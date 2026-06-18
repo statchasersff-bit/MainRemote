@@ -26,7 +26,9 @@ body {
 }
 
 .page {
-  max-width: 1100px;
+  /* Fill the container (e.g. the embedding iframe) instead of self-capping,
+     so the host page controls the width. */
+  max-width: 100%;
   margin: 0 auto;
   padding: 24px 20px 48px;
 }
@@ -34,7 +36,9 @@ body {
 /* Card list */
 .news-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* auto-fit (not auto-fill) so the cards stretch to fill the available width
+     rather than leaving empty columns when the container is wide. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 18px;
 }
 

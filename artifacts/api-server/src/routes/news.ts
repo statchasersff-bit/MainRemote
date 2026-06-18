@@ -15,7 +15,7 @@ async function backfillSummaries(): Promise<void> {
     .prepare(
       `SELECT id, title FROM news_items
        WHERE summary IS NULL AND title IS NOT NULL
-       ORDER BY pubDate DESC, firstSeenAt DESC
+       ORDER BY pubDateMs DESC, firstSeenAt DESC
        LIMIT ?`,
     )
     .all(SUMMARY_BATCH) as { id: string; title: string }[];
@@ -100,12 +100,13 @@ export async function runIngest(): Promise<{
   const now = new Date().toISOString();
 
   const upsert = db.prepare(`
-    INSERT INTO news_items (id, title, link, pubDate, playerName, image, source, firstSeenAt, lastSeenAt)
-    VALUES (@id, @title, @link, @pubDate, @playerName, @image, @source, @now, @now)
+    INSERT INTO news_items (id, title, link, pubDate, pubDateMs, playerName, image, source, firstSeenAt, lastSeenAt)
+    VALUES (@id, @title, @link, @pubDate, @pubDateMs, @playerName, @image, @source, @now, @now)
     ON CONFLICT(id) DO UPDATE SET
       title = excluded.title,
       link = excluded.link,
       pubDate = excluded.pubDate,
+      pubDateMs = excluded.pubDateMs,
       playerName = excluded.playerName,
       image = excluded.image,
       lastSeenAt = excluded.lastSeenAt
@@ -118,11 +119,14 @@ export async function runIngest(): Promise<{
       const id =
         item.id?.toString().trim() || makeFallbackId(item);
 
+      const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+
       upsert.run({
         id,
         title: item.title ?? "(no title)",
         link: item.link ?? null,
         pubDate: item.pubDate ?? null,
+        pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
         source: "Dynasty Command",
@@ -180,7 +184,7 @@ router.get("/news", (req, res) => {
       .prepare(
         `SELECT * FROM news_items
          WHERE title LIKE ? OR playerName LIKE ?
-         ORDER BY pubDate DESC, firstSeenAt DESC
+         ORDER BY pubDateMs DESC, firstSeenAt DESC
          LIMIT ?`,
       )
       .all(pattern, pattern, limit);
@@ -188,7 +192,7 @@ router.get("/news", (req, res) => {
     items = db
       .prepare(
         `SELECT * FROM news_items
-         ORDER BY pubDate DESC, firstSeenAt DESC
+         ORDER BY pubDateMs DESC, firstSeenAt DESC
          LIMIT ?`,
       )
       .all(limit);
