@@ -1,10 +1,12 @@
-import express, { type Express } from "express";
+import express, { type Express, type Response } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { setupLiveReload } from "./lib/livereload";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,11 +40,33 @@ app.use("/api", router);
 
 // Serve static frontend files
 const publicDir = path.resolve(__dirname, "..", "public");
+
+// Development-only live reload: watches publicDir and refreshes the browser.
+const liveReload = setupLiveReload(app, publicDir);
+
+function sendIndexHtml(res: Response) {
+  const indexPath = path.join(publicDir, "index.html");
+  if (!liveReload.enabled) {
+    res.sendFile(indexPath);
+    return;
+  }
+  fs.readFile(indexPath, "utf8", (err, html) => {
+    if (err) {
+      res.status(500).send("index.html not found");
+      return;
+    }
+    res.type("html").send(liveReload.injectIntoHtml(html));
+  });
+}
+
+// In development, serve index.html with the live-reload client injected.
+if (liveReload.enabled) {
+  app.get(["/", "/index.html"], (_req, res) => sendIndexHtml(res));
+}
+
 app.use(express.static(publicDir));
 
 // Fallback to index.html for any non-API route
-app.use((_req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
-});
+app.use((_req, res) => sendIndexHtml(res));
 
 export default app;
