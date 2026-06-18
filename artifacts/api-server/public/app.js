@@ -1,7 +1,4 @@
 const newsList = document.getElementById('newsList');
-const emptyState = document.getElementById('emptyState');
-const statusBar = document.getElementById('statusBar');
-const refreshBtn = document.getElementById('refreshBtn');
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -79,13 +76,6 @@ function renderCard(item) {
   return card;
 }
 
-function showStatus(message, type = 'info') {
-  statusBar.textContent = message;
-  statusBar.className = `status-bar ${type}`;
-  statusBar.classList.remove('hidden');
-  setTimeout(() => statusBar.classList.add('hidden'), 5000);
-}
-
 async function loadNews() {
   try {
     const res = await fetch('/api/news?limit=250');
@@ -93,10 +83,9 @@ async function loadNews() {
     const data = await res.json();
 
     newsList.innerHTML = '';
-    emptyState.classList.add('hidden');
 
     if (!data.items || data.items.length === 0) {
-      emptyState.classList.remove('hidden');
+      newsList.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:48px 0;">No news yet.</p>';
       return;
     }
 
@@ -106,31 +95,8 @@ async function loadNews() {
     }
     newsList.appendChild(fragment);
   } catch (err) {
-    newsList.innerHTML = '';
-    showStatus('Failed to load news. Please try again.', 'error');
+    newsList.innerHTML = '<p style="text-align:center;color:#dc2626;padding:48px 0;">Failed to load news.</p>';
   }
 }
-
-async function runRefresh() {
-  refreshBtn.disabled = true;
-  const btnIcon = refreshBtn.querySelector('.btn-icon');
-  btnIcon.classList.add('spinning');
-  showStatus('Fetching latest news from Dynasty Command…', 'info');
-
-  try {
-    const res = await fetch('/api/ingest', { method: 'POST' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    showStatus(`Done — ${data.total} items fetched (${data.inserted} new, ${data.updated} updated)`, 'success');
-    await loadNews();
-  } catch (err) {
-    showStatus('Refresh failed. Check your connection and try again.', 'error');
-  } finally {
-    refreshBtn.disabled = false;
-    btnIcon.classList.remove('spinning');
-  }
-}
-
-refreshBtn.addEventListener('click', runRefresh);
 
 loadNews();
