@@ -24,6 +24,7 @@ db.exec(`
     playerName TEXT,
     image TEXT,
     source TEXT DEFAULT 'Dynasty Command',
+    summary TEXT,
     firstSeenAt TEXT NOT NULL,
     lastSeenAt TEXT NOT NULL
   );
@@ -31,5 +32,13 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_news_pubDate ON news_items(pubDate DESC);
   CREATE INDEX IF NOT EXISTS idx_news_playerName ON news_items(playerName);
 `);
+
+// Migration: add the summary column to pre-existing databases.
+const columns = db.prepare("PRAGMA table_info(news_items)").all() as {
+  name: string;
+}[];
+if (!columns.some((c) => c.name === "summary")) {
+  db.exec("ALTER TABLE news_items ADD COLUMN summary TEXT");
+}
 
 logger.info({ path: DB_PATH }, "Database initialized");

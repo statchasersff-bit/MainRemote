@@ -1,6 +1,44 @@
 import { Router } from "express";
 import { db } from "../lib/db";
 import { logger } from "../lib/logger";
+import { summarize, summariesEnabled } from "../lib/summarize";
+
+// Per-ingest cap so a large backlog fills gradually instead of one huge burst.
+const SUMMARY_BATCH = 25;
+const SUMMARY_CONCURRENCY = 3;
+
+// Generate synopses for the newest items still missing one.
+async function backfillSummaries(): Promise<void> {
+  if (!summariesEnabled()) return;
+
+  const rows = db
+    .prepare(
+      `SELECT id, title FROM news_items
+       WHERE summary IS NULL AND title IS NOT NULL
+       ORDER BY pubDate DESC, firstSeenAt DESC
+       LIMIT ?`,
+    )
+    .all(SUMMARY_BATCH) as { id: string; title: string }[];
+
+  if (rows.length === 0) return;
+
+  const update = db.prepare("UPDATE news_items SET summary = ? WHERE id = ?");
+  let generated = 0;
+
+  for (let i = 0; i < rows.length; i += SUMMARY_CONCURRENCY) {
+    const chunk = rows.slice(i, i + SUMMARY_CONCURRENCY);
+    const results = await Promise.all(chunk.map((r) => summarize(r.title)));
+    for (let j = 0; j < chunk.length; j++) {
+      const text = results[j];
+      if (text) {
+        update.run(text, chunk[j]!.id);
+        generated++;
+      }
+    }
+  }
+
+  logger.info({ generated, attempted: rows.length }, "Summaries backfilled");
+}
 
 const router = Router();
 
@@ -104,11 +142,21 @@ export async function runIngest(): Promise<{
     "Ingest complete",
   );
 
+  await backfillSummaries();
+
   return { inserted, updated, total: rawItems.length };
 }
 
 // POST /api/ingest
 router.post("/ingest", async (req, res) => {
+  // Opt-in guard: when INGEST_SECRET is set, callers must present it. Keeps the
+  // externally-triggerable ingest endpoint from being abused. No secret = open.
+  const secret = process.env["INGEST_SECRET"];
+  if (secret && req.get("x-ingest-secret") !== secret) {
+    res.status(401).json({ ok: false, error: "unauthorized" });
+    return;
+  }
+
   try {
     const result = await runIngest();
     res.json({ ok: true, ...result });
