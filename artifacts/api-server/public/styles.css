@@ -33,18 +33,23 @@ body {
   padding: 24px 20px 48px;
 }
 
-/* Card list */
+/* Card list — fixed-width cards, centered and wrapping. Keeps every card the
+   same size regardless of how many are on the page (a 2-card page looks the
+   same as a 3-card page) and centers the row in wide/embedded containers. */
 .news-list {
-  display: grid;
-  /* auto-fit (not auto-fill) so the cards stretch to fill the available width
-     rather than leaving empty columns when the container is wide. */
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 18px;
 }
 
 /* News card — tall premium player card */
 .sc-card {
   position: relative;
+  /* Fixed width so cards never stretch to fill the row; cap at 100% so a single
+     card still fits narrow phones. */
+  flex: 0 0 340px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   border-radius: 20px;
