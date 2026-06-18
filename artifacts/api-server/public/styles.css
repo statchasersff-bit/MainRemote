@@ -47,8 +47,9 @@ body {
 .sc-card {
   position: relative;
   /* Fixed width so cards never stretch to fill the row; cap at 100% so a single
-     card still fits narrow phones. */
-  flex: 0 0 340px;
+     card still fits narrow phones. 310px lets a full row of 4 fit common laptop
+     widths (~1366px+) — keep in sync with CARD_WIDTH in app.js. */
+  flex: 0 0 310px;
   max-width: 100%;
   display: flex;
   flex-direction: column;
@@ -78,10 +79,10 @@ body {
 /* Image area */
 .sc-card-media {
   position: relative;
-  /* Scale the image band with the card width (instead of a fixed height) so the
-     player photo keeps the same crop at any card width — wide embedded cards
-     were cropping the player badly. 17:10 ≈ the original 340x200 proportion. */
-  aspect-ratio: 17 / 10;
+  /* Fixed height (cards are fixed-width now, so this no longer over-crops wide
+     embeds). A proportional aspect-ratio shrank the image band — and cropped
+     the player's head — whenever a narrow embed forced the card below 340px. */
+  height: 200px;
   display: grid;
   place-items: center;
   overflow: hidden;
