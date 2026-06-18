@@ -1,8 +1,12 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import router from "./routes";
 import { logger } from "./lib/logger";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Express = express();
 
@@ -29,6 +33,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// API routes
 app.use("/api", router);
+
+// Serve static frontend files
+const publicDir = path.resolve(__dirname, "..", "public");
+app.use(express.static(publicDir));
+
+// Fallback to index.html for any non-API route
+app.use((_req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
 
 export default app;

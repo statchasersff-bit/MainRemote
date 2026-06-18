@@ -1,0 +1,107 @@
+I want to build a very simple StatChasers fantasy football player news archive tool.
+
+Important context:
+
+* I already have a Dynasty Command app that has an endpoint for recent NFL player news.
+* The new app should NOT fetch directly from Rotowire.
+* The new app should pull news from Dynasty Command’s existing API endpoint.
+* The goal is to save the news items into this new app’s database so users can come back later and browse old player news.
+* This should be simple, clean, and lightweight.
+
+Source endpoint:
+Use this environment variable:
+
+DYNASTY_NEWS_API_URL=https://dynasty-command.replit.app/api/news/nfl
+
+Build a full-stack Replit app with:
+
+* Express backend
+* SQLite database
+* Simple frontend using HTML, CSS, and vanilla JavaScript
+* No login needed for now
+* No complex admin dashboard needed yet
+
+Database requirements:
+Create a table called news_items with the following fields:
+
+* id TEXT PRIMARY KEY
+* title TEXT NOT NULL
+* link TEXT
+* pubDate TEXT
+* playerName TEXT
+* image TEXT
+* source TEXT DEFAULT 'Dynasty Command'
+* firstSeenAt TEXT NOT NULL
+* lastSeenAt TEXT NOT NULL
+
+Backend requirements:
+Create these API routes:
+
+1. GET /api/health
+   Returns a basic status check.
+
+2. POST /api/ingest
+   Fetches the latest news from DYNASTY_NEWS_API_URL, normalizes the items, and saves them into SQLite.
+
+Important:
+
+* If a news item already exists, update title, link, pubDate, playerName, image, and lastSeenAt.
+* Do not duplicate the same news item.
+* Use the existing id from Dynasty Command if available.
+* If no id exists, create a fallback id from title + link + pubDate.
+* Do not save article bodies.
+* Only save headline metadata.
+
+3. GET /api/news
+   Returns saved news from the database.
+   Support query params:
+
+* limit, default 100, max 250
+* search, which searches title and playerName
+
+Frontend requirements:
+Create a clean StatChasers-style page with:
+
+* White background
+* Centered hero section
+* Page title: Fantasy Football Player News
+* Gold underline under the title
+* Short description explaining that this is a saved archive of recent NFL player news from Dynasty Command
+* Search input to search by player or headline
+* Refresh News button that calls POST /api/ingest
+* News cards showing:
+
+  * player headshot if available
+  * fallback gold dot if no image exists
+  * player name
+  * headline
+  * published date
+  * source label: Dynasty Command
+  * outbound link to the original article
+
+Design style:
+
+* Premium, simple, clean
+* StatChasers gold accent: #d4af37
+* Rounded cards
+* Subtle borders
+* Mobile responsive
+* No dark alternating section backgrounds
+* Keep the whole page white and easy to read
+
+Automatic refresh:
+
+* On server startup, run the ingest function once.
+* Then run ingest every 10 minutes with setInterval.
+* If ingest fails, log the error but do not crash the app.
+
+Files to create:
+
+* package.json
+* server.js
+* .env.example
+* public/index.html
+* public/styles.css
+* public/app.js
+
+Please implement the full working app. Keep the code simple and easy to understand.
