@@ -1,7 +1,19 @@
 const newsList = document.getElementById('newsList');
 const pager = document.getElementById('pager');
 
-const PAGE_SIZE = 3;
+// Cards are a fixed 310px wide with an 18px gap (see styles.css). A page holds
+// as many as fit in one row of the current container, capped at 4 on desktop,
+// so every page is a single tidy row rather than a tall wrapping block.
+const CARD_WIDTH = 310;
+const CARD_GAP = 18;
+const MAX_PAGE_SIZE = 4;
+
+function pageSize() {
+  const width = (newsList && newsList.clientWidth) || window.innerWidth;
+  const fit = Math.floor((width + CARD_GAP) / (CARD_WIDTH + CARD_GAP));
+  return Math.min(MAX_PAGE_SIZE, Math.max(1, fit));
+}
+
 let allItems = [];
 let currentPage = 0;
 
@@ -144,11 +156,11 @@ function wireImageFallbacks() {
 }
 
 function totalPages() {
-  return Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
+  return Math.max(1, Math.ceil(allItems.length / pageSize()));
 }
 
 function renderPager() {
-  if (allItems.length <= PAGE_SIZE) {
+  if (allItems.length <= pageSize()) {
     pager.innerHTML = '';
     return;
   }
@@ -161,8 +173,9 @@ function renderPager() {
 }
 
 function renderPage() {
-  const start = currentPage * PAGE_SIZE;
-  const pageItems = allItems.slice(start, start + PAGE_SIZE);
+  const size = pageSize();
+  const start = currentPage * size;
+  const pageItems = allItems.slice(start, start + size);
   newsList.innerHTML = pageItems.map(renderCard).join('');
   wireImageFallbacks();
   renderPager();
@@ -175,6 +188,19 @@ pager.addEventListener('click', (e) => {
   currentPage = Math.max(0, Math.min(currentPage, totalPages() - 1));
   renderPage();
   newsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// Re-paginate when the container width changes enough to fit a different number
+// of cards per row (e.g. the embed is resized or the device is rotated). Anchor
+// on the first card currently shown so the reader doesn't lose their place.
+let lastPageSize = pageSize();
+window.addEventListener('resize', () => {
+  const size = pageSize();
+  if (size === lastPageSize) return;
+  const firstItem = currentPage * lastPageSize;
+  lastPageSize = size;
+  currentPage = Math.min(Math.floor(firstItem / size), totalPages() - 1);
+  if (allItems.length) renderPage();
 });
 
 // preservePage keeps the reader on their current page during a background
