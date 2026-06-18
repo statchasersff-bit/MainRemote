@@ -73,7 +73,10 @@ body {
 /* Image area */
 .sc-card-media {
   position: relative;
-  height: 200px;
+  /* Scale the image band with the card width (instead of a fixed height) so the
+     player photo keeps the same crop at any card width — wide embedded cards
+     were cropping the player badly. 17:10 ≈ the original 340x200 proportion. */
+  aspect-ratio: 17 / 10;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -221,10 +224,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  .sc-card-media {
-    height: 172px;
-  }
-
   .sc-card-name {
     font-size: 1.08rem;
   }
