@@ -227,15 +227,22 @@ const embedded = window.parent !== window;
 
 function postHeight() {
   if (!embedded) return;
+  // Measure the content wrapper directly. documentElement.scrollHeight is
+  // clamped to the iframe's viewport height, so it can never shrink the frame
+  // below its current size (it leaves whitespace). The .page element's own
+  // height reflects the true content height regardless of the frame size.
+  const page = document.querySelector('.page');
   const height = Math.ceil(
-    Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
+    page ? page.getBoundingClientRect().height : document.body.scrollHeight,
   );
   window.parent.postMessage({ type: 'statchasers:height', height }, '*');
 }
 
 if (embedded && 'ResizeObserver' in window) {
-  // Fires on every layout change: render, image load, pager, font swap, resize.
-  new ResizeObserver(postHeight).observe(document.documentElement);
+  // Observe the content wrapper (not documentElement, which is viewport-bound)
+  // so we re-measure on every layout change: render, image load, pager, resize.
+  const page = document.querySelector('.page');
+  new ResizeObserver(postHeight).observe(page || document.body);
 }
 window.addEventListener('load', postHeight);
 
