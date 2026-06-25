@@ -23,14 +23,32 @@ function publicOrigin(req: Request): string {
 export function embedScript(origin: string): string {
   return `(function () {
   var ORIGIN = ${JSON.stringify(origin)};
+  function frame() { return document.getElementById('statchasers-news'); }
+
   // Resolve the frame inside the handler so load order never matters.
   window.addEventListener('message', function (e) {
     if (e.origin !== ORIGIN) return;
     if (!e.data || e.data.type !== 'statchasers:height') return;
-    var frame = document.getElementById('statchasers-news');
+    var f = frame();
     var h = parseInt(e.data.height, 10);
-    if (frame && h > 0) frame.style.height = h + 'px';
+    if (f && h > 0) f.style.height = h + 'px';
   });
+
+  // This file is often loaded LATE — performance plugins (WP Rocket /
+  // Perfmatters / LiteSpeed) "delay JavaScript execution" until the first user
+  // interaction, by which point the iframe's load-time height broadcast is long
+  // gone. So don't just wait passively: ask the iframe for its height now, and
+  // again whenever it (re)loads. The iframe answers with a fresh statchasers:height.
+  function requestHeight() {
+    var f = frame();
+    if (f && f.contentWindow) {
+      f.contentWindow.postMessage({ type: 'statchasers:request-height' }, ORIGIN);
+    }
+  }
+  requestHeight();
+  window.addEventListener('load', requestHeight);
+  var f0 = frame();
+  if (f0) f0.addEventListener('load', requestHeight);
 })();
 `;
 }
@@ -40,13 +58,18 @@ export function embedScript(origin: string): string {
 // message and resizes the frame to match, so there is no inner scrollbar and no
 // leftover whitespace ("white block") when the content is shorter than the frame.
 export function embedSnippet(origin: string): string {
-  return `<iframe
-  id="statchasers-news"
-  src="${origin}/"
-  title="StatChasers — NFL Player News"
-  style="width:100%;border:0;border-radius:16px;display:block;height:600px;"
-  loading="lazy"></iframe>
-<script src="${origin}/embed.js"></script>`;
+  // NOTE: deliberately NOT using loading="lazy" — and we add the skip markers
+  // that the common performance plugins honor (WP Rocket / Perfmatters /
+  // LiteSpeed / a3 Lazy Load). A lazy-loaded iframe gets pulled out of the DOM
+  // until scrolled into view, which both hides it and breaks the postMessage
+  // auto-resize. These attributes keep the plugin from touching it.
+  // Keep the iframe on ONE line with only quoted attributes. Divi/WordPress's
+  // editor mangles multi-line tags (and bare attributes like `data-skip-lazy`),
+  // and a dropped </iframe> makes the iframe swallow everything after it.
+  return (
+    `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:600px;"></iframe>\n` +
+    `<script src="${origin}/embed.js"></script>`
+  );
 }
 
 // Small HTML escaper so the snippet renders as text inside <code>, not as live
