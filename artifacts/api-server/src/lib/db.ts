@@ -65,4 +65,75 @@ db.exec(
   "CREATE INDEX IF NOT EXISTS idx_news_pubDateMs ON news_items(pubDateMs DESC)",
 );
 
+// A stable content fingerprint for an item. We dedupe on this rather than the
+// upstream id: the feed has historically changed both its id scheme and its
+// pubDate formatting, and the old fallback id (a hash of title|link|pubDate)
+// produced a fresh row for the same article every time that string changed —
+// which is how the backlog ended up with each story stored twice.
+export function newsDedupeKey(item: {
+  title?: string | null;
+  id?: string | null;
+}): string {
+  const title = (item.title ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+  return title || `id:${(item.id ?? "").trim()}`;
+}
+
+// Migration: add the dedupe key, collapse pre-existing duplicates, and enforce
+// uniqueness so the same story can never be stored twice again. Idempotent —
+// safe to run on every startup, which lets production self-heal on deploy.
+if (!columns.some((c) => c.name === "dedupeKey")) {
+  db.exec("ALTER TABLE news_items ADD COLUMN dedupeKey TEXT");
+}
+
+{
+  const rows = db
+    .prepare("SELECT rowid, id, title, summary, firstSeenAt FROM news_items")
+    .all() as {
+    rowid: number;
+    id: string;
+    title: string | null;
+    summary: string | null;
+    firstSeenAt: string;
+  }[];
+
+  const setKey = db.prepare("UPDATE news_items SET dedupeKey = ? WHERE rowid = ?");
+  const deleteRow = db.prepare("DELETE FROM news_items WHERE rowid = ?");
+
+  // Group rows by their content fingerprint so duplicates land together.
+  const groups = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const key = newsDedupeKey(r);
+    const group = groups.get(key);
+    if (group) group.push(r);
+    else groups.set(key, [r]);
+  }
+
+  let removed = 0;
+  const cleanup = db.transaction(() => {
+    for (const [key, group] of groups) {
+      // Keep the best copy: prefer one that already has a generated summary,
+      // then the earliest-seen row. Backfill the key, drop the rest.
+      group.sort((a, b) => {
+        if (!!a.summary !== !!b.summary) return a.summary ? -1 : 1;
+        return a.firstSeenAt < b.firstSeenAt ? -1 : 1;
+      });
+      const [keep, ...rest] = group;
+      setKey.run(key, keep!.rowid);
+      for (const dup of rest) {
+        deleteRow.run(dup.rowid);
+        removed++;
+      }
+    }
+  });
+  cleanup();
+
+  if (removed > 0) {
+    logger.warn({ removed }, "Removed duplicate news items");
+  }
+}
+
+db.exec(
+  "CREATE UNIQUE INDEX IF NOT EXISTS idx_news_dedupeKey ON news_items(dedupeKey)",
+);
+
 logger.info({ path: DB_PATH }, "Database initialized");

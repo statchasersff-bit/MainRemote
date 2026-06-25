@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../lib/db";
+import { db, newsDedupeKey } from "../lib/db";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
 
@@ -99,47 +99,65 @@ export async function runIngest(): Promise<{
 
   const now = new Date().toISOString();
 
-  const upsert = db.prepare(`
-    INSERT INTO news_items (id, title, link, pubDate, pubDateMs, playerName, image, source, firstSeenAt, lastSeenAt)
-    VALUES (@id, @title, @link, @pubDate, @pubDateMs, @playerName, @image, @source, @now, @now)
-    ON CONFLICT(id) DO UPDATE SET
-      title = excluded.title,
-      link = excluded.link,
-      pubDate = excluded.pubDate,
-      pubDateMs = excluded.pubDateMs,
-      playerName = excluded.playerName,
-      image = excluded.image,
-      lastSeenAt = excluded.lastSeenAt
+  // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
+  // with the same fingerprint already exists we update it in place — keeping its
+  // original id, summary, and firstSeenAt — so a changed upstream id or pubDate
+  // format can never spawn a second copy of the same story.
+  const findByKey = db.prepare("SELECT id FROM news_items WHERE dedupeKey = ?");
+
+  const insert = db.prepare(`
+    INSERT INTO news_items (id, dedupeKey, title, link, pubDate, pubDateMs, playerName, image, source, firstSeenAt, lastSeenAt)
+    VALUES (@id, @dedupeKey, @title, @link, @pubDate, @pubDateMs, @playerName, @image, @source, @now, @now)
   `);
 
-  const countBefore = (db.prepare("SELECT COUNT(*) as c FROM news_items").get() as { c: number }).c;
+  const update = db.prepare(`
+    UPDATE news_items SET
+      title = @title,
+      link = @link,
+      pubDate = @pubDate,
+      pubDateMs = @pubDateMs,
+      playerName = @playerName,
+      image = @image,
+      lastSeenAt = @now
+    WHERE id = @id
+  `);
+
+  let inserted = 0;
+  let updated = 0;
 
   const insertMany = db.transaction((items: RawNewsItem[]) => {
     for (const item of items) {
-      const id =
-        item.id?.toString().trim() || makeFallbackId(item);
-
+      const id = item.id?.toString().trim() || makeFallbackId(item);
+      const dedupeKey = newsDedupeKey({ title: item.title, id });
       const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
 
-      upsert.run({
-        id,
+      const row = {
         title: item.title ?? "(no title)",
         link: item.link ?? null,
         pubDate: item.pubDate ?? null,
         pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
-        source: "Dynasty Command",
         now,
-      });
+      };
+
+      const existing = findByKey.get(dedupeKey) as { id: string } | undefined;
+      if (existing) {
+        update.run({ ...row, id: existing.id });
+        updated++;
+      } else {
+        insert.run({
+          ...row,
+          id,
+          dedupeKey,
+          source: "Dynasty Command",
+        });
+        inserted++;
+      }
     }
   });
 
   insertMany(rawItems);
-
-  const countAfter = (db.prepare("SELECT COUNT(*) as c FROM news_items").get() as { c: number }).c;
-  const inserted = countAfter - countBefore;
-  const updated = rawItems.length - inserted;
 
   logger.info(
     { total: rawItems.length, inserted, updated },
