@@ -179,6 +179,9 @@ function renderPage() {
   newsList.innerHTML = pageItems.map(renderCard).join('');
   wireImageFallbacks();
   renderPager();
+  // Report the freshly-rendered height so the embedding frame can never stay
+  // stuck at a stale/oversized value from an earlier transient layout.
+  postHeight();
 }
 
 pager.addEventListener('click', (e) => {
@@ -271,6 +274,18 @@ if (embedded && 'ResizeObserver' in window) {
   new ResizeObserver(postHeight).observe(page || document.body);
 }
 window.addEventListener('load', postHeight);
+
+if (embedded) {
+  // The parent's resize script (embed.js) can load late — performance plugins
+  // such as WP Rocket / Perfmatters "delay JavaScript execution" until the user
+  // interacts, so our load-time broadcast above is often missed. Two safeguards:
+  // (1) answer an explicit height request whenever embed.js finally runs, and
+  // (2) re-broadcast a few times after load so a late listener still catches up.
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'statchasers:request-height') postHeight();
+  });
+  [250, 1000, 2500, 5000].forEach((ms) => setTimeout(postHeight, ms));
+}
 
 // Apply team-logo watermarks as soon as the Sleeper map is ready.
 loadPlayerTeams().then(() => {
