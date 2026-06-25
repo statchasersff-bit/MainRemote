@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
+import embedRouter from "./routes/embed";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 
@@ -37,6 +38,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // API routes
 app.use("/api", router);
+
+// Copy-paste embed snippet page (/embed and /embed.txt). Mounted before the
+// static/SPA fallback so it isn't swallowed by the index.html catch-all.
+app.use(embedRouter);
 
 // Serve static frontend files
 const publicDir = path.resolve(__dirname, "..", "public");
