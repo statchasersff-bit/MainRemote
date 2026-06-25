@@ -15,10 +15,30 @@ function publicOrigin(req: Request): string {
   return `${proto}://${host}`;
 }
 
+// The external resize listener, served as a standalone .js file. Hosting it as a
+// file (rather than inline) is what makes the embed survive WordPress/Divi: the
+// page's HTML formatter (wpautop) rewrites inline <script> bodies — inserting
+// <br>/<p> tags — which produces "Uncaught SyntaxError: Unexpected token '<'"
+// and kills the listener. A separate file has no inline body to mangle.
+export function embedScript(origin: string): string {
+  return `(function () {
+  var ORIGIN = ${JSON.stringify(origin)};
+  // Resolve the frame inside the handler so load order never matters.
+  window.addEventListener('message', function (e) {
+    if (e.origin !== ORIGIN) return;
+    if (!e.data || e.data.type !== 'statchasers:height') return;
+    var frame = document.getElementById('statchasers-news');
+    var h = parseInt(e.data.height, 10);
+    if (frame && h > 0) frame.style.height = h + 'px';
+  });
+})();
+`;
+}
+
 // The parent-page embed markup. The iframe broadcasts its true content height
-// (see public/app.js -> postHeight); this snippet listens for that message and
-// resizes the frame to match, so there is no inner scrollbar and no leftover
-// whitespace ("white block") when the content is shorter than a fixed height.
+// (see public/app.js -> postHeight); the external embed.js listens for that
+// message and resizes the frame to match, so there is no inner scrollbar and no
+// leftover whitespace ("white block") when the content is shorter than the frame.
 export function embedSnippet(origin: string): string {
   return `<iframe
   id="statchasers-news"
@@ -26,17 +46,7 @@ export function embedSnippet(origin: string): string {
   title="StatChasers — NFL Player News"
   style="width:100%;border:0;border-radius:16px;display:block;height:600px;"
   loading="lazy"></iframe>
-<script>
-  (function () {
-    var frame = document.getElementById('statchasers-news');
-    window.addEventListener('message', function (e) {
-      if (e.origin !== '${origin}') return;
-      if (!e.data || e.data.type !== 'statchasers:height') return;
-      var h = parseInt(e.data.height, 10);
-      if (h > 0) frame.style.height = h + 'px';
-    });
-  })();
-</script>`;
+<script src="${origin}/embed.js"></script>`;
 }
 
 // Small HTML escaper so the snippet renders as text inside <code>, not as live
@@ -47,6 +57,14 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
+
+// GET /embed.js — the external resize listener referenced by the snippet.
+router.get("/embed.js", (req, res) => {
+  res
+    .type("application/javascript")
+    .set("Cache-Control", "public, max-age=300")
+    .send(embedScript(publicOrigin(req)));
+});
 
 // GET /embed.txt — raw snippet, for scripting or a quick copy.
 router.get("/embed.txt", (req, res) => {
@@ -75,11 +93,12 @@ router.get("/embed", (req, res) => {
 </head>
 <body>
   <h1>Embed the StatChasers news feed</h1>
-  <p>Paste this into a code/HTML block on your page (in Divi, use a <strong>Code</strong> module so the <code>&lt;script&gt;</code> is kept):</p>
+  <p>Paste this into a code/HTML block on your page (in Divi, use a <strong>Code</strong> module):</p>
   <pre><code id="snippet">${escapeHtml(snippet)}</code></pre>
   <button onclick="navigator.clipboard.writeText(document.getElementById('snippet').textContent).then(function(){this.textContent='Copied!'}.bind(this))">Copy snippet</button>
   <h2>Important</h2>
   <ol>
+    <li>The resize logic loads from <code>/embed.js</code> (an external file) on purpose — WordPress/Divi rewrites <em>inline</em> scripts and breaks them, but it can't touch an external file.</li>
     <li>Do <strong>not</strong> set a fixed height on the surrounding module/row — leave Height blank/auto. The script sizes the frame to the content; a fixed height leaves a white block below it.</li>
     <li>The <code>height:600px</code> in the snippet is only a placeholder shown before the script runs.</li>
     <li>The frame re-sizes automatically on refresh, pagination, and window resize.</li>
