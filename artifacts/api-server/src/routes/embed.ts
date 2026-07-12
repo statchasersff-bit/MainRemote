@@ -31,7 +31,14 @@ export function embedScript(origin: string): string {
     if (!e.data || e.data.type !== 'statchasers:height') return;
     var f = frame();
     var h = parseInt(e.data.height, 10);
-    if (f && h > 0) f.style.height = h + 'px';
+    // Set the height as inline !important so it wins over any leftover host CSS
+    // (e.g. a legacy "#statchasers-news { height: 530px !important }" rule) —
+    // an inline !important beats a stylesheet !important, so the frame always
+    // reflects the true content height. Clear min-height for the same reason.
+    if (f && h > 0) {
+      f.style.setProperty('height', h + 'px', 'important');
+      f.style.setProperty('min-height', '0', 'important');
+    }
   });
 
   // This file is often loaded LATE — performance plugins (WP Rocket /
