@@ -1,17 +1,12 @@
 const newsList = document.getElementById('newsList');
 const pager = document.getElementById('pager');
 
-// Cards are a fixed 310px wide with an 18px gap (see styles.css). A page holds
-// as many as fit in one row of the current container, capped at 4 on desktop,
-// so every page is a single tidy row rather than a tall wrapping block.
-const CARD_WIDTH = 310;
-const CARD_GAP = 18;
-const MAX_PAGE_SIZE = 4;
+// Cards are full-width horizontal rows stacked vertically (see styles.css), so
+// each page is a fixed-length column of cards rather than a single row.
+const PAGE_SIZE = 6;
 
 function pageSize() {
-  const width = (newsList && newsList.clientWidth) || window.innerWidth;
-  const fit = Math.floor((width + CARD_GAP) / (CARD_WIDTH + CARD_GAP));
-  return Math.min(MAX_PAGE_SIZE, Math.max(1, fit));
+  return PAGE_SIZE;
 }
 
 let allItems = [];
@@ -54,10 +49,39 @@ function playerIdFromImage(url) {
   return match ? match[1] : null;
 }
 
-function teamLogoUrl(item) {
+// Primary brand color per NFL team, keyed by Sleeper's lowercase abbreviation.
+// Used to tint each card's headshot square instead of a single navy for all.
+const TEAM_COLORS = {
+  ari: '#97233F', atl: '#A71930', bal: '#241773', buf: '#00338D',
+  car: '#0085CA', chi: '#0B162A', cin: '#FB4F14', cle: '#311D00',
+  dal: '#041E42', den: '#FB4F14', det: '#0076B6', gb: '#203731',
+  hou: '#03202F', ind: '#002C5F', jax: '#006778', kc: '#E31837',
+  lac: '#0080C6', lar: '#003594', lv: '#101820', mia: '#008E97',
+  min: '#4F2683', ne: '#002244', no: '#101820', nyg: '#0B2265',
+  nyj: '#125740', phi: '#004C54', pit: '#101820', sea: '#002244',
+  sf: '#AA0000', tb: '#D50A0A', ten: '#0C2340', was: '#5A1414',
+};
+
+// Secondary/accent color per team, used for the strip along the photo's edge.
+const TEAM_ACCENTS = {
+  ari: '#FFB612', atl: '#A5ACAF', bal: '#9E7C0C', buf: '#C60C30',
+  car: '#BFC0BF', chi: '#C83803', cin: '#000000', cle: '#FF3C00',
+  dal: '#869397', den: '#002244', det: '#B0B7BC', gb: '#FFB612',
+  hou: '#A71930', ind: '#FFFFFF', jax: '#D7A22A', kc: '#FFB81C',
+  lac: '#FFC20E', lar: '#FFD100', lv: '#A5ACAF', mia: '#FC4C02',
+  min: '#FFC62F', ne: '#C60C30', no: '#D3BC8D', nyg: '#A71930',
+  nyj: '#FFFFFF', phi: '#A5ACAF', pit: '#FFB612', sea: '#69BE28',
+  sf: '#B3995D', tb: '#FF7900', ten: '#4B92DB', was: '#FFB612',
+};
+
+// The player's team abbreviation (lowercase), or null if unknown.
+function teamAbbrev(item) {
   if (!playerTeams) return null;
   const id = playerIdFromImage(item.image);
-  const team = id && playerTeams[id];
+  return (id && playerTeams[id]) || null;
+}
+
+function teamLogoUrl(team) {
   return team ? `https://sleepercdn.com/images/team_logos/nfl/${team}.png` : null;
 }
 
@@ -113,9 +137,19 @@ function renderCard(item) {
     ? ` href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer"`
     : '';
 
-  const logo = teamLogoUrl(item);
+  const team = teamAbbrev(item);
+  const logo = teamLogoUrl(team);
+  const color = team ? TEAM_COLORS[team] : null;
+  const accent = team ? TEAM_ACCENTS[team] : null;
+
   const cardClass = logo ? 'sc-card has-team-logo' : 'sc-card';
-  const styleAttr = logo ? ` style="--sc-team-logo:url('${escapeHtml(logo)}')"` : '';
+  const styleParts = [];
+  if (logo) styleParts.push(`--sc-team-logo:url('${logo}')`);
+  if (color) styleParts.push(`--sc-team-color:${color}`);
+  if (accent) styleParts.push(`--sc-team-accent:${accent}`);
+  const styleAttr = styleParts.length
+    ? ` style="${escapeHtml(styleParts.join(';'))}"`
+    : '';
 
   // The full headline (e.g. "Drake London: Nursing minor injury") is the heading.
   const titleBlock = `<h2 class="sc-card-name">${title}</h2>`;
