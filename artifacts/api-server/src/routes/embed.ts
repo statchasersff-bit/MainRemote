@@ -66,8 +66,13 @@ export function embedSnippet(origin: string): string {
   // Keep the iframe on ONE line with only quoted attributes. Divi/WordPress's
   // editor mangles multi-line tags (and bare attributes like `data-skip-lazy`),
   // and a dropped </iframe> makes the iframe swallow everything after it.
+  // The height here is only a placeholder shown before embed.js runs and resizes
+  // the frame to the true content height. Size it to fit a FULL page of cards
+  // (PAGE_SIZE rows + pager) so that if the resize listener ever fails to load
+  // — e.g. the WordPress/Divi editor mangles the <script> URL — the frame is
+  // still tall enough to show every card with no inner scrollbar.
   return (
-    `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:600px;"></iframe>\n` +
+    `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:900px;"></iframe>\n` +
     `<script src="${origin}/embed.js"></script>`
   );
 }
@@ -123,7 +128,8 @@ router.get("/embed", (req, res) => {
   <ol>
     <li>The resize logic loads from <code>/embed.js</code> (an external file) on purpose — WordPress/Divi rewrites <em>inline</em> scripts and breaks them, but it can't touch an external file.</li>
     <li>Do <strong>not</strong> set a fixed height on the surrounding module/row — leave Height blank/auto. The script sizes the frame to the content; a fixed height leaves a white block below it.</li>
-    <li>The <code>height:600px</code> in the snippet is only a placeholder shown before the script runs.</li>
+    <li>The <code>height:900px</code> in the snippet is only a placeholder shown before the script runs — sized to fit a full page of cards so a failed resize still shows everything without an inner scrollbar.</li>
+    <li>After pasting, click into the code and confirm the script URL reads <code>/embed.js</code> with no stray space — Divi occasionally inserts one when a long line wraps, which stops the resize script from loading.</li>
     <li>The frame re-sizes automatically on refresh, pagination, and window resize.</li>
   </ol>
   <p class="muted">Raw snippet also available at <a href="/embed.txt">/embed.txt</a>.</p>

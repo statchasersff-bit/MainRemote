@@ -30,7 +30,8 @@ body {
      so the host page controls the width. */
   max-width: 100%;
   margin: 0 auto;
-  padding: 24px 20px 48px;
+  /* No padding — the widget sits flush to the container edges on all sides. */
+  padding: 0;
 }
 
 /* Card list — full-width horizontal cards stacked vertically. Each card is a
