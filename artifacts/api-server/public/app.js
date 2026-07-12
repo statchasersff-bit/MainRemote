@@ -2,8 +2,9 @@ const newsList = document.getElementById('newsList');
 const pager = document.getElementById('pager');
 
 // Cards are full-width horizontal rows stacked vertically (see styles.css), so
-// each page is a fixed-length column of cards rather than a single row.
-const PAGE_SIZE = 6;
+// each page is a fixed-length column of cards rather than a single row. Five per
+// page fit the embed height without an inner scrollbar.
+const PAGE_SIZE = 5;
 
 function pageSize() {
   return PAGE_SIZE;
