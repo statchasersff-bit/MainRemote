@@ -74,12 +74,13 @@ export function embedSnippet(origin: string): string {
   // editor mangles multi-line tags (and bare attributes like `data-skip-lazy`),
   // and a dropped </iframe> makes the iframe swallow everything after it.
   // The height here is only a placeholder shown before embed.js runs and resizes
-  // the frame to the true content height. Size it to fit a FULL page of cards
-  // (PAGE_SIZE rows + pager) so that if the resize listener ever fails to load
-  // — e.g. the WordPress/Divi editor mangles the <script> URL — the frame is
-  // still tall enough to show every card with no inner scrollbar.
+  // the frame to the true content height. Set it close to the ACTUAL height of a
+  // full page of cards (~728px) rather than oversized: performance plugins often
+  // delay the resize script until the visitor interacts, and until then the
+  // placeholder IS the visible height — too tall leaves an empty gap under the
+  // cards, too short shows a brief scrollbar. Matching real content avoids both.
   return (
-    `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:900px;"></iframe>\n` +
+    `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:728px;"></iframe>\n` +
     `<script src="${origin}/embed.js"></script>`
   );
 }
@@ -135,7 +136,7 @@ router.get("/embed", (req, res) => {
   <ol>
     <li>The resize logic loads from <code>/embed.js</code> (an external file) on purpose — WordPress/Divi rewrites <em>inline</em> scripts and breaks them, but it can't touch an external file.</li>
     <li>Do <strong>not</strong> set a fixed height on the surrounding module/row — leave Height blank/auto. The script sizes the frame to the content; a fixed height leaves a white block below it.</li>
-    <li>The <code>height:900px</code> in the snippet is only a placeholder shown before the script runs — sized to fit a full page of cards so a failed resize still shows everything without an inner scrollbar.</li>
+    <li>The <code>height:728px</code> in the snippet is only a placeholder shown before the script runs — set close to the real content height so there's no gap (too tall) or scrollbar (too short) before the resize kicks in.</li>
     <li>After pasting, click into the code and confirm the script URL reads <code>/embed.js</code> with no stray space — Divi occasionally inserts one when a long line wraps, which stops the resize script from loading.</li>
     <li>The frame re-sizes automatically on refresh, pagination, and window resize.</li>
   </ol>
