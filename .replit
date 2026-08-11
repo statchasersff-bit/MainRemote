@@ -33,7 +33,7 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.shared]
-DYNASTY_NEWS_API_URL = "https://dynasty-command.replit.app/api/news/nfl"
+DYNASTY_NEWS_API_URL = "https://api.statchasers.com/api/news/nfl"
 
 [[ports]]
 localPort = 8080
