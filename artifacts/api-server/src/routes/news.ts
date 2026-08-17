@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { db, newsDedupeKey } from "../lib/db";
+import { listNews } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
+import { ensureTeams } from "../lib/teams";
+import { invalidateFreshness } from "../lib/freshness";
+import { invalidateRenderCache } from "../lib/ssr";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -35,6 +39,14 @@ async function backfillSummaries(): Promise<void> {
         generated++;
       }
     }
+  }
+
+  if (generated > 0) {
+    // Revises existing items rather than adding news: the rendered cards change
+    // (so caches must drop), but the archive is not newer, so the public
+    // "last updated" date stays put.
+    invalidateFreshness(false);
+    invalidateRenderCache();
   }
 
   logger.info({ generated, attempted: rows.length }, "Summaries backfilled");
@@ -159,12 +171,24 @@ export async function runIngest(): Promise<{
 
   insertMany(rawItems);
 
+  // Only a run that actually changed something invalidates the freshness
+  // timestamp and the render cache. An ingest that re-sees the same items is
+  // not a content change, and must not move the "Last updated" date.
+  if (inserted > 0 || updated > 0) {
+    invalidateFreshness();
+    invalidateRenderCache();
+  }
+
   logger.info(
     { total: rawItems.length, inserted, updated },
     "Ingest complete",
   );
 
   await backfillSummaries();
+
+  // Piggyback the player -> team refresh on the ingest cycle. It self-throttles
+  // to once a day and never throws, so this is just a convenient heartbeat.
+  await ensureTeams();
 
   return { inserted, updated, total: rawItems.length };
 }
@@ -190,31 +214,15 @@ router.post("/ingest", async (req, res) => {
 
 // GET /api/news
 router.get("/news", (req, res) => {
-  const rawLimit = parseInt(String(req.query["limit"] ?? "100"), 10);
-  const limit = Math.min(Math.max(rawLimit, 1), 250);
+  const rawLimit = parseInt(String(req.query["limit"] ?? ""), 10);
   const search = String(req.query["search"] ?? "").trim();
 
-  let items: unknown[];
-
-  if (search) {
-    const pattern = `%${search}%`;
-    items = db
-      .prepare(
-        `SELECT * FROM news_items
-         WHERE title LIKE ? OR playerName LIKE ?
-         ORDER BY pubDateMs DESC, firstSeenAt DESC
-         LIMIT ?`,
-      )
-      .all(pattern, pattern, limit);
-  } else {
-    items = db
-      .prepare(
-        `SELECT * FROM news_items
-         ORDER BY pubDateMs DESC, firstSeenAt DESC
-         LIMIT ?`,
-      )
-      .all(limit);
-  }
+  // Shared with the server-side renderer so the JSON the browser refreshes with
+  // is the same shape — including the resolved `team` — that SSR used.
+  const items = listNews({
+    ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
+    search,
+  });
 
   res.json({ ok: true, count: items.length, items });
 });

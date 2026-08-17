@@ -5,6 +5,8 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server test` — build, then run the SEO
+  regression + rendered-browser suites (see `artifacts/api-server/tests/`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,11 +24,70 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/src/lib/render.ts` — **source of truth for the tool's
+  markup**. Compiled into both the server bundle and the browser bundle. Must
+  stay free of Node APIs, DOM APIs, and non-determinism (`Date.now()`, locale
+  defaults); the two tsconfigs enforce that from opposite directions.
+- `artifacts/api-server/src/lib/ssr.ts` — renders the page and the embeddable
+  fragment server-side.
+- `artifacts/api-server/src/client/main.ts` — browser entry, compiled to
+  `public/dist/statchasers-news.js` by `build.mjs`. Enhancement only.
+- `artifacts/api-server/src/lib/db.ts` — SQLite schema + migrations.
+- `artifacts/api-server/src/routes/embed.ts` — `/embed` setup page, `/embed/ssr`
+  fragment endpoint, `/embed/assets.json`, `/embed/schema.json`, legacy iframe
+  snippet.
+- `artifacts/api-server/src/lib/freshness.ts` — when the content last really
+  changed; drives the "Last updated" stamp, ETags, and the render cache key.
+- `artifacts/api-server/src/client/vitals.ts` — Core Web Vitals reporting, built
+  as its own bundle and fetched only when an endpoint is configured.
+- `artifacts/api-server/tests/` — `seo.test.mjs` (crawler's view, no JS) and
+  `rendered.test.mjs` (reader's view, real bundle in jsdom).
+- `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts the
+  tool into a page. See `wordpress-plugin/README.md`.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Server-rendered, then hydrated.** The page ships the complete news list in
+  its HTML; the client bundle only paginates, relabels timestamps, and
+  refreshes. Previously the page was an empty div and everything came from a
+  client fetch, which meant crawlers saw no content.
+- **One renderer, two bundles.** `src/lib/render.ts` is shared rather than
+  duplicated so SSR output and client re-renders can't drift. This is why that
+  file has hard purity constraints — see above.
+- **Every item is in the HTML; pagination only hides.** Pages after the first
+  are hidden by CSS (`.news-list[data-paged]`) and revealed by the client. No
+  click ever triggers a fetch, so primary content is never gated behind an
+  interaction. A `<noscript>` block reveals all pages when JS is off.
+- **Direct WordPress mount over iframe.** The plugin prints the fragment into
+  the page and enqueues the bundles, so the content belongs to the
+  statchasers.com URL. The legacy iframe still works and the framed app is
+  served `noindex, indexifembedded`, but it leaves the parent page's HTML empty.
+- **Player→team map moved to the server** (`src/lib/teams.ts`). SSR needs team
+  colours at render time, and it removes a multi-megabyte Sleeper fetch that
+  every visitor used to make. `team` now rides along on each `/api/news` item.
+- **Metadata is server-rendered and JS never touches it.** Title, description,
+  canonical and OG tags come from `src/lib/seo.ts` and are injected at the
+  `<!--SSR-HEAD-->` marker. Title, H1 and og:title are derived from one pair of
+  strings so they cannot drift apart.
+- **The canonical is built from the path only** (`src/lib/request.ts`), so tool
+  state in the query string can never produce a second canonical. The tool also
+  never writes to the URL: pagination is DOM-only, with no `pushState` and no
+  `?page=`, and every control is a `<button>` rather than a crawlable
+  `<a href="?...">`.
+- **Unknown paths 404.** The old SPA fallback returned a byte-identical 200 for
+  every URL on the host, which is an unbounded duplicate URL space. The app is
+  one page and lives at `/`.
+- **The host page's SEO plugin stays the authority.** The WordPress plugin emits
+  no canonical/title/description/og/robots/breadcrumbs. Its only structured data
+  is one `SoftwareApplication`+`WebApplication` node injected into Rank Math's
+  graph via `rank_math/json_ld` (`src/lib/schema.ts` is the equivalent for
+  non-WordPress hosts, served at `/embed/schema.json`). No `aggregateRating` or
+  `review` — we have no real rating data and won't invent any.
+- **Entity links are opt-in.** `PLAYER_PROFILE_URL_TEMPLATE` /
+  `TEAM_PAGE_URL_TEMPLATE` (or the plugin's `player_url`/`team_url`) turn player
+  and team names already on the card into internal links. Empty by default
+  because this server can't verify those pages exist; a player with no team gets
+  no team link rather than a fabricated one.
 
 ## Product
 
@@ -38,7 +99,42 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- `pnpm run build` builds **two** bundles: the Node server and the browser
+  client. `public/dist/` is generated — never edit it, and never re-add a
+  hand-written `public/app.js`.
+- `public/index.html` must keep its `<!--SSR-->` marker; without it the page
+  falls back to a client-only render (logged as a warning).
+- Anything added to `src/lib/render.ts` runs in both Node and the browser.
+  `pnpm --filter @workspace/api-server run typecheck` runs both tsconfigs and is
+  what catches a stray `document.` or `process.` there.
+- The pager relies on `.sc-pager[hidden]` in `styles.css`; without that rule the
+  `display: flex` beats the UA `[hidden]` rule and a dead pager shows for
+  no-JS visitors.
+- `public/index.html` needs all three markers: `<!--SSR-HEAD-->`, `<!--SSR-H1-->`
+  and `<!--SSR-->`. A missing one is logged as a warning, not an error.
+- Don't add filter/sort UI as `<a href="?...">`. Use `<button>` and keep the
+  state in the DOM — anchors here would create a crawlable duplicate URL space
+  and undo the canonical work. Links to *other pages* are fine and wanted; it's
+  parameterised self-links that cause the problem. Set `PUBLIC_CANONICAL_URL` if
+  the app is served behind a different public URL than it sees.
+- `.sc-card-player` must stay above the headline's stretched `::after` overlay
+  (z-index 3 vs 2) or the player/team links become unclickable for readers while
+  still being followable by crawlers — a silent, easy-to-miss regression.
+- Don't add schema types to the plugin because the data happens to be there.
+  Article/ItemList/Dataset/FAQPage on this page would be inaccurate, and ratings
+  must never be synthesised.
+- **Run `pnpm --filter @workspace/api-server test` before shipping any change to
+  rendering, the plugin, or the build.** It is specifically there to catch a
+  change that makes the tool invisible to crawlers again.
+- Anything rendered into the root element's attributes must be added to
+  `cacheKey()` in `src/lib/ssr.ts`, or requests differing only in that option
+  will be served each other's cached HTML.
+- The "Last updated" stamp must only move on a real content change. An ingest
+  that re-sees the same items calls `invalidateFreshness(false)` — it drops
+  caches without moving the date. Never bump it per request.
+- Tests spawn the built server; drain **both** its stdio pipes. pino logs every
+  request, and an unread stdout pipe blocks the server process — which presents
+  as a mysteriously hung test suite.
 
 ## Pointers
 
