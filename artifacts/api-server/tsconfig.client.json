@@ -1,0 +1,16 @@
+{
+  // Typecheck pass for the browser bundle. Separate from tsconfig.json because
+  // the client needs the DOM lib and must NOT see @types/node — that separation
+  // is what keeps src/lib/render.ts (imported by both) honest about being pure:
+  // a stray `fs` or `process` reference fails here, a stray `document`
+  // reference fails in the server project.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo.client",
+    "noEmit": true,
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": []
+  },
+  "include": ["src/client", "src/lib/render.ts"]
+}

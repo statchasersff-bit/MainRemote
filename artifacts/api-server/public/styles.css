@@ -34,14 +34,102 @@ body {
   padding: 0;
 }
 
-/* Card list — full-width horizontal cards stacked vertically. Each card is a
-   single row (photo left, content right); cards sit one on top of another in a
-   single column that fills the full width of the container (no side gutters). */
+/* Root container for the tool. Present in both mounts: the standalone page and,
+   more importantly, directly inside a WordPress page. Themes style bare
+   elements aggressively, so re-assert the basics here rather than relying on
+   the reset above (which only exists in the standalone document). */
+.statchasers-news {
+  font-family: var(--font);
+  color: var(--text);
+  line-height: 1.6;
+  text-align: left;
+}
+
+.statchasers-news *,
+.statchasers-news *::before,
+.statchasers-news *::after {
+  box-sizing: border-box;
+}
+
+/* Hidden from sight, still in the accessibility tree and the document outline.
+   Used for the standalone page's H1. */
+.sc-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The standalone page's own H1. In the WordPress mount this never renders —
+   the page's existing H1 plays that role. */
+.sc-page-heading {
+  margin: 0 0 18px;
+  color: #0b2347;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* Heading for the tool itself. The host page supplies the H1; this is the H2
+   that introduces the news section within it. */
+.sc-section-heading {
+  margin: 0 0 18px;
+  color: #0b2347;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* "Last updated" stamp. Reflects a real content change, never render time. */
+.sc-updated {
+  margin: 0 0 14px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Card list — an ordered list, because the feed is genuinely ordered
+   (newest first). Full-width horizontal cards stacked vertically: each card is
+   a single row (photo left, content right), filling the container width. */
 .news-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Reserve the height of one full page before anything loads or paginates.
+     --sc-reserved-rows is set server-side from page_size; a card is 168px tall
+     with a 16px gap between rows. Holding this space is what stops the list
+     collapsing when the client paginates, and stops anything below it moving. */
+  min-height: calc(
+    (168px * var(--sc-reserved-rows, 4)) + (16px * (var(--sc-reserved-rows, 4) - 1))
+  );
+}
+
+.sc-card-item {
+  display: block;
+}
+
+/* Pagination is presentation only. Every item is in the HTML from the first
+   response; pages after the first start hidden and the client toggles them with
+   an inline style, which overrides this rule. With JavaScript off, the
+   <noscript> block emitted alongside the list reveals all of them instead. */
+.news-list[data-paged] .sc-card-item:not([data-page="0"]) {
+  display: none;
+}
+
+.sc-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-light);
 }
 
 /* News card — horizontal premium player card (photo left, content right) */
@@ -200,6 +288,106 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* The headline is the card's only link, so its accessible name is the headline
+   rather than the whole card's text. The stretched ::after restores full-card
+   clickability without wrapping everything in an anchor. */
+.sc-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sc-card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.sc-card-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 3px;
+}
+
+.sc-card-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sc-card-player {
+  /* Above the headline's stretched ::after overlay (z-index 2) so the player
+     and team links inside remain clickable — otherwise the card-wide overlay
+     would swallow every click and the internal links would be unreachable for
+     readers even though crawlers could still follow them. */
+  position: relative;
+  z-index: 3;
+  margin: 6px 0 0;
+  color: #123b73;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+/* Player / team links. Their anchor text is the entity name itself, which is
+   what makes them useful links rather than decoration. */
+.sc-entity-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(18, 59, 115, 0.28);
+}
+
+.sc-entity-link:hover {
+  color: #0b2347;
+  border-bottom-color: var(--gold);
+}
+
+.sc-entity-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.sc-byline-sep {
+  color: var(--text-light);
+}
+
+/* Related tools — plain crawlable links, no JS navigation. */
+.sc-related {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sc-related-heading {
+  margin: 0 0 10px;
+  color: #0b2347;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.sc-related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sc-related-list a {
+  color: #123b73;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(18, 59, 115, 0.3);
+}
+
+.sc-related-list a:hover {
+  color: #0b2347;
+  border-bottom-color: var(--gold);
+}
+
 .sc-card-summary {
   position: relative;
   z-index: 1;
@@ -232,8 +420,9 @@ body {
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: auto;
+  justify-content: space-between;
+  gap: 12px;
+  margin: auto 0 0;
   padding-top: 16px;
   border-top: 1px solid rgba(15, 39, 71, 0.10);
   color: #123b73;
@@ -241,16 +430,41 @@ body {
   font-weight: 850;
 }
 
-.sc-card-cta span {
+.sc-card-source {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sc-card-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.sc-card-more span {
   color: #d4af37;
   transition: transform 160ms ease;
 }
 
-.sc-card:hover .sc-card-cta span {
+.sc-card:hover .sc-card-more span {
   transform: translateX(3px);
 }
 
 @media (max-width: 640px) {
+  /* Cards are shorter here, so the reserved height has to match or we'd hold
+     open a gap below the list on mobile. Content itself is NOT reduced —
+     mobile shows the same items, headlines, players, teams and links as
+     desktop; only the sizing changes. */
+  .news-list {
+    min-height: calc(
+      (120px * var(--sc-reserved-rows, 4)) + (16px * (var(--sc-reserved-rows, 4) - 1))
+    );
+  }
+
   .sc-card {
     min-height: 120px;
   }
@@ -284,6 +498,13 @@ body {
 }
 
 .sc-pager:empty {
+  display: none;
+}
+
+/* The pager ships from the server with the `hidden` attribute set and is
+   revealed by the client. Without this the `display: flex` above would beat the
+   user-agent rule for [hidden] and show a pager that nothing is driving. */
+.sc-pager[hidden] {
   display: none;
 }
 
@@ -332,20 +553,5 @@ body {
   font-weight: 600;
 }
 
-/* Loading */
-.loading-state {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
-}
-
-.spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid var(--border);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
+/* No loading spinner: the list arrives rendered, so there is never a moment
+   where the tool has nothing to show. */

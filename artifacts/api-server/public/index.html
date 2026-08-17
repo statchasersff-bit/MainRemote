@@ -3,21 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StatChasers — NFL Player News</title>
+  <!--
+    Title, description, canonical and the OG/Twitter tags are rendered here by
+    the server (see src/lib/seo.ts). They are deliberately NOT set or amended by
+    JavaScript: a crawler that never runs the bundle still receives the final
+    values, and the canonical is a plain tag in the HTML rather than something
+    applied at runtime.
+  -->
+  <!--SSR-HEAD-->
+  <!--
+    This URL is the raw tool, meant to be consumed inside a StatChasers page
+    rather than ranked on its own. `noindex` keeps it out of the index as a
+    standalone result; `indexifembedded` tells Google it may still use this
+    content when the page is embedded in a parent document that permits
+    indexing. Only meaningful together, and only honoured by Google.
+    The canonical above is self-referencing — pointing a noindex page's
+    canonical at some other URL would be a contradictory signal.
+    See also the X-Robots-Tag set in src/app.ts.
+  -->
+  <meta name="robots" content="noindex, indexifembedded" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="page">
-    <div id="newsList" class="news-list">
-      <div class="loading-state">
-        <div class="spinner"></div>
-      </div>
-    </div>
-    <nav id="pager" class="sc-pager" aria-label="News pagination"></nav>
-  </div>
-  <script src="/app.js"></script>
+  <main class="page">
+    <!--
+      The standalone document's own H1, worded to agree with the <title> and
+      og:title. When this content is mounted into WordPress instead, the page's
+      H1 plays that role and the tool contributes only its H2 — which is why
+      this heading lives here rather than in the shared fragment.
+    -->
+    <!--SSR-H1-->
+    <!--SSR-->
+  </main>
+  <script src="/dist/statchasers-news.js" defer></script>
 </body>
 </html>

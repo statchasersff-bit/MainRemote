@@ -1,9 +1,10 @@
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -120,7 +121,65 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   });
 }
 
-buildAll().catch((err) => {
+/**
+ * Browser bundle for the news tool.
+ *
+ * The client used to be a hand-written public/app.js served as-is. It's now
+ * compiled from src/client/main.ts so it can share src/lib/render.ts with the
+ * server — that shared module is what lets the server-rendered HTML and any
+ * client re-render come out identical. It also gives WordPress a real compiled
+ * bundle to hand to wp_enqueue_script().
+ */
+async function buildClient() {
+  const outDir = path.resolve(artifactDir, "public", "dist");
+  await rm(outDir, { recursive: true, force: true });
+
+  const shared = {
+    platform: "browser",
+    format: "iife",
+    bundle: true,
+    minify: true,
+    sourcemap: "linked",
+    // Matches the syntax used in src/client (optional chaining, nullish).
+    target: ["es2020"],
+    logLevel: "info",
+  };
+
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/main.ts")],
+    outfile: path.join(outDir, "statchasers-news.js"),
+  });
+
+  // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
+  // only when a site has configured an endpoint. Folding it into the main
+  // bundle would make every visitor download monitoring code they don't use,
+  // and would put it in front of the tool it's supposed to be measuring.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/vitals-entry.ts")],
+    outfile: path.join(outDir, "statchasers-vitals.js"),
+  });
+
+  // A content hash over the two assets WordPress enqueues. The filenames stay
+  // stable (index.html references them directly); this is the `ver` query the
+  // plugin appends so a deploy busts caches without renaming anything.
+  const js = await readFile(path.join(outDir, "statchasers-news.js"));
+  const css = await readFile(path.resolve(artifactDir, "public", "styles.css"));
+  const version = createHash("sha256")
+    .update(js)
+    .update(css)
+    .digest("hex")
+    .slice(0, 12);
+
+  await writeFile(
+    path.join(outDir, "version.json"),
+    `${JSON.stringify({ version }, null, 2)}\n`,
+  );
+  console.log(`  client asset version: ${version}`);
+}
+
+Promise.all([buildAll(), buildClient()]).catch((err) => {
   console.error(err);
   process.exit(1);
 });

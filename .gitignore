@@ -5,6 +5,7 @@ dist
 tmp
 out-tsc
 *.tsbuildinfo
+*.tsbuildinfo.client
 .expo
 .expo-shared
 
@@ -43,6 +44,10 @@ Thumbs.db
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Runtime cache of the Sleeper player -> team map (see src/lib/teams.ts).
+# Regenerated on demand; not source.
+artifacts/api-server/data/player-teams.json
 
 # Replit
 .cache/

@@ -1,0 +1,22 @@
+# Nothing here is blocked, on purpose.
+#
+# Google has to fetch the stylesheet, the JS bundle and the news API to render
+# and understand this tool. Blocking any of them would leave the crawler with a
+# broken page — and blocking the HTML would stop it ever reading the
+# "noindex, indexifembedded" directive this app serves, which is the mechanism
+# that keeps the bare tool URL out of the index while still letting Google use
+# the content on the page that embeds it. A disallowed URL can't be crawled, so
+# its meta robots tag is never seen.
+#
+# Indexing is controlled by that robots meta tag / X-Robots-Tag header, not here.
+
+User-agent: *
+Allow: /
+
+# Explicit for clarity — these are render-critical.
+Allow: /styles.css
+Allow: /dist/
+Allow: /api/news
+
+# The ingest endpoint mutates data and is not useful to crawl.
+Disallow: /api/ingest
