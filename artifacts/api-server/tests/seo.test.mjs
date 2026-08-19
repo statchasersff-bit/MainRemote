@@ -64,17 +64,30 @@ after(async () => {
 });
 
 describe("crawlable HTML (no JavaScript executed)", () => {
-  test("has exactly one H1 and it matches the title", () => {
-    const h1s = pageDoc.querySelectorAll("h1");
-    assert.equal(h1s.length, 1, "expected exactly one H1");
-
-    const h1 = h1s[0].textContent.trim();
-    const title = pageDoc.querySelector("title").textContent.trim();
-    assert.ok(h1.length > 0, "H1 must not be empty");
-    assert.ok(
-      title.startsWith(h1),
-      `title (${title}) should lead with the H1 (${h1})`,
+  test("emits no heading of its own — the host page supplies it", () => {
+    // This document is only ever read inside a StatChasers page, which prints
+    // its own header above the tool. A heading here would restate it, and in
+    // the WordPress mount it would put a second H1 into the composed page.
+    assert.equal(pageDoc.querySelectorAll("h1").length, 0, "unexpected H1");
+    assert.equal(
+      pageDoc.querySelectorAll(".sc-section-heading").length,
+      0,
+      "the standalone page must not render the tool's H2 either",
     );
+  });
+
+  test("title and og:title still carry the phrase and agree", () => {
+    // Dropping the visible heading must not cost the page its metadata: the
+    // title is what a search result shows, and og:title has to match it or the
+    // two signals disagree.
+    const title = pageDoc.querySelector("title").textContent.trim();
+    const ogTitle = pageDoc
+      .querySelector('meta[property="og:title"]')
+      .getAttribute("content")
+      .trim();
+    assert.ok(title.length > 0, "title must not be empty");
+    assert.equal(ogTitle, title);
+    assert.match(title, /Fantasy Football Player News/);
   });
 
   test("has exactly one self-referencing canonical", () => {

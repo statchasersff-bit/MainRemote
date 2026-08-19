@@ -20,7 +20,6 @@ import { listNews, MAX_LIMIT } from "./news-query";
 import {
   renderFragment,
   DEFAULT_PAGE_SIZE,
-  escapeHtml,
   type LinkTemplates,
   type RelatedLink,
 } from "./render";
@@ -136,7 +135,6 @@ export async function renderNewsFragment(
  */
 const HEAD_MARKER = "<!--SSR-HEAD-->";
 const BODY_MARKER = "<!--SSR-->";
-const H1_MARKER = "<!--SSR-H1-->";
 
 let templateCache: string | null = null;
 
@@ -165,10 +163,11 @@ export async function renderAppPage(
   try {
     fragment = await renderNewsFragment({
       ...options,
-      // The standalone page renders its own visible H1 (below), so the tool
-      // must not also emit a heading — that would repeat the same phrase twice
-      // in a row. In the WordPress mount it's the reverse: the page owns the
-      // H1 and the tool contributes the H2.
+      // No heading of any kind on this page. It is never read on its own —
+      // it is consumed inside a StatChasers page (the WordPress mount, or the
+      // legacy iframe), and that page already prints its own header directly
+      // above the tool. A heading here would restate it. The <title> and
+      // og:title still carry the phrase for search results; see lib/seo.ts.
       heading: false,
     });
   } catch (err) {
@@ -178,7 +177,7 @@ export async function renderAppPage(
     fragment = "";
   }
 
-  for (const marker of [HEAD_MARKER, BODY_MARKER, H1_MARKER]) {
+  for (const marker of [HEAD_MARKER, BODY_MARKER]) {
     if (!template.includes(marker)) {
       logger.warn({ marker }, "index.html is missing an SSR marker");
     }
@@ -186,6 +185,5 @@ export async function renderAppPage(
 
   return template
     .replace(HEAD_MARKER, renderHeadTags(meta))
-    .replace(H1_MARKER, `<h1 class="sc-page-heading">${escapeHtml(meta.heading)}</h1>`)
     .replace(BODY_MARKER, fragment);
 }

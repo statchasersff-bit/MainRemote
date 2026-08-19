@@ -192,10 +192,20 @@ export function safeUrl(value: string | null | undefined): string | null {
   return null;
 }
 
-/** First initial of the player name (or "SC") for the headshot fallback badge. */
-export function initialFor(name: string | null | undefined): string {
-  const first = (name ?? "").trim()[0] ?? "";
-  return /[a-z0-9]/i.test(first) ? escapeHtml(first.toUpperCase()) : "SC";
+/**
+ * The form a name is matched in: lowercase, unaccented, punctuation folded to
+ * spaces. Rendered onto each card as `data-player` and applied to whatever the
+ * reader types, so "jamarr" finds "Ja'Marr" and "andre" finds "André" without
+ * the filter having to know about either spelling.
+ */
+export function searchKey(value: string | null | undefined): string {
+  return (value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    // Combining marks, i.e. the accents that NFD just split off.
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 const MONTHS = [
@@ -332,7 +342,14 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
   const decoding = isLcpCandidate ? "sync" : "async";
   const mediaInner = image
     ? `<img class="sc-card-photo" src="${escapeHtml(image)}" alt="${playerName}" width="108" height="108" loading="${loading}" decoding="${decoding}"${priority} />`
-    : `<span class="sc-card-photo-fallback" aria-hidden="true">${initialFor(item.playerName)}</span>`;
+    : // No headshot for this player: the badge shows the StatChasers logo,
+      // painted by styles.css as a background rather than an <img>. The mark is
+      // decoration standing in for a missing photo, not content — so it stays
+      // out of the accessibility tree and out of the image index, and the URL
+      // resolves against the stylesheet's own origin, which is the tool server
+      // in both mounts. An <img> here would need the origin threaded through
+      // every render path just to avoid pointing at the host site.
+      `<span class="sc-card-photo-fallback" aria-hidden="true"></span>`;
 
   const team = item.team ?? null;
   const logo = teamLogoUrl(team);
@@ -415,7 +432,13 @@ export function renderList(
     .map((item, index) => {
       const pageIndex = Math.floor(index / pageSize);
       return (
-        `<li class="sc-card-item" data-page="${pageIndex}">` +
+        // data-player/data-team are what the filters read. Matching an
+        // attribute keeps the work off the rendered text, so filtering never
+        // has to walk into a card or care how the byline is marked up.
+        `<li class="sc-card-item" data-page="${pageIndex}"` +
+        ` data-player="${escapeHtml(searchKey(item.playerName))}"` +
+        (item.team ? ` data-team="${escapeHtml(item.team)}"` : "") +
+        `>` +
         renderCard(item, {
           pageIndex,
           ...(index === 0 ? { lcpCandidate: true } : {}),
@@ -445,6 +468,58 @@ export function renderList(
     // Without JavaScript the pager can't work, so reveal every page instead of
     // stranding the reader on page 1 behind a button that does nothing.
     `<noscript><style>.news-list[data-paged] .sc-card-item{display:block!important}.sc-pager{display:none!important}</style></noscript>`
+  );
+}
+
+/**
+ * Team dropdown + player search.
+ *
+ * Deliberately NOT wrapped in a <form>: a form with no action submits to the
+ * current URL, so one Enter keypress in the search box would reload the page
+ * with a query string attached and hand crawlers a duplicate URL — the exact
+ * thing the canonical work exists to prevent. These are bare controls whose
+ * state lives in the DOM, filtering cards that are already on the page. Nothing
+ * here fetches, and nothing here writes to the URL.
+ *
+ * Ships `hidden` like the pager: without JavaScript the controls cannot filter
+ * anything, and a dead dropdown is worse than none. The <noscript> block in
+ * renderList reveals every card in that case.
+ *
+ * The dropdown lists only teams that actually appear in the rendered items —
+ * filtering is DOM-only, so an option for a team with no cards could only ever
+ * produce an empty list.
+ */
+export function renderFilters(items: NewsItem[]): string {
+  const teams = Array.from(
+    new Set(items.map((item) => item.team).filter((t): t is string => !!t)),
+  )
+    .map((code) => ({ code, name: TEAM_NAMES[code] ?? code }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const options = [`<option value="">All teams</option>`]
+    .concat(
+      teams.map(
+        (t) =>
+          `<option value="${escapeHtml(t.code)}">${escapeHtml(t.name)}</option>`,
+      ),
+    )
+    .join("");
+
+  return (
+    `<div class="sc-filters" hidden>` +
+    `<label class="sc-filter">` +
+    `<span class="sc-filter-label">Search players</span>` +
+    `<input id="scFilterPlayer" class="sc-filter-input" type="search"` +
+    ` placeholder="Player name" autocomplete="off" />` +
+    `</label>` +
+    `<label class="sc-filter">` +
+    `<span class="sc-filter-label">Team</span>` +
+    `<select id="scFilterTeam" class="sc-filter-select">${options}</select>` +
+    `</label>` +
+    // Announces the result count to screen readers as the filters change, and
+    // gives everyone else a plain "showing N of M" they can trust.
+    `<p class="sc-filter-status" role="status"></p>` +
+    `</div>`
   );
 }
 
@@ -586,10 +661,20 @@ export function renderFragment(
       ? `<h2 class="sc-section-heading">${escapeHtml(options.headingText || SECTION_HEADING)}</h2>`
       : "") +
     renderUpdatedStamp(options.updatedAtMs) +
+    // Outside renderList on purpose: a background refresh replaces the list and
+    // pager wholesale, and the reader's half-typed search and chosen team must
+    // survive that.
+    (items.length > 0 ? renderFilters(items) : "") +
     renderList(items, {
       pageSize,
       ...(links ? { links } : {}),
     }) +
+    // Shown by the client when the filters exclude everything. Rendered here,
+    // hidden, rather than created on demand so the message is one string in one
+    // place instead of markup built in the browser.
+    (items.length > 0
+      ? `<p class="sc-empty sc-no-matches" hidden>No player news matches those filters.</p>`
+      : "") +
     (options.relatedLinks?.length
       ? renderRelatedLinks(options.relatedLinks, options.relatedHeading)
       : "") +

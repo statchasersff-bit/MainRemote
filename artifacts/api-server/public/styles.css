@@ -61,7 +61,9 @@ body {
 }
 
 /* Hidden from sight, still in the accessibility tree and the document outline.
-   Used for the standalone page's H1. */
+   Carries the standalone page's H1: every host that displays this page prints
+   its own title directly above the tool, so showing the heading here would say
+   the same thing twice. */
 .sc-visually-hidden {
   position: absolute;
   width: 1px;
@@ -72,17 +74,6 @@ body {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
-}
-
-/* The standalone page's own H1. In the WordPress mount this never renders —
-   the page's existing H1 plays that role. */
-.sc-page-heading {
-  margin: 0 0 18px;
-  color: #0b2347;
-  font-size: 1.6rem;
-  line-height: 1.2;
-  font-weight: 900;
-  letter-spacing: -0.02em;
 }
 
 /* Heading for the tool itself. The host page supplies the H1; this is the H2
@@ -221,19 +212,31 @@ body {
   object-position: center top;
 }
 
+/* Stand-in for a player with no headshot: the StatChasers mark sitting directly
+   on the thumbnail's tinted square, with no puck or ring of its own. The team
+   tint reads straight through, so a card without a photo looks like part of the
+   set rather than a hole in it.
+   Two artwork files ship, named for the surface they belong on. This one is
+   always the on-dark (white) mark: both stops of the tile's gradient are
+   colour-mixed toward black, so the square is dark whatever the team colour —
+   there is no team for which the navy artwork would read. Its counterpart,
+   statchasers-logo-on-light.png, is for any light surface.
+   The URL is relative to THIS stylesheet, so it resolves against the tool server
+   in both mounts — including the WordPress one, where the markup lives on
+   statchasers.com but the CSS is enqueued from here. A background rather than an
+   <img> because the mark is decoration replacing a missing photo, not content
+   worth indexing. */
 .sc-card-photo-fallback {
-  width: 88px;
-  height: 88px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: #ffffff;
-  border: 2px solid rgba(212, 175, 55, 0.9);
-  box-shadow: 0 0 0 5px rgba(212, 175, 55, 0.15);
-  color: #0b1f3a;
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 0.02em;
+  /* Fills the thumbnail rather than sitting inside it as a separate shape. */
+  width: 100%;
+  height: 100%;
+  background: url("/statchasers-logo-on-dark.png") no-repeat center;
+  /* Width-based, so the mark scales with the tile at every breakpoint and needs
+     no separate mobile size. */
+  background-size: 62%;
+  /* Just short of solid, so the gradient underneath carries through the mark and
+     it reads as part of the tile instead of a sticker on top of it. */
+  opacity: 0.92;
 }
 
 /* Content section */
@@ -484,17 +487,118 @@ body {
     /* Left inset matches the centered vertical gap ((120 − 80) / 2 = 20px). */
     margin: 14px 0 14px 20px;
   }
+  .sc-filters {
+    gap: 10px;
+  }
+  .sc-filter {
+    flex: 1 1 100%;
+  }
+  .sc-filter-input {
+    width: 100%;
+  }
+  .sc-filter-status {
+    margin: 0;
+  }
   .sc-card-body {
     padding: 14px 16px 15px 22px;
   }
   .sc-card-name {
     font-size: 1.02rem;
   }
-  .sc-card-photo-fallback {
-    width: 60px;
-    height: 60px;
-    font-size: 1.1rem;
-  }
+}
+
+/* Filters — team dropdown + player search.
+
+   Ships with the `hidden` attribute (nothing to filter with before the client
+   runs) and, like the pager, needs this explicit rule: `display: flex` below
+   would otherwise beat the user-agent `[hidden]` rule and show controls that
+   do nothing for a no-JS visitor. */
+.sc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.sc-filters[hidden] {
+  display: none;
+}
+
+.sc-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* The label is part of the control's clickable area, so no `for`/`id` pair is
+     needed to associate them — but the ids stay on the inputs because the
+     client addresses them directly. */
+  min-width: 0;
+}
+
+.sc-filter-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sc-filter-input,
+.sc-filter-select {
+  /* Themes style bare form controls hard, and this markup is printed straight
+     into a WordPress page — so every visual property is set here rather than
+     inherited. */
+  appearance: none;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: #fff;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+.sc-filter-input {
+  width: 220px;
+}
+
+.sc-filter-select {
+  /* Room on the right for the chevron drawn below. */
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, #a87905 50%),
+    linear-gradient(135deg, #a87905 50%, transparent 50%);
+  background-position: right 18px center, right 13px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.sc-filter-input:focus-visible,
+.sc-filter-select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.sc-filter-input::placeholder {
+  color: var(--text-light);
+}
+
+/* Result count. Empty until the reader actually filters, so it takes no room
+   on a first load. */
+.sc-filter-status {
+  margin: 0 0 9px auto;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sc-filter-status:empty {
+  display: none;
+}
+
+/* Shown only when the filters exclude everything. */
+.sc-no-matches[hidden] {
+  display: none;
 }
 
 /* Pager */

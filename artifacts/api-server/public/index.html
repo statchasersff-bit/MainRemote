@@ -30,12 +30,10 @@
 <body>
   <main class="page">
     <!--
-      The standalone document's own H1, worded to agree with the <title> and
-      og:title. When this content is mounted into WordPress instead, the page's
-      H1 plays that role and the tool contributes only its H2 — which is why
-      this heading lives here rather than in the shared fragment.
+      No H1 here on purpose. This document is only ever consumed inside a
+      StatChasers page, which supplies the header; a heading in the frame would
+      repeat it. The <title> and og:title still carry the phrase.
     -->
-    <!--SSR-H1-->
     <!--SSR-->
   </main>
   <script src="/dist/statchasers-news.js" defer></script>
