@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { db, newsDedupeKey } from "../lib/db";
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { listNews } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
 import { ensureTeams } from "../lib/teams";
-import { invalidateFreshness } from "../lib/freshness";
+import { ensureFreshness, invalidateFreshness } from "../lib/freshness";
 import { invalidateRenderCache } from "../lib/ssr";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
@@ -15,18 +16,18 @@ const SUMMARY_CONCURRENCY = 3;
 async function backfillSummaries(): Promise<void> {
   if (!summariesEnabled()) return;
 
-  const rows = db
-    .prepare(
-      `SELECT id, title FROM news_items
-       WHERE summary IS NULL AND title IS NOT NULL
-       ORDER BY pubDateMs DESC, firstSeenAt DESC
-       LIMIT ?`,
+  const rows = await db
+    .select({ id: newsItems.id, title: newsItems.title })
+    .from(newsItems)
+    .where(and(isNull(newsItems.summary), isNotNull(newsItems.title)))
+    .orderBy(
+      sql`${newsItems.pubDateMs} desc nulls last`,
+      desc(newsItems.firstSeenAt),
     )
-    .all(SUMMARY_BATCH) as { id: string; title: string }[];
+    .limit(SUMMARY_BATCH);
 
   if (rows.length === 0) return;
 
-  const update = db.prepare("UPDATE news_items SET summary = ? WHERE id = ?");
   let generated = 0;
 
   for (let i = 0; i < rows.length; i += SUMMARY_CONCURRENCY) {
@@ -35,7 +36,10 @@ async function backfillSummaries(): Promise<void> {
     for (let j = 0; j < chunk.length; j++) {
       const text = results[j];
       if (text) {
-        update.run(text, chunk[j]!.id);
+        await db
+          .update(newsItems)
+          .set({ summary: text })
+          .where(eq(newsItems.id, chunk[j]!.id));
         generated++;
       }
     }
@@ -109,67 +113,83 @@ export async function runIngest(): Promise<{
       ? ((data as { items: RawNewsItem[] }).items)
       : [];
 
-  const now = new Date().toISOString();
+  const now = new Date();
 
   // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
   // with the same fingerprint already exists we update it in place — keeping its
   // original id, summary, and firstSeenAt — so a changed upstream id or pubDate
   // format can never spawn a second copy of the same story.
-  const findByKey = db.prepare("SELECT id FROM news_items WHERE dedupeKey = ?");
-
-  const insert = db.prepare(`
-    INSERT INTO news_items (id, dedupeKey, title, link, pubDate, pubDateMs, playerName, image, source, firstSeenAt, lastSeenAt)
-    VALUES (@id, @dedupeKey, @title, @link, @pubDate, @pubDateMs, @playerName, @image, @source, @now, @now)
-  `);
-
-  const update = db.prepare(`
-    UPDATE news_items SET
-      title = @title,
-      link = @link,
-      pubDate = @pubDate,
-      pubDateMs = @pubDateMs,
-      playerName = @playerName,
-      image = @image,
-      lastSeenAt = @now
-    WHERE id = @id
-  `);
+  //
+  // Collapse duplicates *within* the batch first. The old row-at-a-time SQLite
+  // loop let a later item overwrite an earlier one with the same fingerprint;
+  // a single multi-row INSERT would instead trip the unique index, so last-wins
+  // is applied here rather than left to the database.
+  const incoming = new Map<string, { id: string; item: RawNewsItem }>();
+  for (const item of rawItems) {
+    const id = item.id?.toString().trim() || makeFallbackId(item);
+    incoming.set(newsDedupeKey({ title: item.title, id }), { id, item });
+  }
 
   let inserted = 0;
   let updated = 0;
 
-  const insertMany = db.transaction((items: RawNewsItem[]) => {
-    for (const item of items) {
-      const id = item.id?.toString().trim() || makeFallbackId(item);
-      const dedupeKey = newsDedupeKey({ title: item.title, id });
-      const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+  await db.transaction(async (tx) => {
+    const keys = [...incoming.keys()];
+    if (keys.length === 0) return;
 
-      const row = {
+    // One lookup for the whole batch, so the work is two round trips plus the
+    // writes rather than a query per item.
+    const existing = await tx
+      .select({ id: newsItems.id, dedupeKey: newsItems.dedupeKey })
+      .from(newsItems)
+      .where(inArray(newsItems.dedupeKey, keys));
+    const idByKey = new Map(existing.map((row) => [row.dedupeKey, row.id]));
+
+    const inserts: (typeof newsItems.$inferInsert)[] = [];
+
+    for (const [dedupeKey, { id, item }] of incoming) {
+      const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+      const fields = {
         title: item.title ?? "(no title)",
         link: item.link ?? null,
         pubDate: item.pubDate ?? null,
         pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
-        now,
       };
 
-      const existing = findByKey.get(dedupeKey) as { id: string } | undefined;
-      if (existing) {
-        update.run({ ...row, id: existing.id });
+      const existingId = idByKey.get(dedupeKey);
+      if (existingId) {
+        // firstSeenAt, summary and the original id are deliberately untouched.
+        await tx
+          .update(newsItems)
+          .set({ ...fields, lastSeenAt: now })
+          .where(eq(newsItems.id, existingId));
         updated++;
       } else {
-        insert.run({
-          ...row,
+        inserts.push({
+          ...fields,
           id,
           dedupeKey,
           source: "Dynasty Command",
+          firstSeenAt: now,
+          lastSeenAt: now,
         });
-        inserted++;
       }
     }
-  });
 
-  insertMany(rawItems);
+    if (inserts.length > 0) {
+      // DO NOTHING rather than an error: a concurrent ingest (the 10-minute
+      // timer overlapping a manual POST /api/ingest) can insert the same story
+      // between the SELECT above and this INSERT.
+      const written = await tx
+        .insert(newsItems)
+        .values(inserts)
+        .onConflictDoNothing({ target: newsItems.dedupeKey })
+        .returning({ id: newsItems.id });
+      inserted = written.length;
+    }
+  });
 
   // Only a run that actually changed something invalidates the freshness
   // timestamp and the render cache. An ingest that re-sees the same items is
@@ -214,17 +234,26 @@ router.post("/ingest", async (req, res) => {
 
 // GET /api/news
 router.get("/news", (req, res) => {
-  const rawLimit = parseInt(String(req.query["limit"] ?? ""), 10);
-  const search = String(req.query["search"] ?? "").trim();
+  void (async () => {
+    const rawLimit = parseInt(String(req.query["limit"] ?? ""), 10);
+    const search = String(req.query["search"] ?? "").trim();
 
-  // Shared with the server-side renderer so the JSON the browser refreshes with
-  // is the same shape — including the resolved `team` — that SSR used.
-  const items = listNews({
-    ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
-    search,
-  });
+    try {
+      // Shared with the server-side renderer so the JSON the browser refreshes
+      // with is the same shape — including the resolved `team` — that SSR used.
+      const items = await listNews({
+        ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
+        search,
+      });
 
-  res.json({ ok: true, count: items.length, items });
+      res.json({ ok: true, count: items.length, items });
+    } catch (err) {
+      // The client falls back to the markup already on the page, so a failed
+      // poll costs nothing visible — but it must not be silent in the log.
+      logger.error({ err }, "Failed to list news");
+      res.status(500).json({ ok: false, error: "failed to list news" });
+    }
+  })();
 });
 
 export default router;

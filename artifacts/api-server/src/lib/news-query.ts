@@ -3,24 +3,13 @@
  * renderer so both see exactly the same rows in the same order.
  */
 
-import { db } from "./db";
+import { desc, ilike, or, sql } from "drizzle-orm";
+import { db, newsItems } from "./db";
 import { teamForImage } from "./teams";
 import type { NewsItem } from "./render";
 
 export const DEFAULT_LIMIT = 100;
 export const MAX_LIMIT = 250;
-
-interface NewsRow {
-  id: string;
-  title: string;
-  link: string | null;
-  pubDate: string | null;
-  pubDateMs: number | null;
-  playerName: string | null;
-  image: string | null;
-  summary: string | null;
-  source: string | null;
-}
 
 export interface ListNewsOptions {
   limit?: number;
@@ -32,26 +21,34 @@ export interface ListNewsOptions {
  * browser (see lib/teams.ts) so server-rendered cards carry their team colours
  * in the initial HTML.
  */
-export function listNews(options: ListNewsOptions = {}): NewsItem[] {
+export async function listNews(
+  options: ListNewsOptions = {},
+): Promise<NewsItem[]> {
   const limit = Math.min(Math.max(options.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
   const search = (options.search ?? "").trim();
 
-  const rows = search
-    ? (db
-        .prepare(
-          `SELECT * FROM news_items
-           WHERE title LIKE ? OR playerName LIKE ?
-           ORDER BY pubDateMs DESC, firstSeenAt DESC
-           LIMIT ?`,
-        )
-        .all(`%${search}%`, `%${search}%`, limit) as NewsRow[])
-    : (db
-        .prepare(
-          `SELECT * FROM news_items
-           ORDER BY pubDateMs DESC, firstSeenAt DESC
-           LIMIT ?`,
-        )
-        .all(limit) as NewsRow[]);
+  const rows = await db
+    .select()
+    .from(newsItems)
+    // ILIKE, not LIKE: SQLite's LIKE was case-insensitive for ASCII by default
+    // and Postgres' is not, so a plain port would have quietly made search
+    // case-sensitive.
+    .where(
+      search
+        ? or(
+            ilike(newsItems.title, `%${search}%`),
+            ilike(newsItems.playerName, `%${search}%`),
+          )
+        : undefined,
+    )
+    // NULLS LAST is explicit for the same reason: Postgres sorts NULLs FIRST on
+    // DESC, so an item with an unparseable pubDate would have jumped to the top
+    // of the page. SQLite put them last.
+    .orderBy(
+      sql`${newsItems.pubDateMs} desc nulls last`,
+      desc(newsItems.firstSeenAt),
+    )
+    .limit(limit);
 
   return rows.map((row) => ({
     id: row.id,

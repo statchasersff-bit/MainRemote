@@ -11,7 +11,13 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — Postgres connection string (the news archive),
+  `DYNASTY_NEWS_API_URL` — upstream feed. **Both must be set on the deployment,
+  not just the workspace**: `.replit`'s `[userenv.shared]` configures the
+  workspace only, and a missing feed URL makes `runIngest()` throw at startup
+  where nothing but the log shows it.
+- `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) —
+  one-time import of the legacy SQLite archive
 
 ## Stack
 
@@ -32,7 +38,11 @@ _Replace the heading above with the project's name, and this line with one sente
   fragment server-side.
 - `artifacts/api-server/src/client/main.ts` — browser entry, compiled to
   `public/dist/statchasers-news.js` by `build.mjs`. Enhancement only.
-- `artifacts/api-server/src/lib/db.ts` — SQLite schema + migrations.
+- `artifacts/api-server/src/lib/db.ts` — data access. Re-exports the Drizzle
+  client and the `news_items` table from `@workspace/db`, plus `newsDedupeKey`.
+  The table itself is defined in `lib/db/src/schema/news.ts`.
+- `artifacts/api-server/scripts/import-sqlite-archive.mjs` — one-time, idempotent
+  import of the old SQLite archive into Postgres.
 - `artifacts/api-server/src/routes/embed.ts` — `/embed` setup page, `/embed/ssr`
   fragment endpoint, `/embed/assets.json`, `/embed/schema.json`, legacy iframe
   snippet.
@@ -54,6 +64,23 @@ _Replace the heading above with the project's name, and this line with one sente
   tool into a page. See `wordpress-plugin/README.md`.
 
 ## Architecture decisions
+
+- **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`
+  rebuilds the filesystem on every publish, so a SQLite file in `data/` was
+  never a store of record — it reset to whatever snapshot was in the image, which
+  is how production came to serve "No player news has been archived yet". The
+  upstream feed only returns its latest ~25 items, so a reset archive cannot be
+  rebuilt from it; each item's `firstSeenAt` and any generated summary would be
+  gone for good. Postgres outlives the deployment. The SQLite files are no longer
+  committed (they churned megabytes of binary WAL per publish and risked
+  restoring stale rows over live data) — `better-sqlite3` remains only as a
+  devDependency for the import script.
+- **Reads are async; the ETag path is not.** Moving off better-sqlite3 made every
+  query a promise, but `contentVersion()` runs mid-response while an ETag and a
+  render-cache key are being assembled. Rather than thread awaits through those
+  callers, `lib/freshness.ts` keeps a memoised snapshot: `ensureFreshness()` is
+  awaited once per content version at the top of a request path, and
+  `freshness()`/`contentVersion()` read it synchronously afterwards.
 
 - **Server-rendered, then hydrated.** The page ships the complete news list in
   its HTML; the client bundle only paginates, relabels timestamps, and
@@ -166,6 +193,16 @@ _Populate as you build — explicit user instructions worth remembering across s
 - The "Last updated" stamp must only move on a real content change. An ingest
   that re-sees the same items calls `invalidateFreshness(false)` — it drops
   caches without moving the date. Never bump it per request.
+- Two Postgres behaviours differ from the SQLite they replaced, and both are
+  load-bearing: `LIKE` is case-sensitive here (search uses `ilike`), and `DESC`
+  sorts NULLs **first** (ordering is spelled `desc nulls last`, or an item with an
+  unparseable pubDate jumps to the top of the page).
+- Values from a Postgres **aggregate** arrive as strings from the pg driver —
+  including `max()` over a `timestamptz`, which does *not* come back as a `Date`
+  the way a plain column selection does. `lib/freshness.ts` reduces everything to
+  epoch ms in SQL and converts with `Number()` for exactly this reason.
+- Tests run against the **live** `DATABASE_URL`, and the server they spawn ingests
+  on startup. There is no test database.
 - Tests spawn the built server; drain **both** its stdio pipes. pino logs every
   request, and an unread stdout pipe blocks the server process — which presents
   as a mysteriously hung test suite.

@@ -11,7 +11,8 @@
  * it survives restarts and can't drift out of sync with what's actually stored.
  */
 
-import { db } from "./db";
+import { sql } from "drizzle-orm";
+import { db, newsItems } from "./db";
 
 export interface Freshness {
   /** Epoch ms of the most recent content change, or null on an empty archive. */
@@ -20,7 +21,11 @@ export interface Freshness {
   count: number;
 }
 
+const EMPTY: Freshness = { changedAtMs: null, count: 0 };
+
 let cached: Freshness | null = null;
+/** In-flight load, so a burst of concurrent requests issues one query. */
+let loading: Promise<Freshness> | null = null;
 
 /**
  * Recompute from the store.
@@ -31,41 +36,64 @@ let cached: Freshness | null = null;
  * the newest of those, plus the row count, changes only when the archive's
  * contents actually change.
  */
-function compute(): Freshness {
-  const row = db
-    .prepare(
-      `SELECT
-         COUNT(*) AS count,
-         MAX(COALESCE(pubDateMs, 0)) AS maxPub,
-         MAX(firstSeenAt) AS maxFirstSeen
-       FROM news_items`,
-    )
-    .get() as {
-    count: number;
-    maxPub: number | null;
-    maxFirstSeen: string | null;
-  };
+async function compute(): Promise<Freshness> {
+  // Everything is reduced to epoch milliseconds in SQL and read back as a
+  // number. Values from an aggregate arrive as strings from the pg driver —
+  // count(*) and max() over a bigint both do, and max() over a timestamptz
+  // does NOT come back as a Date the way a plain column selection would — so
+  // converting here rather than trusting the shape keeps one rule instead of
+  // three special cases.
+  const [row] = await db
+    .select({
+      count: sql<string>`count(*)`,
+      maxPub: sql<string | null>`max(coalesce(${newsItems.pubDateMs}, 0))`,
+      maxFirstSeenMs: sql<
+        string | null
+      >`max(extract(epoch from ${newsItems.firstSeenAt}) * 1000)`,
+    })
+    .from(newsItems);
 
-  if (!row || row.count === 0) {
-    return { changedAtMs: null, count: 0 };
-  }
+  const count = Number(row?.count ?? 0);
+  if (!row || count === 0) return EMPTY;
 
-  const firstSeenMs = row.maxFirstSeen ? Date.parse(row.maxFirstSeen) : NaN;
-  const candidates = [
-    row.maxPub ?? 0,
-    Number.isNaN(firstSeenMs) ? 0 : firstSeenMs,
-  ].filter((n) => n > 0);
+  const candidates = [Number(row.maxPub ?? 0), Number(row.maxFirstSeenMs ?? 0)]
+    .filter((n) => Number.isFinite(n) && n > 0);
 
   return {
     changedAtMs: candidates.length ? Math.max(...candidates) : null,
-    count: row.count,
+    count,
   };
 }
 
-/** Current freshness, memoised until invalidated by an ingest that changed data. */
+/**
+ * Load the snapshot if it isn't warm. Await this before anything reads
+ * freshness() or contentVersion() for a response — a no-op once loaded.
+ *
+ * This exists because the store went async when it moved to Postgres, but the
+ * two readers below cannot: they run while an ETag is being assembled and a
+ * cache key computed, mid-response. Rather than make those paths async and
+ * spread awaits through every caller, the value is loaded once per content
+ * version and read synchronously from memory afterwards.
+ */
+export async function ensureFreshness(): Promise<Freshness> {
+  if (cached !== null) return cached;
+  loading ??= compute()
+    .then((value) => {
+      cached = value;
+      return value;
+    })
+    .finally(() => {
+      loading = null;
+    });
+  return loading;
+}
+
+/**
+ * The loaded snapshot. Returns the empty value if nothing has loaded it yet,
+ * which is why request paths call ensureFreshness() first.
+ */
 export function freshness(): Freshness {
-  if (cached === null) cached = compute();
-  return cached;
+  return cached ?? EMPTY;
 }
 
 /**
@@ -85,7 +113,10 @@ let mutationSeq = 0;
  */
 export function invalidateFreshness(movesDate = true): void {
   mutationSeq++;
-  if (movesDate) cached = null;
+  if (movesDate) {
+    cached = null;
+    loading = null;
+  }
 }
 
 /**

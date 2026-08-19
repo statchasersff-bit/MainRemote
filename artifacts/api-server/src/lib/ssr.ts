@@ -25,7 +25,7 @@ import {
 } from "./render";
 import { ensureTeams } from "./teams";
 import { pageMeta, renderHeadTags, type PageMeta } from "./seo";
-import { contentVersion, freshness } from "./freshness";
+import { contentVersion, ensureFreshness, freshness } from "./freshness";
 import { logger } from "./logger";
 
 export interface SsrOptions {
@@ -44,7 +44,7 @@ export interface SsrOptions {
 /**
  * Rendered-fragment cache.
  *
- * Rendering 250 cards means a SQLite read plus a few hundred kilobytes of
+ * Rendering 250 cards means a database round trip plus a few hundred kilobytes of
  * string building. Doing that per request wastes TTFB — which is LCP's floor —
  * for output that only changes when the news does. Entries are keyed by the
  * render options *and* the content version, and dropped outright when an
@@ -89,13 +89,18 @@ export async function renderNewsFragment(
   options: SsrOptions = {},
 ): Promise<string> {
   await ensureTeams();
+  // Warm the freshness snapshot before cacheKey() reads contentVersion() from
+  // it. Without this the first render after a restart would key itself on the
+  // empty "0-0-0" version and then serve that entry to later requests, which
+  // are looking at a different version string.
+  await ensureFreshness();
   const limit = options.limit ?? MAX_LIMIT;
 
   const key = cacheKey(options, limit);
   const hit = renderCache.get(key);
   if (hit !== undefined) return hit;
 
-  const items = listNews({ limit });
+  const items = await listNews({ limit });
   const html = renderFragment(items, {
     updatedAtMs: freshness().changedAtMs,
     limit,

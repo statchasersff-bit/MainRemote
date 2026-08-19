@@ -52,3 +52,11 @@ artifacts/api-server/data/player-teams.json
 # Replit
 .cache/
 .local/
+
+# The news archive lives in Postgres (see artifacts/api-server/src/lib/db.ts).
+# The old SQLite file is kept locally only as the source for
+# scripts/import-sqlite-archive.mjs; committing it churned megabytes of binary
+# WAL on every publish and could restore a stale snapshot over live data.
+artifacts/api-server/data/*.db
+artifacts/api-server/data/*.db-shm
+artifacts/api-server/data/*.db-wal
