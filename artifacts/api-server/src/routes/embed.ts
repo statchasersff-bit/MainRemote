@@ -45,17 +45,40 @@ export function embedScript(origin: string): string {
   var ORIGIN = ${JSON.stringify(origin)};
   function frame() { return document.getElementById('statchasers-news'); }
 
+  // The origin the frame is ACTUALLY loaded from, read off its own src. ORIGIN
+  // is baked in when this file is served, so the two disagree whenever the
+  // snippet pasted into the page is older than the current deploy, or the host
+  // reached this server over a different scheme/host than the one that
+  // generated the snippet (http vs https, apex vs www). A strict comparison
+  // against the baked value then rejects every height message in silence, the
+  // frame keeps its placeholder height forever, and the symptom on the page is
+  // a tool that scrolls inside its own box.
+  function frameOrigin(f) {
+    try { return new URL(f.getAttribute('src'), location.href).origin; }
+    catch (err) { return ORIGIN; }
+  }
+
   // Resolve the frame inside the handler so load order never matters.
   window.addEventListener('message', function (e) {
-    if (e.origin !== ORIGIN) return;
     if (!e.data || e.data.type !== 'statchasers:height') return;
     var f = frame();
+    if (!f) return;
+    // Identity of the sending window is the real check — it is precisely "this
+    // came from our iframe" and cannot be spoofed by another frame on the page.
+    // The origin comparison stays as the fallback for the case where the source
+    // window is not exposed, and now accepts the frame's real origin as well as
+    // the baked one.
+    if (e.source) {
+      if (e.source !== f.contentWindow) return;
+    } else if (e.origin !== ORIGIN && e.origin !== frameOrigin(f)) {
+      return;
+    }
     var h = parseInt(e.data.height, 10);
     // Set the height as inline !important so it wins over any leftover host CSS
     // (e.g. a legacy "#statchasers-news { height: 530px !important }" rule) —
     // an inline !important beats a stylesheet !important, so the frame always
     // reflects the true content height. Clear min-height for the same reason.
-    if (f && h > 0) {
+    if (h > 0) {
       f.style.setProperty('height', h + 'px', 'important');
       f.style.setProperty('min-height', '0', 'important');
     }
@@ -69,13 +92,21 @@ export function embedScript(origin: string): string {
   function requestHeight() {
     var f = frame();
     if (f && f.contentWindow) {
-      f.contentWindow.postMessage({ type: 'statchasers:request-height' }, ORIGIN);
+      f.contentWindow.postMessage({ type: 'statchasers:request-height' }, frameOrigin(f));
     }
   }
   requestHeight();
   window.addEventListener('load', requestHeight);
   var f0 = frame();
   if (f0) f0.addEventListener('load', requestHeight);
+  // The mirror of the child's re-broadcast. The first request above lands on a
+  // frame whose document may not be listening yet (nothing answers, and no
+  // event tells us so), and a frame that finished loading before this file ran
+  // fires no further load event. A few bounded retries cover both without any
+  // state to keep.
+  for (var i = 0, ms = [300, 1000, 2500, 5000]; i < ms.length; i++) {
+    setTimeout(requestHeight, ms[i]);
+  }
 })();
 `;
 }

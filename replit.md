@@ -110,6 +110,12 @@ _Populate as you build — explicit user instructions worth remembering across s
 - The pager relies on `.sc-pager[hidden]` in `styles.css`; without that rule the
   `display: flex` beats the UA `[hidden]` rule and a dead pager shows for
   no-JS visitors.
+- Showing a page must assign a real `display` value, never `""`. The empty string
+  removes the inline declaration and hands the card back to
+  `.news-list[data-paged] .sc-card-item:not([data-page="0"])`, which hides it —
+  so every page after the first renders blank while its inline style looks fine.
+  Inline-style assertions cannot see this; `tests/rendered.test.mjs` loads the
+  real stylesheet and checks computed styles for exactly that reason.
 - `public/index.html` needs all three markers: `<!--SSR-HEAD-->`, `<!--SSR-H1-->`
   and `<!--SSR-->`. A missing one is logged as a warning, not an error.
 - Don't add filter/sort UI as `<a href="?...">`. Use `<button>` and keep the
@@ -135,6 +141,13 @@ _Populate as you build — explicit user instructions worth remembering across s
 - Tests spawn the built server; drain **both** its stdio pipes. pino logs every
   request, and an unread stdout pipe blocks the server process — which presents
   as a mysteriously hung test suite.
+- An inner scrollbar in the legacy iframe means the auto-resize did not land,
+  and every way it fails is silent. Two rules keep it working: `.page` must keep
+  `display: flow-root` (without it descendant margins collapse out of the box
+  the child measures, so the frame is set a few pixels short), and `/embed.js`
+  must go on trusting the frame's own `src` origin rather than only the origin
+  baked in at serve time — a snippet older than the current domain otherwise has
+  every height message rejected. `tests/embed.test.mjs` guards both.
 
 ## Pointers
 

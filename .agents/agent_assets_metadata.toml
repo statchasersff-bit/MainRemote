@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "znRtJT9zxPBrBSEXov2O_"
+uri = "file://attached_assets/statchasers_logo_transparent_light_1787155995953.png"
+type = "image"
+title = "StatChasers logo — blue"
+description = "Saved StatChasers logo asset."
+
+[[outputs]]
+id = "pZctI_HnMZ5F_EWsfFo3q"
+uri = "file://attached_assets/statchasers_logo_transparent_dark_1787155995954.png"
+type = "image"
+title = "StatChasers logo — white"
+description = "Saved StatChasers logo asset."
