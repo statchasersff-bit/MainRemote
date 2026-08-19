@@ -10,7 +10,7 @@ import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
 import { canonicalUrl } from "./lib/request";
 import { linkTemplatesFromEnv, relatedLinksFromEnv } from "./lib/links";
-import { contentVersion, freshness } from "./lib/freshness";
+import { contentVersion, ensureFreshness, freshness } from "./lib/freshness";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -64,8 +64,10 @@ async function sendIndexHtml(req: Request, res: Response) {
   try {
     // Validators derived from the content itself, so a repeat visit revalidates
     // to a 304 instead of re-downloading ~95KB. contentVersion() changes only
-    // when the news does — see lib/freshness.ts.
-    const { changedAtMs } = freshness();
+    // when the news does — see lib/freshness.ts. The load has to complete before
+    // the ETag is read, or a cold server would answer with a version string that
+    // does not describe what it is about to send.
+    const { changedAtMs } = await ensureFreshness();
     res.set("ETag", `W/"${contentVersion()}"`);
     if (changedAtMs) {
       res.set("Last-Modified", new Date(changedAtMs).toUTCString());
