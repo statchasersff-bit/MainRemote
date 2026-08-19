@@ -20,6 +20,8 @@ import {
   renderPager,
   itemsSignature,
   formatAbsoluteDate,
+  searchKey,
+  TEAM_NAMES,
   DEFAULT_PAGE_SIZE,
   type NewsItem,
   type LinkTemplates,
@@ -97,14 +99,177 @@ class NewsWidget {
    */
   private pages: HTMLElement[][] = [];
 
+  /** Every card in the list, in document order — the set the filters run over. */
+  private allItems: HTMLElement[] = [];
+
+  /**
+   * Filter state, held here and nowhere else.
+   *
+   * Not in the URL, deliberately: `?team=PHI&player=hurts` would hand crawlers
+   * an unbounded space of near-identical URLs and undo the canonical work. The
+   * cards are all on the page already, so this is a view of the DOM, not an
+   * address.
+   */
+  private teamFilter = "";
+  private playerQuery = "";
+
   private indexPages(): void {
+    this.allItems = Array.from(
+      this.root.querySelectorAll<HTMLElement>(".sc-card-item"),
+    );
+    this.repaginate();
+  }
+
+  /** True when the card survives both filters. Empty filter matches everything. */
+  private matches(item: HTMLElement): boolean {
+    if (this.teamFilter && item.dataset["team"] !== this.teamFilter) return false;
+    if (
+      this.playerQuery &&
+      !(item.dataset["player"] ?? "").includes(this.playerQuery)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Group the cards that pass the filters into pages of pageSize.
+   *
+   * Pages are built from the FILTERED set rather than read off the server's
+   * `data-page`, so narrowing to three cards gives one full page rather than
+   * five pages with holes in them. `data-page` still drives the server's
+   * initial CSS hiding; from the first client render on, the inline styles
+   * written here are the authority.
+   */
+  private repaginate(): void {
     const groups: HTMLElement[][] = [];
-    const items = this.root.querySelectorAll<HTMLElement>(".sc-card-item");
-    for (const item of Array.from(items)) {
-      const page = Number(item.dataset["page"] ?? 0);
-      (groups[page] ??= []).push(item);
+    for (const item of this.allItems) {
+      if (!this.matches(item)) continue;
+      const last = groups[groups.length - 1];
+      if (!last || last.length >= this.pageSize) groups.push([item]);
+      else last.push(item);
     }
     this.pages = groups;
+  }
+
+  /**
+   * Re-run the filters and repaint.
+   *
+   * @param resetPage Send the reader back to page 1. True when they changed a
+   *   filter — the page they were on no longer means anything. False for a
+   *   background refresh, which must not yank someone off page 3 every two
+   *   minutes just because a new item arrived.
+   */
+  private applyFilters(resetPage = true): void {
+    this.repaginate();
+
+    // Cards the filters excluded are hidden once, here; the page loop in
+    // goToPage only ever touches cards that passed.
+    const included = new Set<HTMLElement>();
+    for (const group of this.pages) for (const item of group) included.add(item);
+    for (const item of this.allItems) {
+      if (!included.has(item)) item.style.display = "none";
+    }
+
+    const target = resetPage
+      ? 0
+      : Math.min(this.currentPage, this.totalPages() - 1);
+    this.currentPage = target;
+    this.goToPage(target, true);
+    this.paintFilterState(included.size);
+  }
+
+  /** Result count, empty state and pager visibility for the current filters. */
+  private paintFilterState(count: number): void {
+    const filtering = this.teamFilter !== "" || this.playerQuery !== "";
+
+    const status = this.root.querySelector<HTMLElement>(".sc-filter-status");
+    if (status) {
+      // Silent until the reader actually filters — a permanent "122 of 122" is
+      // noise, and it would make the live region announce on every render.
+      status.textContent = filtering
+        ? `${count} of ${this.allItems.length} updates`
+        : "";
+    }
+
+    const empty = this.root.querySelector<HTMLElement>(".sc-no-matches");
+    if (empty) empty.hidden = count > 0;
+
+    // The list reserves the height of a full page, which would otherwise hold a
+    // blank gap open above the "no matches" line.
+    const list = this.list;
+    if (list) list.style.display = count === 0 ? "none" : "";
+
+    const pager = this.pager;
+    // Server ships the pager hidden so a no-JS visitor isn't stranded behind a
+    // dead button. Now that we're running, pagination is real — but only while
+    // there is more than one page left to move between.
+    if (pager) pager.hidden = this.pages.length <= 1;
+  }
+
+  /**
+   * Bind the toolbar. Called once from init(), not from enhance(): a refresh
+   * replaces only the list and pager, so the controls (and whatever the reader
+   * has typed into them) outlive it — re-binding per render would stack
+   * duplicate listeners on the same two elements.
+   */
+  private wireFilters(): void {
+    const filters = this.root.querySelector<HTMLElement>(".sc-filters");
+    if (!filters) return;
+    // Shipped hidden because without this script they cannot filter anything.
+    filters.hidden = false;
+
+    filters.addEventListener("input", (event) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.id !== "scFilterPlayer") return;
+      // Normalised the same way the cards were, so "jamarr" matches "Ja'Marr".
+      this.playerQuery = searchKey((target as HTMLInputElement).value);
+      this.applyFilters();
+    });
+
+    filters.addEventListener("change", (event) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.id !== "scFilterTeam") return;
+      this.teamFilter = (target as HTMLSelectElement).value;
+      this.applyFilters();
+    });
+  }
+
+  /**
+   * Keep the dropdown honest after a refresh brought different teams into the
+   * feed. Options are rebuilt only when the set actually changed, so typing
+   * through a background poll doesn't lose the open dropdown for no reason.
+   */
+  private syncTeamOptions(): void {
+    const select = this.root.querySelector<HTMLSelectElement>("#scFilterTeam");
+    if (!select) return;
+
+    const present = Array.from(
+      new Set(
+        this.allItems.map((item) => item.dataset["team"] ?? "").filter(Boolean),
+      ),
+    );
+    const listed = Array.from(select.options)
+      .slice(1)
+      .map((option) => option.value);
+    const unchanged =
+      present.length === listed.length &&
+      present.every((code) => listed.includes(code));
+    if (unchanged) return;
+
+    const chosen = select.value;
+    const labelled = present
+      .map((code) => ({ code, name: TEAM_NAMES[code] ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Index 0 is "All teams" and always stays.
+    select.length = 1;
+    for (const team of labelled) select.add(new Option(team.name, team.code));
+
+    // If the selected team dropped out of the feed entirely, fall back to all
+    // teams rather than leaving a selection that can only show an empty list.
+    select.value = present.includes(chosen) ? chosen : "";
+    this.teamFilter = select.value;
   }
 
   private totalPages(): number {
@@ -123,6 +288,7 @@ class NewsWidget {
       this.enhance();
     }
 
+    this.wireFilters();
     this.startAutoRefresh();
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") void this.refresh();
@@ -151,11 +317,10 @@ class NewsWidget {
     this.indexPages();
     this.upgradeTimestamps();
     this.wireImageFallbacks();
-    const pager = this.pager;
-    // Server ships the pager hidden so a no-JS visitor isn't stranded behind a
-    // dead button; now that we're running, pagination is real.
-    if (pager) pager.hidden = false;
-    this.goToPage(this.currentPage, true);
+    this.syncTeamOptions();
+    // Re-applies whatever the reader has filtered to, so a background refresh
+    // cannot quietly widen the list back out — and keeps them on their page.
+    this.applyFilters(false);
   }
 
   /**
@@ -196,6 +361,11 @@ class NewsWidget {
       for (const item of this.pages[target] ?? []) item.style.display = SHOW;
     }
 
+    // Before the pager work, not after it: what just changed is how tall the
+    // list is, and a list short enough to need no pager (or filtered down to
+    // one page) would otherwise leave the frame sized for the old content.
+    this.postHeight();
+
     const pager = this.pager;
     if (!pager) return;
 
@@ -207,8 +377,6 @@ class NewsWidget {
     const next = pager.querySelector<HTMLButtonElement>('[data-dir="next"]');
     if (prev) prev.disabled = target === 0;
     if (next) next.disabled = target >= pages - 1;
-
-    this.postHeight();
   }
 
   private upgradeTimestamps(): void {
@@ -232,13 +400,13 @@ class NewsWidget {
     )) {
       if (img.dataset["scFallbackWired"]) continue;
       img.dataset["scFallbackWired"] = "1";
+      // Same badge the server renders for a player who has no headshot at all
+      // (see renderCard) — the StatChasers mark, painted by styles.css. A photo
+      // that 404s and a photo that never existed should not look different.
       const swap = (): void => {
-        const first = (img.getAttribute("alt") ?? "").trim()[0] ?? "";
-        const initial = /[a-z0-9]/i.test(first) ? first.toUpperCase() : "SC";
         const span = document.createElement("span");
         span.className = "sc-card-photo-fallback";
         span.setAttribute("aria-hidden", "true");
-        span.textContent = initial;
         img.replaceWith(span);
       };
       img.addEventListener("error", swap);
@@ -284,10 +452,14 @@ class NewsWidget {
         pager?.remove();
       } else {
         // No server-rendered list to replace (SSR unavailable) — build it.
-        const heading = this.root.querySelector(".sc-section-heading");
-        const empty = this.root.querySelector(".sc-empty");
+        // Anchor below the toolbar when there is one, so the controls stay
+        // above the cards they filter.
+        const anchor =
+          this.root.querySelector(".sc-filters") ??
+          this.root.querySelector(".sc-section-heading");
+        const empty = this.root.querySelector(".sc-empty:not(.sc-no-matches)");
         empty?.remove();
-        if (heading) heading.insertAdjacentHTML("afterend", html);
+        if (anchor) anchor.insertAdjacentHTML("afterend", html);
         else this.root.insertAdjacentHTML("beforeend", html);
       }
 

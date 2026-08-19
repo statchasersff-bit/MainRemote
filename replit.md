@@ -38,6 +38,14 @@ _Replace the heading above with the project's name, and this line with one sente
   snippet.
 - `artifacts/api-server/src/lib/freshness.ts` — when the content last really
   changed; drives the "Last updated" stamp, ETags, and the render cache key.
+- `artifacts/api-server/public/statchasers-logo-on-{dark,light}.png` — the mark
+  shown in place of a missing player headshot, named for the surface it belongs
+  on rather than for its own colour. The thumbnail tile is dark for every team,
+  so the card uses the on-dark (white) file; the on-light (navy) one is its
+  counterpart for a light surface. Referenced only from `styles.css`, so both
+  resolve against the tool origin in either mount. Regenerate from the sources in
+  `attached_assets/` — trim the transparent margin, resize to 192px wide and
+  quantize, which is what takes them from ~110KB to under 2KB.
 - `artifacts/api-server/src/client/vitals.ts` — Core Web Vitals reporting, built
   as its own bundle and fetched only when an endpoint is configured.
 - `artifacts/api-server/tests/` — `seo.test.mjs` (crawler's view, no JS) and
@@ -54,6 +62,15 @@ _Replace the heading above with the project's name, and this line with one sente
 - **One renderer, two bundles.** `src/lib/render.ts` is shared rather than
   duplicated so SSR output and client re-renders can't drift. This is why that
   file has hard purity constraints — see above.
+- **Filtering is a view of the DOM, not an address.** The team dropdown and
+  player search (`renderFilters` in `src/lib/render.ts`) narrow cards that are
+  already on the page — no fetch, no `<form>` (one Enter would submit to the
+  current URL and mint a duplicate), and nothing written to the URL. Filter state
+  lives in the widget instance. Pages are rebuilt from the *filtered* set, so
+  narrowing to three cards gives one page rather than five with holes; the
+  server's `data-page` only drives the pre-hydration CSS hiding. Matching runs
+  against `data-player`/`data-team` on each `<li>`, both sides folded through
+  `searchKey()` so "jamarr" finds "Ja'Marr".
 - **Every item is in the HTML; pagination only hides.** Pages after the first
   are hidden by CSS (`.news-list[data-paged]`) and revealed by the client. No
   click ever triggers a fetch, so primary content is never gated behind an
@@ -107,6 +124,17 @@ _Populate as you build — explicit user instructions worth remembering across s
 - Anything added to `src/lib/render.ts` runs in both Node and the browser.
   `pnpm --filter @workspace/api-server run typecheck` runs both tsconfigs and is
   what catches a stray `document.` or `process.` there.
+- The standalone page renders **no heading at all** — no H1, and `heading: false`
+  suppresses the tool's H2. It is only ever read inside a StatChasers page, which
+  supplies the header; anything here restates it, and in the WordPress mount an
+  H1 here would be a second H1 in the composed page. The phrase still lives in
+  `<title>`/`og:title` (`lib/seo.ts`) and in the `SoftwareApplication` name.
+  `index.html` no longer has an `<!--SSR-H1-->` marker; don't re-add one.
+- `.sc-filters` needs its own `[hidden]` rule for the same reason the pager does
+  — `display: flex` beats the UA `[hidden]` rule, and a no-JS visitor would get
+  controls that cannot filter anything. The toolbar is rendered by
+  `renderFragment`, *outside* `renderList`, because a background refresh replaces
+  the list and pager wholesale and must not wipe out a half-typed search.
 - The pager relies on `.sc-pager[hidden]` in `styles.css`; without that rule the
   `display: flex` beats the UA `[hidden]` rule and a dead pager shows for
   no-JS visitors.

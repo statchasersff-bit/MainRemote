@@ -240,6 +240,175 @@ describe("hydration", () => {
   });
 });
 
+describe("filters", () => {
+  /** Hydrate the standalone page and hand back the filter controls. */
+  async function withFilters() {
+    const handles = await renderStandalone();
+    const { doc } = handles;
+    return {
+      ...handles,
+      filters: doc.querySelector(".sc-filters"),
+      team: doc.querySelector("#scFilterTeam"),
+      player: doc.querySelector("#scFilterPlayer"),
+      cardsFor: (code) =>
+        doc.querySelectorAll(`.sc-card-item[data-team="${code}"]`).length,
+    };
+  }
+
+  /** Fire the event the control really produces, so the delegated handler runs. */
+  function setValue(el, value, type) {
+    el.value = value;
+    el.dispatchEvent(new el.ownerDocument.defaultView.Event(type, { bubbles: true }));
+  }
+
+  test("controls are inert markup until the bundle runs", async () => {
+    // A dropdown that cannot filter is worse than no dropdown: the no-JS
+    // visitor gets every card via the <noscript> rule instead.
+    const raw = await (await fetch(`${server.origin}/`)).text();
+    assert.match(
+      raw,
+      /<div class="sc-filters" hidden>/,
+      "filters must ship hidden",
+    );
+
+    const { filters } = await withFilters();
+    assert.equal(filters.hidden, false, "hydration should reveal the filters");
+  });
+
+  test("is not a form and adds no crawlable URLs", async () => {
+    // A <form> with no action submits to the current URL, so one Enter in the
+    // search box would reload with a query string and hand crawlers a duplicate.
+    const raw = await (await fetch(`${server.origin}/`)).text();
+    assert.equal(/<form/i.test(raw), false, "filters must not be a form");
+
+    const { doc } = await withFilters();
+    const links = [...doc.querySelectorAll(".sc-filters a")];
+    assert.deepEqual(links, [], "filters must not contain links");
+  });
+
+  test("team dropdown lists exactly the teams on the page, sorted", async () => {
+    const { doc, team } = await withFilters();
+    const options = [...team.options];
+
+    assert.equal(options[0].value, "", "first option should be the reset");
+    const listed = options.slice(1).map((o) => o.value);
+    const present = [
+      ...new Set(
+        [...doc.querySelectorAll(".sc-card-item[data-team]")].map(
+          (li) => li.dataset.team,
+        ),
+      ),
+    ];
+    assert.deepEqual([...listed].sort(), [...present].sort());
+
+    const names = options.slice(1).map((o) => o.textContent);
+    assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  test("selecting a team shows only that team and repaginates", async () => {
+    const { doc, team, visible, cardsFor, calls } = await withFilters();
+    const code = team.options[1].value;
+    const expected = cardsFor(code);
+    const before = calls();
+
+    setValue(team, code, "change");
+
+    const shown = visible();
+    assert.ok(shown.length > 0, "expected at least one card for the team");
+    assert.ok(
+      shown.every((li) => li.dataset.team === code),
+      "another team's card survived the filter",
+    );
+
+    const pageSize = Number(doc.querySelector(".news-list").dataset.pageSize);
+    assert.equal(shown.length, Math.min(expected, pageSize));
+
+    const pager = doc.querySelector(".sc-pager");
+    const pages = Math.ceil(expected / pageSize);
+    if (pages <= 1) {
+      assert.equal(pager.hidden, true, "a single page needs no pager");
+    } else {
+      assert.match(pager.querySelector(".sc-pager-status").textContent, /1 of/);
+    }
+    assert.equal(calls() - before, 0, "filtering must not fetch");
+  });
+
+  test("player search matches through punctuation and accents", async () => {
+    const { doc, player, visible } = await withFilters();
+    // data-player is pre-normalised by the renderer; type a word out of one.
+    const sample = [...doc.querySelectorAll(".sc-card-item[data-player]")]
+      .map((li) => li.dataset.player)
+      .find((v) => v && v.includes(" "));
+    assert.ok(sample, "expected a card with a two-part player name");
+    const surname = sample.split(" ").pop();
+
+    setValue(player, surname, "input");
+    const shown = visible();
+    assert.ok(shown.length > 0, "expected a match");
+    assert.ok(
+      shown.every((li) => li.dataset.player.includes(surname)),
+      "a non-matching card survived the search",
+    );
+
+    // The same query with punctuation and an accent must still match: both
+    // sides are folded through searchKey().
+    setValue(player, `${surname.toUpperCase()}'`, "input");
+    assert.equal(visible().length, shown.length);
+  });
+
+  test("no matches shows a message instead of an empty gap", async () => {
+    const { doc, player, visible } = await withFilters();
+    setValue(player, "zzzznotaplayer", "input");
+
+    assert.deepEqual(visible(), []);
+    const empty = doc.querySelector(".sc-no-matches");
+    assert.equal(empty.hidden, false, "expected the no-matches message");
+    assert.equal(
+      doc.querySelector(".news-list").style.display,
+      "none",
+      "the list reserves a page of height — hide it or it holds a blank gap",
+    );
+    assert.equal(doc.querySelector(".sc-pager").hidden, true);
+  });
+
+  test("clearing the filters restores the full list", async () => {
+    const { doc, team, player, visible } = await withFilters();
+    const pageSize = Number(doc.querySelector(".news-list").dataset.pageSize);
+
+    setValue(team, team.options[1].value, "change");
+    setValue(player, "zzzznotaplayer", "input");
+    assert.deepEqual(visible(), []);
+
+    setValue(player, "", "input");
+    setValue(team, "", "change");
+
+    assert.equal(visible().length, pageSize, "should be back to a full page");
+    assert.equal(doc.querySelector(".sc-no-matches").hidden, true);
+    assert.equal(doc.querySelector(".news-list").style.display, "");
+    assert.equal(doc.querySelector(".sc-filter-status").textContent, "");
+  });
+
+  test("filtering never writes to the URL", async () => {
+    const { window, doc, team, player } = await withFilters();
+    let historyWrites = 0;
+    for (const method of ["pushState", "replaceState"]) {
+      const original = window.history[method].bind(window.history);
+      window.history[method] = (...args) => {
+        historyWrites++;
+        return original(...args);
+      };
+    }
+    const urlBefore = window.location.href;
+
+    setValue(team, team.options[1].value, "change");
+    setValue(player, "smith", "input");
+
+    assert.equal(historyWrites, 0, "filters must not write history");
+    assert.equal(window.location.href, urlBefore, "URL must not change");
+    assert.ok(doc.querySelector(".sc-filter-status").textContent.length > 0);
+  });
+});
+
 describe("WordPress mount", () => {
   test("does not add a second canonical, title or H1", async () => {
     const { doc } = await renderMounted();
