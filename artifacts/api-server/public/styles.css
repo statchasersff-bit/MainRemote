@@ -32,6 +32,15 @@ body {
   margin: 0 auto;
   /* No padding — the widget sits flush to the container edges on all sides. */
   padding: 0;
+  /* Establish a block formatting context so descendant margins (the pager's and
+     the related-tools block's margin-top, a card's margin-bottom) are contained
+     rather than collapsing through this box. With padding: 0 and no border they
+     would otherwise escape it, making the wrapper measure shorter than what it
+     actually occupies — which is what the legacy iframe reports as its height,
+     so the frame ends up a few pixels short and shows a scrollbar. flow-root
+     rather than overflow: hidden: same containment, without clipping anything
+     that intentionally overhangs (focus rings, card shadows). */
+  display: flow-root;
 }
 
 /* Root container for the tool. Present in both mounts: the standalone page and,

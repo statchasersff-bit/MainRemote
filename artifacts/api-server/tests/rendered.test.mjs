@@ -161,6 +161,75 @@ describe("hydration", () => {
     assert.equal(window.location.href, urlBefore, "URL must not change");
   });
 
+  test("later pages actually become visible under the real stylesheet", async () => {
+    // The other pagination tests read `style.display`, i.e. the INLINE style.
+    // That is blind to the failure this test exists for: clearing the inline
+    // style hands the card back to the stylesheet, which hides every page but
+    // the first — so a "shown" page renders blank while its inline style looks
+    // perfectly fine. Only a computed style, with styles.css actually loaded,
+    // can tell the difference.
+    const css = await (await fetch(`${server.origin}/styles.css`)).text();
+    const html = (await (await fetch(`${server.origin}/`)).text())
+      // The no-JS fallback (`.sc-card-item { display: block !important }`) has to
+      // go. A browser with scripting enabled parses <noscript> as inert text, but
+      // jsdom applies the style inside it — which would force every page visible
+      // and make this test pass no matter what the bundle does. Dropping it
+      // reproduces what the reader's browser actually cascades.
+      //
+      // Strip BEFORE injecting the stylesheet: styles.css names `<noscript>` in a
+      // comment, and with the CSS already inlined this pattern would run from
+      // there to the real closing tag and swallow the entire list.
+      .replace(/<noscript>[\s\S]*?<\/noscript>/g, "")
+      .replace("</head>", `<style>${css}</style></head>`);
+
+    const dom = new JSDOM(html, {
+      runScripts: "outside-only",
+      url: `${server.origin}/`,
+      pretendToBeVisual: true,
+    });
+    const { window } = dom;
+    windows.push(window);
+    const doc = window.document;
+    const shown = (el) => window.getComputedStyle(el).display !== "none";
+
+    const laterPage = doc.querySelector('.sc-card-item[data-page="1"]');
+    assert.ok(laterPage, "fixture needs at least two pages of cards");
+    // Guards the guard: if the stylesheet failed to parse or stopped hiding
+    // later pages, everything below would pass for the wrong reason.
+    assert.equal(
+      shown(laterPage),
+      false,
+      "server markup should hide later pages via CSS before the bundle runs",
+    );
+
+    window.eval(bundle);
+    await new Promise((r) => setTimeout(r, 150));
+
+    const pages = Number(doc.querySelector(".news-list").dataset.total)
+      ? [...doc.querySelectorAll(".sc-card-item")].reduce(
+          (max, el) => Math.max(max, Number(el.dataset.page)),
+          0,
+        ) + 1
+      : 1;
+
+    for (let page = 1; page < pages; page++) {
+      doc.querySelector('[data-dir="next"]').click();
+      await new Promise((r) => setTimeout(r, 30));
+
+      const onPage = [...doc.querySelectorAll(`.sc-card-item[data-page="${page}"]`)];
+      assert.ok(
+        onPage.every(shown),
+        `page ${page + 1} rendered blank — no card on it is actually visible`,
+      );
+      assert.ok(
+        [...doc.querySelectorAll('.sc-card-item[data-page="0"]')].every(
+          (el) => !shown(el),
+        ),
+        `page 1 stayed visible while on page ${page + 1}`,
+      );
+    }
+  });
+
   test("upgrades recent timestamps to relative labels", async () => {
     const { doc } = await renderStandalone();
     const relative = [...doc.querySelectorAll("time[data-ts]")].filter((t) =>

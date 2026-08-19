@@ -173,16 +173,27 @@ class NewsWidget {
     if (target === previous && !force) return;
     this.currentPage = target;
 
+    // SHOW must write a real value, never "". Assigning the empty string
+    // REMOVES the inline declaration, which hands the element back to the
+    // stylesheet — and the stylesheet says
+    // `.news-list[data-paged] .sc-card-item:not([data-page="0"]) { display: none }`.
+    // Clearing the inline style on any page but the first therefore hides the
+    // page it was meant to reveal. SHOW matches `.sc-card-item`'s own rule.
+    const SHOW = "block";
+    const HIDE = "none";
+
     if (force) {
-      // First run: the server hid everything after page 0 via CSS, so make the
-      // current page's state explicit and leave the rest to the stylesheet.
+      // First run: the server hid everything after page 0 via CSS. Make every
+      // page's state explicit rather than leaving any of it to the stylesheet,
+      // so a re-render that lands on a later page (a background refresh while
+      // the reader is on page 3) shows that page instead of blanking it.
       for (let i = 0; i < this.pages.length; i++) {
-        const display = i === target ? "" : "none";
+        const display = i === target ? SHOW : HIDE;
         for (const item of this.pages[i]!) item.style.display = display;
       }
     } else {
-      for (const item of this.pages[previous] ?? []) item.style.display = "none";
-      for (const item of this.pages[target] ?? []) item.style.display = "";
+      for (const item of this.pages[previous] ?? []) item.style.display = HIDE;
+      for (const item of this.pages[target] ?? []) item.style.display = SHOW;
     }
 
     const pager = this.pager;
@@ -302,9 +313,23 @@ class NewsWidget {
 
   private postHeight(): void {
     if (window.parent === window) return;
+    // Measure the wrapper's BOTTOM EDGE in document coordinates, not its
+    // height: anything rendered above `.page` shifts the content down without
+    // making the wrapper any taller, and a height-only measurement then
+    // under-reports by exactly that offset — enough for the frame to keep a
+    // scrollbar. `.page` carries `display: flow-root` (styles.css) so
+    // descendant margins stay inside that box instead of collapsing through it
+    // and adding height the wrapper never accounts for.
+    //
+    // Deliberately NOT max()-ed with documentElement.scrollHeight: that value is
+    // floored at the viewport height, so once the parent applies a height the
+    // measurement can only ever grow. The frame would never shrink back from the
+    // placeholder to a shorter real content height, leaving a blank gap instead.
     const page = document.querySelector(".page");
     const height = Math.ceil(
-      page ? page.getBoundingClientRect().height : document.body.scrollHeight,
+      page
+        ? page.getBoundingClientRect().bottom + window.scrollY
+        : document.body.scrollHeight,
     );
     window.parent.postMessage({ type: "statchasers:height", height }, "*");
   }
