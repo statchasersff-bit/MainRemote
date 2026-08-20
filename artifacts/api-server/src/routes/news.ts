@@ -58,26 +58,66 @@ async function backfillSummaries(): Promise<void> {
 
 const router = Router();
 
-const DYNASTY_NEWS_API_URL = process.env["DYNASTY_NEWS_API_URL"];
+/**
+ * Where to fetch the feed, in order of preference.
+ *
+ * A comma-separated list, not a single URL, because the feed is reachable by
+ * more than one route and which routes work is not under this app's control.
+ * Cloudflare sits in front of `api.statchasers.com` and challenges this
+ * deployment's egress IP; the API's own `*.replit.app` origin is not proxied and
+ * is not challenged. Listing both means an unreachable first choice costs one
+ * failed request rather than an outage, and a route that comes back is used
+ * again automatically.
+ *
+ * It also makes the origin hostname safe to guess: put it first, and if it is
+ * wrong the ingest simply falls through to the next entry.
+ */
+const FEED_URLS: string[] = (process.env["DYNASTY_NEWS_API_URL"] ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 /** Identifies this server to the upstream feed. See the fetch below. */
 const USER_AGENT = "StatChasersNews/1.0 (+https://newsfeed.replit.app)";
 
 /**
- * The feed's hostname, or null if it isn't set or isn't a URL.
+ * Header carrying the shared secret that proves this caller to the feed's WAF.
  *
- * Reported by /api/status. The host — not the full URL — because that is the
- * whole diagnostic: it says which feed this environment is actually pointed at,
- * which is what distinguishes "the deployment still holds a retired URL" from
- * "the right URL is being refused". `[userenv.shared]` in .replit configures the
- * workspace only, so the two environments genuinely can disagree, and nothing
- * else exposes which one a running instance got. A hostname is not a secret; a
- * query string could be, so it is dropped.
+ * Cloudflare sits in front of api.statchasers.com and challenges this
+ * deployment — it answers "Just a moment..." (the JS interstitial), which a
+ * server cannot solve, so the ingest 403s forever. The block is scored on
+ * egress IP reputation, not on anything in the request: the workspace and the
+ * deployment send byte-identical calls and only the deployment is challenged.
+ *
+ * A WAF Skip rule keyed on this header lets the ingest through without
+ * weakening the API for anyone else. Keyed on a *secret* rather than on the
+ * User-Agent because a User-Agent is trivially spoofable by anyone who reads
+ * it, and it would hand every scraper the same bypass. Not IP-allowlisted
+ * because Replit's egress addresses are not guaranteed stable.
  */
-function feedHost(): string | null {
-  if (!DYNASTY_NEWS_API_URL) return null;
+const FEED_KEY_HEADER = "X-SC-Ingest-Key";
+
+/**
+ * The secret itself. Inert when unset: no header is sent and nothing changes,
+ * so this is safe to ship before the WAF rule exists (and for any other
+ * deployment that does not need it).
+ */
+const FEED_KEY = process.env["DYNASTY_NEWS_API_KEY"]?.trim() || undefined;
+
+/**
+ * A URL's hostname, for reporting.
+ *
+ * The host — not the full URL — because that is the whole diagnostic: it says
+ * which feed this environment is actually pointed at, which is what
+ * distinguishes "the deployment still holds a retired URL" from "the right URL
+ * is being refused". `[userenv.shared]` in .replit configures the workspace
+ * only, so the two environments genuinely can disagree, and nothing else exposes
+ * which one a running instance got. A hostname is not a secret; a query string
+ * could be, so it is dropped.
+ */
+function hostOf(url: string): string {
   try {
-    return new URL(DYNASTY_NEWS_API_URL).host;
+    return new URL(url).host;
   } catch {
     // Set but unparseable — worth surfacing, since a stray quote or newline in
     // the deployment's environment lands here and nowhere else.
@@ -152,6 +192,8 @@ interface IngestState {
   lastResult: { inserted: number; updated: number; total: number } | null;
   lastError: string | null;
   consecutiveFailures: number;
+  /** Which configured route last worked, or "push" — see runIngest(). */
+  lastSource: string | null;
 }
 
 const ingestState: IngestState = {
@@ -160,16 +202,22 @@ const ingestState: IngestState = {
   lastResult: null,
   lastError: null,
   consecutiveFailures: 0,
+  lastSource: null,
 };
 
 export function ingestStatus(): IngestState & {
   feedConfigured: boolean;
-  feedHost: string | null;
+  feedHosts: string[];
+  feedKeyConfigured: boolean;
 } {
   return {
     ...ingestState,
-    feedConfigured: Boolean(DYNASTY_NEWS_API_URL),
-    feedHost: feedHost(),
+    feedConfigured: FEED_URLS.length > 0,
+    feedHosts: FEED_URLS.map(hostOf),
+    // Whether the WAF bypass secret reached this environment — never its value.
+    // Without this the only way to tell a missing secret from a wrong WAF rule
+    // is to change one and see, which is the loop this endpoint exists to end.
+    feedKeyConfigured: Boolean(FEED_KEY),
   };
 }
 
@@ -218,18 +266,27 @@ export interface IngestResult {
  * traffic hook, POST /api/ingest — goes through here, so `ingestStatus()` always
  * describes the last real attempt.
  */
-export async function runIngest(): Promise<IngestResult> {
+export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
   // Stamped before the guard: a missing feed URL is still an attempt, and
   // retrying it on every single request would be pointless load.
   lastIngestStartedMs = Date.now();
   ingestState.lastAttemptMs = lastIngestStartedMs;
 
   try {
-    const result = await performIngest();
+    // Pushed items skip the fetch entirely, which is the point of push mode:
+    // nothing outbound, so nothing between here and the feed can block it.
+    const source = pushed ? "push" : null;
+    const { items, from } = pushed
+      ? { items: pushed, from: "push" }
+      : await fetchFeed();
+
+    const result = await storeItems(items);
+
     ingestState.lastSuccessMs = Date.now();
     ingestState.lastResult = result;
     ingestState.lastError = null;
     ingestState.consecutiveFailures = 0;
+    ingestState.lastSource = source ?? from;
     return result;
   } catch (err) {
     ingestState.lastError = err instanceof Error ? err.message : String(err);
@@ -238,12 +295,40 @@ export async function runIngest(): Promise<IngestResult> {
   }
 }
 
-async function performIngest(): Promise<IngestResult> {
-  if (!DYNASTY_NEWS_API_URL) {
+/**
+ * Fetch the feed, trying each configured route in order.
+ *
+ * A route failing is expected rather than exceptional — see FEED_URLS — so the
+ * loop carries on and only gives up once every route has failed. The thrown
+ * error names each one and why it failed, because "which of my three URLs is
+ * broken" is otherwise invisible from outside.
+ */
+async function fetchFeed(): Promise<{ items: RawNewsItem[]; from: string }> {
+  if (FEED_URLS.length === 0) {
     throw new Error("DYNASTY_NEWS_API_URL is not set");
   }
 
-  const response = await fetch(DYNASTY_NEWS_API_URL, {
+  const failures: string[] = [];
+
+  for (const url of FEED_URLS) {
+    try {
+      return { items: await fetchFeedFrom(url), from: hostOf(url) };
+    } catch (err) {
+      failures.push(
+        `${hostOf(url)} — ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  throw new Error(
+    failures.length === 1
+      ? failures[0]!
+      : `all ${failures.length} feed routes failed: ${failures.join(" | ")}`,
+  );
+}
+
+async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
+  const response = await fetch(feedUrl, {
     headers: {
       Accept: "application/json",
       // Node's fetch otherwise sends `user-agent: node`, which is exactly what
@@ -253,6 +338,8 @@ async function performIngest(): Promise<IngestResult> {
       // thing to do when calling our own API and the difference between a WAF
       // rule that can allow this traffic and one that cannot see who it is.
       "User-Agent": USER_AGENT,
+      // Only when configured — see FEED_KEY_HEADER.
+      ...(FEED_KEY ? { [FEED_KEY_HEADER]: FEED_KEY } : {}),
     },
     signal: AbortSignal.timeout(15_000),
   });
@@ -274,12 +361,21 @@ async function performIngest(): Promise<IngestResult> {
   }
 
   const data = (await response.json()) as unknown;
-  const rawItems: RawNewsItem[] = Array.isArray(data)
-    ? data
-    : Array.isArray((data as { items?: unknown }).items)
-      ? ((data as { items: RawNewsItem[] }).items)
-      : [];
+  return coerceItems(data);
+}
 
+/**
+ * Accept either a bare array or `{ items: [...] }`. Shared by the fetch path and
+ * the pushed-body path so both understand the same two shapes.
+ */
+export function coerceItems(data: unknown): RawNewsItem[] {
+  if (Array.isArray(data)) return data as RawNewsItem[];
+  const items = (data as { items?: unknown } | null)?.items;
+  return Array.isArray(items) ? (items as RawNewsItem[]) : [];
+}
+
+/** Write a batch of feed items into the archive. Never fetches anything. */
+async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
   const now = new Date();
 
   // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
@@ -405,7 +501,24 @@ async function performIngest(): Promise<IngestResult> {
   return { inserted, updated, total: rawItems.length };
 }
 
-// POST /api/ingest
+/**
+ * POST /api/ingest — refresh now.
+ *
+ * Two modes:
+ *
+ *   - **Pull** (empty body): the server fetches the feed itself. Simplest, and
+ *     what the timer and the traffic hook use.
+ *   - **Push** (`{"items": [...]}` or a bare array): the caller supplies the
+ *     items and the server just stores them. Nothing outbound is involved, so
+ *     this works even when the server cannot reach the feed at all — which is
+ *     exactly the situation Cloudflare's bot challenge creates. Anything that
+ *     *can* read the feed (a laptop, a CI job, the API itself) can drive the
+ *     archive with it. See scripts/ingest.mjs, which does both.
+ *
+ * Guard both modes with INGEST_SECRET. Push mode writes caller-supplied content
+ * straight into the archive, so an open endpoint is a way to put arbitrary
+ * headlines on the page.
+ */
 router.post("/ingest", async (req, res) => {
   // Opt-in guard: when INGEST_SECRET is set, callers must present it. Keeps the
   // externally-triggerable ingest endpoint from being abused. No secret = open.
@@ -415,12 +528,30 @@ router.post("/ingest", async (req, res) => {
     return;
   }
 
+  // An empty body is the pull mode this endpoint has always had; only a body
+  // that actually carries items switches modes, so existing callers (and the
+  // scheduled trigger) are unaffected.
+  const pushed = coerceItems(req.body);
+  const mode = pushed.length > 0 ? "push" : "pull";
+
+  if (secret === undefined && mode === "push") {
+    // Refusing rather than accepting: pull mode only ever stores what the
+    // configured feed served, so leaving it open is a throttling question. Push
+    // mode stores whatever the caller sent, which is a different kind of risk
+    // and must not be available anonymously by default.
+    res.status(401).json({
+      ok: false,
+      error: "push mode requires INGEST_SECRET to be configured on the server",
+    });
+    return;
+  }
+
   try {
-    const result = await runIngest();
-    res.json({ ok: true, ...result });
+    const result = await runIngest(mode === "push" ? pushed : undefined);
+    res.json({ ok: true, mode, ...result });
   } catch (err) {
     req.log.error({ err }, "Ingest failed");
-    res.status(500).json({ ok: false, error: String(err) });
+    res.status(500).json({ ok: false, mode, error: String(err) });
   }
 });
 
@@ -448,7 +579,9 @@ router.get("/status", (_req, res) => {
         ok: true,
         now: new Date(nowMs).toISOString(),
         feedConfigured: ingest.feedConfigured,
-        feedHost: ingest.feedHost,
+        feedHosts: ingest.feedHosts,
+        feedKeyConfigured: ingest.feedKeyConfigured,
+        pushModeAvailable: Boolean(process.env["INGEST_SECRET"]),
         ingest: {
           lastAttempt: iso(ingest.lastAttemptMs),
           lastSuccess: iso(ingest.lastSuccessMs),
@@ -456,6 +589,9 @@ router.get("/status", (_req, res) => {
             ingest.lastSuccessMs === null
               ? null
               : Math.round((nowMs - ingest.lastSuccessMs) / 1000),
+          // Which route actually worked, so a fallback quietly carrying the
+          // archive is visible rather than looking like the primary is fine.
+          lastSource: ingest.lastSource,
           lastResult: ingest.lastResult,
           lastError: ingest.lastError,
           consecutiveFailures: ingest.consecutiveFailures,

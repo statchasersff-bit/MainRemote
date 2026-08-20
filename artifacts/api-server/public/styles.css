@@ -86,9 +86,24 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* Toolbar — the "Last updated" stamp on the left, the filter controls on the
+   right, sharing one row above the cards. The stamp is always present; the
+   filters are absent with no items and hidden with no JavaScript, so the row
+   has to look right holding the stamp alone. */
+.sc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 18px;
+  margin: 0 0 18px;
+}
+
 /* "Last updated" stamp. Reflects a real content change, never render time. */
 .sc-updated {
-  margin: 0 0 14px;
+  /* Spacing belongs to the toolbar row now. The small bottom offset lines the
+     text up with the baseline of the controls opposite it. */
+  margin: 0 0 9px;
   color: var(--text-muted);
   font-size: 0.78rem;
   font-weight: 600;
@@ -476,6 +491,12 @@ body {
     /* Left inset matches the centered vertical gap ((120 − 80) / 2 = 20px). */
     margin: 14px 0 14px 20px;
   }
+  .sc-toolbar {
+    display: block;
+  }
+  .sc-updated {
+    margin: 0 0 10px;
+  }
   .sc-filters {
     gap: 10px;
   }
@@ -486,6 +507,9 @@ body {
     width: 100%;
   }
   .sc-filter-status {
+    /* Controls go full-width and stack here, so the count reads better below
+       them again. */
+    order: 0;
     margin: 0;
   }
   .sc-card-body {
@@ -506,8 +530,14 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
+  /* Controls sit at the right edge of the tool; the status line (pulled ahead
+     of them with `order` below) holds the left. */
+  justify-content: flex-end;
   gap: 12px;
-  margin: 0 0 18px;
+  /* Takes the rest of the toolbar row so its own flex-end alignment lands the
+     controls on the right edge, with or without the stamp beside them. */
+  flex: 1 1 auto;
+  margin: 0;
 }
 
 .sc-filters[hidden] {
@@ -576,7 +606,10 @@ body {
 /* Result count. Empty until the reader actually filters, so it takes no room
    on a first load. */
 .sc-filter-status {
-  margin: 0 0 9px auto;
+  /* Last in the markup, first on the row: `order` puts the count on the left
+     and the auto right margin pushes the controls to the right edge. */
+  order: -1;
+  margin: 0 auto 9px 0;
   color: var(--text-muted);
   font-size: 0.85rem;
 }

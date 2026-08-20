@@ -16,6 +16,19 @@ _Replace the heading above with the project's name, and this line with one sente
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the
   workspace only, and a missing feed URL makes `runIngest()` throw at startup
   where nothing but the log shows it.
+- `DYNASTY_NEWS_API_URL` accepts a **comma-separated list** of feed URLs, tried
+  in order until one works. A dead entry costs one failed request, not an outage,
+  which is what makes an unverified origin hostname safe to put first.
+  `/api/status` reports `feedHosts` and which one last worked (`lastSource`).
+- `POST /api/ingest` also takes **push mode**: send `{"items":[...]}` and the
+  server stores them without any outbound call, so it works even when the feed is
+  unreachable from the deployment. Requires `INGEST_SECRET`. `scripts/ingest.mjs`
+  drives it when `FEED_URL` is set.
+- Optional env: `DYNASTY_NEWS_API_KEY` — shared secret sent to the feed as
+  `X-SC-Ingest-Key`. Inert when unset. Exists because Cloudflare challenges the
+  deployment's egress IP in front of `api.statchasers.com`; a WAF Skip rule keyed
+  on this header lets the ingest through without weakening the API. Set it on the
+  deployment AND in the Cloudflare rule, and keep the two in step
 - `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) —
   one-time import of the legacy SQLite archive
 - `INGEST_URL=https://<deployment>/api/ingest node ./scripts/ingest.mjs` — force a
@@ -64,6 +77,11 @@ _Replace the heading above with the project's name, and this line with one sente
   as its own bundle and fetched only when an endpoint is configured.
 - `artifacts/api-server/tests/` — `seo.test.mjs` (crawler's view, no JS) and
   `rendered.test.mjs` (reader's view, real bundle in jsdom).
+- `docs/INGEST-FIX-CHECKLIST.md` — the do-this-now steps for pointing the ingest
+  at the API origin. Background and alternatives are in the runbook below.
+- `docs/ingest-cloudflare.md` — runbook for the Cloudflare challenge that blocks
+  the deployment from the upstream feed. Start there when `/api/status` shows a
+  403 whose body says "Just a moment...".
 - `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts the
   tool into a page. See `wordpress-plugin/README.md`.
 
@@ -126,6 +144,18 @@ _Replace the heading above with the project's name, and this line with one sente
   is. If the feed ever 403s only from the deployment while the workspace
   succeeds, suspect IP reputation or a bot rule, not the code — the two run
   identical requests from different egress addresses.
+
+- **The ingest calls the feed's Replit origin, not its public domain.**
+  `api.statchasers.com` is a Replit deployment behind Cloudflare, and Cloudflare
+  challenges this deployment's egress IP with the "Just a moment..." JS
+  interstitial — which a server cannot solve, so the ingest 403s forever. Bot
+  Fight Mode is zone-wide on the Free plan and cannot be skipped by a WAF rule, so
+  the request has to avoid the edge rather than negotiate with it: `DYNASTY_NEWS_API_URL`
+  points at the API's `*.replit.app` hostname, which is not proxied. Bot
+  protection stays fully on for everything public. The trap is a canonical-host
+  redirect on the origin hostname — `fetch` follows redirects by default, so that
+  would land back on Cloudflare and fail looking identical to the original bug.
+  See `docs/ingest-cloudflare.md`.
 
 - **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`
   rebuilds the filesystem on every publish, so a SQLite file in `data/` was
