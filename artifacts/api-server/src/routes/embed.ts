@@ -81,6 +81,19 @@ export function embedScript(origin: string): string {
     if (h > 0) {
       f.style.setProperty('height', h + 'px', 'important');
       f.style.setProperty('min-height', '0', 'important');
+      // Tell the frame its height is being honoured. That acknowledgement is
+      // what lets it stop scrolling internally: the frame is now exactly as tall
+      // as its content, so a scrollbar inside it would be scrolling nothing. It
+      // waits to be told rather than assuming, because if THIS script never runs
+      // (a performance plugin deferring it, a blocked request) the frame is
+      // stuck at its placeholder height and must stay scrollable or the content
+      // below the fold becomes unreachable.
+      if (f.contentWindow) {
+        f.contentWindow.postMessage(
+          { type: 'statchasers:height-applied', height: h },
+          frameOrigin(f)
+        );
+      }
     }
   });
 

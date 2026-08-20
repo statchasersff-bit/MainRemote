@@ -258,6 +258,59 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.equal(related.textContent.trim(), "Fantasy Football Strength of Schedule");
   });
 
+  test("the byline names the team only, never the player again", () => {
+    // Every headline already opens with the player's name, so printing it in
+    // the byline directly beside the team said the same thing twice per card.
+    const bylines = [...pageDoc.querySelectorAll(".sc-card-player")];
+    assert.ok(bylines.length > 0, "expected team bylines");
+
+    const teamNames = new Set(
+      [...pageDoc.querySelectorAll(".sc-card-item[data-team]")].map((li) =>
+        li.querySelector(".sc-card-player")?.textContent.trim(),
+      ),
+    );
+
+    for (const byline of bylines.slice(0, 10)) {
+      const text = byline.textContent.trim();
+      assert.ok(text.length > 0, "byline should not be empty");
+      // A byline that still carried both would contain the separator.
+      assert.equal(
+        byline.querySelectorAll(".sc-byline-sep").length,
+        0,
+        "byline should have a single entity, so no separator",
+      );
+
+      const card = byline.closest(".sc-card");
+      const player = card
+        .closest(".sc-card-item")
+        .getAttribute("data-player");
+      if (player) {
+        // data-player is the normalised name; normalise the byline the same way.
+        const normalised = text
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+        assert.notEqual(normalised, player, "byline is repeating the player");
+      }
+    }
+    assert.ok(teamNames.size > 1, "expected bylines to differ by team");
+  });
+
+  test("cards do not print the feed's name", () => {
+    assert.equal(
+      pageDoc.querySelectorAll(".sc-card-source").length,
+      0,
+      "the source label was removed from the card",
+    );
+    assert.equal(
+      /Dynasty Command/.test(pageHtml),
+      false,
+      "the feed name must not appear in the rendered page",
+    );
+  });
+
   test("images are real <img> with dimensions and correct loading strategy", () => {
     const imgs = [...pageDoc.querySelectorAll("img.sc-card-photo")];
     assert.ok(imgs.length > 0, "expected headshots as real <img> elements");

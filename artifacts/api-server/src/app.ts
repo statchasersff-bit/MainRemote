@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter from "./routes/embed";
+import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
@@ -38,6 +39,16 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Keep the archive moving on a deployment that idles between requests, where
+// the in-process refresh timer never gets to fire. Hung off "finish" so it runs
+// after the response has been written and can never add latency to it, and
+// throttled inside refreshIfStale() so this costs one ingest per ten minutes
+// however much traffic arrives.
+app.use((_req, res, next) => {
+  res.on("finish", refreshIfStale);
+  next();
+});
 
 // API routes
 app.use("/api", router);

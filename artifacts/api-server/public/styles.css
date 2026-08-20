@@ -359,10 +359,6 @@ body {
   border-radius: 3px;
 }
 
-.sc-byline-sep {
-  color: var(--text-light);
-}
-
 /* Related tools — plain crawlable links, no JS navigation. */
 .sc-related {
   margin-top: 28px;
@@ -432,7 +428,8 @@ body {
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Only "Read article" lives here now that the feed name is gone. */
+  justify-content: flex-start;
   gap: 12px;
   margin: auto 0 0;
   padding-top: 16px;
@@ -440,14 +437,6 @@ body {
   color: #123b73;
   font-size: 0.9rem;
   font-weight: 850;
-}
-
-.sc-card-source {
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .sc-card-more {

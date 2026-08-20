@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { listNews } from "../lib/news-query";
 import { logger } from "../lib/logger";
@@ -86,11 +86,74 @@ interface RawNewsItem {
   [key: string]: unknown;
 }
 
+/**
+ * Traffic-triggered refresh.
+ *
+ * The 10-minute `setInterval` in index.ts only fires while a process is alive,
+ * and this deployment does not stay alive between requests — it idles, the timer
+ * never fires, and the archive stops moving until something cold-starts the
+ * instance. Observed in production: an ingest ran at 17:28 and the next one
+ * never happened, so the page served hours-old news while upstream had more.
+ *
+ * So requests drive the refresh as well. Any request may kick an ingest, but at
+ * most one per REFRESH_MIN_GAP_MS and never more than one at a time — a busy
+ * page must not mean an ingest per visitor.
+ */
+const REFRESH_MIN_GAP_MS = (() => {
+  // Overridable so the throttle can be exercised in a test without waiting ten
+  // minutes. Not meant as production tuning — a smaller value in production just
+  // means more calls to a feed that changes every few minutes at best.
+  const raw = Number(process.env["INGEST_MIN_GAP_MS"]);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
+})();
+
+/** When an ingest last STARTED, whether by timer, by request, or by POST. */
+let lastIngestStartedMs = 0;
+let ingestInFlight: Promise<unknown> | null = null;
+
+/**
+ * Pure so the throttle can be reasoned about (and tested) without a server.
+ * `lastMs` of 0 means "never ingested", which must always pass.
+ */
+export function shouldRefresh(
+  nowMs: number,
+  lastMs: number,
+  gapMs: number = REFRESH_MIN_GAP_MS,
+): boolean {
+  return lastMs === 0 || nowMs - lastMs >= gapMs;
+}
+
+/**
+ * Start an ingest if one is due. Returns immediately — the caller is a request
+ * that has already been answered, and must never wait on this.
+ */
+export function refreshIfStale(): void {
+  if (ingestInFlight) return;
+  if (!shouldRefresh(Date.now(), lastIngestStartedMs)) return;
+
+  ingestInFlight = runIngest()
+    .then((result) => {
+      logger.info(result, "Traffic-triggered ingest complete");
+    })
+    .catch((err) => {
+      // Stamped before the attempt, so a feed that is down costs one request
+      // every ten minutes rather than one per visitor.
+      logger.error({ err }, "Traffic-triggered ingest failed");
+    })
+    .finally(() => {
+      ingestInFlight = null;
+    });
+}
+
 export async function runIngest(): Promise<{
   inserted: number;
   updated: number;
   total: number;
 }> {
+  // Before the guard: a missing feed URL is still an attempt, and retrying it on
+  // every single request would be pointless load.
+  lastIngestStartedMs = Date.now();
+
   if (!DYNASTY_NEWS_API_URL) {
     throw new Error("DYNASTY_NEWS_API_URL is not set");
   }
@@ -137,13 +200,25 @@ export async function runIngest(): Promise<{
     const keys = [...incoming.keys()];
     if (keys.length === 0) return;
 
+    // Look up by BOTH keys. Matching only on the fingerprint misses the case
+    // that upstream keeps an item's id and edits its title: the new title is a
+    // new fingerprint, so the row looks new, and inserting it collides with the
+    // id already in the table. That is a primary-key violation, which aborts the
+    // whole transaction — one retitled story and NOTHING ingests. Seen in
+    // production, where the archive silently stopped moving for hours after
+    // upstream reworded a headline.
+    //
     // One lookup for the whole batch, so the work is two round trips plus the
     // writes rather than a query per item.
+    const ids = [...incoming.values()].map((entry) => entry.id);
     const existing = await tx
       .select({ id: newsItems.id, dedupeKey: newsItems.dedupeKey })
       .from(newsItems)
-      .where(inArray(newsItems.dedupeKey, keys));
+      .where(
+        or(inArray(newsItems.dedupeKey, keys), inArray(newsItems.id, ids)),
+      );
     const idByKey = new Map(existing.map((row) => [row.dedupeKey, row.id]));
+    const keyById = new Map(existing.map((row) => [row.id, row.dedupeKey]));
 
     const inserts: (typeof newsItems.$inferInsert)[] = [];
 
@@ -166,6 +241,15 @@ export async function runIngest(): Promise<{
           .set({ ...fields, lastSeenAt: now })
           .where(eq(newsItems.id, existingId));
         updated++;
+      } else if (keyById.has(id)) {
+        // Same story, reworded upstream. Update in place and move the
+        // fingerprint with it, so the next ingest matches on the new title
+        // instead of colliding here again.
+        await tx
+          .update(newsItems)
+          .set({ ...fields, dedupeKey, lastSeenAt: now })
+          .where(eq(newsItems.id, id));
+        updated++;
       } else {
         inserts.push({
           ...fields,
@@ -185,7 +269,11 @@ export async function runIngest(): Promise<{
       const written = await tx
         .insert(newsItems)
         .values(inserts)
-        .onConflictDoNothing({ target: newsItems.dedupeKey })
+        // No target, so this covers a race on the id as well as on the
+        // fingerprint. A concurrent ingest (the refresh timer overlapping a
+        // POST /api/ingest) can write either one between the SELECT and here,
+        // and neither is worth failing the batch over.
+        .onConflictDoNothing()
         .returning({ id: newsItems.id });
       inserted = written.length;
     }
