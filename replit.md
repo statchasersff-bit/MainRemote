@@ -133,8 +133,10 @@ _Replace the heading above with the project's name, and this line with one sente
   environments can silently disagree about, and `lastError` carries the first
   200 characters of the upstream response body: the status alone cannot tell a
   retired URL from a blocked one (both are "403: Forbidden"), but the body can —
-  the old `dynasty-command.replit.app` feed answers `{"error":"forbidden"}`,
-  while a WAF answers an HTML challenge page.
+  `dynasty-command.replit.app` (the API's own origin) answers
+  `{"error":"forbidden"}` — its canonical-host gate — while a WAF answers an HTML
+  challenge page. `feedHosts` is a list and `lastSource` names the route that
+  actually served the feed.
 
 - **The ingest identifies itself to the feed.** Node's `fetch` otherwise sends
   `user-agent: node`, which is what bot management scores as anonymous
@@ -145,16 +147,23 @@ _Replace the heading above with the project's name, and this line with one sente
   succeeds, suspect IP reputation or a bot rule, not the code — the two run
   identical requests from different egress addresses.
 
-- **The ingest calls the feed's Replit origin, not its public domain.**
-  `api.statchasers.com` is a Replit deployment behind Cloudflare, and Cloudflare
-  challenges this deployment's egress IP with the "Just a moment..." JS
-  interstitial — which a server cannot solve, so the ingest 403s forever. Bot
-  Fight Mode is zone-wide on the Free plan and cannot be skipped by a WAF rule, so
-  the request has to avoid the edge rather than negotiate with it: `DYNASTY_NEWS_API_URL`
-  points at the API's `*.replit.app` hostname, which is not proxied. Bot
-  protection stays fully on for everything public. The trap is a canonical-host
-  redirect on the origin hostname — `fetch` follows redirects by default, so that
-  would land back on Cloudflare and fail looking identical to the original bug.
+- **The ingest should call the feed's Replit origin, not its public domain —
+  and as of 2026-08-20 it still cannot.** `api.statchasers.com` is a Replit
+  deployment behind Cloudflare, and Cloudflare challenges this deployment's
+  egress IP with the "Just a moment..." JS interstitial — which a server cannot
+  solve, so the ingest 403s forever. (`deploymentTarget = "gce"` means the
+  deployment egresses from a Google Cloud address; the workspace does not, which
+  is why identical code succeeds there and fails published.) Bot Fight Mode is
+  zone-wide on the Free plan and cannot be skipped by a WAF rule, so the request
+  has to avoid the edge rather than negotiate with it. The origin is
+  `dynasty-command.replit.app` and it is up, but the API serves `/api/news/*`
+  only on its canonical host and answers `{"error":"forbidden"}` there — so
+  `DYNASTY_NEWS_API_URL` lists the origin first and the public domain last, and
+  the list currently falls through to the edge. **The unblock is one change on
+  the API side**, not here: exempt `/api/news/*` from the canonical-host gate, or
+  admit any host carrying `X-SC-Ingest-Key`. The other trap is a canonical-host
+  *redirect* rather than a 403 — `fetch` follows redirects by default, so that
+  lands back on Cloudflare and fails looking identical to the original bug.
   See `docs/ingest-cloudflare.md`.
 
 - **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`

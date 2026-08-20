@@ -33,7 +33,8 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.shared]
-DYNASTY_NEWS_API_URL = "https://api.statchasers.com/api/news/nfl"
+CLAUDE_CONFIG_DIR = "/home/runner/workspace/.claude-home"
+DYNASTY_NEWS_API_URL = "https://dynasty-command.replit.app/api/news/nfl,https://api.statchasers.com/api/news/nfl"
 
 [[ports]]
 localPort = 8080

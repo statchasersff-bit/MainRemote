@@ -3,8 +3,14 @@
 **Runbook for:** production shows stale news, and `GET /api/status` reports a
 `403: Forbidden` whose body starts `<!DOCTYPE html>...<title>Just a moment...</title>`.
 
-**Current resolution:** the ingest calls the feed's Replit origin directly,
-bypassing Cloudflare. See [The fix in place](#the-fix-in-place).
+**Current status (2026-08-20): not resolved.** Production has been failing this
+way since roughly 20:31 on 2026-08-19 — `consecutiveFailures: 53`, no successful
+ingest since the last restart, archive ~17 hours behind upstream.
+
+The intended fix — call the feed's Replit origin and bypass Cloudflare — is
+**blocked on a change to the API**, not on anything in this repo. The origin
+hostname is confirmed (`dynasty-command.replit.app`, alive: `/api/health` → 200),
+but the API refuses `/api/news/*` on it. See [The fix](#the-fix).
 
 **Just want the steps?** → [`INGEST-FIX-CHECKLIST.md`](./INGEST-FIX-CHECKLIST.md)
 
@@ -45,19 +51,59 @@ from the other side with their source IP, their `User-Agent`
 
 ---
 
-## The fix in place
+## The fix
 
 Every Replit deployment stays reachable on its own `*.replit.app` hostname even
 when a custom domain is attached. That hostname is **not proxied through
 Cloudflare**, so Bot Fight Mode never sees the request.
 
-The ingest therefore calls the API's Replit origin rather than its public domain:
+The ingest should therefore call the API's Replit origin rather than its public
+domain. The origin is **`dynasty-command.replit.app`** — it is what
+`DYNASTY_NEWS_API_URL` pointed at before `ba4cbad` (2026-08-11) switched it to
+the public domain, and it is still up.
+
+### Step 1 — the API has to allow it (this is the blocker)
+
+The origin hostname is reachable but the API gates the feed to its canonical
+host. Measured 2026-08-20:
+
+| Request | Result |
+|---|---|
+| `GET dynasty-command.replit.app/api/health` | `200 {"status":"ok"}` |
+| `GET dynasty-command.replit.app/api/news/nfl` | `403 {"error":"forbidden"}` |
+| `GET statchasers.com/api/news/nfl` | `403` |
+| `GET api.statchasers.com/api/news/nfl` | `200` (from an unchallenged IP) |
+
+That 403 is **the API's own**, not Cloudflare's — a JSON body, no challenge page,
+and it does not depend on `Origin` or `Referer`. Until it is lifted, pointing
+`DYNASTY_NEWS_API_URL` at the origin swaps one 403 for another.
+
+In the Dynasty Command API, let `/api/news/*` through when the request arrives on
+`dynasty-command.replit.app`. Two ways, either is fine:
+
+- **Host exemption** — skip the canonical-host gate for `/api/news/*`. Simplest.
+- **Key exemption** — allow any host when the request carries `X-SC-Ingest-Key`
+  matching a shared secret. Tighter, and it keeps the origin path closed to
+  everyone else. This app already sends that header whenever
+  `DYNASTY_NEWS_API_KEY` is set, so nothing changes here.
+
+### Step 2 — point the ingest at it
+
+`DYNASTY_NEWS_API_URL` takes a comma-separated list, tried in order, so the
+public domain stays as a safety net and a premature switch costs one failed
+request rather than an outage:
 
 ```
-DYNASTY_NEWS_API_URL = https://<api-app>.replit.app/api/news/nfl
+DYNASTY_NEWS_API_URL = https://dynasty-command.replit.app/api/news/nfl,https://api.statchasers.com/api/news/nfl
 ```
 
-Set on the **deployment**, then publish. Nothing else changes.
+`.replit`'s `[userenv.shared]` already carries this value, but that configures the
+**workspace**. Set the same value on the **deployment** and publish — it is read
+once at process start.
+
+`ingest.lastSource` in `/api/status` then names which route actually served the
+feed, so a silent fall-through to Cloudflare is visible rather than looking
+healthy.
 
 **What this costs and does not cost:**
 
@@ -70,18 +116,23 @@ Set on the **deployment**, then publish. Nothing else changes.
   every call, so the API can require it on the origin hostname if you ever want
   the direct path authenticated rather than merely obscure.
 
-### The gotcha that silently defeats this
+### Two ways a canonical-host rule defeats this
 
-If the API redirects its `*.replit.app` hostname to the canonical
-`api.statchasers.com` — a common "canonical host" redirect — then this does not
-work, and **it fails looking exactly like the original bug.** Node's `fetch`
-follows redirects by default, so the request lands back on Cloudflare and gets
-the same challenge, with the same error in `/api/status`.
+A "canonical host" rule on the API can express itself as either a **403** or a
+**redirect**, and both land you back at a stale archive:
+
+- **403 (what is actually happening today).** The API answers
+  `{"error":"forbidden"}` on the origin hostname. Distinguishable from the
+  Cloudflare block by the body: JSON, not `<!DOCTYPE html>...Just a moment...`.
+- **Redirect.** If the API instead 301s `*.replit.app` → `api.statchasers.com`,
+  Node's `fetch` follows it by default, the request lands back on Cloudflare, and
+  it fails looking **exactly** like the original bug — same challenge page, same
+  error string in `/api/status`.
 
 Check before you rely on it:
 
 ```bash
-API_APP=your-api-app-name
+API_APP=dynasty-command
 
 curl -s -o /dev/null -w 'status=%{http_code} redirects=%{num_redirects} final=%{url_effective}\n' \
   -L "https://$API_APP.replit.app/api/news/nfl"
@@ -89,9 +140,9 @@ curl -s -o /dev/null -w 'status=%{http_code} redirects=%{num_redirects} final=%{
 
 You want `status=200`, `redirects=0`, and a `final` URL still on `*.replit.app`.
 (Use the variable — a literal `<api-app>` in a shell is read as input
-redirection.)
-If it redirects to `api.statchasers.com`, exempt `/api/*` from that redirect on
-the API side, or use one of the alternatives below.
+redirection.) As of 2026-08-20 this reports `status=403 redirects=0`, which is
+the host gate in [Step 1](#step-1--the-api-has-to-allow-it-this-is-the-blocker),
+not a redirect.
 
 ### Verifying after publish
 
@@ -105,7 +156,8 @@ Looking for:
 ```jsonc
 {
   "feedConfigured": true,
-  "feedHost": "<api-app>.replit.app",  // the origin, not the Cloudflare domain
+  "feedHosts": ["dynasty-command.replit.app", "api.statchasers.com"],
+  "ingest": { "lastSource": "dynasty-command.replit.app" },  // the origin won, not the edge
   "feedKeyConfigured": true,
   "ingest": {
     "lastError": null,
@@ -117,7 +169,9 @@ Looking for:
 
 | Symptom | Meaning |
 |---|---|
-| `feedHost` still `api.statchasers.com` | The deployment did not get the new value. Set it on the **deployment**, not the workspace, and republish — the value is read once at process start. |
+| `feedHosts` still only `api.statchasers.com` | The deployment did not get the new value. Set it on the **deployment**, not the workspace, and republish — the value is read once at process start. |
+| `lastSource` is `api.statchasers.com` while the origin is listed first | The origin route is still refused and the list fell through to the edge. Working for now, one Cloudflare scoring change away from another outage — finish Step 1. |
+| `lastError` mentions `{"error":"forbidden"}` | The API's host gate, not Cloudflare. Step 1 is not done. |
 | `lastError` still shows `Just a moment...` | The origin hostname is redirecting to the canonical domain. See the gotcha above. |
 | `lastError` shows `404` or `ENOTFOUND` | Wrong hostname or path. Confirm both with the `curl` above. |
 | `lastError: null` but the page looks stale | Not this problem. Staleness is bounded to 60s by `FRESHNESS_MAX_AGE_MS`; compare `archive.newestContentAt` against the feed. |
@@ -128,11 +182,16 @@ Looking for:
 
 ### Push instead of pull
 
-Reverse the direction: the API POSTs new items to the news app when it publishes
-them. Outbound requests *from* the API are not touched by Bot Fight Mode, so the
-problem disappears structurally rather than being routed around. Requires a new
-endpoint here that accepts items in the request body — today `POST /api/ingest`
-still fetches the feed itself, so it does not help on its own.
+Reverse the direction: anything that can read the feed POSTs the items to the
+news app, so this server makes no outbound call and Cloudflare is not in the
+path. Outbound requests *from* the API are not touched by Bot Fight Mode either,
+so the problem disappears structurally rather than being routed around.
+
+`POST /api/ingest` accepts `{"items":[...]}` today, and `scripts/ingest.mjs`
+drives it (set `FEED_URL` to switch it into push mode). It needs `INGEST_SECRET`
+set on the deployment — push writes caller-supplied content straight into the
+archive, so it is refused without one. `/api/status` reports
+`pushModeAvailable`.
 
 Structurally the soundest option, and the only one that survives any future
 change to Cloudflare's scoring or Replit's hostnames.
