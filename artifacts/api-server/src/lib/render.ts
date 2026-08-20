@@ -146,15 +146,6 @@ function applyTemplate(
   return safeInternalUrl(filled);
 }
 
-/** Internal profile URL for a player, or null when not configured. */
-export function playerUrl(
-  name: string | null | undefined,
-  links: LinkTemplates | undefined,
-): string | null {
-  const slug = slugify(name ?? "");
-  if (!slug) return null;
-  return applyTemplate(links?.playerUrl, { slug });
-}
 
 /** Internal page URL for a team, or null when not configured. */
 export function teamUrl(
@@ -262,46 +253,30 @@ export interface RenderCardOptions {
 }
 
 /**
- * The player/team byline.
+ * The team byline.
  *
- * These names are already on the card — this only upgrades them to links when
- * the site actually has somewhere to point them. The anchor text is the name
- * itself ("DeVonta Smith", "Philadelphia Eagles"), which is exactly the
- * descriptive, crawlable text a link should carry.
+ * The player's name is deliberately NOT repeated here: every headline already
+ * opens with it ("Jayden Higgins: Suffers torn ACL at practice"), so a name
+ * printed again immediately below said the same thing twice on every card.
+ *
+ * The team name is already on the card — this only upgrades it to a link when
+ * the site actually has somewhere to point it. The anchor text is the name
+ * itself ("Philadelphia Eagles"), which is exactly the descriptive, crawlable
+ * text a link should carry.
  */
 function renderByline(
-  playerName: string,
   team: string | null,
   links: LinkTemplates | undefined,
 ): string {
-  const parts: string[] = [];
-
-  if (playerName) {
-    const href = playerUrl(playerName, links);
-    parts.push(
-      href
-        ? `<a class="sc-entity-link" href="${escapeHtml(href)}">${escapeHtml(playerName)}</a>`
-        : escapeHtml(playerName),
-    );
-  }
-
   const teamName = team ? TEAM_NAMES[team] : null;
-  if (teamName) {
-    const href = teamUrl(team, links);
-    parts.push(
-      href
-        ? `<a class="sc-entity-link" href="${escapeHtml(href)}">${escapeHtml(teamName)}</a>`
-        : escapeHtml(teamName),
-    );
-  }
+  if (!teamName) return "";
 
-  if (parts.length === 0) return "";
+  const href = teamUrl(team, links);
+  const label = href
+    ? `<a class="sc-entity-link" href="${escapeHtml(href)}">${escapeHtml(teamName)}</a>`
+    : escapeHtml(teamName);
 
-  return (
-    `<p class="sc-card-player">` +
-    parts.join(`<span class="sc-byline-sep" aria-hidden="true"> &middot; </span>`) +
-    `</p>`
-  );
+  return `<p class="sc-card-player">${label}</p>`;
 }
 
 /**
@@ -317,11 +292,10 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
 
   const link = safeUrl(item.link);
   const image = safeUrl(item.image);
-  const rawPlayerName = (item.playerName ?? "").trim();
-  const playerName = escapeHtml(rawPlayerName);
+  // Still used for the headshot's alt text, which describes who is pictured.
+  const playerName = escapeHtml((item.playerName ?? "").trim());
   const title = escapeHtml(item.title);
   const summary = item.summary ? escapeHtml(item.summary) : "";
-  const source = escapeHtml(item.source || "Dynasty Command");
 
   const ts = itemTimestamp(item);
   const timeHtml = ts
@@ -379,11 +353,14 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     timeHtml +
     `</div>` +
     `<h3 class="sc-card-name">${headline}</h3>` +
-    renderByline(rawPlayerName, team, links) +
+    renderByline(team, links) +
     (summary ? `<p class="sc-card-summary">${summary}</p>` : "") +
-    `<p class="sc-card-cta"><span class="sc-card-source">${source}</span>` +
-    (link ? `<span class="sc-card-more">Read article <span aria-hidden="true">&rarr;</span></span>` : "") +
-    `</p>` +
+    // The feed's name ("Dynasty Command") is no longer printed on the card. It
+    // is still stored and still returned by /api/news — this is a display
+    // decision, not a data one.
+    (link
+      ? `<p class="sc-card-cta"><span class="sc-card-more">Read article <span aria-hidden="true">&rarr;</span></span></p>`
+      : "") +
     `</div>` +
     `</article>`
   );

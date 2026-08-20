@@ -483,6 +483,27 @@ class NewsWidget {
   // plugin mounts it directly, where the parent sizes itself and none of this
   // runs.
 
+  /**
+   * Stop the framed document scrolling on its own.
+   *
+   * Only ever called in response to the parent confirming it has applied a
+   * height (see embed.js): at that point the frame is exactly as tall as this
+   * document, so an inner scrollbar can only scroll nothing — it is the nested
+   * scroll area readers get stuck in, not a way to reach anything. Until that
+   * confirmation arrives the document stays scrollable, so a frame left at its
+   * placeholder height because the parent script never ran still gives access
+   * to everything below the fold.
+   */
+  private scrollLocked = false;
+
+  private lockScrolling(): void {
+    if (this.scrollLocked) return;
+    this.scrollLocked = true;
+    // Both elements: which one owns the viewport scrollbar varies by browser.
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+  }
+
   private postHeight(): void {
     if (window.parent === window) return;
     // Measure the wrapper's BOTTOM EDGE in document coordinates, not its
@@ -516,7 +537,9 @@ class NewsWidget {
     window.addEventListener("load", () => this.postHeight());
     window.addEventListener("message", (e: MessageEvent) => {
       const data = e.data as { type?: string } | null;
-      if (data && data.type === "statchasers:request-height") this.postHeight();
+      if (!data) return;
+      if (data.type === "statchasers:request-height") this.postHeight();
+      if (data.type === "statchasers:height-applied") this.lockScrolling();
     });
     // The parent's listener often loads late (performance plugins delay JS
     // until first interaction), so re-broadcast a few times after load.

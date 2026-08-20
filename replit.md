@@ -18,6 +18,10 @@ _Replace the heading above with the project's name, and this line with one sente
   where nothing but the log shows it.
 - `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) —
   one-time import of the legacy SQLite archive
+- `INGEST_URL=https://<deployment>/api/ingest node ./scripts/ingest.mjs` — force a
+  refresh from outside. Point a Replit Scheduled Deployment at this (every 10
+  minutes) so the archive keeps moving even with no visitors; add
+  `INGEST_SECRET` on both sides if the endpoint should not be open
 
 ## Stack
 
@@ -64,6 +68,19 @@ _Replace the heading above with the project's name, and this line with one sente
   tool into a page. See `wordpress-plugin/README.md`.
 
 ## Architecture decisions
+
+- **Refreshes are driven by traffic, not only by a timer.** `index.ts` still runs
+  an ingest every 10 minutes, but that `setInterval` only fires while a process
+  is alive and this deployment idles between requests — observed in production,
+  where an ingest ran at 17:28 and the next never happened while upstream moved
+  on. So a middleware in `app.ts` calls `refreshIfStale()` on every response's
+  `finish` event. It is throttled to one ingest per `REFRESH_MIN_GAP_MS`
+  (10 minutes; `INGEST_MIN_GAP_MS` overrides it, which is how the test exercises
+  the throttle) and never runs two at once, so traffic volume cannot turn into
+  feed load. It is hung off `finish` so it can never add latency to a response.
+  For refreshes that continue through a stretch with no visitors at all, run
+  `scripts/ingest.mjs` on a schedule — it POSTs `/api/ingest`, which both
+  refreshes the data and wakes an idle instance.
 
 - **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`
   rebuilds the filesystem on every publish, so a SQLite file in `data/` was
@@ -127,11 +144,25 @@ _Replace the heading above with the project's name, and this line with one sente
   graph via `rank_math/json_ld` (`src/lib/schema.ts` is the equivalent for
   non-WordPress hosts, served at `/embed/schema.json`). No `aggregateRating` or
   `review` — we have no real rating data and won't invent any.
-- **Entity links are opt-in.** `PLAYER_PROFILE_URL_TEMPLATE` /
-  `TEAM_PAGE_URL_TEMPLATE` (or the plugin's `player_url`/`team_url`) turn player
-  and team names already on the card into internal links. Empty by default
-  because this server can't verify those pages exist; a player with no team gets
-  no team link rather than a fabricated one.
+- **The card names the player once.** Every headline opens with the player's
+  name, so the byline carries the team alone — printing the name again directly
+  beside it said the same thing twice per card. The feed's own name is not
+  printed either; `source` is still stored and still returned by `/api/news`,
+  it just isn't shown. The player's name is still in `data-player` (the search
+  filter reads it) and in the headshot's alt text.
+- **Entity links are opt-in.** `TEAM_PAGE_URL_TEMPLATE` (or the plugin's
+  `team_url`) turns the team name already on the card into an internal link.
+  Empty by default because this server can't verify those pages exist; a player
+  with no team gets no team link rather than a fabricated one.
+  `PLAYER_PROFILE_URL_TEMPLATE` / the plugin's `player_url` are **currently
+  inert** — the plumbing still carries them so the installed plugin keeps
+  working, but no player name is rendered for them to link.
+- **The framed tool stops scrolling only once the parent proves it is sizing
+  it.** embed.js answers an applied height with `statchasers:height-applied`, and
+  only then does the frame set `overflow: hidden` on itself. Locking
+  unconditionally (or with `scrolling="no"` on the iframe) would clip everything
+  below the fold on any page where the resize script is deferred or blocked and
+  the frame is stuck at its placeholder height.
 
 ## Product
 
@@ -193,6 +224,17 @@ _Populate as you build — explicit user instructions worth remembering across s
 - The "Last updated" stamp must only move on a real content change. An ingest
   that re-sees the same items calls `invalidateFreshness(false)` — it drops
   caches without moving the date. Never bump it per request.
+- **Ingest matches on the id AND the fingerprint.** Upstream reuses an item's
+  id and edits its headline. The fingerprint is derived from the title, so a
+  reworded story stops matching on fingerprint, looks new, and its insert
+  collides with the id already stored — a primary-key violation that aborts the
+  whole batch, so ONE reworded headline stops the archive dead. It did exactly
+  that in production. `runIngest` therefore looks rows up by either key and
+  moves the fingerprint onto the existing row when the title changed.
+  `tests/ingest.test.mjs` covers it.
+- `tests/ingest.test.mjs` is the only suite that writes rows, and it cleans up
+  its own `test:`-prefixed row afterwards. Its stub feed serves an empty list for
+  the throttle tests precisely so they cannot touch real data.
 - Two Postgres behaviours differ from the SQLite they replaced, and both are
   load-bearing: `LIKE` is case-sensitive here (search uses `ilike`), and `DESC`
   sorts NULLs **first** (ordering is spelled `desc nulls last`, or an item with an

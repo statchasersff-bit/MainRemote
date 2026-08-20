@@ -109,6 +109,39 @@ describe("iframe auto-resize listener", () => {
     assert.equal(frame.style.height, "1200px");
   });
 
+  test("acknowledges the height so the frame can stop scrolling", async () => {
+    // The frame only disables its own scrollbar once told its height is being
+    // honoured. Without this message it must keep scrolling, or a frame stuck at
+    // the placeholder height would hide everything below the fold.
+    const { frame, send } = await loadListener();
+
+    const seen = [];
+    frame.contentWindow.addEventListener("message", (e) => seen.push(e.data));
+
+    send({ height: 900 });
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert.ok(
+      seen.some((d) => d && d.type === "statchasers:height-applied"),
+      `expected a height-applied ack, got ${JSON.stringify(seen)}`,
+    );
+  });
+
+  test("does not acknowledge a height it refused to apply", async () => {
+    const { frame, send } = await loadListener();
+    const seen = [];
+    frame.contentWindow.addEventListener("message", (e) => seen.push(e.data));
+
+    send({ height: 0 });
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert.equal(
+      seen.some((d) => d && d.type === "statchasers:height-applied"),
+      false,
+      "an unusable height must not tell the frame to lock scrolling",
+    );
+  });
+
   test("ignores messages from anything that is not the frame", async () => {
     const { window, frame, send } = await loadListener();
     const impostor = new JSDOM("", { url: "https://evil.example/" }).window;
