@@ -26,6 +26,41 @@ const EMPTY: Freshness = { changedAtMs: null, count: 0 };
 let cached: Freshness | null = null;
 /** In-flight load, so a burst of concurrent requests issues one query. */
 let loading: Promise<Freshness> | null = null;
+/** When `cached` was computed, for the staleness bound below. */
+let loadedAtMs = 0;
+/**
+ * Bumped by every invalidation. A load that started before one lands must not
+ * overwrite `cached` with the value it read *before* the change — otherwise an
+ * ingest that finishes mid-query is silently undone and the snapshot goes back
+ * to describing the archive as it was.
+ */
+let epoch = 0;
+
+/**
+ * How long a loaded snapshot may be trusted without re-reading the archive.
+ *
+ * This process is not the only thing that can write to the archive, and — more
+ * to the point — it is not guaranteed to notice when it is. `invalidateFreshness()`
+ * only fires from an ingest *in this process* that *succeeded* and *changed*
+ * something. Every other case leaves the snapshot untouched forever:
+ *
+ *   - this instance's ingest throws every time (a feed URL missing from the
+ *     deployment's environment, an upstream outage, a database error). Nothing
+ *     invalidates, so the ETag never moves and the render cache never drops —
+ *     the page serves the same HTML indefinitely no matter what is in the
+ *     database. This is the failure that kept production frozen: a cache whose
+ *     only invalidation path was the very thing that was broken.
+ *   - something else writes: the scheduled deployment POSTing /api/ingest to a
+ *     different instance, a second instance, a manual import.
+ *
+ * So the snapshot expires on its own as well. 60s matches the `max-age=60`
+ * already on the page and the embed fragment, so this adds no staleness the
+ * HTTP layer did not already allow, and costs one small aggregate per minute.
+ */
+const MAX_AGE_MS = (() => {
+  const raw = Number(process.env["FRESHNESS_MAX_AGE_MS"]);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 60_000;
+})();
 
 /**
  * Recompute from the store.
@@ -74,17 +109,30 @@ async function compute(): Promise<Freshness> {
  * cache key computed, mid-response. Rather than make those paths async and
  * spread awaits through every caller, the value is loaded once per content
  * version and read synchronously from memory afterwards.
+ *
+ * "Warm" means loaded *and* younger than MAX_AGE_MS — see that constant for why
+ * an invalidation-only snapshot is not enough.
  */
 export async function ensureFreshness(): Promise<Freshness> {
-  if (cached !== null) return cached;
-  loading ??= compute()
-    .then((value) => {
-      cached = value;
-      return value;
-    })
-    .finally(() => {
-      loading = null;
-    });
+  if (cached !== null && Date.now() - loadedAtMs < MAX_AGE_MS) return cached;
+
+  loading ??= (() => {
+    const at = epoch;
+    return compute()
+      .then((value) => {
+        // Dropped if an invalidation landed while this query was running: that
+        // value describes the archive from before the change.
+        if (epoch === at) {
+          cached = value;
+          loadedAtMs = Date.now();
+        }
+        return value;
+      })
+      .finally(() => {
+        loading = null;
+      });
+  })();
+
   return loading;
 }
 
@@ -114,6 +162,7 @@ let mutationSeq = 0;
 export function invalidateFreshness(movesDate = true): void {
   mutationSeq++;
   if (movesDate) {
+    epoch++;
     cached = null;
     loading = null;
   }

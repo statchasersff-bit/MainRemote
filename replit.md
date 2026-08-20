@@ -82,6 +82,51 @@ _Replace the heading above with the project's name, and this line with one sente
   `scripts/ingest.mjs` on a schedule — it POSTs `/api/ingest`, which both
   refreshes the data and wakes an idle instance.
 
+- **Caches expire on their own as well as on invalidation.** The freshness
+  snapshot (`lib/freshness.ts`) keys the ETag *and* the rendered-fragment cache
+  in `lib/ssr.ts`, and it used to drop only when `invalidateFreshness()` fired —
+  which happens only for an ingest **in this process** that **succeeded** and
+  **changed something**. Every other case left it warm forever, so a deployment
+  whose ingest failed every time served byte-identical HTML with an unmoving
+  ETag no matter what was in the database: a cache whose only invalidation path
+  was the very thing that was broken. It also missed any other writer — the
+  scheduled deployment POSTing `/api/ingest` to a different instance, a second
+  instance, a manual import. The snapshot now also expires after
+  `FRESHNESS_MAX_AGE_MS` (default 60s, matching the `max-age=60` already on the
+  page and the embed fragment, so it adds no staleness HTTP did not already
+  allow). Invalidation is still what makes a local ingest show up instantly; the
+  bound is the floor under it. `tests/freshness.test.mjs` starts a server with a
+  deliberately broken ingest, writes a row from outside the process, and asserts
+  the page and `/embed/ssr` both pick it up.
+
+- **`/api/status` reports the ingest; `/api/healthz` only reports the process.**
+  healthz answers `ok` as soon as the server is listening, which says nothing
+  about the thing that has actually broken in production twice. `/api/status`
+  reports whether the feed URL reached this environment at all, when an ingest
+  last ran and succeeded, the last error, and the archive's item count and newest
+  content — enough to tell "upstream is quiet" from "this deployment has never
+  once fetched the feed" from outside the box. It carries no secrets (never the
+  feed URL or the connection string) and is `no-store`. **Check it first when
+  production looks stale**: `curl https://<deployment>/api/status`.
+  `feedConfigured: false` means the deployment's environment is missing
+  `DYNASTY_NEWS_API_URL` — see the env note under Run & Operate, `.replit`'s
+  `[userenv.shared]` configures the workspace only. `feedHost` reports which
+  feed *this* instance actually got, because that is the thing the two
+  environments can silently disagree about, and `lastError` carries the first
+  200 characters of the upstream response body: the status alone cannot tell a
+  retired URL from a blocked one (both are "403: Forbidden"), but the body can —
+  the old `dynasty-command.replit.app` feed answers `{"error":"forbidden"}`,
+  while a WAF answers an HTML challenge page.
+
+- **The ingest identifies itself to the feed.** Node's `fetch` otherwise sends
+  `user-agent: node`, which is what bot management scores as anonymous
+  automation — and `api.statchasers.com` is behind Cloudflare. A named
+  `User-Agent` is both good manners toward our own API and the difference
+  between a WAF rule that can allow this caller and one that cannot see who it
+  is. If the feed ever 403s only from the deployment while the workspace
+  succeeds, suspect IP reputation or a bot rule, not the code — the two run
+  identical requests from different egress addresses.
+
 - **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`
   rebuilds the filesystem on every publish, so a SQLite file in `data/` was
   never a store of record — it reset to whatever snapshot was in the image, which

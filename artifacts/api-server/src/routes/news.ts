@@ -60,6 +60,31 @@ const router = Router();
 
 const DYNASTY_NEWS_API_URL = process.env["DYNASTY_NEWS_API_URL"];
 
+/** Identifies this server to the upstream feed. See the fetch below. */
+const USER_AGENT = "StatChasersNews/1.0 (+https://newsfeed.replit.app)";
+
+/**
+ * The feed's hostname, or null if it isn't set or isn't a URL.
+ *
+ * Reported by /api/status. The host — not the full URL — because that is the
+ * whole diagnostic: it says which feed this environment is actually pointed at,
+ * which is what distinguishes "the deployment still holds a retired URL" from
+ * "the right URL is being refused". `[userenv.shared]` in .replit configures the
+ * workspace only, so the two environments genuinely can disagree, and nothing
+ * else exposes which one a running instance got. A hostname is not a secret; a
+ * query string could be, so it is dropped.
+ */
+function feedHost(): string | null {
+  if (!DYNASTY_NEWS_API_URL) return null;
+  try {
+    return new URL(DYNASTY_NEWS_API_URL).host;
+  } catch {
+    // Set but unparseable — worth surfacing, since a stray quote or newline in
+    // the deployment's environment lands here and nowhere else.
+    return "(not a valid URL)";
+  }
+}
+
 function makeFallbackId(item: {
   title?: string;
   link?: string;
@@ -112,6 +137,43 @@ let lastIngestStartedMs = 0;
 let ingestInFlight: Promise<unknown> | null = null;
 
 /**
+ * Outcome of the most recent ingest, for GET /api/status.
+ *
+ * A failing ingest used to be a log line and nothing else, which made the one
+ * failure mode that matters here — a deployment whose environment is missing
+ * DYNASTY_NEWS_API_URL, so every run throws before it fetches anything —
+ * indistinguishable from a healthy server with quiet upstream. `/api/healthz`
+ * answered "ok" either way. This is the state that tells the two apart from
+ * outside the box.
+ */
+interface IngestState {
+  lastAttemptMs: number | null;
+  lastSuccessMs: number | null;
+  lastResult: { inserted: number; updated: number; total: number } | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+}
+
+const ingestState: IngestState = {
+  lastAttemptMs: null,
+  lastSuccessMs: null,
+  lastResult: null,
+  lastError: null,
+  consecutiveFailures: 0,
+};
+
+export function ingestStatus(): IngestState & {
+  feedConfigured: boolean;
+  feedHost: string | null;
+} {
+  return {
+    ...ingestState,
+    feedConfigured: Boolean(DYNASTY_NEWS_API_URL),
+    feedHost: feedHost(),
+  };
+}
+
+/**
  * Pure so the throttle can be reasoned about (and tested) without a server.
  * `lastMs` of 0 means "never ingested", which must always pass.
  */
@@ -145,27 +207,69 @@ export function refreshIfStale(): void {
     });
 }
 
-export async function runIngest(): Promise<{
+export interface IngestResult {
   inserted: number;
   updated: number;
   total: number;
-}> {
-  // Before the guard: a missing feed URL is still an attempt, and retrying it on
-  // every single request would be pointless load.
-  lastIngestStartedMs = Date.now();
+}
 
+/**
+ * Run an ingest and record how it went. Every caller — startup, the timer, the
+ * traffic hook, POST /api/ingest — goes through here, so `ingestStatus()` always
+ * describes the last real attempt.
+ */
+export async function runIngest(): Promise<IngestResult> {
+  // Stamped before the guard: a missing feed URL is still an attempt, and
+  // retrying it on every single request would be pointless load.
+  lastIngestStartedMs = Date.now();
+  ingestState.lastAttemptMs = lastIngestStartedMs;
+
+  try {
+    const result = await performIngest();
+    ingestState.lastSuccessMs = Date.now();
+    ingestState.lastResult = result;
+    ingestState.lastError = null;
+    ingestState.consecutiveFailures = 0;
+    return result;
+  } catch (err) {
+    ingestState.lastError = err instanceof Error ? err.message : String(err);
+    ingestState.consecutiveFailures++;
+    throw err;
+  }
+}
+
+async function performIngest(): Promise<IngestResult> {
   if (!DYNASTY_NEWS_API_URL) {
     throw new Error("DYNASTY_NEWS_API_URL is not set");
   }
 
   const response = await fetch(DYNASTY_NEWS_API_URL, {
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      // Node's fetch otherwise sends `user-agent: node`, which is exactly what
+      // bot management in front of an API scores as anonymous automation. The
+      // upstream feed sits behind Cloudflare, and a 403 there looks identical to
+      // a 403 from anywhere else. Identifying the caller is both the polite
+      // thing to do when calling our own API and the difference between a WAF
+      // rule that can allow this traffic and one that cannot see who it is.
+      "User-Agent": USER_AGENT,
+    },
     signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
+    // The status alone cannot tell a wrong URL from a blocked one — both are
+    // "403: Forbidden". The body can: the retired feed answers
+    // {"error":"forbidden"}, a WAF answers an HTML challenge page. Kept short,
+    // and failure to read it must not mask the original error.
+    const detail = await response
+      .text()
+      .then((body) => body.trim().replace(/\s+/g, " ").slice(0, 200))
+      .catch(() => "");
+
     throw new Error(
-      `Dynasty Command API responded with ${response.status}: ${response.statusText}`,
+      `Dynasty Command API responded with ${response.status}: ${response.statusText}` +
+        (detail ? ` — ${detail}` : ""),
     );
   }
 
@@ -319,6 +423,67 @@ router.post("/ingest", async (req, res) => {
     res.status(500).json({ ok: false, error: String(err) });
   }
 });
+
+/**
+ * GET /api/status — is this instance actually keeping the archive moving?
+ *
+ * `/api/healthz` answers "ok" as soon as the process is listening, which says
+ * nothing about the thing that has actually broken in production twice now: the
+ * ingest. This reports whether the feed URL reached this environment at all,
+ * when an ingest last ran, whether it succeeded, and what the archive looks like
+ * as a result — enough to tell "upstream is quiet" from "this deployment has
+ * never once managed to fetch the feed" without reading the logs.
+ *
+ * Deliberately unauthenticated and free of secrets: booleans, timestamps, counts
+ * and an error message, never the feed URL or the connection string.
+ */
+router.get("/status", (_req, res) => {
+  void (async () => {
+    const ingest = ingestStatus();
+    const nowMs = Date.now();
+
+    try {
+      const { changedAtMs, count } = await ensureFreshness();
+      res.set("Cache-Control", "no-store").json({
+        ok: true,
+        now: new Date(nowMs).toISOString(),
+        feedConfigured: ingest.feedConfigured,
+        feedHost: ingest.feedHost,
+        ingest: {
+          lastAttempt: iso(ingest.lastAttemptMs),
+          lastSuccess: iso(ingest.lastSuccessMs),
+          secondsSinceLastSuccess:
+            ingest.lastSuccessMs === null
+              ? null
+              : Math.round((nowMs - ingest.lastSuccessMs) / 1000),
+          lastResult: ingest.lastResult,
+          lastError: ingest.lastError,
+          consecutiveFailures: ingest.consecutiveFailures,
+          minGapMs: REFRESH_MIN_GAP_MS,
+        },
+        archive: {
+          items: count,
+          newestContentAt: iso(changedAtMs),
+        },
+      });
+    } catch (err) {
+      // The archive half failed, but the ingest half is the interesting part and
+      // is held in memory — still answer with it rather than a bare 500.
+      logger.error({ err }, "Failed to read archive state for /api/status");
+      res.status(500).set("Cache-Control", "no-store").json({
+        ok: false,
+        now: new Date(nowMs).toISOString(),
+        feedConfigured: ingest.feedConfigured,
+        ingest,
+        error: "failed to read archive state",
+      });
+    }
+  })();
+});
+
+function iso(ms: number | null): string | null {
+  return ms === null ? null : new Date(ms).toISOString();
+}
 
 // GET /api/news
 router.get("/news", (req, res) => {
