@@ -36,7 +36,12 @@ let server;
 
 before(async () => {
   await removeProbe();
-  server = await startServer({ FRESHNESS_MAX_AGE_MS: String(MAX_AGE_MS) });
+  server = await startServer({
+    FRESHNESS_MAX_AGE_MS: String(MAX_AGE_MS),
+    // Pinned rather than inherited, so the assertions below stay deterministic
+    // once this is set in a real environment.
+    DYNASTY_NEWS_API_KEY: "",
+  });
 });
 
 after(async () => {
@@ -148,7 +153,13 @@ describe("GET /api/status", () => {
     );
     // Which feed this environment actually got is the whole point: the
     // workspace and the deployment are configured separately and can disagree.
-    assert.equal(body.feedHost, null);
+    assert.deepEqual(body.feedHosts, []);
+    // The WAF bypass secret is reported as present/absent, never echoed.
+    assert.equal(body.feedKeyConfigured, false);
+    assert.ok(
+      !JSON.stringify(body).toLowerCase().includes("ingest-key"),
+      "/api/status must never echo the shared secret or its header",
+    );
     assert.equal(body.ingest.lastSuccess, null);
     assert.ok(
       body.ingest.lastError,

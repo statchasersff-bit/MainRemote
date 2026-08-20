@@ -501,6 +501,19 @@ export function renderFilters(items: NewsItem[]): string {
 }
 
 /**
+ * One row holding the "Last updated" stamp and the filter controls: stamp on
+ * the left, controls on the right.
+ *
+ * A wrapper rather than nesting the stamp inside renderFilters, because the
+ * two have different lifetimes — the filters ship hidden and disappear
+ * entirely when there are no items, while the stamp shows either way.
+ */
+export function renderToolbar(updatedStamp: string, filters: string): string {
+  if (!updatedStamp && !filters) return "";
+  return `<div class="sc-toolbar">${updatedStamp}${filters}</div>`;
+}
+
+/**
  * The pager. Rendered server-side but `hidden` until the client un-hides it —
  * see renderList: with no JS every page is visible and a pager is meaningless.
  */
@@ -637,11 +650,13 @@ export function renderFragment(
     (heading
       ? `<h2 class="sc-section-heading">${escapeHtml(options.headingText || SECTION_HEADING)}</h2>`
       : "") +
-    renderUpdatedStamp(options.updatedAtMs) +
     // Outside renderList on purpose: a background refresh replaces the list and
     // pager wholesale, and the reader's half-typed search and chosen team must
     // survive that.
-    (items.length > 0 ? renderFilters(items) : "") +
+    renderToolbar(
+      renderUpdatedStamp(options.updatedAtMs),
+      items.length > 0 ? renderFilters(items) : "",
+    ) +
     renderList(items, {
       pageSize,
       ...(links ? { links } : {}),

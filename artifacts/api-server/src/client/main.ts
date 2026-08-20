@@ -455,6 +455,7 @@ class NewsWidget {
         // Anchor below the toolbar when there is one, so the controls stay
         // above the cards they filter.
         const anchor =
+          this.root.querySelector(".sc-toolbar") ??
           this.root.querySelector(".sc-filters") ??
           this.root.querySelector(".sc-section-heading");
         const empty = this.root.querySelector(".sc-empty:not(.sc-no-matches)");
