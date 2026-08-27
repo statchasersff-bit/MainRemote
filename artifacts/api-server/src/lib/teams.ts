@@ -7,21 +7,62 @@
  * HTML we send — and it was a large third-party fetch on every cold visit, so
  * the lookup now lives here. The team abbreviation rides along on each item in
  * the API response, and the client no longer talks to Sleeper at all.
+ *
+ * The same response also feeds the team pages' roster index
+ * (lib/team/roster.ts): depth chart, injury designations and headshots all come
+ * out of this one download. Fetching them separately would mean pulling ~14MB
+ * twice to read different fields off the same objects.
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "./logger";
+import {
+  indexRoster,
+  restoreRosterIndex,
+  rosterFetchedAt,
+  snapshotRosterIndex,
+  type SleeperPlayer,
+  type TeamRoster,
+} from "./team/roster";
 
 const SLEEPER_PLAYERS_URL = "https://api.sleeper.app/v1/players/nfl";
-const REFRESH_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Twelve hours rather than twenty-four.
+ *
+ * The player->team map barely moves and would happily live for a day, but the
+ * same payload now carries injury designations, and an "Ankle / Questionable"
+ * that is a day old is exactly the stale-shown-as-current problem the team
+ * pages must not have. Twice a day is the compromise; the page also stamps the
+ * snapshot time onto Injury Watch, so it never claims to be fresher than it is.
+ */
+const REFRESH_MS = 12 * 60 * 60 * 1000;
 
 // Disk cache, so a restart (or a Sleeper outage) doesn't cost us the map.
 const CACHE_PATH = path.resolve(process.cwd(), "data", "player-teams.json");
 
+/**
+ * The roster index gets its own file rather than being folded into the one
+ * above: it is an order of magnitude larger, and keeping them apart means a
+ * corrupt or absent roster cache costs the team pages one refresh instead of
+ * taking the news tool's team colours down with it.
+ */
+const ROSTER_CACHE_PATH = path.resolve(
+  process.cwd(),
+  "data",
+  "team-roster.json",
+);
+
 interface CacheShape {
   fetchedAt: number;
   teams: Record<string, string>;
+}
+
+interface RosterCacheShape {
+  fetchedAt: number;
+  byTeam: Record<string, TeamRoster>;
+  teamByPlayerName: Record<string, string>;
 }
 
 let teams: Record<string, string> = {};
@@ -45,6 +86,42 @@ function readDiskCache(): void {
   }
 }
 
+function readRosterDiskCache(): void {
+  try {
+    const raw = fs.readFileSync(ROSTER_CACHE_PATH, "utf8");
+    const parsed = JSON.parse(raw) as RosterCacheShape;
+    if (parsed?.byTeam && typeof parsed.fetchedAt === "number") {
+      restoreRosterIndex(
+        parsed.byTeam,
+        parsed.teamByPlayerName ?? {},
+        parsed.fetchedAt,
+      );
+      logger.info(
+        { teams: Object.keys(parsed.byTeam).length },
+        "Team roster index loaded from disk cache",
+      );
+    }
+  } catch {
+    // No cache yet (or it's corrupt) — the next refresh rebuilds it.
+  }
+}
+
+function writeRosterDiskCache(): void {
+  try {
+    const snapshot = snapshotRosterIndex();
+    fs.writeFileSync(
+      ROSTER_CACHE_PATH,
+      JSON.stringify({
+        fetchedAt: snapshot.fetchedAt,
+        byTeam: snapshot.byTeam,
+        teamByPlayerName: snapshot.teamByPlayerName,
+      } satisfies RosterCacheShape),
+    );
+  } catch (err) {
+    logger.warn({ err }, "Could not write team roster cache");
+  }
+}
+
 function writeDiskCache(): void {
   try {
     fs.writeFileSync(
@@ -57,6 +134,7 @@ function writeDiskCache(): void {
 }
 
 readDiskCache();
+readRosterDiskCache();
 
 async function fetchTeams(): Promise<void> {
   const res = await fetch(SLEEPER_PLAYERS_URL, {
@@ -65,10 +143,7 @@ async function fetchTeams(): Promise<void> {
   });
   if (!res.ok) throw new Error(`Sleeper responded ${res.status}`);
 
-  const data = (await res.json()) as Record<
-    string,
-    { team?: string | null } | null
-  >;
+  const data = (await res.json()) as Record<string, SleeperPlayer | null>;
 
   const next: Record<string, string> = {};
   for (const id in data) {
@@ -86,6 +161,16 @@ async function fetchTeams(): Promise<void> {
   fetchedAt = Date.now();
   writeDiskCache();
   logger.info({ count: Object.keys(teams).length }, "Player team map refreshed");
+
+  // Second pass over the payload already in hand: depth chart, injuries and
+  // headshots for the team pages. Wrapped so a change in the shape of the
+  // fields it reads can never take the team-colour map down with it.
+  try {
+    indexRoster(data, fetchedAt);
+    writeRosterDiskCache();
+  } catch (err) {
+    logger.warn({ err }, "Team roster index build failed");
+  }
 }
 
 /**
@@ -93,9 +178,13 @@ async function fetchTeams(): Promise<void> {
  * cards render without team colours, which is cosmetic.
  */
 export async function ensureTeams(): Promise<void> {
-  if (Date.now() - fetchedAt < REFRESH_MS && Object.keys(teams).length > 0) {
-    return;
-  }
+  const warm =
+    Date.now() - fetchedAt < REFRESH_MS && Object.keys(teams).length > 0;
+  // A warm team map with no roster behind it is the first boot after this
+  // feature shipped, and any boot with a corrupt roster cache: the news tool is
+  // fine, the team pages have nothing to render. Treat it as stale so a single
+  // refresh fixes both.
+  if (warm && rosterFetchedAt() > 0) return;
   // Collapse concurrent callers onto one request; the payload is large.
   if (!inFlight) {
     inFlight = fetchTeams()

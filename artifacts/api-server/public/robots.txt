@@ -15,6 +15,7 @@ Allow: /
 
 # Explicit for clarity — these are render-critical.
 Allow: /styles.css
+Allow: /team.css
 Allow: /dist/
 Allow: /api/news
 

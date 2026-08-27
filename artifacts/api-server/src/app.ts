@@ -5,12 +5,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter from "./routes/embed";
+import teamRouter from "./routes/team";
+import previewRouter from "./routes/preview";
 import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
 import { canonicalUrl } from "./lib/request";
 import { linkTemplatesFromEnv, relatedLinksFromEnv } from "./lib/links";
+import { devBarEnabled, injectDevBar } from "./lib/devbar";
 import { contentVersion, ensureFreshness, freshness } from "./lib/freshness";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +60,16 @@ app.use("/api", router);
 // static/SPA fallback so it isn't swallowed by the index.html catch-all.
 app.use(embedRouter);
 
+// NFL Team Hub: /team, /team/:slug and the /embed/team/:slug fragment. Mounted
+// here for the same reason as the embed router — the 404 at the bottom of this
+// file is deliberate and catches everything that gets past the routes above.
+// It changes nothing about "/", which is still the news tool and nothing else.
+app.use(teamRouter);
+
+// Shortcode preview harness (/preview/*). Development only — the router's own
+// first middleware 404s the whole thing outside development.
+app.use(previewRouter);
+
 // Serve static frontend files
 const publicDir = path.resolve(__dirname, "..", "public");
 
@@ -98,6 +111,12 @@ async function sendIndexHtml(req: Request, res: Response) {
       relatedLinks: relatedLinksFromEnv(),
     });
     if (liveReload.enabled) html = liveReload.injectIntoHtml(html);
+    // Development only, and injected here rather than in the renderer: this
+    // page's markup IS the WordPress fragment, so a switcher inside it would
+    // ship to statchasers.com. See lib/devbar.ts.
+    if (devBarEnabled()) {
+      html = injectDevBar(html, { path: req.path, embed: false });
+    }
     res
       // The rendered list changes as news is ingested, so let shared caches
       // hold it only briefly and revalidate.
@@ -130,18 +149,22 @@ app.use(express.static(publicDir));
  * a crawler infinite equivalent pages to work through. The app is a single
  * page; it lives at "/" and nowhere else.
  */
-app.use((_req, res) => {
+app.use((req, res) => {
+  const html =
+    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+    `<meta name="robots" content="noindex" />` +
+    `<title>Not found</title></head><body>` +
+    `<h1>Not found</h1><p><a href="/">Go to the news tool</a>` +
+    ` &middot; <a href="/team">Go to the team hub</a></p>` +
+    `</body></html>`;
   res
     .status(404)
     .set("X-Robots-Tag", "noindex")
     .type("html")
-    .send(
-      `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
-        `<meta name="robots" content="noindex" />` +
-        `<title>Not found</title></head><body>` +
-        `<h1>Not found</h1><p><a href="/">Go to the news tool</a></p>` +
-        `</body></html>`,
-    );
+    // Development only, and the reason this handler takes `req`: a mistyped URL
+    // inside the Replit preview pane has no address bar to recover from, so the
+    // switcher has to be on the 404 too. See lib/devbar.ts.
+    .send(injectDevBar(html, { path: req.path, embed: false }));
 });
 
 export default app;

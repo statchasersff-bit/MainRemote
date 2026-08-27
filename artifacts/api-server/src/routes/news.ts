@@ -172,6 +172,32 @@ const REFRESH_MIN_GAP_MS = (() => {
   return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
 })();
 
+/**
+ * When an ingest is considered *unhealthy* — see GET /api/ingest/health.
+ *
+ * Both thresholds exist because they catch different failures. A failure count
+ * catches a feed that is refusing us right now; an age catches the quieter case
+ * where nothing is failing because nothing is running at all (an idle instance,
+ * a timer that never fired, a scheduled trigger someone turned off).
+ *
+ * Defaults: three consecutive failures is ~30 minutes at the 10-minute cadence,
+ * comfortably past a transient upstream blip; an hour without a success is well
+ * inside the feed's rolling ~25-item window, so an alert still leaves time to
+ * fix it before anything is lost for good.
+ */
+const ALERT_MAX_FAILURES = (() => {
+  const raw = Number(process.env["INGEST_ALERT_MAX_FAILURES"]);
+  return Number.isFinite(raw) && raw > 0 ? raw : 3;
+})();
+
+const ALERT_MAX_AGE_MS = (() => {
+  const raw = Number(process.env["INGEST_ALERT_MAX_AGE_MS"]);
+  return Number.isFinite(raw) && raw > 0 ? raw : 60 * 60 * 1000;
+})();
+
+/** For the age check before the first success — see evaluateIngestHealth(). */
+const PROCESS_STARTED_MS = Date.now();
+
 /** When an ingest last STARTED, whether by timer, by request, or by POST. */
 let lastIngestStartedMs = 0;
 let ingestInFlight: Promise<unknown> | null = null;
@@ -233,6 +259,56 @@ export function shouldRefresh(
   return lastMs === 0 || nowMs - lastMs >= gapMs;
 }
 
+export interface IngestHealthVerdict {
+  ok: boolean;
+  /** Every reason it is unhealthy, so one alert explains the whole picture. */
+  reasons: string[];
+}
+
+/**
+ * Is the ingest healthy enough to stay quiet about?
+ *
+ * Pure, like shouldRefresh above, so the thresholds can be reasoned about and
+ * tested without a server or a clock.
+ *
+ * Before the first success of a process there is no last-success timestamp to
+ * measure from, so the age is measured from process start instead. Without that
+ * a deployment that has *never* managed an ingest — the exact state production
+ * sat in for 17 hours — would look healthy indefinitely on the age check, which
+ * is precisely backwards.
+ */
+export function evaluateIngestHealth(args: {
+  nowMs: number;
+  lastSuccessMs: number | null;
+  consecutiveFailures: number;
+  startedMs: number;
+  maxFailures?: number;
+  maxAgeMs?: number;
+}): IngestHealthVerdict {
+  const maxFailures = args.maxFailures ?? ALERT_MAX_FAILURES;
+  const maxAgeMs = args.maxAgeMs ?? ALERT_MAX_AGE_MS;
+  const reasons: string[] = [];
+
+  if (args.consecutiveFailures >= maxFailures) {
+    reasons.push(
+      `${args.consecutiveFailures} consecutive ingest failures (threshold ${maxFailures})`,
+    );
+  }
+
+  const since = args.lastSuccessMs ?? args.startedMs;
+  const ageMs = args.nowMs - since;
+  if (ageMs > maxAgeMs) {
+    const mins = Math.round(ageMs / 60_000);
+    reasons.push(
+      args.lastSuccessMs === null
+        ? `no successful ingest since this process started ${mins}m ago (threshold ${Math.round(maxAgeMs / 60_000)}m)`
+        : `last successful ingest was ${mins}m ago (threshold ${Math.round(maxAgeMs / 60_000)}m)`,
+    );
+  }
+
+  return { ok: reasons.length === 0, reasons };
+}
+
 /**
  * Start an ingest if one is due. Returns immediately — the caller is a request
  * that has already been answered, and must never wait on this.
@@ -291,6 +367,21 @@ export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
   } catch (err) {
     ingestState.lastError = err instanceof Error ? err.message : String(err);
     ingestState.consecutiveFailures++;
+
+    // Logged once, on the crossing, rather than on every failure: an alert that
+    // repeats every ten minutes is one people learn to scroll past, and the
+    // whole problem here was a failure nobody noticed for 17 hours.
+    if (ingestState.consecutiveFailures === ALERT_MAX_FAILURES) {
+      logger.error(
+        {
+          consecutiveFailures: ingestState.consecutiveFailures,
+          lastError: ingestState.lastError,
+          feedHosts: FEED_URLS.map(hostOf),
+        },
+        "Ingest is unhealthy — the archive has stopped moving",
+      );
+    }
+
     throw err;
   }
 }
@@ -361,7 +452,25 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
   }
 
   const data = (await response.json()) as unknown;
-  return coerceItems(data);
+  const items = coerceItems(data);
+
+  // A 200 carrying nothing is a failure, not a quiet success.
+  //
+  // storeItems([]) returns {inserted: 0, updated: 0} perfectly happily, which
+  // would mark the run successful and leave `lastError: null` — so an upstream
+  // that starts answering 200 with an empty list would freeze the archive while
+  // /api/status went on reporting a healthy ingest. That is the exact shape of
+  // failure this whole subsystem keeps getting caught by: the signal says fine
+  // and the data says otherwise.
+  //
+  // Thrown here rather than in runIngest so it behaves like any other bad route:
+  // the loop in fetchFeed() falls through and tries the next URL. The feed is
+  // never legitimately empty — it carries a rolling ~25 items.
+  if (items.length === 0) {
+    throw new Error("responded 200 but carried no items");
+  }
+
+  return items;
 }
 
 /**
@@ -615,6 +724,51 @@ router.get("/status", (_req, res) => {
       });
     }
   })();
+});
+
+/**
+ * GET /api/ingest/health — the endpoint to point a monitor at.
+ *
+ * `/api/status` is for a human reading the whole picture and always answers 200,
+ * which is right for diagnosis and useless for alerting: nothing pages on a 200.
+ * This answers **503 when the ingest has stopped working**, so any uptime checker
+ * — Replit's, UptimeRobot, a curl in cron — turns it into a notification without
+ * this app needing to know how to send one.
+ *
+ * Deliberately NOT folded into `/api/healthz`. That one is the platform's
+ * liveness probe: making it fail on a stale ingest would have Replit restart a
+ * perfectly healthy process, and restarting changes nothing about a feed that is
+ * refusing us.
+ *
+ * This outage ran for hours before anyone noticed. That gap is the thing this
+ * endpoint exists to close — it fires while the page still looks fine, well
+ * before the archive visibly falls behind.
+ */
+router.get("/ingest/health", (_req, res) => {
+  const verdict = evaluateIngestHealth({
+    nowMs: Date.now(),
+    lastSuccessMs: ingestState.lastSuccessMs,
+    consecutiveFailures: ingestState.consecutiveFailures,
+    startedMs: PROCESS_STARTED_MS,
+  });
+
+  res
+    .status(verdict.ok ? 200 : 503)
+    .set("Cache-Control", "no-store")
+    .json({
+      ok: verdict.ok,
+      // Plural: one alert should explain the whole picture, not the first thing
+      // that tripped.
+      reasons: verdict.reasons,
+      consecutiveFailures: ingestState.consecutiveFailures,
+      lastSuccess: iso(ingestState.lastSuccessMs),
+      lastError: ingestState.lastError,
+      lastSource: ingestState.lastSource,
+      thresholds: {
+        maxFailures: ALERT_MAX_FAILURES,
+        maxAgeMs: ALERT_MAX_AGE_MS,
+      },
+    });
 });
 
 function iso(ms: number | null): string | null {

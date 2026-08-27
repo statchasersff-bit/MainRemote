@@ -25,10 +25,93 @@ _Replace the heading above with the project's name, and this line with one sente
   unreachable from the deployment. Requires `INGEST_SECRET`. `scripts/ingest.mjs`
   drives it when `FEED_URL` is set.
 - Optional env: `DYNASTY_NEWS_API_KEY` — shared secret sent to the feed as
-  `X-SC-Ingest-Key`. Inert when unset. Exists because Cloudflare challenges the
-  deployment's egress IP in front of `api.statchasers.com`; a WAF Skip rule keyed
-  on this header lets the ingest through without weakening the API. Set it on the
-  deployment AND in the Cloudflare rule, and keep the two in step
+  `X-SC-Ingest-Key`. Inert when unset. It is what gets the ingest past Dynasty
+  Command's origin lock on `dynasty-command.replit.app`, whose exception is
+  scoped to `GET`/`HEAD` on `/api/news` only. **Not a Cloudflare rule and not a
+  general API credential** — see the architecture note below and
+  `docs/ingest-cloudflare.md` before assuming it reaches anything else. Must match
+  `SC_INGEST_KEY` on the Dynasty Command deployment. A newly added Replit secret
+  needs a full **Stop → Start**; a publish keeps the environment it booted with.
+  `/api/status` reports `feedKeyConfigured` so you can tell "never arrived" from
+  "wrong value".
+- Monitoring env: `INGEST_ALERT_MAX_FAILURES` (default 3) and
+  `INGEST_ALERT_MAX_AGE_MS` (default 1h) set when `GET /api/ingest/health` starts
+  answering 503. Point an uptime checker at it — see below
+- **Seeing the team pages in the Replit preview.** The workflow serves the
+  whole app on port 8080, so the preview URL already carries them. It opens at
+  `/`, which is the news tool and links nowhere else (it is the embedded
+  product; adding navigation to it would change what WordPress prints) — so in
+  development a **preview switcher** is pinned to the top of every standalone
+  page instead. See `artifacts/api-server/src/lib/devbar.ts`. Without
+  leaving the preview it gives you:
+  - the two shortcodes — `[statchasers_news]` and `[statchasers_team]`;
+  - a **team picker**, all 32 grouped by division, which changes the team
+    without changing which view you are in;
+  - the four **mounts**: *Page* (this app's own shell), *Embed* (`?embed=1`,
+    the markup stripped for a host page), **Shortcode** and *Raw*. The news
+    tool has no Embed button: `?embed=1` does nothing on `/`, and offering it
+    there was the bar claiming a variant that does not exist;
+  - the shortcode producing what is on screen, printed on the right.
+
+  **Shortcode** is the mount to use when comparing the two tools as published.
+  The fragment endpoints ship bare markup with no stylesheet and no script,
+  because on a real page WordPress enqueues those separately — so opening
+  `/embed/ssr.html` in a browser is an unstyled wall of HTML you cannot judge
+  anything by. `/preview/news` and `/preview/team/:slug`
+  (`artifacts/api-server/src/routes/preview.ts`) assemble what WordPress
+  assembles: the same fragment from the same renderer, wrapped in a mock host
+  page carrying the stylesheet and bundle the plugin registers. Because the
+  mount travels with the tool switch, picking *Shortcode* once and then
+  clicking News / Team Hub **alternates between the two shortcode pages**,
+  which is what the bar is really for.
+
+  *Raw* shows the literal bytes as source, at `/preview/raw/news` and
+  `/preview/raw/team/:slug`. It used to link straight at the fragment endpoint
+  and therefore had to open a new tab — the bar is never injected into a
+  fragment, so that link stranded you in bare markup with no way back. A new
+  tab is the wrong answer inside a preview pane. **Nothing in the bar opens a
+  new tab now**; every control is an in-place navigation, so the whole thing
+  works in one frame.
+
+  The harness is development-only and 404s in production — it is a second way
+  to assemble the same markup, and two differently-assembled copies of a tool
+  on the public internet is the duplicate-content problem the canonical work
+  exists to avoid. The guard is scoped to `/preview`; a bare
+  `router.use(guard)` 404s the whole app, which is a mistake that has already
+  been made once and is covered by a test.
+
+  The **DEV** chip on the left collapses the bar to a corner chip and remembers
+  it, for when you want the full height of the pane back.
+
+  It is `position: fixed` at the top and pads the body by its own measured
+  height rather than a hard-coded one, because it wraps to two or three rows in
+  a narrow pane. On a team page it also sets `--sct-nav-offset` on the hub root
+  to that height — the property the hub already exposes for "a host page with
+  its own sticky header" — so the section nav parks underneath it instead of
+  colliding with it. The whole thing is guarded by the same
+  `NODE_ENV === "development"` check that arms live reload, so it cannot reach a
+  production response.
+
+  Direct addresses still work: **`/team`** for an index of all 32, or
+  `/team/new-england-patriots`. The dev server injects the same live-reload
+  snippet the news page gets, so editing `public/team.css` or `public/team.html`
+  refreshes the preview; editing anything under `src/` still needs a rebuild.
+  In development the team routes answer `no-store` and skip the conditional
+  `304`: the render fingerprint covers the DATA, not the shell, so a warm
+  validator would otherwise keep serving the markup from before your last edit.
+- **Team hub link configuration.** `/team/:slug` links out to the real
+  StatChasers tools, and every destination is an environment variable with a
+  best-guess default that this server cannot verify — see the header of
+  `artifacts/api-server/src/lib/team/links.ts`. Only `SC_TEAM_HUB_URL_TEMPLATE`
+  and `SC_SOS_URL` have any evidence behind them. Check the rest against the
+  live site and correct them here; setting one to an empty string removes that
+  link everywhere rather than pointing it at a 404:
+  `SC_SITE_ORIGIN` (default `https://statchasers.com`),
+  `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE`,
+  `SC_TEAM_SCHEDULE_URL_TEMPLATE`, `SC_TEAM_PLAYERS_URL_TEMPLATE`,
+  `SC_PLAYER_PROFILE_URL_TEMPLATE` (empty by default — set it and every player
+  name on a team page becomes a link), `SC_SOS_URL`, `SC_FPA_URL`,
+  `SC_NEWS_URL`.
 - `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) —
   one-time import of the legacy SQLite archive
 - `INGEST_URL=https://<deployment>/api/ingest node ./scripts/ingest.mjs` — force a
@@ -85,6 +168,42 @@ _Replace the heading above with the project's name, and this line with one sente
 - `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts the
   tool into a page. See `wordpress-plugin/README.md`.
 
+### NFL Team Hub (`/team/:slug`)
+
+A second tool in the same app, sharing the news pipeline, the player→team map
+and the deployment. It does not touch the news page.
+
+- `src/lib/team/teams.ts` — **the canonical 32-team table**. One row per
+  franchise: id, slug, names, division, colours, ESPN ids. Nothing else may
+  carry a team mapping. `getTeamBySlug`, `getTeamByAbbreviation` and
+  `normalizeTeamName` are the only ways to turn a string into a team;
+  `normalizeTeamName` also accepts nicknames, ESPN codes and retired ones
+  (`OAK`, `SD`, `STL`, `WFT`).
+- `src/lib/team/links.ts` — every statchasers.com URL these pages emit, in one
+  place, env-configurable. See the note under Run & Operate.
+- `src/lib/team/roster.ts` — depth chart, fantasy cornerstones and injury
+  designations, indexed per team from Sleeper's player dictionary. Fed by
+  `lib/teams.ts` out of the fetch that already happens for the news cards.
+- `src/lib/team/cache.ts` — the stale-while-revalidate keyed cache every
+  provider uses, plus `TEAM_USER_AGENT`.
+- `src/lib/team/schedule.ts` / `profile.ts` / `snapshot.ts` — ESPN providers:
+  the regular-season fixture list (bye week derived from the gap), record and
+  head coach, and the four Team Snapshot rates with their NFL ranks.
+- `src/lib/team/nfl-state.ts` — season, week and season type from Sleeper.
+  Gates the record and picks which season the snapshot describes.
+- `src/lib/team/team-data.ts` — composes one `TeamPageData` from all of the
+  above with `Promise.allSettled`, and fingerprints it for the render cache.
+- `src/lib/team-render.ts` — **all team-page markup**. Server-only (unlike
+  `lib/render.ts`), because nothing on this page is re-rendered in the browser.
+- `src/lib/team-ssr.ts`, `src/lib/team-seo.ts` — page assembly, fragment cache
+  and head metadata. `public/team.html` is the shell.
+- `src/routes/team.ts` — `/team`, `/team/:slug`, `/team/:slug?embed=1` and
+  `/embed/team/:slug` (the bare fragment for the WordPress mount).
+- `src/client/team.ts` → `public/dist/statchasers-team.js` — enhancement only:
+  sticky-nav highlighting, switcher dismissal, relative timestamps, iframe
+  height. `public/team.css` is its stylesheet.
+- `tests/team.test.mjs` — the crawler's-eye regression suite for these pages.
+
 ## Architecture decisions
 
 - **Refreshes are driven by traffic, not only by a timer.** `index.ts` still runs
@@ -133,10 +252,32 @@ _Replace the heading above with the project's name, and this line with one sente
   environments can silently disagree about, and `lastError` carries the first
   200 characters of the upstream response body: the status alone cannot tell a
   retired URL from a blocked one (both are "403: Forbidden"), but the body can —
-  `dynasty-command.replit.app` (the API's own origin) answers
-  `{"error":"forbidden"}` — its canonical-host gate — while a WAF answers an HTML
-  challenge page. `feedHosts` is a list and `lastSource` names the route that
-  actually served the feed.
+  `dynasty-command.replit.app` answers `{"error":"forbidden"}` — its origin lock
+  refusing a request that carried no valid key — while a WAF answers an HTML
+  challenge page ("Just a moment..."), and a stopped Replit deployment answers
+  "This app isn't live yet". `feedHosts` is a list, `lastSource` names the route
+  that actually served the feed, and `feedKeyConfigured` says whether
+  `DYNASTY_NEWS_API_KEY` reached this environment at all.
+
+- **`/api/ingest/health` is for machines; `/api/status` is for people.**
+  `/api/status` always answers 200 and describes everything, which is right for
+  diagnosis and useless for alerting — nothing pages on a 200. The health endpoint
+  answers **503** once the ingest is failing (`INGEST_ALERT_MAX_FAILURES`
+  consecutive failures) or has been quiet too long (`INGEST_ALERT_MAX_AGE_MS`),
+  with `reasons` and `lastError` in the body so the alert explains itself. Before
+  a process's first success the age is measured from process start, so an instance
+  that has *never* ingested alerts instead of looking healthy forever — that was
+  production's actual state for 17 hours. Deliberately not folded into
+  `/api/healthz`: that is the platform liveness probe, and failing it would have
+  Replit restart a healthy process, which fixes nothing about a feed refusing us.
+
+- **A feed response of `200` with no items is a failure, not a quiet success.**
+  `storeItems([])` returns `{inserted: 0, updated: 0}` happily, so an upstream that
+  started answering with an empty list would freeze the archive while
+  `/api/status` reported `lastError: null` — the same "signal says fine, data says
+  otherwise" shape as the outage itself. The throw lives in `fetchFeedFrom()` so an
+  empty route falls through to the next URL like any other bad one. The feed is
+  never legitimately empty; it carries a rolling ~25 items.
 
 - **The ingest identifies itself to the feed.** Node's `fetch` otherwise sends
   `user-agent: node`, which is what bot management scores as anonymous
@@ -147,24 +288,94 @@ _Replace the heading above with the project's name, and this line with one sente
   succeeds, suspect IP reputation or a bot rule, not the code — the two run
   identical requests from different egress addresses.
 
-- **The ingest should call the feed's Replit origin, not its public domain —
-  and as of 2026-08-20 it still cannot.** `api.statchasers.com` is a Replit
-  deployment behind Cloudflare, and Cloudflare challenges this deployment's
-  egress IP with the "Just a moment..." JS interstitial — which a server cannot
-  solve, so the ingest 403s forever. (`deploymentTarget = "gce"` means the
-  deployment egresses from a Google Cloud address; the workspace does not, which
-  is why identical code succeeds there and fails published.) Bot Fight Mode is
-  zone-wide on the Free plan and cannot be skipped by a WAF rule, so the request
-  has to avoid the edge rather than negotiate with it. The origin is
-  `dynasty-command.replit.app` and it is up, but the API serves `/api/news/*`
-  only on its canonical host and answers `{"error":"forbidden"}` there — so
-  `DYNASTY_NEWS_API_URL` lists the origin first and the public domain last, and
-  the list currently falls through to the edge. **The unblock is one change on
-  the API side**, not here: exempt `/api/news/*` from the canonical-host gate, or
-  admit any host carrying `X-SC-Ingest-Key`. The other trap is a canonical-host
-  *redirect* rather than a 403 — `fetch` follows redirects by default, so that
-  lands back on Cloudflare and fails looking identical to the original bug.
+- **The ingest calls the feed's Replit address, not its public domain.**
+  `api.statchasers.com` is behind Cloudflare, and Cloudflare challenged this
+  deployment's egress IP with the "Just a moment..." JS interstitial — which a
+  server cannot solve, so the ingest 403'd for 17 hours. (`deploymentTarget = "gce"`
+  means the deployment egresses from a Google Cloud address; the workspace does
+  not, which is why identical code succeeded there and failed published. If the
+  feed ever 403s only from the deployment, suspect IP reputation, not the code.)
+  Bot Fight Mode is zone-wide on the Free plan and cannot be skipped by a WAF rule,
+  and punching a hole in the edge for one caller was rejected as worse than
+  avoiding it — so `DYNASTY_NEWS_API_URL` lists `dynasty-command.replit.app`
+  first (not proxied, Cloudflare never sees it) and `api.statchasers.com` last as
+  the degrade-don't-go-dark fallback.
+
+- **The feed key is scoped to `/api/news`, read-only, and is not an API
+  credential.** Dynasty Command refuses anything that did not come through
+  Cloudflare: its edge injects `X-Edge-Secret`, the origin compares it against
+  `EDGE_SECRET` timing-safe, and a request without it is dropped *before* routing
+  (hence a 403, not a 404, on paths that do not exist). The exception granted to
+  this app is `X-SC-Ingest-Key` vs `SC_INGEST_KEY` — timing-safe, `GET`/`HEAD`
+  only, `/api/news` prefix-exact, inert when unset. It is scoped that tightly
+  *because* the key lives here, outside the system it opens, so a leak on this
+  side exposes public NFL headlines and nothing more. Do not widen it, do not
+  assume it reaches another path, and never ask for `EDGE_SECRET`. Sending the
+  header is all this app does: see `FEED_KEY_HEADER` in `src/routes/news.ts`.
+
+- **Do not diagnose an ingest failure from Dynasty Command's request log.** Its
+  origin lock answers and drops a refused request 109 lines before its request
+  logger runs, so a 403 from that gate leaves no log line. During this incident
+  that log showed a tidy 10-minute cadence of `GET /api/news/nfl 200` — the
+  Dynasty site's own ticker arriving via browsers — which read as this archiver
+  working. `/api/status` here is the authoritative signal; Dynasty's startup
+  posture line (`news archiver origin exception ... ON | INERT`) is the
+  authoritative signal for whether the key reached that side.
   See `docs/ingest-cloudflare.md`.
+
+- **The team hub reuses the news pipeline rather than duplicating it.**
+  `listNewsForTeam()` in `lib/news-query.ts` is the same table, the same
+  ordering and the same row→item mapping as `listNews()`; the only thing it adds
+  is the filter. The filter has to run in memory because `team` is not a column
+  — it is derived per row from the player behind the headshot — so the read is
+  bounded to the newest `TEAM_SCAN_LIMIT` rows rather than the whole table.
+  Rows with no headshot now fall back to matching the player's NAME against the
+  same Sleeper index, because the archive genuinely contains imageless rows that
+  would otherwise belong to no team at all. Names that appear on more than one
+  roster are dropped from that index rather than resolved first-wins: an
+  ambiguous name costs one unattributed story, a wrong guess costs a story on
+  the wrong team's page.
+
+- **One Sleeper download feeds both tools.** The player dictionary is ~14MB and
+  `lib/teams.ts` was already pulling it to colour news cards. The team pages'
+  depth chart, injuries and headshots are a second pass over that same payload
+  (`lib/team/roster.ts`), not a second fetch. Its refresh dropped from 24h to
+  12h when injuries moved onto it — a designation a day old is exactly the
+  stale-shown-as-current problem these pages must not have — and Injury Watch
+  stamps the snapshot time so it never claims to be fresher than it is.
+
+- **Every team-page section is allowed to be absent.** Four upstreams
+  (Sleeper x2, ESPN site + core) each settle independently, a failure leaves its
+  field null, and the renderer drops the section AND its entry in the section
+  navigation. There is no "N/A" anywhere on the page and `tests/team.test.mjs`
+  asserts there never is. The corollary: **the record is withheld until the
+  regular season is under way**, because ESPN's team document reports the
+  PRESEASON record in August and printing it under a heading that says 2026
+  would be a plain falsehood. The Team Snapshot reads the last completed season
+  in that window and says so on the card.
+
+- **Team data is stale-while-revalidate, not fetched per request.**
+  `lib/team/cache.ts`: a cold key is awaited under a timeout, a warm key returns
+  instantly, a stale key returns instantly and refreshes behind the response,
+  and a failure keeps the last good value and backs off. Only the first visitor
+  for a team ever waits — a warm team page renders in single-digit milliseconds
+  — and one unreachable upstream cannot turn into a request-rate amplifier
+  against it.
+
+- **The team is an accent, never a repaint.** Three custom properties
+  (`--team-primary`, `--team-secondary`, `--team-logo`) are set on the root
+  element and nothing else in `team.css` knows which team it is drawing. They
+  reach a hairline above the hero, a blurred aura behind the crest, a 6%
+  watermark and a heavily-whitened wash behind player photos. The tint
+  percentages are set by the worst case rather than the average: navy at 22%
+  is a tasteful wash, Kansas City red at 22% is pink.
+
+- **The team hub's interactive parts are HTML, not JavaScript.** The team
+  switcher, "view more news" and the full-season schedule are all `<details>`,
+  and the section nav is anchor links. They work with the bundle blocked, the
+  switcher is 32 crawlable internal links rather than a scripted menu, and
+  `src/client/team.ts` (2.5KB) only adds highlighting, dismissal, relative
+  timestamps and iframe height.
 
 - **The archive lives in Postgres, not a file.** `deploymentTarget = "gce"`
   rebuilds the filesystem on every publish, so a SQLite file in `data/` was
@@ -258,6 +469,23 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
+- **Never write a bare-element reset inside `.sct` without `:where()`.**
+  `.sct p { margin: 0 }` is specificity (0,1,1) — heavier than the single class
+  `.sct-subtitle` that is supposed to set that paragraph's margin — so a reset
+  meant as a floor beats every component rule in the file and collapses the
+  whole page's spacing. It did exactly that once. The reset in `team.css` is
+  written `:where(.sct) :where(p, ul, ...)` so it weighs zero.
+- **ESPN 403s a User-Agent containing a URL scheme.** The conventional
+  `(+https://example.com)` form — which the news ingest uses and which the team
+  providers were first written with — is rejected outright on every request.
+  `TEAM_USER_AGENT` in `lib/team/cache.ts` is `(+statchasers.com)` for that
+  reason. Do not "fix" it back to a full URL without re-testing.
+- **Conditional-request tests must not use `fetch()`.** undici attaches its own
+  cache directives, which is enough to stop a 304 ever happening; both
+  `seo.test.mjs` and `team.test.mjs` carry a raw `http.request` helper for this.
+- The team page's sticky section nav parks at `--sct-nav-offset` (default 0). A
+  WordPress theme with its own sticky header sets `.sct { --sct-nav-offset: 72px }`
+  so the two do not overlap; this server cannot know what is above it.
 - `pnpm run build` builds **two** bundles: the Node server and the browser
   client. `public/dist/` is generated — never edit it, and never re-add a
   hand-written `public/app.js`.

@@ -13,6 +13,7 @@ import {
 import { appSchema } from "../lib/schema";
 import { pageMeta } from "../lib/seo";
 import { logger } from "../lib/logger";
+import { injectDevBar } from "../lib/devbar";
 
 const router: IRouter = Router();
 
@@ -317,9 +318,7 @@ router.get("/embed.txt", (req, res) => {
 router.get("/embed", (req, res) => {
   const origin = publicOrigin(req);
   const snippet = embedSnippet(origin);
-  res
-    .set("X-Robots-Tag", "noindex")
-    .type("html").send(`<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -397,7 +396,14 @@ router.get("/embed", (req, res) => {
 
   <p class="muted">Raw iframe snippet also available at <a href="/embed.txt">/embed.txt</a>.</p>
 </body>
-</html>`);
+</html>`;
+
+  res
+    .set("X-Robots-Tag", "noindex")
+    .type("html")
+    // Development only. Without it this page is a dead end: the switcher links
+    // here, and a preview pane has no address bar to get back with.
+    .send(injectDevBar(html, { path: req.path, embed: false }));
 });
 
 export default router;

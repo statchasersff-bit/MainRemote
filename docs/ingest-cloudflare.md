@@ -3,14 +3,13 @@
 **Runbook for:** production shows stale news, and `GET /api/status` reports a
 `403: Forbidden` whose body starts `<!DOCTYPE html>...<title>Just a moment...</title>`.
 
-**Current status (2026-08-20): not resolved.** Production has been failing this
-way since roughly 20:31 on 2026-08-19 — `consecutiveFailures: 53`, no successful
-ingest since the last restart, archive ~17 hours behind upstream.
+**Resolved 2026-08-20 14:00 UTC.** The ingest now calls Dynasty Command's Replit
+address directly, authenticated with a scoped key, so Cloudflare is not in the
+path. Bot Fight Mode is still on at full strength and nothing in Cloudflare was
+changed. See [The fix](#the-fix).
 
-The intended fix — call the feed's Replit origin and bypass Cloudflare — is
-**blocked on a change to the API**, not on anything in this repo. The origin
-hostname is confirmed (`dynasty-command.replit.app`, alive: `/api/health` → 200),
-but the API refuses `/api/news/*` on it. See [The fix](#the-fix).
+For context on how bad it got: 53 consecutive failures, no successful ingest for
+roughly 17 hours, archive frozen at 2026-08-19 19:31 while upstream kept moving.
 
 **Just want the steps?** → [`INGEST-FIX-CHECKLIST.md`](./INGEST-FIX-CHECKLIST.md)
 
@@ -57,123 +56,148 @@ Every Replit deployment stays reachable on its own `*.replit.app` hostname even
 when a custom domain is attached. That hostname is **not proxied through
 Cloudflare**, so Bot Fight Mode never sees the request.
 
-The ingest should therefore call the API's Replit origin rather than its public
-domain. The origin is **`dynasty-command.replit.app`** — it is what
-`DYNASTY_NEWS_API_URL` pointed at before `ba4cbad` (2026-08-11) switched it to
-the public domain, and it is still up.
+The ingest therefore calls the API's Replit address — **`dynasty-command.replit.app`**,
+the URL `DYNASTY_NEWS_API_URL` pointed at before `ba4cbad` (2026-08-11) — and
+authenticates itself with a scoped key.
 
-### Step 1 — the API has to allow it (this is the blocker)
+### What the gate on that address is
 
-The origin hostname is reachable but the API gates the feed to its canonical
-host. Measured 2026-08-20:
+Dynasty Command refuses anything that did not arrive through Cloudflare.
+**It is not a hostname check.** Cloudflare injects `X-Edge-Secret` on every
+request it forwards to the origin; the app compares that header against
+`EDGE_SECRET` with a timing-safe compare, and refuses when it does not match.
+Calling the `.replit.app` address directly therefore returned
+`403 {"error":"forbidden"}` — a missing header, not a wrong host.
 
-| Request | Result |
+Implementation: `server/originLock.ts`, middleware `requireEdgeSecret`, mounted
+globally at `server/index.ts:306`. `/api/health` is exempt on purpose, because
+Replit's platform liveness probes hit the `.replit.app` host directly.
+
+> **Correction.** Earlier revisions of this file described a
+> `req.hostname !== "api.statchasers.com"` guard and gave a code sketch for it.
+> No such guard exists. The inference came from watching a non-existent path
+> (`/api/v1/does-not-exist`) answer *forbidden* rather than *not found*: that
+> correctly showed the gate runs before routing, but the mechanism behind it was
+> guessed and the guess was wrong. Setting a `Host` header would not have helped,
+> and the patch that sketch implied — opening all of `/api` to a key holder —
+> would have exposed portfolio data, admin endpoints and valuation models. What
+> shipped is deliberately much narrower.
+
+### The exception that shipped
+
+A second exception in the same middleware, checked *before* the edge-secret check
+so a valid key short-circuits it:
+
+| | |
 |---|---|
-| `GET dynasty-command.replit.app/api/health` | `200 {"status":"ok"}` |
-| `GET dynasty-command.replit.app/api/news/nfl` | `403 {"error":"forbidden"}` |
-| `GET statchasers.com/api/news/nfl` | `403` |
-| `GET api.statchasers.com/api/news/nfl` | `200` (from an unchallenged IP) |
+| Header | `X-SC-Ingest-Key` |
+| Compared against | `SC_INGEST_KEY` (Dynasty Command deployment secret) |
+| Comparison | timing-safe, same as the edge check |
+| Methods | `GET` and `HEAD` only |
+| Paths | `/api/news` and `/api/news/…` only, prefix-exact |
+| When unset | the exception does not exist; everything 403s as before |
 
-That 403 is **the API's own**, not Cloudflare's — a JSON body, no challenge page,
-and it does not depend on `Origin` or `Referer`. Until it is lifted, pointing
-`DYNASTY_NEWS_API_URL` at the origin swaps one 403 for another.
+**This is a feed key, not an API credential**, and the scoping is why it could be
+granted at all: the key lives in the news deployment, outside the system it opens,
+so a leak from this side exposes aggregated public NFL headlines and nothing else.
 
-In the Dynasty Command API, let `/api/news/*` through when the request arrives on
-`dynasty-command.replit.app`. Two ways, either is fine:
+- Any path outside `/api/news` 403s even with a valid key. `/api/newsletter` is
+  **not** covered by the `/api/news` prefix.
+- Writes are refused — `POST`/`PUT`/`PATCH`/`DELETE` 403 with a valid key.
+- Need something outside `/api/news`? **Name the endpoint and ask.** Do not assume
+  the key reaches it, and do not work around a refusal.
+- **Do not ask for `EDGE_SECRET`.** It would work, and it would hand this
+  deployment the master key to the entire protected API surface.
+- **Do not add a Cloudflare bot-management bypass** to come through the front door
+  instead. Routing around Cloudflare for one authenticated caller is strictly
+  safer than punching a hole in it for everyone.
 
-- **Host exemption** — skip the canonical-host gate for `/api/news/*`. Simplest.
-- **Key exemption** — allow any host when the request carries `X-SC-Ingest-Key`
-  matching a shared secret. Tighter, and it keeps the origin path closed to
-  everyone else. This app already sends that header whenever
-  `DYNASTY_NEWS_API_KEY` is set, so nothing changes here.
+### Configuration, both sides
 
-### Step 2 — point the ingest at it
-
-`DYNASTY_NEWS_API_URL` takes a comma-separated list, tried in order, so the
-public domain stays as a safety net and a premature switch costs one failed
-request rather than an outage:
+**Dynasty Command deployment**
 
 ```
+SC_INGEST_KEY = <the shared key>
+```
+
+**News archiver deployment**
+
+```
+DYNASTY_NEWS_API_KEY = <the same shared key>
 DYNASTY_NEWS_API_URL = https://dynasty-command.replit.app/api/news/nfl,https://api.statchasers.com/api/news/nfl
 ```
 
-`.replit`'s `[userenv.shared]` already carries this value, but that configures the
-**workspace**. Set the same value on the **deployment** and publish — it is read
-once at process start.
+`api.statchasers.com` stays **last** on purpose: the list is tried in order, so if
+the direct route ever breaks, behaviour degrades to the old path rather than going
+dark. `.replit`'s `[userenv.shared]` carries the same value but configures the
+workspace only.
 
-`ingest.lastSource` in `/api/status` then names which route actually served the
-feed, so a silent fall-through to Cloudflare is visible rather than looking
-healthy.
+> **Replit gotcha — this cost most of an hour.** A newly added secret is **not**
+> picked up by a publish; the process keeps the environment it booted with. It
+> needs a full **Stop → Start**. Also reload the secrets pane and confirm the value
+> is still listed before concluding anything: one silently failed to save and
+> vanished from the pane.
 
-**What this costs and does not cost:**
+### The other way this can fail: a redirect
 
-- Bot Fight Mode stays fully on for `api.statchasers.com` and everything public.
-  Only this one server-to-server call takes the direct path.
-- That call gives up Cloudflare's caching and protection. It is one request per
-  ten minutes from one caller to an endpoint that is public anyway, so the
-  exposure is negligible.
-- Keep `DYNASTY_NEWS_API_KEY` set. The ingest sends it as `X-SC-Ingest-Key` on
-  every call, so the API can require it on the origin hostname if you ever want
-  the direct path authenticated rather than merely obscure.
-
-### Two ways a canonical-host rule defeats this
-
-A "canonical host" rule on the API can express itself as either a **403** or a
-**redirect**, and both land you back at a stale archive:
-
-- **403 (what is actually happening today).** The API answers
-  `{"error":"forbidden"}` on the origin hostname. Distinguishable from the
-  Cloudflare block by the body: JSON, not `<!DOCTYPE html>...Just a moment...`.
-- **Redirect.** If the API instead 301s `*.replit.app` → `api.statchasers.com`,
-  Node's `fetch` follows it by default, the request lands back on Cloudflare, and
-  it fails looking **exactly** like the original bug — same challenge page, same
-  error string in `/api/status`.
-
-Check before you rely on it:
+If the API ever 301s its `*.replit.app` hostname to the canonical domain, Node's
+`fetch` follows it by default, the request lands back on Cloudflare, and it fails
+looking **exactly** like the original bug — same challenge page, same error string.
+Check with:
 
 ```bash
-API_APP=dynasty-command
-
 curl -s -o /dev/null -w 'status=%{http_code} redirects=%{num_redirects} final=%{url_effective}\n' \
-  -L "https://$API_APP.replit.app/api/news/nfl"
+  -L https://dynasty-command.replit.app/api/news/nfl
 ```
 
-You want `status=200`, `redirects=0`, and a `final` URL still on `*.replit.app`.
-(Use the variable — a literal `<api-app>` in a shell is read as input
-redirection.) As of 2026-08-20 this reports `status=403 redirects=0`, which is
-the host gate in [Step 1](#step-1--the-api-has-to-allow-it-this-is-the-blocker),
-not a redirect.
+Want `redirects=0` and a `final` URL still on `*.replit.app`.
 
-### Verifying after publish
+### Verifying
 
 ```bash
 curl -s https://newsfeed.replit.app/api/status
-curl -s -X POST https://newsfeed.replit.app/api/ingest
 ```
-
-Looking for:
 
 ```jsonc
 {
-  "feedConfigured": true,
   "feedHosts": ["dynasty-command.replit.app", "api.statchasers.com"],
-  "ingest": { "lastSource": "dynasty-command.replit.app" },  // the origin won, not the edge
   "feedKeyConfigured": true,
   "ingest": {
+    "lastSource": "dynasty-command.replit.app",  // the direct route won, not the edge
     "lastError": null,
-    "lastSuccess": "…",
     "consecutiveFailures": 0
   }
 }
 ```
 
+**`/api/status` is the authoritative check.** It was right at every stage of this
+incident and should have been trusted sooner.
+
+**Dynasty Command's request log cannot help you.** The origin lock is mounted at
+`server/index.ts:306` and the request logger at `server/index.ts:415`, so a refused
+request is answered and dropped 109 lines before the logger ever sees it — a 403
+from that gate leaves **no log line at all**. During this incident that log showed
+a clean run of `GET /api/news/nfl 200` every ten minutes, which looked exactly like
+this archiver succeeding. It was the Dynasty site's own news ticker, coming through
+Cloudflare from browsers. Absence of errors there is not evidence of anything.
+
+What does report it is Dynasty Command's startup posture line:
+
+```
+news archiver origin exception (GET /api/news only) ... ON | INERT
+```
+
+`INERT` means `SC_INGEST_KEY` is not in that deployment's environment; no amount of
+debugging on this side will help until it reads `ON`.
+
 | Symptom | Meaning |
 |---|---|
-| `feedHosts` still only `api.statchasers.com` | The deployment did not get the new value. Set it on the **deployment**, not the workspace, and republish — the value is read once at process start. |
-| `lastSource` is `api.statchasers.com` while the origin is listed first | The origin route is still refused and the list fell through to the edge. Working for now, one Cloudflare scoring change away from another outage — finish Step 1. |
-| `lastError` mentions `{"error":"forbidden"}` | The API's host gate, not Cloudflare. Step 1 is not done. |
-| `lastError` still shows `Just a moment...` | The origin hostname is redirecting to the canonical domain. See the gotcha above. |
-| `lastError` shows `404` or `ENOTFOUND` | Wrong hostname or path. Confirm both with the `curl` above. |
+| `lastError` contains `Just a moment...` | Went through Cloudflare. The direct URL is not being used, or the list fell back to it. |
+| `lastError` contains `{"error":"forbidden"}` | Reached the app; the gate refused. Key missing or mismatched, or a path outside `/api/news`. |
+| `lastError` contains `This app isn't live yet` | Replit's placeholder — the Dynasty deployment is down or restarting. Not a code or key problem. |
+| `lastSource` is `api.statchasers.com` | Direct route refused, fallback carried it. News flows, but the exception is broken. |
+| `feedKeyConfigured: false` | `DYNASTY_NEWS_API_KEY` never reached the news deployment. New secrets need Stop → Start. |
+| `feedHosts` still only `api.statchasers.com` | Value set on the workspace, not the deployment — or not restarted. |
 | `lastError: null` but the page looks stale | Not this problem. Staleness is bounded to 60s by `FRESHNESS_MAX_AGE_MS`; compare `archive.newestContentAt` against the feed. |
 
 ---
@@ -196,10 +220,14 @@ archive, so it is refused without one. `/api/status` reports
 Structurally the soundest option, and the only one that survives any future
 change to Cloudflare's scoring or Replit's hostnames.
 
-### Super Bot Fight Mode (Pro)
+### Super Bot Fight Mode (Pro) — rejected, kept for the record
+
+**Do not pursue this.** Punching a bot-management hole in the edge for this caller
+is strictly worse than routing one authenticated caller around it, and the API
+owner has ruled it out. Documented only so nobody re-derives it as a fresh idea.
 
 On Pro, Bot Fight Mode becomes skippable and everything can keep flowing through
-Cloudflare with protection intact. The rule:
+Cloudflare with protection intact. The rule would be:
 
 **Security → WAF → Custom rules → Create rule**, ordered **first**:
 
@@ -231,16 +259,11 @@ a single successful ingest backfills everything inside that window. Stories olde
 than the window are gone for good — upstream does not serve them and this archive
 is the only store of record.
 
-This outage ran for hours before anyone noticed, so the thing worth adding is not
-another fallback but a signal:
-
-- **A scheduled ingest.** Point a Replit Scheduled Deployment at
-  `scripts/ingest.mjs` (every 10 minutes). It POSTs `/api/ingest`, which both
-  refreshes the data and wakes an idle instance.
-- **A check on `/api/status`.** `ingest.consecutiveFailures > 0`, or a large
-  `ingest.secondsSinceLastSuccess`, is the earliest possible signal — it fires
-  while the page still looks fine, because the archive only visibly falls behind
-  some hours later.
+That window is why the monitoring matters more than another fallback. See
+[`INGEST-FIX-CHECKLIST.md` → Monitoring](./INGEST-FIX-CHECKLIST.md#monitoring)
+for `GET /api/ingest/health` (503 when the ingest has stopped, so an uptime
+checker can page), its thresholds, and why an empty 200 from the feed is now
+treated as a failure rather than a successful no-op.
 
 ## Related
 

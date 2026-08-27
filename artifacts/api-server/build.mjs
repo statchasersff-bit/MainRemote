@@ -151,6 +151,15 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-news.js"),
   });
 
+  // The team hub's enhancement bundle. Separate from the news bundle because
+  // the two mount independently: a WordPress page with the news shortcode on it
+  // should not download the team hub's code, and vice versa.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/team.ts")],
+    outfile: path.join(outDir, "statchasers-team.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -166,9 +175,13 @@ async function buildClient() {
   // plugin appends so a deploy busts caches without renaming anything.
   const js = await readFile(path.join(outDir, "statchasers-news.js"));
   const css = await readFile(path.resolve(artifactDir, "public", "styles.css"));
+  const teamJs = await readFile(path.join(outDir, "statchasers-team.js"));
+  const teamCss = await readFile(path.resolve(artifactDir, "public", "team.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
+    .update(teamJs)
+    .update(teamCss)
     .digest("hex")
     .slice(0, 12);
 

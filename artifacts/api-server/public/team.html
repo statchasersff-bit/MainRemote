@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+    Title, description, canonical and the OG/Twitter tags are rendered here by
+    the server (src/lib/team-seo.ts). Nothing below is set or amended by
+    JavaScript: a crawler that never runs the bundle still receives the final
+    values, and the canonical is a plain tag rather than something applied at
+    runtime.
+  -->
+  <!--SSR-HEAD-->
+  <!--
+    This URL is the raw tool. The public team page is
+    https://statchasers.com/nfl/teams/<slug>/, and WordPress owns the canonical,
+    title, description and schema there. `noindex` keeps this address out of the
+    index on its own; `indexifembedded` lets Google still use the content when
+    it is embedded in a page that permits indexing. The canonical above is
+    self-referencing — pointing a noindex page's canonical at another URL would
+    be a contradictory signal. See also the X-Robots-Tag in src/routes/team.ts.
+  -->
+  <meta name="robots" content="noindex, indexifembedded" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!--
+    Preconnect to the two image CDNs the page pulls from before the parser
+    reaches the markup that needs them: the hero crest is the LCP candidate and
+    every headshot comes from the same host as the news tool's.
+  -->
+  <link rel="preconnect" href="https://sleepercdn.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/team.css" />
+</head>
+<body class="sct-page<!--SSR-BODY-CLASS-->">
+  <!--SSR-->
+  <script src="/dist/statchasers-team.js" defer></script>
+</body>
+</html>
