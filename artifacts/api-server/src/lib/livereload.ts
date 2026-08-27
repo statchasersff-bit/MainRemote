@@ -16,6 +16,25 @@ export interface LiveReload {
   injectIntoHtml(html: string): string;
 }
 
+const NOOP: LiveReload = { enabled: false, injectIntoHtml: (html) => html };
+
+let current: LiveReload = NOOP;
+
+/**
+ * The live-reload instance for this process.
+ *
+ * app.ts is the only caller of setupLiveReload() — it is the one that has the
+ * Express instance and the directory to watch — but the team pages are rendered
+ * by a router mounted from there, and importing app.ts back would be a cycle.
+ * So the instance is published here instead of threaded through every route.
+ *
+ * Returns the no-op outside development, which is what makes it safe to call
+ * unconditionally from a request path.
+ */
+export function liveReload(): LiveReload {
+  return current;
+}
+
 /**
  * Wires up a development-only live-reload: an SSE endpoint the browser
  * subscribes to, plus a watcher on the served frontend directory that pushes a
@@ -23,7 +42,7 @@ export interface LiveReload {
  */
 export function setupLiveReload(app: Express, watchDir: string): LiveReload {
   if (process.env.NODE_ENV !== "development") {
-    return { enabled: false, injectIntoHtml: (html) => html };
+    return NOOP;
   }
 
   const clients = new Set<Response>();
@@ -50,11 +69,13 @@ export function setupLiveReload(app: Express, watchDir: string): LiveReload {
 
   logger.info(`Live reload watching ${watchDir}`);
 
-  return {
+  current = {
     enabled: true,
     injectIntoHtml: (html) =>
       html.includes("</body>")
         ? html.replace("</body>", `${CLIENT_SNIPPET}</body>`)
         : html + CLIENT_SNIPPET,
   };
+
+  return current;
 }

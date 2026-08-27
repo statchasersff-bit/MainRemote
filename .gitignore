@@ -45,9 +45,11 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Runtime cache of the Sleeper player -> team map (see src/lib/teams.ts).
-# Regenerated on demand; not source.
+# Runtime caches built from the Sleeper player dictionary (see
+# src/lib/teams.ts and src/lib/team/roster.ts). Regenerated on demand; not
+# source, and the roster index is ~600KB of churn per refresh.
 artifacts/api-server/data/player-teams.json
+artifacts/api-server/data/team-roster.json
 
 # Replit
 .cache/

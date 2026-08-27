@@ -14,3 +14,10 @@ uri = "file://attached_assets/statchasers_logo_transparent_dark_1787155995954.pn
 type = "image"
 title = "StatChasers logo — white"
 description = "Saved StatChasers logo asset."
+
+[[outputs]]
+id = "2Fv7wdgQRsCRIreQwuv9n"
+uri = "file://attached_assets/image_1787852063099.png"
+type = "image"
+title = "StatChasers reference screenshot"
+description = "Saved reference image supplied by the user."

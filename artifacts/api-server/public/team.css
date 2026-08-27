@@ -1,0 +1,2376 @@
+/* ==========================================================================
+   StatChasers — NFL Team Hub
+   ==========================================================================
+
+   Deliberately a separate stylesheet from styles.css. The news tool's CSS is
+   loaded into WordPress pages that may not contain a team hub and vice versa,
+   and the two mount independently — sharing one file would make every page pay
+   for the other's markup. The design tokens below are the shared language; the
+   selectors are not shared.
+
+   The team's own colours enter through exactly three custom properties, set on
+   the .sct root by the renderer: --team-primary, --team-secondary, --team-logo.
+   Nothing else in this file knows which team it is drawing. That is what keeps
+   a Patriots page reading as StatChasers-with-Patriots-accents rather than as a
+   Patriots site.
+   ========================================================================== */
+
+:root {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-hairline: rgba(15, 23, 42, 0.08);
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  /* Elevation — restrained: a wide, soft, low-opacity drop, never a glow. */
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-shadow-lift: 0 14px 38px rgba(15, 23, 42, 0.1);
+
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1280px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Height of the sticky section nav, so anchors don't land underneath it. */
+  --sct-nav-h: 56px;
+
+  /* Where the sticky nav parks. Zero here; a host page with its own sticky
+     header sets this to that header's height so the two do not overlap:
+
+       .sct { --sct-nav-offset: 72px; }
+
+     Exposed as a property rather than hard-coded because this server cannot
+     know what the WordPress theme above it is doing. */
+  --sct-nav-offset: 0px;
+}
+
+/* --------------------------------------------------------- document shell */
+
+body.sct-page {
+  margin: 0;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* Stops iOS Safari inflating text in the tall, narrow columns this page is
+     full of — a metric card and a depth-chart column both qualify, and the
+     result is two type scales on one screen. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Embedded: no page background of its own, no outer breathing room. The
+   WordPress page owns both, and a second background behind the fragment reads
+   as a box drawn around it. */
+body.sct-page.is-embed {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------ root layout */
+
+.sct {
+  box-sizing: border-box;
+  max-width: var(--sc-shell);
+  /* The page gutter as a property rather than a literal, because the sticky
+     section nav has to cancel it exactly to reach the shell's edge. One name,
+     one number, and the embedded mount sets it to zero. */
+  --sct-gutter: 24px;
+  /* Left/right padding only. No top margin: the standalone page is the tool
+     and the embedded one sits directly under the host page's own heading. */
+  margin: 0 auto;
+  padding: 0 var(--sct-gutter) 72px;
+  /* A tap on a phone otherwise flashes the platform's highlight over whatever
+     box the link stretches across — on a player card that is the entire card,
+     which reads as a rendering fault rather than as feedback. */
+  -webkit-tap-highlight-color: rgba(11, 22, 52, 0.08);
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.55;
+  text-align: left;
+  /* Anchor targets clear the sticky nav rather than hiding behind it. */
+  scroll-padding-top: calc(var(--sct-nav-h) + var(--sct-nav-offset) + 16px);
+}
+
+/* Re-assert the basics inside the root.
+   This markup is printed straight into a WordPress page, where the theme styles
+   bare elements hard — p/ul/li margins, list bullets, heading sizes — and none
+   of the reset in this file's own document applies. Everything below is a
+   floor that a component then overrides.
+
+   Wrapped in :where() so the whole selector weighs ZERO. A plain ".sct p" is
+   (0,1,1) — heavier than the single class ".sct-subtitle" that is supposed to
+   set that paragraph's margin — so the reset would beat every component rule in
+   the file and collapse the entire page's spacing. It did exactly that once. */
+:where(.sct) :where(p, ul, ol, li, h1, h2, h3, figure) {
+  margin: 0;
+  padding: 0;
+}
+
+:where(.sct) :where(ul, ol) {
+  list-style: none;
+}
+
+:where(.sct) :where(img) {
+  max-width: 100%;
+}
+
+.sct *,
+.sct *::before,
+.sct *::after {
+  box-sizing: border-box;
+}
+
+.sct.is-embed {
+  /* Flush inside whatever container WordPress provides — no outer gutter, no
+     leading gap. The block above the shortcode owns the space above it. */
+  --sct-gutter: 0px;
+  padding-bottom: 8px;
+  max-width: 100%;
+}
+
+.sct.is-embed .sct-hero {
+  margin-top: 0;
+}
+
+.sct-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sct-arrow {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--sc-gold);
+  transition: transform 160ms ease;
+}
+
+/* ------------------------------------------------------------------- hero */
+
+/* One dark surface on the page, and only one: the hero. It is what makes the
+   top half read as the most important part without anything below it having to
+   compete, and it is StatChasers navy rather than the team's colour — the team
+   appears on it as an aura and a watermark.
+
+   Note the absence of `overflow: hidden`; the clip lives one level in, on
+   .sct-hero-decor, so that the team switcher's panel is not clipped with it. */
+.sct-hero {
+  position: relative;
+  isolation: isolate;
+  margin: 24px 0 0;
+  padding: 28px 32px;
+  border-radius: var(--sc-radius);
+  background:
+    radial-gradient(
+      120% 140% at 12% 0%,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0) 55%
+    ),
+    linear-gradient(160deg, var(--sc-navy) 0%, var(--sc-navy-deep) 100%);
+  color: #fff;
+}
+
+/* Everything decorative on the hero lives in this layer, and this layer is what
+   clips — not the hero.
+
+   The hero used to carry the `overflow: hidden` that keeps the aura and the
+   watermark inside its rounded corners. That also clipped the team switcher's
+   panel: an absolutely positioned dropdown inside an overflow-hidden ancestor
+   is cut at that ancestor's edge, and this panel opens *below* its summary, so
+   most of it was being thrown away — on a phone, nearly all of it. Moving the
+   clip one level in keeps the decorations contained and lets the panel out. */
+.sct-hero-decor {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* The single hairline of team colour on the whole page, running the width of
+   the hero and fading into gold. */
+.sct-hero-decor::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--team-primary, var(--sc-gold)) 0%,
+    var(--team-secondary, var(--sc-gold-soft)) 45%,
+    var(--sc-gold) 100%
+  );
+  opacity: 0.9;
+}
+
+/* Team-coloured aura behind the crest. Low opacity and heavily blurred: it
+   should be felt rather than seen, and it must never fight the white text. */
+.sct-hero-aura {
+  position: absolute;
+  top: -60px;
+  left: -40px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--team-primary, #1e3a6b) 0%,
+    rgba(0, 0, 0, 0) 68%
+  );
+  opacity: 0.42;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+/* Oversized crest on the far right, at the opacity of a watermark. */
+.sct-hero-watermark {
+  position: absolute;
+  top: 50%;
+  right: -48px;
+  width: 300px;
+  height: 300px;
+  transform: translateY(-50%);
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.sct-hero-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+}
+
+/* A light disc under the crest. Team marks are drawn for light backgrounds —
+   several are black or near-black — so putting them straight onto navy would
+   make a handful of the 32 pages unreadable. The plate makes every logo read
+   the same way, and doubles as the object the aura sits behind. */
+.sct-hero-crest {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff 0%, #eef2f8 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.sct-hero-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.sct-eyebrow {
+  margin: 0 0 6px;
+  color: var(--sc-gold-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sct-title {
+  margin: 0;
+  /* Strong without becoming a billboard. */
+  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.5rem);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+
+.sct-subtitle {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.sct-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sct-fact-label {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-fact-value {
+  color: #fff;
+  font-size: 0.94rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-hero-updated {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.sct-hero-actions {
+  align-self: start;
+}
+
+/* --------------------------------------------------------- team switcher */
+
+/* <details> rather than a scripted menu — see teamSwitcher() in
+   team-render.ts. Everything below is presentation on top of behaviour the
+   browser already provides. */
+.sct-switch {
+  position: relative;
+}
+
+.sct-switch-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  /* 44px minimum touch target. */
+  min-height: 44px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.sct-switch-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sct-switch-summary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(212, 175, 55, 0.55);
+}
+
+.sct-switch-summary:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+}
+
+.sct-switch-logo {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.sct-switch-name {
+  white-space: nowrap;
+}
+
+.sct-switch-caret {
+  width: 8px;
+  height: 8px;
+  margin-left: 2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  opacity: 0.75;
+  transition: transform 160ms ease;
+}
+
+.sct-switch[open] .sct-switch-caret {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.sct-switch-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(620px, 84vw);
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  padding: 18px 20px 20px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  box-shadow: 0 22px 60px rgba(6, 13, 33, 0.28);
+}
+
+/* The open panel has to clear the sticky section nav, and it cannot do that on
+   its own: the hero is a stacking context (isolation: isolate), so whatever
+   z-index the panel carries, the hero as a whole still sits at level 0 beside a
+   nav at 30. Lifting the hero — and only while the panel is open — is what
+   actually puts the panel on top. */
+.sct-hero:has(.sct-switch[open]) {
+  z-index: 50;
+}
+
+.sct-switch-heading {
+  margin: 0 0 12px;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-switch-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 28px;
+}
+
+.sct-switch-conf-title {
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--sc-gold);
+  color: var(--sc-navy);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.sct-switch-div {
+  margin-top: 12px;
+}
+
+.sct-switch-div-title {
+  margin: 0 0 4px;
+  color: var(--sc-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-switch-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-switch-team {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-radius: var(--sc-radius-xs);
+  color: var(--sc-ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.sct-switch-team:hover {
+  background: var(--sc-surface-sink);
+  color: var(--sc-navy);
+}
+
+.sct-switch-team:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+}
+
+.sct-switch-team.is-current {
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+/* The /team index reuses the switcher's grid at full page width. */
+.sct-switch-grid.is-index {
+  margin-top: 28px;
+  gap: 32px 40px;
+}
+
+/* -------------------------------------------------------- section nav bar */
+
+.sct-nav {
+  position: sticky;
+  top: var(--sct-nav-offset, 0px);
+  z-index: 30;
+  /* Cancels the page gutter and puts it straight back as padding, so the bar's
+     frosted background and hairline reach the shell's edge while the links stay
+     aligned with the content beneath them. Without this the gutters are bare
+     and the page is visible sliding through them, either side of a bar that is
+     supposed to be opaque. */
+  margin: 0 calc(var(--sct-gutter, 0px) * -1) 8px;
+  padding: 0 var(--sct-gutter, 0px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sct-nav-list {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  /* Proximity, not mandatory: a flick that lands mid-list should tidy up to a
+     link edge, but dragging one link at a time is not what a five-item row
+     wants. */
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+}
+
+.sct-nav-list::-webkit-scrollbar {
+  display: none;
+}
+
+.sct-nav-link {
+  display: inline-flex;
+  align-items: center;
+  scroll-snap-align: start;
+  height: var(--sct-nav-h);
+  padding: 0 14px;
+  border-bottom: 2px solid transparent;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.sct-nav-link:hover {
+  color: var(--sc-navy);
+}
+
+.sct-nav-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -4px;
+}
+
+.sct-nav-link.is-active {
+  color: var(--sc-navy);
+  border-bottom-color: var(--sc-gold);
+}
+
+/* -------------------------------------------------------------- sections */
+
+.sct-section {
+  padding: 40px 0 0;
+}
+
+/* The `scroll-padding-top` on .sct does nothing on its own: scroll padding
+   applies to the scroll *container*, and .sct is not one — the document is.
+   This is the scoped equivalent, set on the elements the nav actually links to,
+   and unlike scroll-padding it is correct whether this page is the document or
+   a fragment printed into a WordPress page that scrolls something else. Without
+   it every nav link lands its section underneath the sticky bar. */
+.sct-section,
+.sct-hero {
+  scroll-margin-top: calc(var(--sct-nav-h) + var(--sct-nav-offset) + 16px);
+}
+
+.sct-block + .sct-block {
+  margin-top: 40px;
+}
+
+.sct-h2 {
+  position: relative;
+  margin: 0 0 6px;
+  padding-bottom: 10px;
+  color: var(--sc-navy);
+  font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem);
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* The gold rule. Short and fixed-width — it marks the heading, it does not
+   underline it. */
+.sct-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.sct-note {
+  margin: 12px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+
+.sct-block-footer {
+  margin: 20px 0 0;
+}
+
+/* ------------------------------------------------------------- buttons */
+
+.sct-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 0.87rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.sct-button:hover {
+  background: #101f45;
+  transform: translateY(-2px);
+}
+
+.sct-button:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+}
+
+.sct-button.is-ghost {
+  background: transparent;
+  color: var(--sc-navy);
+  border-color: var(--sc-border);
+}
+
+.sct-button.is-ghost:hover {
+  background: var(--sc-surface-soft);
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.sct-textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--sc-navy);
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(11, 22, 52, 0.25);
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.sct-textlink:hover {
+  color: var(--sc-gold-deep);
+  border-bottom-color: var(--sc-gold);
+}
+
+.sct-textlink:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+}
+
+/* -------------------------------------------------------- team snapshot */
+
+.sct-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-metric {
+  padding: 18px 20px 16px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-metric-label {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-metric-value {
+  margin: 8px 0 0;
+  color: var(--sc-navy);
+  font-size: clamp(1.7rem, 1.3rem + 1.2vw, 2.15rem);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-metric-rank {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  /* Neutral by default; the tiers below tint it. Muted on purpose — the rank is
+     a secondary value under the number, not a traffic light. */
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+}
+
+.sct-metric-rank-value {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-metric-rank[data-tier="good"] {
+  background: rgba(16, 122, 87, 0.1);
+  color: #0f6b4f;
+}
+
+.sct-metric-rank[data-tier="poor"] {
+  background: rgba(153, 46, 46, 0.09);
+  color: #94363a;
+}
+
+/* --------------------------------------------------- fantasy cornerstones */
+
+.sct-players {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-player {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.sct-player:hover {
+  /* 2px. Anything more and six cards in a row start bouncing. */
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+/* Stretched hit area, so the whole card is clickable while the accessible name
+   stays on one labelled link rather than the card's entire text. */
+.sct-player-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.sct-player-hit:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -3px;
+  border-radius: var(--sc-radius);
+}
+
+/* The photo well is the one place a player card carries team colour, and it is
+   mixed heavily toward white so six of them in a row do not turn the section
+   into a colour swatch. The percentages are set by the worst case rather than
+   the average: navy at 22% is a tasteful wash, but Kansas City red at 22% is
+   pink, and the same number has to work for all 32.
+
+   The height cap matters at tablet widths, where three cards share the row and
+   a strict square would make each well over 300px tall — a page of enormous
+   faces. Capped, a wide card simply crops wider; the headshots are top-anchored
+   so the head stays in frame either way. */
+.sct-player-well {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-height: 200px;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 15%, #fff) 0%,
+      color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 70%
+    );
+}
+
+.sct-player-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.sct-player-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px 14px 14px;
+}
+
+.sct-slot {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: rgba(212, 175, 55, 0.16);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  color: var(--sc-gold-deep);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.sct-slot.is-small {
+  min-width: 34px;
+  justify-content: center;
+  font-size: 0.62rem;
+}
+
+.sct-player-name {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 0.98rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.sct-player-cta {
+  margin-top: 2px;
+  color: var(--sc-muted-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.sct-player:hover .sct-player-cta {
+  color: var(--sc-navy);
+}
+
+.sct-player:hover .sct-arrow {
+  transform: translateX(3px);
+}
+
+.sct-player-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(11, 22, 52, 0.2);
+}
+
+.sct-player-link:hover {
+  border-bottom-color: var(--sc-gold);
+}
+
+.sct-injury-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: rgba(180, 83, 9, 0.1);
+  color: #9a5b12;
+}
+
+.sct-injury-badge[data-severity="out"] {
+  background: rgba(153, 46, 46, 0.1);
+  color: #94363a;
+}
+
+/* --------------------------------------------------------- news + sidebar */
+
+.sct-news-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+.sct-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-news {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.sct-news:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.42);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+/* The newest story reads as the lead: a taller photo and a larger headline. It
+   is the same component with more room, not a different card. */
+.sct-news.is-featured {
+  border-color: rgba(11, 22, 52, 0.14);
+}
+
+.sct-news-well {
+  position: relative;
+  flex: 0 0 116px;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--team-primary, #0b1634) 14%, #fff) 0%,
+    color-mix(in srgb, var(--team-primary, #0b1634) 4%, #fff) 100%
+  );
+}
+
+.sct-news.is-featured .sct-news-well {
+  flex-basis: 168px;
+}
+
+.sct-news-well::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--team-secondary, var(--sc-gold));
+  opacity: 0.7;
+}
+
+.sct-news-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.sct-news-photo-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 46%;
+  opacity: 0.16;
+}
+
+.sct-news-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 16px 0;
+}
+
+.sct-news.is-featured .sct-news-body {
+  padding: 22px 26px 22px 0;
+}
+
+.sct-news-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sct-news-kicker {
+  color: var(--sc-navy);
+}
+
+.sct-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+  flex: 0 0 auto;
+}
+
+.sct-news-title {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 1.02rem;
+  line-height: 1.28;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.sct-news.is-featured .sct-news-title {
+  font-size: 1.25rem;
+  line-height: 1.22;
+}
+
+.sct-news-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Stretched overlay restores full-card clicking without wrapping the card in an
+   anchor, so the link's accessible name stays the headline. */
+.sct-news-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.sct-news-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 3px;
+}
+
+.sct-news-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sct-news-byline {
+  /* Above the stretched overlay so the player link inside stays clickable. */
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+}
+
+.sct-news-player {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+.sct-news-team {
+  color: var(--sc-muted);
+  font-weight: 600;
+}
+
+/* Fantasy Impact — rendered only when the archive actually holds a synopsis for
+   the row. See renderNewsCard(). */
+.sct-impact {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--sc-gold);
+  border-radius: 0 var(--sc-radius-xs) var(--sc-radius-xs) 0;
+  background: var(--sc-surface-soft);
+}
+
+.sct-impact-label {
+  margin: 0 0 3px;
+  color: var(--sc-gold-deep);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-impact-text {
+  margin: 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.sct-news-cta {
+  margin: auto 0 0;
+  padding-top: 14px;
+  color: var(--sc-navy);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.sct-news:hover .sct-arrow {
+  transform: translateX(3px);
+}
+
+/* Few enough stories that a two-column split would leave a hole — see
+   renderTeamPage(). The rail becomes a row beneath the news instead. */
+.sct-news-grid.is-stacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+
+.sct-news-grid.is-stacked .sct-sidebar {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: start;
+  margin-top: 0;
+}
+
+/* ------------------------------------------------------------- disclosure */
+
+/* "View more" is a <details>, not a fetch — every story is already in the HTML.
+   Styled as a button so it reads as the affordance it is. */
+.sct-more {
+  margin-top: 18px;
+}
+
+.sct-more-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  color: var(--sc-navy);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.sct-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sct-more-summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 160ms ease;
+}
+
+.sct-more[open] .sct-more-summary::after {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.sct-more-summary:hover {
+  background: var(--sc-surface-soft);
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.sct-more-summary:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------- empty states */
+
+.sct-empty {
+  margin: 20px 0 0;
+  padding: 34px 24px;
+  border-radius: var(--sc-radius);
+  border: 1px dashed var(--sc-border);
+  background: var(--sc-surface-soft);
+  text-align: center;
+}
+
+.sct-empty-title {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.sct-empty-body {
+  margin: 6px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.87rem;
+}
+
+/* ----------------------------------------------------------- side panels */
+
+.sct-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Sits alongside a column that can be much taller; sticking keeps Injury
+     Watch and Next Game in view while the reader works down the news. */
+  position: sticky;
+  top: calc(var(--sct-nav-h) + var(--sct-nav-offset) + 16px);
+  margin-top: 20px;
+}
+
+.sct-panel {
+  padding: 18px 20px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-panel-title {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sc-border);
+  color: var(--sc-navy);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-panel-stamp {
+  margin: 12px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.sct-panel-empty {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.84rem;
+}
+
+/* ---------------------------------------------------------- injury watch */
+
+.sct-injuries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-injury {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sct-injury:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sct-injury-name {
+  color: var(--sc-navy);
+  font-size: 0.87rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.sct-injury-status {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(180, 83, 9, 0.1);
+  color: #9a5b12;
+}
+
+.sct-injury-status[data-severity="out"] {
+  background: rgba(153, 46, 46, 0.1);
+  color: #94363a;
+}
+
+.sct-injury-part,
+.sct-injury-practice {
+  grid-column: 2 / -1;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- next game */
+
+.sct-nextgame-week {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-nextgame-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 0;
+  color: var(--sc-navy);
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.sct-homeaway {
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.sct-nextgame-logo {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.sct-nextgame-when {
+  margin: 8px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sct-nextgame-time {
+  font-weight: 600;
+}
+
+.sct-nextgame-venue {
+  margin: 2px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+}
+
+/* ----------------------------------------------------------- quick links */
+
+.sct-quicklinks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-quicklink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border-radius: var(--sc-radius-xs);
+  color: var(--sc-navy);
+  font-size: 0.87rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 140ms ease;
+}
+
+.sct-quicklink:hover {
+  background: var(--sc-surface-sink);
+}
+
+.sct-quicklink:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------------ depth chart */
+
+.sct-depth {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+}
+
+.sct-depth-col {
+  padding: 16px 18px 14px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-depth-pos {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--sc-gold);
+  color: var(--sc-navy);
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.sct-depth-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-depth-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sct-depth-name {
+  color: var(--sc-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------- schedule */
+
+.sct-games {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-game {
+  padding: 18px 20px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.sct-game:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.42);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+.sct-game-week {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-game-matchup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  color: var(--sc-navy);
+  font-size: 1.12rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.sct-game-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.sct-game-when {
+  margin: 10px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sct-game-time {
+  font-weight: 600;
+}
+
+.sct-game-venue {
+  margin: 2px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+}
+
+.sct-game-network {
+  margin: 2px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.sct-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+
+.sct-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted-strong);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sct-badge[data-kind="division"] {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--sc-gold-deep);
+}
+
+.sct-badge[data-kind="intl"] {
+  border-color: rgba(11, 22, 52, 0.25);
+  background: rgba(11, 22, 52, 0.06);
+  color: var(--sc-navy);
+}
+
+.sct-badge.is-tiny {
+  padding: 1px 6px;
+  font-size: 0.58rem;
+}
+
+/* Full season, as rows. Becomes a stack of cards on narrow screens. */
+.sct-slist {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  overflow: hidden;
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-srow {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1.4fr) minmax(0, 1.1fr) minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--sc-border);
+  font-size: 0.86rem;
+}
+
+.sct-srow:last-child {
+  border-bottom: 0;
+}
+
+.sct-srow:nth-child(even) {
+  background: var(--sc-surface-soft);
+}
+
+.sct-srow.is-bye {
+  background: rgba(212, 175, 55, 0.07);
+}
+
+.sct-srow-week {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.sct-srow-opp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+.sct-srow-logo {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.sct-srow-bye {
+  color: var(--sc-gold-deep);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.sct-srow-when,
+.sct-srow-venue {
+  color: var(--sc-muted);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sct-result {
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+}
+
+.sct-result[data-outcome="W"] {
+  background: rgba(16, 122, 87, 0.1);
+  color: #0f6b4f;
+}
+
+.sct-result[data-outcome="L"] {
+  background: rgba(153, 46, 46, 0.09);
+  color: #94363a;
+}
+
+/* -------------------------------------------------- fantasy outlook (CTA) */
+
+.sct-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  margin: 18px 0 0;
+  padding: 26px 30px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background:
+    radial-gradient(
+      90% 140% at 100% 0%,
+      rgba(212, 175, 55, 0.1),
+      rgba(255, 255, 255, 0) 60%
+    ),
+    var(--sc-surface-soft);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-cta-text {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.sct-cta-title {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 1.14rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.sct-cta-body {
+  margin: 6px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.9rem;
+  max-width: 62ch;
+}
+
+.sct-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* -------------------------------------------------------------- resources */
+
+.sct-resources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-resource-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 20px 22px;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.sct-resource-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+.sct-resource-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+}
+
+.sct-resource-title {
+  color: var(--sc-navy);
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: -0.015em;
+}
+
+.sct-resource-body {
+  color: var(--sc-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.sct-resource-cta {
+  margin-top: auto;
+  padding-top: 12px;
+  color: var(--sc-navy);
+  font-size: 0.79rem;
+  font-weight: 800;
+}
+
+.sct-resource-link:hover .sct-arrow {
+  transform: translateX(3px);
+}
+
+/* ============================================================ breakpoints */
+
+/* The sidebar is the first thing to go: below this the news column is too
+   narrow for a featured card AND a 340px rail. */
+@media (max-width: 1080px) {
+  .sct-news-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .sct-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    margin-top: 0;
+  }
+
+  .sct-players {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .sct-hero-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 18px;
+  }
+
+  /* Switcher moves under the crest+name pair rather than being squeezed
+     beside it. */
+  .sct-hero-actions {
+    grid-column: 1 / -1;
+  }
+
+  .sct-depth {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct-games {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-switch-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* The full-season table stops being a table: five columns cannot survive a
+     phone, and horizontally scrolling a schedule is worse than stacking it. */
+  .sct-srow {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 4px;
+    padding: 14px 16px;
+  }
+
+  .sct-srow-opp {
+    justify-self: start;
+  }
+
+  .sct-srow-when,
+  .sct-srow-venue {
+    grid-column: 2 / -1;
+    white-space: normal;
+    font-size: 0.8rem;
+  }
+
+  .sct-result {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}
+
+/* --------------------------------------------------------------- phones */
+
+/* Everything below 720 is one device: a hand holding a screen about 360 CSS
+   pixels wide. The rules are about the three things that costs — vertical
+   space, horizontal space, and the absence of a mouse. */
+
+@media (max-width: 720px) {
+  :root {
+    /* 56px of permanently parked chrome is a tenth of a phone screen. */
+    --sct-nav-h: 48px;
+  }
+
+  .sct {
+    /* max() rather than a flat 16, so the content clears a notch when the phone
+       is turned sideways. The gutter is also what the sticky nav cancels, so
+       both move together and the bar stays flush. */
+    --sct-gutter: max(16px, env(safe-area-inset-left, 0px));
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sct.is-embed {
+    --sct-gutter: 0px;
+  }
+
+  /* A row that scrolls with no visible edge reads as a row that ends. The fade
+     is the only thing telling a reader there are sections to the right. */
+  .sct-nav-list {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - 22px),
+      transparent
+    );
+    mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+  }
+
+  .sct-hero {
+    margin-top: 14px;
+    padding: 20px 18px;
+  }
+
+  .sct-hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  /* Smaller than the tablet crest. Stacked above the name it is pure vertical
+     cost, and everything it pushes below the fold is the part of the hero that
+     carries information. */
+  .sct-hero-crest {
+    width: 72px;
+    height: 72px;
+  }
+
+  .sct-hero-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .sct-hero-watermark {
+    right: -70px;
+    width: 240px;
+    height: 240px;
+    opacity: 0.05;
+  }
+
+  .sct-hero-actions {
+    grid-column: auto;
+  }
+
+  /* Team names are two and three words; balanced wrapping keeps "New England
+     Patriots" from breaking to a lone trailing word. */
+  .sct-title {
+    text-wrap: balance;
+  }
+
+  /* Flex-wrapped chips leave a ragged last row and a different shape on every
+     team. Two fixed columns line the labels up and stop a long "Head Coach"
+     from being three times the width of "Bye". */
+  .sct-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .sct-fact {
+    min-width: 0;
+  }
+
+  .sct-fact-value {
+    overflow-wrap: anywhere;
+  }
+
+  .sct-hero-updated {
+    margin-top: 12px;
+  }
+
+  .sct-switch-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* A bottom sheet, not a dropdown.
+
+     Thirty-two destinations do not belong in a panel hanging off a control near
+     the top of a phone: it opens away from the thumb, and its height is decided
+     by whatever happens to be above it. Fixed to the bottom edge, the sheet
+     opens where the hand already is, is sized by the viewport, and is measured
+     against the viewport rather than against the hero. */
+  .sct-switch-panel {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: auto;
+    max-height: 76vh;
+    /* Declared second so browsers without dynamic viewport units keep the vh
+       value above rather than dropping the declaration. dvh is the honest one:
+       it shrinks when the URL bar is showing. */
+    max-height: 76dvh;
+    padding: 0 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -18px 60px rgba(6, 13, 33, 0.32);
+    /* Flicking past the end of the team list must not start scrolling the page
+       behind the sheet. */
+    overscroll-behavior: contain;
+  }
+
+  /* Stays put while the teams scroll under it, and carries the grab handle that
+     makes the sheet read as a sheet rather than as a panel that lost its
+     anchor. */
+  .sct-switch-heading {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 0 -16px 12px;
+    padding: 16px 16px 10px;
+    background: var(--sc-surface);
+    border-bottom: 1px solid var(--sc-hairline);
+    text-align: center;
+  }
+
+  .sct-switch-heading::before {
+    content: "";
+    display: block;
+    width: 38px;
+    height: 4px;
+    margin: 0 auto 10px;
+    border-radius: 999px;
+    background: var(--sc-border);
+  }
+
+  /* Two columns even on the narrowest phone: a nickname beside a 20px mark is
+     about 120px wide, and one column would make the sheet thirty-two rows long
+     before a reader found their team. */
+  .sct-switch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+
+  /* Tapping off the sheet closes it: the click lands on the hero, which is
+     outside the <details>, which is exactly what the bundle's outside-click
+     handler is watching for.
+
+     Hung off the hero rather than off .sct-switch for that reason — a
+     pseudo-element's clicks are reported against its originating element, so a
+     dimmer drawn by the switcher would register as a click *inside* the
+     switcher and the sheet would refuse to close. */
+  .sct-hero:has(.sct-switch[open])::after {
+    content: "";
+    position: fixed;
+    z-index: 39;
+    inset: 0;
+    background: rgba(6, 13, 33, 0.45);
+    /* Dragging the dimmer must not scroll the page underneath it. */
+    touch-action: none;
+  }
+
+  .sct-section {
+    padding-top: 32px;
+  }
+
+  .sct-block + .sct-block {
+    margin-top: 30px;
+  }
+
+  .sct-metrics {
+    /* 2x2, per the brief — four cards in a row are unreadable at 375px. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .sct-metric {
+    padding: 14px 15px 13px;
+  }
+
+  .sct-players {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .sct-news {
+    gap: 12px;
+  }
+
+  .sct-news-well,
+  .sct-news.is-featured .sct-news-well {
+    flex-basis: 88px;
+  }
+
+  /* The well is as tall as the card, and a card carrying a Fantasy Impact note
+     is more than twice as tall as the photo column is wide. `cover` then blows
+     an 88px headshot up to fill 200px of height and crops away everything but a
+     band across the forehead. `contain`, bottom-anchored, draws the head at its
+     own size standing on the floor of the tinted well — which is what the
+     well's `place-items: end center` was describing all along. */
+  .sct-news-photo {
+    object-fit: contain;
+    object-position: bottom center;
+  }
+
+  .sct-news-body,
+  .sct-news.is-featured .sct-news-body {
+    padding: 14px 15px 14px 0;
+  }
+
+  .sct-news.is-featured .sct-news-title {
+    font-size: 1.06rem;
+  }
+
+  /* Full width. These are the two controls that open the rest of the page, and
+     as short pills they are a small target adrift in an empty row. */
+  .sct-more-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sct-block-footer .sct-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sct-srow {
+    padding: 12px 14px;
+  }
+
+  .sct-game {
+    padding: 16px 17px;
+  }
+
+  .sct-cta {
+    padding: 22px 20px;
+  }
+
+  .sct-cta-actions {
+    width: 100%;
+  }
+
+  .sct-cta-actions .sct-button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .sct-resource-link {
+    padding: 17px 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sct-fact {
+    padding: 6px 11px;
+  }
+
+  .sct-depth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Every pixel the photo column gives up goes to the headline, which is the
+     part of the card a reader is actually scanning. */
+  .sct-news-well,
+  .sct-news.is-featured .sct-news-well {
+    flex-basis: 78px;
+  }
+
+  .sct-news-title {
+    font-size: 0.96rem;
+  }
+
+  /* The time-of-day is the first thing to drop when the meta row runs out of
+     room; the date stays. */
+  .sct-news-time {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------- touch pointers */
+
+/* A phone cannot hover, but it still fires :hover.
+
+   A tap sets it and leaves it set until the reader touches something else, so a
+   card they opened and came back from is still lifted, still gold-bordered,
+   still shadowed — a highlight stuck on an element nobody is pointing at. The
+   2px lift is also layout shift that buys nothing without a cursor. Each rule
+   below returns one component to its resting state. */
+@media (hover: none) {
+  .sct-player:hover,
+  .sct-news:hover,
+  .sct-game:hover,
+  .sct-resource-link:hover {
+    transform: none;
+    border-color: var(--sc-hairline);
+    box-shadow: var(--sc-shadow);
+  }
+
+  .sct-news.is-featured:hover {
+    border-color: rgba(11, 22, 52, 0.14);
+  }
+
+  .sct-player:hover .sct-player-cta {
+    color: var(--sc-muted-strong);
+  }
+
+  .sct-player:hover .sct-arrow,
+  .sct-news:hover .sct-arrow,
+  .sct-resource-link:hover .sct-arrow {
+    transform: none;
+  }
+
+  .sct-button:hover {
+    transform: none;
+    background: var(--sc-navy);
+    border-color: var(--sc-navy);
+  }
+
+  .sct-button.is-ghost:hover {
+    background: transparent;
+    border-color: var(--sc-border);
+  }
+
+  .sct-switch-summary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .sct-more-summary:hover {
+    background: var(--sc-surface);
+    border-color: var(--sc-border);
+  }
+
+  .sct-switch-team:hover {
+    background: transparent;
+    color: var(--sc-ink);
+  }
+
+  .sct-quicklink:hover {
+    background: transparent;
+  }
+
+  /* Restated after the reset above, which shares its specificity and would
+     otherwise win on source order and strip the current team's highlight. */
+  .sct-switch-team.is-current:hover {
+    background: rgba(212, 175, 55, 0.14);
+    color: var(--sc-navy);
+  }
+
+  .sct-news-link:hover {
+    text-decoration: none;
+  }
+
+  .sct-textlink:hover {
+    color: var(--sc-navy);
+    border-bottom-color: rgba(11, 22, 52, 0.25);
+  }
+
+  .sct-player-link:hover {
+    border-bottom-color: rgba(11, 22, 52, 0.2);
+  }
+
+  .sct-nav-link:hover {
+    color: var(--sc-muted-strong);
+  }
+
+  .sct-nav-link.is-active {
+    color: var(--sc-navy);
+  }
+
+  /* What replaces hover on a touch screen. A press is real feedback at the
+     moment of the tap and gone the instant it ends, which is the whole reason
+     it is safe where :hover is not.
+
+     Deliberately not on .sct-switch-summary: a transform there would make it
+     the containing block for the fixed bottom sheet it is about to open. */
+  .sct-player:active,
+  .sct-news:active,
+  .sct-game:active,
+  .sct-resource-link:active,
+  .sct-button:active,
+  .sct-more-summary:active {
+    transform: scale(0.985);
+  }
+}
+
+/* 44px is the smallest thing a finger hits reliably. These are the dense lists
+   whose row height is set by small text rather than by a deliberate target. */
+@media (pointer: coarse) {
+  .sct-switch-team {
+    min-height: 44px;
+    padding: 7px 10px;
+  }
+
+  .sct-quicklink {
+    min-height: 46px;
+  }
+
+  .sct-nav-link {
+    padding: 0 16px;
+  }
+}
+
+/* ------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .sct *,
+  .sct *::before,
+  .sct *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .sct-player:hover,
+  .sct-news:hover,
+  .sct-game:hover,
+  .sct-resource-link:hover,
+  .sct-button:hover,
+  .sct-player:active,
+  .sct-news:active,
+  .sct-game:active,
+  .sct-resource-link:active,
+  .sct-button:active,
+  .sct-more-summary:active {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------- print */
+
+@media print {
+  .sct-nav,
+  .sct-hero-actions {
+    display: none;
+  }
+
+  .sct-hero {
+    background: none;
+    color: var(--sc-ink);
+    border: 1px solid var(--sc-border);
+  }
+
+  .sct-title,
+  .sct-fact-value {
+    color: var(--sc-ink);
+  }
+}
