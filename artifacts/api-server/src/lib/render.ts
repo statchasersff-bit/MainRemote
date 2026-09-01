@@ -449,6 +449,73 @@ export function renderList(
 }
 
 /**
+ * Team codes in the order the filter lists them — by full name, not by
+ * abbreviation. Exported so the client re-sorts a rebuilt menu the same way.
+ */
+export function sortTeamCodes(codes: string[]): string[] {
+  return [...codes].sort((a, b) => teamLabel(a).localeCompare(teamLabel(b)));
+}
+
+/** Every team with at least one card, in menu order. */
+export function teamCodesInItems(items: NewsItem[]): string[] {
+  return sortTeamCodes(
+    Array.from(
+      new Set(items.map((item) => item.team).filter((t): t is string => !!t)),
+    ),
+  );
+}
+
+/** Display name for a filter choice; the empty code is the reset. */
+function teamLabel(code: string): string {
+  return code ? (TEAM_NAMES[code] ?? code) : "All teams";
+}
+
+/**
+ * The mark beside a team's name in the filter: its logo, or — for the reset
+ * row, which stands for no team in particular — a neutral disc drawn in CSS.
+ *
+ * Decorative in both cases: the team's name is right beside it as text, so a
+ * second announcement of "Bills logo, Buffalo Bills" adds nothing.
+ */
+function teamMark(code: string): string {
+  const logo = teamLogoUrl(code);
+  return logo
+    ? `<img class="sc-team-logo" src="${escapeHtml(logo)}" alt=""` +
+        ` width="22" height="22" loading="lazy" decoding="async" />`
+    : `<span class="sc-team-logo sc-team-all" aria-hidden="true"></span>`;
+}
+
+/** Logo + name, as shown both on the trigger and on every row of the menu. */
+export function renderTeamChoice(code: string): string {
+  return (
+    teamMark(code) +
+    `<span class="sc-team-name">${escapeHtml(teamLabel(code))}</span>`
+  );
+}
+
+/**
+ * The menu's rows: the reset first, then one per team.
+ *
+ * Exported because the client rebuilds this list when a refresh changes which
+ * teams are in the feed — same function, same markup, so the rebuilt menu is
+ * identical to the one the server rendered.
+ */
+export function renderTeamOptions(codes: string[], selected: string): string {
+  return ["", ...codes]
+    .map((code) => {
+      const current = code === selected;
+      return (
+        `<li>` +
+        `<button type="button" class="sc-team-option${current ? " is-current" : ""}"` +
+        ` data-team="${escapeHtml(code)}" aria-pressed="${current}">` +
+        renderTeamChoice(code) +
+        `</button></li>`
+      );
+    })
+    .join("");
+}
+
+/**
  * Team dropdown + player search.
  *
  * Deliberately NOT wrapped in a <form>: a form with no action submits to the
@@ -467,20 +534,7 @@ export function renderList(
  * produce an empty list.
  */
 export function renderFilters(items: NewsItem[]): string {
-  const teams = Array.from(
-    new Set(items.map((item) => item.team).filter((t): t is string => !!t)),
-  )
-    .map((code) => ({ code, name: TEAM_NAMES[code] ?? code }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  const options = [`<option value="">All teams</option>`]
-    .concat(
-      teams.map(
-        (t) =>
-          `<option value="${escapeHtml(t.code)}">${escapeHtml(t.name)}</option>`,
-      ),
-    )
-    .join("");
+  const teams = teamCodesInItems(items);
 
   return (
     `<div class="sc-filters" hidden>` +
@@ -489,10 +543,28 @@ export function renderFilters(items: NewsItem[]): string {
     `<input id="scFilterPlayer" class="sc-filter-input" type="search"` +
     ` placeholder="Player name" autocomplete="off" />` +
     `</label>` +
-    `<label class="sc-filter">` +
-    `<span class="sc-filter-label">Team</span>` +
-    `<select id="scFilterTeam" class="sc-filter-select">${options}</select>` +
-    `</label>` +
+    // Not a <label> around a <select> any more: the team picker shows each
+    // team's logo, and a native <option> cannot render an image in every
+    // browser (iOS renders the whole control as a system picker). A <details>
+    // disclosure holding real buttons looks the same everywhere, opens and
+    // closes without script, and is the pattern the team-page switcher already
+    // uses. Nothing is lost by not being a <select>: these controls are hidden
+    // outright until the bundle runs — see the block comment above.
+    `<div class="sc-filter sc-filter-team">` +
+    `<span class="sc-filter-label" id="scFilterTeamLabel">Team</span>` +
+    `<details class="sc-team-select" id="scFilterTeam">` +
+    `<summary class="sc-team-trigger"` +
+    ` aria-labelledby="scFilterTeamLabel scFilterTeamValue">` +
+    `<span class="sc-team-current" id="scFilterTeamValue">` +
+    renderTeamChoice("") +
+    `</span>` +
+    `<span class="sc-team-caret" aria-hidden="true"></span>` +
+    `</summary>` +
+    `<div class="sc-team-panel">` +
+    `<ul class="sc-team-list">${renderTeamOptions(teams, "")}</ul>` +
+    `</div>` +
+    `</details>` +
+    `</div>` +
     // Announces the result count to screen readers as the filters change, and
     // gives everyone else a plain "showing N of M" they can trust.
     `<p class="sc-filter-status" role="status"></p>` +
@@ -501,16 +573,15 @@ export function renderFilters(items: NewsItem[]): string {
 }
 
 /**
- * One row holding the "Last updated" stamp and the filter controls: stamp on
- * the left, controls on the right.
+ * The row above the cards holding the filter controls.
  *
- * A wrapper rather than nesting the stamp inside renderFilters, because the
- * two have different lifetimes — the filters ship hidden and disappear
- * entirely when there are no items, while the stamp shows either way.
+ * A wrapper rather than styling renderFilters directly: the filters ship
+ * hidden and disappear entirely when there are no items, and the client
+ * addresses this row as the anchor it inserts a refreshed list after.
  */
-export function renderToolbar(updatedStamp: string, filters: string): string {
-  if (!updatedStamp && !filters) return "";
-  return `<div class="sc-toolbar">${updatedStamp}${filters}</div>`;
+export function renderToolbar(filters: string): string {
+  if (!filters) return "";
+  return `<div class="sc-toolbar">${filters}</div>`;
 }
 
 /**
@@ -525,22 +596,6 @@ export function renderPager(currentPage: number, totalPages: number): string {
     `<span class="sc-pager-status" role="status">${currentPage + 1} <span>of</span> ${totalPages}</span>` +
     `<button type="button" class="sc-pager-btn" data-dir="next"${currentPage >= totalPages - 1 ? " disabled" : ""}>Next &rarr;</button>` +
     `</nav>`
-  );
-}
-
-/**
- * "Last updated" stamp.
- *
- * Reflects a real change to the archive's contents, not the time this response
- * was generated — see lib/freshness.ts. A date that moves on every page view is
- * a freshness lie, and a `lastmod` derived from one is worthless.
- */
-export function renderUpdatedStamp(updatedAtMs: number | null | undefined): string {
-  if (typeof updatedAtMs !== "number" || !(updatedAtMs > 0)) return "";
-  return (
-    `<p class="sc-updated">Last updated ` +
-    `<time datetime="${escapeHtml(new Date(updatedAtMs).toISOString())}" data-ts="${updatedAtMs}">` +
-    `${escapeHtml(formatAbsoluteDate(updatedAtMs))}</time></p>`
   );
 }
 
@@ -603,12 +658,6 @@ export interface RenderFragmentOptions extends RenderListOptions {
   relatedLinks?: RelatedLink[];
   /** Heading for the related-links block. */
   relatedHeading?: string;
-  /**
-   * Epoch ms the content last materially changed. Rendered as a visible
-   * "Last updated" stamp. Must reflect a real change to the data — see
-   * lib/freshness.ts — never the time the page happened to be served.
-   */
-  updatedAtMs?: number | null;
   /** Endpoint for real-user Core Web Vitals reports. Omit to disable entirely. */
   vitalsEndpoint?: string;
   /** URL of the host page, so framed metrics attach to the ranked URL. */
@@ -653,10 +702,7 @@ export function renderFragment(
     // Outside renderList on purpose: a background refresh replaces the list and
     // pager wholesale, and the reader's half-typed search and chosen team must
     // survive that.
-    renderToolbar(
-      renderUpdatedStamp(options.updatedAtMs),
-      items.length > 0 ? renderFilters(items) : "",
-    ) +
+    renderToolbar(items.length > 0 ? renderFilters(items) : "") +
     renderList(items, {
       pageSize,
       ...(links ? { links } : {}),

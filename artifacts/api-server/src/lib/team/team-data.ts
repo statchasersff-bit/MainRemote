@@ -11,8 +11,9 @@
  * Second, nothing is invented to fill a gap. The record is withheld until the
  * regular season is actually under way (ESPN reports the preseason record
  * before that, which would be a lie about a season nobody has played), the
- * snapshot names the season it describes, and Injury Watch carries the time its
- * snapshot was taken. Where this app has no data at all — strength of schedule,
+ * snapshot names the season it describes, and Injury Watch says nothing at all
+ * rather than report a clean bill of health it has not checked. Where this app
+ * has no data at all — strength of schedule,
  * fantasy analysis on a news item — the section is either omitted or replaced
  * with an honest link into the tool that does have it.
  */

@@ -28,6 +28,13 @@ import {
 } from "./render";
 import type { NflTeam } from "./team/teams";
 import { TEAM_GROUPS } from "./team/teams";
+import { networkMarkFor } from "./team/network-marks";
+import {
+  getTeamOutlook,
+  type OutlookFact,
+  type OutlookGroup,
+  type OutlookPlayer,
+} from "./team/outlook";
 import type { TeamPageData } from "./team/team-data";
 import type {
   HistorySeason,
@@ -41,7 +48,6 @@ import { isOutDesignation, SKILL_POSITIONS, type DepthChartEntry } from "./team/
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
 import {
   getFPAUrl,
-  getNewsUrl,
   getPlayerProfileUrl,
   getSOSUrl,
   getTeamDepthChartUrl,
@@ -404,12 +410,12 @@ function snapshotMovement(
  * One snapshot card: label, number, and a footer that says where the team
  * stands and which way it is going.
  *
- * Built from the same parts as a Stats-tab tile — gold mark, ruled footer, the
- * ordinal captioned rather than housed in a pill, a percentile groove along the
- * bottom edge — at the larger scale the Overview's four cards get. That is the
- * point of the shape rather than a coincidence of it: the two tabs are showing
- * the same kind of fact and there is no reason for a reader to have to learn it
- * twice.
+ * Built from the same parts as the .sct-tile below it — gold mark, ruled
+ * footer, the ordinal captioned rather than housed in a pill, a percentile
+ * groove along the bottom edge — at the larger scale four across earns. That
+ * rhyme used to span two tabs and now runs down one: the snapshot opens the
+ * Stats tab and the tiles follow it, so a reader learns the shape once at the
+ * top of the page and reads every block under it for free.
  *
  * "in NFL" is gone from the ordinal. The section is titled Team Snapshot and
  * sits under the team's own name, so the league was never in doubt, and four
@@ -1199,6 +1205,243 @@ function briefName(name: string): string | null {
   return brief.length < full.length ? brief : null;
 }
 
+/* ---------------------------------------------------------------- outlook */
+
+/**
+ * One "what changed" fact: an offseason arrival, the play caller, the pace.
+ *
+ * A <div> pair inside a <dl> rather than a card, because these are the page's
+ * cheapest facts and dressing them as tiles would put them at the same weight
+ * as the snapshot's ranks directly above. They are context for the take below,
+ * not findings of their own.
+ *
+ * The rank rides on the value rather than getting a line of its own. It is the
+ * same relationship the snapshot card draws between a figure and its ordinal —
+ * the reading, then what the reading is worth — and giving it a third line here
+ * would make a six-item strip twice as tall for a two-character word.
+ */
+function outlookFact(fact: OutlookFact): string {
+  const rank = fact.rank
+    ? ` <span class="sct-outlook-fact-rank">${escapeHtml(fact.rank)}` +
+      `<span class="sct-visually-hidden"> in the NFL</span></span>`
+    : "";
+  return (
+    `<div class="sct-outlook-fact">` +
+    `<dt class="sct-outlook-fact-label">${escapeHtml(fact.label)}</dt>` +
+    `<dd class="sct-outlook-fact-value">${escapeHtml(fact.value)}${rank}</dd>` +
+    `</div>`
+  );
+}
+
+/**
+ * The compact evidence row under a player's thesis.
+ *
+ * A list, not a sentence: three facts separated by dots are read by jumping
+ * between them, and that is the whole job of this row — it is what a reader
+ * checks the claim above against before deciding whether the paragraph below
+ * is worth their time.
+ *
+ * Renders nothing on an empty array rather than an empty rule, because a
+ * player who arrived this offseason genuinely has no line to quote here and a
+ * bar of dots with nothing between them would be worse than the gap.
+ */
+function outlookStats(stats: string[]): string {
+  if (stats.length === 0) return "";
+  return (
+    `<ul class="sct-outlook-stats">` +
+    stats
+      .map((stat) => `<li class="sct-outlook-stat">${escapeHtml(stat)}</li>`)
+      .join("") +
+    `</ul>`
+  );
+}
+
+/**
+ * One player's card: a face, the call, the evidence, the case.
+ *
+ * The same card every other player on this page gets — the .sct-player shell,
+ * the depth chart's round team-tinted headshot well, and the position chip both
+ * of them already use. The take is what is different about this block; the card
+ * it arrives in should not be.
+ *
+ * The card reads top to bottom in decreasing commitment, which is what lets a
+ * reader stop at any point and still have taken something away: the tier is the
+ * answer, the thesis is the answer in a sentence, the stat row is what the
+ * sentence rests on, and the paragraph is for the reader who has decided this
+ * player matters to them. It used to be a name and then four sentences, which
+ * asked for all of that attention or none of it.
+ *
+ * `data-pos` is on the card as well as the chip so the stylesheet can put the
+ * position's colour on the card's edge — see the inset accent in team.css.
+ *
+ * `headshot` is whatever the roster could match by name, and null is an
+ * ordinary outcome: an outlook can name a rookie Sleeper has not indexed yet.
+ * The well is drawn either way and simply stays a tinted disc, which is the
+ * same degradation the depth chart takes when the CDN has no thumbnail.
+ */
+function outlookPlayerCard(player: OutlookPlayer, headshot: string | null): string {
+  const position = player.position.toUpperCase();
+
+  // Decorative, so the alt is empty: the name is on the same row, and
+  // announcing the face as well would read the player out twice.
+  const photo = headshot
+    ? `<img class="sct-outlook-photo" src="${escapeHtml(headshot)}" alt=""` +
+      ` width="64" height="64" loading="lazy" decoding="async" />`
+    : "";
+
+  // The name carries the link and a stretched ::after makes the whole card
+  // clickable — the news card's device rather than the cornerstone's bare
+  // overlay, because that one lays a box over the card's whole text and these
+  // cards carry a paragraph a reader may well want to select.
+  const href = getPlayerProfileUrl(player.name);
+  const name = href
+    ? `<a class="sct-outlook-link" href="${escapeHtml(href)}" target="_top">` +
+      `${escapeHtml(player.name)}</a>`
+    : escapeHtml(player.name);
+
+  // Text beside the chip rather than a pill of its own. A second lozenge on
+  // this line is what the market-rank and verdict chips were, and the reason
+  // they went; the classification is a continuation of "QB", not a badge
+  // competing with it.
+  const tier = player.tier
+    ? `<span class="sct-dot" aria-hidden="true"></span>` +
+      `<span class="sct-outlook-tier">${escapeHtml(player.tier)}</span>`
+    : "";
+
+  return (
+    `<li class="sct-outlook-player" data-pos="${escapeHtml(position)}">` +
+    `<div class="sct-outlook-head">` +
+    `<span class="sct-outlook-well">${photo}</span>` +
+    `<div class="sct-outlook-who">` +
+    `<h4 class="sct-outlook-name">${name}</h4>` +
+    `<p class="sct-outlook-meta">` +
+    slotChip(position, true) +
+    tier +
+    `</p>` +
+    `</div>` +
+    `</div>` +
+    (player.thesis
+      ? `<p class="sct-outlook-thesis">${escapeHtml(player.thesis)}</p>`
+      : "") +
+    outlookStats(player.stats) +
+    `<p class="sct-outlook-note">${escapeHtml(player.note)}</p>` +
+    `</li>`
+  );
+}
+
+/**
+ * One band of players under its own heading.
+ *
+ * The heading is the take: "Core fantasy pieces" is an assertion about which
+ * four of the seven decide a draft, and it is the reason this section is a
+ * curated list rather than a roster dump. It is an <h3> under the section's
+ * <h2>, which is what puts the player names at <h4> — the outline follows the
+ * page rather than the other way round.
+ *
+ * Every card in every band carries the team crest as a watermark — the page's
+ * existing device (.sct-news-body::before), not a new one. It briefly ran on
+ * the core band alone as that band's emphasis; with it on all of them the
+ * heading is what tells the bands apart.
+ */
+function outlookGroup(group: OutlookGroup, headshots: Map<string, string>): string {
+  if (group.players.length === 0) return "";
+  const cards = group.players
+    .map((player) =>
+      outlookPlayerCard(player, headshots.get(searchKey(player.name)) ?? null),
+    )
+    .join("");
+  return (
+    `<div class="sct-outlook-group">` +
+    `<h3 class="sct-outlook-group-label">${escapeHtml(group.label)}</h3>` +
+    `<ul class="sct-outlook-players">${cards}</ul>` +
+    `</div>`
+  );
+}
+
+/**
+ * The headshot for a name the outlook mentions, from the roster already loaded.
+ *
+ * Matched on searchKey rather than the raw string, the same normalisation the
+ * news pipeline attributes stories with — the outlook is written by hand and
+ * "A.J. Brown" should find "AJ Brown" whichever way Sleeper spells it.
+ */
+function outlookHeadshots(data: TeamPageData): Map<string, string> {
+  const byName = new Map<string, string>();
+  for (const player of data.roster?.players ?? []) {
+    const key = searchKey(player.name);
+    if (key && !byName.has(key)) byName.set(key, player.headshot);
+  }
+  return byName;
+}
+
+/**
+ * The team's draft-season take, on the Overview tab.
+ *
+ * Nothing here is fetched, and the meta line says so. Every other block on this
+ * page carries a timestamp because it was pulled from a provider minutes ago;
+ * this one is a written opinion that will not change until somebody changes it.
+ * The line carries the month it was last written for the same reason a byline
+ * carries a date — it is the only thing that lets a reader judge how much of it
+ * the season has already overtaken — and it keeps "not live data" beside that
+ * date so the date cannot be mistaken for a refresh.
+ */
+function renderOutlook(data: TeamPageData): string {
+  const outlook = getTeamOutlook(data.team.abbreviation);
+  if (!outlook) return "";
+
+  const headshots = outlookHeadshots(data);
+  const groups = outlook.groups.map((group) => outlookGroup(group, headshots)).join("");
+  if (!groups) return "";
+
+  // An outlook written for a season the calendar has passed is dropped rather
+  // than dated. "A.J. Brown arrives" is true for one offseason and misleading
+  // forever after, and a heading reading 2026 on a 2027 page does not rescue
+  // the sentence under it — the reader has already taken the advice. Nothing
+  // rewrites these but a person, so the page removes them instead of ageing
+  // them.
+  if (outlook.season < data.state.season) return "";
+
+  const facts = outlook.facts.length
+    ? `<dl class="sct-outlook-facts">${outlook.facts.map(outlookFact).join("")}</dl>`
+    : "";
+
+  const meta = [
+    "Preseason outlook",
+    ...(outlook.updated ? [`Updated ${outlook.updated}`] : []),
+  ]
+    .map((part) => `<span class="sct-outlook-meta-item">${escapeHtml(part)}</span>`)
+    .join(`<span class="sct-dot" aria-hidden="true"></span>`);
+
+  const bottomLine = outlook.bottomLine
+    ? `<p class="sct-outlook-bottom">` +
+      `<span class="sct-outlook-bottom-label">Bottom line</span>` +
+      escapeHtml(outlook.bottomLine) +
+      `</p>`
+    : "";
+
+  return (
+    `<div class="sct-block">` +
+    h2(`${outlook.season} Fantasy Outlook`) +
+    `<p class="sct-outlook-stamp">${meta}</p>` +
+    `<p class="sct-outlook-lede">${escapeHtml(outlook.summary)}</p>` +
+    facts +
+    groups +
+    bottomLine +
+    `</div>`
+  );
+}
+
+/**
+ * The four depth-chart starters, as photo cards.
+ *
+ * NOT CURRENTLY MOUNTED. This sat under the outlook on the Overview tab and was
+ * taken off it; nothing calls this today. It is kept rather than deleted
+ * because the block is complete and correct and the page has already moved one
+ * section between tabs this week — the cost of keeping it is a function nobody
+ * calls, and the cost of deleting it is writing it again. If it is still
+ * unmounted when the hub next settles, delete it along with the .sct-player
+ * rules in team.css (all but .sct-player-link, which the news byline uses).
+ */
 function renderCornerstones(data: TeamPageData): string {
   if (data.cornerstones.length === 0) return "";
 
@@ -1299,11 +1542,16 @@ function renderNewsCard(
   const name = (item.playerName ?? "").trim();
   const headline = escapeHtml(splitHeadline(item));
 
+  // 16:9 on the attributes, matching the band the CSS cuts. These are the
+  // browser's before-load aspect hint, not a size — the well's own
+  // aspect-ratio governs once the stylesheet is in — and the square they used
+  // to declare was a headshot's shape, from before the clubs' landscape art
+  // was the common case.
   const media = image
     ? `<img class="sct-news-photo" src="${escapeHtml(image)}" alt="${escapeHtml(name)}"` +
-      ` width="${featured ? 128 : 84}" height="${featured ? 128 : 84}"` +
+      ` width="${featured ? 640 : 480}" height="${featured ? 360 : 270}"` +
       ` loading="lazy" decoding="async" />`
-    : // No headshot: the well keeps its team tint and shows nothing else. A
+    : // No image: the well keeps its team tint and shows nothing else. A
       // stand-in mark would be one more thing to load for no information.
       `<span class="sct-news-photo-empty" aria-hidden="true"></span>`;
 
@@ -1383,18 +1631,10 @@ function renderNewsColumn(data: TeamPageData): string {
       `</details>`
     : "";
 
-  const allNews = getNewsUrl();
-  const footer = allNews
-    ? `<p class="sct-block-footer">` +
-      siteLink(allNews, `All NFL player news ${ARROW}`, "sct-textlink") +
-      `</p>`
-    : "";
-
   return (
     h2(`Latest ${team.nickname} News`) +
     renderNewsList(visible, team, 0) +
-    more +
-    footer
+    more
   );
 }
 
@@ -1402,24 +1642,6 @@ function renderNewsColumn(data: TeamPageData): string {
 
 function renderInjuryPanel(data: TeamPageData): string {
   const rows = data.injuries;
-  // "Updated 43m ago", not "Checked Sep 1, 2:14 PM". `data-ts-compact` asks
-  // client/team.ts for the short form of the relative label — this is a footnote
-  // at the bottom of a card, and "44 minutes ago" spelled out was the widest
-  // line in it. The absolute time stays in the datetime attribute and moves to
-  // the tooltip on hydration, so nothing is only available in the short form.
-  const stamp = data.rosterFetchedAt
-    ? (() => {
-        const parts = easternParts(data.rosterFetchedAt);
-        return (
-          `<p class="sct-panel-stamp">` +
-          `<span class="sct-panel-stamp-icon" aria-hidden="true"></span>` +
-          `Updated ` +
-          `<time datetime="${escapeHtml(new Date(data.rosterFetchedAt).toISOString())}"` +
-          ` data-ts="${data.rosterFetchedAt}" data-ts-compact="1">` +
-          `${escapeHtml(`${parts.month} ${parts.day}, ${parts.time}`)}</time></p>`
-        );
-      })()
-    : "";
 
   // No roster snapshot at all: say nothing rather than claim a clean bill of
   // health we have not checked.
@@ -1457,7 +1679,6 @@ function renderInjuryPanel(data: TeamPageData): string {
     `<section class="sct-panel">` +
     `<h2 class="sct-panel-title">Injury Watch</h2>` +
     body +
-    stamp +
     `</section>`
   );
 }
@@ -1764,7 +1985,12 @@ function renderDepthChart(data: TeamPageData): string {
         // Not "View the full Patriots depth chart": the heading two lines above
         // already says whose chart this is, and repeating it was most of a
         // button that ran wider than the cards it sat under.
-        siteLink(full, `View full depth chart ${ARROW}`, "sct-button") +
+        //
+        // .sct-textlink, not .sct-button — the same treatment the schedule and
+        // news footers use. A filled navy button was the loudest thing on the
+        // tab and it was pointing away from it; all three block footers are the
+        // same quiet gold-underlined link now.
+        siteLink(full, `View full depth chart ${ARROW}`, "sct-textlink") +
         `</p>`
       : "")
   );
@@ -1798,12 +2024,14 @@ function fixtureTags(game: ScheduleGame): Array<{ kind: string; label: string }>
 /**
  * The broadcaster's name, at the width a badge in a table column has.
  *
- * Only the ones that do not fit. "CBS", "FOX", "NBC", "ESPN" and "Netflix" are
- * already marks; "Prime Video" and "NFL Network" are sentences, and in a 66px
- * cell they arrive as "Prime Vid…" — which is worse than either the short form
- * or nothing. Anything not listed passes through untouched rather than being
- * truncated to something unreadable, which is the same rule the injury
- * designations follow.
+ * This is the fallback's fallback now: every network the NFL schedule names has
+ * a logo, so the only strings that reach here are the local call signs ESPN
+ * sends in place of one ("WBZ", "KHOU"), which are already short. The table
+ * stays because those are not the only strings it can ever send — a future
+ * "Prime Video" arriving where no logo matched is better as "Prime" than as
+ * "Prime Vid…" in a 66px cell. Anything not listed passes through untouched
+ * rather than being truncated to something unreadable, which is the same rule
+ * the injury designations follow.
  *
  * The full name stays on the element as a title, so shortening never loses it.
  */
@@ -1816,6 +2044,86 @@ const SHORT_NETWORK: Record<string, string> = {
 
 function shortNetwork(network: string): string {
   return SHORT_NETWORK[network.trim().toLowerCase()] ?? network.trim();
+}
+
+/**
+ * A broadcaster as its own logo, or as the short text when it has none.
+ *
+ * The <use> points at a symbol defined once per page by networkDefs() — a
+ * season carries the same four or five networks across seventeen rows, and
+ * repeating the path data on each of them is the same picture seventeen times.
+ *
+ * The <svg> carries the crop twice over, and both copies earn their place.
+ * `viewBox` with `meet` is what guarantees the artwork can never be stretched:
+ * whatever box the stylesheet gives it, the logo scales to fit inside and
+ * centres, so a box that is a rounding off the ratio costs a stray pixel of air
+ * rather than a squashed wordmark. `--sct-net-aspect` is the same crop as a
+ * number, which is what lets the stylesheet size the box to the shape instead
+ * of leaving that air — see .sct-net-mark. The label is the broadcaster's full
+ * name, because "CBS" is what the text version says and a logo should not read
+ * as less.
+ *
+ * The text branch is still reachable: ESPN names a local call sign ("WBZ",
+ * "KHOU") for some games, and a station we cannot identify keeps its own name.
+ */
+function networkHtml(network: string, className: string): string {
+  const mark = networkMarkFor(network);
+  if (!mark) {
+    return (
+      `<span class="${className}"><span class="sct-net-text" title="${escapeHtml(network)}">` +
+      `${escapeHtml(shortNetwork(network))}</span></span>`
+    );
+  }
+  return (
+    `<span class="${className}" title="${escapeHtml(network)}">` +
+    `<svg class="sct-net-mark" viewBox="${mark.viewBox}" preserveAspectRatio="xMidYMid meet"` +
+    ` style="--sct-net-aspect:${mark.aspect}"` +
+    ` role="img" aria-label="${escapeHtml(mark.title)}">` +
+    `<use href="#sct-net-${mark.key}" />` +
+    `</svg></span>`
+  );
+}
+
+/**
+ * The symbols the marks on this page point at, defined once.
+ *
+ * Only the networks this team actually plays on: a schedule that never touches
+ * Netflix has no reason to carry its path. The block is inert — no size, hidden
+ * from assistive tech — and lives inside the schedule section so it travels
+ * with the only thing that references it.
+ *
+ * Each part carries its own fill, because these are the broadcasters' real
+ * marks and their colours are the point. Paint order is the table's order: the
+ * NFL shield's white stars are shapes laid over its navy field, not holes in
+ * it, and drawing them first would lose them under it.
+ */
+function networkDefs(networks: Array<string | null>): string {
+  const marks = new Map<string, ReturnType<typeof networkMarkFor>>();
+  for (const network of networks) {
+    if (!network) continue;
+    const mark = networkMarkFor(network);
+    if (mark) marks.set(mark.key, mark);
+  }
+  if (marks.size === 0) return "";
+  return (
+    `<svg class="sct-net-defs" aria-hidden="true" focusable="false"><defs>` +
+    [...marks.values()]
+      .map(
+        (mark) =>
+          `<symbol id="sct-net-${mark!.key}" viewBox="${mark!.viewBox}">` +
+          mark!.paths
+            .map(
+              (part) =>
+                `<path fill="${part.fill}"` +
+                (part.evenOdd ? ` fill-rule="evenodd"` : "") +
+                ` d="${part.d}" />`,
+            )
+            .join("") +
+          `</symbol>`,
+      )
+      .join("") +
+    `</defs></svg>`
+  );
 }
 
 /**
@@ -1872,10 +2180,12 @@ function renderUpcomingCard(game: ScheduleGame, index: number): string {
 
   // Venue and network on one line. Either can be missing — ESPN has no network
   // for a game it has not scheduled a window for — and a lone separator is
-  // worse than a shorter line.
-  const where = [game.venue, game.network].filter((part): part is string =>
-    Boolean(part),
-  );
+  // worse than a shorter line. The network is markup rather than text because
+  // it may be a mark; the venue is escaped here so the two can be joined.
+  const where = [
+    game.venue ? escapeHtml(game.venue) : "",
+    game.network ? networkHtml(game.network, "sct-game-tv") : "",
+  ].filter(Boolean);
 
   return (
     `<li class="sct-game"${index === 0 ? ` data-next="1"` : ""}>` +
@@ -1915,7 +2225,7 @@ function renderUpcomingCard(game: ScheduleGame, index: number): string {
       : "") +
     `</p>` +
     (where.length
-      ? `<p class="sct-game-where">${where.map(escapeHtml).join(" · ")}</p>`
+      ? `<p class="sct-game-where">${where.join(" · ")}</p>`
       : "") +
     `</div>` +
     `</li>`
@@ -1973,8 +2283,7 @@ function renderFullSchedule(data: TeamPageData): string {
         // is the last thing on a line you read once; in a table it is a column
         // people run their eye down looking for the games they can watch.
         (game.network
-          ? `<span class="sct-srow-tv" title="${escapeHtml(game.network)}">` +
-            `${escapeHtml(shortNetwork(game.network))}</span>`
+          ? networkHtml(game.network, "sct-srow-tv")
           : // Kept, and empty. ESPN has no network for a game it has not put in
             // a window yet, and dropping the cell would shift every column to
             // its right on exactly those rows.
@@ -2022,6 +2331,7 @@ function renderSchedule(data: TeamPageData, now: number): string {
 
   return (
     h2(`${schedule.season} ${team.nickname} Schedule`) +
+    networkDefs(schedule.games.map((game) => game.network)) +
     (schedule.byeWeek
       ? `<p class="sct-note">${escapeHtml(`Bye in Week ${schedule.byeWeek}.`)}</p>`
       : "") +
@@ -2088,7 +2398,10 @@ export function renderTeamPage(
   const { team } = data;
   const now = options.now ?? Date.now();
 
-  const overview = renderSnapshot(data) + renderCornerstones(data);
+  // Overview is the outlook alone. Fantasy Cornerstones used to follow it;
+  // renderCornerstones() is still here and still correct, just not mounted —
+  // see the note above it.
+  const overview = renderOutlook(data);
 
   const sidebar =
     renderInjuryPanel(data) +
@@ -2108,7 +2421,13 @@ export function renderTeamPage(
     (sidebar ? `<aside class="sct-sidebar">${sidebar}</aside>` : "") +
     `</div>`;
 
-  const stats = renderTeamStats(data);
+  // The snapshot leads the Stats tab: it is the four-card version of the
+  // ladders directly below it, and a reader who opens Stats is asking the
+  // question it answers first. Concatenated rather than folded into
+  // renderTeamStats() so the tab still appears carrying the snapshot alone when
+  // ESPN's season statistics fail but its team summary does not — the two come
+  // from different endpoints and fail independently.
+  const stats = renderSnapshot(data) + renderTeamStats(data);
   const depth = renderDepthChart(data);
   const schedule = renderSchedule(data, now);
 
@@ -2116,9 +2435,9 @@ export function renderTeamPage(
   // in the page and must not be in the navigation pointing at nothing.
   const sections: Section[] = [
     { id: "overview", label: "Overview", html: overview },
-    // Directly right of Overview: it is the same kind of reading — the whole
-    // team at a glance — one level deeper, and it belongs beside the snapshot
-    // it expands rather than behind the news archive.
+    // Directly right of Overview rather than behind the news archive: it now
+    // opens with the Team Snapshot and expands it, so it is the whole team at a
+    // glance and then the same reading one level deeper.
     { id: "stats", label: "Stats", html: stats },
     { id: "news", label: "News", html: newsSection },
     { id: "depth-chart", label: "Depth Chart", html: depth },

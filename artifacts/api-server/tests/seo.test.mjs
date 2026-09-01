@@ -378,19 +378,22 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.ok(body.length < 2000, "404 must not be a copy of the tool page");
   });
 
-  test("last-updated reflects content, not request time", async () => {
-    const first = await (await fetch(`${server.origin}/`)).text();
+  test("freshness reflects content, not request time", async () => {
+    // The page no longer prints a "last updated" line, but the same freshness
+    // value still drives the validator. It must not move just because time
+    // passed between two requests over unchanged content.
+    const first = await fetch(`${server.origin}/`);
+    await first.text();
     await new Promise((r) => setTimeout(r, 1100));
-    const second = await (await fetch(`${server.origin}/`)).text();
+    const second = await fetch(`${server.origin}/`);
+    await second.text();
 
-    const stamp = (html) =>
-      html.match(/class="sc-updated">[\s\S]*?datetime="([^"]+)"/)?.[1];
-
-    assert.ok(stamp(first), "expected a last-updated stamp");
+    const etag = first.headers.get("etag");
+    assert.ok(etag, "expected an ETag");
     assert.equal(
-      stamp(first),
-      stamp(second),
-      "last-updated must not move between requests when nothing changed",
+      etag,
+      second.headers.get("etag"),
+      "the validator must not move between requests when nothing changed",
     );
   });
 
