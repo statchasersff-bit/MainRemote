@@ -47,6 +47,16 @@ export interface NflTeam {
   espnId: string;
   /** ESPN's abbreviation. Differs from ours for Washington (WSH vs WAS). */
   espnAbbr: string;
+  /**
+   * The club's own site, e.g. "patriots.com" — the host of its official news
+   * feed at https://www.<siteDomain>/rss/news.
+   *
+   * Stored rather than derived because it follows no rule: some clubs use the
+   * nickname (packers.com), some the city and nickname (dallascowboys.com),
+   * some neither (therams.com, azcardinals.com). All 32 are on one NFL platform
+   * and answer the same path, so the domain is the only part that varies.
+   */
+  siteDomain: string;
 }
 
 interface TeamSeed {
@@ -58,49 +68,50 @@ interface TeamSeed {
   divisionName: DivisionName;
   espnId: string;
   espnAbbr?: string;
+  siteDomain: string;
 }
 
 const SEEDS: TeamSeed[] = [
   // AFC East
-  { abbreviation: "buf", slug: "buffalo-bills", city: "Buffalo", nickname: "Bills", conference: "AFC", divisionName: "East", espnId: "2" },
-  { abbreviation: "mia", slug: "miami-dolphins", city: "Miami", nickname: "Dolphins", conference: "AFC", divisionName: "East", espnId: "15" },
-  { abbreviation: "ne", slug: "new-england-patriots", city: "New England", nickname: "Patriots", conference: "AFC", divisionName: "East", espnId: "17" },
-  { abbreviation: "nyj", slug: "new-york-jets", city: "New York", nickname: "Jets", conference: "AFC", divisionName: "East", espnId: "20" },
+  { abbreviation: "buf", slug: "buffalo-bills", city: "Buffalo", nickname: "Bills", conference: "AFC", divisionName: "East", espnId: "2", siteDomain: "buffalobills.com" },
+  { abbreviation: "mia", slug: "miami-dolphins", city: "Miami", nickname: "Dolphins", conference: "AFC", divisionName: "East", espnId: "15", siteDomain: "miamidolphins.com" },
+  { abbreviation: "ne", slug: "new-england-patriots", city: "New England", nickname: "Patriots", conference: "AFC", divisionName: "East", espnId: "17", siteDomain: "patriots.com" },
+  { abbreviation: "nyj", slug: "new-york-jets", city: "New York", nickname: "Jets", conference: "AFC", divisionName: "East", espnId: "20", siteDomain: "newyorkjets.com" },
   // AFC North
-  { abbreviation: "bal", slug: "baltimore-ravens", city: "Baltimore", nickname: "Ravens", conference: "AFC", divisionName: "North", espnId: "33" },
-  { abbreviation: "cin", slug: "cincinnati-bengals", city: "Cincinnati", nickname: "Bengals", conference: "AFC", divisionName: "North", espnId: "4" },
-  { abbreviation: "cle", slug: "cleveland-browns", city: "Cleveland", nickname: "Browns", conference: "AFC", divisionName: "North", espnId: "5" },
-  { abbreviation: "pit", slug: "pittsburgh-steelers", city: "Pittsburgh", nickname: "Steelers", conference: "AFC", divisionName: "North", espnId: "23" },
+  { abbreviation: "bal", slug: "baltimore-ravens", city: "Baltimore", nickname: "Ravens", conference: "AFC", divisionName: "North", espnId: "33", siteDomain: "baltimoreravens.com" },
+  { abbreviation: "cin", slug: "cincinnati-bengals", city: "Cincinnati", nickname: "Bengals", conference: "AFC", divisionName: "North", espnId: "4", siteDomain: "bengals.com" },
+  { abbreviation: "cle", slug: "cleveland-browns", city: "Cleveland", nickname: "Browns", conference: "AFC", divisionName: "North", espnId: "5", siteDomain: "clevelandbrowns.com" },
+  { abbreviation: "pit", slug: "pittsburgh-steelers", city: "Pittsburgh", nickname: "Steelers", conference: "AFC", divisionName: "North", espnId: "23", siteDomain: "steelers.com" },
   // AFC South
-  { abbreviation: "hou", slug: "houston-texans", city: "Houston", nickname: "Texans", conference: "AFC", divisionName: "South", espnId: "34" },
-  { abbreviation: "ind", slug: "indianapolis-colts", city: "Indianapolis", nickname: "Colts", conference: "AFC", divisionName: "South", espnId: "11" },
-  { abbreviation: "jax", slug: "jacksonville-jaguars", city: "Jacksonville", nickname: "Jaguars", conference: "AFC", divisionName: "South", espnId: "30" },
-  { abbreviation: "ten", slug: "tennessee-titans", city: "Tennessee", nickname: "Titans", conference: "AFC", divisionName: "South", espnId: "10" },
+  { abbreviation: "hou", slug: "houston-texans", city: "Houston", nickname: "Texans", conference: "AFC", divisionName: "South", espnId: "34", siteDomain: "houstontexans.com" },
+  { abbreviation: "ind", slug: "indianapolis-colts", city: "Indianapolis", nickname: "Colts", conference: "AFC", divisionName: "South", espnId: "11", siteDomain: "colts.com" },
+  { abbreviation: "jax", slug: "jacksonville-jaguars", city: "Jacksonville", nickname: "Jaguars", conference: "AFC", divisionName: "South", espnId: "30", siteDomain: "jaguars.com" },
+  { abbreviation: "ten", slug: "tennessee-titans", city: "Tennessee", nickname: "Titans", conference: "AFC", divisionName: "South", espnId: "10", siteDomain: "tennesseetitans.com" },
   // AFC West
-  { abbreviation: "den", slug: "denver-broncos", city: "Denver", nickname: "Broncos", conference: "AFC", divisionName: "West", espnId: "7" },
-  { abbreviation: "kc", slug: "kansas-city-chiefs", city: "Kansas City", nickname: "Chiefs", conference: "AFC", divisionName: "West", espnId: "12" },
-  { abbreviation: "lv", slug: "las-vegas-raiders", city: "Las Vegas", nickname: "Raiders", conference: "AFC", divisionName: "West", espnId: "13" },
-  { abbreviation: "lac", slug: "los-angeles-chargers", city: "Los Angeles", nickname: "Chargers", conference: "AFC", divisionName: "West", espnId: "24" },
+  { abbreviation: "den", slug: "denver-broncos", city: "Denver", nickname: "Broncos", conference: "AFC", divisionName: "West", espnId: "7", siteDomain: "denverbroncos.com" },
+  { abbreviation: "kc", slug: "kansas-city-chiefs", city: "Kansas City", nickname: "Chiefs", conference: "AFC", divisionName: "West", espnId: "12", siteDomain: "chiefs.com" },
+  { abbreviation: "lv", slug: "las-vegas-raiders", city: "Las Vegas", nickname: "Raiders", conference: "AFC", divisionName: "West", espnId: "13", siteDomain: "raiders.com" },
+  { abbreviation: "lac", slug: "los-angeles-chargers", city: "Los Angeles", nickname: "Chargers", conference: "AFC", divisionName: "West", espnId: "24", siteDomain: "chargers.com" },
   // NFC East
-  { abbreviation: "dal", slug: "dallas-cowboys", city: "Dallas", nickname: "Cowboys", conference: "NFC", divisionName: "East", espnId: "6" },
-  { abbreviation: "nyg", slug: "new-york-giants", city: "New York", nickname: "Giants", conference: "NFC", divisionName: "East", espnId: "19" },
-  { abbreviation: "phi", slug: "philadelphia-eagles", city: "Philadelphia", nickname: "Eagles", conference: "NFC", divisionName: "East", espnId: "21" },
-  { abbreviation: "was", slug: "washington-commanders", city: "Washington", nickname: "Commanders", conference: "NFC", divisionName: "East", espnId: "28", espnAbbr: "WSH" },
+  { abbreviation: "dal", slug: "dallas-cowboys", city: "Dallas", nickname: "Cowboys", conference: "NFC", divisionName: "East", espnId: "6", siteDomain: "dallascowboys.com" },
+  { abbreviation: "nyg", slug: "new-york-giants", city: "New York", nickname: "Giants", conference: "NFC", divisionName: "East", espnId: "19", siteDomain: "giants.com" },
+  { abbreviation: "phi", slug: "philadelphia-eagles", city: "Philadelphia", nickname: "Eagles", conference: "NFC", divisionName: "East", espnId: "21", siteDomain: "philadelphiaeagles.com" },
+  { abbreviation: "was", slug: "washington-commanders", city: "Washington", nickname: "Commanders", conference: "NFC", divisionName: "East", espnId: "28", espnAbbr: "WSH", siteDomain: "commanders.com" },
   // NFC North
-  { abbreviation: "chi", slug: "chicago-bears", city: "Chicago", nickname: "Bears", conference: "NFC", divisionName: "North", espnId: "3" },
-  { abbreviation: "det", slug: "detroit-lions", city: "Detroit", nickname: "Lions", conference: "NFC", divisionName: "North", espnId: "8" },
-  { abbreviation: "gb", slug: "green-bay-packers", city: "Green Bay", nickname: "Packers", conference: "NFC", divisionName: "North", espnId: "9" },
-  { abbreviation: "min", slug: "minnesota-vikings", city: "Minnesota", nickname: "Vikings", conference: "NFC", divisionName: "North", espnId: "16" },
+  { abbreviation: "chi", slug: "chicago-bears", city: "Chicago", nickname: "Bears", conference: "NFC", divisionName: "North", espnId: "3", siteDomain: "chicagobears.com" },
+  { abbreviation: "det", slug: "detroit-lions", city: "Detroit", nickname: "Lions", conference: "NFC", divisionName: "North", espnId: "8", siteDomain: "detroitlions.com" },
+  { abbreviation: "gb", slug: "green-bay-packers", city: "Green Bay", nickname: "Packers", conference: "NFC", divisionName: "North", espnId: "9", siteDomain: "packers.com" },
+  { abbreviation: "min", slug: "minnesota-vikings", city: "Minnesota", nickname: "Vikings", conference: "NFC", divisionName: "North", espnId: "16", siteDomain: "vikings.com" },
   // NFC South
-  { abbreviation: "atl", slug: "atlanta-falcons", city: "Atlanta", nickname: "Falcons", conference: "NFC", divisionName: "South", espnId: "1" },
-  { abbreviation: "car", slug: "carolina-panthers", city: "Carolina", nickname: "Panthers", conference: "NFC", divisionName: "South", espnId: "29" },
-  { abbreviation: "no", slug: "new-orleans-saints", city: "New Orleans", nickname: "Saints", conference: "NFC", divisionName: "South", espnId: "18" },
-  { abbreviation: "tb", slug: "tampa-bay-buccaneers", city: "Tampa Bay", nickname: "Buccaneers", conference: "NFC", divisionName: "South", espnId: "27" },
+  { abbreviation: "atl", slug: "atlanta-falcons", city: "Atlanta", nickname: "Falcons", conference: "NFC", divisionName: "South", espnId: "1", siteDomain: "atlantafalcons.com" },
+  { abbreviation: "car", slug: "carolina-panthers", city: "Carolina", nickname: "Panthers", conference: "NFC", divisionName: "South", espnId: "29", siteDomain: "panthers.com" },
+  { abbreviation: "no", slug: "new-orleans-saints", city: "New Orleans", nickname: "Saints", conference: "NFC", divisionName: "South", espnId: "18", siteDomain: "neworleanssaints.com" },
+  { abbreviation: "tb", slug: "tampa-bay-buccaneers", city: "Tampa Bay", nickname: "Buccaneers", conference: "NFC", divisionName: "South", espnId: "27", siteDomain: "buccaneers.com" },
   // NFC West
-  { abbreviation: "ari", slug: "arizona-cardinals", city: "Arizona", nickname: "Cardinals", conference: "NFC", divisionName: "West", espnId: "22" },
-  { abbreviation: "lar", slug: "los-angeles-rams", city: "Los Angeles", nickname: "Rams", conference: "NFC", divisionName: "West", espnId: "14" },
-  { abbreviation: "sf", slug: "san-francisco-49ers", city: "San Francisco", nickname: "49ers", conference: "NFC", divisionName: "West", espnId: "25" },
-  { abbreviation: "sea", slug: "seattle-seahawks", city: "Seattle", nickname: "Seahawks", conference: "NFC", divisionName: "West", espnId: "26" },
+  { abbreviation: "ari", slug: "arizona-cardinals", city: "Arizona", nickname: "Cardinals", conference: "NFC", divisionName: "West", espnId: "22", siteDomain: "azcardinals.com" },
+  { abbreviation: "lar", slug: "los-angeles-rams", city: "Los Angeles", nickname: "Rams", conference: "NFC", divisionName: "West", espnId: "14", siteDomain: "therams.com" },
+  { abbreviation: "sf", slug: "san-francisco-49ers", city: "San Francisco", nickname: "49ers", conference: "NFC", divisionName: "West", espnId: "25", siteDomain: "49ers.com" },
+  { abbreviation: "sea", slug: "seattle-seahawks", city: "Seattle", nickname: "Seahawks", conference: "NFC", divisionName: "West", espnId: "26", siteDomain: "seahawks.com" },
 ];
 
 function build(seed: TeamSeed): NflTeam {
@@ -123,6 +134,7 @@ function build(seed: TeamSeed): NflTeam {
     secondaryColor: TEAM_ACCENTS[abbr] ?? "#d4af37",
     espnId: seed.espnId,
     espnAbbr: seed.espnAbbr ?? abbr.toUpperCase(),
+    siteDomain: seed.siteDomain,
   };
 }
 

@@ -3,11 +3,13 @@
  *
  * The page is complete before this file runs — every headline, player, fixture
  * and link is in the HTML the server sent, and the team switcher, the "view
- * more" disclosures and the section links all work with JavaScript disabled.
+ * more" disclosures and the section tabs all work with JavaScript disabled.
  * Nothing here fetches anything and nothing here renders anything.
  *
  * It adds four things:
- *   1. active-section highlighting in the sticky nav;
+ *   1. tab behaviour for the section bar — switching in place instead of
+ *      navigating to an anchor, plus the ARIA roles and arrow keys that CSS
+ *      `:target` cannot supply on its own;
  *   2. outside-click and Escape closing for the team switcher;
  *   3. relative timestamps ("3 hours ago") on stamps the server rendered as
  *      absolute — the server cannot know "now" without breaking its own render
@@ -17,67 +19,144 @@
 
 const ROOT_SELECTOR = "[data-sct-root]";
 
-/* --------------------------------------------------------------- nav ---- */
+/* -------------------------------------------------------------- tabs ---- */
 
-function wireNav(root: HTMLElement): void {
+/**
+ * Turn the section bar into a tab strip.
+ *
+ * The panels are already one-at-a-time before this runs — CSS `:target` does
+ * that, and the page is usable with scripting off. What this adds is the part a
+ * selector cannot: switching without navigating (no jump to the anchor, no
+ * scroll position lost), the ARIA roles, and arrow-key movement between tabs.
+ *
+ * The roles are added here rather than server-side on purpose. `role="tab"`
+ * promises arrow-key navigation and a roving tabindex; promising that in static
+ * HTML and only delivering it if a bundle loads is worse for a screen-reader
+ * user than the plain list of links the server sends, which behaves exactly as
+ * announced.
+ */
+function wireTabs(root: HTMLElement): void {
   const nav = root.querySelector<HTMLElement>("[data-sct-nav]");
   if (!nav) return;
 
+  const list = nav.querySelector<HTMLElement>(".sct-nav-list");
   const links = Array.from(
     nav.querySelectorAll<HTMLAnchorElement>(".sct-nav-link"),
   );
   if (links.length === 0) return;
 
-  const byId = new Map<string, HTMLAnchorElement>();
-  const sections: HTMLElement[] = [];
+  const tabs: Array<{ id: string; link: HTMLAnchorElement; panel: HTMLElement }> =
+    [];
   for (const link of links) {
     const id = link.getAttribute("href")?.replace(/^#/, "");
     if (!id) continue;
-    const section = document.getElementById(id);
-    if (!section) continue;
-    byId.set(id, link);
-    sections.push(section);
+    const panel = document.getElementById(id);
+    if (!panel) continue;
+    tabs.push({ id, link, panel });
   }
-  if (sections.length === 0) return;
+  // Below two there is nothing to switch between, and taking over would only
+  // mean hiding the one panel there is.
+  if (tabs.length < 2) return;
 
-  function activate(id: string): void {
-    for (const [key, link] of byId) {
-      link.classList.toggle("is-active", key === id);
+  list?.setAttribute("role", "tablist");
+  for (const { id, link, panel } of tabs) {
+    link.setAttribute("role", "tab");
+    link.setAttribute("aria-controls", id);
+    panel.setAttribute("role", "tabpanel");
+    // Focusable so the reader who just chose a tab lands on its content, and so
+    // a panel that scrolls can be scrolled from the keyboard.
+    panel.setAttribute("tabindex", "0");
+    const item = link.closest("li");
+    if (item) item.setAttribute("role", "presentation");
+  }
+
+  function select(id: string, focusPanel: boolean): void {
+    for (const tab of tabs) {
+      const on = tab.id === id;
+      tab.panel.classList.toggle("is-active", on);
+      tab.link.classList.toggle("is-active", on);
+      tab.link.setAttribute("aria-selected", on ? "true" : "false");
+      // Roving tabindex: one stop for the whole strip, arrows move within it.
+      tab.link.tabIndex = on ? 0 : -1;
+    }
+    if (focusPanel) {
+      const current = tabs.find((tab) => tab.id === id);
+      current?.panel.focus({ preventScroll: true });
     }
   }
 
-  if (!("IntersectionObserver" in window)) return;
-
-  // Track which sections are on screen and highlight the topmost one, rather
-  // than reacting to individual crossings — with short sections a single
-  // "entered" event fires for a band the reader has already scrolled past.
-  const visible = new Set<string>();
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        const id = entry.target.id;
-        if (entry.isIntersecting) visible.add(id);
-        else visible.delete(id);
-      }
-      const first = sections.find((section) => visible.has(section.id));
-      if (first) activate(first.id);
-    },
-    {
-      // Top margin clears the sticky bar; the large negative bottom means a
-      // section counts as "current" only while its start is near the top of the
-      // viewport, which is what makes the highlight track reading position.
-      rootMargin: "-72px 0px -55% 0px",
-      threshold: 0,
-    },
-  );
-
-  for (const section of sections) observer.observe(section);
-
-  // Clicking a link should highlight it immediately rather than waiting for the
-  // scroll to settle.
-  for (const [id, link] of byId) {
-    link.addEventListener("click", () => activate(id));
+  /** The tab the URL asks for, or the first one. */
+  function fromHash(): string {
+    const id = location.hash.replace(/^#/, "");
+    return tabs.some((tab) => tab.id === id) ? id : tabs[0]!.id;
   }
+
+  // State is settled BEFORE the CSS is handed over, so there is no frame where
+  // :target has been switched off and .is-active still names the server's guess
+  // — which on a deep link (#depth-chart) would flash the Overview panel.
+  let active = fromHash();
+  select(active, false);
+  root.dataset["sctTabs"] = "js";
+
+  for (const { id, link } of tabs) {
+    link.addEventListener("click", (event) => {
+      // Let the browser handle anything that is not a plain left click — a
+      // middle click or ctrl-click on these links opens the hub at that tab,
+      // which is a genuinely useful thing to be able to do.
+      if (event.defaultPrevented) return;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey ||
+          event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      active = id;
+      select(id, true);
+      // replaceState, not pushState: the tab is worth putting in the URL so it
+      // can be linked and reloaded, but five tab clicks must not become five
+      // presses of the back button before the reader can leave the page.
+      try {
+        history.replaceState(null, "", `#${id}`);
+      } catch {
+        // Some embeddings disallow history writes (a sandboxed frame). The tab
+        // still switches; only the shareable URL is lost.
+      }
+    });
+  }
+
+  // A hash arriving from outside — an in-page link, an edit to the address bar,
+  // or the back button after some other navigation wrote one.
+  window.addEventListener("hashchange", () => {
+    const id = fromHash();
+    if (id === active) return;
+    active = id;
+    select(id, false);
+  });
+
+  // Arrow keys move between tabs, which is what role="tab" above promised.
+  list?.addEventListener("keydown", (event: KeyboardEvent) => {
+    const index = tabs.findIndex((tab) => tab.link === document.activeElement);
+    if (index < 0) return;
+
+    let next = index;
+    switch (event.key) {
+      case "ArrowRight": next = (index + 1) % tabs.length; break;
+      case "ArrowLeft": next = (index - 1 + tabs.length) % tabs.length; break;
+      case "Home": next = 0; break;
+      case "End": next = tabs.length - 1; break;
+      default: return;
+    }
+
+    event.preventDefault();
+    const tab = tabs[next]!;
+    active = tab.id;
+    select(tab.id, false);
+    tab.link.focus();
+    try {
+      history.replaceState(null, "", `#${tab.id}`);
+    } catch {
+      // See above.
+    }
+  });
 }
 
 /* ----------------------------------------------------------- switcher ---- */
@@ -110,20 +189,27 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-function relativeLabel(ms: number, now: number): string | null {
+/**
+ * @param compact Abbreviated units — "43m ago" rather than "43 min ago".
+ *   Asked for by `data-ts-compact`, and used where the stamp is a footnote in a
+ *   narrow card rather than a line of its own under a headline.
+ */
+function relativeLabel(ms: number, now: number, compact = false): string | null {
   const delta = now - ms;
   if (delta < 0) return null;
   if (delta < MINUTE) return "just now";
   if (delta < HOUR) {
     const minutes = Math.floor(delta / MINUTE);
-    return `${minutes} min ago`;
+    return compact ? `${minutes}m ago` : `${minutes} min ago`;
   }
   if (delta < DAY) {
     const hours = Math.floor(delta / HOUR);
+    if (compact) return `${hours}h ago`;
     return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
   }
   if (delta < 7 * DAY) {
     const days = Math.floor(delta / DAY);
+    if (compact) return `${days}d ago`;
     return `${days} ${days === 1 ? "day" : "days"} ago`;
   }
   // Older than a week: the absolute date the server already rendered is more
@@ -142,7 +228,7 @@ function wireTimestamps(root: HTMLElement): void {
     for (const stamp of stamps) {
       const ts = Number(stamp.getAttribute("data-ts"));
       if (!Number.isFinite(ts) || ts <= 0) continue;
-      const label = relativeLabel(ts, now);
+      const label = relativeLabel(ts, now, stamp.hasAttribute("data-ts-compact"));
       if (!label) continue;
       // The absolute form moves into the tooltip rather than being discarded —
       // "3 hours ago" is easier to read, the exact time is still available, and
@@ -214,7 +300,7 @@ function boot(): void {
     document.querySelectorAll<HTMLElement>(ROOT_SELECTOR),
   );
   for (const root of roots) {
-    wireNav(root);
+    wireTabs(root);
     wireSwitcher(root);
     wireTimestamps(root);
     wireFrameHeight(root);

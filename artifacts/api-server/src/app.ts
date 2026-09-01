@@ -92,13 +92,24 @@ async function sendIndexHtml(req: Request, res: Response) {
     // the ETag is read, or a cold server would answer with a version string that
     // does not describe what it is about to send.
     const { changedAtMs } = await ensureFreshness();
-    res.set("ETag", `W/"${contentVersion()}"`);
-    if (changedAtMs) {
-      res.set("Last-Modified", new Date(changedAtMs).toUTCString());
-    }
-    if (req.fresh) {
-      res.status(304).end();
-      return;
+    // Development sends no validators and no cache at all, because this page is
+    // the one whose ETag does not describe its own bytes: contentVersion()
+    // tracks the NEWS, and the dev switcher is injected downstream of the
+    // renderer, so the two are independent. A browser holding a copy of this
+    // page from before the bar existed revalidates, gets a 304 (the news has
+    // not changed since), and re-renders its bar-less copy — with no amount of
+    // reloading able to fix it, because a reload is exactly what produces the
+    // 304. That is not hypothetical: it is what hid the switcher. Production
+    // keeps the validators; there they are worth ~95KB a repeat visit.
+    if (!devBarEnabled()) {
+      res.set("ETag", `W/"${contentVersion()}"`);
+      if (changedAtMs) {
+        res.set("Last-Modified", new Date(changedAtMs).toUTCString());
+      }
+      if (req.fresh) {
+        res.status(304).end();
+        return;
+      }
     }
 
     // Canonical is built from the path alone — see lib/request.ts. Tool state
@@ -119,8 +130,11 @@ async function sendIndexHtml(req: Request, res: Response) {
     }
     res
       // The rendered list changes as news is ingested, so let shared caches
-      // hold it only briefly and revalidate.
-      .set("Cache-Control", "public, max-age=60")
+      // hold it only briefly and revalidate. Never in development — see above.
+      .set(
+        "Cache-Control",
+        devBarEnabled() ? "no-store" : "public, max-age=60",
+      )
       // Keep the bare tool URL from ranking on its own while still letting
       // Google use it when embedded in a StatChasers page. Mirrors the meta
       // tag in public/index.html; the header also covers non-HTML consumers.

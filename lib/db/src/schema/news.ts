@@ -9,10 +9,11 @@ import {
 /**
  * The news archive.
  *
- * Rows arrive from the Dynasty Command feed on a timer and are never deleted —
- * this is the store of record for what the tool renders, and the reason it can
- * show a back catalogue the upstream feed no longer carries (upstream returns
- * only its latest ~25 items).
+ * Rows arrive on a timer from two providers — Dynasty Command's player wire and
+ * the 32 clubs' own RSS feeds — and are never deleted. This is the store of
+ * record for what the tool renders, and the reason it can show a back catalogue
+ * neither source still carries: the wire returns only its latest ~25 items, and
+ * a club feed only its latest 5 to 100.
  */
 export const newsItems = pgTable(
   "news_items",
@@ -41,6 +42,21 @@ export const newsItems = pgTable(
     pubDateMs: bigint("pub_date_ms", { mode: "number" }),
 
     playerName: text("player_name"),
+
+    /**
+     * The club this story belongs to, as our lowercase code ("ne"), or null.
+     *
+     * Only set by a provider that KNOWS the team rather than infers it — which
+     * today means the club feeds, where the team is the feed we fetched. The
+     * player wire leaves it null and its rows are still resolved at read time
+     * from the headshot and then the player's name (lib/news-query.ts).
+     *
+     * That split is the whole point of the column: a team page can filter the
+     * club rows in SQL through the index below, and only has to scan for the
+     * derived ones. Nothing backfills it for the wire, because a guess written
+     * into a column is indistinguishable from a fact once it is stored.
+     */
+    teamAbbr: text("team_abbr"),
     image: text("image"),
     source: text("source").default("Dynasty Command"),
 
@@ -63,6 +79,12 @@ export const newsItems = pgTable(
     // The list's only ordering, newest first.
     index("idx_news_pub_date_ms").on(table.pubDateMs.desc()),
     index("idx_news_player_name").on(table.playerName),
+    // A team page's read: one club, newest first. Composite rather than a bare
+    // team index so the ordering comes off the index too.
+    index("idx_news_team_abbr_pub_date_ms").on(
+      table.teamAbbr,
+      table.pubDateMs.desc(),
+    ),
   ],
 );
 

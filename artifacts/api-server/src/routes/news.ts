@@ -7,6 +7,9 @@ import { summarize, summariesEnabled } from "../lib/summarize";
 import { ensureTeams } from "../lib/teams";
 import { ensureFreshness, invalidateFreshness } from "../lib/freshness";
 import { invalidateRenderCache } from "../lib/ssr";
+import { fetchClubNews } from "../lib/club-news";
+import type { RawNewsItem } from "../lib/news-item";
+import { TEAMS } from "../lib/team/teams";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -57,6 +60,8 @@ async function backfillSummaries(): Promise<void> {
 }
 
 const router = Router();
+
+export type { RawNewsItem };
 
 /**
  * Where to fetch the feed, in order of preference.
@@ -141,15 +146,6 @@ function makeFallbackId(item: {
   return `fallback-${Math.abs(hash).toString(36)}`;
 }
 
-interface RawNewsItem {
-  id?: string;
-  title?: string;
-  link?: string;
-  pubDate?: string;
-  playerName?: string;
-  image?: string;
-  [key: string]: unknown;
-}
 
 /**
  * Traffic-triggered refresh.
@@ -473,6 +469,109 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
   return items;
 }
 
+/** The provider label on a club row when the item does not name an outlet. */
+export const CLUB_PROVIDER = "NFL Clubs";
+
+/**
+ * How many of the 32 club feeds have to answer before a sweep counts.
+ *
+ * Not all of them. These are 32 independent sites and one being down is normal;
+ * failing the whole run over it would throw away the 31 that worked and leave
+ * the archive no fresher than doing nothing. Below this, though, the shape of
+ * the failure has changed from "a club is having a bad day" to "something on
+ * our side stopped reaching the internet", and that is worth reporting as a
+ * failure rather than as a thin but successful ingest.
+ */
+const CLUB_MIN_OK = 8;
+
+/**
+ * Outcome of the last club sweep, reported alongside the wire's on /api/status.
+ *
+ * Separate state rather than folded into ingestState. The two providers fail
+ * independently and for unrelated reasons — the wire behind a WAF, a club
+ * behind its own outage — and one number covering both would say "the ingest is
+ * fine" while the half of it that carries team pages was dead.
+ */
+interface ClubIngestState {
+  lastAttemptMs: number | null;
+  lastSuccessMs: number | null;
+  lastResult: { inserted: number; updated: number; total: number } | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+  /** Clubs that answered on the last sweep, out of 32. */
+  clubsOk: number | null;
+  /** Clubs that could not be read, by code. */
+  clubsFailed: string[];
+  /** Clubs answering 200 but carrying nothing recent — see lib/club-news.ts. */
+  clubsStale: string[];
+}
+
+const clubState: ClubIngestState = {
+  lastAttemptMs: null,
+  lastSuccessMs: null,
+  lastResult: null,
+  lastError: null,
+  consecutiveFailures: 0,
+  clubsOk: null,
+  clubsFailed: [],
+  clubsStale: [],
+};
+
+export function clubIngestStatus(): ClubIngestState {
+  return { ...clubState };
+}
+
+/**
+ * Sweep all 32 club feeds and store what they carry.
+ *
+ * Deliberately a separate entry point from runIngest() rather than a step
+ * inside it. The wire is fetched on every traffic-triggered refresh, which can
+ * be as often as every ten minutes per instance; putting 32 more requests on
+ * that path would multiply this app's outbound traffic by an order of magnitude
+ * to re-read feeds that change a few times a day. The timer in index.ts calls
+ * this on its own, slower cadence.
+ */
+export async function runClubIngest(): Promise<IngestResult> {
+  clubState.lastAttemptMs = Date.now();
+
+  try {
+    const sweep = await fetchClubNews();
+
+    if (sweep.ok < CLUB_MIN_OK) {
+      throw new Error(
+        `only ${sweep.ok} of ${sweep.ok + sweep.failed.length} club feeds answered` +
+          (sweep.failed[0] ? ` — e.g. ${sweep.failed[0].team}: ${sweep.failed[0].error}` : ""),
+      );
+    }
+
+    const result = await storeItems(sweep.items, CLUB_PROVIDER);
+
+    clubState.lastSuccessMs = Date.now();
+    clubState.lastResult = result;
+    clubState.lastError = null;
+    clubState.consecutiveFailures = 0;
+    clubState.clubsOk = sweep.ok;
+    clubState.clubsFailed = sweep.failed.map((f) => f.team);
+    clubState.clubsStale = sweep.stale.map((s) => s.team);
+
+    logger.info(
+      {
+        ...result,
+        clubsOk: sweep.ok,
+        clubsFailed: sweep.failed.length,
+        clubsStale: sweep.stale.length,
+        tooOld: sweep.tooOld,
+      },
+      "Club news sweep complete",
+    );
+    return result;
+  } catch (err) {
+    clubState.lastError = err instanceof Error ? err.message : String(err);
+    clubState.consecutiveFailures++;
+    throw err;
+  }
+}
+
 /**
  * Accept either a bare array or `{ items: [...] }`. Shared by the fetch path and
  * the pushed-body path so both understand the same two shapes.
@@ -483,8 +582,28 @@ export function coerceItems(data: unknown): RawNewsItem[] {
   return Array.isArray(items) ? (items as RawNewsItem[]) : [];
 }
 
-/** Write a batch of feed items into the archive. Never fetches anything. */
-async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
+/**
+ * The label describing who relayed the feed we are configured to read.
+ *
+ * A named constant rather than a literal at the insert site because it is about
+ * to stop being the only one: a second provider writes through this same
+ * storeItems() and must land rows carrying its own name, or the archive merges
+ * two feeds into one indistinguishable pile and no one can tell which of them
+ * went quiet.
+ */
+export const DYNASTY_PROVIDER = "Dynasty Command";
+
+/**
+ * Write a batch of feed items into the archive. Never fetches anything.
+ *
+ * `provider` names whoever relayed this batch. An item may override it with its
+ * own `source` when it knows the reporting outlet; see RawNewsItem.source for
+ * why the current feed never does.
+ */
+async function storeItems(
+  rawItems: RawNewsItem[],
+  provider: string = DYNASTY_PROVIDER,
+): Promise<IngestResult> {
   const now = new Date();
 
   // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
@@ -499,7 +618,12 @@ async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
   const incoming = new Map<string, { id: string; item: RawNewsItem }>();
   for (const item of rawItems) {
     const id = item.id?.toString().trim() || makeFallbackId(item);
-    incoming.set(newsDedupeKey({ title: item.title, id }), { id, item });
+    // Scoped by team for the club feeds, unscoped for the wire — see
+    // newsDedupeKey. Two clubs filing "Practice Report" are two stories.
+    incoming.set(
+      newsDedupeKey({ title: item.title, id, scope: item.teamAbbr }),
+      { id, item },
+    );
   }
 
   let inserted = 0;
@@ -533,6 +657,8 @@ async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
 
     for (const [dedupeKey, { id, item }] of incoming) {
       const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+      const outlet = item.source?.toString().trim() || null;
+      const teamAbbr = item.teamAbbr?.toString().trim().toLowerCase() || null;
       const fields = {
         title: item.title ?? "(no title)",
         link: item.link ?? null,
@@ -540,14 +666,26 @@ async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
         pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
+        // Rewritten on every pass, unlike summary below: this is a fact about
+        // which feed the row came from, and it cannot drift the way a generated
+        // sentence can.
+        teamAbbr,
       };
+
+      // Attribution upgrades but never downgrades. A row that already names the
+      // outlet that broke the story must not be flattened back to a relay's
+      // name because a second, less specific provider re-saw the same headline
+      // — and with two providers writing here, that race is routine rather than
+      // hypothetical. So an update carries `source` only when this batch
+      // actually knows an outlet; otherwise the stored value stands.
+      const attribution = outlet ? { source: outlet } : {};
 
       const existingId = idByKey.get(dedupeKey);
       if (existingId) {
         // firstSeenAt, summary and the original id are deliberately untouched.
         await tx
           .update(newsItems)
-          .set({ ...fields, lastSeenAt: now })
+          .set({ ...fields, ...attribution, lastSeenAt: now })
           .where(eq(newsItems.id, existingId));
         updated++;
       } else if (keyById.has(id)) {
@@ -556,7 +694,7 @@ async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
         // instead of colliding here again.
         await tx
           .update(newsItems)
-          .set({ ...fields, dedupeKey, lastSeenAt: now })
+          .set({ ...fields, ...attribution, dedupeKey, lastSeenAt: now })
           .where(eq(newsItems.id, id));
         updated++;
       } else {
@@ -564,7 +702,15 @@ async function storeItems(rawItems: RawNewsItem[]): Promise<IngestResult> {
           ...fields,
           id,
           dedupeKey,
-          source: "Dynasty Command",
+          source: outlet ?? provider,
+          // Insert only. A club's standfirst is better than a generated
+          // synopsis and is free, so it is worth taking on the way in — but
+          // setting it on update too would overwrite whatever
+          // backfillSummaries() produced for the row, on every single ingest,
+          // for as long as the item stays in the feed.
+          ...(item.summary?.toString().trim()
+            ? { summary: item.summary.toString().trim() }
+            : {}),
           firstSeenAt: now,
           lastSeenAt: now,
         });
@@ -665,6 +811,42 @@ router.post("/ingest", async (req, res) => {
 });
 
 /**
+ * POST /api/ingest/clubs — sweep the 32 club feeds now.
+ *
+ * The club half of POST /api/ingest, kept separate for the reason
+ * runClubIngest() is: the two providers run on different cadences and fail for
+ * unrelated reasons, and a single endpoint that did both would make "the wire
+ * is blocked" and "one club is down" the same 500.
+ *
+ * Pull-only. There is no push mode here because there is nothing to push
+ * through — a caller with items already has POST /api/ingest, and a second
+ * anonymous way to write arbitrary headlines into the archive is exactly what
+ * that endpoint's guard exists to prevent.
+ */
+router.post("/ingest/clubs", async (req, res) => {
+  const secret = process.env["INGEST_SECRET"];
+  if (secret && req.get("x-ingest-secret") !== secret) {
+    res.status(401).json({ ok: false, error: "unauthorized" });
+    return;
+  }
+
+  try {
+    const result = await runClubIngest();
+    const clubs = clubIngestStatus();
+    res.json({
+      ok: true,
+      ...result,
+      feedsOk: clubs.clubsOk,
+      feedsFailed: clubs.clubsFailed,
+      feedsStale: clubs.clubsStale,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Club news sweep failed");
+    res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
+/**
  * GET /api/status — is this instance actually keeping the archive moving?
  *
  * `/api/healthz` answers "ok" as soon as the process is listening, which says
@@ -680,6 +862,7 @@ router.post("/ingest", async (req, res) => {
 router.get("/status", (_req, res) => {
   void (async () => {
     const ingest = ingestStatus();
+    const clubs = clubIngestStatus();
     const nowMs = Date.now();
 
     try {
@@ -705,6 +888,27 @@ router.get("/status", (_req, res) => {
           lastError: ingest.lastError,
           consecutiveFailures: ingest.consecutiveFailures,
           minGapMs: REFRESH_MIN_GAP_MS,
+        },
+        // The second provider, reported separately for the reason
+        // ClubIngestState gives: these two fail independently, and a single
+        // verdict covering both would call the ingest healthy while the half
+        // that feeds the team pages was dead.
+        clubs: {
+          lastAttempt: iso(clubs.lastAttemptMs),
+          lastSuccess: iso(clubs.lastSuccessMs),
+          secondsSinceLastSuccess:
+            clubs.lastSuccessMs === null
+              ? null
+              : Math.round((nowMs - clubs.lastSuccessMs) / 1000),
+          lastResult: clubs.lastResult,
+          lastError: clubs.lastError,
+          consecutiveFailures: clubs.consecutiveFailures,
+          feedsOk: clubs.clubsOk,
+          feedsTotal: TEAMS.length,
+          // Named rather than counted: "3 clubs failed" sends someone to the
+          // logs, "was, min, chi" is already the answer.
+          feedsFailed: clubs.clubsFailed,
+          feedsStale: clubs.clubsStale,
         },
         archive: {
           items: count,

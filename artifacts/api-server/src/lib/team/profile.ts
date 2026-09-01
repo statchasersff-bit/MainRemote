@@ -7,9 +7,10 @@
  * page's rule everywhere (see the empty-state note in team-render.ts).
  *
  * The record needs care. ESPN's team document reports the record for whatever
- * part of the calendar is current, which before Week 1 is the PRESEASON record.
- * `regularSeasonUnderway` from lib/team/nfl-state.ts is what gates it, and the
- * gate lives in the caller (team-data.ts) so this module stays a plain reader.
+ * part of the calendar is current, which before Week 1 is the PRESEASON record,
+ * with nothing in the record itself to say so. `nextGameType` below is the
+ * evidence that settles it; the gate that acts on it lives in the caller
+ * (team-data.ts) so this module stays a plain reader.
  */
 
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
@@ -22,6 +23,21 @@ export interface TeamProfile {
   /** e.g. "1st in AFC East". Null when absent. */
   standing: string | null;
   headCoach: string | null;
+  /**
+   * Which part of the calendar this team's NEXT scheduled game belongs to.
+   *
+   * Reported rather than acted on, because it is the only thing in the response
+   * that says what the record above is a record OF. ESPN's `record.items` has
+   * exactly three entries — total, home, road — and none of them names a season
+   * type, so on 31 August the Eagles' "total" of 0-3 is a preseason result with
+   * nothing on it to say so. The next event does say so: while it is a
+   * preseason fixture, no regular-season game has been played and the total can
+   * only be exhibition football.
+   *
+   * Null when ESPN lists no next event at all — after a team's final game, and
+   * through the deep offseason. The caller falls back to the calendar there.
+   */
+  nextGameType: "pre" | "regular" | "post" | null;
   fetchedAt: number;
 }
 
@@ -31,7 +47,25 @@ interface EspnTeamResponse {
     record?: {
       items?: Array<{ type?: string; summary?: string }>;
     };
+    nextEvent?: Array<{ seasonType?: { type?: number } }>;
   };
+}
+
+/** ESPN's season-type ids. 4 is the offseason and is not a game. */
+function nextGameTypeOf(
+  team: EspnTeamResponse["team"],
+): TeamProfile["nextGameType"] {
+  const id = team?.nextEvent?.[0]?.seasonType?.type;
+  switch (id) {
+    case 1:
+      return "pre";
+    case 2:
+      return "regular";
+    case 3:
+      return "post";
+    default:
+      return null;
+  }
 }
 
 interface EspnCoachesResponse {
@@ -104,6 +138,7 @@ const cache = createKeyedCache<TeamProfile>({
       record: total?.summary?.trim() || null,
       standing: team?.standingSummary?.trim() || null,
       headCoach: coachResult.status === "fulfilled" ? coachResult.value : null,
+      nextGameType: nextGameTypeOf(team),
       fetchedAt: Date.now(),
     };
   },

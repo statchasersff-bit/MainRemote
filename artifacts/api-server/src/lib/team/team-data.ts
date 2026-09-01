@@ -22,8 +22,9 @@ import { ensureTeams } from "../teams";
 import { itemTimestamp, type NewsItem } from "../render";
 import { nflState, type NflState } from "./nfl-state";
 import { getTeamProfile, type TeamProfile } from "./profile";
-import { getTeamSchedule, type TeamSchedule } from "./schedule";
+import { getTeamSchedule, upcomingGames, type TeamSchedule } from "./schedule";
 import { getTeamSnapshot, type TeamSnapshot } from "./snapshot";
+import { getTeamStats, type TeamStats } from "./stats";
 import {
   depthPreview,
   fantasyCornerstones,
@@ -37,9 +38,18 @@ import {
 import type { NflTeam } from "./teams";
 
 /** Stories shown before "View more" reveals the rest. */
-export const TEAM_NEWS_VISIBLE = 6;
-/** Stories fetched in total; the remainder ships hidden behind the disclosure. */
-export const TEAM_NEWS_LIMIT = 18;
+export const TEAM_NEWS_VISIBLE = 10;
+/**
+ * Stories fetched in total; the remainder ships hidden behind the disclosure.
+ *
+ * Sized against the reference these pages are matching (thehuddle's team
+ * news/injuries pages), which lists a team's whole recent run — order 30-40
+ * items across about four months — in one column rather than a handful with a
+ * link away. Sixty is that with headroom for a team having a loud fortnight,
+ * and it costs nothing when the archive holds less: the read is bounded by
+ * TEAM_WINDOW_DAYS, and this is only the cap on what comes back.
+ */
+export const TEAM_NEWS_LIMIT = 60;
 
 export interface TeamPageData {
   team: NflTeam;
@@ -59,6 +69,36 @@ export interface TeamPageData {
   schedule: TeamSchedule | null;
   profile: TeamProfile | null;
   snapshot: TeamSnapshot | null;
+  /**
+   * Offence and defence with league ranks, for the Stats tab. Shares its season
+   * with the snapshot rather than picking its own: both describe completed
+   * football, so before Week 1 both describe last season and the page has one
+   * season to explain instead of two.
+   */
+  stats: TeamStats | null;
+
+  /**
+   * How the next opponent's defence is doing, for the one line of context on
+   * the Next Game card.
+   *
+   * Deliberately one number, and a real one: points allowed per game with its
+   * league rank, read from the same league table the Stats tab is built on. It
+   * costs almost nothing to add — that table is already in memory for this
+   * season, and this is one map lookup against it.
+   *
+   * `abbreviation` is carried so the renderer can check that the game it picked
+   * is the game this was fetched for. The two run off different clocks — this
+   * one Date.now(), the renderer whatever it was handed — and within four hours
+   * of a kickoff they can disagree about which fixture is next. When they do,
+   * the line is dropped rather than printed against the wrong opponent.
+   */
+  nextOpponentDefense: {
+    abbreviation: string;
+    /** Points allowed per game, preformatted: "18.8". */
+    value: string;
+    /** e.g. "4th". Null when the metric could not be ranked. */
+    rankLabel: string | null;
+  } | null;
 
   /** Changes whenever any input changes — used as the render cache key. */
   version: string;
@@ -66,6 +106,64 @@ export interface TeamPageData {
 
 function settled<T>(result: PromiseSettledResult<T | null>): T | null {
   return result.status === "fulfilled" ? result.value : null;
+}
+
+/**
+ * Does ESPN's win-loss record describe the season this page is labelled with?
+ *
+ * The calendar cannot answer this. Sleeper flips `season_type` to "regular" and
+ * `week` to 1 as soon as the preseason ends — days before anybody plays a
+ * regular-season game — so `regularSeasonUnderway` is true for most of the last
+ * week of August while ESPN's "total" record is still the PRESEASON record.
+ * That is how a Philadelphia hub headed "2026 Season" came to print "Record
+ * 0-3" for a season in which the Eagles had not played.
+ *
+ * The schedule answers it directly. It is fetched for season type 2, so every
+ * game in it is a regular-season game, and a game marked final is one that was
+ * actually played. One of those and the record is a regular-season record; none
+ * of them and it cannot be, whatever the calendar says. Nothing is inferred
+ * from the date at all.
+ *
+ * The cost is that a team shows no record between kickoff of Week 1 and its own
+ * first game — where the true answer is 0-0, which is not worth a line in the
+ * hero. That is the right side to be wrong on: this field's whole purpose is to
+ * say how the season is going, and before a team has played, it isn't.
+ *
+ * With no schedule to read, the two weaker signals are taken together: the next
+ * game still being a preseason fixture is proof the record is exhibition
+ * football, and past that the calendar is the best evidence left.
+ */
+function recordDescribesSeason(
+  profile: TeamProfile,
+  schedule: TeamSchedule | null,
+  state: NflState,
+): boolean {
+  if (schedule) return schedule.games.some((game) => game.status === "final");
+  if (profile.nextGameType === "pre") return false;
+  return state.regularSeasonUnderway;
+}
+
+/**
+ * Points allowed per game, and its rank, for whoever this team plays next.
+ *
+ * Null whenever anything is missing — no schedule, an opponent ESPN named that
+ * the canonical table does not know, a season the stats provider is down for.
+ * One absent line on a card, never a placeholder.
+ */
+async function opponentDefense(
+  schedule: TeamSchedule | null,
+  season: number,
+): Promise<TeamPageData["nextOpponentDefense"]> {
+  const opponent = upcomingGames(schedule, Date.now(), 1)[0]?.opponent;
+  if (!opponent) return null;
+  const stats = await getTeamStats(opponent, season).catch(() => null);
+  const row = stats?.defense.find((cell) => cell.key === "def-points");
+  if (!row) return null;
+  return {
+    abbreviation: opponent.abbreviation,
+    value: row.value,
+    rankLabel: row.rankLabel,
+  };
 }
 
 export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
@@ -76,22 +174,26 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
 
   const state = await nflState();
 
-  const [newsResult, scheduleResult, profileResult, snapshotResult] =
+  const [newsResult, scheduleResult, profileResult, snapshotResult, statsResult] =
     await Promise.allSettled([
       listNewsForTeam(team.abbreviation, { limit: TEAM_NEWS_LIMIT }),
       getTeamSchedule(team, state.season),
       getTeamProfile(team, state.season),
       getTeamSnapshot(team, state.statsSeason),
+      getTeamStats(team, state.statsSeason),
     ]);
 
   const news = settled(newsResult) ?? [];
   const roster = getTeamRoster(team.abbreviation);
   const profile = settled(profileResult);
+  const schedule = settled(scheduleResult);
 
   const newsUpdatedAtMs = news.reduce<number | null>((newest, item) => {
     const ts = itemTimestamp(item);
     return ts !== null && (newest === null || ts > newest) ? ts : newest;
   }, null);
+
+  const nextOpponentDefense = await opponentDefense(schedule, state.statsSeason);
 
   return {
     team,
@@ -103,15 +205,17 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     depthChart: depthPreview(roster),
     injuries: injuryWatch(roster),
     rosterFetchedAt: rosterFetchedAt(),
-    schedule: settled(scheduleResult),
+    schedule,
     profile:
-      profile && !state.regularSeasonUnderway
-        ? // Before Week 1 ESPN's "record" is the preseason record. Drop the
-          // field rather than print a number that describes exhibition games
-          // under a heading that says 2026.
+      profile && !recordDescribesSeason(profile, schedule, state)
+        ? // ESPN's "record" still describes the preseason. Drop the field
+          // rather than print a number that counts exhibition games under a
+          // heading that names the regular season.
           { ...profile, record: null, standing: null }
         : profile,
     snapshot: settled(snapshotResult),
+    stats: settled(statsResult),
+    nextOpponentDefense,
     version: "",
   };
 }
@@ -133,6 +237,8 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     data.schedule?.fetchedAt ?? 0,
     data.profile?.fetchedAt ?? 0,
     data.snapshot?.fetchedAt ?? 0,
+    data.stats?.fetchedAt ?? 0,
+    data.nextOpponentDefense?.rankLabel ?? "",
     data.state.season,
     data.state.week,
   ].join("-");
