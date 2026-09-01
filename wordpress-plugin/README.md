@@ -1,6 +1,7 @@
 # StatChasers WordPress plugin
 
-Mounts the StatChasers news tool **directly into a WordPress page** — no iframe.
+Mounts the StatChasers news tool and NFL team hubs **directly into WordPress pages**
+— no iframe.
 
 ## Why
 
@@ -32,13 +33,69 @@ nothing is hidden behind a click.
    Alternatively set the `statchasers_news_origin` option, or filter
    `statchasers_news_origin`.
 
-3. Add the shortcode to a page:
+3. Add a shortcode to a page:
 
    ```
-   [statchasers_news]
+   [statchasers_news]     the player news tool
+   [statchasers_team]     an NFL team hub
    ```
 
-## Shortcode attributes
+## The team hubs — `[statchasers_team]`
+
+One shortcode per team page, at `/nfl/teams/<slug>/`. It mounts the same team
+hub the API serves at `/team/<slug>`: team stats with NFL ranks, season history,
+the offensive depth chart, the schedule, the fantasy outlook and the team's news
+archive — all server-rendered into your page's HTML.
+
+| Attribute | Default          | Meaning |
+|-----------|------------------|---------|
+| `slug`    | the page's slug  | Which team to render, e.g. `philadelphia-eagles`. |
+
+**`slug` is usually unnecessary.** It defaults to the WordPress page's own slug,
+and the API's team slugs are the same strings, so all 32 pages can carry one
+identical shortcode:
+
+```
+[statchasers_team]
+```
+
+Set it explicitly only where the page slug isn't the team slug:
+
+```
+[statchasers_team slug="philadelphia-eagles"]
+```
+
+### Why this shortcode is what makes team pages rank
+
+The API serves every team page with `noindex, indexifembedded`. That is
+deliberate — the bare app URL should not compete with `statchasers.com` — but it
+has a consequence worth stating plainly: **until a page embeds a team hub, that
+hub is invisible to search.** `indexifembedded` with no embed is just `noindex`.
+This shortcode is the embed. Without it the content exists and ranks nowhere.
+
+The fragment carries no `<h1>`, `<title>`, canonical or robots directive; the
+WordPress page owns all of those, exactly as with the news tool. The hub's tab
+strip is `:target`-based, so all five tabs are in the HTML on first response and
+the only URL state it can produce is a `#hash` — not a separate URL.
+
+### Server-side configuration
+
+Set `SC_TEAM_PATH_PREFIX` on the **API deployment** to the public path of these
+pages:
+
+```
+SC_TEAM_PATH_PREFIX=/nfl/teams/
+```
+
+The hub's team switcher links all 32 teams. Left unset it points them at the
+API's own `/team/<slug>`, so a reader clicking a team inside your page leaves
+the site for the bare tool. Setting it also drops the `?embed=1` the switcher
+appends for the local mount — which matters, because `embed` is a reserved
+WordPress query var and `/nfl/teams/dallas-cowboys/?embed=1` serves WordPress's
+oEmbed template instead of the page. (`SC_TEAM_LINK_QUERY` overrides that query
+if a mount needs something else.)
+
+## News shortcode attributes
 
 | Attribute      | Default | Meaning |
 |----------------|---------|---------|
@@ -172,9 +229,16 @@ don't let tool state leak into the existing page's URL.
 
 ## Caching
 
-- Rendered fragments are cached in a transient for 5 minutes.
+- Rendered fragments are cached in a transient for 5 minutes — news and team
+  hubs alike, each team cached under its own key.
 - The last successful render is kept for 24 hours and served if the API is slow
-  or unreachable, so a hiccup shows stale news rather than an empty box.
+  or unreachable, so a hiccup shows stale news rather than an empty box. A team
+  hub with no cached copy yet renders nothing rather than an empty shell: unlike
+  the news tool there is no client-side render to fall back to, and the rest of
+  the page — H1, copy, internal links — is left intact.
+- The team endpoint gets an 8-second timeout rather than the news tool's 5. A
+  hub assembles season stats, a depth chart, a schedule and the news archive, so
+  a cold render is legitimately slower than a list of headlines.
 - Asset versions come from `/embed/assets.json` (cached 15 minutes) and are used
   as the enqueue `ver`, so a deploy busts browser caches automatically.
 

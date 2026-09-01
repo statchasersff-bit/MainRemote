@@ -112,6 +112,15 @@ _Replace the heading above with the project's name, and this line with one sente
   `SC_PLAYER_PROFILE_URL_TEMPLATE` (empty by default — set it and every player
   name on a team page becomes a link), `SC_SOS_URL`, `SC_FPA_URL`,
   `SC_NEWS_URL`.
+- **`SC_TEAM_PATH_PREFIX` must be set for the WordPress mount** (default
+  `/team/`). It is where the team switcher's 32 links point inside
+  `/embed/team/:slug`, so left at the default a reader clicking a team on
+  statchasers.com is sent to the bare tool on this origin. Set it to
+  `/nfl/teams/`. The `?embed=1` the switcher appends is derived from it rather
+  than fixed — kept while the prefix is local, dropped once it points off-origin,
+  because `embed` is a reserved WordPress query var and
+  `/nfl/teams/dallas-cowboys/?embed=1` serves WordPress's oEmbed template
+  instead of the page. `SC_TEAM_LINK_QUERY` overrides it either way.
 - `node ./scripts/import-sqlite-archive.mjs` (from `artifacts/api-server`) —
   one-time import of the legacy SQLite archive
 - `INGEST_URL=https://<deployment>/api/ingest node ./scripts/ingest.mjs` — force a
@@ -198,7 +207,12 @@ and the deployment. It does not touch the news page.
 - `src/lib/team-ssr.ts`, `src/lib/team-seo.ts` — page assembly, fragment cache
   and head metadata. `public/team.html` is the shell.
 - `src/routes/team.ts` — `/team`, `/team/:slug`, `/team/:slug?embed=1` and
-  `/embed/team/:slug` (the bare fragment for the WordPress mount).
+  `/embed/team/:slug` (the bare fragment for the WordPress mount). The consumer
+  of that last one is `[statchasers_team]` in
+  `wordpress-plugin/statchasers-news/statchasers-team.php` — and it is the only
+  thing that makes these pages indexable at all, since every team route ships
+  `noindex, indexifembedded` and an `indexifembedded` page nobody embeds is
+  simply noindexed.
 - `src/client/team.ts` → `public/dist/statchasers-team.js` — enhancement only:
   sticky-nav highlighting, switcher dismissal, relative timestamps, iframe
   height. `public/team.css` is its stylesheet.

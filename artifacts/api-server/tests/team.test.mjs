@@ -493,3 +493,69 @@ describe("the preview switcher never leaves the pane", () => {
     assert.equal(raw.status, 404, "the source view must not exist in production");
   });
 });
+
+/**
+ * The WordPress mount's switcher links.
+ *
+ * `?embed=1` is meaningful only against this origin's own /team/:slug, where it
+ * asks for the chrome-less render. Once SC_TEAM_PATH_PREFIX points the switcher
+ * at statchasers.com the query is actively harmful: `embed` is a reserved
+ * WordPress public query var, so /nfl/teams/<slug>/?embed=1 serves WordPress's
+ * oEmbed template instead of the page — 31 of them per team page, each a
+ * crawlable variant of a URL that already exists clean.
+ *
+ * Booted separately from the suite above because the behaviour IS the
+ * environment: one server cannot answer for both configurations.
+ */
+describe("the WordPress fragment's team switcher", () => {
+  async function fragment(env) {
+    const srv = await startServer(env);
+    try {
+      const res = await fetch(`${srv.origin}/embed/team/phi`);
+      assert.equal(res.status, 200);
+      return await res.text();
+    } finally {
+      await srv.stop();
+    }
+  }
+
+  test("drops ?embed=1 once the links leave this origin", async () => {
+    const html = await fragment({ SC_TEAM_PATH_PREFIX: "/nfl/teams/" });
+
+    const hrefs = [...html.matchAll(/class="sct-switch-team[^"]*"\s+href="([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+    assert.equal(hrefs.length, 32, "every team is in the switcher");
+
+    for (const href of hrefs) {
+      assert.ok(
+        href.startsWith("/nfl/teams/"),
+        `switcher link must use the configured prefix, got ${href}`,
+      );
+      assert.ok(
+        !href.includes("embed="),
+        `an off-origin switcher link must not carry embed= (${href}) — ` +
+          `WordPress serves its oEmbed template for that URL`,
+      );
+    }
+  });
+
+  test("keeps ?embed=1 while the prefix is still this origin's own", async () => {
+    const html = await fragment({});
+    const hrefs = [...html.matchAll(/class="sct-switch-team[^"]*"\s+href="([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+    assert.equal(hrefs.length, 32);
+    for (const href of hrefs) {
+      assert.match(href, /^\/team\/[a-z0-9-]+\?embed=1$/);
+    }
+  });
+
+  test("SC_TEAM_LINK_QUERY overrides both", async () => {
+    const html = await fragment({
+      SC_TEAM_PATH_PREFIX: "/nfl/teams/",
+      SC_TEAM_LINK_QUERY: "?src=hub",
+    });
+    assert.match(html, /href="\/nfl\/teams\/dallas-cowboys\?src=hub"/);
+  });
+});

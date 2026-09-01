@@ -53,6 +53,31 @@ function switcherQuery(req: Request): string {
   return isEmbed(req) ? "?embed=1" : "";
 }
 
+/** This origin's own team path — the prefix used when nothing overrides it. */
+const TEAM_PATH_PREFIX = "/team/";
+
+/**
+ * The query string appended to switcher links in the WordPress fragment.
+ *
+ * `?embed=1` is only meaningful against this origin's `/team/:slug`, where it
+ * asks for the chrome-less render. Once SC_TEAM_PATH_PREFIX points the switcher
+ * at statchasers.com the query is not just useless, it is harmful: `embed` is a
+ * reserved WordPress public query var, so `/nfl/teams/dallas-cowboys/?embed=1`
+ * serves WordPress's oEmbed template instead of the page. Every team page would
+ * carry 31 links to that, and each one is a crawlable URL variant of a page
+ * that already exists at a clean address.
+ *
+ * So it is derived rather than fixed: keep it while the prefix is still local,
+ * drop it once the links leave this origin. SC_TEAM_LINK_QUERY overrides both
+ * for a mount that needs something else; set it to a single space to force it
+ * empty while the prefix is still the default.
+ */
+function fragmentLinkQuery(prefix: string): string {
+  const override = process.env["SC_TEAM_LINK_QUERY"];
+  if (override !== undefined) return override.trim();
+  return prefix === TEAM_PATH_PREFIX ? "?embed=1" : "";
+}
+
 function noStoreHtml(res: Response, status: number, html: string): void {
   res
     .status(status)
@@ -187,14 +212,16 @@ router.get("/embed/team/:slug", (req, res) => {
       return;
     }
 
+    // Switcher links point at the public site's team pages, not at this
+    // origin — otherwise clicking a team inside a WordPress page would send
+    // the reader to the bare tool.
+    const prefix = (process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX).trim();
+
     try {
       const result = await renderTeamFragment(team, {
         embed: true,
-        // Switcher links point at the public site's team pages, not at this
-        // origin — otherwise clicking a team inside a WordPress page would send
-        // the reader to the bare tool.
-        teamPathPrefix: (process.env["SC_TEAM_PATH_PREFIX"] ?? "/team/").trim(),
-        linkQuery: "?embed=1",
+        teamPathPrefix: prefix,
+        linkQuery: fragmentLinkQuery(prefix),
       });
       res.set("ETag", `W/"${result.version}"`);
       if (req.fresh) {

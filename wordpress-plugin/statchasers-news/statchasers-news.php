@@ -38,6 +38,12 @@ const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 
+// The team hub shortcode. Required after the constants above and before any
+// hook registration, because it reuses this file's origin, asset-version and
+// canonical helpers — all of which are function declarations and so are
+// available regardless of order, but the constants are not.
+require_once __DIR__ . '/statchasers-team.php';
+
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 
@@ -396,9 +402,9 @@ add_shortcode( STATCHASERS_NEWS_SHORTCODE, 'statchasers_news_shortcode' );
  * ---------------------------------------------------------------------------
  */
 
-/** Is the tool actually on the page being rendered? */
+/** Is either tool actually on the page being rendered? */
 function statchasers_news_is_active(): bool {
-	return statchasers_news_post_has_shortcode();
+	return statchasers_news_post_has_shortcode() || statchasers_team_post_has_shortcode();
 }
 
 /**
@@ -463,7 +469,12 @@ function statchasers_news_schema_description(): string {
 	}
 
 	if ( '' === $description ) {
-		$description = 'Browse NFL player news and injury updates for fantasy football, with headlines, publish times and sources for each report.';
+		// Last resort only — reached when the page has neither a Rank Math
+		// description nor an excerpt. Worded for whichever tool is mounted,
+		// because describing a team hub as a news feed is worse than no node.
+		$description = statchasers_team_post_has_shortcode()
+			? 'An NFL team hub for fantasy football: team stats and NFL ranks, offensive depth chart, schedule, and the latest player news and injury designations.'
+			: 'Browse NFL player news and injury updates for fantasy football, with headlines, publish times and sources for each report.';
 	}
 
 	return wp_strip_all_tags( $description );
@@ -579,7 +590,8 @@ function statchasers_news_unwrap_shortcode( $content ) {
 	if ( ! is_string( $content ) || '' === $content ) {
 		return $content;
 	}
-	$pattern = '#<p>\s*(\[' . STATCHASERS_NEWS_SHORTCODE . '(?:\s[^\]]*)?/?\])\s*</p>#';
+	$tags    = STATCHASERS_NEWS_SHORTCODE . '|' . STATCHASERS_TEAM_SHORTCODE;
+	$pattern = '#<p>\s*(\[(?:' . $tags . ')(?:\s[^\]]*)?/?\])\s*</p>#';
 	return (string) preg_replace( $pattern, '$1', $content );
 }
 add_filter( 'the_content', 'statchasers_news_unwrap_shortcode', 10 );
@@ -596,7 +608,12 @@ function statchasers_news_resource_hints( array $urls, string $relation_type ): 
 	if ( 'preconnect' !== $relation_type ) {
 		return $urls;
 	}
-	if ( ! wp_style_is( STATCHASERS_NEWS_HANDLE, 'enqueued' ) && ! statchasers_news_post_has_shortcode() ) {
+	$mounted = wp_style_is( STATCHASERS_NEWS_HANDLE, 'enqueued' )
+		|| wp_style_is( STATCHASERS_TEAM_HANDLE, 'enqueued' )
+		|| statchasers_news_post_has_shortcode()
+		|| statchasers_team_post_has_shortcode();
+
+	if ( ! $mounted ) {
 		return $urls;
 	}
 
@@ -625,5 +642,7 @@ function statchasers_news_flush(): void {
 			$wpdb->esc_like( '_transient_timeout_sc_news_ssr_' ) . '%'
 		)
 	);
+
+	statchasers_team_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
