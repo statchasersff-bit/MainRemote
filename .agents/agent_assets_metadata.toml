@@ -7,6 +7,7 @@ uri = "file://attached_assets/statchasers_logo_transparent_light_1787155995953.p
 type = "image"
 title = "StatChasers logo — blue"
 description = "Saved StatChasers logo asset."
+logical_id = "9ec3fae3-c8e9-4303-a907-c115697e6e67"
 
 [[outputs]]
 id = "pZctI_HnMZ5F_EWsfFo3q"
@@ -14,6 +15,7 @@ uri = "file://attached_assets/statchasers_logo_transparent_dark_1787155995954.pn
 type = "image"
 title = "StatChasers logo — white"
 description = "Saved StatChasers logo asset."
+logical_id = "3e7932e9-f753-4d92-8ad4-507ec31504fd"
 
 [[outputs]]
 id = "2Fv7wdgQRsCRIreQwuv9n"
@@ -21,3 +23,18 @@ uri = "file://attached_assets/image_1787852063099.png"
 type = "image"
 title = "StatChasers reference screenshot"
 description = "Saved reference image supplied by the user."
+logical_id = "567670a5-aad2-4ce4-8974-73ee3ccd3749"
+
+[[outputs]]
+id = "XC8c44c5XDknbZ_lQvHxG"
+uri = "file://attached_assets/image_1788257620845.png"
+type = "image"
+title = "StatChasers reference screenshot"
+description = "Saved reference image supplied by the user."
+logical_id = "d356f1ed-c557-4f84-abd6-8a78b834f39c"
+content_hash = "sha256:7c65b2a97885c747f676ddb795adb37a4dff9c273178b74698ead052fc83c928"
+size = 322231
+mtime_ms = 1788257621637
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:0f5de917-1130-4570-b0bd-175a3503878a/d356f1ed-c557-4f84-abd6-8a78b834f39c/5940321e-b5ce-4020-88dd-de36a8a80a62"
+storage_version_token = "1788257633320988"
+content_type = "image/png"

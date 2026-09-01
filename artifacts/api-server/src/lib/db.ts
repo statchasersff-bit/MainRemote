@@ -20,16 +20,9 @@ export { db } from "@workspace/db";
 export { newsItems, type NewsItemRow, type InsertNewsItem } from "@workspace/db";
 
 /**
- * A stable content fingerprint for an item. We dedupe on this rather than the
- * upstream id: the feed has historically changed both its id scheme and its
- * pubDate formatting, and the old fallback id (a hash of title|link|pubDate)
- * produced a fresh row for the same article every time that string changed —
- * which is how the backlog ended up with each story stored twice.
+ * Re-exported so the existing callers keep one import for "the news store".
+ * The function itself is pure and lives beside the shape it fingerprints, in
+ * lib/news-item.ts — nothing about it needs a database connection, and a test
+ * that wants it should not have to open one.
  */
-export function newsDedupeKey(item: {
-  title?: string | null;
-  id?: string | null;
-}): string {
-  const title = (item.title ?? "").toLowerCase().replace(/\s+/g, " ").trim();
-  return title || `id:${(item.id ?? "").trim()}`;
-}
+export { newsDedupeKey } from "./news-item";

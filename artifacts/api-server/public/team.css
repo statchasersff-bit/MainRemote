@@ -88,7 +88,7 @@ body.sct-page.is-embed {
   /* The page gutter as a property rather than a literal, because the sticky
      section nav has to cancel it exactly to reach the shell's edge. One name,
      one number, and the embedded mount sets it to zero. */
-  --sct-gutter: 24px;
+  --sct-gutter: 2.4px;
   /* Left/right padding only. No top margin: the standalone page is the tool
      and the embedded one sits directly under the host page's own heading. */
   margin: 0 auto;
@@ -243,11 +243,14 @@ body.sct-page.is-embed {
   pointer-events: none;
 }
 
-/* Oversized crest on the far right, at the opacity of a watermark. */
+/* Oversized crest on the far right, at the opacity of a watermark. It sits
+   inside the right edge rather than bleeding past it — a mark cropped by the
+   hero reads as a mistake at this opacity, where a whole one reads as a
+   watermark. */
 .sct-hero-watermark {
   position: absolute;
   top: 50%;
-  right: -48px;
+  right: 24px;
   width: 300px;
   height: 300px;
   transform: translateY(-50%);
@@ -628,6 +631,120 @@ body.sct-page.is-embed {
   margin-top: 40px;
 }
 
+/* ------------------------------------------------------------------ tabs */
+
+/* Sections are panels: one at a time, switched by the bar above.
+ *
+ * Every panel is still in the HTML the server sent — this hides them, it does
+ * not withhold them. That matters twice over: a crawler reads the whole hub
+ * from one response, and "Depth Chart" is one request away from any other tab
+ * rather than being a page that has to be fetched.
+ *
+ * Two mechanisms, in this order:
+ *
+ *   1. :target — the URL names the open panel, so the bar is a working tab
+ *      strip with scripting disabled and a link to #depth-chart opens on the
+ *      depth chart. This is the whole no-JS story; there is no fallback tab
+ *      script to load.
+ *   2. .is-active, once client/team.ts announces itself by setting
+ *      data-sct-tabs="js". It exists because pushing a hash through the History
+ *      API does not reliably re-evaluate :target, so the scripted path owns its
+ *      state explicitly instead of steering a selector it cannot depend on.
+ *
+ * Keyed on [data-sct-panel] rather than on .sct-section, because not every
+ * .sct-section is a tab: the "More <team> Tools" block carries the same class and
+ * sits outside the nav, so a class-based rule would hide it on every tab with
+ * nothing able to bring it back. It is page furniture and stays put.
+ *
+ * Wrapped in @supports so a browser without :has() gets the pre-tabs page —
+ * every section stacked and reachable — rather than the :not(:has(...)) rule
+ * dropping out and leaving no visible panel at all. Degrading to the old layout
+ * is a worse page; degrading to a blank one is a broken page.
+ */
+@supports selector(:has(*)) {
+  .sct:not([data-sct-tabs="js"]) [data-sct-panel] {
+    display: none;
+  }
+
+  .sct:not([data-sct-tabs="js"]) [data-sct-panel]:target {
+    display: block;
+  }
+
+  .sct:not([data-sct-tabs="js"]):not(:has([data-sct-panel]:target)) [data-sct-panel].is-default {
+    display: block;
+  }
+}
+
+.sct[data-sct-tabs="js"] [data-sct-panel] {
+  display: none;
+}
+
+.sct[data-sct-tabs="js"] [data-sct-panel].is-active {
+  display: block;
+}
+
+/* The "More <team> Tools" block is page furniture and stays put on most tabs
+   (see above), but it is not always worth showing in full — a card that links
+   to what the reader is already looking at is a link backwards.
+ *
+ * Sibling selectors rather than a class the script sets, so all of this follows
+ * both mechanisms the tabs already use: :target with scripting off, .is-active
+ * once client/team.ts takes over. #resources is a sibling of the panels — both
+ * are children of .sct — so the panel that is showing can reach it. Overview is
+ * the default panel and hides nothing, so no :target-absent case arises. */
+
+/* News drops the block outright. It is the one tab with its own right-hand
+   rail, and Quick Links in that rail is already the same set of tools; keeping
+   both put the list on the page twice. */
+.sct[data-sct-tabs="js"] #news.is-active ~ #resources,
+.sct:not([data-sct-tabs="js"]) #news:target ~ #resources {
+  display: none;
+}
+
+/* Single cards, on the tabs that already carry what they point at: Schedule
+   sits a few hundred pixels above its own "see the full schedule" footer on
+   Stats and Schedule, and Depth Chart above the chart itself. */
+.sct[data-sct-tabs="js"] #stats.is-active ~ #resources [data-tool="schedule"],
+.sct[data-sct-tabs="js"] #schedule.is-active ~ #resources [data-tool="schedule"],
+.sct[data-sct-tabs="js"] #depth-chart.is-active ~ #resources [data-tool="depth-chart"],
+.sct:not([data-sct-tabs="js"]) #stats:target ~ #resources [data-tool="schedule"],
+.sct:not([data-sct-tabs="js"]) #schedule:target ~ #resources [data-tool="schedule"],
+.sct:not([data-sct-tabs="js"]) #depth-chart:target ~ #resources [data-tool="depth-chart"] {
+  display: none;
+}
+
+/* A panel is focused programmatically when its tab is chosen, so the focus ring
+   would draw around the full width of the content for a mouse user who never
+   asked for it. Keyboard focus still shows: :focus-visible is untouched. */
+[data-sct-panel]:focus {
+  outline: none;
+}
+
+/* Nothing scrolls to a panel any more — it is swapped in place — so the top
+   padding is spacing under the bar rather than clearance for it. */
+.sct[data-sct-tabs="js"] [data-sct-panel],
+.sct [data-sct-panel]:target {
+  scroll-margin-top: 0;
+}
+
+/* Print wants the whole hub, not whichever tab happened to be open. */
+@media print {
+  .sct [data-sct-panel] {
+    display: block !important;
+  }
+
+  /* Print takes every panel, so the tab something was hidden on is no longer
+     the tab — the whole hub is on the page and the tool list prints complete. */
+  #resources {
+    display: block !important;
+  }
+
+  .sct-resource[data-tool] {
+    display: list-item !important;
+  }
+}
+
+
 .sct-h2 {
   position: relative;
   margin: 0 0 6px;
@@ -694,17 +811,6 @@ body.sct-page.is-embed {
   outline-offset: 3px;
 }
 
-.sct-button.is-ghost {
-  background: transparent;
-  color: var(--sc-navy);
-  border-color: var(--sc-border);
-}
-
-.sct-button.is-ghost:hover {
-  background: var(--sc-surface-soft);
-  border-color: rgba(212, 175, 55, 0.6);
-}
-
 .sct-textlink {
   display: inline-flex;
   align-items: center;
@@ -731,6 +837,17 @@ body.sct-page.is-embed {
 
 /* -------------------------------------------------------- team snapshot */
 
+/* The Overview's four headline rates.
+ *
+ * The same card as a Stats-tab tile (.sct-tile, below) at the larger scale four
+ * across earns: gold mark on the label, a ruled footer carrying the rank and
+ * its movement, and a percentile groove on the bottom edge. The parts are
+ * repeated rather than shared with a joint selector because the two blocks are
+ * sized independently — a snapshot card is 130px of hero and a tile is 100px of
+ * reference — and a shared rule would have to be overridden on every line that
+ * matters.
+ */
+
 .sct-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -741,58 +858,864 @@ body.sct-page.is-embed {
 }
 
 .sct-metric {
-  padding: 18px 20px 16px;
+  position: relative;
+  overflow: hidden;
+  /* Was 18px 20px 16px around a stack of 8px and 10px gaps, which spent about
+     a third of a 160px card on air. The card is ~130px now and every pixel it
+     lost was space between things that belong together. */
+  padding: 14px 16px 16px;
+  border-radius: var(--sc-radius-sm);
+  /* A shade darker than the page hairline, and a shadow tinted navy rather than
+     black. On the Overview's white ground these cards were dissolving; this is
+     the least weight that gives each of the four an edge. */
+  border: 1px solid rgba(15, 23, 42, 0.13);
+  background: var(--sc-surface);
+  box-shadow: 0 1px 3px rgba(11, 22, 52, 0.07);
+}
+
+/* The gold mark: one 10px dash beside the label. Enough to say whose page this
+   is, small enough that four of them read as a rhythm rather than as decoration
+   — the brand is the accent here, not the subject. */
+.sct-metric-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-metric-label::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sc-gold);
+}
+
+.sct-metric-value {
+  margin: 7px 0 0;
+  color: var(--sc-navy);
+  /* Bigger than it was, in a shorter card. The number is the reading; the
+     height came out of the gaps around it, not out of the figure itself. */
+  font-size: clamp(2.25rem, 1.8rem + 1.3vw, 2.75rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The footer: rank at the left, movement flush right, a hairline above them.
+   The rule is what turns three loose lines into a card with a head and a foot,
+   and it costs 1px where the old stacked margins cost most of the height. */
+.sct-metric-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+/* Flat, not a pill. A filled capsule behind every ordinal put a second block of
+   colour under a value that is already the loudest thing on the card; the dot
+   says the same thing in 6px and lets the ordinal itself carry the tint. */
+.sct-metric-rank {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-metric-dot {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentcolor;
+}
+
+.sct-metric-rank-value {
+  white-space: nowrap;
+}
+
+/* Deliberately quieter than the ordinal it captions: this is the axis label,
+   not the reading. It is also the whole of what "in NFL" used to cost four
+   cards a line apiece to say. */
+.sct-metric-rank-label {
+  overflow: hidden;
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Top five. Gold, and one of only two places on the page it is spent on a
+   result. Darker than the brand gold because 13px bold on white has to clear
+   4.5:1 and --sc-gold-deep only reaches 3.9 — so the text is the deeper bronze
+   and the dot beside it keeps the brighter gold, where contrast is not a
+   requirement. */
+.sct-metric-rank[data-accent="elite"] {
+  color: #8a6500;
+}
+
+.sct-metric-rank[data-accent="elite"] .sct-metric-dot {
+  background: var(--sc-gold-deep);
+}
+
+.sct-metric-rank[data-accent="good"] {
+  color: #0f6b4f;
+}
+
+.sct-metric-rank[data-accent="poor"] {
+  color: #94363a;
+}
+
+/* The percentile groove, flush with the bottom edge of the card. Full width is
+   1st and a stub is 32nd, so the row can be read as a shape before any of the
+   ordinals are read as numbers. 3px because it is a texture for scanning, not a
+   figure to be read off — the ordinal above it is the figure. */
+.sct-metric-track {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--sc-surface-sink);
+}
+
+.sct-metric-fill {
+  display: block;
+  height: 100%;
+  /* Mid is a lightened navy rather than a grey, as in the ladders and tiles:
+     grey between green and red reads as "no data", and the middle of the league
+     is a result rather than a gap. */
+  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
+}
+
+.sct-metric-track[data-tier="elite"] .sct-metric-fill {
+  background: var(--sc-gold);
+}
+
+.sct-metric-track[data-tier="good"] .sct-metric-fill {
+  background: #0f6b4f;
+}
+
+.sct-metric-track[data-tier="poor"] .sct-metric-fill {
+  background: #94363a;
+}
+
+/* -------------------------------------------------------- advanced stats */
+
+/* The Stats tab.
+ *
+ * Its whole job is comparison, so it is built out of two things the rest of the
+ * page does not need: a pair of ladders that line up row for row, and a track
+ * that shows a rank as a length. Everything else — the card, the hairline, the
+ * rank chip, the tier tints — is the vocabulary already established above by
+ * .sct-metric, reused rather than re-invented so the tab does not read as a
+ * different product bolted on.
+ */
+
+.sct-ladders {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 18px 0 0;
+}
+
+.sct-ladder {
+  padding: 20px 22px 16px;
   border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
   box-shadow: var(--sc-shadow);
 }
 
-.sct-metric-label {
+.sct-ladder-title {
+  position: relative;
+  margin: 0;
+  padding-left: 12px;
+  color: var(--sc-navy);
+  font-size: 1.02rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+/* A short bar in the margin rather than a rule underneath: the .sct-h2 above it
+   already owns the gold underline, and repeating it here would read as two
+   headings of equal rank. Gold marks the side that scores, navy the side that
+   stops — the only place on this tab where colour carries a label. */
+.sct-ladder-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.18em;
+  bottom: 0.18em;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.sct-ladder[data-unit="defense"] .sct-ladder-title::before {
+  background: var(--sc-navy);
+}
+
+.sct-ladder-caption {
+  margin: 4px 0 0;
+  padding-left: 12px;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.sct-ladder-list {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* label | track | value | rank | movement.
+   The track is given the most room after the label because it is the thing
+   being compared; the other three are short and fixed by their own content.
+   The movement chip is last and optional — a row whose rank did not move simply
+   leaves that column empty, which is why it is last and not in the middle. */
+.sct-stat {
+  display: grid;
+  grid-template-columns:
+    minmax(84px, 0.95fr) minmax(44px, 1.2fr) auto minmax(44px, auto) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+.sct-stat:last-child {
+  border-bottom: 0;
+}
+
+.sct-stat-label {
+  min-width: 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sct-stat-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+/* No rank, no track. An empty groove beside a real number would imply a league
+   position that was never established. */
+.sct-stat-bar.is-empty {
+  background: transparent;
+}
+
+.sct-stat-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  /* Mid is a lightened navy rather than a grey: grey next to green and red
+     reads as "no data", and the middle of the league is a result, not a gap. */
+  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
+}
+
+.sct-stat-bar[data-tier="good"] .sct-stat-fill {
+  background: #0f6b4f;
+}
+
+.sct-stat-bar[data-tier="poor"] .sct-stat-fill {
+  background: #94363a;
+}
+
+/* Only reachable from a volume metric, which is never drawn with a bar today.
+   Kept so a future volume row in a ladder gets the neutral team accent instead
+   of inheriting a judgement it has not earned. */
+.sct-stat-bar[data-tier="none"] .sct-stat-fill {
+  background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
+}
+
+.sct-stat-value {
+  justify-self: end;
+  color: var(--sc-navy);
+  font-size: 0.92rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A pill, unlike the flat rank on a snapshot card or a tile: a ladder row has
+   no footer rule to sit on, so the ordinal needs an edge of its own to keep it
+   from reading as a fifth column of numbers. */
+.sct-stat-rank {
+  justify-self: end;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sct-stat-rank[data-tier="good"] {
+  background: rgba(16, 122, 87, 0.1);
+  color: #0f6b4f;
+}
+
+.sct-stat-rank[data-tier="poor"] {
+  background: rgba(153, 46, 46, 0.09);
+  color: #94363a;
+}
+
+/* ------------------------------------------------------------- stat tiles */
+
+/* The column count is set per block rather than left to auto-fit: eight tiles
+   want four across and six want three, and auto-fit would give both whatever
+   the viewport happened to allow — an eight-across row of 140px cards at one
+   width and a ragged five at another. */
+.sct-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-tiles[data-cols="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sct-tile {
+  position: relative;
+  overflow: hidden;
+  padding: 13px 15px 15px;
+  border-radius: var(--sc-radius-sm);
+  /* A shade darker than the page hairline and a shadow tinted navy rather than
+     black. These cards sit on a soft ground and were dissolving into it; this
+     is the least weight that gives eight of them an edge apiece. */
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 2px rgba(11, 22, 52, 0.05);
+  background: var(--sc-surface);
+}
+
+/* The gold mark. One 6px square beside the label — enough to say whose page
+   this is, small enough that eight of them in a grid read as a rhythm rather
+   than as eight bullets demanding to be counted. */
+.sct-tile-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin: 0;
   color: var(--sc-muted);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.sct-metric-value {
-  margin: 8px 0 0;
+.sct-tile-label::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.sct-tile-value {
+  margin: 6px 0 0;
   color: var(--sc-navy);
-  font-size: clamp(1.7rem, 1.3rem + 1.2vw, 2.15rem);
-  line-height: 1.05;
+  font-size: 1.5rem;
+  line-height: 1.02;
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-.sct-metric-rank {
+/* The footer: rank at the left, movement flush right, a hairline above them.
+   The rule is what turns three loose lines into a card with a head and a foot,
+   and it costs 1px where the old 9px gaps cost most of the card's height. */
+.sct-tile-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 9px 0 0;
+  padding: 7px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.sct-tile-rank {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
-  margin: 10px 0 0;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  /* Neutral by default; the tiers below tint it. Muted on purpose — the rank is
-     a secondary value under the number, not a traffic light. */
-  background: var(--sc-surface-sink);
+  gap: 5px;
+  min-width: 0;
   color: var(--sc-muted-strong);
-}
-
-.sct-metric-rank-value {
+  font-size: 0.72rem;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
 
-.sct-metric-rank[data-tier="good"] {
-  background: rgba(16, 122, 87, 0.1);
+/* The tier as a dot rather than as a filled pill. A pill behind every ordinal
+   put a second block of colour under a value that is already the loudest thing
+   on the card; the dot says the same thing in 6px and lets the ordinal itself
+   carry the tint. */
+.sct-tile-dot {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentcolor;
+}
+
+.sct-tile-rank-value {
+  white-space: nowrap;
+}
+
+/* Deliberately quieter than the ordinal it captions: this is the axis label,
+   not the reading. */
+.sct-tile-rank-label {
+  overflow: hidden;
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Top five. Gold, and the only place on the tab it is spent on a result.
+   Darker than the brand gold because 11px bold on white has to clear 4.5:1 and
+   --sc-gold-deep only reaches 3.9 — so the text is the deeper bronze and the
+   dot beside it keeps the brighter gold, where contrast is not a requirement. */
+.sct-tile-rank[data-accent="elite"] {
+  color: #8a6500;
+}
+
+.sct-tile-rank[data-accent="elite"] .sct-tile-dot {
+  background: var(--sc-gold-deep);
+}
+
+.sct-tile-rank[data-accent="good"] {
   color: #0f6b4f;
 }
 
-.sct-metric-rank[data-tier="poor"] {
+.sct-tile-rank[data-accent="poor"] {
+  color: #94363a;
+}
+
+/* The percentile groove, flush with the bottom edge of the card. Full width is
+   1st and a stub is 32nd, so a block of eight can be read as a shape before any
+   of the ordinals are read as numbers. */
+.sct-tile-track {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--sc-surface-sink);
+}
+
+.sct-tile-fill {
+  display: block;
+  height: 100%;
+  /* Mid is a lightened navy rather than a grey, as in the ladders: grey between
+     green and red reads as "no data", and the middle of the league is a result
+     rather than a gap. */
+  background: color-mix(in srgb, var(--sc-navy) 42%, #fff);
+}
+
+.sct-tile-track[data-tier="elite"] .sct-tile-fill {
+  background: var(--sc-gold);
+}
+
+.sct-tile-track[data-tier="good"] .sct-tile-fill {
+  background: #0f6b4f;
+}
+
+.sct-tile-track[data-tier="poor"] .sct-tile-fill {
+  background: #94363a;
+}
+
+/* A volume metric is ranked but never judged — the neutral team accent, the
+   same licence the play-mix bar takes. */
+.sct-tile-track[data-tier="none"] .sct-tile-fill {
+  background: color-mix(in srgb, var(--team-primary, #0b1634) 60%, #fff);
+}
+
+/* ---------------------------------------------------------------- play mix */
+
+.sct-mixes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0 0;
+}
+
+.sct-mix {
+  padding: 16px 18px 14px;
+  border-radius: var(--sc-radius-sm);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.sct-mix-label {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-mix-bar {
+  display: flex;
+  height: 14px;
+  margin: 11px 0 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sc-surface-sink);
+}
+
+.sct-mix-seg {
+  display: block;
+  height: 100%;
+}
+
+/* The one place on this tab the team's own colour appears — the same licence
+   the player card's photo well takes, and for the same reason: a proportion has
+   no good end, so there is no tier tint competing for the slot. */
+.sct-mix-seg[data-kind="pass"],
+.sct-mix-key[data-kind="pass"]::before {
+  background: color-mix(in srgb, var(--team-primary, #0b1634) 72%, #fff);
+}
+
+.sct-mix-seg[data-kind="rush"],
+.sct-mix-key[data-kind="rush"]::before {
+  background: var(--sc-gold);
+}
+
+.sct-mix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 10px 0 0;
+}
+
+.sct-mix-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--sc-navy);
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-mix-key::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.sct-mix-caption {
+  margin: 8px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------- rank movement */
+
+/* Deliberately quiet. The rank chip beside it is already carrying a tier
+   colour, and two tinted things in one row would compete for the same glance —
+   so movement is a muted arrow and a number, and only the arrow is coloured. */
+.sct-stat-move {
+  justify-self: end;
+  min-width: 26px;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* "spots" is what makes the number unambiguous — four places, not four sacks —
+   so it is the last thing to go, and it only goes where the card is too narrow
+   to hold it beside the rank. */
+.sct-move-unit {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.sct-stat-move[data-dir="up"] {
+  color: #0f6b4f;
+}
+
+.sct-stat-move[data-dir="down"] {
+  color: #94363a;
+}
+
+/* ------------------------------------------------------- season history */
+
+/* The one block on this tab that scrolls sideways.
+   Six metric columns against five seasons cannot stack into a phone without
+   becoming five separate cards, and the comparison between seasons — the whole
+   reason the table exists — does not survive that. So it scrolls, and the fade
+   on the right edge is what says so, exactly as the section nav does at the
+   same width. */
+.sct-hist-scroll {
+  margin: 18px 0 0;
+  overflow-x: auto;
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fixed layout, so the column widths are a decision rather than whatever the
+   browser has left over. Auto layout spreads the slack evenly across seven
+   columns, which on a wide screen put 40-odd pixels of nothing between every
+   pair of three-digit numbers. Here the season column takes the width it
+   actually needs for "2025 · Current" and the six metric columns split the
+   rest, which tightens them and makes the table read as a block.
+
+   `min-width` is what keeps the sideways scroll working underneath that: a
+   fixed table set to width:100% would otherwise squeeze to any container and
+   clip rather than scroll. */
+.sct-hist {
+  width: 100%;
+  min-width: 700px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  /* Every figure in here is compared down a column, and proportional digits
+     put the decimal point of 6.18 and 27.2 in different places. */
+  font-variant-numeric: tabular-nums;
+  /* A hint of a stripe, not a grey row. The zebra is there to stop the eye
+     sliding between seasons on a wide table; at --sc-surface-soft it was doing
+     more than that and competing with the rank tints, which are the thing in
+     here that is supposed to carry colour. */
+  --sct-hist-stripe: #fcfdfe;
+}
+
+.sct-hist th,
+.sct-hist td {
+  padding: 10px 12px;
+  /* Right, not centred: comparing 379.4 against 91.2 down a column only works
+     when the units line up, and centring puts them a digit apart. */
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Smaller, wider-tracked, and lifted off the body by a soft navy fade rather
+   than by the border alone — the border stays, hairline-thin, to keep the edge
+   crisp where the fade is too faint to read as one. */
+.sct-hist thead th {
+  position: relative;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  color: var(--sc-muted);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  /* The one place wrapping is allowed. Every column width here is a fraction of
+     a fixed layout, so a head that does not fit has nowhere to go but over its
+     neighbour; two lines is the graceful version of that, and the numbers below
+     stay on one line either way. */
+  white-space: normal;
+  background: var(--sc-surface-soft);
+  border-bottom: 1px solid var(--sc-hairline);
+  box-shadow: 0 3px 6px -5px rgba(11, 22, 52, 0.55);
+}
+
+/* Group separators live in the header only. Full-height gridlines would cut the
+   table into six strips and make the row — one season — the harder thing to
+   read, which is backwards. A short rule in the head plus the extra gap the
+   body cells carry (below) is enough to say "these three belong together". */
+.sct-hist thead th.is-group-start::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 28%;
+  bottom: 28%;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.sct-hist th.is-group-start,
+.sct-hist td.is-group-start {
+  padding-left: 22px;
+}
+
+/* The year stays put while the metrics scroll under it. Without this, a phone
+   reader two columns into the table has six numbers and nothing saying which
+   season they belong to — which is the one thing the table exists to say. The
+   backgrounds are repeated per row state because a transparent sticky cell
+   would have the scrolling columns pass through it. */
+.sct-hist-season {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 21%;
+  text-align: left !important;
+  background: var(--sc-surface);
+}
+
+.sct-hist thead .sct-hist-season {
+  background: var(--sc-surface-soft);
+}
+
+.sct-hist tbody tr:nth-child(even) .sct-hist-season {
+  background: var(--sct-hist-stripe);
+}
+
+.sct-hist tbody th {
+  color: var(--sc-navy);
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.sct-hist-year {
+  display: flex;
+  align-items: center;
+  /* Wraps rather than overflowing: at the narrow end of the scroll the year and
+     the chip do not both fit on one line, and the chip dropping under it is a
+     better answer than it running into the first metric column. */
+  flex-wrap: wrap;
+  gap: 3px 7px;
+}
+
+/* Says in words what the gold hairline down the row's left edge says in colour. */
+.sct-hist-now {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.16);
+  color: #7a5a04;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Games played sits under the year rather than beside it: it is a qualifier on
+   the row, not a column of its own, and it is the thing that says "this season
+   is three games old" when the top row is the one in progress. Spelled out and
+   set lighter than the year, so the pair reads as a heading and its footnote
+   rather than as two facts of equal weight. */
+.sct-hist-games {
+  display: block;
+  margin-top: 2px;
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sct-hist tbody tr {
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sct-hist tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.sct-hist tbody tr:nth-child(even) {
+  background: var(--sct-hist-stripe);
+}
+
+/* The most recent season, marked the way the schedule marks the next game: a
+   gold hairline down the left edge rather than a filled row, which would fight
+   the zebra striping and the rank tints inside the cells. */
+.sct-hist tbody tr.is-current .sct-hist-season {
+  box-shadow: inset 3px 0 0 var(--sc-gold);
+}
+
+.sct-hist-value {
+  display: block;
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+/* This team's own best in the column, across the seasons shown.
+   An underline rather than gold text: at this size the number needs full
+   contrast against the row, and #d4af37 as ink on white does not have it. The
+   rule sits under the digits only — text-decoration draws on the text, not on
+   the block box — so it reads as a mark on the figure rather than a border on
+   the cell. Doubled for screen readers by a note in the cell itself. */
+.sct-hist-value.is-best {
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-color: rgba(212, 175, 55, 0.9);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* Tucked under the number it belongs to — 4px, close enough that the pair reads
+   as one thing. Medium weight rather than heavy: the figure above is the fact
+   and the rank is its footnote, and at 800 the pill was winning that argument. */
+.sct-hist-rank {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  margin-top: 4px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(11, 22, 52, 0.05);
+  color: var(--sc-muted-strong);
+  font-size: 0.69rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Four bands, so five seasons sort themselves by eye. Every tint is carried by
+   ink that clears 4.5:1 on both the white and the striped row underneath —
+   the band is the background, never the legibility. */
+.sct-hist-rank[data-tier="elite"] {
+  background: rgba(15, 107, 79, 0.17);
+  color: #0a5540;
+}
+
+.sct-hist-rank[data-tier="good"] {
+  background: rgba(15, 107, 79, 0.07);
+  color: #146b52;
+}
+
+.sct-hist-rank[data-tier="mid"] {
+  background: rgba(11, 22, 52, 0.05);
+  color: #4a5568;
+}
+
+.sct-hist-rank[data-tier="poor"] {
   background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
@@ -877,25 +1800,54 @@ body.sct-page.is-embed {
   object-position: center top;
 }
 
+/* Centred under a centred photo. Left-aligned text under a full-bleed square
+   image left the card looking hung off its left edge — the name is the card's
+   subject and sits on the same axis as the face above it. */
 .sct-player-body {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
   padding: 12px 14px 14px;
+  text-align: center;
 }
 
+/* Bare text, not a pill. The chip used to carry a tinted background and border;
+   with six cards in a row that was six coloured lozenges competing with the
+   headshots above them. The colour alone carries the position, so only the ink
+   varies here — the default is gold, which is both TE's colour and the
+   fallback for any position the depth chart hands us that is not one of the
+   four. */
 .sct-slot {
+  /* A step darker than --sc-gold-deep (#a87905), which was fine as ink on a
+     gold-tinted pill but only reaches 3.89:1 on white — under the 4.5:1 this
+     text now needs, at 0.66rem, with nothing behind it. 5.48:1 here, in the
+     same band as the other three. */
+  --sct-slot-ink: #8a6205;
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 5px;
-  background: rgba(212, 175, 55, 0.16);
-  border: 1px solid rgba(212, 175, 55, 0.38);
-  color: var(--sc-gold-deep);
+  color: var(--sct-slot-ink);
   font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.06em;
+}
+
+/* Position colours. The red and the green are the two the metric tiers already
+   use (see .sct-metric-rank), so the page carries one palette rather than a
+   second set of nearly-the-same hues; the blue is picked to sit at the same
+   darkness as those two. With no tint behind them these are now the only thing
+   distinguishing a position, so they are read at full strength on white and
+   each clears 4.5:1 against it. TE keeps the base gold. */
+.sct-slot[data-pos="QB"] {
+  --sct-slot-ink: #99323a;
+}
+
+.sct-slot[data-pos="RB"] {
+  --sct-slot-ink: #0f6b4f;
+}
+
+.sct-slot[data-pos="WR"] {
+  --sct-slot-ink: #1d4e8c;
 }
 
 .sct-slot.is-small {
@@ -906,6 +1858,10 @@ body.sct-page.is-embed {
 
 .sct-player-name {
   margin: 0;
+  /* Six cards to a row leaves names narrow, and plenty of them are two long
+     words. Balanced wrapping splits "Christian McCaffrey" evenly instead of
+     dropping a lone surname onto line two. */
+  text-wrap: balance;
   color: var(--sc-navy);
   font-size: 0.98rem;
   line-height: 1.2;
@@ -938,21 +1894,53 @@ body.sct-page.is-embed {
   border-bottom-color: var(--sc-gold);
 }
 
+/* Yellow, and filled rather than tinted: at four characters the chip is small
+   enough that a 10%-alpha wash read as no colour at all. The ink is a dark
+   amber on that fill (7.93:1) — yellow text on white is the one thing this
+   cannot be. "Out" stays red below. */
 .sct-injury-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  justify-content: center;
+  /* Sized for one character without collapsing to a dot. Q, D and P are one
+     letter and Out, IR, PUP and Sus are three, so the padding is set for the
+     long ones and the floor keeps the short ones from becoming a circle. */
+  min-width: 20px;
+  padding: 2px 7px;
   border-radius: 999px;
-  font-size: 0.66rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 900;
   letter-spacing: 0.02em;
-  background: rgba(180, 83, 9, 0.1);
-  color: #9a5b12;
+  background: #fde68a;
+  color: #5c3d06;
 }
 
 .sct-injury-badge[data-severity="out"] {
   background: rgba(153, 46, 46, 0.1);
   color: #94363a;
+}
+
+/* On a cornerstone card the badge is pinned to the top-right of the photo,
+   over the well rather than under the name. Sitting in the body it added a row
+   to some cards and not others, so a run of six sat with their names on
+   different baselines. Above the hit link (z-index 2) so the title tooltip
+   still resolves, and given a solid fill plus a hairline so it reads over
+   whatever part of the headshot lands beneath it. */
+.sct-injury-badge.is-pinned {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+  border: 1px solid rgba(11, 22, 52, 0.08);
+  box-shadow: 0 1px 3px rgba(11, 22, 52, 0.18);
+}
+
+.sct-injury-badge.is-pinned[data-severity="out"] {
+  /* The tinted red is 10% alpha, which over a headshot is not a colour. The
+     body-copy version keeps its wash; this one is opaque. */
+  background: #f6dede;
 }
 
 /* --------------------------------------------------------- news + sidebar */
@@ -975,6 +1963,10 @@ body.sct-page.is-embed {
 
 .sct-news {
   position: relative;
+  /* Its own stacking context, so the crest watermark below can sit at a
+     negative z-index — over the card's background, under its text — without
+     dropping behind the card entirely. */
+  isolation: isolate;
   display: flex;
   gap: 18px;
   align-items: stretch;
@@ -999,6 +1991,37 @@ body.sct-page.is-embed {
    is the same component with more room, not a different card. */
 .sct-news.is-featured {
   border-color: rgba(11, 22, 52, 0.14);
+}
+
+/* The team crest as a watermark behind the card's text — the same device the
+   player news cards use (.sc-card-body::before in styles.css), painted from
+   --team-logo as a background because it is decoration, not content.
+   Absolutely positioned, so it is not a flex item of the card. The offsets run
+   it off the corner and the card's own `overflow: hidden` crops it, which is
+   what keeps it reading as a watermark rather than a pasted-on logo. */
+.sct-news::before {
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: -46px;
+  z-index: -1;
+  width: 224px;
+  height: 224px;
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* The lead card is half again as tall, so a crest sized for the standard card
+   reads as a smaller mark on it. Scaled with the card instead. */
+.sct-news.is-featured::before {
+  right: -52px;
+  bottom: -58px;
+  width: 288px;
+  height: 288px;
 }
 
 .sct-news-well {
@@ -1144,32 +2167,6 @@ body.sct-page.is-embed {
   font-weight: 600;
 }
 
-/* Fantasy Impact — rendered only when the archive actually holds a synopsis for
-   the row. See renderNewsCard(). */
-.sct-impact {
-  margin: 12px 0 0;
-  padding: 10px 14px;
-  border-left: 3px solid var(--sc-gold);
-  border-radius: 0 var(--sc-radius-xs) var(--sc-radius-xs) 0;
-  background: var(--sc-surface-soft);
-}
-
-.sct-impact-label {
-  margin: 0 0 3px;
-  color: var(--sc-gold-deep);
-  font-size: 0.64rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sct-impact-text {
-  margin: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.85rem;
-  line-height: 1.45;
-}
-
 .sct-news-cta {
   margin: auto 0 0;
   padding-top: 14px;
@@ -1189,11 +2186,16 @@ body.sct-page.is-embed {
   gap: 28px;
 }
 
+/* Stretched, not start-aligned. Three cards of three different heights read as
+   three unrelated boxes that happened to land in a row; ending level is what
+   makes them a set. Nothing inside them stretches with the card — each has a
+   footnote pushed to its own bottom edge (.sct-panel-stamp, .sct-matchup-note)
+   so the extra height lands there rather than as a gap under the content. */
 .sct-news-grid.is-stacked .sct-sidebar {
   position: static;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  align-items: start;
+  align-items: stretch;
   margin-top: 0;
 }
 
@@ -1289,30 +2291,82 @@ body.sct-page.is-embed {
   margin-top: 20px;
 }
 
+/* Softer than the page's other cards. These three sit in a row of their own
+   with nothing behind them, and --sc-shadow — tuned for a card lifting off a
+   grid of siblings — read as a halo on all three at once. The radius is the
+   page token, unchanged at 16px. */
 .sct-panel {
+  display: flex;
+  flex-direction: column;
   padding: 18px 20px;
   border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
 }
 
+/* The one branded detail in this row: a small gold block ahead of each title.
+   Picked over a gold rule above the card or gold arrows on hover because it
+   marks all three headings identically, reads at a glance as a set, and costs
+   nothing in height. Nothing else here is gold. */
 .sct-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--sc-border);
+  border-bottom: 1px solid var(--sc-hairline);
   color: var(--sc-navy);
   font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  /* 900/0.1em was the heaviest thing in the card and outweighed the content
+     under it. */
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
+.sct-panel-title::before {
+  content: "";
+  flex: none;
+  width: 4px;
+  height: 13px;
+  border-radius: 1px;
+  background: var(--sc-gold);
+}
+
+/* Pushed to the bottom of the card by the flex column above, so the three cards
+   can be the same height without their footnotes floating mid-air. */
 .sct-panel-stamp {
-  margin: 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: auto 0 0;
+  padding-top: 12px;
   color: var(--sc-muted);
   font-size: 0.7rem;
   font-weight: 600;
+}
+
+/* A clock, drawn in borders rather than fetched: this page ships no icon set
+   and one glyph is not worth starting one. */
+.sct-panel-stamp-icon {
+  position: relative;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.75;
+}
+
+.sct-panel-stamp-icon::before {
+  content: "";
+  position: absolute;
+  left: 2.5px;
+  top: 1.5px;
+  width: 1.5px;
+  height: 3px;
+  background: currentColor;
 }
 
 .sct-panel-empty {
@@ -1326,24 +2380,42 @@ body.sct-page.is-embed {
 .sct-injuries {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Chip, name, status on one line; the qualifier tucked under the name. The
+   name column is the one that flexes, so the chip sits tight against it and the
+   status pill stays hard right whatever the name's length. */
 .sct-injury {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--sc-border);
+  gap: 2px 7px;
+  padding-bottom: 9px;
+  /* Hairline, not --sc-border: at two or three players the heavier rule made
+     the card look like a table of its own. */
+  border-bottom: 1px solid var(--sc-hairline);
 }
 
 .sct-injury:last-child {
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+/* A chip here, bare text on a cornerstone card. The difference is what is
+   around it: on a card the slot sits under a name in open space and needs no
+   container, and in this row it is one of three things on a line and the tint
+   is what stops "RB1" reading as part of the name beside it. */
+.sct-injury .sct-slot {
+  min-width: 30px;
+  justify-content: center;
+  padding: 2px 5px;
+  border-radius: var(--sc-radius-xs);
+  background: color-mix(in srgb, var(--sct-slot-ink) 11%, transparent);
+  font-size: 0.6rem;
 }
 
 .sct-injury-name {
@@ -1353,28 +2425,47 @@ body.sct-page.is-embed {
   min-width: 0;
 }
 
+/* Four bands, matched to the badge on the cornerstone cards so a designation is
+   one colour wherever the page prints it. Every ink clears 4.5:1 on its own
+   fill and on white. */
 .sct-injury-status {
-  padding: 2px 9px;
+  padding: 1px 7px;
   border-radius: 999px;
-  font-size: 0.66rem;
-  font-weight: 900;
+  font-size: 0.62rem;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgba(180, 83, 9, 0.1);
-  color: #9a5b12;
+  background: #fde68a;
+  color: #5c3d06;
 }
 
 .sct-injury-status[data-severity="out"] {
-  background: rgba(153, 46, 46, 0.1);
+  background: rgba(153, 46, 46, 0.11);
   color: #94363a;
 }
 
-.sct-injury-part,
-.sct-injury-practice {
+.sct-injury-status[data-severity="doubtful"] {
+  background: rgba(194, 91, 32, 0.14);
+  color: #9a4b12;
+}
+
+.sct-injury-status[data-severity="probable"] {
+  background: rgba(15, 107, 79, 0.11);
+  color: #0f6b4f;
+}
+
+/* Body part and practice status on one line under the name, in the name's
+   column — indented past the chip, which is what makes the pair read as a
+   footnote on this player rather than a third row of the card. */
+.sct-injury-detail {
   grid-column: 2 / -1;
   color: var(--sc-muted);
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   font-weight: 600;
+}
+
+.sct-injury-dot {
+  opacity: 0.5;
 }
 
 /* ------------------------------------------------------------- next game */
@@ -1382,137 +2473,411 @@ body.sct-page.is-embed {
 .sct-nextgame-week {
   margin: 0;
   color: var(--sc-muted);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.sct-nextgame-line {
-  display: flex;
-  align-items: center;
+/* The card's centrepiece, and the reason it no longer reads as a mostly empty
+   box: away side, "@", home side, in the order every scoreboard uses. The old
+   card said "at Seahawks" — one crest and a preposition — which told a reader
+   who already knew the fixture nothing they could not have guessed. */
+.sct-matchup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
   gap: 10px;
-  margin: 8px 0 0;
-  color: var(--sc-navy);
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
+  margin: 12px 0 0;
+  padding: 12px 4px;
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
 }
 
-.sct-homeaway {
-  color: var(--sc-muted);
-  font-size: 0.78rem;
-  font-weight: 800;
-  text-transform: lowercase;
+.sct-matchup-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  text-align: center;
 }
 
-.sct-nextgame-logo {
+.sct-matchup-logo {
   display: block;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
+  /* The opponent recedes a step. This is a hub for one team, and both crests at
+     full strength made the card a neutral fixture listing. */
+  opacity: 0.62;
+}
+
+.sct-matchup-side.is-team .sct-matchup-logo {
+  opacity: 1;
+}
+
+.sct-matchup-code {
+  color: var(--sc-muted-strong);
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.sct-matchup-side.is-team .sct-matchup-code {
+  color: var(--sc-navy);
+}
+
+.sct-matchup-name {
+  min-width: 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* No canonical team behind the name, so there is no code above it and the name
+   takes the code's weight instead of sitting under a blank. */
+.sct-matchup-name.is-lead {
+  color: var(--sc-navy);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.sct-matchup-at {
+  margin-top: 12px;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .sct-nextgame-when {
-  margin: 8px 0 0;
-  color: var(--sc-muted-strong);
+  margin: 12px 0 0;
+  color: var(--sc-navy);
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .sct-nextgame-time {
   font-weight: 600;
+  color: var(--sc-muted-strong);
 }
 
 .sct-nextgame-venue {
   margin: 2px 0 0;
   color: var(--sc-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+}
+
+/* One line of context, not a second stats panel: the opponent's points allowed
+   per game and its rank, which is the number a manager is actually asking about
+   and the only one this card carries. Pushed to the card's bottom edge so Next
+   Game ends level with its neighbours. */
+.sct-matchup-note {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 0.73rem;
+}
+
+.sct-matchup-note-team {
+  color: var(--sc-muted);
+  font-weight: 700;
+}
+
+.sct-matchup-note-value {
+  color: var(--sc-navy);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sct-matchup-note-unit {
+  color: var(--sc-muted);
+  font-weight: 600;
 }
 
 /* ----------------------------------------------------------- quick links */
 
+/* Two columns of tiles rather than five full-width rows. Five rows was the
+   tallest thing in the row of three cards by a wide margin, and the links are
+   short enough that half a card's width is more than they need. */
 .sct-quicklinks {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.sct-quicklink-item {
+  display: flex;
+  min-width: 0;
+}
+
+/* An odd number of tools leaves one alone on the last row; full width is a
+   deliberate finish to the grid rather than a gap beside it. */
+.sct-quicklink-item:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .sct-quicklink {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  min-height: 40px;
-  padding: 8px 10px;
-  margin: 0 -10px;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
   border-radius: var(--sc-radius-xs);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface-soft);
   color: var(--sc-navy);
-  font-size: 0.87rem;
+  font-size: 0.79rem;
   font-weight: 700;
+  line-height: 1.25;
   text-decoration: none;
-  transition: background 140ms ease;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.sct-quicklink-text {
+  min-width: 0;
+}
+
+/* The arrow holds its column while the label wraps beside it — "Strength of
+   Schedule" is two lines in half a card and the arrow must not ride down with
+   the second one. */
+.sct-quicklink .sct-arrow {
+  flex: none;
+  align-self: center;
+  color: var(--sc-muted);
 }
 
 .sct-quicklink:hover {
   background: var(--sc-surface-sink);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
 .sct-quicklink:focus-visible {
   outline: 2px solid var(--sc-gold);
   outline-offset: -2px;
 }
-
 /* ------------------------------------------------------------ depth chart */
 
 .sct-depth {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Content-driven, not stretched. Grid's default is `stretch`, which padded
+     every column to the height of the tallest — so two quarterbacks got the
+     same card as four receivers and spent the difference on nothing. Four
+     cards of visibly different heights read as four lists of different
+     lengths, which is what they are; four equal cards with dead space at the
+     bottom of two of them read as two that failed to load. */
+  align-items: start;
   gap: 16px;
   margin: 18px 0 0;
 }
 
 .sct-depth-col {
-  padding: 16px 18px 14px;
+  padding: 14px 16px 12px;
   border-radius: var(--sc-radius);
   border: 1px solid var(--sc-hairline);
   background: var(--sc-surface);
   box-shadow: var(--sc-shadow);
 }
 
+/* Position at the left, how many are listed at the right, and a short gold
+   accent under both. The rule used to be a 2px gold border across the whole
+   card, which at this size was the strongest mark in the section and drew the
+   eye to a divider rather than to the players under it. Shortened to a 34px
+   dash, it still says StatChasers and stops competing. */
 .sct-depth-pos {
-  margin: 0 0 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--sc-gold);
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding-bottom: 9px;
   color: var(--sc-navy);
   font-size: 0.86rem;
   font-weight: 900;
   letter-spacing: 0.1em;
 }
 
+.sct-depth-pos::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 34px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sc-gold);
+}
+
+/* Quieter than the position it counts — this is a label on the list, not a
+   second heading. */
+.sct-depth-count {
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
 .sct-depth-list {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  /* No gap. The rows carry their own padding and a hairline between them, which
+     is what turns a stack of floating rows into a list — and it costs 1px
+     where a 12px gap cost twelve. */
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Photo, then a two-line stack: the name, and the labels that describe it.
+ *
+ * Everything used to sit on one line, which meant the name shared about 120px
+ * with a slot chip and a status pill and lost. Giving the name the full width
+ * beside the photo and dropping the labels underneath costs no height — the
+ * two lines together are shorter than the 38px photo they sit against — and it
+ * is the difference between a name that has to be abbreviated to fit and one
+ * that does not.
+ *
+ * The negative inline margin lets the separators and the starter's tint reach
+ * the card's padding rather than stopping short of it. */
 .sct-depth-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-inline: -8px;
+  padding: 9px 8px;
+  border-radius: 10px;
 }
 
+.sct-depth-body {
+  display: flex;
+  flex-direction: column;
+  /* Tight: these two lines are one unit, and any more air here starts to read
+     as two separate rows sharing a photo. */
+  gap: 2px;
+  min-width: 0;
+}
+
+/* The labels under the name, in reading order: which slot, then whether there
+   is anything wrong. Left-aligned rather than spread, so a column of them makes
+   one vertical line down the card instead of two. */
+.sct-depth-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* Faint, and only between rows: a border under the last one would draw a line
+   across the bottom of the card for no reason. */
+.sct-depth-row + .sct-depth-row {
+  border-top: 1px solid var(--sc-hairline);
+}
+
+/* The starter, marked. QB1 and QB2 were the same weight on the same ground and
+   the only thing separating them was a chip two characters wide — so the one
+   fact a reader wants first took as long to find as the one they wanted
+   second. A wash of the team's own colour at 5% and a heavier name is enough;
+   anything stronger turns a list into a leaderboard. */
+.sct-depth-row:first-child {
+  background: color-mix(in srgb, var(--team-primary, #0b1634) 5%, #fff);
+}
+
+.sct-depth-row:first-child .sct-depth-name {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+/* The headshot well, at the size of one line of the ladder. Round because the
+   row is a list rather than a card: a square photo the height of two lines of
+   text reads as a tile and turns four ladders into thirty-two tiles, where the
+   circle stays subordinate to the name beside it.
+
+   Tint only. The crest used to sit behind the photo as well, which was invisible
+   on the rows that had a headshot and doing nothing but adding a second mark
+   under a 38px face on the rows that did not. The tinted disc is still the
+   fallback — a player the CDN has no thumbnail for sits in a filled circle
+   rather than a hole — it is simply the team colour doing it alone. Mixed to
+   white so a column of them does not become a stripe of team colour, the same
+   recipe as the cornerstone cards and the news wells. */
+.sct-depth-well {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--team-primary, #0b1634) 10%, #fff);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+/* Top-anchored for the same reason as every other headshot on the page: these
+   are shoulders-up crops, and centring them cuts the forehead off. */
+.sct-depth-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* One line, always.
+ *
+ * A name that wraps makes its row taller than the eleven around it, and a
+ * column whose rows are different heights is not a chart — which is the whole
+ * reason the status chip was moved into its own track. Letting the name wrap
+ * instead would have put the raggedness back in a different place.
+ *
+ * So the cell clips, and the renderer offers a shorter spelling for the names
+ * that would need clipping — see briefName() in lib/team-render.ts. The ellipsis
+ * is the floor under that, for a name with no second word to abbreviate away. */
 .sct-depth-name {
+  min-width: 0;
+  overflow: hidden;
   color: var(--sc-ink);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1.25;
   font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* On the meta line the chip is the first thing on a line rather than a column
+   of its own, so the 34px that centred it in a grid track would only push the
+   status chip away from it. */
+.sct-depth-meta .sct-slot.is-small {
+  min-width: 0;
+}
+
+/* Four across is the layout the abbreviation exists for, so the brief spelling
+   is the default and the full one is carried alongside it, hidden to the eye
+   and not to a screen reader. Below 1080px the chart drops to two columns and
+   the media query at that breakpoint swaps them back. */
+.sct-depth-name-long {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --------------------------------------------------------------- schedule */
@@ -1521,17 +2886,44 @@ body.sct-page.is-embed {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin: 18px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
 
+/* A label over the strip of upcoming games, so three cards read as a deliberate
+   component rather than an unexplained extract of the season. */
+.sct-games-eyebrow {
+  margin: 16px 0 0;
+  color: var(--sc-gold-deep);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* One upcoming fixture.
+
+   The numbers, since several of them are deliberate departures from the shared
+   tokens: the radius is a step tighter than --sc-radius (16px), because a
+   fixture card should read closer to a scoreboard than to a dashboard tile; the
+   border is a shade stronger than --sc-hairline, which all but disappeared
+   against the page; and the shadow is in two parts — a 1px contact shadow under
+   a wide soft drop. A card that is only a wide blur floats; the contact shadow
+   is what gives it an edge to sit on.
+
+   The rest of this section is about removing air. The card ran to ~265px for
+   six short lines, most of it gaps between groups that were never grouped. */
 .sct-game {
-  padding: 18px 20px;
-  border-radius: var(--sc-radius);
-  border: 1px solid var(--sc-hairline);
+  position: relative;
+  overflow: hidden;
+  padding: 12px 16px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(11, 22, 52, 0.09);
   background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  box-shadow:
+    0 1px 2px rgba(11, 22, 52, 0.02),
+    0 8px 24px rgba(11, 22, 52, 0.045);
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -1541,11 +2933,61 @@ body.sct-page.is-embed {
 .sct-game:hover {
   transform: translateY(-2px);
   border-color: rgba(212, 175, 55, 0.42);
-  box-shadow: var(--sc-shadow-lift);
+  box-shadow:
+    0 2px 4px rgba(11, 22, 52, 0.03),
+    0 12px 30px rgba(11, 22, 52, 0.08);
+}
+
+/* The next game. A gold rule across the top and a label, rather than a tint:
+   the row needs one card to be first, not one card to be a different colour.
+   The top padding gives back the pixel the thicker border takes, so all three
+   cards still start their content on the same line. */
+.sct-game[data-next] {
+  padding-top: 11px;
+  border-top: 2px solid var(--sc-gold);
+}
+
+.sct-game-next {
+  margin: 0 0 4px;
+  color: var(--sc-gold-deep);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* The opponent's mark, bled off the bottom-right corner behind the content.
+   2.5% was below the threshold at which anyone could tell it from a compression
+   artefact — present in the markup, absent from the design. 6% is a watermark:
+   still nowhere near competing with the real crest in the matchup line, but
+   deliberate enough that three cards in a row read as one treatment. */
+.sct-game-mark {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+/* Everything else rides above it. */
+.sct-game > *:not(.sct-game-mark) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Week and home/away are two halves of the same fact — which fixture this is —
+   so they share a line instead of bookending the card. */
+.sct-game-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .sct-game-week {
-  margin: 0;
   color: var(--sc-muted);
   font-size: 0.68rem;
   font-weight: 900;
@@ -1553,26 +2995,98 @@ body.sct-page.is-embed {
   text-transform: uppercase;
 }
 
+.sct-game-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sct-game-pill,
+.sct-game-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted-strong);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Home is the state worth marking. Away is where two thirds of a season is
+   played, and a filled chip on every other card is not a signal. */
+.sct-game-pill[data-kind="home"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.sct-game-tag[data-kind="division"] {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--sc-gold-deep);
+}
+
+.sct-game-tag[data-kind="intl"] {
+  border-color: rgba(11, 22, 52, 0.25);
+  background: rgba(11, 22, 52, 0.06);
+  color: var(--sc-navy);
+}
+
 .sct-game-matchup {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 10px 0 0;
-  color: var(--sc-navy);
-  font-size: 1.12rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
+  gap: 11px;
+  margin: 9px 0 0;
 }
 
 .sct-game-logo {
+  flex: 0 0 auto;
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
 }
 
-.sct-game-when {
+.sct-game-teams {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* The opponent is what the card is about, and at 1.32rem it was losing to the
+   46px crest beside it. Bigger type against a slightly smaller mark puts the
+   name back in front — and costs no height, because the two text lines together
+   still measure less than the logo. */
+.sct-game-opp {
+  color: var(--sc-navy);
+  font-size: 1.46rem;
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.sct-game-full {
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+/* The hairline is the point of this block: it splits "who" from "when and
+   where" without spending a heading or a gap on saying so. Date and time lead
+   in the darker ink; venue and network follow, smaller and muted, because they
+   are what you check second. */
+.sct-game-meta {
   margin: 10px 0 0;
+  padding: 9px 0 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.sct-game-when {
+  margin: 0;
   color: var(--sc-muted-strong);
   font-size: 0.86rem;
   font-weight: 700;
@@ -1582,24 +3096,11 @@ body.sct-page.is-embed {
   font-weight: 600;
 }
 
-.sct-game-venue {
-  margin: 2px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
-}
-
-.sct-game-network {
+.sct-game-where {
   margin: 2px 0 0;
   color: var(--sc-muted);
   font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.sct-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0 0;
+  font-weight: 500;
 }
 
 .sct-badge {
@@ -1614,10 +3115,14 @@ body.sct-page.is-embed {
   text-transform: uppercase;
 }
 
+/* The division game is the one a reader is hunting for down a column of
+   seventeen, so it gets the strongest treatment on the row: a fuller gold wash
+   and the deeper bronze ink, which clears 4.5:1 where --sc-gold-deep does not
+   at this size. */
 .sct-badge[data-kind="division"] {
-  border-color: rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.12);
-  color: var(--sc-gold-deep);
+  border-color: rgba(212, 175, 55, 0.7);
+  background: rgba(212, 175, 55, 0.22);
+  color: #8a6500;
 }
 
 .sct-badge[data-kind="intl"] {
@@ -1631,26 +3136,45 @@ body.sct-page.is-embed {
   font-size: 0.58rem;
 }
 
-/* Full season, as rows. Becomes a stack of cards on narrow screens. */
+/* The full season.
+ *
+ * Given the fixture cards' own shell rather than the page's generic one — the
+ * 14px radius, the shade-stronger border, the two-part shadow with a 1px
+ * contact under a wide soft drop. It sits directly under three cards built that
+ * way, and in --sc-radius with a hairline and a flat drop it read as a data
+ * grid that had been pasted below them rather than as the rest of the same
+ * component. */
 .sct-slist {
   margin: 18px 0 0;
   padding: 0;
   list-style: none;
-  border-radius: var(--sc-radius);
-  border: 1px solid var(--sc-hairline);
+  border-radius: 14px;
+  border: 1px solid rgba(11, 22, 52, 0.09);
   overflow: hidden;
   background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  box-shadow:
+    0 1px 2px rgba(11, 22, 52, 0.02),
+    0 8px 24px rgba(11, 22, 52, 0.045);
 }
 
+/* Week, side, opponent, when, where, on what, and how it went.
+ *
+ * Seven tracks rather than five. The two new ones are the columns a reader
+ * actually scans — which games are at home, and which they can still watch —
+ * and both were previously buried inside a sentence: "at" hidden mid-line in
+ * the opponent cell, the network trailing the venue on the cards and absent
+ * here entirely. */
 .sct-srow {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1.4fr) minmax(0, 1.1fr) minmax(0, 1.2fr) auto;
+  grid-template-columns:
+    54px 62px minmax(0, 1.5fr) minmax(0, 1.25fr)
+    minmax(0, 1.2fr) 66px 76px;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px;
+  padding: 11px 18px;
   border-bottom: 1px solid var(--sc-border);
   font-size: 0.86rem;
+  transition: background 140ms ease;
 }
 
 .sct-srow:last-child {
@@ -1661,8 +3185,15 @@ body.sct-page.is-embed {
   background: var(--sc-surface-soft);
 }
 
-.sct-srow.is-bye {
-  background: rgba(212, 175, 55, 0.07);
+/* A row is not interactive, but following one across seven columns with a mouse
+   is, and the tint is what stops the eye sliding a line. */
+.sct-srow:hover {
+  background: color-mix(in srgb, var(--sc-gold) 7%, var(--sc-surface));
+}
+
+.sct-srow.is-bye,
+.sct-srow.is-bye:hover {
+  background: rgba(212, 175, 55, 0.1);
 }
 
 .sct-srow-week {
@@ -1670,6 +3201,30 @@ body.sct-page.is-embed {
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Home filled, away outlined — the same pair as the cards above, so the two
+   halves of the tab teach one thing rather than two. Home is the state worth
+   marking: away is where two thirds of a season is played, and a filled chip on
+   two rows in three is not a signal. */
+.sct-srow-side {
+  justify-self: start;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sct-srow-side[data-kind="home"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
 }
 
 .sct-srow-opp {
@@ -1677,8 +3232,21 @@ body.sct-page.is-embed {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+/* The opponent is the row's subject and now reads like it: the page's darkest
+   ink at the heaviest weight, against a date and a venue that stay muted. The
+   whole row used to sit within a shade and a weight of itself, which is what
+   made seventeen of them flat. */
+.sct-srow-name {
+  min-width: 0;
+  overflow: hidden;
   color: var(--sc-navy);
-  font-weight: 800;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sct-srow-logo {
@@ -1689,10 +3257,14 @@ body.sct-page.is-embed {
   flex: 0 0 auto;
 }
 
+/* The bye takes the row from the week number to the end: it has nothing to say
+   in five of the six remaining columns, and empty cells drew column rules
+   through the one row that is not a fixture. */
 .sct-srow-bye {
-  color: var(--sc-gold-deep);
+  grid-column: 2 / -1;
+  color: #8a6500;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.75rem;
 }
@@ -1707,12 +3279,35 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
+/* The broadcaster, as a mark rather than a sentence. Small, boxed and
+   monospaced by weight so CBS, NBC and Prime line up down the column. */
+.sct-srow-tv {
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sc-muted-strong);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sct-srow-tv:not(:empty) {
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface-sink);
+}
+
 .sct-result {
+  justify-self: start;
   padding: 2px 9px;
   border-radius: 6px;
   font-size: 0.74rem;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   background: var(--sc-surface-sink);
   color: var(--sc-muted-strong);
 }
@@ -1727,52 +3322,25 @@ body.sct-page.is-embed {
   color: #94363a;
 }
 
-/* -------------------------------------------------- fantasy outlook (CTA) */
-
-.sct-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px 32px;
-  margin: 18px 0 0;
-  padding: 26px 30px;
-  border-radius: var(--sc-radius);
-  border: 1px solid var(--sc-hairline);
-  background:
-    radial-gradient(
-      90% 140% at 100% 0%,
-      rgba(212, 175, 55, 0.1),
-      rgba(255, 255, 255, 0) 60%
-    ),
-    var(--sc-surface-soft);
-  box-shadow: var(--sc-shadow);
+/* The placeholder in the same column a result will occupy. Unboxed and muted,
+   because "Upcoming" on every row before Week 1 must not read as seventeen
+   chips — it is holding the column open, not saying anything. */
+.sct-sstatus {
+  justify-self: start;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.sct-cta-text {
-  flex: 1 1 360px;
-  min-width: 0;
-}
-
-.sct-cta-title {
-  margin: 0;
-  color: var(--sc-navy);
-  font-size: 1.14rem;
+.sct-sstatus[data-state="live"] {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(153, 46, 46, 0.1);
+  color: #94363a;
   font-weight: 900;
-  letter-spacing: -0.02em;
-}
-
-.sct-cta-body {
-  margin: 6px 0 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.9rem;
-  max-width: 62ch;
-}
-
-.sct-cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  text-transform: uppercase;
 }
 
 /* -------------------------------------------------------------- resources */
@@ -1853,11 +3421,35 @@ body.sct-page.is-embed {
     position: static;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    align-items: stretch;
     margin-top: 0;
   }
 
   .sct-players {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Four across stops working here rather than at 900px. At 1080 a column is
+     about 200px, which leaves the name roughly 60px once the photo, the slot
+     chip and the status have taken theirs — not enough for a full name or an
+     abbreviated one, so every row would end in an ellipsis. Two columns is the
+     first width at which the names fit, which is also where the full spelling
+     comes back below. */
+  .sct-depth {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Room for the whole name again, so the abbreviation stands down. */
+  .sct-depth-name-long {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip-path: none;
+  }
+
+  .sct-depth-name-brief {
+    display: none;
   }
 }
 
@@ -1873,7 +3465,18 @@ body.sct-page.is-embed {
     grid-column: 1 / -1;
   }
 
-  .sct-depth {
+  /* Two ladders side by side stop being comparable long before they stop
+     fitting: at this width the labels wrap and the tracks are shorter than the
+     rank chips beside them. Stacked they are still readable — one after the
+     other rather than one against the other, which is the trade the width
+     forces. */
+  .sct-ladders,
+  .sct-mixes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-tiles,
+  .sct-tiles[data-cols="3"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1885,28 +3488,59 @@ body.sct-page.is-embed {
     grid-template-columns: 1fr;
   }
 
-  /* The full-season table stops being a table: five columns cannot survive a
-     phone, and horizontally scrolling a schedule is worse than stacking it. */
+  /* Seven columns cannot survive a narrow screen, and scrolling a schedule
+     sideways is worse than stacking it — so the row becomes three lines of one
+     card. The first keeps what the row is identified by and how it went; the
+     logistics fall underneath.
+
+     Placed explicitly rather than left to auto-flow. The cells are in reading
+     order in the markup, which is not the order they are wanted in here — the
+     status has to come up beside the opponent from the end of the row, and the
+     network has to come down beside the venue from ahead of it. */
   .sct-srow {
-    grid-template-columns: auto minmax(0, 1fr);
-    row-gap: 4px;
-    padding: 14px 16px;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    row-gap: 5px;
+    padding: 12px 16px;
+  }
+
+  .sct-srow-week {
+    grid-area: 1 / 1;
+  }
+
+  .sct-srow-side {
+    grid-area: 1 / 2;
   }
 
   .sct-srow-opp {
+    grid-area: 1 / 3;
     justify-self: start;
   }
 
-  .sct-srow-when,
-  .sct-srow-venue {
-    grid-column: 2 / -1;
+  .sct-result,
+  .sct-sstatus {
+    grid-area: 1 / 4;
+    justify-self: end;
+  }
+
+  .sct-srow-when {
+    grid-area: 2 / 1 / 3 / -1;
     white-space: normal;
     font-size: 0.8rem;
   }
 
-  .sct-result {
-    grid-column: 2 / -1;
-    justify-self: start;
+  .sct-srow-venue {
+    grid-area: 3 / 1 / 4 / 4;
+    white-space: normal;
+    font-size: 0.8rem;
+  }
+
+  .sct-srow-tv {
+    grid-area: 3 / 4 / 4 / -1;
+    justify-self: end;
+  }
+
+  .sct-srow-bye {
+    grid-area: 1 / 2 / 2 / -1;
   }
 }
 
@@ -1923,10 +3557,10 @@ body.sct-page.is-embed {
   }
 
   .sct {
-    /* max() rather than a flat 16, so the content clears a notch when the phone
-       is turned sideways. The gutter is also what the sticky nav cancels, so
-       both move together and the bar stays flush. */
-    --sct-gutter: max(16px, env(safe-area-inset-left, 0px));
+    /* max() rather than a flat value, so the content still clears a notch when
+       the phone is turned sideways. The gutter is also what the sticky nav
+       cancels, so both move together and the bar stays flush. */
+    --sct-gutter: max(1.6px, env(safe-area-inset-left, 0px));
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -1968,8 +3602,11 @@ body.sct-page.is-embed {
     height: 48px;
   }
 
+  /* Still cropped at this width, just less of it. A 240px mark held fully
+     inside a 360px hero sits behind the stacked name and switcher rather than
+     beside them, which is a different device from the desktop watermark. */
   .sct-hero-watermark {
-    right: -70px;
+    right: -24px;
     width: 240px;
     height: 240px;
     opacity: 0.05;
@@ -2102,7 +3739,93 @@ body.sct-page.is-embed {
   }
 
   .sct-metric {
-    padding: 14px 15px 13px;
+    padding: 12px 13px 14px;
+  }
+
+  /* Two cards across a phone is 144px of content. The clamp floor is sized for
+     a card a third wider than that, and five tabular digits at 36px would take
+     all of it. */
+  .sct-metric-value {
+    font-size: 1.95rem;
+  }
+
+  /* Two cards across a phone leaves the footer about 130px. The ordinal and the
+     arrow are the facts; the caption and the noun are the glosses, and they are
+     what the width takes — the same trade the tiles make below. */
+  .sct-metric-rank-label {
+    display: none;
+  }
+
+  /* A ladder row loses its middle column. Four cells across 343px leaves the
+     track about 40px wide, which is not a bar, it is a dot — and a label that
+     wraps to two lines under a value that does not. Label and numbers on one
+     line, the track its own full-width line beneath: the comparison survives
+     and it is the only one of the four that needs the room. */
+  .sct-ladder {
+    padding: 16px 16px 12px;
+  }
+
+  .sct-stat {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    column-gap: 8px;
+    row-gap: 7px;
+    padding: 9px 0;
+  }
+
+  /* Same fade the section nav uses at this width, for the same reason: a row
+     that scrolls with no visible edge reads as a row that ends. */
+  .sct-hist-scroll {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+  }
+
+  .sct-hist {
+    font-size: 0.8rem;
+    /* The table already scrolls at this width, so the floor comes down: a
+       660px minimum on a 360px screen is most of a second screenful of drag
+       before the first defensive column appears. */
+    min-width: 560px;
+  }
+
+  .sct-hist th,
+  .sct-hist td {
+    padding: 10px 9px;
+  }
+
+  /* Restated because the rule above resets padding wholesale at this width and
+     the group gap is the only thing separating offence from defence once the
+     header divider is scrolled off the left edge. */
+  .sct-hist th.is-group-start,
+  .sct-hist td.is-group-start {
+    padding-left: 20px;
+  }
+
+  .sct-stat-bar {
+    order: 1;
+    grid-column: 1 / -1;
+    height: 6px;
+  }
+
+  .sct-tiles,
+  .sct-tiles[data-cols="3"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .sct-tile {
+    padding: 11px 12px 13px;
+  }
+
+  .sct-tile-value {
+    font-size: 1.3rem;
+  }
+
+  /* Two tiles across a phone leaves the footer about 130px. The ordinal and the
+     arrow are the facts; the caption and the noun are the glosses, and they are
+     what the width takes. */
+  .sct-tile-rank-label,
+  .sct-move-unit {
+    display: none;
   }
 
   .sct-players {
@@ -2114,13 +3837,22 @@ body.sct-page.is-embed {
     gap: 12px;
   }
 
+  /* Narrower cards: the full-size crest would reach across the headline. */
+  .sct-news::before,
+  .sct-news.is-featured::before {
+    right: -30px;
+    bottom: -32px;
+    width: 156px;
+    height: 156px;
+  }
+
   .sct-news-well,
   .sct-news.is-featured .sct-news-well {
     flex-basis: 88px;
   }
 
-  /* The well is as tall as the card, and a card carrying a Fantasy Impact note
-     is more than twice as tall as the photo column is wide. `cover` then blows
+  /* The well is as tall as the card, and a card carrying a long headline is
+     more than twice as tall as the photo column is wide. `cover` then blows
      an 88px headshot up to fill 200px of height and crops away everything but a
      band across the forehead. `contain`, bottom-anchored, draws the head at its
      own size standing on the floor of the tinted well — which is what the
@@ -2156,20 +3888,7 @@ body.sct-page.is-embed {
   }
 
   .sct-game {
-    padding: 16px 17px;
-  }
-
-  .sct-cta {
-    padding: 22px 20px;
-  }
-
-  .sct-cta-actions {
-    width: 100%;
-  }
-
-  .sct-cta-actions .sct-button {
-    flex: 1 1 auto;
-    justify-content: center;
+    padding: 16px 16px 18px;
   }
 
   .sct-resource-link {
@@ -2216,11 +3935,21 @@ body.sct-page.is-embed {
 @media (hover: none) {
   .sct-player:hover,
   .sct-news:hover,
-  .sct-game:hover,
   .sct-resource-link:hover {
     transform: none;
     border-color: var(--sc-hairline);
     box-shadow: var(--sc-shadow);
+  }
+
+  /* Broken out of the list above: the fixture card does not rest on the shared
+     hairline and shadow, so returning it to those would be a restyle, not a
+     reset. */
+  .sct-game:hover {
+    transform: none;
+    border-color: rgba(11, 22, 52, 0.09);
+    box-shadow:
+      0 1px 2px rgba(11, 22, 52, 0.02),
+      0 8px 24px rgba(11, 22, 52, 0.045);
   }
 
   .sct-news.is-featured:hover {
@@ -2243,11 +3972,6 @@ body.sct-page.is-embed {
     border-color: var(--sc-navy);
   }
 
-  .sct-button.is-ghost:hover {
-    background: transparent;
-    border-color: var(--sc-border);
-  }
-
   .sct-switch-summary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.18);
@@ -2264,7 +3988,8 @@ body.sct-page.is-embed {
   }
 
   .sct-quicklink:hover {
-    background: transparent;
+    background: var(--sc-surface-soft);
+    border-color: var(--sc-hairline);
   }
 
   /* Restated after the reset above, which shares its specificity and would
@@ -2320,7 +4045,7 @@ body.sct-page.is-embed {
   }
 
   .sct-quicklink {
-    min-height: 46px;
+    min-height: 44px;
   }
 
   .sct-nav-link {
