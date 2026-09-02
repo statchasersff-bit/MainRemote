@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       StatChasers News
- * Description:       Mounts the StatChasers NFL player news tool directly into a page — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.2.0
+ * Plugin Name:       StatChasers
+ * Description:       Mounts the StatChasers NFL player news tool and the 32 team hubs directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.3.1
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.2.0';
+const STATCHASERS_NEWS_VERSION       = '1.3.1';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -43,6 +43,7 @@ const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 // canonical helpers — all of which are function declarations and so are
 // available regardless of order, but the constants are not.
 require_once __DIR__ . '/statchasers-team.php';
+require_once __DIR__ . '/statchasers-team-pages.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
