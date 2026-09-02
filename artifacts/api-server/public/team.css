@@ -192,6 +192,61 @@ body.sct-page.is-embed {
   list-style: none !important;
 }
 
+/* Theme armour, part two: the column the hub is standing in.
+ *
+ * Everything above defends the hub's own markup. This defends the box around
+ * it, and it lives in the stylesheet rather than in the WordPress plugin
+ * because the plugin is a thing someone has to remember to upload, while this
+ * file is already loaded by every page that mounts the hub. It arrives with the
+ * next API deploy, on its own.
+ *
+ * Divi reserves a sidebar column on every page whose layout is not explicitly
+ * full width, which is the default:
+ *
+ *     @media (min-width: 981px) { #left-area { width: 79.125% } }
+ *
+ * Note what that selector is NOT. The 79.125% sits on the bare id, unqualified
+ * by the .et_right_sidebar body class you reach for first — so taking that
+ * class off the body changes precisely nothing, and the published Eagles page
+ * spent a day proving it. What Divi actually keys full width off is
+ * `.et_full_width_page #left-area { width: 100% !important }`, added by a body
+ * class, which is one filter deep and can be outrun by anything that appends
+ * behind it.
+ *
+ * On a hub page the reserved column has no widgets in it, so the page rendered
+ * as three quarters of a tool, a 1px grey rule, and a tall band of nothing.
+ * Only above 980px — below that Divi collapses the columns itself, which is why
+ * it survived every check anyone did on a phone.
+ *
+ * Scoped by loading, not by selector: team.css is enqueued only on pages that
+ * mount the hub, so `#left-area` here cannot mean anyone else's page. A host
+ * that wants its sidebar back stops loading this file on that page.
+ *
+ * Inert everywhere else — no other theme has these ids, and the standalone page
+ * at the API's own URL has no `#left-area` at all. */
+@media (min-width: 981px) {
+  #left-area {
+    width: 100% !important;
+    float: none !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  /* The rule Divi draws down the column boundary. With nothing on the far side
+     of it, it is a line down the middle of the page. */
+  #main-content .container:before {
+    display: none !important;
+  }
+
+  /* CSS cannot stop page.php calling get_sidebar(), so a populated widget area
+     would otherwise land in a heap underneath the hub once the float above is
+     gone. The plugin removes the markup properly when it is installed; this is
+     for when it isn't. */
+  #sidebar {
+    display: none !important;
+  }
+}
+
 .sct *,
 .sct *::before,
 .sct *::after {

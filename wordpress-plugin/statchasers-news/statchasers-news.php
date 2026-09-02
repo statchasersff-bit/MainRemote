@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers News
  * Description:       Mounts the StatChasers NFL player news tool directly into a page — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.0.0
+ * Version:           1.2.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.0.0';
+const STATCHASERS_NEWS_VERSION       = '1.2.0';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -236,6 +236,14 @@ function statchasers_news_asset_version(): string {
 
 	if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
 		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		// ! empty() rather than isset(), and deliberately: "0" is the API's
+		// sentinel for "I could not read my own version.json", not a version.
+		// Taking it at face value would pin every browser's copy of the CSS and
+		// JS to the literal string 0 forever. Falling back to the constant below
+		// is the better of the two wrong answers — it at least changes when this
+		// file does. If the enqueued ver= is stuck at STATCHASERS_NEWS_VERSION,
+		// the deployment is not serving a built version.json and that is where
+		// to look; nothing here can fix it.
 		if ( is_array( $body ) && ! empty( $body['version'] ) ) {
 			$version = (string) $body['version'];
 		}
