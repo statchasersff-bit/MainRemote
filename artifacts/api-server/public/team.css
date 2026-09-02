@@ -247,6 +247,44 @@ body.sct-page.is-embed {
   }
 }
 
+/* The host page's own <h1>, given the tool's heading mark.
+ *
+ * The page title sits above the fragment and is the theme's, not ours — but it
+ * is the first thing on the page, and a plain black heading over a hub whose
+ * every section carries the gold rule reads as two designs stacked. Same bar as
+ * .sct-h2::after, same dimensions.
+ *
+ * `#d4af37` is --sc-gold written out, because the token lives on .sct and this
+ * heading is outside it. Change one, change the other.
+ *
+ * Divi's page/post title is the only element carrying both classes, and this
+ * file only loads on hub pages — see the column rules above for that argument.
+ * `:empty` guard: a page with no title still prints the empty <h1>, and a gold
+ * bar under nothing looks like a rendering fault rather than a heading. */
+#left-area .entry-title.main_title {
+  position: relative;
+  padding-bottom: 12px;
+  /* Room between the bar and the hero. The embedded hero sets its own top
+     margin to zero on the assumption the host heading brings the spacing,
+     so this is where the spacing lives. */
+  margin-bottom: 22px;
+}
+
+#left-area .entry-title.main_title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: #d4af37;
+}
+
+#left-area .entry-title.main_title:empty::after {
+  display: none;
+}
+
 .sct *,
 .sct *::before,
 .sct *::after {
