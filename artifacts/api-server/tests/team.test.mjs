@@ -627,6 +627,38 @@ describe("team.css survives a host theme", () => {
     );
   });
 
+  test("the host's sidebar column is taken back", async () => {
+    const sheet = await css();
+
+    // Divi puts `width: 79.125%` on the BARE id, not on `.et_right_sidebar`,
+    // so the class swap everyone reaches for first is a no-op and the hub
+    // renders in three quarters of the page with an empty widget column beside
+    // it. Only above 980px, which is why it survived every check on a phone.
+    const guard = sheet.match(
+      /@media \(min-width: 981px\) \{[\s\S]*?#left-area \{[\s\S]*?\n  \}/,
+    );
+    assert.ok(guard, "the #left-area override is inside a min-width:981px block");
+    assert.match(
+      guard[0],
+      /width:\s*100%\s*!important/,
+      "the host column is widened, not merely unfloated",
+    );
+    assert.match(guard[0], /float:\s*none\s*!important/, "and unfloated too");
+
+    // Both of these are the difference between "full width" and "full width
+    // with a grey line down it and the widgets dumped underneath".
+    assert.match(
+      sheet,
+      /#main-content \.container:before \{\s*display:\s*none\s*!important/,
+      "the column divider rule is removed",
+    );
+    assert.match(
+      sheet,
+      /#sidebar \{\s*display:\s*none\s*!important/,
+      "an emptied sidebar cannot land under the hub",
+    );
+  });
+
   test("the page gutter is a real gutter", async () => {
     const sheet = await css();
 
