@@ -297,7 +297,12 @@ body.sct-page.is-embed {
   position: relative;
   isolation: isolate;
   margin: 24px 0 0;
-  padding: 28px 32px;
+  /* 18px, not 28px. The hero is the tallest thing above the fold and every
+     pixel of it pushes the tab strip and the first panel down; the block
+     padding was the cheapest quarter of its height to give back. Inline
+     padding is untouched — the crest and the name still need their margin
+     from the rounded corner. */
+  padding: 18px 32px;
   border-radius: var(--sc-radius);
   background:
     radial-gradient(
@@ -395,8 +400,11 @@ body.sct-page.is-embed {
 .sct-hero-crest {
   display: grid;
   place-items: center;
-  width: 112px;
-  height: 112px;
+  /* Scaled with the hero. At 112px in an 18px-padded box the plate was
+     taller than the text column beside it and became the thing setting the
+     height, which is the opposite of what it is for. */
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: linear-gradient(180deg, #fff 0%, #eef2f8 100%);
   box-shadow:
@@ -406,13 +414,18 @@ body.sct-page.is-embed {
 
 .sct-hero-logo {
   display: block;
-  width: 76px;
-  height: 76px;
+  width: 66px;
+  height: 66px;
   object-fit: contain;
 }
 
+/* The five stacked elements below carry the rest of the reduction, in the
+   gaps between them and in their own leading rather than in their type sizes.
+   Line height is set explicitly on each: they inherit 1.55 from .sct, which is
+   a reading measure and far too loose for a single line of 11px caps. */
 .sct-eyebrow {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
+  line-height: 1.3;
   color: var(--sc-gold-soft);
   font-size: 0.72rem;
   font-weight: 800;
@@ -423,7 +436,7 @@ body.sct-page.is-embed {
 .sct-title {
   margin: 0;
   /* Strong without becoming a billboard. */
-  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.5rem);
+  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.05rem);
   line-height: 1.08;
   font-weight: 900;
   letter-spacing: -0.025em;
@@ -431,7 +444,8 @@ body.sct-page.is-embed {
 }
 
 .sct-subtitle {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
+  line-height: 1.4;
   color: rgba(255, 255, 255, 0.66);
   font-size: 0.92rem;
   font-weight: 500;
@@ -441,7 +455,7 @@ body.sct-page.is-embed {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 16px 0 0;
+  margin: 9px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -450,13 +464,14 @@ body.sct-page.is-embed {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 7px 14px;
+  padding: 5px 14px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sct-fact-label {
+  line-height: 1.3;
   color: rgba(255, 255, 255, 0.55);
   font-size: 0.63rem;
   font-weight: 800;
@@ -465,6 +480,7 @@ body.sct-page.is-embed {
 }
 
 .sct-fact-value {
+  line-height: 1.3;
   color: #fff;
   font-size: 0.94rem;
   font-weight: 800;
@@ -472,7 +488,8 @@ body.sct-page.is-embed {
 }
 
 .sct-hero-updated {
-  margin: 14px 0 0;
+  margin: 7px 0 0;
+  line-height: 1.3;
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.74rem;
   font-weight: 600;
@@ -4310,7 +4327,8 @@ body.sct-page.is-embed {
 
   .sct-hero {
     margin-top: 14px;
-    padding: 20px 18px;
+    /* Kept below the desktop block padding, which is now 18px. */
+    padding: 16px 18px;
   }
 
   .sct-hero-inner {
