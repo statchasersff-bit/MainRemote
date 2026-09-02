@@ -91,6 +91,31 @@ function wireTabs(root: HTMLElement): void {
     return tabs.some((tab) => tab.id === id) ? id : tabs[0]!.id;
   }
 
+  /**
+   * Take the hash OUT of the address bar.
+   *
+   * The tabs used to write themselves into the URL — #depth-chart and so on —
+   * so a tab could be reloaded or shared. That is still true of a link INTO
+   * the page: fromHash() honours an arriving hash, and every tab link keeps
+   * its href, so a middle-click or a copied link still opens on the right
+   * panel. What changed is that clicking a tab no longer rewrites the URL of
+   * the page the reader is already on. The address bar shows the page, and
+   * only the page.
+   *
+   * Clearing rather than leaving alone, because a reader who arrived at
+   * #depth-chart and then clicked Stats would otherwise be looking at the
+   * stats under a URL that says depth chart.
+   */
+  function clearHash(): void {
+    if (!location.hash) return;
+    try {
+      history.replaceState(null, "", location.pathname + location.search);
+    } catch {
+      // Some embeddings disallow history writes (a sandboxed frame). The tab
+      // still switches; only the stale hash stays.
+    }
+  }
+
   // State is settled BEFORE the CSS is handed over, so there is no frame where
   // :target has been switched off and .is-active still names the server's guess
   // — which on a deep link (#depth-chart) would flash the Overview panel.
@@ -111,15 +136,7 @@ function wireTabs(root: HTMLElement): void {
       event.preventDefault();
       active = id;
       select(id, true);
-      // replaceState, not pushState: the tab is worth putting in the URL so it
-      // can be linked and reloaded, but five tab clicks must not become five
-      // presses of the back button before the reader can leave the page.
-      try {
-        history.replaceState(null, "", `#${id}`);
-      } catch {
-        // Some embeddings disallow history writes (a sandboxed frame). The tab
-        // still switches; only the shareable URL is lost.
-      }
+      clearHash();
     });
   }
 
@@ -151,11 +168,7 @@ function wireTabs(root: HTMLElement): void {
     active = tab.id;
     select(tab.id, false);
     tab.link.focus();
-    try {
-      history.replaceState(null, "", `#${tab.id}`);
-    } catch {
-      // See above.
-    }
+    clearHash();
   });
 }
 
