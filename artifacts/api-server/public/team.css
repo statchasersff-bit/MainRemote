@@ -264,10 +264,9 @@ body.sct-page.is-embed {
 #left-area .entry-title.main_title {
   position: relative;
   padding-bottom: 12px;
-  /* Room between the bar and the hero. The embedded hero sets its own top
-     margin to zero on the assumption the host heading brings the spacing,
-     so this is where the spacing lives. */
-  margin-bottom: 22px;
+  /* No margin of its own: the gap to the hero is .sct.is-embed's top padding,
+     so it is one number rather than two that have to be kept in step. */
+  margin-bottom: 0;
 }
 
 #left-area .entry-title.main_title::after {
@@ -292,10 +291,13 @@ body.sct-page.is-embed {
 }
 
 .sct.is-embed {
-  /* Flush inside whatever container WordPress provides — no outer gutter, no
-     leading gap. The block above the shortcode owns the space above it. */
+  /* Flush at the sides — no outer gutter, the host container owns those. Top
+     and bottom are the tool's own: 30px between the host heading and the hero,
+     30px between the last panel and whatever the theme prints next. Held here
+     rather than split with the heading above so the gap is one number. */
   --sct-gutter: 0px;
-  padding-bottom: 8px;
+  padding-top: 30px;
+  padding-bottom: 30px;
   max-width: 100%;
 }
 
