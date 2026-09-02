@@ -132,6 +132,81 @@ function statchasers_divi_body_class( array $classes ): array {
 add_filter( 'body_class', 'statchasers_divi_body_class' );
 
 /**
+ * Give every team page Divi's full-width layout.
+ *
+ * The hub is a full-bleed tool — a hero, a sticky tab strip, four-across metric
+ * cards, a schedule grid. Divi's default page layout is `et_right_sidebar`,
+ * which hands it about three quarters of the column and draws a vertical rule
+ * down the boundary. The published Eagles page was the hub squeezed into 1120px
+ * with an empty widgetless sidebar and that rule beside it for the full height
+ * of the page.
+ *
+ * Filtering the meta rather than asking someone to set the dropdown on all 32
+ * pages: WP-CLI creates these pages (see wordpress-plugin/scripts/), a new team
+ * page would arrive with the default again, and "why is there a line down the
+ * right of one team page" is not a thing anyone should have to rediscover. The
+ * layout is a property of what a team page IS, so it belongs with the other 32
+ * rows rather than in the database.
+ *
+ * Both hooks are needed and they do different jobs:
+ *   - the meta filter is what page.php reads to decide whether to call
+ *     get_sidebar(), so it removes the sidebar MARKUP;
+ *   - the body_class filter swaps the class Divi's stylesheet keys its column
+ *     widths and that vertical rule off, so it removes the LAYOUT.
+ * Doing only one leaves either an empty sidebar in a full-width column or a
+ * narrow column with nothing beside it.
+ *
+ * @param mixed  $value     Short-circuit value; null means "not handled".
+ * @param int    $object_id Post ID being queried.
+ * @param string $meta_key  Meta key being queried.
+ * @return mixed Null to fall through to the stored value.
+ */
+function statchasers_divi_force_fullwidth( $value, $object_id, $meta_key ) {
+	if ( '_et_pb_page_layout' !== $meta_key ) {
+		return $value;
+	}
+
+	$team = statchasers_divi_team();
+	// get_queried_object() is the page; $object_id is whatever is being asked
+	// about, which during a Theme Builder render can be the layout post. Only
+	// answer for the page itself.
+	if ( null === $team || (int) $object_id !== (int) get_queried_object_id() ) {
+		return $value;
+	}
+
+	// get_post_meta() with $single = true unwraps one level, so a short-circuit
+	// has to return the array form or the caller gets the first character.
+	return array( 'et_full_width_page' );
+}
+add_filter( 'get_post_metadata', 'statchasers_divi_force_fullwidth', 10, 3 );
+
+/**
+ * The body classes that go with that layout.
+ *
+ * Divi prints `et_right_sidebar` from the same meta, but it is added by a
+ * filter that may already have run, so the class is corrected here rather than
+ * assumed absent.
+ *
+ * @param string[] $classes Existing classes.
+ * @return string[]
+ */
+function statchasers_divi_fullwidth_body_class( array $classes ): array {
+	if ( null === statchasers_divi_team() ) {
+		return $classes;
+	}
+
+	$classes = array_values(
+		array_diff( $classes, array( 'et_right_sidebar', 'et_left_sidebar' ) )
+	);
+	$classes[] = 'et_full_width_page';
+
+	return $classes;
+}
+// Priority 20: after statchasers_divi_body_class above, and after Divi's own
+// layout class has been added, so there is something to take back out.
+add_filter( 'body_class', 'statchasers_divi_fullwidth_body_class', 20 );
+
+/**
  * The team's colours and crest, as custom properties on <body>.
  *
  * This is the whole trick behind "one Divi template, 32 team-coloured heroes":

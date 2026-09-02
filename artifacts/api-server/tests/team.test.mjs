@@ -559,3 +559,84 @@ describe("the WordPress fragment's team switcher", () => {
     assert.match(html, /href="\/nfl\/teams\/dallas-cowboys\?src=hub"/);
   });
 });
+
+/**
+ * Host-page survivability.
+ *
+ * The hub is printed into a WordPress page whose theme this server has never
+ * seen, and the cascade there is not the cascade in the standalone preview.
+ * These assert the two rules that failed in production — a palette published
+ * on `:root`, and typography left to inheritance — against the stylesheet as
+ * served, because that is what the plugin enqueues.
+ *
+ * Read from the CSS text rather than by rendering: jsdom does not resolve the
+ * cascade, and a real browser is not in this suite's dependencies. The
+ * properties below are structural enough that their presence in the file is
+ * the whole assertion.
+ */
+describe("team.css survives a host theme", () => {
+  async function css() {
+    const res = await get("/team.css");
+    assert.equal(res.status, 200, "team.css should be served");
+    return res.body;
+  }
+
+  test("the palette is not published on :root", async () => {
+    const sheet = await css();
+
+    // `:root` is <html>. Every element between it and .sct outranks it for an
+    // inherited custom property, so a host that defines any --sc-* name of its
+    // own repaints the hub with no contest — statchasers.com defines --sc-navy
+    // as #0b3a7a, and the published hero, every h2, the active tab and every
+    // solid button drew in it. Declaring on the fragment root instead is what
+    // makes the tokens unreachable from above. It also stops the reverse leak:
+    // on :root these were overwriting the SITE's --sc-* names for the whole
+    // page.
+    const rootBlocks = sheet.match(/(^|\})\s*:root\s*\{[^}]*\}/g) ?? [];
+    const leaked = rootBlocks.filter((block) => /--sc-/.test(block));
+    assert.deepEqual(
+      leaked,
+      [],
+      "custom properties must be declared on .sct / body.sct-page, not :root",
+    );
+
+    assert.match(
+      sheet,
+      /:where\(\.sct\),\s*\n\s*:where\(body\.sct-page\)\s*\{/,
+      "the token block is scoped to the fragment root",
+    );
+    assert.match(sheet, /--sc-navy:\s*#0b1634/, "brand navy is still ours");
+  });
+
+  test("typography and list markers are armoured", async () => {
+    const sheet = await css();
+
+    // Inheritance loses to any rule naming the element, so `h2 { font-family }`
+    // in a theme took every heading in the hub while our own colour and size
+    // rules kept winning. And the marker belongs to the <li>, so `list-style:
+    // none` on the <ul> alone left the tab strip reading "• Stats • News".
+    assert.match(
+      sheet,
+      /font-family:\s*var\(--sc-font\)\s*!important/,
+      "the fragment forces its own font family",
+    );
+    assert.match(
+      sheet,
+      /\.sct :is\(ul, ol, li\)\s*\{\s*list-style:\s*none\s*!important/,
+      "list markers are cleared on the <li>, not only the <ul>",
+    );
+  });
+
+  test("the page gutter is a real gutter", async () => {
+    const sheet = await css();
+
+    // A find-and-replace once turned 24px into 2.4px here, and 16px into 1.6px
+    // on the phone breakpoint — a gutter that is not there.
+    assert.match(sheet, /--sct-gutter:\s*24px/, "desktop gutter is 24px");
+    assert.doesNotMatch(
+      sheet,
+      /--sct-gutter:[^;]*\d\.\d+px/,
+      "no sub-pixel gutter",
+    );
+  });
+});
