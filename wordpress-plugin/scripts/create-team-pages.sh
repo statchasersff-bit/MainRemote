@@ -194,7 +194,12 @@ for row in "${TEAMS[@]}"; do
 	IFS='|' read -r slug name abbr division <<< "$row"
 	nick="$(nickname_of "$name")"
 
-	title="$name Fantasy Football Hub"
+	# The page title, which is the <h1> Divi prints above the shortcode — the
+	# fragment itself steps down to <h2> when embedded so this one stays the
+	# page's heading. Deliberately NOT the same string as rank_math_title below:
+	# that one is the <title> tag and competes in a search result, this one is
+	# read by someone already on the page.
+	title="$name Team Page"
 	id="$(page_id "$slug" "$teams_parent")"
 
 	if [ -z "$id" ]; then
