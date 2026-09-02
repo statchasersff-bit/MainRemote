@@ -659,6 +659,28 @@ describe("team.css survives a host theme", () => {
     );
   });
 
+  test("the host page's H1 gets the tool's gold rule", async () => {
+    const sheet = await css();
+
+    // Same bar as .sct-h2::after. The token is out of reach outside .sct, so
+    // the colour is written out — keep it equal to --sc-gold.
+    const gold = sheet.match(/--sc-gold:\s*(#[0-9a-f]{6})/i);
+    assert.ok(gold, "--sc-gold is defined");
+    assert.match(
+      sheet,
+      new RegExp(
+        "#left-area \\.entry-title\\.main_title::after \\{[^}]*width:\\s*44px[^}]*height:\\s*3px[^}]*background:\\s*" + gold[1],
+        "i",
+      ),
+      "the H1 bar is 44x3 in --sc-gold",
+    );
+    assert.match(
+      sheet,
+      /\.entry-title\.main_title:empty::after \{\s*display:\s*none/,
+      "no bar under an empty title",
+    );
+  });
+
   test("the page gutter is a real gutter", async () => {
     const sheet = await css();
 
