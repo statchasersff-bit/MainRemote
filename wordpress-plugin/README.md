@@ -95,6 +95,36 @@ WordPress query var and `/nfl/teams/dallas-cowboys/?embed=1` serves WordPress's
 oEmbed template instead of the page. (`SC_TEAM_LINK_QUERY` overrides that query
 if a mount needs something else.)
 
+### Creating the 32 pages, and the Divi template
+
+Two companion files live beside this plugin. Neither is required — the
+shortcode works without them — but together they are what turns `[statchasers_team]`
+into 32 finished pages rather than 32 pages you build by hand.
+
+- **`scripts/create-team-pages.sh`** — a WP-CLI script that creates
+  `/nfl/teams/<slug>/` for all 32 teams with the shortcode as post content, the
+  Rank Math title/description/robots, and the team crest as the featured image.
+  Idempotent: it never overwrites content, and fills Rank Math fields only where
+  they are empty. `--dry-run` first, `--force` to refresh meta after a season
+  rollover.
+- **`divi/statchasers-divi-teams.php`** — an mu-plugin exposing each page's team
+  to a single Divi Theme Builder template: `sc-team-<slug>` body classes,
+  `--sc-team-primary`/`--sc-team-accent`/`--sc-team-logo` custom properties, a
+  `[sc_team field=…]` shortcode, and the measured `--sct-nav-offset` that keeps
+  the hub's sticky section bar out from under a Divi fixed header.
+
+Two things that bite on a Divi site specifically:
+
+1. **A Theme Builder body template must contain a Post Content module.** Without
+   it the page renders your template and nothing else — the shortcode never runs,
+   and every one of these pages ships empty. It is the exact failure the
+   `indexifembedded` posture cannot survive.
+2. **Divi swaps the global post while it renders a Theme Builder layout**, so
+   `[statchasers_team]` placed *inside the template* defaults its slug from the
+   layout, not the page. Keep the hub in page content (what the script writes), or
+   use `[sc_team_hub]` from the mu-plugin, which reads `get_queried_object()` and
+   is correct either way.
+
 ## News shortcode attributes
 
 | Attribute      | Default | Meaning |
