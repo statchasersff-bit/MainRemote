@@ -15,7 +15,34 @@
    Patriots site.
    ========================================================================== */
 
-:root {
+/* The design tokens.
+ *
+ * Declared on the fragment's own root — NOT on `:root`. This is load-bearing,
+ * and it is the difference between the hub looking like itself on a host page
+ * and looking like the host.
+ *
+ * A custom property resolves from the NEAREST ancestor that declares it.
+ * `:root` is `<html>`, the farthest ancestor there is, so every element between
+ * `<html>` and `.sct` outranks it — a theme's `body { --sc-navy: … }` beats a
+ * fragment's `:root { --sc-navy: … }` outright, with no specificity or
+ * load-order contest to win. This is not hypothetical: statchasers.com defines
+ * `--sc-navy` as #0b3a7a, and the published hub was drawing its hero gradient,
+ * every h2, the active tab and every solid button in the site's mid-blue
+ * instead of this file's #0b1634. `--sc-navy-deep` survived only because the
+ * site happens not to define that one.
+ *
+ * Declaring them here instead puts them ON the element the fragment starts at,
+ * where no ancestor can reach them. `:where()` keeps the weight at zero so a
+ * host that WANTS to retune the hub — `.sct { --sc-font: … }` — still can; the
+ * immunity comes from which element the declaration lands on, not from its
+ * specificity.
+ *
+ * Both selectors carry the same values: `.sct` is the fragment as embedded, and
+ * `body.sct-page` is the standalone page, whose own background/colour/font
+ * rules need to see the tokens too.
+ */
+:where(.sct),
+:where(body.sct-page) {
   /* Brand */
   --sc-navy: #0b1634;
   --sc-navy-deep: #060d21;
@@ -88,7 +115,7 @@ body.sct-page.is-embed {
   /* The page gutter as a property rather than a literal, because the sticky
      section nav has to cancel it exactly to reach the shell's edge. One name,
      one number, and the embedded mount sets it to zero. */
-  --sct-gutter: 2.4px;
+  --sct-gutter: 24px;
   /* Left/right padding only. No top margin: the standalone page is the tool
      and the embedded one sits directly under the host page's own heading. */
   margin: 0 auto;
@@ -126,6 +153,43 @@ body.sct-page.is-embed {
 
 :where(.sct) :where(img) {
   max-width: 100%;
+}
+
+/* Theme armour. Two properties, and deliberately only two.
+ *
+ * The zero-weight reset above is the right shape for anything a component in
+ * this file also sets — it has to lose to `.sct-subtitle`, so it has to weigh
+ * nothing. But that also means it loses to the HOST theme, whose rules are
+ * real element selectors, and the two properties below are ones no component
+ * here ever varies. Leaving them at zero weight bought nothing and cost both:
+ *
+ *   font-family  Declared exactly twice in this file, on `.sct` and on
+ *                `body.sct-page`, and inherited everywhere else. Inheritance
+ *                loses to ANY rule that names the element, so a theme's
+ *                `h1, h2, h3 { font-family: <serif> }` took every heading in
+ *                the hub while our own colour and size rules kept winning —
+ *                which is how the published page ended up as StatChasers navy
+ *                typeset in the theme's serif.
+ *   list-style   Set on the <ul> (`.sct-nav-list`), which a theme's `li` rule
+ *                outranks, because the marker is drawn by the <li>. The
+ *                published tab strip read "• Stats • News • Depth Chart".
+ *
+ * `!important` rather than raised specificity because a theme that sets fonts
+ * from an options panel emits `!important` itself, and there is no specificity
+ * high enough to beat that. The escape hatch is intact: the family is
+ * `var(--sc-font)`, so a host restyles the hub by setting the token, not by
+ * outgunning this rule.
+ *
+ * Do not add spacing properties here. Margin and padding ARE varied per
+ * component — `.sct-fact` and `.sct-resource` are both <li> — and arming them
+ * is the collapse the comment above describes. */
+:is(.sct, body.sct-page),
+:is(.sct, body.sct-page) * {
+  font-family: var(--sc-font) !important;
+}
+
+.sct :is(ul, ol, li) {
+  list-style: none !important;
 }
 
 .sct *,
@@ -4160,7 +4224,8 @@ body.sct-page.is-embed {
    space, horizontal space, and the absence of a mouse. */
 
 @media (max-width: 720px) {
-  :root {
+  :where(.sct),
+  :where(body.sct-page) {
     /* 56px of permanently parked chrome is a tenth of a phone screen. */
     --sct-nav-h: 48px;
   }
@@ -4169,7 +4234,7 @@ body.sct-page.is-embed {
     /* max() rather than a flat value, so the content still clears a notch when
        the phone is turned sideways. The gutter is also what the sticky nav
        cancels, so both move together and the bar stays flush. */
-    --sct-gutter: max(1.6px, env(safe-area-inset-left, 0px));
+    --sct-gutter: max(16px, env(safe-area-inset-left, 0px));
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 

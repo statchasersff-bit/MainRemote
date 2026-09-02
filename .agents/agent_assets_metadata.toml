@@ -52,3 +52,17 @@ mtime_ms = 1788357041219
 storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:0f5de917-1130-4570-b0bd-175a3503878a/8f89fea1-fb21-49a5-8163-ccf39a0071c2/ba2b7f59-45dc-4b31-861f-7e09b2ad50bf"
 storage_version_token = "1788357050679666"
 content_type = "image/png"
+
+[[outputs]]
+id = "rZ46ofORRMY_Nj3w6gB20"
+uri = "file://attached_assets/image_1788357775855.png"
+type = "image"
+title = "Preview reference image"
+description = "Saved reference image supplied by the user as preview.png."
+logical_id = "9636f8bf-a9b6-4756-9f98-58b01e379dcc"
+content_hash = "sha256:5fb3f23ab8f659a3205883dcbfdced31ab4ec0356d06fb4ef94e14d6646078b7"
+size = 186718
+mtime_ms = 1788357777510
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:0f5de917-1130-4570-b0bd-175a3503878a/9636f8bf-a9b6-4756-9f98-58b01e379dcc/62468b54-f79c-4e45-bf31-b9854e5074b0"
+storage_version_token = "1788357787757936"
+content_type = "image/png"

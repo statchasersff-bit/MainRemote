@@ -48,6 +48,32 @@ body {
    elements aggressively, so re-assert the basics here rather than relying on
    the reset above (which only exists in the standalone document). */
 .statchasers-news {
+  /* The tokens again, on the fragment's own root.
+   *
+   * The :root copy above still feeds this document's own chrome (body, .page),
+   * but :root is <html> — the farthest ancestor there is — so on a WordPress
+   * page every element between <html> and this one outranks it. A theme that
+   * happens to define --gold or --text or --border, all names generic enough
+   * that a site plausibly owns them already, silently repaints the tool. The
+   * team hub shipped that exact bug: statchasers.com defines --sc-navy, and the
+   * published hero drew in the site's blue rather than team.css's.
+   *
+   * Redeclaring here puts them ON the element the fragment starts at, where no
+   * ancestor can reach them. Not on body: these names are generic, and writing
+   * them to the host page's <body> would be this tool overwriting the SITE's
+   * palette — the same collision pointed the other way. */
+  --gold: #d4af37;
+  --gold-light: #f0d060;
+  --gold-bg: #fdf8e8;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --border: #e5e7eb;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-hover: 0 4px 14px rgba(0,0,0,0.1);
+  --font: 'Inter', system-ui, sans-serif;
+
   font-family: var(--font);
   color: var(--text);
   line-height: 1.6;
