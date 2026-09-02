@@ -46,6 +46,13 @@ building all 32:
       diagnostics ("no team slug", "the API returned nothing") render as an
       empty string for everyone else, so a broken mount looks like a missing
       section rather than an error.
+- [ ] the hub uses the **full content column** — open the page at a desktop
+      width above 1100px, not just on a phone. Divi splits the row 79/21 for a
+      sidebar unless the layout is full width, and an empty widget area leaves
+      that 21% blank. The plugin forces `et_full_width_page` on any page that
+      mounts the shortcode; if a band of white is still there, confirm the body
+      tag carries that class and not `et_right_sidebar`. Below 980px Divi
+      collapses the split by itself, which is why this only shows on desktop.
 
 ## 2. Validate the structured data
 
