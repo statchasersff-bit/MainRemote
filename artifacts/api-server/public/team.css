@@ -837,9 +837,9 @@ body.sct-page.is-embed {
 
 /* -------------------------------------------------------- team snapshot */
 
-/* The Overview's four headline rates.
+/* The four headline rates that open the Stats tab.
  *
- * The same card as a Stats-tab tile (.sct-tile, below) at the larger scale four
+ * The same card as a .sct-tile below it on that tab, at the larger scale four
  * across earns: gold mark on the label, a ruled footer carrying the rank and
  * its movement, and a percentile groove on the bottom edge. The parts are
  * repeated rather than shared with a joint selector because the two blocks are
@@ -866,7 +866,7 @@ body.sct-page.is-embed {
   padding: 14px 16px 16px;
   border-radius: var(--sc-radius-sm);
   /* A shade darker than the page hairline, and a shadow tinted navy rather than
-     black. On the Overview's white ground these cards were dissolving; this is
+     black. On the page's white ground these cards were dissolving; this is
      the least weight that gives each of the four an edge. */
   border: 1px solid rgba(15, 23, 42, 0.13);
   background: var(--sc-surface);
@@ -1016,6 +1016,492 @@ body.sct-page.is-embed {
 
 .sct-metric-track[data-tier="poor"] .sct-metric-fill {
   background: #94363a;
+}
+
+/* ---------------------------------------------------------------- outlook */
+
+/* The one block on this page that is an opinion rather than a reading.
+ *
+ * Everything around it is a grid of measurements, so the risk here was that a
+ * wall of sentences read as a different site dropped into the middle of the
+ * hub. What holds it to the page is that it is built from parts the page
+ * already has and not from new ones: the card is .sct-player's shell, the
+ * headshot is the depth chart's round tinted well at a larger size, the
+ * position chip is .sct-slot unchanged, the position colours on the card edge
+ * are that chip's own palette, and the closing line is marked with the gold
+ * inset the history table uses on its current season.
+ *
+ * Inside the card the type runs down in decreasing commitment — classification,
+ * one-line thesis, a row of evidence, then the paragraph — so a reader can stop
+ * at any level and still have taken something away. That ladder is the whole
+ * reason this reads as analysis rather than as an article with pictures.
+ */
+
+/* The status line under the heading. Micro-caps rather than a sentence: it is
+   provenance, not prose, and at sentence weight it competed with the lede two
+   lines below it for the same job. */
+.sct-outlook-stamp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* "Not live data" is the one segment that is a disclosure rather than a label,
+   and it keeps the page honest about what the date beside it means: the month
+   this take was written, not the minute it was refreshed. */
+.sct-outlook-meta-item {
+  white-space: nowrap;
+}
+
+/* The lede. Deliberately close to the card notes below it (0.88rem) rather than
+   sized as an article's standfirst: the section has two registers of prose and
+   they should agree.
+
+   No measure cap, and this one has been settled twice. A typographic reading
+   width (~74ch, then 92ch) is the right rule for an article and the wrong one
+   here: every other child of .sct-block runs the full width of the block, and a
+   paragraph stopping short of that reads as a column that failed to fill rather
+   than as a considered measure. If the line ever needs shortening it should be
+   the block that narrows, not this paragraph alone. */
+.sct-outlook-lede {
+  margin: 16px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.94rem;
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+/* The offseason facts: compact stat blocks, not a rule of micro-type.
+ *
+ * These were label and value at nearly the same tiny size, which made a strip
+ * of six read as one undifferentiated band. The label is still micro-caps and
+ * the value is now most of a card's worth of weight above it, so the row can be
+ * scanned by value alone.
+ *
+ * auto-fit rather than a fixed count because the list is written per team and
+ * runs four to seven entries — a fixed four would strand three on their own
+ * row. The 190px floor is the width at which the longest of these still sets on
+ * two lines. */
+.sct-outlook-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 18px 22px;
+  margin: 22px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+/* The metric label's micro-type, gold dash included, so these read as the same
+   kind of label as the ones on the snapshot cards. */
+.sct-outlook-fact-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-outlook-fact-label::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sc-gold);
+}
+
+/* Navy, and a step up in both size and weight. The gap between this and the
+   label above it is the whole point of the change: one of the two is the
+   reading and it should not take a second look to tell which. */
+.sct-outlook-fact-value {
+  margin: 6px 0 0;
+  color: var(--sc-navy);
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+/* The league rank, tucked after the value the way the snapshot card tucks its
+   ordinal under a figure: quieter, tabular, and never the thing read first. */
+.sct-outlook-fact-rank {
+  margin-left: 6px;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------ player bands */
+
+.sct-outlook-group {
+  margin: 26px 0 0;
+}
+
+/* The band heading. Sized as a label rather than a sub-heading — it is a
+   divider that happens to assert something, and at heading weight two of them
+   would compete with the section's own <h2>. The rule fills the rest of the
+   line so the band reads as a section break at a glance. */
+.sct-outlook-group-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sct-outlook-group-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--sc-hairline);
+}
+
+/* Two across, not six. These cards hold a paragraph apiece, and at a
+   cornerstone card's width the measure drops under 30 characters — which is a
+   column of poetry, not a scouting note.
+
+   `align-items: stretch` is grid's default and is what makes the cards in one
+   ROW share a height while a later row is free to be shorter. That is the
+   behaviour wanted here: a row should look level, and a band of three should
+   not be padded to match a band of four. */
+.sct-outlook-players {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* An odd card last in its band takes the full width rather than sitting beside
+   a hole. It is the same rule the news lead follows, for the same reason: a
+   half-empty final row reads as a layout that ran out rather than as a list
+   that ended. */
+.sct-outlook-players > .sct-outlook-player:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+/* .sct-player's shell, repeated rather than shared with a joint selector for
+   the same reason the snapshot repeats the tile's: the two are sized
+   independently — a cornerstone is a photo with a name under it and this is a
+   paragraph with a head on it — and a shared rule would be overridden on every
+   line that matters.
+ *
+ * 14px rather than the page's 16: at two to a row these are the widest cards on
+ * the hub, and a radius tuned for a 180px cornerstone reads soft on a 560px
+ * one. The padding is tighter than it was for the same reason — the card gained
+ * two rows of content and should not also gain height.
+ *
+ * The left edge carries the position's own colour, at 2px, using the gold-inset
+ * device the history table already uses. It is a tint, not a border: enough to
+ * sort a row of cards by position at a glance, not enough to make the section a
+ * colour chart. --sct-pos-ink defaults to the same gold .sct-slot falls back to
+ * for a position the depth chart does not recognise. */
+.sct-outlook-player {
+  --sct-pos-ink: #8a6205;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface);
+  box-shadow:
+    inset 2px 0 0 var(--sct-pos-ink),
+    var(--sc-shadow);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+/* The team crest as a watermark behind every player card.
+ *
+ * The same device the news cards use (.sct-news-body::before), painted from
+ * --team-logo as a background because it is decoration and not content, at the
+ * same 0.07 the page already spends on a crest.
+ *
+ * It ran on the core band alone for one revision, as that band's emphasis. It
+ * is on all of them now, which means the bands are told apart by their headings
+ * and nothing else — the right trade if the crest is wanted as the section's
+ * texture rather than as a ranking of it, and the reason there is no
+ * .is-lead selector here any more.
+ *
+ * Two properties on the card make it work. "isolation" gives the card its own
+ * stacking context so the z-index below sits above the card background instead
+ * of falling behind the card entirely, and "overflow" is what crops the mark at
+ * the card edge — which is what keeps it reading as a watermark rather than as
+ * a pasted-on logo. Neither disturbs what is already there: an inset box-shadow
+ * paints inside the border box and an outer one paints outside it, so the
+ * position accent and the page shadow both survive the crop. */
+.sct-outlook-player {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.sct-outlook-player::before {
+  content: "";
+  position: absolute;
+  /* Low and right, so the crest sits behind the paragraph rather than behind
+     the headshot and the name — the two things on this card that are already
+     pictures of something.
+
+     Positioned by its CENTRE, as on the news card and for the same reason: the
+     mark is taller than the card, so anchoring its bottom edge hangs all of the
+     overhang upwards and moves the crest UP. Top past 50% with the centring
+     transform says where the middle of the mark goes, which is what is being
+     aimed. */
+  top: 68%;
+  right: -6px;
+  z-index: -1;
+  /* Sized off the card's own height rather than in pixels, so it holds its
+     proportion whether the paragraph runs three lines or six, and capped on
+     width so it cannot reach across a card that is mostly text. */
+  height: 130%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 48%;
+  transform: translateY(-50%);
+  background-image: var(--team-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+/* The same four inks .sct-slot uses, so a card edge and the chip inside it are
+   never two different greens. */
+.sct-outlook-player[data-pos="QB"] {
+  --sct-pos-ink: #99323a;
+}
+
+.sct-outlook-player[data-pos="RB"] {
+  --sct-pos-ink: #0f6b4f;
+}
+
+.sct-outlook-player[data-pos="WR"] {
+  --sct-pos-ink: #1d4e8c;
+}
+
+.sct-outlook-player:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow:
+    inset 2px 0 0 var(--sct-pos-ink),
+    var(--sc-shadow-lift);
+}
+
+/* The well and the name stack. Centred rather than top-aligned: the stack is
+   two short lines against a 64px disc, and hung from the top it sat visibly
+   above the middle of the face beside it. */
+.sct-outlook-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+/* The depth chart's well at 64px instead of 38. Same recipe — a disc of team
+   colour mixed hard toward white, a hairline drawn inside so it has an edge on
+   a white card — because this is the same object at a different scale, and the
+   page should not carry two ways of drawing a headshot.
+
+   Empty is a supported state: an outlook can name a rookie the roster has not
+   indexed, and the well is then simply a tinted disc. */
+.sct-outlook-well {
+  position: relative;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--team-primary, #0b1634) 10%, #fff);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+/* Top-anchored for the same reason as every other headshot on the page: these
+   are shoulders-up crops, and centring them cuts the forehead off. */
+.sct-outlook-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Shrinkable and flexible: the well is fixed, so a long name wraps inside the
+   column it has rather than widening the head. */
+.sct-outlook-who {
+  flex: 1;
+  min-width: 0;
+}
+
+.sct-outlook-name {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 1.06rem;
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+/* The news card's device, not the cornerstone's: the anchor is the name, and a
+   stretched ::after gives the card back its full click target. The cornerstone
+   lays a real element over the whole card, which is right for a card that is a
+   photo and a name and wrong for one that carries a paragraph a reader may want
+   to select. */
+.sct-outlook-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sct-outlook-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.sct-outlook-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 3px;
+}
+
+.sct-outlook-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sct-outlook-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0 0;
+}
+
+/* The fantasy classification, as text continuing the position rather than as a
+   pill of its own. A second lozenge on this line is exactly what the market
+   rank and the verdict chip were, and the reason they went: two badges beside a
+   name make a scorecard, and this section is not one. Navy so it reads as the
+   card's answer, which is what a reader scanning the band is looking for. */
+.sct-outlook-tier {
+  color: var(--sc-navy);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* The thesis: the card's claim, in one line. Set above the paragraph in both
+   size and weight because it is the sentence that makes the paragraph optional
+   — a reader who stops here has still been told the thing. */
+.sct-outlook-thesis {
+  margin: 13px 0 0;
+  color: var(--sc-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+
+/* The evidence row. Dots between rather than rules around: this is one line of
+   related facts, and boxing each of them would put three more cards inside a
+   card. Wraps rather than scrolls — at two to a row there is space for three
+   short facts, and on a phone they stack into two lines without anything being
+   hidden. */
+.sct-outlook-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--sc-muted-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The separator is drawn rather than typed, so it is never read aloud and never
+   ends up copied into a reader's clipboard as stray punctuation. */
+.sct-outlook-stat + .sct-outlook-stat::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 10px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--sc-border);
+}
+
+/* The paragraph, now the quietest thing on the card rather than the only thing
+   on it. */
+.sct-outlook-note {
+  margin: 11px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* The closing take. Marked with the gold inset the history table puts on its
+   current season rather than a left border of its own — same 3px, same edge,
+   one device on the page for "this row is the one to read". Sat on
+   --sc-surface-soft with the page hairline, which makes it the same well the
+   rest of the hub uses for a panel. */
+.sct-outlook-bottom {
+  margin: 24px 0 0;
+  padding: 14px 18px;
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-sm);
+  box-shadow: inset 3px 0 0 var(--sc-gold);
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.sct-outlook-bottom-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-outlook-bottom-label::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sc-gold);
 }
 
 /* -------------------------------------------------------- advanced stats */
@@ -1529,9 +2015,11 @@ body.sct-page.is-embed {
 .sct-hist th,
 .sct-hist td {
   padding: 10px 12px;
-  /* Right, not centred: comparing 379.4 against 91.2 down a column only works
-     when the units line up, and centring puts them a digit apart. */
-  text-align: right;
+  /* Centred under the head it belongs to. The tabular figures above keep every
+     digit the same width, so a centred column of 379.4 and 91.2 still stacks
+     evenly, and centring puts the value and the rank pill under it on one axis
+     rather than hanging both off the right edge. */
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -1952,13 +2440,37 @@ body.sct-page.is-embed {
   align-items: start;
 }
 
+/* A grid, not a column. The clubs send 16:9 editorial art, and a 16:9 picture
+   across a 900px column is a 500px-tall band per story — one headline visible
+   per screen. At three across the same picture is 150px tall and the column
+   shows a page of news, which is what a news list is for. auto-fill rather than
+   a fixed count so the same rule holds when the sidebar drops away at 1080 and
+   the column gets wider. */
 .sct-news-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+  gap: 18px;
   margin: 20px 0 0;
   padding: 0;
   list-style: none;
+}
+
+/* The <li> stays in the box tree — this is an <ol> and `display: contents`
+   would drop the list semantics — so it is the grid item, and the card is
+   stretched to fill it. */
+.sct-news-item {
+  display: flex;
+  min-width: 0;
+}
+
+.sct-news-item > .sct-news {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The lead runs the full width of the grid, whatever the column count. */
+.sct-news-item:has(.sct-news.is-featured) {
+  grid-column: 1 / -1;
 }
 
 .sct-news {
@@ -1968,7 +2480,9 @@ body.sct-page.is-embed {
      dropping behind the card entirely. */
   isolation: isolate;
   display: flex;
-  gap: 18px;
+  /* Picture above the words. A side rail can only be as tall as the text beside
+     it, which is what forced a 16:9 graphic through a portrait slot. */
+  flex-direction: column;
   align-items: stretch;
   overflow: hidden;
   border-radius: var(--sc-radius);
@@ -1989,46 +2503,80 @@ body.sct-page.is-embed {
 
 /* The newest story reads as the lead: a taller photo and a larger headline. It
    is the same component with more room, not a different card. */
+/* The lead is the exception that keeps its side-by-side split: spanning every
+   column, its picture half is ~40% of the news column — wide enough that a 16:9
+   graphic fills it at very nearly the card's own height, which is the geometry
+   the narrow rail never had. */
 .sct-news.is-featured {
+  flex-direction: row;
   border-color: rgba(11, 22, 52, 0.14);
 }
 
-/* The team crest as a watermark behind the card's text — the same device the
-   player news cards use (.sc-card-body::before in styles.css), painted from
-   --team-logo as a background because it is decoration, not content.
-   Absolutely positioned, so it is not a flex item of the card. The offsets run
-   it off the corner and the card's own `overflow: hidden` crops it, which is
-   what keeps it reading as a watermark rather than a pasted-on logo. */
-.sct-news::before {
+/* The team crest as a watermark behind the card's words, set the way the hero's
+   is (.sct-hero-watermark): the whole mark, vertically centred, held inside the
+   right edge rather than run off the corner. A crest cropped by the card reads
+   as a mistake at this opacity; a whole one reads as a watermark.
+   Painted from --team-logo as a background because it is decoration, not
+   content, and hung on the BODY rather than on the card — the card's top half
+   is now an opaque picture, and a mark centred on the card would spend half of
+   itself behind it. */
+.sct-news-body::before {
   content: "";
   position: absolute;
-  right: -40px;
-  bottom: -46px;
+  /* Low and right in the grid cards, so the crest sits behind the byline and
+     the CTA rather than behind the headline.
+
+     Positioned by its CENTRE, not by its bottom edge. The mark is two thirds
+     taller than the body it sits in, so anchoring `bottom` near the body's
+     floor hangs all of that overhang upwards and moves the crest UP the card —
+     the opposite of what the offset reads like. `top` past 50% with the
+     centring transform says where the middle of the mark goes, which is the
+     thing being aimed. */
+  top: 72%;
+  right: 4px;
   z-index: -1;
-  width: 224px;
-  height: 224px;
+  /* Oversized, like the hero's — 300px of crest in a hero shorter than that,
+     though held back from the hero's ratio now that it sits in the corner
+     rather than across the middle. Sized off the body's own height rather than
+     in pixels so it holds that proportion in a two-line card and a four-line
+     one, and capped on width so it cannot swamp a narrow column. What overhangs
+     is cropped by the card's `overflow: hidden`. */
+  height: 138%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 64%;
+  transform: translateY(-50%);
   background-image: var(--team-logo);
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.08;
+  opacity: 0.07;
   pointer-events: none;
 }
 
-/* The lead card is half again as tall, so a crest sized for the standard card
-   reads as a smaller mark on it. Scaled with the card instead. */
-.sct-news.is-featured::before {
-  right: -52px;
-  bottom: -58px;
-  width: 288px;
-  height: 288px;
+/* The lead's body is twice as wide, so a crest sized for the grid card reads as
+   a smaller mark on it. Scaled with the body instead. */
+/* The lead's body is twice as wide and half again as tall: room enough for the
+   hero's own treatment, set against the right edge and only just below centre,
+   where the grid cards drop theirs into the corner. Its own proportion rather
+   than the grid cards' — at this size that ratio would put a 340px crest behind
+   four lines of text. Positioned by the mark's centre, as they are. */
+.sct-news.is-featured .sct-news-body::before {
+  top: 58%;
+  right: 22px;
+  height: 148%;
+  max-width: 52%;
+  transform: translateY(-50%);
 }
 
 .sct-news-well {
   position: relative;
-  flex: 0 0 116px;
+  /* The band's own shape, matching the source art, so the picture arrives whole
+     and the card's height is not what decides how much of it survives. */
+  width: 100%;
+  aspect-ratio: 16 / 9;
   display: grid;
-  place-items: end center;
+  place-items: stretch;
   overflow: hidden;
   background: linear-gradient(
     180deg,
@@ -2038,7 +2586,8 @@ body.sct-page.is-embed {
 }
 
 .sct-news.is-featured .sct-news-well {
-  flex-basis: 168px;
+  flex: 0 0 40%;
+  width: auto;
 }
 
 .sct-news-well::after {
@@ -2050,6 +2599,10 @@ body.sct-page.is-embed {
   opacity: 0.7;
 }
 
+/* Full-bleed in a band cut to the source's own 16:9, so the clubs' editorial
+   art loses nothing. Sleeper's squared headshots are the other feed and they do
+   get cropped here — top-anchored, so what goes is the chest rather than the
+   face. */
 .sct-news-photo {
   display: block;
   width: 100%;
@@ -2070,15 +2623,16 @@ body.sct-page.is-embed {
 }
 
 .sct-news-body {
+  position: relative;
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 16px 20px 16px 0;
+  padding: 14px 18px 16px;
 }
 
 .sct-news.is-featured .sct-news-body {
-  padding: 22px 26px 22px 0;
+  padding: 22px 26px;
 }
 
 .sct-news-meta {
@@ -3279,25 +3833,80 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
-/* The broadcaster, as a mark rather than a sentence. Small, boxed and
-   monospaced by weight so CBS, NBC and Prime line up down the column. */
+/* The broadcaster: a slot of a fixed size, with the logo centred in it.
+ *
+ * The sizing is the part that matters and it stays. Twelve logos this column has
+ * to hold run from the CBS eye to the YouTube wordmark — a square against
+ * something four and a half times as wide — so a cell that hugs its contents
+ * gives the column a ragged edge down both sides. Stretched and centred, the
+ * column reads as a column and the raggedness stays inside the slot.
+ *
+ * What is gone is the frame around it: this drew a bordered, filled chip, and a
+ * box around a broadcaster's own mark reads as a second logo behind the first.
+ * The logo sits bare in the slot now. A station we cannot identify still falls
+ * back to its call sign in the same place. */
 .sct-srow-tv {
-  justify-self: start;
+  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
-  overflow: hidden;
+  height: 25px;
   color: var(--sc-muted-strong);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+/* The call-sign fallback. Its own element so it can still ellipsize inside a
+   chip that is now a flex box — text sitting loose in one is an anonymous item
+   and would clip mid-letter instead. */
+.sct-net-text {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sct-srow-tv:not(:empty) {
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid var(--sc-border);
-  background: var(--sc-surface-sink);
+/* The largest the logo can be drawn inside the chip, as a box the mark is
+   fitted into rather than a size it is set to.
+
+   Two constraints, and the shape decides which one binds: a wordmark runs out
+   of width first and is drawn shorter, a roundel runs out of height first and
+   is drawn narrower. `min()` against the mark's own ratio picks the smaller of
+   the two, so the element ends up exactly the size of the fitted artwork and
+   the chip centres real ink rather than a box with air in it. The SVG's
+   `preserveAspectRatio` is the backstop: if the two ever disagree the logo
+   letterboxes, and no arithmetic here can stretch it. */
+.sct-net-mark {
+  --sct-net-box: 48px;
+  --sct-net-cap: 15px;
+  display: block;
+  width: min(var(--sct-net-box), calc(var(--sct-net-cap) * var(--sct-net-aspect, 1)));
+  height: min(var(--sct-net-cap), calc(var(--sct-net-box) / var(--sct-net-aspect, 1)));
+}
+
+/* Defined once per page and referenced by every mark on it. */
+.sct-net-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* On the cards the network trails the venue in a sentence, so the mark sits on
+   the text's own baseline rather than in a box of its own. */
+.sct-game-tv {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -1px;
+  color: var(--sc-muted-strong);
+  font-weight: 700;
+}
+
+.sct-game-tv .sct-net-mark {
+  --sct-net-box: 54px;
+  --sct-net-cap: 14px;
 }
 
 .sct-result {
@@ -3732,6 +4341,22 @@ body.sct-page.is-embed {
     margin-top: 30px;
   }
 
+  /* One card across. Two would leave a scouting note about 150px wide, which
+     is four or five words a line — the note is the whole point of the card and
+     it stops being readable before the layout stops fitting. */
+  .sct-outlook-players {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .sct-outlook-player {
+    padding: 14px 15px 16px;
+  }
+
+  .sct-outlook-facts {
+    gap: 12px 16px;
+  }
+
   .sct-metrics {
     /* 2x2, per the brief — four cards in a row are unreadable at 375px. */
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3833,54 +4458,43 @@ body.sct-page.is-embed {
     gap: 12px;
   }
 
-  .sct-news {
-    gap: 12px;
+  /* One column at this width, so the lead is shaped like every other card and
+     takes the same crest. */
+  .sct-news-body::before,
+  .sct-news.is-featured .sct-news-body::before {
+    right: 8px;
+    height: 132%;
+    max-width: 52%;
   }
 
-  /* Narrower cards: the full-size crest would reach across the headline. */
-  .sct-news::before,
-  .sct-news.is-featured::before {
-    right: -30px;
-    bottom: -32px;
-    width: 156px;
-    height: 156px;
+  /* The lead's side-by-side split needs a picture half worth having. At 360px
+     that half is 144px, so the lead stacks like every other card and is left
+     with the larger headline as the thing that marks it out. */
+  .sct-news.is-featured {
+    flex-direction: column;
   }
 
-  .sct-news-well,
   .sct-news.is-featured .sct-news-well {
-    flex-basis: 88px;
-  }
-
-  /* The well is as tall as the card, and a card carrying a long headline is
-     more than twice as tall as the photo column is wide. `cover` then blows
-     an 88px headshot up to fill 200px of height and crops away everything but a
-     band across the forehead. `contain`, bottom-anchored, draws the head at its
-     own size standing on the floor of the tinted well — which is what the
-     well's `place-items: end center` was describing all along. */
-  .sct-news-photo {
-    object-fit: contain;
-    object-position: bottom center;
+    flex: none;
+    width: 100%;
   }
 
   .sct-news-body,
   .sct-news.is-featured .sct-news-body {
-    padding: 14px 15px 14px 0;
+    padding: 13px 15px 15px;
   }
 
   .sct-news.is-featured .sct-news-title {
     font-size: 1.06rem;
   }
 
-  /* Full width. These are the two controls that open the rest of the page, and
-     as short pills they are a small target adrift in an empty row. */
+  /* Full width. As a short pill this is a small target adrift in an empty row.
+     It was a pair with the depth chart footer's button until that footer became
+     a .sct-textlink like the other two; a text link is not a pill and needs no
+     stretching, so only this one is left. */
   .sct-more-summary {
     width: 100%;
     justify-content: space-between;
-  }
-
-  .sct-block-footer .sct-button {
-    width: 100%;
-    justify-content: center;
   }
 
   .sct-srow {
@@ -3903,13 +4517,6 @@ body.sct-page.is-embed {
 
   .sct-depth {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  /* Every pixel the photo column gives up goes to the headline, which is the
-     part of the card a reader is actually scanning. */
-  .sct-news-well,
-  .sct-news.is-featured .sct-news-well {
-    flex-basis: 78px;
   }
 
   .sct-news-title {
@@ -3939,6 +4546,18 @@ body.sct-page.is-embed {
     transform: none;
     border-color: var(--sc-hairline);
     box-shadow: var(--sc-shadow);
+  }
+
+  /* Broken out of the list above for the same reason the fixture card is: this
+     card rests on a position-tinted inset as well as the page shadow, and
+     returning it to var(--sc-shadow) alone would take the accent off every
+     card on every phone. */
+  .sct-outlook-player:hover {
+    transform: none;
+    border-color: var(--sc-hairline);
+    box-shadow:
+      inset 2px 0 0 var(--sct-pos-ink),
+      var(--sc-shadow);
   }
 
   /* Broken out of the list above: the fixture card does not rest on the shared
@@ -4028,6 +4647,7 @@ body.sct-page.is-embed {
      the containing block for the fixed bottom sheet it is about to open. */
   .sct-player:active,
   .sct-news:active,
+  .sct-outlook-player:active,
   .sct-game:active,
   .sct-resource-link:active,
   .sct-button:active,
@@ -4067,6 +4687,7 @@ body.sct-page.is-embed {
 
   .sct-player:hover,
   .sct-news:hover,
+  .sct-outlook-player:hover,
   .sct-game:hover,
   .sct-resource-link:hover,
   .sct-button:hover,

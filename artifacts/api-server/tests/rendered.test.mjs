@@ -231,7 +231,19 @@ describe("hydration", () => {
   });
 
   test("upgrades recent timestamps to relative labels", async () => {
-    const { doc } = await renderStandalone();
+    // Freshen one card's stamp before hydrating. This suite runs against
+    // whatever the last ingest stored, and a relative label only applies inside
+    // a 48-hour window — asserting on the stored dates would make the test pass
+    // or fail on the age of the data.
+    const recent = Date.now() - 3 * 60 * 60 * 1000;
+    const page = (await (await fetch(`${server.origin}/`)).text()).replace(
+      /<time class="sc-chip" datetime="[^"]*" data-ts="\d+"/,
+      () =>
+        `<time class="sc-chip" datetime="${new Date(recent).toISOString()}"` +
+        ` data-ts="${recent}"`,
+    );
+    const { doc } = await render(page, { url: `${server.origin}/` });
+
     const relative = [...doc.querySelectorAll("time[data-ts]")].filter((t) =>
       /ago|just now/.test(t.textContent),
     );
@@ -245,10 +257,20 @@ describe("filters", () => {
   async function withFilters() {
     const handles = await renderStandalone();
     const { doc } = handles;
+    const menu = doc.querySelector("#scFilterTeam");
     return {
       ...handles,
       filters: doc.querySelector(".sc-filters"),
-      team: doc.querySelector("#scFilterTeam"),
+      // The team picker is a <details> disclosure, not a <select> — a native
+      // <option> cannot carry a logo. Its rows are ordinary buttons.
+      menu,
+      teamRows: () => [...menu.querySelectorAll(".sc-team-option")],
+      pickTeam: (row) => {
+        menu.open = true;
+        row.dispatchEvent(
+          new doc.defaultView.MouseEvent("click", { bubbles: true }),
+        );
+      },
       player: doc.querySelector("#scFilterPlayer"),
       cardsFor: (code) =>
         doc.querySelectorAll(`.sc-card-item[data-team="${code}"]`).length,
@@ -286,12 +308,12 @@ describe("filters", () => {
     assert.deepEqual(links, [], "filters must not contain links");
   });
 
-  test("team dropdown lists exactly the teams on the page, sorted", async () => {
-    const { doc, team } = await withFilters();
-    const options = [...team.options];
+  test("team menu lists exactly the teams on the page, sorted", async () => {
+    const { doc, teamRows } = await withFilters();
+    const rows = teamRows();
 
-    assert.equal(options[0].value, "", "first option should be the reset");
-    const listed = options.slice(1).map((o) => o.value);
+    assert.equal(rows[0].dataset.team, "", "first row should be the reset");
+    const listed = rows.slice(1).map((row) => row.dataset.team);
     const present = [
       ...new Set(
         [...doc.querySelectorAll(".sc-card-item[data-team]")].map(
@@ -301,17 +323,66 @@ describe("filters", () => {
     ];
     assert.deepEqual([...listed].sort(), [...present].sort());
 
-    const names = options.slice(1).map((o) => o.textContent);
+    const names = rows
+      .slice(1)
+      .map((row) => row.querySelector(".sc-team-name").textContent);
     assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b)));
   });
 
+  test("every team in the menu is shown with its logo", async () => {
+    const { teamRows } = await withFilters();
+    const rows = teamRows();
+    assert.ok(rows.length > 1, "expected at least one team in the menu");
+
+    for (const row of rows.slice(1)) {
+      const logo = row.querySelector("img.sc-team-logo");
+      assert.ok(logo, `no logo on the ${row.dataset.team} row`);
+      assert.match(logo.getAttribute("src"), /team_logos\/nfl\//);
+      assert.equal(
+        logo.getAttribute("alt"),
+        "",
+        "the logo is decorative — the team name is beside it",
+      );
+    }
+
+    // The reset row keeps the labels aligned without inventing a crest for it.
+    assert.equal(rows[0].querySelector("img"), null);
+    assert.ok(rows[0].querySelector(".sc-team-all"));
+  });
+
+  test("choosing a team moves its logo onto the trigger", async () => {
+    const { doc, teamRows, pickTeam, menu } = await withFilters();
+    const row = teamRows()[1];
+    const code = row.dataset.team;
+
+    pickTeam(row);
+
+    const current = doc.querySelector(".sc-team-current");
+    assert.ok(
+      current.querySelector("img").getAttribute("src").endsWith(`/${code}.png`),
+      "the trigger should show the chosen team's logo",
+    );
+    assert.equal(
+      current.querySelector(".sc-team-name").textContent,
+      row.querySelector(".sc-team-name").textContent,
+    );
+    assert.equal(menu.open, false, "picking a team closes the menu");
+    assert.equal(
+      doc.querySelectorAll(".sc-team-option.is-current").length,
+      1,
+      "exactly one row stays marked as current",
+    );
+  });
+
   test("selecting a team shows only that team and repaginates", async () => {
-    const { doc, team, visible, cardsFor, calls } = await withFilters();
-    const code = team.options[1].value;
+    const { doc, teamRows, pickTeam, visible, cardsFor, calls } =
+      await withFilters();
+    const row = teamRows()[1];
+    const code = row.dataset.team;
     const expected = cardsFor(code);
     const before = calls();
 
-    setValue(team, code, "change");
+    pickTeam(row);
 
     const shown = visible();
     assert.ok(shown.length > 0, "expected at least one card for the team");
@@ -372,15 +443,16 @@ describe("filters", () => {
   });
 
   test("clearing the filters restores the full list", async () => {
-    const { doc, team, player, visible } = await withFilters();
+    const { doc, teamRows, pickTeam, player, visible } = await withFilters();
     const pageSize = Number(doc.querySelector(".news-list").dataset.pageSize);
 
-    setValue(team, team.options[1].value, "change");
+    pickTeam(teamRows()[1]);
     setValue(player, "zzzznotaplayer", "input");
     assert.deepEqual(visible(), []);
 
     setValue(player, "", "input");
-    setValue(team, "", "change");
+    // Row 0 is the reset, which is how the reader gets back to every team.
+    pickTeam(teamRows()[0]);
 
     assert.equal(visible().length, pageSize, "should be back to a full page");
     assert.equal(doc.querySelector(".sc-no-matches").hidden, true);
@@ -389,7 +461,7 @@ describe("filters", () => {
   });
 
   test("filtering never writes to the URL", async () => {
-    const { window, doc, team, player } = await withFilters();
+    const { window, doc, teamRows, pickTeam, player } = await withFilters();
     let historyWrites = 0;
     for (const method of ["pushState", "replaceState"]) {
       const original = window.history[method].bind(window.history);
@@ -400,7 +472,7 @@ describe("filters", () => {
     }
     const urlBefore = window.location.href;
 
-    setValue(team, team.options[1].value, "change");
+    pickTeam(teamRows()[1]);
     setValue(player, "smith", "input");
 
     assert.equal(historyWrites, 0, "filters must not write history");

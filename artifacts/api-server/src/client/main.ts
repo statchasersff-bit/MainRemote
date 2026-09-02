@@ -18,10 +18,12 @@
 import {
   renderList,
   renderPager,
+  renderTeamChoice,
+  renderTeamOptions,
+  sortTeamCodes,
   itemsSignature,
   formatAbsoluteDate,
   searchKey,
-  TEAM_NAMES,
   DEFAULT_PAGE_SIZE,
   type NewsItem,
   type LinkTemplates,
@@ -210,8 +212,8 @@ class NewsWidget {
   /**
    * Bind the toolbar. Called once from init(), not from enhance(): a refresh
    * replaces only the list and pager, so the controls (and whatever the reader
-   * has typed into them) outlive it — re-binding per render would stack
-   * duplicate listeners on the same two elements.
+   * has typed or chosen in them) outlive it — re-binding per render would stack
+   * duplicate listeners on the same controls.
    */
   private wireFilters(): void {
     const filters = this.root.querySelector<HTMLElement>(".sc-filters");
@@ -227,49 +229,134 @@ class NewsWidget {
       this.applyFilters();
     });
 
-    filters.addEventListener("change", (event) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.id !== "scFilterTeam") return;
-      this.teamFilter = (target as HTMLSelectElement).value;
-      this.applyFilters();
+    filters.addEventListener("click", (event) => {
+      const option = (event.target as HTMLElement | null)?.closest<HTMLElement>(
+        ".sc-team-option",
+      );
+      if (option) this.chooseTeam(option.dataset["team"] ?? "");
+    });
+
+    // Arrow keys walk the open menu, Escape closes it. The rows are buttons, so
+    // Tab and Enter already work; this is the roving behaviour a reader expects
+    // from something shaped like a dropdown.
+    filters.addEventListener("keydown", (event) => {
+      const menu = this.teamMenu;
+      if (!menu?.open) return;
+      const rows = Array.from(
+        menu.querySelectorAll<HTMLButtonElement>(".sc-team-option"),
+      );
+      if (rows.length === 0) return;
+
+      const here = rows.indexOf(document.activeElement as HTMLButtonElement);
+      let next = here;
+      switch (event.key) {
+        case "Escape":
+          this.closeTeamMenu(true);
+          return;
+        case "ArrowDown":
+          next = here < 0 ? 0 : (here + 1) % rows.length;
+          break;
+        case "ArrowUp":
+          next = here < 0 ? rows.length - 1 : (here - 1 + rows.length) % rows.length;
+          break;
+        case "Home":
+          next = 0;
+          break;
+        case "End":
+          next = rows.length - 1;
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+      rows[next]?.focus();
+    });
+
+    // A refresh that arrived while the menu was open left the rows alone; catch
+    // up the moment it closes.
+    this.teamMenu?.addEventListener("toggle", () => {
+      if (!this.teamMenu?.open) this.syncTeamMenu();
+    });
+
+    // A menu left open behind a click elsewhere on the page is a stuck overlay.
+    document.addEventListener("click", (event) => {
+      const menu = this.teamMenu;
+      if (!menu?.open) return;
+      const target = event.target;
+      if (target instanceof Node && menu.contains(target)) return;
+      menu.open = false;
     });
   }
 
+  private get teamMenu(): HTMLDetailsElement | null {
+    return this.root.querySelector<HTMLDetailsElement>(".sc-team-select");
+  }
+
+  /** Close the menu, optionally handing focus back to the trigger. */
+  private closeTeamMenu(refocus = false): void {
+    const menu = this.teamMenu;
+    if (!menu) return;
+    menu.open = false;
+    if (refocus) menu.querySelector<HTMLElement>(".sc-team-trigger")?.focus();
+  }
+
+  /** Apply a team choice and repaint the trigger and the menu's current row. */
+  private chooseTeam(code: string): void {
+    this.teamFilter = code;
+    this.paintTeamChoice();
+    this.closeTeamMenu(true);
+    this.applyFilters();
+  }
+
+  /** The trigger shows the chosen team; exactly one row is marked current. */
+  private paintTeamChoice(): void {
+    const current = this.root.querySelector<HTMLElement>(".sc-team-current");
+    if (current) current.innerHTML = renderTeamChoice(this.teamFilter);
+
+    for (const row of Array.from(
+      this.root.querySelectorAll<HTMLElement>(".sc-team-option"),
+    )) {
+      const chosen = (row.dataset["team"] ?? "") === this.teamFilter;
+      row.classList.toggle("is-current", chosen);
+      row.setAttribute("aria-pressed", String(chosen));
+    }
+  }
+
   /**
-   * Keep the dropdown honest after a refresh brought different teams into the
-   * feed. Options are rebuilt only when the set actually changed, so typing
-   * through a background poll doesn't lose the open dropdown for no reason.
+   * Keep the menu honest after a refresh brought different teams into the feed.
+   *
+   * Rebuilt only when the set actually changed, and never while the menu is
+   * open — replacing the rows under an open menu would move what the reader is
+   * pointing at and drop keyboard focus. The toggle listener in wireFilters
+   * runs this again as soon as it closes.
    */
-  private syncTeamOptions(): void {
-    const select = this.root.querySelector<HTMLSelectElement>("#scFilterTeam");
-    if (!select) return;
+  private syncTeamMenu(): void {
+    const list = this.root.querySelector<HTMLElement>(".sc-team-list");
+    if (!list || this.teamMenu?.open) return;
 
     const present = Array.from(
       new Set(
         this.allItems.map((item) => item.dataset["team"] ?? "").filter(Boolean),
       ),
     );
-    const listed = Array.from(select.options)
-      .slice(1)
-      .map((option) => option.value);
+    const listed = Array.from(
+      list.querySelectorAll<HTMLElement>(".sc-team-option"),
+    )
+      .map((row) => row.dataset["team"] ?? "")
+      .filter(Boolean);
     const unchanged =
       present.length === listed.length &&
       present.every((code) => listed.includes(code));
     if (unchanged) return;
 
-    const chosen = select.value;
-    const labelled = present
-      .map((code) => ({ code, name: TEAM_NAMES[code] ?? code }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    // Index 0 is "All teams" and always stays.
-    select.length = 1;
-    for (const team of labelled) select.add(new Option(team.name, team.code));
-
-    // If the selected team dropped out of the feed entirely, fall back to all
+    // If the chosen team dropped out of the feed entirely, fall back to all
     // teams rather than leaving a selection that can only show an empty list.
-    select.value = present.includes(chosen) ? chosen : "";
-    this.teamFilter = select.value;
+    if (!present.includes(this.teamFilter)) this.teamFilter = "";
+
+    // Same renderer the server used, so the rebuilt rows are byte-identical to
+    // the ones they replace — including the sort.
+    list.innerHTML = renderTeamOptions(sortTeamCodes(present), this.teamFilter);
+    this.paintTeamChoice();
   }
 
   private totalPages(): number {
@@ -317,7 +404,7 @@ class NewsWidget {
     this.indexPages();
     this.upgradeTimestamps();
     this.wireImageFallbacks();
-    this.syncTeamOptions();
+    this.syncTeamMenu();
     // Re-applies whatever the reader has filtered to, so a background refresh
     // cannot quietly widen the list back out — and keeps them on their page.
     this.applyFilters(false);

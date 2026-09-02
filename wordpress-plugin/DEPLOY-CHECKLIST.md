@@ -24,6 +24,29 @@ In the rendered HTML, confirm you can find:
 
 Also check the **Screenshot** tab: the tool should be visible, not an empty box.
 
+### On a team page, additionally
+
+Team hubs are `noindex, indexifembedded` at the API's own URL, so the embed is
+the only thing that makes them indexable. Verify on one team page before
+building all 32:
+
+- [ ] content from **every tab** is in the rendered HTML, not just the Overview.
+      Search for `Season History`, a depth-chart player name, and an opponent
+      from the schedule. All five panels ship on the first response; if only one
+      is there, the `:target` tab CSS or the fragment has regressed.
+- [ ] the page's own robots directive is **indexable** — the fragment carries no
+      robots meta, so what Rank Math emits is what applies. A team page that
+      inherited `noindex` from a template is the one failure mode that makes all
+      of this pointless.
+- [ ] the team switcher's 32 links point at `/nfl/teams/<slug>/` with **no
+      `?embed=1`**. If they carry it, `SC_TEAM_PATH_PREFIX` is unset on the API
+      deployment — and because `embed` is a reserved WordPress query var, every
+      one of those links serves the oEmbed template instead of the page.
+- [ ] the fragment is present for a **logged-out** visitor. The admin-only
+      diagnostics ("no team slug", "the API returned nothing") render as an
+      empty string for everyone else, so a broken mount looks like a missing
+      section rather than an error.
+
 ## 2. Validate the structured data
 
 [Rich Results Test](https://search.google.com/test/rich-results) on the same URL.
@@ -56,6 +79,9 @@ tool's data, either accept it or feed it the real value from
 Search Console → URL Inspection → **More info** → **Page resources**.
 
 - [ ] `styles.css`, `dist/statchasers-news.js` and `api/news` all load.
+- [ ] On a team page: `team.css` and `dist/statchasers-team.js` load. These are
+      separate handles from the news tool's, so a page mounting one enqueues
+      only that one.
 - [ ] Nothing render-critical is listed as blocked.
 
 The app serves its own permissive `robots.txt`; make sure the **WordPress**

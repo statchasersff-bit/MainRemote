@@ -25,7 +25,7 @@ import {
 } from "./render";
 import { ensureTeams } from "./teams";
 import { pageMeta, renderHeadTags, type PageMeta } from "./seo";
-import { contentVersion, ensureFreshness, freshness } from "./freshness";
+import { contentVersion, ensureFreshness } from "./freshness";
 import { logger } from "./logger";
 
 export interface SsrOptions {
@@ -102,7 +102,6 @@ export async function renderNewsFragment(
 
   const items = await listNews({ limit });
   const html = renderFragment(items, {
-    updatedAtMs: freshness().changedAtMs,
     limit,
     pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
     ...(options.origin !== undefined ? { origin: options.origin } : {}),

@@ -86,10 +86,9 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Toolbar — the "Last updated" stamp on the left, the filter controls on the
-   right, sharing one row above the cards. The stamp is always present; the
-   filters are absent with no items and hidden with no JavaScript, so the row
-   has to look right holding the stamp alone. */
+/* Toolbar — the row above the cards holding the filter controls. The filters
+   are absent with no items and hidden with no JavaScript, so this row is
+   frequently empty and must not reserve space of its own. */
 .sc-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -99,14 +98,8 @@ body {
   margin: 0 0 18px;
 }
 
-/* "Last updated" stamp. Reflects a real content change, never render time. */
-.sc-updated {
-  /* Spacing belongs to the toolbar row now. The small bottom offset lines the
-     text up with the baseline of the controls opposite it. */
-  margin: 0 0 9px;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
+.sc-toolbar:empty {
+  display: none;
 }
 
 /* Card list — an ordered list, because the feed is genuinely ordered
@@ -494,22 +487,38 @@ body {
   .sc-toolbar {
     display: block;
   }
-  .sc-updated {
-    margin: 0 0 10px;
-  }
   .sc-filters {
     gap: 10px;
   }
   .sc-filter {
-    flex: 1 1 100%;
+    /* Search and team share one row on a phone rather than stacking: equal
+       halves from a zero basis, so a long team name in the select can't
+       squeeze the search box, and neither control's intrinsic width can push
+       the other onto a second line. */
+    flex: 1 1 0;
   }
-  .sc-filter-input {
+  .sc-filter-input,
+  .sc-team-trigger {
     width: 100%;
+    min-width: 0;
+    /* Tighter than desktop so both controls fit a 320px-wide screen without
+       clipping their text. */
+    padding-left: 13px;
+  }
+  .sc-team-trigger {
+    gap: 6px;
+    padding-right: 10px;
+  }
+  .sc-team-logo {
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
   }
   .sc-filter-status {
-    /* Controls go full-width and stack here, so the count reads better below
-       them again. */
-    order: 0;
+    /* The controls own the row, so the count wraps onto its own line beneath
+       them instead of sitting to their left. */
+    order: 1;
+    flex: 1 1 100%;
     margin: 0;
   }
   .sc-card-body {
@@ -563,7 +572,7 @@ body {
 }
 
 .sc-filter-input,
-.sc-filter-select {
+.sc-team-trigger {
   /* Themes style bare form controls hard, and this markup is printed straight
      into a WordPress page — so every visual property is set here rather than
      inherited. */
@@ -583,24 +592,153 @@ body {
   width: 220px;
 }
 
-.sc-filter-select {
-  /* Room on the right for the chevron drawn below. */
-  padding-right: 38px;
-  background-image: linear-gradient(45deg, transparent 50%, #a87905 50%),
-    linear-gradient(135deg, #a87905 50%, transparent 50%);
-  background-position: right 18px center, right 13px center;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-
 .sc-filter-input:focus-visible,
-.sc-filter-select:focus-visible {
+.sc-team-trigger:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
 .sc-filter-input::placeholder {
   color: var(--text-light);
+}
+
+/* Team picker — a <details> disclosure rather than a <select>, because a
+   native <option> cannot show a logo in every browser (and iOS replaces the
+   whole control with a system picker). See renderFilters in lib/render.ts. */
+.sc-team-select {
+  /* The panel is positioned against this. */
+  position: relative;
+}
+
+.sc-team-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Fixed enough that picking a long team name doesn't shove the row around;
+     the mobile block below relaxes it so both controls still share one line. */
+  min-width: 190px;
+  /* Room on the right for the caret; the flex gap handles the rest. */
+  padding-right: 12px;
+  cursor: pointer;
+  user-select: none;
+  /* Safari still paints the disclosure triangle without this. */
+  list-style: none;
+}
+
+.sc-team-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.sc-team-trigger:hover {
+  border-color: var(--gold);
+}
+
+.sc-team-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Lets the name truncate instead of widening the control past its half of
+     the row on a narrow screen. */
+  min-width: 0;
+}
+
+.sc-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Logos are third-party PNGs at whatever size the CDN serves; the box is fixed
+   here so a slow or missing image never reflows the row. */
+.sc-team-logo {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* Stands in for a logo on the "All teams" row, so every label starts at the
+   same x-position whether or not there is a crest beside it. */
+.sc-team-all {
+  border-radius: 50%;
+  border: 1px dashed rgba(212, 175, 55, 0.75);
+  background: var(--gold-bg);
+}
+
+.sc-team-caret {
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #a87905;
+  transition: transform 150ms ease;
+}
+
+.sc-team-select[open] .sc-team-caret {
+  transform: rotate(180deg);
+}
+
+.sc-team-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  /* Anchored to the right so the panel opens inside the tool rather than off
+     the edge — the team filter is the rightmost control on the row. */
+  right: 0;
+  /* At least as wide as the trigger, but wide enough for the longest team name
+     when the trigger itself is only half a phone screen. */
+  min-width: 100%;
+  width: max-content;
+  max-width: min(320px, 86vw);
+  /* Roughly eight rows before it scrolls: long enough to browse, short enough
+     that it cannot run past the bottom of the embedding iframe. */
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(15, 39, 71, 0.18);
+}
+
+.sc-team-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sc-team-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sc-team-option:hover {
+  background: var(--gold-bg);
+}
+
+.sc-team-option:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.sc-team-option.is-current {
+  background: var(--gold-bg);
+  font-weight: 800;
 }
 
 /* Result count. Empty until the reader actually filters, so it takes no room

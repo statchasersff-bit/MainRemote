@@ -178,7 +178,7 @@ const cache = createKeyedCache<TeamSnapshot>({
  * played a regular-season game. ESPN has nothing to average until then and
  * answers 404 for the new season outright, so through the opening week the
  * request for the right season returns nothing and the whole block used to
- * disappear from the Overview tab.
+ * disappear from the Stats tab.
  *
  * Last season is real football. It is fetched instead, and `TeamSnapshot.season`
  * carries which one came back so the card can say so — the same fallback, for
