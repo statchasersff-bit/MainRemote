@@ -805,6 +805,398 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     bottomLine:
       "Everything here is competent and nothing is a difference-maker, which is the McCarthy-and-Rodgers offence in one line. Metcalf is the only player worth reaching for; the backfield is the trap, and it will stay one until somebody wins it outright.",
   },
+  hou: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Houston runs the sixth-fastest offence in football and finished 2nd in turnover margin, which is a good team that has not turned into a good scoring team — 23.8 points a game, 13th. C.J. Stroud missed three starts and threw nineteen touchdowns in the fourteen he made. Nico Collins is the only skill player here whose role is not shared with somebody.",
+    facts: [
+      { label: "Head coach", value: "DeMeco Ryans (fourth season)" },
+      { label: "Pace", value: "64.0 plays/g", rank: "6th" },
+      { label: "Turnover margin", value: "+17", rank: "2nd" },
+      { label: "Scoring", value: "23.8 pts/g", rank: "13th" },
+      { label: "Passing", value: "232.7 yds/g", rank: "14th" },
+      { label: "Backfield split", value: "196 / 158 carries" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Nico Collins",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "120 targets at 15.7 a catch — volume and efficiency in the same profile.",
+            stats: ["71 rec, 1,117 yds", "120 targets", "6 TD"],
+            note:
+              "A thousand-yard season in fifteen games on the league's sixth-fastest offence, at 15.7 a reception, is the rare receiving line that does not depend on garbage time or a single explosive week. He is the first read and the deep threat at once. Six touchdowns is the only modest number and it is a function of a red zone that runs the ball; everything else here is a locked-in WR1.",
+          },
+          {
+            name: "C.J. Stroud",
+            position: "QB",
+            tier: "Mid-range QB1",
+            thesis:
+              "A 92.9 rating in fourteen starts, with just enough rushing to matter.",
+            stats: ["3,041 pass yds", "19 TD, 8 INT", "209 rush yds"],
+            note:
+              "Two hundred and seventeen passing yards and 1.4 touchdowns a start is a solid rather than a spectacular rate, and the 209 rushing yards add a floor that his early career did not have. The pace is what makes him startable — sixty-four plays a game means attempts, and attempts are most of quarterback scoring. The three missed starts and a run-heavy red zone are why he is not in the top five.",
+          },
+          {
+            name: "Dalton Schultz",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "106 targets and 82 catches, and almost none of it near the end zone.",
+            stats: ["82 rec, 777 yds", "106 targets", "3 TD"],
+            note:
+              "One hundred and six targets is top-five volume at the position and 82 receptions gives him one of the safest PPR floors any tight end has. Then the ceiling: 9.5 yards a catch and three touchdowns across seventeen games. He will keep your Sunday from going wrong and will almost never win you a week, which at this position is worth more than it sounds.",
+          },
+        ],
+      },
+      {
+        label: "A shared backfield and a crowded receiver room",
+        players: [
+          {
+            name: "Woody Marks",
+            position: "RB",
+            tier: "Committee RB3",
+            thesis:
+              "The larger half of a split, at 3.6 yards a carry.",
+            stats: ["703 rush yds", "196 carries", "5 total TD"],
+            note:
+              "One hundred and ninety-six carries is the biggest workload in the room and 3.6 a carry is the reason it never became a job. Twenty-four catches on 36 targets keeps him involved when Houston trails, which on this offence is less often than it used to be. He is a flex play whose value would double the week Montgomery is unavailable and not before.",
+          },
+          {
+            name: "David Montgomery",
+            position: "RB",
+            tier: "Touchdown-dependent RB3",
+            thesis:
+              "Fewer carries, better yards, and every score that mattered.",
+            stats: ["716 rush yds", "4.5 yds/carry", "8 TD"],
+            note:
+              "He out-gained Marks on 38 fewer attempts and scored eight times to Marks's two — this is the goal-line back on a team that ran nine touchdowns in. That concentration is the whole case and it is also the whole risk, because a back whose value is touchdowns in an offence ranked 22nd in rushing has weeks worth nothing at all. Start him in the matchups, not by default.",
+          },
+          {
+            name: "Kayshon Boutte",
+            position: "WR",
+            tier: "Big-play WR4",
+            thesis:
+              "16.7 yards a catch and six touchdowns on forty-six targets.",
+            stats: ["33 rec, 551 yds", "46 targets", "6 TD"],
+            note:
+              "Thirty-three receptions producing six scores is an extraordinary rate and forty-six targets is not enough volume to trust it repeating. Everything he did was downfield, which is the most week-to-week variable way for a receiver to score points. He belongs on a bench as the fourth receiver whose good weeks are genuinely good; he does not belong in a starting lineup on the strength of that touchdown rate.",
+          },
+          {
+            name: "Jayden Higgins",
+            position: "WR",
+            tier: "Late-round upside",
+            thesis:
+              "Six touchdowns as a second-year receiver on 68 targets.",
+            stats: ["41 rec, 525 yds", "68 targets", "6 TD"],
+            note:
+              "Forty-one catches at 12.8 a go with six scores is a real complementary season, and he did it while Collins took the coverage and Boutte took the deep shots. Sixty-eight targets in a room this crowded is the ceiling until somebody leaves. Draft him last and hold him as the most likely of Houston's secondary receivers to take a step.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Nico Collins and the pace are the two things worth paying for; everything else in this offence is shared with somebody who is nearly as good. The backfield in particular is a genuine coin-flip, and Houston has shown no interest in resolving it.",
+  },
+  ind: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Indianapolis scored 27.4 points a game and ran twenty-seven touchdowns into the end zone, more than it threw. Jonathan Taylor took 369 touches for 1,963 yards and twenty scores, which is the largest single share of a good offence anyone had last season. Daniel Jones posted a 100.2 rating in thirteen starts and the receiving corps behind Taylor is four deep and evenly split.",
+    facts: [
+      { label: "Head coach", value: "Shane Steichen (fourth season)" },
+      { label: "Scoring", value: "27.4 pts/g", rank: "8th" },
+      { label: "Passing", value: "240.3 yds/g", rank: "8th" },
+      { label: "Third down", value: "42.6%", rank: "8th" },
+      { label: "Rushing TDs", value: "27" },
+      { label: "Taylor's touches", value: "369" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jonathan Taylor",
+            position: "RB",
+            tier: "The first pick",
+            thesis:
+              "1,963 yards and twenty touchdowns on 369 touches — there is no comparable workload.",
+            stats: ["1,585 rush yds", "18 rush TD", "46 rec, 378 yds"],
+            note:
+              "Three hundred and twenty-three carries at 4.9 a pop, eighteen rushing scores, and 46 receptions on 55 targets across all seventeen games. The touchdown total is the part that will not fully repeat — twenty-seven team rushing scores is a historically high number to sit behind — but the volume and the receiving role mean he does not need it to. He is the only back in football with a top-five workload and a top-five offence attached to it.",
+          },
+          {
+            name: "Daniel Jones",
+            position: "QB",
+            tier: "Streaming QB1",
+            thesis:
+              "A 100.2 rating and five rushing touchdowns, on an offence that scores without him.",
+            stats: ["3,101 pass yds", "19 TD, 8 INT", "5 rush TD"],
+            note:
+              "Sixty-eight percent completion at a 100.2 rating is comfortably the best stretch of his career, and the five rushing touchdowns are worth more to a fantasy line than the 164 rushing yards suggest. The problem is the same one that makes Taylor great: Indianapolis runs it in from the two, so the passing touchdowns are capped. A fine QB1 in the weeks the matchup forces Indianapolis to throw.",
+          },
+          {
+            name: "Tyler Warren",
+            position: "TE",
+            tier: "Top-six TE",
+            thesis:
+              "112 targets in a rookie season, second only to Keenan Allen on the roster.",
+            stats: ["76 rec, 817 yds", "112 targets", "4 TD"],
+            note:
+              "Seventy-six catches for 817 yards from a first-year tight end is a genuine breakout, and the 112 targets say it was by design rather than by accident of injury. Four touchdowns is low and it is the same red-zone story every Colt has — Taylor takes those. The usage is already top-five at the position and the scoring is the part with room to grow.",
+          },
+        ],
+      },
+      {
+        label: "A four-way receiver split",
+        players: [
+          {
+            name: "Alec Pierce",
+            position: "WR",
+            tier: "Boom-or-bust WR3",
+            thesis:
+              "21.3 yards a reception — the most extreme deep-threat profile in the league.",
+            stats: ["47 rec, 1,003 yds", "84 targets", "6 TD"],
+            note:
+              "A thousand yards on forty-seven catches is a season built entirely on explosive plays, and it is the single most volatile way to accumulate fantasy points. Eighty-four targets on a team with three other pass-catchers over 88 means the volume will not save a quiet week. He wins you matchups outright and loses you others without warning; roster him knowing which.",
+          },
+          {
+            name: "Keenan Allen",
+            position: "WR",
+            tier: "PPR WR3",
+            thesis:
+              "Team-high 122 targets, at 9.6 yards a catch.",
+            stats: ["81 rec, 777 yds", "122 targets", "4 TD"],
+            note:
+              "Eighty-one receptions across all seventeen games is a genuinely reliable PPR floor and the target share is the largest in the receiving corps. Everything about the yardage says short and intermediate — he is moving the chains while Pierce takes the top off. In a points-per-reception league he is a steady starter; in standard scoring 777 yards and four scores is a bench profile.",
+          },
+          {
+            name: "Josh Downs",
+            position: "WR",
+            tier: "PPR flex",
+            thesis:
+              "Eighty-eight targets from the slot in a genuinely crowded room.",
+            stats: ["58 rec, 566 yds", "88 targets", "4 TD"],
+            note:
+              "Fifty-eight catches on 88 targets is efficient slot work and the third-largest receiving role on a top-ten passing offence. The ceiling is arithmetic: Allen, Pierce and Warren took 318 targets between them, so the week where Downs is the difference requires one of them to be out. A useful PPR bench piece and an obvious beneficiary if the room thins.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Take Jonathan Taylor and then be careful, because everything behind him is a genuine four-way split of a very good passing offence. Tyler Warren is the one piece of that split whose usage already justifies a real pick.",
+  },
+  jax: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Jacksonville scored 27.9 points a game, ran the fourth-fastest offence in football and finished 3rd in turnover margin. Trevor Lawrence threw for 4,007 yards and twenty-nine touchdowns and ran in nine more, which is a top-five fantasy quarterback season regardless of the 60.9% completion rate. The receiving work is split three ways and the backfield is split three ways after that.",
+    facts: [
+      { label: "Head coach", value: "Liam Coen (second season)" },
+      { label: "Scoring", value: "27.9 pts/g", rank: "6th" },
+      { label: "Pace", value: "64.3 plays/g", rank: "4th" },
+      { label: "Turnover margin", value: "+13", rank: "3rd" },
+      { label: "Passing", value: "236.8 yds/g", rank: "11th" },
+      { label: "TD split", value: "29 pass / 22 rush" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Trevor Lawrence",
+            position: "QB",
+            tier: "Top-five QB1",
+            thesis:
+              "Twenty-nine passing touchdowns and nine on the ground, at the league's fourth-fastest pace.",
+            stats: ["4,007 pass yds", "29 TD, 12 INT", "9 rush TD"],
+            note:
+              "Thirty-eight total touchdowns across seventeen games is the whole case, and the nine rushing scores are the part that makes it durable — that is a floor no receiving corps can take away from him. The 60.9% completion rate is genuinely poor and it did not stop any of it, because sixty-four plays a game produces enough attempts to absorb the misses. Pace and legs are why he is a QB1 rather than a good real-life quarterback.",
+          },
+          {
+            name: "Brian Thomas",
+            position: "WR",
+            tier: "WR2 with WR1 upside",
+            thesis:
+              "14.7 a catch in fourteen games, on ninety-one targets he did not have to share evenly.",
+            stats: ["48 rec, 707 yds", "91 targets", "14 games"],
+            note:
+              "Fifty yards a game and 14.7 a reception is a downfield role on a fast offence, and ninety-one targets in fourteen appearances is a rate that projects past 100 over a full year. Two touchdowns is the number that will look wrong in hindsight — nothing about the usage or the depth of target explains it, and Jacksonville threw twenty-nine scores. The cheapest source of touchdown regression on this roster.",
+          },
+          {
+            name: "Parker Washington",
+            position: "WR",
+            tier: "WR3",
+            thesis:
+              "Led the team's receivers in yards, which nobody expected and the price has not caught up to.",
+            stats: ["58 rec, 847 yds", "95 targets", "5 TD"],
+            note:
+              "Eight hundred and forty-seven yards at 14.6 a catch, with five touchdowns, is the most complete receiving season anyone here produced. Ninety-five targets is a real share on an offence with this much volume. The caution is that he has done it once, in a room where Thomas and Meyers both have stronger claims to the first read — this is a genuine three-way split, and he is the one with the least security in it.",
+          },
+          {
+            name: "Jakobi Meyers",
+            position: "WR",
+            tier: "PPR WR3",
+            thesis:
+              "Team-high 110 targets and 75 catches, and three touchdowns to show for it.",
+            stats: ["75 rec, 835 yds", "110 targets", "3 TD"],
+            note:
+              "Seventy-five receptions is the safest PPR floor in this receiving corps and the target share is the largest. Three touchdowns on an offence that scored twenty-nine through the air is the anomaly, and it is the same anomaly he has produced most seasons — this is a chains-and-slot role, not a red-zone one. Reliable in points-per-reception, unstartable without it.",
+          },
+        ],
+      },
+      {
+        label: "A three-way backfield and two wild cards",
+        players: [
+          {
+            name: "Chris Rodriguez",
+            position: "RB",
+            tier: "Touchdown-share RB3",
+            thesis:
+              "The largest share of a backfield that ran twenty-two touchdowns in.",
+            stats: ["500 rush yds", "4.5 yds/carry", "6 TD"],
+            note:
+              "One hundred and twelve carries is the biggest workload in a room that gave meaningful touches to three backs, and six touchdowns is the reason he matters — Jacksonville reached the end zone on the ground twenty-two times and he took the largest slice. Five hundred rushing yards is not a startable base. He is a touchdown-dependent flex whose value collapses the moment the split moves.",
+          },
+          {
+            name: "Bhayshul Tuten",
+            position: "RB",
+            tier: "Speculative RB4",
+            thesis:
+              "Five touchdowns on eighty-three carries, at 3.7 a pop.",
+            stats: ["307 rush yds", "5 rush TD", "10 rec"],
+            note:
+              "Seven scores in total from 93 touches is a startling rate and 3.7 yards a carry is the reason it has not earned him a bigger role. He is the change-of-pace and short-yardage option in a committee that has no lead back, which means the path to volume exists and nobody has walked it. Worth a final-round pick in a deep league and nothing more until the split resolves.",
+          },
+          {
+            name: "Travis Hunter",
+            position: "WR",
+            tier: "Upside bench stash",
+            thesis:
+              "Seven games, and the only player here whose ceiling is unknown rather than measured.",
+            stats: ["28 rec, 298 yds", "45 targets", "7 games"],
+            note:
+              "Forty-five targets in seven appearances is a six-a-week rate, which in this offence would be a genuine WR3 role over a full season. Everything about the sample is too small to price and the games he missed are the reason he is available. He is the one player on this roster you draft for what he might become rather than for what the numbers already say.",
+          },
+          {
+            name: "Brenton Strange",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Caught 77% of his targets in twelve games, then the season ended.",
+            stats: ["46 rec, 540 yds", "60 targets", "12 games"],
+            note:
+              "Forty-six catches on sixty targets is efficient work and forty-five yards a game is a usable tight-end rate on an offence with this much volume. Twelve games is the recurring problem and three touchdowns is the ceiling it produced. In a fast offence that spreads it around he is a fine bye-week answer and a poor season-long plan.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Trevor Lawrence is the asset here and the pace is why — thirty-eight total touchdowns from a quarterback completing 60.9% of his throws is a volume story, and the volume is not going anywhere. Brian Thomas is the buy underneath him; the backfield is a three-way split nobody should pay to solve.",
+  },
+  ten: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Tennessee scored 16.7 points a game, converted 31.9% of its third downs and gave up fifty-six sacks. Cam Ward threw fifteen touchdowns in a full seventeen-game season at a 59.8% completion rate. The two players worth owning both got there on volume nobody else wanted: Tony Pollard's 275 touches and Wan'Dale Robinson's 140 targets.",
+    facts: [
+      { label: "Head coach", value: "Robert Saleh" },
+      { label: "Scoring", value: "16.7 pts/g", rank: "30th" },
+      { label: "Third down", value: "31.9%", rank: "31st" },
+      { label: "Passing", value: "190.6 yds/g", rank: "29th" },
+      { label: "Sacks allowed", value: "56", rank: "27th" },
+      { label: "Robinson targets", value: "140" },
+    ],
+    groups: [
+      {
+        label: "Worth owning",
+        players: [
+          {
+            name: "Wan'Dale Robinson",
+            position: "WR",
+            tier: "PPR WR2",
+            thesis:
+              "140 targets and ninety-two catches, at eleven yards each.",
+            stats: ["92 rec, 1,014 yds", "140 targets", "4 TD"],
+            note:
+              "One hundred and forty targets is a top-five share in the entire league and it happened on the 29th-ranked passing offence, which tells you how completely this passing game runs through him. Ninety-two receptions is an elite PPR floor. Everything else is a warning: 11.0 yards a catch and four touchdowns is what a high-volume underneath role produces, so in standard scoring the same season is barely startable.",
+          },
+          {
+            name: "Tony Pollard",
+            position: "RB",
+            tier: "Volume RB2",
+            thesis:
+              "1,082 rushing yards at 4.5 a carry, behind the 30th-ranked rushing offence.",
+            stats: ["1,082 rush yds", "242 carries", "5 TD"],
+            note:
+              "Beating 4.5 a carry on a team that finished 30th in rushing yards is genuinely good running, and 242 carries across all seventeen games is the kind of durable workload that survives a bad offence. Five touchdowns is the cost of playing here — Tennessee ran the ball into the end zone nine times all year. He is a weekly starter on usage whose ceiling is capped by everything around him.",
+          },
+        ],
+      },
+      {
+        label: "Everything else",
+        players: [
+          {
+            name: "Cam Ward",
+            position: "QB",
+            tier: "Superflex only",
+            thesis:
+              "Fifteen touchdowns in seventeen starts, behind a line that allowed fifty-six sacks.",
+            stats: ["3,169 pass yds", "15 TD, 7 INT", "80.2 rating"],
+            note:
+              "He took every snap of a lost season and came out of it with a 59.8% completion rate and an 80.2 rating, which is roughly what the pass protection deserved. The seven interceptions are the encouraging part — he was not throwing the game away, he was being hit. Two rushing scores and 159 yards on the ground is not enough of a floor to make him startable in a one-quarterback league.",
+          },
+          {
+            name: "Elic Ayomanor",
+            position: "WR",
+            tier: "Late-round flier",
+            thesis:
+              "Eighty-nine targets and four scores as the WR2 in a bad passing game.",
+            stats: ["41 rec, 515 yds", "89 targets", "4 TD"],
+            note:
+              "Eighty-nine targets is real volume and a 46% catch rate is what happens when a struggling quarterback throws them. Four touchdowns on an offence with fifteen passing scores is a meaningful red-zone share. If Ward takes any step at all, he is the receiver on this roster with the most room between his usage and his production.",
+          },
+          {
+            name: "Chimere Dike",
+            position: "WR",
+            tier: "Deep bench",
+            thesis:
+              "Four touchdowns on 74 targets, and 8.8 yards a catch.",
+            stats: ["48 rec, 423 yds", "74 targets", "4 TD"],
+            note:
+              "Forty-eight receptions across seventeen games is steady involvement in a three-man rotation that nobody has separated from. The yardage is the ceiling — 8.8 a catch in an offence that does not score means the touchdowns are the only path to a usable week. He is a name to know in the deepest leagues rather than a player to roster.",
+          },
+          {
+            name: "Gunnar Helm",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "An 80% catch rate on a small, safe role.",
+            stats: ["44 rec, 357 yds", "55 targets", "2 TD"],
+            note:
+              "Forty-four catches on fifty-five targets is exactly the outlet role a pressured quarterback creates, and it gives him a floor of three or four receptions most weeks. Three hundred and fifty-seven yards and two touchdowns is the whole ceiling. Stream him when the matchup is right and never plan a season around him.",
+          },
+          {
+            name: "Calvin Ridley",
+            position: "WR",
+            tier: "Bench flier",
+            thesis:
+              "17.8 yards a catch in seven games, and no touchdowns at all.",
+            stats: ["17 rec, 303 yds", "36 targets", "7 games"],
+            note:
+              "The per-catch number says the downfield ability is intact and thirty-six targets in seven games is a real role while he was available. Zero touchdowns on an offence that threw fifteen is the kind of luck that usually corrects. Seven games is why he will be cheap, and the offence is why cheap is the only price worth paying.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Two players here are startable and both got there by absorbing volume from an offence that had nowhere else to put it. Robinson is a PPR-only asset and Pollard is a floor play; in standard scoring there is almost nothing on this roster worth a starting spot.",
+  },
 };
 
 /** The outlook for a team, or null when none has been written. */
