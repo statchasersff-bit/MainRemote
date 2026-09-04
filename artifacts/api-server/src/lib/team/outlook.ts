@@ -1197,6 +1197,388 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     bottomLine:
       "Two players here are startable and both got there by absorbing volume from an offence that had nowhere else to put it. Robinson is a PPR-only asset and Pollard is a floor play; in standard scoring there is almost nothing on this roster worth a starting spot.",
   },
+  den: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Denver allowed twenty-three sacks, fewest in the NFL, and ran the fifth-fastest offence in the league — protection and volume, which is the combination that makes everyone here startable. Bo Nix threw for 3,931 yards with twenty-five touchdowns and ran in five more. Jaylen Waddle arrives from Miami into a receiving corps that already had three players above 100 targets.",
+    facts: [
+      { label: "Head coach", value: "Sean Payton" },
+      { label: "Arrivals", value: "Jaylen Waddle" },
+      { label: "Sacks allowed", value: "23", rank: "1st" },
+      { label: "Pace", value: "64.2 plays/g", rank: "5th" },
+      { label: "Scoring", value: "23.6 pts/g", rank: "14th" },
+      { label: "TD split", value: "25 pass / 18 rush" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Bo Nix",
+            position: "QB",
+            tier: "Top-eight QB1",
+            thesis:
+              "Thirty total touchdowns behind the best pass protection in football.",
+            stats: ["3,931 pass yds", "25 TD, 11 INT", "356 rush yds, 5 TD"],
+            note:
+              "Twenty-five passing scores and five on the ground, across all seventeen games, on an offence that ran 64.2 plays a game and gave up fewer sacks than anyone. That is the whole profile: volume, protection, and enough rushing to hold a floor when the passing goes quiet. The 63.4% completion rate and eleven interceptions say he is not yet efficient — he does not need to be at this pace.",
+          },
+          {
+            name: "Courtland Sutton",
+            position: "WR",
+            tier: "WR2",
+            thesis:
+              "124 targets and seven touchdowns — the established first read, for now.",
+            stats: ["74 rec, 1,017 yds", "124 targets", "7 TD"],
+            note:
+              "A thousand yards at 13.7 a catch with seven scores is a complete WR2 season and the target share was the largest on the roster. The reason to hesitate is arithmetic rather than talent: Waddle's arrival puts a fourth genuine pass-catcher into a room where Sutton, Franklin and Engram already took 304 targets between them. Somebody's volume comes down and Sutton has the most to lose.",
+          },
+          {
+            name: "Jaylen Waddle",
+            position: "WR",
+            tier: "WR3 with upside",
+            thesis:
+              "910 yards on a dysfunctional Miami offence, now attached to a functional one.",
+            stats: ["64 rec, 910 yds", "100 targets", "6 TD"],
+            note:
+              "One hundred targets and 14.2 a catch, produced on a team that finished 25th in passing yards with an unsettled quarterback — the context he is leaving is the entire argument for him. Denver throws more, protects better and scores more often. The caution is the same one that applies to every Bronco receiver: this is now a four-way split, and he is the one who has to learn the offence.",
+          },
+        ],
+      },
+      {
+        label: "A split backfield and a crowded middle",
+        players: [
+          {
+            name: "RJ Harvey",
+            position: "RB",
+            tier: "Touchdown-heavy RB2",
+            thesis:
+              "Twelve touchdowns on 193 touches, at 3.7 yards a carry.",
+            stats: ["540 rush yds", "47 rec, 356 yds", "12 total TD"],
+            note:
+              "The efficiency is poor and almost irrelevant: he caught 47 passes on 58 targets and scored twelve times, which is a role built out of the passing game and the goal line rather than out of yardage. That is a genuinely valuable fantasy shape, especially in PPR. It is also the most fragile — twelve scores on 193 touches is a rate that regresses, and Dobbins ran for 5.0 a carry alongside him.",
+          },
+          {
+            name: "J.K. Dobbins",
+            position: "RB",
+            tier: "Efficient RB3",
+            thesis:
+              "5.0 yards a carry in ten games, and none of the touchdown work.",
+            stats: ["772 rush yds", "5.0 yds/carry", "4 TD"],
+            note:
+              "Seven hundred and seventy-two yards in ten appearances is a 77-yard-a-game rate that only two or three backs beat, and behind this line it is believable. He does nothing in the passing game — eleven catches — and Harvey took the scores. Health is the recurring story and it is why he is priced as a committee back rather than the more productive runner he plainly was.",
+          },
+          {
+            name: "Troy Franklin",
+            position: "WR",
+            tier: "PPR flex",
+            thesis:
+              "104 targets and six touchdowns, at 10.9 a catch.",
+            stats: ["65 rec, 709 yds", "104 targets", "6 TD"],
+            note:
+              "Sixty-five receptions is a real PPR floor and six scores on a team that threw twenty-five is a fair red-zone share. The yardage says underneath work, which is exactly the role most exposed by Waddle's arrival. He is a useful bench receiver whose target count is likely to fall before his efficiency rises.",
+          },
+          {
+            name: "Evan Engram",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Seventy-six targets and one touchdown.",
+            stats: ["50 rec, 461 yds", "76 targets", "1 TD"],
+            note:
+              "Fifty catches gives him a PPR pulse and 9.2 yards a reception with a single touchdown gives him nothing else. Denver reached the end zone plenty; it simply never looked for him there. In a room about to add Waddle to three existing 100-target receivers, the case for a tight end with this scoring rate gets harder rather than easier.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "The offensive line is the asset here — nobody protected better, and everything Bo Nix does is downstream of it. The receiving corps is now four deep and somebody's targets are about to disappear, so buy Nix and Harvey's role rather than guessing which receiver survives the split.",
+  },
+  kc: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Kansas City scored 21.3 points a game, 21st in the league, and finished 25th in rushing. Patrick Mahomes made fourteen starts and Rashee Rice played eight games; the offence spent the year without both of them at once more often than with them. Kenneth Walker arrives from Seattle to fix the run game, and Justin Fields arrives as the most capable backup Andy Reid has ever carried.",
+    facts: [
+      { label: "Head coach", value: "Andy Reid" },
+      { label: "Arrivals", value: "Kenneth Walker, Justin Fields" },
+      { label: "Scoring", value: "21.3 pts/g", rank: "21st" },
+      { label: "Rushing", value: "106.6 yds/g", rank: "25th" },
+      { label: "Sacks allowed", value: "47", rank: "22nd" },
+      { label: "Mahomes starts", value: "14 of 17" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Patrick Mahomes",
+            position: "QB",
+            tier: "Top-five QB1",
+            thesis:
+              "422 rushing yards at 6.6 a carry is the part of his game that quietly saved the season.",
+            stats: ["3,587 pass yds", "22 TD, 11 INT", "422 rush yds, 5 TD"],
+            note:
+              "An 89.6 rating and eleven interceptions is the least efficient full season of his career, and he still finished as a top-five fantasy quarterback because he ran for 422 yards and five scores behind a line that allowed forty-seven sacks. The rushing is now a structural part of his value rather than a bonus. Three missed starts is the risk; the offence around him being 21st in scoring is the reason he is not the first quarterback off the board.",
+          },
+          {
+            name: "Kenneth Walker",
+            position: "RB",
+            tier: "RB2 with RB1 volume",
+            thesis:
+              "A 221-carry back walking into an offence that finished 25th in rushing.",
+            stats: ["1,027 rush yds", "4.6 yds/carry", "31 rec"],
+            note:
+              "A thousand yards at 4.6 a carry in Seattle is a proven three-down workload, and Kansas City has not had one — the position produced almost nothing on the ground last season. Thirty-one catches on 36 targets means Reid can use him on passing downs, which is where this offence lives. The unknown is the goal line, where Mahomes ran in five himself and the team scored only fifteen rushing touchdowns in total.",
+          },
+          {
+            name: "Travis Kelce",
+            position: "TE",
+            tier: "Top-three TE",
+            thesis:
+              "108 targets and seventy-six catches — the volume has not moved.",
+            stats: ["76 rec, 851 yds", "108 targets", "5 TD"],
+            note:
+              "Seventy-six receptions across all seventeen games is still the most dependable tight-end floor in fantasy, and 108 targets says Mahomes has not stopped looking for him first. The 11.2 yards a catch is the age showing — this is a chains role now rather than a seam-splitting one. Five touchdowns on a 21st-ranked scoring offence is fair, and it is the number most likely to improve if the offence does.",
+          },
+          {
+            name: "Rashee Rice",
+            position: "WR",
+            tier: "WR2, availability permitting",
+            thesis:
+              "Seventy-eight targets in eight games — nearly ten a week when he played.",
+            stats: ["53 rec, 571 yds", "78 targets", "5 TD"],
+            note:
+              "Fifty-three catches and five touchdowns in eight appearances is a per-game rate that would have made him a clear WR1 over a full season, and the target share says he is the receiver Mahomes trusts. He has not put a healthy season together yet, and that is the entire discount. Draft him as the highest-upside receiver on this roster and plan for the weeks he misses.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Xavier Worthy",
+            position: "WR",
+            tier: "Bench upside",
+            thesis:
+              "Seventy-three targets turned into one touchdown.",
+            stats: ["42 rec, 532 yds", "73 targets", "1 TD"],
+            note:
+              "Fourteen games, 532 yards and a single score is a disappointing second season, and the 12.7 yards a catch says the role was fine even when the production was not. Kansas City manufactured touches for him on the ground — eleven carries at 7.9 — which is how you use speed that is not winning routes yet. He is worth a late pick on talent and the touchdown regression, not on last year's usage.",
+          },
+          {
+            name: "Tyquan Thornton",
+            position: "WR",
+            tier: "Deep-league dart",
+            thesis:
+              "23.1 yards a reception, which is the highest figure of anyone here by a distance.",
+            stats: ["19 rec, 438 yds", "37 targets", "3 TD"],
+            note:
+              "Nineteen catches for 438 yards is a season made entirely of explosive plays, and three touchdowns on 37 targets is a strong rate attached to almost no volume. That combination wins a week outright once a month and does nothing the rest of the time. Roster him only in leagues deep enough that a boom week matters more than a reliable one.",
+          },
+          {
+            name: "Justin Fields",
+            position: "QB",
+            tier: "Superflex stash",
+            thesis:
+              "383 rushing yards and four scores in nine games — as a backup.",
+            stats: ["1,259 pass yds", "7 TD, 1 INT", "383 rush yds"],
+            note:
+              "Seven touchdowns against one interception is the cleanest passing stretch of his career and the 383 rushing yards are why he matters in fantasy at all. He is behind a quarterback who missed three starts last season, in an offence that would suit his legs. In Superflex he is the single most valuable backup quarterback on any roster; in a one-quarterback league he is nothing until Mahomes is hurt.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This was a below-average scoring offence last season and the fix was a running back, which tells you what Reid thinks the problem was. Mahomes and Kelce are priced on reputation and still worth it; Rashee Rice is the one place where the discount is larger than the risk.",
+  },
+  lv: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Las Vegas finished 32nd in scoring, 32nd in rushing, 32nd in pace and 32nd in sacks allowed, and ran the ball into the end zone five times all season. Klint Kubiak takes over and Kirk Cousins arrives from Atlanta to replace a quarterback room that threw nineteen interceptions. Ashton Jeanty and Brock Bowers produced anyway, which is the only reason to open this page.",
+    facts: [
+      { label: "Head coach", value: "Klint Kubiak (first season)" },
+      { label: "Arrivals", value: "Kirk Cousins, Jalen Nailor" },
+      { label: "Scoring", value: "14.2 pts/g", rank: "32nd" },
+      { label: "Rushing", value: "77.5 yds/g", rank: "32nd" },
+      { label: "Sacks allowed", value: "64", rank: "32nd" },
+      { label: "Rushing TDs", value: "5" },
+    ],
+    groups: [
+      {
+        label: "Good players, bad address",
+        players: [
+          {
+            name: "Ashton Jeanty",
+            position: "RB",
+            tier: "Volume RB1",
+            thesis:
+              "321 touches on the worst offence in football, and ten touchdowns out of it anyway.",
+            stats: ["975 rush yds", "55 rec, 346 yds", "10 total TD"],
+            note:
+              "Two hundred and sixty-six carries and 73 targets across all seventeen games is a genuinely enormous workload, and 3.7 yards a carry is what happens when it comes behind a line that allowed sixty-four sacks on a team that never led. The 55 receptions are what make him startable regardless — that role does not disappear in a bad game script, it grows. Any improvement in the offence around him lands on him first.",
+          },
+          {
+            name: "Brock Bowers",
+            position: "TE",
+            tier: "TE1, top two at the position",
+            thesis:
+              "Seven touchdowns in twelve games, on a team that scored 14.2 points a week.",
+            stats: ["64 rec, 680 yds", "86 targets", "7 TD"],
+            note:
+              "Eighty-six targets in twelve appearances is a seven-a-week rate that no other tight end matches, and seven scores on an offence this barren is remarkable — he was the red-zone plan. Sixty-four catches gives him the PPR floor and the touchdowns give him the ceiling, which is a combination almost nobody at the position has. Five missed games is the only mark against him, and Cousins is a clear upgrade on what was throwing to him.",
+          },
+        ],
+      },
+      {
+        label: "Everything downstream of the quarterback",
+        players: [
+          {
+            name: "Tre Tucker",
+            position: "WR",
+            tier: "WR3",
+            thesis:
+              "Ninety-two targets and five scores as the only established receiver on the roster.",
+            stats: ["57 rec, 696 yds", "92 targets", "5 TD"],
+            note:
+              "Fifty-seven catches for 696 yards at 12.2 a reception, across all seventeen games, on the league's least productive offence — the role is unambiguous and the production is what the situation allowed. Five touchdowns on a team that scored twenty total is a large share. He is the receiver most directly helped by Cousins arriving, and he is priced as though last season's offence is the one he is stuck with.",
+          },
+          {
+            name: "Kirk Cousins",
+            position: "QB",
+            tier: "Superflex only",
+            thesis:
+              "An 84.8 rating in ten games, and the best quarterback this roster has had in years.",
+            stats: ["1,721 pass yds", "10 TD, 5 INT", "10 games"],
+            note:
+              "Ten touchdowns against five interceptions is unspectacular and it is a substantial upgrade on nineteen interceptions from the room he replaces. He contributes nothing on the ground — seven rushing yards — so his fantasy value is entirely volume, and this offence ran the fewest plays in the league. He raises everyone around him and remains unstartable himself in a one-quarterback format.",
+          },
+          {
+            name: "Michael Mayer",
+            position: "TE",
+            tier: "Deep bench",
+            thesis:
+              "Fifty targets as the second tight end behind Brock Bowers.",
+            stats: ["35 rec, 328 yds", "50 targets", "1 TD"],
+            note:
+              "Thirty-five catches in thirteen games is real playing time and it exists mostly because Bowers missed five. A second tight end on a bottom-ranked offence has no path to weekly relevance while the first one is healthy. He is a contingency stash in the deepest leagues and nothing else.",
+          },
+          {
+            name: "Jalen Nailor",
+            position: "WR",
+            tier: "Late-round flier",
+            thesis:
+              "15.3 yards a catch in Minnesota, arriving into a room with one established receiver.",
+            stats: ["29 rec, 444 yds", "53 targets", "4 TD"],
+            note:
+              "Twenty-nine receptions at 15.3 with four touchdowns is efficient complementary work, produced on a far better offence than the one he joins. The opportunity is real — behind Tucker there is nobody with a claim to a hundred targets. The offence is the reason to keep expectations small, and the reason he will cost nothing.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Two genuinely excellent players are trapped here, and both are priced below what their usage says because of everything around them. Jeanty and Bowers are buys on volume alone; nobody else on this roster should be started until the offence proves it has moved off the bottom of the league.",
+  },
+  lac: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "The Chargers ran the third-fastest offence in football and converted 45.8% of their third downs, third-best in the league, and still scored only 21.6 points a game. The reason is on the line: sixty sacks allowed, 29th. Justin Herbert threw twenty-six touchdowns and ran for 498 yards, and every skill position behind him is a genuine committee.",
+    facts: [
+      { label: "Head coach", value: "Jim Harbaugh" },
+      { label: "Arrivals", value: "David Njoku, Keaton Mitchell" },
+      { label: "Pace", value: "64.4 plays/g", rank: "3rd" },
+      { label: "Third down", value: "45.8%", rank: "3rd" },
+      { label: "Sacks allowed", value: "60", rank: "29th" },
+      { label: "Scoring", value: "21.6 pts/g", rank: "20th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Justin Herbert",
+            position: "QB",
+            tier: "Top-six QB1",
+            thesis:
+              "498 rushing yards at 6.0 a carry, which is not what he used to be.",
+            stats: ["3,727 pass yds", "26 TD, 13 INT", "498 rush yds"],
+            note:
+              "Twenty-six touchdowns at a 94.1 rating is a strong passing season and the rushing is the part that changed his fantasy profile — 498 yards on 83 carries is a genuine weekly floor that he simply did not offer earlier in his career. Sixty sacks is the cost of it and the reason the interceptions climbed to thirteen. On the third-fastest offence in the league he will see the attempts to finish top six.",
+          },
+          {
+            name: "Ladd McConkey",
+            position: "WR",
+            tier: "WR2",
+            thesis:
+              "Team-high 106 targets and the most secure role in a crowded receiving corps.",
+            stats: ["66 rec, 789 yds", "106 targets", "6 TD"],
+            note:
+              "Sixty-six catches on 106 targets in sixteen games is a dependable share of a high-volume offence, and six touchdowns is a fair return on it. The 12.0 yards a reception says he is working the intermediate middle rather than stretching defences. He is the safest receiver here and the one least likely to produce a season-winning week — a solid WR2 whose floor is the reason to own him.",
+          },
+          {
+            name: "Quentin Johnston",
+            position: "WR",
+            tier: "WR3 with WR2 scoring",
+            thesis:
+              "Eight touchdowns on eighty-five targets — the red-zone receiver on this roster.",
+            stats: ["51 rec, 735 yds", "85 targets", "8 TD"],
+            note:
+              "Eight scores is more than any Charger and it came on twenty-one fewer targets than McConkey, at 14.4 a catch. That is a downfield and goal-line role rather than a volume one, which makes him the more explosive weekly play and the less reliable one. Fifty-one receptions in fourteen games is a thin PPR base; the touchdown rate is what you are buying and it is the part that regresses.",
+          },
+          {
+            name: "Omarion Hampton",
+            position: "RB",
+            tier: "RB2 when available",
+            thesis:
+              "Thirty-two catches on thirty-five targets in nine games — the passing-down job is already his.",
+            stats: ["545 rush yds", "32 rec, 192 yds", "5 total TD"],
+            note:
+              "One hundred and twenty-four carries at 4.4 and a 91% catch rate on his targets is the complete back this offence wants, and he produced it in barely half a season. Kimani Vidal took 155 carries in his absence and did less with them. If Hampton is upright he is the clear lead in a top-three pace offence; the nine games are why he will be cheaper than that sentence deserves.",
+          },
+        ],
+      },
+      {
+        label: "The committee behind them",
+        players: [
+          {
+            name: "Oronde Gadsden",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "664 yards at 13.6 a catch from a rookie tight end, and then Njoku arrived.",
+            stats: ["49 rec, 664 yds", "69 targets", "3 TD"],
+            note:
+              "Forty-nine receptions for 664 yards is an excellent first season and 13.6 a catch is genuine field-stretching production from the position. The complication is David Njoku, who is a better red-zone player and was signed to be one. Gadsden keeps the yardage role and probably loses the touchdowns, which is the least useful half of a tight end's fantasy line.",
+          },
+          {
+            name: "Kimani Vidal",
+            position: "RB",
+            tier: "Contingent RB3",
+            thesis:
+              "155 carries of replacement-level running while Hampton was out.",
+            stats: ["643 rush yds", "4.1 yds/carry", "4 total TD"],
+            note:
+              "Six hundred and forty-three yards at 4.1 across thirteen games is what a committee back produces when the starter is unavailable, and the sixteen catches say he does not take the passing work. His value is entirely conditional on Hampton's health, which is admittedly not a small condition. Handcuff him if you draft Hampton; ignore him otherwise.",
+          },
+          {
+            name: "David Njoku",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Four touchdowns on forty-eight targets, joining a room that already has a starter.",
+            stats: ["33 rec, 293 yds", "48 targets", "4 TD"],
+            note:
+              "Four scores in twelve games on a Cleveland offence that could not throw is a real red-zone skill and the yardage was never the appeal. He walks into a tight-end room where Gadsden just posted 664 yards, so the likeliest outcome is that Njoku takes the goal-line snaps and little else. That is a touchdown-or-nothing weekly profile, which at tight end is streamable rather than startable.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Pace and third-down conversions say this should be a top-ten scoring offence and the offensive line says why it is not. Herbert is the reliable asset; everything behind him is split two or three ways, and Omarion Hampton's health is the single variable that would resolve the most of it.",
+  },
 };
 
 /** The outlook for a team, or null when none has been written. */
