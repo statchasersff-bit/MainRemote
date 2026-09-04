@@ -551,6 +551,260 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     bottomLine:
       "Henry and Flowers are the two most reliably used players on a team that does not spread the ball around, and that concentration is the appeal at every position here. The risk is uniform: this offence is 29th in pace, so there is one fewer chance per game for anyone outside the top three to matter.",
   },
+  cin: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Joe Burrow played eight games and Cincinnati still finished 7th in passing yards and threw thirty-six touchdowns. Joe Flacco started most of the rest at a 79.2 rating, which is the control experiment: this offence produces WR1 volume regardless of who is upright. The run game finished 29th and nothing about the roster suggests that was an accident.",
+    facts: [
+      { label: "Head coach", value: "Zac Taylor (eighth season)" },
+      { label: "Passing", value: "249.6 yds/g", rank: "7th" },
+      { label: "Rushing", value: "93.6 yds/g", rank: "29th" },
+      { label: "Scoring", value: "24.4 pts/g", rank: "12th" },
+      { label: "Passing TDs", value: "36" },
+      { label: "Burrow starts", value: "8 of 17" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Ja'Marr Chase",
+            position: "WR",
+            tier: "First-round WR1",
+            thesis:
+              "185 targets is the highest-usage receiving role in football, and it survived losing the quarterback.",
+            stats: ["125 rec, 1,412 yds", "185 targets", "8 TD"],
+            note:
+              "One hundred and twenty-five catches on 185 targets is a share nobody else in the league commands, and he produced it with Joe Flacco throwing most of them. The 11.3 yards a reception is the one number that looks wrong, and it is the tell: those were checkdowns and manufactured touches from a backup, not the intermediate targets Burrow feeds him. The volume is already elite; a healthy quarterback is pure upside on the efficiency.",
+          },
+          {
+            name: "Joe Burrow",
+            position: "QB",
+            tier: "Top-five QB1, health permitting",
+            thesis:
+              "Seventeen touchdowns and five picks in eight games — a 36-touchdown pace at a 100.7 rating.",
+            stats: ["1,809 pass yds", "17 TD, 5 INT", "8 games"],
+            note:
+              "Per start he threw for 226 yards and 2.1 touchdowns, which over a full season is the best fantasy line at the position outside of the rushing quarterbacks. He has now missed significant time in three of the last four years, and he contributes nothing on the ground — 41 rushing yards all season — so a bad week is genuinely bad. Draft the ceiling and hold a real backup, not a streamer.",
+          },
+          {
+            name: "Tee Higgins",
+            position: "WR",
+            tier: "WR2 with WR1 scoring",
+            thesis:
+              "Eleven touchdowns on 98 targets is the best red-zone rate of any receiver here.",
+            stats: ["59 rec, 846 yds", "11 TD", "14.3 yds/rec"],
+            note:
+              "Eleven scores in fifteen games, on a third of Chase's target volume, is the entire argument — this offence throws it near the goal line and he is the one it looks for when Chase draws the double. The 14.3 average says the targets he does get are the valuable ones. The risk is the same one it has always been: his weeks without a touchdown are WR4 weeks, and there are more of them than the season total suggests.",
+          },
+          {
+            name: "Chase Brown",
+            position: "RB",
+            tier: "Reception-fuelled RB2",
+            thesis:
+              "Eighty-eight targets is what makes him startable, because 4.4 a carry is not.",
+            stats: ["1,019 rush yds", "69 rec, 437 yds", "11 total TD"],
+            note:
+              "Three hundred and one touches and eleven touchdowns is a genuine RB1 workload, and it was produced by the 29th-ranked rushing offence — the yardage per carry says the blocking is not helping him. What makes the profile hold up is the 69 receptions: in a pass-first offence that trails often enough, his floor comes from the passing game rather than from game script. Volume is the buy; efficiency is not coming.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Andrei Iosivas",
+            position: "WR",
+            tier: "Bye-week fill",
+            thesis:
+              "The WR3 in a two-receiver offence, which is a smaller job than it sounds.",
+            stats: ["33 rec, 435 yds", "58 targets", "13.2 yds/rec"],
+            note:
+              "Fifty-eight targets across seventeen games is roughly three a week, and 13.2 a catch says he is being used down the field rather than as a volume outlet. That is a fine profile for a fourth receiver on your bench and a poor one for a starter, because his best games require a Chase or Higgins absence. The upside is real only in the weeks the injury report creates it.",
+          },
+          {
+            name: "Mike Gesicki",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Forty-two targets in an offence with two receivers who take everything.",
+            stats: ["28 rec, 307 yds", "42 targets", "13 games"],
+            note:
+              "Twenty-eight catches for 307 yards is a real but small role, and the ceiling is capped by arithmetic — Chase and Higgins accounted for 283 targets between them. He is on the field enough to catch a touchdown in any given week and not enough to be trusted for yardage. Stream him against a defence that struggles with tight ends; do not roster him weekly.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is the cleanest buy on the board if you believe in eight-game samples: Chase and Higgins are both underpriced by a season Burrow mostly missed. The run game is not fixed and is not going to be, so Chase Brown's value lives entirely in his 88 targets.",
+  },
+  cle: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Cleveland scored 16.4 points a game, threw for 184.8, gave up fifty-one sacks and put eighteen passes into the wrong hands. Todd Monken inherits that and a quarterback room where Shedeur Sanders and Dillon Gabriel split seventeen starts without either settling it. The one genuinely good thing that happened was a rookie tight end leading the team in targets, catches, yards and touchdowns.",
+    facts: [
+      { label: "Head coach", value: "Todd Monken (first season)" },
+      { label: "Scoring", value: "16.4 pts/g", rank: "31st" },
+      { label: "Passing", value: "184.8 yds/g", rank: "31st" },
+      { label: "Third down", value: "33.6%", rank: "29th" },
+      { label: "Sacks allowed", value: "51", rank: "26th" },
+      { label: "Interceptions", value: "18" },
+    ],
+    groups: [
+      {
+        label: "The reasons to look here at all",
+        players: [
+          {
+            name: "Harold Fannin",
+            position: "TE",
+            tier: "Top-eight TE",
+            thesis:
+              "Led the team in targets, receptions, yards and touchdowns — as a rookie tight end.",
+            stats: ["72 rec, 731 yds", "107 targets", "6 TD"],
+            note:
+              "One hundred and seven targets is a number a tight end reaches only when he is the first read, and he reached it on the 31st-ranked passing offence in his first season. Seventy-two catches and six scores from that role is the kind of usage that survives a coaching change, because it was earned rather than schemed. The 10.2 yards a reception is the honest limit — this is volume in a bad offence, not a seam threat in a good one — but the volume is what the position pays for.",
+          },
+          {
+            name: "Quinshon Judkins",
+            position: "RB",
+            tier: "Touchdown-reliant RB2",
+            thesis:
+              "230 carries and seven scores, at 3.6 a carry behind a line that allowed fifty-one sacks.",
+            stats: ["827 rush yds", "3.6 yds/carry", "7 TD"],
+            note:
+              "The workload is unambiguous and the efficiency is alarming: 3.6 a carry over 230 attempts is bottom-of-the-league running, and it happened on an offence that gave defences no reason to respect the pass. Seven touchdowns on a team that scored 16.4 a game says the goal-line work is his, which is the entire fantasy case. If Monken's arrival moves the passing game at all, Judkins is the player it helps most.",
+          },
+        ],
+      },
+      {
+        label: "Speculative at best",
+        players: [
+          {
+            name: "Jerry Jeudy",
+            position: "WR",
+            tier: "Bench flier",
+            thesis:
+              "106 targets turned into 602 yards, which is the whole story of this passing game.",
+            stats: ["50 rec, 602 yds", "106 targets", "2 TD"],
+            note:
+              "A 47% catch rate on 106 looks is the signature of quarterbacks completing 56.6% and 59.5% of their throws. The target volume says the role is real and the production says nothing came of it. He is worth a late pick only as a bet on Monken and a settled quarterback, and there is no evidence yet for either.",
+          },
+          {
+            name: "Shedeur Sanders",
+            position: "QB",
+            tier: "Superflex dart",
+            thesis:
+              "A 68.1 rating in eight starts, with the legs that make it interesting anyway.",
+            stats: ["1,400 pass yds", "7 TD, 10 INT", "169 rush yds"],
+            note:
+              "Seven touchdowns against ten interceptions at 56.6% completion is not an NFL starter's line, and Dillon Gabriel's 80.8 rating in ten games means the job is not his by default. The reason to keep the name is 8.0 yards a carry on 21 attempts — a rushing element that would raise his floor considerably if the job and the confidence to run ever arrive together. Superflex only, and only late.",
+          },
+          {
+            name: "Dylan Sampson",
+            position: "RB",
+            tier: "PPR handcuff",
+            thesis:
+              "Forty targets is a defined passing-down role behind an inefficient starter.",
+            stats: ["33 rec, 271 yds", "40 targets", "2.7 yds/carry"],
+            note:
+              "Thirty-three catches on forty targets is genuine third-down usage, and it matters more than his 2.7 yards a carry suggests — in an offence that trails as often as this one, the receiving back is on the field for the snaps that produce points. He is the handcuff to a 230-carry back whose efficiency invites a committee. In PPR he has standalone weeks; anywhere else he does not.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Harold Fannin is a genuine asset who happens to play here, and he is the only player on this roster you should draft at his market price rather than below it. Everything else is a wager on Todd Monken fixing the 31st-ranked passing game in one offseason with the same quarterbacks.",
+  },
+  pit: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Mike McCarthy takes over an offence that was efficient without being productive: 4th in turnover margin, 28th in pace, 22nd in passing. Aaron Rodgers threw twenty-four touchdowns against seven interceptions at a 94.8 rating. The backfield is the problem — Rico Dowdle and Jaylen Warren finished within 120 yards and one touchdown of each other, and neither has taken the job.",
+    facts: [
+      { label: "Head coach", value: "Mike McCarthy" },
+      { label: "Scoring", value: "23.4 pts/g", rank: "15th" },
+      { label: "Passing", value: "213.6 yds/g", rank: "22nd" },
+      { label: "Pace", value: "58.1 plays/g", rank: "28th" },
+      { label: "Turnover margin", value: "+12", rank: "4th" },
+      { label: "Backfield split", value: "236 / 211 carries" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "DK Metcalf",
+            position: "WR",
+            tier: "WR2",
+            thesis:
+              "14.4 a catch and six scores — the only player here who wins a route by himself.",
+            stats: ["59 rec, 850 yds", "99 targets", "6 TD"],
+            note:
+              "Ninety-nine targets on an offence that runs 58.1 plays a game is a large share of a small pie, and 14.4 yards a reception is what separates him from the possession receiver lined up opposite. Fifteen games and six touchdowns is a fair reflection of the role. The cap on him is the pace: Pittsburgh does not throw enough for a receiver to reach WR1 volume, so he needs the efficiency to keep holding.",
+          },
+          {
+            name: "Michael Pittman",
+            position: "WR",
+            tier: "PPR WR3",
+            thesis:
+              "111 targets and seven touchdowns, at 9.8 yards a catch.",
+            stats: ["80 rec, 784 yds", "111 targets", "7 TD"],
+            note:
+              "He led the team in targets and receptions and finished with fewer yards than Metcalf, which tells you exactly what the job is — chains and the red zone, not field position. Eighty catches gives him a genuine PPR floor and seven scores says Rodgers trusts him inside the twenty. In a standard league the 9.8 average makes him a flex play rather than a starter.",
+          },
+          {
+            name: "Aaron Rodgers",
+            position: "QB",
+            tier: "Low-end QB1",
+            thesis:
+              "Twenty-four touchdowns to seven picks, with nothing at all on the ground.",
+            stats: ["3,322 pass yds", "24 TD, 7 INT", "94.8 rating"],
+            note:
+              "A 94.8 rating across sixteen games is genuinely good quarterbacking and a 24-to-7 ratio is the reason Pittsburgh finished 4th in turnover margin. For fantasy the ceiling is capped twice over: 61 rushing yards all season means no floor beneath the passing, and a 28th-ranked pace means fewer attempts than his rate deserves. A fine QB1 in a two-quarterback league, a streamer in one.",
+          },
+        ],
+      },
+      {
+        label: "A split backfield and a safe tight end",
+        players: [
+          {
+            name: "Rico Dowdle",
+            position: "RB",
+            tier: "Frustrating RB3",
+            thesis:
+              "1,373 yards from scrimmage, and a teammate who produced 1,291.",
+            stats: ["1,076 rush yds", "39 rec, 297 yds", "7 total TD"],
+            note:
+              "Two hundred and thirty-six carries at 4.6 is a productive season by any individual measure, and it is worth less than it looks because Jaylen Warren took 211 of his own. Neither back has ever pulled clear, and McCarthy's arrival is as likely to reset the split as resolve it. Draft him as the marginally larger half of a committee, and price the touchdowns — seven on 275 touches — accordingly.",
+          },
+          {
+            name: "Jaylen Warren",
+            position: "RB",
+            tier: "Frustrating RB3",
+            thesis:
+              "Fewer touches than Dowdle, more touchdowns, and better hands.",
+            stats: ["958 rush yds", "40 rec, 333 yds", "8 total TD"],
+            note:
+              "Forty catches on 45 targets is a 89% catch rate and the most reliable passing-down role in the backfield, which in PPR closes the gap with Dowdle entirely. He scored eight times to Dowdle's seven on twenty-four fewer touches. There is a real argument he is the better player; there is no argument that either of them is startable with confidence while the split holds.",
+          },
+          {
+            name: "Pat Freiermuth",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "Seventy-six percent of his targets caught, in an offence that values the safe throw.",
+            stats: ["41 rec, 486 yds", "54 targets", "4 TD"],
+            note:
+              "Forty-one catches on 54 targets is the kind of reliability Rodgers has always fed, and four touchdowns on a team that scored 23.4 a game is a fair share of the red-zone work. The yardage will never be exciting because the offence does not throw enough. He is the tight end you draft when you have skipped the position twice and want to stop thinking about it.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Everything here is competent and nothing is a difference-maker, which is the McCarthy-and-Rodgers offence in one line. Metcalf is the only player worth reaching for; the backfield is the trap, and it will stay one until somebody wins it outright.",
+  },
 };
 
 /** The outlook for a team, or null when none has been written. */
