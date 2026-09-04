@@ -1579,6 +1579,388 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     bottomLine:
       "Pace and third-down conversions say this should be a top-ten scoring offence and the offensive line says why it is not. Herbert is the reliable asset; everything behind him is split two or three ways, and Omarion Hampton's health is the single variable that would resolve the most of it.",
   },
+  dal: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Dallas led the NFL in passing yards and in plays per game, finished 2nd in total offence and 7th in scoring. Dak Prescott threw for 4,552 yards and thirty touchdowns across a full seventeen games. The one thing holding it back was giveaways — a minus-nine turnover margin, 29th — and that is a team problem rather than a fantasy one.",
+    facts: [
+      { label: "Head coach", value: "Brian Schottenheimer (second season)" },
+      { label: "Passing", value: "277.5 yds/g", rank: "1st" },
+      { label: "Pace", value: "65.9 plays/g", rank: "1st" },
+      { label: "Scoring", value: "27.7 pts/g", rank: "7th" },
+      { label: "Passing TDs", value: "31" },
+      { label: "Turnover margin", value: "-9", rank: "29th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Dak Prescott",
+            position: "QB",
+            tier: "Top-five QB1",
+            thesis:
+              "Thirty touchdowns and 4,552 yards, at the fastest pace in football.",
+            stats: ["4,552 pass yds", "30 TD, 10 INT", "67.3% comp"],
+            note:
+              "A 99.5 rating over all seventeen games, on the offence that threw for more yards than any other and ran more plays than any other — the volume and the efficiency arrived together. He offers almost nothing on the ground, so he needs that passing environment to stay top-five, and nothing about the roster suggests it will not. The only real risk is his own availability history, and last season answered it.",
+          },
+          {
+            name: "George Pickens",
+            position: "WR",
+            tier: "First-round WR1",
+            thesis:
+              "137 targets, 1,429 yards and nine scores — he out-produced CeeDee Lamb outright.",
+            stats: ["93 rec, 1,429 yds", "137 targets", "9 TD"],
+            note:
+              "Ninety-three catches at 15.4 a reception is the rare profile combining elite volume with genuine downfield work, and he did it across all seventeen games. The nine touchdowns confirm the red-zone role is his as much as anyone's. He is no longer the second option here and his price should reflect that before the market catches up.",
+          },
+          {
+            name: "CeeDee Lamb",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "1,077 yards in fourteen games, and three touchdowns to go with them.",
+            stats: ["75 rec, 1,077 yds", "117 targets", "3 TD"],
+            note:
+              "Seventy-seven yards a game at 14.4 a catch is WR1 production and 117 targets in fourteen appearances is a rate that beats Pickens's per game. Three touchdowns on an offence that threw thirty-one is the anomaly — nothing in the usage explains it, and it is the cleanest regression case on this roster. Buy him at whatever discount the touchdown total has created.",
+          },
+          {
+            name: "Javonte Williams",
+            position: "RB",
+            tier: "RB1",
+            thesis:
+              "1,201 yards and thirteen total touchdowns on the league's busiest offence.",
+            stats: ["1,201 rush yds", "11 rush TD", "35 rec"],
+            note:
+              "Two hundred and fifty-two carries at 4.8 with eleven rushing scores is a complete workhorse season, and it came attached to an offence that ran more plays than anyone — more snaps means more carries and more goal-line chances. The receiving work is the soft spot at 3.9 yards a catch, so this is a rushing-and-touchdown profile rather than a PPR one. In this offence that is more than enough.",
+          },
+          {
+            name: "Jake Ferguson",
+            position: "TE",
+            tier: "Top-four TE",
+            thesis:
+              "102 targets and eight touchdowns, at 7.3 yards a catch.",
+            stats: ["82 rec, 600 yds", "102 targets", "8 TD"],
+            note:
+              "Eighty-two receptions is elite tight-end volume and the eight scores mean he has the ceiling the position usually lacks — that combination is worth a real pick. The 7.3 yards a reception is genuinely poor and it is the whole shape of the role: he is the checkdown and the goal-line target on an offence with two 1,000-yard receivers ahead of him. Draft the catches and the touchdowns, not the yardage.",
+          },
+        ],
+      },
+      {
+        label: "Behind the top five",
+        players: [
+          {
+            name: "Ryan Flournoy",
+            position: "WR",
+            tier: "Deep-league flex",
+            thesis:
+              "Fifty-six targets and four touchdowns as the third receiver.",
+            stats: ["40 rec, 475 yds", "56 targets", "4 TD"],
+            note:
+              "Forty catches and four scores is a real contribution and it is what the WR3 slot on the league's highest-volume passing offence produces. Fifty-six targets is not enough to start on merit while Pickens and Lamb are both healthy. He is the first man up if either misses time, and on this offence that is worth a roster spot in deeper formats.",
+          },
+          {
+            name: "KaVontae Turpin",
+            position: "WR",
+            tier: "Bench dart",
+            thesis:
+              "15.2 yards a catch on thirty-eight targets, plus manufactured carries.",
+            stats: ["26 rec, 396 yds", "38 targets", "2 TD"],
+            note:
+              "Twenty-six receptions is a small role executed explosively, and Dallas gave him seventeen carries at 5.2 to get the ball in his hands another way. That gadget usage is the entire fantasy case and it is not a repeatable weekly floor. He belongs on a bench in a deep league as a bet on the offence generating enough volume to reach a fourth option.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is the most target-rich offence in football and it supports five genuine fantasy starters, which almost no other roster does. CeeDee Lamb's three touchdowns are the single clearest mispricing on this page; George Pickens is no longer the cheaper of the two receivers and should not be drafted as though he is.",
+  },
+  nyg: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "John Harbaugh inherits a run-first offence that finished 5th in rushing and ran in twenty-two touchdowns, one more than it threw. Jaxson Dart is the reason to care: fifteen passing scores and nine on the ground in fourteen starts, with 487 rushing yards at 5.7 a carry. Malik Nabers played four games, and the backfield behind Dart is split three ways.",
+    facts: [
+      { label: "Head coach", value: "John Harbaugh (first season)" },
+      { label: "Arrivals", value: "Darnell Mooney, Isaiah Likely, Calvin Austin" },
+      { label: "Rushing", value: "129.1 yds/g", rank: "5th" },
+      { label: "Passing", value: "217.1 yds/g", rank: "21st" },
+      { label: "Pace", value: "63.8 plays/g", rank: "8th" },
+      { label: "TD split", value: "21 pass / 22 rush" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jaxson Dart",
+            position: "QB",
+            tier: "Top-eight QB1",
+            thesis:
+              "Nine rushing touchdowns in fourteen starts — the floor almost no quarterback has.",
+            stats: ["2,272 pass yds", "15 TD, 5 INT", "487 rush yds, 9 TD"],
+            note:
+              "Twenty-four total touchdowns in fourteen games, with more than a third of them coming on the ground, is the shape that wins fantasy weeks regardless of how the passing goes. The passing volume is modest — 162 yards a start on the 21st-ranked passing offence — and it barely matters when he runs for 35 a game at 5.7 a carry. Fifteen-to-five is also a genuinely careful ratio for a young quarterback.",
+          },
+          {
+            name: "Malik Nabers",
+            position: "WR",
+            tier: "WR2 on four games of evidence",
+            thesis:
+              "Thirty-five targets in four appearances, and then nothing.",
+            stats: ["18 rec, 271 yds", "35 targets", "4 games"],
+            note:
+              "Nearly nine targets a game at 15.1 a catch is a genuine WR1 usage rate, and there are four games of it. Everything about the profile says he is the first read whenever he plays and nothing about it has been sustained across a season. The receiving corps around him — Slayton, Mooney, Austin — is a collection of complementary pieces, so the target share is his to take. Price the games missed, not the talent.",
+          },
+          {
+            name: "Tyrone Tracy",
+            position: "RB",
+            tier: "Committee RB3",
+            thesis:
+              "The largest share of a three-way backfield, and only four touchdowns.",
+            stats: ["740 rush yds", "36 rec, 288 yds", "4 total TD"],
+            note:
+              "One hundred and seventy-six carries and 48 targets is the biggest workload in the room, and it produced four scores while the team ran twenty-two into the end zone — Skattebo and Singletary took ten of those between them. The receiving role is what keeps him startable in PPR. Until somebody wins this backfield outright he is a flex play with a frustrating touchdown share.",
+          },
+        ],
+      },
+      {
+        label: "A three-way backfield and a rebuilt receiver room",
+        players: [
+          {
+            name: "Cam Skattebo",
+            position: "RB",
+            tier: "Upside RB3",
+            thesis:
+              "Seven touchdowns in eight games, on the fewest carries of the three.",
+            stats: ["410 rush yds", "5 rush TD", "24 rec, 207 yds"],
+            note:
+              "One hundred and one carries producing five rushing scores, plus 24 catches on 32 targets, is the most efficient use of a small role in this backfield — he was the goal-line and passing-down option at once across eight appearances. That is the profile that becomes valuable fastest if Harbaugh consolidates the committee. The eight games are the reason he is affordable and the reason to be careful.",
+          },
+          {
+            name: "Theo Johnson",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "Seventy-four targets and five touchdowns, more than any receiver on the roster.",
+            stats: ["45 rec, 528 yds", "74 targets", "5 TD"],
+            note:
+              "Forty-five catches for 528 yards is solid tight-end production and five scores led all New York pass-catchers, which says as much about the receiving corps as about him. Seventy-four targets on a run-first offence is a real share. Isaiah Likely's arrival is the complication, and Likely has never held a full-time role either — Johnson keeps the job on last season's usage.",
+          },
+          {
+            name: "Darnell Mooney",
+            position: "WR",
+            tier: "Bench flier",
+            thesis:
+              "Seventy-two targets in Atlanta turned into 443 yards.",
+            stats: ["32 rec, 443 yds", "72 targets", "1 TD"],
+            note:
+              "A 44% catch rate on 72 targets is poor by any measure, and 13.8 yards a reception says the role was downfield rather than dysfunctional. He arrives into a room where Nabers takes the coverage and nobody else has claimed the second job. On a team that threw twenty-one touchdowns all season, his ceiling is a WR4 who occasionally hits — draft him last or not at all.",
+          },
+          {
+            name: "Darius Slayton",
+            position: "WR",
+            tier: "Deep-league only",
+            thesis:
+              "14.5 a catch, sixty-three targets, one touchdown.",
+            stats: ["37 rec, 538 yds", "63 targets", "1 TD"],
+            note:
+              "The per-catch number has been consistent for years and so has everything else about him: a downfield complement who produces yardage in bursts and almost never scores. One touchdown across fourteen games on a low-volume passing offence is the ceiling, not bad luck. He matters only in leagues deep enough to start a fifth receiver.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Jaxson Dart's legs make him a genuine QB1 on an offence that throws for 217 yards a game, and that is the single most useful fact on this page. The backfield is a three-way split with the touchdowns going to the man with the fewest carries, and Malik Nabers is a four-game sample you are being asked to pay a full season for.",
+  },
+  phi: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Philadelphia scored 22.3 points a game on the 25th-fastest offence in the league — a deliberate, low-volume attack that protects the football and finished 7th in turnover margin. A.J. Brown is in New England, which makes DeVonta Smith the unambiguous first read for the first time. Jalen Hurts ran in eight touchdowns and Dallas Goedert caught eleven.",
+    facts: [
+      { label: "Head coach", value: "Nick Sirianni (sixth season)" },
+      { label: "Arrivals", value: "Marquise Brown, Tank Bigsby" },
+      { label: "Departures", value: "A.J. Brown" },
+      { label: "Pace", value: "59.4 plays/g", rank: "25th" },
+      { label: "Passing", value: "204.7 yds/g", rank: "23rd" },
+      { label: "Turnover margin", value: "+6", rank: "7th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jalen Hurts",
+            position: "QB",
+            tier: "Top-four QB1",
+            thesis:
+              "Thirty-three total touchdowns on an offence that ranked 23rd in passing yards.",
+            stats: ["3,224 pass yds", "25 TD, 6 INT", "421 rush yds, 8 TD"],
+            note:
+              "Twenty-five through the air and eight on the ground, at a 98.5 rating with only six interceptions — this is the most touchdown-efficient quarterback in football relative to his volume. The passing yardage will never be exciting because Philadelphia does not run enough plays to make it so. The goal-line rushing is the entire edge and it has been stable for years; it is what keeps him ahead of quarterbacks who throw for a thousand more yards.",
+          },
+          {
+            name: "Saquon Barkley",
+            position: "RB",
+            tier: "RB1 on volume",
+            thesis:
+              "317 touches, and 4.1 a carry doing it.",
+            stats: ["1,140 rush yds", "37 rec, 273 yds", "9 total TD"],
+            note:
+              "Two hundred and eighty carries is a top-three workload and 4.1 yards a carry is the lowest efficiency of his time here, which is the tension in drafting him. Nine touchdowns is a fair return on a team where Hurts takes the short-yardage carries himself — that is eight scores a year Barkley structurally cannot have. The volume makes him an RB1; nothing about the profile suggests a return to the per-carry numbers that made him a first-round pick.",
+          },
+          {
+            name: "DeVonta Smith",
+            position: "WR",
+            tier: "WR2 with WR1 volume incoming",
+            thesis:
+              "1,008 yards while sharing the offence, and now he is not sharing it.",
+            stats: ["77 rec, 1,008 yds", "113 targets", "4 TD"],
+            note:
+              "A thousand yards on 113 targets across all seventeen games is a strong season and it was produced with A.J. Brown drawing the coverage. Brown's departure hands him the entire first-read share of a passing game that, admittedly, throws for only 204.7 a game. Four touchdowns is the number to expect to improve — Philadelphia threw twenty-six and he caught a small fraction of them.",
+          },
+          {
+            name: "Dallas Goedert",
+            position: "TE",
+            tier: "Top-three TE",
+            thesis:
+              "Eleven touchdowns on eighty-two targets — nobody at the position scored more efficiently.",
+            stats: ["60 rec, 591 yds", "82 targets", "11 TD"],
+            note:
+              "Sixty catches for 591 yards is unremarkable and eleven touchdowns is extraordinary, and the second number is not luck: this offence stalls inside the twenty and throws to its tight end there. The 9.9 yards a reception tells you the yardage will not carry a week on its own. He is a touchdown-driven TE1, which at this position beats a yardage-driven one nearly every time.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Marquise Brown",
+            position: "WR",
+            tier: "WR3 in a vacated role",
+            thesis:
+              "Arrives from Kansas City into the target share A.J. Brown left behind.",
+            stats: ["49 rec, 587 yds", "74 targets", "5 TD"],
+            note:
+              "Forty-nine catches and five scores on 74 targets is efficient complementary work, and the opportunity in front of him is the largest of his recent career — the Eagles have one established receiver and a vacancy opposite him. The caution is the offence itself: 59.4 plays a game and 204.7 passing yards is not an environment that supports two productive receivers. He is the WR2 on a team that may only feed one.",
+          },
+          {
+            name: "Tank Bigsby",
+            position: "RB",
+            tier: "Handcuff",
+            thesis:
+              "5.7 yards a carry on sixty-three attempts, behind a 280-carry starter.",
+            stats: ["356 rush yds", "5.7 yds/carry", "2 TD"],
+            note:
+              "Three hundred and fifty-six yards on 63 carries is the best per-carry figure in this backfield by a wide margin, and it came in Jacksonville rather than here. He does nothing in the passing game — four targets — so he is a pure rushing handcuff. Behind a back carrying 280 times at 4.1, that is a genuinely valuable thing to hold in a deep league.",
+          },
+          {
+            name: "Dontayvion Wicks",
+            position: "WR",
+            tier: "Deep bench",
+            thesis:
+              "Forty-six targets in Green Bay, arriving into a two-receiver offence.",
+            stats: ["30 rec, 332 yds", "46 targets", "2 TD"],
+            note:
+              "Thirty catches for 332 yards is a fourth-receiver line and that is roughly the job available to him here behind Smith and Marquise Brown. Philadelphia's snap count is the ceiling on everyone in this room and he starts third in the queue for it. Worth knowing the name in a deep league; not worth a pick in a normal one.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is a low-volume offence that converts what it gets into touchdowns better than almost anyone, which is why Hurts and Goedert outperform their yardage every year. DeVonta Smith inheriting A.J. Brown's targets is the clearest opportunity on the roster, and Saquon Barkley's 4.1 a carry is the clearest warning.",
+  },
+  was: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Washington finished 4th in rushing and 24th in passing, and lost the turnover battle by thirteen — 31st in the league. Jayden Daniels made seven starts; Marcus Mariota made the other ten. Stefon Diggs arrived from New England and immediately caught 85 passes, which is more than any Commander has managed in some time.",
+    facts: [
+      { label: "Head coach", value: "Dan Quinn" },
+      { label: "Arrivals", value: "Stefon Diggs, Rachaad White, Chig Okonkwo" },
+      { label: "Rushing", value: "134.7 yds/g", rank: "4th" },
+      { label: "Passing", value: "195.8 yds/g", rank: "24th" },
+      { label: "Turnover margin", value: "-13", rank: "31st" },
+      { label: "Daniels starts", value: "7 of 17" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jayden Daniels",
+            position: "QB",
+            tier: "QB1 upside, seven-game sample",
+            thesis:
+              "Ten total touchdowns and 278 rushing yards in seven starts, then the season ended.",
+            stats: ["1,262 pass yds", "8 TD, 3 INT", "278 rush yds"],
+            note:
+              "Forty rushing yards a start at 4.8 a carry is the floor that makes him a fantasy asset regardless of a modest 180 passing yards a game — the offence around him ranked 24th through the air. Eight touchdowns against three interceptions says the decision-making held up. Seven starts is the entire problem, and it is the second consecutive season where availability has been the deciding variable rather than production.",
+          },
+          {
+            name: "Stefon Diggs",
+            position: "WR",
+            tier: "PPR WR2",
+            thesis:
+              "Eighty-five catches on 102 targets — an 83% catch rate at age thirty-plus.",
+            stats: ["85 rec, 1,013 yds", "102 targets", "4 TD"],
+            note:
+              "A thousand yards across all seventeen games on the 24th-ranked passing offence, catching 83% of what came his way, is a remarkably efficient season and an outstanding PPR floor. The 11.9 yards a reception says this is now an underneath, chain-moving role rather than a downfield one. Four touchdowns on a team that threw nineteen is a fair share; expect the receptions to repeat and the yardage not to grow.",
+          },
+          {
+            name: "Jacory Croskey-Merritt",
+            position: "RB",
+            tier: "RB2",
+            thesis:
+              "Eight rushing touchdowns on the league's fourth-best rushing offence.",
+            stats: ["805 rush yds", "4.6 yds/carry", "8 TD"],
+            note:
+              "One hundred and seventy-five carries at 4.6 with eight scores is the most valuable role in this backfield — Washington ran twenty touchdowns in and he took the largest share of them. Nine targets across seventeen games means he does nothing in the passing game, so his weeks are entirely dependent on volume and the goal line. Rachaad White's arrival threatens the receiving work he never had rather than the carries he does.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Terry McLaurin",
+            position: "WR",
+            tier: "Boom-or-bust WR3",
+            thesis:
+              "15.3 yards a catch in ten games, and Diggs took the volume while he was out.",
+            stats: ["38 rec, 582 yds", "60 targets", "3 TD"],
+            note:
+              "Fifty-eight yards a game at 15.3 a reception is the downfield role he has always played, and six targets a game is a smaller share than he is used to commanding. The complication is Diggs, who caught 85 passes in the same offence and is not going anywhere. Seven missed games and a genuine target competition make him a WR3 rather than the WR2 his name suggests.",
+          },
+          {
+            name: "Rachaad White",
+            position: "RB",
+            tier: "PPR flex",
+            thesis:
+              "Forty catches on forty-five targets — the passing-down role Croskey-Merritt does not have.",
+            stats: ["572 rush yds", "40 rec, 218 yds", "4 TD"],
+            note:
+              "An 89% catch rate on 45 targets is a defined third-down job, and it is exactly the complement to a lead back with nine targets all season. The rushing is unremarkable at 4.3 a carry and it does not need to be better. In PPR he has standalone value in the weeks Washington trails; in standard scoring he is a handcuff with a small role.",
+          },
+          {
+            name: "Chig Okonkwo",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Seventy-nine targets in Tennessee, arriving as the clear starter here.",
+            stats: ["56 rec, 560 yds", "79 targets", "2 TD"],
+            note:
+              "Fifty-six catches across all seventeen games is durable, usable tight-end volume and he produced it on an offence worse than the one he joins. Two touchdowns is the ceiling problem — he has never been a red-zone target, and Washington runs it in from close range. A safe streaming option whose upside depends on Jayden Daniels playing a full season.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Everything here is contingent on Jayden Daniels playing seventeen games, which he has not yet done. Stefon Diggs is the safest asset because his 85 receptions happened with a backup quarterback throwing most of them, and Croskey-Merritt's eight touchdowns are the cheapest source of scoring on the roster.",
+  },
 };
 
 /** The outlook for a team, or null when none has been written. */
