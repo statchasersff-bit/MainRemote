@@ -385,6 +385,172 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     bottomLine:
       "Achane is a first-round talent attached to a bottom-five offence, and squaring those two things is the whole Miami draft decision. Everything behind him is a bet that somebody in a stripped-down passing game becomes startable — at these prices you can afford to find out, just not in a lineup you need to win with.",
   },
+  nyj: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "The Jets threw for 163.8 yards a game — last in the NFL — gave the ball away nineteen more times than they took it, and allowed sixty sacks. Aaron Glenn's answer in year two is Geno Smith, who threw seventeen interceptions of his own last season. Breece Hall and a healthy Garrett Wilson are the reasons to look at this offence anyway, and neither of them is the reason it finished 29th in scoring.",
+    facts: [
+      { label: "Head coach", value: "Aaron Glenn (second season)" },
+      { label: "Arrivals", value: "Geno Smith, Adonai Mitchell" },
+      { label: "Departures", value: "Justin Fields" },
+      { label: "Passing", value: "163.8 yds/g", rank: "32nd" },
+      { label: "Scoring", value: "17.6 pts/g", rank: "29th" },
+      { label: "Turnover margin", value: "-19", rank: "32nd" },
+    ],
+    groups: [
+      {
+        label: "Worth a real pick",
+        players: [
+          {
+            name: "Breece Hall",
+            position: "RB",
+            tier: "Touch-dependent RB2",
+            thesis:
+              "279 touches and 1,415 yards, and only five trips to the end zone to show for it.",
+            stats: ["1,065 rush yds", "36 rec, 350 yds", "5 total TD"],
+            note:
+              "The workload is not in question — 243 carries and 48 targets is a genuine three-down role, and 4.4 a carry behind a line that surrendered sixty sacks is respectable work. The touchdowns are the whole problem. Five scores on 279 touches is what happens when an offence scores 17.6 points a game, and no part of that maths improves because the quarterback changed. Draft the volume and price the scoring honestly.",
+          },
+          {
+            name: "Garrett Wilson",
+            position: "WR",
+            tier: "Buy-low WR2",
+            thesis:
+              "56 yards a game in seven appearances, in the worst passing offence in football.",
+            stats: ["36 rec, 395 yds", "4 TD", "7 games"],
+            note:
+              "Seven games is the headline and the opportunity: 5.1 catches and 56.4 yards a game is a WR2 rate, and he produced it while the team around him threw for the fewest yards in the league. Four touchdowns in seven games says the red-zone role is his whenever he is upright. He has now been the one functional part of three consecutive bad passing games, which is either a durability warning or the cheapest talent on the board.",
+          },
+        ],
+      },
+      {
+        label: "The rest of a rebuilt passing game",
+        players: [
+          {
+            name: "Geno Smith",
+            position: "QB",
+            tier: "Superflex QB2",
+            thesis:
+              "An upgrade on what the Jets had, which is a lower bar than it sounds.",
+            stats: ["3,025 pass yds", "19 TD", "17 INT"],
+            note:
+              "A 67.4% completion rate is real and the 84.7 rating is not — nineteen touchdowns against seventeen interceptions is the line of a quarterback under pressure making the wrong choice. He now inherits an offence that allowed sixty sacks, which is precisely the condition that produced those interceptions. There is a floor here the Jets did not have; there is no ceiling worth a one-quarterback roster spot.",
+          },
+          {
+            name: "Mason Taylor",
+            position: "TE",
+            tier: "TE2 with a path",
+            thesis:
+              "Caught 68% of his targets as a rookie on a team with nothing else working.",
+            stats: ["44 rec, 369 yds", "65 targets", "13 games"],
+            note:
+              "Forty-four catches on 65 targets in thirteen rookie games is a real usage rate, and it came in the league's least productive passing game — the volume is there before anything improves. The yardage tells you what the role is: 8.4 a catch is a checkdown outlet, not a seam threat. If Geno Smith throws underneath as often as the sack numbers suggest he will have to, Taylor is the cheapest beneficiary on the roster.",
+          },
+          {
+            name: "Adonai Mitchell",
+            position: "WR",
+            tier: "Late-round upside",
+            thesis:
+              "13.7 yards a catch, and he caught fewer than half of what came his way.",
+            stats: ["33 rec, 453 yds", "74 targets", "2 TD"],
+            note:
+              "Seventy-four targets is the second-largest share on this roster and 33 receptions is a 45% catch rate, which is the kind of split that is either a bad quarterback or bad hands and is usually some of both. The 13.7 average says he is the only vertical element the Jets have. He is worth a last-round pick precisely because Garrett Wilson's availability is not guaranteed.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is a volume offence with no scoring attached to it, and every Jet is priced by which half of that sentence you believe. Hall and Wilson are startable on usage alone; nobody here should be on your roster because you expect touchdowns.",
+  },
+  bal: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Jesse Minter takes over an offence that finished 2nd in rushing and 27th in passing, and ran the fewest plays of anyone outside the bottom three. Derrick Henry turned 307 carries into 1,595 yards and sixteen touchdowns; Lamar Jackson missed four games and the passing game never replaced him. Zay Flowers is the only receiver here who commanded a defence.",
+    facts: [
+      { label: "Head coach", value: "Jesse Minter (first season)" },
+      { label: "Rushing", value: "156.6 yds/g", rank: "2nd" },
+      { label: "Passing", value: "192.8 yds/g", rank: "27th" },
+      { label: "Scoring", value: "24.9 pts/g", rank: "11th" },
+      { label: "Pace", value: "57.3 plays/g", rank: "29th" },
+      { label: "TD split", value: "23 pass / 23 rush" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Derrick Henry",
+            position: "RB",
+            tier: "RB1, with an age asterisk",
+            thesis:
+              "307 carries, 5.2 a pop and sixteen scores — the volume never came down.",
+            stats: ["1,595 rush yds", "16 TD", "5.2 yds/carry"],
+            note:
+              "This is the most valuable workload in fantasy football: a 300-carry back on the league's second-best rushing offence, in a scheme that ran twenty-three touchdowns into the end zone on the ground. He did it across all seventeen games without a per-carry decline. The reason he is not the first pick is the only reason — nobody has carried this load at this age and repeated it, and Baltimore has no incentive to find out gently.",
+          },
+          {
+            name: "Lamar Jackson",
+            position: "QB",
+            tier: "Elite QB1 when upright",
+            thesis:
+              "A 103.8 rating and 5.2 yards a carry, in thirteen games rather than seventeen.",
+            stats: ["2,549 pass yds", "21 TD, 7 INT", "349 rush yds"],
+            note:
+              "Per game he threw for 196 yards with 1.6 touchdowns and ran for another 27 — a top-three fantasy rate at the position, and the 21-to-7 ratio says the efficiency is entirely intact. He simply was not there for four of them. In a run-first offence that throws it 27th-most, his fantasy value is disproportionately his legs, and the legs are what the missed games were about.",
+          },
+          {
+            name: "Zay Flowers",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "118 targets and 1,211 yards on a team that threw for 192.8 a game.",
+            stats: ["86 rec, 1,211 yds", "118 targets", "14.1 yds/rec"],
+            note:
+              "He is not the leading receiver on this team, he is the passing game. Eighty-six catches at 14.1 a go, on an offence ranked 27th in passing yards, means his target share is enormous and his efficiency is carrying it rather than the volume. Five touchdowns is the one soft number, and it is a symptom of Henry owning everything inside the ten. Everything else about the profile is a locked-in WR1.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Mark Andrews",
+            position: "TE",
+            tier: "Touchdown-dependent TE2",
+            thesis:
+              "The yardage has gone and the red-zone role has not.",
+            stats: ["48 rec, 422 yds", "5 TD", "8.8 yds/rec"],
+            note:
+              "Forty-eight catches for 422 yards is 8.8 a reception, a number that says he is being used as a short-area and goal-line target rather than a seam threat. The five touchdowns are the whole case, and they are real — this offence scores, and he is still the tight end it looks for when the field shortens. Roster him as a floor-less TE2 whose good weeks are entirely about where the drive ended.",
+          },
+          {
+            name: "Rashod Bateman",
+            position: "WR",
+            tier: "Bench flier",
+            thesis:
+              "Thirty-eight targets, nineteen catches, and no clear reason it changes.",
+            stats: ["19 rec, 224 yds", "38 targets", "13 games"],
+            note:
+              "A 50% catch rate on 38 looks is a marginal role executed badly, and it happened in a season where the WR2 job was genuinely open. Baltimore's passing volume is the ceiling on anyone who is not Flowers, and there is nothing in this line suggesting he is next in the queue. He is a bye-week name, not a bench stash.",
+          },
+          {
+            name: "Justice Hill",
+            position: "RB",
+            tier: "Handcuff with pass-game value",
+            thesis:
+              "The receiving back behind a 307-carry workhorse who is 32 years old.",
+            stats: ["21 rec, 169 yds", "5.2 yds/carry", "10 games"],
+            note:
+              "Twenty-one catches on 27 targets is a defined third-down role, and 5.2 a carry on his eighteen attempts matches what Henry averaged on 307 of them. That combination is the point: he already has the passing-down job, so an injury in front of him hands him a full workload rather than half of one. The most valuable handcuff on any roster whose starter carries this much.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Henry and Flowers are the two most reliably used players on a team that does not spread the ball around, and that concentration is the appeal at every position here. The risk is uniform: this offence is 29th in pace, so there is one fewer chance per game for anyone outside the top three to matter.",
+  },
 };
 
 /** The outlook for a team, or null when none has been written. */
