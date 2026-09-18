@@ -190,7 +190,7 @@ function collectAdvancedStats(player) {
 // Synthesis via Claude (raw HTTPS, no SDK — matches this repo's build scripts)
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You write original "2026 Fantasy Outlook" blurbs for an NFL fantasy-football site.
+const SYSTEM_PROMPT = `You write the "2026 Fantasy Outlook" for an NFL fantasy-football site. Your output is BOTH a short scouting read and the decision layer the site renders around it.
 
 You are given, for one player: (a) our proprietary advanced stats, (b) facts scraped from a FantasyPros expert note, and (c) facts scraped from a CBS Sports 2026 outlook.
 
@@ -200,12 +200,55 @@ Rules:
 - ANTI-PLAGIARISM: do not copy any run of ~6 or more consecutive words from the sources. Rephrase every idea in your own voice.
 - Be concrete and numeric where our stats allow (EPA, success rate, finish rank, TD rate, games, etc.). Do not invent numbers that are not in the provided data.
 - AGE: the PLAYER line gives the player's authoritative age. If you reference the player's age at all, use exactly that number ("now 31", "at 31", "31-year-old"). Never state a different age, and never infer age from the scraped sources — they may be stale.
-- Two short paragraphs, ~110-170 words total. Confident analyst tone, no hedging filler, no headers, no bullet points.
+- Confident analyst tone, no hedging filler, no headers, no bullet points inside prose fields.
 - Do not mention "FantasyPros", "CBS", "sources", or that this was generated.
+- Never write a sentence that only restates the position ("he is a quarterback"). Every field must carry information.
 
-Return ONLY a JSON object, no markdown fence, with keys:
-  "headline": a punchy <=12-word summary,
-  "body": the two-paragraph outlook as a single string (use \\n\\n between paragraphs).`;
+Return ONLY a JSON object, no markdown fence, with exactly these keys:
+
+  "headline"      — a punchy <=12-word summary.
+  "body"          — two short paragraphs, ~110-170 words total, as one string with \\n\\n between them.
+  "quickTake"     — TWO OR THREE SENTENCES, max ~55 words. The whole take for a reader who reads nothing else. Not a teaser for the body; a standalone answer to "what should I expect from him?".
+  "weeklyRole"    — 1-3 words for his role in the offence: e.g. "Starter", "Spot Starter", "Lead Back", "Committee Back", "Rotational WR", "Backup".
+  "restOfSeason"  — the rest-of-season call in the site's shorthand: a positional tier and a use, joined by " / ". e.g. "QB3 / Matchup Play", "RB2 / Weekly Starter", "WR4 / Bench Stash".
+  "confidence"    — exactly one of "High", "Moderate", "Low". How sure you are of "restOfSeason", given role certainty and how stable his production has been. A player whose role is contested or whose sample is thin is NOT "High".
+
+  "range"         — the projected 2026 POSITIONAL finish, as three bands. Each is
+                    { "best": <int>, "worst": <int>, "note": "<max ~10 words>" }.
+                    "best" is the smaller (better) rank. Ranks are within his own
+                    position: a QB's bands are QB ranks, a WR's are WR ranks.
+                    Required ordering, or the range is discarded:
+                      ceiling.best <= expected.best <= floor.best
+                      ceiling.worst <= expected.worst <= floor.worst
+                    Keys: "floor", "expected", "ceiling".
+                    The "note" says what PRODUCES that outcome — "Low-volume game or
+                    poor efficiency", "300+ yards, multiple TDs" — not how likely it is.
+                    Bands should be realistic widths (5-8 ranks), not one number.
+
+  "upsideTriggers" — 3 strings. Concrete, checkable things that would make him MORE
+                     valuable. Each ~6-12 words, present tense, no leading arrow or
+                     bullet. Prefer thresholds a reader could actually verify in a box
+                     score or a snap count.
+  "warningSigns"   — 3 strings, same shape, for what would make him LESS valuable.
+
+  "usage"         — how to actually use him:
+                    { "standard": "...", "deep": "...", "bestWhen": "...", "avoidWhen": "..." }
+                    For a QB, "standard" is his role in a 1QB league and "deep" is his
+                    role in SUPERFLEX. For every other position, "standard" is a 12-team
+                    league and "deep" is a deep league. Each value is a short phrase
+                    (2-8 words), not a sentence: "Matchup streamer", "Usable QB2",
+                    "WR3 / FLEX", "Strong starter".
+                    "bestWhen" and "avoidWhen" name the game or roster conditions.
+
+  "verdict"       — { "call": "...", "rationale": "..." }
+                    "call" is 1-3 words, or two terms joined by " / ", chosen from:
+                      Every-Week Starter, Weekly Starter, Flex Play, Matchup Play,
+                      Stream, Hold, Hold / Stream, Bench Stash, Handcuff, Waiver Add,
+                      Avoid.
+                    Use ONLY these. Do not write "Buy" or "Sell" — this site does not
+                    have the trade-market data to support a buy/sell call.
+                    "rationale" is ONE OR TWO sentences, max ~40 words, and must not
+                    repeat quickTake's wording.`
 
 function buildUserPrompt(player, advStats, fp, cbs) {
   const lines = [];
@@ -225,7 +268,7 @@ function buildUserPrompt(player, advStats, fp, cbs) {
 async function synthesize(player, advStats, fp, cbs) {
   const body = {
     model: MODEL,
-    max_tokens: 1024,
+    max_tokens: 3000,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: buildUserPrompt(player, advStats, fp, cbs) }],
   };
@@ -261,6 +304,99 @@ async function synthesize(player, advStats, fp, cbs) {
   throw new Error('exhausted API retries');
 }
 
+// ---------------------------------------------------------------------------
+// Validating the model's decision layer
+//
+// Every field below is OPTIONAL in the stored record, and each is validated on
+// its own: a malformed range does not cost the record its triggers, and a
+// missing decision layer entirely still leaves a perfectly good headline and
+// body. The page renders whatever survives and nothing else, so the failure
+// mode of a bad generation is a smaller tab rather than a wrong one.
+// ---------------------------------------------------------------------------
+
+/** A trimmed string no longer than `max`, or undefined. */
+function str(value, max) {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.length > max ? undefined : trimmed;
+}
+
+/** Up to `count` non-empty strings, each within the length cap. */
+function strList(value, count, max) {
+  if (!Array.isArray(value)) return undefined;
+  const out = [];
+  for (const entry of value) {
+    const line = str(entry, max);
+    if (line) out.push(line);
+    if (out.length === count) break;
+  }
+  return out.length ? out : undefined;
+}
+
+function band(value) {
+  if (!value || typeof value !== 'object') return null;
+  const best = Number(value.best);
+  const worst = Number(value.worst);
+  if (!Number.isInteger(best) || !Number.isInteger(worst)) return null;
+  if (best < 1 || worst < 1 || best > worst) return null;
+  return { best, worst, note: str(value.note, 90) || '' };
+}
+
+/**
+ * The three bands, or nothing.
+ *
+ * The ordering is the claim — a ceiling that is worse than the floor is not a
+ * range, it is a mistake — so a set that does not satisfy it is dropped whole
+ * rather than drawn backwards on the spectrum.
+ */
+function parseRange(value) {
+  if (!value || typeof value !== 'object') return undefined;
+  const floor = band(value.floor);
+  const expected = band(value.expected);
+  const ceiling = band(value.ceiling);
+  if (!floor || !expected || !ceiling) return undefined;
+  if (!(ceiling.best <= expected.best && expected.best <= floor.best)) return undefined;
+  if (!(ceiling.worst <= expected.worst && expected.worst <= floor.worst)) return undefined;
+  return { floor, expected, ceiling };
+}
+
+const CONFIDENCE = new Set(['High', 'Moderate', 'Low']);
+
+/**
+ * The closing call, from a fixed vocabulary.
+ *
+ * Fixed because the chip is rendered as a conclusion and a free-text one drifts:
+ * three generations produce "Matchup Play", "matchup-dependent" and "Use in good
+ * matchups", which are the same call printed three ways. Buy and Sell are
+ * deliberately absent — this site has no trade-market data behind them.
+ */
+const VERDICT_CALLS = new Set([
+  'Every-Week Starter', 'Weekly Starter', 'Flex Play', 'Matchup Play',
+  'Stream', 'Hold', 'Hold / Stream', 'Bench Stash', 'Handcuff',
+  'Waiver Add', 'Avoid',
+]);
+
+function parseVerdict(value) {
+  if (!value || typeof value !== 'object') return undefined;
+  const call = str(value.call, 40);
+  if (!call) return undefined;
+  const match = [...VERDICT_CALLS].find(c => c.toLowerCase() === call.toLowerCase());
+  if (!match) return undefined;
+  return { call: match, rationale: str(value.rationale, 300) || '' };
+}
+
+function parseUsage(value) {
+  if (!value || typeof value !== 'object') return undefined;
+  const usage = {
+    standard: str(value.standard, 60) || '',
+    deep: str(value.deep, 60) || '',
+    bestWhen: str(value.bestWhen, 120) || '',
+    avoidWhen: str(value.avoidWhen, 120) || '',
+  };
+  return Object.values(usage).some(Boolean) ? usage : undefined;
+}
+
 function parseModelJson(text) {
   let s = text.trim();
   if (s.startsWith('```')) s = s.replace(/^```(?:json)?/, '').replace(/```$/, '').trim();
@@ -269,7 +405,31 @@ function parseModelJson(text) {
   if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
   const obj = JSON.parse(s);
   if (!obj.body) throw new Error('model output missing "body"');
-  return { headline: obj.headline || '', body: obj.body };
+
+  const out = { headline: obj.headline || '', body: obj.body };
+
+  const quickTake = str(obj.quickTake, 500);
+  if (quickTake) out.quickTake = quickTake;
+  const weeklyRole = str(obj.weeklyRole, 40);
+  if (weeklyRole) out.weeklyRole = weeklyRole;
+  const restOfSeason = str(obj.restOfSeason, 60);
+  if (restOfSeason) out.restOfSeason = restOfSeason;
+  if (CONFIDENCE.has(obj.confidence)) out.confidence = obj.confidence;
+
+  const range = parseRange(obj.range);
+  if (range) out.range = range;
+
+  const upside = strList(obj.upsideTriggers, 3, 120);
+  if (upside) out.upsideTriggers = upside;
+  const warning = strList(obj.warningSigns, 3, 120);
+  if (warning) out.warningSigns = warning;
+
+  const usage = parseUsage(obj.usage);
+  if (usage) out.usage = usage;
+  const verdict = parseVerdict(obj.verdict);
+  if (verdict) out.verdict = verdict;
+
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -324,15 +484,17 @@ async function main() {
         continue;
       }
 
-      const { headline, body } = await synthesize(player, advStats, fp, cbs);
+      const synthesized = await synthesize(player, advStats, fp, cbs);
+      const { headline, body } = synthesized;
       const record = {
         slug,
         name: player.name,
         position: player.position,
         team: player.team,
         season: SEASON,
-        headline,
-        body,
+        // headline and body first, then whatever of the decision layer survived
+        // validation. A field the model omitted or malformed is simply absent.
+        ...synthesized,
         keyStats: advStats[0] || null,
         sources: [
           { name: 'FantasyPros', url: fp.url, used: fp.ok },
@@ -348,7 +510,17 @@ async function main() {
 
       const srcTag = `[FP:${fp.ok ? 'y' : 'n'} CBS:${cbs.ok ? 'y' : 'n'} ADV:${advStats.length}]`;
       console.log(`ok ${srcTag}`);
-      if (opts.print) console.log(`\n  ${headline}\n  ${body.replace(/\n/g, '\n  ')}\n`);
+      if (opts.print) {
+        console.log(`\n  ${headline}\n  ${body.replace(/\n/g, '\n  ')}\n`);
+        const layer = { ...synthesized };
+        delete layer.headline;
+        delete layer.body;
+        console.log(`  ${JSON.stringify(layer, null, 2).replace(/\n/g, '\n  ')}\n`);
+        const missing = ['quickTake', 'weeklyRole', 'restOfSeason', 'confidence',
+          'range', 'upsideTriggers', 'warningSigns', 'usage', 'verdict']
+          .filter(k => synthesized[k] === undefined);
+        if (missing.length) console.log(`  MISSING (dropped in validation): ${missing.join(', ')}\n`);
+      }
 
       if (!opts.dry) fs.writeFileSync(OUT_FILE, JSON.stringify(existing, null, 0)); // incremental save
     } catch (err) {

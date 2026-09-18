@@ -283,19 +283,24 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 		// Rank Math. The plugin emits no title/description/robots of its own by
 		// design, so these three are the page's only ones — and the robots value
 		// is the difference between a hub that ranks and 32 that quietly don't.
-		$nickname = substr( strrchr( ' ' . $name, ' ' ), 1 );
+		//
+		// The strings come from statchasers_team_section_meta() with no section,
+		// which is the same function the virtual section URLs generate theirs
+		// from. One place the hub's title is written, so it cannot say one thing
+		// on a page created today and another on the five addresses beneath it.
+		//
+		// STORED, unlike the section URLs': this is a real page an editor may
+		// rewrite, and fill_meta only ever fills an empty field. A team page
+		// created before this wording existed therefore keeps its old title —
+		// see the note in README.md on updating the 32 that already exist.
+		$root = statchasers_team_section_meta( $slug, '' );
 
 		statchasers_team_fill_meta(
 			$id,
 			'rank_math_title',
-			STATCHASERS_TEAM_SEASON . ' ' . $name . ' Fantasy Football Hub | StatChasers'
+			$root['title'] . ' | StatChasers'
 		);
-		statchasers_team_fill_meta(
-			$id,
-			'rank_math_description',
-			'Live ' . $nickname . ' player news and injury updates, the offensive depth chart, ' .
-			STATCHASERS_TEAM_SEASON . ' schedule, team stats with NFL ranks and a weekly fantasy outlook.'
-		);
+		statchasers_team_fill_meta( $id, 'rank_math_description', $root['description'] );
 		statchasers_team_fill_meta( $id, 'rank_math_robots', array( 'index', 'follow' ) );
 
 		if ( $with_images ) {
@@ -567,6 +572,8 @@ function statchasers_team_pages_screen(): void {
 		echo '<p><strong>All 32 pages exist.</strong> Nothing to do.</p>';
 	}
 
+	statchasers_team_retitle_panel();
+
 	echo '<h2>Teams</h2>';
 	echo '<table class="widefat striped"><thead><tr>' .
 		'<th>Team</th><th>Slug</th><th>Status</th></tr></thead><tbody>';
@@ -589,4 +596,540 @@ function statchasers_team_pages_screen(): void {
 	}
 
 	echo '</tbody></table></div>';
+}
+
+/* ------------------------------------------------------- section URLs */
+
+/**
+ * Sections a team URL can be scoped to.
+ *
+ * Mirrors SECTIONS in the API's src/routes/team.ts and the tab ids in
+ * src/lib/team-render.ts — keep the three lists together. A rewrite rule
+ * pointing at a section the API will not scope to serves the hub under a URL
+ * that promised one panel, which is duplicate content wearing a second address.
+ *
+ * `news` is addressable on the API but deliberately absent here. A team whose
+ * archive is two stories is a thin page, and the hub already carries the tab;
+ * the section is opened by adding it to this list once the data is dense enough
+ * to carry its own URL.
+ */
+const STATCHASERS_TEAM_SECTIONS = array(
+	'outlook',
+	'stats',
+	'schedule',
+	'depth-chart',
+);
+
+/**
+ * Whether the nested section URLs are live. Off by default.
+ *
+ *     add_filter( 'statchasers_team_section_urls', '__return_true' );
+ *
+ * Then flush permalinks once (Settings > Permalinks > Save).
+ *
+ * WHAT IT DOES NOT DO: create pages. The rule points the section URL at the
+ * team's EXISTING page and sets a query var the shortcode reads, so one page
+ * per team serves every section address. 32 teams do not need 160 pages, and a
+ * section is opened or closed by editing one list rather than by minting or
+ * deleting rows in wp_posts.
+ *
+ * Same shape and the same switch as statchasers_player_section_urls(), because
+ * the two page types are addressed the same way.
+ */
+function statchasers_team_section_urls_enabled(): bool {
+	return (bool) apply_filters( 'statchasers_team_section_urls', false );
+}
+
+/** A section id, or '' if it is not one we serve. */
+function statchasers_team_section_id( string $raw ): string {
+	$section = strtolower( trim( $raw ) );
+	return in_array( $section, STATCHASERS_TEAM_SECTIONS, true ) ? $section : '';
+}
+
+/**
+ * The section a request is scoped to, from the URL.
+ *
+ * Read by the shortcode when no explicit `section` attribute is given, and by
+ * the metadata filters below so the title, description and canonical describe
+ * the section rather than the hub.
+ *
+ * `sc_section` is the same query var the player pages use; it is registered
+ * there and reused here rather than adding a second name for one idea.
+ */
+function statchasers_team_section_from_url(): string {
+	return statchasers_team_section_id( (string) get_query_var( 'sc_section' ) );
+}
+
+add_action(
+	'init',
+	function (): void {
+		if ( ! statchasers_team_section_urls_enabled() ) {
+			return;
+		}
+
+		$base     = trim( STATCHASERS_TEAM_PATH, '/' );
+		$sections = implode( '|', array_map( 'preg_quote', STATCHASERS_TEAM_SECTIONS ) );
+
+		// The page itself is resolved by pagename, exactly as WordPress would
+		// have resolved the bare team URL; only sc_section is added. No new
+		// post, no template override, nothing for an editor to keep in sync.
+		add_rewrite_rule(
+			'^' . $base . '/([^/]+)/(' . $sections . ')/?$',
+			'index.php?pagename=' . $base . '/$matches[1]&sc_section=$matches[2]',
+			'top'
+		);
+	}
+);
+
+/* -------------------------------------------------- section metadata */
+
+/**
+ * The team this request is on, or '' when it is not a team page.
+ *
+ * The page slug is the team, exactly as it is for the shortcode — one key, so
+ * the URL, the render and the metadata cannot disagree about which team they
+ * are describing.
+ */
+function statchasers_team_current_slug(): string {
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return '';
+	}
+
+	$slug = (string) $queried->post_name;
+	return isset( statchasers_team_table()[ $slug ] ) ? $slug : '';
+}
+
+/**
+ * Title and description for one team URL, built from team + section + season.
+ *
+ * MIRRORS sectionMeta() in the API's src/lib/team-seo.ts. The API origin is
+ * noindex and Rank Math owns the indexed title, so these are the strings that
+ * actually rank — but a reader can reach either, and the two must say the same
+ * thing. Changing one means changing the other.
+ *
+ * Generated rather than stored: 32 teams x 5 URLs is 160 title/description
+ * pairs, and storing them would mean 160 rows to migrate every time a season
+ * rolls over or a phrase is reworded. The season is a constant at the top of
+ * this file, so a rollover is one edit.
+ *
+ * @param string $slug    Team slug.
+ * @param string $section Section id, or '' for the hub.
+ * @return array{title:string,description:string}|null Null for an unknown team.
+ */
+function statchasers_team_section_meta( string $slug, string $section ): ?array {
+	$row = statchasers_team_table()[ $slug ] ?? null;
+	if ( null === $row ) {
+		return null;
+	}
+
+	$name   = $row[0];
+	$season = STATCHASERS_TEAM_SEASON;
+	// "Patriots" from "New England Patriots" — the form a sentence wants.
+	$nick = substr( strrchr( ' ' . $name, ' ' ), 1 );
+
+	switch ( $section ) {
+		case 'outlook':
+			return array(
+				'title'       => sprintf( '%s Fantasy Football Outlook %s', $name, $season ),
+				'description' => sprintf(
+					'%1$s fantasy outlook for %2$s: projected win total, offensive pace and pass rate, the %3$s players who carry fantasy value and the roles behind them.',
+					$name,
+					$season,
+					$nick
+				),
+			);
+
+		case 'stats':
+			return array(
+				'title'       => sprintf( '%s Stats %s: Offense, Defense & NFL Rankings', $name, $season ),
+				'description' => sprintf(
+					'%1$s team stats for %2$s: points, yards, pace and play mix on offense and defense, each with the %3$s rank among all 32 teams.',
+					$name,
+					$season,
+					$nick
+				),
+			);
+
+		case 'schedule':
+			return array(
+				'title'       => sprintf( '%s Schedule %s: Dates, Opponents & Results', $name, $season ),
+				'description' => sprintf(
+					'The full %1$s %2$s schedule: every opponent, kickoff time and result, plus the %3$s bye week and what is next on the calendar.',
+					$season,
+					$name,
+					$nick
+				),
+			);
+
+		case 'depth-chart':
+			return array(
+				'title'       => sprintf( '%s Depth Chart %s: Starters & Backups', $name, $season ),
+				'description' => sprintf(
+					'The %1$s offensive depth chart for %2$s: starters and backups by position, with the %3$s roles that decide fantasy value.',
+					$name,
+					$season,
+					$nick
+				),
+			);
+	}
+
+	return array(
+		'title'       => sprintf( '%1$s %2$s: Record, Schedule, Stats & Fantasy Football', $name, $season ),
+		'description' => sprintf(
+			'Live %1$s player news and injury updates, the offensive depth chart, %2$s schedule, team stats with NFL ranks and a weekly fantasy outlook.',
+			$nick,
+			$season
+		),
+	);
+}
+
+/**
+ * The metadata for THIS request, or null when it is not a section URL.
+ *
+ * Deliberately scoped to section URLs only. The 32 hub pages have stored Rank
+ * Math fields that an editor may have rewritten, and this plugin's standing
+ * promise is that it never overwrites them — so the hub is left alone and only
+ * the virtual addresses, which have no row to store anything in, are generated.
+ *
+ * @return array{title:string,description:string,section:string}|null
+ */
+function statchasers_team_request_meta(): ?array {
+	$section = statchasers_team_section_from_url();
+	if ( '' === $section ) {
+		return null;
+	}
+
+	$slug = statchasers_team_current_slug();
+	if ( '' === $slug ) {
+		return null;
+	}
+
+	$meta = statchasers_team_section_meta( $slug, $section );
+	if ( null === $meta ) {
+		return null;
+	}
+
+	$meta['section'] = $section;
+	return $meta;
+}
+
+/** The self-referencing canonical for a section URL. */
+function statchasers_team_section_canonical(): string {
+	$section = statchasers_team_section_from_url();
+	$slug    = statchasers_team_current_slug();
+
+	if ( '' === $section || '' === $slug ) {
+		return '';
+	}
+
+	$page = get_page_by_path( trim( STATCHASERS_TEAM_PATH, '/' ) . '/' . $slug );
+	if ( ! $page instanceof WP_Post ) {
+		return '';
+	}
+
+	// Built from the hub's permalink so it inherits the site's scheme, host and
+	// trailing-slash convention rather than guessing at any of them.
+	return user_trailingslashit(
+		trailingslashit( (string) get_permalink( $page ) ) . $section
+	);
+}
+
+/**
+ * Rank Math owns the title, description, canonical and robots on this site, so
+ * a section URL has to say its piece through Rank Math's own filters rather
+ * than by printing tags of its own — two canonicals is worse than a wrong one.
+ *
+ * NOT VERIFIED against the installed Rank Math build. These four filter names
+ * are the documented ones; each callback returns the value it was handed when
+ * this is not a section URL, so a renamed filter degrades to Rank Math's own
+ * output rather than to a broken tag. The document_title_parts fallback below
+ * covers the title if Rank Math is absent entirely.
+ */
+add_filter(
+	'rank_math/frontend/title',
+	function ( $title ) {
+		$meta = statchasers_team_request_meta();
+		return $meta ? $meta['title'] . ' | StatChasers' : $title;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/description',
+	function ( $description ) {
+		$meta = statchasers_team_request_meta();
+		return $meta ? $meta['description'] : $description;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/canonical',
+	function ( $canonical ) {
+		$url = statchasers_team_section_canonical();
+		return '' === $url ? $canonical : $url;
+	}
+);
+
+/**
+ * og:url on a section page is the section, not the hub. Scoped exactly as the
+ * canonical is — the callback hands back what it was given everywhere else, so
+ * ordinary pages' OpenGraph output is untouched.
+ */
+add_filter(
+	'rank_math/opengraph/url',
+	function ( $url ) {
+		$section = statchasers_team_section_canonical();
+		return '' === $section ? $url : $section;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/robots',
+	function ( $robots ) {
+		if ( null === statchasers_team_request_meta() ) {
+			return $robots;
+		}
+
+		// These exist to be indexed; that is the whole point of splitting them
+		// off the hub. Stated rather than left to a default that a site-wide
+		// setting could have turned into noindex for everything but posts.
+		$robots['index']  = 'index';
+		$robots['follow'] = 'follow';
+		return $robots;
+	}
+);
+
+/**
+ * Title and canonical without Rank Math.
+ *
+ * Core prints the canonical from the post's permalink, which on a section URL
+ * is the hub — five addresses all canonicalising to one, which is the split
+ * buying nothing. Rank Math short-circuits both of these when it is active.
+ */
+add_filter(
+	'document_title_parts',
+	function ( array $parts ): array {
+		$meta = statchasers_team_request_meta();
+		if ( $meta && isset( $parts['title'] ) ) {
+			$parts['title'] = $meta['title'];
+		}
+		return $parts;
+	}
+);
+
+add_filter(
+	'get_canonical_url',
+	function ( $canonical ) {
+		$url = statchasers_team_section_canonical();
+		return '' === $url ? $canonical : $url;
+	}
+);
+
+
+/* ------------------------------------------------------------- sitemap */
+
+/**
+ * One <url> entry, as Rank Math's page sitemap prints them.
+ *
+ * @param string $loc     Absolute URL.
+ * @param string $lastmod ISO 8601 date, or '' to omit.
+ */
+function statchasers_team_sitemap_entry( string $loc, string $lastmod ): string {
+	return "\t<url>\n" .
+		"\t\t<loc>" . esc_url( $loc ) . "</loc>\n" .
+		( '' === $lastmod ? '' : "\t\t<lastmod>" . esc_html( $lastmod ) . "</lastmod>\n" ) .
+		"\t</url>\n";
+}
+
+/**
+ * The section URLs, appended to Rank Math's page sitemap.
+ *
+ * The hub pages are real posts and Rank Math lists them itself. The section
+ * URLs have no post, so they have to be added — and only while the rewrite is
+ * live, or the sitemap would advertise 128 addresses that 404. Same switch as
+ * the rewrite, so the two cannot disagree.
+ *
+ * Built from the pages that actually exist: a team whose hub has not been
+ * created has no section URLs either, because they resolve THROUGH the hub.
+ *
+ * NOT VERIFIED against the installed Rank Math build: `{$type}_content` is the
+ * documented filter for appending entries to a post-type sitemap. If the page
+ * sitemap does not list the section URLs after enabling the flag, this is the
+ * name to check.
+ */
+add_filter(
+	'rank_math/sitemap/page_content',
+	function ( $content ) {
+		if ( ! statchasers_team_section_urls_enabled() ) {
+			return $content;
+		}
+
+		$container = statchasers_team_container( false );
+		if ( ! $container ) {
+			return $content;
+		}
+
+		$extra = '';
+		foreach ( array_keys( statchasers_team_table() ) as $slug ) {
+			$id = statchasers_team_find_page( $slug, $container );
+			if ( ! $id || 'publish' !== get_post_status( $id ) ) {
+				continue;
+			}
+
+			$hub     = trailingslashit( (string) get_permalink( $id ) );
+			$lastmod = (string) get_post_modified_time( 'c', true, $id );
+
+			foreach ( STATCHASERS_TEAM_SECTIONS as $section ) {
+				$extra .= statchasers_team_sitemap_entry( user_trailingslashit( $hub . $section ), $lastmod );
+			}
+		}
+
+		return $content . $extra;
+	}
+);
+
+/* ------------------------------------------------- hub title migration */
+
+/**
+ * Whether a stored hub title is one this plugin wrote, in any season.
+ *
+ * The old template was "<season> <team> Fantasy Football Hub | StatChasers".
+ * Anything else that is not empty was typed by a person and is theirs.
+ *
+ * @param string $title Stored rank_math_title.
+ * @param string $name  Team full name, e.g. "New England Patriots".
+ */
+function statchasers_team_title_is_generated( string $title, string $name ): bool {
+	$title = trim( $title );
+	if ( '' === $title ) {
+		return true;
+	}
+	return 1 === preg_match(
+		'/^\d{4} ' . preg_quote( $name, '/' ) . ' Fantasy Football Hub \| StatChasers$/',
+		$title
+	);
+}
+
+/**
+ * Which hub pages the retitle would touch, and which it would leave alone.
+ *
+ * The dry run: read on the Tools screen so the count is on the button before
+ * anything is written. Descriptions are not migrated — the generated wording
+ * did not change, so there is nothing to move them to.
+ *
+ * @return array{eligible:array<int,string>,custom:array<int,string>,missing:int}
+ */
+function statchasers_team_retitle_plan(): array {
+	$plan      = array( 'eligible' => array(), 'custom' => array(), 'missing' => 0 );
+	$container = statchasers_team_container( false );
+
+	foreach ( statchasers_team_table() as $slug => $row ) {
+		$id = $container ? statchasers_team_find_page( $slug, $container ) : 0;
+		if ( ! $id ) {
+			++$plan['missing'];
+			continue;
+		}
+
+		$current = (string) get_post_meta( $id, 'rank_math_title', true );
+		$wanted  = statchasers_team_section_meta( $slug, '' )['title'] . ' | StatChasers';
+
+		if ( $current === $wanted ) {
+			continue; // Already there.
+		}
+
+		if ( statchasers_team_title_is_generated( $current, $row[0] ) ) {
+			$plan['eligible'][ $id ] = $slug;
+		} else {
+			$plan['custom'][ $id ] = $slug;
+		}
+	}
+
+	return $plan;
+}
+
+/**
+ * Apply the plan: the eligible pages only.
+ *
+ * @return int Pages updated.
+ */
+function statchasers_team_retitle_apply(): int {
+	$done = 0;
+	foreach ( statchasers_team_retitle_plan()['eligible'] as $id => $slug ) {
+		update_post_meta(
+			$id,
+			'rank_math_title',
+			statchasers_team_section_meta( $slug, '' )['title'] . ' | StatChasers'
+		);
+		++$done;
+	}
+	return $done;
+}
+
+add_action(
+	'admin_init',
+	static function (): void {
+		if ( ! isset( $_POST['statchasers_team_retitle'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'You do not have permission to do this.' );
+		}
+
+		check_admin_referer( 'statchasers_team_retitle' );
+
+		set_transient( 'statchasers_team_retitle_result', statchasers_team_retitle_apply(), MINUTE_IN_SECONDS );
+
+		wp_safe_redirect( add_query_arg( 'page', STATCHASERS_TEAM_PAGES_SCREEN, admin_url( 'tools.php' ) ) );
+		exit;
+	}
+);
+
+/** The retitle panel on the Tools screen. Printed by statchasers_team_pages_screen(). */
+function statchasers_team_retitle_panel(): void {
+	$result = get_transient( 'statchasers_team_retitle_result' );
+	if ( false !== $result ) {
+		delete_transient( 'statchasers_team_retitle_result' );
+		printf(
+			'<div class="notice notice-success is-dismissible"><p><strong>Done.</strong> %d hub title%s updated.</p></div>',
+			(int) $result,
+			1 === (int) $result ? '' : 's'
+		);
+	}
+
+	$plan     = statchasers_team_retitle_plan();
+	$eligible = count( $plan['eligible'] );
+	$custom   = count( $plan['custom'] );
+
+	echo '<h2>Hub titles</h2>';
+	printf(
+		'<p>The hub title is now <code>%s</code>. Pages still carrying the old ' .
+		'<code>&lt;season&gt; &lt;team&gt; Fantasy Football Hub</code> wording, or no title, can be moved to it here. ' .
+		'A title someone typed by hand is never touched.</p>',
+		esc_html( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] . ' | StatChasers' )
+	);
+	printf(
+		'<p><strong>%d eligible &middot; %d custom title%s left alone%s</strong></p>',
+		$eligible,
+		$custom,
+		1 === $custom ? '' : 's',
+		$plan['missing'] ? sprintf( ' &middot; %d page%s missing', $plan['missing'], 1 === $plan['missing'] ? '' : 's' ) : ''
+	);
+
+	if ( $custom ) {
+		echo '<p class="description">Custom: <code>' . esc_html( implode( '</code>, <code>', $plan['custom'] ) ) . '</code></p>';
+	}
+
+	if ( $eligible ) {
+		echo '<form method="post">';
+		wp_nonce_field( 'statchasers_team_retitle' );
+		printf(
+			'<p><button type="submit" name="statchasers_team_retitle" value="1" class="button button-primary">Update %d title%s</button></p>',
+			$eligible,
+			1 === $eligible ? '' : 's'
+		);
+		echo '</form>';
+	} else {
+		echo '<p>Nothing to update.</p>';
+	}
 }

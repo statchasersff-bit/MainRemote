@@ -1,0 +1,389 @@
+/**
+ * Redraft rankings regression tests.
+ *
+ * Same posture as fpa.test.mjs: assert on the served HTML without executing any
+ * JavaScript, because the whole point of this rewrite is that the boards arrive
+ * complete. The standalone app this replaced shipped a container and filled it
+ * from React state, so the assertion that actually matters here is the boring
+ * one — that a response nobody ran a bundle against contains 230 player names.
+ *
+ * Two suites need no server. The tier rules and the CSV parser are pure
+ * functions, and both make a claim worth checking rather than trusting: that
+ * the tier boundaries the data module applies are the ones the standalone app
+ * published, and that the parser drops a malformed row instead of inventing a
+ * player from it.
+ */
+
+import test, { before, after, describe } from "node:test";
+import assert from "node:assert/strict";
+import http from "node:http";
+import { JSDOM } from "jsdom";
+import { startServer } from "./helpers/server.mjs";
+import { importModule, cleanupBundles } from "./helpers/bundle.mjs";
+
+let server;
+/** Whether a rankings file is present to render. */
+let hasData;
+
+before(async () => {
+  server = await startServer();
+  const probe = await fetch(`${server.origin}/embed/rankings`);
+  hasData = probe.status === 200;
+});
+
+after(async () => {
+  await server?.stop();
+  await cleanupBundles();
+});
+
+function rawGet(pathname, headers = {}) {
+  const url = new URL(pathname, server.origin);
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method: "GET",
+        headers,
+      },
+      (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (c) => (body += c));
+        res.on("end", () =>
+          resolve({ status: res.statusCode, headers: res.headers, body }),
+        );
+      },
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+async function page(pathname) {
+  const res = await fetch(`${server.origin}${pathname}`);
+  const html = await res.text();
+  return { res, doc: new JSDOM(html).window.document, html };
+}
+
+/* ------------------------------------------------------------ pure modules */
+
+describe("tier rules", () => {
+  let mod;
+
+  before(async () => {
+    mod = await importModule("lib/rankings/rankings-data");
+  });
+
+  test("the tier boundaries are the published ones", () => {
+    // The exact cliffs the standalone app drew. Restated here rather than read
+    // from TIER_RULES, because a test that reads the table it is checking only
+    // asserts that the table equals itself.
+    const cases = [
+      ["QB", 1, 1], ["QB", 5, 1], ["QB", 6, 2], ["QB", 13, 2], ["QB", 14, 3],
+      ["RB", 4, 1], ["RB", 5, 2], ["RB", 11, 2], ["RB", 12, 3], ["RB", 50, 7],
+      ["WR", 4, 1], ["WR", 5, 2], ["WR", 12, 2], ["WR", 13, 3], ["WR", 63, 7],
+      ["TE", 3, 1], ["TE", 4, 2], ["TE", 9, 2], ["TE", 10, 3], ["TE", 39, 6],
+    ];
+    for (const [position, rank, tier] of cases) {
+      assert.equal(
+        mod.getTier(position, rank),
+        tier,
+        `${position}${rank} should be tier ${tier}`,
+      );
+    }
+  });
+
+  test("a rank past the last rule keeps the last tier", () => {
+    // The boards are sliced to POSITION_LIMITS, so this is defensive — but the
+    // alternative to a defined answer here is `undefined` reaching the markup.
+    assert.equal(mod.getTier("QB", 999), 6);
+    assert.equal(mod.getTier("WR", 999), 7);
+  });
+
+  test("tiers never go backwards as rank increases", () => {
+    for (const position of mod.STAT_POSITIONS) {
+      let previous = 0;
+      for (let rank = 1; rank <= mod.POSITION_LIMITS[position]; rank += 1) {
+        const tier = mod.getTier(position, rank);
+        assert.ok(
+          tier >= previous,
+          `${position}${rank} dropped from tier ${previous} to ${tier}`,
+        );
+        previous = tier;
+      }
+    }
+  });
+
+  test("names normalise across suffix and punctuation spellings", () => {
+    assert.equal(mod.normalizeName("Michael Pittman Jr."), "michael pittman");
+    assert.equal(mod.normalizeName("Ja'Marr Chase"), "jamarr chase");
+    assert.equal(mod.normalizeName("Marvin Harrison Jr"), "marvin harrison");
+    assert.equal(mod.normalizeName("  A.J.  Brown "), "aj brown");
+  });
+});
+
+describe("the CSV parser", () => {
+  let parse;
+
+  before(async () => {
+    ({ parseRankingsCsv: parse } = await importModule(
+      "lib/rankings/rankings-data",
+    ));
+  });
+
+  test("reads the published three-column shape", () => {
+    const rows = parse("Position,Final Rank,Player\nQB,1,Josh Allen\nRB,2,Bijan Robinson\n");
+    assert.deepEqual(rows, [
+      { position: "QB", rank: 1, name: "Josh Allen" },
+      { position: "RB", rank: 2, name: "Bijan Robinson" },
+    ]);
+  });
+
+  test("drops the header, blanks and malformed rows rather than guessing", () => {
+    const rows = parse(
+      [
+        "Position,Final Rank,Player",
+        "",
+        "QB,1,Josh Allen",
+        "K,1,Justin Tucker", // not a fantasy position this board covers
+        "QB,notanumber,Somebody",
+        "QB,2,", // no name
+        "QB", // no commas at all
+        "   ",
+      ].join("\n"),
+    );
+    assert.deepEqual(rows, [{ position: "QB", rank: 1, name: "Josh Allen" }]);
+  });
+
+  test("a comma in a name survives", () => {
+    const rows = parse("WR,1,Smith, Jr.\n");
+    assert.equal(rows[0].name, "Smith, Jr.");
+  });
+});
+
+/* -------------------------------------------------------------- the routes */
+
+describe("the rankings page", () => {
+  test("serves the boards with the embedding posture", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { res, doc } = await page("/rankings");
+
+    assert.equal(res.status, 200);
+    assert.equal(
+      res.headers.get("x-robots-tag"),
+      "noindex, indexifembedded",
+      "this origin must not compete with statchasers.com",
+    );
+    assert.match(
+      doc.querySelector("meta[name=robots]").getAttribute("content"),
+      /noindex, indexifembedded/,
+    );
+    assert.match(doc.title, /Redraft Rankings/);
+    assert.ok(doc.querySelector("link[rel=canonical]"), "needs a canonical");
+  });
+
+  test("the canonical ignores every piece of page state", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const bare = await page("/rankings");
+    const stated = await page("/rankings?pos=te&season=2026&embed=1");
+
+    assert.equal(
+      stated.doc.querySelector("link[rel=canonical]").href,
+      bare.doc.querySelector("link[rel=canonical]").href,
+      "five boards of one set of rankings are one page",
+    );
+  });
+
+  test("all five panels are in the HTML, unexecuted", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const panels = [...doc.querySelectorAll("[data-scr-panel]")].map((p) => p.id);
+    assert.deepEqual(panels, [
+      "scr-panel-all",
+      "scr-panel-qb",
+      "scr-panel-rb",
+      "scr-panel-wr",
+      "scr-panel-te",
+    ]);
+
+    // The point of the rewrite: the board nobody clicked is still on the page.
+    for (const [id, expected] of [
+      ["scr-panel-qb", 40],
+      ["scr-panel-rb", 50],
+      ["scr-panel-wr", 100],
+      ["scr-panel-te", 40],
+    ]) {
+      const rows = doc.querySelectorAll(`#${id} .scr-row`);
+      assert.equal(rows.length, expected, `${id} should hold ${expected} rows`);
+    }
+  });
+
+  test("the tail of the All board is disclosed, not withheld", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+    const all = doc.querySelector("#scr-panel-all");
+
+    const rows = all.querySelectorAll(".scr-all-row");
+    assert.ok(rows.length > 50, "every row belongs in the response");
+    assert.ok(
+      all.querySelector("details.scr-more"),
+      "the rows past the first screen sit in a <details>, not in JS state",
+    );
+  });
+
+  test("exactly one panel opens by default, and ?pos chooses it", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+
+    const bare = await page("/rankings");
+    const defaults = bare.doc.querySelectorAll("[data-scr-panel].is-default");
+    assert.equal(defaults.length, 1);
+    assert.equal(defaults[0].id, "scr-panel-all");
+
+    const te = await page("/rankings?pos=te");
+    assert.equal(
+      te.doc.querySelector("[data-scr-panel].is-default").id,
+      "scr-panel-te",
+    );
+
+    const nonsense = await page("/rankings?pos=kicker");
+    assert.equal(
+      nonsense.doc.querySelector("[data-scr-panel].is-default").id,
+      "scr-panel-all",
+      "an unknown position falls back rather than opening nothing",
+    );
+  });
+
+  test("the tab strip is links, and carries no ARIA roles server-side", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const links = [...doc.querySelectorAll(".scr-nav-link")];
+    assert.equal(links.length, 5);
+    for (const link of links) {
+      assert.match(link.getAttribute("href"), /^#scr-panel-/);
+      // role="tab" promises arrow keys. The server cannot keep that promise,
+      // so it does not make it — client/rankings.ts adds the roles when it
+      // adds the behaviour.
+      assert.equal(link.getAttribute("role"), null);
+    }
+  });
+
+  test("a player with no page is named, not linked", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const rows = [...doc.querySelectorAll("#scr-panel-wr .scr-row")];
+    const unlinked = rows.filter((row) =>
+      row.querySelector("span.scr-player-link"),
+    );
+    assert.ok(
+      unlinked.length > 0,
+      "the current board has free agents the dictionary cannot place",
+    );
+    for (const row of unlinked) {
+      assert.equal(row.querySelector("a.scr-player-link"), null);
+      assert.ok(
+        row.querySelector(".scr-player").textContent.trim().length > 0,
+        "the row keeps the name it cannot link",
+      );
+    }
+  });
+
+  test("tiers are announced as rowgroups, not as styled rows", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const heads = [...doc.querySelectorAll("#scr-panel-qb .scr-tier-head th")];
+    assert.ok(heads.length >= 5);
+    for (const head of heads) {
+      assert.equal(head.getAttribute("scope"), "rowgroup");
+      assert.match(head.textContent, /^Tier \d+$/);
+    }
+  });
+
+  test("the side-by-side caption says the ranks are positional", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const caption = doc.querySelector("#scr-panel-all .scr-caption").textContent;
+    // The shape of the table invites "QB7 and RB7 go at the same pick". The
+    // caption is the only thing standing between a reader and that reading.
+    assert.match(caption, /positional rank/i);
+    assert.match(caption, /not a claim/i);
+  });
+});
+
+describe("the embed fragment", () => {
+  test("is a bare fragment with no document chrome", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const res = await fetch(`${server.origin}/embed/rankings`);
+    const html = await res.text();
+
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("x-robots-tag"), "noindex, indexifembedded");
+    assert.doesNotMatch(html, /<html/i, "the host page owns the document");
+    assert.doesNotMatch(html, /<script/i, "the plugin enqueues the bundle");
+    // No <h1>: the WordPress page supplies it.
+    assert.doesNotMatch(html, /<h1/i);
+    assert.match(html, /class="scr is-embed"/);
+  });
+
+  test("revalidates with an ETag", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const first = await rawGet("/embed/rankings");
+    assert.equal(first.status, 200);
+    assert.ok(first.headers.etag, "needs an ETag to revalidate against");
+
+    const second = await rawGet("/embed/rankings", {
+      "If-None-Match": first.headers.etag,
+    });
+    assert.equal(second.status, 304);
+    assert.equal(second.body, "");
+  });
+
+  test("404s rather than printing a hole in the host page", async () => {
+    // A season with no file is the state a fresh deployment is in. The
+    // shortcode turns this 404 into "render nothing", which leaves the page's
+    // own H1 and copy intact — an empty shell would not.
+    const res = await fetch(`${server.origin}/embed/rankings?season=1999`);
+    assert.equal(res.status, 404);
+  });
+});
+
+describe("the CSV export", () => {
+  test("matches what is on screen, with the derived columns", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const res = await fetch(`${server.origin}/rankings/download.csv`);
+    const body = await res.text();
+
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type"), /text\/csv/);
+    assert.match(
+      res.headers.get("content-disposition"),
+      /attachment; filename="statchasers-redraft-\d{4}\.csv"/,
+    );
+
+    const lines = body.trim().split("\n");
+    assert.equal(lines[0], "Position,Rank,Tier,Player,Team");
+    // The same 230 players the boards print, and no more: the source file runs
+    // to 713, and a CSV deeper than the page would be a second set of rankings.
+    assert.equal(lines.length - 1, 40 + 50 + 100 + 40);
+
+    const { doc } = await page("/rankings");
+    const firstQb = doc
+      .querySelector("#scr-panel-qb .scr-row .scr-player")
+      .textContent.trim();
+    assert.ok(
+      firstQb.startsWith(lines[1].split(",")[3]),
+      "the file and the screen must not disagree",
+    );
+  });
+
+  test("404s for a season with no file", async () => {
+    const res = await fetch(`${server.origin}/rankings/download.csv?season=1999`);
+    assert.equal(res.status, 404);
+  });
+});

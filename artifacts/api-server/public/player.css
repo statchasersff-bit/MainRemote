@@ -12,6 +12,22 @@
  * structure and a gold accent; a dark theme here and not there would be
  * conspicuous on a page that can mount both.
  *
+ * The page ground is white, which leaves exactly two card treatments and no
+ * third:
+ *
+ *   RAISED  — white fill, hairline border, shadow. The summary tiles, the
+ *             grade cards and the injury report: the blocks meant to sit on
+ *             top of the page. A shadow is what separates them, so they are
+ *             the only things allowed to be white on white.
+ *   RECESSED — `--sc-surface-soft` fill, hairline border, no shadow.
+ *             Everything else. On a grey page these could be white and still
+ *             have an edge; on a white one a white card is only its hairline,
+ *             which is not enough to hold a grid of them together.
+ *
+ * Anything nested inside a recessed card therefore has to clear the tint, not
+ * white — which is what `--sc-track` and the sink-filled chips are for, and why
+ * the team's news list drops to the sink to stay a step behind the player's.
+ *
  * Both selectors carry the tokens: `.scp` is the fragment as embedded, and
  * `body.scp-page` is the standalone page, whose own background/colour/font
  * rules need to see them too.
@@ -26,6 +42,15 @@
   --sc-gold: #d4af37;
   --sc-gold-soft: #f2d36b;
   --sc-gold-deep: #a87905;
+  /*
+   * Gold for small text on a light surface.
+   *
+   * `--sc-gold-deep` is 3.6:1 on the hero — fine for the 30px rank, short of
+   * the 4.5:1 an 11px eyebrow owes. This is the same hue two steps down: 5.2:1
+   * on the hero, 5.7:1 on white. Deliberately not #8a6205, which is the
+   * moderate-risk status colour and must not double as a brand accent.
+   */
+  --sc-gold-ink: #856005;
 
   /* Neutrals */
   --sc-muted: #64748b;
@@ -35,6 +60,16 @@
   --sc-surface: #ffffff;
   --sc-surface-soft: #f7f9fc;
   --sc-surface-sink: #f1f5f9;
+  /*
+   * Bar and meter tracks, one step below the sink.
+   *
+   * The sink was enough when a track only ever sat on a white card over a grey
+   * page. Now that the page itself is white and the cards carrying bars are the
+   * tinted ones, a sink-filled track lands within ~2% lightness of its own card
+   * and effectively disappears; this keeps the empty half of a bar visible on
+   * every surface the page actually uses.
+   */
+  --sc-track: #e2e8f0;
 
   --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
   --sc-shadow-lift: 0 14px 38px rgba(15, 23, 42, 0.1);
@@ -84,7 +119,7 @@
 
 body.scp-page {
   margin: 0;
-  background: var(--sc-surface-soft);
+  background: var(--sc-surface);
   color: var(--sc-ink);
   font-family: var(--sc-font);
   -webkit-font-smoothing: antialiased;
@@ -114,14 +149,29 @@ body.scp-page {
 
 /* ------------------------------------------------------------------- hero */
 
+/*
+ * Light, not navy.
+ *
+ * These pages mount under a navy site header, and two navy slabs stacked read
+ * as one oversized header with the player's name lost inside it. So the hero
+ * is the recessed card treatment the rest of the page uses, one shade deeper
+ * top to bottom, and the contrast it needs comes from the type: navy name,
+ * deep-gold eyebrow and rank. The team's colours are still the only colour in
+ * here, and they carry further on a light ground than they did on navy.
+ */
 .scp-hero {
   position: relative;
   display: block;
   margin: 24px 0 0;
   padding: 28px;
+  border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius);
-  background: linear-gradient(180deg, var(--sc-navy) 0%, var(--sc-navy-deep) 100%);
-  color: #fff;
+  background: linear-gradient(
+    180deg,
+    var(--sc-surface-soft) 0%,
+    var(--sc-surface-sink) 100%
+  );
+  color: var(--sc-ink);
   overflow: hidden;
 }
 
@@ -154,7 +204,7 @@ body.scp-page {
   place-items: center;
   background: radial-gradient(
     circle at 50% 40%,
-    color-mix(in srgb, var(--team-primary) 55%, transparent) 0%,
+    color-mix(in srgb, var(--team-primary) 42%, transparent) 0%,
     transparent 70%
   );
 }
@@ -165,7 +215,7 @@ body.scp-page {
   border-radius: 50%;
   object-fit: cover;
   background: var(--sc-navy-deep);
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid var(--sc-hairline);
 }
 
 .scp-hero-text {
@@ -179,7 +229,7 @@ body.scp-page {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sc-gold-soft);
+  color: var(--sc-gold-ink);
 }
 
 .scp-title {
@@ -188,12 +238,13 @@ body.scp-page {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  color: var(--sc-navy);
 }
 
 .scp-hero-facts {
   margin: 8px 0 0;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--sc-muted-strong);
 }
 
 .scp-hero-meta {
@@ -209,16 +260,17 @@ body.scp-page {
   align-items: center;
   gap: 8px;
   padding: 6px 12px 6px 6px;
+  border: 1px solid var(--sc-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--sc-surface);
+  color: var(--sc-navy);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .scp-hero-team:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--sc-surface-sink);
 }
 
 .scp-hero-logo {
@@ -231,8 +283,9 @@ body.scp-page {
 .scp-hero-flag {
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(153, 50, 58, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--scp-risk-high) 10%, var(--sc-surface));
+  border: 1px solid color-mix(in srgb, var(--scp-risk-high) 35%, transparent);
+  color: var(--scp-risk-high);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -243,14 +296,14 @@ body.scp-page {
   flex: 0 0 auto;
   text-align: right;
   padding-left: 20px;
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid var(--sc-border);
 }
 
 .scp-hero-rank-value {
   display: block;
   font-size: 30px;
   font-weight: 800;
-  color: var(--sc-gold-soft);
+  color: var(--sc-gold-ink);
   line-height: 1;
 }
 
@@ -260,7 +313,7 @@ body.scp-page {
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--sc-muted-strong);
 }
 
 /* ------------------------------------------------------- controls and nav */
@@ -276,12 +329,12 @@ body.scp-page {
   flex-wrap: wrap;
   margin-top: 20px;
   padding: 6px 0;
-  background: var(--sc-surface-soft);
-  border-bottom: 1px solid var(--sc-border);
-}
-
-.scp.is-embed .scp-controls {
+  /* Opaque, and the same white as the page: this bar's job is to hide the rows
+     scrolling under it, so any tint here would read as a band across the page.
+     Embedded it stays white too — a sticky bar has to be opaque whatever the
+     host's own background is, which is what the old is-embed override did. */
   background: var(--sc-surface);
+  border-bottom: 1px solid var(--sc-border);
 }
 
 .scp-nav {
@@ -330,7 +383,7 @@ body.scp-page {
   padding: 3px;
   border: 1px solid var(--sc-border);
   border-radius: 999px;
-  background: var(--sc-surface);
+  background: var(--sc-surface-soft);
 }
 
 .scp-format-label {
@@ -463,6 +516,31 @@ body.scp-page {
   margin-top: 0;
 }
 
+.scp-h4 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* Present to a screen reader, absent to everyone else. Used for table captions
+   that would be redundant beside a visible heading but that a table still owes
+   somebody navigating it out of context. */
+.scp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
 .scp-note {
   margin: 12px 0 0;
   font-size: 13px;
@@ -507,11 +585,6 @@ body.scp-page {
   text-align: left;
 }
 
-.scp-stamp {
-  margin: 14px 0 0;
-  font-size: 12px;
-  color: var(--sc-muted);
-}
 
 /* ------------------------------------------------------------- stat tiles */
 
@@ -1092,62 +1165,14 @@ body.scp-page {
   max-width: 76ch;
 }
 
-.scp-bullets {
-  margin: 0 0 18px;
-  padding-left: 20px;
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--sc-muted-strong);
-}
 
-.scp-style-row {
-  margin-bottom: 14px;
-}
 
-.scp-style-label {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
 
-.scp-style-text {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--sc-ink);
-}
 
-.scp-steps {
-  margin: 18px 0;
-  padding: 0 0 0 18px;
-  display: grid;
-  gap: 10px;
-  border-left: 2px solid var(--sc-border);
-  list-style: none;
-}
 
-.scp-step {
-  display: grid;
-  gap: 2px;
-  font-size: 13px;
-}
 
-.scp-step-season {
-  font-weight: 800;
-  color: var(--sc-gold-deep);
-}
 
-.scp-step-label {
-  font-weight: 700;
-  color: var(--sc-navy);
-}
 
-.scp-step-detail {
-  color: var(--sc-muted);
-}
 
 .scp-outlook {
   margin: 0;
@@ -1157,9 +1182,461 @@ body.scp-page {
   background: var(--sc-surface-soft);
 }
 
+/* ---------------------------------------------------------- outlook tab */
+
+/*
+ * The Outlook tab is the one forward-looking surface on the page, and it is
+ * built to be read in one pass top to bottom rather than scanned like the stat
+ * tabs. Three devices carry it and nothing else does:
+ *
+ *   THE HEAD    a raised slab, the only thing above the fold.
+ *   THE STRIP   four measured readings divided by hairlines.
+ *   THE SLAB    one navy block closing the tab.
+ *
+ * Deliberately absent: green and red. The upside/warning columns are the two
+ * directions one season can go, not a good thing beside a bad thing.
+ */
+
+.scp-verdict {
+  margin: 0 0 28px;
+  padding: 24px 26px;
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+/* An <h2> worn as an eyebrow: it is the tab's heading in the outline, and the
+   name beneath it is the display line. */
+.scp-verdict-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sc-gold-ink);
+}
+
+.scp-verdict-name {
+  margin: 6px 0 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--sc-navy);
+}
+
+.scp-verdict-id {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-verdict-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  margin: 20px 0 0;
+  /* The gap IS the rule: one hairline background through 1px gutters. */
+  background: var(--sc-border);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: hidden;
+}
+
+.scp-chip {
+  padding: 14px 16px;
+  background: var(--sc-surface-soft);
+}
+
+.scp-chip-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-chip-value {
+  margin: 5px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--sc-navy);
+}
+
+.scp-chip[data-mod="lead"] {
+  background: var(--sc-surface);
+}
+
+.scp-chip[data-mod="lead"] .scp-chip-value {
+  color: var(--sc-gold-deep);
+}
+
+.scp-chip[data-mod="high"] .scp-chip-value { color: var(--scp-risk-low); }
+.scp-chip[data-mod="moderate"] .scp-chip-value { color: var(--scp-risk-moderate); }
+.scp-chip[data-mod="low"] .scp-chip-value { color: var(--scp-risk-high); }
+
+.scp-take {
+  margin: 20px 0 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--sc-gold);
+}
+
+.scp-take-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-take-body {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sc-ink);
+}
+
+/* A section's one-line gloss, under an h3 rather than an h2. */
+.scp-sub {
+  margin: -2px 0 14px;
+  font-size: 13px;
+  color: var(--sc-muted);
+}
+
+/* ---- the driver strip */
+
+.scp-drivers {
+  display: grid;
+  grid-template-columns: repeat(var(--scp-driver-cols, 4), minmax(0, 1fr));
+  gap: 0 24px;
+  margin: 0 0 28px;
+  border-top: 2px solid var(--sc-navy);
+}
+
+.scp-drivers[data-count="3"] { --scp-driver-cols: 3; }
+.scp-drivers[data-count="2"] { --scp-driver-cols: 2; }
+.scp-drivers[data-count="1"] { --scp-driver-cols: 1; }
+
+.scp-driver {
+  padding: 16px 0 4px;
+  position: relative;
+}
+
+/* The hairline between columns, drawn in the gutter rather than as a border on
+   the cell, so the first column has none and the rule does not box anything. */
+.scp-driver + .scp-driver::before {
+  content: "";
+  position: absolute;
+  inset: 16px auto 8px -12px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-driver-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-driver-value {
+  margin: 7px 0 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--sc-navy);
+}
+
+.scp-driver-detail {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sc-muted-strong);
+}
+
+.scp-driver-context {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--sc-muted);
+}
+
+/* The ordinal ramp, not a traffic light. */
+.scp-driver[data-level="high"] .scp-driver-value { color: var(--scp-tier-1); }
+.scp-driver[data-level="mid"] .scp-driver-value { color: var(--scp-tier-2); }
+.scp-driver[data-level="low"] .scp-driver-value { color: var(--sc-muted-strong); }
+
+/* ---- the range spectrum */
+
+.scp-range {
+  margin: 0 0 28px;
+  padding: 26px 24px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.scp-range-axis {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.scp-range-end {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--sc-muted-strong);
+}
+
+.scp-range-end.is-ceiling {
+  color: var(--scp-tier-1);
+}
+
+.scp-range-track {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--sc-track) 0%,
+    var(--scp-tier-4) 55%,
+    var(--scp-tier-2) 100%
+  );
+}
+
+/* The expected band is a segment, not a point: a projection precise to one rank
+   is a precision nobody has. */
+.scp-range-band {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-radius: 999px;
+  background: var(--scp-tier-1);
+  opacity: 0.22;
+}
+
+.scp-range-marker {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--sc-navy);
+  border: 3px solid var(--sc-surface);
+  box-shadow: 0 0 0 1px var(--sc-navy);
+}
+
+.scp-range-marker-label {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-range-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin: 34px 0 0;
+}
+
+/* Text, not cards. Three rounded boxes would say floor, expected and ceiling
+   are three separate facts; they are three points on the axis above. */
+.scp-range-note { min-width: 0; }
+.scp-range-note[data-key="expected"] { text-align: center; }
+.scp-range-note[data-key="ceiling"] { text-align: right; }
+
+.scp-range-head {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-range-rank {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-range-why {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--sc-muted-strong);
+}
+
+/* ---- what moves it */
+
+.scp-moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px 36px;
+  margin: 0 0 28px;
+}
+
+.scp-moves-col {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 2px solid var(--sc-navy);
+}
+
+.scp-moves-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+/* The arrow is the only mark distinguishing the two columns, and it is a
+   direction rather than a judgement. */
+.scp-moves-mark {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--sc-gold-deep);
+}
+
+.scp-moves-col[data-key="down"] .scp-moves-mark {
+  color: var(--sc-muted);
+}
+
+.scp-moves-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.scp-moves-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+.scp-moves-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+}
+
+.scp-moves-col[data-key="down"] .scp-moves-list li::before {
+  background: var(--sc-border);
+}
+
+/* ---- how to use him */
+
+.scp-usage {
+  margin: 0 0 28px;
+  padding: 0;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-usage-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-usage-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  align-self: center;
+}
+
+.scp-usage-value {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--sc-navy);
+}
+
+/* ---- the closing slab */
+
+.scp-final {
+  margin: 28px 0 0;
+  padding: 26px 28px;
+  border-radius: var(--sc-radius);
+  background: linear-gradient(160deg, var(--sc-navy) 0%, var(--sc-navy-deep) 100%);
+  color: #fff;
+}
+
+.scp-final-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sc-gold-soft);
+}
+
+.scp-final-call {
+  margin: 8px 0 0;
+  font-size: clamp(24px, 3.4vw, 32px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.scp-final-body {
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* The call's own words set the accent — see verdictTone() in player-render.ts. */
+.scp-final[data-tone="positive"] .scp-final-call { color: var(--sc-gold-soft); }
+.scp-final[data-tone="caution"] .scp-final-call { color: #f4b6b6; }
+
 .scp-outlook-headline {
   margin: 0;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--sc-navy);
 }
@@ -1167,6 +1644,7 @@ body.scp-page {
 .scp-outlook-body {
   margin: 8px 0 0;
   font-size: 14px;
+  line-height: 1.6;
   color: var(--sc-muted-strong);
 }
 
@@ -1310,114 +1788,359 @@ body.scp-page {
   color: var(--sc-muted);
 }
 
-.scp-risks,
-.scp-regions {
-  margin: 0;
+/*
+ * The availability profile: four readings, each with its record beside it.
+ *
+ * Presented as readings of a record rather than as scores. The old rows were a
+ * label and a level word — "Games Missed Impact: High" — which reads like a
+ * model output and hides the eleven games that produced it. Every row now
+ * prints the fact it was derived from, and the one row where the number IS the
+ * answer prints the number instead of a word.
+ */
+
+/*
+ * Two readings of one record, side by side.
+ *
+ * The availability profile reads the absences across TIME; the body-part table
+ * reads them across the body. A reader compares the two rather than taking one
+ * after the other, so they share a row. Both are four rows deep, which is why
+ * an even split works and neither column runs long.
+ *
+ * `align-items: start` because they will not end level — the profile carries a
+ * disclosure underneath it — and stretching the shorter one to match would put
+ * an empty box under the table.
+ */
+.scp-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px 36px;
+  align-items: start;
+  /* The column headings carry no top margin of their own — see below — so the
+     grid owns the gap that separates this pair from whatever precedes it. */
+  margin: 32px 0 28px;
+}
+
+.scp-pair-col {
+  min-width: 0;
+}
+
+/* The two headings start level. Their own top margin is what a heading needs
+   when it follows a block, and here each one opens a column. */
+.scp-pair-col > .scp-h3:first-child {
+  margin-top: 0;
+}
+
+/* Inside the pair the profile's own bottom margin is the grid's job. */
+.scp-pair-col .scp-avails {
+  margin-bottom: 0;
+}
+
+.scp-pair-col .scp-how {
+  margin: 14px 0 0;
+}
+
+.scp-avails {
+  margin: 0 0 24px;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-avail {
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-border);
 }
 
-.scp-risk,
-.scp-region {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 11px 14px;
-  border: 1px solid var(--sc-border);
-  border-left: 3px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface);
+.scp-avail-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  align-self: center;
+}
+
+.scp-avail-value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: right;
+  color: var(--sc-navy);
+}
+
+.scp-avail[data-level="low"] .scp-avail-value { color: var(--scp-risk-low); }
+.scp-avail[data-level="moderate"] .scp-avail-value { color: var(--scp-risk-moderate); }
+.scp-avail[data-level="high"] .scp-avail-value { color: var(--scp-risk-high); }
+
+.scp-avail-detail {
+  grid-column: 1;
   font-size: 13px;
-}
-
-.scp-risk[data-level="low"] { border-left-color: var(--scp-risk-low); }
-.scp-risk[data-level="moderate"] { border-left-color: var(--scp-risk-moderate); }
-.scp-risk[data-level="high"] { border-left-color: var(--scp-risk-high); }
-
-.scp-risk-label,
-.scp-region-name {
-  font-weight: 600;
   color: var(--sc-muted-strong);
 }
 
-.scp-risk-level {
-  font-weight: 800;
+/*
+ * The Overview tab's variant, where the ramp means the opposite.
+ *
+ * On the Injury tab "high" is high risk and paints red. On Overview the same
+ * list renders a fantasy profile, where a high ceiling rate is the GOOD end —
+ * so the two ends swap rather than the page telling a reader that a good
+ * ceiling is a warning.
+ */
+.scp-avails--read .scp-avail[data-level="high"] .scp-avail-value {
+  color: var(--scp-risk-low);
 }
 
-.scp-risk[data-level="low"] .scp-risk-level { color: var(--scp-risk-low); }
-.scp-risk[data-level="moderate"] .scp-risk-level { color: var(--scp-risk-moderate); }
-.scp-risk[data-level="high"] .scp-risk-level { color: var(--scp-risk-high); }
+.scp-avails--read .scp-avail[data-level="low"] .scp-avail-value {
+  color: var(--scp-risk-high);
+}
 
-.scp-region-count,
-.scp-region-missed {
-  color: var(--sc-muted);
+.scp-avails--read .scp-avail[data-level="mid"] .scp-avail-value {
+  color: var(--sc-navy);
+}
+
+/* "How this is calculated" — the rules, out of the way but in the HTML. */
+.scp-how {
+  margin: -8px 0 28px;
+}
+
+.scp-how-summary {
+  cursor: pointer;
   font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-navy);
+  list-style: none;
 }
 
-.scp-inj-timeline {
-  margin: 0;
+.scp-how-summary::-webkit-details-marker {
+  display: none;
+}
+
+.scp-how-summary::before {
+  content: "+ ";
+  color: var(--sc-gold-deep);
+}
+
+.scp-how[open] .scp-how-summary::before {
+  content: "\2212 ";
+}
+
+.scp-how-body {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--sc-muted);
+}
+
+/* ---- the history, one injury at a time */
+
+.scp-episodes {
+  margin: 0 0 12px;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 16px;
+  gap: 0;
+  border-top: 1px solid var(--sc-border);
 }
 
-.scp-inj-year {
+.scp-episode {
+  padding: 18px 0 18px 16px;
+  border-bottom: 1px solid var(--sc-border);
+  /* The severity rail is the entry's only accent, and it is a rail rather than
+     a wash so a major injury is marked without the paragraph beside it being
+     coloured like a warning. */
+  border-left: 3px solid var(--sc-border);
+}
+
+.scp-episode[data-severity="major"] { border-left-color: var(--scp-risk-high); }
+.scp-episode[data-severity="moderate"] { border-left-color: var(--scp-risk-moderate); }
+.scp-episode[data-severity="minor"] { border-left-color: var(--sc-border); }
+
+.scp-episode-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 10px;
-  margin: 0 0 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-episode-year {
+  color: var(--sc-gold-deep);
+}
+
+.scp-episode-side {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-episode-meta {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-episode-body {
+  margin: 9px 0 0;
+  max-width: 72ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sc-muted-strong);
+}
+
+/* ---- the questions people type */
+
+.scp-faq {
+  margin: 0;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-faq-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-faq-q {
+  margin: 0;
   font-size: 15px;
   font-weight: 800;
   color: var(--sc-navy);
 }
 
-.scp-inj-missed {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--scp-risk-high);
+.scp-faq-a {
+  margin: 7px 0 0;
+  max-width: 72ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sc-muted-strong);
 }
 
-.scp-inj-played {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--scp-risk-low);
+/* ------------------------------------------------------------ injury status */
+
+/*
+ * The answer, above everything else on the tab.
+ *
+ * Unlike the report card below — which renders only when a club has filed
+ * something — this block ALWAYS renders, because "no designation" is the answer
+ * most readers came for and an absent card communicates nothing. What it must
+ * not do is turn that into a clean bill of health: the wording is "no current
+ * injury designation", never "healthy".
+ */
+
+.scp-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px 32px;
+  align-items: center;
+  margin: 0 0 28px;
+  padding: 22px 24px;
+  border: 1px solid var(--sc-hairline);
+  border-left: 4px solid var(--scp-risk-low);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
 }
 
-.scp-inj-list {
+.scp-status[data-severity="out"] { border-left-color: var(--scp-risk-high); }
+.scp-status[data-severity="doubtful"] { border-left-color: var(--scp-risk-high); }
+.scp-status[data-severity="questionable"] { border-left-color: var(--scp-risk-moderate); }
+.scp-status[data-severity="probable"],
+.scp-status[data-severity="active"] { border-left-color: var(--scp-risk-low); }
+
+.scp-status-main {
+  min-width: 0;
+}
+
+.scp-status-label {
   margin: 0;
-  padding: 0 0 0 16px;
-  list-style: none;
-  border-left: 2px solid var(--sc-border);
-  display: grid;
-  gap: 8px;
-}
-
-.scp-inj-item {
-  display: grid;
-  gap: 2px;
-  font-size: 13px;
-}
-
-.scp-inj-type {
-  font-weight: 700;
-  color: var(--sc-ink);
-}
-
-.scp-inj-item[data-severity="major"] .scp-inj-type { color: var(--scp-risk-high); }
-.scp-inj-item[data-severity="moderate"] .scp-inj-type { color: var(--scp-risk-moderate); }
-
-.scp-inj-week {
-  font-size: 11px;
-  letter-spacing: 0.05em;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
-.scp-inj-desc {
+.scp-status-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+.scp-status-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--scp-risk-low);
+}
+
+.scp-status[data-severity="out"] .scp-status-dot,
+.scp-status[data-severity="doubtful"] .scp-status-dot { background: var(--scp-risk-high); }
+.scp-status[data-severity="questionable"] .scp-status-dot { background: var(--scp-risk-moderate); }
+
+.scp-status-detail {
+  margin: 7px 0 0;
+  font-size: 14px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-status-stamp {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* This season's availability, and the last thing that happened to him. */
+.scp-status-facts {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.scp-status-fact {
+  min-width: 0;
+}
+
+.scp-status-fact-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-status-fact-value {
+  margin: 4px 0 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--sc-navy);
+}
+
+.scp-status-fact-sub {
+  margin: 3px 0 0;
+  font-size: 12px;
   color: var(--sc-muted);
 }
 
@@ -1495,61 +2218,286 @@ body.scp-page {
 
 /* ------------------------------------------------------------------ news */
 
+/*
+ * The team hub's news card, restated here under this page's prefix.
+ *
+ * A grid, not a column, and for the hub's reason: the clubs send 16:9 editorial
+ * art, and a 16:9 picture across the full panel is a 500px band per story — one
+ * headline visible per screen. At two or three across the same picture is a
+ * couple of hundred pixels tall and the panel shows a page of news, which is
+ * what a news list is for.
+ *
+ * Two things the hub's card has that this one does not: the crest watermark
+ * behind the words, and the team tint in the picture well. Both are a repaint,
+ * and on a player page the team is an accent behind the headshot and a hairline
+ * on the hero — see the note at the top of this file. The well's wash is brand
+ * navy here, on every page, whoever the player plays for.
+ */
+
 .scp-news {
-  margin: 0;
+  margin: 20px 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 18px;
 }
 
+/* The <li> stays the grid item and the card is stretched to fill it, so a row
+   of cards ends level however long its headlines are. */
 .scp-news-item {
-  padding: 16px 18px;
-  border: 1px solid var(--sc-border);
+  display: flex;
+  min-width: 0;
+}
+
+.scp-news-item > .scp-newscard {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The lead runs the full width of the grid, whatever the column count. */
+.scp-news-item:has(.scp-newscard.is-featured) {
+  grid-column: 1 / -1;
+}
+
+.scp-newscard {
+  position: relative;
+  display: flex;
+  /* Picture above the words. A side rail can only be as tall as the text beside
+     it, which is what would force a 16:9 graphic through a portrait slot. */
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
   border-radius: var(--sc-radius-sm);
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.scp-newscard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.42);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+/* The newest story reads as the lead: a wider picture and a larger headline. */
+.scp-newscard.is-featured {
+  flex-direction: row;
   background: var(--sc-surface);
+  border-color: var(--sc-hairline);
+  box-shadow: var(--sc-shadow);
 }
 
-.scp-news-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.35;
+.scp-news-well {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: stretch;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sc-navy) 12%, #fff) 0%,
+    color-mix(in srgb, var(--sc-navy) 4%, #fff) 100%
+  );
 }
 
-.scp-news-title a {
-  color: var(--sc-navy);
-  text-decoration: none;
+/*
+ * The lead's picture keeps the 16/9 band but is capped.
+ *
+ * Uncapped, a picture 40% of the panel wide makes the lead 250px tall, and a
+ * wire item — a headline, a byline, no summary — leaves most of that as white
+ * space. The hub can afford that height because a crest watermark fills the
+ * gap; this page does not paint one, so the ceiling is what stands in for it.
+ */
+.scp-newscard.is-featured .scp-news-well {
+  flex: 0 0 38%;
+  width: auto;
+  max-height: 210px;
 }
 
-.scp-news-title a:hover {
-  text-decoration: underline;
+.scp-news-well::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--sc-gold);
+  opacity: 0.7;
 }
 
-.scp-news-summary {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: var(--sc-muted-strong);
+/* Full-bleed in a band cut to the source's own 16:9. Sleeper's squared
+   headshots are the other feed and they do get cropped here — top-anchored, so
+   what goes is the chest rather than the face. */
+.scp-news-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* No picture: the well keeps its wash and shows nothing else. It stays in the
+   card rather than collapsing so that headlines across a row start on the same
+   line. */
+.scp-news-photo-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.scp-news-body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+}
+
+.scp-newscard.is-featured .scp-news-body {
+  padding: 22px 24px;
 }
 
 .scp-news-meta {
   display: flex;
-  gap: 12px;
-  margin: 10px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
   color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* The team's news is context for the player's, so it is set one step back —
-   same cards, quieter surface, so the eye reaches the player's list first. */
-.scp-news--team .scp-news-item {
-  background: var(--sc-surface-soft);
+.scp-news-kicker {
+  color: var(--sc-navy);
+}
+
+.scp-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+  flex: 0 0 auto;
+}
+
+.scp-news-title {
+  margin: 0;
+  color: var(--sc-navy);
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.scp-newscard.is-featured .scp-news-title {
+  font-size: 19px;
+  line-height: 1.24;
+}
+
+.scp-news-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Stretched overlay restores full-card clicking without wrapping the card in an
+   anchor, so the link's accessible name stays the headline. */
+.scp-news-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.scp-news-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 3px;
+}
+
+.scp-news-link:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* The lead only. Clamped rather than trusted: these come from a feed this app
+   does not control, and one that arrives as four paragraphs would set the
+   height of the whole first row. */
+.scp-news-summary {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.scp-news-byline {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.scp-news-player {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+.scp-news-source {
+  color: var(--sc-muted);
+  font-weight: 600;
+}
+
+.scp-news-cta {
+  margin: auto 0 0;
+  padding-top: 14px;
+  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scp-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  transition: transform 180ms ease;
+}
+
+.scp-newscard:hover .scp-arrow {
+  transform: translateX(3px);
+}
+
+/* The team's news is context for the player's, so it is set one step back. */
+.scp-news--team .scp-newscard {
+  background: var(--sc-surface-sink);
+}
+
+.scp-news--team .scp-news-well {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sc-navy) 7%, #fff) 0%,
+    color-mix(in srgb, var(--sc-navy) 3%, #fff) 100%
+  );
+}
+
+.scp-news--team .scp-news-well::after {
+  opacity: 0.45;
 }
 
 .scp-news-more {
-  margin: 14px 0 0;
+  margin: 18px 0 0;
 }
 
 .scp-news-more-link {
@@ -1563,6 +2511,627 @@ body.scp-page {
 
 .scp-news-more-link:hover {
   color: var(--sc-gold-deep);
+}
+
+/* -------------------------------------------------------------- overview tab */
+
+/*
+ * Overview is the interpretation layer, and it should not look like a stats
+ * page. Where Stats is tables and tabular numerals, this is readings: a word
+ * first, the number that earned it underneath in a quieter size. If a block
+ * here starts looking like a box score, it belongs on the other tab.
+ */
+
+/*
+ * No card around this one.
+ *
+ * It is the first thing on the tab and it is already the most prominent thing
+ * on it; boxing it as well put a frame around the whole page's opening and made
+ * the tab start with a container rather than with an answer. The readings below
+ * keep their own hairline module — that grid IS the device — and the sentence
+ * runs to the page's measure like every other line of prose here.
+ */
+.scp-read-hero {
+  margin: 0 0 8px;
+}
+
+.scp-read-eyebrow {
+  margin: 0 0 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sc-gold-ink);
+}
+
+.scp-read-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--sc-border);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: hidden;
+}
+
+.scp-read-cell {
+  padding: 14px 16px;
+  background: var(--sc-surface-soft);
+}
+
+.scp-read-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-read-value {
+  margin: 6px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--sc-navy);
+}
+
+/* The tier the player is producing at carries the accent; the direction of
+   travel takes the same three-step ramp the rest of the page reads with. */
+.scp-read-cell[data-mod="elite"] .scp-read-value,
+.scp-read-cell[data-mod="starter"] .scp-read-value { color: var(--scp-tier-1); }
+.scp-read-cell[data-mod="streaming"] .scp-read-value { color: var(--scp-tier-2); }
+.scp-read-cell[data-mod="up"] .scp-read-value { color: var(--scp-risk-low); }
+.scp-read-cell[data-mod="down"] .scp-read-value { color: var(--scp-risk-high); }
+
+/* The assembled sentence. Set as prose — larger and looser than the readings
+   above it — and to the page's full width, not a narrower measure of its own. */
+.scp-read-line {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sc-ink);
+}
+
+/* ---- the weekly spread */
+
+/* A label over a block of evidence, inside a section that already has a head. */
+.scp-subhead {
+  margin: 20px 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-spread {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.scp-spread-step {
+  min-width: 0;
+}
+
+.scp-spread-head {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-spread-rank {
+  margin: 5px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--sc-navy);
+}
+
+/* The typical week is the reading; the two ends are its bounds. */
+.scp-spread-step[data-key="typical"] .scp-spread-rank {
+  color: var(--sc-gold-deep);
+  font-size: 26px;
+}
+
+.scp-spread-arrow {
+  color: var(--sc-border);
+  font-size: 17px;
+}
+
+.scp-styleline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 13px 18px;
+  border-left: 3px solid var(--sc-gold);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-sink);
+}
+
+.scp-styleline-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-styleline-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+/* ---- the career strip, and the way out of this tab */
+
+.scp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin: 0;
+  padding: 15px 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.scp-strip-stats {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+/* ------------------------------------------------------------- stats tab */
+
+/*
+ * The Stats tab is a dossier, not a stack of components.
+ *
+ * The structure was right and it still read as boxed data, because every block
+ * was the same kind of box at the same weight. The fix is variation with a
+ * system behind it — three treatments and no fourth:
+ *
+ *   CARD     white, hairline, soft shadow. The things you read INTO: the
+ *            snapshot, the passing line, fantasy production.
+ *   OPEN     no container at all. The career table and the advanced grid,
+ *            which are wide and earn the full measure.
+ *   MODULE   hairline-divided cells sharing one border. The summary rows at
+ *            the bottom, which are one record split four ways rather than four
+ *            separate facts.
+ *
+ * Rhythm does the rest: tight inside a card, generous between sections, and a
+ * gold kicker rule marking where each one starts.
+ */
+
+/* ---- section rhythm */
+
+.scp-sect {
+  margin: 48px 0 18px;
+}
+
+/* The first section on the tab sits under the page head, which has its own
+   spacing; it must not add another 48px on top of it. */
+.scp-section > .scp-sect:first-child {
+  margin-top: 0;
+}
+
+.scp-sect-title {
+  position: relative;
+  margin: 0;
+  padding-bottom: 10px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--sc-navy);
+}
+
+/* Under the text, like .scp-h2 above it — the two are the same device at two
+   sizes, and a rule that sits above one heading and below the other reads as
+   two unrelated ornaments rather than one system. Narrower than the h2's 48px
+   because the heading it underlines is smaller. */
+.scp-sect-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.scp-sect-sub {
+  margin: 7px 0 0;
+  font-size: 13px;
+  color: var(--sc-muted);
+}
+
+/* The page's authority line: who, which season, how far into it. */
+.scp-statmeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin: 14px 0 24px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* ---- the snapshot */
+
+.scp-snapshot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 24px 40px;
+  margin: 0;
+  padding: 26px 28px;
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-snapshot-grid {
+  flex: 1 1 440px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+  gap: 22px 8px;
+  min-width: 0;
+  align-items: end;
+}
+
+/* Separators between the stat cells, drawn in the gutter — a hairline rather
+   than a border, so the row reads as one line of numbers. */
+.scp-snapshot-cell {
+  position: relative;
+  min-width: 0;
+  padding-left: 18px;
+}
+
+.scp-snapshot-cell:first-child {
+  padding-left: 0;
+}
+
+.scp-snapshot-cell:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-snapshot-value {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quieter than the number, deliberately: the value carries the row. */
+.scp-snapshot-label {
+  margin: 7px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* The anchor. Gold, larger, and stacked over its own qualifier — this is the
+   number the page exists to show and it should not be one cell among seven. */
+.scp-snapshot-fantasy {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-left: 40px;
+  border-left: 1px solid var(--sc-border);
+}
+
+.scp-snapshot-fpts {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--sc-gold-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-snapshot-fpts-unit {
+  margin: 8px 0 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-snapshot-rank {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+/* ---- the production grid */
+
+.scp-prod-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(250px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.scp-prod-main {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.scp-prod-side {
+  min-width: 0;
+}
+
+.scp-card {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+/* Fantasy production is the layer this site adds, so it carries the accent the
+   box-score cards do not. */
+.scp-card--fantasy {
+  border-top: 3px solid var(--sc-gold);
+}
+
+.scp-card-foot {
+  margin: 14px 0 0;
+  padding-top: 11px;
+  border-top: 1px solid var(--sc-border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* The secondary line — a quarterback's legs. A bar, not a third card. */
+.scp-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+  margin: 20px 0 0;
+  padding: 13px 18px;
+  border: 1px solid var(--sc-hairline);
+  border-left: 3px solid var(--sc-navy);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-soft);
+}
+
+.scp-bar-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-bar-stats {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- fantasy production, as a metric grid */
+
+.scp-fantasy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 14px;
+}
+
+.scp-fantasy-cell {
+  min-width: 0;
+}
+
+/* Fantasy points spans the grid and sets the card's anchor. */
+.scp-fantasy-cell.is-lead {
+  grid-column: 1 / -1;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-fantasy-value {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-fantasy-cell.is-lead .scp-fantasy-value {
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  color: var(--sc-gold-deep);
+}
+
+.scp-fantasy-label {
+  margin: 5px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* ---- the label/value tables inside a card */
+
+.scp-table--split {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scp-table--split th,
+.scp-table--split td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--sc-border);
+  font-size: 13.5px;
+}
+
+.scp-table--split tr:last-child th,
+.scp-table--split tr:last-child td {
+  border-bottom: 0;
+}
+
+.scp-table--split tr:last-child th,
+.scp-table--split tr:last-child td {
+  padding-bottom: 0;
+}
+
+.scp-table--split th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.scp-table--split td {
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+/* ---- the career table */
+
+/* The column-group row. Not headers — labels over blocks of them — so it is
+   quiet, aria-hidden, and skipped by the sorter. */
+.scp-group-row td {
+  padding: 0 10px 6px;
+  border-bottom: 0;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-gold-deep);
+}
+
+.scp-group-row td:not(.scp-group-pad) {
+  box-shadow: inset 0 -1px 0 var(--sc-border);
+}
+
+.scp-table--career thead th {
+  padding-top: 8px;
+}
+
+.scp-table--career tbody td,
+.scp-table--career tbody th {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+/* The season in progress: start here. A gold tint and a heavier season cell,
+   not a border — a bordered row in the middle of a table reads as a total. */
+.scp-table--career tbody tr.is-current {
+  background: color-mix(in srgb, var(--sc-gold) 9%, var(--sc-surface));
+}
+
+.scp-table--career tbody tr.is-current:hover {
+  background: color-mix(in srgb, var(--sc-gold) 14%, var(--sc-surface));
+}
+
+.scp-table--career tbody tr.is-current th[scope="row"] {
+  font-weight: 800;
+  color: var(--sc-navy);
+  box-shadow: inset 3px 0 0 var(--sc-gold);
+}
+
+.scp-partial {
+  margin-left: 7px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-gold-deep);
+}
+
+/* ---- the summary modules */
+
+.scp-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 1px;
+  /* One hairline showing through 1px gutters: four cells of one record, not
+     four cards that happen to be adjacent. */
+  background: var(--sc-border);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: hidden;
+}
+
+.scp-summary-card {
+  padding: 16px 18px 15px;
+  background: var(--sc-surface);
+}
+
+.scp-summary-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* Tight to its label and tight to its detail — the vertical gaps were what
+   made these read as generic info boxes. */
+.scp-summary-value {
+  margin: 9px 0 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-summary-detail {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--sc-muted);
 }
 
 /* ----------------------------------------------------------------- index */
@@ -1610,7 +3179,595 @@ body.scp-page {
 
 /* ------------------------------------------------------------ responsive */
 
+/* --------------------------------------------------------------- game log */
+
+/*
+ * The Game Log's own control bar.
+ *
+ * Season on the left, scoring on the right — the two things that change every
+ * number below them, and nothing else. It sits inside the panel rather than in
+ * the page header because a section-scoped URL has no page header. The season
+ * chips are the Advanced tab's, reused: two controls that pick a season should
+ * not be two different controls.
+ */
+.scp-logbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.scp-logbar .scp-seasons {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.scp-seasons-label {
+  padding: 0 8px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* The generated sentence over the table. Body copy, not a caption. */
+.scp-lede {
+  max-width: 68ch;
+  margin: 16px 0 20px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--sc-muted-strong);
+}
+
+/* The per-game line reads as one row of facts, so it packs tighter than the
+   four-tile grids elsewhere on the page. */
+.scp-tiles--log {
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+}
+
+/*
+ * Fantasy points, the column this table is built around.
+ *
+ * It sits fourth — straight after the result and ahead of every box-score
+ * column — and it is the only one that carries the brand's gold. That is the
+ * whole differentiator against a generic box score, stated in one rule.
+ */
+.scp-table--log .scp-col-pts,
+.scp-table--log .scp-pts {
+  color: var(--sc-gold-ink);
+}
+
+.scp-table--log td.scp-pts {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Secondary columns stay in the table — it scrolls rather than dropping them —
+   but they are quieter, so the eye lands on the line that matters. */
+.scp-table--log .scp-col-2 {
+  color: var(--sc-muted);
+}
+
+/* ---- the per-week detail ---- */
+
+/*
+ * Collapsed only once the client says it can be.
+ *
+ * The server renders these rows open. Without this attribute — no JavaScript,
+ * or a bundle that failed to load — they stay open and the page is complete,
+ * which is the same bargain the sortable headers make. See wireExpandableLog().
+ */
+.scp-table--log[data-scp-expand="js"] .scp-detail {
+  display: none;
+}
+
+.scp-table--log[data-scp-expand="js"] .scp-detail.is-open {
+  display: table-row;
+}
+
+.scp-row.is-open {
+  background: var(--sc-surface-soft);
+}
+
+.scp-detail-cell {
+  padding: 0 !important;
+  background: var(--sc-surface-soft);
+}
+
+.scp-detail-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 32px;
+  padding: 16px 12px 18px;
+  white-space: normal;
+  text-align: left;
+  border-left: 3px solid var(--sc-gold);
+}
+
+.scp-detail-head {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+.scp-detail-facts {
+  flex: 1 1 260px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.scp-detail-fact {
+  min-width: 0;
+}
+
+.scp-detail-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-detail-value {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+/* ---- where the week's points came from ---- */
+
+.scp-breakdown {
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.scp-breakdown-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp-breakdown-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+.scp-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.scp-breakdown-label {
+  flex: 1 1 auto;
+  color: var(--sc-muted-strong);
+}
+
+.scp-breakdown-detail {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  color: var(--sc-muted);
+}
+
+.scp-breakdown-pts {
+  flex: 0 0 52px;
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+/* ---- the week-number toggle ---- */
+
+.scp-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* A chevron drawn from two borders, so it needs no glyph and no asset. Down
+   when closed, up when open — the same state aria-expanded announces. */
+.scp-expand-icon {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--sc-muted);
+  border-bottom: 1.5px solid var(--sc-muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.12s ease;
+}
+
+.scp-expand[aria-expanded="true"] .scp-expand-icon {
+  transform: translateY(1px) rotate(-135deg);
+  border-color: var(--sc-navy);
+}
+
+.scp-expand:hover .scp-expand-icon {
+  border-color: var(--sc-navy);
+}
+
+/* -------------------------------------------------------------------- bio */
+
+/*
+ * The identity block — the answer, before anything else on the tab.
+ *
+ * A labelled grid rather than the page's stat tiles: these are facts about a
+ * person, not measurements with a shared scale, and the tiles' big-number
+ * treatment would make a birth date look like a statistic.
+ */
+.scp-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px 24px;
+  margin: 0 0 28px;
+  padding: 22px 24px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface-soft);
+}
+
+.scp-fact {
+  min-width: 0;
+}
+
+.scp-fact-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-fact-value {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--sc-navy);
+}
+
+/* The draft's team, under the round and pick it belongs to. */
+.scp-fact-detail {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+/* ---- the career timeline ---- */
+
+/*
+ * A rail, not a stack of cards.
+ *
+ * This is the one block on the player pages that is genuinely a sequence, and
+ * drawing it as one is what gives Bio an identity of its own next to six tabs
+ * of tables. The rail is a left border on the list; each stop punches a dot
+ * through it.
+ */
+.scp-stints {
+  margin: 0 0 28px;
+  padding: 4px 0 4px 0;
+  list-style: none;
+  border-left: 2px solid var(--sc-border);
+}
+
+.scp-stint {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 0 0 20px 22px;
+}
+
+.scp-stint:last-child {
+  padding-bottom: 0;
+}
+
+.scp-stint-mark {
+  position: absolute;
+  left: -7px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--sc-surface);
+  border-radius: 50%;
+  background: var(--sc-muted);
+}
+
+/* The current club is the one a reader is looking for, so it is the one the
+   rail points at. */
+.scp-stint[data-current="1"] .scp-stint-mark {
+  background: var(--sc-gold);
+}
+
+.scp-stint[data-kind="college"] .scp-stint-mark {
+  background: var(--sc-surface);
+  border: 2px solid var(--sc-border);
+}
+
+.scp-stint-years {
+  flex: 0 0 82px;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--sc-muted);
+}
+
+.scp-stint-body {
+  flex: 1 1 200px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.scp-stint-logo {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.scp-stint-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-stint[data-current="1"] .scp-stint-name {
+  color: var(--sc-navy);
+}
+
+/* The draft badge, on the stop where the career started. */
+.scp-stint-note {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+/* ---- the draft block ---- */
+
+.scp-draft {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px 24px;
+  margin: 0 0 28px;
+  padding: 20px 24px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-draft-row {
+  min-width: 0;
+}
+
+.scp-draft-label {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-draft-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-draft-logo {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* --------------------------------------------------------- upcoming games */
+
+/*
+ * Fixtures, under results.
+ *
+ * Four across where there is room, two on a tablet, one on a phone. A row of
+ * cards rather than table rows, because these carry no statistics and a table
+ * with empty stat columns is how a schedule gets mistaken for a player who did
+ * not play — the distinction lib/player/upcoming.ts exists to keep.
+ */
+.scp-nexts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp-next {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 15px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  min-width: 0;
+}
+
+/* Small, uppercase, muted — the label, not the content. */
+.scp-next-week {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* The focal line: crest, home/away marker and the opponent's code. */
+.scp-next-team {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  min-width: 0;
+}
+
+.scp-next-logo {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/*
+ * "@" or "vs", carried on the focal line itself.
+ *
+ * Home and away have to be readable at a glance, and a separate chip somewhere
+ * else on the card is a second thing to look for. It is muted rather than
+ * loud: the marker qualifies the opponent, it is not the headline.
+ */
+.scp-next-ha {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+.scp-next-code {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--sc-navy);
+}
+
+.scp-next-name {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- the matchup rank ---- */
+
+.scp-next-matchup {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 2px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.scp-next-rank {
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--sc-navy);
+}
+
+/*
+ * A restrained tint, and only at the ends.
+ *
+ * The rank is the reading; the colour is a hint under it. Only the softest and
+ * toughest thirds are tinted at all — a card per fixture in full green or red
+ * turns a schedule into a traffic light and buries the who and the when, which
+ * is what the block is actually for.
+ */
+.scp-next-rank[data-band="soft"] {
+  color: var(--sc-gold-ink);
+}
+
+.scp-next-rank[data-band="tough"] {
+  color: var(--sc-muted-strong);
+}
+
+.scp-next-vs {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-next-matchup--none .scp-next-vs {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.scp-next-when {
+  margin: auto 0 0;
+  padding-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sc-muted);
+}
+
+/* The gold hairline marks the next game up, and only that one. */
+.scp-next:first-child {
+  border-top: 2px solid var(--sc-gold);
+}
+
+.scp-next-note {
+  margin: 0 0 8px;
+}
+
+/* Visible to a screen reader, and to nothing else: the home/away marker on the
+   focal line is a glyph, so the name line carries the words. */
+.scp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (max-width: 900px) {
+  .scp-nexts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .scp-prod {
     grid-template-columns: 1fr;
   }
@@ -1624,6 +3781,145 @@ body.scp-page {
   :where(.scp),
   :where(body.scp-page) {
     --scp-gutter: 16px;
+  }
+
+  /* ---- news: the lead stacks like every other card */
+  .scp-newscard.is-featured {
+    flex-direction: column;
+  }
+
+  .scp-newscard.is-featured .scp-news-well {
+    flex: none;
+    width: 100%;
+    max-height: none;
+  }
+
+  .scp-newscard.is-featured .scp-news-body {
+    padding: 14px 16px 16px;
+  }
+
+  .scp-newscard.is-featured .scp-news-title {
+    font-size: 17px;
+  }
+
+  /* ---- outlook: four readings do not fit a phone in a row */
+  .scp-drivers {
+    --scp-driver-cols: 2;
+    gap: 0 20px;
+  }
+
+  .scp-drivers[data-count="3"] {
+    --scp-driver-cols: 2;
+  }
+
+  .scp-driver + .scp-driver::before {
+    inset: 14px auto 6px -10px;
+  }
+
+  .scp-driver:nth-child(odd)::before {
+    display: none;
+  }
+
+  .scp-driver:nth-child(n + 3) {
+    border-top: 1px solid var(--sc-border);
+  }
+
+  .scp-verdict {
+    padding: 20px;
+  }
+
+  /* Two columns fits three chips as two-and-a-hole, and the hole is a lit cell:
+     the 1px gutters that draw the rules light the empty track too. */
+  .scp-verdict-chips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp-range {
+    padding: 22px 16px 16px;
+  }
+
+  /* The two end labels take most of a phone's width, leaving the axis about
+     90px of track to say everything on. Labels to their own row. */
+  .scp-range-axis {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 10px 8px;
+  }
+
+  .scp-range-end.is-floor {
+    grid-area: 1 / 1;
+    justify-self: start;
+  }
+
+  .scp-range-end.is-ceiling {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+
+  .scp-range-track {
+    grid-area: 2 / 1 / 3 / -1;
+  }
+
+  .scp-range-notes {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin-top: 30px;
+  }
+
+  .scp-range-note[data-key="expected"],
+  .scp-range-note[data-key="ceiling"] {
+    text-align: left;
+  }
+
+  .scp-usage-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .scp-final {
+    padding: 22px 20px;
+  }
+
+  /* ---- injury: the status answer and this season's numbers stack rather than
+     competing for a narrow row. */
+  .scp-status {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  /* ---- stats: the fantasy anchor drops under the stat line, and the rule
+     between them becomes a rule above. */
+  .scp-snapshot {
+    padding: 20px 16px;
+    gap: 18px;
+  }
+
+  .scp-snapshot-fantasy {
+    flex: 1 1 100%;
+    padding: 16px 0 0;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--sc-border);
+  }
+
+  .scp-snapshot-fpts {
+    font-size: 34px;
+  }
+
+  /* Fantasy production goes under the box score rather than beside it. */
+  .scp-prod-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp-sect {
+    margin-top: 34px;
+  }
+
+  /* The first columns to go when the log meets a phone. Marked `secondary` in
+     gameLogColumns() — worth a column on a laptop, not worth a sideways scroll
+     on a handset. */
+  .scp-table--log .scp-col-secondary {
+    display: none;
   }
 
   .scp-hero {
@@ -1668,9 +3964,36 @@ body.scp-page {
   }
 }
 
+@media (max-width: 420px) {
+  .scp-nexts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The time-of-day is the first thing to drop when the meta row runs out of
+     room; the date stays, and the client turns a recent one relative anyway. */
+  .scp-news-time {
+    display: none;
+  }
+
+  .scp-news-title,
+  .scp-newscard.is-featured .scp-news-title {
+    font-size: 14.5px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .scp-spark-dot {
+  .scp-expand-icon {
     transition: none;
+  }
+
+  .scp-spark-dot,
+  .scp-newscard,
+  .scp-arrow {
+    transition: none;
+  }
+
+  .scp-newscard:hover {
+    transform: none;
   }
 }
 

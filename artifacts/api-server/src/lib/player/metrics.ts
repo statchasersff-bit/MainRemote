@@ -338,76 +338,224 @@ export function keyStatSummary(
   }
 }
 
-export interface ColumnDef {
+/**
+ * How the game log turns one stat line into one cell.
+ *
+ * "count" is the stat itself. "ratio" prints two stats over one another as
+ * they are written on a box score — 27/37, not 0.73 — and "per" divides them
+ * into a rate. The renderer owns the formatting; this file owns which stats a
+ * position's log is actually about.
+ */
+export type LogColumnKind = "count" | "ratio" | "per";
+
+export interface LogColumn {
   key: string;
   label: string;
+  kind: LogColumnKind;
+  /** The second stat, for "ratio" and "per". */
+  over?: string;
+  /** Dropped first when the table has to fit a phone. */
+  secondary?: boolean;
 }
 
-/** The game-log table's columns for this position. */
-export function positionColumns(position: string | null): {
-  primary: ColumnDef[];
-  detail: ColumnDef[];
-  /** WR/TE only get rushing columns in a season where they actually ran. */
+/**
+ * The game log's columns for this position.
+ *
+ * One list per position rather than one universal table, because the columns
+ * ARE the page: a receiver's log with a PASS TD column in it is a template
+ * someone pointed at a player, and a reader can tell. Fantasy points are not in
+ * here — the renderer puts them immediately after the result, ahead of every
+ * box-score column, which is the one ordering decision this table makes that
+ * the mainstream sites do not.
+ *
+ * `conditionalRush` is the one exception to fixed columns: a receiver who ran
+ * the ball six times this season has a rushing line worth a column, and one who
+ * never did has three columns of zeroes.
+ */
+export function gameLogColumns(position: string | null): {
+  columns: LogColumn[];
   conditionalRush: boolean;
 } {
   switch (position) {
     case "QB":
       return {
-        primary: [
-          { key: "pass_yd", label: "PASS YDS" },
-          { key: "pass_td", label: "PASS TD" },
-          { key: "pass_int", label: "INT" },
-          { key: "rush_yd", label: "RUSH YDS" },
-          { key: "rush_td", label: "RUSH TD" },
-        ],
-        detail: [
-          { key: "pass_cmp", label: "CMP" },
-          { key: "pass_att", label: "ATT" },
-          { key: "rush_att", label: "CAR" },
+        columns: [
+          { key: "pass_cmp", over: "pass_att", label: "CMP/ATT", kind: "ratio" },
+          { key: "pass_yd", label: "PASS YDS", kind: "count" },
+          { key: "pass_td", label: "PASS TD", kind: "count" },
+          { key: "pass_int", label: "INT", kind: "count" },
+          { key: "rush_att", label: "CAR", kind: "count", secondary: true },
+          { key: "rush_yd", label: "RUSH YDS", kind: "count" },
+          { key: "rush_td", label: "RUSH TD", kind: "count" },
         ],
         conditionalRush: false,
       };
     case "RB":
       return {
-        primary: [
-          { key: "rush_att", label: "CAR" },
-          { key: "rush_yd", label: "RUSH YDS" },
-          { key: "rush_td", label: "RUSH TD" },
-          { key: "rec", label: "REC" },
-          { key: "rec_yd", label: "REC YDS" },
-        ],
-        detail: [
-          { key: "rec_tgt", label: "TGT" },
-          { key: "rec_td", label: "REC TD" },
+        columns: [
+          { key: "rush_att", label: "CAR", kind: "count" },
+          { key: "rush_yd", label: "RUSH YDS", kind: "count" },
+          { key: "rush_td", label: "RUSH TD", kind: "count" },
+          { key: "rec_tgt", label: "TGT", kind: "count" },
+          { key: "rec", label: "REC", kind: "count" },
+          { key: "rec_yd", label: "REC YDS", kind: "count" },
+          { key: "rec_td", label: "REC TD", kind: "count" },
         ],
         conditionalRush: false,
       };
     case "WR":
     case "TE":
       return {
-        primary: [
-          { key: "rec_tgt", label: "TGT" },
-          { key: "rec", label: "REC" },
-          { key: "rec_yd", label: "REC YDS" },
-          { key: "rec_td", label: "REC TD" },
+        columns: [
+          { key: "rec_tgt", label: "TGT", kind: "count" },
+          { key: "rec", label: "REC", kind: "count" },
+          { key: "rec_yd", label: "REC YDS", kind: "count" },
+          { key: "rec_td", label: "REC TD", kind: "count" },
+          { key: "rec_yd", over: "rec", label: "YPR", kind: "per", secondary: true },
         ],
-        detail: [],
         conditionalRush: true,
       };
     case "K":
       return {
-        primary: [
-          { key: "fgm", label: "FGM" },
-          { key: "fga", label: "FGA" },
-          { key: "xpm", label: "XPM" },
-          { key: "xpa", label: "XPA" },
+        columns: [
+          { key: "fgm", over: "fga", label: "FG", kind: "ratio" },
+          { key: "xpm", over: "xpa", label: "XP", kind: "ratio" },
+          { key: "fgm_lng", label: "LNG", kind: "count", secondary: true },
         ],
-        detail: [{ key: "fgm_lng", label: "FG LNG" }],
         conditionalRush: false,
       };
     default:
-      return { primary: [], detail: [], conditionalRush: false };
+      return { columns: [], conditionalRush: false };
   }
+}
+
+/** The rushing columns a receiver's log earns in a season he actually ran. */
+export const RECEIVER_RUSH_COLUMNS: LogColumn[] = [
+  { key: "rush_att", label: "CAR", kind: "count", secondary: true },
+  { key: "rush_yd", label: "RUSH YDS", kind: "count" },
+  { key: "rush_td", label: "RUSH TD", kind: "count" },
+];
+
+/* --------------------------------------------------- per-game rate summary */
+
+/** One headline rate, ready to print. `pct` values are already 0-100. */
+export interface RateStat {
+  /** The tile's label — abbreviated, because a tile has one line for it. */
+  label: string;
+  value: number;
+  digits: number;
+  pct?: boolean;
+  /**
+   * The same rate named in prose, for the generated summary sentence.
+   *
+   * "240 pass yds/g" is right on a tile and wrong in a sentence, and a
+   * generated paragraph that reads like a column header is the tell that
+   * nobody wrote it. Absent for rates that do not belong in a list of
+   * averages — a completion percentage is not something a player averaged.
+   */
+  prose?: string;
+}
+
+/**
+ * The per-game line that belongs above a game log.
+ *
+ * Rates rather than totals, because this sits on the tab that answers "what
+ * does a week from this player look like" — the totals are the Stats tab's
+ * question and are answered there. Over the games PLAYED, for the reason
+ * computeGameLogStats() gives: per-game over weeks on a roster is a number
+ * about availability wearing the clothes of a number about production.
+ *
+ * Returns [] for a position with no defined line, which is how the caller knows
+ * to render nothing rather than a row of dashes.
+ */
+export function perGameRates(
+  entries: GameLogEntry[],
+  position: string | null,
+): RateStat[] {
+  const played = entries.filter((e) => hasParticipation(e.stats, position));
+  const gp = played.length;
+  if (gp === 0) return [];
+
+  const per = (key: string): number => sumStat(played, key) / gp;
+  const share = (made: string, attempted: string): number => {
+    const att = sumStat(played, attempted);
+    return att > 0 ? (sumStat(played, made) / att) * 100 : 0;
+  };
+
+  switch (position) {
+    case "QB":
+      return [
+        { label: "Pass yds/g", value: per("pass_yd"), digits: 0, prose: "passing yards" },
+        {
+          label: "Pass TD/g",
+          value: per("pass_td"),
+          digits: 1,
+          prose: "passing touchdowns",
+        },
+        { label: "Cmp %", value: share("pass_cmp", "pass_att"), digits: 1, pct: true },
+        {
+          label: "Rush yds/g",
+          value: per("rush_yd"),
+          digits: 0,
+          prose: "rushing yards",
+        },
+      ];
+    case "RB":
+      return [
+        { label: "Carries/g", value: per("rush_att"), digits: 1, prose: "carries" },
+        {
+          label: "Rush yds/g",
+          value: per("rush_yd"),
+          digits: 1,
+          prose: "rushing yards",
+        },
+        { label: "Rec/g", value: per("rec"), digits: 1, prose: "receptions" },
+        {
+          label: "Rec yds/g",
+          value: per("rec_yd"),
+          digits: 1,
+          prose: "receiving yards",
+        },
+      ];
+    case "WR":
+    case "TE": {
+      const rec = sumStat(played, "rec");
+      return [
+        { label: "Targets/g", value: per("rec_tgt"), digits: 1, prose: "targets" },
+        { label: "Rec/g", value: per("rec"), digits: 1, prose: "receptions" },
+        {
+          label: "Rec yds/g",
+          value: per("rec_yd"),
+          digits: 1,
+          prose: "receiving yards",
+        },
+        {
+          label: "Yds/rec",
+          value: rec > 0 ? sumStat(played, "rec_yd") / rec : 0,
+          digits: 1,
+        },
+      ];
+    }
+    case "K":
+      return [
+        { label: "FG made/g", value: per("fgm"), digits: 1, prose: "field goals" },
+        { label: "FG %", value: share("fgm", "fga"), digits: 0, pct: true },
+        { label: "XP made/g", value: per("xpm"), digits: 1, prose: "extra points" },
+      ];
+    default:
+      return [];
+  }
+}
+
+/**
+ * The trailing slice of a season, for the "last five games" read.
+ *
+ * Played games only and in played order, so "last five" means the last five he
+ * was on the field for rather than the last five weeks on the calendar — a
+ * player back from a three-week absence has played one game recently, not four.
+ */
+export function recentGames(entries: GameLogEntry[], count: number): GameLogEntry[] {
+  return entries.filter((e) => e.game_status === "active").slice(-count);
 }
 
 /* -------------------------------------------------------------- trend and shape */

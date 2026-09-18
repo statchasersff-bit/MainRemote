@@ -21,8 +21,28 @@
  */
 
 import { listNews, listNewsForTeam } from "../news-query";
+import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
+import {
+  careerHighs,
+  careerStatRows,
+  careerTotals,
+  statsFaq,
+  type CareerHigh,
+  type CareerStatRow,
+  type CareerTotalsRow,
+  type StatsFaq,
+} from "./stats-profile";
 import { itemTimestamp, searchKey, type NewsItem } from "../render";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import { buildBioProfile, type BioProfile } from "./bio";
+import {
+  buildUpcoming,
+  matchupTable,
+  upcomingStamp,
+  type UpcomingGame,
+} from "./upcoming";
+import { getTeamSchedule } from "../team/schedule";
+import { logger } from "../logger";
 import { ensureTeams } from "../teams";
 import {
   getTeamRoster,
@@ -34,7 +54,9 @@ import {
   getAvailableSeasons,
   loadIndexedSlugs,
   getPlayerBySlug,
+  loadBioFacts,
   loadBios,
+  loadDraft,
   loadDynastyRankings,
   loadFantasyOutlook2026,
   loadGameLogs,
@@ -75,10 +97,14 @@ import {
   computeRiskBreakdown,
   getInjuryHistory,
   injuriesBySeason,
+  injuryFaq,
+  latestInjury,
   regionTallies,
   summarizeInjuries,
+  type InjuryFaq,
   type InjurySeasonRow,
   type InjurySummary,
+  type NflInjuryEntry,
   type PlayerInjuryHistory,
   type RegionTally,
   type RiskRow,
@@ -109,6 +135,29 @@ const PLAYER_NEWS_LIMIT = 12;
 const TEAM_NEWS_LIMIT = 8;
 
 /** Seasons of production history shown on the finish timeline. */
+/**
+ * One season's counting stats, as the production snapshot files them.
+ *
+ * Carried through rather than dropped because this file reaches back further
+ * than the game logs do — ten seasons against four — and it is the only place a
+ * career passing or receiving line exists at all. Every field is optional in
+ * spirit: a quarterback's row has no targets and a receiver's no attempts.
+ */
+export interface ProductionTotals {
+  passCmp: number;
+  passAtt: number;
+  passYd: number;
+  passTd: number;
+  passInt: number;
+  rushAtt: number;
+  rushYd: number;
+  rushTd: number;
+  tgt: number;
+  rec: number;
+  recYd: number;
+  recTd: number;
+}
+
 export interface ProductionSeason {
   season: number;
   position: string;
@@ -117,6 +166,18 @@ export interface ProductionSeason {
   total: number;
   posFinishTotal: number | null;
   posFinishPpg: number | null;
+  /** The counting stats behind the fantasy points. */
+  totals: ProductionTotals;
+}
+
+export interface StatsProfile {
+  /** Every season with a game in it, newest first. */
+  career: CareerStatRow[];
+  totals: CareerTotalsRow;
+  /** The row for the season the page is showing, when he has played in it. */
+  current: CareerStatRow | null;
+  highs: CareerHigh[];
+  faq: StatsFaq[];
 }
 
 export interface InjuryProfile {
@@ -126,6 +187,19 @@ export interface InjuryProfile {
   seasons: InjurySeasonRow[];
   regions: RegionTally[];
   insight: string;
+  /** The most recent logged injury, for the status block. */
+  latest: NflInjuryEntry | null;
+  /**
+   * Games the player missed in the season the page is showing.
+   *
+   * Counted off the game log, which is padded to the TEAM's own schedule — so
+   * a week the team has not played yet is not counted as a game missed. Null
+   * when there is no log to count from.
+   */
+  seasonMissed: number | null;
+  /** The most recent week he actually played, for the FAQ. */
+  lastPlayedWeek: number | null;
+  faq: InjuryFaq[];
 }
 
 export interface EfficiencyRates {
@@ -157,6 +231,36 @@ export interface PlayerPageData {
   /** Every week of `season`, padded, ranked and enriched. */
   gameLog: GameLogEntry[];
   stats: GameLogSummary | null;
+
+  /**
+   * The Game Log tab's season, and the log behind it.
+   *
+   * `logSeason` is `season` unless the reader pinned another one, in which case
+   * `seasonLog` is that season's weeks and `gameLog` is still the active
+   * season's. Everything else on the page — the outlook, the injury history,
+   * the benchmarks — stays on `season`, because the tab is what was re-scoped
+   * and not the profile.
+   */
+  logSeason: number;
+  logSeasonLabel: string | null;
+
+  /**
+   * The next few fixtures, with each opponent's difficulty at this position.
+   *
+   * Schedule and matchup context only — never statistics. It sits under the
+   * completed game log and is kept rigorously apart from it: see
+   * lib/player/upcoming.ts on why a fixture must not become a table row with
+   * dashes in its stat columns.
+   */
+  upcoming: UpcomingGame[];
+  /** "Week 3", "Preseason baseline" — what the matchup ranks are measured over. */
+  upcomingMatchupMode: string | null;
+  /** Fingerprint of the fixtures and their ranks, for the render cache. */
+  upcomingStamp: string;
+  seasonLog: GameLogEntry[];
+  seasonLogStats: GameLogSummary | null;
+  /** Seasons this player actually appeared in, newest first. */
+  logSeasons: number[];
   outlook: Outlook;
   tdDependency: TdDependency;
 
@@ -176,7 +280,34 @@ export interface PlayerPageData {
   rates: EfficiencyRates | null;
   dynasty: DynastyData | null;
   bio: PlayerBio | null;
+
+  /**
+   * The Bio tab: identity facts, career timeline, draft, story and questions.
+   *
+   * Derived in lib/player/bio.ts from players.json, draft.json and
+   * bio_facts.json — never from anything fantasy. Bio is the one tab on this
+   * page that answers "who is he?" rather than a lineup question, and keeping
+   * its inputs disjoint from the rest is what keeps it that way.
+   */
+  bioProfile: BioProfile;
   fantasyOutlook2026: FantasyOutlook2026 | null;
+
+  /**
+   * The four measured cards on the Outlook tab, adapted to the position.
+   *
+   * Beside `fantasyOutlook2026` rather than inside it because the two have
+   * different authors: that record is written, this is read off the player's
+   * advanced line against the position's own distribution. See
+   * lib/player/outlook-drivers.ts.
+   */
+  outlookDrivers: OutlookDriver[];
+
+  /**
+   * The Stats tab's aggregates: the career table, its totals, the records and
+   * the questions they answer. See lib/player/stats-profile.ts — Stats is
+   * totals, Game Log is games, and this is the totals side.
+   */
+  statsProfile: StatsProfile;
 
   /** Null when the player is not in the advanced table — the tab is hidden. */
   advanced: AdvancedProfile | null;
@@ -283,6 +414,29 @@ function currentDesignation(
 }
 
 /** Sleeper-backed season production, for the finish timeline. */
+/** The counting stats off one production row, with every absence read as zero. */
+function readTotals(raw: unknown): ProductionTotals {
+  const row = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const n = (key: string): number => {
+    const value = row[key];
+    return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  };
+  return {
+    passCmp: n("passCmp"),
+    passAtt: n("passAtt"),
+    passYd: n("passYd"),
+    passTd: n("passTd"),
+    passInt: n("passInt"),
+    rushAtt: n("rushAtt"),
+    rushYd: n("rushYd"),
+    rushTd: n("rushTd"),
+    tgt: n("tgt"),
+    rec: n("rec"),
+    recYd: n("recYd"),
+    recTd: n("recTd"),
+  };
+}
+
 function productionSeasons(
   playerId: string,
   format: ScoringFormat,
@@ -312,6 +466,7 @@ function productionSeasons(
           typeof scoring["posFinishPpg"] === "number"
             ? (scoring["posFinishPpg"] as number)
             : null,
+        totals: readTotals(row["totals"]),
       };
     })
     .filter((row): row is ProductionSeason => row !== null && Number.isFinite(row.season))
@@ -467,16 +622,55 @@ function buildCareerProfile(
   };
 }
 
-function buildInjuryProfile(playerId: string): InjuryProfile | null {
+function buildInjuryProfile(
+  playerId: string,
+  name: string,
+  season: number,
+  gameLog: GameLogEntry[],
+  designation: RosterPlayer | null,
+): InjuryProfile | null {
   const history = getInjuryHistory(playerId);
   if (!history) return null;
+
+  const summary = summarizeInjuries(history);
+
+  // Absences in the season on the page. "out" and not "bye", off a log that
+  // stops at the team's last played game — so this counts games that happened
+  // without him, never games that have not kicked off.
+  const seasonMissed =
+    gameLog.length > 0
+      ? gameLog.filter((entry) => entry.game_status === "out").length
+      : null;
+  const played = gameLog.filter((entry) => entry.game_status === "active");
+  const lastPlayedWeek =
+    played.length > 0 ? Math.max(...played.map((entry) => entry.week)) : null;
+
   return {
     history,
-    summary: summarizeInjuries(history),
+    summary,
     risks: computeRiskBreakdown(history),
     seasons: injuriesBySeason(history.nfl),
     regions: regionTallies(history.nfl),
     insight: buildTimelineInsight(history.nfl),
+    latest: latestInjury(history.nfl),
+    seasonMissed,
+    lastPlayedWeek,
+    faq: injuryFaq({
+      name,
+      // Only a designation with a status on it counts. A roster row exists for
+      // every player; the injury status is the part that may be absent.
+      designation: designation?.injuryStatus
+        ? {
+            injuryStatus: designation.injuryStatus,
+            injuryBodyPart: designation.injuryBodyPart,
+          }
+        : null,
+      summary,
+      nfl: history.nfl,
+      seasonMissed,
+      season,
+      lastPlayedWeek,
+    }),
   };
 }
 
@@ -484,6 +678,15 @@ export interface PlayerDataOptions {
   format?: ScoringFormat;
   /** Which season's advanced table to show. Defaults to the active season. */
   advancedSeason?: number;
+  /**
+   * Which season the Game Log tab shows. Defaults to the active season.
+   *
+   * Scoped to that one tab rather than to the page. A reader on the Game Log
+   * looking at 2023 has not asked for a 2023 injury history or a 2023 outlook,
+   * and re-pointing the whole profile at an old season would be a different
+   * page wearing this one's URL. Ignored unless the player actually played it.
+   */
+  logSeason?: number;
 }
 
 export async function getPlayerPageData(
@@ -507,24 +710,30 @@ export async function getPlayerPageData(
 
   /* ---- the active season: the newest one they actually played in ---- */
 
-  let season = seasons[0] ?? new Date().getFullYear();
-  let gameLog: GameLogEntry[] = [];
-
-  for (const candidate of seasons) {
+  /**
+   * One season's log, ranked, enriched and padded.
+   *
+   * Extracted because it is now called twice. The Game Log tab can be pinned to
+   * a season other than the active one, and a reader asking for 2023 has to get
+   * 2023's weekly ranks and 2023's opponent ranks with it — the alternative,
+   * re-labelling the active season's log, is the kind of bug that produces a
+   * page that is wrong rather than empty.
+   */
+  const buildLog = (candidate: number): GameLogEntry[] => {
     const logs = loadGameLogs(candidate);
     const raw = logs[player.id] ?? [];
-    if (!raw.some((e) => hasParticipation(e.stats, player.position))) continue;
+    if (raw.length === 0) return [];
 
-    season = candidate;
-    const ranks = buildWeeklyRanks(candidate, logs, allPlayers, format);
-    const oppRanks = buildOppRanks(candidate, logs, allPlayers, format);
-
-    gameLog = fillMissingWeeks(
+    return fillMissingWeeks(
       enrichWithTeamMetrics(
         attachOppRanks(
-          attachRanks(raw, player.id, ranks),
+          attachRanks(
+            raw,
+            player.id,
+            buildWeeklyRanks(candidate, logs, allPlayers, format),
+          ),
           player.position,
-          oppRanks,
+          buildOppRanks(candidate, logs, allPlayers, format),
         ),
         player.team,
         candidate,
@@ -533,18 +742,49 @@ export async function getPlayerPageData(
       ),
       candidate,
       resolveSeasonTeam(player.team, raw, logs, allPlayers),
+      player.position,
     );
-    break;
+  };
+
+  /** "2024 Season Final", or how far into an unfinished one the log runs. */
+  const labelFor = (log: GameLogEntry[], year: number): string | null => {
+    const active = log.filter((e) => e.game_status === "active");
+    if (active.length === 0) return null;
+    const last = Math.max(...active.map((e) => e.week));
+    return last >= 17 ? `${year} Season Final` : `${year} Season (Through Week ${last})`;
+  };
+
+  let season = seasons[0] ?? new Date().getFullYear();
+  let gameLog: GameLogEntry[] = [];
+
+  // Every season this player actually appeared in, newest first. The Game Log's
+  // season selector is built from it, so a season nobody played is never
+  // offered — an empty table behind a chip is worse than no chip.
+  const logSeasons: number[] = [];
+
+  for (const candidate of seasons) {
+    const logs = loadGameLogs(candidate);
+    const raw = logs[player.id] ?? [];
+    if (!raw.some((e) => hasParticipation(e.stats, player.position))) continue;
+
+    logSeasons.push(candidate);
+    // The first one found is the newest, and it is the page's active season.
+    if (gameLog.length === 0) {
+      season = candidate;
+      gameLog = buildLog(candidate);
+    }
   }
 
   const played = gameLog.filter((e) => e.game_status === "active");
-  const maxWeek = played.length > 0 ? Math.max(...played.map((e) => e.week)) : 0;
-  const seasonLabel =
-    played.length > 0
-      ? maxWeek >= 17
-        ? `${season} Season Final`
-        : `${season} Season (Through Week ${maxWeek})`
-      : null;
+  const seasonLabel = labelFor(gameLog, season);
+
+  /* ---- the Game Log's own season, which need not be the active one ---- */
+
+  const requested = options.logSeason;
+  const logSeason =
+    requested !== undefined && logSeasons.includes(requested) ? requested : season;
+  // Reference-equal when they agree, so the common case builds one log.
+  const seasonLog = logSeason === season ? gameLog : buildLog(logSeason);
 
   /* ---- career: every season with a log, on the position-specific scale ---- */
 
@@ -605,14 +845,58 @@ export async function getPlayerPageData(
     allPlayers,
   );
 
-  const advSeason = options.advancedSeason ?? season;
   const advPositions =
     player.position && ADVANCED_POSITIONS.has(player.position)
       ? advancedSeasons(player.position, seasons)
       : [];
 
+  /*
+   * Which advanced table to show.
+   *
+   * NOT simply the season the rest of the page is on. The advanced tables
+   * arrive from a separate pipeline and land after a season is filed, so in
+   * September the page is on a season that has no table at all — and defaulting
+   * to it made the whole Advanced section vanish from every player the moment
+   * the game log rolled over to the new year.
+   *
+   * So: the reader's choice if they made one and it exists, otherwise the
+   * current season if it has a table, otherwise the newest one that does.
+   */
+  const advSeason =
+    options.advancedSeason ??
+    (advPositions.includes(season) ? season : (advPositions[0] ?? season));
+
+  /* ---- what is next: the schedule, and the matchup it walks into ---- */
+
+  // Both upstreams are allowed to fail. The schedule is a network fetch and the
+  // points-allowed table is a database query, and neither is worth a 500 on a
+  // page whose other nine blocks are arithmetic over JSON already in memory.
+  const leagueSeason = seasons[0] ?? season;
+  const schedule = team
+    ? await getTeamSchedule(team, leagueSeason).catch((err: unknown) => {
+        logger.warn({ err, team: team.code }, "No schedule for the upcoming-games block");
+        return null;
+      })
+    : null;
+  const fpaTable = await matchupTable(format);
+  const upcoming = buildUpcoming({
+    position: player.position,
+    schedule,
+    fpa: fpaTable,
+    now: Date.now(),
+  });
+
   const news = await newsForPlayer(player.name);
   const teamNews = await teamNewsFor(team, news);
+
+  const outlook2026 = loadFantasyOutlook2026()[player.id] ?? null;
+  const designation = currentDesignation(player, team);
+
+  const production = productionSeasons(player.id, format);
+  const careerRows = careerStatRows(production, careerSeasons, season);
+  const rowTotals = careerTotals(careerRows);
+  const currentRow = careerRows.find((row) => row.season === season) ?? null;
+  const rank = positionalFinish(player.id, player.position, season, format, allPlayers);
 
   return {
     player,
@@ -622,17 +906,24 @@ export async function getPlayerPageData(
 
     season,
     seasonLabel,
-    seasonRank: positionalFinish(
-      player.id,
-      player.position,
-      season,
-      format,
-      allPlayers,
-    ),
+    seasonRank: rank,
     availableSeasons: seasons,
 
     gameLog,
     stats,
+
+    logSeason,
+    logSeasonLabel: labelFor(seasonLog, logSeason),
+    upcoming,
+    upcomingMatchupMode: fpaTable?.dataMode ?? null,
+    upcomingStamp: upcomingStamp(upcoming),
+    seasonLog,
+    seasonLogStats:
+      logSeason === season
+        ? stats
+        : computeGameLogStats(seasonLog, player.position, format),
+    logSeasons,
+
     outlook: structuredOutlook(player.name, player.position, stats, format),
     tdDependency: tdDependency(played, player.position, format),
 
@@ -644,20 +935,53 @@ export async function getPlayerPageData(
       player.position,
       format,
     ),
-    production: productionSeasons(player.id, format),
+    production,
 
     benchmarks,
     rates: efficiency?.rates ?? null,
     dynasty: loadDynastyRankings()[player.slug] ?? null,
     bio: loadBios()[player.slug] ?? null,
-    fantasyOutlook2026: loadFantasyOutlook2026()[player.id] ?? null,
+    bioProfile: buildBioProfile({
+      player,
+      team,
+      facts: loadBioFacts()[player.slug] ?? null,
+      draft: loadDraft()[player.slug] ?? null,
+      // The LEAGUE's current season, not the player's newest played one: a
+      // timeline is about where he is, and a player who has not taken a snap
+      // this year has not left the league.
+      currentSeason: seasons[0] ?? season,
+      now: new Date(),
+    }),
+    fantasyOutlook2026: outlook2026,
+    outlookDrivers: outlookDrivers(player, outlook2026),
+
+    statsProfile: {
+      career: careerRows,
+      totals: rowTotals,
+      current: currentRow,
+      highs: careerHighs(careerRows, player.position),
+      faq: statsFaq({
+        name: player.name,
+        position: player.position,
+        season,
+        seasonRow: currentRow,
+        totals: rowTotals,
+        seasonRank: rank,
+      }),
+    },
 
     advanced:
       player.position && ADVANCED_POSITIONS.has(player.position)
         ? advancedProfile(player.id, player.position, advSeason)
         : null,
     advancedSeasons: advPositions,
-    injury: buildInjuryProfile(player.id),
+    injury: buildInjuryProfile(
+      player.id,
+      player.name,
+      season,
+      gameLog,
+      designation,
+    ),
 
     news,
     newsUpdatedAtMs: news.reduce<number | null>((newest, item) => {
@@ -665,7 +989,7 @@ export async function getPlayerPageData(
       return ts !== null && (newest === null || ts > newest) ? ts : newest;
     }, null),
     teamNews,
-    designation: currentDesignation(player, team),
+    designation,
     rosterFetchedAt: rosterFetchedAt(),
 
     version: "",
@@ -690,6 +1014,13 @@ export function playerDataVersion(
     dataStamp(),
     contentVersion,
     data.season,
+    // The Game Log's own season, which the cache key must separate: two
+    // requests for the same player in the same format render different tables.
+    data.logSeason,
+    // The fixtures and their matchup ranks. Neither is a data file, so neither
+    // is covered by dataStamp() — a finished game and a fresh FPA ingest both
+    // have to invalidate this page and nothing else would notice.
+    data.upcomingStamp,
     data.news.length,
     data.newsUpdatedAtMs ?? 0,
     data.teamNews.length,

@@ -169,6 +169,22 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-player.js"),
   });
 
+  // The Fantasy Points Allowed bundle. Separate for the same reason as the
+  // other three: one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/fpa.ts")],
+    outfile: path.join(outDir, "statchasers-fpa.js"),
+  });
+
+  // The redraft rankings bundle. Separate for the same reason as the other
+  // four: one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/rankings.ts")],
+    outfile: path.join(outDir, "statchasers-rankings.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -188,6 +204,12 @@ async function buildClient() {
   const teamCss = await readFile(path.resolve(artifactDir, "public", "team.css"));
   const playerJs = await readFile(path.join(outDir, "statchasers-player.js"));
   const playerCss = await readFile(path.resolve(artifactDir, "public", "player.css"));
+  const fpaJs = await readFile(path.join(outDir, "statchasers-fpa.js"));
+  const fpaCss = await readFile(path.resolve(artifactDir, "public", "fpa.css"));
+  const rankingsJs = await readFile(path.join(outDir, "statchasers-rankings.js"));
+  const rankingsCss = await readFile(
+    path.resolve(artifactDir, "public", "rankings.css"),
+  );
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -195,6 +217,10 @@ async function buildClient() {
     .update(teamCss)
     .update(playerJs)
     .update(playerCss)
+    .update(fpaJs)
+    .update(fpaCss)
+    .update(rankingsJs)
+    .update(rankingsCss)
     .digest("hex")
     .slice(0, 12);
 

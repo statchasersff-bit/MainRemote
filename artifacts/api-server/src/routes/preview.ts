@@ -1,9 +1,10 @@
 /**
  * Shortcode preview harness. Development only.
  *
- * The three tools are shipped as FRAGMENTS: /embed/ssr.html,
- * /embed/team/:slug and /embed/player/:slug return bare markup with no
- * stylesheet and no script, because on a real page WordPress enqueues those
+ * The five tools are shipped as FRAGMENTS: /embed/ssr.html,
+ * /embed/team/:slug, /embed/player/:slug, /embed/fpa and /embed/rankings return
+ * bare markup
+ * with no stylesheet and no script, because on a real page WordPress enqueues those
  * separately. Opening any of them in a browser shows a wall of unstyled HTML — which makes the one
  * question you actually want to answer while working ("what does this shortcode
  * look like on a page?") the one question the app could not answer.
@@ -13,6 +14,8 @@
  *   [statchasers_news]    ->  /preview/news
  *   [statchasers_team]    ->  /preview/team/:slug
  *   [statchasers_player]  ->  /preview/player/:slug
+ *   [statchasers_fpa]     ->  /preview/fpa
+ *   [statchasers_rankings] -> /preview/rankings
  *
  * The fragment is the SAME markup the plugin fetches — it comes from the same
  * renderer the /embed endpoints use, not a second code path — wrapped in a mock
@@ -37,6 +40,9 @@ import { publicOrigin } from "../lib/request";
 import { renderNewsFragment } from "../lib/ssr";
 import { renderTeamFragment } from "../lib/team-ssr";
 import { renderPlayerFragment } from "../lib/player-ssr";
+import { renderFpaFragment } from "../lib/fpa-ssr";
+import { renderRankingsFragment } from "../lib/rankings-ssr";
+import { parseFpaFormat, parseFpaView } from "../lib/fpa/fpa-data";
 import { normalizeTeamName } from "../lib/team/teams";
 
 const router: IRouter = Router();
@@ -288,6 +294,67 @@ router.get("/preview/player/:slug", (req, res) => {
   })();
 });
 
+/** [statchasers_fpa] as it renders on a page. */
+router.get("/preview/fpa", (req, res) => {
+  void (async () => {
+    const format = parseFpaFormat(String(req.query["format"] ?? ""));
+    const view = parseFpaView(String(req.query["view"] ?? ""));
+    try {
+      const result = await renderFpaFragment(
+        { format, view },
+        {
+          embed: true,
+          // Point the table's own controls back into the harness, so switching
+          // format from inside the preview keeps you inside the preview.
+          basePath: "/preview/fpa",
+          teamPathPrefix: "/preview/team/",
+        },
+      );
+      send(
+        req,
+        res,
+        hostPage({
+          title: "Fantasy Points Allowed",
+          shortcode: `[statchasers_fpa format="${format}" view="${view}"]`,
+          styles: ["/fpa.css"],
+          scripts: ["/dist/statchasers-fpa.js"],
+          fragment: result.html,
+        }),
+      );
+    } catch (err) {
+      logger.error({ err }, "FPA shortcode preview failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/** [statchasers_rankings] as it renders on a page. */
+router.get("/preview/rankings", (req, res) => {
+  try {
+    const result = renderRankingsFragment(undefined, {
+      embed: true,
+      // Point the board's own links back into the harness, so following a
+      // player from inside the preview keeps you inside the preview.
+      basePath: "/preview/rankings",
+      playerPathPrefix: "/preview/player/",
+    });
+    send(
+      req,
+      res,
+      hostPage({
+        title: "Redraft Rankings",
+        shortcode: "[statchasers_rankings]",
+        styles: ["/rankings.css"],
+        scripts: ["/dist/statchasers-rankings.js"],
+        fragment: result.html,
+      }),
+    );
+  } catch (err) {
+    logger.error({ err }, "Rankings shortcode preview failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
 /** The news fragment as source. */
 router.get("/preview/raw/news", (req, res) => {
   void (async () => {
@@ -358,6 +425,44 @@ router.get("/preview/raw/player/:slug", (req, res) => {
       res.status(500).type("html").send("<h1>Preview failed</h1>");
     }
   })();
+});
+
+/** The FPA fragment as source. */
+router.get("/preview/raw/fpa", (req, res) => {
+  void (async () => {
+    const format = parseFpaFormat(String(req.query["format"] ?? ""));
+    const view = parseFpaView(String(req.query["view"] ?? ""));
+    try {
+      const result = await renderFpaFragment({ format, view }, { embed: true });
+      send(
+        req,
+        res,
+        sourcePage(
+          `[statchasers_fpa format="${format}" view="${view}"]`,
+          "/embed/fpa",
+          result.html,
+        ),
+      );
+    } catch (err) {
+      logger.error({ err }, "FPA fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/** The rankings fragment as source. */
+router.get("/preview/raw/rankings", (req, res) => {
+  try {
+    const result = renderRankingsFragment(undefined, { embed: true });
+    send(
+      req,
+      res,
+      sourcePage("[statchasers_rankings]", "/embed/rankings", result.html),
+    );
+  } catch (err) {
+    logger.error({ err }, "Rankings fragment source view failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
 });
 
 export default router;

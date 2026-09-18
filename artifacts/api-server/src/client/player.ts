@@ -10,8 +10,9 @@
  *   1. tab behaviour for the section bar, from client/enhance.ts;
  *   2. relative timestamps on the news list, likewise;
  *   3. height reporting for the legacy iframe mount, likewise;
- *   4. the two behaviours particular to this page: a hover layer on the weekly
- *      chart, and sortable columns on the game log.
+ *   4. the behaviours particular to this page: a hover layer on the weekly
+ *      chart, sortable columns on the game log and the career table, and the
+ *      per-week detail the game log folds away behind each week number.
  *
  * The chart already carries a `<title>` per point, so it is readable with no
  * script at all; what (4) adds is a real tooltip with a hit target bigger than
@@ -100,28 +101,79 @@ function cellValue(cell: HTMLTableCellElement): number | string {
 }
 
 /**
- * Make the game log sortable by any column.
+ * Make a marked table sortable by any column.
  *
- * Rows for weeks the player did not play carry a colspan cell rather than a
- * full set of columns, so they cannot be sorted meaningfully — they are pushed
- * to the bottom and kept in week order rather than being interleaved with real
+ * Two tables opt in: the weekly game log and the career table on the Stats tab.
+ * Both are "one row per period, sorted by that period" and both are read the
+ * same way — you arrive in chronological order and re-sort to find the best or
+ * worst of something.
+ *
+ * Rows that carry a colspan cell rather than a full set of columns — a week the
+ * player did not play — cannot be sorted meaningfully, so they are pushed to
+ * the bottom and kept in their original order rather than interleaved with real
  * results on a value they do not have.
  *
- * The default order is by week, and the button that restores it is the week
- * header itself, so there is always a way back to the page as it was sent.
+ * A <tfoot> is untouched: the career total belongs under the table however it
+ * is sorted, not somewhere in the middle of it.
+ *
+ * The default order is the one the server sent, and the button that restores it
+ * is the first column's header, so there is always a way back.
  */
+interface RowGroup {
+  row: HTMLTableRowElement;
+  /** The expandable detail that belongs under it, when there is one. */
+  detail: HTMLTableRowElement | null;
+}
+
+/**
+ * The body's rows, with each detail row absorbed into the row above it.
+ *
+ * Sorting moves rows with appendChild, and a detail row is only a detail of the
+ * row it follows — left to itself it has no sortable cells, sinks to the
+ * bottom, and ends up describing a week it is nowhere near. So the pair moves
+ * as one thing.
+ */
+function rowGroups(body: Element): RowGroup[] {
+  const groups: RowGroup[] = [];
+
+  for (const child of Array.from(body.children)) {
+    const row = child as HTMLTableRowElement;
+    const last = groups[groups.length - 1];
+    if (row.classList.contains("scp-detail") && last && !last.detail) {
+      last.detail = row;
+      continue;
+    }
+    groups.push({ row, detail: null });
+  }
+
+  return groups;
+}
+
 function wireSortableLog(root: HTMLElement): void {
   const tables = Array.from(
-    root.querySelectorAll<HTMLTableElement>("table[data-scp-log]"),
+    root.querySelectorAll<HTMLTableElement>("table[data-scp-sortable]"),
   );
 
   for (const table of tables) {
-    const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th"));
+    // The LAST header row. The career table puts a column-group row above its
+    // headers, and those cells are not columns — treating them as sort buttons
+    // would map every click to the wrong index.
+    const headerRow = table.querySelector<HTMLTableRowElement>("thead tr:last-child");
+    const headers = headerRow
+      ? Array.from(headerRow.querySelectorAll<HTMLTableCellElement>("th"))
+      : [];
     const body = table.querySelector("tbody");
     if (!body || headers.length === 0) continue;
 
-    const rows = Array.from(body.querySelectorAll("tr"));
-    const original = rows.slice();
+    const original = rowGroups(body);
+
+    /** Re-append in this order, each detail following its own row. */
+    const place = (groups: RowGroup[]): void => {
+      for (const group of groups) {
+        body.appendChild(group.row);
+        if (group.detail) body.appendChild(group.detail);
+      }
+    };
 
     headers.forEach((header, index) => {
       const button = document.createElement("button");
@@ -136,15 +188,15 @@ function wireSortableLog(root: HTMLElement): void {
 
       button.addEventListener("click", () => {
         const playable = original.filter(
-          (row) => row.getAttribute("data-status") === "active",
+          (group) => group.row.getAttribute("data-status") === "active",
         );
         const rest = original.filter(
-          (row) => row.getAttribute("data-status") !== "active",
+          (group) => group.row.getAttribute("data-status") !== "active",
         );
 
         if (index === 0) {
           // The week column restores the page as the server sent it.
-          for (const row of original) body.appendChild(row);
+          place(original);
           for (const other of headers) other.setAttribute("aria-sort", "none");
           header.setAttribute("aria-sort", "ascending");
           descending = true;
@@ -152,8 +204,8 @@ function wireSortableLog(root: HTMLElement): void {
         }
 
         playable.sort((a, b) => {
-          const left = cellValue(a.cells[index] as HTMLTableCellElement);
-          const right = cellValue(b.cells[index] as HTMLTableCellElement);
+          const left = cellValue(a.row.cells[index] as HTMLTableCellElement);
+          const right = cellValue(b.row.cells[index] as HTMLTableCellElement);
           if (typeof left === "number" && typeof right === "number") {
             return descending ? right - left : left - right;
           }
@@ -162,8 +214,8 @@ function wireSortableLog(root: HTMLElement): void {
             : String(left).localeCompare(String(right));
         });
 
-        for (const row of playable) body.appendChild(row);
-        for (const row of rest) body.appendChild(row);
+        place(playable);
+        place(rest);
 
         for (const other of headers) other.setAttribute("aria-sort", "none");
         header.setAttribute("aria-sort", descending ? "descending" : "ascending");
@@ -172,6 +224,67 @@ function wireSortableLog(root: HTMLElement): void {
     });
 
     table.dataset["scpSort"] = "js";
+  }
+}
+
+/* ---------------------------------------------------------- expandable log */
+
+/**
+ * Fold the game log's per-week detail away behind its week number.
+ *
+ * The server sends those rows EXPANDED and this collapses them, which is the
+ * way round it has to be: the stylesheet hides them only under
+ * `[data-scp-expand="js"]`, so a page whose script never runs keeps every fact
+ * visible instead of hiding content behind a button that does nothing. The
+ * toggle is built here for the same reason — a control that cannot work should
+ * not be in the HTML.
+ */
+function wireExpandableLog(root: HTMLElement): void {
+  const tables = Array.from(
+    root.querySelectorAll<HTMLTableElement>("table[data-scp-expandable]"),
+  );
+
+  for (const table of tables) {
+    const rows = Array.from(
+      table.querySelectorAll<HTMLTableRowElement>("tr[data-detail]"),
+    );
+    if (rows.length === 0) continue;
+
+    for (const row of rows) {
+      const id = row.getAttribute("data-detail");
+      if (!id) continue;
+      const detail = table.querySelector<HTMLTableRowElement>(`tr[id="${id}"]`);
+      const head = row.querySelector("th");
+      if (!detail || !head) continue;
+
+      const week = (head.textContent ?? "").trim();
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "scp-expand";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", id);
+      // The visible label is the week number; the accessible name says what
+      // pressing it does, which "7" on its own does not.
+      button.setAttribute("aria-label", `Week ${week} detail`);
+      button.textContent = week;
+
+      const icon = document.createElement("span");
+      icon.className = "scp-expand-icon";
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+
+      head.textContent = "";
+      head.appendChild(button);
+
+      button.addEventListener("click", () => {
+        const open = detail.classList.toggle("is-open");
+        row.classList.toggle("is-open", open);
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
+
+    table.dataset["scpExpand"] = "js";
   }
 }
 
@@ -188,6 +301,7 @@ function boot(): void {
     wireTimestamps(root);
     wireChartTooltip(root);
     wireSortableLog(root);
+    wireExpandableLog(root);
     wireFrameHeight(root);
   }
 }

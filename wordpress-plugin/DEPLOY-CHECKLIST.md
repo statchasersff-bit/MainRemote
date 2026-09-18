@@ -30,7 +30,7 @@ Team hubs are `noindex, indexifembedded` at the API's own URL, so the embed is
 the only thing that makes them indexable. Verify on one team page before
 building all 32:
 
-- [ ] content from **every tab** is in the rendered HTML, not just the Overview.
+- [ ] content from **every tab** is in the rendered HTML, not just the Outlook.
       Search for `Season History`, a depth-chart player name, and an opponent
       from the schedule. All five panels ship on the first response; if only one
       is there, the `:target` tab CSS or the fragment has regressed.
@@ -46,6 +46,51 @@ building all 32:
       diagnostics ("no team slug", "the API returned nothing") render as an
       empty string for everyone else, so a broken mount looks like a missing
       section rather than an error.
+
+### Section URLs
+
+Only once `statchasers_team_section_urls` is on. Flush permalinks first
+(Settings → Permalinks → Save) or every section URL 404s. Then take one team
+end to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`,
+`/schedule/` and `/depth-chart/` — and on **every one of the five** confirm:
+
+- [ ] HTTP **200**.
+- [ ] the H1 is the page's phrase: the team name on the hub, "New England
+      Patriots Schedule 2026" and so on below it. Exactly one H1, and no `<h2>`
+      inside the panel repeating it.
+- [ ] `<title>` matches the H1's phrase and differs across the five.
+- [ ] the meta description is present, unique to the page, and there is one.
+- [ ] `<link rel="canonical">` is the page's own **pretty** path with a trailing
+      slash — never the hub on a section page, never `?section=` anywhere. One
+      canonical, not two: a second one means the plugin's filter and the theme
+      are both printing.
+- [ ] `og:url` equals the canonical.
+- [ ] robots is `index, follow`. The fragment carries no robots meta; Rank Math's
+      is the one that counts.
+- [ ] a section page shows **its panel and nothing else**: no tab strip, no
+      content from the other panels. All five panels means `sc_section` is not
+      reaching the shortcode and the URL is the hub wearing a second address.
+- [ ] a strip of real links (`.sct-pages`) is present — on the hub it points at
+      the four section pages; on a section page at the hub and its siblings,
+      with the current one marked. Missing on the hub means the fetch is not
+      sending `sections=1`.
+- [ ] at most one `FAQPage` node in the page, and it holds only that page's
+      questions. The Schedule page has none — that is correct, not a gap.
+- [ ] the URL is in the **page sitemap**. If the four section URLs are absent,
+      the `rank_math/sitemap/page_content` filter name is the first thing to
+      check — it is the one Rank Math hook not confirmed against a live build.
+
+Then the edges:
+
+- [ ] the bare hub still serves as before.
+- [ ] `/nfl/teams/<slug>/not-a-real-section/` is a **404**, not the hub.
+- [ ] on the API origin, `/team/ne/schedule/` and `/team/ne?section=schedule`
+      both 301 to `/team/new-england-patriots/schedule/`; `/team/nowhere/stats/`
+      is a 404.
+- [ ] with the flag **off**: the section URLs 404, the hub prints no `.sct-pages`
+      strip, and the sitemap lists no section URLs. Off must be genuinely off.
+
+Once all of that holds on one team, submit the page sitemap in Search Console.
 - [ ] the hub uses the **full content column** — open the page at a desktop
       width above 1100px, not just on a phone. Divi splits the row 79/21 for a
       sidebar unless the layout is full width, and an empty widget area leaves

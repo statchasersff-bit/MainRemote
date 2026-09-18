@@ -95,9 +95,113 @@ export interface DynastyData extends DynastyFormatValues {
   sf: DynastyFormatValues | null;
 }
 
+/**
+ * One band on the range-of-outcomes spectrum.
+ *
+ * Positional ranks, so LOWER is better and `best` is always the smaller number.
+ * A band rather than a point because a single projected rank is a precision
+ * nobody has: "QB22–28" is the honest shape of the claim, and the spectrum is
+ * drawn from these two numbers rather than from a decimal.
+ */
+export interface OutlookBand {
+  /** The good end of the band — the smaller rank. */
+  best: number;
+  /** The bad end of the band — the larger rank. */
+  worst: number;
+  /** One line on what produces this outcome. */
+  note: string;
+}
+
+/**
+ * How to actually use the player, by format.
+ *
+ * `standard` and `deep` are deliberately not named for a format here: the
+ * renderer labels them "1QB leagues" and "Superflex" for a quarterback and
+ * "12-team" and "Deep leagues" for everyone else, because those are the two
+ * questions each position's managers are actually asking.
+ */
+export interface OutlookUsage {
+  standard: string;
+  deep: string;
+  bestWhen: string;
+  avoidWhen: string;
+}
+
+/** The closing call. `call` is a short chip — "Hold / Stream", "Buy". */
+export interface OutlookVerdict {
+  call: string;
+  rationale: string;
+}
+
+/**
+ * The 2025 advanced line the outlook was written from.
+ *
+ * An index signature rather than a field per metric, for the reason the
+ * Advanced Stats tab reads its tables the same way: these rows arrive from the
+ * advanced-stats pipeline, they differ by position, and a table that starts
+ * carrying a new metric must not become a type error in a server whose job is
+ * to read what it is given. `outlook-drivers.ts` names the handful of keys it
+ * needs and tolerates their absence.
+ */
+export interface OutlookKeyStats {
+  [key: string]: number | string | null | undefined;
+}
+
+/**
+ * The written 2026 outlook, and the decision layer on top of it.
+ *
+ * `headline` and `body` are the original two fields and are always present.
+ * Everything below them is the Outlook tab's decision layer — the verdict, the
+ * projected range, the triggers, the usage — and every one of them is OPTIONAL,
+ * because a record generated before those fields existed simply does not carry
+ * them and the tab must render what it has rather than a row of empty labels.
+ *
+ * All of it is authored, not derived: a rest-of-season rank, a floor and a
+ * ceiling, and a buy/hold call are judgements, and this server has no data from
+ * which to compute one. They are written by the same pass that writes `body`
+ * (scripts/player/buildFantasyOutlook2026.js) and a record marked
+ * `edited: true` is never overwritten by it.
+ *
+ * The four driver cards on the tab are NOT here, and deliberately: they are
+ * measured from `keyStats` against the position's own distribution, so they
+ * stay true without anybody rewriting them. See lib/player/outlook-drivers.ts.
+ */
 export interface FantasyOutlook2026 {
+  /**
+   * Identity, as the generator stamped it. Carried so a consumer reading the
+   * file on its own — outlook-drivers.ts builds its position distributions
+   * straight out of it — does not have to join back to players.json first.
+   */
+  slug?: string;
+  name?: string;
+  position?: string | null;
+  team?: string | null;
+  season?: number;
+
   headline: string;
   body: string;
+
+  /** Two or three sentences. The whole take, above the fold. */
+  quickTake?: string;
+  /** "Spot Starter", "Lead Back", "Committee Back". */
+  weeklyRole?: string;
+  /** "QB3 / Matchup Play" — the rest-of-season call, in the site's shorthand. */
+  restOfSeason?: string;
+  confidence?: "High" | "Moderate" | "Low";
+
+  range?: {
+    floor: OutlookBand;
+    expected: OutlookBand;
+    ceiling: OutlookBand;
+  };
+
+  upsideTriggers?: string[];
+  warningSigns?: string[];
+  usage?: OutlookUsage;
+  verdict?: OutlookVerdict;
+
+  /** The advanced line this was written from. Present since the first build. */
+  keyStats?: OutlookKeyStats | null;
 }
 
 /** A row of `data/player/players.json`. */
@@ -206,4 +310,42 @@ export interface PlayerBio {
   narrative_paragraphs?: string[];
   last_updated?: string;
   sources?: string[];
+}
+
+/**
+ * A row of `data/player/draft.json`. Absent for an undrafted player.
+ *
+ * `draft_team` is the team that made the pick, which is frequently not the team
+ * on the player's current row and is never the one the timeline ends on.
+ */
+export interface DraftRecord {
+  player_id?: string;
+  name?: string;
+  college?: string | null;
+  rookie_year?: number | null;
+  year?: number | null;
+  round?: number | null;
+  pick?: number | null;
+  draft_team?: string | null;
+}
+
+/**
+ * A row of `data/player/bio_facts.json` — the Bio tab's own source.
+ *
+ * `teams` is one entry per season the player was actually on a roster for,
+ * oldest first, and it is the career timeline. Seasons he was not in the league
+ * are absent rather than zero: see the guard in buildBioFacts.mjs, which exists
+ * because the upstream API answers for every season with the player's CURRENT
+ * team and an empty stat line.
+ *
+ * There is no hometown here. Sleeper's birth_city and birth_state are null for
+ * every active player, so the field would be a column of blanks — and rule 1
+ * says a field we do not have is not rendered.
+ */
+export interface BioFacts {
+  /** ISO "YYYY-MM-DD", or null. */
+  birthDate: string | null;
+  college: string | null;
+  highSchool: string | null;
+  teams: { season: number; team: string }[];
 }

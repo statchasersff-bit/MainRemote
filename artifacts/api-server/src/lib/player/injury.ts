@@ -18,6 +18,7 @@
  * the section is omitted rather than reported as a clean bill of health.
  */
 
+import { surname } from "./bio";
 import { loadInjuries } from "./data";
 
 export type InjurySeverity = "minor" | "moderate" | "major";
@@ -140,6 +141,17 @@ export type RiskLevel = "low" | "moderate" | "high";
 export interface RiskRow {
   label: string;
   level: RiskLevel;
+  /**
+   * What the row actually says.
+   *
+   * A level word for the three rows that ARE a judgement, and a count for
+   * career time lost, where the number is the fact and a word would only hide
+   * it. The row is not a score with a gloss; it is a reading with the record
+   * printed beside it.
+   */
+  value: string;
+  /** The record the reading came from, in one line. */
+  detail: string;
 }
 
 /**
@@ -151,15 +163,25 @@ export interface RiskRow {
  * reasons, and averaging them into a single number loses exactly the part a
  * reader would act on.
  */
+const LEVEL_WORD: Record<RiskLevel, string> = {
+  low: "Low",
+  moderate: "Moderate",
+  high: "High",
+};
+
 export function computeRiskBreakdown(history: PlayerInjuryHistory): RiskRow[] {
   const nfl = history.nfl;
   const rows: RiskRow[] = [];
 
   const latest = nfl.reduce((max, e) => Math.max(max, e.season), 0);
   const recent = latest > 0 ? nfl.filter((e) => e.season >= latest - 1).length : 0;
+  const recentLevel: RiskLevel =
+    recent >= 3 ? "high" : recent >= 1 ? "moderate" : "low";
   rows.push({
-    label: "Recent Injury Risk",
-    level: recent >= 3 ? "high" : recent >= 1 ? "moderate" : "low",
+    label: "Recent history",
+    level: recentLevel,
+    value: LEVEL_WORD[recentLevel],
+    detail: latest > 0 ? `Last logged injury: ${latest}` : "No logged injuries",
   });
 
   const byBodyPart = new Map<string, number>();
@@ -167,25 +189,382 @@ export function computeRiskBreakdown(history: PlayerInjuryHistory): RiskRow[] {
     if (e.bodyPart) byBodyPart.set(e.bodyPart, (byBodyPart.get(e.bodyPart) ?? 0) + 1);
   }
   const maxRepeat = byBodyPart.size > 0 ? Math.max(...byBodyPart.values()) : 0;
+  const repeatLevel: RiskLevel =
+    maxRepeat >= 3 ? "high" : maxRepeat >= 2 ? "moderate" : "low";
   rows.push({
-    label: "Recurring Injury Risk",
-    level: maxRepeat >= 3 ? "high" : maxRepeat >= 2 ? "moderate" : "low",
+    label: "Repeat injuries",
+    level: repeatLevel,
+    value: LEVEL_WORD[repeatLevel],
+    detail:
+      maxRepeat >= 2
+        ? `${maxRepeat} injuries to the same body region`
+        : "No recurring body-region pattern",
   });
 
   const totalMissed = nfl.reduce((sum, e) => sum + (e.gamesMissed ?? 0), 0);
+  const biggest = nfl.reduce((max, e) => Math.max(max, e.gamesMissed ?? 0), 0);
+  const missedLevel: RiskLevel =
+    totalMissed >= 10 ? "high" : totalMissed >= 4 ? "moderate" : "low";
   rows.push({
-    label: "Games Missed Impact",
-    level: totalMissed >= 10 ? "high" : totalMissed >= 4 ? "moderate" : "low",
+    label: "Career time lost",
+    level: missedLevel,
+    // The count, not a word. "High" over eleven games missed tells a reader
+    // less than "11 games" does, and the eleven is the thing they came for.
+    value: `${totalMissed} game${totalMissed === 1 ? "" : "s"}`,
+    detail:
+      biggest > 0
+        ? `Largest absence: ${biggest} game${biggest === 1 ? "" : "s"}`
+        : "No games missed",
   });
 
   const withBodyPart = nfl.filter((e) => e.bodyPart).length;
   const share = withBodyPart > 0 ? maxRepeat / withBodyPart : 0;
+  const concentrationLevel: RiskLevel =
+    share >= 0.5 ? "high" : share >= 0.34 ? "moderate" : "low";
+  const regions = byBodyPart.size;
   rows.push({
-    label: "Body Part Concentration",
-    level: share >= 0.5 ? "high" : share >= 0.34 ? "moderate" : "low",
+    label: "Injury concentration",
+    level: concentrationLevel,
+    value: LEVEL_WORD[concentrationLevel],
+    detail:
+      regions > 0
+        ? `${nfl.length} injur${nfl.length === 1 ? "y" : "ies"} across ${regions} body region${regions === 1 ? "" : "s"}`
+        : "No body region recorded",
   });
 
   return rows;
+}
+
+/** The most recent logged injury — the one a status block leads with. */
+export function latestInjury(nfl: NflInjuryEntry[]): NflInjuryEntry | null {
+  let best: NflInjuryEntry | null = null;
+  for (const entry of nfl) {
+    if (
+      !best ||
+      entry.season > best.season ||
+      (entry.season === best.season && (entry.week ?? 0) > (best.week ?? 0))
+    ) {
+      best = entry;
+    }
+  }
+  return best;
+}
+
+/**
+ * "Week 17", or "Preseason" for the week-0 entries.
+ *
+ * Week 0 is how the record files a preseason injury, and it was previously
+ * rendered as nothing at all — the entry lost the one piece of timing it had.
+ */
+export function injuryWhen(entry: NflInjuryEntry): string {
+  if (entry.week === undefined || entry.week === null) return "";
+  return entry.week === 0 ? "Preseason" : `Week ${entry.week}`;
+}
+
+export interface InjuryFaq {
+  question: string;
+  answer: string;
+}
+
+/**
+ * The words that already name an injury rather than a place on the body.
+ *
+ * The record's `type` is sometimes the injury ("Thumb Fracture", "MCL Sprain")
+ * and sometimes just the part ("Shoulder", "Hamstring"). Without this the
+ * second kind produces "the latest recorded injury was a shoulder in 2024",
+ * which is a sentence about anatomy rather than about football.
+ */
+/** Injury names that are somebody's surname and keep their capital. */
+const PROPER_NOUNS = new Set(["achilles", "jones", "lisfranc", "bennett"]);
+
+const INJURY_NOUNS =
+  /(fracture|sprain|strain|tear|torn|rupture|surgery|concussion|contusion|dislocat|tendin|bruis|inflammation|injur|illness|soreness|stinger|laceration|break|separation)/i;
+
+/** An injury named the way a sentence names one: "thumb fracture", "MCL sprain". */
+function injuryName(entry: NflInjuryEntry): string {
+  const type = (entry.type ?? "").trim();
+  if (!type) {
+    return entry.bodyPart ? `${entry.bodyPart.toLowerCase()} injury` : "injury";
+  }
+  // Word by word: an initialism keeps its capitals and a proper noun keeps its
+  // one, everything else is lowercased for the middle of a sentence. Applying
+  // toLowerCase() to the whole string turns "PCL Sprain" into "pcl sprain", and
+  // leaving it alone turns it into "the 2022 PCL Sprain caused..." — a database
+  // row in the middle of a paragraph.
+  const name = type
+    .split(/\s+/)
+    .map((word) => {
+      if (/^[A-Z]{2,}$/.test(word)) return word;
+      const lower = word.toLowerCase();
+      return PROPER_NOUNS.has(lower) ? word : lower;
+    })
+    .join(" ");
+  return INJURY_NOUNS.test(type) ? name : `${name} injury`;
+}
+
+/** "8 games", "1 game" — the unit this whole tab is counted in. */
+function games(n: number): string {
+  return `${n} game${n === 1 ? "" : "s"}`;
+}
+
+/**
+ * "a", or "an" — by how the next word is SAID, not how it is spelled.
+ *
+ * "an MCL sprain" is right and "a MCL sprain" is wrong, because the letter M is
+ * pronounced "em". The second test covers the initialisms this record actually
+ * contains; everything else falls back to the vowel rule.
+ */
+function article(word: string): string {
+  if (/^[aeiou]/i.test(word)) return "an";
+  // An initialism starting with a letter whose NAME begins with a vowel.
+  if (/^[A-Z]{2,}/.test(word) && /^[AEFHILMNORSX]/.test(word)) return "an";
+  return "a";
+}
+
+/** The distinct body parts in a record, most-injured first. */
+function bodyParts(nfl: NflInjuryEntry[]): { label: string; count: number; missed: number }[] {
+  const byPart = new Map<string, { label: string; count: number; missed: number }>();
+
+  for (const entry of nfl) {
+    // The recorded body part where there is one, and the region otherwise:
+    // "hamstring" is what somebody searches, and "Upper Leg" is a filing
+    // category that nobody has ever typed into a search box.
+    const label = (entry.bodyPart ?? "").trim()
+      ? (entry.bodyPart as string).trim().toLowerCase()
+      : classifyRegion(entry).toLowerCase();
+
+    const row = byPart.get(label);
+    if (row) {
+      row.count += 1;
+      row.missed += entry.gamesMissed ?? 0;
+    } else {
+      byPart.set(label, { label, count: 1, missed: entry.gamesMissed ?? 0 });
+    }
+  }
+
+  return [...byPart.values()].sort(
+    (a, b) => b.count - a.count || b.missed - a.missed || a.label.localeCompare(b.label),
+  );
+}
+
+/** "the a, b and c". */
+function listWords(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0] as string;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/**
+ * The questions people actually type, answered from the record.
+ *
+ * Five to seven, and every one of them literal: this tab already carries the
+ * deep history — the timeline, the body map, the risk rows — and the job here
+ * is to answer the sentence somebody typed into Google, in the first line,
+ * using facts that are already on the page.
+ *
+ * The two rules that shape every answer:
+ *
+ * 1. **Nothing predicts.** "Is he playing this week" is the highest-volume
+ *    query on this page and the one this server has no business answering: a
+ *    designation is a status the league report assigns, not a ruling on Sunday,
+ *    and no amount of history tells you whether somebody suits up. So the
+ *    answer states the designation, states when he last played, and points at
+ *    the status block — which is where the freshest fact lives. That is rule 3
+ *    in player-render.ts applied where it is most tempting to break.
+ *
+ * 2. **A question with no record behind it is not asked.** A player with no
+ *    logged injuries gets the first two questions and nothing else, rather than
+ *    five answers saying "no data".
+ *
+ * Written without pronouns, using the surname after the first mention — partly
+ * because it reads like a sports desk rather than a mail merge, and partly
+ * because the record this is generated from does not carry anybody's pronouns.
+ */
+export function injuryFaq(input: {
+  name: string;
+  designation: { injuryStatus: string; injuryBodyPart?: string | null } | null;
+  summary: InjurySummary;
+  nfl: NflInjuryEntry[];
+  /** Games missed in the season the page is showing, and that season. */
+  seasonMissed: number | null;
+  season: number;
+  /** The most recent week the player actually played, if any. */
+  lastPlayedWeek: number | null;
+}): InjuryFaq[] {
+  const { name, designation, summary, nfl, seasonMissed, season, lastPlayedWeek } =
+    input;
+
+  const last = surname(name);
+  const faq: InjuryFaq[] = [];
+
+  // Newest first, which is the order every answer below reads them in.
+  const history = nfl
+    .slice()
+    .sort((a, b) => b.season - a.season || (b.week ?? 0) - (a.week ?? 0));
+  const latest = history[0] ?? null;
+
+  /* ---- 1. is he injured ---- */
+
+  const latestClause = latest
+    ? ` The latest recorded injury was ${article(injuryName(latest))} ` +
+      `${injuryName(latest)} in ${latest.season}, ` +
+      ((latest.gamesMissed ?? 0) > 0
+        ? `which cost ${games(latest.gamesMissed ?? 0)}.`
+        : `which ${last} played through without missing a regular-season game.`)
+    : "";
+
+  faq.push({
+    question: `Is ${name} injured?`,
+    answer: designation
+      ? `${name} is listed as ${designation.injuryStatus}` +
+        (designation.injuryBodyPart
+          ? ` with ${article(designation.injuryBodyPart)} ` +
+            `${designation.injuryBodyPart.toLowerCase()} injury`
+          : "") +
+        ` on the most recent league injury report.`
+      : `${name} does not currently carry an injury designation on the league ` +
+        `injury report.${latestClause}`,
+  });
+
+  /* ---- 2. is he playing this week ---- */
+
+  const playedClause =
+    lastPlayedWeek !== null
+      ? ` ${last} last played in Week ${lastPlayedWeek} of the ${season} season.`
+      : ` ${last} has not played a game in the ${season} season.`;
+
+  faq.push({
+    question: `Is ${name} playing this week?`,
+    answer:
+      (designation
+        ? `${name} is listed as ${designation.injuryStatus}, which is a status ` +
+          `the league injury report assigns rather than a ruling on any one game.`
+        : `${name} carries no injury designation on the most recent league ` +
+          `injury report.`) +
+      playedClause +
+      ` The status and practice participation above are the most up-to-date ` +
+      `information on this page.`,
+  });
+
+  if (history.length === 0) return faq;
+
+  /* ---- 3. the history ---- */
+
+  const parts = bodyParts(history);
+
+  /*
+   * The injury that cost the most, found here rather than taken from
+   * `summary.primaryDriver`.
+   *
+   * That field carries a pre-joined "2022 PCL Sprain" label, and lowercasing it
+   * for the middle of a sentence turns it into "2022 pcl sprain". Re-deriving
+   * from the entry lets injuryName() keep the initialism and drop the rest of
+   * the capitals, which is the difference between a written sentence and a
+   * database row with a CSS transform on it.
+   */
+  const worst = history.reduce<NflInjuryEntry | null>((pick, entry) => {
+    if (!pick) return entry;
+    const score = (e: NflInjuryEntry) =>
+      (e.gamesMissed ?? 0) * 100 + (e.severity ? SEVERITY_RANK[e.severity] : 0);
+    return score(entry) > score(pick) ? entry : pick;
+  }, null);
+  const worstName = worst ? `${worst.season} ${injuryName(worst)}` : "";
+  const worstMissed = worst?.gamesMissed ?? 0;
+
+  faq.push({
+    question: `What is ${name}'s injury history?`,
+    answer:
+      `${last} has ${history.length} logged NFL ` +
+      `injur${history.length === 1 ? "y" : "ies"}, affecting the ` +
+      // Five is where a list stops being readable and starts being a dump.
+      `${listWords(parts.slice(0, 5).map((part) => part.label))}` +
+      `${parts.length > 5 ? ", among others" : ""}.` +
+      (worst && worstMissed > 0
+        ? ` The longest absence came from the ${worstName}, ` +
+          `which cost ${games(worstMissed)}.`
+        : history.length === 1
+          ? ` It did not cost a regular-season game.`
+          : ` None of them has cost a regular-season game.`),
+  });
+
+  /* ---- 4. the most recent one ---- */
+
+  if (latest) {
+    const when = latest.week === 0 ? `in the ${latest.season} preseason` : `in ${latest.season}`;
+    faq.push({
+      question: `What was ${name}'s most recent injury?`,
+      answer:
+        `${last}'s most recent recorded injury was ${article(injuryName(latest))} ` +
+        `${injuryName(latest)} ${when}.` +
+        ((latest.gamesMissed ?? 0) > 0
+          ? ` It cost ${games(latest.gamesMissed ?? 0)}.`
+          : ` ${last} played through it and did not miss a regular-season game.`),
+    });
+  }
+
+  /* ---- 5. games missed ---- */
+
+  faq.push({
+    question: `How many games has ${name} missed due to injury?`,
+    answer:
+      // A zero is the good answer to this question, and "has missed 0 games" is
+      // the worst way to give it: it reads as a counter that failed to fill in
+      // rather than as a clean record.
+      (summary.totalMissed === 0
+        ? `${last} has not missed a regular-season game through ` +
+          (history.length === 1
+            ? `the one injury in this record.`
+            : `any of the ${history.length} injuries in this record.`)
+        : `${last} has missed ${games(summary.totalMissed)} across the ` +
+          `injuries tracked in this career history.`) +
+      // Only when it is actually some: "0 games of those fall in 2026" is a
+      // sentence that exists to fill a slot.
+      (seasonMissed !== null && seasonMissed > 0
+        ? ` ${games(seasonMissed)} of those fall in ${season}.`
+        : ""),
+  });
+
+  /* ---- 6. recurrence ---- */
+
+  const repeated = parts.filter((part) => part.count > 1);
+  if (repeated.length > 0) {
+    const top = repeated[0] as { label: string; count: number; missed: number };
+    faq.push({
+      question: `Has ${name} had any recurring injuries?`,
+      answer:
+        `Yes. ${last} has ${top.count} logged injuries to the ${top.label}` +
+        (top.missed > 0 ? `, costing ${games(top.missed)}` : "") +
+        `.` +
+        (repeated.length > 1
+          ? ` The record also repeats at the ` +
+            `${listWords(repeated.slice(1).map((part) => part.label))}.`
+          : ""),
+    });
+  } else if (parts.length > 1) {
+    faq.push({
+      question: `Has ${name} had any recurring injuries?`,
+      answer:
+        `No. ${last}'s logged injuries have affected ${parts.length} different ` +
+        `areas of the body rather than the same one repeatedly, so the record ` +
+        `shows no recurring pattern.`,
+    });
+  }
+
+  /* ---- 7. the worst one ---- */
+
+  if (worst) {
+    faq.push({
+      question: `What was ${name}'s worst injury?`,
+      answer:
+        worstMissed > 0
+          ? `The ${worstName} caused the longest absence in ${last}'s record, ` +
+            `costing ${games(worstMissed)}.`
+          : `No logged injury has cost ${last} a regular-season game. The most ` +
+            `serious on record is the ${worstName}.`,
+    });
+  }
+
+  return faq;
 }
 
 /**

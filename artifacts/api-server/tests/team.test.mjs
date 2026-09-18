@@ -258,6 +258,186 @@ describe("embedded mode", () => {
   });
 });
 
+/**
+ * The FAQs on the Outlook and Stats tabs.
+ *
+ * Every answer is built from what the tab already rendered — the outlook cards
+ * (lib/team/outlook-faq.ts) and the stat ladders (lib/team/stats-faq.ts) — so
+ * what these assert is the three things derivation cannot guarantee on its own:
+ * that the blocks reach the page, that the structured data agrees with the
+ * visible text, and that there is exactly one FAQPage for the whole document
+ * however many tabs carry questions.
+ */
+describe("tab FAQs", () => {
+  function faqEntries(doc, scope = "") {
+    const prefix = scope ? `${scope} ` : "";
+    return [...doc.querySelectorAll(`${prefix}.sct-faq-item`)].map((item) => ({
+      question: item.querySelector(".sct-faq-q")?.textContent?.trim() ?? "",
+      answer: item.querySelector(".sct-faq-a")?.textContent?.trim() ?? "",
+    }));
+  }
+
+  test("the outlook carries questions answered in full sentences", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const entries = faqEntries(doc, "#outlook");
+    assert.ok(entries.length >= 5, `expected an FAQ, got ${entries.length} items`);
+    for (const entry of entries) {
+      assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
+      // A one-word answer is the failure mode a derived FAQ has: a missing
+      // field rendering as an empty phrase rather than the entry being skipped.
+      assert.ok(
+        entry.answer.length > 40,
+        `answer too short to be one: ${entry.answer}`,
+      );
+      assert.match(entry.answer, /[.!?]$/, `unpunctuated: ${entry.answer}`);
+    }
+  });
+
+  test("the Stats tab answers from its own numbers", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const entries = faqEntries(doc, "#stats");
+    assert.ok(entries.length >= 4, `expected a stats FAQ, got ${entries.length}`);
+
+    // The point of deriving these: every figure quoted must be one the tab
+    // printed. Pull the numbers out of the answers and check each appears
+    // somewhere in the stat rows above them.
+    const rendered = doc.querySelector("#stats").textContent;
+    for (const entry of entries) {
+      assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
+      for (const figure of entry.answer.match(/\d+\.\d+/g) ?? []) {
+        assert.ok(
+          rendered.includes(figure),
+          `${figure} is in an answer but nowhere on the tab: ${entry.answer}`,
+        );
+      }
+    }
+  });
+
+  test("the Stats FAQ says how many games it is built on", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const entries = faqEntries(doc, "#stats");
+    // A per-game rate with no denominator is the one way this block can
+    // mislead, and early in a season it is the whole story.
+    // Case-insensitive: the window is a leading clause in some answers and a
+    // trailing one in others, so it is capitalised in some of them.
+    const framed = entries.filter((e) =>
+      /through \d+ games?|in the \d{4} regular season/i.test(e.answer),
+    );
+    assert.equal(
+      framed.length,
+      entries.length,
+      "every stats answer must say what window it covers",
+    );
+  });
+
+  test("the questions sit under their section, not in one of their own", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    // A question has to be one level under whatever introduces it, and the two
+    // FAQs sit at different depths. On Outlook the block is a band closing the
+    // outlook's <h2>, so its questions are <h4> beside the player names; on
+    // Stats there is nothing to belong to, so the block takes an <h2> of its own
+    // and its questions are <h3>. Hard-coding one level for both filed the
+    // Stats questions in the outline under "Season History", which is neither
+    // where they are nor what they are about.
+    for (const [id, tag] of [
+      ["#outlook", "H4"],
+      ["#stats", "H3"],
+    ]) {
+      const questions = doc.querySelectorAll(`${id} .sct-faq-item`);
+      assert.ok(questions.length > 0, `${id} must carry questions`);
+      for (const item of questions) {
+        assert.equal(item.querySelector(".sct-faq-q").tagName, tag);
+      }
+    }
+    for (const id of ["#outlook", "#stats"]) {
+      assert.equal(
+        doc.querySelectorAll(`${id} .sct-faq`).length,
+        1,
+        `one FAQ block on ${id}`,
+      );
+    }
+  });
+
+  test("one FAQPage for the document, covering every tab that has questions", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const entries = faqEntries(doc);
+    assert.ok(
+      faqEntries(doc, "#outlook").length > 0 && faqEntries(doc, "#stats").length > 0,
+      "this test is only meaningful with both tabs carrying questions",
+    );
+
+    const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')]
+      .map((node) => JSON.parse(node.textContent))
+      .filter((json) => json["@type"] === "FAQPage");
+    // One node, not one per tab: a second FAQPage is what gets the whole lot
+    // ignored rather than merged.
+    assert.equal(blocks.length, 1, "exactly one FAQPage on the page");
+
+    const asked = blocks[0].mainEntity.map((q) => ({
+      question: q.name,
+      answer: q.acceptedAnswer.text,
+    }));
+    // Markup that says something the page does not is the whole reason schema
+    // gets a page penalised, so this is equality rather than a spot check.
+    assert.deepEqual(asked, entries);
+  });
+
+  test("embedded, the questions ship as data for the host to place", async () => {
+    // Rank Math owns the graph on statchasers.com, so the fragment must not
+    // inject a second <script type="application/ld+json"> — one graph competes
+    // with the other rather than adding to it.
+    //
+    // It does NOT follow that the questions should be withheld. The indexed URL
+    // is the WordPress one, and emitting nothing there is what left these
+    // questions rendered for readers and invisible to crawlers. So the fragment
+    // ships them as an inert island, and statchasers-team.php lifts it into
+    // Rank Math's graph and strips it before printing.
+    for (const path of ["/team/new-england-patriots?embed=1", "/embed/team/ne"]) {
+      const res = await get(path);
+      assert.equal(res.status, 200);
+      assert.ok(
+        !/FAQPage/.test(res.body),
+        `${path} must not emit FAQPage markup of its own`,
+      );
+      // The visible questions still ship — it is only the node that is deferred.
+      assert.match(res.body, /sct-faq-q/, `${path} should still render the FAQ`);
+
+      const island = res.body.match(
+        /<script type="application\/json" class="sct-faq-data">(.*?)<\/script>/s,
+      );
+      assert.ok(island, `${path} must carry the FAQ data island`);
+
+      // The island has to describe what is on the page, not a second version of
+      // it: markup that says something the page does not is the whole reason
+      // schema gets a page penalised. Same equality the standalone node gets.
+      const carried = JSON.parse(island[1]).map((entry) => ({
+        question: entry.q,
+        answer: entry.a,
+      }));
+      const { doc } = await dom(path);
+      assert.deepEqual(carried, faqEntries(doc));
+    }
+  });
+
+  test("every team with an outlook gets an FAQ, and no team without one does", async () => {
+    // Scoped to Outlook: the Stats tab answers from a different source and
+    // renders on teams whose outlook has not been written.
+    // Cheap breadth check: the FAQ must not be special-cased to the team it was
+    // written against, and a team whose outlook has not been written must not
+    // render an empty block with a heading over it.
+    for (const slug of ["buffalo-bills", "cincinnati-bengals", "baltimore-ravens"]) {
+      const { doc } = await dom(`/team/${slug}`);
+      const hasOutlook = !!doc.querySelector("#outlook .sct-outlook-player");
+      const entries = faqEntries(doc, "#outlook");
+      if (hasOutlook) {
+        assert.ok(entries.length > 0, `${slug} has an outlook but no FAQ`);
+      } else {
+        assert.equal(entries.length, 0, `${slug} has an FAQ but no outlook`);
+      }
+    }
+  });
+});
+
 describe("honest empty states", () => {
   test("no placeholder values anywhere on the page", async () => {
     const { doc } = await dom("/team/new-england-patriots");
@@ -423,6 +603,7 @@ describe("preview switcher", () => {
       "/player",
       `/player/${playerSlug}`,
       `/embed/player/${playerSlug}`,
+      "/fpa",
     ]) {
       const res = await get(route);
       assert.equal(res.status, 200, `${route} should be 200`);
@@ -454,6 +635,8 @@ describe("shortcode preview harness", () => {
       "/preview/team/ne",
       `/preview/player/${playerSlug}`,
       `/preview/raw/player/${playerSlug}`,
+      "/preview/fpa",
+      "/preview/raw/fpa",
     ]) {
       const res = await get(route);
       assert.equal(res.status, 404, `${route} must not exist outside development`);
@@ -462,19 +645,34 @@ describe("shortcode preview harness", () => {
 
   /**
    * The fragment endpoints must stay bare. If one ever starts shipping its own
-   * <link> or <script>, WordPress would enqueue the assets a second time and
-   * the harness above would stop representing what the plugin actually does.
+   * <link> or executable <script>, WordPress would enqueue the assets a second
+   * time and the harness above would stop representing what the plugin does.
+   *
+   * The one thing that is allowed through is an FAQ's inert payload —
+   * `scp-faq-data` on the player mount, `sct-faq-data` on the team hub. Neither
+   * carries code: each is lifted into Rank Math's graph by the plugin that owns
+   * that mount and stripped from the markup before any of it is printed, so it
+   * never reaches the rendered page and cannot be enqueued as an asset. Matched
+   * exactly rather than waved past by type, so a real script that happened to
+   * sit next to one would still fail this.
    */
   test("the fragments it wraps ship no assets of their own", async () => {
+    const INERT_FAQ =
+      /<script type="application\/json" class="sc[pt]-faq-data">.*?<\/script>/gs;
+
     for (const route of [
       "/embed/ssr.html",
       "/embed/team/ne",
       `/embed/player/${playerSlug}`,
+      "/embed/fpa",
     ]) {
       const res = await get(route);
       assert.equal(res.status, 200);
       assert.ok(!/<link\b/i.test(res.body), `${route} must not carry a stylesheet`);
-      assert.ok(!/<script\b/i.test(res.body), `${route} must not carry a script`);
+      assert.ok(
+        !/<script\b/i.test(res.body.replace(INERT_FAQ, "")),
+        `${route} must not carry a script`,
+      );
     }
   });
 });
@@ -503,9 +701,16 @@ describe("the preview switcher never leaves the pane", () => {
     assert.match(endpoint.body, /data-sct-root/);
 
     // And it is bare — which is exactly why it cannot carry the bar, and why
-    // the source view has to exist at all.
+    // the source view has to exist at all. The FAQ data island is not an asset
+    // and not the bar: it carries no code, and the plugin strips it before the
+    // markup is printed. Same exemption, and same exactness, as the asset guard
+    // above.
+    const withoutIsland = endpoint.body.replace(
+      /<script type="application\/json" class="sct-faq-data">.*?<\/script>/gs,
+      "",
+    );
     assert.ok(!/<link\b/i.test(endpoint.body));
-    assert.ok(!/<script\b/i.test(endpoint.body));
+    assert.ok(!/<script\b/i.test(withoutIsland));
 
     // The source view wrapping it is development-only, like the rest of /preview.
     const raw = await get("/preview/raw/team/ne");
@@ -711,5 +916,207 @@ describe("team.css survives a host theme", () => {
       /--sct-gutter:[^;]*\d\.\d+px/,
       "no sub-pixel gutter",
     );
+  });
+});
+
+/**
+ * Section-scoped team URLs.
+ *
+ * `/team/<slug>/<section>/` is the public address: the one the canonical
+ * names, the hub links to and the WordPress rewrite mirrors as
+ * /nfl/teams/<slug>/<section>/. `?section=` is the internal spelling the
+ * plugin fetches the fragment with. These assertions are what makes the pretty
+ * address a different PAGE rather than the hub wearing a second URL. Same
+ * contract as the player pages.
+ */
+describe("team section URLs", () => {
+  const SECTIONS = [
+    ["outlook", /Fantasy Football Outlook 2\d{3}$/],
+    ["stats", /Stats 2\d{3}$/],
+    ["schedule", /Schedule 2\d{3}$/],
+    ["depth-chart", /Depth Chart 2\d{3}$/],
+  ];
+  const at = (id) => `/team/new-england-patriots/${id}/`;
+
+  test("each section is one panel, named for what it holds", async () => {
+    for (const [id, heading] of SECTIONS) {
+      const { doc } = await dom(at(id));
+
+      const root = doc.querySelector("[data-sct-root]");
+      assert.equal(root.getAttribute("data-section"), id, `${id}: scoped root`);
+
+      const panels = doc.querySelectorAll("[data-sct-panel]");
+      assert.equal(panels.length, 1, `${id}: exactly one panel`);
+      assert.equal(panels[0].getAttribute("id"), id, `${id}: it is the right one`);
+
+      const h1 = doc.querySelectorAll("h1");
+      assert.equal(h1.length, 1, `${id}: exactly one H1`);
+      assert.match(h1[0].textContent.trim(), heading, `${id}: H1 names the section`);
+    }
+  });
+
+  test("the head names the section, once, at its pretty address", async () => {
+    // One of each, and every URL-bearing tag is the pretty self-reference —
+    // never the hub, never the ?section= spelling. The Rank Math filters on the
+    // WordPress side owe the same four things; this is the origin's half.
+    for (const [id] of SECTIONS) {
+      const { doc } = await dom(at(id));
+      const one = (selector) => {
+        const found = doc.querySelectorAll(selector);
+        assert.equal(found.length, 1, `${id}: exactly one ${selector}`);
+        return found[0];
+      };
+      const canonical = one('link[rel="canonical"]').getAttribute("href");
+      assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
+      assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
+      assert.ok(!canonical.includes("?section="), "no query-string canonical");
+      one("title");
+      one('meta[name="description"]');
+      one('meta[name="robots"]');
+    }
+  });
+
+  test("the tab strip is replaced by real links to the hub and its siblings", async () => {
+    // Five tabs that all leave this URL is navigation pretending to be tabs;
+    // what a section page needs is a way back and a way across.
+    for (const [id] of SECTIONS) {
+      const { doc } = await dom(at(id));
+      assert.equal(doc.querySelectorAll(".sct-nav-link").length, 0, `${id}: no tab strip`);
+
+      const links = [...doc.querySelectorAll(".sct-pages .sct-crosslink")];
+      const hrefs = links.map((a) => a.getAttribute("href"));
+      assert.deepEqual(hrefs, [
+        "/team/new-england-patriots",
+        ...SECTIONS.map(([other]) => at(other)),
+      ]);
+      const current = links.filter((a) => a.getAttribute("aria-current") === "page");
+      assert.equal(current.length, 1);
+      assert.equal(current[0].getAttribute("href"), at(id), `${id}: marked current`);
+    }
+  });
+
+  test("the hub links to every section page with a real anchor", async () => {
+    // The tab strip is #hash navigation and a crawler following it never
+    // leaves the hub. Discovery of the section URLs depends on these.
+    const { doc } = await dom("/team/new-england-patriots");
+    const hrefs = [...doc.querySelectorAll(".sct-pages a[href]")].map((a) =>
+      a.getAttribute("href"),
+    );
+    for (const [id] of SECTIONS) {
+      assert.ok(hrefs.includes(at(id)), `hub links to ${at(id)}`);
+    }
+    assert.ok(!hrefs.some((h) => h.includes("news")), "news has no public address yet");
+  });
+
+  test("the section does not print the heading the hero already carries", async () => {
+    for (const id of ["outlook", "schedule", "depth-chart"]) {
+      const { doc } = await dom(at(id));
+      const h1 = doc.querySelector("h1").textContent.trim();
+      for (const h2 of doc.querySelectorAll(`#${id} h2`)) {
+        assert.notEqual(h2.textContent.trim(), h1, `${id}: heading printed twice`);
+      }
+    }
+  });
+
+  test("the FAQ describes the page it is on, not the hub", async () => {
+    const outlook = await dom(at("outlook"));
+    const schedule = await dom(at("schedule"));
+    const nodes = (doc) =>
+      [...doc.querySelectorAll('script[type="application/ld+json"]')]
+        .map((n) => JSON.parse(n.textContent))
+        .filter((json) => json["@type"] === "FAQPage");
+
+    const scoped = nodes(outlook.doc);
+    assert.equal(scoped.length, 1, "the outlook page carries its own FAQPage");
+    assert.deepEqual(
+      scoped[0].mainEntity.map((q) => q.name),
+      [...outlook.doc.querySelectorAll("#outlook .sct-faq-q")].map((q) =>
+        q.textContent.trim(),
+      ),
+    );
+    // Not invented to fill the schema: a section with no questions has none.
+    assert.equal(nodes(schedule.doc).length, 0);
+  });
+
+  test("the title and description are written for the section's query", async () => {
+    // MIRRORED IN PHP: statchasers_team_section_meta() builds the same strings
+    // for Rank Math, which is what actually ranks. If these change, that
+    // changes too.
+    const expected = {
+      outlook: "New England Patriots Fantasy Football Outlook 2026",
+      stats: "New England Patriots Stats 2026: Offense, Defense & NFL Rankings",
+      schedule: "New England Patriots Schedule 2026: Dates, Opponents & Results",
+      "depth-chart": "New England Patriots Depth Chart 2026: Starters & Backups",
+    };
+    for (const [id, title] of Object.entries(expected)) {
+      const { doc } = await dom(at(id));
+      assert.equal(doc.querySelector("title").textContent, `${title} | StatChasers`);
+      assert.ok(
+        (doc.querySelector('meta[name="description"]')?.content ?? "").length > 80,
+        `${id}: carries its own description`,
+      );
+    }
+  });
+
+  test("a section that is not public is a 404, not a copy of the hub", async () => {
+    // Any path segment resolving to the hub is an unbounded supply of
+    // indexable duplicates. `news` is addressable internally but has no public
+    // address yet, so it 404s here too.
+    for (const id of ["not-a-real-section", "news", "overview", "Stats"]) {
+      const res = await get(`/team/new-england-patriots/${id}/`);
+      assert.equal(res.status, 404, `${id}`);
+      assert.equal(res.headers.get("x-robots-tag"), "noindex");
+    }
+    assert.equal((await get("/team/nowhere/stats/")).status, 404, "unknown team");
+  });
+
+  test("the ?section= spelling redirects to the pretty address", async () => {
+    // One address per page. The query form is what the plugin fetches the
+    // fragment with; a reader or crawler holding it is sent to the real one.
+    for (const [path, target] of [
+      ["/team/new-england-patriots?section=stats", "/team/new-england-patriots/stats/"],
+      ["/team/ne?section=schedule", "/team/new-england-patriots/schedule/"],
+      ["/team/ne/depth-chart/", "/team/new-england-patriots/depth-chart/"],
+      ["/team/ne?section=outlook&embed=1", "/team/new-england-patriots/outlook/?embed=1"],
+    ]) {
+      const res = await get(path);
+      assert.equal(res.status, 301, path);
+      assert.equal(res.headers.get("location"), target, path);
+    }
+  });
+
+  test("an unrecognised ?section= still falls through to the hub", async () => {
+    // Defensive: a stale link is worth a full page, not a 404 — the pretty
+    // route is where a bad section is refused.
+    for (const query of ["?section=bogus", "?section=", ""]) {
+      const { doc } = await dom(`/team/new-england-patriots${query}`);
+      assert.ok(doc.querySelectorAll(".sct-nav-link").length > 1, `${query || "(none)"}: the hub`);
+      assert.equal(doc.querySelector("[data-sct-root]").getAttribute("data-section"), null);
+    }
+  });
+
+  test("the WordPress fragment scopes with ?section= and links only when told", async () => {
+    const scoped = await get("/embed/team/ne?section=depth-chart");
+    assert.equal(scoped.status, 200);
+    assert.match(scoped.body, /data-section="depth-chart"/);
+    assert.ok(!/sct-nav-link/.test(scoped.body), "no tab strip in a scoped fragment");
+    assert.ok(!/<h1\b/i.test(scoped.body), "the fragment never carries an H1");
+
+    // The hub's link strip is the plugin's call: it knows whether its rewrite
+    // is live, and a hub linking to four 404s is worse than one linking to
+    // nothing.
+    const quiet = await get("/embed/team/ne");
+    const linked = await get("/embed/team/ne?sections=1");
+    assert.ok(!/sct-pages/.test(quiet.body), "no strip unless asked");
+    assert.match(linked.body, /sct-pages/);
+    assert.notEqual(quiet.headers.get("etag"), linked.headers.get("etag"), "cached apart");
+  });
+
+  test("a section render is cached apart from the hub's", async () => {
+    const hub = await get("/embed/team/ne");
+    const scoped = await get("/embed/team/ne?section=schedule");
+    assert.notEqual(hub.headers.get("etag"), scoped.headers.get("etag"));
+    assert.match(hub.body, /sct-nav-link/);
+    assert.ok(!/sct-nav-link/.test(scoped.body));
   });
 });

@@ -14,6 +14,7 @@
  */
 
 import { getTeamByAbbreviation } from "../team/teams";
+import { seasonYear } from "../seo";
 import { getEntryPoints, type ScoringFormat } from "./scoring";
 import { loadByeWeeks, loadGameLogs, loadGameScores } from "./data";
 import type { GameLogEntry, GameLogStats, GameScore, Player } from "./types";
@@ -353,19 +354,69 @@ export function enrichWithTeamMetrics(
 /* ---------------------------------------------------------- missing weeks, scores */
 
 const seasonMaxWeekCache = new Map<number, number>();
+const teamMaxWeekCache = new Map<string, number>();
 
-function getSeasonMaxWeek(season: number): number {
-  const hit = seasonMaxWeekCache.get(season);
-  if (hit) return hit;
+/**
+ * The last week THIS TEAM has a logged game for, in a season.
+ *
+ * Needed because the league does not play a week at once. On a Friday in
+ * September two teams have played the Thursday game and thirty have not, so a
+ * league-wide "weeks played" pads twenty-eight rosters with an absence from a
+ * game that has not kicked off — and then counts it against them as a game
+ * missed. The unit is the team's schedule, not the calendar.
+ */
+function getTeamMaxWeek(season: number, team: string | null): number {
+  if (!team) return 0;
+  const code = teamCode(team);
+  const key = `${season}:${code}`;
+  const hit = teamMaxWeekCache.get(key);
+  if (hit !== undefined) return hit;
+
   let max = 0;
   for (const entries of Object.values(loadGameLogs(season))) {
-    for (const e of entries) if (e.week > max) max = e.week;
+    for (const e of entries) {
+      if (e.week > max && e.team && teamCode(e.team) === code) max = e.week;
+    }
+  }
+  teamMaxWeekCache.set(key, max);
+  return max;
+}
+
+function getSeasonMaxWeek(season: number, team: string | null): number {
+  const hit = seasonMaxWeekCache.get(season);
+  let max = hit;
+  if (max === undefined) {
+    max = 0;
+    for (const entries of Object.values(loadGameLogs(season))) {
+      for (const e of entries) if (e.week > max) max = e.week;
+    }
+    seasonMaxWeekCache.set(season, max);
   }
   // 18 weeks from 2021, 17 before — a season with no logs yet still shows its
   // full shape rather than collapsing to nothing.
-  const result = Math.max(max, season >= 2021 ? 18 : 17);
-  seasonMaxWeekCache.set(season, result);
-  return result;
+  const fullSeason = season >= 2021 ? 18 : 17;
+
+  /*
+   * A season IN PROGRESS is padded only as far as the league has played.
+   *
+   * Padding it to its full shape is what the rule above does for a finished
+   * season, and it is right there: the weeks a player is missing from a
+   * completed season are weeks he missed. In September it is a different claim
+   * entirely — sixteen rows of "Did not play" under a player who has not missed
+   * anything, for weeks nobody has played. The table would be asserting
+   * absences from the future.
+   *
+   * "In progress" is the current season with fewer weeks logged than it has.
+   * A PRIOR season short of a full log is missing data, not unplayed, and still
+   * shows its whole shape.
+   */
+  const inProgress = season >= seasonYear() && max > 0 && max < fullSeason;
+  if (!inProgress) return Math.max(max, fullSeason);
+
+  // In progress: this team's own last game, falling back to the league's when
+  // the player has no team on record and there is no schedule to read.
+  const teamWeeks = getTeamMaxWeek(season, team);
+  return teamWeeks > 0 ? teamWeeks : max;
 }
 
 function getByeWeek(season: number, team: string | null): number | null {
@@ -397,12 +448,13 @@ export function fillMissingWeeks(
   entries: GameLogEntry[],
   season: number,
   team: string | null,
+  position: string | null = null,
 ): GameLogEntry[] {
   if (entries.length === 0) return entries;
 
   const byeWeek = getByeWeek(season, team);
   const present = new Set(entries.map((e) => e.week));
-  const maxWeek = getSeasonMaxWeek(season);
+  const maxWeek = getSeasonMaxWeek(season, team);
   const filled: GameLogEntry[] = [...entries];
 
   for (let w = 1; w <= maxWeek; w += 1) {
@@ -419,9 +471,13 @@ export function fillMissingWeeks(
   filled.sort((a, b) => a.week - b.week);
 
   return filled.map((entry) => {
+    // The POSITION matters here, and passing null was a real bug: a kicker's
+    // participation is his attempts, and the position-blind check looks only at
+    // targets, catches, carries and pass attempts. Every kicker's log therefore
+    // read "Did not play" for every game he kicked in.
     const status =
       entry.game_status ??
-      (hasParticipation(entry.stats, null) ? "active" : "out");
+      (hasParticipation(entry.stats, position) ? "active" : "out");
     return {
       ...entry,
       game_status: status,
@@ -439,4 +495,5 @@ export function resetRankCaches(): void {
   oppRanksCache.clear();
   teamAggCache.clear();
   seasonMaxWeekCache.clear();
+  teamMaxWeekCache.clear();
 }

@@ -1,0 +1,578 @@
+/*
+ * StatChasers — Redraft Rankings
+ *
+ * The fourth sibling of team.css, player.css and fpa.css, and a sibling for the
+ * same reason: the stylesheets are enqueued independently, so a page mounting
+ * [statchasers_rankings] must not need another tool's CSS. The brand tokens are
+ * restated rather than imported.
+ *
+ * Light-only, matching the other three.
+ */
+
+:where(.scr),
+:where(body.scr-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --scr-gutter: 24px;
+
+  /*
+   * The tier scale: NOMINAL, not ordinal.
+   *
+   * Tier 3 is not "more" than tier 2; it is a different group. So this is seven
+   * distinct hues held at one lightness, not a ramp — a ramp would say the
+   * tiers are rungs on a scale, and the reason a tiered board exists is that
+   * they are bands with cliffs between them.
+   *
+   * All seven sit at ~95% lightness and low chroma. That is deliberate and it
+   * is the accessibility argument: at this lightness every tint keeps
+   * --sc-ink's contrast ratio against it above 13:1, so the colour never
+   * carries any of the text's legibility. It is doing one job — telling a
+   * reader which cells belong together as their eye runs down a column.
+   *
+   * Colour is never the only encoding. Every tinted cell in the All board also
+   * prints the row's rank in the leftmost column, and the per-position tables
+   * print the tier number in a column of its own, so nothing here is lost to a
+   * colour-blind reader or a monochrome print — the tint is a grouping cue on
+   * top of two textual ones, which is the only role a nominal scale of seven
+   * hues can safely play.
+   */
+  --scr-tier-1: hsl(45, 80%, 95%);
+  --scr-tier-2: hsl(140, 45%, 95%);
+  --scr-tier-3: hsl(200, 55%, 95.5%);
+  --scr-tier-4: hsl(265, 42%, 95.5%);
+  --scr-tier-5: hsl(330, 50%, 95.5%);
+  --scr-tier-6: hsl(20, 65%, 95.5%);
+  --scr-tier-7: hsl(180, 35%, 95.5%);
+  --scr-tier-8: hsl(0, 0%, 95.5%);
+}
+
+/* ------------------------------------------------------------- standalone */
+
+body.scr-page {
+  margin: 0;
+  padding: var(--scr-gutter);
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.scr-page.is-embed {
+  padding: 0;
+  background: transparent;
+}
+
+.scr {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.45;
+}
+
+.scr *,
+.scr *::before,
+.scr *::after {
+  box-sizing: border-box;
+}
+
+/* Embedded, the host page owns the outer spacing. */
+.scr.is-embed {
+  max-width: none;
+}
+
+.scr-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------- controls */
+
+.scr-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 0 0 12px;
+}
+
+.scr-nav,
+.scr-scoring {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.scr-nav-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.scr-nav {
+  /* The strip scrolls rather than wrapping: five short chips that stay on one
+     line are easier to hit than two ragged rows of them. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scr-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.scr-nav-list,
+.scr-opts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scr-nav-link,
+.scr-opt {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.scr-nav-link:hover {
+  border-color: var(--sc-border);
+  color: var(--sc-ink);
+}
+
+.scr-nav-link.is-active,
+.scr-opt.is-active {
+  background: var(--sc-navy);
+  border-color: var(--sc-navy);
+  color: #fff;
+}
+
+/* Published in one format only. Stated by being visibly unavailable rather
+   than by a control that looks live and does nothing. */
+.scr-opt.is-off {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scr-csv {
+  margin-left: auto;
+  padding: 6px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scr-csv:hover {
+  border-color: var(--sc-gold-deep);
+  color: var(--sc-gold-deep);
+}
+
+.scr-updated {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------------ panels */
+
+.scr-section-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+/*
+ * One panel at a time.
+ *
+ * Every panel is still in the HTML the server sent — this hides them, it does
+ * not withhold them. A crawler reads all five boards from one response.
+ *
+ * Two mechanisms, in this order, exactly as player.css documents at length:
+ *
+ *   1. :target — the URL names the open panel, so the strip works with
+ *      scripting disabled and a link to #scr-panel-te opens on tight ends;
+ *   2. .is-active, once client/rankings.ts announces itself by setting
+ *      data-scr-tabs="js". Pushing a hash through the History API does not
+ *      reliably re-evaluate :target, so the scripted path owns its state.
+ *
+ * Wrapped in @supports so a browser without :has() gets every board stacked and
+ * reachable rather than the :not(:has(...)) rule dropping out and leaving no
+ * visible panel at all. Degrading to a long page is worse; degrading to a blank
+ * one is broken.
+ */
+@supports selector(:has(*)) {
+  .scr:not([data-scr-tabs="js"]) [data-scr-panel] {
+    display: none;
+  }
+
+  .scr:not([data-scr-tabs="js"]) [data-scr-panel]:target {
+    display: block;
+  }
+
+  .scr:not([data-scr-tabs="js"]):not(:has([data-scr-panel]:target))
+    [data-scr-panel].is-default {
+    display: block;
+  }
+}
+
+.scr[data-scr-tabs="js"] [data-scr-panel] {
+  display: none;
+}
+
+.scr[data-scr-tabs="js"] [data-scr-panel].is-active {
+  display: block;
+}
+
+[data-scr-panel]:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 4px;
+}
+
+/* ------------------------------------------------------------------ cards */
+
+.scr-card {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  box-shadow: var(--sc-shadow);
+  overflow: hidden;
+}
+
+.scr-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scr-caption {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sc-muted);
+  background: var(--sc-surface-soft);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scr-empty {
+  margin: 0;
+  padding: 36px 20px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.scr-all-table,
+.scr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.scr-all-table thead th,
+.scr-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.scr-all-table abbr,
+.scr-table abbr {
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+/* -------------------------------------------------- the side-by-side board */
+
+.scr-all-col {
+  width: 25%;
+}
+
+.scr-all-row + .scr-all-row th,
+.scr-all-row + .scr-all-row td {
+  border-top: 1px solid rgba(229, 231, 235, 0.7);
+}
+
+.scr-all-rank {
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--sc-muted);
+  background: var(--sc-surface-soft);
+  white-space: nowrap;
+}
+
+.scr-all-cell {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+
+.scr-all-cell.is-empty {
+  background: var(--sc-surface-soft);
+}
+
+.scr-all-name {
+  font-weight: 600;
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+a.scr-all-name:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+.scr-team {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sc-muted);
+  white-space: nowrap;
+}
+
+/*
+ * The tail of the All board.
+ *
+ * A <details>, not a slice: all 100 rows are in the document either way, which
+ * is the whole reason this tool was moved off the React build. What the
+ * disclosure buys is a short first screen, and it opens with scripting off.
+ */
+.scr-more > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-top: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scr-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.scr-more > summary:hover {
+  color: var(--sc-gold-deep);
+}
+
+.scr-more:not([open]) .scr-more-close,
+.scr-more[open] .scr-more-open {
+  display: none;
+}
+
+/* ------------------------------------------------- the per-position boards */
+
+.scr-col-tier,
+.scr-col-rank {
+  width: 56px;
+}
+
+.scr-th-player {
+  text-align: left !important;
+}
+
+.scr-tier-head th {
+  padding: 5px 14px;
+  background: linear-gradient(90deg, var(--sc-navy) 0%, #132a4a 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.scr-row.is-alt {
+  background: var(--sc-surface-soft);
+}
+
+.scr-row td,
+.scr-row th {
+  padding: 7px 10px;
+  border-top: 1px solid rgba(229, 231, 235, 0.7);
+}
+
+.scr-tier-cell,
+.scr-rank-cell {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--sc-muted);
+  white-space: nowrap;
+}
+
+.scr-player {
+  text-align: left;
+  font-weight: 600;
+}
+
+.scr-player-link {
+  color: var(--sc-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.scr-player-link:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------- the tints */
+
+.scr-all-cell[data-tier="1"],
+.scr-legend-swatch[data-tier="1"] { background: var(--scr-tier-1); }
+.scr-all-cell[data-tier="2"],
+.scr-legend-swatch[data-tier="2"] { background: var(--scr-tier-2); }
+.scr-all-cell[data-tier="3"],
+.scr-legend-swatch[data-tier="3"] { background: var(--scr-tier-3); }
+.scr-all-cell[data-tier="4"],
+.scr-legend-swatch[data-tier="4"] { background: var(--scr-tier-4); }
+.scr-all-cell[data-tier="5"],
+.scr-legend-swatch[data-tier="5"] { background: var(--scr-tier-5); }
+.scr-all-cell[data-tier="6"],
+.scr-legend-swatch[data-tier="6"] { background: var(--scr-tier-6); }
+.scr-all-cell[data-tier="7"],
+.scr-legend-swatch[data-tier="7"] { background: var(--scr-tier-7); }
+.scr-all-cell[data-tier="8"],
+.scr-legend-swatch[data-tier="8"] { background: var(--scr-tier-8); }
+
+/* ------------------------------------------------------------- the legend */
+
+.scr-legend-wrap {
+  margin-top: 12px;
+}
+
+.scr-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.scr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.scr-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 4px;
+}
+
+.scr-legend-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--sc-muted);
+}
+
+/* -------------------------------------------------------------- narrow */
+
+@media (max-width: 640px) {
+  body.scr-page {
+    padding: 12px;
+  }
+
+  .scr-controls {
+    gap: 8px 12px;
+  }
+
+  .scr-csv {
+    margin-left: 0;
+  }
+
+  /* The All board is five columns of names on a phone, so it gets the tighter
+     of the two paddings and a smaller face rather than a horizontal scroll the
+     reader has to discover. */
+  .scr-all-table {
+    font-size: 11px;
+  }
+
+  .scr-all-cell,
+  .scr-all-rank {
+    padding: 5px 4px;
+  }
+
+  /* The team badge is the first thing to go: it is the least of the three
+     things in the cell and the only one that is not the player. */
+  .scr-all-cell .scr-team {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scr-nav-link,
+  .scr-opt {
+    transition: none;
+  }
+}

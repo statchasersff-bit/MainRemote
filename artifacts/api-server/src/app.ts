@@ -7,6 +7,8 @@ import router from "./routes";
 import embedRouter from "./routes/embed";
 import teamRouter from "./routes/team";
 import playerRouter from "./routes/player";
+import fpaRouter from "./routes/fpa";
+import rankingsRouter from "./routes/rankings";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -73,6 +75,14 @@ app.use(teamRouter);
 // the bottom of this file is deliberate and catches everything the routes above
 // do not claim. It changes nothing about "/", which is still the news tool.
 app.use(playerRouter);
+
+// Fantasy Points Allowed: /fpa, /fpa/download.csv and the /embed/fpa fragment.
+// Mounted alongside the other two tools, for the same reason.
+app.use(fpaRouter);
+
+// Redraft Rankings: /rankings, /rankings/download.csv and the /embed/rankings
+// fragment. Mounted alongside the other tools, for the same reason.
+app.use(rankingsRouter);
 
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
@@ -185,7 +195,9 @@ app.use((req, res) => {
     `<title>Not found</title></head><body>` +
     `<h1>Not found</h1><p><a href="/">Go to the news tool</a>` +
     ` &middot; <a href="/team">Go to the team hubs</a>` +
-    ` &middot; <a href="/player">Go to the player pages</a></p>` +
+    ` &middot; <a href="/player">Go to the player pages</a>` +
+    ` &middot; <a href="/fpa">Go to fantasy points allowed</a>` +
+    ` &middot; <a href="/rankings">Go to the redraft rankings</a></p>` +
     `</body></html>`;
   res
     .status(404)

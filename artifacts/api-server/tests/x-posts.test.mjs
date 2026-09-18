@@ -327,6 +327,47 @@ describe("what kind of news it is", () => {
     ["Teams are believed to have interest in a trade", "transaction"],
     ["A solid waiver wire add this week", "fantasy"],
     ["Great atmosphere at the stadium tonight", "other"],
+    // Availability, which has no body part, no move and no practice in it.
+    // Every one of these used to land in "other".
+    ["Won't play in Saturday's preseason game", "status"],
+    ["In line to play in Friday's preseason contest", "status"],
+    ["Done for season", "status"],
+    ["Feels on track for Week 1", "status"],
+    // Participation. A bare `practice` missed the -ing form, which is the
+    // shape the wire files most of these in.
+    ["Not practicing Wednesday", "practice"],
+    ["Takes part in 7-on-7 drills", "practice"],
+    ["Had a rest day Tuesday", "practice"],
+    // Role notes, which read as depth chart rather than as nothing.
+    ["Still Dallas' clear TE1", "depth-chart"],
+    ["Embracing complementary role", "depth-chart"],
+    ["Wins kicker competition in Washington", "depth-chart"],
+    // `back` is a body part, a direction and a position: it counts as an
+    // injury only with an injury word beside it, or as a return to play.
+    ["Back for Year 2 with Steelers", "other"],
+    ["Viewed as three-down back", "depth-chart"],
+    ["Dealing with lower back tightness", "injury"],
+    ["Working back at his own pace", "injury"],
+    // ...and `out for` needs a duration, or "works out for" is an injury.
+    ["Officially works out for Rams again", "other"],
+    ["Out for at least one month with MCL sprain", "injury"],
+    // The club lane's own genres. None of these name a player fact at all,
+    // and every one of them used to be "other".
+    ["How to Watch: Buccaneers vs. Browns | Week 2 2026", "preview"],
+    ["Know Your Foe: The Texans' Look To Slow Joe Burrow", "preview"],
+    ["Expert Game Picks: Raiders or Chargers?", "preview"],
+    ["Bills 41, Lions 31 | Final Score, recap + highlights", "recap"],
+    ["Top 3 things we learned from Bills vs. Lions | Week 2", "recap"],
+    ["2026 Bucs NFL Power Rankings Week 2", "analysis"],
+    ["Transcript: DC Sean Duggan Press Conference - September 17", "media"],
+    ["Mailbag: How to contain running QBs?", "media"],
+    ["Colts, Versiti announce dates for 2026 Bleed Blue Blood Drives", "club"],
+    ["Miami Dolphins Academy Hosts Flag Football Clinics for Youth", "club"],
+    // A player fact published by a club is still the player fact: the genre
+    // rules sit below every rule above them.
+    ["Colts rule out WR Ashton Dulin for Week 2 game against Kansas City", "injury"],
+    ["INACTIVES: Lions vs. Bills", "status"],
+    ["Carson Wentz to Start for Vikings in Week 2 at Bears", "depth-chart"],
   ];
 
   for (const [text, expected] of cases) {
