@@ -15,6 +15,12 @@
  * "3 hours ago" label after load.
  */
 
+import {
+  CATEGORY_LABELS,
+  NEWS_CATEGORIES,
+  type NewsCategory,
+} from "./news-category";
+
 export interface NewsItem {
   id: string;
   title: string;
@@ -27,6 +33,23 @@ export interface NewsItem {
   source?: string | null;
   /** Lowercase team abbreviation (e.g. "buf"), resolved server-side. */
   team?: string | null;
+  /**
+   * Which provider lane produced this item: "wire", "club", "x", or null for
+   * everything stored before lanes were recorded. Only "x" changes how a card
+   * is drawn; the rest are the news the tool has always shown.
+   */
+  sourceType?: string | null;
+  /** The reporter's X handle, lowercase and without the @, on X items. */
+  authorHandle?: string | null;
+  /** Derived category — see lib/news-category.ts. Drives the filter. */
+  category?: string | null;
+}
+
+/** The lane whose cards carry an author instead of a section label. */
+export const X_SOURCE = "x";
+
+export function isXItem(item: NewsItem): boolean {
+  return item.sourceType === X_SOURCE;
 }
 
 /** Cards shown per page once JavaScript takes over pagination. */
@@ -243,6 +266,53 @@ export function itemTimestamp(item: NewsItem): number | null {
   return null;
 }
 
+/**
+ * The X mark.
+ *
+ * Inline SVG rather than an <img>: it is a 16px glyph on every X card in the
+ * list, and a request per card — cross-origin, at that, from a page this tool
+ * is embedded into — would be absurd next to 400 bytes of path data. Marked
+ * aria-hidden because the handle beside it already says what this is.
+ */
+const X_MARK =
+  `<svg class="sc-x-mark" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false">` +
+  `<path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>` +
+  `</svg>`;
+
+/**
+ * The top-left of a card: what kind of item this is, or — for X — who wrote it.
+ *
+ * An X post's byline replaces the section label rather than adding a row to the
+ * card, because on a post the author IS the category: "Player News" says
+ * nothing a reader of a Schefter post needs, and the reporter's name is the
+ * single most load-bearing piece of attribution in the feed. Same slot, same
+ * size, same alignment as every other card — the mark and the handle are the
+ * only things that distinguish it.
+ */
+function renderCardLabel(item: NewsItem): string {
+  if (!isXItem(item) || !item.authorHandle) {
+    return `<span class="sc-card-label">Player News</span>`;
+  }
+
+  const handle = escapeHtml(item.authorHandle);
+  // `source` carries the reporter's display name for an X row (see the ingest's
+  // toNewsItem); it falls back to the handle, so this is only ever a duplicate
+  // when we never learned a name, in which case the name half is dropped.
+  const name = (item.source ?? "").trim();
+  const nameHtml =
+    name && name.toLowerCase() !== `@${item.authorHandle}`
+      ? `<span class="sc-x-author">${escapeHtml(name)}</span>`
+      : "";
+
+  return (
+    `<span class="sc-card-label sc-card-label-x">` +
+    X_MARK +
+    nameHtml +
+    `<span class="sc-x-handle">@${handle}</span>` +
+    `</span>`
+  );
+}
+
 export interface RenderCardOptions {
   /** Zero-based page this card belongs to; drives lazy-loading and paging. */
   pageIndex: number;
@@ -338,7 +408,9 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     ? ` style="${escapeHtml(styleParts.join(";"))}"`
     : "";
 
-  const cardClass = logo ? "sc-card has-team-logo" : "sc-card";
+  const cardClass =
+    (logo ? "sc-card has-team-logo" : "sc-card") +
+    (isXItem(item) ? " sc-card-x" : "");
 
   const headline = link
     ? `<a class="sc-card-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${title}</a>`
@@ -349,7 +421,7 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     `<div class="sc-card-media">${mediaInner}</div>` +
     `<div class="sc-card-body">` +
     `<div class="sc-card-toprow">` +
-    `<span class="sc-card-label">Player News</span>` +
+    renderCardLabel(item) +
     timeHtml +
     `</div>` +
     `<h3 class="sc-card-name">${headline}</h3>` +
@@ -415,6 +487,14 @@ export function renderList(
         `<li class="sc-card-item" data-page="${pageIndex}"` +
         ` data-player="${escapeHtml(searchKey(item.playerName))}"` +
         (item.team ? ` data-team="${escapeHtml(item.team)}"` : "") +
+        // The filters read attributes rather than the rendered text, so they
+        // never have to walk into a card — the rule the player and team
+        // filters were already built on, extended to the three new ones.
+        ` data-source="${isXItem(item) ? X_SOURCE : "news"}"` +
+        (item.authorHandle
+          ? ` data-handle="${escapeHtml(item.authorHandle)}"`
+          : "") +
+        ` data-category="${escapeHtml(item.category ?? "other")}"` +
         `>` +
         renderCard(item, {
           pageIndex,
@@ -516,6 +596,118 @@ export function renderTeamOptions(codes: string[], selected: string): string {
 }
 
 /**
+ * The X accounts present in a list, as handle -> display name.
+ *
+ * Built from the items rather than from the monitored-account table, for the
+ * same reason the team menu lists only teams that have a card: the filters work
+ * on the DOM, so an option for a reporter who has not posted could only ever
+ * produce an empty list.
+ */
+export function accountsInItems(items: NewsItem[]): Array<[string, string]> {
+  const names = new Map<string, string>();
+  for (const item of items) {
+    if (!isXItem(item) || !item.authorHandle) continue;
+    const handle = item.authorHandle;
+    const name = (item.source ?? "").trim();
+    // First non-handle display name wins; a later card for the same reporter
+    // cannot downgrade it back to the bare handle.
+    if (!names.get(handle) && name && name.toLowerCase() !== `@${handle}`) {
+      names.set(handle, name);
+    } else if (!names.has(handle)) {
+      names.set(handle, `@${handle}`);
+    }
+  }
+  return [...names.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+}
+
+/** Categories present in a list, in the menu's fixed order. */
+export function categoriesInItems(items: NewsItem[]): NewsCategory[] {
+  const present = new Set(items.map((item) => item.category ?? "other"));
+  return NEWS_CATEGORIES.filter((category) => present.has(category));
+}
+
+/** Whether any item in the list came from X. Decides if the menus are shown. */
+export function hasXItems(items: NewsItem[]): boolean {
+  return items.some(isXItem);
+}
+
+function renderOptions(
+  choices: Array<{ value: string; label: string }>,
+  selected: string,
+): string {
+  return choices
+    .map(
+      (choice) =>
+        `<option value="${escapeHtml(choice.value)}"` +
+        (choice.value === selected ? " selected" : "") +
+        `>${escapeHtml(choice.label)}</option>`,
+    )
+    .join("");
+}
+
+/**
+ * The source menu's options. Exported because the client rebuilds the menus
+ * after a refresh with the same function the server rendered them with.
+ */
+export function renderSourceOptions(selected = ""): string {
+  return renderOptions(
+    [
+      { value: "", label: "All sources" },
+      { value: "news", label: "News" },
+      { value: X_SOURCE, label: "X" },
+    ],
+    selected,
+  );
+}
+
+export function renderAccountOptions(
+  items: NewsItem[],
+  selected = "",
+): string {
+  return renderOptions(
+    [
+      { value: "", label: "All accounts" },
+      ...accountsInItems(items).map(([handle, name]) => ({
+        value: handle,
+        label: name,
+      })),
+    ],
+    selected,
+  );
+}
+
+export function renderCategoryOptions(
+  items: NewsItem[],
+  selected = "",
+): string {
+  return renderOptions(
+    [
+      { value: "", label: "All categories" },
+      ...categoriesInItems(items).map((category) => ({
+        value: category,
+        label: CATEGORY_LABELS[category],
+      })),
+    ],
+    selected,
+  );
+}
+
+/** One labelled <select>, in the same shape as the search field beside it. */
+function renderSelectFilter(
+  id: string,
+  label: string,
+  optionsHtml: string,
+  extraClass = "",
+): string {
+  return (
+    `<label class="sc-filter ${extraClass}">` +
+    `<span class="sc-filter-label">${escapeHtml(label)}</span>` +
+    `<select id="${escapeHtml(id)}" class="sc-filter-select">${optionsHtml}</select>` +
+    `</label>`
+  );
+}
+
+/**
  * Team dropdown + player search.
  *
  * Deliberately NOT wrapped in a <form>: a form with no action submits to the
@@ -535,6 +727,7 @@ export function renderTeamOptions(codes: string[], selected: string): string {
  */
 export function renderFilters(items: NewsItem[]): string {
   const teams = teamCodesInItems(items);
+  const showX = hasXItems(items);
 
   return (
     `<div class="sc-filters" hidden>` +
@@ -565,6 +758,34 @@ export function renderFilters(items: NewsItem[]): string {
     `</div>` +
     `</details>` +
     `</div>` +
+    // Category is useful whatever the feed is carrying, so it is always shown.
+    // Source and account only appear once there is an X post to filter to —
+    // the same rule the team menu follows: a control that can only ever return
+    // everything, or nothing, is worse than no control. (The toolbar is not
+    // replaced by a background refresh — that would discard whatever the reader
+    // has typed into it — so on a page that had no X items when it was rendered,
+    // the two menus appear on the next load rather than the moment the first
+    // post arrives. The cards themselves appear immediately either way.)
+    renderSelectFilter(
+      "scFilterCategory",
+      "Category",
+      renderCategoryOptions(items),
+      "sc-filter-category",
+    ) +
+    (showX
+      ? renderSelectFilter(
+          "scFilterSource",
+          "Source",
+          renderSourceOptions(),
+          "sc-filter-source",
+        ) +
+        renderSelectFilter(
+          "scFilterAccount",
+          "X account",
+          renderAccountOptions(items),
+          "sc-filter-account",
+        )
+      : "") +
     // Announces the result count to screen readers as the filters change, and
     // gives everyone else a plain "showing N of M" they can trust.
     `<p class="sc-filter-status" role="status"></p>` +

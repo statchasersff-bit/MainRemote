@@ -1,0 +1,1580 @@
+/*
+ * StatChasers — NFL Player Pages
+ *
+ * The sibling of team.css, and deliberately its sibling rather than its
+ * extension: the two stylesheets are enqueued independently, so a WordPress
+ * page mounting [statchasers_player] must not need [statchasers_team]'s CSS to
+ * render. The brand tokens are therefore restated here rather than imported —
+ * one extra copy of forty custom properties is cheaper than a cross-tool
+ * dependency, and it is the same trade the two bundles already make.
+ *
+ * Light-only, like the team hub. The design system is white-first with navy
+ * structure and a gold accent; a dark theme here and not there would be
+ * conspicuous on a page that can mount both.
+ *
+ * Both selectors carry the tokens: `.scp` is the fragment as embedded, and
+ * `body.scp-page` is the standalone page, whose own background/colour/font
+ * rules need to see them too.
+ */
+
+:where(.scp),
+:where(body.scp-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-hairline: rgba(15, 23, 42, 0.08);
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-shadow-lift: 0 14px 38px rgba(15, 23, 42, 0.1);
+
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /*
+   * The finish-tier ramp: ONE hue in four monotone lightness steps.
+   *
+   * POS1 through Bust is an order, not four identities, so it takes an ordinal
+   * ramp rather than four hues — the reader sees the order in the colour. The
+   * steps are validated, not chosen: OKLCH lightness ascends 0.359 / 0.500 /
+   * 0.628 / 0.754 in even increments, and the palest still clears 2:1 against
+   * the white surface, which is the floor an ordinal ramp's light end has to
+   * hold. Every tier is also labelled in text, so the pale end never carries
+   * meaning alone.
+   */
+  --scp-tier-1: #0b3a7a;
+  --scp-tier-2: #2f63a8;
+  --scp-tier-3: #5a8cc4;
+  --scp-tier-4: #8fb3da;
+
+  /* The two chart series. Validated as a pair: ΔE 23.7 under protanopia. */
+  --scp-series-points: #2f63a8;
+  --scp-series-average: #a87905;
+
+  /* Status, for the injury risk rows only — never reused as a series colour. */
+  --scp-risk-low: #0f6b4f;
+  --scp-risk-moderate: #8a6205;
+  --scp-risk-high: #99323a;
+
+  --scp-nav-h: 52px;
+  --scp-nav-offset: 0px;
+  --scp-gutter: 24px;
+
+  /* Falls back to the brand navy when a player has no team. */
+  --team-primary: var(--sc-navy);
+  --team-secondary: var(--sc-gold);
+}
+
+/* ------------------------------------------------------------- page shell */
+
+body.scp-page {
+  margin: 0;
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.scp {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  padding: 0 var(--scp-gutter) 64px;
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.5;
+}
+
+/* Embedded: WordPress supplies the page's own padding and background. */
+.scp.is-embed {
+  max-width: none;
+  padding: 0;
+  background: transparent;
+}
+
+.scp *,
+.scp *::before,
+.scp *::after {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------------- hero */
+
+.scp-hero {
+  position: relative;
+  display: block;
+  margin: 24px 0 0;
+  padding: 28px;
+  border-radius: var(--sc-radius);
+  background: linear-gradient(180deg, var(--sc-navy) 0%, var(--sc-navy-deep) 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+/*
+ * The team's colours enter the page here and nowhere else: a soft aura behind
+ * the headshot and a hairline along the top edge. The team is an accent, not a
+ * repaint — a Bengals page still has to read as StatChasers.
+ */
+.scp-hero-decor {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--team-primary), var(--team-secondary));
+}
+
+.scp-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.scp-photo {
+  position: relative;
+  flex: 0 0 auto;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in srgb, var(--team-primary) 55%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.scp-photo-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--sc-navy-deep);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.scp-hero-text {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.scp-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sc-gold-soft);
+}
+
+.scp-title {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.scp-hero-facts {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.scp-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.scp-hero-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.scp-hero-team:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.scp-hero-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* The injury designation. Present only when there is one — never "Healthy". */
+.scp-hero-flag {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(153, 50, 58, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scp-hero-rank {
+  flex: 0 0 auto;
+  text-align: right;
+  padding-left: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.scp-hero-rank-value {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--sc-gold-soft);
+  line-height: 1;
+}
+
+.scp-hero-rank-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* ------------------------------------------------------- controls and nav */
+
+.scp-controls {
+  position: sticky;
+  top: var(--scp-nav-offset);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 6px 0;
+  background: var(--sc-surface-soft);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp.is-embed .scp-controls {
+  background: var(--sc-surface);
+}
+
+.scp-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scp-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.scp-nav-list {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp-nav-link {
+  display: block;
+  padding: 12px 14px;
+  border-bottom: 2px solid transparent;
+  color: var(--sc-muted-strong);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.scp-nav-link:hover {
+  color: var(--sc-ink);
+}
+
+.scp-nav-link.is-active {
+  color: var(--sc-navy);
+  border-bottom-color: var(--sc-gold);
+}
+
+.scp-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+}
+
+.scp-format-label {
+  padding: 0 8px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-format-opt {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.scp-format-opt.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- panels */
+
+.scp-section {
+  padding: 32px 0 0;
+  scroll-margin-top: calc(var(--scp-nav-h) + var(--scp-nav-offset) + 16px);
+}
+
+.scp-hero {
+  scroll-margin-top: calc(var(--scp-nav-h) + var(--scp-nav-offset) + 16px);
+}
+
+/*
+ * Sections are panels: one at a time, switched by the bar above.
+ *
+ * Every panel is still in the HTML the server sent — this hides them, it does
+ * not withhold them. A crawler reads the whole profile from one response, and
+ * the game log is zero requests away from the overview.
+ *
+ * Two mechanisms, in this order:
+ *
+ *   1. :target — the URL names the open panel, so the bar works with scripting
+ *      disabled and a link to #injury opens on the injury tab. This is the
+ *      whole no-JS story; there is no fallback tab script to load.
+ *   2. .is-active, once client/player.ts announces itself by setting
+ *      data-scp-tabs="js". Pushing a hash through the History API does not
+ *      reliably re-evaluate :target, so the scripted path owns its state
+ *      explicitly rather than steering a selector it cannot depend on.
+ *
+ * Wrapped in @supports so a browser without :has() gets every section stacked
+ * and reachable rather than the :not(:has(...)) rule dropping out and leaving
+ * no visible panel at all. Degrading to a long page is worse; degrading to a
+ * blank one is broken.
+ */
+@supports selector(:has(*)) {
+  .scp:not([data-scp-tabs="js"]) [data-scp-panel] {
+    display: none;
+  }
+
+  .scp:not([data-scp-tabs="js"]) [data-scp-panel]:target {
+    display: block;
+  }
+
+  .scp:not([data-scp-tabs="js"]):not(:has([data-scp-panel]:target))
+    [data-scp-panel].is-default {
+    display: block;
+  }
+}
+
+.scp[data-scp-tabs="js"] [data-scp-panel] {
+  display: none;
+}
+
+.scp[data-scp-tabs="js"] [data-scp-panel].is-active {
+  display: block;
+}
+
+[data-scp-panel]:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 4px;
+}
+
+/* --------------------------------------------------------------- headings */
+
+.scp-head {
+  margin: 0 0 18px;
+}
+
+.scp-h2 {
+  position: relative;
+  margin: 0;
+  padding-bottom: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--sc-navy);
+}
+
+/* The gold rule is drawn by the heading, not by a sibling node, so it cannot
+   be left behind by a heading that moves. */
+.scp-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--sc-gold), var(--sc-gold-soft));
+}
+
+.scp-head-sub {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--sc-muted);
+}
+
+.scp-h3 {
+  margin: 32px 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-section > .scp-h3:first-child {
+  margin-top: 0;
+}
+
+.scp-note {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--sc-muted);
+}
+
+.scp-note--lead {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-para {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-empty {
+  padding: 32px 0;
+  color: var(--sc-muted);
+}
+
+.scp-caption {
+  caption-side: bottom;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--sc-muted);
+  text-align: left;
+}
+
+.scp-stamp {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------- stat tiles */
+
+.scp-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.scp-tile {
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-tile-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-tile-value {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--sc-navy);
+}
+
+.scp-tile-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-gold-deep);
+}
+
+.scp-tile-sub {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------ read boxes */
+
+.scp-reads {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.scp-read {
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-left: 3px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.scp-read[data-mod="up"] { border-left-color: var(--scp-risk-low); }
+.scp-read[data-mod="down"] { border-left-color: var(--scp-risk-high); }
+.scp-read[data-mod="low"] { border-left-color: var(--scp-risk-low); }
+.scp-read[data-mod="high"] { border-left-color: var(--scp-risk-high); }
+
+.scp-read-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-read-value {
+  margin: 6px 0 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-read-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------- the stacked bar */
+
+.scp-stack-bar {
+  display: flex;
+  /* The 2px gap is the spacer between segments: adjacent steps of one hue have
+     to stay countable, and a hairline of surface does that without adding a
+     fifth colour. */
+  gap: 2px;
+  height: 34px;
+  border-radius: var(--sc-radius-xs);
+  overflow: hidden;
+}
+
+.scp-stack-seg {
+  display: grid;
+  place-items: center;
+  flex-grow: 0;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.scp-stack-inline {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* The palest tier cannot carry white text; its label goes dark instead. */
+.scp-stack-seg[data-tier="bust"] .scp-stack-inline {
+  color: var(--sc-ink);
+}
+
+.scp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.scp-legend-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+/* Text wears text tokens, never the series colour — the swatch beside it
+   carries the identity. */
+.scp-legend-label {
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+.scp-legend-value {
+  color: var(--sc-muted);
+}
+
+/* --------------------------------------------------------------- figures */
+
+.scp-figure {
+  position: relative;
+  margin: 0;
+}
+
+/* Scaled uniformly: width drives, height follows the viewBox's ratio. The
+   renderer's note explains why this is not preserveAspectRatio="none". */
+.scp-spark {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  overflow: visible;
+}
+
+/* Recessive chrome: the axis is a hairline and the reference a dashed rule,
+   both well below the data in weight. */
+.scp-spark-axis {
+  stroke: var(--sc-border);
+  stroke-width: 1;
+}
+
+.scp-spark-grid {
+  stroke: var(--sc-border);
+  stroke-width: 1;
+}
+
+.scp-spark-tick {
+  fill: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.scp-spark-dot {
+  transition: r 0.1s ease;
+}
+
+.scp-spark-dot.is-hot,
+.scp-spark-dot:focus-visible {
+  r: 6;
+  outline: none;
+  /* The 2px surface ring keeps a highlighted marker legible where the line
+     passes behind it. */
+  stroke: var(--sc-surface);
+  stroke-width: 2;
+}
+
+.scp-figcaption {
+  margin-top: 4px;
+}
+
+.scp-tip {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, calc(-100% - 10px));
+  padding: 6px 10px;
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--sc-shadow-lift);
+}
+
+/* ---------------------------------------------------------------- meters */
+
+.scp-meters {
+  display: grid;
+  gap: 10px;
+}
+
+.scp-meter {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 68px minmax(120px, 1.4fr);
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.scp-meter-label {
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+.scp-meter-value {
+  font-weight: 800;
+  color: var(--sc-navy);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-meter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scp-meter-track {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.scp-meter-fill {
+  display: block;
+  height: 100%;
+  /* Rounded data-end anchored to the baseline. */
+  border-radius: 0 4px 4px 0;
+  background: var(--scp-tier-2);
+}
+
+.scp-meter-pct {
+  flex: 0 0 auto;
+  min-width: 36px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-meter-empty {
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.scp-meters-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------ production block */
+
+.scp-prod {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.scp-td {
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+}
+
+.scp-td[data-high="1"] {
+  border-color: color-mix(in srgb, var(--scp-risk-moderate) 40%, var(--sc-border));
+}
+
+.scp-td-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-td-value {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-td-sub {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ---------------------------------------------------------- key stat rows */
+
+.scp-keystats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.scp-keystat {
+  padding: 14px 16px;
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+  border: 1px solid var(--sc-border);
+}
+
+.scp-keystat-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-keystat-total {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-keystat-pg {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.scp-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-table th,
+.scp-table td {
+  padding: 9px 10px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--sc-surface);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  border-bottom: 2px solid var(--sc-border);
+}
+
+.scp-table tbody th[scope="row"],
+.scp-table thead th:first-child,
+.scp-table tfoot th {
+  text-align: left;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-table td:nth-child(2),
+.scp-table thead th:nth-child(2) {
+  text-align: left;
+}
+
+.scp-table tbody tr:hover {
+  background: var(--sc-surface-soft);
+}
+
+.scp-row[data-status="bye"],
+.scp-row[data-status="out"] {
+  color: var(--sc-muted);
+}
+
+.scp-row-empty {
+  text-align: left !important;
+  font-style: italic;
+  color: var(--sc-muted);
+}
+
+.scp-pts {
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-opp-rank {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.scp-score {
+  color: var(--sc-muted);
+}
+
+.scp-tier {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--tier-fill, var(--scp-tier-2));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* The palest step cannot carry white text. */
+.scp-tier[data-tier="bust"] {
+  color: var(--sc-ink);
+}
+
+.scp-total th,
+.scp-total td {
+  border-top: 2px solid var(--sc-border);
+  border-bottom: none;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.scp-sort:hover {
+  color: var(--sc-navy);
+}
+
+.scp-table th[aria-sort="descending"] .scp-sort::after { content: " \2193"; }
+.scp-table th[aria-sort="ascending"] .scp-sort::after { content: " \2191"; }
+
+.scp-table--role th[scope="row"] {
+  white-space: normal;
+}
+
+.scp-ctx {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-delta[data-dir="up"] { color: var(--scp-risk-low); font-weight: 700; }
+.scp-delta[data-dir="down"] { color: var(--scp-risk-high); font-weight: 700; }
+.scp-delta[data-dir="flat"] { color: var(--sc-muted); }
+
+/* ------------------------------------------------------ finish timeline */
+
+.scp-finishes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.scp-finish {
+  display: grid;
+  grid-template-columns: 58px 64px minmax(96px, auto) 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  font-size: 13px;
+}
+
+.scp-finish-season {
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-finish-rank {
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.scp-finish-badge {
+  justify-self: start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.scp-finish-badge[data-tier="elite"] { background: var(--scp-tier-1); }
+.scp-finish-badge[data-tier="starter"] { background: var(--scp-tier-2); }
+.scp-finish-badge[data-tier="streaming"] { background: var(--scp-tier-3); }
+.scp-finish-badge[data-tier="depth"] { background: var(--scp-tier-4); color: var(--sc-ink); }
+.scp-finish-badge[data-tier="poor"] { background: var(--sc-surface-sink); color: var(--sc-muted-strong); }
+
+.scp-finish-ppg,
+.scp-finish-gp {
+  color: var(--sc-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-finish-gp {
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------- bio */
+
+.scp-bio {
+  max-width: 76ch;
+}
+
+.scp-bullets {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-style-row {
+  margin-bottom: 14px;
+}
+
+.scp-style-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-style-text {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--sc-ink);
+}
+
+.scp-steps {
+  margin: 18px 0;
+  padding: 0 0 0 18px;
+  display: grid;
+  gap: 10px;
+  border-left: 2px solid var(--sc-border);
+  list-style: none;
+}
+
+.scp-step {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.scp-step-season {
+  font-weight: 800;
+  color: var(--sc-gold-deep);
+}
+
+.scp-step-label {
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-step-detail {
+  color: var(--sc-muted);
+}
+
+.scp-outlook {
+  margin: 0;
+  padding: 18px 20px;
+  border-left: 3px solid var(--sc-gold);
+  border-radius: 0 var(--sc-radius-sm) var(--sc-radius-sm) 0;
+  background: var(--sc-surface-soft);
+}
+
+.scp-outlook-headline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-outlook-body {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-outlook-src {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* -------------------------------------------------------- advanced stats */
+
+.scp-seasons {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+}
+
+.scp-season-opt {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.scp-season-opt.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.scp-adv {
+  display: grid;
+  gap: 24px;
+  margin-top: 18px;
+}
+
+.scp-adv-group {
+  padding-left: 14px;
+  border-left: 3px solid var(--group-accent, var(--sc-border));
+}
+
+.scp-adv-group-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+.scp-adv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.scp-adv-cell {
+  padding: 12px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+}
+
+.scp-adv-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-adv-value {
+  margin: 6px 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-adv-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.scp-adv-fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--scp-tier-2);
+}
+
+.scp-adv-pct {
+  margin: 5px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+/* ---------------------------------------------------------------- injury */
+
+.scp-injury-top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.scp-grade {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 18px 22px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-grade-letter {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--sc-navy);
+}
+
+.scp-grade-score {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-risks,
+.scp-regions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.scp-risk,
+.scp-region {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--sc-border);
+  border-left: 3px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  font-size: 13px;
+}
+
+.scp-risk[data-level="low"] { border-left-color: var(--scp-risk-low); }
+.scp-risk[data-level="moderate"] { border-left-color: var(--scp-risk-moderate); }
+.scp-risk[data-level="high"] { border-left-color: var(--scp-risk-high); }
+
+.scp-risk-label,
+.scp-region-name {
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.scp-risk-level {
+  font-weight: 800;
+}
+
+.scp-risk[data-level="low"] .scp-risk-level { color: var(--scp-risk-low); }
+.scp-risk[data-level="moderate"] .scp-risk-level { color: var(--scp-risk-moderate); }
+.scp-risk[data-level="high"] .scp-risk-level { color: var(--scp-risk-high); }
+
+.scp-region-count,
+.scp-region-missed {
+  color: var(--sc-muted);
+  font-size: 12px;
+}
+
+.scp-inj-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 16px;
+}
+
+.scp-inj-year {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-inj-missed {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--scp-risk-high);
+}
+
+.scp-inj-played {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--scp-risk-low);
+}
+
+.scp-inj-list {
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+  border-left: 2px solid var(--sc-border);
+  display: grid;
+  gap: 8px;
+}
+
+.scp-inj-item {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.scp-inj-type {
+  font-weight: 700;
+  color: var(--sc-ink);
+}
+
+.scp-inj-item[data-severity="major"] .scp-inj-type { color: var(--scp-risk-high); }
+.scp-inj-item[data-severity="moderate"] .scp-inj-type { color: var(--scp-risk-moderate); }
+
+.scp-inj-week {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-inj-desc {
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------------ news */
+
+.scp-news {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.scp-news-item {
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+}
+
+.scp-news-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.scp-news-title a {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.scp-news-title a:hover {
+  text-decoration: underline;
+}
+
+.scp-news-summary {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--sc-muted-strong);
+}
+
+.scp-news-meta {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* ----------------------------------------------------------------- index */
+
+.scp-index {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.scp-index-team {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scp-index-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.scp-index-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--sc-radius-xs);
+  font-size: 13px;
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+.scp-index-link:hover {
+  background: var(--sc-surface-sink);
+}
+
+.scp-index-pos {
+  color: var(--sc-muted);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 900px) {
+  .scp-prod {
+    grid-template-columns: 1fr;
+  }
+
+  .scp-injury-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  :where(.scp),
+  :where(body.scp-page) {
+    --scp-gutter: 16px;
+  }
+
+  .scp-hero {
+    padding: 20px;
+  }
+
+  .scp-hero-rank {
+    padding-left: 0;
+    border-left: 0;
+    text-align: left;
+  }
+
+  .scp-section {
+    padding-top: 24px;
+  }
+
+  .scp-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scp-meter {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+  }
+
+  .scp-meter-bar {
+    grid-column: 1 / -1;
+  }
+
+  /* Five columns of numbers do not fit a phone; the finish row stacks into
+     two lines rather than scrolling sideways. */
+  .scp-finish {
+    grid-template-columns: 58px 64px 1fr;
+    row-gap: 6px;
+  }
+
+  .scp-finish-ppg,
+  .scp-finish-gp {
+    grid-column: span 1;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scp-spark-dot {
+    transition: none;
+  }
+}
+
+/*
+ * Forced colours: the ordinal ramp collapses to system colours, so the tier
+ * segments would become indistinguishable. Borders restore the boundaries,
+ * and every tier's text label is already present to carry the meaning.
+ */
+@media (forced-colors: active) {
+  .scp-stack-seg,
+  .scp-meter-fill,
+  .scp-adv-fill {
+    border: 1px solid CanvasText;
+  }
+}

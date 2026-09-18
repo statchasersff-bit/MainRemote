@@ -60,6 +60,28 @@ export const newsItems = pgTable(
     image: text("image"),
     source: text("source").default("Dynasty Command"),
 
+    /**
+     * Which provider lane wrote the row: "wire", "club" or "x".
+     *
+     * Nullable and without a default, on purpose. Every row stored before lanes
+     * were recorded is legacy and says so by being null, rather than being
+     * back-dated into a claim nobody checked — and no read depends on it being
+     * filled in. listNews() still separates wire from club exactly the way it
+     * always did (team_abbr), and only consults this column to pull the X lane
+     * into the main feed. See lib/news-query.ts.
+     */
+    sourceType: text("source_type"),
+
+    /**
+     * The X handle behind the item, lowercase and without the @, for the rows
+     * whose author is a person rather than an outlet.
+     *
+     * On news_items and not only on x_posts because the feed reads it: the card
+     * prints "@AdamSchefter" and the account filter narrows on it, and neither
+     * should have to join a second table to render one line of a card.
+     */
+    authorHandle: text("author_handle"),
+
     /** Generated synopsis; null until the summary backfill reaches the row. */
     summary: text("summary"),
 
@@ -83,6 +105,11 @@ export const newsItems = pgTable(
     // team index so the ordering comes off the index too.
     index("idx_news_team_abbr_pub_date_ms").on(
       table.teamAbbr,
+      table.pubDateMs.desc(),
+    ),
+    // The source filter's read: one lane, newest first.
+    index("idx_news_source_type_pub_date_ms").on(
+      table.sourceType,
       table.pubDateMs.desc(),
     ),
   ],

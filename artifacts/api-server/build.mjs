@@ -160,6 +160,15 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-team.js"),
   });
 
+  // The player pages' enhancement bundle. Separate from the other two for the
+  // same reason they are separate from each other: a WordPress page mounting
+  // one shortcode should not download another tool's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/player.ts")],
+    outfile: path.join(outDir, "statchasers-player.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -170,18 +179,22 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-vitals.js"),
   });
 
-  // A content hash over the two assets WordPress enqueues. The filenames stay
+  // A content hash over every asset WordPress enqueues. The filenames stay
   // stable (index.html references them directly); this is the `ver` query the
   // plugin appends so a deploy busts caches without renaming anything.
   const js = await readFile(path.join(outDir, "statchasers-news.js"));
   const css = await readFile(path.resolve(artifactDir, "public", "styles.css"));
   const teamJs = await readFile(path.join(outDir, "statchasers-team.js"));
   const teamCss = await readFile(path.resolve(artifactDir, "public", "team.css"));
+  const playerJs = await readFile(path.join(outDir, "statchasers-player.js"));
+  const playerCss = await readFile(path.resolve(artifactDir, "public", "player.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
     .update(teamJs)
     .update(teamCss)
+    .update(playerJs)
+    .update(playerCss)
     .digest("hex")
     .slice(0, 12);
 

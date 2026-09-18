@@ -854,3 +854,88 @@ body {
 
 /* No loading spinner: the list arrives rendered, so there is never a moment
    where the tool has nothing to show. */
+
+/* X posts in the feed.
+
+   Compact by design: this is a news intelligence interface, not a social
+   reader, so an X card is the SAME card as every other one — same size, same
+   grid, same headshot square, same timestamp. The only differences are in the
+   label slot that already existed, where the reporter's name and handle replace
+   the "Player News" tag, and a hairline down the left edge so the eye can pick
+   the lane out of a list without reading it. */
+.sc-card-label-x {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* The section label is uppercase and tracked out; a person's name is not. */
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.sc-x-mark {
+  flex: 0 0 auto;
+  color: #0b1f3a;
+  opacity: 0.85;
+}
+
+.sc-x-author {
+  color: #123b73;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-x-handle {
+  color: var(--text-muted, #5b6b82);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* On a narrow card the reporter's name wins and the handle steps aside — the
+   name is the attribution that matters, and the X mark already says where it
+   came from. */
+@media (max-width: 480px) {
+  .sc-x-handle {
+    display: none;
+  }
+}
+
+.sc-card-x {
+  box-shadow: inset 3px 0 0 0 rgba(11, 31, 58, 0.55);
+}
+
+/* The three <select> filters, matched to the search input and team trigger
+   beside them rather than left to whatever the host theme does to a bare
+   control — the same reason .sc-filter-input sets every property itself. */
+.sc-filter-select {
+  appearance: none;
+  padding: 9px 30px 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background-color: #fff;
+  /* Caret drawn in, since appearance:none removes the native one. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%235b6b82' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+.sc-filter-select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .sc-filter-select {
+    width: 100%;
+    min-width: 0;
+  }
+}

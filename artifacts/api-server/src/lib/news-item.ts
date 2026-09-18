@@ -44,6 +44,24 @@ export interface RawNewsItem {
    * generated summary on every pass.
    */
   summary?: string;
+  /**
+   * A fingerprint the provider supplies itself, instead of the title-derived
+   * one below.
+   *
+   * For a provider whose upstream has a stable, unique external id, that id IS
+   * the identity and a title fingerprint is strictly worse: two X posts can
+   * legitimately carry the same words (a reporter posting the same sentence
+   * about two players, a correction reposted verbatim), and collapsing them
+   * into one row would lose a story. Only set by such a provider; the wire and
+   * the club feeds have no such id and keep the content fingerprint that was
+   * built for them.
+   */
+  dedupeKey?: string;
+  /**
+   * The handle behind the item, when its author is a person rather than an
+   * outlet. Lowercase, without the @. See news_items.author_handle.
+   */
+  authorHandle?: string;
   [key: string]: unknown;
 }
 

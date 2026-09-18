@@ -19,9 +19,11 @@ import path from "node:path";
 import { logger } from "./logger";
 import {
   indexRoster,
+  namedPlayerCount,
   restoreRosterIndex,
   rosterFetchedAt,
   snapshotRosterIndex,
+  type NamedPlayer,
   type SleeperPlayer,
   type TeamRoster,
 } from "./team/roster";
@@ -63,6 +65,8 @@ interface RosterCacheShape {
   fetchedAt: number;
   byTeam: Record<string, TeamRoster>;
   teamByPlayerName: Record<string, string>;
+  /** Optional: a cache written before free-text name matching existed has none. */
+  playerByName?: Record<string, NamedPlayer>;
 }
 
 let teams: Record<string, string> = {};
@@ -95,6 +99,7 @@ function readRosterDiskCache(): void {
         parsed.byTeam,
         parsed.teamByPlayerName ?? {},
         parsed.fetchedAt,
+        parsed.playerByName ?? {},
       );
       logger.info(
         { teams: Object.keys(parsed.byTeam).length },
@@ -115,6 +120,7 @@ function writeRosterDiskCache(): void {
         fetchedAt: snapshot.fetchedAt,
         byTeam: snapshot.byTeam,
         teamByPlayerName: snapshot.teamByPlayerName,
+        playerByName: snapshot.playerByName,
       } satisfies RosterCacheShape),
     );
   } catch (err) {
@@ -184,7 +190,14 @@ export async function ensureTeams(): Promise<void> {
   // feature shipped, and any boot with a corrupt roster cache: the news tool is
   // fine, the team pages have nothing to render. Treat it as stale so a single
   // refresh fixes both.
-  if (warm && rosterFetchedAt() > 0) return;
+  //
+  // The same test, again, for the name index the X lane matches post text
+  // against: a cache file written before that index existed restores every
+  // other part of the roster and none of it, and without this check it would
+  // look warm for twelve hours while every ingested post was filed under
+  // nobody. The tagging happens once, on the way in, so "it will be right after
+  // the next refresh" is not a recovery — those rows stay untagged for good.
+  if (warm && rosterFetchedAt() > 0 && namedPlayerCount() > 0) return;
   // Collapse concurrent callers onto one request; the payload is large.
   if (!inFlight) {
     inFlight = fetchTeams()

@@ -15,7 +15,7 @@
  */
 
 import { build } from "esbuild";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -47,6 +47,40 @@ export async function importModule(relative) {
     target: "node20",
     // Third-party code is left to Node to resolve from node_modules, so a
     // bundle of a 200-line parser does not also contain fast-xml-parser.
+    packages: "external",
+    logLevel: "silent",
+  });
+
+  return import(pathToFileURL(outfile).href);
+}
+
+/**
+ * Bundle a one-off entry module written for a test, and return its exports.
+ *
+ * For the cases importModule() cannot reach: a module's behaviour that depends
+ * on state held in ANOTHER module it imports. Bundling the two separately gives
+ * two copies of that state, so the test would be configuring an index its
+ * subject never reads. One entry that re-exports both gives one copy, which is
+ * what a running server has.
+ *
+ * `source` is TypeScript, and is written beside the bundle — so it refers to
+ * the app's own modules as "../src/lib/...".
+ */
+export async function importSource(source) {
+  const dir = await mkdtemp(path.join(APP_DIR, ".test-bundle-"));
+  dirs.push(dir);
+  const entry = path.join(dir, "entry.ts");
+  const outfile = path.join(dir, "module.mjs");
+
+  await writeFile(entry, source, "utf8");
+
+  await build({
+    entryPoints: [entry],
+    outfile,
+    bundle: true,
+    format: "esm",
+    platform: "node",
+    target: "node20",
     packages: "external",
     logLevel: "silent",
   });

@@ -1,0 +1,4872 @@
+{
+  "jacoby-brissett": {
+    "player_id": "3257",
+    "name": "Jacoby Brissett",
+    "college": "North Carolina State",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 3,
+    "pick": 91,
+    "draft_team": "NE"
+  },
+  "kyler-murray": {
+    "player_id": "5849",
+    "name": "Kyler Murray",
+    "college": "Oklahoma",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "ARI"
+  },
+  "james-conner": {
+    "player_id": "4137",
+    "name": "James Conner",
+    "college": "Pittsburgh",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 105,
+    "draft_team": "PIT"
+  },
+  "trey-benson": {
+    "player_id": "11589",
+    "name": "Trey Benson",
+    "college": "Florida State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 66,
+    "draft_team": "ARI"
+  },
+  "michael-carter": {
+    "player_id": "7607",
+    "name": "Michael Carter",
+    "college": "North Carolina",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 107,
+    "draft_team": "NYJ"
+  },
+  "emari-demercado": {
+    "player_id": "11199",
+    "name": "Emari Demercado",
+    "college": "TCU",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "corey-kiner": {
+    "player_id": "12491",
+    "name": "Corey Kiner",
+    "college": "Cincinnati",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "marvin-harrison": {
+    "player_id": "11628",
+    "name": "Marvin Harrison",
+    "college": "Ohio State",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "simi-fehoko": {
+    "player_id": "7812",
+    "name": "Simi Fehoko",
+    "college": "Stanford",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 5,
+    "pick": 179,
+    "draft_team": "DAL"
+  },
+  "zay-jones": {
+    "player_id": "4080",
+    "name": "Zay Jones",
+    "college": "East Carolina",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 2,
+    "pick": 37,
+    "draft_team": "BUF"
+  },
+  "xavier-weaver": {
+    "player_id": "11921",
+    "name": "Xavier Weaver",
+    "college": "Colorado",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "michael-wilson": {
+    "player_id": "10232",
+    "name": "Michael Wilson",
+    "college": "Stanford",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 94,
+    "draft_team": "ARI"
+  },
+  "greg-dortch": {
+    "player_id": "5970",
+    "name": "Greg Dortch",
+    "college": "Wake Forest",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "trey-mcbride": {
+    "player_id": "8130",
+    "name": "Trey McBride",
+    "college": "Colorado State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 55,
+    "draft_team": "ARI"
+  },
+  "tip-reiman": {
+    "player_id": "11716",
+    "name": "Tip Reiman",
+    "college": "Illinois",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 82,
+    "draft_team": "ARI"
+  },
+  "elijah-higgins": {
+    "player_id": "10231",
+    "name": "Elijah Higgins",
+    "college": "Stanford",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 197,
+    "draft_team": "MIA"
+  },
+  "josiah-deguara": {
+    "player_id": "7050",
+    "name": "Josiah Deguara",
+    "college": "Cincinnati",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 3,
+    "pick": 94,
+    "draft_team": "GB"
+  },
+  "rivaldo-fairweather": {
+    "player_id": "12851",
+    "name": "Rivaldo Fairweather",
+    "college": "Auburn",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "michael-penix": {
+    "player_id": "11559",
+    "name": "Michael Penix",
+    "college": "Washington",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kirk-cousins": {
+    "player_id": "1166",
+    "name": "Kirk Cousins",
+    "college": "Michigan State",
+    "rookie_year": 2012,
+    "year": 2012,
+    "round": 4,
+    "pick": 102,
+    "draft_team": "WAS"
+  },
+  "bijan-robinson": {
+    "player_id": "9509",
+    "name": "Bijan Robinson",
+    "college": "Texas",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 8,
+    "draft_team": "ATL"
+  },
+  "tyler-allgeier": {
+    "player_id": "8132",
+    "name": "Tyler Allgeier",
+    "college": "BYU",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 151,
+    "draft_team": "ATL"
+  },
+  "nathan-carter": {
+    "player_id": "12897",
+    "name": "Nathan Carter",
+    "college": "Michigan State",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "carlos-washington": {
+    "player_id": "11186",
+    "name": "Carlos Washington",
+    "college": "Southeastern Louisiana",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "darnell-mooney": {
+    "player_id": "7090",
+    "name": "Darnell Mooney",
+    "college": "Tulane",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 5,
+    "pick": 173,
+    "draft_team": "CHI"
+  },
+  "deven-thompkins": {
+    "player_id": "8253",
+    "name": "Deven Thompkins",
+    "college": "Utah State",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "david-sills": {
+    "player_id": "6154",
+    "name": "David Sills",
+    "college": "West Virginia",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "khadarel-hodge": {
+    "player_id": "5773",
+    "name": "KhaDarel Hodge",
+    "college": "Prairie View A&M",
+    "rookie_year": 2018,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "drake-london": {
+    "player_id": "8112",
+    "name": "Drake London",
+    "college": "USC",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 8,
+    "draft_team": "ATL"
+  },
+  "dylan-drummond": {
+    "player_id": "11474",
+    "name": "Dylan Drummond",
+    "college": "Eastern Michigan",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kyle-pitts": {
+    "player_id": "7553",
+    "name": "Kyle Pitts",
+    "college": "Florida",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "charlie-woerner": {
+    "player_id": "7075",
+    "name": "Charlie Woerner",
+    "college": "Georgia",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 6,
+    "pick": 190,
+    "draft_team": "SF"
+  },
+  "teagan-quitoriano": {
+    "player_id": "8227",
+    "name": "Teagan Quitoriano",
+    "college": "Oregon State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 170,
+    "draft_team": "HOU"
+  },
+  "lamar-jackson": {
+    "player_id": "4881",
+    "name": "Lamar Jackson",
+    "college": "Louisville",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 32,
+    "draft_team": "BAL"
+  },
+  "tyler-huntley": {
+    "player_id": "7083",
+    "name": "Tyler Huntley",
+    "college": "Utah",
+    "rookie_year": 2020,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "derrick-henry": {
+    "player_id": "3198",
+    "name": "Derrick Henry",
+    "college": "Alabama",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 2,
+    "pick": 45,
+    "draft_team": "TEN"
+  },
+  "justice-hill": {
+    "player_id": "5995",
+    "name": "Justice Hill",
+    "college": "Oklahoma State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 4,
+    "pick": 113,
+    "draft_team": "BAL"
+  },
+  "keaton-mitchell": {
+    "player_id": "9511",
+    "name": "Keaton Mitchell",
+    "college": "East Carolina",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "rasheen-ali": {
+    "player_id": "11570",
+    "name": "Rasheen Ali",
+    "college": "Marshall",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 165,
+    "draft_team": "BAL"
+  },
+  "rashod-bateman": {
+    "player_id": "7571",
+    "name": "Rashod Bateman",
+    "college": "Minnesota",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 27,
+    "draft_team": "BAL"
+  },
+  "deandre-hopkins": {
+    "player_id": "1426",
+    "name": "DeAndre Hopkins",
+    "college": "Clemson",
+    "rookie_year": 2013,
+    "year": 2013,
+    "round": 1,
+    "pick": 27,
+    "draft_team": "HOU"
+  },
+  "devontez-walker": {
+    "player_id": "11629",
+    "name": "Devontez Walker",
+    "college": "North Carolina",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 113,
+    "draft_team": "BAL"
+  },
+  "tylan-wallace": {
+    "player_id": "7595",
+    "name": "Tylan Wallace",
+    "college": "Oklahoma State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 131,
+    "draft_team": "BAL"
+  },
+  "zay-flowers": {
+    "player_id": "9997",
+    "name": "Zay Flowers",
+    "college": "Boston College",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 22,
+    "draft_team": "BAL"
+  },
+  "lajohntay-wester": {
+    "player_id": "12699",
+    "name": "LaJohntay Wester",
+    "college": "Colorado",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 6,
+    "pick": 203,
+    "draft_team": "BAL"
+  },
+  "mark-andrews": {
+    "player_id": "5012",
+    "name": "Mark Andrews",
+    "college": "Oklahoma",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 3,
+    "pick": 86,
+    "draft_team": "BAL"
+  },
+  "isaiah-likely": {
+    "player_id": "8131",
+    "name": "Isaiah Likely",
+    "college": "Coastal Carolina",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 139,
+    "draft_team": "BAL"
+  },
+  "charlie-kolar": {
+    "player_id": "8127",
+    "name": "Charlie Kolar",
+    "college": "Iowa State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 128,
+    "draft_team": "BAL"
+  },
+  "josh-allen": {
+    "player_id": "4984",
+    "name": "Josh Allen",
+    "college": "Wyoming",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 7,
+    "draft_team": "BUF"
+  },
+  "mitchell-trubisky": {
+    "player_id": "3976",
+    "name": "Mitchell Trubisky",
+    "college": "North Carolina",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "CHI"
+  },
+  "james-cook": {
+    "player_id": "8138",
+    "name": "James Cook",
+    "college": "Georgia",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "ty-johnson": {
+    "player_id": "6039",
+    "name": "Ty Johnson",
+    "college": "Maryland",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 6,
+    "pick": 186,
+    "draft_team": "DET"
+  },
+  "ray-davis": {
+    "player_id": "11575",
+    "name": "Ray Davis",
+    "college": "Kentucky",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 128,
+    "draft_team": "BUF"
+  },
+  "reggie-gilliam": {
+    "player_id": "7204",
+    "name": "Reggie Gilliam",
+    "college": "Toledo",
+    "rookie_year": 2020,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "brandin-cooks": {
+    "player_id": "2197",
+    "name": "Brandin Cooks",
+    "college": "Oregon State",
+    "rookie_year": 2014,
+    "year": 2014,
+    "round": 1,
+    "pick": 20,
+    "draft_team": "NO"
+  },
+  "keon-coleman": {
+    "player_id": "11637",
+    "name": "Keon Coleman",
+    "college": "Florida State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 2,
+    "pick": 33,
+    "draft_team": "BUF"
+  },
+  "joshua-palmer": {
+    "player_id": "7670",
+    "name": "Joshua Palmer",
+    "college": "Tennessee",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 3,
+    "pick": 77,
+    "draft_team": "LAC"
+  },
+  "tyrell-shavers": {
+    "player_id": "11377",
+    "name": "Tyrell Shavers",
+    "college": "San Diego State",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "khalil-shakir": {
+    "player_id": "8134",
+    "name": "Khalil Shakir",
+    "college": "Boise State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 148,
+    "draft_team": "BUF"
+  },
+  "curtis-samuel": {
+    "player_id": "4082",
+    "name": "Curtis Samuel",
+    "college": "Ohio State",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 2,
+    "pick": 40,
+    "draft_team": "CAR"
+  },
+  "dawson-knox": {
+    "player_id": "5906",
+    "name": "Dawson Knox",
+    "college": "Ole Miss",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 96,
+    "draft_team": "BUF"
+  },
+  "dalton-kincaid": {
+    "player_id": "10236",
+    "name": "Dalton Kincaid",
+    "college": "Utah",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 25,
+    "draft_team": "BUF"
+  },
+  "jackson-hawes": {
+    "player_id": "12658",
+    "name": "Jackson Hawes",
+    "college": "Georgia Tech",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 173,
+    "draft_team": "BUF"
+  },
+  "bryce-young": {
+    "player_id": "9228",
+    "name": "Bryce Young",
+    "college": "Alabama",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "CAR"
+  },
+  "andy-dalton": {
+    "player_id": "829",
+    "name": "Andy Dalton",
+    "college": "TCU",
+    "rookie_year": 2011,
+    "year": 2011,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "CIN"
+  },
+  "chuba-hubbard": {
+    "player_id": "7594",
+    "name": "Chuba Hubbard",
+    "college": "Oklahoma State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 126,
+    "draft_team": "CAR"
+  },
+  "rico-dowdle": {
+    "player_id": "7021",
+    "name": "Rico Dowdle",
+    "college": "South Carolina",
+    "rookie_year": 2020,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jonathon-brooks": {
+    "player_id": "11583",
+    "name": "Jonathon Brooks",
+    "college": "Texas",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 2,
+    "pick": 46,
+    "draft_team": "CAR"
+  },
+  "trevor-etienne": {
+    "player_id": "12531",
+    "name": "Trevor Etienne",
+    "college": "Georgia",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 114,
+    "draft_team": "CAR"
+  },
+  "tetairoa-mcmillan": {
+    "player_id": "12526",
+    "name": "Tetairoa McMillan",
+    "college": "Arizona",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 8,
+    "draft_team": "CAR"
+  },
+  "david-moore": {
+    "player_id": "4274",
+    "name": "David Moore",
+    "college": "East Central",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 7,
+    "pick": 226,
+    "draft_team": "SEA"
+  },
+  "xavier-legette": {
+    "player_id": "11626",
+    "name": "Xavier Legette",
+    "college": "South Carolina",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 32,
+    "draft_team": "CAR"
+  },
+  "brycen-tremayne": {
+    "player_id": "11157",
+    "name": "Brycen Tremayne",
+    "college": "Stanford",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jalen-coker": {
+    "player_id": "11646",
+    "name": "Jalen Coker",
+    "college": "Holy Cross",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jimmy-horn": {
+    "player_id": "12523",
+    "name": "Jimmy Horn",
+    "college": "Colorado",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tommy-tremble": {
+    "player_id": "7694",
+    "name": "Tommy Tremble",
+    "college": "Notre Dame",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 3,
+    "pick": 83,
+    "draft_team": "CAR"
+  },
+  "jatavion-sanders": {
+    "player_id": "11600",
+    "name": "Ja'Tavion Sanders",
+    "college": "Texas",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 101,
+    "draft_team": "CAR"
+  },
+  "mitchell-evans": {
+    "player_id": "12473",
+    "name": "Mitchell Evans",
+    "college": "Notre Dame",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 163,
+    "draft_team": "CAR"
+  },
+  "caleb-williams": {
+    "player_id": "11560",
+    "name": "Caleb Williams",
+    "college": "USC",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "CHI"
+  },
+  "tyson-bagent": {
+    "player_id": "11256",
+    "name": "Tyson Bagent",
+    "college": "Shepherd (WV)",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dandre-swift": {
+    "player_id": "6790",
+    "name": "D'Andre Swift",
+    "college": "Georgia",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "DET"
+  },
+  "kyle-monangai": {
+    "player_id": "12534",
+    "name": "Kyle Monangai",
+    "college": "Rutgers",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 233,
+    "draft_team": "CHI"
+  },
+  "roschon-johnson": {
+    "player_id": "10235",
+    "name": "Roschon Johnson",
+    "college": "Texas",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 4,
+    "pick": 115,
+    "draft_team": "CHI"
+  },
+  "travis-homer": {
+    "player_id": "6012",
+    "name": "Travis Homer",
+    "college": "Miami (FL)",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 6,
+    "pick": 204,
+    "draft_team": "SEA"
+  },
+  "rome-odunze": {
+    "player_id": "11620",
+    "name": "Rome Odunze",
+    "college": "Washington",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 9,
+    "draft_team": "CHI"
+  },
+  "jahdae-walker": {
+    "player_id": "13079",
+    "name": "Jahdae Walker",
+    "college": "Texas A&M",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dj-moore": {
+    "player_id": "4983",
+    "name": "DJ Moore",
+    "college": "Maryland",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 24,
+    "draft_team": "CAR"
+  },
+  "olamide-zaccheaus": {
+    "player_id": "6271",
+    "name": "Olamide Zaccheaus",
+    "college": "Virginia",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "luther-burden": {
+    "player_id": "12519",
+    "name": "Luther Burden",
+    "college": "Missouri",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "devin-duvernay": {
+    "player_id": "6847",
+    "name": "Devin Duvernay",
+    "college": "Texas",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 3,
+    "pick": 92,
+    "draft_team": "BAL"
+  },
+  "colston-loveland": {
+    "player_id": "12517",
+    "name": "Colston Loveland",
+    "college": "Michigan",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 10,
+    "draft_team": "CHI"
+  },
+  "cole-kmet": {
+    "player_id": "6826",
+    "name": "Cole Kmet",
+    "college": "Notre Dame",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 43,
+    "draft_team": "CHI"
+  },
+  "durham-smythe": {
+    "player_id": "5008",
+    "name": "Durham Smythe",
+    "college": "Notre Dame",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 4,
+    "pick": 123,
+    "draft_team": "MIA"
+  },
+  "joe-burrow": {
+    "player_id": "6770",
+    "name": "Joe Burrow",
+    "college": "LSU",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "CIN"
+  },
+  "joe-flacco": {
+    "player_id": "19",
+    "name": "Joe Flacco",
+    "college": "Delaware",
+    "rookie_year": 2008,
+    "year": 2008,
+    "round": 1,
+    "pick": 18,
+    "draft_team": "BAL"
+  },
+  "chase-brown": {
+    "player_id": "9224",
+    "name": "Chase Brown",
+    "college": "Illinois",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 163,
+    "draft_team": "CIN"
+  },
+  "samaje-perine": {
+    "player_id": "4147",
+    "name": "Samaje Perine",
+    "college": "Oklahoma",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 4,
+    "pick": 114,
+    "draft_team": "WAS"
+  },
+  "tahj-brooks": {
+    "player_id": "12543",
+    "name": "Tahj Brooks",
+    "college": "Texas Tech",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 6,
+    "pick": 193,
+    "draft_team": "CIN"
+  },
+  "gary-brightwell": {
+    "player_id": "7529",
+    "name": "Gary Brightwell",
+    "college": "Arizona",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 6,
+    "pick": 196,
+    "draft_team": "NYG"
+  },
+  "jamarr-chase": {
+    "player_id": "7564",
+    "name": "Ja'Marr Chase",
+    "college": "LSU",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 5,
+    "draft_team": "CIN"
+  },
+  "keshawn-williams": {
+    "player_id": "12971",
+    "name": "Ke'Shawn Williams",
+    "college": "Indiana",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tee-higgins": {
+    "player_id": "6801",
+    "name": "Tee Higgins",
+    "college": "Clemson",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 33,
+    "draft_team": "CIN"
+  },
+  "mitch-tinsley": {
+    "player_id": "11068",
+    "name": "Mitch Tinsley",
+    "college": "Penn State",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "andrei-iosivas": {
+    "player_id": "10226",
+    "name": "Andrei Iosivas",
+    "college": "Princeton",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 206,
+    "draft_team": "CIN"
+  },
+  "charlie-jones": {
+    "player_id": "10228",
+    "name": "Charlie Jones",
+    "college": "Purdue",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 4,
+    "pick": 131,
+    "draft_team": "CIN"
+  },
+  "mike-gesicki": {
+    "player_id": "4993",
+    "name": "Mike Gesicki",
+    "college": "Penn State",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 42,
+    "draft_team": "MIA"
+  },
+  "drew-sample": {
+    "player_id": "6001",
+    "name": "Drew Sample",
+    "college": "Washington",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 52,
+    "draft_team": "CIN"
+  },
+  "noah-fant": {
+    "player_id": "5857",
+    "name": "Noah Fant",
+    "college": "Iowa",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 1,
+    "pick": 20,
+    "draft_team": "DEN"
+  },
+  "cam-grandy": {
+    "player_id": "12062",
+    "name": "Cam Grandy",
+    "college": "Illinois State",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "shedeur-sanders": {
+    "player_id": "12524",
+    "name": "Shedeur Sanders",
+    "college": "Colorado",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 144,
+    "draft_team": "CLE"
+  },
+  "dillon-gabriel": {
+    "player_id": "12486",
+    "name": "Dillon Gabriel",
+    "college": "Oregon",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 94,
+    "draft_team": "CLE"
+  },
+  "quinshon-judkins": {
+    "player_id": "12512",
+    "name": "Quinshon Judkins",
+    "college": "Ohio State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 36,
+    "draft_team": "CLE"
+  },
+  "dylan-sampson": {
+    "player_id": "12469",
+    "name": "Dylan Sampson",
+    "college": "Tennessee",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 126,
+    "draft_team": "CLE"
+  },
+  "jerome-ford": {
+    "player_id": "8143",
+    "name": "Jerome Ford",
+    "college": "Cincinnati",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 156,
+    "draft_team": "CLE"
+  },
+  "raheim-sanders": {
+    "player_id": "12472",
+    "name": "Raheim Sanders",
+    "college": "South Carolina",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jerry-jeudy": {
+    "player_id": "6783",
+    "name": "Jerry Jeudy",
+    "college": "Alabama",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 15,
+    "draft_team": "DEN"
+  },
+  "jamari-thrash": {
+    "player_id": "11633",
+    "name": "Jamari Thrash",
+    "college": "Louisville",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 156,
+    "draft_team": "CLE"
+  },
+  "cedric-tillman": {
+    "player_id": "10444",
+    "name": "Cedric Tillman",
+    "college": "Tennessee",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 74,
+    "draft_team": "CLE"
+  },
+  "gage-larvadain": {
+    "player_id": "13101",
+    "name": "Gage Larvadain",
+    "college": "South Carolina",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "isaiah-bond": {
+    "player_id": "12503",
+    "name": "Isaiah Bond",
+    "college": "Texas",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "malachi-corley": {
+    "player_id": "11617",
+    "name": "Malachi Corley",
+    "college": "Western Kentucky",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 65,
+    "draft_team": "NYJ"
+  },
+  "harold-fannin": {
+    "player_id": "12506",
+    "name": "Harold Fannin",
+    "college": "Bowling Green",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "david-njoku": {
+    "player_id": "4033",
+    "name": "David Njoku",
+    "college": "Miami (FL)",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 1,
+    "pick": 29,
+    "draft_team": "CLE"
+  },
+  "blake-whiteheart": {
+    "player_id": "11201",
+    "name": "Blake Whiteheart",
+    "college": "Wake Forest",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dak-prescott": {
+    "player_id": "3294",
+    "name": "Dak Prescott",
+    "college": "Mississippi State",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 4,
+    "pick": 135,
+    "draft_team": "DAL"
+  },
+  "joe-milton": {
+    "player_id": "11557",
+    "name": "Joe Milton",
+    "college": "Tennessee",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "javonte-williams": {
+    "player_id": "7588",
+    "name": "Javonte Williams",
+    "college": "North Carolina",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "DEN"
+  },
+  "malik-davis": {
+    "player_id": "8800",
+    "name": "Malik Davis",
+    "college": "Florida",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "miles-sanders": {
+    "player_id": "6151",
+    "name": "Miles Sanders",
+    "college": "Penn State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 53,
+    "draft_team": "PHI"
+  },
+  "jaydon-blue": {
+    "player_id": "12457",
+    "name": "Jaydon Blue",
+    "college": "Texas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 149,
+    "draft_team": "DAL"
+  },
+  "george-pickens": {
+    "player_id": "8137",
+    "name": "George Pickens",
+    "college": "Georgia",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 52,
+    "draft_team": "PIT"
+  },
+  "jonathan-mingo": {
+    "player_id": "10225",
+    "name": "Jonathan Mingo",
+    "college": "Ole Miss",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 39,
+    "draft_team": "CAR"
+  },
+  "ceedee-lamb": {
+    "player_id": "6786",
+    "name": "CeeDee Lamb",
+    "college": "Oklahoma",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 17,
+    "draft_team": "DAL"
+  },
+  "jalen-tolbert": {
+    "player_id": "8117",
+    "name": "Jalen Tolbert",
+    "college": "South Alabama",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 3,
+    "pick": 88,
+    "draft_team": "DAL"
+  },
+  "ryan-flournoy": {
+    "player_id": "11783",
+    "name": "Ryan Flournoy",
+    "college": "Southeast Missouri State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 216,
+    "draft_team": "DAL"
+  },
+  "kavontae-turpin": {
+    "player_id": "8917",
+    "name": "KaVontae Turpin",
+    "college": "TCU",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jake-ferguson": {
+    "player_id": "8110",
+    "name": "Jake Ferguson",
+    "college": "Wisconsin",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 129,
+    "draft_team": "DAL"
+  },
+  "luke-schoonmaker": {
+    "player_id": "10871",
+    "name": "Luke Schoonmaker",
+    "college": "Michigan",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 58,
+    "draft_team": "DAL"
+  },
+  "brevyn-spann-ford": {
+    "player_id": "11593",
+    "name": "Brevyn Spann-Ford",
+    "college": "Minnesota",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "bo-nix": {
+    "player_id": "11563",
+    "name": "Bo Nix",
+    "college": "Oregon",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 12,
+    "draft_team": "DEN"
+  },
+  "jarrett-stidham": {
+    "player_id": "6136",
+    "name": "Jarrett Stidham",
+    "college": "Auburn",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 4,
+    "pick": 133,
+    "draft_team": "NE"
+  },
+  "jk-dobbins": {
+    "player_id": "6806",
+    "name": "J.K. Dobbins",
+    "college": "Ohio State",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 55,
+    "draft_team": "BAL"
+  },
+  "rj-harvey": {
+    "player_id": "12489",
+    "name": "RJ Harvey",
+    "college": "UCF",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 60,
+    "draft_team": "DEN"
+  },
+  "jaleel-mclaughlin": {
+    "player_id": "11439",
+    "name": "Jaleel McLaughlin",
+    "college": "Youngstown State",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tyler-badie": {
+    "player_id": "8208",
+    "name": "Tyler Badie",
+    "college": "Missouri",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 196,
+    "draft_team": "BAL"
+  },
+  "courtland-sutton": {
+    "player_id": "5045",
+    "name": "Courtland Sutton",
+    "college": "SMU",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 40,
+    "draft_team": "DEN"
+  },
+  "troy-franklin": {
+    "player_id": "11627",
+    "name": "Troy Franklin",
+    "college": "Oregon",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 102,
+    "draft_team": "DEN"
+  },
+  "marvin-mims": {
+    "player_id": "9494",
+    "name": "Marvin Mims",
+    "college": "Oklahoma",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "pat-bryant": {
+    "player_id": "12492",
+    "name": "Pat Bryant",
+    "college": "Illinois",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 74,
+    "draft_team": "DEN"
+  },
+  "liljordan-humphrey": {
+    "player_id": "5938",
+    "name": "Lil'Jordan Humphrey",
+    "college": "Texas",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "nick-williams": {
+    "player_id": "1604",
+    "name": "Nick Williams",
+    "college": "UConn",
+    "rookie_year": null,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "adam-trautman": {
+    "player_id": "6869",
+    "name": "Adam Trautman",
+    "college": "Dayton",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 3,
+    "pick": 105,
+    "draft_team": "NO"
+  },
+  "evan-engram": {
+    "player_id": "4066",
+    "name": "Evan Engram",
+    "college": "Ole Miss",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 1,
+    "pick": 23,
+    "draft_team": "NYG"
+  },
+  "nate-adkins": {
+    "player_id": "11433",
+    "name": "Nate Adkins",
+    "college": "South Carolina",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jared-goff": {
+    "player_id": "3163",
+    "name": "Jared Goff",
+    "college": "California",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "LAR"
+  },
+  "kyle-allen": {
+    "player_id": "5127",
+    "name": "Kyle Allen",
+    "college": "Houston",
+    "rookie_year": 2018,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jahmyr-gibbs": {
+    "player_id": "9221",
+    "name": "Jahmyr Gibbs",
+    "college": "Alabama",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 12,
+    "draft_team": "DET"
+  },
+  "david-montgomery": {
+    "player_id": "5892",
+    "name": "David Montgomery",
+    "college": "Iowa State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 73,
+    "draft_team": "CHI"
+  },
+  "jacob-saylors": {
+    "player_id": "11237",
+    "name": "Jacob Saylors",
+    "college": "East Tennessee State",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "sione-vaki": {
+    "player_id": "11729",
+    "name": "Sione Vaki",
+    "college": "Utah",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 132,
+    "draft_team": "DET"
+  },
+  "isaac-teslaa": {
+    "player_id": "12535",
+    "name": "Isaac TeSlaa",
+    "college": "Arkansas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 70,
+    "draft_team": "DET"
+  },
+  "kalif-raymond": {
+    "player_id": "3634",
+    "name": "Kalif Raymond",
+    "college": "Holy Cross",
+    "rookie_year": 2016,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jameson-williams": {
+    "player_id": "8148",
+    "name": "Jameson Williams",
+    "college": "Alabama",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 12,
+    "draft_team": "DET"
+  },
+  "dominic-lovett": {
+    "player_id": "12732",
+    "name": "Dominic Lovett",
+    "college": "Georgia",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 244,
+    "draft_team": "DET"
+  },
+  "amon-ra-st-brown": {
+    "player_id": "7547",
+    "name": "Amon-Ra St. Brown",
+    "college": "USC",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 112,
+    "draft_team": "DET"
+  },
+  "tom-kennedy": {
+    "player_id": "6588",
+    "name": "Tom Kennedy",
+    "college": "Bryant",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "sam-laporta": {
+    "player_id": "10859",
+    "name": "Sam LaPorta",
+    "college": "Iowa",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 34,
+    "draft_team": "DET"
+  },
+  "brock-wright": {
+    "player_id": "7891",
+    "name": "Brock Wright",
+    "college": "Notre Dame",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "shane-zylstra": {
+    "player_id": "8041",
+    "name": "Shane Zylstra",
+    "college": "Minnesota State",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jordan-love": {
+    "player_id": "6804",
+    "name": "Jordan Love",
+    "college": "Utah State",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 26,
+    "draft_team": "GB"
+  },
+  "malik-willis": {
+    "player_id": "8161",
+    "name": "Malik Willis",
+    "college": "Liberty",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 3,
+    "pick": 86,
+    "draft_team": "TEN"
+  },
+  "josh-jacobs": {
+    "player_id": "5850",
+    "name": "Josh Jacobs",
+    "college": "Alabama",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 1,
+    "pick": 24,
+    "draft_team": "LV"
+  },
+  "emanuel-wilson": {
+    "player_id": "11435",
+    "name": "Emanuel Wilson",
+    "college": "Fort Valley State",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "chris-brooks": {
+    "player_id": "11370",
+    "name": "Chris Brooks",
+    "college": "BYU",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "marshawn-lloyd": {
+    "player_id": "11581",
+    "name": "MarShawn Lloyd",
+    "college": "USC",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 88,
+    "draft_team": "GB"
+  },
+  "christian-watson": {
+    "player_id": "8167",
+    "name": "Christian Watson",
+    "college": "North Dakota State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 34,
+    "draft_team": "GB"
+  },
+  "matthew-golden": {
+    "player_id": "12501",
+    "name": "Matthew Golden",
+    "college": "Texas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 23,
+    "draft_team": "GB"
+  },
+  "romeo-doubs": {
+    "player_id": "8121",
+    "name": "Romeo Doubs",
+    "college": "Nevada",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 132,
+    "draft_team": "GB"
+  },
+  "bo-melton": {
+    "player_id": "8204",
+    "name": "Bo Melton",
+    "college": "Rutgers",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 7,
+    "pick": 229,
+    "draft_team": "SEA"
+  },
+  "jayden-reed": {
+    "player_id": "10222",
+    "name": "Jayden Reed",
+    "college": "Michigan State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 50,
+    "draft_team": "GB"
+  },
+  "dontayvion-wicks": {
+    "player_id": "9486",
+    "name": "Dontayvion Wicks",
+    "college": "Virginia",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 159,
+    "draft_team": "GB"
+  },
+  "tucker-kraft": {
+    "player_id": "9484",
+    "name": "Tucker Kraft",
+    "college": "South Dakota State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 78,
+    "draft_team": "GB"
+  },
+  "john-fitzpatrick": {
+    "player_id": "8500",
+    "name": "John FitzPatrick",
+    "college": "Georgia",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 213,
+    "draft_team": "ATL"
+  },
+  "luke-musgrave": {
+    "player_id": "9481",
+    "name": "Luke Musgrave",
+    "college": "Oregon State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 42,
+    "draft_team": "GB"
+  },
+  "cj-stroud": {
+    "player_id": "9758",
+    "name": "C.J. Stroud",
+    "college": "Ohio State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "HOU"
+  },
+  "davis-mills": {
+    "player_id": "7585",
+    "name": "Davis Mills",
+    "college": "Stanford",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 3,
+    "pick": 67,
+    "draft_team": "HOU"
+  },
+  "woody-marks": {
+    "player_id": "12474",
+    "name": "Woody Marks",
+    "college": "USC",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 116,
+    "draft_team": "HOU"
+  },
+  "nick-chubb": {
+    "player_id": "4988",
+    "name": "Nick Chubb",
+    "college": "Georgia",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "CLE"
+  },
+  "dare-ogunbowale": {
+    "player_id": "4718",
+    "name": "Dare Ogunbowale",
+    "college": "Wisconsin",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jawhar-jordan": {
+    "player_id": "11588",
+    "name": "Jawhar Jordan",
+    "college": "Louisville",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 205,
+    "draft_team": "HOU"
+  },
+  "nico-collins": {
+    "player_id": "7569",
+    "name": "Nico Collins",
+    "college": "Michigan",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 3,
+    "pick": 89,
+    "draft_team": "HOU"
+  },
+  "xavier-hutchinson": {
+    "player_id": "10218",
+    "name": "Xavier Hutchinson",
+    "college": "Iowa State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 205,
+    "draft_team": "HOU"
+  },
+  "jayden-higgins": {
+    "player_id": "12484",
+    "name": "Jayden Higgins",
+    "college": "Iowa State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 34,
+    "draft_team": "HOU"
+  },
+  "tank-dell": {
+    "player_id": "9502",
+    "name": "Tank Dell",
+    "college": "Houston",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 69,
+    "draft_team": "HOU"
+  },
+  "christian-kirk": {
+    "player_id": "4950",
+    "name": "Christian Kirk",
+    "college": "Texas A&M",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 47,
+    "draft_team": "ARI"
+  },
+  "jaylin-noel": {
+    "player_id": "12536",
+    "name": "Jaylin Noel",
+    "college": "Iowa State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 79,
+    "draft_team": "HOU"
+  },
+  "dalton-schultz": {
+    "player_id": "5001",
+    "name": "Dalton Schultz",
+    "college": "Stanford",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 4,
+    "pick": 137,
+    "draft_team": "DAL"
+  },
+  "cade-stover": {
+    "player_id": "11599",
+    "name": "Cade Stover",
+    "college": "Ohio State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 123,
+    "draft_team": "HOU"
+  },
+  "harrison-bryant": {
+    "player_id": "6850",
+    "name": "Harrison Bryant",
+    "college": "Florida Atlantic",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 4,
+    "pick": 115,
+    "draft_team": "CLE"
+  },
+  "daniel-jones": {
+    "player_id": "5870",
+    "name": "Daniel Jones",
+    "college": "Duke",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 1,
+    "pick": 6,
+    "draft_team": "NYG"
+  },
+  "anthony-richardson": {
+    "player_id": "9229",
+    "name": "Anthony Richardson",
+    "college": "Florida",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jonathan-taylor": {
+    "player_id": "6813",
+    "name": "Jonathan Taylor",
+    "college": "Wisconsin",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 41,
+    "draft_team": "IND"
+  },
+  "ameer-abdullah": {
+    "player_id": "2359",
+    "name": "Ameer Abdullah",
+    "college": "Nebraska",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 2,
+    "pick": 54,
+    "draft_team": "DET"
+  },
+  "tyler-goodson": {
+    "player_id": "8207",
+    "name": "Tyler Goodson",
+    "college": "Iowa",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dj-giddens": {
+    "player_id": "12471",
+    "name": "DJ Giddens",
+    "college": "Kansas State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 151,
+    "draft_team": "IND"
+  },
+  "michael-pittman": {
+    "player_id": "6819",
+    "name": "Michael Pittman",
+    "college": "USC",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 34,
+    "draft_team": "IND"
+  },
+  "ashton-dulin": {
+    "player_id": "6427",
+    "name": "Ashton Dulin",
+    "college": "Malone (OH)",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "alec-pierce": {
+    "player_id": "8142",
+    "name": "Alec Pierce",
+    "college": "Cincinnati",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 53,
+    "draft_team": "IND"
+  },
+  "laquon-treadwell": {
+    "player_id": "3155",
+    "name": "Laquon Treadwell",
+    "college": "Ole Miss",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 1,
+    "pick": 23,
+    "draft_team": "MIN"
+  },
+  "josh-downs": {
+    "player_id": "9500",
+    "name": "Josh Downs",
+    "college": "North Carolina",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 79,
+    "draft_team": "IND"
+  },
+  "anthony-gould": {
+    "player_id": "11762",
+    "name": "Anthony Gould",
+    "college": "Oregon State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 142,
+    "draft_team": "IND"
+  },
+  "tyler-warren": {
+    "player_id": "12518",
+    "name": "Tyler Warren",
+    "college": "Penn State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 14,
+    "draft_team": "IND"
+  },
+  "mo-alie-cox": {
+    "player_id": "4054",
+    "name": "Mo Alie-Cox",
+    "college": "VCU",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "drew-ogletree": {
+    "player_id": "8489",
+    "name": "Drew Ogletree",
+    "college": "Youngstown State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 192,
+    "draft_team": "IND"
+  },
+  "trevor-lawrence": {
+    "player_id": "7523",
+    "name": "Trevor Lawrence",
+    "college": "Clemson",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "JAX"
+  },
+  "nick-mullens": {
+    "player_id": "4464",
+    "name": "Nick Mullens",
+    "college": "Southern Miss",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "travis-etienne": {
+    "player_id": "7543",
+    "name": "Travis Etienne",
+    "college": "Clemson",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "bhayshul-tuten": {
+    "player_id": "12490",
+    "name": "Bhayshul Tuten",
+    "college": "Virginia Tech",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 104,
+    "draft_team": "JAX"
+  },
+  "lequint-allen": {
+    "player_id": "12544",
+    "name": "LeQuint Allen",
+    "college": "Syracuse",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "deejay-dallas": {
+    "player_id": "6931",
+    "name": "DeeJay Dallas",
+    "college": "Miami (FL)",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 4,
+    "pick": 144,
+    "draft_team": "SEA"
+  },
+  "brian-thomas": {
+    "player_id": "11631",
+    "name": "Brian Thomas",
+    "college": "LSU",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tim-patrick": {
+    "player_id": "4351",
+    "name": "Tim Patrick",
+    "college": "Utah",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jakobi-meyers": {
+    "player_id": "5947",
+    "name": "Jakobi Meyers",
+    "college": "North Carolina State",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dyami-brown": {
+    "player_id": "7587",
+    "name": "Dyami Brown",
+    "college": "North Carolina",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 3,
+    "pick": 82,
+    "draft_team": "WAS"
+  },
+  "parker-washington": {
+    "player_id": "9487",
+    "name": "Parker Washington",
+    "college": "Penn State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 185,
+    "draft_team": "JAX"
+  },
+  "travis-hunter": {
+    "player_id": "12530",
+    "name": "Travis Hunter",
+    "college": "Colorado",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "JAX"
+  },
+  "brenton-strange": {
+    "player_id": "9480",
+    "name": "Brenton Strange",
+    "college": "Penn State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 61,
+    "draft_team": "JAX"
+  },
+  "quintin-morris": {
+    "player_id": "7536",
+    "name": "Quintin Morris",
+    "college": "Bowling Green",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "johnny-mundt": {
+    "player_id": "4314",
+    "name": "Johnny Mundt",
+    "college": "Oregon",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "patrick-mahomes": {
+    "player_id": "4046",
+    "name": "Patrick Mahomes",
+    "college": "Texas Tech",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 1,
+    "pick": 10,
+    "draft_team": "KC"
+  },
+  "gardner-minshew": {
+    "player_id": "6011",
+    "name": "Gardner Minshew",
+    "college": "Washington State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 6,
+    "pick": 178,
+    "draft_team": "JAX"
+  },
+  "isiah-pacheco": {
+    "player_id": "8205",
+    "name": "Isiah Pacheco",
+    "college": "Rutgers",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 7,
+    "pick": 251,
+    "draft_team": "KC"
+  },
+  "kareem-hunt": {
+    "player_id": "4098",
+    "name": "Kareem Hunt",
+    "college": "Toledo",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 86,
+    "draft_team": "KC"
+  },
+  "brashard-smith": {
+    "player_id": "12455",
+    "name": "Brashard Smith",
+    "college": "SMU",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 228,
+    "draft_team": "KC"
+  },
+  "dameon-pierce": {
+    "player_id": "8129",
+    "name": "Dameon Pierce",
+    "college": "Florida",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 107,
+    "draft_team": "HOU"
+  },
+  "tyquan-thornton": {
+    "player_id": "8188",
+    "name": "Tyquan Thornton",
+    "college": "Baylor",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 50,
+    "draft_team": "NE"
+  },
+  "xavier-worthy": {
+    "player_id": "11624",
+    "name": "Xavier Worthy",
+    "college": "Texas",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 28,
+    "draft_team": "KC"
+  },
+  "juju-smith-schuster": {
+    "player_id": "4040",
+    "name": "JuJu Smith-Schuster",
+    "college": "USC",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 2,
+    "pick": 62,
+    "draft_team": "PIT"
+  },
+  "rashee-rice": {
+    "player_id": "10229",
+    "name": "Rashee Rice",
+    "college": "SMU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 55,
+    "draft_team": "KC"
+  },
+  "jalen-royals": {
+    "player_id": "12505",
+    "name": "Jalen Royals",
+    "college": "Utah State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 133,
+    "draft_team": "KC"
+  },
+  "joe-forson": {
+    "player_id": "6677",
+    "name": "Joe Forson",
+    "college": "Valdosta State",
+    "rookie_year": null,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "travis-kelce": {
+    "player_id": "1466",
+    "name": "Travis Kelce",
+    "college": "Cincinnati",
+    "rookie_year": 2013,
+    "year": 2013,
+    "round": 3,
+    "pick": 63,
+    "draft_team": "KC"
+  },
+  "noah-gray": {
+    "player_id": "7828",
+    "name": "Noah Gray",
+    "college": "Duke",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 5,
+    "pick": 162,
+    "draft_team": "KC"
+  },
+  "robert-tonyan": {
+    "player_id": "4602",
+    "name": "Robert Tonyan",
+    "college": "Indiana State",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "justin-herbert": {
+    "player_id": "6797",
+    "name": "Justin Herbert",
+    "college": "Oregon",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 6,
+    "draft_team": "LAC"
+  },
+  "trey-lance": {
+    "player_id": "7610",
+    "name": "Trey Lance",
+    "college": "North Dakota State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 3,
+    "draft_team": "SF"
+  },
+  "omarion-hampton": {
+    "player_id": "12507",
+    "name": "Omarion Hampton",
+    "college": "North Carolina",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 22,
+    "draft_team": "LAC"
+  },
+  "najee-harris": {
+    "player_id": "7528",
+    "name": "Najee Harris",
+    "college": "Alabama",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 24,
+    "draft_team": "PIT"
+  },
+  "kimani-vidal": {
+    "player_id": "11647",
+    "name": "Kimani Vidal",
+    "college": "Troy",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 181,
+    "draft_team": "LAC"
+  },
+  "jaret-patterson": {
+    "player_id": "7537",
+    "name": "Jaret Patterson",
+    "college": "Buffalo",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "quentin-johnston": {
+    "player_id": "9754",
+    "name": "Quentin Johnston",
+    "college": "TCU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 21,
+    "draft_team": "LAC"
+  },
+  "tre-harris": {
+    "player_id": "12509",
+    "name": "Tre' Harris",
+    "college": "Ole Miss",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "keenan-allen": {
+    "player_id": "1479",
+    "name": "Keenan Allen",
+    "college": "California",
+    "rookie_year": 2013,
+    "year": 2013,
+    "round": 3,
+    "pick": 76,
+    "draft_team": "LAC"
+  },
+  "keandre-lambert-smith": {
+    "player_id": "12670",
+    "name": "KeAndre Lambert-Smith",
+    "college": "Auburn",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 158,
+    "draft_team": "LAC"
+  },
+  "ladd-mcconkey": {
+    "player_id": "11635",
+    "name": "Ladd McConkey",
+    "college": "Georgia",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 2,
+    "pick": 34,
+    "draft_team": "LAC"
+  },
+  "derius-davis": {
+    "player_id": "10234",
+    "name": "Derius Davis",
+    "college": "TCU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 4,
+    "pick": 125,
+    "draft_team": "LAC"
+  },
+  "oronde-gadsden": {
+    "player_id": "12493",
+    "name": "Oronde Gadsden",
+    "college": "Syracuse",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 165,
+    "draft_team": "LAC"
+  },
+  "tucker-fisk": {
+    "player_id": "8885",
+    "name": "Tucker Fisk",
+    "college": "Stanford",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "will-dissly": {
+    "player_id": "5010",
+    "name": "Will Dissly",
+    "college": "Washington",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 4,
+    "pick": 120,
+    "draft_team": "SEA"
+  },
+  "matthew-stafford": {
+    "player_id": "421",
+    "name": "Matthew Stafford",
+    "college": "Georgia",
+    "rookie_year": 2009,
+    "year": 2009,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "DET"
+  },
+  "jimmy-garoppolo": {
+    "player_id": "1837",
+    "name": "Jimmy Garoppolo",
+    "college": "Eastern Illinois",
+    "rookie_year": 2014,
+    "year": 2014,
+    "round": 2,
+    "pick": 62,
+    "draft_team": "NE"
+  },
+  "kyren-williams": {
+    "player_id": "8150",
+    "name": "Kyren Williams",
+    "college": "Notre Dame",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 164,
+    "draft_team": "LAR"
+  },
+  "blake-corum": {
+    "player_id": "11586",
+    "name": "Blake Corum",
+    "college": "Michigan",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 83,
+    "draft_team": "LAR"
+  },
+  "ronnie-rivers": {
+    "player_id": "8195",
+    "name": "Ronnie Rivers",
+    "college": "Fresno State",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jarquez-hunter": {
+    "player_id": "11569",
+    "name": "Jarquez Hunter",
+    "college": "Auburn",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 117,
+    "draft_team": "LAR"
+  },
+  "davante-adams": {
+    "player_id": "2133",
+    "name": "Davante Adams",
+    "college": "Fresno State",
+    "rookie_year": 2014,
+    "year": 2014,
+    "round": 2,
+    "pick": 53,
+    "draft_team": "GB"
+  },
+  "konata-mumpfield": {
+    "player_id": "12718",
+    "name": "Konata Mumpfield",
+    "college": "Pittsburgh",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 242,
+    "draft_team": "LAR"
+  },
+  "puka-nacua": {
+    "player_id": "9493",
+    "name": "Puka Nacua",
+    "college": "BYU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 177,
+    "draft_team": "LAR"
+  },
+  "tutu-atwell": {
+    "player_id": "7562",
+    "name": "Tutu Atwell",
+    "college": "Louisville",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 2,
+    "pick": 57,
+    "draft_team": "LAR"
+  },
+  "jordan-whittington": {
+    "player_id": "11623",
+    "name": "Jordan Whittington",
+    "college": "Texas",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 213,
+    "draft_team": "LAR"
+  },
+  "xavier-smith": {
+    "player_id": "11168",
+    "name": "Xavier Smith",
+    "college": "Florida A&M",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "colby-parkinson": {
+    "player_id": "6865",
+    "name": "Colby Parkinson",
+    "college": "Stanford",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 4,
+    "pick": 133,
+    "draft_team": "SEA"
+  },
+  "terrance-ferguson": {
+    "player_id": "12487",
+    "name": "Terrance Ferguson",
+    "college": "Oregon",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 46,
+    "draft_team": "LAR"
+  },
+  "davis-allen": {
+    "player_id": "10214",
+    "name": "Davis Allen",
+    "college": "Clemson",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 175,
+    "draft_team": "LAR"
+  },
+  "geno-smith": {
+    "player_id": "1373",
+    "name": "Geno Smith",
+    "college": "West Virginia",
+    "rookie_year": 2013,
+    "year": 2013,
+    "round": 2,
+    "pick": 39,
+    "draft_team": "NYJ"
+  },
+  "kenny-pickett": {
+    "player_id": "8160",
+    "name": "Kenny Pickett",
+    "college": "Pittsburgh",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 20,
+    "draft_team": "PIT"
+  },
+  "ashton-jeanty": {
+    "player_id": "12527",
+    "name": "Ashton Jeanty",
+    "college": "Boise State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 6,
+    "draft_team": "LV"
+  },
+  "raheem-mostert": {
+    "player_id": "2749",
+    "name": "Raheem Mostert",
+    "college": "Purdue",
+    "rookie_year": 2015,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dylan-laube": {
+    "player_id": "11574",
+    "name": "Dylan Laube",
+    "college": "New Hampshire",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 208,
+    "draft_team": "LV"
+  },
+  "zamir-white": {
+    "player_id": "8139",
+    "name": "Zamir White",
+    "college": "Georgia",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 122,
+    "draft_team": "LV"
+  },
+  "jack-bech": {
+    "player_id": "12483",
+    "name": "Jack Bech",
+    "college": "TCU",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 58,
+    "draft_team": "LV"
+  },
+  "donte-thornton": {
+    "player_id": "12541",
+    "name": "Dont'e Thornton",
+    "college": "Tennessee",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tre-tucker": {
+    "player_id": "10213",
+    "name": "Tre Tucker",
+    "college": "Cincinnati",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 100,
+    "draft_team": "LV"
+  },
+  "shedrick-jackson": {
+    "player_id": "11257",
+    "name": "Shedrick Jackson",
+    "college": "Auburn",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tyler-lockett": {
+    "player_id": "2374",
+    "name": "Tyler Lockett",
+    "college": "Kansas State",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 3,
+    "pick": 69,
+    "draft_team": "SEA"
+  },
+  "alex-bachman": {
+    "player_id": "6386",
+    "name": "Alex Bachman",
+    "college": "Wake Forest",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "brock-bowers": {
+    "player_id": "11604",
+    "name": "Brock Bowers",
+    "college": "Georgia",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 13,
+    "draft_team": "LV"
+  },
+  "michael-mayer": {
+    "player_id": "9482",
+    "name": "Michael Mayer",
+    "college": "Notre Dame",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "LV"
+  },
+  "ian-thomas": {
+    "player_id": "4995",
+    "name": "Ian Thomas",
+    "college": "Indiana",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 4,
+    "pick": 101,
+    "draft_team": "CAR"
+  },
+  "quinn-ewers": {
+    "player_id": "12500",
+    "name": "Quinn Ewers",
+    "college": "Texas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 231,
+    "draft_team": "MIA"
+  },
+  "zach-wilson": {
+    "player_id": "7538",
+    "name": "Zach Wilson",
+    "college": "BYU",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "NYJ"
+  },
+  "devon-achane": {
+    "player_id": "9226",
+    "name": "De'Von Achane",
+    "college": "Texas A&M",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 84,
+    "draft_team": "MIA"
+  },
+  "jaylen-wright": {
+    "player_id": "11643",
+    "name": "Jaylen Wright",
+    "college": "Tennessee",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 120,
+    "draft_team": "MIA"
+  },
+  "ollie-gordon": {
+    "player_id": "12495",
+    "name": "Ollie Gordon",
+    "college": "Oklahoma State",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "alexander-mattison": {
+    "player_id": "5987",
+    "name": "Alexander Mattison",
+    "college": "Boise State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 102,
+    "draft_team": "MIN"
+  },
+  "jaylen-waddle": {
+    "player_id": "7526",
+    "name": "Jaylen Waddle",
+    "college": "Alabama",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 6,
+    "draft_team": "MIA"
+  },
+  "dee-eskridge": {
+    "player_id": "7612",
+    "name": "Dee Eskridge",
+    "college": "Western Michigan",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 2,
+    "pick": 56,
+    "draft_team": "SEA"
+  },
+  "cedrick-wilson": {
+    "player_id": "5113",
+    "name": "Cedrick Wilson",
+    "college": "Boise State",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 6,
+    "pick": 208,
+    "draft_team": "DAL"
+  },
+  "theo-wease": {
+    "player_id": "12860",
+    "name": "Theo Wease",
+    "college": "Missouri",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "malik-washington": {
+    "player_id": "11610",
+    "name": "Malik Washington",
+    "college": "Virginia",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 184,
+    "draft_team": "MIA"
+  },
+  "tahj-washington": {
+    "player_id": "11821",
+    "name": "Tahj Washington",
+    "college": "USC",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 7,
+    "pick": 241,
+    "draft_team": "MIA"
+  },
+  "darren-waller": {
+    "player_id": "2505",
+    "name": "Darren Waller",
+    "college": "Georgia Tech",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 6,
+    "pick": 204,
+    "draft_team": "BAL"
+  },
+  "julian-hill": {
+    "player_id": "11371",
+    "name": "Julian Hill",
+    "college": "Campbell",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "greg-dulcich": {
+    "player_id": "8172",
+    "name": "Greg Dulcich",
+    "college": "UCLA",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 3,
+    "pick": 80,
+    "draft_team": "DEN"
+  },
+  "jj-mccarthy": {
+    "player_id": "11565",
+    "name": "J.J. McCarthy",
+    "college": "Michigan",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 10,
+    "draft_team": "MIN"
+  },
+  "carson-wentz": {
+    "player_id": "3161",
+    "name": "Carson Wentz",
+    "college": "North Dakota State",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "PHI"
+  },
+  "aaron-jones": {
+    "player_id": "4199",
+    "name": "Aaron Jones",
+    "college": "UTEP",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 5,
+    "pick": 182,
+    "draft_team": "GB"
+  },
+  "jordan-mason": {
+    "player_id": "8408",
+    "name": "Jordan Mason",
+    "college": "Georgia Tech",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "ty-chandler": {
+    "player_id": "8230",
+    "name": "Ty Chandler",
+    "college": "North Carolina",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 5,
+    "pick": 169,
+    "draft_team": "MIN"
+  },
+  "zavier-scott": {
+    "player_id": "11299",
+    "name": "Zavier Scott",
+    "college": "Maine",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "justin-jefferson": {
+    "player_id": "6794",
+    "name": "Justin Jefferson",
+    "college": "LSU",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 1,
+    "pick": 22,
+    "draft_team": "MIN"
+  },
+  "tai-felton": {
+    "player_id": "12496",
+    "name": "Tai Felton",
+    "college": "Maryland",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 102,
+    "draft_team": "MIN"
+  },
+  "jordan-addison": {
+    "player_id": "9756",
+    "name": "Jordan Addison",
+    "college": "USC",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 23,
+    "draft_team": "MIN"
+  },
+  "jalen-nailor": {
+    "player_id": "8180",
+    "name": "Jalen Nailor",
+    "college": "Michigan State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 191,
+    "draft_team": "MIN"
+  },
+  "myles-price": {
+    "player_id": "13075",
+    "name": "Myles Price",
+    "college": "Indiana",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "rondale-moore": {
+    "player_id": "7601",
+    "name": "Rondale Moore",
+    "college": "Purdue",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tj-hockenson": {
+    "player_id": "5844",
+    "name": "T.J. Hockenson",
+    "college": "Iowa",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 1,
+    "pick": 8,
+    "draft_team": "DET"
+  },
+  "josh-oliver": {
+    "player_id": "5973",
+    "name": "Josh Oliver",
+    "college": "San Jose State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 69,
+    "draft_team": "JAX"
+  },
+  "ben-sims": {
+    "player_id": "11082",
+    "name": "Ben Sims",
+    "college": "Baylor",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "drake-maye": {
+    "player_id": "11564",
+    "name": "Drake Maye",
+    "college": "North Carolina",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 3,
+    "draft_team": "NE"
+  },
+  "joshua-dobbs": {
+    "player_id": "4179",
+    "name": "Joshua Dobbs",
+    "college": "Tennessee",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 4,
+    "pick": 135,
+    "draft_team": "PIT"
+  },
+  "rhamondre-stevenson": {
+    "player_id": "7611",
+    "name": "Rhamondre Stevenson",
+    "college": "Oklahoma",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 120,
+    "draft_team": "NE"
+  },
+  "treveyon-henderson": {
+    "player_id": "12529",
+    "name": "TreVeyon Henderson",
+    "college": "Ohio State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 38,
+    "draft_team": "NE"
+  },
+  "lan-larison": {
+    "player_id": "12969",
+    "name": "Lan Larison",
+    "college": "UC Davis",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "terrell-jennings": {
+    "player_id": "12412",
+    "name": "Terrell Jennings",
+    "college": "Florida A&M",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kayshon-boutte": {
+    "player_id": "9504",
+    "name": "Kayshon Boutte",
+    "college": "LSU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 187,
+    "draft_team": "NE"
+  },
+  "kyle-williams-12547": {
+    "player_id": "12547",
+    "name": "Kyle Williams",
+    "college": "Washington State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 69,
+    "draft_team": "NE"
+  },
+  "mack-hollins": {
+    "player_id": "4177",
+    "name": "Mack Hollins",
+    "college": "North Carolina",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 4,
+    "pick": 118,
+    "draft_team": "PHI"
+  },
+  "efton-chism": {
+    "player_id": "12542",
+    "name": "Efton Chism",
+    "college": "Eastern Washington",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "stefon-diggs": {
+    "player_id": "2449",
+    "name": "Stefon Diggs",
+    "college": "Maryland",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 5,
+    "pick": 146,
+    "draft_team": "MIN"
+  },
+  "demario-douglas": {
+    "player_id": "9501",
+    "name": "DeMario Douglas",
+    "college": "Liberty",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 210,
+    "draft_team": "NE"
+  },
+  "hunter-henry": {
+    "player_id": "3214",
+    "name": "Hunter Henry",
+    "college": "Arkansas",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "LAC"
+  },
+  "austin-hooper": {
+    "player_id": "3202",
+    "name": "Austin Hooper",
+    "college": "Stanford",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 3,
+    "pick": 81,
+    "draft_team": "ATL"
+  },
+  "cj-dippre": {
+    "player_id": "12984",
+    "name": "CJ Dippre",
+    "college": "Alabama",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tyler-shough": {
+    "player_id": "12545",
+    "name": "Tyler Shough",
+    "college": "Louisville",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 40,
+    "draft_team": "NO"
+  },
+  "spencer-rattler": {
+    "player_id": "11562",
+    "name": "Spencer Rattler",
+    "college": "South Carolina",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 150,
+    "draft_team": "NO"
+  },
+  "alvin-kamara": {
+    "player_id": "4035",
+    "name": "Alvin Kamara",
+    "college": "Tennessee",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 67,
+    "draft_team": "NO"
+  },
+  "kendre-miller": {
+    "player_id": "9757",
+    "name": "Kendre Miller",
+    "college": "TCU",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 71,
+    "draft_team": "NO"
+  },
+  "devin-neal": {
+    "player_id": "12476",
+    "name": "Devin Neal",
+    "college": "Kansas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 6,
+    "pick": 184,
+    "draft_team": "NO"
+  },
+  "evan-hull": {
+    "player_id": "9220",
+    "name": "Evan Hull",
+    "college": "Northwestern",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 176,
+    "draft_team": "IND"
+  },
+  "mason-tipton": {
+    "player_id": "11895",
+    "name": "Mason Tipton",
+    "college": "Yale",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kevin-austin": {
+    "player_id": "8200",
+    "name": "Kevin Austin",
+    "college": "Notre Dame",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "chris-olave": {
+    "player_id": "8144",
+    "name": "Chris Olave",
+    "college": "Ohio State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 11,
+    "draft_team": "NO"
+  },
+  "bub-means": {
+    "player_id": "11748",
+    "name": "Bub Means",
+    "college": "Pittsburgh",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 170,
+    "draft_team": "NO"
+  },
+  "devaughn-vele": {
+    "player_id": "11834",
+    "name": "Devaughn Vele",
+    "college": "Utah",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 7,
+    "pick": 235,
+    "draft_team": "DEN"
+  },
+  "dante-pettis": {
+    "player_id": "4992",
+    "name": "Dante Pettis",
+    "college": "Washington",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 44,
+    "draft_team": "SF"
+  },
+  "juwan-johnson": {
+    "player_id": "7002",
+    "name": "Juwan Johnson",
+    "college": "Oregon",
+    "rookie_year": 2020,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "foster-moreau": {
+    "player_id": "5985",
+    "name": "Foster Moreau",
+    "college": "LSU",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 4,
+    "pick": 137,
+    "draft_team": "LV"
+  },
+  "taysom-hill": {
+    "player_id": "4381",
+    "name": "Taysom Hill",
+    "college": "BYU",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jack-stoll": {
+    "player_id": "7946",
+    "name": "Jack Stoll",
+    "college": "Nebraska",
+    "rookie_year": 2021,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "zaire-mitchell-paden": {
+    "player_id": "8799",
+    "name": "Zaire Mitchell-Paden",
+    "college": "Florida Atlantic",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "mason-pline": {
+    "player_id": "12068",
+    "name": "Mason Pline",
+    "college": "Furman",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jaxson-dart": {
+    "player_id": "12508",
+    "name": "Jaxson Dart",
+    "college": "Ole Miss",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 25,
+    "draft_team": "NYG"
+  },
+  "jameis-winston": {
+    "player_id": "2306",
+    "name": "Jameis Winston",
+    "college": "Florida State",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "TB"
+  },
+  "cam-skattebo": {
+    "player_id": "12481",
+    "name": "Cam Skattebo",
+    "college": "Arizona State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 105,
+    "draft_team": "NYG"
+  },
+  "tyrone-tracy": {
+    "player_id": "11655",
+    "name": "Tyrone Tracy",
+    "college": "Purdue",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "devin-singletary": {
+    "player_id": "6130",
+    "name": "Devin Singletary",
+    "college": "Florida Atlantic",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 74,
+    "draft_team": "BUF"
+  },
+  "eric-gray": {
+    "player_id": "10223",
+    "name": "Eric Gray",
+    "college": "Oklahoma",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 172,
+    "draft_team": "NYG"
+  },
+  "malik-nabers": {
+    "player_id": "11632",
+    "name": "Malik Nabers",
+    "college": "LSU",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 6,
+    "draft_team": "NYG"
+  },
+  "isaiah-hodgins": {
+    "player_id": "6920",
+    "name": "Isaiah Hodgins",
+    "college": "Oregon State",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 6,
+    "pick": 207,
+    "draft_team": "BUF"
+  },
+  "darius-slayton": {
+    "player_id": "6149",
+    "name": "Darius Slayton",
+    "college": "Auburn",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 5,
+    "pick": 171,
+    "draft_team": "NYG"
+  },
+  "beaux-collins": {
+    "player_id": "12889",
+    "name": "Beaux Collins",
+    "college": "Notre Dame",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "wandale-robinson": {
+    "player_id": "8126",
+    "name": "Wan'Dale Robinson",
+    "college": "Kentucky",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 43,
+    "draft_team": "NYG"
+  },
+  "gunner-olszewski": {
+    "player_id": "6699",
+    "name": "Gunner Olszewski",
+    "college": "Bemidji State",
+    "rookie_year": 2019,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "theo-johnson": {
+    "player_id": "11597",
+    "name": "Theo Johnson",
+    "college": "Penn State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 107,
+    "draft_team": "NYG"
+  },
+  "daniel-bellinger": {
+    "player_id": "8225",
+    "name": "Daniel Bellinger",
+    "college": "San Diego State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 112,
+    "draft_team": "NYG"
+  },
+  "chris-manhertz": {
+    "player_id": "3048",
+    "name": "Chris Manhertz",
+    "college": "Canisius",
+    "rookie_year": 2015,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "justin-fields": {
+    "player_id": "7591",
+    "name": "Justin Fields",
+    "college": "Ohio State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 11,
+    "draft_team": "CHI"
+  },
+  "brady-cook": {
+    "player_id": "12538",
+    "name": "Brady Cook",
+    "college": "Missouri",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "breece-hall": {
+    "player_id": "8155",
+    "name": "Breece Hall",
+    "college": "Iowa State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 36,
+    "draft_team": "NYJ"
+  },
+  "braelon-allen": {
+    "player_id": "11576",
+    "name": "Braelon Allen",
+    "college": "Wisconsin",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 134,
+    "draft_team": "NYJ"
+  },
+  "isaiah-davis": {
+    "player_id": "11571",
+    "name": "Isaiah Davis",
+    "college": "South Dakota State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 5,
+    "pick": 173,
+    "draft_team": "NYJ"
+  },
+  "kene-nwangwu": {
+    "player_id": "7720",
+    "name": "Kene Nwangwu",
+    "college": "Iowa State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 119,
+    "draft_team": "MIN"
+  },
+  "adonai-mitchell": {
+    "player_id": "11625",
+    "name": "Adonai Mitchell",
+    "college": "Texas",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 2,
+    "pick": 52,
+    "draft_team": "IND"
+  },
+  "arian-smith": {
+    "player_id": "12539",
+    "name": "Arian Smith",
+    "college": "Georgia",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 110,
+    "draft_team": "NYJ"
+  },
+  "garrett-wilson": {
+    "player_id": "8146",
+    "name": "Garrett Wilson",
+    "college": "Ohio State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 10,
+    "draft_team": "NYJ"
+  },
+  "josh-reynolds": {
+    "player_id": "4171",
+    "name": "Josh Reynolds",
+    "college": "Texas A&M",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 4,
+    "pick": 117,
+    "draft_team": "LAR"
+  },
+  "john-metchie": {
+    "player_id": "8147",
+    "name": "John Metchie",
+    "college": "Alabama",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "isaiah-williams": {
+    "player_id": "11608",
+    "name": "Isaiah Williams",
+    "college": "Illinois",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "mason-taylor": {
+    "player_id": "12498",
+    "name": "Mason Taylor",
+    "college": "LSU",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 42,
+    "draft_team": "NYJ"
+  },
+  "jeremy-ruckert": {
+    "player_id": "8145",
+    "name": "Jeremy Ruckert",
+    "college": "Ohio State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 3,
+    "pick": 101,
+    "draft_team": "NYJ"
+  },
+  "stone-smartt": {
+    "player_id": "8583",
+    "name": "Stone Smartt",
+    "college": "Old Dominion",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jalen-hurts": {
+    "player_id": "6904",
+    "name": "Jalen Hurts",
+    "college": "Oklahoma",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 53,
+    "draft_team": "PHI"
+  },
+  "tanner-mckee": {
+    "player_id": "9230",
+    "name": "Tanner McKee",
+    "college": "Stanford",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 6,
+    "pick": 188,
+    "draft_team": "PHI"
+  },
+  "saquon-barkley": {
+    "player_id": "4866",
+    "name": "Saquon Barkley",
+    "college": "Penn State",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "NYG"
+  },
+  "tank-bigsby": {
+    "player_id": "9225",
+    "name": "Tank Bigsby",
+    "college": "Auburn",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 88,
+    "draft_team": "JAX"
+  },
+  "will-shipley": {
+    "player_id": "11577",
+    "name": "Will Shipley",
+    "college": "Clemson",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 127,
+    "draft_team": "PHI"
+  },
+  "aj-dillon": {
+    "player_id": "6828",
+    "name": "A.J. Dillon",
+    "college": "Boston College",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 62,
+    "draft_team": "GB"
+  },
+  "aj-brown": {
+    "player_id": "5859",
+    "name": "A.J. Brown",
+    "college": "Ole Miss",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 51,
+    "draft_team": "TEN"
+  },
+  "darius-cooper": {
+    "player_id": "13150",
+    "name": "Darius Cooper",
+    "college": "Tarleton State",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jahan-dotson": {
+    "player_id": "8119",
+    "name": "Jahan Dotson",
+    "college": "Penn State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 16,
+    "draft_team": "WAS"
+  },
+  "johnny-wilson": {
+    "player_id": "11636",
+    "name": "Johnny Wilson",
+    "college": "Florida State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 6,
+    "pick": 185,
+    "draft_team": "PHI"
+  },
+  "devonta-smith": {
+    "player_id": "7525",
+    "name": "DeVonta Smith",
+    "college": "Alabama",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 10,
+    "draft_team": "PHI"
+  },
+  "britain-covey": {
+    "player_id": "8414",
+    "name": "Britain Covey",
+    "college": "Utah",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "dallas-goedert": {
+    "player_id": "5022",
+    "name": "Dallas Goedert",
+    "college": "South Dakota State",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 2,
+    "pick": 49,
+    "draft_team": "PHI"
+  },
+  "grant-calcaterra": {
+    "player_id": "8177",
+    "name": "Grant Calcaterra",
+    "college": "SMU",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 198,
+    "draft_team": "PHI"
+  },
+  "kylen-granson": {
+    "player_id": "7602",
+    "name": "Kylen Granson",
+    "college": "SMU",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 127,
+    "draft_team": "IND"
+  },
+  "aaron-rodgers": {
+    "player_id": "96",
+    "name": "Aaron Rodgers",
+    "college": "California",
+    "rookie_year": 2005,
+    "year": 2005,
+    "round": 1,
+    "pick": 24,
+    "draft_team": "GB"
+  },
+  "mason-rudolph": {
+    "player_id": "4972",
+    "name": "Mason Rudolph",
+    "college": "Oklahoma State",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 3,
+    "pick": 76,
+    "draft_team": "PIT"
+  },
+  "kenneth-gainwell": {
+    "player_id": "7567",
+    "name": "Kenneth Gainwell",
+    "college": "Memphis",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 5,
+    "pick": 150,
+    "draft_team": "PHI"
+  },
+  "jaylen-warren": {
+    "player_id": "8228",
+    "name": "Jaylen Warren",
+    "college": "Oklahoma State",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kaleb-johnson": {
+    "player_id": "12504",
+    "name": "Kaleb Johnson",
+    "college": "Iowa",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 3,
+    "pick": 83,
+    "draft_team": "PIT"
+  },
+  "lew-nichols": {
+    "player_id": "9510",
+    "name": "Lew Nichols",
+    "college": "Central Michigan",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 7,
+    "pick": 235,
+    "draft_team": "GB"
+  },
+  "dk-metcalf": {
+    "player_id": "5846",
+    "name": "DK Metcalf",
+    "college": "Ole Miss",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 64,
+    "draft_team": "SEA"
+  },
+  "roman-wilson": {
+    "player_id": "11630",
+    "name": "Roman Wilson",
+    "college": "Michigan",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 84,
+    "draft_team": "PIT"
+  },
+  "marquez-valdes-scantling": {
+    "player_id": "5086",
+    "name": "Marquez Valdes-Scantling",
+    "college": "South Florida",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 5,
+    "pick": 174,
+    "draft_team": "GB"
+  },
+  "scotty-miller": {
+    "player_id": "6290",
+    "name": "Scotty Miller",
+    "college": "Bowling Green",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 6,
+    "pick": 208,
+    "draft_team": "TB"
+  },
+  "calvin-austin": {
+    "player_id": "8125",
+    "name": "Calvin Austin",
+    "college": "Memphis",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "ben-skowronek": {
+    "player_id": "7757",
+    "name": "Ben Skowronek",
+    "college": "Notre Dame",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 7,
+    "pick": 249,
+    "draft_team": "LAR"
+  },
+  "darnell-washington": {
+    "player_id": "9479",
+    "name": "Darnell Washington",
+    "college": "Georgia",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 93,
+    "draft_team": "PIT"
+  },
+  "pat-freiermuth": {
+    "player_id": "7600",
+    "name": "Pat Freiermuth",
+    "college": "Penn State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 2,
+    "pick": 55,
+    "draft_team": "PIT"
+  },
+  "jonnu-smith": {
+    "player_id": "4144",
+    "name": "Jonnu Smith",
+    "college": "Florida International",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 100,
+    "draft_team": "TEN"
+  },
+  "sam-darnold": {
+    "player_id": "4943",
+    "name": "Sam Darnold",
+    "college": "USC",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 3,
+    "draft_team": "NYJ"
+  },
+  "drew-lock": {
+    "player_id": "5854",
+    "name": "Drew Lock",
+    "college": "Missouri",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 42,
+    "draft_team": "DEN"
+  },
+  "kenneth-walker-8151": {
+    "player_id": "8151",
+    "name": "Kenneth Walker",
+    "college": "Michigan State",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "zach-charbonnet": {
+    "player_id": "9753",
+    "name": "Zach Charbonnet",
+    "college": "UCLA",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 52,
+    "draft_team": "SEA"
+  },
+  "george-holani": {
+    "player_id": "12048",
+    "name": "George Holani",
+    "college": "Boise State",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "kenny-mcintosh": {
+    "player_id": "10216",
+    "name": "Kenny McIntosh",
+    "college": "Georgia",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 7,
+    "pick": 237,
+    "draft_team": "SEA"
+  },
+  "jaxon-smith-njigba": {
+    "player_id": "9488",
+    "name": "Jaxon Smith-Njigba",
+    "college": "Ohio State",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 1,
+    "pick": 20,
+    "draft_team": "SEA"
+  },
+  "jake-bobo": {
+    "player_id": "10867",
+    "name": "Jake Bobo",
+    "college": "UCLA",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "rashid-shaheed": {
+    "player_id": "8676",
+    "name": "Rashid Shaheed",
+    "college": "Weber State",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "tory-horton": {
+    "player_id": "12497",
+    "name": "Tory Horton",
+    "college": "Colorado State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 166,
+    "draft_team": "SEA"
+  },
+  "cooper-kupp": {
+    "player_id": "4039",
+    "name": "Cooper Kupp",
+    "college": "Eastern Washington",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 69,
+    "draft_team": "LAR"
+  },
+  "cody-white": {
+    "player_id": "7039",
+    "name": "Cody White",
+    "college": "Michigan State",
+    "rookie_year": 2020,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "aj-barner": {
+    "player_id": "11603",
+    "name": "AJ Barner",
+    "college": "Michigan",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 121,
+    "draft_team": "SEA"
+  },
+  "eric-saubert": {
+    "player_id": "4189",
+    "name": "Eric Saubert",
+    "college": "Drake",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 5,
+    "pick": 174,
+    "draft_team": "ATL"
+  },
+  "elijah-arroyo": {
+    "player_id": "12521",
+    "name": "Elijah Arroyo",
+    "college": "Miami (FL)",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 2,
+    "pick": 50,
+    "draft_team": "SEA"
+  },
+  "brock-purdy": {
+    "player_id": "8183",
+    "name": "Brock Purdy",
+    "college": "Iowa State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 7,
+    "pick": 262,
+    "draft_team": "SF"
+  },
+  "mac-jones": {
+    "player_id": "7527",
+    "name": "Mac Jones",
+    "college": "Alabama",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 1,
+    "pick": 15,
+    "draft_team": "NE"
+  },
+  "christian-mccaffrey": {
+    "player_id": "4034",
+    "name": "Christian McCaffrey",
+    "college": "Stanford",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 1,
+    "pick": 8,
+    "draft_team": "CAR"
+  },
+  "brian-robinson": {
+    "player_id": "8154",
+    "name": "Brian Robinson",
+    "college": "Alabama",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jordan-james": {
+    "player_id": "12467",
+    "name": "Jordan James",
+    "college": "Oregon",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 5,
+    "pick": 147,
+    "draft_team": "SF"
+  },
+  "isaac-guerendo": {
+    "player_id": "11651",
+    "name": "Isaac Guerendo",
+    "college": "Louisville",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 129,
+    "draft_team": "SF"
+  },
+  "ricky-pearsall": {
+    "player_id": "11638",
+    "name": "Ricky Pearsall",
+    "college": "Florida",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 31,
+    "draft_team": "SF"
+  },
+  "kendrick-bourne": {
+    "player_id": "4454",
+    "name": "Kendrick Bourne",
+    "college": "Eastern Washington",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jauan-jennings": {
+    "player_id": "7049",
+    "name": "Jauan Jennings",
+    "college": "Tennessee",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 7,
+    "pick": 217,
+    "draft_team": "SF"
+  },
+  "jordan-watkins": {
+    "player_id": "12634",
+    "name": "Jordan Watkins",
+    "college": "Ole Miss",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 138,
+    "draft_team": "SF"
+  },
+  "demarcus-robinson": {
+    "player_id": "3286",
+    "name": "Demarcus Robinson",
+    "college": "Florida",
+    "rookie_year": 2016,
+    "year": 2016,
+    "round": 4,
+    "pick": 126,
+    "draft_team": "KC"
+  },
+  "skyy-moore": {
+    "player_id": "8168",
+    "name": "Skyy Moore",
+    "college": "Western Michigan",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 2,
+    "pick": 54,
+    "draft_team": "KC"
+  },
+  "george-kittle": {
+    "player_id": "4217",
+    "name": "George Kittle",
+    "college": "Iowa",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 5,
+    "pick": 146,
+    "draft_team": "SF"
+  },
+  "luke-farrell": {
+    "player_id": "7842",
+    "name": "Luke Farrell",
+    "college": "Ohio State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 5,
+    "pick": 145,
+    "draft_team": "JAX"
+  },
+  "jake-tonges": {
+    "player_id": "8698",
+    "name": "Jake Tonges",
+    "college": "California",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "baker-mayfield": {
+    "player_id": "4892",
+    "name": "Baker Mayfield",
+    "college": "Oklahoma",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "CLE"
+  },
+  "teddy-bridgewater": {
+    "player_id": "2152",
+    "name": "Teddy Bridgewater",
+    "college": "Louisville",
+    "rookie_year": 2014,
+    "year": 2014,
+    "round": 1,
+    "pick": 32,
+    "draft_team": "MIN"
+  },
+  "bucky-irving": {
+    "player_id": "11584",
+    "name": "Bucky Irving",
+    "college": "Oregon",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 4,
+    "pick": 125,
+    "draft_team": "TB"
+  },
+  "rachaad-white": {
+    "player_id": "8136",
+    "name": "Rachaad White",
+    "college": "Arizona State",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 3,
+    "pick": 91,
+    "draft_team": "TB"
+  },
+  "sean-tucker": {
+    "player_id": "9506",
+    "name": "Sean Tucker",
+    "college": "Syracuse",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "josh-williams": {
+    "player_id": "12787",
+    "name": "Josh Williams",
+    "college": "LSU",
+    "rookie_year": 2025,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "mike-evans": {
+    "player_id": "2216",
+    "name": "Mike Evans",
+    "college": "Texas A&M",
+    "rookie_year": 2014,
+    "year": 2014,
+    "round": 1,
+    "pick": 7,
+    "draft_team": "TB"
+  },
+  "jalen-mcmillan": {
+    "player_id": "11618",
+    "name": "Jalen McMillan",
+    "college": "Washington",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 92,
+    "draft_team": "TB"
+  },
+  "emeka-egbuka": {
+    "player_id": "12514",
+    "name": "Emeka Egbuka",
+    "college": "Ohio State",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 19,
+    "draft_team": "TB"
+  },
+  "tez-johnson": {
+    "player_id": "12485",
+    "name": "Tez Johnson",
+    "college": "Oregon",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 235,
+    "draft_team": "TB"
+  },
+  "chris-godwin": {
+    "player_id": "4037",
+    "name": "Chris Godwin",
+    "college": "Penn State",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 3,
+    "pick": 84,
+    "draft_team": "TB"
+  },
+  "kameron-johnson": {
+    "player_id": "11994",
+    "name": "Kameron Johnson",
+    "college": "Barton",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "cade-otton": {
+    "player_id": "8111",
+    "name": "Cade Otton",
+    "college": "Washington",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 106,
+    "draft_team": "TB"
+  },
+  "payne-durham": {
+    "player_id": "10227",
+    "name": "Payne Durham",
+    "college": "Purdue",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 5,
+    "pick": 171,
+    "draft_team": "TB"
+  },
+  "ko-kieft": {
+    "player_id": "8484",
+    "name": "Ko Kieft",
+    "college": "Minnesota",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 6,
+    "pick": 218,
+    "draft_team": "TB"
+  },
+  "cam-ward": {
+    "player_id": "12522",
+    "name": "Cam Ward",
+    "college": "Miami (FL)",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 1,
+    "pick": 1,
+    "draft_team": "TEN"
+  },
+  "will-levis": {
+    "player_id": "9999",
+    "name": "Will Levis",
+    "college": "Kentucky",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 2,
+    "pick": 33,
+    "draft_team": "TEN"
+  },
+  "tony-pollard": {
+    "player_id": "5967",
+    "name": "Tony Pollard",
+    "college": "Memphis",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 4,
+    "pick": 128,
+    "draft_team": "DAL"
+  },
+  "tyjae-spears": {
+    "player_id": "9508",
+    "name": "Tyjae Spears",
+    "college": "Tulane",
+    "rookie_year": 2023,
+    "year": 2023,
+    "round": 3,
+    "pick": 81,
+    "draft_team": "TEN"
+  },
+  "kalel-mullings": {
+    "player_id": "12516",
+    "name": "Kalel Mullings",
+    "college": "Michigan",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 6,
+    "pick": 188,
+    "draft_team": "TEN"
+  },
+  "julius-chestnut": {
+    "player_id": "8254",
+    "name": "Julius Chestnut",
+    "college": "Sacred Heart",
+    "rookie_year": 2022,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "elic-ayomanor": {
+    "player_id": "12499",
+    "name": "Elic Ayomanor",
+    "college": "Stanford",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 136,
+    "draft_team": "TEN"
+  },
+  "van-jefferson": {
+    "player_id": "6853",
+    "name": "Van Jefferson",
+    "college": "Florida",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 2,
+    "pick": 57,
+    "draft_team": "LAR"
+  },
+  "calvin-ridley": {
+    "player_id": "4981",
+    "name": "Calvin Ridley",
+    "college": "Alabama",
+    "rookie_year": 2018,
+    "year": 2018,
+    "round": 1,
+    "pick": 26,
+    "draft_team": "ATL"
+  },
+  "bryce-oliver": {
+    "player_id": "11959",
+    "name": "Bryce Oliver",
+    "college": "Youngstown State",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "chimere-dike": {
+    "player_id": "12540",
+    "name": "Chimere Dike",
+    "college": "Florida",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 103,
+    "draft_team": "TEN"
+  },
+  "james-proche": {
+    "player_id": "6957",
+    "name": "James Proche",
+    "college": "SMU",
+    "rookie_year": 2020,
+    "year": 2020,
+    "round": 6,
+    "pick": 201,
+    "draft_team": "BAL"
+  },
+  "chig-okonkwo": {
+    "player_id": "8210",
+    "name": "Chig Okonkwo",
+    "college": "Maryland",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 4,
+    "pick": 143,
+    "draft_team": "TEN"
+  },
+  "gunnar-helm": {
+    "player_id": "12502",
+    "name": "Gunnar Helm",
+    "college": "Texas",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 120,
+    "draft_team": "TEN"
+  },
+  "david-martin-robinson": {
+    "player_id": "12357",
+    "name": "David Martin-Robinson",
+    "college": "Temple",
+    "rookie_year": 2024,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jayden-daniels": {
+    "player_id": "11566",
+    "name": "Jayden Daniels",
+    "college": "LSU",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "WAS"
+  },
+  "marcus-mariota": {
+    "player_id": "2307",
+    "name": "Marcus Mariota",
+    "college": "Oregon",
+    "rookie_year": 2015,
+    "year": 2015,
+    "round": 1,
+    "pick": 2,
+    "draft_team": "TEN"
+  },
+  "austin-ekeler": {
+    "player_id": "4663",
+    "name": "Austin Ekeler",
+    "college": "Western Colorado",
+    "rookie_year": 2017,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "chris-rodriguez": {
+    "player_id": "10219",
+    "name": "Chris Rodriguez",
+    "college": "Kentucky",
+    "rookie_year": 2023,
+    "year": null,
+    "round": null,
+    "pick": null,
+    "draft_team": null
+  },
+  "jacory-croskey-merritt": {
+    "player_id": "12533",
+    "name": "Jacory Croskey-Merritt",
+    "college": "Arizona",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 7,
+    "pick": 245,
+    "draft_team": "WAS"
+  },
+  "jeremy-mcnichols": {
+    "player_id": "4219",
+    "name": "Jeremy McNichols",
+    "college": "Boise State",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 5,
+    "pick": 162,
+    "draft_team": "TB"
+  },
+  "terry-mclaurin": {
+    "player_id": "5927",
+    "name": "Terry McLaurin",
+    "college": "Ohio State",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 3,
+    "pick": 76,
+    "draft_team": "WAS"
+  },
+  "noah-brown": {
+    "player_id": "4234",
+    "name": "Noah Brown",
+    "college": "Ohio State",
+    "rookie_year": 2017,
+    "year": 2017,
+    "round": 7,
+    "pick": 239,
+    "draft_team": "DAL"
+  },
+  "luke-mccaffrey": {
+    "player_id": "11650",
+    "name": "Luke McCaffrey",
+    "college": "Rice",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 3,
+    "pick": 100,
+    "draft_team": "WAS"
+  },
+  "treylon-burks": {
+    "player_id": "8135",
+    "name": "Treylon Burks",
+    "college": "Arkansas",
+    "rookie_year": 2022,
+    "year": 2022,
+    "round": 1,
+    "pick": 18,
+    "draft_team": "TEN"
+  },
+  "deebo-samuel": {
+    "player_id": "5872",
+    "name": "Deebo Samuel",
+    "college": "South Carolina",
+    "rookie_year": 2019,
+    "year": 2019,
+    "round": 2,
+    "pick": 36,
+    "draft_team": "SF"
+  },
+  "jaylin-lane": {
+    "player_id": "12641",
+    "name": "Jaylin Lane",
+    "college": "Virginia Tech",
+    "rookie_year": 2025,
+    "year": 2025,
+    "round": 4,
+    "pick": 128,
+    "draft_team": "WAS"
+  },
+  "zach-ertz": {
+    "player_id": "1339",
+    "name": "Zach Ertz",
+    "college": "Stanford",
+    "rookie_year": 2013,
+    "year": 2013,
+    "round": 2,
+    "pick": 35,
+    "draft_team": "PHI"
+  },
+  "john-bates": {
+    "player_id": "7716",
+    "name": "John Bates",
+    "college": "Boise State",
+    "rookie_year": 2021,
+    "year": 2021,
+    "round": 4,
+    "pick": 124,
+    "draft_team": "WAS"
+  },
+  "ben-sinnott": {
+    "player_id": "11596",
+    "name": "Ben Sinnott",
+    "college": "Kansas State",
+    "rookie_year": 2024,
+    "year": 2024,
+    "round": 2,
+    "pick": 53,
+    "draft_team": "WAS"
+  }
+}

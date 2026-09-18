@@ -1,7 +1,7 @@
 # StatChasers WordPress plugin
 
-Mounts the StatChasers news tool and NFL team hubs **directly into WordPress pages**
-— no iframe.
+Mounts the StatChasers news tool, the NFL team hubs and the player pages
+**directly into WordPress pages** — no iframe.
 
 ## Why
 
@@ -38,6 +38,7 @@ nothing is hidden behind a click.
    ```
    [statchasers_news]     the player news tool
    [statchasers_team]     an NFL team hub
+   [statchasers_player]   an NFL player page
    ```
 
 ## The team hubs — `[statchasers_team]`
@@ -124,6 +125,109 @@ Two things that bite on a Divi site specifically:
    layout, not the page. Keep the hub in page content (what the script writes), or
    use `[sc_team_hub]` from the mu-plugin, which reads `get_queried_object()` and
    is correct either way.
+
+## The player pages — `[statchasers_player]`
+
+One shortcode per player page, at `/nfl/players/<slug>/`. It mounts the same
+profile the API serves at `/player/<slug>`: the season summary, the weekly
+finish distribution and trend, the full game log, career totals, advanced
+metrics with league percentiles, a generated bio, injury history and the
+player's news — all server-rendered into your page's HTML.
+
+| Attribute | Default          | Meaning |
+|-----------|------------------|---------|
+| `slug`    | the page's slug  | Which player to render, e.g. `kyler-murray`. |
+| `format`  | `ppr`            | Scoring format: `standard`, `half` or `ppr`. |
+
+**`slug` is usually unnecessary.** It defaults to the WordPress page's own slug,
+and the API's player slugs are the same strings, so every page can carry one
+identical shortcode:
+
+```
+[statchasers_player]
+```
+
+Set it explicitly only where the page slug isn't the player slug:
+
+```
+[statchasers_player slug="kyler-murray"]
+```
+
+`format` changes every number in the profile — points per game, the weekly
+finishes, the tier rates, the volatility. Set it once per site if your league
+isn't PPR:
+
+```
+[statchasers_player format="half"]
+```
+
+### Why this shortcode is what makes player pages rank
+
+Exactly the team hubs' story. The API serves every player route with
+`noindex, indexifembedded`, so **until a page embeds a profile, that profile is
+invisible to search** — `indexifembedded` with no embed is just `noindex`. This
+shortcode is the embed.
+
+The fragment carries no `<h1>`, `<title>`, canonical or robots directive; the
+WordPress page owns all of those. The tab strip is `:target`-based, so all six
+tabs are in the HTML on first response and the only URL state it can produce is
+a `#hash` — not a separate URL.
+
+### Server-side configuration
+
+Set `SC_PLAYER_PATH_PREFIX` on the **API deployment** to the public path of
+these pages:
+
+```
+SC_PLAYER_PATH_PREFIX=/nfl/players/
+```
+
+Left unset, links inside the profile point at the API's own `/player/<slug>`,
+so a reader clicking through from inside your page leaves the site for the bare
+tool. Setting it also drops the `?embed=1` those links carry for the local
+mount — which matters for the same reason it does on the team hubs: `embed` is a
+reserved WordPress query var, and `/nfl/players/kyler-murray/?embed=1` serves
+WordPress's oEmbed template instead of the page. (`SC_PLAYER_LINK_QUERY`
+overrides that query if a mount needs something else.)
+
+Set `SC_TEAM_PATH_PREFIX` too if you have the team hubs: the profile's hero
+links to the player's team, and it uses the same prefix the hubs do.
+
+### Creating the pages
+
+**`scripts/create-player-pages.sh`** is the companion to
+`create-team-pages.sh` — a WP-CLI script that creates `/nfl/players/<slug>/` for
+every indexed player with the shortcode as post content and the Rank Math
+title/description/robots. Idempotent: it never overwrites content, and fills
+Rank Math fields only where they are empty.
+
+```bash
+ORIGIN=https://your-api.example.com bash scripts/create-player-pages.sh --dry-run
+ORIGIN=https://your-api.example.com LIMIT=5 bash scripts/create-player-pages.sh
+ORIGIN=https://your-api.example.com bash scripts/create-player-pages.sh
+```
+
+Three differences from the team script, all of them consequences of there being
+about six hundred of these rather than 32:
+
+- **The player list comes from the API**, at `/embed/players.json`, not from a
+  table inside the script. The roster moves every offseason and a pasted copy
+  would be wrong by the time anyone ran it. `ORIGIN` is therefore required.
+- **It creates pages for the *indexed* players only** — the fantasy-relevant
+  ones. The dictionary holds every player in the league and most have no game
+  log, no advanced row and no bio; a page each would be several thousand thin
+  pages, which is the opposite of what these are for.
+- **No featured image by default.** Six hundred headshot sideloads is a large
+  media library and a long run for an image the profile renders itself.
+  `--with-images` turns it on for a template that needs one.
+
+`LIMIT=5` on the first run against a live site is worth the thirty seconds: it
+creates five pages you can check before committing to the rest.
+
+The Divi notes on the team hubs apply here unchanged — a Theme Builder body
+template **must** contain a Post Content module or every one of these pages
+ships empty, and the plugin takes Divi's full-width column for the same reason
+it does on a hub.
 
 ## News shortcode attributes
 
@@ -259,8 +363,10 @@ don't let tool state leak into the existing page's URL.
 
 ## Caching
 
-- Rendered fragments are cached in a transient for 5 minutes — news and team
-  hubs alike, each team cached under its own key.
+- Rendered fragments are cached in a transient for 5 minutes — news, team hubs
+  and player pages alike, each cached under its own key (a player's key includes
+  the scoring format, so three formats are three entries rather than one that
+  flip-flops).
 - The last successful render is kept for 24 hours and served if the API is slow
   or unreachable, so a hiccup shows stale news rather than an empty box. A team
   hub with no cached copy yet renders nothing rather than an empty shell: unlike
@@ -268,7 +374,10 @@ don't let tool state leak into the existing page's URL.
   the page — H1, copy, internal links — is left intact.
 - The team endpoint gets an 8-second timeout rather than the news tool's 5. A
   hub assembles season stats, a depth chart, a schedule and the news archive, so
-  a cold render is legitimately slower than a list of headlines.
+  a cold render is legitimately slower than a list of headlines. The player
+  endpoint gets 6: it waits on nobody — every number in a profile is arithmetic
+  over JSON the API already holds — so a slow answer there means the deployment
+  is in trouble, not that an upstream is.
 - Asset versions come from `/embed/assets.json` (cached 15 minutes) and are used
   as the enqueue `ver`, so a deploy busts browser caches automatically.
 

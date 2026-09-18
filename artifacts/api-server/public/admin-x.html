@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>X Sources — StatChasers News</title>
+    <style>
+      /* Deliberately self-contained. This page is an operator tool, not part of
+         the embeddable product, so it must not pull in the tool's stylesheet
+         (whose class names are load-bearing for WordPress) or add weight to a
+         bundle every visitor downloads. The palette matches the tool's. */
+      :root {
+        --navy: #0b2347;
+        --ink: #123b73;
+        --gold: #d4af37;
+        --muted: #5b6b82;
+        --line: rgba(15, 39, 71, 0.12);
+        --bg: #f4f6fa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 64px;
+        background: var(--bg);
+        color: var(--navy);
+        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .wrap { max-width: 960px; margin: 0 auto; }
+      h1 { margin: 0 0 4px; font-size: 1.6rem; letter-spacing: -0.02em; }
+      .sub { margin: 0 0 24px; color: var(--muted); }
+      .bar {
+        display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        margin-bottom: 20px;
+      }
+      button, input, select {
+        font: inherit; border-radius: 8px; border: 1px solid var(--line);
+        padding: 8px 12px; background: #fff; color: var(--navy);
+      }
+      button { cursor: pointer; font-weight: 600; }
+      button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+      button.danger { color: #a11; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .status {
+        padding: 10px 14px; border-radius: 8px; background: #fff;
+        border: 1px solid var(--line); margin-bottom: 20px; font-size: 0.9rem;
+      }
+      .status.off { border-color: #d99; background: #fff6f6; }
+      table { width: 100%; border-collapse: collapse; background: #fff;
+              border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+      th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+           color: var(--muted); background: #fafbfd; }
+      tr:last-child td { border-bottom: 0; }
+      tr.disabled { opacity: 0.55; }
+      .handle { color: var(--muted); font-size: 0.85rem; }
+      .name { font-weight: 700; }
+      .toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+      .toggle {
+        border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px;
+        font-size: 0.72rem; font-weight: 700; cursor: pointer; background: #fff;
+        color: var(--muted);
+      }
+      .toggle.on { background: rgba(18, 59, 115, 0.09); color: var(--ink);
+                   border-color: rgba(18, 59, 115, 0.25); }
+      .err { color: #a11; font-size: 0.8rem; max-width: 260px; }
+      .muted { color: var(--muted); font-size: 0.82rem; }
+      .add { display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+             margin: 20px 0; padding: 14px; background: #fff;
+             border: 1px solid var(--line); border-radius: 10px; }
+      .note { color: var(--muted); font-size: 0.82rem; margin-top: 24px; }
+      .rules { margin: 0 0 20px; padding: 12px 14px; background: #fff;
+               border: 1px solid var(--line); border-radius: 10px; }
+      .rules summary { cursor: pointer; font-weight: 600; }
+      .rules pre { margin: 6px 0 14px; padding: 10px; background: var(--bg);
+                   border-radius: 6px; font-size: 0.78rem; white-space: pre-wrap;
+                   word-break: break-all; }
+      .rules code { font-size: 0.82rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>X Sources</h1>
+      <p class="sub">
+        Reporters whose public posts are pulled into the news feed. Changes take
+        effect on the next poll — no deploy needed.
+      </p>
+
+      <div class="status" id="status">Loading…</div>
+
+      <div class="bar">
+        <button class="primary" id="sweep">Run sweep now</button>
+        <button id="reload">Refresh list</button>
+        <button id="seed">Re-apply seed list</button>
+        <span class="muted" id="msg"></span>
+      </div>
+
+      <div class="add">
+        <input id="newHandle" placeholder="handle (no @)" size="18" />
+        <select id="newPriority">
+          <option value="normal">Normal priority</option>
+          <option value="high">High priority</option>
+          <option value="low">Low priority</option>
+        </select>
+        <input id="newCategory" placeholder="category (optional)" size="14" />
+        <button class="primary" id="add">+ Add account</button>
+      </div>
+
+      <details class="rules" id="rulesBlock">
+        <summary>Real-time filter rules</summary>
+        <p class="muted">
+          Register these with your provider and point their webhook at
+          <code id="webhookUrl"></code>. Each is capped at 255 characters, which
+          is why the watchlist needs more than one. Re-check this after adding
+          or removing a reporter.
+        </p>
+        <div id="rules" class="muted">Loading…</div>
+      </details>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Reporter</th>
+            <th>Priority</th>
+            <th>Post kinds</th>
+            <th>Last checked</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="5" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+
+      <p class="note">
+        Originals / Replies / Reposts / Quotes are per account — click to
+        toggle. Disabling an account stops polling it but keeps everything it
+        has already contributed to the feed.
+      </p>
+    </div>
+
+    <script>
+      // The same shared secret the ingest endpoints use (INGEST_SECRET). Asked
+      // for once and kept in sessionStorage — this page has no login because
+      // the app has no accounts, and inventing one for a settings page would be
+      // a larger change to the product than the feature it configures.
+      const KEY = "sc-ingest-secret";
+
+      function secret() {
+        let value = sessionStorage.getItem(KEY);
+        if (value === null) {
+          value = window.prompt("INGEST_SECRET (leave blank if not set):") || "";
+          sessionStorage.setItem(KEY, value);
+        }
+        return value;
+      }
+
+      async function api(path, options = {}) {
+        const headers = { "Content-Type": "application/json" };
+        const key = secret();
+        if (key) headers["x-ingest-secret"] = key;
+        const res = await fetch(path, { ...options, headers });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          // A wrong secret must not be sticky, or the page is unusable until
+          // the tab is closed.
+          sessionStorage.removeItem(KEY);
+          throw new Error("unauthorized — check INGEST_SECRET");
+        }
+        if (!res.ok || body.ok === false) {
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        return body;
+      }
+
+      const msg = document.getElementById("msg");
+      function say(text, isError) {
+        msg.textContent = text;
+        msg.style.color = isError ? "#a11" : "";
+        if (text) setTimeout(() => { if (msg.textContent === text) msg.textContent = ""; }, 6000);
+      }
+
+      function when(value) {
+        if (!value) return "never";
+        const ms = Date.now() - new Date(value).getTime();
+        const mins = Math.round(ms / 60000);
+        if (mins < 1) return "just now";
+        if (mins < 60) return mins + "m ago";
+        const hours = Math.round(mins / 60);
+        if (hours < 48) return hours + "h ago";
+        return Math.round(hours / 24) + "d ago";
+      }
+
+      function escape(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+        })[c]);
+      }
+
+      const KINDS = [
+        ["includeOriginals", "Originals"],
+        ["includeReplies", "Replies"],
+        ["includeReposts", "Reposts"],
+        ["includeQuotes", "Quotes"],
+      ];
+
+      function renderRows(accounts) {
+        const rows = document.getElementById("rows");
+        if (!accounts.length) {
+          rows.innerHTML = '<tr><td colspan="5" class="muted">No accounts yet.</td></tr>';
+          return;
+        }
+        rows.innerHTML = accounts.map((a) => `
+          <tr class="${a.enabled ? "" : "disabled"}" data-username="${escape(a.username)}">
+            <td>
+              <div class="name">${escape(a.displayName || "@" + a.username)}</div>
+              <div class="handle">@${escape(a.username)}${a.category ? " · " + escape(a.category) : ""}</div>
+              ${a.lastError ? `<div class="err">${escape(a.lastError)}</div>` : ""}
+            </td>
+            <td>
+              <select data-field="priority">
+                ${["high", "normal", "low"].map((p) =>
+                  `<option value="${p}"${p === a.priority ? " selected" : ""}>${p}</option>`).join("")}
+              </select>
+            </td>
+            <td>
+              <div class="toggles">
+                ${KINDS.map(([field, label]) =>
+                  `<button class="toggle ${a[field] ? "on" : ""}" data-toggle="${field}">${label} ${a[field] ? "✓" : "✕"}</button>`).join("")}
+              </div>
+            </td>
+            <td class="muted">
+              ${when(a.lastCheckedAt)}
+              ${a.consecutiveFailures ? `<br><span class="err">${a.consecutiveFailures} fails</span>` : ""}
+            </td>
+            <td>
+              <button data-toggle="enabled">${a.enabled ? "Disable" : "Enable"}</button>
+              <button class="danger" data-remove="1">Remove</button>
+            </td>
+          </tr>`).join("");
+      }
+
+      let accounts = [];
+
+      async function load() {
+        try {
+          const [list, status] = await Promise.all([
+            fetch("/api/x/accounts").then((r) => r.json()),
+            fetch("/api/x/status").then((r) => r.json()),
+          ]);
+          accounts = list.accounts || [];
+          renderRows(accounts);
+
+          const el = document.getElementById("status");
+          const enabled = status.enabled;
+          el.className = "status" + (enabled ? "" : " off");
+          el.innerHTML = enabled
+            ? `Ingestion <strong>on</strong> · provider <strong>${escape(status.provider)}</strong>`
+              + ` · ${status.ticks} sweeps this process · ${status.postsStored} posts stored`
+              + ` · last sweep ${when(status.lastTickMs ? new Date(status.lastTickMs).toISOString() : null)}`
+            : `Ingestion is <strong>off</strong>. Set <code>X_NEWS_INGESTION_ENABLED=true</code> and restart to start polling.`;
+        } catch (err) {
+          say(err.message, true);
+        }
+      }
+
+      document.getElementById("rows").addEventListener("click", async (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        const row = button.closest("tr");
+        const username = row?.dataset.username;
+        if (!username) return;
+
+        try {
+          if (button.dataset.remove) {
+            if (!window.confirm("Stop monitoring @" + username + "?")) return;
+            await api("/api/x/accounts/" + username, { method: "DELETE" });
+            say("Removed @" + username);
+          } else if (button.dataset.toggle) {
+            const field = button.dataset.toggle;
+            const account = accounts.find((a) => a.username === username);
+            await api("/api/x/accounts/" + username, {
+              method: "PATCH",
+              body: JSON.stringify({ [field]: !account[field] }),
+            });
+          }
+          await load();
+        } catch (err) {
+          say(err.message, true);
+        }
+      });
+
+      document.getElementById("rows").addEventListener("change", async (event) => {
+        const select = event.target.closest("select[data-field]");
+        if (!select) return;
+        const username = select.closest("tr").dataset.username;
+        try {
+          await api("/api/x/accounts/" + username, {
+            method: "PATCH",
+            body: JSON.stringify({ [select.dataset.field]: select.value }),
+          });
+          say("Updated @" + username);
+          await load();
+        } catch (err) {
+          say(err.message, true);
+        }
+      });
+
+      document.getElementById("add").addEventListener("click", async () => {
+        const handle = document.getElementById("newHandle").value.trim().replace(/^@/, "");
+        if (!handle) return;
+        try {
+          const body = await api("/api/x/accounts", {
+            method: "POST",
+            body: JSON.stringify({
+              username: handle,
+              priority: document.getElementById("newPriority").value,
+              category: document.getElementById("newCategory").value.trim(),
+            }),
+          });
+          say(body.created ? "Added @" + handle : "@" + handle + " was already monitored");
+          document.getElementById("newHandle").value = "";
+          document.getElementById("newCategory").value = "";
+          await load();
+        } catch (err) {
+          say(err.message, true);
+        }
+      });
+
+      document.getElementById("sweep").addEventListener("click", async (event) => {
+        event.target.disabled = true;
+        try {
+          const body = await api("/api/x/ingest", { method: "POST" });
+          say(`Checked ${body.checked}, stored ${body.stored}, ${body.errors} error(s)`);
+          await load();
+        } catch (err) {
+          say(err.message, true);
+        } finally {
+          event.target.disabled = false;
+        }
+      });
+
+      document.getElementById("seed").addEventListener("click", async () => {
+        try {
+          const body = await api("/api/x/accounts/seed", { method: "POST" });
+          say(body.added ? `Added ${body.added} account(s)` : "Nothing new to add");
+          await load();
+        } catch (err) {
+          say(err.message, true);
+        }
+      });
+
+      async function loadRules() {
+        const el = document.getElementById("rules");
+        try {
+          const body = await fetch("/api/x/webhook/rules").then((r) => r.json());
+          document.getElementById("webhookUrl").textContent =
+            `${location.origin}/api/x/webhook`;
+
+          el.innerHTML =
+            `<p class="muted">${body.accounts} enabled account(s) → ${body.rules.length} rule(s)` +
+            (body.webhookConfigured
+              ? ""
+              : ` · <strong style="color:#a11">no X_WEBHOOK_SECRET set — deliveries will be refused</strong>`) +
+            `</p>` +
+            body.rules
+              .map(
+                (rule) =>
+                  `<div><strong>${escape(rule.tag)}</strong> ` +
+                  `<span class="muted">(${rule.length}/255)</span>` +
+                  `<pre>${escape(rule.value)}</pre></div>`,
+              )
+              .join("");
+        } catch (err) {
+          el.textContent = err.message;
+        }
+      }
+
+      document.getElementById("rulesBlock").addEventListener("toggle", (event) => {
+        // Only when opened: this is a setup aid, not something every visit
+        // needs to fetch.
+        if (event.target.open) loadRules();
+      });
+
+      document.getElementById("reload").addEventListener("click", load);
+
+      load();
+    </script>
+  </body>
+</html>

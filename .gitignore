@@ -70,3 +70,8 @@ artifacts/api-server/data/*.db-wal
 # esbuild scratch from tests/helpers/bundle.mjs. Cleaned by the test that made
 # it; ignored so a crashed run cannot leave one staged.
 artifacts/api-server/.test-bundle-*/
+
+# The 2026 outlook workflow's working directory: ~1000 per-player input/output
+# files that scripts/player/outlookPrep.js regenerates and outlookMerge.js folds
+# into data/player/fantasy_outlook_2026.json. Intermediates, not data.
+artifacts/api-server/data/player/.outlook_parts/
