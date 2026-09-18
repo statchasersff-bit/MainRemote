@@ -255,6 +255,21 @@ describe("player page content", () => {
         );
       }
 
+      // The News tab's report card is rendered only when a designation exists,
+      // so its mere presence is a claim — and it must never be the claim that
+      // nothing is wrong.
+      const report = doc.querySelector(".scp-report");
+      if (report) {
+        assert.ok(
+          report.querySelector(".scp-report-pill")?.textContent.trim(),
+          `${player.slug}: a report card without a designation should not exist`,
+        );
+        assert.ok(
+          !/healthy|no injur|cleared/i.test(report.textContent),
+          `${player.slug}: the report card reports a designation, never its absence`,
+        );
+      }
+
       const injury = doc.querySelector("#injury");
       if (injury) {
         assert.ok(
@@ -301,6 +316,132 @@ describe("player page content", () => {
       assert.ok(
         !svg.hasAttribute("preserveAspectRatio"),
         "the chart scales uniformly; stretching distorts strokes and markers",
+      );
+    }
+  });
+});
+
+describe("the news tab", () => {
+  /** The first player whose page renders a News tab. */
+  async function withNews() {
+    for (const player of roster.slice(0, 40)) {
+      const res = await get(`/player/${player.slug}`);
+      if (res.status !== 200 || !res.body.includes('id="news"')) continue;
+      return { player, doc: new JSDOM(res.body).window.document };
+    }
+    return null;
+  }
+
+  test("carries the team's reporting, not just the player's", async () => {
+    const found = await withNews();
+    assert.ok(found, "at least one player has a news tab");
+
+    const news = found.doc.querySelector("#news");
+    const lists = news.querySelectorAll("ul.scp-news");
+    assert.ok(lists.length >= 1, "at least one list of stories");
+
+    // Every card is a real link with real text — this section is the one most
+    // likely to quietly render empty shells if a feed changes shape.
+    for (const item of news.querySelectorAll(".scp-news-item")) {
+      const title = item.querySelector(".scp-news-title");
+      assert.ok(title, "every card has a headline");
+      assert.ok(title.textContent.trim().length > 0, "the headline has text");
+      const link = title.querySelector("a");
+      if (link) {
+        assert.match(link.getAttribute("href"), /^https?:\/\//);
+        assert.equal(link.getAttribute("rel"), "noopener noreferrer");
+      }
+    }
+  });
+
+  test("a story is never listed twice under two headings", async () => {
+    const found = await withNews();
+    const news = found.doc.querySelector("#news");
+    const hrefs = [...news.querySelectorAll(".scp-news-title a")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.equal(
+      new Set(hrefs).size,
+      hrefs.length,
+      "the player's news and their team's must be deduped against each other",
+    );
+  });
+
+  test("headlines sit below the section heading in the outline", async () => {
+    const found = await withNews();
+    const news = found.doc.querySelector("#news");
+    assert.ok(news.querySelector("h2"), "the tab owns an h2");
+    // h4 rather than h3: the subsection headings ("Latest on X", "Around the
+    // Y") are the h3s, so a headline at h3 would flatten the outline.
+    assert.equal(news.querySelectorAll("h3.scp-news-title").length, 0);
+    assert.ok(news.querySelectorAll("h4.scp-news-title").length > 0);
+  });
+
+  test("a designation is stamped with the snapshot it came from", async () => {
+    // Every report card must say when it was read. A designation shown without
+    // a time can look current indefinitely, which is the exact failure this
+    // page is least allowed to have.
+    let checked = 0;
+    for (const player of roster.slice(0, 40)) {
+      const res = await get(`/player/${player.slug}`);
+      if (res.status !== 200) continue;
+      const doc = new JSDOM(res.body).window.document;
+      const report = doc.querySelector(".scp-report");
+      if (!report) continue;
+      checked += 1;
+
+      assert.ok(
+        report.querySelector(".scp-report-pill").textContent.trim(),
+        "the card names the designation",
+      );
+      const stamp = report.querySelector(".scp-report-stamp time");
+      assert.ok(stamp, "the card carries a snapshot time");
+      assert.ok(stamp.getAttribute("datetime"), "machine-readable");
+      assert.ok(Number(stamp.getAttribute("data-ts")) > 0, "and refinable by the client");
+      assert.match(
+        report.getAttribute("data-severity"),
+        /^(out|doubtful|questionable|probable)$/,
+      );
+      if (checked >= 3) break;
+    }
+    assert.ok(checked > 0, "expected at least one designated player in the snapshot");
+  });
+
+  test("the injury tab points at the current report when there is one", async () => {
+    // The two are deliberately separate — current designation in News, career
+    // record in Injury & Health — so the cross-link is what stops the tab
+    // named for the question from failing to answer it.
+    let checked = 0;
+    for (const player of roster.slice(0, 40)) {
+      const res = await get(`/player/${player.slug}`);
+      if (res.status !== 200) continue;
+      const doc = new JSDOM(res.body).window.document;
+      const report = doc.querySelector(".scp-report");
+      const injury = doc.querySelector("#injury");
+      if (!report || !injury) continue;
+      checked += 1;
+
+      const link = injury.querySelector(".scp-crosslink");
+      assert.ok(link, "a designated player's injury tab links to the report");
+      assert.equal(link.getAttribute("href"), "#news");
+      assert.ok(
+        doc.getElementById("news"),
+        "and the anchor it points at is on the page",
+      );
+      if (checked >= 2) break;
+    }
+    assert.ok(checked > 0, "expected at least one designated player");
+  });
+
+  test("the team's news offers a way through to the hub", async () => {
+    const found = await withNews();
+    const more = found.doc.querySelector("#news .scp-news-more-link");
+    if (more) {
+      assert.match(more.getAttribute("href"), /^\/team\//);
+      assert.equal(
+        more.getAttribute("target"),
+        "_top",
+        "a link into the site must break out of the legacy frame",
       );
     }
   });

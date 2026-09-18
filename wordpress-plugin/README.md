@@ -131,8 +131,9 @@ Two things that bite on a Divi site specifically:
 One shortcode per player page, at `/nfl/players/<slug>/`. It mounts the same
 profile the API serves at `/player/<slug>`: the season summary, the weekly
 finish distribution and trend, the full game log, career totals, advanced
-metrics with league percentiles, a generated bio, injury history and the
-player's news — all server-rendered into your page's HTML.
+metrics with league percentiles, a generated bio, injury history, and a News &
+Analysis tab carrying the player's current injury designation, their own news
+and their team's — all server-rendered into your page's HTML.
 
 | Attribute | Default          | Meaning |
 |-----------|------------------|---------|

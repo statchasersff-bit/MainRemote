@@ -277,10 +277,9 @@ tool and the hubs work — and Rank Math keeps the SEO.
   The advanced tables are self-describing (columns + rows), so a rebuilt table
   with new metrics renders with no code change.
 - `src/lib/player/player-data.ts` — composes one `PlayerPageData` and
-  fingerprints it. The only asynchronous source is this app's own news archive:
-  the standalone app scraped eight club sites for its News tab, and here
-  `listNews()` answers instead, so a player's news is the same rows with the
-  same dedupe as the news tool and the hubs.
+  fingerprints it. The only asynchronous sources are this app's own archive and
+  the roster snapshot, which together are what the News tab is made of — see
+  below.
 - `src/lib/player-render.ts` — **all player-page markup**. Server-only, like
   `team-render.ts`. Carries the rule the other two tools do not need: nothing on
   this page predicts. Every label is a restatement of a number printed beside it,
@@ -305,6 +304,30 @@ tool and the hubs work — and Rank Math keeps the SEO.
 - `tests/player.test.mjs` — the crawler's-eye regression suite. Picks its fixture
   player from `/embed/players.json` at runtime rather than hard-coding one, so a
   trade does not fail the suite.
+
+**The News tab is a superset of the one it replaces.** The standalone app's
+version had two lazily-fetched views behind a toggle — articles and the club's
+injury report — scraped from eight club websites, which meant the other
+twenty-four teams saw an empty tab. Here it is three stacked blocks, all in the
+first response and all covering 32 teams:
+
+1. the **current injury designation** (status, body part, practice
+   participation) from the roster snapshot `lib/team/roster.ts` already keeps
+   for the hubs' Injury Watch, stamped with when that snapshot was read;
+2. the **player's own news**, from `listNews()`;
+3. their **team's news**, from `listNewsForTeam()` — the same club feeds the
+   hubs read — deduped by row id against (2), with a link through to the hub.
+
+No toggle, because nothing is fetched: hiding half the tab behind a button only
+made sense when the other half cost a request. And no impact tags or generated
+blurbs: the original had them, this app does not produce them, and inventing a
+"high impact" label would be the page asserting an editorial judgement nobody
+made.
+
+The designation card renders **only when a designation exists**. There is no
+"Healthy" state and deliberately no styling for one — the snapshot reports what
+clubs have filed, and "nothing filed" is not the same claim as "fit".
+`tests/player.test.mjs` asserts that in both directions.
 
 **The charts are specified, not styled.** The four finish tiers are an *ordinal*
 scale, so they take one hue in four monotone lightness steps (OKLCH L 0.359 /

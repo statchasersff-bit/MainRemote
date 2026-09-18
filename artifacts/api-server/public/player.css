@@ -475,6 +475,19 @@ body.scp-page {
   color: var(--sc-muted-strong);
 }
 
+/* An in-page anchor to another tab. Underlined in gold so it reads as a way
+   through rather than as an external link, which these never are. */
+.scp-crosslink {
+  color: var(--sc-navy);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+}
+
+.scp-crosslink:hover {
+  color: var(--sc-gold-deep);
+}
+
 .scp-para {
   margin: 0 0 12px;
   font-size: 15px;
@@ -1408,6 +1421,78 @@ body.scp-page {
   color: var(--sc-muted);
 }
 
+/* --------------------------------------------------- current injury report */
+
+/*
+ * The one time-sensitive block on the page, so it leads the News tab and is the
+ * only card that carries a severity accent. Rendered ONLY when a designation
+ * exists — there is deliberately no "healthy" state to style, because the
+ * absence of a filing is not a clean bill of health.
+ */
+.scp-report {
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-left: 3px solid var(--sc-muted);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-report[data-severity="out"] { border-left-color: var(--scp-risk-high); }
+.scp-report[data-severity="doubtful"] { border-left-color: var(--scp-risk-high); }
+.scp-report[data-severity="questionable"] { border-left-color: var(--scp-risk-moderate); }
+.scp-report[data-severity="probable"] { border-left-color: var(--scp-risk-low); }
+
+.scp-report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scp-report-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-report-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--sc-muted);
+}
+
+.scp-report[data-severity="out"] .scp-report-pill { background: var(--scp-risk-high); }
+.scp-report[data-severity="doubtful"] .scp-report-pill { background: var(--scp-risk-high); }
+.scp-report[data-severity="questionable"] .scp-report-pill { background: var(--scp-risk-moderate); }
+.scp-report[data-severity="probable"] .scp-report-pill { background: var(--scp-risk-low); }
+
+.scp-report-detail {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sc-ink);
+}
+
+.scp-report-dot {
+  color: var(--sc-muted);
+  font-weight: 400;
+}
+
+.scp-report-stamp {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
 /* ------------------------------------------------------------------ news */
 
 .scp-news {
@@ -1455,6 +1540,29 @@ body.scp-page {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--sc-muted);
+}
+
+/* The team's news is context for the player's, so it is set one step back —
+   same cards, quieter surface, so the eye reaches the player's list first. */
+.scp-news--team .scp-news-item {
+  background: var(--sc-surface-soft);
+}
+
+.scp-news-more {
+  margin: 14px 0 0;
+}
+
+.scp-news-more-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sc-navy);
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+  padding-bottom: 1px;
+}
+
+.scp-news-more-link:hover {
+  color: var(--sc-gold-deep);
 }
 
 /* ----------------------------------------------------------------- index */
