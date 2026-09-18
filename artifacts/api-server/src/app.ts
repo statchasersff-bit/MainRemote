@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter from "./routes/embed";
 import teamRouter from "./routes/team";
+import playerRouter from "./routes/player";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -66,6 +67,12 @@ app.use(embedRouter);
 // file is deliberate and catches everything that gets past the routes above.
 // It changes nothing about "/", which is still the news tool and nothing else.
 app.use(teamRouter);
+
+// NFL Player Pages: /player, /player/:slug and the /embed/player/:slug
+// fragment. Mounted alongside the team router for the same reason — the 404 at
+// the bottom of this file is deliberate and catches everything the routes above
+// do not claim. It changes nothing about "/", which is still the news tool.
+app.use(playerRouter);
 
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
@@ -177,7 +184,8 @@ app.use((req, res) => {
     `<meta name="robots" content="noindex" />` +
     `<title>Not found</title></head><body>` +
     `<h1>Not found</h1><p><a href="/">Go to the news tool</a>` +
-    ` &middot; <a href="/team">Go to the team hub</a></p>` +
+    ` &middot; <a href="/team">Go to the team hubs</a>` +
+    ` &middot; <a href="/player">Go to the player pages</a></p>` +
     `</body></html>`;
   res
     .status(404)

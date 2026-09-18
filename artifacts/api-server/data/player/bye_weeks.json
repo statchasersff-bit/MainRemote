@@ -1,0 +1,33 @@
+{
+  "2023": {
+    "CLE": 5, "LAC": 5, "SEA": 5, "TB": 5,
+    "WAS": 6, "PIT": 6,
+    "CAR": 7, "CIN": 7, "DAL": 7, "HOU": 7, "NYJ": 7, "TEN": 7,
+    "DEN": 9, "DET": 9, "JAX": 9, "SF": 9,
+    "ATL": 10, "IND": 10, "NE": 10, "NO": 10,
+    "ARI": 11, "GB": 11, "LAR": 11, "PHI": 11,
+    "BAL": 13, "BUF": 13, "CHI": 13, "LV": 13, "MIN": 13, "NYG": 13,
+    "KC": 14, "MIA": 14
+  },
+  "2024": {
+    "DET": 5, "LAC": 5, "PHI": 5, "TEN": 5,
+    "KC": 6, "LAR": 6, "MIA": 6, "MIN": 6,
+    "CLE": 7, "DAL": 7, "PIT": 7, "SF": 7,
+    "CHI": 9, "NYG": 9, "SEA": 9, "TB": 9,
+    "ARI": 10, "CAR": 10, "GB": 10,
+    "LV": 11,
+    "ATL": 12, "BUF": 12, "CIN": 12, "JAX": 12, "NO": 12, "NYJ": 12,
+    "BAL": 14, "DEN": 14, "HOU": 14, "IND": 14, "NE": 14, "WAS": 14
+  },
+  "2025": {
+    "CHI": 5, "ATL": 5, "GB": 5, "PIT": 5,
+    "HOU": 6, "MIN": 6,
+    "BUF": 7, "BAL": 7,
+    "TB": 8, "ARI": 8, "JAX": 8, "DET": 8, "LV": 8, "SEA": 8,
+    "CLE": 9, "PHI": 9, "NYJ": 9, "LAR": 9,
+    "CIN": 10, "KC": 10, "DAL": 10, "TEN": 10,
+    "IND": 11, "NO": 11,
+    "DEN": 12, "LAC": 12, "WAS": 12, "MIA": 12,
+    "SF": 14, "NYG": 14, "CAR": 14, "NE": 14
+  }
+}

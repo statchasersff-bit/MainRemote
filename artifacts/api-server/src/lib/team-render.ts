@@ -45,7 +45,12 @@ import type {
 } from "./team/stats";
 import type { SnapshotMetric } from "./team/snapshot";
 import { TEAM_NEWS_VISIBLE } from "./team/team-data";
-import { isOutDesignation, SKILL_POSITIONS, type DepthChartEntry } from "./team/roster";
+import {
+  isOutDesignation,
+  SKILL_POSITIONS,
+  type DepthChartEntry,
+  type RosterPlayer,
+} from "./team/roster";
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
 import {
   getFPAUrl,
@@ -1122,7 +1127,14 @@ const SHORT_INJURY_STATUS: Record<string, string> = {
  * status, body part and practice status in full, so this is a second way to the
  * same fact rather than the only one.
  */
-function injuryBadge(player: DepthChartEntry, extraClass = ""): string {
+/**
+ * Anything carrying a designation. Widened from DepthChartEntry because the
+ * outlook cards need this badge too and an outlook names a player, not a
+ * depth-chart slot — these two functions only ever read the two fields.
+ */
+type Designated = Pick<RosterPlayer, "injuryStatus" | "injuryBodyPart">;
+
+function injuryBadge(player: Designated, extraClass = ""): string {
   if (!player.injuryStatus) return "";
   const short =
     SHORT_INJURY_STATUS[player.injuryStatus.toLowerCase()] ?? player.injuryStatus;
@@ -1138,7 +1150,7 @@ function injuryBadge(player: DepthChartEntry, extraClass = ""): string {
 }
 
 /** Status and body part spelled out: "Questionable · Knee - ACL". */
-function injuryDetail(player: DepthChartEntry): string {
+function injuryDetail(player: Designated): string {
   if (!player.injuryStatus) return "";
   return player.injuryBodyPart
     ? `${player.injuryStatus} · ${player.injuryBodyPart}`
@@ -1275,13 +1287,18 @@ function outlookStats(stats: string[]): string {
  * `data-pos` is on the card as well as the chip so the stylesheet can put the
  * position's colour on the card's edge — see the inset accent in team.css.
  *
- * `headshot` is whatever the roster could match by name, and null is an
- * ordinary outcome: an outlook can name a rookie Sleeper has not indexed yet.
- * The well is drawn either way and simply stays a tinted disc, which is the
- * same degradation the depth chart takes when the CDN has no thumbnail.
+ * `live` is whatever the roster could match by name, and null is an ordinary
+ * outcome: an outlook can name a rookie Sleeper has not indexed yet. The well is
+ * drawn either way and simply stays a tinted disc, which is the same degradation
+ * the depth chart takes when the CDN has no thumbnail; an unmatched name simply
+ * carries no designation, exactly as it did before there was one to carry.
  */
-function outlookPlayerCard(player: OutlookPlayer, headshot: string | null): string {
+function outlookPlayerCard(
+  player: OutlookPlayer,
+  live: RosterPlayer | null,
+): string {
   const position = player.position.toUpperCase();
+  const headshot = live?.headshot ?? null;
 
   // Decorative, so the alt is empty: the name is on the same row, and
   // announcing the face as well would read the player out twice.
@@ -1309,6 +1326,10 @@ function outlookPlayerCard(player: OutlookPlayer, headshot: string | null): stri
       `<span class="sct-outlook-tier">${escapeHtml(player.tier)}</span>`
     : "";
 
+  // After the tier, not before it: the chip and the classification are what the
+  // card is about, and the designation is the thing that has happened to it.
+  const designation = live ? injuryBadge(live) : "";
+
   return (
     `<li class="sct-outlook-player" data-pos="${escapeHtml(position)}">` +
     `<div class="sct-outlook-head">` +
@@ -1318,6 +1339,7 @@ function outlookPlayerCard(player: OutlookPlayer, headshot: string | null): stri
     `<p class="sct-outlook-meta">` +
     slotChip(position, true) +
     tier +
+    designation +
     `</p>` +
     `</div>` +
     `</div>` +
@@ -1344,11 +1366,14 @@ function outlookPlayerCard(player: OutlookPlayer, headshot: string | null): stri
  * the core band alone as that band's emphasis; with it on all of them the
  * heading is what tells the bands apart.
  */
-function outlookGroup(group: OutlookGroup, headshots: Map<string, string>): string {
+function outlookGroup(
+  group: OutlookGroup,
+  live: Map<string, RosterPlayer>,
+): string {
   if (group.players.length === 0) return "";
   const cards = group.players
     .map((player) =>
-      outlookPlayerCard(player, headshots.get(searchKey(player.name)) ?? null),
+      outlookPlayerCard(player, live.get(searchKey(player.name)) ?? null),
     )
     .join("");
   return (
@@ -1360,17 +1385,22 @@ function outlookGroup(group: OutlookGroup, headshots: Map<string, string>): stri
 }
 
 /**
- * The headshot for a name the outlook mentions, from the roster already loaded.
+ * The live roster entry for a name the outlook mentions.
  *
  * Matched on searchKey rather than the raw string, the same normalisation the
  * news pipeline attributes stories with — the outlook is written by hand and
  * "A.J. Brown" should find "AJ Brown" whichever way Sleeper spells it.
+ *
+ * It used to return the headshot alone. The whole entry, because the outlook is
+ * a written opinion with no idea what has happened since: a paragraph about the
+ * alpha this offence just traded for reads very differently beside an IR badge,
+ * and the badge is the only part of that card the page can keep current.
  */
-function outlookHeadshots(data: TeamPageData): Map<string, string> {
-  const byName = new Map<string, string>();
+function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
+  const byName = new Map<string, RosterPlayer>();
   for (const player of data.roster?.players ?? []) {
     const key = searchKey(player.name);
-    if (key && !byName.has(key)) byName.set(key, player.headshot);
+    if (key && !byName.has(key)) byName.set(key, player);
   }
   return byName;
 }
@@ -1390,8 +1420,8 @@ function renderOutlook(data: TeamPageData): string {
   const outlook = getTeamOutlook(data.team.abbreviation);
   if (!outlook) return "";
 
-  const headshots = outlookHeadshots(data);
-  const groups = outlook.groups.map((group) => outlookGroup(group, headshots)).join("");
+  const live = outlookRoster(data);
+  const groups = outlook.groups.map((group) => outlookGroup(group, live)).join("");
   if (!groups) return "";
 
   // An outlook written for a season the calendar has passed is dropped rather

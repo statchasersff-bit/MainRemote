@@ -189,8 +189,10 @@ _Replace the heading above with the project's name, and this line with one sente
 - `docs/ingest-cloudflare.md` — runbook for the Cloudflare challenge that blocks
   the deployment from the upstream feed. Start there when `/api/status` shows a
   403 whose body says "Just a moment...".
-- `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts the
-  tool into a page. See `wordpress-plugin/README.md`.
+- `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts all
+  three tools into a page: `statchasers-news.php` is the plugin and the news
+  shortcode, `statchasers-team.php` the hubs, `statchasers-player.php` the player
+  pages. See `wordpress-plugin/README.md`.
 
 ### NFL Team Hub (`/team/:slug`)
 
@@ -232,6 +234,85 @@ and the deployment. It does not touch the news page.
   sticky-nav highlighting, switcher dismissal, relative timestamps, iframe
   height. `public/team.css` is its stylesheet.
 - `tests/team.test.mjs` — the crawler's-eye regression suite for these pages.
+
+### NFL Player Pages (`/player/:slug`)
+
+The third tool in the same app, ported from the standalone
+`statchasers-player-pages` repo. It shares the deployment, the canonical team
+table and the news archive; it does not touch the news page or the hubs.
+
+The port changed the architecture, not the content. That app was an Express +
+React SPA whose 3,200-line profile component built every section in the browser,
+plus a self-contained WordPress plugin that bundled 12MB of JSON, registered its
+own rewrite rules and owned its own SEO. Here the server renders the profile and
+`[statchasers_player]` prints it into a statchasers.com page, exactly as the news
+tool and the hubs work — and Rank Math keeps the SEO.
+
+- `data/player/*.json` — **the whole dataset, committed**. ~13MB across the
+  player dictionary, three seasons of game logs, game scores, bios, dynasty
+  rankings, injury history, season production, the 2026 outlook and the advanced
+  stats tables. This is what makes a player page cheap: assembling one is
+  arithmetic over objects already in memory, with no upstream in the request
+  path at all. Rebuilt by `scripts/player/` — see its README for the order.
+- `src/lib/player/data.ts` — every read of that directory, in one place. Each
+  file is optional (a missing one drops the section it feeds, never 500s) and
+  parsed at most once. `dataStamp()` fingerprints the files and is what the
+  render cache keys on.
+- `src/lib/player/ranks.ts` — weekly positional ranks, opponent ranks, team
+  target share and the padding that makes a season show its byes and absences as
+  rows. All derived at read time, which is what lets one dataset answer for
+  Standard, Half-PPR and PPR. The per-season league tables are cached per
+  (season, format), because a weekly rank is a statement about every player in
+  the league that week.
+- `src/lib/player/metrics.ts` — the numbers, as pure functions. **Note the two
+  tier scales**: weekly finishes bucket uniformly (1-12 / 13-24 / 25-36 / bust),
+  the season and career aggregates bucket per position (QB and TE bust outside
+  18, WR outside 36). That inconsistency came across from the original
+  deliberately — both numbers are published, and unifying them would silently
+  restate every percentage on every profile.
+- `src/lib/player/benchmarks.ts` — efficiency percentiles within the position,
+  with the volume threshold that decides both who is in the distribution and
+  whether the player gets percentiles at all.
+- `src/lib/player/advanced.ts`, `injury.ts` — the Advanced Stats and Injury tabs.
+  The advanced tables are self-describing (columns + rows), so a rebuilt table
+  with new metrics renders with no code change.
+- `src/lib/player/player-data.ts` — composes one `PlayerPageData` and
+  fingerprints it. The only asynchronous source is this app's own news archive:
+  the standalone app scraped eight club sites for its News tab, and here
+  `listNews()` answers instead, so a player's news is the same rows with the
+  same dedupe as the news tool and the hubs.
+- `src/lib/player-render.ts` — **all player-page markup**. Server-only, like
+  `team-render.ts`. Carries the rule the other two tools do not need: nothing on
+  this page predicts. Every label is a restatement of a number printed beside it,
+  and the one forward-looking block (the 2026 outlook) is quoted and attributed
+  rather than spoken in the page's voice.
+- `src/lib/player-ssr.ts`, `src/lib/player-seo.ts` — page assembly, fragment
+  cache and head metadata. `public/player.html` is the shell. The canonical
+  always points at the bare slug: three scoring formats are three renderings of
+  one page, not three pages.
+- `src/routes/player.ts` — `/player`, `/player/:slug`, `/embed/player/:slug` (the
+  fragment the shortcode reads) and `/embed/players.json` (the roster manifest
+  `scripts/create-player-pages.sh` builds the WordPress pages from). No alias
+  redirects, unlike the hubs — a team has a few well-known aliases, a player slug
+  has thousands of near-misses.
+- `src/client/player.ts` → `public/dist/statchasers-player.js` — enhancement
+  only: tabs, relative timestamps, a hover layer on the weekly chart, sortable
+  game-log columns. `public/player.css` is its stylesheet.
+- `src/client/enhance.ts` — the tab/timestamp/iframe-height behaviours shared
+  with the hubs. `client/team.ts` still carries its own copies; it predates this
+  module and folding it in is a follow-up, not something to do while adding a
+  third tool.
+- `tests/player.test.mjs` — the crawler's-eye regression suite. Picks its fixture
+  player from `/embed/players.json` at runtime rather than hard-coding one, so a
+  trade does not fail the suite.
+
+**The charts are specified, not styled.** The four finish tiers are an *ordinal*
+scale, so they take one hue in four monotone lightness steps (OKLCH L 0.359 /
+0.500 / 0.628 / 0.754, palest still ≥2:1 on white) rather than four hues — the
+order is visible in the colour, and every tier is labelled in text as well. The
+weekly chart's two series were validated as a pair (ΔE 23.7 under protanopia).
+Those values are in `public/player.css` with the reasoning beside them; changing
+them means re-validating, not re-eyeballing.
 
 ## Architecture decisions
 

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Mounts the StatChasers NFL player news tool and the 32 team hubs directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.3.1
+ * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs and the player pages directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.4.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,17 +33,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.3.1';
+const STATCHASERS_NEWS_VERSION       = '1.4.0';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 
-// The team hub shortcode. Required after the constants above and before any
-// hook registration, because it reuses this file's origin, asset-version and
-// canonical helpers — all of which are function declarations and so are
-// available regardless of order, but the constants are not.
+// The team hub and player page shortcodes. Required after the constants above
+// and before any hook registration, because they reuse this file's origin,
+// asset-version and canonical helpers — all of which are function declarations
+// and so are available regardless of order, but the constants are not.
+//
+// The player file must come after the team file: it reuses the team file's Divi
+// detection and full-width stylesheet rather than carrying a second copy, and
+// while function declarations hoist within a file they do not hoist across an
+// include that has not run yet.
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
+require_once __DIR__ . '/statchasers-player.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -653,5 +659,6 @@ function statchasers_news_flush(): void {
 	);
 
 	statchasers_team_flush();
+	statchasers_player_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
