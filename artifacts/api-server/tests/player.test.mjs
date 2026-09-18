@@ -495,6 +495,130 @@ describe("the embedded fragment", () => {
   });
 });
 
+describe("the development switcher", () => {
+  /**
+   * The preview switcher and the /preview/* harness are development-only, and
+   * every other suite here runs with NODE_ENV=test — which is the right default
+   * and also means nothing ever exercised them switched ON. So this suite
+   * starts its own server in development mode.
+   *
+   * It exists because a real failure: the player pages shipped with routes,
+   * a shortcode and tests, and were absent from the switcher, so the only way
+   * to reach them in the Replit preview was to type the URL.
+   */
+  let dev;
+  let devSlug;
+
+  before(async () => {
+    dev = await startServer({ NODE_ENV: "development" });
+    const body = await (await fetch(`${dev.origin}/embed/players.json`)).json();
+    devSlug = body.players[0].slug;
+  });
+
+  after(async () => {
+    await dev?.stop();
+  });
+
+  async function devGet(pathname) {
+    const res = await fetch(`${dev.origin}${pathname}`, { redirect: "manual" });
+    return { status: res.status, body: await res.text() };
+  }
+
+  test("every tool is reachable from every other one", async () => {
+    // The whole point of the bar. Checked from each tool's own page, because a
+    // tool that lists itself but not its siblings is the failure mode.
+    for (const path of ["/", "/team/new-england-patriots", `/player/${devSlug}`]) {
+      const res = await devGet(path);
+      assert.equal(res.status, 200, `${path} should be 200`);
+      assert.ok(res.body.includes("scdev"), `${path} carries the switcher`);
+
+      for (const shortcode of [
+        "statchasers_news",
+        "statchasers_team",
+        "statchasers_player",
+      ]) {
+        assert.ok(
+          res.body.includes(`[${shortcode}]`),
+          `${path} must offer ${shortcode}`,
+        );
+      }
+    }
+  });
+
+  test("the player tool offers every mount, and each one resolves", async () => {
+    const res = await devGet(`/player/${devSlug}`);
+    const doc = new JSDOM(res.body).window.document;
+    const bar = doc.querySelector("[data-scdev]");
+    assert.ok(bar, "the bar is present");
+
+    const hrefs = [...bar.querySelectorAll("a")]
+      .map((a) => a.getAttribute("href"))
+      .filter((href) => href.includes("player"));
+    assert.ok(hrefs.length >= 4, "page, embed, shortcode and raw at least");
+
+    // Every link in the bar must actually go somewhere — the bug this suite
+    // exists for was a dead end, and a 404 behind a switcher button is the same
+    // dead end wearing a button.
+    for (const href of new Set(hrefs)) {
+      const target = await devGet(href);
+      assert.equal(target.status, 200, `${href} must resolve`);
+    }
+  });
+
+  test("the picker offers the whole roster, on player pages only", async () => {
+    const onPlayer = await devGet(`/player/${devSlug}`);
+    const doc = new JSDOM(onPlayer.body).window.document;
+    const select = doc.querySelector("[data-scdev] select[data-scdev-goto]");
+    assert.ok(select, "a picker is present on a player page");
+    assert.ok(
+      select.querySelectorAll("option").length > 100,
+      "and it lists the roster, not a handful",
+    );
+    for (const option of [...select.querySelectorAll("option")].slice(0, 5)) {
+      assert.match(option.getAttribute("value"), /player/);
+    }
+
+    // Six hundred options is ~40KB, so it must not ride along on the news tool.
+    const onNews = await devGet("/");
+    assert.ok(
+      !new JSDOM(onNews.body).window.document.querySelector(
+        "[data-scdev] select",
+      ),
+      "the picker must not be injected into a tool that cannot use it",
+    );
+  });
+
+  test("the preview harness assembles the player shortcode", async () => {
+    const res = await devGet(`/preview/player/${devSlug}`);
+    assert.equal(res.status, 200);
+    // The host page enqueues exactly what the plugin enqueues, and nothing else.
+    assert.ok(res.body.includes("/player.css"));
+    assert.ok(res.body.includes("/dist/statchasers-player.js"));
+    assert.ok(res.body.includes("data-scp-root"));
+    assert.ok(
+      !res.body.includes("/team.css") && !res.body.includes("/styles.css"),
+      "one tool's preview must not pull another tool's assets",
+    );
+  });
+
+  test("the raw view shows the fragment as source", async () => {
+    const res = await devGet(`/preview/raw/player/${devSlug}`);
+    assert.equal(res.status, 200);
+    assert.ok(res.body.includes("/embed/player/"), "it names the endpoint");
+    // Escaped into a <pre>, so the markup is shown rather than rendered.
+    assert.ok(res.body.includes("&lt;div"), "the fragment is escaped source");
+  });
+
+  test("an unknown player is a 404 in the harness too", async () => {
+    for (const path of [
+      "/preview/player/not-a-real-person",
+      "/preview/raw/player/not-a-real-person",
+    ]) {
+      assert.equal((await devGet(path)).status, 404, `${path} should 404`);
+    }
+  });
+});
+
 describe("caching", () => {
   test("repeat requests revalidate to 304", async () => {
     const first = await get(`/player/${fixture.slug}`);

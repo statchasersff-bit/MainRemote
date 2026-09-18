@@ -26,14 +26,10 @@ import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
-import { renderPlayerIndex, type PlayerIndexEntry } from "../lib/player-render";
-import {
-  getAvailableSeasons,
-  getPlayerBySlug,
-  loadIndexedSlugs,
-} from "../lib/player/data";
+import { renderPlayerIndex } from "../lib/player-render";
+import { getAvailableSeasons } from "../lib/player/data";
+import { indexedPlayers } from "../lib/player/player-data";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
-import { getTeamByAbbreviation } from "../lib/team/teams";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -122,21 +118,9 @@ function notFound(res: Response): void {
 }
 
 router.get("/player", (req, res) => {
-  const entries: PlayerIndexEntry[] = [];
-  for (const slug of loadIndexedSlugs()) {
-    const player = getPlayerBySlug(slug);
-    if (!player) continue;
-    // Same exclusion as the manifest below: a team defence's page is the hub.
-    if (player.position === "DEF") continue;
-    entries.push({
-      slug: player.slug,
-      name: player.name,
-      position: player.position,
-      team: getTeamByAbbreviation(player.team),
-    });
-  }
-
-  const index = renderPlayerIndex(entries, { linkQuery: linkQuery(req) });
+  const index = renderPlayerIndex(indexedPlayers(), {
+    linkQuery: linkQuery(req),
+  });
   let html = liveReload().enabled ? liveReload().injectIntoHtml(index) : index;
   if (devBarEnabled()) {
     html = injectDevBar(html, { path: req.path, embed: isEmbed(req) });
@@ -174,25 +158,16 @@ router.get("/player", (req, res) => {
  * history, no bio. A defence's page already exists and it is the team hub.
  */
 router.get("/embed/players.json", (_req, res) => {
-  const players = [];
-  for (const slug of loadIndexedSlugs()) {
-    const player = getPlayerBySlug(slug);
-    if (!player) continue;
-    if (player.position === "DEF") continue;
-    const team = getTeamByAbbreviation(player.team);
-    players.push({
-      // Sleeper's id, which is what its headshot CDN is keyed by — the slug is
-      // ours and means nothing to them.
-      id: player.id,
-      slug: player.slug,
-      name: player.name,
-      position: player.position,
-      team: team?.code ?? null,
-      teamName: team?.fullName ?? null,
-      teamSlug: team?.slug ?? null,
-      headshot: player.headshotUrl ?? null,
-    });
-  }
+  const players = indexedPlayers().map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    position: row.position,
+    team: row.team?.code ?? null,
+    teamName: row.team?.fullName ?? null,
+    teamSlug: row.team?.slug ?? null,
+    headshot: row.headshot,
+  }));
 
   res
     .set("Cache-Control", "public, max-age=3600")

@@ -31,6 +31,7 @@
  */
 
 import { TEAM_GROUPS, type NflTeam } from "./team/teams";
+import { indexedPlayers, type IndexedPlayer } from "./player/player-data";
 
 /** True only in development. The single guard for everything in this file. */
 export function devBarEnabled(): boolean {
@@ -62,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team";
+  key: "news" | "team" | "player";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -104,12 +105,38 @@ const TOOLS: Tool[] = [
       path.startsWith("/preview/team") ||
       path.startsWith("/preview/raw/team"),
   },
+  {
+    key: "player",
+    label: "NFL Player Pages",
+    shortLabel: "Players",
+    shortcode: "statchasers_player",
+    hasEmbedMode: true,
+    // Ordered after the two /team tests above only for readability; the paths
+    // are disjoint, so `toolFor` finding this one first would be equivalent.
+    active: (path) =>
+      path.startsWith("/player") ||
+      path.startsWith("/preview/player") ||
+      path.startsWith("/preview/raw/player"),
+  },
 ];
 
 /** The team the Team Hub button lands on when you are not already on one. */
 const DEFAULT_TEAM_SLUG = "new-england-patriots";
 
 const TEAM_PATH = /^\/(?:preview\/(?:raw\/)?)?team\/([a-z0-9-]+)\/?$/i;
+const PLAYER_PATH = /^\/(?:preview\/(?:raw\/)?)?player\/([a-z0-9-]+)\/?$/i;
+
+/**
+ * The player the Players button lands on when you are not already on one.
+ *
+ * Read from the indexed list rather than hard-coded. A pinned slug is a name
+ * that retires, gets traded out of the index, or is simply spelled differently
+ * next season — and the failure mode is a switcher button that 404s, which is
+ * exactly the thing this bar exists to prevent.
+ */
+function defaultPlayerSlug(): string {
+  return indexedPlayers()[0]?.slug ?? "";
+}
 
 /**
  * The team currently on screen, read back out of the path.
@@ -130,6 +157,14 @@ function currentTeam(path: string): NflTeam | null {
     }
   }
   return null;
+}
+
+/** The player currently on screen, read back out of the path. */
+function currentPlayer(path: string): IndexedPlayer | null {
+  const match = PLAYER_PATH.exec(path);
+  if (!match) return null;
+  const slug = (match[1] ?? "").toLowerCase();
+  return indexedPlayers().find((row) => row.slug === slug) ?? null;
 }
 
 function toolFor(path: string): Tool {
@@ -153,16 +188,39 @@ function escapeAttr(value: string): string {
 
 /* ------------------------------------------------------------------ links */
 
-/** Where a given tool + mount + team lives. */
-function href(tool: Tool, mount: Mount, team: NflTeam | null): string {
-  const slug = team?.slug ?? DEFAULT_TEAM_SLUG;
+/**
+ * Whatever the current view is *about* — a team, a player, or neither.
+ *
+ * Carried as one object rather than as two parameters threaded through every
+ * function below, because a third tool made the two-parameter version a
+ * four-argument call at every site and the next tool would make it five.
+ */
+interface Subject {
+  team: NflTeam | null;
+  player: IndexedPlayer | null;
+}
+
+/** Where a given tool + mount + subject lives. */
+function href(tool: Tool, mount: Mount, subject: Subject): string {
   if (tool.key === "team") {
+    const slug = subject.team?.slug ?? DEFAULT_TEAM_SLUG;
     // The source VIEW, not the fragment endpoint itself: the endpoint is bare
     // by design and carries no bar, so linking straight at it strands you.
     if (mount === "fragment") return `/preview/raw/team/${slug}`;
     if (mount === "shortcode") return `/preview/team/${slug}`;
     return mount === "embed" ? `/team/${slug}?embed=1` : `/team/${slug}`;
   }
+
+  if (tool.key === "player") {
+    const slug = subject.player?.slug ?? defaultPlayerSlug();
+    // No indexed players at all — a deployment with no data files. Send the
+    // button at the index, which says so honestly, rather than at /player/.
+    if (!slug) return "/player";
+    if (mount === "fragment") return `/preview/raw/player/${slug}`;
+    if (mount === "shortcode") return `/preview/player/${slug}`;
+    return mount === "embed" ? `/player/${slug}?embed=1` : `/player/${slug}`;
+  }
+
   if (mount === "fragment") return "/preview/raw/news";
   return mount === "shortcode" ? "/preview/news" : "/";
 }
@@ -173,16 +231,23 @@ function href(tool: Tool, mount: Mount, team: NflTeam | null): string {
  * Printed rather than linked because it is the one thing the preview cannot
  * show you: which line in a WordPress page this view corresponds to.
  */
-function shortcodeText(tool: Tool, team: NflTeam | null): string {
+function shortcodeText(tool: Tool, subject: Subject): string {
   if (tool.key === "team") {
-    return `[${tool.shortcode} team="${team?.abbreviation ?? "ne"}"]`;
+    return `[${tool.shortcode} team="${subject.team?.abbreviation ?? "ne"}"]`;
+  }
+  if (tool.key === "player") {
+    // Spelled with the slug, which is what the plugin actually accepts. On a
+    // real page the attribute is usually absent — it defaults to the post slug
+    // — but the preview has no post to default from.
+    const slug = subject.player?.slug ?? defaultPlayerSlug();
+    return slug ? `[${tool.shortcode} slug="${slug}"]` : `[${tool.shortcode}]`;
   }
   return `[${tool.shortcode}]`;
 }
 
 /* ------------------------------------------------------------------ parts */
 
-function toolButtons(context: DevBarContext, team: NflTeam | null): string {
+function toolButtons(context: DevBarContext, subject: Subject): string {
   const mount = currentMount(context);
   const active = toolFor(context.path);
   return TOOLS.map((tool) => {
@@ -192,7 +257,7 @@ function toolButtons(context: DevBarContext, team: NflTeam | null): string {
     // variant falls back to its page.
     const keep: Mount = mount === "embed" && !tool.hasEmbedMode ? "page" : mount;
     return (
-      `<a href="${escapeAttr(href(tool, keep, team))}"` +
+      `<a href="${escapeAttr(href(tool, keep, subject))}"` +
       `${current ? ' aria-current="page"' : ""}>` +
       `<span class="scdev-full">${tool.label}</span>` +
       `<span class="scdev-short">${tool.shortLabel}</span>` +
@@ -202,8 +267,9 @@ function toolButtons(context: DevBarContext, team: NflTeam | null): string {
   }).join("");
 }
 
-function teamPicker(context: DevBarContext, team: NflTeam | null): string {
+function teamPicker(context: DevBarContext, subject: Subject): string {
   if (toolFor(context.path).key !== "team") return "";
+  const team = subject.team;
   const mount = currentMount(context);
   const options = TEAM_GROUPS.map((conference) =>
     conference.divisions
@@ -212,7 +278,7 @@ function teamPicker(context: DevBarContext, team: NflTeam | null): string {
           .map((entry) => {
             const selected = entry.slug === team?.slug;
             return (
-              `<option value="${escapeAttr(href(TOOLS[1]!, mount, entry))}"` +
+              `<option value="${escapeAttr(href(TOOLS[1]!, mount, { team: entry, player: null }))}"` +
               `${selected ? " selected" : ""}>${escapeAttr(entry.fullName)}</option>`
             );
           })
@@ -231,12 +297,67 @@ function teamPicker(context: DevBarContext, team: NflTeam | null): string {
   return (
     `<span class="scdev-group">` +
     `<span class="scdev-label">Team</span>` +
-    `<select data-scdev-team aria-label="Preview a different team">${options}</select>` +
+    `<select data-scdev-goto aria-label="Preview a different team">${options}</select>` +
     `</span>`
   );
 }
 
-function mountButtons(context: DevBarContext, team: NflTeam | null): string {
+/**
+ * The player picker, grouped by team.
+ *
+ * Rendered only while the player tool is the active one, like the team picker —
+ * which matters more here: this is six hundred options, and injecting it into
+ * every page in development would put ~40KB of `<select>` on the news tool for
+ * no reason.
+ */
+function playerPicker(context: DevBarContext, subject: Subject): string {
+  if (toolFor(context.path).key !== "player") return "";
+  const mount = currentMount(context);
+  const players = indexedPlayers();
+  if (players.length === 0) return "";
+
+  const byTeam = new Map<string, IndexedPlayer[]>();
+  for (const player of players) {
+    const label = player.team?.fullName ?? "Free agents";
+    const group = byTeam.get(label);
+    if (group) group.push(player);
+    else byTeam.set(label, [player]);
+  }
+
+  const options = Array.from(byTeam.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([label, group]) => {
+      const items = group
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((player) => {
+          const selected = player.slug === subject.player?.slug;
+          const name = player.position
+            ? `${player.name} (${player.position})`
+            : player.name;
+          return (
+            `<option value="${escapeAttr(
+              href(TOOLS[2]!, mount, { team: null, player }),
+            )}"${selected ? " selected" : ""}>${escapeAttr(name)}</option>`
+          );
+        })
+        .join("");
+      return `<optgroup label="${escapeAttr(label)}">${items}</optgroup>`;
+    })
+    .join("");
+
+  // Same one-line behaviour as the team picker: the option VALUE is the
+  // destination, and keeping the current mount in every value is what makes the
+  // picker change the player without also changing which view you are in.
+  return (
+    `<span class="scdev-group">` +
+    `<span class="scdev-label">Player</span>` +
+    `<select data-scdev-goto aria-label="Preview a different player">${options}</select>` +
+    `</span>`
+  );
+}
+
+function mountButtons(context: DevBarContext, subject: Subject): string {
   const tool = toolFor(context.path);
   const mount = currentMount(context);
 
@@ -245,7 +366,7 @@ function mountButtons(context: DevBarContext, team: NflTeam | null): string {
   // navigation, so the whole bar works inside a preview pane.
   const add = (target: Mount, label: string, title: string): void => {
     buttons.push(
-      `<a href="${escapeAttr(href(tool, target, team))}"` +
+      `<a href="${escapeAttr(href(tool, target, subject))}"` +
         ` title="${escapeAttr(title)}"` +
         (target === mount ? ' aria-current="page"' : "") +
         `>${label}</a>`,
@@ -259,7 +380,7 @@ function mountButtons(context: DevBarContext, team: NflTeam | null): string {
   add(
     "shortcode",
     "Shortcode",
-    `${shortcodeText(tool, team)} as it renders on a page — the plugin's ` +
+    `${shortcodeText(tool, subject)} as it renders on a page — the plugin's ` +
       "stylesheet and bundle, inside a host page that supplies the H1",
   );
   add(
@@ -362,7 +483,7 @@ body{padding-top:44px}
  */
 function script(): string {
   return `(function(){var b=document.querySelector('[data-scdev]');if(!b)return;
-var s=b.querySelector('[data-scdev-team]');
+var s=b.querySelector('[data-scdev-goto]');
 function offset(){var h=Math.round(b.getBoundingClientRect().height);
 document.body.style.paddingTop=h+'px';
 var r=document.querySelectorAll('[data-sct-root]');
@@ -382,26 +503,34 @@ addEventListener('resize',offset);offset();})();`;
 export function injectDevBar(html: string, context: DevBarContext): string {
   if (!devBarEnabled()) return html;
 
-  const team = currentTeam(context.path);
+  const subject: Subject = {
+    team: currentTeam(context.path),
+    player: currentPlayer(context.path),
+  };
   const tool = toolFor(context.path);
-  const picker = teamPicker(context, team);
+  // At most one of these renders: each returns "" unless its own tool is the
+  // active one, so the two are mutually exclusive by construction.
+  const picker = teamPicker(context, subject) + playerPicker(context, subject);
 
   const bar =
     `<div class="scdev" data-scdev role="navigation" aria-label="Preview switcher">` +
     `<span class="scdev-tag">DEV</span>` +
     `<div class="scdev-body">` +
-    `<span class="scdev-group"><span class="scdev-label-view">View</span>${toolButtons(context, team)}</span>` +
+    `<span class="scdev-group"><span class="scdev-label-view">View</span>${toolButtons(context, subject)}</span>` +
     (picker ? `<span class="scdev-sep"></span>${picker}` : "") +
     `<span class="scdev-sep"></span>` +
-    mountButtons(context, team) +
+    mountButtons(context, subject) +
     `<span class="scdev-sep"></span>` +
     `<span class="scdev-group">` +
     `<a href="/team">` +
     `<span class="scdev-full">All 32 teams</span>` +
     `<span class="scdev-short">All 32</span></a>` +
+    `<a href="/player">` +
+    `<span class="scdev-full">All players</span>` +
+    `<span class="scdev-short">Players</span></a>` +
     `<a class="scdev-wide-only" href="/embed">Embed setup</a>` +
     `</span>` +
-    `<code class="scdev-now">${escapeAttr(shortcodeText(tool, team))}</code>` +
+    `<code class="scdev-now">${escapeAttr(shortcodeText(tool, subject))}</code>` +
     `</div></div>`;
 
   const block = `<style>${css()}</style>${bar}<script>${script()}</script>`;

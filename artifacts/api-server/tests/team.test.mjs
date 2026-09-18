@@ -54,9 +54,19 @@ function rawGet(pathname, headers = {}) {
 }
 
 let server;
+/**
+ * A player slug that resolves right now.
+ *
+ * Read from the manifest rather than pinned, because a pinned name is one that
+ * retires or is traded out of the indexed list, and the resulting failure looks
+ * like a bug in the routes rather than in the fixture.
+ */
+let playerSlug;
 
 before(async () => {
   server = await startServer();
+  const roster = await (await fetch(`${server.origin}/embed/players.json`)).json();
+  playerSlug = roster.players[0]?.slug ?? "";
 });
 
 after(async () => {
@@ -410,6 +420,9 @@ describe("preview switcher", () => {
       "/team/new-england-patriots?embed=1",
       "/embed/team/ne",
       "/embed/ssr.html",
+      "/player",
+      `/player/${playerSlug}`,
+      `/embed/player/${playerSlug}`,
     ]) {
       const res = await get(route);
       assert.equal(res.status, 200, `${route} should be 200`);
@@ -439,6 +452,8 @@ describe("shortcode preview harness", () => {
       "/preview/news",
       "/preview/team/new-england-patriots",
       "/preview/team/ne",
+      `/preview/player/${playerSlug}`,
+      `/preview/raw/player/${playerSlug}`,
     ]) {
       const res = await get(route);
       assert.equal(res.status, 404, `${route} must not exist outside development`);
@@ -451,7 +466,11 @@ describe("shortcode preview harness", () => {
    * the harness above would stop representing what the plugin actually does.
    */
   test("the fragments it wraps ship no assets of their own", async () => {
-    for (const route of ["/embed/ssr.html", "/embed/team/ne"]) {
+    for (const route of [
+      "/embed/ssr.html",
+      "/embed/team/ne",
+      `/embed/player/${playerSlug}`,
+    ]) {
       const res = await get(route);
       assert.equal(res.status, 200);
       assert.ok(!/<link\b/i.test(res.body), `${route} must not carry a stylesheet`);
