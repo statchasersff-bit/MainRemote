@@ -34,6 +34,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 const STATCHASERS_PLAYER_SHORTCODE = 'statchasers_player';
+
+/**
+ * Sections a URL can be scoped to. Mirrors SECTIONS in the API's
+ * src/routes/player.ts — keep the two lists together.
+ */
+const STATCHASERS_PLAYER_SECTIONS = array(
+	'overview',
+	'stats',
+	'game-log',
+	'outlook',
+	'injury',
+	'news',
+	'bio',
+);
 const STATCHASERS_PLAYER_HANDLE    = 'statchasers-player';
 
 /** How long a rendered player fragment is reused before we ask the API again. */
@@ -64,14 +78,21 @@ const STATCHASERS_PLAYER_FORMATS = array( 'standard', 'half', 'ppr' );
  * hundred pages can carry one identical shortcode with no attribute at all.
  * `slug="..."` is there for the pages where that isn't true.
  *
+ * `section` scopes the mount to ONE part of the profile, for the per-section
+ * URLs — `/fantasy-football/players/<slug>/injury/` mounts
+ * `[statchasers_player section="injury"]`. The API then renders that panel as
+ * the whole page, with its own heading, and no tab strip. Without it the mount
+ * is the full profile exactly as before.
+ *
  * @param array<string,mixed> $atts Raw shortcode attributes.
- * @return array{slug:string,format:string}
+ * @return array{slug:string,format:string,section:string,log:string}
  */
 function statchasers_player_args( array $atts ): array {
 	$atts = shortcode_atts(
 		array(
-			'slug'   => '',
-			'format' => '',
+			'slug'    => '',
+			'format'  => '',
+			'section' => '',
 		),
 		$atts,
 		STATCHASERS_PLAYER_SHORTCODE
@@ -95,14 +116,71 @@ function statchasers_player_args( array $atts ): array {
 	}
 
 	$format = strtolower( trim( (string) $atts['format'] ) );
+	if ( '' === $format ) {
+		// No attribute: take it from the URL. The API renders the scoring toggle
+		// as real links to `?format=half`, and without this they are links to a
+		// page that ignores them — a control that looks live and is not.
+		$format = statchasers_player_query_value( 'format' );
+	}
 	if ( ! in_array( $format, STATCHASERS_PLAYER_FORMATS, true ) ) {
 		$format = 'ppr';
 	}
 
+	// Which season the Game Log tab is pinned to, from the URL only — there is
+	// no attribute for it, because it is a reader's choice on the page rather
+	// than something an editor sets when placing the shortcode. Constrained to a
+	// plausible NFL season; the API drops anything this player did not play.
+	$log  = statchasers_player_query_value( 'log' );
+	$year = (int) $log;
+	$log  = ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) + 1 ) ? (string) $year : '';
+
+	// A closed list, matching SECTIONS in the API's routes/player.ts. An
+	// unrecognised value is dropped rather than passed through: the API would
+	// ignore it and serve the full profile, which at a URL promising one section
+	// is the whole page duplicated at a second address.
+	$section = strtolower( trim( (string) $atts['section'] ) );
+	if ( '' === $section ) {
+		// No attribute: take it from the URL, so one page and one shortcode
+		// serve both /nfl/players/<slug>/ and /nfl/players/<slug>/injury/.
+		$section = statchasers_player_section_from_url();
+	}
+	if ( '' === $section ) {
+		// And as a plain query parameter, which is the shape the API's own
+		// in-page links use. Without it, changing the scoring format on a
+		// section page silently returns the reader to the full profile.
+		$section = statchasers_player_query_value( 'section' );
+	}
+	if ( ! in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ) {
+		$section = '';
+	}
+
 	return array(
-		'slug'   => $slug,
-		'format' => $format,
+		'slug'    => $slug,
+		'format'  => $format,
+		'section' => $section,
+		'log'     => $log,
 	);
+}
+
+/**
+ * One lowercased query parameter, or ''.
+ *
+ * Everything read through here is validated against a closed list or a numeric
+ * range by its caller before it reaches a URL or a cache key — these values
+ * come from the address bar, so "sanitised" is the floor and not the bar.
+ */
+function statchasers_player_query_value( string $key ): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$raw = isset( $_GET[ $key ] ) ? wp_unslash( $_GET[ $key ] ) : '';
+
+	// `?log[]=1` makes this an array, and casting one to a string is a PHP
+	// warning printed into the page's <head>. Anything that is not a scalar is
+	// not a value this function has been asked for.
+	if ( ! is_scalar( $raw ) ) {
+		return '';
+	}
+
+	return strtolower( trim( sanitize_text_field( (string) $raw ) ) );
 }
 
 /**
@@ -112,17 +190,24 @@ function statchasers_player_args( array $atts ): array {
  * the `{ok, html, version}` JSON `/embed/ssr` returns, so the body is read
  * directly and the version comes from the ETag the route already sets.
  *
- * @param string $slug   Player slug.
- * @param string $format Scoring format.
+ * @param string $slug    Player slug.
+ * @param string $format  Scoring format.
+ * @param string $section Section to scope to, or '' for the whole profile.
+ * @param string $log     Season the Game Log is pinned to, or '' for the latest.
  * @return array{html:string,version:string}|null Null when nothing is available.
  */
-function statchasers_player_fetch( string $slug, string $format ): ?array {
+function statchasers_player_fetch( string $slug, string $format, string $section = '', string $log = '' ): ?array {
 	$origin = statchasers_news_origin();
 	if ( '' === $origin || '' === $slug ) {
 		return null;
 	}
 
-	$key        = md5( $origin . '|' . $slug . '|' . $format );
+	// The section is in the cache key because it changes the whole render. Left
+	// out, the injury URL and the profile URL share one cached fragment and
+	// whichever is requested first wins for both.
+	// The Game Log's season is in the key for the same reason the section is: it
+	// changes the table, and two readers on two seasons must not share a render.
+	$key        = md5( $origin . '|' . $slug . '|' . $format . '|' . $section . '|' . $log );
 	$cache_key  = 'sc_player_ssr_' . $key;
 	$backup_key = 'sc_player_ssr_bak_' . $key;
 
@@ -134,6 +219,12 @@ function statchasers_player_fetch( string $slug, string $format ): ?array {
 	$url = $origin . '/embed/player/' . rawurlencode( $slug );
 	if ( 'ppr' !== $format ) {
 		$url = add_query_arg( 'format', $format, $url );
+	}
+	if ( '' !== $section ) {
+		$url = add_query_arg( 'section', $section, $url );
+	}
+	if ( '' !== $log ) {
+		$url = add_query_arg( 'log', $log, $url );
 	}
 
 	$response = wp_remote_get(
@@ -389,7 +480,12 @@ function statchasers_player_shortcode( $atts = array() ): string {
 		return '';
 	}
 
-	$data = statchasers_player_fetch( $args['slug'], $args['format'] );
+	$data = statchasers_player_fetch(
+		$args['slug'],
+		$args['format'],
+		$args['section'],
+		$args['log']
+	);
 
 	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_player_enqueue_assets();
@@ -418,14 +514,438 @@ function statchasers_player_shortcode( $atts = array() ): string {
 	 * @param string $slug   Player slug.
 	 * @param string $format Scoring format.
 	 */
+	// Stripped before the filter, so anything hooking it sees the markup that
+	// will actually be printed rather than the transport for the FAQ node.
 	return (string) apply_filters(
 		'statchasers_player_fragment_html',
-		$data['html'],
+		statchasers_player_strip_faq_data( (string) $data['html'] ),
 		$args['slug'],
 		$args['format']
 	);
 }
 add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
+
+/* --------------------------------------------------------------- FAQ schema */
+
+/**
+ * The FAQ schema for a mounted player page.
+ *
+ * The fragment carries its own Q&A as inert JSON (see renderFaq() in the API's
+ * player-render.ts) precisely so this can exist: the API does not print an
+ * FAQPage into an embedded mount, because the host document owns its schema and
+ * a second <script> competing with Rank Math's graph is the problem, not the
+ * fix. So the questions arrive as data and get appended to the graph the page
+ * was already going to print.
+ *
+ * This matters more since the per-section URLs below: /nfl/players/<slug>/game-log/
+ * mounts ONE section, so the page carries one FAQ about one subject, which is
+ * the shape an FAQPage is supposed to describe. On the unsectioned profile every
+ * section's questions merge into a single node — still one FAQPage, because
+ * four of them on one URL is four candidates for the same page and Google picks
+ * one of them for you.
+ */
+
+/**
+ * The Q&A the fragment for THIS request is carrying.
+ *
+ * Resolved and fetched here rather than handed over by the shortcode, because
+ * Rank Math prints its graph in wp_head and the shortcode does not run until
+ * the_content — by then the <head> is long gone. The fetch is transient-cached
+ * on exactly the arguments the shortcode will use, so this warms the cache the
+ * shortcode then hits rather than costing a second request.
+ *
+ * Memoised: the filter and the fallback printer both ask.
+ *
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_player_faq_items(): array {
+	static $items = null;
+
+	if ( null !== $items ) {
+		return $items;
+	}
+
+	$items = array();
+
+	if ( ! statchasers_player_post_has_shortcode() ) {
+		return $items;
+	}
+
+	// The slug comes off the QUERIED object rather than being left to
+	// statchasers_player_args()'s get_post() fallback, for the reason given on
+	// statchasers_player_post_has_shortcode(): the global post is not reliably
+	// this page. Everything else — section, format, season — is read from the
+	// URL, which is where a reader's choices live.
+	//
+	// An editor who hard-coded slug="..." on a page with a different slug gets
+	// no node rather than the wrong one: the API has nothing for a slug that is
+	// not a player, so the fetch comes back empty and this returns nothing.
+	$queried = get_queried_object();
+	$args    = statchasers_player_args(
+		array(
+			'slug' => $queried instanceof WP_Post ? (string) $queried->post_name : '',
+		)
+	);
+
+	if ( '' === $args['slug'] ) {
+		return $items;
+	}
+
+	$data = statchasers_player_fetch(
+		$args['slug'],
+		$args['format'],
+		$args['section'],
+		$args['log']
+	);
+
+	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
+		return $items;
+	}
+
+	$items = statchasers_player_faq_parse( (string) $data['html'] );
+
+	return $items;
+}
+
+/**
+ * Pull the Q&A islands out of a rendered fragment.
+ *
+ * Every island on the page is merged, in document order, so the profile mount
+ * produces one node rather than one per tab.
+ *
+ * Validated rather than trusted. It is our own origin, but this ends up in the
+ * page's structured data and a malformed island should drop an entry rather
+ * than emit a broken node.
+ *
+ * @param string $html Rendered fragment.
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_player_faq_parse( string $html ): array {
+	$items = array();
+
+	if ( false === strpos( $html, 'scp-faq-data' ) ) {
+		return $items;
+	}
+
+	$found = preg_match_all(
+		'#<script type="application/json" class="scp-faq-data">(.*?)</script>#s',
+		$html,
+		$matches
+	);
+
+	if ( ! $found ) {
+		return $items;
+	}
+
+	foreach ( $matches[1] as $json ) {
+		$decoded = json_decode( $json, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		foreach ( $decoded as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['q'], $entry['a'] ) ) {
+				continue;
+			}
+			if ( ! is_string( $entry['q'] ) || ! is_string( $entry['a'] ) ) {
+				continue;
+			}
+
+			$question = trim( wp_strip_all_tags( $entry['q'] ) );
+			$answer   = trim( wp_strip_all_tags( $entry['a'] ) );
+
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $question,
+				'a' => $answer,
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+ * One FAQPage node from the questions this request is carrying.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null Null when there is nothing to describe.
+ */
+function statchasers_player_faq_node( string $webpage_id = '' ) {
+	$items = statchasers_player_faq_items();
+
+	if ( empty( $items ) ) {
+		return null;
+	}
+
+	$questions = array();
+	foreach ( $items as $item ) {
+		$questions[] = array(
+			'@type'          => 'Question',
+			'name'           => $item['q'],
+			'acceptedAnswer' => array(
+				'@type' => 'Answer',
+				'text'  => $item['a'],
+			),
+		);
+	}
+
+	$node = array(
+		'@type'      => 'FAQPage',
+		'mainEntity' => $questions,
+	);
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the FAQPage to Rank Math's graph.
+ *
+ * Same posture as statchasers_news_rank_math_schema(): append to the array Rank
+ * Math hands us, so what ships is one <script> containing one graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_player_rank_math_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_player_faq_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null === $node ) {
+		return $data;
+	}
+
+	$data['statchasersPlayerFaq'] = $node;
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_player_rank_math_schema', 20 );
+
+/**
+ * Fallback FAQPage for sites with no schema-graph plugin.
+ *
+ * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * plugin present, WebPage and Organization are a site-wide decision somebody
+ * should make deliberately rather than something this tool improvises.
+ */
+function statchasers_player_print_fallback_schema(): void {
+	if ( statchasers_news_graph_provider_present() ) {
+		return;
+	}
+
+	$node = statchasers_player_faq_node();
+	if ( null === $node ) {
+		return;
+	}
+
+	$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+	echo '<script type="application/ld+json">' .
+		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+		'</script>' . "\n";
+}
+add_action( 'wp_head', 'statchasers_player_print_fallback_schema', 20 );
+
+/**
+ * Drop the Q&A islands from the markup that is printed.
+ *
+ * They are a transport for the node above, and once it is built they are a
+ * second copy of every answer sitting in the page for nobody. The schema reads
+ * from the cached fetch, not from this string, so removing them here costs the
+ * node nothing.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_player_strip_faq_data( string $html ): string {
+	if ( false === strpos( $html, 'scp-faq-data' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace(
+		'#<script type="application/json" class="scp-faq-data">.*?</script>#s',
+		'',
+		$html
+	);
+}
+
+/* -------------------------------------------------------------- section URLs */
+
+/**
+ * Per-section player URLs, e.g. /nfl/players/jacoby-brissett/injury/.
+ *
+ * OFF BY DEFAULT, and deliberately. Rewrite rules are site-wide and a wrong one
+ * takes out URLs that have nothing to do with this plugin, so nothing here runs
+ * until the site opts in:
+ *
+ *     add_filter( 'statchasers_player_section_urls', '__return_true' );
+ *
+ * Then flush permalinks once (Settings > Permalinks > Save).
+ *
+ * WHAT IT DOES NOT DO: create pages. The rule points the section URL at the
+ * player's EXISTING page and sets a query var the shortcode reads, so one page
+ * per player serves every section address. Several hundred players do not need
+ * several thousand pages.
+ *
+ * The base defaults to the path the player pages already live at. Change it
+ * with:
+ *
+ *     add_filter( 'statchasers_player_url_base', fn() => 'fantasy-football/players' );
+ *
+ * and set up 301s from the old base before you do — the old URLs are indexed.
+ */
+function statchasers_player_section_urls_enabled(): bool {
+	return (bool) apply_filters( 'statchasers_player_section_urls', false );
+}
+
+/** The path player pages live under, with no leading or trailing slash. */
+function statchasers_player_url_base(): string {
+	$base = (string) apply_filters( 'statchasers_player_url_base', 'nfl/players' );
+	return trim( $base, '/' );
+}
+
+add_filter(
+	'query_vars',
+	function ( array $vars ): array {
+		$vars[] = 'sc_section';
+		return $vars;
+	}
+);
+
+add_action(
+	'init',
+	function (): void {
+		if ( ! statchasers_player_section_urls_enabled() ) {
+			return;
+		}
+
+		$base     = statchasers_player_url_base();
+		$sections = implode( '|', array_map( 'preg_quote', STATCHASERS_PLAYER_SECTIONS ) );
+
+		// The page itself is resolved by pagename, exactly as WordPress would
+		// have resolved the bare player URL; only sc_section is added.
+		add_rewrite_rule(
+			'^' . $base . '/([^/]+)/(' . $sections . ')/?$',
+			'index.php?pagename=' . $base . '/$matches[1]&sc_section=$matches[2]',
+			'top'
+		);
+	}
+);
+
+/**
+ * The section a request is scoped to, from the URL.
+ *
+ * Read by the shortcode when no explicit `section` attribute is given, which is
+ * what lets one page and one shortcode serve both the profile URL and every
+ * section URL beneath it.
+ */
+function statchasers_player_section_from_url(): string {
+	$section = strtolower( trim( (string) get_query_var( 'sc_section' ) ) );
+	return in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ? $section : '';
+}
+
+/**
+ * The season the Game Log is showing, read off the fragment the page will print.
+ *
+ * The title needs the year — "Game Log 2026" is the phrase people type — and
+ * only the API knows which year that is: the newest season this player actually
+ * appeared in, or the one `?log=` pinned. Guessing it from the calendar is wrong
+ * for exactly the players whose season ended early, which is the group whose
+ * game log gets looked up.
+ *
+ * Cheap, despite being an HTTP fetch: this is the same cached call the shortcode
+ * makes a moment later on the same render, so a miss here is a request that was
+ * going to happen anyway rather than a second one.
+ *
+ * Returns '' when the fragment says nothing, and the title then carries no year
+ * — better than carrying a wrong one.
+ *
+ * @param array{slug:string,format:string,section:string,log:string} $args Mount arguments.
+ */
+function statchasers_player_log_season( array $args ): string {
+	$data = statchasers_player_fetch(
+		$args['slug'],
+		$args['format'],
+		$args['section'],
+		$args['log']
+	);
+	if ( ! is_array( $data ) || ! isset( $data['html'] ) ) {
+		return '';
+	}
+
+	if ( ! preg_match( '/data-log-season="(\d{4})"/', (string) $data['html'], $match ) ) {
+		return '';
+	}
+
+	return $match[1];
+}
+
+/**
+ * The document title on a section URL.
+ *
+ * Without this, the section URL inherits the profile page's title and the two
+ * addresses compete for the same query with the same string. The API renders
+ * the matching <h2> inside the fragment; the <h1> is the theme's and is the one
+ * piece of this that has to be changed there.
+ */
+add_filter(
+	'document_title_parts',
+	function ( array $parts ): array {
+		$section = statchasers_player_section_from_url();
+		if ( '' === $section || ! isset( $parts['title'] ) ) {
+			return $parts;
+		}
+
+		$phrases = array(
+			'stats'    => 'Stats',
+			'injury'   => 'Injury Update, Status & History',
+			'game-log' => 'Game Log',
+			'outlook'  => 'Fantasy Outlook',
+			'news'     => 'News & Analysis',
+			'overview' => 'Season Overview',
+			'bio'      => 'Bio',
+		);
+
+		if ( ! isset( $phrases[ $section ] ) ) {
+			return $parts;
+		}
+
+		$title = $parts['title'] . ' ' . $phrases[ $section ];
+
+		// "Jacoby Brissett Game Log 2026: Fantasy Points & Stats by Week" — the
+		// season, then what the page actually holds. Only the game log takes the
+		// suffix; the other sections read as themselves.
+		// "Jacoby Brissett Bio: Age, Height, College, Draft & Career" — the
+		// biographical cluster named outright. Bio is the one section whose
+		// queries are not fantasy queries, and its title says so.
+		if ( 'bio' === $section ) {
+			$title .= ': Age, Height, College, Draft & Career';
+		}
+
+		if ( 'game-log' === $section ) {
+			$args   = statchasers_player_args( array() );
+			$season = '' === $args['slug'] ? '' : statchasers_player_log_season( $args );
+			if ( '' !== $season ) {
+				$title .= ' ' . $season;
+			}
+			$title .= ': Fantasy Points & Stats by Week';
+		}
+
+		$parts['title'] = $title;
+
+		return $parts;
+	}
+);
 
 /**
  * Clear cached player renders. Called by statchasers_news_flush().

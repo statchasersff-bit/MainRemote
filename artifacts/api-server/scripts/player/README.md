@@ -26,6 +26,7 @@ this order:
 | 5 | `buildGameScores.js` | `game_scores.json` | ESPN scoreboard |
 | 6 | `buildDraft.js` | `draft.json` | ESPN athlete search |
 | 7 | `buildBios.js` | `bios.json` | game logs + `draft.json`, deterministic templates |
+| 7a | `buildBioFacts.mjs` | `bio_facts.json` | Sleeper player dictionary + season stats |
 | 8 | `buildDynastyRankings.js` | `dynasty_rankings.json` | KeepTradeCut |
 | 9 | `buildProductionSnapshot.mjs` | `player_production.json` | Sleeper season production |
 | 10 | `buildInjurySnapshots.mjs` | `player_injuries.json` | injury history |
@@ -33,6 +34,62 @@ this order:
 
 `backfillTeamInGameLogs.js` and `syncPlayerTeamsFromDepthCharts.js` are
 maintenance passes over files that already exist, not part of a cold build.
+
+## Bio facts
+
+`buildBioFacts.mjs` feeds the Bio tab and only the Bio tab: birth date, college
+and high school from Sleeper's player dictionary, plus one row per season the
+player was actually on a roster, which is the career timeline.
+
+It is numbered 7a because it needs `players.json` (for the slugs, which it reads
+rather than recomputes) and nothing else. It runs about twenty requests — one
+per season from 2005 — and takes a minute.
+
+Two things worth knowing before changing it:
+
+**Sleeper answers for seasons a player was not alive for.** Ask
+`/stats/nfl/2005?grouping=season` about a 2016 draftee and it returns his
+CURRENT team with an empty stats object. Taken at face value that put Jacoby
+Brissett on Arizona in 2005. The builder therefore requires a non-empty stat
+line before it records a season, and a timeline that starts before a player's
+draft year is the signature of that guard having been removed.
+
+**There is no hometown.** Sleeper's `birth_city` and `birth_state` are null for
+every active player at every position — not sparse, empty — so the Bio tab has
+no hometown row. If a source for it appears, this is the script that should
+carry it.
+
+Re-running one season (`node buildBioFacts.mjs 2019`) rewrites that season for
+everybody and leaves the rest of the file alone.
+
+## Seasons
+
+`buildGameLogs.js` and `buildGameScores.js` used to carry
+`const SEASONS = [2023, 2024, 2025]`. That list is wrong every September and
+wrong *silently* — the build succeeds, the server serves, and every player page
+shows last season's game log as though it were this one. Both now derive the
+list from the calendar (`season.mjs`), and both take seasons as arguments:
+
+```
+node scripts/player/buildGameLogs.js              # 2023 through the current season
+node scripts/player/buildGameLogs.js 2026         # just this one
+SC_SEASON=2025 node scripts/player/buildGameLogs.js   # pin "current" for a backfill
+```
+
+Naming one season rebuilds one file and leaves the others alone, which matters
+because they are committed: a full rebuild rewrites four megabytes of JSON to
+re-derive numbers that stopped changing when the season ended.
+
+`buildGameScores.js` needs one more thing per season — `SEASON_STARTS`, the
+Thursday of week 1, which is the anchor its date-range queries are counted from.
+A season missing from that map throws rather than fetching the wrong week's
+games and filing them under the right week's key. Sleeper reports the date as
+`season_start_date` at `https://api.sleeper.app/v1/state/nfl`.
+
+That script also **merges** into `game_scores.json` rather than replacing it,
+and will not overwrite a season already on disk with an empty fetch. ESPN rate
+limits and blocks, and both of those would otherwise turn three finished seasons
+into nothing.
 
 `advanced_stats/<pos>_<season>.json` is not built here — those tables arrive
 from the advanced-stats pipeline and are dropped in whole. The Advanced Stats
@@ -52,6 +109,56 @@ node scripts/player/outlookMerge.js         # fold the parts into the file
 
 `outlookMerge.js` never clobbers a record marked `edited: true`, so a hand-written
 outlook survives a regeneration.
+
+### What a record carries
+
+`headline` and `body` are the original two fields. Everything else is the
+**decision layer** the Outlook tab renders around them, and all of it is
+authored in the same pass:
+
+| field | shape | drives |
+| --- | --- | --- |
+| `quickTake` | 2–3 sentences | the take under the head |
+| `weeklyRole` | 1–3 words | the Weekly Role chip |
+| `restOfSeason` | `"QB3 / Matchup Play"` | the Rest-of-Season chip |
+| `confidence` | `High` \| `Moderate` \| `Low` | the Confidence chip |
+| `range` | `floor`/`expected`/`ceiling`, each `{best, worst, note}` | the range spectrum |
+| `upsideTriggers` | 3 strings | the left column of "What moves the outlook" |
+| `warningSigns` | 3 strings | the right column |
+| `usage` | `{standard, deep, bestWhen, avoidWhen}` | "How to use him" |
+| `verdict` | `{call, rationale}` | the closing slab |
+
+Every one of them is **optional**, and each is validated on its own: a malformed
+`range` does not cost the record its triggers, and a record with no decision
+layer at all still renders a perfectly good tab from `headline`, `body` and the
+measured driver strip. The failure mode of a bad generation is a shorter tab,
+never a wrong one.
+
+Two validations are worth knowing about, both in `parseModelJson`:
+
+- **The range is dropped whole unless it is ordered** —
+  `ceiling.best <= expected.best <= floor.best`, and the same for `worst`. A
+  ceiling worse than the floor is not a range, it is a mistake, and drawing it
+  would put the marker off the axis.
+- **`verdict.call` must come from a fixed vocabulary** (`VERDICT_CALLS`).
+  Free text drifts: three runs produce "Matchup Play", "matchup-dependent" and
+  "Use in good matchups" for the same call. `Buy` and `Sell` are deliberately
+  not in the list — this site has no trade-market data behind them.
+
+The four driver cards on the tab are **not** in this file and are not authored.
+They are measured from `keyStats` against the position's own distribution — see
+`src/lib/player/outlook-drivers.ts` — so they stay true without anybody
+rewriting them, and the categories differ by position.
+
+To see what one generation produces before committing to a full run:
+
+```
+ANTHROPIC_API_KEY=... node scripts/player/buildFantasyOutlook2026.js \
+  jacoby-brissett --force --print
+```
+
+`--print` shows the prose and then the decision layer as JSON, and names any
+field that was dropped in validation.
 
 Two things to know before running it:
 

@@ -1,7 +1,7 @@
 # StatChasers WordPress plugin
 
-Mounts the StatChasers news tool, the NFL team hubs and the player pages
-**directly into WordPress pages** — no iframe.
+Mounts the StatChasers news tool, the NFL team hubs, the player pages and the
+Fantasy Points Allowed table **directly into WordPress pages** — no iframe.
 
 ## Why
 
@@ -39,6 +39,8 @@ nothing is hidden behind a click.
    [statchasers_news]     the player news tool
    [statchasers_team]     an NFL team hub
    [statchasers_player]   an NFL player page
+   [statchasers_fpa]      the Fantasy Points Allowed table
+   [statchasers_rankings] the redraft rankings board
    ```
 
 ## The team hubs — `[statchasers_team]`
@@ -78,6 +80,76 @@ The fragment carries no `<h1>`, `<title>`, canonical or robots directive; the
 WordPress page owns all of those, exactly as with the news tool. The hub's tab
 strip is `:target`-based, so all five tabs are in the HTML on first response and
 the only URL state it can produce is a `#hash` — not a separate URL.
+
+### Section URLs (off by default)
+
+The hub answers five different questions at one address, and one address gets
+one title tag. `/nfl/teams/<slug>/schedule/` and friends give four of them a
+title, a description and a canonical of their own:
+
+```
+/nfl/teams/new-england-patriots/               the hub
+/nfl/teams/new-england-patriots/outlook/       New England Patriots Fantasy Football Outlook 2026
+/nfl/teams/new-england-patriots/stats/         … Stats 2026: Offense, Defense & NFL Rankings
+/nfl/teams/new-england-patriots/schedule/      … Schedule 2026: Dates, Opponents & Results
+/nfl/teams/new-england-patriots/depth-chart/   … Depth Chart 2026: Starters & Backups
+```
+
+Turn them on with:
+
+```php
+add_filter( 'statchasers_team_section_urls', '__return_true' );
+```
+
+Then flush permalinks once (Settings → Permalinks → Save).
+
+**No pages are created.** A rewrite rule points the section URL at the team's
+existing page and sets `sc_section`, which the shortcode reads — so the same 32
+pages serve all 160 addresses, and a section is opened or closed by editing
+`STATCHASERS_TEAM_SECTIONS` rather than by minting rows in `wp_posts`. Identical
+in shape to `statchasers_player_section_urls`.
+
+A section page is the hero, that section, a strip of real links to the hub and
+its sibling sections, and the resources block; it does not repeat the other
+four panels, or the five addresses would be one page under five URLs. Its
+title, description, self-referencing canonical and `og:url` are generated from
+team + section + season by `statchasers_team_section_meta()`, which mirrors
+`sectionMeta()` in the API's `src/lib/team-seo.ts` — change one and change the
+other. The pretty path is the only public spelling: `?section=` is what the
+plugin fetches the fragment with, and the API 301s it to the pretty path.
+
+**Discovery.** The hub's tab strip is `#hash` navigation, which a crawler
+follows nowhere, so once the flag is on the plugin asks the API (`sections=1`)
+to print a strip of real anchors to the four section pages under the panels.
+Off, the hub prints none — four links to 404s is worse than none.
+
+**Sitemap.** With the flag on, the four section URLs of every published hub
+page are appended to Rank Math's page sitemap through
+`rank_math/sitemap/page_content`. Off, they are not, so the sitemap can never
+advertise the URLs before the rewrite serves them. That filter name is the one
+piece of the Rank Math integration not confirmed against an installed build —
+if the page sitemap does not list them after enabling, check it first.
+
+**Unknown sections 404.** The rewrite matches the four ids and nothing else, so
+`/nfl/teams/<slug>/anything-else/` falls to WordPress's own resolution and
+404s rather than serving the hub under a second name. The API's
+`/team/<slug>/<section>/` does the same, and treats `news` and any case variant
+(`/Stats/`) the same way.
+
+**`news` is deliberately not in the list.** Some teams' archives are two stories
+and a standalone URL for those is a thin page. The hub still carries the tab.
+Roster and Injuries are candidates later, once the data is dense enough.
+
+The 32 hub pages keep their **stored** Rank Math fields: this plugin never
+silently overwrites a field an editor may have rewritten, so only the virtual
+section URLs — which have no row to store anything in — are generated. Pages
+created before the current hub wording (`<team> <season>: Record, Schedule,
+Stats & Fantasy Football`) keep the old one until you move them: **Tools →
+StatChasers Team Pages → Hub titles** shows a dry run first (`N eligible · N
+custom titles left alone`) and the button updates only pages whose stored title
+is empty or is exactly the old generated template, in any season. Anything else
+was typed by a person and is kept, and is listed by slug so you can see which.
+Descriptions are not migrated: the generated wording did not change.
 
 ### Server-side configuration
 
@@ -162,6 +234,23 @@ isn't PPR:
 [statchasers_player format="half"]
 ```
 
+#### Two things the reader sets, not you
+
+The scoring toggle and the Game Log's season selector are rendered by the API as
+real links, and the shortcode reads what they set back out of the URL:
+
+| Parameter | Meaning |
+|-----------|---------|
+| `?format=` | `standard`, `half` or `ppr`. Overridden by a `format` attribute. |
+| `?log=`    | The season the **Game Log** tab shows, e.g. `?log=2024`. |
+
+Both are cached separately, and both carry `rel="nofollow"` on every link that
+is not the current one — one game log per player is the page that ranks, and a
+pinned season is a rendering of it rather than a second address competing with
+it. Nothing else on the page moves when `?log=` is set: the injury history, the
+outlook and the advanced metrics all stay on the player's active season, because
+the reader re-scoped a tab and not the profile.
+
 ### Why this shortcode is what makes player pages rank
 
 Exactly the team hubs' story. The API serves every player route with
@@ -229,6 +318,88 @@ The Divi notes on the team hubs apply here unchanged — a Theme Builder body
 template **must** contain a Post Content module or every one of these pages
 ships empty, and the plugin takes Divi's full-width column for the same reason
 it does on a hub.
+
+## Fantasy Points Allowed — `[statchasers_fpa]`
+
+One page, at `/nfl/fantasy-points-allowed/`. It mounts the table the API serves
+at `/fpa`: how many fantasy points each of the 32 defences gives up per game to
+QBs, RBs, WRs and TEs, with ranks, three scoring formats, raw and
+schedule-adjusted views, and a CSV export.
+
+| Attribute | Default | Meaning |
+|-----------|---------|---------|
+| `format`  | `half`  | Scoring: `standard`, `half` or `ppr`. |
+| `view`    | `raw`   | `raw` (as measured) or `adjusted` (corrected for strength of schedule). |
+| `season`  | current | Pin a season. Leave it off — see below. |
+
+```
+[statchasers_fpa]
+[statchasers_fpa format="ppr" view="adjusted"]
+```
+
+**Leave `season` off.** The API serves whatever it is configured to treat as
+current, so an unpinned page rolls over by itself; a hard-coded season is a page
+that quietly shows last year's table next September.
+
+### Migrating from "StatChasers Data Tools"
+
+The FPA tool shipped with its own plugin, which worked the other way round:
+WordPress cached the JSON, exposed it at `/wp-json/statchasers/v1/fpa`, and a
+browser bundle drew the table from it. That is fine for a reader and no good for
+search — the page's own HTML was an empty container, which is the problem this
+whole plugin exists to solve.
+
+The shortcode tag is **deliberately the same**, so:
+
+1. Update this plugin.
+2. **Deactivate StatChasers Data Tools.** Both plugins registering
+   `statchasers_fpa` is a collision, and WordPress keeps whichever registered
+   last — so leaving both active makes which table you get depend on plugin
+   load order.
+3. The page itself needs no edit.
+
+The old plugin's admin refresh button and its `FPA_ADMIN_SECRET` endpoint have
+no counterpart here, by design: the data is rebuilt by a scheduled ingest on the
+API side (`pnpm --filter @workspace/api-server run ingest-fpa`), not by a button
+in wp-admin. One less secret to share between two systems.
+
+### Running the ingest
+
+The table is built from nflverse's weekly player stats. Nothing renders until
+the ingest has run at least once:
+
+```bash
+pnpm --filter @workspace/api-server run ingest-fpa
+```
+
+Schedule it weekly in season. It is idempotent — running it twice leaves exactly
+what running it once does — and it replaces the stored figures in one
+transaction, so a reader never sees half of one ingest and half of the last.
+
+If the table is empty the API answers `/embed/fpa` with a 404 and the shortcode
+prints **nothing**, leaving the rest of your page intact. An administrator
+viewing the page sees a note saying what to run; a reader sees no hole.
+
+### Server-side configuration
+
+```
+SC_FPA_PATH=/nfl/fantasy-points-allowed/
+```
+
+The table's own format and view controls are ordinary links. Left unset they
+point at the API's own `/fpa`, so a reader changing scoring format inside your
+page would leave the site for the bare tool.
+
+`SC_TEAM_PATH_PREFIX` matters here too: every row's defence name links to that
+team's hub.
+
+### What the colours mean
+
+The cells are tinted on a **diverging** scale — rank 1 is the softest defence,
+rank 32 the toughest, league average in the middle — so it takes two hues either
+side of a neutral rather than one ramp. Blue is the exploitable pole, red the
+one to avoid. Every tinted cell also prints its rank, so the tint is a second
+reading rather than the only one, and the legend names each band in words.
 
 ## News shortcode attributes
 
@@ -362,12 +533,125 @@ If you later add controls that *should* be indexed as their own landing pages,
 make them real links to real server-rendered URLs with their own canonicals —
 don't let tool state leak into the existing page's URL.
 
+## Redraft rankings — `[statchasers_rankings]`
+
+One page, at `/fantasy-football/redraft-rankings/`. It mounts the board the API
+serves at `/rankings`: tiered quarterback, running back, wide receiver and tight
+end rankings, plus an all-positions view that aligns the four by positional
+rank, and a CSV export.
+
+| Attribute | Default | Meaning |
+|-----------|---------|---------|
+| `pos`     | `all`   | Which panel opens first: `all`, `qb`, `rb`, `wr` or `te`. |
+| `season`  | newest  | Pin a season. Leave it off — see below. |
+
+```
+[statchasers_rankings]
+[statchasers_rankings pos="rb"]
+```
+
+**Leave `season` off.** The API serves the newest board it has, so an unpinned
+page rolls over by itself when next year's file lands; a hard-coded season is a
+page that quietly shows last year's rankings next August.
+
+There is no `scoring` attribute. The rankings are published in PPR only, and the
+board says so rather than offering two controls that do nothing.
+
+### Migrating from the standalone rankings app
+
+The rankings shipped as their own Vite app in a separate repository
+(`statchasersff-bit/Redraft-Rankings-table`), mounted here through a
+prerender-and-hydrate arrangement: a build step rendered the board to HTML,
+WordPress served that, and a React bundle hydrated it. Better than an iframe,
+and it had two problems this shortcode does not.
+
+- **The board was only as fresh as the last build.** Updating a ranking meant
+  re-running the prerender and redeploying that app. Here the rankings are a CSV
+  the API reads per request, cached on its modification time — publishing a new
+  one is a commit.
+- **Four of the five boards were not really on the page.** Only the active
+  position panel and the first fifty rows of the all-positions view were in the
+  markup; the rest lived in React state, which is to say a crawler never saw
+  them. The server now renders all five panels and every row.
+
+To migrate: put `[statchasers_rankings]` on the page, remove the old app's mount
+(its container div, block, or whatever its bundle looked for), and stop
+deploying that app. Nothing collides — the tag is new, because the old mount was
+not a WordPress shortcode.
+
+### Publishing rankings
+
+The board is built from `data/rankings/redraft-<season>.csv` in the API
+repository — three columns, `Position,Final Rank,Player`:
+
+```csv
+Position,Final Rank,Player
+QB,1,Josh Allen
+RB,1,Bijan Robinson
+```
+
+Ranks are **positional**: QB1 and RB1 are both rank 1. The tiers are not in the
+file — they are drawn from the rank by the tier rules in
+`src/lib/rankings/rankings-data.ts`, which is where a tier boundary is moved.
+
+Beside it, an optional `redraft-<season>.meta.json` supplies the "updated" line:
+
+```json
+{
+  "season": 2026,
+  "scoring": "PPR",
+  "updatedAt": "August 31, 2026 9:33am ET",
+  "updatedAtIso": "2026-08-31T09:33:00-04:00"
+}
+```
+
+Without it the board still renders and simply does not claim a date.
+
+Each board is capped — 40 QBs, 50 RBs, 100 WRs, 40 TEs — so the working file can
+run as deep as you like without the page doing the same. If no rankings file
+exists the API answers `/embed/rankings` with a 404 and the shortcode prints
+**nothing**, leaving the rest of your page intact. An administrator viewing the
+page sees a note saying what is missing; a reader sees no hole.
+
+### Server-side configuration
+
+```
+SC_RANKINGS_PATH=/fantasy-football/redraft-rankings/
+```
+
+The board's CSV link is an ordinary link. Left unset it points at the API's own
+`/rankings`, so a reader downloading from inside your page would leave the site
+for the bare tool.
+
+`SC_PLAYER_PATH_PREFIX` matters here too: every player's name links to his
+player page. A player the API's dictionary cannot place — a free agent, usually
+— keeps his row and his rank and is rendered as plain text rather than as a link
+to a page that does not exist.
+
+### What the colours mean
+
+The all-positions board tints each cell by tier. That scale is **nominal**, not
+ordered: tier 3 is not "more" than tier 2, it is a different group, so it is
+seven distinct hues held at one lightness rather than a ramp. Every tint sits at
+about 95% lightness, which keeps the player's name at full contrast against it —
+the colour is doing grouping work only.
+
+Colour is never the only encoding. Every tinted cell's row prints its rank, and
+the per-position tables print the tier in a column of its own, so nothing is
+lost to a colour-blind reader or to a monochrome print.
+
 ## Caching
 
 - Rendered fragments are cached in a transient for 5 minutes — news, team hubs
   and player pages alike, each cached under its own key (a player's key includes
   the scoring format, so three formats are three entries rather than one that
-  flip-flops).
+  flip-flops). The FPA table gets **15 minutes**: it is rebuilt by a weekly
+  ingest, so a five-minute TTL would mean a hundred and twenty round trips a day
+  to learn nothing had changed.
+  The rankings board gets **an hour**, the longest of the five, for the same
+  reason taken further: a rankings file moves when somebody publishes one, which
+  is a handful of times a season. `statchasers_news_flush()` clears it, which is
+  the path an editor who has just published takes.
 - The last successful render is kept for 24 hours and served if the API is slow
   or unreachable, so a hiccup shows stale news rather than an empty box. A team
   hub with no cached copy yet renders nothing rather than an empty shell: unlike

@@ -308,7 +308,7 @@ function deriveSide(
     pointsPerGame: read("passing", split, "totalPointsPerGame"),
     // "Net" throughout, matching lib/team/snapshot.ts — sack yardage is charged
     // to the offence there and it must not be charged differently here, or the
-    // Overview tab and this one would print two different totals for one team.
+    // Outlook tab and this one would print two different totals for one team.
     yardsPerGame: read("passing", split, "netYardsPerGame"),
     yardsPerPlay: ratio(netTotalYards, plays),
     passYardsPerGame: read("passing", split, "netPassingYardsPerGame"),
@@ -812,7 +812,7 @@ function build(season: number, payload: ByTeamResponse): LeagueStats {
  */
 const cache = createKeyedCache<LeagueStats>({
   name: "espn-byteam",
-  // Season aggregates move once a week, on the same cadence as the Overview
+  // Season aggregates move once a week, on the same cadence as the Outlook
   // tab's snapshot; six hours matches it deliberately so the two tabs cannot
   // drift apart within a page view.
   ttlMs: 6 * 60 * 60 * 1000,

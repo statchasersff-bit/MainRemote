@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player";
+  key: "news" | "team" | "player" | "fpa" | "rankings";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -117,6 +117,28 @@ const TOOLS: Tool[] = [
       path.startsWith("/player") ||
       path.startsWith("/preview/player") ||
       path.startsWith("/preview/raw/player"),
+  },
+  {
+    key: "fpa",
+    label: "Fantasy Points Allowed",
+    shortLabel: "FPA",
+    shortcode: "statchasers_fpa",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/fpa") ||
+      path.startsWith("/preview/fpa") ||
+      path.startsWith("/preview/raw/fpa"),
+  },
+  {
+    key: "rankings",
+    label: "Redraft Rankings",
+    shortLabel: "Rankings",
+    shortcode: "statchasers_rankings",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/rankings") ||
+      path.startsWith("/preview/rankings") ||
+      path.startsWith("/preview/raw/rankings"),
   },
 ];
 
@@ -219,6 +241,22 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return `/preview/raw/player/${slug}`;
     if (mount === "shortcode") return `/preview/player/${slug}`;
     return mount === "embed" ? `/player/${slug}?embed=1` : `/player/${slug}`;
+  }
+
+  if (tool.key === "fpa") {
+    // One table, no subject — the only state is format and view, and those are
+    // the table's own controls rather than something the bar picks.
+    if (mount === "fragment") return "/preview/raw/fpa";
+    if (mount === "shortcode") return "/preview/fpa";
+    return mount === "embed" ? "/fpa?embed=1" : "/fpa";
+  }
+
+  if (tool.key === "rankings") {
+    // Five boards, no subject — which panel is open is the strip's business,
+    // not the bar's, and it is a fragment link rather than a URL.
+    if (mount === "fragment") return "/preview/raw/rankings";
+    if (mount === "shortcode") return "/preview/rankings";
+    return mount === "embed" ? "/rankings?embed=1" : "/rankings";
   }
 
   if (mount === "fragment") return "/preview/raw/news";
@@ -528,6 +566,7 @@ export function injectDevBar(html: string, context: DevBarContext): string {
     `<a href="/player">` +
     `<span class="scdev-full">All players</span>` +
     `<span class="scdev-short">Players</span></a>` +
+    `<a class="scdev-wide-only" href="/fpa/download.csv">FPA CSV</a>` +
     `<a class="scdev-wide-only" href="/embed">Embed setup</a>` +
     `</span>` +
     `<code class="scdev-now">${escapeAttr(shortcodeText(tool, subject))}</code>` +

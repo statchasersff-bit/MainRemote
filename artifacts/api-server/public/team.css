@@ -866,7 +866,7 @@ body.sct-page.is-embed {
  * Sibling selectors rather than a class the script sets, so all of this follows
  * both mechanisms the tabs already use: :target with scripting off, .is-active
  * once client/team.ts takes over. #resources is a sibling of the panels — both
- * are children of .sct — so the panel that is showing can reach it. Overview is
+ * are children of .sct — so the panel that is showing can reach it. Outlook is
  * the default panel and hides nothing, so no :target-absent case arises. */
 
 /* News drops the block outright. It is the one tab with its own right-hand
@@ -1322,7 +1322,9 @@ body.sct-page.is-embed {
 
 /* ------------------------------------------------------------ player bands */
 
-.sct-outlook-group {
+/* A band: a labelled run of content inside a section. The outlook's player
+   groups, and the FAQ that closes the Outlook and Stats tabs. */
+.sct-band {
   margin: 26px 0 0;
 }
 
@@ -1330,7 +1332,7 @@ body.sct-page.is-embed {
    divider that happens to assert something, and at heading weight two of them
    would compete with the section's own <h2>. The rule fills the rest of the
    line so the band reads as a section break at a glance. */
-.sct-outlook-group-label {
+.sct-band-label {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1342,7 +1344,7 @@ body.sct-page.is-embed {
   text-transform: uppercase;
 }
 
-.sct-outlook-group-label::after {
+.sct-band-label::after {
   content: "";
   flex: 1;
   height: 1px;
@@ -1678,6 +1680,41 @@ body.sct-page.is-embed {
   height: 2px;
   border-radius: 1px;
   background: var(--sc-gold);
+}
+
+/* The questions people type, answered from the cards above them.
+   A stack of hairline-separated rows rather than cards: these are an index of
+   the section, and giving each one the player card's border and shadow would
+   make the appendix look as heavy as the argument. The rule sits on the top of
+   each row so the list reads as one block under its heading. */
+.sct-faq {
+  margin: 14px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.sct-faq-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+.sct-faq-q {
+  margin: 0;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+/* 72ch, the measure the outlook notes already read at. The FAQ answers are
+   shorter but they sit in the same column, and two paragraph widths in one
+   section is the kind of thing a reader notices without being able to say
+   what is wrong. */
+.sct-faq-a {
+  margin: 7px 0 0;
+  max-width: 72ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
 }
 
 /* -------------------------------------------------------- advanced stats */
@@ -3612,24 +3649,15 @@ body.sct-page.is-embed {
 
 /* --------------------------------------------------------------- schedule */
 
+/* The strip sits directly under the section heading: the eyebrow that used to
+   introduce it is gone, so the top margin here is the whole gap. */
 .sct-games {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin: 10px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
-}
-
-/* A label over the strip of upcoming games, so three cards read as a deliberate
-   component rather than an unexplained extract of the season. */
-.sct-games-eyebrow {
-  margin: 16px 0 0;
-  color: var(--sc-gold-deep);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 /* One upcoming fixture.
@@ -4897,4 +4925,43 @@ body.sct-page.is-embed {
   .sct-fact-value {
     color: var(--sc-ink);
   }
+}
+
+/* ---------------------------------------------------------- section pages */
+
+/* Real links between the hub and its section pages — /outlook/, /stats/ and so
+   on. The tab strip above is #hash navigation and a crawler following it never
+   leaves the hub, so this strip is how the section URLs get found. On a
+   section page it is also the way back, with the current page marked. */
+.sct-pages {
+  margin: 24px 0 8px;
+}
+
+.sct-pages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Underlined in gold so it reads as a way through rather than an external
+   link, which these never are. Same treatment as the player page's crosslink. */
+.sct-crosslink {
+  color: var(--sc-navy);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+}
+
+.sct-crosslink:hover {
+  color: var(--sc-gold-deep);
+}
+
+.sct-crosslink.is-current {
+  border-bottom-color: transparent;
+  color: var(--sc-muted-strong);
+  cursor: default;
 }

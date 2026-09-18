@@ -11,6 +11,9 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/api-server run ingest-fpa` — rebuild Fantasy Points
+  Allowed from nflverse. Weekly in season; idempotent. Nothing renders at `/fpa`
+  until this has run once.
 - Required env: `DATABASE_URL` — Postgres connection string (the news archive),
   `DYNASTY_NEWS_API_URL` — upstream feed. **Both must be set on the deployment,
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the
@@ -112,6 +115,19 @@ _Replace the heading above with the project's name, and this line with one sente
   `SC_PLAYER_PROFILE_URL_TEMPLATE` (empty by default — set it and every player
   name on a team page becomes a link), `SC_SOS_URL`, `SC_FPA_URL`,
   `SC_NEWS_URL`.
+- **Section-scoped team URLs.** `/team/:slug/<section>/` is the public
+  address — one panel as the whole page: hero, that section, a strip of real
+  links to the hub and siblings, resources — with a title, description,
+  self-referencing canonical, `og:url` and FAQ written for that section alone.
+  Public sections are `PUBLIC_SECTIONS` in `team-render.ts` (`outlook`,
+  `stats`, `schedule`, `depth-chart`); any other segment, including `news` and
+  case variants, is a true 404 so no path can mint a copy of the hub.
+  `?section=<id>` is the internal spelling: `/embed/team/:slug?section=` is
+  what the WordPress plugin fetches, and on `/team/:slug` it 301s to the pretty
+  path (`news` alone renders scoped there, having no public address). The
+  fragment prints the hub's link strip only with `?sections=1`, which the plugin
+  sends once its rewrite is live. The plugin mirrors the list as
+  `STATCHASERS_TEAM_SECTIONS` — keep the two together.
 - **`SC_TEAM_PATH_PREFIX` must be set for the WordPress mount** (default
   `/team/`). It is where the team switcher's 32 links point inside
   `/embed/team/:slug`, so left at the default a reader clicking a team on
@@ -190,9 +206,11 @@ _Replace the heading above with the project's name, and this line with one sente
   the deployment from the upstream feed. Start there when `/api/status` shows a
   403 whose body says "Just a moment...".
 - `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts all
-  three tools into a page: `statchasers-news.php` is the plugin and the news
+  five tools into a page: `statchasers-news.php` is the plugin and the news
   shortcode, `statchasers-team.php` the hubs, `statchasers-player.php` the player
-  pages. See `wordpress-plugin/README.md`.
+  pages, `statchasers-fpa.php` the Fantasy Points Allowed table,
+  `statchasers-rankings.php` the redraft rankings. See
+  `wordpress-plugin/README.md`.
 
 ### NFL Team Hub (`/team/:slug`)
 
@@ -346,6 +364,117 @@ order is visible in the colour, and every tier is labelled in text as well. The
 weekly chart's two series were validated as a pair (ΔE 23.7 under protanopia).
 Those values are in `public/player.css` with the reasoning beside them; changing
 them means re-validating, not re-eyeballing.
+
+### Fantasy Points Allowed (`/fpa`)
+
+The fourth tool, ported from the standalone `FPA` repo. Unlike the player pages
+it is database-backed: an ingest writes to Postgres and the page reads 96 rows.
+
+The port changed the WordPress half, not the football. That repo's plugin
+cached the JSON in WordPress and drew the table in the browser — "WordPress is
+the control panel, Replit is the data engine" — which leaves the page's own HTML
+an empty container. Here the API renders the table and `[statchasers_fpa]`
+prints it, like the other three.
+
+- `lib/db/src/schema/fpa.ts` — two tables. `fantasy_points_allowed_games` is the
+  granular record (season, week, defence, position, format) and exists so a
+  served figure can be traced to the weeks that made it;
+  `fantasy_points_allowed_snapshots` is the one-row-per-(defence, format) figure
+  the page serves.
+- `src/lib/fpa/nflverse.ts` — fetch, RFC-4180 CSV parse, and the scoring formula
+  for all three formats. Written out rather than read off upstream's own
+  `fantasy_points` columns, because a rule on the page is checkable and a column
+  taken on trust is not — and Half-PPR is not published at all. `scoreRow` is
+  pure and the tests check it against those columns.
+- `src/lib/fpa/blend.ts` — **the two halves of one decision**:
+  `currentSeasonWeight` is the weight the ingest applies, `describeDataMode` is
+  the sentence the page prints about it. Deliberately free of any database
+  import, which is what lets the tests assert the prose against the arithmetic
+  without a Postgres connection.
+- `src/lib/fpa/ingest.ts` — aggregation, the strength-of-schedule adjustment,
+  and the blend. Replaces rather than accumulates, in one transaction.
+- `src/lib/fpa/fpa-data.ts` — the read: one query, ranked. **Rank 1 is the
+  softest defence** (the industry convention, and the one that matches how the
+  table is read); the page says so in words and `tests/fpa.test.mjs` asserts the
+  direction off the rendered HTML.
+- `src/lib/fpa-render.ts` / `fpa-ssr.ts` / `fpa-seo.ts` — markup, fragment cache
+  and head metadata. `public/fpa.html` is the shell, `public/fpa.css` the
+  stylesheet. The canonical always points at the bare path: six combinations of
+  format and view are one page.
+- `src/routes/fpa.ts` — `/fpa`, `/fpa/download.csv` (built from the same query
+  the page renders, so the file and the screen cannot disagree) and `/embed/fpa`.
+- `scripts/ingest-fpa.mjs` — `pnpm --filter @workspace/api-server run ingest-fpa`.
+  Schedule it weekly in season.
+
+**The number says what it is a mix of.** Early in a season the figure is mostly
+last season's, so the data-mode note sits ABOVE the table rather than under it —
+a caveat a reader meets after forming an opinion has not done its job. For the
+same reason the games column is headed with the season (`2026 G`) rather than
+"Games Played": at week 2 most teams show 1, beside a number that is still 60%
+last season.
+
+**A cold database does not block a request.** The first request that finds no
+snapshots kicks off one background ingest and returns the honest empty state
+immediately; concurrent requests share the in-flight promise, and a failure
+backs off for a minute. Scheduled ingest is still the intended path — this is
+the safety net under it, not the mechanism.
+
+**The colour scale is diverging, not ordinal.** Rank 1 is softest, 32 toughest,
+league average in the middle, so it takes two hues either side of a neutral
+rather than one ramp. The poles were validated as a pair (ΔE 19.1 under
+protanopia, both above 6:1 on white) and the arms are lightness-symmetric. Every
+tinted cell prints its rank.
+
+### Redraft Rankings (`/rankings`)
+
+The fifth tool, ported from the standalone `Redraft-Rankings-table` repo. The
+lightest of the five: the rankings are a CSV somebody publishes, so there is no
+ingest, no database and nothing to compute — the work is reading a file and
+deciding what the tiers are.
+
+The port changed the WordPress half, not the football. That repo prerendered the
+board at BUILD time and hydrated it with React, which has two consequences: the
+page was only as fresh as the last deploy, and the four position panels nobody
+had clicked lived in component state rather than in the markup — so to a crawler
+they were not on the page. Here the API renders all five panels per request and
+`[statchasers_rankings]` prints them, like the other four.
+
+- `data/rankings/redraft-<season>.csv` — the published board,
+  `Position,Final Rank,Player`. Ranks are **positional**: QB1 and RB1 are both
+  rank 1. An optional `redraft-<season>.meta.json` beside it carries the
+  "updated" line. Adding a 2027 file is a data drop, not a code change — the
+  loader discovers seasons by filename and serves the newest.
+- `src/lib/rankings/rankings-data.ts` — the read, and the domain. `TIER_RULES`
+  is where a tier boundary moves; it is **editorial**, not computed, because the
+  cliff between QB5 and QB6 is a judgement about the position. `POSITION_LIMITS`
+  is how deep each board goes (40/50/100/40) — the source file runs to 713
+  players and the page has no business printing all of them.
+- Team abbreviations and player links come from `data/player/players.json`, the
+  dictionary the player pages already load, rather than the 700 kB Sleeper map
+  the standalone app shipped. It places all 230 displayed players; 226 of them
+  also have a player page. **A player it cannot place keeps his row and loses
+  his link** rather than pointing at a 404.
+- `src/lib/rankings-render.ts` / `rankings-ssr.ts` / `rankings-seo.ts` — markup,
+  fragment cache and head metadata. `public/rankings.html` is the shell,
+  `public/rankings.css` the stylesheet. The canonical always points at the bare
+  path: five boards of one set of rankings are one page.
+- `src/routes/rankings.ts` — `/rankings`, `/rankings/download.csv` (built from
+  the same load the page renders, and carrying the derived tier and team columns
+  the source file does not have) and `/embed/rankings`.
+- `src/client/rankings.ts` — tab behaviour only. Deliberately no sorting: a
+  tiered board has one meaningful order, the one it is published in, and letting
+  a reader sort it alphabetically would only take the tiers apart.
+
+**The side-by-side board must not read as an overall board.** Four columns
+aligned by rank invites "QB7 and RB7 go at the same pick", which is not what it
+says. The caption states the positional reading explicitly, and
+`tests/rankings.test.mjs` asserts that it does.
+
+**The tier scale is nominal, not ordinal.** Tier 3 is not "more" than tier 2, it
+is a different group, so the tints are seven distinct hues at one lightness
+rather than a ramp. All of them sit near 95% lightness, which keeps the name at
+full contrast; the rank column and the tier column carry the same information in
+text, so nothing is encoded in colour alone.
 
 ## Architecture decisions
 

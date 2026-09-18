@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DATA_DIR as SC_DATA_DIR } from "./paths.mjs";
+import { seasonsFromArgs } from "./season.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,7 +10,10 @@ const DATA_DIR = SC_DATA_DIR;
 const GAME_LOGS_DIR = path.resolve(DATA_DIR, 'game_logs');
 const PLAYERS_FILE = path.resolve(DATA_DIR, 'players.json');
 
-const SEASONS = [2023, 2024, 2025];
+// Derived, not typed: a hardcoded list is wrong every September and fails
+// silently — the build succeeds and every page shows last season. Name seasons
+// on the command line to rebuild one year: `node buildGameLogs.js 2026`.
+const SEASONS = seasonsFromArgs();
 const REGULAR_WEEKS = 18;
 const STATS_BASE = 'https://api.sleeper.com/stats/nfl';
 const DELAY_MS = 250;

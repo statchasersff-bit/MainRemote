@@ -18,6 +18,7 @@
 import {
   CATEGORY_LABELS,
   NEWS_CATEGORIES,
+  categoryLabel,
   type NewsCategory,
 } from "./news-category";
 
@@ -196,6 +197,23 @@ export function escapeHtml(value: unknown): string {
 }
 
 /**
+ * JSON safe to sit inside a <script> element.
+ *
+ * `</script>` inside a string literal ends the element wherever it appears, and
+ * everything these pages put into JSON-LD is free text from a data file or a
+ * hand-written note. Escaping the `<` is the whole fix; the result is still
+ * valid JSON because \u003c is a legal escape.
+ *
+ * Shared rather than copied per renderer: an escaper with two implementations
+ * is an escaper with one that is out of date.
+ */
+export function escapeJsonLd(json: string): string {
+  return json.replace(/</g, "\\u003c").replace(/\u2028|\u2029/g, (c) =>
+    c === "\u2028" ? "\\u2028" : "\\u2029",
+  );
+}
+
+/**
  * Only allow URLs we're willing to put in an href/src. Feed data is third-party,
  * so a `javascript:` link must never survive into the markup.
  */
@@ -283,15 +301,21 @@ const X_MARK =
  * The top-left of a card: what kind of item this is, or — for X — who wrote it.
  *
  * An X post's byline replaces the section label rather than adding a row to the
- * card, because on a post the author IS the category: "Player News" says
- * nothing a reader of a Schefter post needs, and the reporter's name is the
- * single most load-bearing piece of attribution in the feed. Same slot, same
- * size, same alignment as every other card — the mark and the handle are the
- * only things that distinguish it.
+ * card, because on a post the author IS the category: the reporter's name is
+ * the single most load-bearing piece of attribution in the feed. Same slot,
+ * same size, same alignment as every other card — the mark and the handle are
+ * the only things that distinguish it.
+ *
+ * Everything else carries its derived category — Injury, Practice, Status and
+ * so on. It used to say "Player News" on every single card, which was the lane
+ * the item arrived in rather than anything about the story, and a label that
+ * never varies on a list where every row has it tells a reader nothing. The
+ * category is already computed for the filter menu (lib/news-category.ts); this
+ * only prints what the filter was sorting by all along.
  */
 function renderCardLabel(item: NewsItem): string {
   if (!isXItem(item) || !item.authorHandle) {
-    return `<span class="sc-card-label">Player News</span>`;
+    return `<span class="sc-card-label">${escapeHtml(categoryLabel(item.category))}</span>`;
   }
 
   const handle = escapeHtml(item.authorHandle);

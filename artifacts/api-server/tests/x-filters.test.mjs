@@ -265,12 +265,24 @@ describe("the source filter", () => {
     );
   });
 
-  test("a news card is untouched by any of this", async () => {
+  test("a news card carries its category, not an author byline", async () => {
     const { doc } = await mount();
-    const card = [...doc.querySelectorAll(".sc-card-item")].find(
-      (li) => li.dataset.source === "news",
-    );
-    assert.equal(card.querySelector(".sc-card-label").textContent, "Player News");
+    const cards = [...doc.querySelectorAll(".sc-card-item")];
+    const card = cards.find((li) => li.dataset.source === "news");
+    // "Practice", from ITEMS[0].category — the label is the item's own
+    // category, not a fixed string every card shares. This used to read
+    // "Player News" on all of them.
+    assert.equal(card.querySelector(".sc-card-label").textContent, "Practice");
     assert.equal(card.querySelector(".sc-card-label-x"), null);
+
+    // And it really does vary between cards, which is the whole point.
+    const labels = cards
+      .filter((li) => li.dataset.source === "news")
+      .map((li) => li.querySelector(".sc-card-label").textContent);
+    assert.ok(labels.length >= 1, "there is at least one wire card to label");
+    assert.ok(
+      !labels.includes("Player News"),
+      "no card falls back to the old fixed label",
+    );
   });
 });

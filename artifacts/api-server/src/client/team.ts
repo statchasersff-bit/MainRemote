@@ -118,7 +118,7 @@ function wireTabs(root: HTMLElement): void {
 
   // State is settled BEFORE the CSS is handed over, so there is no frame where
   // :target has been switched off and .is-active still names the server's guess
-  // — which on a deep link (#depth-chart) would flash the Overview panel.
+  // — which on a deep link (#depth-chart) would flash the Outlook panel.
   let active = fromHash();
   select(active, false);
   root.dataset["sctTabs"] = "js";

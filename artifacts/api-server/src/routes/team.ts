@@ -20,8 +20,9 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
+import { escapeHtml } from "../lib/render";
 import { renderTeamAppPage, renderTeamFragment } from "../lib/team-ssr";
-import { renderTeamIndex } from "../lib/team-render";
+import { PUBLIC_SECTIONS, renderTeamIndex, sectionPath } from "../lib/team-render";
 import {
   getTeamBySlug,
   normalizeTeamName,
@@ -55,6 +56,75 @@ function switcherQuery(req: Request): string {
 
 /** This origin's own team path — the prefix used when nothing overrides it. */
 const TEAM_PATH_PREFIX = "/team/";
+
+/**
+ * Which section this URL is scoped to, if any.
+ *
+ * A closed list, not free text: `?section=` reaches the renderer, and an
+ * unrecognised id there would silently fall through to the hub under a URL that
+ * promised one section. Ids match the tab ids in team-render.ts, and the list
+ * is mirrored by STATCHASERS_TEAM_SECTIONS in the WordPress plugin — that is
+ * what mints these URLs, so the two lists cannot drift without a rewrite rule
+ * pointing at a section the API will not scope to.
+ *
+ * `news` is addressable here but deliberately NOT in the plugin's rewrite: a
+ * team whose archive is two stories is a thin page, and the hub already carries
+ * the tab.
+ */
+const SECTIONS = new Set([
+  "outlook",
+  "stats",
+  "news",
+  "depth-chart",
+  "schedule",
+]);
+
+function section(req: Request): string | undefined {
+  const raw = String(req.query["section"] ?? "").trim().toLowerCase();
+  return SECTIONS.has(raw) ? raw : undefined;
+}
+
+/**
+ * Whether a section has a pretty URL of its own.
+ *
+ * `/team/<slug>/<section>/` is the public address and the one the canonical
+ * names; `?section=` is the internal form the WordPress plugin fetches with.
+ * Only the public sections get the pretty route, so `/team/<slug>/news/` is a
+ * 404 rather than a fifth indexable copy of the hub.
+ */
+function isPublicSection(id: string): id is (typeof PUBLIC_SECTIONS)[number] {
+  return (PUBLIC_SECTIONS as readonly string[]).includes(id);
+}
+
+/** The query a redirect carries: `embed` only, never the section. */
+function embedQuery(req: Request): string {
+  return isEmbed(req) ? "?embed=1" : "";
+}
+
+function teamNotFound(res: Response): void {
+  noStoreHtml(
+    res,
+    404,
+    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+      `<meta name="robots" content="noindex" /><title>Team not found</title>` +
+      `</head><body><h1>Team not found</h1>` +
+      `<p><a href="/team">Browse all 32 NFL teams</a></p></body></html>`,
+  );
+}
+
+function sectionNotFound(res: Response, team: NflTeam): void {
+  // A true 404, deliberately. Falling through to the hub here would let any
+  // path segment mint an indexable copy of it.
+  noStoreHtml(
+    res,
+    404,
+    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+      `<meta name="robots" content="noindex" /><title>Page not found</title>` +
+      `</head><body><h1>Page not found</h1>` +
+      `<p><a href="/team/${escapeHtml(team.slug)}">${escapeHtml(team.fullName)} hub</a></p>` +
+      `</body></html>`,
+  );
+}
 
 /**
  * The query string appended to switcher links in the WordPress fragment.
@@ -91,15 +161,21 @@ async function sendTeamPage(
   req: Request,
   res: Response,
   team: NflTeam,
+  scoped?: string,
 ): Promise<void> {
   const embed = isEmbed(req);
   try {
     const result = await renderTeamAppPage(publicDir, team, {
       // Built from the path alone (lib/request.ts), so ?embed=1 can never mint
-      // a second canonical for the same page.
+      // a second canonical for the same page — and on a section URL the path
+      // IS the pretty form, so the canonical is self-referencing for free.
       canonical: canonicalUrl(req),
       embed,
       linkQuery: switcherQuery(req),
+      section: scoped,
+      // This origin serves the pretty section routes itself, so the hub may
+      // always link to them here.
+      sectionLinks: true,
     });
 
     // Development only: the same reload snippet the news page gets, so editing
@@ -169,30 +245,89 @@ router.get("/team", (req, res) => {
 router.get("/team/:slug", (req, res) => {
   void (async () => {
     const raw = String(req.params.slug ?? "");
+    const scoped = section(req);
     const canonicalTeam = getTeamBySlug(raw);
 
     if (canonicalTeam) {
-      await sendTeamPage(req, res, canonicalTeam);
+      // `?section=` is the internal spelling. A public section has one address
+      // — the pretty one — so the query form is sent there rather than served,
+      // or the same page would answer at two URLs.
+      if (scoped && isPublicSection(scoped)) {
+        res.redirect(
+          301,
+          `${sectionPath(TEAM_PATH_PREFIX, canonicalTeam.slug, scoped)}${embedQuery(req)}`,
+        );
+        return;
+      }
+      // Anything else scoped (`news`) has no public address and renders here.
+      await sendTeamPage(req, res, canonicalTeam, scoped);
       return;
     }
 
     // Not the canonical slug, but it may still name a team: an abbreviation, a
     // nickname, or a retired code. 301 to the real URL so there is exactly one
-    // address per team.
+    // address per team. The section rides along: /team/ne?section=schedule is
+    // a request for the schedule, and dropping it here would land the reader
+    // on the hub via a 301 they cannot see happening.
     const alias = normalizeTeamName(raw);
     if (alias) {
-      res.redirect(301, `/team/${alias.slug}${switcherQuery(req)}`);
+      if (scoped && isPublicSection(scoped)) {
+        res.redirect(
+          301,
+          `${sectionPath(TEAM_PATH_PREFIX, alias.slug, scoped)}${embedQuery(req)}`,
+        );
+        return;
+      }
+      const params = new URLSearchParams();
+      if (isEmbed(req)) params.set("embed", "1");
+      if (scoped) params.set("section", scoped);
+      const query = params.toString();
+      res.redirect(301, `/team/${alias.slug}${query ? `?${query}` : ""}`);
       return;
     }
 
-    noStoreHtml(
-      res,
-      404,
-      `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
-        `<meta name="robots" content="noindex" /><title>Team not found</title>` +
-        `</head><body><h1>Team not found</h1>` +
-        `<p><a href="/team">Browse all 32 NFL teams</a></p></body></html>`,
-    );
+    teamNotFound(res);
+  })();
+});
+
+/**
+ * The pretty section URL: `/team/<slug>/<section>/`.
+ *
+ * This is the address the canonical names, the sitemap lists and the hub links
+ * to. The segment is checked against the public list BEFORE the team, so an
+ * unknown section on a real team is a 404 and not the hub under a new name.
+ */
+router.get("/team/:slug/:section", (req, res) => {
+  void (async () => {
+    const raw = String(req.params.slug ?? "");
+    // Exact, not normalised: /Stats/ resolving would be a second address for
+    // the same page, and the point of this route is that there is one.
+    const scoped = String(req.params.section ?? "");
+    const canonicalTeam = getTeamBySlug(raw);
+
+    if (canonicalTeam) {
+      if (!isPublicSection(scoped)) {
+        sectionNotFound(res, canonicalTeam);
+        return;
+      }
+      await sendTeamPage(req, res, canonicalTeam, scoped);
+      return;
+    }
+
+    const alias = normalizeTeamName(raw);
+    if (alias) {
+      if (!isPublicSection(scoped)) {
+        sectionNotFound(res, alias);
+        return;
+      }
+      res.redirect(
+        301,
+        `${sectionPath(TEAM_PATH_PREFIX, alias.slug, scoped)}${embedQuery(req)}`,
+      );
+      return;
+    }
+
+    teamNotFound(res);
   })();
 });
 
@@ -222,6 +357,10 @@ router.get("/embed/team/:slug", (req, res) => {
         embed: true,
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
+        section: section(req),
+        // The plugin says whether its rewrite is live. Left to guesswork the
+        // hub would link to four 404s on a site that has not turned them on.
+        sectionLinks: TRUTHY.has(String(req.query["sections"] ?? "").trim().toLowerCase()),
       });
       res.set("ETag", `W/"${result.version}"`);
       if (req.fresh) {

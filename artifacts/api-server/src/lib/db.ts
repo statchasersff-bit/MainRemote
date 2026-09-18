@@ -20,6 +20,19 @@ export { db } from "@workspace/db";
 export { newsItems, type NewsItemRow, type InsertNewsItem } from "@workspace/db";
 
 /**
+ * The Fantasy Points Allowed tables. Re-exported here for the same reason the
+ * news table is: one import for "the store", so a schema move is one edit.
+ */
+export {
+  fpaGames,
+  fpaSnapshots,
+  type FpaGame,
+  type FpaSnapshot,
+  type InsertFpaGame,
+  type InsertFpaSnapshot,
+} from "@workspace/db";
+
+/**
  * Re-exported so the existing callers keep one import for "the news store".
  * The function itself is pure and lives beside the shape it fingerprints, in
  * lib/news-item.ts — nothing about it needs a database connection, and a test

@@ -46,6 +46,11 @@ function optionKey(options: TeamRenderOptions): string {
     options.embed ?? false,
     options.teamPathPrefix ?? "",
     options.linkQuery ?? "",
+    // The section scopes the whole render — one panel instead of five, a
+    // different heading, no tab strip. Left out of the key, a request for
+    // ?section=schedule poisons the cache for the hub at the same slug.
+    options.section ?? "",
+    options.sectionLinks ?? false,
   ]);
 }
 
@@ -113,7 +118,7 @@ export async function renderTeamAppPage(
 ): Promise<TeamSsrResult> {
   const template = readTemplate(publicDir);
   const fragment = await renderTeamFragment(team, options);
-  const meta = teamPageMeta(team, fragment.season, options.canonical);
+  const meta = teamPageMeta(team, fragment.season, options.canonical, options.section);
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
     if (!template.includes(marker)) {

@@ -21,12 +21,17 @@
 
 import {
   escapeHtml,
-  isXItem,
+  escapeJsonLd,
   itemTimestamp,
   safeUrl,
   searchKey,
   type NewsItem,
 } from "./render";
+import {
+  easternParts,
+  newsStamp as sharedNewsStamp,
+  splitHeadline,
+} from "./news-card";
 import type { NflTeam } from "./team/teams";
 import { TEAM_GROUPS } from "./team/teams";
 import { networkMarkFor } from "./team/network-marks";
@@ -36,6 +41,8 @@ import {
   type OutlookGroup,
   type OutlookPlayer,
 } from "./team/outlook";
+import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
+import { statsFaq } from "./team/stats-faq";
 import type { TeamPageData } from "./team/team-data";
 import type {
   HistorySeason,
@@ -74,6 +81,83 @@ export interface TeamRenderOptions {
   linkQuery?: string;
   /** Rendered for testability; the page cache keys on the data, not on this. */
   now?: number;
+  /**
+   * Render ONE section as the whole page, for a section-scoped URL.
+   *
+   * `/nfl/teams/<slug>/schedule/` has to be a different page from the team's
+   * hub or it is duplicate content wearing a second address: five tabs of
+   * identical markup at every URL, competing with each other. So a section page
+   * is the hero, that section, and a way back to the rest — and its heading is
+   * the phrase the page is actually about.
+   *
+   * Ignored when the id does not match a section that rendered, which keeps a
+   * stale link serving the hub rather than a 404. Same contract as
+   * PlayerRenderOptions.section; the two pages are addressed the same way.
+   */
+  section?: string;
+  /**
+   * Print real links from the hub to its section pages.
+   *
+   * Off unless the caller says the section URLs resolve where `teamPathPrefix`
+   * points. This origin always serves them, so its own /team/:slug turns this
+   * on; the WordPress mount only does once its rewrite is live, or the hub
+   * would carry four links to 404s. Scoped pages ignore it — a reader on one
+   * is proof the routes exist.
+   */
+  sectionLinks?: boolean;
+}
+
+/**
+ * The sections with a public URL of their own, in the order they are linked.
+ *
+ * `news` is deliberately absent: a team whose archive is two stories is a thin
+ * page, so it stays a tab on the hub until the data can carry an address. The
+ * WordPress rewrite mirrors this list as STATCHASERS_TEAM_SECTIONS.
+ */
+export const PUBLIC_SECTIONS = ["outlook", "stats", "schedule", "depth-chart"] as const;
+
+/** The pretty address of one section: `<prefix><slug>/<section>/`. */
+export function sectionPath(prefix: string, slug: string, section: string): string {
+  return `${prefix}${slug}/${section}/`;
+}
+
+/**
+ * How a section-scoped page names itself.
+ *
+ * The heading is the page's H1 (its H2 in embed mode, where WordPress supplies
+ * the H1) and is written as the phrase people search rather than as a tab
+ * label: "Fantasy Football Outlook", not "Outlook". Sections not listed here
+ * can still be addressed; they just fall back to the team's own name.
+ *
+ * News is deliberately absent from the WordPress rewrite that mints these URLs
+ * — a team whose archive is two stories is a thin page — but it is listed here
+ * so that if the route is ever opened it names itself correctly rather than
+ * falling back.
+ */
+const SECTION_HEADINGS: Record<string, string> = {
+  outlook: "Fantasy Football Outlook",
+  stats: "Stats",
+  schedule: "Schedule",
+  "depth-chart": "Depth Chart",
+  news: "News",
+};
+
+/**
+ * The public heading for a section page, e.g. "New England Patriots Schedule
+ * 2026".
+ *
+ * The season trails the phrase for every team section, unlike the player pages
+ * where only Stats and the Game Log take a year: a team's schedule, depth chart
+ * and outlook are all read as belonging to one season, and the year is part of
+ * the phrase people type for each of them.
+ */
+export function teamSectionHeading(
+  teamName: string,
+  section: string,
+  season: number,
+): string | null {
+  const phrase = SECTION_HEADINGS[section];
+  return phrase ? `${teamName} ${phrase} ${season}` : null;
 }
 
 /* ------------------------------------------------------------------ atoms */
@@ -115,49 +199,6 @@ function siteLink(
     `<a class="${className}" href="${escapeHtml(href)}" target="_top"${extra}>` +
     `${label}</a>`
   );
-}
-
-const MONTHS_UPPER = [
-  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
-];
-
-interface DateParts {
-  monthUpper: string;
-  month: string;
-  day: string;
-  year: string;
-  weekday: string;
-  time: string;
-}
-
-/**
- * Date pieces in US Eastern — the league's own timezone, and the same one the
- * news cards already format in. Pinned rather than locale-derived so a cached
- * render is correct for every reader and identical on every request.
- */
-function easternParts(ms: number): DateParts {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).formatToParts(new Date(ms));
-  const get = (type: string): string =>
-    parts.find((p) => p.type === type)?.value ?? "";
-  const monthIndex = Number(get("month")) - 1;
-  return {
-    monthUpper: MONTHS_UPPER[monthIndex] ?? "",
-    month: (MONTHS_UPPER[monthIndex] ?? "").charAt(0) + (MONTHS_UPPER[monthIndex] ?? "").slice(1).toLowerCase(),
-    day: get("day"),
-    year: get("year"),
-    weekday: get("weekday"),
-    time: `${get("hour")}:${get("minute")} ${get("dayPeriod").toUpperCase()} ET`,
-  };
 }
 
 /* ------------------------------------------------------------------- hero */
@@ -268,6 +309,16 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
   const { team } = data;
   const headingTag = options.embed ? "h2" : "h1";
 
+  // On a section-scoped URL the hero carries the page's subject, not just the
+  // team's name — "New England Patriots Depth Chart 2026" is what that page is
+  // about and what its heading should say. The section then drops its own
+  // heading so the phrase is not printed twice; see renderOutlook(),
+  // renderSchedule() and renderDepthChart().
+  const heroTitle =
+    (options.section &&
+      teamSectionHeading(team.fullName, options.section, data.state.season)) ||
+    team.fullName;
+
   const updated =
     data.newsUpdatedAtMs !== null
       ? (() => {
@@ -307,8 +358,10 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     `</div>` +
     `<div class="sct-hero-text">` +
     `<p class="sct-eyebrow">${escapeHtml(`${team.division} · ${data.state.season} Season`)}</p>` +
-    `<${headingTag} class="sct-title">${escapeHtml(team.fullName)}</${headingTag}>` +
-    `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
+    `<${headingTag} class="sct-title">${escapeHtml(heroTitle)}</${headingTag}>` +
+    (options.section
+      ? ""
+      : `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>`) +
     heroFacts(data) +
     updated +
     `</div>` +
@@ -318,12 +371,58 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
   );
 }
 
+/**
+ * Real links between the hub and its section pages.
+ *
+ * Plain anchors to plain URLs, which is the whole point: the tab strip is
+ * `#hash` navigation and a crawler following it never leaves the hub, so this
+ * is how the section pages get discovered. On a section page it doubles as the
+ * way back — the hub first, then the siblings, the current one marked.
+ */
+function renderSectionLinks(
+  team: NflTeam,
+  sections: Section[],
+  options: TeamRenderOptions,
+  current?: string,
+): string {
+  const prefix = (options.teamPathPrefix ?? "/team/").trim();
+  const query = options.linkQuery ?? "";
+  const rendered = new Set(sections.map((section) => section.id));
+  const linked = PUBLIC_SECTIONS.filter((id) => rendered.has(id));
+  if (linked.length === 0) return "";
+
+  const link = (href: string, label: string, active: boolean): string =>
+    `<li><a class="sct-crosslink${active ? " is-current" : ""}"` +
+    ` href="${escapeHtml(href)}" target="_top"` +
+    `${active ? ` aria-current="page"` : ""}>${escapeHtml(label)}</a></li>`;
+
+  const items =
+    link(`${prefix}${team.slug}${query}`, `All ${team.nickname} stats & analysis`, !current) +
+    linked
+      .map((id) =>
+        link(
+          `${sectionPath(prefix, team.slug, id)}${query}`,
+          `${team.nickname} ${SECTION_HEADINGS[id] ?? id}`,
+          id === current,
+        ),
+      )
+      .join("");
+
+  return (
+    `<nav class="sct-pages" aria-label="${escapeHtml(`${team.fullName} pages`)}">` +
+    `<ul class="sct-pages-list">${items}</ul>` +
+    `</nav>`
+  );
+}
+
 /* ------------------------------------------------------------- section nav */
 
 interface Section {
   id: string;
   label: string;
   html: string;
+  /** The questions this section drew, for the FAQPage the document emits. */
+  faq?: FaqSink;
 }
 
 /**
@@ -963,7 +1062,7 @@ function playMix(label: string, caption: string, balance: PlayBalance): string {
  * line up row for row and "28.8 scored / 18.8 allowed" can be read across
  * without hunting. That symmetry is enforced in lib/team/stats.ts, not here.
  */
-function renderTeamStats(data: TeamPageData): string {
+function renderTeamStats(data: TeamPageData, faq: FaqSink): string {
   const stats = data.stats;
   if (!stats) return "";
 
@@ -1051,6 +1150,24 @@ function renderTeamStats(data: TeamPageData): string {
   // which is the question almost everyone arrives with; the history answers
   // "and is that new", which only makes sense once the first is answered.
   if (history) blocks.push(history);
+
+  // After the history, for the same reason the outlook's FAQ sits after its
+  // bottom line: the questions are this tab re-cut into the forms people search
+  // for, and one of them is the history comparison, so it cannot precede it.
+  const questions = faqList(
+    statsFaq({ team: data.team, stats, currentSeason: data.state.season }),
+    faq,
+    "h3",
+  );
+  if (questions) {
+    blocks.push(
+      `<div class="sct-block">` +
+        h2("Common questions") +
+        `<p class="sct-note">${escapeHtml(seasonNote)}</p>` +
+        questions +
+        `</div>`,
+    );
+  }
 
   return blocks.join("");
 }
@@ -1377,8 +1494,8 @@ function outlookGroup(
     )
     .join("");
   return (
-    `<div class="sct-outlook-group">` +
-    `<h3 class="sct-outlook-group-label">${escapeHtml(group.label)}</h3>` +
+    `<div class="sct-band">` +
+    `<h3 class="sct-band-label">${escapeHtml(group.label)}</h3>` +
     `<ul class="sct-outlook-players">${cards}</ul>` +
     `</div>`
   );
@@ -1406,7 +1523,128 @@ function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
 }
 
 /**
- * The team's draft-season take, on the Overview tab.
+ * Every question the page has rendered, in render order.
+ *
+ * Collected rather than recomputed. Two tabs carry an FAQ and each decides for
+ * itself whether it renders at all — the outlook drops out once its season has
+ * passed, the stats block drops out when ESPN gave us nothing — so the only way
+ * to be certain the structured data describes what is actually on the page is
+ * for the sections to hand over the questions as they draw them. Recomputing
+ * the same two lists a second time for the schema would work right up until one
+ * of those guards changed on one side only.
+ */
+type FaqSink = OutlookFaq[];
+
+/**
+ * The question list, and its entry in the page's FAQ.
+ *
+ * Shared by the Outlook tab's outlook and the Stats tab's numbers, which are
+ * built in team/outlook-faq.ts and team/stats-faq.ts respectively — that is
+ * where the answers come from and where the rule that they may only restate
+ * what is already rendered is enforced.
+ *
+ * Markup only: the schema for both is emitted once, at the page level. A
+ * document is allowed one FAQPage, and two nodes — one per tab — is the failure
+ * mode that gets structured data ignored outright rather than the second one
+ * merged into the first.
+ *
+ * The heading and the wrapper belong to the caller, because the two FAQs sit at
+ * different depths and a question has to be one level under whatever introduces
+ * it. On Outlook the FAQ is a band of the outlook section, so it closes an
+ * <h2> that is already on the screen and its questions are <h4> beside the
+ * player names. On Stats the tab is a run of <h2> blocks with nothing to belong
+ * to, so it takes an <h2> of its own and its questions are <h3>. Hard-coding
+ * one of those put eight questions in the page outline underneath "Season
+ * History", which is not where they are and not what they are about.
+ */
+function faqList(
+  items: OutlookFaq[],
+  sink: FaqSink,
+  tag: "h3" | "h4",
+): string {
+  if (items.length === 0) return "";
+  sink.push(...items);
+
+  const body = items
+    .map(
+      (entry) =>
+        `<div class="sct-faq-item">` +
+        `<${tag} class="sct-faq-q">${escapeHtml(entry.question)}</${tag}>` +
+        `<p class="sct-faq-a">${escapeHtml(entry.answer)}</p>` +
+        `</div>`,
+    )
+    .join("");
+
+  return `<div class="sct-faq">${body}</div>`;
+}
+
+/** An FAQ as a band of the section it closes — the Outlook tab's shape. */
+function faqBand(list: string): string {
+  if (!list) return "";
+  return (
+    `<div class="sct-band">` +
+    `<h3 class="sct-band-label">Common questions</h3>` +
+    list +
+    `</div>`
+  );
+}
+
+/**
+ * The page's FAQPage node, or the inert island the plugin builds it from.
+ *
+ * Standalone, this is the node itself. Embedded, it is the same questions as
+ * DATA: WordPress owns the document and Rank Math owns its schema graph, so a
+ * second `<script type="application/ld+json">` injected into the host page from
+ * inside a mounted fragment competes with the graph rather than joining it —
+ * the same reasoning as the embed mount adding no canonical and no H1.
+ *
+ * Emitting nothing was the previous answer, and it was the wrong one. The
+ * indexed URL is the WordPress one, so suppressing the node there meant the
+ * questions were rendered for readers and invisible to crawlers — which is
+ * most of the reason an FAQ is on the page at all. The island closes that:
+ * statchasers-team.php lifts it into Rank Math's graph and strips it from the
+ * markup before printing, so the questions arrive inside the one <script> the
+ * page already emits.
+ *
+ * Data rather than the plugin re-reading the rendered HTML, for the reason
+ * given on player-render.ts's renderFaq(): by then the answers have been
+ * escaped for display, and putting them back together means un-escaping prose
+ * in PHP to feed a crawler. This is the array the answers were built from.
+ */
+function faqSchema(items: FaqSink, options: TeamRenderOptions): string {
+  if (items.length === 0) return "";
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="sct-faq-data">` +
+      escapeJsonLd(
+        JSON.stringify(
+          items.map((entry) => ({ q: entry.question, a: entry.answer })),
+        ),
+      ) +
+      `</script>`
+    );
+  }
+
+  return (
+    `<script type="application/ld+json">` +
+    escapeJsonLd(
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((entry) => ({
+          "@type": "Question",
+          name: entry.question,
+          acceptedAnswer: { "@type": "Answer", text: entry.answer },
+        })),
+      }),
+    ) +
+    `</script>`
+  );
+}
+
+/**
+ * The team's draft-season take, on the Outlook tab.
  *
  * Nothing here is fetched, and the meta line says so. Every other block on this
  * page carries a timestamp because it was pulled from a provider minutes ago;
@@ -1416,7 +1654,11 @@ function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
  * the season has already overtaken — and it keeps "not live data" beside that
  * date so the date cannot be mistaken for a refresh.
  */
-function renderOutlook(data: TeamPageData): string {
+function renderOutlook(
+  data: TeamPageData,
+  faq: FaqSink,
+  scoped = false,
+): string {
   const outlook = getTeamOutlook(data.team.abbreviation);
   if (!outlook) return "";
 
@@ -1452,12 +1694,18 @@ function renderOutlook(data: TeamPageData): string {
 
   return (
     `<div class="sct-block">` +
-    h2(`${outlook.season} Fantasy Outlook`) +
+    // The hero already says it on a section page — see renderHero().
+    (scoped ? "" : h2(`${outlook.season} Fantasy Outlook`)) +
     `<p class="sct-outlook-stamp">${meta}</p>` +
     `<p class="sct-outlook-lede">${escapeHtml(outlook.summary)}</p>` +
     facts +
     groups +
     bottomLine +
+    // After the bottom line, not before it. The closing take is the end of the
+    // argument this section makes; the FAQ is the same argument re-cut into the
+    // forms people search for, and putting it between the cards and their
+    // conclusion would break the one thing the section is trying to say.
+    faqBand(faqList(outlookFaq(data.team, outlook), faq, "h4")) +
     `</div>`
   );
 }
@@ -1465,7 +1713,7 @@ function renderOutlook(data: TeamPageData): string {
 /**
  * The four depth-chart starters, as photo cards.
  *
- * NOT CURRENTLY MOUNTED. This sat under the outlook on the Overview tab and was
+ * NOT CURRENTLY MOUNTED. This sat under the outlook on the Outlook tab and was
  * taken off it; nothing calls this today. It is kept rather than deleted
  * because the block is complete and correct and the page has already moved one
  * section between tabs this week — the cost of keeping it is a function nobody
@@ -1528,55 +1776,9 @@ function renderCornerstones(data: TeamPageData): string {
 
 /* ------------------------------------------------------------------- news */
 
-/**
- * The headline with the leading player name removed.
- *
- * The feed writes titles as "TreVeyon Henderson: Dealing with ankle injury",
- * and this card prints the player's name on its own line directly beneath. Left
- * alone the name would appear twice on every card. Only stripped when the title
- * really does start with the stored player name, so a title in any other shape
- * is passed through untouched.
- */
-export function splitHeadline(item: NewsItem): string {
-  const title = item.title.trim();
-  const name = (item.playerName ?? "").trim();
-  if (!name) return title;
-  const separator = title.indexOf(":");
-  if (separator <= 0) return title;
-  if (searchKey(title.slice(0, separator)) !== searchKey(name)) return title;
-  const rest = title.slice(separator + 1).trim();
-  return rest || title;
-}
-
-/**
- * The kicker above a headline.
- *
- * "Player News" for the wire and the club feeds, and the reporter for an X
- * post: this team page has its own card renderer, so a post arriving here would
- * otherwise be labelled as something it is not. The feed's card makes the same
- * substitution in the same slot — see renderCardLabel in lib/render.ts — and
- * this keeps the two surfaces telling the reader the same thing.
- */
-function newsKicker(item: NewsItem): string {
-  if (!isXItem(item)) return "Player News";
-  const name = (item.source ?? "").trim();
-  return name || (item.authorHandle ? `@${item.authorHandle}` : "X");
-}
-
+/** The card's stamp line — the shared one, under this page's class prefix. */
 function newsStamp(item: NewsItem): string {
-  const kicker = escapeHtml(newsKicker(item));
-  const ts = itemTimestamp(item);
-  if (ts === null) return `<span class="sct-news-kicker">${kicker}</span>`;
-  const parts = easternParts(ts);
-  return (
-    `<p class="sct-news-meta">` +
-    `<span class="sct-news-kicker">${kicker}</span>` +
-    `<span class="sct-dot" aria-hidden="true"></span>` +
-    `<time datetime="${escapeHtml(new Date(ts).toISOString())}" data-ts="${ts}">` +
-    `${escapeHtml(`${parts.monthUpper} ${parts.day}`)}` +
-    `<span class="sct-news-time"> · ${escapeHtml(parts.time)}</span>` +
-    `</time></p>`
-  );
+  return sharedNewsStamp(item, itemTimestamp(item), "sct");
 }
 
 function renderNewsCard(
@@ -1959,7 +2161,7 @@ function depthName(player: DepthChartEntry): string {
   );
 }
 
-function renderDepthChart(data: TeamPageData): string {
+function renderDepthChart(data: TeamPageData, scoped = false): string {
   const { team, depthChart } = data;
   const groups = SKILL_POSITIONS.filter(
     (position) => depthChart[position].length > 0,
@@ -2024,7 +2226,7 @@ function renderDepthChart(data: TeamPageData): string {
   const full = getTeamDepthChartUrl(team);
 
   return (
-    h2(`${team.nickname} Fantasy Depth Chart`) +
+    (scoped ? "" : h2(`${team.nickname} Fantasy Depth Chart`)) +
     `<p class="sct-note">Offensive skill positions only. Order as listed on the team's depth chart.</p>` +
     `<div class="sct-depth">${columns}</div>` +
     (full
@@ -2360,12 +2562,16 @@ function renderFullSchedule(data: TeamPageData): string {
   return `<ol class="sct-slist">${rows.map((row) => row.html).join("")}</ol>`;
 }
 
-function renderSchedule(data: TeamPageData, now: number): string {
+function renderSchedule(
+  data: TeamPageData,
+  now: number,
+  scoped = false,
+): string {
   const { team, schedule } = data;
 
   if (!schedule) {
     return (
-      h2(`${data.state.season} ${team.nickname} Schedule`) +
+      (scoped ? "" : h2(`${data.state.season} ${team.nickname} Schedule`)) +
       `<div class="sct-empty">` +
       `<p class="sct-empty-title">Schedule information is temporarily unavailable.</p>` +
       `<p class="sct-empty-body">It will reappear here as soon as the fixture data loads.</p>` +
@@ -2377,20 +2583,14 @@ function renderSchedule(data: TeamPageData, now: number): string {
   const full = getTeamScheduleUrl(team);
 
   return (
-    h2(`${schedule.season} ${team.nickname} Schedule`) +
+    (scoped ? "" : h2(`${schedule.season} ${team.nickname} Schedule`)) +
     networkDefs(schedule.games.map((game) => game.network)) +
-    (schedule.byeWeek
-      ? `<p class="sct-note">${escapeHtml(`Bye in Week ${schedule.byeWeek}.`)}</p>`
-      : "") +
-    // A label over the cards, so the three of them read as a deliberate "what is
-    // coming up" strip rather than an unexplained extract of the season. The
-    // count is the real one: late in the year upcomingGames() returns fewer
-    // than three, and a heading that says otherwise is just wrong.
+    // The upcoming cards carry no label of their own. The bye note and the
+    // "Next N games" eyebrow that used to sit here were both removed: the cards
+    // state their own dates, and the bye is already a row in the full schedule
+    // below, so both lines only repeated what the block already shows.
     (next.length
-      ? `<p class="sct-games-eyebrow">${escapeHtml(
-          next.length === 1 ? "Next game" : `Next ${next.length} games`,
-        )}</p>` +
-        `<ul class="sct-games">${next.map((game, i) => renderUpcomingCard(game, i)).join("")}</ul>`
+      ? `<ul class="sct-games">${next.map((game, i) => renderUpcomingCard(game, i)).join("")}</ul>`
       : "") +
     renderFullSchedule(data) +
     (full
@@ -2445,10 +2645,21 @@ export function renderTeamPage(
   const { team } = data;
   const now = options.now ?? Date.now();
 
-  // Overview is the outlook alone. Fantasy Cornerstones used to follow it;
-  // renderCornerstones() is still here and still correct, just not mounted —
-  // see the note above it.
-  const overview = renderOutlook(data);
+  // The Outlook tab is the outlook alone. Fantasy Cornerstones used to follow
+  // it; renderCornerstones() is still here and still correct, just not mounted
+  // — see the note above it.
+  //
+  // A sink PER SECTION rather than one for the page, because a section-scoped
+  // URL emits one panel and its schema must describe that panel alone. The
+  // sections still all render — the tab strip is built from what produced
+  // markup — so a single sink would put the Stats questions in the Schedule
+  // page's FAQPage, which is markup saying something the page does not.
+  // Concatenated in section order below, which is the render order the
+  // page-level FAQPage already had.
+  const outlookFaq: FaqSink = [];
+  const statsFaq: FaqSink = [];
+  const scopedSection = String(options.section ?? "");
+  const outlook = renderOutlook(data, outlookFaq, scopedSection === "outlook");
 
   const sidebar =
     renderInjuryPanel(data) +
@@ -2474,36 +2685,22 @@ export function renderTeamPage(
   // renderTeamStats() so the tab still appears carrying the snapshot alone when
   // ESPN's season statistics fail but its team summary does not — the two come
   // from different endpoints and fail independently.
-  const stats = renderSnapshot(data) + renderTeamStats(data);
-  const depth = renderDepthChart(data);
-  const schedule = renderSchedule(data, now);
+  const stats = renderSnapshot(data) + renderTeamStats(data, statsFaq);
+  const depth = renderDepthChart(data, scopedSection === "depth-chart");
+  const schedule = renderSchedule(data, now, scopedSection === "schedule");
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing.
   const sections: Section[] = [
-    { id: "overview", label: "Overview", html: overview },
-    // Directly right of Overview rather than behind the news archive: it now
+    { id: "outlook", label: "Outlook", html: outlook, faq: outlookFaq },
+    // Directly right of Outlook rather than behind the news archive: it now
     // opens with the Team Snapshot and expands it, so it is the whole team at a
     // glance and then the same reading one level deeper.
-    { id: "stats", label: "Stats", html: stats },
+    { id: "stats", label: "Stats", html: stats, faq: statsFaq },
     { id: "news", label: "News", html: newsSection },
     { id: "depth-chart", label: "Depth Chart", html: depth },
     { id: "schedule", label: "Schedule", html: schedule },
   ].filter((section) => section.html !== "");
-
-  // `is-default` marks the panel that shows when the URL names no section. It
-  // is a class rather than :first-of-type because the CSS must not depend on
-  // this element being the first <section> among its siblings — the hero and
-  // the resources block are sections too, and a reorder here would silently
-  // blank the page rather than fail visibly.
-  const body = sections
-    .map(
-      (section, i) =>
-        `<section class="sct-section${i === 0 ? " is-default is-active" : ""}"` +
-        ` data-sct-panel id="${escapeHtml(section.id)}"` +
-        ` aria-labelledby="${escapeHtml(section.id)}-tab">${section.html}</section>`,
-    )
-    .join("");
 
   // One place a team's colours enter the page. Everything team-tinted below
   // reads these custom properties, so there is no per-team CSS and no component
@@ -2514,14 +2711,70 @@ export function renderTeamPage(
     `--team-logo:url('${team.logo}')`,
   ]);
 
-  return (
-    `<div class="sct${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
+  const rootAttrs =
+    `class="sct${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
     ` data-team="${escapeHtml(team.abbreviation)}"` +
-    ` data-season="${escapeHtml(String(data.state.season))}"${rootStyle}>` +
+    ` data-season="${escapeHtml(String(data.state.season))}"`;
+
+  /**
+   * One section as the whole page.
+   *
+   * The tab strip is replaced by a link back to the hub, because a strip of
+   * five tabs that all leave this URL is navigation pretending to be tabs.
+   * Everything else — the hero, the resources block, the markup of the section
+   * itself — is unchanged, so the two addresses render the same component and
+   * cannot drift.
+   *
+   * An unknown id finds nothing here and falls through to the hub below, which
+   * is why a stale section link degrades to the full page rather than 404ing.
+   */
+  const scoped = scopedSection
+    ? sections.find((entry) => entry.id === scopedSection)
+    : undefined;
+
+  if (scoped) {
+    return (
+      `<div ${rootAttrs} data-section="${escapeHtml(scoped.id)}"${rootStyle}>` +
+      renderHero(data, options) +
+      `<section class="sct-section is-default is-active" data-sct-panel` +
+      ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
+      renderSectionLinks(team, sections, options, scoped.id) +
+      renderResources(team) +
+      // Scoped to this section: a Schedule page carrying the Stats questions
+      // would be structured data describing a page the reader is not on.
+      faqSchema(scoped.faq ?? [], options) +
+      `</div>`
+    );
+  }
+
+  // `is-default` marks the panel that shows when the URL names no section. It
+  // is a class rather than :first-of-type because the CSS must not depend on
+  // this element being the first <section> among its siblings — the hero and
+  // the resources block are sections too, and a reorder here would silently
+  // blank the page rather than fail visibly.
+  // The hub's FAQPage: every section's questions, in the order the sections
+  // appear, which is the order their questions appear in the document.
+  const faq: FaqSink = sections.flatMap((section) => section.faq ?? []);
+
+  const body = sections
+    .map(
+      (section, i) =>
+        `<section class="sct-section${i === 0 ? " is-default is-active" : ""}"` +
+        ` data-sct-panel id="${escapeHtml(section.id)}"` +
+        ` aria-labelledby="${escapeHtml(section.id)}-tab">${section.html}</section>`,
+    )
+    .join("");
+
+  return (
+    `<div ${rootAttrs}${rootStyle}>` +
     renderHero(data, options) +
     renderNav(sections) +
     body +
+    (options.sectionLinks ? renderSectionLinks(team, sections, options) : "") +
     renderResources(team) +
+    // After the sections, because it describes them: `faq` is only complete
+    // once every block above has had its chance to render.
+    faqSchema(faq, options) +
     `</div>`
   );
 }

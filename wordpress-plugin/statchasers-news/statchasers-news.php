@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs and the player pages directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.4.0
+ * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.6.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,23 +33,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.4.0';
+const STATCHASERS_NEWS_VERSION       = '1.6.0';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 
-// The team hub and player page shortcodes. Required after the constants above
-// and before any hook registration, because they reuse this file's origin,
+// The other four tools' shortcodes. Required after the constants above and
+// before any hook registration, because they reuse this file's origin,
 // asset-version and canonical helpers — all of which are function declarations
 // and so are available regardless of order, but the constants are not.
 //
-// The player file must come after the team file: it reuses the team file's Divi
-// detection and full-width stylesheet rather than carrying a second copy, and
-// while function declarations hoist within a file they do not hoist across an
-// include that has not run yet.
+// The team file must come FIRST. The player, FPA and rankings files each reuse
+// its Divi detection and full-width stylesheet rather than carrying a fourth
+// copy, and while function declarations hoist within a file they do not hoist
+// across an include that has not run yet.
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
 require_once __DIR__ . '/statchasers-player.php';
+require_once __DIR__ . '/statchasers-fpa.php';
+require_once __DIR__ . '/statchasers-rankings.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -410,10 +412,17 @@ add_shortcode( STATCHASERS_NEWS_SHORTCODE, 'statchasers_news_shortcode' );
  * Math's existing graph via its own filter, so the page ends up with a single
  * coherent `@graph` rather than two competing ones.
  *
- * Deliberately NOT emitted: Article, NewsArticle, ItemList, Dataset, FAQPage,
- * Product, Review, aggregateRating. Some of those would be easy to generate
- * from the news items, but they wouldn't accurately describe the page, and
- * irrelevant or fabricated markup is a liability rather than a ranking benefit.
+ * The player and team mounts add one more, on the same terms: an FAQPage built
+ * from the questions their fragment is actually rendering, injected into the
+ * same graph (statchasers_player_rank_math_schema(), and the team equivalent).
+ * It describes visible text word for word — the fragment hands the questions
+ * over as an inert JSON island precisely so the node cannot drift from what the
+ * reader sees — and the mount that has no FAQ on it contributes no node.
+ *
+ * Deliberately NOT emitted: Article, NewsArticle, ItemList, Dataset, Product,
+ * Review, aggregateRating. Some of those would be easy to generate from the
+ * news items, but they wouldn't accurately describe the page, and irrelevant or
+ * fabricated markup is a liability rather than a ranking benefit.
  * ---------------------------------------------------------------------------
  */
 
@@ -522,28 +531,39 @@ function statchasers_news_rank_math_schema( $data ) {
 		return $data;
 	}
 
-	// Attach to whatever page-level node Rank Math produced, rather than
-	// assuming a key name — it varies by page type (WebPage, CollectionPage,
-	// ItemPage, ProfilePage...).
-	$webpage_id = '';
-	foreach ( $data as $node ) {
-		if ( ! is_array( $node ) || empty( $node['@type'] ) || empty( $node['@id'] ) ) {
-			continue;
-		}
-		$types = (array) $node['@type'];
-		foreach ( $types as $type ) {
-			if ( is_string( $type ) && false !== strpos( $type, 'Page' ) ) {
-				$webpage_id = (string) $node['@id'];
-				break 2;
-			}
-		}
-	}
-
-	$data['statchasersNewsTool'] = statchasers_news_schema_node( $webpage_id );
+	$data['statchasersNewsTool'] = statchasers_news_schema_node(
+		statchasers_news_schema_page_id( $data )
+	);
 
 	return $data;
 }
 add_filter( 'rank_math/json_ld', 'statchasers_news_rank_math_schema', 20 );
+
+/**
+ * The @id of the page-level node in a schema graph, or ''.
+ *
+ * Found by shape rather than by key name, because the key varies by page type
+ * (WebPage, CollectionPage, ItemPage, ProfilePage...) and an SEO plugin is free
+ * to rename it. Shared with statchasers-player.php: two copies of this walk
+ * would be one copy and one that no longer matches the graph.
+ *
+ * @param array<string,mixed> $data Schema nodes.
+ * @return string
+ */
+function statchasers_news_schema_page_id( array $data ): string {
+	foreach ( $data as $node ) {
+		if ( ! is_array( $node ) || empty( $node['@type'] ) || empty( $node['@id'] ) ) {
+			continue;
+		}
+		foreach ( (array) $node['@type'] as $type ) {
+			if ( is_string( $type ) && false !== strpos( $type, 'Page' ) ) {
+				return (string) $node['@id'];
+			}
+		}
+	}
+
+	return '';
+}
 
 /**
  * Is some other plugin already publishing a schema graph we've hooked into?
@@ -660,5 +680,7 @@ function statchasers_news_flush(): void {
 
 	statchasers_team_flush();
 	statchasers_player_flush();
+	statchasers_fpa_flush();
+	statchasers_rankings_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );

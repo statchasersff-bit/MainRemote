@@ -29,6 +29,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
 import type {
+  BioFacts,
+  DraftRecord,
   DynastyData,
   FantasyOutlook2026,
   GameLogEntry,
@@ -46,6 +48,8 @@ const BYE_WEEKS_FILE = path.join(DATA_DIR, "bye_weeks.json");
 const GAME_SCORES_FILE = path.join(DATA_DIR, "game_scores.json");
 const DYNASTY_FILE = path.join(DATA_DIR, "dynasty_rankings.json");
 const BIOS_FILE = path.join(DATA_DIR, "bios.json");
+const BIO_FACTS_FILE = path.join(DATA_DIR, "bio_facts.json");
+const DRAFT_FILE = path.join(DATA_DIR, "draft.json");
 const OUTLOOK_FILE = path.join(DATA_DIR, "fantasy_outlook_2026.json");
 const PRODUCTION_FILE = path.join(DATA_DIR, "player_production.json");
 const INJURIES_FILE = path.join(DATA_DIR, "player_injuries.json");
@@ -191,6 +195,18 @@ export const loadDynastyRankings = lazy<Record<string, DynastyData>>(
 
 export const loadBios = lazy<Record<string, PlayerBio>>(BIOS_FILE, {});
 
+/**
+ * Birth date, college, high school and the season-by-season team history.
+ *
+ * Built by scripts/player/buildBioFacts.mjs and read by nothing but the Bio
+ * tab. Separate from players.json deliberately: that document is loaded for
+ * every request for every player, and these four fields serve one tab.
+ */
+export const loadBioFacts = lazy<Record<string, BioFacts>>(BIO_FACTS_FILE, {});
+
+/** Draft year, round, pick, team and college, keyed by slug. */
+export const loadDraft = lazy<Record<string, DraftRecord>>(DRAFT_FILE, {});
+
 export const loadFantasyOutlook2026 = lazy<Record<string, FantasyOutlook2026>>(
   OUTLOOK_FILE,
   {},
@@ -269,6 +285,8 @@ export function dataStamp(): string {
     GAME_SCORES_FILE,
     DYNASTY_FILE,
     BIOS_FILE,
+    BIO_FACTS_FILE,
+    DRAFT_FILE,
     OUTLOOK_FILE,
     PRODUCTION_FILE,
     INJURIES_FILE,

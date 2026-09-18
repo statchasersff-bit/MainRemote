@@ -82,6 +82,28 @@ function safeSlug(value: unknown): string {
 }
 
 /**
+ * Which section this URL is scoped to, if any.
+ *
+ * A closed list, not free text: `?section=` reaches renderPlayerPage, and an
+ * unrecognised id there would silently fall through to the full page under a
+ * URL that promised one section. Ids match the tab ids in player-render.ts.
+ */
+const SECTIONS = new Set([
+  "overview",
+  "stats",
+  "game-log",
+  "outlook",
+  "injury",
+  "news",
+  "bio",
+]);
+
+function section(req: Request): string | undefined {
+  const raw = String(req.query["section"] ?? "").trim().toLowerCase();
+  return SECTIONS.has(raw) ? raw : undefined;
+}
+
+/**
  * Which advanced-stats season the reader asked for.
  *
  * Constrained to the seasons that actually have a table, so `?adv=1998` is
@@ -89,6 +111,24 @@ function safeSlug(value: unknown): string {
  */
 function advancedSeason(req: Request): number | undefined {
   const raw = Number.parseInt(String(req.query["adv"] ?? ""), 10);
+  if (!Number.isFinite(raw)) return undefined;
+  return getAvailableSeasons().includes(raw) ? raw : undefined;
+}
+
+/**
+ * Which season the Game Log tab is pinned to.
+ *
+ * Same constraint as `?adv=`, and the same reason: a season with no log file
+ * behind it is ignored rather than rendered as an empty table. Whether this
+ * PLAYER played that season is the data layer's call, not the router's — it is
+ * the only thing holding the list of seasons he appeared in.
+ *
+ * Deliberately not part of the canonical. One game log per player is the page
+ * that ranks, the season selector carries rel="nofollow", and `?log=2023` is a
+ * rendering of that page rather than a second one. See player-seo.ts.
+ */
+function logSeason(req: Request): number | undefined {
+  const raw = Number.parseInt(String(req.query["log"] ?? ""), 10);
   if (!Number.isFinite(raw)) return undefined;
   return getAvailableSeasons().includes(raw) ? raw : undefined;
 }
@@ -195,8 +235,13 @@ router.get("/player/:slug", (req, res) => {
           canonical: canonicalUrl(req),
           embed,
           linkQuery: linkQuery(req),
+          section: section(req),
         },
-        { format: format(req), advancedSeason: advancedSeason(req) },
+        {
+          format: format(req),
+          advancedSeason: advancedSeason(req),
+          logSeason: logSeason(req),
+        },
       );
 
       if (!result) {
@@ -280,8 +325,13 @@ router.get("/embed/player/:slug", (req, res) => {
           playerPathPrefix: playerPrefix,
           teamPathPrefix: teamPrefix,
           linkQuery: fragmentLinkQuery(playerPrefix),
+          section: section(req),
         },
-        { format: format(req), advancedSeason: advancedSeason(req) },
+        {
+          format: format(req),
+          advancedSeason: advancedSeason(req),
+          logSeason: logSeason(req),
+        },
       );
 
       if (!result) {

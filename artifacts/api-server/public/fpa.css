@@ -1,0 +1,722 @@
+/*
+ * StatChasers — Fantasy Points Allowed
+ *
+ * The third sibling of team.css and player.css, and a sibling for the same
+ * reason: the three stylesheets are enqueued independently, so a page mounting
+ * [statchasers_fpa] must not need another tool's CSS. The brand tokens are
+ * restated rather than imported.
+ *
+ * Light-only, matching the other two.
+ */
+
+:where(.scf),
+:where(body.scf-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+  /* Row density. The table is 32 rows and the whole point is comparing them,
+     so it wants to be scanned in one screenful rather than scrolled: these two
+     are what set the row height, and they are here so it stays one decision. */
+  --scf-cell-pad-y: 2px;
+  --scf-crest: 22px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --scf-gutter: 24px;
+
+  /*
+   * The matchup scale: DIVERGING, not ordinal.
+   *
+   * Rank 1 is the softest defense and 32 the toughest, with league average in
+   * the middle — two poles either side of a neutral, so it takes two hues
+   * rather than one ramp. Green is the exploitable pole and red the one to
+   * avoid, which is the convention every fantasy reader already has.
+   *
+   * The middle is not a colour, it is the absence of one. The scale tints the
+   * top six, the next six, the bottom six and the six above them; ranks 13–20
+   * stay the white of the page. A defense a place or two off the median is not
+   * a matchup either way, and a tint there would be the table asserting a
+   * difference the numbers do not support. It also buys the four bands that are
+   * left a lot of room: every one of them now clears ΔE 11.8 against white even
+   * simulated, so a tinted cell is unmistakably tinted and an untinted one is
+   * unmistakably ordinary.
+   *
+   * Green against red is the one pair that red-green colour blindness takes
+   * away, and no choice of hues gets it back — at equal lightness the two arms
+   * simulate to a ΔE of about 1, i.e. the same colour. Three things are doing
+   * the work instead:
+   *
+   * 1. **The arms are NOT lightness-symmetric.** Red runs 0.080 darker than its
+   *    green mirror (green L 0.755/0.865 against red 0.675/0.785), so what
+   *    survives simulation is a light arm and a dark arm. That tilt is the
+   *    entire reason the mirrored pairs hold up: ΔE 15.6 under protanopia and
+   *    7.5 under deuteranopia, against roughly 1 if the arms were level. 7.5 is
+   *    the 6–8 floor band rather than the ≥8 target, which is legal only with
+   *    a second encoding — hence (2).
+   * 2. **Every cell prints its rank**, in the arm's ink. The tint is a second
+   *    reading of a number that is already there, never the only one.
+   * 3. **The table arrives sorted by rank**, so position carries the ordering
+   *    even for a reader who sees no colour at all.
+   *
+   * Red is the darker arm rather than the lighter one on purpose: protanopes
+   * see red darker than its luminance implies, so darkening it adds to the
+   * lightness cue instead of cancelling it. The opposite tilt measured ΔE 2.7.
+   *
+   * The washes are what the table cells wear; the inks are the rank digits.
+   * Within each arm the steps are ΔL ≈ 0.11 apart, above the 0.06 ramp floor,
+   * and the outer bands sit at 2.09:1 and 3.11:1 against white. The dark figure
+   * on top clears 6:1 everywhere and the rank digit 4.6:1 on its own wash; on an
+   * untinted cell that digit is the muted grey, 4.76:1 on white.
+   */
+  --scf-soft-2-ink: #004f21;
+  --scf-soft-1-ink: #096a30;
+  --scf-tough-1-ink: #8d140c;
+  --scf-tough-2-ink: #5d0000;
+
+  --scf-soft-2-wash: #77c488;
+  --scf-soft-1-wash: #aee2b7;
+  --scf-tough-1-wash: #e8a69b;
+  --scf-tough-2-wash: #d6786a;
+}
+
+/* ------------------------------------------------------------- page shell */
+
+body.scf-page {
+  margin: 0;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * White is the canvas, and the tool paints it rather than inheriting it.
+ *
+ * Embedded, this sits inside a WordPress page whose background is not ours to
+ * predict; the scale underneath assumes white (the washes were stepped against
+ * it, and the 2px gaps between tinted cells are the surface showing through).
+ * Painting it here is what makes the table look the same in the host page as it
+ * does standalone. Everything that used to be a white card on a tinted page is
+ * inverted below: the page is white and the chrome carries the tint.
+ */
+.scf {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  padding: 0 var(--scf-gutter) 64px;
+  /*
+   * The breakpoint is THIS element's width, not the window's.
+   *
+   * Embedded, the table lives in a WordPress content column that can be 700px
+   * wide inside a 1400px window. A viewport media query cannot see that: it
+   * would report a wide screen and leave the table overflowing its column. A
+   * container query asks the only question that matters — how much room do I
+   * actually have — and gets the same answer standalone and embedded.
+   */
+  container-type: inline-size;
+  container-name: scf;
+  background: var(--sc-surface);
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.5;
+}
+
+.scf.is-embed {
+  max-width: none;
+  padding: 0;
+}
+
+.scf *,
+.scf *::before,
+.scf *::after {
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------- controls */
+
+.scf-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.scf-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  position: relative;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  /* Tinted, not white: on a white page a white pill is only its border. */
+  background: var(--sc-surface-sink);
+}
+
+/*
+ * "Scoring" and "View" are not printed — the options say what they are, and two
+ * words of chrome in front of them earned less than the room they took.
+ *
+ * Clipped rather than deleted. The group is a row of links with no heading and
+ * no fieldset, so without this a screen reader meets "Standard, Half-PPR, PPR"
+ * with nothing saying what is being chosen. Clipping keeps that sentence for
+ * anyone who needs it and costs the layout nothing.
+ */
+.scf-control-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.scf-opt {
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.scf-opt.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.scf-csv {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sc-navy);
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+  padding-bottom: 1px;
+}
+
+.scf-csv:hover {
+  color: var(--sc-gold-deep);
+}
+
+/* -------------------------------------------------------------------- faq */
+
+.scf-faq {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--sc-border);
+  max-width: 78ch;
+}
+
+.scf-faq-summary {
+  cursor: pointer;
+}
+
+/* Inline, so the disclosure marker sits beside the title rather than above it.
+   It is still an <h2> — the outline does not change with the open state. */
+.scf-faq-title {
+  display: inline;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--sc-navy);
+}
+
+.scf-faq-body {
+  margin-top: 4px;
+}
+
+.scf-faq-q {
+  margin: 22px 0 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scf-faq-a {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--sc-muted-strong);
+}
+
+/* -------------------------------------------------------------- data mode */
+
+/* Above the table, because it qualifies everything under it. A caveat a reader
+   meets after forming an opinion has not done its job. */
+.scf-mode {
+  margin: 18px 0 0;
+  padding: 14px 18px;
+  border: 1px solid var(--sc-border);
+  border-left: 3px solid var(--sc-gold);
+  border-radius: 0 var(--sc-radius-sm) var(--sc-radius-sm) 0;
+  /* The same recessed tint the controls wear. One step off white is the whole
+     hierarchy here: white is data, tinted is chrome. */
+  background: var(--sc-surface-sink);
+}
+
+.scf-mode-body {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sc-muted-strong);
+}
+
+/* Only the adjusted view has a second paragraph. */
+.scf-mode-body + .scf-mode-body {
+  margin-top: 6px;
+}
+
+/* ------------------------------------------------------------------ table */
+
+.scf-scroll {
+  margin-top: 18px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scf-table {
+  width: 100%;
+  border-collapse: separate;
+  /* The grid. The outer edge is on the table rather than on .scf-scroll, so on
+     a narrow screen it bounds the table you are scrolling, not the window you
+     are scrolling it through; the inner lines are per-cell right/bottom borders
+     below.
+     `separate` with zero spacing rather than `collapse`: collapse throws away
+     border-radius, and it is the only way to keep the rounded outer edge that
+     the rest of the page's chrome has. The 2px gaps that used to separate
+     adjacent tints are gone because the 1px line now does that job. */
+  border: 1px solid var(--sc-border);
+  border-radius: 8px;
+  line-height: 1.12;
+  border-spacing: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scf-caption {
+  caption-side: bottom;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--sc-muted);
+  text-align: left;
+}
+
+.scf-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 1px 10px;
+  /* The brand navy — the same one the active control pill wears, so the page
+     carries one blue. It has to be opaque anyway: the header is sticky and the
+     rows scroll under it. Rounded like the data cells below, because
+     border-spacing makes every cell its own chip either way. */
+  background: var(--sc-navy);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The two headers that are not centred. Each sits over a column that is not
+   centred either: the team names run left, the games count runs right. Only the
+   position columns — read as a block, left to right — take the centred label. */
+.scf-table thead .scf-th-team {
+  text-align: left;
+}
+
+.scf-table thead .scf-th-games {
+  text-align: right;
+}
+
+.scf-team {
+  padding: var(--scf-cell-pad-y) 10px;
+  text-align: left;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--sc-surface);
+}
+
+.scf-team-link {
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  gap: 8px;
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.scf-team-link:hover {
+  color: var(--sc-gold-deep);
+}
+
+/* A row whose team we could not resolve: same shape, no crest and no link. */
+.scf-team-link.is-plain {
+  padding-left: calc(var(--scf-crest) + 8px);
+}
+
+.scf-team-id {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+/* The line a reader scans. Its colour is the link's, so hover moves both. */
+.scf-team-abbr {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Under it, quieter: the name is the fallback reading, not the primary one. */
+.scf-team-name {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--sc-muted);
+}
+
+.scf-team-logo {
+  width: var(--scf-crest);
+  height: var(--scf-crest);
+  object-fit: contain;
+}
+
+.scf-cell {
+  padding: var(--scf-cell-pad-y) 10px;
+  /* The team cell is two lines now, so everything beside it centres against it
+     rather than sitting on the first line's baseline. */
+  vertical-align: middle;
+  text-align: right;
+  white-space: nowrap;
+  /* Ranks 13–20 wear the page. Nothing to say about them, so nothing said. */
+  background: var(--sc-surface);
+}
+
+.scf-cell[data-tier="soft-2"] { background: var(--scf-soft-2-wash); }
+.scf-cell[data-tier="soft-1"] { background: var(--scf-soft-1-wash); }
+.scf-cell[data-tier="tough-1"] { background: var(--scf-tough-1-wash); }
+.scf-cell[data-tier="tough-2"] { background: var(--scf-tough-2-wash); }
+
+/*
+ * The inner grid.
+ *
+ * Every cell draws its own right and bottom line, and the last of each is
+ * dropped so the table's own border is not doubled up against it. On the navy
+ * header the line is a light tint of the navy instead of the page's grey — a
+ * grey rule on a dark band reads as a gap in the band.
+ */
+.scf-table thead th,
+.scf-table tbody th,
+.scf-table tbody td {
+  border-right: 1px solid var(--sc-border);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scf-table thead th {
+  border-right-color: rgba(255, 255, 255, 0.16);
+  border-bottom-color: var(--sc-navy);
+}
+
+.scf-table tr > *:last-child {
+  border-right: 0;
+}
+
+.scf-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.scf-fpa {
+  font-weight: 700;
+  color: var(--sc-ink);
+}
+
+/* The rank, in the arm's ink — the second reading of the tint, and the one
+   that survives a greyscale print. */
+.scf-rank {
+  display: inline-block;
+  vertical-align: middle;
+  min-width: 22px;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+  color: var(--sc-muted);
+}
+
+.scf-cell[data-tier="soft-2"] .scf-rank { color: var(--scf-soft-2-ink); }
+.scf-cell[data-tier="soft-1"] .scf-rank { color: var(--scf-soft-1-ink); }
+.scf-cell[data-tier="tough-1"] .scf-rank { color: var(--scf-tough-1-ink); }
+.scf-cell[data-tier="tough-2"] .scf-rank { color: var(--scf-tough-2-ink); }
+
+.scf-games {
+  padding: var(--scf-cell-pad-y) 10px;
+  vertical-align: middle;
+  text-align: right;
+  color: var(--sc-muted);
+  background: var(--sc-surface);
+}
+
+.scf-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.scf-sort:hover {
+  color: var(--sc-gold-soft);
+}
+
+.scf-table th[aria-sort="descending"] .scf-sort::after { content: " \2193"; }
+.scf-table th[aria-sort="ascending"] .scf-sort::after { content: " \2191"; }
+
+/* ----------------------------------------------------------------- legend */
+
+.scf-legend-wrap {
+  margin-top: 20px;
+}
+
+.scf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scf-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.scf-legend-swatch {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  flex: 0 0 auto;
+}
+
+.scf-legend-swatch[data-tier="soft-2"] { background: var(--scf-soft-2-wash); }
+.scf-legend-swatch[data-tier="soft-1"] { background: var(--scf-soft-1-wash); }
+.scf-legend-swatch[data-tier="tough-1"] { background: var(--scf-tough-1-wash); }
+.scf-legend-swatch[data-tier="tough-2"] { background: var(--scf-tough-2-wash); }
+
+/* Text wears text tokens, never the scale's colour. */
+.scf-legend-label {
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+.scf-empty {
+  margin: 32px 0;
+  padding: 20px;
+  border: 1px dashed var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-muted);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------ responsive */
+
+/* The page's own gutter is a genuine window question, so it stays a media
+   query: it is about the edge of the screen, not the width of the table. */
+@media (max-width: 680px) {
+  :where(.scf),
+  :where(body.scf-page) {
+    --scf-gutter: 16px;
+  }
+
+}
+
+/*
+ * Narrow: the table drops the full team names.
+ *
+ * 680px is measured, not chosen: the table's natural width is ~626px with the
+ * names and ~527px without, so below roughly that first figure the columns
+ * cannot all be on screen at once and the names are what pays. The crest and
+ * the abbreviation stay, which is what a reader matches a row on anyway.
+ *
+ * It is one rule on one selector, so all 32 names go at the same moment. That
+ * is the point: names disappearing a row at a time — which is what truncation
+ * or a per-cell measurement would do — would read as a rendering fault.
+ *
+ * Nothing is pinned. Below ~527px the table scrolls sideways and the defense
+ * column scrolls away with it; the crest is then what identifies a row mid-scroll.
+ */
+@container scf (max-width: 680px) {
+  .scf-team-name {
+    display: none;
+  }
+
+}
+
+/*
+ * Narrower still: the rank digits go too, leaving the figure alone.
+ *
+ * Same measurement, one step on. Without the names the table wants ~527px, and
+ * without the ranks as well ~377px — so 540px is where the ranks become what
+ * pays. That is the last thing the table can give up: below it there is nothing
+ * left to drop and it scrolls sideways instead.
+ *
+ * Hidden VISUALLY, not removed. The rank is the tint's second reading, and on a
+ * page whose scale is green against red that second reading is what a
+ * colourblind reader is relying on. Clipping it rather than displaying it none
+ * keeps it in the accessibility tree, so a screen reader still reads "23.7, 4th
+ * most points allowed" while the screen shows only 23.7. A sighted reader who
+ * needs the ranks back can turn the phone.
+ */
+@container scf (max-width: 540px) {
+  .scf-rank {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* The columns are down to their labels and four digits; the gutters can come
+     in with them. This is what gets a 375px phone under the wire. */
+  .scf-cell,
+  .scf-team,
+  .scf-games,
+  .scf-table thead th {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  /* With the rank gone the figure is alone in the cell, so it can sit under the
+     centred header rather than ranging right against a label that does not. The
+     games column is untouched: its header ranges right and so does its number. */
+  .scf-cell {
+    text-align: center;
+  }
+
+  /*
+   * The CSV link goes rather than wrapping.
+   *
+   * The controls row needs ~493px to hold both filter groups and the link on
+   * one line — 493 rather than the 621 it took before the labels came off — so
+   * this is where the link would start wrapping, and a lone button on a row of
+   * its own reads as a layout accident rather than a choice.
+   *
+   * The file itself is not gone: /fpa/download.csv still serves it, with the
+   * same format and view the page is on. What goes is the affordance, on the
+   * screens least likely to want a spreadsheet.
+   */
+  .scf-csv {
+    display: none;
+  }
+}
+
+/*
+ * Narrowest: the games column goes, and that is the end of the line.
+ *
+ * ~335px with it and ~282px without, so 360px is the threshold on the same
+ * ~8% headroom the other two carry. It is last on purpose — it is the only
+ * column here that is not fantasy points allowed, and the one a reader gives up
+ * least by losing, because the note above the table already says how much of
+ * the season is in the figures.
+ *
+ * Hidden with display:none rather than clipped: unlike the rank, this is not a
+ * second reading of something else on the row, so leaving it in the
+ * accessibility tree would just be a column screen-reader users have and
+ * sighted ones do not. The CSV still carries it either way.
+ */
+@container scf (max-width: 360px) {
+  .scf-games,
+  .scf-th-games {
+    display: none;
+  }
+}
+
+/* The same rules for anything that cannot do container queries. The viewport is
+   a worse proxy — it is wrong for the embed — but it is the only one left. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 680px) {
+    .scf-team-name {
+      display: none;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .scf-rank {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .scf-cell,
+    .scf-team,
+    .scf-games,
+    .scf-table thead th {
+      padding-left: 7px;
+      padding-right: 7px;
+    }
+
+    .scf-cell {
+      text-align: center;
+    }
+
+    .scf-csv {
+      display: none;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .scf-games,
+    .scf-th-games {
+      display: none;
+    }
+  }
+}
+
+/*
+ * Forced colours: the washes collapse to system colours, so the tint stops
+ * distinguishing anything. The rank digit in every cell already carries the
+ * meaning; the border restores the cell boundaries.
+ */
+@media (forced-colors: active) {
+  .scf-cell,
+  .scf-legend-swatch {
+    border: 1px solid CanvasText;
+  }
+}

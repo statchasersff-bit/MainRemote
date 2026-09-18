@@ -54,8 +54,15 @@ function optionKey(
     options.playerPathPrefix ?? "",
     options.teamPathPrefix ?? "",
     options.linkQuery ?? "",
+    // The section scopes the whole render — one panel instead of seven, a
+    // different heading, no tab strip. Left out of the key, a request for
+    // ?section=injury poisons the cache for the full profile at the same slug.
+    options.section ?? "",
     data.format ?? "ppr",
     data.advancedSeason ?? 0,
+    // The Game Log's season, for the same reason the section is here: two
+    // requests differing only in ?log= render different tables.
+    data.logSeason ?? 0,
   ]);
 }
 
@@ -124,7 +131,7 @@ export async function renderPlayerAppPage(
   const fragment = await renderPlayerFragment(slug, options, dataOptions);
   if (!fragment) return null;
 
-  const meta = playerPageMeta(data, options.canonical);
+  const meta = playerPageMeta(data, options.canonical, options.section);
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
     if (!template.includes(marker)) {

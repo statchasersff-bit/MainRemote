@@ -84,16 +84,26 @@ function statchasers_team_slug( array $atts ): string {
 /**
  * Fetch the server-rendered team fragment, cached.
  *
- * @param string $slug Team slug.
+ * @param string $slug    Team slug.
+ * @param string $section Section to scope the render to, or '' for the hub.
  * @return array{html:string,version:string}|null Null when nothing is available.
  */
-function statchasers_team_fetch( string $slug ): ?array {
+function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	$origin = statchasers_news_origin();
 	if ( '' === $origin || '' === $slug ) {
 		return null;
 	}
 
-	$key        = md5( $origin . '|' . $slug );
+	// Whether the hub may print real links to /outlook/, /stats/ and so on.
+	// Only once the rewrite is live: before that they are four links to 404s.
+	$linked = statchasers_team_section_urls_enabled();
+
+	// The section and the link flag are part of the identity of what comes back
+	// — one panel or five, a different heading, links or none — so they are
+	// part of the cache key. Left out, the first request to any section address
+	// would serve its markup to the hub and to every other section on that team
+	// for the rest of the TTL.
+	$key        = md5( $origin . '|' . $slug . '|' . $section . '|' . ( $linked ? '1' : '0' ) );
 	$cache_key  = 'sc_team_ssr_' . $key;
 	$backup_key = 'sc_team_ssr_bak_' . $key;
 
@@ -102,8 +112,17 @@ function statchasers_team_fetch( string $slug ): ?array {
 		return $cached;
 	}
 
+	$query = array();
+	if ( '' !== $section ) {
+		$query['section'] = $section;
+	}
+	if ( $linked ) {
+		$query['sections'] = '1';
+	}
+
 	$response = wp_remote_get(
-		$origin . '/embed/team/' . rawurlencode( $slug ),
+		$origin . '/embed/team/' . rawurlencode( $slug ) .
+			( $query ? '?' . http_build_query( $query ) : '' ),
 		array(
 			'timeout' => STATCHASERS_TEAM_TIMEOUT,
 			'headers' => array( 'Accept' => 'text/html' ),
@@ -418,7 +437,15 @@ function statchasers_team_shortcode( $atts = array() ): string {
 		return '';
 	}
 
-	$slug = statchasers_team_slug( is_array( $atts ) ? $atts : array() );
+	$atts = is_array( $atts ) ? $atts : array();
+	$slug = statchasers_team_slug( $atts );
+
+	// An explicit section="..." wins; otherwise the URL decides, which is what
+	// lets ONE page and ONE shortcode serve the hub and every section address
+	// beneath it. See statchasers_team_section_from_url().
+	$section = isset( $atts['section'] )
+		? statchasers_team_section_id( (string) $atts['section'] )
+		: statchasers_team_section_from_url();
 
 	if ( '' === $slug ) {
 		if ( current_user_can( 'manage_options' ) ) {
@@ -427,7 +454,7 @@ function statchasers_team_shortcode( $atts = array() ): string {
 		return '';
 	}
 
-	$data = statchasers_team_fetch( $slug );
+	$data = statchasers_team_fetch( $slug, $section );
 
 	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_team_enqueue_assets();
@@ -452,12 +479,243 @@ function statchasers_team_shortcode( $atts = array() ): string {
 	 * Deliberately not escaped, for the reason given on the news filter: this is
 	 * first-party markup from the origin the page already loads its bundle from.
 	 *
-	 * @param string $html Rendered fragment.
-	 * @param string $slug Team slug.
+	 * @param string $html    Rendered fragment.
+	 * @param string $slug    Team slug.
+	 * @param string $section Section the render was scoped to, or ''.
 	 */
-	return (string) apply_filters( 'statchasers_team_fragment_html', $data['html'], $slug );
+	return (string) apply_filters(
+		'statchasers_team_fragment_html',
+		statchasers_team_strip_faq_data( (string) $data['html'] ),
+		$slug,
+		$section
+	);
 }
 add_shortcode( STATCHASERS_TEAM_SHORTCODE, 'statchasers_team_shortcode' );
+
+/* ------------------------------------------------------------- faq schema */
+
+/**
+ * The questions this request's team fragment is carrying.
+ *
+ * The team hub is one mount with a `:target` tab strip, so a single fetch
+ * carries every tab's questions — the Outlook FAQ and the Stats FAQ both — and
+ * this produces one node for the page rather than one per tab.
+ *
+ * Reads the cached fetch the shortcode is about to hit rather than costing a
+ * second request, and is memoised because the filter and the fallback printer
+ * both ask.
+ *
+ * The slug comes off the QUERIED object for the reason given on
+ * statchasers_team_post_has_shortcode(): on a Divi page the global post is the
+ * layout, not the page, so get_post() would answer about the wrong thing.
+ *
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_team_faq_items(): array {
+	static $items = null;
+
+	if ( null !== $items ) {
+		return $items;
+	}
+
+	$items = array();
+
+	if ( ! statchasers_team_post_has_shortcode() ) {
+		return $items;
+	}
+
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return $items;
+	}
+
+	$slug = statchasers_team_slug( array( 'slug' => (string) $queried->post_name ) );
+	if ( '' === $slug ) {
+		return $items;
+	}
+
+	// Scoped to the same section the shortcode will print, or the questions in
+	// Rank Math's graph describe a page this reader is not on — the Schedule
+	// URL carrying the Stats tab's eight questions.
+	$data = statchasers_team_fetch( $slug, statchasers_team_section_from_url() );
+
+	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
+		return $items;
+	}
+
+	$items = statchasers_team_faq_parse( (string) $data['html'] );
+
+	return $items;
+}
+
+/**
+ * Pull the Q&A islands out of a rendered fragment.
+ *
+ * Validated rather than trusted. It is our own origin, but this ends up in the
+ * page's structured data and a malformed island should drop an entry rather
+ * than emit a broken node.
+ *
+ * @param string $html Rendered fragment.
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_team_faq_parse( string $html ): array {
+	$items = array();
+
+	if ( false === strpos( $html, 'sct-faq-data' ) ) {
+		return $items;
+	}
+
+	$found = preg_match_all(
+		'#<script type="application/json" class="sct-faq-data">(.*?)</script>#s',
+		$html,
+		$matches
+	);
+
+	if ( ! $found ) {
+		return $items;
+	}
+
+	foreach ( $matches[1] as $json ) {
+		$decoded = json_decode( $json, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		foreach ( $decoded as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['q'], $entry['a'] ) ) {
+				continue;
+			}
+			if ( ! is_string( $entry['q'] ) || ! is_string( $entry['a'] ) ) {
+				continue;
+			}
+
+			$question = trim( wp_strip_all_tags( $entry['q'] ) );
+			$answer   = trim( wp_strip_all_tags( $entry['a'] ) );
+
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $question,
+				'a' => $answer,
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+ * One FAQPage node from the questions this request is carrying.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null Null when there is nothing to describe.
+ */
+function statchasers_team_faq_node( string $webpage_id = '' ) {
+	$items = statchasers_team_faq_items();
+
+	if ( empty( $items ) ) {
+		return null;
+	}
+
+	$questions = array();
+	foreach ( $items as $item ) {
+		$questions[] = array(
+			'@type'          => 'Question',
+			'name'           => $item['q'],
+			'acceptedAnswer' => array(
+				'@type' => 'Answer',
+				'text'  => $item['a'],
+			),
+		);
+	}
+
+	$node = array(
+		'@type'      => 'FAQPage',
+		'mainEntity' => $questions,
+	);
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the FAQPage to Rank Math's graph.
+ *
+ * Same posture as statchasers_player_rank_math_schema(): append to the array
+ * Rank Math hands us, so what ships is one <script> containing one graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_team_rank_math_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_team_faq_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null === $node ) {
+		return $data;
+	}
+
+	$data['statchasersTeamFaq'] = $node;
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_team_rank_math_schema', 20 );
+
+/**
+ * Fallback FAQPage for sites with no schema-graph plugin.
+ *
+ * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * plugin present, WebPage and Organization are a site-wide decision somebody
+ * should make deliberately rather than something this tool improvises.
+ */
+function statchasers_team_print_fallback_schema(): void {
+	if ( statchasers_news_graph_provider_present() ) {
+		return;
+	}
+
+	$node = statchasers_team_faq_node();
+	if ( null === $node ) {
+		return;
+	}
+
+	$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+	echo '<script type="application/ld+json">' .
+		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+		'</script>' . "\n";
+}
+add_action( 'wp_head', 'statchasers_team_print_fallback_schema', 20 );
+
+/**
+ * Drop the Q&A islands from the markup that is printed.
+ *
+ * They are a transport for the node above, and once it is built they are a
+ * second copy of every answer sitting in the page for nobody. The schema reads
+ * from the cached fetch, not from this string, so removing them here costs the
+ * node nothing.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_team_strip_faq_data( string $html ): string {
+	if ( false === strpos( $html, 'sct-faq-data' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace(
+		'#<script type="application/json" class="sct-faq-data">.*?</script>#s',
+		'',
+		$html
+	);
+}
 
 /**
  * Clear cached team renders. Called by statchasers_news_flush().
