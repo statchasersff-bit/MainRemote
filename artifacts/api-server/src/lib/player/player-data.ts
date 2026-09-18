@@ -32,6 +32,7 @@ import {
 import {
   dataStamp,
   getAvailableSeasons,
+  loadIndexedSlugs,
   getPlayerBySlug,
   loadBios,
   loadDynastyRankings,
@@ -700,6 +701,49 @@ export function playerDataVersion(
     data.rosterFetchedAt,
     data.advanced?.season ?? "",
   ].join("-");
+}
+
+/**
+ * One row per player that has a page, resolved against the team table.
+ *
+ * The single answer to "which players exist" for every consumer that needs the
+ * list rather than one profile: the `/player` index, the `/embed/players.json`
+ * manifest the WordPress page script builds from, and the development
+ * switcher's player picker. It was the same fifteen-line loop in all three, and
+ * the exclusion rule below is exactly the kind of thing that gets fixed in one
+ * of three copies.
+ *
+ * **Team defences are excluded.** They are in the indexed list because the news
+ * tool ranks them, but nothing a player page renders applies to one — no game
+ * log, no efficiency percentiles, no injury history, no bio. A defence's page
+ * already exists and it is the team hub.
+ */
+export interface IndexedPlayer {
+  /** Sleeper's id — what its headshot CDN is keyed by. */
+  id: string;
+  slug: string;
+  name: string;
+  position: string | null;
+  team: NflTeam | null;
+  headshot: string | null;
+}
+
+export function indexedPlayers(): IndexedPlayer[] {
+  const rows: IndexedPlayer[] = [];
+  for (const slug of loadIndexedSlugs()) {
+    const player = getPlayerBySlug(slug);
+    if (!player) continue;
+    if (player.position === "DEF") continue;
+    rows.push({
+      id: player.id,
+      slug: player.slug,
+      name: player.name,
+      position: player.position,
+      team: getTeamByAbbreviation(player.team),
+      headshot: player.headshotUrl ?? null,
+    });
+  }
+  return rows;
 }
 
 /** The canonical team code for a player's current team, or "". */

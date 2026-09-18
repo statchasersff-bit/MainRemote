@@ -1,17 +1,18 @@
 /**
  * Shortcode preview harness. Development only.
  *
- * The two tools are shipped as FRAGMENTS: /embed/ssr.html and
- * /embed/team/:slug return bare markup with no stylesheet and no script,
- * because on a real page WordPress enqueues those separately. Opening either in
- * a browser therefore shows a wall of unstyled HTML — which makes the one
+ * The three tools are shipped as FRAGMENTS: /embed/ssr.html,
+ * /embed/team/:slug and /embed/player/:slug return bare markup with no
+ * stylesheet and no script, because on a real page WordPress enqueues those
+ * separately. Opening any of them in a browser shows a wall of unstyled HTML — which makes the one
  * question you actually want to answer while working ("what does this shortcode
  * look like on a page?") the one question the app could not answer.
  *
  * These routes answer it. They assemble exactly what WordPress assembles:
  *
- *   [statchasers_news]  ->  /preview/news
- *   [statchasers_team]  ->  /preview/team/:slug
+ *   [statchasers_news]    ->  /preview/news
+ *   [statchasers_team]    ->  /preview/team/:slug
+ *   [statchasers_player]  ->  /preview/player/:slug
  *
  * The fragment is the SAME markup the plugin fetches — it comes from the same
  * renderer the /embed endpoints use, not a second code path — wrapped in a mock
@@ -35,6 +36,7 @@ import { linkTemplatesFromEnv, relatedLinksFromEnv } from "../lib/links";
 import { publicOrigin } from "../lib/request";
 import { renderNewsFragment } from "../lib/ssr";
 import { renderTeamFragment } from "../lib/team-ssr";
+import { renderPlayerFragment } from "../lib/player-ssr";
 import { normalizeTeamName } from "../lib/team/teams";
 
 const router: IRouter = Router();
@@ -252,6 +254,40 @@ router.get("/preview/team/:slug", (req, res) => {
   })();
 });
 
+/** [statchasers_player slug="…"] as it renders on a page. */
+router.get("/preview/player/:slug", (req, res) => {
+  void (async () => {
+    const slug = String(req.params.slug ?? "").trim().toLowerCase();
+    try {
+      const result = await renderPlayerFragment(slug, {
+        embed: true,
+        // Point links at this harness rather than at the bare tool, so moving
+        // between players from inside the preview keeps you inside the preview.
+        playerPathPrefix: "/preview/player/",
+        teamPathPrefix: "/preview/team/",
+      });
+      if (!result) {
+        res.status(404).type("text/plain").send("Unknown player");
+        return;
+      }
+      send(
+        req,
+        res,
+        hostPage({
+          title: `${result.name} Fantasy Football Stats`,
+          shortcode: `[statchasers_player slug="${slug}"]`,
+          styles: ["/player.css"],
+          scripts: ["/dist/statchasers-player.js"],
+          fragment: result.html,
+        }),
+      );
+    } catch (err) {
+      logger.error({ err, slug }, "Player shortcode preview failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
 /** The news fragment as source. */
 router.get("/preview/raw/news", (req, res) => {
   void (async () => {
@@ -293,6 +329,32 @@ router.get("/preview/raw/team/:slug", (req, res) => {
       );
     } catch (err) {
       logger.error({ err, team: team.abbreviation }, "Team fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/** The player fragment as source. */
+router.get("/preview/raw/player/:slug", (req, res) => {
+  void (async () => {
+    const slug = String(req.params.slug ?? "").trim().toLowerCase();
+    try {
+      const result = await renderPlayerFragment(slug, { embed: true });
+      if (!result) {
+        res.status(404).type("text/plain").send("Unknown player");
+        return;
+      }
+      send(
+        req,
+        res,
+        sourcePage(
+          `[statchasers_player slug="${slug}"]`,
+          `/embed/player/${slug}`,
+          result.html,
+        ),
+      );
+    } catch (err) {
+      logger.error({ err, slug }, "Player fragment source view failed");
       res.status(500).type("html").send("<h1>Preview failed</h1>");
     }
   })();

@@ -303,7 +303,17 @@ tool and the hubs work — and Rank Math keeps the SEO.
   third tool.
 - `tests/player.test.mjs` — the crawler's-eye regression suite. Picks its fixture
   player from `/embed/players.json` at runtime rather than hard-coding one, so a
-  trade does not fail the suite.
+  trade does not fail the suite. It also carries the first tests that run a
+  server in **development** mode: the preview switcher and the `/preview/*`
+  harness are guarded by `NODE_ENV`, so every other suite could only ever assert
+  they are absent — and the player pages shipped with routes, a shortcode and
+  tests while being missing from the switcher entirely. `startServer()` now
+  takes a `NODE_ENV` override for that.
+- The switcher (`lib/devbar.ts`) and the harness (`routes/preview.ts`) both
+  carry a player entry: `/preview/player/:slug` for the shortcode view,
+  `/preview/raw/player/:slug` for the source view, and a roster picker that is
+  injected only on player pages — six hundred `<option>`s is ~40KB and has no
+  business on the news tool.
 
 **The News tab is a superset of the one it replaces.** The standalone app's
 version had two lazily-fetched views behind a toggle — articles and the club's

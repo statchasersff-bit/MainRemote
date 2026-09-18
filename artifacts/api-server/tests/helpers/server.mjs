@@ -46,7 +46,13 @@ export async function startServer(env = {}) {
       DYNASTY_NEWS_API_URL: "",
       ...env,
       PORT: String(port),
-      NODE_ENV: "test",
+      // Overridable, because the development-only surfaces — the preview
+      // switcher and the /preview/* harness — are otherwise untestable: their
+      // single guard is this variable, so a suite that can only ever set it to
+      // "test" can assert that they are ABSENT and nothing about whether they
+      // are correct when present. That gap is how a tool went missing from the
+      // switcher for a whole release.
+      NODE_ENV: env.NODE_ENV ?? "test",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

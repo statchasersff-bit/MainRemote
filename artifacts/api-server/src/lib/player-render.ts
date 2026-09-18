@@ -48,7 +48,11 @@ import {
   weeklyTierLabel,
   type WeeklyTier,
 } from "./player/metrics";
-import type { PlayerPageData, ProductionSeason } from "./player/player-data";
+import type {
+  IndexedPlayer,
+  PlayerPageData,
+  ProductionSeason,
+} from "./player/player-data";
 import { SCORING_LABELS, SCORING_SHORT, type ScoringFormat } from "./player/scoring";
 import type {
   CareerSeasonStat,
@@ -1741,13 +1745,6 @@ export function renderPlayerPage(
   );
 }
 
-export interface PlayerIndexEntry {
-  slug: string;
-  name: string;
-  position: string | null;
-  team: NflTeam | null;
-}
-
 /**
  * A plain index of the indexed players at /player.
  *
@@ -1756,13 +1753,13 @@ export interface PlayerIndexEntry {
  * reader. A full document rather than a fragment, because nothing embeds it.
  */
 export function renderPlayerIndex(
-  entries: PlayerIndexEntry[],
+  entries: IndexedPlayer[],
   options: { playerPathPrefix?: string; linkQuery?: string } = {},
 ): string {
   const prefix = options.playerPathPrefix ?? "/player/";
   const query = options.linkQuery ?? "";
 
-  const byTeam = new Map<string, { team: NflTeam | null; players: PlayerIndexEntry[] }>();
+  const byTeam = new Map<string, { team: NflTeam | null; players: IndexedPlayer[] }>();
   for (const entry of entries) {
     const key = entry.team?.abbreviation ?? "zz-free-agent";
     const group = byTeam.get(key);
