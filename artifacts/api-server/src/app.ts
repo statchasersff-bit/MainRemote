@@ -7,6 +7,7 @@ import router from "./routes";
 import embedRouter from "./routes/embed";
 import teamRouter from "./routes/team";
 import previewRouter from "./routes/preview";
+import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
@@ -69,6 +70,13 @@ app.use(teamRouter);
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
 app.use(previewRouter);
+
+// The X integration's API (/api/x/...) and its admin page (/admin/x). Mounted
+// here for the same reason as the routers above — the 404 at the bottom of this
+// file catches everything that gets past them. Mounting it costs nothing when
+// the integration is switched off: the routes exist, the poller does not run,
+// and /api/x/status says so.
+app.use(xRouter);
 
 // Serve static frontend files
 const publicDir = path.resolve(__dirname, "..", "public");

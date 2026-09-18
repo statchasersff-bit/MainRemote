@@ -21,6 +21,7 @@
 
 import {
   escapeHtml,
+  isXItem,
   itemTimestamp,
   safeUrl,
   searchKey,
@@ -1517,13 +1518,29 @@ export function splitHeadline(item: NewsItem): string {
   return rest || title;
 }
 
+/**
+ * The kicker above a headline.
+ *
+ * "Player News" for the wire and the club feeds, and the reporter for an X
+ * post: this team page has its own card renderer, so a post arriving here would
+ * otherwise be labelled as something it is not. The feed's card makes the same
+ * substitution in the same slot — see renderCardLabel in lib/render.ts — and
+ * this keeps the two surfaces telling the reader the same thing.
+ */
+function newsKicker(item: NewsItem): string {
+  if (!isXItem(item)) return "Player News";
+  const name = (item.source ?? "").trim();
+  return name || (item.authorHandle ? `@${item.authorHandle}` : "X");
+}
+
 function newsStamp(item: NewsItem): string {
+  const kicker = escapeHtml(newsKicker(item));
   const ts = itemTimestamp(item);
-  if (ts === null) return `<span class="sct-news-kicker">Player News</span>`;
+  if (ts === null) return `<span class="sct-news-kicker">${kicker}</span>`;
   const parts = easternParts(ts);
   return (
     `<p class="sct-news-meta">` +
-    `<span class="sct-news-kicker">Player News</span>` +
+    `<span class="sct-news-kicker">${kicker}</span>` +
     `<span class="sct-dot" aria-hidden="true"></span>` +
     `<time datetime="${escapeHtml(new Date(ts).toISOString())}" data-ts="${ts}">` +
     `${escapeHtml(`${parts.monthUpper} ${parts.day}`)}` +

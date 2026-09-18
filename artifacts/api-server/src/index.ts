@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { runClubIngest, runIngest } from "./routes/news";
+import { startXScheduler } from "./lib/x/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -68,4 +69,18 @@ app.listen(port, (err) => {
   // process is idle and nobody is waiting.
   setTimeout(clubSweep, 60 * 1000);
   setInterval(clubSweep, 30 * 60 * 1000);
+
+  // The X poller, if it is switched on (X_NEWS_INGESTION_ENABLED).
+  //
+  // Wrapped, and last, on purpose: this is the newest and least critical of the
+  // three providers, and the one reading a source nobody here controls. Nothing
+  // it can do — not a bad configuration, not an unreachable provider, not a
+  // database it cannot read — may be allowed to stop a server that has already
+  // bound its port from serving the news it already has. startXScheduler() is
+  // itself written not to throw; this is the second line of that defence.
+  try {
+    startXScheduler();
+  } catch (err) {
+    logger.error({ err }, "[X INGEST] scheduler failed to start — continuing without it");
+  }
 });

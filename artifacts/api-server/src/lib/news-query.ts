@@ -8,8 +8,17 @@ import { db, newsItems } from "./db";
 import { logger } from "./logger";
 import { teamForImage } from "./teams";
 import { teamForPlayerName } from "./team/roster";
+import { categorize } from "./news-category";
 import type { NewsItem } from "./render";
 import { mergeNewsLanes } from "./news-merge";
+
+/**
+ * The X lane's source_type. Declared here rather than imported from lib/x so
+ * the read path does not depend on the ingestion half at all — the feed must
+ * still build, and still read X rows, in a deployment where X ingestion is
+ * switched off and nothing in lib/x is ever loaded.
+ */
+const X_LANE = "x";
 
 export const DEFAULT_LIMIT = 100;
 export const MAX_LIMIT = 250;
@@ -77,7 +86,23 @@ export async function listNews(
 ): Promise<NewsItem[]> {
   const limit = Math.min(Math.max(options.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
   const search = (options.search ?? "").trim();
-  const wireOnly = options.includeClubs ? undefined : isNull(newsItems.teamAbbr);
+  /**
+   * The lanes this list shows: the player wire, plus X.
+   *
+   * Still expressed as `team_abbr IS NULL` for the wire rather than as a test
+   * on the new source_type column, because that is the rule every row in the
+   * archive was written under and the column is null for all of them. Changing
+   * the wire/club split to depend on source_type would make this list's
+   * contents contingent on a backfill — and a backfill that has not run yet
+   * looks exactly like a feed that has silently swallowed the club archive.
+   *
+   * X is added as its own term instead. Its rows may carry a team (resolved at
+   * ingest from the player named in the post), so the wire's test excludes
+   * them, and the whole point of the integration is that they appear here.
+   */
+  const lanes = options.includeClubs
+    ? undefined
+    : or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE));
 
   const rows = await db
     .select()
@@ -87,11 +112,14 @@ export async function listNews(
     // case-sensitive.
     .where(
       and(
-        wireOnly,
+        lanes,
         search
           ? or(
               ilike(newsItems.title, `%${search}%`),
               ilike(newsItems.playerName, `%${search}%`),
+              // The handle, so "schefter" finds his posts. Only X rows have
+              // one, so this costs nothing on the rest of the archive.
+              ilike(newsItems.authorHandle, `%${search}%`),
             )
           : undefined,
       ),
@@ -138,6 +166,12 @@ function toNewsItem(row: typeof newsItems.$inferSelect): NewsItem {
     image: row.image,
     summary: row.summary,
     source: row.source,
+    sourceType: row.sourceType,
+    authorHandle: row.authorHandle,
+    // Derived, never stored — see lib/news-category.ts. Computed over the
+    // title and the summary together because an X row's title is only the
+    // post's first line and the rest of it is in the summary.
+    category: categorize(row.title, row.summary),
     team:
       row.teamAbbr ??
       teamForImage(row.image) ??

@@ -311,18 +311,18 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     season: 2026,
     updated: "September 2026",
     summary:
-      "Miami tore the offence down to the studs. Tua Tagovailoa is in Atlanta, Jaylen Waddle is in Denver, Tyreek Hill is unsigned, and Jeff Hafley inherits a quarterback room of Kyle McCord and Malik Willis. What is left is De'Von Achane and a passing game that already ranked 25th in yards before it lost its three best players.",
+      "Miami tore the offence down to the studs. Tua Tagovailoa is in Atlanta, Jaylen Waddle is in Denver, Tyreek Hill is unsigned, and Jeff Hafley hands the offence to Malik Willis. What is left is De'Von Achane, a passing game that already ranked 25th in yards before it lost its three best players, and 160 vacated receiver targets nobody in the building has earned yet.",
     facts: [
       { label: "Head coach", value: "Jeff Hafley (first season)" },
+      { label: "Arrivals", value: "Malik Willis, Jalen Tolbert, Tutu Atwell" },
       { label: "Departures", value: "Tua Tagovailoa, Jaylen Waddle, Tyreek Hill" },
+      { label: "Vacated WR targets", value: "160 (67.2%)" },
       { label: "Scoring", value: "20.4 pts/g", rank: "25th" },
-      { label: "Passing", value: "195.4 yds/g", rank: "25th" },
       { label: "Pace", value: "55.8 plays/g", rank: "31st" },
-      { label: "Rushing", value: "120.2 yds/g", rank: "13th" },
     ],
     groups: [
       {
-        label: "The one player who matters",
+        label: "The two worth a real pick",
         players: [
           {
             name: "De'Von Achane",
@@ -334,25 +334,25 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "238 carries for 1,350 yards at 5.7 a pop, plus 67 catches on 85 targets — 305 touches and 1,838 scrimmage yards in sixteen games, on a team that scored 20.4 points a game. The receiving work is what makes him matchup-proof: he does not need a lead to keep touching the ball. The cost is the scoring environment. A back this good on the 25th-ranked offence is a volume bet, not a touchdown bet, and Miami has fewer ways to reach the end zone now than it did last season.",
           },
+          {
+            name: "Malik Willis",
+            position: "QB",
+            tier: "Upside QB2",
+            thesis:
+              "One of the most interesting values on the board, and the rushing floor is why.",
+            stats: ["31.5 pts in Week 17", "13.0 / 25.4 / 31.5 as a starter", "Projected starter"],
+            note:
+              "Two years of flashing elite rushing ability and surprising passing chops in relief for Green Bay, and now the projected starting job. His Week 17 line — 288 passing yards, 60 on the ground, two rushing scores, 31.5 fantasy points — came with EPA per dropback and CPOE numbers that were off the charts on 35 attempts, which is far too small a sample to conclude anything about the passing. The rushing is the part you can conclude something from: 13.0, 25.4 and 31.5 in his three starts across two seasons, plus 13.2 in relief on 64% of the snaps. What he no longer has is Matt LaFleur calling plays or Green Bay's weapons — Chris Bell, Caleb Douglas, Malik Washington, Greg Dulcich, Jalen Tolbert and Tutu Atwell are a long way from a proven room, and Kyle McCord is the fallback if the passing does not hold up. At a low-end QB2 price the legs alone justify the pick, and Miami trailing all season is a feature: this is a garbage-time-hero profile with a real breakout case if even one receiver emerges.",
+          },
         ],
       },
       {
         label: "Everything else is a dart",
         players: [
           {
-            name: "Kyle McCord",
-            position: "QB",
-            tier: "Superflex only",
-            thesis:
-              "The job is open and nobody in the room has won an NFL game with it.",
-            stats: ["No 2025 production", "Open competition", "Willis is the alternative"],
-            note:
-              "McCord has no meaningful NFL snaps and the competition is Malik Willis, whose 2025 was four efficient games in relief rather than a body of work. Hafley's first roster gives whoever wins it the 25th-ranked receiving corps minus its top two targets. There is a cheap dual-threat upside case in a Superflex league; in a one-quarterback format there is no case at all.",
-          },
-          {
             name: "Malik Washington",
             position: "WR",
-            tier: "Deep sleeper",
+            tier: "Sleeper",
             thesis:
               "Inherits the WR1 role by default, having gained 317 yards to earn it.",
             stats: ["46 rec, 317 yds", "3 TD", "110 rush yds"],
@@ -360,14 +360,14 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "Forty-six catches on 65 targets is a real role and 317 yards is not a real WR1 season — but Hill and Waddle took their target share out of the building, and Washington is the man standing closest to it. Miami also handed him 17 carries, which says the staff will manufacture touches. The floor is nothing; the path to 100 targets is genuinely open.",
           },
           {
-            name: "Jaylen Wright",
-            position: "RB",
-            tier: "Priority handcuff",
+            name: "Caleb Douglas",
+            position: "WR",
+            tier: "Deep sleeper",
             thesis:
-              "The only back who inherits a bell-cow role in a one-back offence.",
-            stats: ["288 rush yds", "4.1 yds/carry", "10 games"],
+              "The vacancy is the case, not the profile.",
+            stats: ["54 rec, 846 yds, 7 TD", "93 targets in 14 g", "11.5% drop rate"],
             note:
-              "Seventy carries at 4.1 behind a 300-touch starter is a backup's line, and it undersells the job. If Achane misses time, Wright inherits the majority of an offence that has no other way to move the ball, on a team that ran it more than it threw it well. That is the highest-leverage handcuff in the league on a per-snap basis.",
+              "A volume receiver whose collegiate line looks better than his efficiency: a 54th-percentile PFF grade, 55th-percentile YPRR, an 11.5% drop rate and a 23rd-percentile contested-catch rate all read like Texas Tech force-feeding him rather than unlocking anything. The argument for drafting him is the 160 vacated targets — 67.2% of Miami's receiver volume — and it is a real argument, because Willis has to throw to somebody. If the hands clean up, the volume profile lands in the most target-rich vacancy in the league.",
           },
           {
             name: "Greg Dulcich",
@@ -379,11 +379,21 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "Twenty-six catches on 33 targets across ten games is efficient work in a small role, and the role is about to get bigger by subtraction. The health record is the reason he keeps being available this late, and a quarterback room this unsettled caps what any pass-catcher here can be. Stream him in a bye week; do not roster him through one.",
           },
+          {
+            name: "Jaylen Wright",
+            position: "RB",
+            tier: "Late-round handcuff",
+            thesis:
+              "The job he would inherit is worth more than he has shown he can do with it.",
+            stats: ["288 rush yds", "4.1 yds/carry", "10 games"],
+            note:
+              "Seventy carries at 4.1 behind a 300-touch starter is a backup's line, and nothing in it argues he is the reason to spend a pick — Achane's workload is, and Miami has shown no reluctance to spread the backup carries around. Take him late in a league where handcuffs are cheap, and do not reach on the theory that this one is different.",
+          },
         ],
       },
     ],
     bottomLine:
-      "Achane is a first-round talent attached to a bottom-five offence, and squaring those two things is the whole Miami draft decision. Everything behind him is a bet that somebody in a stripped-down passing game becomes startable — at these prices you can afford to find out, just not in a lineup you need to win with.",
+      "Achane is a first-round talent attached to a bottom-five offence, and squaring those two things is the whole Miami draft decision. Willis is the cheap swing worth taking alongside him — a dual-threat starter on a team that will trail all year — and everything behind the two of them is a bet that somebody in a stripped-down passing game becomes startable.",
   },
   nyj: {
     season: 2026,
@@ -1960,6 +1970,300 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     bottomLine:
       "Everything here is contingent on Jayden Daniels playing seventeen games, which he has not yet done. Stefon Diggs is the safest asset because his 85 receptions happened with a backup quarterback throwing most of them, and Croskey-Merritt's eight touchdowns are the cheapest source of scoring on the roster.",
+  },
+  chi: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Ben Johnson's first season produced the best turnover margin in football at plus-twenty-two, the second-fastest pace, the third-best rushing attack and the third-fewest sacks allowed. Caleb Williams threw twenty-seven touchdowns against seven interceptions on 58.1% passing, which is the one number that has room to move. DJ Moore left for Buffalo and the receiving corps did not miss him.",
+    facts: [
+      { label: "Head coach", value: "Ben Johnson (second season)" },
+      { label: "Departures", value: "DJ Moore" },
+      { label: "Turnover margin", value: "+22", rank: "1st" },
+      { label: "Pace", value: "64.9 plays/g", rank: "2nd" },
+      { label: "Rushing", value: "144.5 yds/g", rank: "3rd" },
+      { label: "Sacks allowed", value: "24", rank: "3rd" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Caleb Williams",
+            position: "QB",
+            tier: "Top-six QB1",
+            thesis:
+              "Thirty total touchdowns and seven interceptions, at the second-fastest pace in the league.",
+            stats: ["3,942 pass yds", "27 TD, 7 INT", "388 rush yds"],
+            note:
+              "Twenty-seven passing scores across a full seventeen games, plus 388 rushing yards, is a top-six fantasy season and he produced it while completing only 58.1% of his throws. That is the argument for him: the volume and the protection are elite, and the accuracy is the part still improving. Ben Johnson's offence runs 64.9 plays a game behind the third-best pass protection — every structural advantage is already in place.",
+          },
+          {
+            name: "D'Andre Swift",
+            position: "RB",
+            tier: "RB2",
+            thesis:
+              "1,386 yards and ten scores, with a genuine committee behind him.",
+            stats: ["1,087 rush yds", "34 rec, 299 yds", "10 total TD"],
+            note:
+              "Two hundred and twenty-three carries at 4.9 on the third-ranked rushing offence, plus 34 receptions, is a complete season and it is the ceiling of what this role offers. Kyle Monangai took 169 carries of his own at 4.6, so this is a 57-43 split rather than a workhorse job. Draft him as a high-floor RB2 whose upside is capped by the back sharing his backfield.",
+          },
+          {
+            name: "Colston Loveland",
+            position: "TE",
+            tier: "Top-five TE",
+            thesis:
+              "Eighty-two targets and six touchdowns, at 12.3 yards a catch.",
+            stats: ["58 rec, 713 yds", "82 targets", "6 TD"],
+            note:
+              "Fifty-eight receptions for 713 yards is genuine receiving production rather than checkdown volume — 12.3 a catch from a tight end means he is working the seam. Six touchdowns on an offence that threw twenty-eight is a real red-zone share. This is the rare tight end with both a PPR floor and a weekly ceiling, on an offence with the pace to support both.",
+          },
+          {
+            name: "Rome Odunze",
+            position: "WR",
+            tier: "WR2",
+            thesis:
+              "Six touchdowns in twelve games, at fifteen yards a catch, with DJ Moore now gone.",
+            stats: ["44 rec, 661 yds", "90 targets", "6 TD"],
+            note:
+              "Ninety targets in twelve appearances is a seven-and-a-half-a-week rate that would have led this team over a full season, and 15.0 a reception is the downfield role. Moore's departure removes the one receiver ahead of him in the pecking order. Twelve games is the caution and the reason the price has not fully adjusted to him being the WR1 here.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Luther Burden",
+            position: "WR",
+            tier: "Upside WR3",
+            thesis:
+              "Caught 78% of his targets as a rookie, and only sixty came his way.",
+            stats: ["47 rec, 652 yds", "60 targets", "2 TD"],
+            note:
+              "Forty-seven catches on sixty targets at 13.9 a reception is outstanding efficiency in a limited role, and the role is about to grow with DJ Moore gone. Two touchdowns is the number that looks wrong for a receiver producing this well in an offence that scored 25.9 a game. He is the cheapest way to buy into the second-fastest offence in football.",
+          },
+          {
+            name: "Kyle Monangai",
+            position: "RB",
+            tier: "Committee RB3",
+            thesis:
+              "169 carries at 4.6 — a real share, not a handcuff's workload.",
+            stats: ["783 rush yds", "4.6 yds/carry", "5 TD"],
+            note:
+              "Seven hundred and eighty-three yards across all seventeen games is standalone production and he matched Swift's efficiency closely enough that Chicago has no reason to consolidate. Thirty targets means the passing work stays with Swift. He is a flex play in good matchups and the direct beneficiary of any Swift absence on a top-three rushing offence.",
+          },
+          {
+            name: "Cole Kmet",
+            position: "TE",
+            tier: "Deep bench",
+            thesis:
+              "The second tight end behind a breakout.",
+            stats: ["30 rec, 347 yds", "48 targets", "2 TD"],
+            note:
+              "Thirty catches for 347 yards is a genuine role and it exists in the shadow of Loveland's 82 targets. Chicago uses two tight ends enough to keep him involved and not enough to make him startable. He matters in the deepest leagues and as insurance if Loveland misses time.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Every structural indicator here is elite — pace, protection, turnovers, rushing — and the quarterback completed 58.1% of his passes anyway. That gap is the opportunity: Caleb Williams and Rome Odunze are both priced on last season's efficiency rather than on the offence Ben Johnson has already built.",
+  },
+  det: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Detroit scored 28.3 points a game, finished 3rd in passing and threw thirty-five touchdowns. Jared Goff posted a 105.5 rating with a 68% completion rate across all seventeen games, and Jahmyr Gibbs turned 320 touches into 1,839 yards and eighteen scores. There are four players here worth a top-five-round pick, which almost no other roster can say.",
+    facts: [
+      { label: "Head coach", value: "Dan Campbell" },
+      { label: "Arrivals", value: "Isiah Pacheco" },
+      { label: "Scoring", value: "28.3 pts/g", rank: "5th" },
+      { label: "Passing", value: "266.6 yds/g", rank: "3rd" },
+      { label: "Passing TDs", value: "35" },
+      { label: "Total offence", value: "373.2 yds/g", rank: "5th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jahmyr Gibbs",
+            position: "RB",
+            tier: "Top-two overall",
+            thesis:
+              "Eighteen touchdowns and 1,839 yards from scrimmage, at five yards a carry.",
+            stats: ["1,223 rush yds", "77 rec, 616 yds", "18 total TD"],
+            note:
+              "Two hundred and forty-three carries at 5.0 and 77 receptions on 94 targets, across all seventeen games — this is a genuine three-down workhorse role on the fifth-highest-scoring offence in football. The receiving volume is what separates him from every other back: 94 targets means his floor does not depend on game script or the goal line. Thirteen rushing touchdowns will regress a little and he does not need them to.",
+          },
+          {
+            name: "Amon-Ra St. Brown",
+            position: "WR",
+            tier: "Top-three WR",
+            thesis:
+              "172 targets, 117 catches and eleven touchdowns — volume and scoring in one profile.",
+            stats: ["117 rec, 1,401 yds", "172 targets", "11 TD"],
+            note:
+              "One hundred and seventeen receptions is an elite PPR floor and eleven touchdowns is a ceiling almost no high-volume receiver also carries. He played all seventeen games and commanded 172 targets on an offence that spreads the ball to a 1,100-yard second receiver and a 77-catch running back. The 12.0 yards a reception is the only ordinary number here and it is entirely beside the point.",
+          },
+          {
+            name: "Jared Goff",
+            position: "QB",
+            tier: "Top-eight QB1",
+            thesis:
+              "Thirty-four touchdowns at a 105.5 rating, with nothing on the ground.",
+            stats: ["4,564 pass yds", "34 TD, 8 INT", "68.0% comp"],
+            note:
+              "Four thousand five hundred yards and thirty-four scores across a full season is genuinely elite passing production, and the 34-to-8 ratio is why Detroit finished 9th in turnover margin. Forty-five rushing yards all year means there is no floor beneath a quiet passing week — he is entirely dependent on this offence continuing to score. It has, for several years running, and the supporting cast is intact.",
+          },
+          {
+            name: "Jameson Williams",
+            position: "WR",
+            tier: "WR2",
+            thesis:
+              "17.2 yards a catch and seven scores — the most explosive WR2 role in football.",
+            stats: ["65 rec, 1,117 yds", "102 targets", "7 TD"],
+            note:
+              "A 1,100-yard season on 102 targets means he averaged nearly eleven yards per target, which is a top-of-the-league figure. Sixty-five receptions is a thinner PPR base than his yardage suggests, so the weekly line swings hard on whether a deep ball connected. Seven touchdowns and seventeen games of availability make him a comfortable WR2 whose ceiling on any given Sunday is higher than St. Brown's.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Sam LaPorta",
+            position: "TE",
+            tier: "TE1 in nine games",
+            thesis:
+              "Caught 82% of his targets, and played just over half the season.",
+            stats: ["40 rec, 489 yds", "49 targets", "9 games"],
+            note:
+              "Forty catches on 49 targets is a remarkable rate and 54 yards a game is top-eight production at the position over a full year. He did not have a full year. On an offence with 172 targets going to St. Brown and 94 to Gibbs, his ceiling is capped anyway — three touchdowns in nine games is the honest scoring rate. A TE1 if healthy, priced as though that is not in doubt.",
+          },
+          {
+            name: "Isaac TeSlaa",
+            position: "WR",
+            tier: "Touchdown lottery ticket",
+            thesis:
+              "Six touchdowns on twenty-seven targets.",
+            stats: ["16 rec, 239 yds", "27 targets", "6 TD"],
+            note:
+              "Sixteen receptions producing six scores is the highest touchdown rate per target of anyone on this page and it is almost entirely unrepeatable — that is a red-zone package, not a role. Two hundred and thirty-nine yards across seventeen games is the actual usage. He is worth a final-round pick in a touchdown-heavy format and nothing anywhere else.",
+          },
+          {
+            name: "Isiah Pacheco",
+            position: "RB",
+            tier: "Handcuff",
+            thesis:
+              "The backup to a 320-touch back, arriving from Kansas City.",
+            stats: ["462 rush yds", "3.9 yds/carry", "2 total TD"],
+            note:
+              "One hundred and eighteen carries at 3.9 in Kansas City is replacement-level running and it does not need to be more than that here. What matters is the job description: if Gibbs misses time, this backfield becomes one of the most valuable in fantasy overnight. He is a handcuff worth holding purely because of what he would inherit.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is the deepest fantasy roster in the league — Gibbs, St. Brown, Goff and Jameson Williams are all startable every week on an offence that scored 28.3 a game. There is no bargain here and there does not need to be; take whichever of the four falls to you.",
+  },
+  gb: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Green Bay converted 48.8% of its third downs, second-best in the league, and still scored only 23.0 points a game because it ran the 23rd-fastest offence. Jordan Love threw twenty-three touchdowns against six interceptions at a 101.2 rating. The receiving corps is the story and the warning: Christian Watson, Tucker Kraft and Jayden Reed played ten, eight and seven games.",
+    facts: [
+      { label: "Head coach", value: "Matt LaFleur" },
+      { label: "Arrivals", value: "Jonnu Smith, Tyrod Taylor" },
+      { label: "Third down", value: "48.8%", rank: "2nd" },
+      { label: "Scoring", value: "23.0 pts/g", rank: "16th" },
+      { label: "Pace", value: "59.4 plays/g", rank: "23rd" },
+      { label: "Sacks allowed", value: "29", rank: "7th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Josh Jacobs",
+            position: "RB",
+            tier: "RB1 on touchdowns",
+            thesis:
+              "Thirteen rushing scores on 929 yards — the touchdown share is the whole asset.",
+            stats: ["929 rush yds", "13 rush TD", "36 rec, 282 yds"],
+            note:
+              "Two hundred and thirty-four carries at 4.0 is unremarkable running and thirteen touchdowns is a top-two figure at the position, which tells you exactly how Green Bay uses him: this offence converts third downs better than anyone and hands him the ball when the field is short. Thirty-six receptions add a PPR floor. The risk is that a 4.0-yard-per-carry back living on scores has a bad month whenever the drives stop ending in the end zone.",
+          },
+          {
+            name: "Jordan Love",
+            position: "QB",
+            tier: "Streaming QB1",
+            thesis:
+              "A 101.2 rating and twenty-three touchdowns, on an offence that runs 59.4 plays a game.",
+            stats: ["3,381 pass yds", "23 TD, 6 INT", "15 games"],
+            note:
+              "Sixty-six percent completion at a 101.2 rating with six interceptions is genuinely good quarterbacking, and the pace is why it does not translate into a top-five fantasy season. Two hundred and twenty-five passing yards a start with 199 rushing yards all year leaves a thin floor. He is the quarterback you start in a good matchup rather than the one you draft to stop thinking about the position.",
+          },
+          {
+            name: "Christian Watson",
+            position: "WR",
+            tier: "WR3 with WR1 weeks",
+            thesis:
+              "17.5 yards a catch and six touchdowns in ten games.",
+            stats: ["35 rec, 611 yds", "55 targets", "6 TD"],
+            note:
+              "Sixty-one yards a game and a touchdown every other week is WR2 production at a rate nobody else in this receiving corps approached. He has now failed to reach twelve games in consecutive seasons, and 55 targets is a small enough base that a quiet week is a zero. Draft him as the highest-ceiling receiver here and never as somebody you rely on.",
+          },
+          {
+            name: "Tucker Kraft",
+            position: "TE",
+            tier: "Top-five TE if healthy",
+            thesis:
+              "Six touchdowns and 489 yards in eight games — a full-season TE1 pace.",
+            stats: ["32 rec, 489 yds", "44 targets", "6 TD"],
+            note:
+              "Sixty-one yards a game at 15.3 a reception, with six scores in half a season, is the most productive per-game tight end line in this division. Eight games is the entire question and Jonnu Smith's arrival is a mild complication rather than a real one. If he plays fifteen games he is a top-five tight end; the market will price him closer to tenth, which is the opportunity.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Matthew Golden",
+            position: "WR",
+            tier: "Bench upside",
+            thesis:
+              "Forty-four targets and no touchdowns, in an offence that needed him to produce.",
+            stats: ["29 rec, 361 yds", "44 targets", "0 TD"],
+            note:
+              "Twenty-nine receptions for 361 yards with zero scores is a disappointing season given how much time Watson and Reed missed — the opportunity was there and he did not take it. Green Bay manufactured ten carries for him, which says the staff wanted him involved. He is a bet on year-two development in a receiving corps where availability keeps creating vacancies.",
+          },
+          {
+            name: "Jayden Reed",
+            position: "WR",
+            tier: "Deep-league flier",
+            thesis:
+              "Twenty-two targets in seven games, and an 86% catch rate on them.",
+            stats: ["19 rec, 207 yds", "22 targets", "7 games"],
+            note:
+              "Nineteen catches on 22 targets is efficient work in a role that barely existed before the season ended for him. The per-game usage was well below what he has commanded previously, so this is a bet on health restoring a role rather than on the role itself. Cheap enough to be worth it in a deep league and nowhere near reliable enough to start.",
+          },
+          {
+            name: "Jonnu Smith",
+            position: "TE",
+            tier: "Deep bench",
+            thesis:
+              "Fifty-four targets at 5.8 yards a catch — volume without yardage.",
+            stats: ["38 rec, 222 yds", "54 targets", "3 total TD"],
+            note:
+              "Thirty-eight receptions producing 222 yards is one of the lowest yards-per-catch figures any regular pass-catcher posted, and Green Bay added him to a room where Kraft is the clear starter when upright. Nine carries and a rushing touchdown suggest he will be used as a gadget piece. He matters only in the weeks Kraft is unavailable.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "An efficient offence that does not run enough plays to make anyone a weekly must-start except Josh Jacobs, and his value rests on thirteen touchdowns rather than on 4.0 yards a carry. Tucker Kraft is the buy here — a top-five tight-end rate that the market will discount because of eight games.",
   },
 };
 

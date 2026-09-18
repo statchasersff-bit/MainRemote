@@ -544,7 +544,7 @@ export async function runClubIngest(): Promise<IngestResult> {
       );
     }
 
-    const result = await storeItems(sweep.items, CLUB_PROVIDER);
+    const result = await storeItems(sweep.items, CLUB_PROVIDER, CLUB_SOURCE_TYPE);
 
     clubState.lastSuccessMs = Date.now();
     clubState.lastResult = result;
@@ -594,15 +594,34 @@ export function coerceItems(data: unknown): RawNewsItem[] {
 export const DYNASTY_PROVIDER = "Dynasty Command";
 
 /**
+ * The provider lanes, as written to news_items.source_type.
+ *
+ * The X lane's name is NOT here — it belongs to lib/x, which owns that
+ * provider, and the read path spells it out for itself (see X_LANE in
+ * lib/news-query.ts) so the feed never has to import the ingestion half.
+ */
+export const WIRE_SOURCE_TYPE = "wire";
+export const CLUB_SOURCE_TYPE = "club";
+
+/**
  * Write a batch of feed items into the archive. Never fetches anything.
  *
  * `provider` names whoever relayed this batch. An item may override it with its
  * own `source` when it knows the reporting outlet; see RawNewsItem.source for
  * why the current feed never does.
  */
-async function storeItems(
+export async function storeItems(
   rawItems: RawNewsItem[],
   provider: string = DYNASTY_PROVIDER,
+  /**
+   * Which provider lane these rows belong to — "wire", "club" or "x".
+   *
+   * A parameter rather than something inferred from `provider`, because the
+   * lane is what the feed's reads are built on (see lib/news-query.ts) and it
+   * must be a fact the caller states, not a string comparison that quietly
+   * changes meaning the day someone renames a provider label.
+   */
+  sourceType: string = WIRE_SOURCE_TYPE,
 ): Promise<IngestResult> {
   const now = new Date();
 
@@ -618,12 +637,14 @@ async function storeItems(
   const incoming = new Map<string, { id: string; item: RawNewsItem }>();
   for (const item of rawItems) {
     const id = item.id?.toString().trim() || makeFallbackId(item);
-    // Scoped by team for the club feeds, unscoped for the wire — see
-    // newsDedupeKey. Two clubs filing "Practice Report" are two stories.
-    incoming.set(
-      newsDedupeKey({ title: item.title, id, scope: item.teamAbbr }),
-      { id, item },
-    );
+    // A provider that has a real external id supplies its own key and dedupes
+    // on that; everyone else gets the content fingerprint. Scoped by team for
+    // the club feeds, unscoped for the wire — see newsDedupeKey. Two clubs
+    // filing "Practice Report" are two stories.
+    const key =
+      item.dedupeKey?.toString().trim() ||
+      newsDedupeKey({ title: item.title, id, scope: item.teamAbbr });
+    incoming.set(key, { id, item });
   }
 
   let inserted = 0;
@@ -670,6 +691,10 @@ async function storeItems(
         // which feed the row came from, and it cannot drift the way a generated
         // sentence can.
         teamAbbr,
+        // Same category of fact, and for the same reason: the lane a row was
+        // written by is not a judgement that can go stale.
+        sourceType,
+        authorHandle: item.authorHandle?.toString().trim().toLowerCase() || null,
       };
 
       // Attribution upgrades but never downgrades. A row that already names the

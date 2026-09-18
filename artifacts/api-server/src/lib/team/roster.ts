@@ -13,6 +13,10 @@
  *   - `injury_status` / `injury_body_part` / `practice_participation` are the
  *     injury designations. A player with no designation is simply absent from
  *     Injury Watch — we never infer a status from a headline.
+ *   - `search_rank` is Sleeper's league-wide fantasy relevance, used to decide
+ *     which designations are worth a row. It has to be, because being injured
+ *     is itself what moves a player down the depth chart — see
+ *     INJURY_RANK_LIMIT at the foot of this file.
  *
  * Only QB/RB/WR/TE are indexed. The team pages are fantasy pages; a full
  * 90-man roster is a different product, and keeping the index to the four
@@ -37,6 +41,15 @@ export interface RosterPlayer {
   depthPosition: string | null;
   jersey: number | null;
   yearsExp: number | null;
+  /**
+   * Sleeper's own fantasy-relevance rank across the whole league (1 = the most
+   * looked-up player). Null when Sleeper does not rank him at all, which is the
+   * honest answer for a camp body.
+   *
+   * This is the only relevance signal here that an injury does not corrupt. See
+   * `injuryWatch` below for why that matters.
+   */
+  searchRank: number | null;
   /** Roster status, e.g. "Active", "Inactive". */
   status: string | null;
   /** e.g. "Questionable", "Out", "IR". Null when the player has no designation. */
@@ -86,17 +99,42 @@ export interface SleeperPlayer {
   active?: boolean | null;
 }
 
+/**
+ * A player as the free-text matcher needs him: the name to print, the team to
+ * tag, and the id the headshot URL is built from.
+ *
+ * Kept separate from RosterPlayer because this index covers EVERY player with a
+ * team, not only the four fantasy positions — an X post about an offensive
+ * lineman or a head coach's quarterback still names a person, and refusing to
+ * recognise him because he cannot be started at flex would be the wrong reason.
+ */
+export interface NamedPlayer {
+  id: string;
+  name: string;
+  team: string;
+}
+
 /** Every indexed player keyed by team, plus a name index for news matching. */
 interface RosterIndex {
   byTeam: Map<string, TeamRoster>;
   /** `search_full_name` -> lowercase team abbreviation. */
   teamByPlayerName: Map<string, string>;
+  /**
+   * `search_full_name` -> that player, for matching names inside free text.
+   *
+   * Same keys and the same ambiguity rule as teamByPlayerName (a name on two
+   * teams is in neither index), so the two can never disagree about who
+   * "Josh Allen" is. This one additionally carries what the card needs to
+   * render him.
+   */
+  playerByName: Map<string, NamedPlayer>;
   fetchedAt: number;
 }
 
 let index: RosterIndex = {
   byTeam: new Map(),
   teamByPlayerName: new Map(),
+  playerByName: new Map(),
   fetchedAt: 0,
 };
 
@@ -145,6 +183,9 @@ export function indexRoster(
   // be worked out — attributing one to the wrong team is worse than leaving it
   // unattributed, which is all an ambiguous name costs.
   const nameCandidates = new Map<string, string | null>();
+  // Same keys, carrying who the name belongs to. Filled for every player with a
+  // team; pruned below by exactly the same ambiguity verdict.
+  const playerCandidates = new Map<string, NamedPlayer>();
 
   for (const key in data) {
     const player = data[key];
@@ -158,6 +199,17 @@ export function indexRoster(
       const seen = nameCandidates.get(searchName);
       if (seen === undefined) nameCandidates.set(searchName, team);
       else if (seen !== null && seen !== team) nameCandidates.set(searchName, null);
+
+      const displayName =
+        player.full_name?.trim() ||
+        [player.first_name, player.last_name].filter(Boolean).join(" ").trim();
+      if (displayName && !playerCandidates.has(searchName)) {
+        playerCandidates.set(searchName, {
+          id: String(player.player_id ?? key),
+          name: displayName,
+          team,
+        });
+      }
     }
 
     const position = player.position ?? null;
@@ -182,6 +234,8 @@ export function indexRoster(
       depthPosition: player.depth_chart_position ?? null,
       jersey: typeof player.number === "number" ? player.number : null,
       yearsExp: typeof player.years_exp === "number" ? player.years_exp : null,
+      searchRank:
+        typeof player.search_rank === "number" ? player.search_rank : null,
       status: player.status ?? null,
       injuryStatus: player.injury_status?.trim() || null,
       injuryBodyPart: player.injury_body_part?.trim() || null,
@@ -212,8 +266,11 @@ export function indexRoster(
       );
     }
     // Injury Watch reads top-down, so order it the way a fantasy manager cares:
-    // starters first, then by position in lineup order. A WR4's hamstring is
-    // real information but it is not the first thing on the page.
+    // the biggest name first. That is Sleeper's search rank and NOT the depth
+    // chart, because a player is demoted on the depth chart *by* the injury —
+    // ordering on depth puts the WR1 who just landed on IR below a healthy-ish
+    // WR4, which is backwards. Depth breaks ties among the unranked, then
+    // position in lineup order, then the name so the list is stable.
     const positionRank: Record<SkillPosition, number> = {
       QB: 0,
       RB: 1,
@@ -222,6 +279,7 @@ export function indexRoster(
     };
     roster.injuries.sort(
       (a, b) =>
+        fantasyRank(a) - fantasyRank(b) ||
         (a.depthOrder ?? 99) - (b.depthOrder ?? 99) ||
         positionRank[a.position] - positionRank[b.position] ||
         a.name.localeCompare(b.name),
@@ -229,11 +287,15 @@ export function indexRoster(
   }
 
   const teamByPlayerName = new Map<string, string>();
+  const playerByName = new Map<string, NamedPlayer>();
   for (const [name, team] of nameCandidates) {
-    if (team !== null) teamByPlayerName.set(name, team);
+    if (team === null) continue;
+    teamByPlayerName.set(name, team);
+    const player = playerCandidates.get(name);
+    if (player) playerByName.set(name, player);
   }
 
-  index = { byTeam, teamByPlayerName, fetchedAt };
+  index = { byTeam, teamByPlayerName, playerByName, fetchedAt };
 }
 
 /** The indexed roster for a team, or null before the first successful fetch. */
@@ -259,6 +321,23 @@ export function teamForPlayerName(name: string | null | undefined): string | nul
   return index.teamByPlayerName.get(key) ?? null;
 }
 
+/**
+ * The player behind a folded name key, or null.
+ *
+ * The key is the same folding Sleeper's own search index uses — see
+ * teamForPlayerName above, whose key() this is deliberately identical to. The
+ * caller does the folding because it is matching many candidate substrings
+ * against this index and should not pay to re-normalise on every one.
+ */
+export function playerForSearchKey(key: string): NamedPlayer | null {
+  return index.playerByName.get(key) ?? null;
+}
+
+/** How many players the free-text matcher can currently recognise. */
+export function namedPlayerCount(): number {
+  return index.playerByName.size;
+}
+
 /** When the roster snapshot was taken, or 0 if there is none yet. */
 export function rosterFetchedAt(): number {
   return index.fetchedAt;
@@ -269,10 +348,16 @@ export function restoreRosterIndex(
   byTeam: Record<string, TeamRoster>,
   teamByPlayerName: Record<string, string>,
   fetchedAt: number,
+  // Optional, so a cache file written before this index existed still restores
+  // everything it does have. The next refresh rebuilds the missing half; until
+  // then free-text matching simply finds nobody, which is the same thing it
+  // does before the first fetch of a cold start.
+  playerByName: Record<string, NamedPlayer> = {},
 ): void {
   index = {
     byTeam: new Map(Object.entries(byTeam)),
     teamByPlayerName: new Map(Object.entries(teamByPlayerName)),
+    playerByName: new Map(Object.entries(playerByName)),
     fetchedAt,
   };
 }
@@ -281,11 +366,13 @@ export function restoreRosterIndex(
 export function snapshotRosterIndex(): {
   byTeam: Record<string, TeamRoster>;
   teamByPlayerName: Record<string, string>;
+  playerByName: Record<string, NamedPlayer>;
   fetchedAt: number;
 } {
   return {
     byTeam: Object.fromEntries(index.byTeam),
     teamByPlayerName: Object.fromEntries(index.teamByPlayerName),
+    playerByName: Object.fromEntries(index.playerByName),
     fetchedAt: index.fetchedAt,
   };
 }
@@ -355,20 +442,52 @@ export function fantasyCornerstones(
  * Sleeper designates everyone, including camp bodies on IR who are not on the
  * depth chart at all. Listing them turns Injury Watch into a transactions log:
  * the brief is fantasy-relevant offensive players, and a WR7's arm is not that.
- * A player off the depth chart entirely is excluded outright.
  */
 const INJURY_DEPTH_LIMIT = 4;
+
+/**
+ * League-wide fantasy relevance that still earns a row no matter how far down
+ * the depth chart the injury has pushed him.
+ *
+ * This limit is the whole reason Injury Watch works. **Sleeper demotes an
+ * injured player on the depth chart**, so a season-ending IR for a genuine WR1
+ * lands him at WR6 — and a depth-only gate then hides precisely the injury the
+ * page exists to report, while still printing the WR4 who is questionable.
+ * Search rank is the signal the injury does not move: it is where Sleeper ranks
+ * him among every player in the league, so a top-300 name on IR is news whether
+ * his team currently lists him first or ninth.
+ *
+ * 300 is deliberately wider than a startable roster. A designated player that
+ * relevant is worth a line even on a deep team, and the row limit below is what
+ * keeps the panel short — not a rank tight enough to drop real players.
+ */
+const INJURY_RANK_LIMIT = 300;
 
 /** Most rows shown, so one battered roster cannot swamp the panel. */
 const INJURY_ROW_LIMIT = 6;
 
-/** Injury Watch rows: designated players near the top of the depth chart. */
+/** Sort key: Sleeper's rank, with the unranked last rather than first. */
+function fantasyRank(player: RosterPlayer): number {
+  // `?? null` rather than a bare read: a roster cache written before this field
+  // existed restores players without it, and `undefined` in arithmetic would
+  // turn every comparison into NaN and leave the list in input order.
+  return player.searchRank ?? Number.MAX_SAFE_INTEGER;
+}
+
+/**
+ * Injury Watch rows: designated players who are either near the top of their
+ * depth chart or fantasy-relevant league-wide. See INJURY_RANK_LIMIT — the
+ * second test is what keeps an IR'd starter on the page after Sleeper has
+ * demoted him for being hurt.
+ */
 export function injuryWatch(roster: TeamRoster | null): DepthChartEntry[] {
   if (!roster) return [];
   return roster.injuries
     .filter(
       (player) =>
-        player.depthOrder !== null && player.depthOrder <= INJURY_DEPTH_LIMIT,
+        (player.depthOrder !== null &&
+          player.depthOrder <= INJURY_DEPTH_LIMIT) ||
+        fantasyRank(player) <= INJURY_RANK_LIMIT,
     )
     .slice(0, INJURY_ROW_LIMIT)
     .map((player) => ({

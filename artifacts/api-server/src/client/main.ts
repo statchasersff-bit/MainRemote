@@ -20,6 +20,8 @@ import {
   renderPager,
   renderTeamChoice,
   renderTeamOptions,
+  renderAccountOptions,
+  renderCategoryOptions,
   sortTeamCodes,
   itemsSignature,
   formatAbsoluteDate,
@@ -114,6 +116,12 @@ class NewsWidget {
    */
   private teamFilter = "";
   private playerQuery = "";
+  /** "" (all), "news" or "x". */
+  private sourceFilter = "";
+  /** An X handle, lowercase and without the @. */
+  private accountFilter = "";
+  /** A category code from lib/news-category.ts. */
+  private categoryFilter = "";
 
   private indexPages(): void {
     this.allItems = Array.from(
@@ -129,6 +137,18 @@ class NewsWidget {
       this.playerQuery &&
       !(item.dataset["player"] ?? "").includes(this.playerQuery)
     ) {
+      return false;
+    }
+    if (this.sourceFilter && item.dataset["source"] !== this.sourceFilter) {
+      return false;
+    }
+    // Choosing a reporter implies their lane, so it does not also need the
+    // source menu set to X — and the two cannot contradict each other, because
+    // every card with a handle is an X card.
+    if (this.accountFilter && item.dataset["handle"] !== this.accountFilter) {
+      return false;
+    }
+    if (this.categoryFilter && item.dataset["category"] !== this.categoryFilter) {
       return false;
     }
     return true;
@@ -183,7 +203,12 @@ class NewsWidget {
 
   /** Result count, empty state and pager visibility for the current filters. */
   private paintFilterState(count: number): void {
-    const filtering = this.teamFilter !== "" || this.playerQuery !== "";
+    const filtering =
+      this.teamFilter !== "" ||
+      this.playerQuery !== "" ||
+      this.sourceFilter !== "" ||
+      this.accountFilter !== "" ||
+      this.categoryFilter !== "";
 
     const status = this.root.querySelector<HTMLElement>(".sc-filter-status");
     if (status) {
@@ -226,6 +251,31 @@ class NewsWidget {
       if (target?.id !== "scFilterPlayer") return;
       // Normalised the same way the cards were, so "jamarr" matches "Ja'Marr".
       this.playerQuery = searchKey((target as HTMLInputElement).value);
+      this.applyFilters();
+    });
+
+    // One delegated handler for all three <select>s, so a menu rebuilt after a
+    // refresh does not need re-binding — the same reason the pager's click
+    // handler lives on the root.
+    filters.addEventListener("change", (event) => {
+      const target = event.target as HTMLSelectElement | null;
+      if (!target || target.tagName !== "SELECT") return;
+      switch (target.id) {
+        case "scFilterSource":
+          this.sourceFilter = target.value;
+          // Narrowing to the news lane would otherwise leave a chosen reporter
+          // set, and the two together can only ever match nothing.
+          if (this.sourceFilter === "news") this.setAccount("");
+          break;
+        case "scFilterAccount":
+          this.accountFilter = target.value;
+          break;
+        case "scFilterCategory":
+          this.categoryFilter = target.value;
+          break;
+        default:
+          return;
+      }
       this.applyFilters();
     });
 
@@ -359,6 +409,109 @@ class NewsWidget {
     this.paintTeamChoice();
   }
 
+  /** Set the account filter and keep its menu showing what is set. */
+  private setAccount(handle: string): void {
+    this.accountFilter = handle;
+    const select = this.root.querySelector<HTMLSelectElement>("#scFilterAccount");
+    if (select) select.value = handle;
+  }
+
+  /**
+   * Keep the source, account and category menus honest after a refresh.
+   *
+   * Same contract as syncTeamMenu: rebuild only what actually changed, and if
+   * the current choice has dropped out of the feed entirely, fall back to "all"
+   * rather than leave a selection that can only show an empty list.
+   *
+   * The source menu is fixed (All/News/X) and never needs rebuilding — but it
+   * does need resetting when the last X card leaves the feed, which is the one
+   * case where "X" stops being a choice that can match anything.
+   */
+  private syncItemMenus(): void {
+    const items = this.items();
+
+    const accountSelect =
+      this.root.querySelector<HTMLSelectElement>("#scFilterAccount");
+    if (accountSelect) {
+      const listed = Array.from(accountSelect.options)
+        .map((option) => option.value)
+        .filter(Boolean);
+      const present = Array.from(
+        new Set(
+          this.allItems
+            .map((item) => item.dataset["handle"] ?? "")
+            .filter(Boolean),
+        ),
+      );
+      const unchanged =
+        present.length === listed.length &&
+        present.every((handle) => listed.includes(handle));
+
+      if (!unchanged) {
+        if (!present.includes(this.accountFilter)) this.accountFilter = "";
+        accountSelect.innerHTML = renderAccountOptions(items, this.accountFilter);
+      }
+    }
+
+    const categorySelect =
+      this.root.querySelector<HTMLSelectElement>("#scFilterCategory");
+    if (categorySelect) {
+      const listed = Array.from(categorySelect.options)
+        .map((option) => option.value)
+        .filter(Boolean);
+      const present = Array.from(
+        new Set(
+          this.allItems
+            .map((item) => item.dataset["category"] ?? "")
+            .filter(Boolean),
+        ),
+      );
+      const unchanged =
+        present.length === listed.length &&
+        present.every((category) => listed.includes(category));
+
+      if (!unchanged) {
+        if (!present.includes(this.categoryFilter)) this.categoryFilter = "";
+        categorySelect.innerHTML = renderCategoryOptions(
+          items,
+          this.categoryFilter,
+        );
+      }
+    }
+
+    if (
+      this.sourceFilter === "x" &&
+      !this.allItems.some((item) => item.dataset["source"] === "x")
+    ) {
+      this.sourceFilter = "";
+      const sourceSelect =
+        this.root.querySelector<HTMLSelectElement>("#scFilterSource");
+      if (sourceSelect) sourceSelect.value = "";
+    }
+  }
+
+  /**
+   * The rendered cards as the menu builders want them.
+   *
+   * Reconstructed from the DOM rather than kept as a parallel array of the last
+   * payload, because the list can also have come from the server with no fetch
+   * behind it — the markup is the one representation that always exists. Only
+   * the fields the menus read are filled in.
+   */
+  private items(): NewsItem[] {
+    return this.allItems.map((element, index) => ({
+      id: String(index),
+      title: "",
+      sourceType: element.dataset["source"] === "x" ? "x" : null,
+      authorHandle: element.dataset["handle"] ?? null,
+      category: element.dataset["category"] ?? null,
+      source:
+        element
+          .querySelector<HTMLElement>(".sc-x-author")
+          ?.textContent?.trim() ?? null,
+    }));
+  }
+
   private totalPages(): number {
     return Math.max(1, this.pages.length);
   }
@@ -405,6 +558,7 @@ class NewsWidget {
     this.upgradeTimestamps();
     this.wireImageFallbacks();
     this.syncTeamMenu();
+    this.syncItemMenus();
     // Re-applies whatever the reader has filtered to, so a background refresh
     // cannot quietly widen the list back out — and keeps them on their page.
     this.applyFilters(false);

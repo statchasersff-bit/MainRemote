@@ -169,6 +169,21 @@ _Replace the heading above with the project's name, and this line with one sente
   as its own bundle and fetched only when an endpoint is configured.
 - `artifacts/api-server/tests/` — `seo.test.mjs` (crawler's view, no JS) and
   `rendered.test.mjs` (reader's view, real bundle in jsdom).
+- `artifacts/api-server/src/lib/x/` — the X (Twitter) reporter integration.
+  `types.ts` is the provider interface every other file talks to;
+  `public-provider.ts` / `official-provider.ts` are the two implementations;
+  `accounts.ts` is the monitored list and the claim-by-UPDATE that serves as the
+  polling queue; `post-shape.ts` is the pure "is this reporting, and what is its
+  headline" half; `ingest.ts` hands the result to the SAME `storeItems()` the
+  wire and the club feeds use. Off unless `X_NEWS_INGESTION_ENABLED=true`.
+- `artifacts/api-server/src/lib/news-category.ts` — injury / transaction /
+  practice / depth-chart / rumor / fantasy, derived at read time for every row
+  and never stored. Improving the rules re-reads the whole archive with no
+  backfill.
+- `artifacts/api-server/public/admin-x.html` — the monitored-account manager at
+  `/admin/x`. Self-contained; adding a reporter is a row, not a deploy.
+- `docs/x-ingestion.md` — how the X integration is wired, every environment
+  variable it reads, and the measured limits of the free public provider.
 - `docs/INGEST-FIX-CHECKLIST.md` — the do-this-now steps for pointing the ingest
   at the API origin. Background and alternatives are in the runbook below.
 - `docs/ingest-cloudflare.md` — runbook for the Cloudflare challenge that blocks
