@@ -234,6 +234,53 @@ async function newsForPlayer(name: string): Promise<NewsItem[]> {
   }
 }
 
+/**
+ * The player's team's news, minus the stories already shown as their own.
+ *
+ * Deduped by id rather than by headline: the same row genuinely appears in both
+ * reads (the wire item about this player IS one of their team's items), and
+ * printing it twice under two headings makes the page look like it has more
+ * news than it does.
+ */
+async function teamNewsFor(
+  team: NflTeam | null,
+  exclude: NewsItem[],
+): Promise<NewsItem[]> {
+  if (!team) return [];
+  try {
+    const seen = new Set(exclude.map((item) => item.id));
+    const rows = await listNewsForTeam(team.abbreviation, {
+      limit: TEAM_NEWS_LIMIT + exclude.length,
+    });
+    return rows.filter((item) => !seen.has(item.id)).slice(0, TEAM_NEWS_LIMIT);
+  } catch {
+    // The archive being unavailable costs this page its team news and nothing
+    // else. Every other section is served from disk.
+    return [];
+  }
+}
+
+/**
+ * The player's current injury designation, or null.
+ *
+ * Matched on the Sleeper id, which both sides are keyed by, rather than on the
+ * name — two players share a name often enough that a name match would
+ * eventually put somebody else's hamstring on this page.
+ *
+ * The roster only indexes skill positions, so a lineman resolves to null. That
+ * is correct: null here means "no designation on file", never "fit".
+ */
+function currentDesignation(
+  player: Player,
+  team: NflTeam | null,
+): RosterPlayer | null {
+  if (!team) return null;
+  const roster = getTeamRoster(team.abbreviation);
+  if (!roster) return null;
+  const match = roster.players.find((row) => row.id === player.id);
+  return match?.injuryStatus ? match : null;
+}
+
 /** Sleeper-backed season production, for the finish timeline. */
 function productionSeasons(
   playerId: string,
@@ -449,6 +496,14 @@ export async function getPlayerPageData(
   const allPlayers = loadPlayers();
   const seasons = getAvailableSeasons();
 
+  // The roster index carries the injury designations and rides on the news
+  // tool's own Sleeper fetch, so this is usually already warm. Awaited here for
+  // the same reason team-data.ts awaits it: on a cold process the designation
+  // would otherwise be missing from the first render of every player and
+  // present on the second.
+  const team = getTeamByAbbreviation(player.team);
+  await ensureTeams();
+
   /* ---- the active season: the newest one they actually played in ---- */
 
   let season = seasons[0] ?? new Date().getFullYear();
@@ -556,10 +611,11 @@ export async function getPlayerPageData(
       : [];
 
   const news = await newsForPlayer(player.name);
+  const teamNews = await teamNewsFor(team, news);
 
   return {
     player,
-    team: getTeamByAbbreviation(player.team),
+    team,
     seasonTeam: getTeamByAbbreviation(seasonTeamCode),
     format,
 
@@ -607,6 +663,9 @@ export async function getPlayerPageData(
       const ts = itemTimestamp(item);
       return ts !== null && (newest === null || ts > newest) ? ts : newest;
     }, null),
+    teamNews,
+    designation: currentDesignation(player, team),
+    rosterFetchedAt: rosterFetchedAt(),
 
     version: "",
   };
@@ -632,6 +691,13 @@ export function playerDataVersion(
     data.season,
     data.news.length,
     data.newsUpdatedAtMs ?? 0,
+    data.teamNews.length,
+    // The designation and the snapshot it came from: a player going from
+    // Questionable to Out has to invalidate this page, and the stamp covers the
+    // case where a refresh clears a designation entirely.
+    data.designation?.injuryStatus ?? "",
+    data.designation?.practice ?? "",
+    data.rosterFetchedAt,
     data.advanced?.season ?? "",
   ].join("-");
 }

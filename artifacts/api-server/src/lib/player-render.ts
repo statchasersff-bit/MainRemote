@@ -1460,8 +1460,27 @@ function renderInjury(data: PlayerPageData): string {
     )
     .join("");
 
+  // The current designation lives in the News tab, next to the reporting that
+  // explains it — which is where the standalone app put it and what was asked
+  // for. This tab is the career record, so a reader who came here for "is he
+  // playing on Sunday" would otherwise find five years of history and no
+  // answer. One line, only when there is something to point at, and it is a
+  // real in-page anchor so it works with scripting disabled.
+  const current = data.designation?.injuryStatus
+    ? `<p class="scp-note scp-note--lead">` +
+      escapeHtml(
+        `${data.player.name} is currently listed as ${data.designation.injuryStatus}`,
+      ) +
+      (data.designation.injuryBodyPart
+        ? escapeHtml(` (${data.designation.injuryBodyPart})`)
+        : "") +
+      `. <a class="scp-crosslink" href="#news">See the current injury report</a>.` +
+      `</p>`
+    : "";
+
   return (
     h2("Injury & health", "Logged injuries and the games they actually cost") +
+    current +
     `<div class="scp-injury-top">${grade}${tiles}</div>` +
     (insight ? `<p class="scp-note scp-note--lead">${escapeHtml(insight)}</p>` : "") +
     (riskRows
@@ -1479,47 +1498,151 @@ function renderInjury(data: PlayerPageData): string {
 /* -------------------------------------------------------------------- news */
 
 /**
- * The player's news, from this app's own archive.
+ * How severe a designation is, for the pill's accent.
  *
- * The standalone player app scraped eight club websites for this tab. Here the
- * pipeline that already ingests that news answers instead, so a player's news
- * is the same rows, with the same dedupe and the same categories, as the news
- * tool and the team hubs — one archive, three views of it.
+ * Four buckets, matching the team hub's `injurySeverity` exactly so the same
+ * status is the same colour on both pages. Anything unrecognised is treated as
+ * "questionable" rather than dropped — an unfamiliar designation is still a
+ * designation, and guessing it is harmless while hiding it is not.
  */
-function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
-  if (data.news.length === 0) return "";
-  const now = options.now ?? Date.now();
+function designationSeverity(status: string | null | undefined): string {
+  const key = (status ?? "").trim().toLowerCase();
+  if (/^(out|ir|pup|nfi|susp|dnr|doubtful-out)/.test(key) || key.includes("injured reserve")) {
+    return "out";
+  }
+  if (key === "doubtful") return "doubtful";
+  if (key === "probable" || key === "active" || key === "full") return "probable";
+  return "questionable";
+}
 
-  const cards = data.news
-    .map((item: NewsItem) => {
-      const href = safeUrl(item.link ?? null);
-      const ts = itemTimestamp(item);
-      const headline = escapeHtml(item.title);
-      return (
-        `<li class="scp-news-item">` +
-        `<h3 class="scp-news-title">` +
-        (href
-          ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${headline}</a>`
-          : headline) +
-        `</h3>` +
-        (item.summary
-          ? `<p class="scp-news-summary">${escapeHtml(item.summary)}</p>`
-          : "") +
-        `<p class="scp-news-meta">` +
-        (item.source ? `<span class="scp-news-source">${escapeHtml(item.source)}</span>` : "") +
-        (ts !== null
-          ? `<time class="scp-news-time" datetime="${escapeHtml(
-              new Date(ts).toISOString(),
-            )}" data-ts="${ts}">${escapeHtml(relativeAge(ts, now))}</time>`
-          : "") +
-        `</p></li>`
-      );
-    })
-    .join("");
+/**
+ * The current injury report card.
+ *
+ * The one genuinely time-sensitive thing on the page, so it leads the tab and
+ * carries the snapshot time — it must never look fresher than it is.
+ *
+ * **Rendered only when there IS a designation.** A player with none gets no
+ * card, because the absence of a filing is not a clean bill of health: this
+ * snapshot reports what clubs have filed, and "nothing filed" and "fit" are
+ * different claims. The standalone app had the same rule and this keeps it.
+ */
+function renderDesignation(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const designation = data.designation;
+  if (!designation?.injuryStatus) return "";
+
+  const now = options.now ?? Date.now();
+  const severity = designationSeverity(designation.injuryStatus);
+
+  const detail = [designation.injuryBodyPart, designation.practice]
+    .filter((part): part is string => Boolean(part))
+    .map((part) => escapeHtml(part))
+    .join(` <span class="scp-report-dot">\u00b7</span> `);
+
+  const stamp =
+    data.rosterFetchedAt > 0
+      ? `<p class="scp-report-stamp">Designation as of ` +
+        `<time datetime="${escapeHtml(new Date(data.rosterFetchedAt).toISOString())}"` +
+        ` data-ts="${data.rosterFetchedAt}" data-ts-compact>` +
+        `${escapeHtml(relativeAge(data.rosterFetchedAt, now))}</time></p>`
+      : "";
 
   return (
-    h2("News & analysis", `Latest reporting on ${data.player.name}`) +
-    `<ul class="scp-news">${cards}</ul>`
+    `<section class="scp-report" data-severity="${escapeHtml(severity)}">` +
+    `<div class="scp-report-head">` +
+    `<p class="scp-report-label">Current injury report</p>` +
+    `<span class="scp-report-pill">${escapeHtml(designation.injuryStatus)}</span>` +
+    `</div>` +
+    (detail ? `<p class="scp-report-detail">${detail}</p>` : "") +
+    stamp +
+    `</section>`
+  );
+}
+
+/** One news card. Shared by the player's own stories and their team's. */
+function renderNewsItem(item: NewsItem, now: number): string {
+  const href = safeUrl(item.link ?? null);
+  const ts = itemTimestamp(item);
+  const headline = escapeHtml(item.title);
+
+  return (
+    `<li class="scp-news-item">` +
+    `<h4 class="scp-news-title">` +
+    (href
+      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${headline}</a>`
+      : headline) +
+    `</h4>` +
+    (item.summary ? `<p class="scp-news-summary">${escapeHtml(item.summary)}</p>` : "") +
+    `<p class="scp-news-meta">` +
+    (item.source ? `<span class="scp-news-source">${escapeHtml(item.source)}</span>` : "") +
+    (ts !== null
+      ? `<time class="scp-news-time" datetime="${escapeHtml(new Date(ts).toISOString())}"` +
+        ` data-ts="${ts}" data-ts-compact>${escapeHtml(relativeAge(ts, now))}</time>`
+      : "") +
+    `</p></li>`
+  );
+}
+
+/**
+ * News & Analysis.
+ *
+ * The standalone app's version of this tab had two lazily-fetched views behind
+ * a toggle — articles and the injury report — and showed nothing at all for the
+ * twenty-four teams whose club sites it did not scrape. This one has no toggle
+ * and no fetch: everything is already in the response, so stacking the sections
+ * is both simpler and strictly more readable than hiding half of them behind a
+ * button. It also covers all 32 teams, because the club feeds this app ingests
+ * for the team hubs are the same feeds.
+ *
+ * Three blocks, in the order a reader needs them: what is true right now (the
+ * designation), what is being said about this player, and what is being said
+ * about their team.
+ *
+ * There are no impact tags or generated blurbs on these cards. The original had
+ * them; this app does not produce them, and inventing a "high impact" label
+ * would be the page asserting an editorial judgement nobody made.
+ */
+function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const now = options.now ?? Date.now();
+
+  const report = renderDesignation(data, options);
+
+  const own = data.news.length
+    ? h3(`Latest on ${data.player.name}`) +
+      `<ul class="scp-news">` +
+      data.news.map((item) => renderNewsItem(item, now)).join("") +
+      `</ul>`
+    : "";
+
+  const team = data.teamNews.length
+    ? h3(data.team ? `Around the ${data.team.nickname}` : "Around the league") +
+      `<ul class="scp-news scp-news--team">` +
+      data.teamNews.map((item) => renderNewsItem(item, now)).join("") +
+      `</ul>` +
+      teamHubLink(data, options)
+    : "";
+
+  // Nothing to say is said by dropping the tab, not by an empty heading — the
+  // navigation is built from what rendered. A designation on its own is still
+  // worth a tab: it is the most time-sensitive fact on the page.
+  if (!report && !own && !team) return "";
+
+  return (
+    h2("News & analysis", `Injury status and the latest reporting on ${data.player.name}`) +
+    report +
+    own +
+    team
+  );
+}
+
+/** A way through to the team hub, which is where the rest of this lives. */
+function teamHubLink(data: PlayerPageData, options: PlayerRenderOptions): string {
+  if (!data.team) return "";
+  const prefix = options.teamPathPrefix ?? "/team/";
+  const href = `${prefix}${data.team.slug}${options.linkQuery ?? ""}`;
+  return (
+    `<p class="scp-news-more">` +
+    siteLink(href, `All ${data.team.fullName} news`, "scp-news-more-link") +
+    `</p>`
   );
 }
 
