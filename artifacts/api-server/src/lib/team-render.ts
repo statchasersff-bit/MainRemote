@@ -59,6 +59,7 @@ import {
   type RosterPlayer,
 } from "./team/roster";
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
+import { canonicalizeMatchupPair } from "./matchup/pair";
 import {
   getFPAUrl,
   getPlayerProfileUrl,
@@ -95,6 +96,8 @@ export interface TeamRenderOptions {
    * PlayerRenderOptions.section; the two pages are addressed the same way.
    */
   section?: string;
+  /** Where matchup pages live. Defaults to this app's own /nfl/. */
+  matchupPathPrefix?: string;
 }
 
 /**
@@ -104,7 +107,7 @@ export interface TeamRenderOptions {
  * page, so it stays a tab on the hub until the data can carry an address. The
  * WordPress rewrite mirrors this list as STATCHASERS_TEAM_SECTIONS.
  */
-export const PUBLIC_SECTIONS = ["outlook", "stats", "schedule", "depth-chart"] as const;
+export const PUBLIC_SECTIONS = ["outlook", "stats", "schedule", "depth-chart", "matchups"] as const;
 
 /** The pretty address of one section: `<prefix><slug>/<section>/`. */
 export function sectionPath(prefix: string, slug: string, section: string): string {
@@ -129,6 +132,7 @@ const SECTION_HEADINGS: Record<string, string> = {
   stats: "Stats",
   schedule: "Schedule",
   "depth-chart": "Depth Chart",
+  matchups: "Matchups",
   news: "News",
 };
 
@@ -152,10 +156,10 @@ export function teamSectionHeading(
 
 /* ------------------------------------------------------------------ atoms */
 
-const ARROW = `<span class="sct-arrow" aria-hidden="true">&rarr;</span>`;
+export const ARROW = `<span class="sct-arrow" aria-hidden="true">&rarr;</span>`;
 
 /** Attribute-safe style declaration list, or "". */
-function styleAttr(parts: Array<string | null>): string {
+export function styleAttr(parts: Array<string | null>): string {
   const kept = parts.filter((p): p is string => !!p);
   return kept.length ? ` style="${escapeHtml(kept.join(";"))}"` : "";
 }
@@ -166,7 +170,7 @@ function styleAttr(parts: Array<string | null>): string {
  * The rule is drawn by CSS on the element rather than being a separate node, so
  * it cannot be left behind by a heading that moves.
  */
-function h2(text: string, extraClass = ""): string {
+export function h2(text: string, extraClass = ""): string {
   return `<h2 class="sct-h2${extraClass ? ` ${extraClass}` : ""}">${escapeHtml(text)}</h2>`;
 }
 
@@ -406,14 +410,14 @@ function renderNav(sections: Section[]): string {
  * difference between 11th and 13th is noise, and shading it implies a precision
  * the number does not have.
  */
-function rankTier(rank: number | null): "good" | "mid" | "poor" | "none" {
+export function rankTier(rank: number | null): "good" | "mid" | "poor" | "none" {
   if (rank === null) return "none";
   if (rank <= 8) return "good";
   if (rank >= 25) return "poor";
   return "mid";
 }
 
-const TIER_WORD: Record<string, string> = {
+export const TIER_WORD: Record<string, string> = {
   good: "Top tier",
   mid: "Middle tier",
   poor: "Bottom tier",
@@ -1136,7 +1140,7 @@ function renderTeamStats(data: TeamPageData, faq: FaqSink): string {
  * call sites have, and an unrecognised position simply falls back to the
  * stylesheet's neutral gold.
  */
-function slotChip(slot: string, small = false): string {
+export function slotChip(slot: string, small = false): string {
   const position = (/^[a-z]+/i.exec(slot)?.[0] ?? "").toUpperCase();
   return (
     `<span class="sct-slot${small ? " is-small" : ""}"` +
@@ -1164,7 +1168,7 @@ function slotChip(slot: string, small = false): string {
  * unfamiliar designation is a reason to look, not a reason to assume the worst
  * or the best.
  */
-function injurySeverity(
+export function injurySeverity(
   status: string | null | undefined,
 ): "out" | "doubtful" | "questionable" | "probable" {
   const key = (status ?? "").trim().toLowerCase();
@@ -1896,7 +1900,7 @@ function renderInjuryPanel(data: TeamPageData): string {
 
 /* ------------------------------------------------------------- next game */
 
-function gameDateLine(game: ScheduleGame): { date: string; time: string } {
+export function gameDateLine(game: ScheduleGame): { date: string; time: string } {
   if (game.kickoffMs === null) return { date: "Date TBD", time: "" };
   const parts = easternParts(game.kickoffMs);
   return {
@@ -1912,7 +1916,7 @@ function gameDateLine(game: ScheduleGame): { date: string; time: string } {
  * card can afford to draw both of them — on a hub for one team, an undifferentiated
  * pair reads as a fixture list rather than as "your next game".
  */
-function matchupSide(
+export function matchupSide(
   team: NflTeam | null,
   fallbackName: string,
   isTeam: boolean,
@@ -1996,6 +2000,90 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
     (next.venue ? `<p class="sct-nextgame-venue">${escapeHtml(next.venue)}</p>` : "") +
     context +
     `</section>`
+  );
+}
+
+/* --------------------------------------------------------------- matchups */
+
+/**
+ * The Matchups hub: how this team compares with each opponent.
+ *
+ * Not the schedule again. Schedule answers "when do they play"; this answers
+ * "who are they playing and how do the two compare" — every row is a door into
+ * the pair's own page. Two meetings with a divisional opponent are two rows,
+ * each with its own week, both opening the same evergreen page: the pair is
+ * canonicalised once, in matchup/pair.ts, and nothing here can produce a
+ * second address for it.
+ */
+function renderMatchups(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+  now: number,
+  scoped = false,
+): string {
+  const { team, schedule } = data;
+  if (!schedule) return "";
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const query = options.linkQuery ?? "";
+  const hrefFor = (opponent: NflTeam | null): string | null => {
+    const pair = canonicalizeMatchupPair(team, opponent);
+    return pair ? `${prefix}${pair.slug}/${query}` : null;
+  };
+
+  const next = upcomingGames(schedule, now, 1)[0];
+  const nextHref = next ? hrefFor(next.opponent) : null;
+  const when = next ? gameDateLine(next) : null;
+  // Away side first, as the Next Game card does; a neutral site keeps this
+  // team on the left and reads "vs".
+  const teamLeft = !!next && (next.homeAway === "away" || next.neutralSite);
+  const upNext =
+    next && nextHref && when
+      ? `<div class="sct-mu-upnext">` +
+        `<p class="sct-game-next">Up next</p>` +
+        `<div class="sct-matchup" aria-hidden="true">` +
+        matchupSide(teamLeft ? team : next.opponent, teamLeft ? team.nickname : next.opponentName, teamLeft) +
+        `<span class="sct-matchup-at">${next.neutralSite ? "vs" : "@"}</span>` +
+        matchupSide(teamLeft ? next.opponent : team, teamLeft ? next.opponentName : team.nickname, !teamLeft) +
+        `</div>` +
+        `<p class="sct-visually-hidden">${escapeHtml(`${team.nickname} ${next.neutralSite ? "vs" : next.homeAway === "away" ? "at" : "host"} ${next.opponent?.nickname ?? next.opponentName}`)}</p>` +
+        `<p class="sct-nextgame-when">${escapeHtml(`Week ${next.week} · ${when.date}`)}${when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : ""}</p>` +
+        `<p class="sct-block-footer"><a class="sct-textlink" href="${escapeHtml(nextHref)}" target="_top">View matchup ${ARROW}</a></p>` +
+        `</div>`
+      : "";
+
+  const rows = schedule.games
+    .map((game) => {
+      const href = hrefFor(game.opponent);
+      const line = gameDateLine(game);
+      const status = game.result
+        ? `<span class="sct-mu-result">${escapeHtml(`${game.result.outcome} ${game.result.teamScore}–${game.result.opponentScore}`)}</span>`
+        : `<span class="sct-mu-result is-pending">${game.status === "live" ? "Live" : "Upcoming"}</span>`;
+      const opponentName = game.opponent?.nickname ?? game.opponentName;
+      return (
+        `<li class="sct-srow sct-mu-row">` +
+        `<span class="sct-srow-week">${escapeHtml(`WK ${game.week}`)}</span>` +
+        `<span class="sct-srow-opp">` +
+        (game.opponent
+          ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async" />`
+          : "") +
+        `<span class="sct-srow-name">${escapeHtml(
+          game.homeAway === "home" ? `${team.nickname} vs ${opponentName}` : `${opponentName} vs ${team.nickname}`,
+        )}</span></span>` +
+        `<span class="sct-srow-when">${escapeHtml(line.date)}</span>` +
+        status +
+        (href
+          ? `<a class="sct-textlink sct-mu-view" href="${escapeHtml(href)}" target="_top">View matchup ${ARROW}</a>`
+          : `<span class="sct-mu-view"></span>`) +
+        `</li>`
+      );
+    })
+    .join("");
+
+  return (
+    (scoped ? "" : h2(`${team.nickname} Matchups`)) +
+    upNext +
+    `<h3 class="sct-mu-h3">${escapeHtml(`${schedule.season} Matchups`)}</h3>` +
+    `<ol class="sct-slist sct-mu-list">${rows}</ol>`
   );
 }
 
@@ -2222,7 +2310,7 @@ function renderDepthChart(data: TeamPageData, scoped = false): string {
  * international game because every international game is played at a neutral
  * site — printing both is one fact twice.
  */
-function fixtureTags(game: ScheduleGame): Array<{ kind: string; label: string }> {
+export function fixtureTags(game: ScheduleGame): Array<{ kind: string; label: string }> {
   const tags: Array<{ kind: string; label: string }> = [];
   if (game.divisional) tags.push({ kind: "division", label: "Div" });
   if (game.international) tags.push({ kind: "intl", label: "Intl" });
@@ -2277,7 +2365,7 @@ function shortNetwork(network: string): string {
  * The text branch is still reachable: ESPN names a local call sign ("WBZ",
  * "KHOU") for some games, and a station we cannot identify keeps its own name.
  */
-function networkHtml(network: string, className: string): string {
+export function networkHtml(network: string, className: string): string {
   const mark = networkMarkFor(network);
   if (!mark) {
     return (
@@ -2308,7 +2396,7 @@ function networkHtml(network: string, className: string): string {
  * NFL shield's white stars are shapes laid over its navy field, not holes in
  * it, and drawing them first would lose them under it.
  */
-function networkDefs(networks: Array<string | null>): string {
+export function networkDefs(networks: Array<string | null>): string {
   const marks = new Map<string, ReturnType<typeof networkMarkFor>>();
   for (const network of networks) {
     if (!network) continue;
@@ -2345,7 +2433,7 @@ function networkDefs(networks: Array<string | null>): string {
  * says "Upcoming" in August and "W 27-20" in September is the same table
  * twice. That is why the placeholder is a word rather than an empty cell.
  */
-function gameStatusCell(game: ScheduleGame): string {
+export function gameStatusCell(game: ScheduleGame): string {
   if (game.result) {
     const { outcome, teamScore, opponentScore } = game.result;
     // An en dash between the scores, as a score line is set — the hyphen read
@@ -2377,7 +2465,7 @@ function gameStatusCell(game: ScheduleGame): string {
  * `index === 0` is the next game. It gets a gold rule across its top and a
  * label, so a row of three is a hierarchy rather than three equal boxes.
  */
-function renderUpcomingCard(game: ScheduleGame, index: number): string {
+export function renderUpcomingCard(game: ScheduleGame, index: number): string {
   const when = gameDateLine(game);
   const opponent = game.opponent;
   const nickname = opponent?.nickname ?? game.opponentName;
@@ -2650,6 +2738,7 @@ export function renderTeamPage(
   const stats = renderSnapshot(data) + renderTeamStats(data, statsFaq);
   const depth = renderDepthChart(data, scopedSection === "depth-chart");
   const schedule = renderSchedule(data, now, scopedSection === "schedule");
+  const matchups = renderMatchups(data, options, now, scopedSection === "matchups");
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing.
@@ -2662,6 +2751,7 @@ export function renderTeamPage(
     { id: "news", label: "News", html: newsSection },
     { id: "depth-chart", label: "Depth Chart", html: depth },
     { id: "schedule", label: "Schedule", html: schedule },
+    { id: "matchups", label: "Matchups", html: matchups },
   ].filter((section) => section.html !== "");
 
   // One place a team's colours enter the page. Everything team-tinted below

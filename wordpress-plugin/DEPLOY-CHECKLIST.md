@@ -87,6 +87,29 @@ Then the edges:
       section URLs. Off must be genuinely off.
 
 Once all of that holds on one team, submit the page sitemap in Search Console.
+
+### Matchup pages
+
+Only once `statchasers_matchup_urls` is on and the holder page exists. Flush
+permalinks first. Then on `/nfl/new-england-patriots-vs-philadelphia-eagles/`:
+
+- [ ] HTTP **200**; H1 is `New England Patriots vs Philadelphia Eagles`.
+- [ ] `<title>` carries the state's phrase (Where to Watch… / Score… /
+      Head-to-Head Record…) and `<link rel="canonical">` and `og:url` are this
+      exact pretty URL. One of each.
+- [ ] robots is `index, follow` here, and `/nfl/matchup/` itself is **noindex**.
+- [ ] `/nfl/philadelphia-eagles-vs-new-england-patriots/` and `/nfl/phi-vs-ne/`
+      **301** to the URL above. Not 200, not 302.
+- [ ] `/nfl/new-england-patriots-vs-fake-team/` and
+      `/nfl/new-england-patriots-vs-new-england-patriots/` are **404**, not the
+      holder, not a hub.
+- [ ] the block under the hero matches the state: Up Next with a Where to
+      Watch section (date, kickoff, TV, venue — no "check local listings"),
+      Final with the score, or Last Meeting. Nothing from a different state.
+- [ ] the page links both hubs and both `/matchups/` sections.
+- [ ] the page sitemap lists the pair URLs (496 entries).
+- [ ] with the flag **off**: pair URLs 404 and the sitemap lists none.
+
 - [ ] the hub uses the **full content column** — open the page at a desktop
       width above 1100px, not just on a phone. Divi splits the row 79/21 for a
       sidebar unless the layout is full width, and an empty widget area leaves

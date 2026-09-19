@@ -573,6 +573,7 @@ function statchasers_team_pages_screen(): void {
 	}
 
 	statchasers_team_retitle_panel();
+	statchasers_matchup_panel();
 
 	echo '<h2>Teams</h2>';
 	echo '<table class="widefat striped"><thead><tr>' .
@@ -618,6 +619,7 @@ const STATCHASERS_TEAM_SECTIONS = array(
 	'stats',
 	'schedule',
 	'depth-chart',
+	'matchups',
 );
 
 /**
@@ -759,6 +761,16 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 					$season,
 					$name,
 					$nick
+				),
+			);
+
+		case 'matchups':
+			return array(
+				'title'       => sprintf( '%s Matchups %s: Opponents, Results & Head-to-Head', $name, $season ),
+				'description' => sprintf(
+					'Every %1$s opponent in %2$s, week by week, with results and a matchup page for each pair: team stats side by side, injuries and the head-to-head record.',
+					$name,
+					$season
 				),
 			);
 

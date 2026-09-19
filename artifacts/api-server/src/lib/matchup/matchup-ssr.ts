@@ -1,0 +1,114 @@
+/**
+ * Server-side rendering for matchup pages, mirroring team-ssr.ts.
+ *
+ * Two consumers: the standalone page at /nfl/<a>-vs-<b>/, which fills
+ * public/matchup.html, and GET /embed/matchup/<a>-vs-<b>, the bare fragment
+ * for the WordPress plugin. Cached per pair and option set on a fingerprint of
+ * both teams' data plus the history schedules — an exact cache, not a timed
+ * one.
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import { contentVersion, ensureFreshness } from "../freshness";
+import { logger } from "../logger";
+import { renderTeamHeadTags } from "../team-seo";
+import { getMatchupData, matchupVersion } from "./matchup-data";
+import { renderMatchupPage, type MatchupRenderOptions } from "./matchup-render";
+import { matchupPageMeta } from "./matchup-seo";
+import type { MatchupPair } from "./pair";
+
+export interface MatchupSsrResult {
+  html: string;
+  version: string;
+  season: number;
+  state: string;
+}
+
+/** 496 pairs × two option sets is the ceiling; most are never asked for. */
+const fragmentCache = new Map<string, MatchupSsrResult>();
+const FRAGMENT_CACHE_MAX = 512;
+
+export function invalidateMatchupRenderCache(): void {
+  fragmentCache.clear();
+}
+
+function optionKey(options: MatchupRenderOptions): string {
+  return JSON.stringify([
+    options.embed ?? false,
+    options.teamPathPrefix ?? "",
+    options.matchupPathPrefix ?? "",
+    options.linkQuery ?? "",
+  ]);
+}
+
+function hash(value: string): string {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) h = ((h << 5) + h + value.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+export async function renderMatchupFragment(
+  pair: MatchupPair,
+  options: MatchupRenderOptions = {},
+): Promise<MatchupSsrResult> {
+  await ensureFreshness();
+  const data = await getMatchupData(pair, options.now);
+  const version = `${hash(matchupVersion(data, contentVersion()))}-${hash(optionKey(options))}`;
+  const key = `${pair.slug}:${optionKey(options)}`;
+
+  const hit = fragmentCache.get(key);
+  if (hit && hit.version === version) return hit;
+
+  const result: MatchupSsrResult = {
+    html: renderMatchupPage(data, options),
+    version,
+    season: data.state.season,
+    state: data.matchupState,
+  };
+  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
+    const oldest = fragmentCache.keys().next();
+    if (!oldest.done) fragmentCache.delete(oldest.value);
+  }
+  fragmentCache.set(key, result);
+  return result;
+}
+
+const HEAD_MARKER = "<!--SSR-HEAD-->";
+const BODY_MARKER = "<!--SSR-->";
+const CLASS_MARKER = "<!--SSR-BODY-CLASS-->";
+let templateCache: string | null = null;
+
+function readTemplate(publicDir: string): string {
+  if (templateCache !== null) return templateCache;
+  const html = fs.readFileSync(path.join(publicDir, "matchup.html"), "utf8");
+  if (process.env["NODE_ENV"] !== "development") templateCache = html;
+  return html;
+}
+
+export interface RenderMatchupAppPageOptions extends MatchupRenderOptions {
+  canonical: string;
+}
+
+export async function renderMatchupAppPage(
+  publicDir: string,
+  pair: MatchupPair,
+  options: RenderMatchupAppPageOptions,
+): Promise<MatchupSsrResult> {
+  const template = readTemplate(publicDir);
+  const fragment = await renderMatchupFragment(pair, options);
+  // The meta needs the state, which the fragment decided; re-deriving it is one
+  // cached data call and keeps the title and the page reading the same state.
+  const data = await getMatchupData(pair, options.now);
+  const meta = matchupPageMeta(data, options.canonical);
+
+  for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
+    if (!template.includes(marker)) logger.warn({ marker }, "matchup.html is missing an SSR marker");
+  }
+
+  const html = template
+    .replace(HEAD_MARKER, renderTeamHeadTags(meta))
+    .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
+    .replace(BODY_MARKER, fragment.html);
+  return { ...fragment, html };
+}

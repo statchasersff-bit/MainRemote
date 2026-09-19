@@ -151,6 +151,56 @@ is empty or is exactly the old generated template, in any season. Anything else
 was typed by a person and is kept, and is listed by slug so you can see which.
 Descriptions are not migrated: the generated wording did not change.
 
+### Matchup pages (off by default)
+
+One evergreen page for every pair of teams — 32 × 31 / 2 = 496 — at:
+
+```
+/nfl/new-england-patriots-vs-philadelphia-eagles/
+```
+
+Not two. The pair is put in one order — the two slugs alphabetically — by
+`canonicalizeMatchupPair()` on the API (`src/lib/matchup/pair.ts`), and every
+URL in the app is built from that. Which team's hub the reader came from cannot
+reach the address. `/nfl/philadelphia-eagles-vs-new-england-patriots/`,
+`/nfl/phi-vs-ne/` and `/nfl/eagles-vs-patriots/` are all 301s to the one above;
+a fake team, a team against itself, or anything else under `/nfl/` that is not
+two different real teams is a true 404, never a hub.
+
+**No pages are created for pairs.** A rewrite rule sends every pair URL to one
+holder page, `/nfl/matchup/`, which carries `[statchasers_matchup]` and is
+noindex at its own address. The shortcode reads `sc_matchup`, fetches
+`/embed/matchup/<a>-vs-<b>` and prints it; the plugin mirrors just enough of the
+pair rule to 301 the reversed spelling before fetching. Create the holder from
+**Tools → StatChasers Team Pages → Matchup pages**, then:
+
+```php
+add_filter( 'statchasers_matchup_urls', '__return_true' );
+```
+
+and flush permalinks once. The 496 pair URLs join Rank Math's page sitemap
+under the same flag.
+
+**The page follows its state, the URL does not.** The API decides once, in
+`matchup-data.ts`, whether the two have an upcoming meeting, one just played
+(within ten days), or neither, and the fragment returns that in an
+`X-Matchup-State` header. The page leads with the next game, the score, or the
+head-to-head accordingly, and the title says so — `… 2026: Where to Watch,
+Stats, Injuries & History` / `… 2026: Score, Stats & Head-to-Head` /
+`…: Head-to-Head Record, Stats & History`. `statchasers_matchup_meta()` mirrors
+`matchupPageMeta()` in `src/lib/matchup/matchup-seo.ts`; change one and change
+the other.
+
+**Nothing is invented.** Where to Watch appears only for an upcoming game and
+carries only what ESPN's schedule has — date, kickoff, TV network, venue. There
+is no streaming line, because there is no streaming data. Head-to-head is the
+regular-season meetings in the current and five prior seasons. A section with
+no data is absent, not padded.
+
+**Each team hub gains a Matchups section** at `/nfl/teams/<slug>/matchups/` —
+its next opponent up top and every scheduled game as a row with the result and
+a link to the pair's page. A divisional opponent is two rows and one page.
+
 ### Server-side configuration
 
 Set `SC_TEAM_PATH_PREFIX` on the **API deployment** to the public path of these

@@ -77,6 +77,15 @@ function sectionMeta(
     };
   }
 
+  if (section === "matchups") {
+    return {
+      title: `${name} Matchups ${season}: Opponents, Results & Head-to-Head`,
+      description:
+        `Every ${name} opponent in ${season}, week by week, with results and a matchup ` +
+        `page for each pair: team stats side by side, injuries and the head-to-head record.`,
+    };
+  }
+
   if (section === "depth-chart") {
     return {
       title: `${name} Depth Chart ${season}: Starters & Backups`,

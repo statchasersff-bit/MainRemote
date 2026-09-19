@@ -49,6 +49,7 @@ const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 // across an include that has not run yet.
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
+require_once __DIR__ . '/statchasers-matchup.php';
 require_once __DIR__ . '/statchasers-player.php';
 require_once __DIR__ . '/statchasers-fpa.php';
 require_once __DIR__ . '/statchasers-rankings.php';

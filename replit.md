@@ -128,6 +128,18 @@ _Replace the heading above with the project's name, and this line with one sente
   the hub nor a section page prints a strip of links to the section pages;
   their discovery rests on the plugin's sitemap entries. The plugin mirrors the
   list as `STATCHASERS_TEAM_SECTIONS` — keep the two together.
+- **Matchup pages.** `src/lib/matchup/` is its own family beside `team/`:
+  `pair.ts` (the ONE place two teams become a URL — alphabetical by slug, 496
+  pairs, aliases resolved, same-team and unknown refused), `matchup-data.ts`
+  (both teams' TeamPageData plus meetings from the current and five prior
+  regular-season schedules; decides `upcoming` / `recently_completed` /
+  `historical` once), `matchup-render.ts` (built from team-render's exported
+  scoreboard, game, stat-row and injury components), `matchup-seo.ts`,
+  `matchup-ssr.ts`. Routes: `/nfl/<a>-vs-<b>/` (non-canonical order or alias →
+  301; anything else → 404, never a hub) and `/embed/matchup/<a>-vs-<b>`, which
+  returns `X-Matchup-State` / `X-Matchup-Season` for the plugin's title.
+  `SC_MATCHUP_PATH_PREFIX` (default `/nfl/`) is where hub links point. Each hub
+  has a `matchups` public section listing every game with a link to the pair.
 - **`SC_TEAM_PATH_PREFIX` must be set for the WordPress mount** (default
   `/team/`). It is where the team switcher's 32 links point inside
   `/embed/team/:slug`, so left at the default a reader clicking a team on
