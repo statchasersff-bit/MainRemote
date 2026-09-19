@@ -185,6 +185,14 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-rankings.js"),
   });
 
+  // The NFL schedule bundle. Separate for the same reason as the other five:
+  // one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/schedule.ts")],
+    outfile: path.join(outDir, "statchasers-schedule.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -210,6 +218,10 @@ async function buildClient() {
   const rankingsCss = await readFile(
     path.resolve(artifactDir, "public", "rankings.css"),
   );
+  const scheduleJs = await readFile(path.join(outDir, "statchasers-schedule.js"));
+  const scheduleCss = await readFile(
+    path.resolve(artifactDir, "public", "schedule.css"),
+  );
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -221,6 +233,8 @@ async function buildClient() {
     .update(fpaCss)
     .update(rankingsJs)
     .update(rankingsCss)
+    .update(scheduleJs)
+    .update(scheduleCss)
     .digest("hex")
     .slice(0, 12);
 

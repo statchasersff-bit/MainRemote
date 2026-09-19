@@ -92,12 +92,11 @@ function sectionMeta(
   }
 
   if (section === "game-log") {
-    // The season here is the one the TAB is showing, not the profile's active
-    // one: `?log=2023` renders 2023's table, and a title naming 2026 over it
-    // would be the page describing something it is not showing. The canonical
-    // still points at the unpinned URL, so this only ever differs on a page
-    // Google is told not to index separately.
-    const year = data.logSeason;
+    // The ACTIVE season, on every rendering of this page. `?log=2023` adds
+    // 2023's table under the season selector and leaves the current season
+    // where it was, so the page is still the current season's game log and a
+    // title naming 2023 would describe the block at the bottom of it.
+    const year = data.season;
     return {
       title:
         `${player.name} Game Log ${year}: Fantasy Points & Stats by Week | ${SITE_NAME}`,

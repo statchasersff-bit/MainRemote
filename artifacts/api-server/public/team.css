@@ -828,7 +828,7 @@ body.sct-page.is-embed {
  *      state explicitly instead of steering a selector it cannot depend on.
  *
  * Keyed on [data-sct-panel] rather than on .sct-section, because not every
- * .sct-section is a tab: the "More <team> Tools" block carries the same class and
+ * .sct-section is a tab: the "Explore StatChasers" block carries the same class and
  * sits outside the nav, so a class-based rule would hide it on every tab with
  * nothing able to bring it back. It is page furniture and stays put.
  *
@@ -859,7 +859,7 @@ body.sct-page.is-embed {
   display: block;
 }
 
-/* The "More <team> Tools" block is page furniture and stays put on most tabs
+/* The "Explore StatChasers" block is page furniture and stays put on most tabs
    (see above), but it is not always worth showing in full — a card that links
    to what the reader is already looking at is a link backwards.
  *
@@ -877,16 +877,61 @@ body.sct-page.is-embed {
   display: none;
 }
 
-/* Single cards, on the tabs that already carry what they point at: Schedule
-   sits a few hundred pixels above its own "see the full schedule" footer on
-   Stats and Schedule, and Depth Chart above the chart itself. */
-.sct[data-sct-tabs="js"] #stats.is-active ~ #resources [data-tool="schedule"],
-.sct[data-sct-tabs="js"] #schedule.is-active ~ #resources [data-tool="schedule"],
-.sct[data-sct-tabs="js"] #depth-chart.is-active ~ #resources [data-tool="depth-chart"],
-.sct:not([data-sct-tabs="js"]) #stats:target ~ #resources [data-tool="schedule"],
-.sct:not([data-sct-tabs="js"]) #schedule:target ~ #resources [data-tool="schedule"],
-.sct:not([data-sct-tabs="js"]) #depth-chart:target ~ #resources [data-tool="depth-chart"] {
+/* The FAQ tails: a tab's questions, rendered after the tools block instead of
+   inside the panel, so "Common questions" closes the page rather than the
+   section (see Section.tail in team-render.ts). They are siblings of the panels
+   and sit after #resources, so the open panel can reach them with the same ~
+   the rules above use, on the same two mechanisms.
+
+   Written per tab rather than generically: CSS cannot say "the tail whose
+   data-sct-faq-for matches the open panel's id", so a new tab with questions
+   needs its pair of selectors added here.
+
+   Hidden only on the hub. A section page (`data-section`) renders exactly one
+   panel and exactly one tail, and nothing there has a tab to be open, so the
+   tail must not be switched off waiting for one. */
+
+/* The tail is a plain div, not a .sct-section, so it inherits none of the 40px
+   that opens every other section on the page — and .sct-block only spaces
+   itself against a PRECEDING block, which the tail's is not. Without this the
+   "Common questions" heading sits flush against the bottom row of tool cards.
+   A little wider than the 40px a section opens with: the questions follow page
+   furniture rather than more of the tab's own content, so the break reads as
+   one of those and then some. */
+.sct-faq-tail {
+  padding-top: 50px;
+}
+
+.sct[data-sct-tabs="js"]:not([data-section]) .sct-faq-tail {
   display: none;
+}
+
+.sct[data-sct-tabs="js"] #outlook.is-active ~ [data-sct-faq-for="outlook"],
+.sct[data-sct-tabs="js"] #stats.is-active ~ [data-sct-faq-for="stats"],
+.sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"] {
+  display: block;
+}
+
+/* Guarded like the panel rules above, and for the same reason: without :has()
+   the no-JS page stacks every panel, so the tails stay visible with them rather
+   than being hidden by a rule whose counterpart never matches. */
+@supports selector(:has(*)) {
+  .sct:not([data-sct-tabs="js"]):not([data-section]) .sct-faq-tail {
+    display: none;
+  }
+
+  .sct:not([data-sct-tabs="js"]) #outlook:target ~ [data-sct-faq-for="outlook"],
+  .sct:not([data-sct-tabs="js"]) #stats:target ~ [data-sct-faq-for="stats"],
+  .sct:not([data-sct-tabs="js"]) #depth-chart:target ~ [data-sct-faq-for="depth-chart"] {
+    display: block;
+  }
+
+  /* No :target: Outlook is the default panel, so its questions are the ones the
+     page opens with. */
+  .sct:not([data-sct-tabs="js"]):not(:has([data-sct-panel]:target))
+    [data-sct-faq-for="outlook"] {
+    display: block;
+  }
 }
 
 /* A panel is focused programmatically when its tab is chosen, so the focus ring
@@ -909,14 +954,16 @@ body.sct-page.is-embed {
     display: block !important;
   }
 
-  /* Print takes every panel, so the tab something was hidden on is no longer
-     the tab — the whole hub is on the page and the tool list prints complete. */
+  /* Print takes every panel, so the tab the block was hidden on is no longer
+     the tab — the whole hub is on the page and the tool list prints with it. */
   #resources {
     display: block !important;
   }
 
-  .sct-resource[data-tool] {
-    display: list-item !important;
+  /* Same for the tails: every tab is on the page, so every tab's questions are.
+     They print after the tool list, which is where they sit on screen. */
+  .sct .sct-faq-tail {
+    display: block !important;
   }
 }
 
@@ -1692,9 +1739,44 @@ body.sct-page.is-embed {
   border-top: 1px solid var(--sc-hairline);
 }
 
+/* One question, one fold. Shut by default: every question shows, and the
+   answer opens under the one the reader came for. The native marker is
+   replaced with a chevron of our own because the default sits outside the
+   heading's box and ahead of the flex row it has no business being part of. */
 .sct-faq-item {
   padding: 14px 0;
   border-bottom: 1px solid var(--sc-hairline);
+}
+
+.sct-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sct-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+/* Nudged down to sit on the first line of the question rather than on the
+   middle of a question that wrapped — `align-items: flex-start` puts the
+   chevron's box at the top, and this centres it on that line's cap height. */
+.sct-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.sct-faq-item[open] > .sct-faq-q-row::before {
+  transform: rotate(45deg);
 }
 
 .sct-faq-q {
@@ -1708,75 +1790,14 @@ body.sct-page.is-embed {
 /* 72ch, the measure the outlook notes already read at. The FAQ answers are
    shorter but they sit in the same column, and two paragraph widths in one
    section is the kind of thing a reader notices without being able to say
-   what is wrong. */
+   what is wrong. The left indent lines the answer up with its question rather
+   than with the chevron. */
 .sct-faq-a {
-  margin: 7px 0 0;
+  margin: 7px 0 0 20px;
   max-width: 72ch;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;
-}
-
-/* Shut by default. The heading — the band label on Outlook, the .sct-h2 on
-   Stats — is the summary, so the outline reads the same open or closed; only
-   the answers fold. The native marker is replaced with a chevron of our own
-   because the default one sits outside the heading's box and, on the band,
-   ahead of a flex row it has no business being part of. */
-.sct-faq-fold > .sct-faq-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.sct-faq-fold > .sct-faq-summary::-webkit-details-marker {
-  display: none;
-}
-
-.sct-faq-fold > .sct-faq-summary::before {
-  content: "";
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--sc-gold);
-  border-bottom: 2px solid var(--sc-gold);
-  transform: rotate(-45deg);
-  transition: transform 140ms ease;
-}
-
-.sct-faq-fold[open] > .sct-faq-summary::before {
-  transform: rotate(45deg);
-}
-
-/* The headings keep their own look; only their box changes. The band label's
-   trailing hairline moves to the summary so the chevron sits inside the row
-   the rule closes, and the .sct-h2's fixed-width gold mark stays where it is
-   because the heading is still its own positioned box. */
-.sct-faq-fold > .sct-faq-summary > .sct-band-label {
-  display: inline;
-}
-
-.sct-faq-fold > .sct-faq-summary > .sct-band-label::after {
-  content: none;
-}
-
-.sct-faq-fold.sct-band > .sct-faq-summary::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--sc-hairline);
-}
-
-.sct-faq-fold > .sct-faq-summary > .sct-h2 {
-  margin-bottom: 0;
-}
-
-/* The .sct-h2's 10px bottom padding is the room for its gold mark, and flex
-   centres the chevron against that box, not the text — 5px low. Pull the
-   chevron's margin box up by the same 10px so it centres on the text instead. */
-.sct-faq-fold:not(.sct-band) > .sct-faq-summary::before {
-  margin-top: -10px;
 }
 
 /* -------------------------------------------------------- advanced stats */
@@ -3697,6 +3718,38 @@ body.sct-page.is-embed {
    is the default and the full one is carried alongside it, hidden to the eye
    and not to a screen reader. Below 1080px the chart drops to two columns and
    the media query at that breakpoint swaps them back. */
+/* A designated player the chart would otherwise hide.
+ *
+ * Sleeper demotes an injured player rather than dropping him, so a WR1 on IR
+ * lands below a four-deep preview and vanishes. These rows put him back, after
+ * the numbered ones and visibly apart from them: a hairline above the first,
+ * and the row set back so the running order still reads 1, 2, 3, 4 down the
+ * column without him in it.
+ *
+ * Dimmed, not greyed out. He is not unavailable information — he is the most
+ * important name in the column for anyone deciding whether to start the player
+ * above him — so the name stays at full contrast and only the photo drops back. */
+.sct-depth-row.is-out {
+  opacity: 0.92;
+}
+
+.sct-depth-row.is-out + .sct-depth-row.is-out {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.sct-depth-row:not(.is-out) + .sct-depth-row.is-out {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--sc-line);
+}
+
+.sct-depth-row.is-out .sct-depth-photo {
+  filter: grayscale(0.7);
+  opacity: 0.75;
+}
+
 .sct-depth-name-long {
   position: absolute;
   width: 1px;
@@ -3986,9 +4039,13 @@ body.sct-page.is-embed {
  * here entirely. */
 .sct-srow {
   display: grid;
+  /* Eight columns: the seventh is the status, the eighth the link to the pair
+     page. The link column is sized to its longest label ("View matchup →") and
+     fixed, so it does not breathe with the fluid columns to its left and leave
+     the arrows down the table out of line with each other. */
   grid-template-columns:
     54px 62px minmax(0, 1.5fr) minmax(0, 1.25fr)
-    minmax(0, 1.2fr) 66px 76px;
+    minmax(0, 1.2fr) 66px 76px 104px;
   align-items: center;
   gap: 12px;
   padding: 11px 18px;
@@ -4022,6 +4079,19 @@ body.sct-page.is-embed {
   font-weight: 900;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
+}
+
+/* The abbreviation is the exception here, not the default — the opposite of the
+   depth chart, where four columns make the short spelling the normal case. The
+   table has room for the full nickname at every width except the squeeze band,
+   so the code sits in the markup unused until that band needs it.
+   
+   MUST STAY ABOVE that media query. A media query carries no specificity of its
+   own, so this rule sitting later in the file beat the one that shows the code
+   — the long name was hidden in the band and the short one never replaced it,
+   which took the team name off the row entirely. */
+.sct-srow-name-brief {
+  display: none;
 }
 
 /* Home filled, away outlined — the same pair as the cards above, so the two
@@ -4220,6 +4290,14 @@ body.sct-page.is-embed {
 
 /* -------------------------------------------------------------- resources */
 
+/* 20px more than the 40px .sct-section opens with. The block is page furniture
+   that follows whichever tab is open, so it wants a wider break from that tab's
+   content than one of that tab's own blocks would. The id outranks
+   .sct-section, so this is the padding that applies. */
+#resources {
+  padding-top: 60px;
+}
+
 .sct-resources {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
@@ -4286,6 +4364,48 @@ body.sct-page.is-embed {
 
 /* The sidebar is the first thing to go: below this the news column is too
    narrow for a featured card AND a 340px rail. */
+/* The band between the table being comfortable and the table becoming cards.
+ *
+ * The schedule row is eight columns wide and three of them are fluid, so as the
+ * panel narrows the opponent cell is the one that gives — and it gives by
+ * ellipsing the team name, which is the one thing in the row nobody can afford
+ * to lose. DIV/INTL/NEUTRAL are qualifiers on a fixture the reader can identify
+ * without them, so they are what comes out first, and the name gets their width
+ * back.
+ *
+ * They return below 900px: the row is cards by then, the opponent has a line of
+ * its own, and the space they cost is no longer taken from the name. The band
+ * is bounded at 901px for exactly that reason — it is the complement of the
+ * card-view query, so the two cannot drift apart. */
+@media (min-width: 901px) and (max-width: 1080px) {
+  .sct-srow .sct-badge.is-tiny {
+    display: none;
+  }
+
+  /* With the pills gone and the name still ellipsing, the long nicknames give
+     up their spelling too: "SEA" beats "Seahaw…". Only the rows that carry a
+     brief form change — a row whose name always fitted still reads "Jets".
+
+     Visually hidden rather than display:none, exactly as the depth chart does
+     it: the row's accessible name stays "Seahawks" while the eye gets "SEA",
+     so the abbreviation never reaches a screen reader as the team's name. */
+  .sct-srow-name-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sct-srow-name-brief {
+    display: inline;
+  }
+}
+
 @media (max-width: 1080px) {
   .sct-news-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -4412,6 +4532,15 @@ body.sct-page.is-embed {
   .sct-srow-tv {
     grid-area: 3 / 4 / 4 / -1;
     justify-self: end;
+  }
+
+  /* Its own line, under the logistics. It is the only interactive thing in the
+     row, so it gets a full-width line rather than a corner of a shared one —
+     on a phone that line is also the touch target. */
+  .sct-srow-view {
+    grid-area: 4 / 1 / 5 / -1;
+    justify-self: end;
+    padding-top: 2px;
   }
 
   .sct-srow-bye {
@@ -5016,11 +5145,50 @@ body.sct-page.is-embed {
   gap: 10px 14px;
 }
 
+/* A past meeting reads as a result: "SEA 23 — NE 20", winner first and heavier,
+   rather than a fixture and a verdict at the same weight in separate columns. */
 .sct-mu-result {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
   font-weight: 700;
   font-size: 13px;
   color: var(--sc-navy);
   white-space: nowrap;
+}
+
+.sct-mu-res-side {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-res-team {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.sct-mu-res-score {
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The winner, not a ranking: the loser stays legible at full opacity, because
+   a greyed-out team in a results list reads as data that failed to load. */
+.sct-mu-res-side.is-winner {
+  color: var(--sc-navy);
+}
+
+.sct-mu-res-side.is-winner .sct-mu-res-score {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.sct-mu-res-dash {
+  color: var(--sc-hairline);
 }
 
 .sct-mu-result.is-pending {
@@ -5031,6 +5199,24 @@ body.sct-page.is-embed {
 .sct-mu-view {
   font-size: 13px;
   white-space: nowrap;
+}
+
+/* The pair-page link on a schedule row. Right-aligned so the column ends flush
+   with the table rather than raggedly against the status beside it, and
+   nowrap because "View matchup" on two lines makes that row taller than the
+   sixteen around it — the same rule the depth chart's name cell follows. */
+.sct-srow-view {
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* The cell is emitted empty on a row with no pair page so the grid keeps its
+   shape; below the breakpoint the cells are placed by hand and an empty one
+   would hold open a row of its own, so there it is taken out instead. */
+.sct-srow-view:empty {
+  display: none;
 }
 
 /* Pair page hero: the two sides with their records under the codes. */
@@ -5056,34 +5242,194 @@ body.sct-page.is-embed {
   cursor: default;
 }
 
-.sct-mu-score {
-  display: flex;
-  gap: 28px;
-  margin: 10px 0 6px;
+/* The final score, as a scoreboard.
+ *
+ * The result is the whole reason a postgame reader opened this page, so it is
+ * the largest thing on it after the hero: crest, nickname and a number set at
+ * display size, with the date and the stadium demoted to the line underneath.
+ * The old block set the score at 32px in a row of card metadata, which made the
+ * most important fact on the page look like one of its footnotes. */
+.sct-mu-scoreboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, 3vw, 28px);
+  margin: 18px 0 14px;
 }
 
-.sct-mu-score-side {
-  display: flex;
-  flex-direction: column;
+.sct-mu-sb-side {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
-.sct-mu-score-team {
+.sct-mu-sb-logo {
+  width: clamp(40px, 9vw, 64px);
+  height: auto;
+}
+
+.sct-mu-sb-name {
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--sc-muted-strong);
+  text-align: center;
 }
 
-.sct-mu-score-num {
-  font-size: 32px;
+/* The number carries the result on its own: the winner's is navy and the
+   loser's stays muted, which is the same emphasis the old block used — only at
+   a size where it registers before the crest does. Tabular figures so a 7 and
+   a 1 occupy the same width and the two sides stay symmetrical. */
+.sct-mu-sb-score {
+  font-size: clamp(44px, 11vw, 76px);
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-score-side.is-winner .sct-mu-score-num {
+.sct-mu-sb-side.is-winner .sct-mu-sb-score {
   color: var(--sc-navy);
+}
+
+.sct-mu-sb-sep {
+  font-size: clamp(20px, 5vw, 32px);
+  font-weight: 700;
+  color: var(--sc-hairline);
+  align-self: center;
+  padding-top: 18px;
+}
+
+/* On a final the date and venue are where it happened, not what happened. */
+.sct-mu-game.is-final .sct-game-meta {
+  text-align: center;
+}
+
+.sct-mu-game.is-final .sct-game-when {
+  font-size: 0.86rem;
+}
+
+/* Game leaders: four cards, one per category.
+ *
+ * The name is the loudest thing in each card, not the number. The number is why
+ * the card exists, but "who threw for the most" is the question, and the search
+ * that lands on this page is a player's name as often as the fixture's. */
+.sct-mu-leader-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-mu-leader {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--sc-line);
+  border-radius: 12px;
+  background: var(--sc-surface);
+}
+
+.sct-mu-leader-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.sct-mu-leader-who {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0;
+}
+
+.sct-mu-leader-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--sc-navy);
+  line-height: 1.2;
+}
+
+.sct-mu-leader-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.sct-mu-leader-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 2px 0 0;
+}
+
+.sct-mu-leader-value {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+.sct-mu-leader-unit {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-leader-line {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* Injury Watch: name first, designation last.
+ *
+ * The status pill used to sit second, straight after the slot chip, where it
+ * was the loudest thing in a list whose point is which players are on it. The
+ * row now reads name, then what is wrong, then the designation — and the pill
+ * is pushed to the end of the line so it is the last thing the eye reaches. */
+.sct-mu-injury {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.sct-mu-injury-main {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sct-mu-injury .sct-injury-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.sct-mu-injury .sct-injury-detail {
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.sct-mu-injury .sct-injury-status {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 2px 7px;
 }
 
 /* Where to watch: a definition list read as label / value rows. */
@@ -5124,29 +5470,83 @@ body.sct-page.is-embed {
 
 .sct-mu-table th,
 .sct-mu-table td {
-  padding: 8px 6px;
+  padding: 10px 6px;
   border-bottom: 1px solid var(--sc-line);
   text-align: center;
   vertical-align: middle;
 }
 
-.sct-mu-th-side {
+/* The metric column takes only what its label needs; the rest is split evenly
+   between the two sides, so the bars are the same length at the same rank
+   whichever side they are on. */
+.sct-mu-td-side {
+  width: 40%;
+}
+
+/* The pairing, named once, above the rows it governs. This replaced a header
+   row that repeated both names on every table. The <thead> is still there for a
+   screen reader moving cell by cell; it is just off the page. */
+.sct-mu-cmp-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sc-line);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--sc-muted-strong);
+  caption-side: top;
+  text-align: center;
+}
+
+/* The team's own colour, as a marker rather than a fill. A 3px rule under the
+   unit name is enough to tell the two sides apart on every row below; tinting
+   the cells themselves put two brand colours behind a table of numbers and made
+   the numbers the second thing you saw. */
+.sct-mu-cmp-side {
+  padding-bottom: 3px;
+  border-bottom: 3px solid transparent;
+}
+
+.sct-mu-cmp-side[data-side="a"] {
+  border-bottom-color: var(--mu-cmp-left, var(--sc-hairline));
+}
+
+.sct-mu-cmp-side[data-side="b"] {
+  border-bottom-color: var(--mu-cmp-right, var(--sc-hairline));
+}
+
+.sct-mu-cmp-vs {
+  color: var(--sc-hairline);
+  font-weight: 700;
 }
 
 .sct-mu-td-label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sc-muted-strong);
   white-space: nowrap;
+  font-size: 12px;
+  letter-spacing: 0.03em;
 }
 
+/* A side of one row: the figure, then the bar under it. The bar grows from the
+   middle of the table outward, so the two sides meet at the metric name and the
+   longer bar is the better unit — readable without reading the ranks. */
 .sct-mu-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.sct-mu-figure {
   display: inline-flex;
   align-items: baseline;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -5158,6 +5558,37 @@ body.sct-page.is-embed {
   font-weight: 800;
   font-size: 17px;
   color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-mu-bar {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--sc-line);
+  overflow: hidden;
+}
+
+.sct-mu-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--mu-cmp-left, var(--sc-navy));
+  /* Muted on purpose. These are a supporting reading of the ranks beside them,
+     not the point of the row, and two saturated brand colours repeated down
+     five rows fought with every number on the table. */
+  opacity: 0.55;
+}
+
+/* Each side's bar fills toward the metric name in the middle. */
+.sct-mu-bar[data-side="a"] .sct-mu-bar-fill {
+  background: var(--mu-cmp-left, var(--sc-navy));
+  margin-left: auto;
+}
+
+.sct-mu-bar[data-side="b"] .sct-mu-bar-fill {
+  background: var(--mu-cmp-right, var(--sc-navy));
+  margin-right: auto;
 }
 
 .sct-mu-cols {
@@ -5166,17 +5597,61 @@ body.sct-page.is-embed {
   gap: 20px 32px;
 }
 
+/* The series record, as a stat rather than a sentence.
+ *
+ * "Seahawks lead 2–0" was a line of body text carrying the strongest fact in
+ * the section. It is now a figure: the tally at display size, the leader named
+ * under it, and a rule in that team's colour down the left so the block reads
+ * as belonging to somebody. */
 .sct-mu-h2h {
-  margin: 0 0 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 16px;
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  border: 1px solid var(--sc-line);
+  border-left: 4px solid var(--mu-h2h-accent, var(--sc-hairline));
+  border-radius: 12px;
+  background: var(--sc-surface);
 }
 
-.sct-mu-h2h-line {
-  font-size: 20px;
+.sct-mu-h2h-logo {
+  grid-row: 1 / 3;
+  width: 44px;
+  height: auto;
+}
+
+.sct-mu-h2h-figure {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.sct-mu-h2h-tally {
+  font-size: clamp(30px, 7vw, 44px);
   font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--sc-navy);
+}
+
+.sct-mu-h2h-who {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-h2h-note {
+  grid-column: 2;
+  margin: 0;
+  font-size: 12px;
+  color: var(--sc-muted);
 }
 
 .sct-mu-row.is-featured {
@@ -5221,4 +5696,9 @@ body.sct-page.is-embed {
 
 .sct-crosslink:hover {
   color: var(--sc-gold-deep);
+}
+
+.sct-game-cta {
+  margin: 10px 0 0;
+  font-size: 13px;
 }

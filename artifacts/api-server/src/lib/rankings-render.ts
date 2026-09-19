@@ -318,13 +318,47 @@ function renderTierRow(
     `<td class="scr-tier-cell">${player.tier}</td>` +
     `<td class="scr-rank-cell">${player.rank}</td>` +
     // The name is the link, so the anchor text is the thing being linked to.
-    // A second "View profile" link on the same row would give the row two links
-    // to one destination, the weaker of them labelled generically.
     `<th scope="row" class="scr-player">` +
     renderName(player, options, "scr-player-link") +
     renderTeam(player) +
     `</th>` +
+    renderProfileCta(player, options) +
     `</tr>`
+  );
+}
+
+/**
+ * The "View profile" cell.
+ *
+ * A second target for the same destination as the name, for a reader who is
+ * looking down the right edge of the table for something to click rather than
+ * at the names. It is deliberately NOT a second stop for anyone navigating by
+ * keyboard or by a screen reader's link list: two links per row, both landing
+ * on the same page and the second one labelled generically, is noise in both
+ * of those. `tabindex="-1"` and `aria-hidden="true"` leave the row with one
+ * announced, focusable link — the name — and give the pointer a bigger one.
+ *
+ * Rule 1 still holds: a player the dictionary cannot place has no URL, so he
+ * gets an empty cell rather than a button that goes nowhere.
+ */
+function renderProfileCta(
+  player: RankedPlayer,
+  options: RankingsRenderOptions,
+): string {
+  if (!player.slug) return `<td class="scr-cta-cell is-empty"></td>`;
+
+  const prefix = options.playerPathPrefix ?? DEFAULT_PLAYER_PREFIX;
+  const query = options.linkQuery ?? "";
+
+  return (
+    `<td class="scr-cta-cell">` +
+    `<a class="scr-cta" href="${escapeHtml(
+      `${prefix}${player.slug}${query}`,
+    )}" target="_top" tabindex="-1" aria-hidden="true">` +
+    `<span class="scr-cta-text">View profile</span>` +
+    `<span class="scr-cta-arrow">&rarr;</span>` +
+    `</a>` +
+    `</td>`
   );
 }
 
@@ -357,7 +391,7 @@ function renderPositionBoard(
       (group) =>
         `<tbody class="scr-tier" data-tier="${group.tier}">` +
         `<tr class="scr-tier-head">` +
-        `<th scope="rowgroup" colspan="3">Tier ${group.tier}</th>` +
+        `<th scope="rowgroup" colspan="4">Tier ${group.tier}</th>` +
         `</tr>` +
         group.players
           .map((player, i) => renderTierRow(player, i, options))
@@ -370,11 +404,16 @@ function renderPositionBoard(
     `<div class="scr-card"><div class="scr-scroll">` +
     `<table class="scr-table">` +
     `<caption class="scr-caption">${escapeHtml(caption)}</caption>` +
-    `<colgroup><col class="scr-col-tier" /><col class="scr-col-rank" /><col /></colgroup>` +
+    `<colgroup><col class="scr-col-tier" /><col class="scr-col-rank" /><col />` +
+    `<col class="scr-col-cta" /></colgroup>` +
     `<thead><tr>` +
     `<th scope="col">Tier</th>` +
     `<th scope="col">Rank</th>` +
     `<th scope="col" class="scr-th-player">Player</th>` +
+    // The column has a name for the row headers to be scoped against; it does
+    // not need one on screen, and "Profile" over a column of identical buttons
+    // would be the third label for one idea.
+    `<th scope="col" class="scr-th-cta"><span class="scr-sr-only">Profile</span></th>` +
     `</tr></thead>` +
     bodies +
     `</table></div></div>`

@@ -479,6 +479,60 @@ a.scr-player-link:hover {
   text-decoration: underline;
 }
 
+/*
+ * The "View profile" button.
+ *
+ * The row's second target for the page its name already links to, sized for a
+ * pointer rather than for reading: the markup hides it from the keyboard and
+ * from assistive tech (see renderProfileCta), so everything here is pointer
+ * affordance and nothing here carries information the row does not already
+ * print. It stays visible rather than appearing on :hover, because a control
+ * that only exists once the pointer is over it is one a touch reader never
+ * finds.
+ */
+
+.scr-col-cta {
+  width: 132px;
+}
+
+.scr-cta-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.scr-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.scr-cta:hover {
+  border-color: var(--sc-gold);
+  background: var(--sc-surface);
+  color: var(--sc-gold-deep);
+}
+
+.scr-cta-arrow {
+  transition: transform 0.15s ease;
+}
+
+.scr-cta:hover .scr-cta-arrow {
+  transform: translateX(2px);
+}
+
 /* ------------------------------------------------------------- the tints */
 
 .scr-all-cell[data-tier="1"],
@@ -568,11 +622,36 @@ a.scr-player-link:hover {
   .scr-all-cell .scr-team {
     display: none;
   }
+
+  /* On the tier tables the button keeps its tap target and loses its label:
+     132px of "View profile" against a column of names is the widest thing on
+     the row, and the arrow in a pill next to a linked name is legible without
+     it. */
+  .scr-col-cta {
+    width: 44px;
+  }
+
+  .scr-cta {
+    padding: 3px 8px;
+  }
+
+  .scr-cta-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scr-nav-link,
-  .scr-opt {
+  .scr-opt,
+  .scr-cta,
+  .scr-cta-arrow {
     transition: none;
   }
 }

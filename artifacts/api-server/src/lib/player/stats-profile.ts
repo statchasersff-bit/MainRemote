@@ -125,6 +125,63 @@ export function careerStatRows(
   return [...rows.values()].sort((a, b) => b.season - a.season);
 }
 
+/**
+ * How many games a season offered. Seventeen from 2021, sixteen before it.
+ *
+ * Exported because availability is computed in two places off two different
+ * shapes — the career rows here and the game-log tiers in player-data.ts — and
+ * a league rule written down twice is a league rule that will be updated once.
+ */
+export function seasonGames(season: number): number {
+  return season >= 2021 ? 17 : 16;
+}
+
+export interface CareerAvailability {
+  played: number;
+  possible: number;
+  pct: number;
+  /** Completed seasons only — see below. */
+  seasons: number;
+}
+
+/**
+ * Games played against games there were to play, across COMPLETED seasons.
+ *
+ * The season in progress is left out of both sides, because neither way of
+ * including it is true: counted whole, a player who has appeared in one of a
+ * year's seventeen games has missed sixteen he has not yet had the chance to
+ * miss; counted as one of one, a year he has barely started reads as perfect
+ * attendance. A rate over the seasons that finished is the only one that means
+ * what the word says.
+ *
+ * `currentSeason` is checked as well as the row's own `inProgress` flag,
+ * because that flag only gets set on a season the game logs contributed. A
+ * year production has already filed a PARTIAL line for arrives marked
+ * finished, and counting it whole charged one player fourteen absences for
+ * games his league had not played yet.
+ *
+ * Null for a player whose only season is the one in progress.
+ */
+export function careerAvailability(
+  rows: CareerStatRow[],
+  currentSeason: number,
+): CareerAvailability | null {
+  const done = rows.filter(
+    (row) => !row.inProgress && row.season < currentSeason,
+  );
+  if (done.length === 0) return null;
+
+  const played = done.reduce((sum, row) => sum + row.gamesPlayed, 0);
+  const possible = done.reduce((sum, row) => sum + seasonGames(row.season), 0);
+
+  return {
+    played,
+    possible,
+    pct: possible > 0 ? (played / possible) * 100 : 0,
+    seasons: done.length,
+  };
+}
+
 export interface CareerTotalsRow {
   seasons: number;
   gamesPlayed: number;

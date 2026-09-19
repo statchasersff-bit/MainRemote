@@ -1,0 +1,98 @@
+/**
+ * Metadata for the NFL schedule page.
+ *
+ * Same posture as the other five tools: everything is in the initial HTML,
+ * nothing is amended by JavaScript, and the page ships
+ * `noindex, indexifembedded` because the address that should rank is
+ * `https://statchasers.com/nfl/nfl-schedule/`, not this origin.
+ *
+ * The canonical always points at the bare path. View, week, team and filter are
+ * the four pieces of state this page carries in a query string, and every
+ * rendering of them is the same page — the same reasoning the FPA table's
+ * format toggle gets, and it matters more here, because the four combine into
+ * several hundred URLs and every one of them would otherwise be a near-duplicate
+ * of the others.
+ *
+ * The description DOES vary with the view, though, because the three views are
+ * genuinely about different things and a snippet that says "browse by week" on
+ * the season matrix is a worse answer than one that does not.
+ */
+
+import { escapeHtml } from "./render";
+import type { NflTeam } from "./team/teams";
+import type { ScheduleSeason, ScheduleView } from "./schedule/schedule-data";
+
+export interface SchedulePageMeta {
+  title: string;
+  description: string;
+  canonical: string;
+  siteName: string;
+}
+
+const SITE_NAME = "StatChasers";
+
+export interface SchedulePageMetaInput {
+  view: ScheduleView;
+  week: number;
+  team: NflTeam | null;
+}
+
+export function schedulePageMeta(
+  schedule: ScheduleSeason | null,
+  canonical: string,
+  state: SchedulePageMetaInput,
+): SchedulePageMeta {
+  const season = schedule?.season ?? new Date().getUTCFullYear();
+
+  if (state.view === "team" && state.team) {
+    return {
+      title: `${state.team.fullName} ${season} Schedule | ${SITE_NAME}`,
+      description:
+        `Every ${state.team.fullName} game of the ${season} regular season: ` +
+        `opponents, dates, kickoff times, TV, the bye week, and the home-road ` +
+        `split across each third of the season.`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
+
+  if (state.view === "matrix") {
+    return {
+      title: `${season} NFL Schedule Grid: Every Team, Every Week | ${SITE_NAME}`,
+      description:
+        `All 32 NFL teams and all 18 weeks of the ${season} regular season in ` +
+        `one grid, with byes marked and home and road games distinguished.`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
+
+  return {
+    title: `${season} NFL Schedule | ${SITE_NAME}`,
+    description:
+      `The ${season} NFL regular-season schedule by week: matchups, dates, ` +
+      `kickoff times in ET, TV networks, byes, division and international ` +
+      `games, and the market's posted spreads and totals.`,
+    canonical,
+    siteName: SITE_NAME,
+  };
+}
+
+export function renderScheduleHeadTags(meta: SchedulePageMeta): string {
+  const t = escapeHtml(meta.title);
+  const d = escapeHtml(meta.description);
+  const url = escapeHtml(meta.canonical);
+  return [
+    `<title>${t}</title>`,
+    `<meta name="description" content="${d}" />`,
+    `<link rel="canonical" href="${url}" />`,
+    `<meta property="og:type" content="website" />`,
+    `<meta property="og:site_name" content="${escapeHtml(meta.siteName)}" />`,
+    `<meta property="og:title" content="${t}" />`,
+    `<meta property="og:description" content="${d}" />`,
+    `<meta property="og:url" content="${url}" />`,
+    `<meta name="twitter:card" content="summary" />`,
+    `<meta name="twitter:title" content="${t}" />`,
+    `<meta name="twitter:description" content="${d}" />`,
+  ].join("\n  ");
+}

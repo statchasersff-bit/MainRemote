@@ -40,6 +40,23 @@ export function percentileRead(percentile: number | null): string {
   return "Bottom of the position";
 }
 
+/**
+ * The same five steps in one or two words.
+ *
+ * "Elite for the position" is a phrase to read; this is a label to scan, for
+ * the Stats tab's efficiency table where it sits in a column beside the rate
+ * and the percentile and has to fit next to them. Same thresholds, so a row
+ * can never be "Elite" here and "Above average" on Overview.
+ */
+export function percentileWord(percentile: number | null): string {
+  if (percentile === null) return "";
+  if (percentile >= 85) return "Elite";
+  if (percentile >= 65) return "Above avg";
+  if (percentile >= 35) return "Average";
+  if (percentile >= 15) return "Below avg";
+  return "Bottom tier";
+}
+
 /** The same five steps, as a level for the accent. */
 export function percentileLevel(percentile: number | null): string {
   if (percentile === null) return "";

@@ -1,0 +1,1345 @@
+/*
+ * StatChasers — NFL Schedule
+ *
+ * The sixth sibling of team.css, player.css, fpa.css and rankings.css, and a
+ * sibling for the same reason: the stylesheets are enqueued independently, so a
+ * page mounting [statchasers_schedule] must not need another tool's CSS. The
+ * brand tokens are restated rather than imported.
+ *
+ * Light-only, matching the others.
+ *
+ * Two things here are load-bearing rather than decorative:
+ *
+ *   - **The board is a grid, and the grid is the reading order.** When /
+ *     matchup / TV, at every width. On a phone the three columns stack into two
+ *     rows rather than shrinking, because a matchup squeezed into 90px stops
+ *     being readable well before it stops fitting.
+ *   - **Home and away are never carried by position alone.** The layout puts
+ *     away on the left because that is the convention, but every row also says
+ *     "at" in text, and the team lens prints "vs"/"at" as words. See
+ *     schedule-render.ts.
+ */
+
+:where(.scs),
+:where(body.scs-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --scs-gutter: 24px;
+
+  /*
+   * Live is the one state that gets a colour of its own, and it is the gold
+   * rather than a red: a red dot on a schedule reads as an error, and the only
+   * thing this tool ever has to say in colour is "this one is happening now".
+   * It is never the only signal — the status text says LIVE or the quarter, and
+   * the row carries data-status="live" for anything reading the markup.
+   */
+  --scs-live: #b45309;
+  --scs-win: #15803d;
+  --scs-loss: #b91c1c;
+}
+
+/* ------------------------------------------------------------- standalone */
+
+body.scs-page {
+  margin: 0;
+  padding: var(--scs-gutter);
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.scs-page.is-embed {
+  padding: 0;
+  background: transparent;
+}
+
+.scs {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.45;
+}
+
+.scs *,
+.scs *::before,
+.scs *::after {
+  box-sizing: border-box;
+}
+
+/* Embedded, the host page owns the outer spacing. */
+.scs.is-embed {
+  max-width: none;
+}
+
+.scs-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.scs-net-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ head */
+
+.scs-head {
+  margin: 0 0 20px;
+}
+
+.scs-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 1.2rem + 1.8vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--sc-navy);
+}
+
+.scs-lede {
+  margin: 10px 0 0;
+  max-width: 68ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.97rem;
+}
+
+/* --------------------------------------------------------------- the bar */
+
+.scs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--sc-border);
+}
+
+.scs-view-list,
+.scs-chip-list,
+.scs-rail-list,
+.scs-bye-list,
+.scs-plain-list,
+.scs-slate,
+.scs-tlist,
+.scs-path {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scs-views {
+  min-width: 0;
+}
+
+.scs-view-list {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.scs-view-link {
+  display: inline-block;
+  padding: 9px 14px;
+  border-bottom: 2px solid transparent;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.scs-view-link:hover,
+.scs-view-link:focus-visible {
+  color: var(--sc-navy);
+}
+
+.scs-view-link.is-active {
+  border-bottom-color: var(--sc-gold);
+  color: var(--sc-navy);
+}
+
+.scs-exports {
+  display: flex;
+  gap: 8px;
+}
+
+.scs-export {
+  padding: 7px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.scs-export:hover,
+.scs-export:focus-visible {
+  border-color: var(--sc-navy);
+  color: var(--sc-navy);
+}
+
+/* ---------------------------------------------------------- the view head */
+
+.scs-viewhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 18px 0 14px;
+}
+
+.scs-view-title {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  color: var(--sc-navy);
+}
+
+.scs-view-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scs-view-title a:hover,
+.scs-view-title a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 3px;
+}
+
+.scs-view-sub {
+  color: var(--sc-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.scs-control-label {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.scs-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scs-chip-list {
+  display: flex;
+  gap: 6px;
+}
+
+.scs-chip {
+  display: inline-block;
+  padding: 6px 11px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.scs-chip.is-active {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* -------------------------------------------------------------- the rail */
+
+.scs-rail {
+  margin: 0 0 16px;
+}
+
+.scs-rail-list {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.scs-rail-link {
+  display: block;
+  min-width: 38px;
+  padding: 8px 6px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 0.84rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-decoration: none;
+}
+
+.scs-rail-link:hover,
+.scs-rail-link:focus-visible {
+  border-color: var(--sc-navy);
+  color: var(--sc-navy);
+}
+
+.scs-rail-link.is-active {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------ the layout */
+
+.scs-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+.scs-main {
+  min-width: 0;
+}
+
+.scs-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .scs-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------------------- the board */
+
+.scs-board {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  overflow: hidden;
+}
+
+.scs-board-head,
+.scs-game {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr) 132px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.scs-board-head {
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.scs-board-head span:last-child {
+  text-align: right;
+}
+
+/*
+ * The weekly board's middle heading sits over a centred column, so it is
+ * centred too. Scoped away from the team lens, whose five columns are a
+ * left-ranged table and whose second heading is "Opponent".
+ */
+.scs-board:not(.scs-board-team) .scs-board-head span:nth-child(2) {
+  text-align: center;
+}
+
+.scs-game {
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scs-game:last-child {
+  border-bottom: 0;
+}
+
+.scs-game[data-status="live"] {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.scs-game-when {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.scs-game-date {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scs-game-status {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+}
+
+.scs-game[data-status="live"] .scs-game-status {
+  color: var(--scs-live);
+  font-weight: 800;
+}
+
+.scs-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--scs-live);
+  vertical-align: middle;
+}
+
+.scs-game-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.scs-game-side {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scs-game-side[data-side="away"] {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.scs-game-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scs-game-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--sc-navy);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.scs-game-name:hover,
+a.scs-game-name:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+.scs-game-code {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scs-game-score {
+  font-size: 1.05rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+.scs-game[data-status="live"] .scs-game-score {
+  color: var(--scs-live);
+}
+
+.scs-game-logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.scs-logo-blank {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--sc-surface-sink);
+}
+
+.scs-game-at {
+  flex: 0 0 auto;
+  color: var(--sc-muted);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.scs-game-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------- the TV */
+
+/*
+ * Two marks STACK rather than sitting side by side.
+ *
+ * A simulcast is "ESPN / ABC" — a 4:1 wordmark next to a roundel — and on one
+ * row the pair reads as a single wide smear whose left half happens to be a
+ * logo. Stacked, each mark keeps its own baseline and the cell stays narrow,
+ * which is what the column beside it needs.
+ */
+.scs-tv {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+/*
+ * Each mark is drawn at the same optical AREA, not the same height.
+ *
+ * --scs-net-h is computed per mark by netMarkStyle() in lib/schedule-render.ts,
+ * which is where the reasoning lives; the width follows from it and the
+ * artwork's own cropped ratio. The fallbacks are the roundel case, so a mark
+ * that somehow arrives without the custom property is small rather than huge.
+ */
+.scs-net-mark {
+  display: block;
+  height: var(--scs-net-h, 13px);
+  width: calc(var(--scs-net-h, 13px) * var(--scs-net-aspect, 1));
+}
+
+.scs-net-text {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--sc-navy);
+  white-space: nowrap;
+}
+
+.scs-tv-tbd {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------------- the tags */
+
+.scs-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.scs-tag {
+  padding: 2px 6px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scs-tag[data-kind="holiday"] {
+  border-color: var(--sc-gold);
+  color: var(--sc-gold-deep);
+}
+
+/* -------------------------------------------------------------- the cards */
+
+/*
+ * The week sidebar's cards are CENTRED, as they are in the app this was ported
+ * from: each one is a single claim about the slate — a matchup, a number, a
+ * line of explanation — and a centred stack is how that reads as a card rather
+ * than as the start of a paragraph.
+ *
+ * The team lens's cards below opt back out. They are lists and tables (a
+ * division slate, an opponent breakdown, a stat grid), where a common left edge
+ * is what makes the rows scannable, and the original left those ranged left
+ * too.
+ */
+.scs-card {
+  padding: 14px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  text-align: center;
+}
+
+.scs-card[data-kind="snapshot"],
+.scs-card[data-kind="path"],
+.scs-card[data-kind="slate"],
+.scs-card[data-kind="opponents"] {
+  text-align: left;
+}
+
+.scs-card-label {
+  margin: 0 0 8px;
+  color: var(--sc-muted);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.scs-card-figure {
+  margin: 8px 0 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--sc-navy);
+}
+
+.scs-card-note {
+  margin: 5px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.scs-card-fine {
+  margin: 6px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+}
+
+.scs-card-takeaway {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-border);
+  color: var(--sc-gold-deep);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scs-mini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.scs-mini-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.scs-mini-logo {
+  object-fit: contain;
+}
+
+.scs-mini-code {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--sc-navy);
+}
+
+.scs-mini-at {
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scs-plain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scs-bye-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.scs-bye {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  color: var(--sc-navy);
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scs-bye:hover,
+.scs-bye:focus-visible {
+  border-color: var(--sc-navy);
+}
+
+.scs-bye-logo {
+  object-fit: contain;
+}
+
+/* --------------------------------------------------------------- the bars */
+
+.scs-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.scs-bar {
+  display: grid;
+  grid-template-columns: 4.8rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: 8px;
+}
+
+.scs-bar-label {
+  color: var(--sc-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scs-bar-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.scs-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sc-gold);
+}
+
+.scs-bar-value {
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+/* ------------------------------------------------------------- the tiles */
+
+.scs-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 8px;
+  margin: 0 0 12px;
+}
+
+.scs-tiles-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scs-tile dt {
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scs-tile dd {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+/* -------------------------------------------------------------- the path */
+
+.scs-path {
+  display: flex;
+  gap: 3px;
+  margin: 0 0 6px;
+}
+
+.scs-path-week {
+  flex: 1 1 0;
+  height: 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: 3px;
+}
+
+.scs-path-week[data-kind="home"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+}
+
+.scs-path-week[data-kind="away"] {
+  background: transparent;
+}
+
+.scs-path-week[data-kind="bye"] {
+  border-style: dashed;
+  background: var(--sc-surface-sink);
+}
+
+.scs-path-key {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scs-path-key span {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--sc-border);
+  border-radius: 2px;
+}
+
+.scs-path-key span[data-kind="home"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+}
+
+.scs-path-key span[data-kind="bye"] {
+  border-style: dashed;
+  background: var(--sc-surface-sink);
+}
+
+.scs-path-key span + span {
+  margin-left: 8px;
+}
+
+.scs-segs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scs-seg {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scs-seg-label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scs-seg-detail {
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+/* --------------------------------------------------------- the team lens */
+
+.scs-lens {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.scs-lens-logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.scs-lens-sub {
+  margin: 4px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+}
+
+.scs-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scs-picker select {
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.scs-picker-go {
+  padding: 8px 14px;
+  border: 1px solid var(--sc-navy);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-navy);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* The bundle hides this once it can submit on change; without the bundle it is
+   the only thing that makes the picker work, so it is visible by default. */
+.scs-picker[data-scs-auto="js"] .scs-picker-go {
+  display: none;
+}
+
+.scs-board-team .scs-board-head {
+  grid-template-columns: 2.6rem minmax(0, 1fr) 4.4rem 5.4rem 4.6rem;
+}
+
+.scs-trow {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) 4.4rem 5.4rem 4.6rem;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scs-trow:last-child {
+  border-bottom: 0;
+}
+
+.scs-trow[data-status="live"] {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.scs-trow-week {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--sc-muted);
+}
+
+.scs-trow-vs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.scs-trow-ha {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scs-trow-ha[data-home="1"] {
+  color: var(--sc-navy);
+}
+
+.scs-trow-logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.scs-trow-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+a.scs-trow-name:hover,
+a.scs-trow-name:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+.scs-trow-date,
+.scs-trow-status {
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted-strong);
+}
+
+.scs-trow[data-status="live"] .scs-trow-status {
+  color: var(--scs-live);
+  font-weight: 800;
+}
+
+.scs-trow-tv {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scs-result {
+  font-weight: 800;
+}
+
+.scs-result[data-outcome="W"] {
+  color: var(--scs-win);
+}
+
+.scs-result[data-outcome="L"] {
+  color: var(--scs-loss);
+}
+
+.scs-slate {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scs-slate li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.scs-slate-week {
+  flex: 0 0 auto;
+  width: 1.9rem;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.scs-slate-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scs-slate-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scs-slate-name a:hover,
+.scs-slate-name a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+/* ------------------------------------------------------------- the matrix */
+
+.scs-matrix-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  scrollbar-width: thin;
+}
+
+/* A scrollable region is focusable so it can be reached and panned by keyboard;
+   the outline is the only cue that it has been. */
+.scs-matrix-scroll:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -2px;
+}
+
+.scs-matrix {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.scs-matrix th,
+.scs-matrix td {
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--sc-border);
+  border-left: 1px solid var(--sc-border);
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.scs-matrix thead th {
+  position: sticky;
+  top: 0;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.scs-matrix thead th a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scs-matrix-corner,
+.scs-matrix-team {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  border-left: 0;
+  background: var(--sc-surface);
+  text-align: left;
+}
+
+.scs-matrix-corner {
+  background: var(--sc-surface-sink);
+}
+
+.scs-matrix-team a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 6px;
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.scs-matrix-logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.scs-matrix-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.scs-matrix-code {
+  color: var(--sc-muted);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.scs-matrix-cell a {
+  display: block;
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+/* A road game is marked with "@" in the text; the tint is a second, redundant
+   cue and never the only one. */
+.scs-matrix-cell[data-home="0"] {
+  background: var(--sc-surface-soft);
+}
+
+.scs-matrix-cell:hover {
+  background: rgba(212, 175, 55, 0.18);
+}
+
+.scs-matrix-bye {
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 900px) {
+  .scs-matrix-name {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------- the rest */
+
+.scs-empty {
+  padding: 42px 20px;
+  text-align: center;
+}
+
+.scs-empty-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.scs-empty-body {
+  margin: 6px auto 0;
+  max-width: 44ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.83rem;
+}
+
+.scs-source {
+  margin: 18px 0 0;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+}
+
+/* ---------------------------------------------------------------- phones */
+
+@media (max-width: 640px) {
+  body.scs-page {
+    padding: 14px;
+  }
+
+  /*
+   * The three columns become two rows: when-and-TV above, matchup below.
+   *
+   * Shrinking the columns instead was the first attempt and it failed the only
+   * test that matters here — at 360px the matchup had 90px to say who was
+   * playing, which is not enough for two nicknames, two codes and two scores.
+   */
+  .scs-board-head {
+    display: none;
+  }
+
+  .scs-game {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    padding: 12px 14px;
+  }
+
+  .scs-game-teams {
+    grid-column: 1 / -1;
+    gap: 10px;
+  }
+
+  .scs-game-meta {
+    align-items: flex-end;
+  }
+
+  .scs-board-team .scs-board-head {
+    display: none;
+  }
+
+  .scs-trow {
+    grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "week vs vs"
+      "week date status";
+    gap: 2px 8px;
+  }
+
+  .scs-trow-week {
+    grid-area: week;
+  }
+
+  .scs-trow-vs {
+    grid-area: vs;
+  }
+
+  .scs-trow-date {
+    grid-area: date;
+  }
+
+  .scs-trow-status {
+    grid-area: status;
+    text-align: right;
+  }
+
+  /* The TV column is the first thing to go: it is the least load-bearing of
+     the five, and the row is already two lines. */
+  .scs-trow-tv {
+    display: none;
+  }
+
+  .scs-viewhead {
+    align-items: flex-start;
+  }
+}

@@ -292,6 +292,55 @@ describe("the rankings page", () => {
     }
   });
 
+  test("the View profile button is a pointer target, not a second link", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const rows = [...doc.querySelectorAll("#scr-panel-rb .scr-row")];
+    assert.ok(rows.length > 0);
+
+    for (const row of rows) {
+      const name = row.querySelector("a.scr-player-link");
+      const cta = row.querySelector("a.scr-cta");
+
+      if (!name) {
+        // Rule 1: no page, no button — and the cell is still there, so the
+        // column does not close up under the rows it has nothing for.
+        assert.equal(cta, null, "an unlinked player gets no button");
+        assert.ok(row.querySelector(".scr-cta-cell.is-empty"));
+        continue;
+      }
+
+      assert.equal(
+        cta.getAttribute("href"),
+        name.getAttribute("href"),
+        "the button and the name must not go to different places",
+      );
+      // The reason this row is allowed two anchors at all: only one of them is
+      // in the tab order and only one of them is in the accessibility tree.
+      assert.equal(cta.getAttribute("tabindex"), "-1");
+      assert.equal(cta.getAttribute("aria-hidden"), "true");
+      assert.equal(name.getAttribute("aria-hidden"), null);
+    }
+  });
+
+  test("the tier tables carry a fourth column for the button", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const table = doc.querySelector("#scr-panel-te .scr-table");
+    assert.equal(table.querySelectorAll("colgroup col").length, 4);
+    assert.equal(table.querySelectorAll("thead th").length, 4);
+    // A rowgroup header that spans three of four columns would leave a stray
+    // empty cell beside every tier heading.
+    for (const head of table.querySelectorAll(".scr-tier-head th")) {
+      assert.equal(head.getAttribute("colspan"), "4");
+    }
+    for (const row of table.querySelectorAll(".scr-row")) {
+      assert.equal(row.children.length, 4);
+    }
+  });
+
   test("tiers are announced as rowgroups, not as styled rows", async (t) => {
     if (!hasData) return t.skip("no rankings file");
     const { doc } = await page("/rankings");

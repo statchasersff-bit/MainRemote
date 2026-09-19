@@ -1,9 +1,9 @@
 /**
  * Shortcode preview harness. Development only.
  *
- * The five tools are shipped as FRAGMENTS: /embed/ssr.html,
- * /embed/team/:slug, /embed/player/:slug, /embed/fpa and /embed/rankings return
- * bare markup
+ * The six tools are shipped as FRAGMENTS: /embed/ssr.html,
+ * /embed/team/:slug, /embed/player/:slug, /embed/fpa, /embed/rankings and
+ * /embed/schedule return bare markup
  * with no stylesheet and no script, because on a real page WordPress enqueues those
  * separately. Opening any of them in a browser shows a wall of unstyled HTML — which makes the one
  * question you actually want to answer while working ("what does this shortcode
@@ -16,6 +16,7 @@
  *   [statchasers_player]  ->  /preview/player/:slug
  *   [statchasers_fpa]     ->  /preview/fpa
  *   [statchasers_rankings] -> /preview/rankings
+ *   [statchasers_schedule] -> /preview/schedule
  *
  * The fragment is the SAME markup the plugin fetches — it comes from the same
  * renderer the /embed endpoints use, not a second code path — wrapped in a mock
@@ -42,7 +43,14 @@ import { renderTeamFragment } from "../lib/team-ssr";
 import { renderPlayerFragment } from "../lib/player-ssr";
 import { renderFpaFragment } from "../lib/fpa-ssr";
 import { renderRankingsFragment } from "../lib/rankings-ssr";
+import { renderScheduleFragment } from "../lib/schedule-ssr";
 import { parseFpaFormat, parseFpaView } from "../lib/fpa/fpa-data";
+import {
+  parseGameFilter,
+  parseScheduleView,
+  parseWeek,
+  scheduleSeason,
+} from "../lib/schedule/schedule-data";
 import { normalizeTeamName } from "../lib/team/teams";
 
 const router: IRouter = Router();
@@ -271,6 +279,7 @@ router.get("/preview/player/:slug", (req, res) => {
         // between players from inside the preview keeps you inside the preview.
         playerPathPrefix: "/preview/player/",
         teamPathPrefix: "/preview/team/",
+        fpaPath: "/preview/fpa",
       });
       if (!result) {
         res.status(404).type("text/plain").send("Unknown player");
@@ -353,6 +362,52 @@ router.get("/preview/rankings", (req, res) => {
     logger.error({ err }, "Rankings shortcode preview failed");
     res.status(500).type("html").send("<h1>Preview failed</h1>");
   }
+});
+
+/**
+ * [statchasers_schedule] as it renders on a page.
+ *
+ * The board carries four pieces of state in its query string, so the harness
+ * reads the same four the real route reads — a preview that could only ever
+ * show Week 1 of the weekly view would not answer the question it exists for.
+ */
+router.get("/preview/schedule", (req, res) => {
+  void (async () => {
+    const view = parseScheduleView(String(req.query["view"] ?? ""));
+    const week = parseWeek(String(req.query["week"] ?? ""));
+    const team = normalizeTeamName(String(req.query["team"] ?? ""));
+    const filter = parseGameFilter(String(req.query["filter"] ?? ""));
+    try {
+      const result = await renderScheduleFragment(scheduleSeason(), {
+        embed: true,
+        // Point the board's own controls back into the harness, so changing
+        // week or team from inside the preview keeps you inside the preview.
+        basePath: "/preview/schedule",
+        teamPathPrefix: "/preview/team/",
+        view,
+        filter,
+        ...(week === null ? {} : { week }),
+        ...(team === null ? {} : { team }),
+      });
+      send(
+        req,
+        res,
+        hostPage({
+          title: "NFL Schedule",
+          shortcode:
+            `[statchasers_schedule view="${view}"` +
+            (team ? ` team="${team.abbreviation}"` : "") +
+            `]`,
+          styles: ["/schedule.css"],
+          scripts: ["/dist/statchasers-schedule.js"],
+          fragment: result.html,
+        }),
+      );
+    } catch (err) {
+      logger.error({ err }, "Schedule shortcode preview failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
 });
 
 /** The news fragment as source. */
@@ -463,6 +518,37 @@ router.get("/preview/raw/rankings", (req, res) => {
     logger.error({ err }, "Rankings fragment source view failed");
     res.status(500).type("html").send("<h1>Preview failed</h1>");
   }
+});
+
+/** The schedule fragment as source. */
+router.get("/preview/raw/schedule", (req, res) => {
+  void (async () => {
+    const view = parseScheduleView(String(req.query["view"] ?? ""));
+    const week = parseWeek(String(req.query["week"] ?? ""));
+    const team = normalizeTeamName(String(req.query["team"] ?? ""));
+    const filter = parseGameFilter(String(req.query["filter"] ?? ""));
+    try {
+      const result = await renderScheduleFragment(scheduleSeason(), {
+        embed: true,
+        view,
+        filter,
+        ...(week === null ? {} : { week }),
+        ...(team === null ? {} : { team }),
+      });
+      send(
+        req,
+        res,
+        sourcePage(
+          `[statchasers_schedule view="${view}"]`,
+          "/embed/schedule",
+          result.html,
+        ),
+      );
+    } catch (err) {
+      logger.error({ err }, "Schedule fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
 });
 
 export default router;

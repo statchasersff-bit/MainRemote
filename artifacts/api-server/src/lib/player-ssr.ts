@@ -53,6 +53,8 @@ function optionKey(
     options.embed ?? false,
     options.playerPathPrefix ?? "",
     options.teamPathPrefix ?? "",
+    options.matchupPathPrefix ?? "",
+    options.fpaPath ?? "",
     options.linkQuery ?? "",
     // The section scopes the whole render — one panel instead of seven, a
     // different heading, no tab strip. Left out of the key, a request for

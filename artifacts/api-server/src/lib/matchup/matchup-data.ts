@@ -20,6 +20,7 @@ import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-da
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
 import type { MatchupPair } from "./pair";
+import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
 
@@ -51,6 +52,23 @@ export interface HeadToHead {
   fromSeason: number | null;
 }
 
+/**
+ * The two defenses' fantasy-points-allowed rows, and what season they describe.
+ *
+ * Null when the FPA ingest has not run — see getFpaTable(), which returns null
+ * rather than 32 zeroes for exactly that case. A side is null on its own when
+ * the table cannot resolve that team, which is the same tolerance the FPA page
+ * itself has for an abbreviation it does not know.
+ */
+export interface MatchupFpa {
+  a: FpaRow | null;
+  b: FpaRow | null;
+  season: number;
+  /** "Week 3", "Preseason Baseline" — what the numbers are drawn from. */
+  dataMode: string;
+  format: string;
+}
+
 export interface MatchupData {
   pair: MatchupPair;
   state: NflState;
@@ -68,6 +86,8 @@ export interface MatchupData {
   record: HeadToHead;
   a: TeamPageData;
   b: TeamPageData;
+  /** What each defense gives up by position, for the Fantasy Matchups block. */
+  fpa: MatchupFpa | null;
   /** Latest fetch stamp across the history schedules, for the cache key. */
   historyFetchedAt: number;
 }
@@ -211,6 +231,23 @@ export async function getMatchupData(
 
   const { matchupState, featured } = decide(thisSeason, history, now);
 
+  // Allowed to fail on its own, like the prior-season schedules above: an FPA
+  // table that will not load costs this page one block, not the page.
+  const fpaTable = await getFpaTable().catch(() => null);
+  const fpaFor = (team: NflTeam): FpaRow | null =>
+    fpaTable?.rows.find(
+      (row) => row.team?.abbreviation === team.abbreviation,
+    ) ?? null;
+  const fpa: MatchupFpa | null = fpaTable
+    ? {
+        a: fpaFor(pair.a),
+        b: fpaFor(pair.b),
+        season: fpaTable.season,
+        dataMode: fpaTable.dataMode,
+        format: fpaTable.format,
+      }
+    : null;
+
   return {
     pair,
     state,
@@ -221,6 +258,7 @@ export async function getMatchupData(
     record: tally([...thisSeason, ...history], pair.a, pair.b),
     a,
     b,
+    fpa,
     historyFetchedAt: prior.reduce((max, s) => Math.max(max, s?.fetchedAt ?? 0), 0),
   };
 }

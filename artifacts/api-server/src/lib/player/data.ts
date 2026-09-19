@@ -28,6 +28,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
+import { searchKey } from "../render";
 import type {
   BioFacts,
   DraftRecord,
@@ -133,6 +134,10 @@ export function loadPlayers(): Player[] {
   const rows = readJson<Player[]>(PLAYERS_FILE, []);
   playersCache = rows;
   playersBySlug = new Map(rows.map((p) => [p.slug, p]));
+  // Rebuilt with the dictionary, not alongside it: it is derived from these
+  // rows, so a stale index outliving a reload would hand out slugs for players
+  // the file no longer has.
+  slugsByName = null;
   playersMtimeMs = mtimeMs;
   logger.info({ count: rows.length }, "Loaded player dictionary");
   return rows;
@@ -141,6 +146,62 @@ export function loadPlayers(): Player[] {
 export function getPlayerBySlug(slug: string): Player | null {
   if (!playersBySlug) loadPlayers();
   return playersBySlug?.get(slug) ?? null;
+}
+
+/* ------------------------------------------------------- name lookup */
+
+/**
+ * `searchKey(name)` -> slug, for the players that have a profile page.
+ *
+ * Null for "not built yet"; a name that resolves to nothing is absent from the
+ * map rather than mapped to null.
+ */
+let slugsByName: Map<string, string> | null = null;
+
+function buildSlugsByName(): Map<string, string> {
+  // Only the INDEXED players. The dictionary carries ~4,000 names and the site
+  // publishes a profile for ~600 of them, so matching against the whole
+  // dictionary would hand out links to pages that do not exist — which is the
+  // failure the caller in team/links.ts exists to avoid.
+  const indexed = new Set(loadIndexedSlugs());
+  const byName = new Map<string, string>();
+  // Names that are not unique once normalised. "Michael Thomas" has been two
+  // players; a link then has to pick one, and picking wrong is worse than
+  // leaving the name as text, so an ambiguous key is dropped entirely.
+  const ambiguous = new Set<string>();
+
+  for (const player of loadPlayers()) {
+    if (!indexed.has(player.slug)) continue;
+    const key = searchKey(player.name);
+    if (!key) continue;
+    const seen = byName.get(key);
+    if (seen && seen !== player.slug) {
+      ambiguous.add(key);
+      continue;
+    }
+    byName.set(key, player.slug);
+  }
+  for (const key of ambiguous) byName.delete(key);
+  return byName;
+}
+
+/**
+ * The slug of the player with this name, or null.
+ *
+ * Matched on `searchKey`, the same normalisation the rest of the app compares
+ * names with, so the punctuation the sources disagree about ("A.J." vs "AJ",
+ * "Ja'Marr" vs "JaMarr") does not decide whether a name resolves.
+ *
+ * Null is the answer for anyone without a published profile, and callers are
+ * expected to render a plain name rather than guess a URL: the slugs here are
+ * the site's own, and deriving one from a name gets "A.J. Brown" wrong
+ * ("a-j-brown", where the site says "aj-brown").
+ */
+export function getPlayerSlugByName(name: string | null | undefined): string | null {
+  const key = searchKey(name ?? "");
+  if (!key) return null;
+  if (!slugsByName) slugsByName = buildSlugsByName();
+  return slugsByName.get(key) ?? null;
 }
 
 /* ---------------------------------------------------------------- game logs */

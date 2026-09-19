@@ -516,14 +516,9 @@ body.scp-page {
   margin-top: 0;
 }
 
-.scp-h4 {
-  margin: 0 0 10px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
+/* .scp-h4 — the card titles on the Stats tab — went with the cards. The
+   Production columns are headed by .scp-prod-head, which carries its own rule
+   and is a label rather than a heading in the document outline. */
 
 /* Present to a screen reader, absent to everyone else. Used for table captions
    that would be redundant beside a visible heading but that a table still owes
@@ -583,6 +578,22 @@ body.scp-page {
   font-size: 12px;
   color: var(--sc-muted);
   text-align: left;
+}
+
+/* A link inside a caption: the phrase the caption is defining, pointing at the
+   table it is defined from. Underlined in gold like .scp-crosslink, but
+   inheriting the caption's size and muted colour — a caption that grew one
+   navy-bold phrase would read as the loudest thing under the section. */
+.scp-caption-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--sc-gold);
+}
+
+.scp-caption-link:hover {
+  color: var(--sc-navy);
+  border-bottom-color: var(--sc-gold-deep);
 }
 
 
@@ -708,6 +719,30 @@ body.scp-page {
   color: var(--sc-ink);
 }
 
+/*
+ * The slim bar: the same reading at the weight of a footnote.
+ *
+ * Under a one- or two-game sample this chart says "100% QB2", which at 34px of
+ * solid colour is the loudest thing on the Overview tab and the least earned
+ * claim on it. At 10px it is a rule under a legend that prints the same
+ * numbers, and the block stops outweighing the season it describes.
+ */
+.scp-stack.is-slim .scp-stack-bar {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.scp-stack.is-slim .scp-legend {
+  gap: 6px 16px;
+  margin-top: 9px;
+}
+
+/* A tier he never reached. It stays in the legend because the zero is a
+   reading, and it dims because it is not part of the bar above it. */
+.scp-legend-item[data-empty="1"] {
+  opacity: 0.55;
+}
+
 .scp-legend {
   display: flex;
   flex-wrap: wrap;
@@ -810,116 +845,12 @@ body.scp-page {
   box-shadow: var(--sc-shadow-lift);
 }
 
-/* ---------------------------------------------------------------- meters */
-
-.scp-meters {
-  display: grid;
-  gap: 10px;
-}
-
-.scp-meter {
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) 68px minmax(120px, 1.4fr);
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.scp-meter-label {
-  color: var(--sc-muted-strong);
-  font-weight: 600;
-}
-
-.scp-meter-value {
-  font-weight: 800;
-  color: var(--sc-navy);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.scp-meter-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.scp-meter-track {
-  flex: 1 1 auto;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--sc-surface-sink);
-  overflow: hidden;
-}
-
-.scp-meter-fill {
-  display: block;
-  height: 100%;
-  /* Rounded data-end anchored to the baseline. */
-  border-radius: 0 4px 4px 0;
-  background: var(--scp-tier-2);
-}
-
-.scp-meter-pct {
-  flex: 0 0 auto;
-  min-width: 36px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sc-muted-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.scp-meter-empty {
-  font-size: 12px;
-  color: var(--sc-muted);
-}
-
-.scp-meters-note {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--sc-muted);
-}
-
-/* ------------------------------------------------------ production block */
-
-.scp-prod {
-  display: grid;
-  grid-template-columns: minmax(200px, 260px) 1fr;
-  gap: 20px;
-  align-items: start;
-}
-
-.scp-td {
-  padding: 16px 18px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface);
-}
-
-.scp-td[data-high="1"] {
-  border-color: color-mix(in srgb, var(--scp-risk-moderate) 40%, var(--sc-border));
-}
-
-.scp-td-label {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-td-value {
-  margin: 8px 0 0;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--sc-navy);
-}
-
-.scp-td-sub {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--sc-muted);
-}
+/* The Stats tab's efficiency block had its own vocabulary — a percentile
+   track with a marker, an ordinal column and a two-word verdict column. It is
+   the Overview tab's .scp-dr rows now, from the same renderer, because the two
+   sections were always the same four readings off the same four percentiles.
+   The scoring style takes .scp-styleline, the line Overview gives its fantasy
+   style. Both live in the overview-tab section below. */
 
 /* ---------------------------------------------------------- key stat rows */
 
@@ -1287,20 +1218,16 @@ body.scp-page {
   border-left: 3px solid var(--sc-gold);
 }
 
-.scp-take-label {
-  margin: 0;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
 .scp-take-body {
-  margin: 6px 0 0;
+  margin: 0;
   font-size: 15px;
   line-height: 1.6;
   color: var(--sc-ink);
+}
+
+/* Two paragraphs of one argument: spaced as prose, not as two blocks. */
+.scp-take > * + * {
+  margin-top: 12px;
 }
 
 /* A section's one-line gloss, under an h3 rather than an h2. */
@@ -1677,6 +1604,12 @@ body.scp-page {
   text-decoration: none;
 }
 
+.scp-season-opt:hover {
+  background: var(--sc-surface-sink);
+  color: var(--sc-navy);
+}
+
+/* Kept for the team pages' own switcher, which still marks a current tab. */
 .scp-season-opt.is-active {
   background: var(--sc-navy);
   color: #fff;
@@ -1883,25 +1816,9 @@ body.scp-page {
   color: var(--sc-muted-strong);
 }
 
-/*
- * The Overview tab's variant, where the ramp means the opposite.
- *
- * On the Injury tab "high" is high risk and paints red. On Overview the same
- * list renders a fantasy profile, where a high ceiling rate is the GOOD end —
- * so the two ends swap rather than the page telling a reader that a good
- * ceiling is a warning.
- */
-.scp-avails--read .scp-avail[data-level="high"] .scp-avail-value {
-  color: var(--scp-risk-low);
-}
-
-.scp-avails--read .scp-avail[data-level="low"] .scp-avail-value {
-  color: var(--scp-risk-high);
-}
-
-.scp-avails--read .scp-avail[data-level="mid"] .scp-avail-value {
-  color: var(--sc-navy);
-}
+/* The Overview tab used to render its fantasy profile through this list with a
+   --read modifier that inverted the ramp. It has its own two-column matrix now
+   (.scp-prof), and the inverted ramp went with it. */
 
 /* "How this is calculated" — the rules, out of the way but in the HTML. */
 .scp-how {
@@ -2003,25 +1920,81 @@ body.scp-page {
 
 /* ---- the questions people type */
 
+/*
+ * The questions, as the team hubs draw them.
+ *
+ * One question, one fold, shut by default. Every question shows and the answer
+ * opens under the one the reader came for — the block used to be four
+ * questions with four answers permanently open, which is a page of prose
+ * restating numbers the tab has already given, sitting exactly where a reader
+ * is looking for an index.
+ *
+ * The native disclosure marker is replaced with a chevron of our own: the
+ * default sits outside the heading's box, ahead of a flex row it has no
+ * business being part of, and is drawn differently by every browser.
+ */
 .scp-faq {
   margin: 0;
   border-top: 1px solid var(--sc-border);
 }
 
 .scp-faq-item {
-  padding: 16px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scp-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+/* Nudged down to sit on the FIRST line of the question rather than on the
+   middle of one that wrapped — `align-items: flex-start` puts the chevron's
+   box at the top, and this centres it on that line's cap height. */
+.scp-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.scp-faq-item[open] > .scp-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
+/* The keyboard focus ring belongs to the row, not to the heading inside it —
+   the summary is the control, and a ring around the text alone reads as a
+   selected word rather than as a focused button. */
+.scp-faq-q-row:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 3px;
+  border-radius: var(--sc-radius-xs);
 }
 
 .scp-faq-q {
   margin: 0;
   font-size: 15px;
   font-weight: 800;
+  line-height: 1.45;
   color: var(--sc-navy);
 }
 
+/* The left indent lines the answer up with its question rather than with the
+   chevron. 72ch is the measure the rest of this page's prose reads at. */
 .scp-faq-a {
-  margin: 7px 0 0;
+  margin: 7px 0 0 20px;
   max-width: 72ch;
   font-size: 14px;
   line-height: 1.6;
@@ -2377,13 +2350,6 @@ body.scp-page {
   color: var(--sc-navy);
 }
 
-.scp-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--sc-gold);
-  flex: 0 0 auto;
-}
 
 .scp-news-title {
   margin: 0;
@@ -2520,7 +2486,54 @@ body.scp-page {
  * page. Where Stats is tables and tabular numerals, this is readings: a word
  * first, the number that earned it underneath in a quieter size. If a block
  * here starts looking like a box score, it belongs on the other tab.
+ *
+ * It should not look like a stack of modules either, which is what it had
+ * become: seven sections, each in its own container, each surrounded by the
+ * same generous air, none of them heavier than the next. That is a SaaS
+ * dashboard. This is a scouting sheet, and the three rules below are what
+ * separate the two.
+ *
+ *   ONE BOX       The snapshot strip is the only bordered container on the
+ *                 tab. Everything under it is hairlines and open layout. A
+ *                 page of rounded cards is the single thing that most reliably
+ *                 makes a page read as machine-assembled.
+ *   PAIRED        Short readings share a row. "Starter" and "Low sample" are
+ *                 not wide enough to own one each, and six of them stacked ran
+ *                 a screen's height for six words.
+ *   BAND RHYTHM   Sections are grouped into three bands — snapshot, profile,
+ *                 weekly — and the gap BETWEEN bands is larger than the gap
+ *                 inside one. Equal gaps everywhere is what made the tab read
+ *                 as a list of unrelated modules.
+ *
+ * Every rule here is scoped to .scp-ov. The sections below reuse markup that
+ * Stats and Injury also render, and those tabs are paced for tables; the
+ * density belongs to this tab, not to the classes.
  */
+
+.scp-ov > * + * {
+  margin-top: 36px;
+}
+
+/* Inside a band the sections sit close: 24px against the 48px the Stats tab
+   uses. Half, because the two sections in a band are one subject read twice —
+   what kind of asset he is, and what is making him one. */
+.scp-ov .scp-sect {
+  margin: 24px 0 12px;
+}
+
+.scp-ov .scp-ov-band > .scp-sect:first-child {
+  margin-top: 0;
+}
+
+.scp-ov .scp-h3 {
+  margin: 26px 0 12px;
+}
+
+.scp-ov .scp-ov-band > .scp-h3:first-child {
+  margin-top: 0;
+}
+
+/* ---- the snapshot strip */
 
 /*
  * No card around this one.
@@ -2532,21 +2545,21 @@ body.scp-page {
  * runs to the page's measure like every other line of prose here.
  */
 .scp-read-hero {
-  margin: 0 0 8px;
+  margin: 0;
 }
 
 .scp-read-eyebrow {
-  margin: 0 0 18px;
-  font-size: 11px;
+  margin: 0 0 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--sc-gold-ink);
 }
 
 .scp-read-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
   gap: 1px;
   background: var(--sc-border);
   border: 1px solid var(--sc-border);
@@ -2554,14 +2567,28 @@ body.scp-page {
   overflow: hidden;
 }
 
+/*
+ * A strip, not a row of tiles: ~62px tall, with the figure over its label.
+ *
+ * The cell places the two rows itself rather than relying on source order,
+ * because the order they must be SAID in and the order they read best in are
+ * opposites. A screen reader gets "Scoring rate, 16.5 PPG" — the label is the
+ * question, and an answer with no question is noise. On screen the figure goes
+ * first, because a column of labels is not something anyone scans.
+ */
 .scp-read-cell {
-  padding: 14px 16px;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  min-height: 62px;
+  padding: 9px 14px;
   background: var(--sc-surface-soft);
 }
 
 .scp-read-label {
-  margin: 0;
-  font-size: 10px;
+  grid-row: 2;
+  margin: 3px 0 0;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2569,12 +2596,30 @@ body.scp-page {
 }
 
 .scp-read-value {
-  margin: 6px 0 0;
-  font-size: 18px;
+  grid-row: 1;
+  margin: 0;
+  font-size: 17px;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.015em;
   color: var(--sc-navy);
+}
+
+/*
+ * The winner.
+ *
+ * Four cells at one weight have no headline, and a reader's eye has to pick
+ * one for itself — which is the difference between a designed page and an
+ * arrangement. The first reading is the tab's answer, so it is set larger and
+ * lifted off the soft fill the other three share.
+ */
+.scp-read-cell[data-lead="1"] {
+  background: var(--sc-surface);
+}
+
+.scp-read-cell[data-lead="1"] .scp-read-value {
+  font-size: 23px;
+  letter-spacing: -0.025em;
 }
 
 /* The tier the player is producing at carries the accent; the direction of
@@ -2586,13 +2631,180 @@ body.scp-page {
 .scp-read-cell[data-mod="down"] .scp-read-value { color: var(--scp-risk-high); }
 
 /* The assembled sentence. Set as prose — larger and looser than the readings
-   above it — and to the page's full width, not a narrower measure of its own. */
+   above it — and to the page's full width, not a narrower measure of its own.
+   It belongs to the strip, so it sits close under it. */
 .scp-read-line {
-  margin: 18px 0 0;
-  font-size: 15px;
-  line-height: 1.6;
+  margin: 10px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
   color: var(--sc-ink);
 }
+
+/* ---- the fantasy profile matrix */
+
+/*
+ * Six readings in two columns, divided by hairlines and nothing else.
+ *
+ * The list this replaced was the Injury tab's availability list, which is the
+ * right shape for six rows of prose and the wrong one for six rows of two
+ * words. Paired, the block is half as tall and the eye crosses it in two
+ * passes instead of six.
+ */
+.scp-prof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-prof-cell {
+  position: relative;
+  padding: 9px 0 11px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+/* An odd count leaves the last cell alone on its row; it takes the full
+   measure rather than sitting under a gap with a rule beside it. */
+.scp-prof-cell:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+/* Drawn in the gutter rather than as a border on the cell, so the rule divides
+   the two columns without boxing either. */
+.scp-prof-cell:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  inset: 9px auto 11px -14px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-prof-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-prof-value {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--sc-navy);
+}
+
+.scp-prof-detail {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sc-muted-strong);
+}
+
+/*
+ * The Overview ramp, which is the Injury tab's inverted.
+ *
+ * There "high" is high risk and paints red. Here a high ceiling rate is the
+ * GOOD end, and one shared ramp would tell a reader that a good ceiling is a
+ * warning.
+ */
+.scp-prof-cell[data-level="high"] .scp-prof-value { color: var(--scp-risk-low); }
+.scp-prof-cell[data-level="low"] .scp-prof-value { color: var(--scp-risk-high); }
+.scp-prof-cell[data-level="mid"] .scp-prof-value { color: var(--sc-navy); }
+
+/* ---- what is driving the production */
+
+/*
+ * The strongest block on the tab, and the one that reads least like a stat.
+ *
+ * It was four columns of "7.5" under "Yards per attempt", which is the Stats
+ * tab's job. Here the READING is the value — "elite for the position" — and
+ * the number that earned it drops to a muted line beneath it.
+ *
+ * Paired rather than stacked, for the same reason the profile above it is: a
+ * quarter-width column wraps "Around league average" onto three lines, and a
+ * full-width row spends 60px of height on a phrase that needs 300px of width.
+ * Two columns of label-plus-reading is the only arrangement that gives the
+ * phrase its line and does not give it the whole page.
+ */
+.scp-dr {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-dr-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(92px, 34%) minmax(0, 1fr);
+  gap: 0 20px;
+  padding: 10px 0 11px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+/* An odd count — three readings, which is every position but quarterback —
+   leaves the last one alone on its row; it takes the full measure. */
+.scp-dr-row:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+/* The rule between the two columns, in the gutter. */
+.scp-dr-row:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  inset: 10px auto 11px -16px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-dr-label {
+  align-self: center;
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-dr-read {
+  position: relative;
+  min-width: 0;
+}
+
+/* The rule between a label and its reading, in the gutter — the same device
+   the Outlook tab's driver strip uses, turned ninety degrees. */
+.scp-dr-read::before {
+  content: "";
+  position: absolute;
+  inset: 1px auto 1px -10px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-dr-value {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--sc-navy);
+}
+
+.scp-dr-detail {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--sc-muted);
+}
+
+/* The ordinal ramp, not a traffic light. */
+.scp-dr-row[data-level="high"] .scp-dr-value { color: var(--scp-tier-1); }
+.scp-dr-row[data-level="mid"] .scp-dr-value { color: var(--scp-tier-2); }
+.scp-dr-row[data-level="low"] .scp-dr-value { color: var(--sc-muted-strong); }
 
 /* ---- the weekly spread */
 
@@ -2617,6 +2829,18 @@ body.scp-page {
   background: var(--sc-surface-soft);
 }
 
+/* Open on Overview: the panel is the second box on a tab that is allowed one,
+   and the three ranks inside it do not need a container to be read as a set —
+   the arrows already say they are one sequence. */
+.scp-ov .scp-spread {
+  gap: 10px 18px;
+  padding: 12px 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--sc-border);
+  border-radius: 0;
+  background: none;
+}
+
 .scp-spread-step {
   min-width: 0;
 }
@@ -2639,15 +2863,39 @@ body.scp-page {
   color: var(--sc-navy);
 }
 
+.scp-ov .scp-spread-rank {
+  margin-top: 4px;
+  font-size: 19px;
+}
+
 /* The typical week is the reading; the two ends are its bounds. */
 .scp-spread-step[data-key="typical"] .scp-spread-rank {
   color: var(--sc-gold-deep);
   font-size: 26px;
 }
 
+.scp-ov .scp-spread-step[data-key="typical"] .scp-spread-rank {
+  font-size: 22px;
+}
+
 .scp-spread-arrow {
   color: var(--sc-border);
   font-size: 17px;
+}
+
+/* Open, the arrow has no panel behind it and a border-weight grey reads as a
+   stray hyphen between two labels rather than as a direction. */
+.scp-ov .scp-spread-arrow {
+  color: var(--sc-muted);
+  opacity: 0.45;
+}
+
+.scp-ov .scp-note {
+  margin-top: 9px;
+}
+
+.scp-ov .scp-subhead {
+  margin: 16px 0 8px;
 }
 
 .scp-styleline {
@@ -2662,6 +2910,11 @@ body.scp-page {
   background: var(--sc-surface-sink);
 }
 
+.scp-ov .scp-styleline {
+  margin-top: 14px;
+  padding: 9px 14px;
+}
+
 .scp-styleline-label {
   font-size: 10px;
   font-weight: 800;
@@ -2674,6 +2927,20 @@ body.scp-page {
   font-size: 15px;
   font-weight: 800;
   color: var(--sc-navy);
+}
+
+/* The evidence under the reading, on the Stats tab's copy of this line. The
+   Overview tab's version has no sub — there the tag alone is the point, and
+   the share it is drawn from is a row of the fantasy profile above it. */
+.scp-styleline-sub {
+  flex: 1 1 100%;
+  margin-top: -2px;
+  font-size: 12.5px;
+  color: var(--sc-muted);
+}
+
+.scp-ov .scp-styleline-value {
+  font-size: 14px;
 }
 
 /* ---- the career strip, and the way out of this tab */
@@ -2691,11 +2958,22 @@ body.scp-page {
   background: var(--sc-surface-soft);
 }
 
+/* The last line on the tab, and a way through rather than a reading: open,
+   with a single rule over it, so it does not close the page with a third box. */
+.scp-ov .scp-strip {
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--sc-border);
+  border-radius: 0;
+  background: none;
+}
+
 .scp-strip-stats {
   font-size: 14px;
   font-weight: 700;
   color: var(--sc-navy);
 }
+
 
 /* ------------------------------------------------------------- stats tab */
 
@@ -2761,69 +3039,69 @@ body.scp-page {
   color: var(--sc-muted);
 }
 
-/* The page's authority line: who, which season, how far into it. */
-.scp-statmeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 9px;
-  margin: 14px 0 24px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
+.scp-ov .scp-sect-sub {
+  margin-top: 5px;
 }
 
-/* ---- the snapshot */
+/* The Stats tab's authority line — position, club, season, games, week — is
+   gone, along with the subtitle above it. Both were captioning a page that
+   prints every one of those facts within a screen of where they sat. */
 
-.scp-snapshot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 24px 40px;
-  margin: 0;
-  padding: 26px 28px;
-  border: 1px solid var(--sc-hairline);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
+/* ---- the stat rail */
 
-.scp-snapshot-grid {
-  flex: 1 1 440px;
+/*
+ * One row of figures, divided by hairlines and nothing else.
+ *
+ * This is one of the Stats tab's three component languages — RAIL, PANEL,
+ * TABLE — and it is the answer to the page's old bottom half, which was career
+ * rates, finish history and career bests rendered as three consecutive rows of
+ * four rounded boxes. Same job three times, three near-identical containers,
+ * and a page that started premium and ended as a dashboard.
+ *
+ * Repetition is the point, but only because the repeated thing is doing the
+ * same work each time: four or seven numbers belonging to one record. The
+ * container is what varies, and only twice — the season strip is a card
+ * because it is the answer to the query, and everything below it is open.
+ */
+.scp-rail {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
-  gap: 22px 8px;
-  min-width: 0;
-  align-items: end;
+  grid-template-columns: repeat(var(--scp-rail-cols, 4), minmax(0, 1fr));
+  align-items: start;
 }
 
-/* Separators between the stat cells, drawn in the gutter — a hairline rather
-   than a border, so the row reads as one line of numbers. */
-.scp-snapshot-cell {
+.scp-rail[data-count="1"] { --scp-rail-cols: 1; }
+.scp-rail[data-count="2"] { --scp-rail-cols: 2; }
+.scp-rail[data-count="3"] { --scp-rail-cols: 3; }
+.scp-rail[data-count="5"] { --scp-rail-cols: 5; }
+.scp-rail[data-count="6"] { --scp-rail-cols: 6; }
+.scp-rail[data-count="7"] { --scp-rail-cols: 7; }
+.scp-rail[data-count="8"] { --scp-rail-cols: 8; }
+
+.scp-rail-cell {
   position: relative;
   min-width: 0;
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
-.scp-snapshot-cell:first-child {
+.scp-rail-cell:first-child {
   padding-left: 0;
 }
 
-.scp-snapshot-cell:not(:first-child)::before {
+/* Drawn in the gutter rather than as a border on the cell, so the row reads as
+   one line of numbers and the first figure is not indented past the heading. */
+.scp-rail-cell:not(:first-child)::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 2px;
-  bottom: 2px;
+  top: 3px;
+  bottom: 3px;
   width: 1px;
   background: var(--sc-border);
 }
 
-.scp-snapshot-value {
+.scp-rail-value {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.025em;
@@ -2832,106 +3110,247 @@ body.scp-page {
 }
 
 /* Quieter than the number, deliberately: the value carries the row. */
-.scp-snapshot-label {
-  margin: 7px 0 0;
+.scp-rail-label {
+  margin: 8px 0 0;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
-/* The anchor. Gold, larger, and stacked over its own qualifier — this is the
-   number the page exists to show and it should not be one cell among seven. */
-.scp-snapshot-fantasy {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-left: 40px;
-  border-left: 1px solid var(--sc-border);
-}
-
-.scp-snapshot-fpts {
-  margin: 0;
-  font-size: 42px;
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  color: var(--sc-gold-deep);
-  font-variant-numeric: tabular-nums;
-}
-
-.scp-snapshot-fpts-unit {
-  margin: 8px 0 0;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.scp-rail-sub {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
   color: var(--sc-muted);
 }
 
-.scp-snapshot-rank {
-  margin: 4px 0 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sc-muted-strong);
-}
-
-/* ---- the production grid */
-
-.scp-prod-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(250px, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-
-.scp-prod-main {
-  display: grid;
-  gap: 20px;
-  min-width: 0;
-}
-
-.scp-prod-side {
-  min-width: 0;
-}
-
-.scp-card {
-  min-width: 0;
-  padding: 18px 20px;
+/*
+ * The hero rail: the season strip, and the only rail that is a container.
+ *
+ * One accent in a row of six. The fantasy figure used to be a separate panel
+ * bolted to the right at 42px, which read as two components; as a cell of the
+ * same rail, in gold, it says fantasy-first more plainly and stops making the
+ * box score look like the smaller half of the strip.
+ */
+.scp-rail[data-variant="hero"] {
+  padding: 26px 28px 24px;
   border: 1px solid var(--sc-hairline);
-  border-radius: var(--sc-radius-sm);
+  border-radius: var(--sc-radius);
   background: var(--sc-surface);
   box-shadow: var(--sc-shadow);
 }
 
-/* Fantasy production is the layer this site adds, so it carries the accent the
-   box-score cards do not. */
-.scp-card--fantasy {
-  border-top: 3px solid var(--sc-gold);
+/* A little air on the right as well: equal columns of left-aligned figures put
+   a wide value ("73.0%") hard against the next cell's rule. */
+.scp-rail[data-variant="hero"] .scp-rail-cell {
+  padding-left: 22px;
+  padding-right: 10px;
 }
 
-.scp-card-foot {
-  margin: 14px 0 0;
-  padding-top: 11px;
-  border-top: 1px solid var(--sc-border);
-  font-size: 11px;
+.scp-rail[data-variant="hero"] .scp-rail-cell:first-child {
+  padding-left: 0;
+}
+
+/* The last cell has no rule to its right and the widest label on the strip;
+   the 10px would only wrap "Fantasy points" onto two lines. */
+.scp-rail[data-variant="hero"] .scp-rail-cell:last-child {
+  padding-right: 0;
+}
+
+.scp-rail[data-variant="hero"] .scp-rail-value {
+  font-size: 26px;
+}
+
+/*
+ * Asymmetry, on purpose.
+ *
+ * Six cells at one size is a list, and a reader has to decide for themselves
+ * which of them is the answer. The fantasy figures lead — half again the width
+ * and a third again the type size — so the rail reads as a sentence with a
+ * subject: "16.5 a game, QB15" first, and the box score that explains it
+ * after.
+ *
+ * Flex rather than grid for the widths. A rail with leads needs a track list
+ * per (count, leads) pair, `repeat(auto-fit, minmax(0, 1fr))` is invalid CSS
+ * after a fixed track — auto-repeat needs a definite size — and `flex-grow` on
+ * the cell expresses "half again as wide" once, for any number of cells.
+ */
+.scp-rail[data-leads] {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.scp-rail[data-leads] .scp-rail-cell {
+  flex: 1 1 0;
+}
+
+.scp-rail[data-leads] .scp-rail-cell[data-lead="1"] {
+  flex-grow: 1.5;
+}
+
+.scp-rail-cell[data-lead="1"] .scp-rail-value {
+  font-size: 34px;
+  letter-spacing: -0.03em;
+}
+
+/*
+ * Gold, and the one rule that governs it.
+ *
+ * On this page gold means a FANTASY figure or the season in progress, and
+ * nothing else. Navy is the type, blue is statistical, and red and green are
+ * reserved for a reading that is genuinely out of range. A palette where the
+ * accent lands on a passing yard as readily as on a fantasy point is not an
+ * accent, it is a fourth neutral.
+ */
+.scp-rail-cell[data-accent="gold"] .scp-rail-value {
+  color: var(--sc-gold-deep);
+}
+
+.scp-rail-cell[data-accent="gold"] .scp-rail-sub {
+  color: var(--sc-muted-strong);
   font-weight: 700;
-  letter-spacing: 0.07em;
+}
+
+/* The open rail: no box, one rule above it, and the section heading doing the
+   work the border used to. */
+.scp-rail[data-variant="open"] {
+  padding-top: 16px;
+  border-top: 1px solid var(--sc-border);
+}
+
+/* ---- the season snapshot */
+
+/* A wrapper, not a container: the hero rail inside it draws the card. */
+.scp-snapshot {
+  margin: 0;
+}
+
+/* -------------------------------------------------------- 2026 production */
+
+/*
+ * Two columns of ONE composition, and not a card between them.
+ *
+ * It was a nine-row passing table in a white bordered box beside a smaller
+ * white bordered box of fantasy figures. Two containers read as two
+ * components, and the heavier one wins on size alone — so the box score looked
+ * like the subject of the section and the fantasy layer like a sidebar, which
+ * is backwards for this site. A third box under them for rushing made the
+ * whole band read as a dashboard row.
+ *
+ * Open layout instead: a shared gutter with one hairline in it, each column a
+ * stack of figure-over-label, and the rows on a common rhythm so the eye can
+ * read down one column or straight across both. The only hierarchy is the
+ * kicker over each heading — navy for the box score, gold for fantasy — which
+ * is a colour doing the work a border and a shadow were doing badly.
+ */
+.scp-prod-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+  /* Its own stacking context, so the watermark cannot escape behind the page
+     background or in front of the type. */
+  isolation: isolate;
+}
+
+.scp-prod-col {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+/* The hairline between the two columns, drawn in the gutter rather than as a
+   border on either, so neither column is boxed by it. */
+.scp-prod-col + .scp-prod-col::before {
+  content: "";
+  position: absolute;
+  inset: 4px auto 4px -20px;
+  width: 1px;
+  background: var(--sc-border);
+}
+
+.scp-prod-head {
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+  border-bottom: 2px solid var(--sc-navy);
+}
+
+/*
+ * Gold marks the fantasy column, and that is the whole rule.
+ *
+ * Gold on this page means one of two things and nothing else: a fantasy
+ * figure, or the season in progress. It is not a decoration and it is not a
+ * second neutral — the moment it lands on a passing yard it stops telling a
+ * reader anything.
+ */
+.scp-prod-col[data-accent="gold"] .scp-prod-head {
+  border-bottom-color: var(--sc-gold);
+  color: var(--sc-gold-ink);
+}
+
+.scp-prod-cell {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scp-prod-cell:last-child {
+  border-bottom: 0;
+}
+
+.scp-prod-value {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-prod-label {
+  margin: 5px 0 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
-/* The secondary line — a quarterback's legs. A bar, not a third card. */
+/*
+ * The club's mark, at four percent.
+ *
+ * Identity without decoration. A page set entirely in grey type is honest and
+ * completely anonymous, and every sports annual ever printed put the crest
+ * somewhere on the page. At this opacity it is a texture behind the fantasy
+ * column, not a logo: it never competes with a figure, it never tints one, and
+ * on a phone it is gone entirely because there is no room for it to be subtle
+ * in.
+ */
+/* ---- the secondary line */
+
+/*
+ * A quarterback's legs, or a running back's targets: the line this section is
+ * NOT about, under the two that it is.
+ *
+ * A rail rather than a third column, and evenly spaced rather than one run of
+ * interpuncts — it carries four or five measurements and should be scannable
+ * as four. The label sits in its own column so the strip announces which line
+ * it is before the numbers start.
+ */
 .scp-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 14px;
-  margin: 20px 0 0;
-  padding: 13px 18px;
-  border: 1px solid var(--sc-hairline);
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 18px;
+  margin: 26px 0 0;
+  padding: 12px 18px;
   border-left: 3px solid var(--sc-navy);
   border-radius: var(--sc-radius-xs);
   background: var(--sc-surface-soft);
@@ -2945,105 +3364,64 @@ body.scp-page {
   color: var(--sc-muted);
 }
 
-.scp-bar-stats {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--sc-navy);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- fantasy production, as a metric grid */
-
-.scp-fantasy {
+.scp-bar-cells {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 14px;
+  grid-template-columns: repeat(var(--scp-bar-cols, 4), minmax(0, 1fr));
+  gap: 8px 12px;
 }
 
-.scp-fantasy-cell {
+.scp-bar-cells[data-count="5"] { --scp-bar-cols: 5; }
+.scp-bar-cells[data-count="3"] { --scp-bar-cols: 3; }
+
+.scp-bar-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
   min-width: 0;
 }
 
-/* Fantasy points spans the grid and sets the card's anchor. */
-.scp-fantasy-cell.is-lead {
-  grid-column: 1 / -1;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--sc-border);
-}
-
-.scp-fantasy-value {
-  margin: 0;
-  font-size: 19px;
+.scp-bar-value {
+  font-size: 15px;
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
   color: var(--sc-navy);
   font-variant-numeric: tabular-nums;
 }
 
-.scp-fantasy-cell.is-lead .scp-fantasy-value {
-  font-size: 32px;
-  letter-spacing: -0.03em;
-  color: var(--sc-gold-deep);
-}
-
-.scp-fantasy-label {
-  margin: 5px 0 0;
+.scp-bar-unit {
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
-/* ---- the label/value tables inside a card */
-
-.scp-table--split {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.scp-table--split th,
-.scp-table--split td {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--sc-border);
-  font-size: 13.5px;
-}
-
-.scp-table--split tr:last-child th,
-.scp-table--split tr:last-child td {
-  border-bottom: 0;
-}
-
-.scp-table--split tr:last-child th,
-.scp-table--split tr:last-child td {
-  padding-bottom: 0;
-}
-
-.scp-table--split th {
-  text-align: left;
-  font-weight: 600;
-  color: var(--sc-muted-strong);
-}
-
-.scp-table--split td {
-  text-align: right;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+.scp-prod-mark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: -10px;
+  width: 200px;
+  height: auto;
+  transform: translateY(-50%);
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ---- the career table */
 
 /* The column-group row. Not headers — labels over blocks of them — so it is
-   quiet, aria-hidden, and skipped by the sorter. */
+   quiet, aria-hidden, and skipped by the sorter. Quiet, but findable: these
+   are what a reader scanning eleven seasons across twelve columns navigates
+   by, and at 9.5px they were losing to the column heads beneath them. */
 .scp-group-row td {
-  padding: 0 10px 6px;
+  padding: 0 10px 7px;
   border-bottom: 0;
   text-align: left;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sc-gold-deep);
 }
@@ -3056,20 +3434,38 @@ body.scp-page {
   padding-top: 8px;
 }
 
+/* Two pixels of air per row. A premium stats table is still dense; this one
+   had crossed from dense into spreadsheet. */
 .scp-table--career tbody td,
 .scp-table--career tbody th {
-  padding-top: 11px;
-  padding-bottom: 11px;
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+/* The season is the row's name and the column a reader scans down. */
+.scp-table--career tbody th[scope="row"] {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+/* The career line is a total, not another season: a navy rule above it rather
+   than the hairline every other row sits on. */
+.scp-table--career tfoot .scp-total th,
+.scp-table--career tfoot .scp-total td {
+  padding-top: 14px;
+  border-top: 2px solid var(--sc-navy);
+  font-size: 13.5px;
 }
 
 /* The season in progress: start here. A gold tint and a heavier season cell,
    not a border — a bordered row in the middle of a table reads as a total. */
 .scp-table--career tbody tr.is-current {
-  background: color-mix(in srgb, var(--sc-gold) 9%, var(--sc-surface));
+  background: color-mix(in srgb, var(--sc-gold) 15%, var(--sc-surface));
 }
 
 .scp-table--career tbody tr.is-current:hover {
-  background: color-mix(in srgb, var(--sc-gold) 14%, var(--sc-surface));
+  background: color-mix(in srgb, var(--sc-gold) 21%, var(--sc-surface));
 }
 
 .scp-table--career tbody tr.is-current th[scope="row"] {
@@ -3087,52 +3483,10 @@ body.scp-page {
   color: var(--sc-gold-deep);
 }
 
-/* ---- the summary modules */
-
-.scp-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
-  gap: 1px;
-  /* One hairline showing through 1px gutters: four cells of one record, not
-     four cards that happen to be adjacent. */
-  background: var(--sc-border);
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  overflow: hidden;
-}
-
-.scp-summary-card {
-  padding: 16px 18px 15px;
-  background: var(--sc-surface);
-}
-
-.scp-summary-label {
-  margin: 0;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-/* Tight to its label and tight to its detail — the vertical gaps were what
-   made these read as generic info boxes. */
-.scp-summary-value {
-  margin: 9px 0 0;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.025em;
-  color: var(--sc-navy);
-  font-variant-numeric: tabular-nums;
-}
-
-.scp-summary-detail {
-  margin: 5px 0 0;
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--sc-muted);
-}
+/* The summary module — two rows of four bordered cards at the bottom of the
+   Stats tab — is gone. Career rates, finish history and career bests are all
+   .scp-rail now; see the note there for why three near-identical containers
+   were the problem rather than the solution. */
 
 /* ----------------------------------------------------------------- index */
 
@@ -3190,36 +3544,117 @@ body.scp-page {
  * chips are the Advanced tab's, reused: two controls that pick a season should
  * not be two different controls.
  */
+/* The scoring toggle, on the scoped page that has no tab strip to carry it.
+   The season switcher used to share this bar; it is an archive, and it moved
+   to the foot of the tab — see .scp-seasonnav. */
 .scp-logbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   margin: 0 0 18px;
 }
 
-.scp-logbar .scp-seasons {
-  align-items: center;
-  margin-bottom: 0;
+/*
+ * The archive selector, under the fixtures.
+ *
+ * Labelled with where it goes — "More <player> game logs" — rather than with
+ * what it changes. The pill row keeps the shape it had in the control bar; the
+ * active season is never in it, and the chip the reader picked is lit, because
+ * picking one now opens that season directly underneath instead of navigating
+ * away from the one above.
+ *
+ * "All" leads the row and is lit by default. It is what gives the row an
+ * unselected state to show — before it, the block underneath was simply empty
+ * until the reader guessed a year was clickable — and what it opens is the
+ * career table, one line per season.
+ */
+.scp-seasonnav {
+  margin: 34px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--sc-border);
 }
 
-.scp-seasons-label {
-  padding: 0 8px 0 10px;
+.scp-seasonnav-label {
+  margin: 0 0 10px;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
 
-/* The generated sentence over the table. Body copy, not a caption. */
+.scp-seasonnav .scp-seasons {
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+/*
+ * What the selector opened: the career table under All, or a pinned season.
+ *
+ * Indented behind a rule and set on the sunk surface, which is the whole
+ * reason it can sit on the same tab as the current season without being
+ * mistaken for it: the reader has to be able to tell, at any scroll position,
+ * whether the table they are looking at is this year's. The heading inside it
+ * names the year — or says "Career by season" — outright for the same reason.
+ */
+.scp-archive {
+  margin: 20px 0 0;
+  padding: 4px 0 18px 18px;
+  border-left: 3px solid var(--sc-gold);
+}
+
+.scp-archive .scp-sect {
+  margin-top: 8px;
+}
+
+/* It is a record, not the page's subject, so it is quieter than the season
+   above it — one step down in size, and the tiles shrink with it. */
+.scp-archive .scp-tile {
+  padding: 12px 14px;
+}
+
+.scp-archive .scp-lede {
+  font-size: 13.5px;
+}
+
+/*
+ * The season in prose, under the heading.
+ *
+ * Body copy, not a caption — it replaced "2026 Season (Through Week 1)", which
+ * was a caption, and the difference is the point. The first paragraph leads at
+ * reading size; the second is the same voice a step quieter, because it is the
+ * detail under the statement rather than a second statement.
+ */
+/* Full-bleed, like every other block on the tab.
+   It was held to a 68ch measure — the right call for a column of prose on its
+   own, and the wrong one here: the paragraph sits between the tiles and the
+   log table, both of which run the full width of the card, so the short
+   measure read as an indent rather than as a line length. The top margin is
+   the gap under the tile grid, which carries none of its own. */
+.scp-logintro {
+  margin: 18px 0 22px;
+}
+
 .scp-lede {
   max-width: 68ch;
   margin: 16px 0 20px;
   font-size: 14.5px;
   line-height: 1.6;
   color: var(--sc-muted-strong);
+}
+
+.scp-logintro .scp-lede {
+  max-width: none;
+  margin: 0;
+  color: var(--sc-ink);
+}
+
+.scp-logintro .scp-note {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
 }
 
 /* The per-game line reads as one row of facts, so it packs tighter than the
@@ -3245,10 +3680,37 @@ body.scp-page {
   font-weight: 800;
 }
 
+/*
+ * The box score steps back.
+ *
+ * FPTS and Finish are what a fantasy manager opened a game log for; completions
+ * and yards are the supporting detail. Every column reads at the same size, so
+ * the separation is ink: the box-score cells sit a step down from full contrast
+ * and the two fantasy columns keep it.
+ */
+.scp-table--log .scp-col-box {
+  color: var(--sc-muted-strong);
+}
+
 /* Secondary columns stay in the table — it scrolls rather than dropping them —
-   but they are quieter, so the eye lands on the line that matters. */
+   but they are quieter still, so the eye lands on the line that matters. */
 .scp-table--log .scp-col-2 {
   color: var(--sc-muted);
+}
+
+.scp-table--log .scp-col-fin {
+  color: var(--sc-navy);
+}
+
+.scp-table--log th.scp-col-pts,
+.scp-table--log th.scp-col-fin {
+  font-weight: 800;
+}
+
+/* The finish pill carries its own colour, so it only needs the room. */
+.scp-table--log td.scp-col-fin .scp-tier {
+  padding: 3px 10px;
+  font-size: 11.5px;
 }
 
 /* ---- the per-week detail ---- */
@@ -3626,6 +4088,14 @@ body.scp-page {
   min-width: 0;
 }
 
+/* The card's label row: which week, and whether it is the next one. */
+.scp-next-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 /* Small, uppercase, muted — the label, not the content. */
 .scp-next-week {
   margin: 0;
@@ -3634,6 +4104,26 @@ body.scp-page {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--sc-muted);
+}
+
+/*
+ * "Next", on the first card only.
+ *
+ * The gold rule along the top of that card was already claiming this and a
+ * rule cannot be read. The word says it; the rule now agrees with something
+ * rather than standing in for it.
+ */
+.scp-next-flag {
+  margin: 0;
+  flex: 0 0 auto;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--sc-gold);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--sc-navy);
 }
 
 /* The focal line: crest, home/away marker and the opponent's code. */
@@ -3647,8 +4137,8 @@ body.scp-page {
 
 .scp-next-logo {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 
@@ -3666,7 +4156,7 @@ body.scp-page {
 }
 
 .scp-next-code {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -3683,23 +4173,113 @@ body.scp-page {
   white-space: nowrap;
 }
 
+/* ---- the way into the pair's page ---- */
+
+/*
+ * The card's one action, at its foot.
+ *
+ * `margin-top: auto` rather than a fixed gap: a fixture with no kickoff time
+ * yet is a line shorter than its neighbours, and without this the four buttons
+ * would sit at four different heights across the row. Pinned to the bottom,
+ * they line up whatever the card above them holds.
+ *
+ * A bar rather than a pill, filling the card's width, because it IS the card:
+ * the whole tile is about one fixture and this is the way into it. Hairline
+ * above to separate it from the fixture's own facts, and no border of its own
+ * — a second rounded rectangle inside a rounded rectangle is the pattern this
+ * page spent a redesign removing.
+ */
+.scp-next-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: auto -16px -15px;
+  padding: 11px 16px 12px;
+  border-top: 1px solid var(--sc-hairline);
+  border-radius: 0 0 var(--sc-radius) var(--sc-radius);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sc-navy);
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.scp-next-cta:hover,
+.scp-next-cta:focus-visible {
+  background: var(--sc-surface-soft);
+  color: var(--sc-gold-deep);
+}
+
+/* The arrow leans in on hover — the one bit of motion on the card, and it is
+   the affordance rather than decoration. */
+.scp-next-cta .scp-arrow {
+  color: var(--sc-gold);
+  transition: transform 120ms ease;
+}
+
+.scp-next-cta:hover .scp-arrow,
+.scp-next-cta:focus-visible .scp-arrow {
+  transform: translateX(2px);
+}
+
+/* The card gains a foot, so the gap between its lines must not also apply
+   above the button — `auto` handles the spacing. */
+.scp-next {
+  padding-bottom: 0;
+}
+
 /* ---- the matchup rank ---- */
 
+/*
+ * The fantasy-specific half of the card, and sized like it.
+ *
+ * Who the opponent is, a schedule already tells you. How hard they are against
+ * THIS position is the thing only this site puts on the fixture, so the rank
+ * reads at nearly the size of the opponent's code rather than as a footnote
+ * under it.
+ */
 .scp-next-matchup {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  margin: 2px 0 0;
-  padding-top: 9px;
+  margin: 4px 0 0;
+  padding-top: 10px;
   border-top: 1px solid var(--sc-hairline);
 }
 
+.scp-next-rankline {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0;
+  min-width: 0;
+}
+
 .scp-next-rank {
-  font-size: 19px;
+  font-size: 30px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   color: var(--sc-navy);
+}
+
+/*
+ * The rank, in a word.
+ *
+ * Subtle on purpose: it is the caption at the foot of the block applied to one
+ * fixture, not a verdict of its own. Tinted to match the rank above it and
+ * left at text size — tinting the whole card would turn a schedule into a
+ * traffic light, which is the thing the band system exists to avoid.
+ */
+.scp-next-read {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.scp-next-read[data-band="soft"] {
+  color: var(--sc-gold-ink);
 }
 
 /*
@@ -3740,13 +4320,38 @@ body.scp-page {
   color: var(--sc-muted);
 }
 
-/* The gold hairline marks the next game up, and only that one. */
-.scp-next:first-child {
+/* The gold hairline marks the next game up, and only that one — alongside the
+   "Next" flag on its week line, which is the half of this a reader can read. */
+.scp-next[data-next] {
   border-top: 2px solid var(--sc-gold);
 }
 
+/*
+ * The opponent-rank direction, under the log table.
+ *
+ * Same job and the same words as the fixtures' caption below it, so it takes
+ * the same ink: both are definitions the ranks above them are unreadable
+ * without, not restatements of a heading.
+ */
+.scp-log-note {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--sc-muted-strong);
+}
+
+/*
+ * The definition of the scale, and it has to be readable.
+ *
+ * This caption is not decorative — every rank above it is uninterpretable
+ * without the sentence — so it sits a step darker than the table captions
+ * elsewhere on the page, which only restate what their columns already say.
+ */
 .scp-next-note {
   margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--sc-muted-strong);
 }
 
 /* Visible to a screen reader, and to nothing else: the home/away marker on the
@@ -3766,10 +4371,6 @@ body.scp-page {
 @media (max-width: 900px) {
   .scp-nexts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .scp-prod {
-    grid-template-columns: 1fr;
   }
 
   .scp-injury-top {
@@ -3800,6 +4401,51 @@ body.scp-page {
 
   .scp-newscard.is-featured .scp-news-title {
     font-size: 17px;
+  }
+
+  /* ---- overview: a 30% label column and a paired matrix both need width */
+  .scp-prof {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .scp-prof-cell:nth-child(even)::before {
+    display: none;
+  }
+
+  /* One column already, so the span that balanced an odd count is a no-op that
+     would otherwise fight the single-column track. */
+  .scp-prof-cell:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .scp-dr {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .scp-dr-row:nth-child(even)::before {
+    display: none;
+  }
+
+  .scp-dr-row:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .scp-dr-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px 0;
+    padding: 11px 0 12px;
+  }
+
+  .scp-dr-label {
+    align-self: start;
+  }
+
+  /* With the label above rather than beside it, the gutter the rule lived in
+     is gone; the row's own bottom hairline is the divider. */
+  .scp-dr-read::before {
+    display: none;
   }
 
   /* ---- outlook: four readings do not fit a phone in a row */
@@ -3887,23 +4533,76 @@ body.scp-page {
     gap: 18px;
   }
 
-  /* ---- stats: the fantasy anchor drops under the stat line, and the rule
-     between them becomes a rule above. */
-  .scp-snapshot {
-    padding: 20px 16px;
-    gap: 18px;
+  /*
+   * ---- stats: a rail of seven becomes a grid of two.
+   *
+   * Every rail collapses the same way, because they are the same component:
+   * two columns, the vertical hairline kept only between them, and a
+   * horizontal one under each row so the figures stay gridded rather than
+   * running together into a list.
+   */
+  .scp-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
   }
 
-  .scp-snapshot-fantasy {
-    flex: 1 1 100%;
-    padding: 16px 0 0;
+  .scp-rail-cell {
+    padding-left: 16px;
+  }
+
+  .scp-rail-cell:nth-child(odd) {
     padding-left: 0;
-    border-left: 0;
+  }
+
+  .scp-rail-cell:nth-child(odd)::before {
+    display: none;
+  }
+
+  .scp-rail-cell:nth-child(n + 3) {
+    padding-top: 16px;
     border-top: 1px solid var(--sc-border);
   }
 
-  .scp-snapshot-fpts {
-    font-size: 34px;
+  .scp-rail[data-variant="hero"] {
+    padding: 20px 16px;
+  }
+
+  .scp-rail[data-variant="hero"] .scp-rail-cell {
+    padding-left: 16px;
+  }
+
+  .scp-rail[data-variant="hero"] .scp-rail-cell:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  /* Two per row, leads included: at this width the extra half-column buys
+     nothing and the type size is carrying the hierarchy on its own. */
+  .scp-rail[data-leads] .scp-rail-cell,
+  .scp-rail[data-leads] .scp-rail-cell[data-lead="1"] {
+    flex: 0 0 50%;
+  }
+
+  .scp-rail[data-variant="hero"] .scp-rail-value {
+    font-size: 23px;
+  }
+
+  .scp-rail-cell[data-lead="1"] .scp-rail-value {
+    font-size: 28px;
+  }
+
+  /* The secondary strip: the label takes its own line above the figures. */
+  .scp-bar {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 14px;
+  }
+
+  .scp-bar-cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp-bar-cells[data-count="5"],
+  .scp-bar-cells[data-count="3"] {
+    --scp-bar-cols: 2;
   }
 
   /* Fantasy production goes under the box score rather than beside it. */
@@ -3941,13 +4640,19 @@ body.scp-page {
     align-items: stretch;
   }
 
-  .scp-meter {
-    grid-template-columns: 1fr auto;
-    row-gap: 4px;
+  /* Production stacks, and the watermark goes: there is no width left for it
+     to be subtle in, and a logo behind a narrow column is just a logo. */
+  .scp-prod-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
   }
 
-  .scp-meter-bar {
-    grid-column: 1 / -1;
+  .scp-prod-col + .scp-prod-col::before {
+    display: none;
+  }
+
+  .scp-prod-mark {
+    display: none;
   }
 
   /* Five columns of numbers do not fit a phone; the finish row stacks into
@@ -3982,8 +4687,16 @@ body.scp-page {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scp-expand-icon {
+  .scp-expand-icon,
+  .scp-faq-q-row::before,
+  .scp-next-cta,
+  .scp-next-cta .scp-arrow {
     transition: none;
+  }
+
+  .scp-next-cta:hover .scp-arrow,
+  .scp-next-cta:focus-visible .scp-arrow {
+    transform: none;
   }
 
   .scp-spark-dot,
@@ -4004,7 +4717,6 @@ body.scp-page {
  */
 @media (forced-colors: active) {
   .scp-stack-seg,
-  .scp-meter-fill,
   .scp-adv-fill {
     border: 1px solid CanvasText;
   }
