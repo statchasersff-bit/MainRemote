@@ -95,16 +95,6 @@ export interface TeamRenderOptions {
    * PlayerRenderOptions.section; the two pages are addressed the same way.
    */
   section?: string;
-  /**
-   * Print real links from the hub to its section pages.
-   *
-   * Off unless the caller says the section URLs resolve where `teamPathPrefix`
-   * points. This origin always serves them, so its own /team/:slug turns this
-   * on; the WordPress mount only does once its rewrite is live, or the hub
-   * would carry four links to 404s. Scoped pages ignore it — a reader on one
-   * is proof the routes exist.
-   */
-  sectionLinks?: boolean;
 }
 
 /**
@@ -368,50 +358,6 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     `<div class="sct-hero-actions">${teamSwitcher(team, options)}</div>` +
     `</div>` +
     `</header>`
-  );
-}
-
-/**
- * Real links between the hub and its section pages.
- *
- * Plain anchors to plain URLs, which is the whole point: the tab strip is
- * `#hash` navigation and a crawler following it never leaves the hub, so this
- * is how the section pages get discovered. On a section page it doubles as the
- * way back — the hub first, then the siblings, the current one marked.
- */
-function renderSectionLinks(
-  team: NflTeam,
-  sections: Section[],
-  options: TeamRenderOptions,
-  current?: string,
-): string {
-  const prefix = (options.teamPathPrefix ?? "/team/").trim();
-  const query = options.linkQuery ?? "";
-  const rendered = new Set(sections.map((section) => section.id));
-  const linked = PUBLIC_SECTIONS.filter((id) => rendered.has(id));
-  if (linked.length === 0) return "";
-
-  const link = (href: string, label: string, active: boolean): string =>
-    `<li><a class="sct-crosslink${active ? " is-current" : ""}"` +
-    ` href="${escapeHtml(href)}" target="_top"` +
-    `${active ? ` aria-current="page"` : ""}>${escapeHtml(label)}</a></li>`;
-
-  const items =
-    link(`${prefix}${team.slug}${query}`, `All ${team.nickname} stats & analysis`, !current) +
-    linked
-      .map((id) =>
-        link(
-          `${sectionPath(prefix, team.slug, id)}${query}`,
-          `${team.nickname} ${SECTION_HEADINGS[id] ?? id}`,
-          id === current,
-        ),
-      )
-      .join("");
-
-  return (
-    `<nav class="sct-pages" aria-label="${escapeHtml(`${team.fullName} pages`)}">` +
-    `<ul class="sct-pages-list">${items}</ul>` +
-    `</nav>`
   );
 }
 
@@ -1160,11 +1106,17 @@ function renderTeamStats(data: TeamPageData, faq: FaqSink): string {
     "h3",
   );
   if (questions) {
+    // Collapsed, for the reason faqBand() gives; the season note folds with the
+    // questions because it qualifies them and nothing else.
     blocks.push(
       `<div class="sct-block">` +
+        `<details class="sct-faq-fold">` +
+        `<summary class="sct-faq-summary">` +
         h2("Common questions") +
+        `</summary>` +
         `<p class="sct-note">${escapeHtml(seasonNote)}</p>` +
         questions +
+        `</details>` +
         `</div>`,
     );
   }
@@ -1578,14 +1530,24 @@ function faqList(
   return `<div class="sct-faq">${body}</div>`;
 }
 
-/** An FAQ as a band of the section it closes — the Outlook tab's shape. */
+/**
+ * An FAQ as a band of the section it closes — the Outlook tab's shape.
+ *
+ * Collapsed, like the Stats tab's and the FPA page's. The questions are indexed
+ * either way — a crawler reads the DOM, not the open state, and the FAQPage
+ * node is built from the same list — but eight answers under the bottom line
+ * is a wall for a reader who came for the bottom line. The heading stays
+ * inside the <summary>, so the outline is the same open or shut.
+ */
 function faqBand(list: string): string {
   if (!list) return "";
   return (
-    `<div class="sct-band">` +
+    `<details class="sct-band sct-faq-fold">` +
+    `<summary class="sct-faq-summary">` +
     `<h3 class="sct-band-label">Common questions</h3>` +
+    `</summary>` +
     list +
-    `</div>`
+    `</details>`
   );
 }
 
@@ -2738,7 +2700,6 @@ export function renderTeamPage(
       renderHero(data, options) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
       ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
-      renderSectionLinks(team, sections, options, scoped.id) +
       renderResources(team) +
       // Scoped to this section: a Schedule page carrying the Stats questions
       // would be structured data describing a page the reader is not on.
@@ -2770,7 +2731,6 @@ export function renderTeamPage(
     renderHero(data, options) +
     renderNav(sections) +
     body +
-    (options.sectionLinks ? renderSectionLinks(team, sections, options) : "") +
     renderResources(team) +
     // After the sections, because it describes them: `faq` is only complete
     // once every block above has had its chance to render.

@@ -1717,6 +1717,68 @@ body.sct-page.is-embed {
   line-height: 1.6;
 }
 
+/* Shut by default. The heading — the band label on Outlook, the .sct-h2 on
+   Stats — is the summary, so the outline reads the same open or closed; only
+   the answers fold. The native marker is replaced with a chevron of our own
+   because the default one sits outside the heading's box and, on the band,
+   ahead of a flex row it has no business being part of. */
+.sct-faq-fold > .sct-faq-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sct-faq-fold > .sct-faq-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sct-faq-fold > .sct-faq-summary::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.sct-faq-fold[open] > .sct-faq-summary::before {
+  transform: rotate(45deg);
+}
+
+/* The headings keep their own look; only their box changes. The band label's
+   trailing hairline moves to the summary so the chevron sits inside the row
+   the rule closes, and the .sct-h2's fixed-width gold mark stays where it is
+   because the heading is still its own positioned box. */
+.sct-faq-fold > .sct-faq-summary > .sct-band-label {
+  display: inline;
+}
+
+.sct-faq-fold > .sct-faq-summary > .sct-band-label::after {
+  content: none;
+}
+
+.sct-faq-fold.sct-band > .sct-faq-summary::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--sc-hairline);
+}
+
+.sct-faq-fold > .sct-faq-summary > .sct-h2 {
+  margin-bottom: 0;
+}
+
+/* The .sct-h2's 10px bottom padding is the room for its gold mark, and flex
+   centres the chevron against that box, not the text — 5px low. Pull the
+   chevron's margin box up by the same 10px so it centres on the text instead. */
+.sct-faq-fold:not(.sct-band) > .sct-faq-summary::before {
+  margin-top: -10px;
+}
+
 /* -------------------------------------------------------- advanced stats */
 
 /* The Stats tab.
@@ -4925,43 +4987,4 @@ body.sct-page.is-embed {
   .sct-fact-value {
     color: var(--sc-ink);
   }
-}
-
-/* ---------------------------------------------------------- section pages */
-
-/* Real links between the hub and its section pages — /outlook/, /stats/ and so
-   on. The tab strip above is #hash navigation and a crawler following it never
-   leaves the hub, so this strip is how the section URLs get found. On a
-   section page it is also the way back, with the current page marked. */
-.sct-pages {
-  margin: 24px 0 8px;
-}
-
-.sct-pages-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Underlined in gold so it reads as a way through rather than an external
-   link, which these never are. Same treatment as the player page's crosslink. */
-.sct-crosslink {
-  color: var(--sc-navy);
-  font-weight: 700;
-  font-size: 14px;
-  text-decoration: none;
-  border-bottom: 2px solid var(--sc-gold);
-}
-
-.sct-crosslink:hover {
-  color: var(--sc-gold-deep);
-}
-
-.sct-crosslink.is-current {
-  border-bottom-color: transparent;
-  color: var(--sc-muted-strong);
-  cursor: default;
 }

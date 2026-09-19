@@ -358,6 +358,34 @@ describe("tab FAQs", () => {
     }
   });
 
+  test("the questions are folded shut by default, heading outside the fold", async () => {
+    // A <details> with no `open`, so the page loads with the heading showing
+    // and the answers hidden. The heading has to sit in the <summary> — it is
+    // the thing a reader clicks, and it is what keeps the outline identical
+    // whether the fold is open or not. The questions themselves stay in the
+    // DOM: the FAQPage node above is only honest if they are on the page.
+    const { doc } = await dom("/team/new-england-patriots");
+    for (const [id, tag] of [
+      ["#outlook", "H3"],
+      ["#stats", "H2"],
+    ]) {
+      const fold = doc.querySelector(`${id} details.sct-faq-fold`);
+      assert.ok(fold, `${id}: the FAQ is a <details>`);
+      assert.equal(fold.hasAttribute("open"), false, `${id}: shut by default`);
+
+      const summary = fold.querySelector(":scope > summary.sct-faq-summary");
+      assert.ok(summary, `${id}: has a summary`);
+      const heading = summary.querySelector(":scope > *");
+      assert.equal(heading.tagName, tag, `${id}: the heading is the summary`);
+      assert.equal(heading.textContent.trim(), "Common questions");
+
+      assert.ok(
+        fold.querySelector(":scope > .sct-faq .sct-faq-item"),
+        `${id}: the questions are inside the fold`,
+      );
+    }
+  });
+
   test("one FAQPage for the document, covering every tab that has questions", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc);
@@ -976,36 +1004,15 @@ describe("team section URLs", () => {
     }
   });
 
-  test("the tab strip is replaced by real links to the hub and its siblings", async () => {
-    // Five tabs that all leave this URL is navigation pretending to be tabs;
-    // what a section page needs is a way back and a way across.
+  test("a section page carries no tab strip", async () => {
+    // Five tabs that all leave this URL is navigation pretending to be tabs.
+    // The hub and its siblings are reachable through the site's own navigation
+    // and the sitemap; the page itself prints no strip of links to them.
     for (const [id] of SECTIONS) {
       const { doc } = await dom(at(id));
       assert.equal(doc.querySelectorAll(".sct-nav-link").length, 0, `${id}: no tab strip`);
-
-      const links = [...doc.querySelectorAll(".sct-pages .sct-crosslink")];
-      const hrefs = links.map((a) => a.getAttribute("href"));
-      assert.deepEqual(hrefs, [
-        "/team/new-england-patriots",
-        ...SECTIONS.map(([other]) => at(other)),
-      ]);
-      const current = links.filter((a) => a.getAttribute("aria-current") === "page");
-      assert.equal(current.length, 1);
-      assert.equal(current[0].getAttribute("href"), at(id), `${id}: marked current`);
+      assert.equal(doc.querySelectorAll(".sct-pages").length, 0, `${id}: no link strip`);
     }
-  });
-
-  test("the hub links to every section page with a real anchor", async () => {
-    // The tab strip is #hash navigation and a crawler following it never
-    // leaves the hub. Discovery of the section URLs depends on these.
-    const { doc } = await dom("/team/new-england-patriots");
-    const hrefs = [...doc.querySelectorAll(".sct-pages a[href]")].map((a) =>
-      a.getAttribute("href"),
-    );
-    for (const [id] of SECTIONS) {
-      assert.ok(hrefs.includes(at(id)), `hub links to ${at(id)}`);
-    }
-    assert.ok(!hrefs.some((h) => h.includes("news")), "news has no public address yet");
   });
 
   test("the section does not print the heading the hero already carries", async () => {
@@ -1095,21 +1102,13 @@ describe("team section URLs", () => {
     }
   });
 
-  test("the WordPress fragment scopes with ?section= and links only when told", async () => {
+  test("the WordPress fragment scopes with ?section=", async () => {
     const scoped = await get("/embed/team/ne?section=depth-chart");
     assert.equal(scoped.status, 200);
     assert.match(scoped.body, /data-section="depth-chart"/);
     assert.ok(!/sct-nav-link/.test(scoped.body), "no tab strip in a scoped fragment");
     assert.ok(!/<h1\b/i.test(scoped.body), "the fragment never carries an H1");
-
-    // The hub's link strip is the plugin's call: it knows whether its rewrite
-    // is live, and a hub linking to four 404s is worse than one linking to
-    // nothing.
-    const quiet = await get("/embed/team/ne");
-    const linked = await get("/embed/team/ne?sections=1");
-    assert.ok(!/sct-pages/.test(quiet.body), "no strip unless asked");
-    assert.match(linked.body, /sct-pages/);
-    assert.notEqual(quiet.headers.get("etag"), linked.headers.get("etag"), "cached apart");
+    assert.ok(!/sct-pages/.test(scoped.body), "no link strip in a fragment");
   });
 
   test("a section render is cached apart from the hub's", async () => {

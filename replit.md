@@ -117,17 +117,17 @@ _Replace the heading above with the project's name, and this line with one sente
   `SC_NEWS_URL`.
 - **Section-scoped team URLs.** `/team/:slug/<section>/` is the public
   address — one panel as the whole page: hero, that section, a strip of real
-  links to the hub and siblings, resources — with a title, description,
+  resources — with a title, description,
   self-referencing canonical, `og:url` and FAQ written for that section alone.
   Public sections are `PUBLIC_SECTIONS` in `team-render.ts` (`outlook`,
   `stats`, `schedule`, `depth-chart`); any other segment, including `news` and
   case variants, is a true 404 so no path can mint a copy of the hub.
   `?section=<id>` is the internal spelling: `/embed/team/:slug?section=` is
   what the WordPress plugin fetches, and on `/team/:slug` it 301s to the pretty
-  path (`news` alone renders scoped there, having no public address). The
-  fragment prints the hub's link strip only with `?sections=1`, which the plugin
-  sends once its rewrite is live. The plugin mirrors the list as
-  `STATCHASERS_TEAM_SECTIONS` — keep the two together.
+  path (`news` alone renders scoped there, having no public address). Neither
+  the hub nor a section page prints a strip of links to the section pages;
+  their discovery rests on the plugin's sitemap entries. The plugin mirrors the
+  list as `STATCHASERS_TEAM_SECTIONS` — keep the two together.
 - **`SC_TEAM_PATH_PREFIX` must be set for the WordPress mount** (default
   `/team/`). It is where the team switcher's 32 links point inside
   `/embed/team/:slug`, so left at the default a reader clicking a team on
