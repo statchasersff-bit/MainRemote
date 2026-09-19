@@ -185,7 +185,7 @@ function statchasers_matchup_fetch( string $slug ): ?array {
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			return $backup;
 		}
-		set_transient( $cache_key, array( 'html' => '', 'version' => '', 'state' => '', 'season' => '' ), MINUTE_IN_SECONDS );
+		set_transient( $cache_key, array( 'html' => '', 'version' => '', 'state' => '', 'season' => '', 'score' => '' ), MINUTE_IN_SECONDS );
 		return null;
 	}
 
@@ -194,6 +194,7 @@ function statchasers_matchup_fetch( string $slug ): ?array {
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 		'state'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-state' ) ),
 		'season'  => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-season' ) ),
+		'score'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-score' ) ),
 	);
 
 	set_transient( $cache_key, $payload, STATCHASERS_MATCHUP_CACHE_TTL );
@@ -256,7 +257,7 @@ add_action(
  *
  * @return array{title:string,description:string}
  */
-function statchasers_matchup_meta( string $a, string $b, string $state, string $season ): array {
+function statchasers_matchup_meta( string $a, string $b, string $state, string $season, string $score = '' ): array {
 	$table  = statchasers_team_table();
 	$name_a = $table[ $a ][0] ?? $a;
 	$name_b = $table[ $b ][0] ?? $b;
@@ -272,9 +273,12 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 				'description' => sprintf( '%1$s vs %2$s in %3$s: kickoff time, TV, venue, team stats side by side, injury designations and the head-to-head record.', $nick_a, $nick_b, $season ),
 			);
 		case 'recently_completed':
+			// The score leads the description when the API sent one, exactly as
+			// matchupScoreLine() wrote it. Absent header, same sentence without it.
+			$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
 			return array(
-				'title'       => sprintf( '%s %s: Score, Stats & Head-to-Head', $names, $season ),
-				'description' => sprintf( '%1$s vs %2$s %3$s result and score, with team stats side by side, injuries and the recent head-to-head record.', $nick_a, $nick_b, $season ),
+				'title'       => sprintf( '%s %s: Score, Player Stats & Fantasy Recap', $names, $season ),
+				'description' => sprintf( '%1$s%2$s vs %3$s %4$s final score, quarter-by-quarter scoring, full player stats and the fantasy takeaways from the game.', $lead, $nick_a, $nick_b, $season ),
 			);
 	}
 	return array(
@@ -294,7 +298,8 @@ function statchasers_matchup_request_meta(): ?array {
 		$pair['a'],
 		$pair['b'],
 		(string) ( $data['state'] ?? '' ),
-		(string) ( $data['season'] ?? '' )
+		(string) ( $data['season'] ?? '' ),
+		(string) ( $data['score'] ?? '' )
 	);
 }
 

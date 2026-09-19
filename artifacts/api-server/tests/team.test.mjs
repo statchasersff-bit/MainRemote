@@ -338,6 +338,71 @@ describe("embedded mode", () => {
     }
   });
 
+  test("the schedule FAQ answers from the rows above it", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const entries = faqEntries(doc, tailOf("schedule"));
+    assert.ok(entries.length >= 5, `expected a schedule FAQ, got ${entries.length}`);
+
+    for (const entry of entries) {
+      assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
+      assert.match(entry.answer, /[.!?]$/, `unpunctuated: ${entry.answer}`);
+    }
+
+    // Every week an answer names is a week the table prints. That is the whole
+    // point of deriving these from the fixtures rather than writing them: an
+    // answer cannot put a game in a week the schedule above does not. The bye
+    // row counts — it is a week in the table with no fixture against it.
+    const weeks = new Set(
+      [...doc.querySelectorAll("#schedule .sct-srow-week")].map((n) =>
+        n.textContent.trim().replace(/^WK\s*/, ""),
+      ),
+    );
+    assert.ok(weeks.size > 0, "the schedule rendered weeks to check against");
+    for (const entry of entries) {
+      for (const [, week] of entry.answer.matchAll(/Week (\d+)/g)) {
+        assert.ok(
+          weeks.has(week),
+          `an answer names Week ${week}, which the table does not: ${entry.answer}`,
+        );
+      }
+    }
+
+    // The bye is the answer most likely to be quoted at a fantasy deadline, so
+    // it has to be the week the table gives it, not a week ESPN's gaps implied.
+    const byeRow = doc.querySelector("#schedule .sct-srow.is-bye .sct-srow-week");
+    if (byeRow) {
+      const week = byeRow.textContent.trim().replace(/^WK\s*/, "");
+      const bye = entries.find((e) => /bye week/i.test(e.question));
+      assert.ok(bye, "the table shows a bye but the FAQ does not answer for it");
+      assert.ok(
+        bye.answer.includes(`Week ${week}`),
+        `the bye answer disagrees with the table's Week ${week}: ${bye.answer}`,
+      );
+    }
+
+    // "Next" is the next UNPLAYED game — see the note at the top of
+    // lib/team/schedule-faq.ts. Once the season is over the cards fall back to
+    // its tail and the question is not asked at all, which is why this pairs
+    // the card with the answer rather than asserting the answer exists.
+    const card = doc.querySelector('#schedule .sct-game[data-next="1"]');
+    const next = entries.find((e) => /play next\?$/.test(e.question));
+    if (card && next) {
+      const week = card.querySelector(".sct-game-week").textContent.trim();
+      assert.ok(
+        next.answer.includes(week),
+        `the next-game answer is not about ${week}: ${next.answer}`,
+      );
+      const nickname = card
+        .querySelector(".sct-game-opp")
+        .textContent.trim()
+        .replace(/^(vs|at)\s+/, "");
+      assert.ok(
+        next.answer.includes(nickname),
+        `the next-game answer names a different opponent than the card (${nickname}): ${next.answer}`,
+      );
+    }
+  });
+
   test("Matchups is off the tab strip but keeps its own URL", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const labels = [...doc.querySelectorAll(".sct-nav-link")].map((a) =>
@@ -557,7 +622,7 @@ describe("tab FAQs", () => {
     // the tool list they follow is an <h2> — a deeper heading would file them
     // in the outline under the tool list, which is neither where they are nor
     // what they are about.
-    for (const id of ["outlook", "stats", "depth-chart"]) {
+    for (const id of ["outlook", "stats", "depth-chart", "schedule"]) {
       const scope = `[data-sct-faq-for="${id}"]`;
       const questions = doc.querySelectorAll(`${scope} .sct-faq-item`);
       assert.ok(questions.length > 0, `${id} must carry questions`);
@@ -600,6 +665,7 @@ describe("tab FAQs", () => {
       ['[data-sct-faq-for="outlook"]', "H3"],
       ['[data-sct-faq-for="stats"]', "H3"],
       ['[data-sct-faq-for="depth-chart"]', "H3"],
+      ['[data-sct-faq-for="schedule"]', "H3"],
     ]) {
       assert.equal(
         doc.querySelector(`${id} details.sct-faq-fold`),
@@ -629,6 +695,7 @@ describe("tab FAQs", () => {
       ['[data-sct-faq-for="outlook"]', ".sct-h2"],
       ['[data-sct-faq-for="stats"]', ".sct-h2"],
       ['[data-sct-faq-for="depth-chart"]', ".sct-h2"],
+      ['[data-sct-faq-for="schedule"]', ".sct-h2"],
     ]) {
       const headings = [...doc.querySelectorAll(`${id} ${selector}`)].filter(
         (node) => node.textContent.trim() === "Common questions",
@@ -1310,23 +1377,31 @@ describe("team section URLs", () => {
   });
 
   test("the FAQ describes the page it is on, not the hub", async () => {
-    const outlook = await dom(at("outlook"));
-    const schedule = await dom(at("schedule"));
     const nodes = (doc) =>
       [...doc.querySelectorAll('script[type="application/ld+json"]')]
         .map((n) => JSON.parse(n.textContent))
         .filter((json) => json["@type"] === "FAQPage");
 
-    const scoped = nodes(outlook.doc);
-    assert.equal(scoped.length, 1, "the outlook page carries its own FAQPage");
-    assert.deepEqual(
-      scoped[0].mainEntity.map((q) => q.name),
-      [...outlook.doc.querySelectorAll(`${tailOf("outlook")} .sct-faq-q`)].map((q) =>
+    // All four public sections draw questions now, so the thing each page owes
+    // is that its FAQPage is ITS list — the hub's four lists on a Schedule page
+    // is structured data describing a page the reader is not on.
+    for (const [id] of SECTIONS) {
+      const { doc } = await dom(at(id));
+      const scoped = nodes(doc);
+      assert.equal(scoped.length, 1, `${id}: one FAQPage of its own`);
+
+      const asked = [...doc.querySelectorAll(`${tailOf(id)} .sct-faq-q`)].map((q) =>
         q.textContent.trim(),
-      ),
-    );
-    // Not invented to fill the schema: a section with no questions has none.
-    assert.equal(nodes(schedule.doc).length, 0);
+      );
+      assert.ok(asked.length > 0, `${id}: the page asks something`);
+      assert.deepEqual(scoped[0].mainEntity.map((q) => q.name), asked);
+      // Nothing from the other tabs rode along in the markup either.
+      assert.equal(
+        doc.querySelectorAll(".sct-faq-q").length,
+        asked.length,
+        `${id}: only its own questions are on the page`,
+      );
+    }
   });
 
   test("the title and description are written for the section's query", async () => {

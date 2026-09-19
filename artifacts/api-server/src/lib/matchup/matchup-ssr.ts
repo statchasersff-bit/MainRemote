@@ -15,7 +15,7 @@ import { logger } from "../logger";
 import { renderTeamHeadTags } from "../team-seo";
 import { getMatchupData, matchupVersion } from "./matchup-data";
 import { renderMatchupPage, type MatchupRenderOptions } from "./matchup-render";
-import { matchupPageMeta } from "./matchup-seo";
+import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import type { MatchupPair } from "./pair";
 
 export interface MatchupSsrResult {
@@ -23,6 +23,17 @@ export interface MatchupSsrResult {
   version: string;
   season: number;
   state: string;
+  /**
+   * The result in one clause — "Seahawks won 13-10" — or "" when the page has
+   * no final score.
+   *
+   * Carried out to the plugin as a header for one reason: the description
+   * WordPress writes for an indexed matchup page mirrors this app's, and the
+   * postgame description leads with the score. Without this the plugin would
+   * have to parse it back out of the markup, or the two would drift, which the
+   * comment at the top of matchup-seo.ts exists to prevent.
+   */
+  scoreLine: string;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
@@ -65,6 +76,7 @@ export async function renderMatchupFragment(
     version,
     season: data.state.season,
     state: data.matchupState,
+    scoreLine: matchupScoreLine(data),
   };
   if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
     const oldest = fragmentCache.keys().next();

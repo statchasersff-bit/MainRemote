@@ -19,12 +19,19 @@ PORT="${PORT:-8080}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="$ROOT/artifacts/api-server"
 ENTRY="$APP/dist/index.mjs"
+# Written last by build.mjs's client pass, so its presence means all six browser
+# bundles under public/dist made it out. A half-finished or clobbered client
+# build leaves the page serving 404s for its own enhancement script — which is
+# silent, because every tool page is built to work without one.
+CLIENT_STAMP="$APP/public/dist/version.json"
 
 emit() { printf '{"systemMessage": %s}\n' "$1"; }
 
 stale=""
 if [ ! -f "$ENTRY" ]; then
   stale="no build yet"
+elif [ ! -f "$CLIENT_STAMP" ]; then
+  stale="no client bundles in public/dist"
 elif [ -n "$(find "$APP/src" -type f -newer "$ENTRY" -print -quit 2>/dev/null)" ]; then
   stale="src/ newer than the running bundle"
 elif ! lsof -t -i ":$PORT" -sTCP:LISTEN >/dev/null 2>&1; then

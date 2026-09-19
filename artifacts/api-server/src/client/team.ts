@@ -6,7 +6,7 @@
  * more" disclosures and the section tabs all work with JavaScript disabled.
  * Nothing here fetches anything and nothing here renders anything.
  *
- * It adds four things:
+ * It adds five things:
  *   1. tab behaviour for the section bar — switching in place instead of
  *      navigating to an anchor, plus the ARIA roles and arrow keys that CSS
  *      `:target` cannot supply on its own;
@@ -14,7 +14,8 @@
  *   3. relative timestamps ("3 hours ago") on stamps the server rendered as
  *      absolute — the server cannot know "now" without breaking its own render
  *      cache, so the absolute form is what ships and this upgrades it;
- *   4. height reporting to a parent frame, for the legacy iframe mount.
+ *   4. sortable column headers on the matchup page's stat tables;
+   5. height reporting to a parent frame, for the legacy iframe mount.
  */
 
 const ROOT_SELECTOR = "[data-sct-root]";
@@ -257,6 +258,129 @@ function wireTimestamps(root: HTMLElement): void {
   window.setInterval(apply, 60_000);
 }
 
+/* ------------------------------------------------------ sortable tables ---- */
+
+/**
+ * The value a cell sorts on, or null when it has none.
+ *
+ * Read from `data-sort` rather than parsed out of the text, the way the FPA
+ * table's sorting does, because these cells and their values disagree on
+ * purpose: "16/22" is two numbers, "90%" is a string, "WR6" is a position and a
+ * rank, and the name cell's text is the name, the position and the team code
+ * run together. The header declares the type, so a column of digits cannot be
+ * mistaken for a number one week and a string the next.
+ *
+ * An EMPTY `data-sort` is a missing value, not a zero — a player with no passer
+ * rating and one with a rating of 0.0 are different things, and only the second
+ * belongs at the bottom of the rating column.
+ */
+function sortValue(
+  cell: HTMLTableCellElement | undefined,
+  type: string,
+): number | string | null {
+  if (!cell) return null;
+  const raw = cell.getAttribute("data-sort");
+  if (raw !== null && raw.trim() === "") return null;
+  if (type === "number") {
+    const n = Number(raw ?? cell.textContent);
+    return Number.isFinite(n) ? n : null;
+  }
+  return (raw ?? cell.textContent ?? "").trim().toLowerCase();
+}
+
+/**
+ * Make the marked stat tables sortable by any column.
+ *
+ * Same behaviour as the game log on the player pages and the FPA table: the
+ * header text becomes a button, numeric columns open descending and text
+ * columns ascending, and a second click on the same column reverses it.
+ *
+ * The buttons are built HERE rather than sent in the HTML. A page whose bundle
+ * never loads keeps a table it can read and no control that does nothing, which
+ * is the rule every other enhancement in this app follows.
+ *
+ * Rows with no value in the column being sorted are held at the bottom in the
+ * order the server sent them, in BOTH directions. That is the one place this
+ * differs from the FPA table, which has no empty cells to worry about: sorting
+ * ascending by a column where half the rows read "—" would otherwise open with
+ * the players the column knows nothing about.
+ */
+function wireSortableTables(root: HTMLElement): void {
+  const tables = Array.from(
+    root.querySelectorAll<HTMLTableElement>("table[data-sct-sortable]"),
+  );
+
+  for (const table of tables) {
+    const body = table.querySelector("tbody");
+    const headers = Array.from(
+      table.querySelectorAll<HTMLTableCellElement>("thead th"),
+    );
+    if (!body || headers.length === 0) continue;
+
+    headers.forEach((header, index) => {
+      const type = header.getAttribute("data-sort-type") ?? "number";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "sct-sort";
+      button.textContent = header.textContent ?? "";
+      header.textContent = "";
+      header.appendChild(button);
+
+      // The server already ordered the rows by one column and says which, so
+      // the table announces the sort it actually has rather than "none". The
+      // next click on that column reverses it, as it would on any other.
+      const sorted = header.getAttribute("data-sort-default");
+      header.setAttribute("aria-sort", sorted ?? "none");
+
+      // Numbers open descending — the top of a stat column is what a reader
+      // clicking it is after. Names open ascending, which is A to Z.
+      let descending = type === "number";
+      if (sorted === "descending") descending = false;
+
+      button.addEventListener("click", () => {
+        const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>("tr"));
+        // The server's order, to fall back on for rows with nothing to compare
+        // and to break ties with — otherwise a column of equal values
+        // reshuffles itself on every click.
+        const original = new Map(rows.map((row, at) => [row, at]));
+
+        const valued: HTMLTableRowElement[] = [];
+        const empty: HTMLTableRowElement[] = [];
+        for (const row of rows) {
+          const value = sortValue(row.cells[index] as HTMLTableCellElement, type);
+          (value === null ? empty : valued).push(row);
+        }
+
+        valued.sort((a, b) => {
+          const left = sortValue(a.cells[index] as HTMLTableCellElement, type)!;
+          const right = sortValue(b.cells[index] as HTMLTableCellElement, type)!;
+          let order: number;
+          if (typeof left === "number" && typeof right === "number") {
+            order = descending ? right - left : left - right;
+          } else {
+            order = descending
+              ? String(right).localeCompare(String(left))
+              : String(left).localeCompare(String(right));
+          }
+          return order !== 0 ? order : (original.get(a) ?? 0) - (original.get(b) ?? 0);
+        });
+
+        empty.sort((a, b) => (original.get(a) ?? 0) - (original.get(b) ?? 0));
+
+        for (const row of valued) body.appendChild(row);
+        for (const row of empty) body.appendChild(row);
+
+        for (const other of headers) other.setAttribute("aria-sort", "none");
+        header.setAttribute("aria-sort", descending ? "descending" : "ascending");
+        descending = !descending;
+      });
+    });
+
+    table.dataset["sctSort"] = "js";
+  }
+}
+
 /* -------------------------------------------------------- iframe height ---- */
 
 /**
@@ -316,6 +440,7 @@ function boot(): void {
     wireTabs(root);
     wireSwitcher(root);
     wireTimestamps(root);
+    wireSortableTables(root);
     wireFrameHeight(root);
   }
 }

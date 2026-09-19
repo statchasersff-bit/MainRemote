@@ -25,6 +25,14 @@ export type GameStatus = "scheduled" | "live" | "final";
 
 export interface ScheduleGame {
   week: number;
+  /**
+   * ESPN's own id for this game, which is what the box score is keyed by.
+   *
+   * Null whenever the response does not carry one. It is the only handle we
+   * have on `summary?event=`, so a game without it simply has no box score —
+   * see lib/matchup/boxscore.ts, which is built to render nothing in that case.
+   */
+  espnEventId: string | null;
   /** Kickoff in epoch ms, or null when ESPN has no confirmed time yet. */
   kickoffMs: number | null;
   /** ESPN's own flag for "this time is real", not a placeholder. */
@@ -69,10 +77,12 @@ interface EspnCompetitor {
 }
 
 interface EspnEvent {
+  id?: string;
   date?: string;
   timeValid?: boolean;
   week?: { number?: number };
   competitions?: Array<{
+    id?: string;
     date?: string;
     neutralSite?: boolean;
     venue?: {
@@ -165,6 +175,7 @@ function parse(
 
     games.push({
       week,
+      espnEventId: (competition.id ?? event.id)?.trim() || null,
       kickoffMs: Number.isNaN(parsedDate) ? null : parsedDate,
       timeConfirmed: event.timeValid !== false,
       homeAway: self.homeAway === "away" ? "away" : "home",

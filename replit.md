@@ -165,9 +165,45 @@ _Replace the heading above with the project's name, and this line with one sente
   scoreboard, game, stat-row and injury components), `matchup-seo.ts`,
   `matchup-ssr.ts`. Routes: `/nfl/<a>-vs-<b>/` (non-canonical order or alias →
   301; anything else → 404, never a hub) and `/embed/matchup/<a>-vs-<b>`, which
-  returns `X-Matchup-State` / `X-Matchup-Season` for the plugin's title.
+  returns `X-Matchup-State` / `X-Matchup-Season` / `X-Matchup-Score` for the
+  plugin's title and description.
   `SC_MATCHUP_PATH_PREFIX` (default `/nfl/`) is where hub links point. Each hub
   has a `matchups` public section listing every game with a link to the pair.
+- **The postgame matchup page.** A pair whose meeting was just played renders a
+  different page, not the fixture page with a score in it. `data-postgame="1"`
+  on the root marks it, and `isPostgame()` in `matchup-render.ts` is the one
+  place that decides. The hero IS the scoreboard — crest, nickname, score at
+  display size, record, venue, and the quarter-by-quarter line — and there is
+  no separate "Final" card under it. Then: **Why the \<winner\> Won** (the box
+  score as one comparison, with a sentence composed from the rows themselves),
+  **Game Leaders** (four cards with headshots), **Player Stats** (passing,
+  rushing, receiving and a Fantasy table carrying PPR/half/standard and the
+  week's positional finish), **Fantasy Takeaways**, **Fantasy Usage**,
+  **Injuries & Fallout**, **What This Changed**, **Season Form**, and
+  Head-to-Head last. Pregame the order and the old headings are unchanged.
+  A pair with no current meeting but an old one (`historical`) keeps the
+  rivalry page — head-to-head first, then that meeting's detail — and is given
+  the box score and the stat tables but NOT the takeaways or the usage table,
+  which are advice about the coming week.
+- **Where the postgame data comes from, and what is missing.** Three sources,
+  each allowed to fail on its own:
+  - `matchup/boxscore.ts` — ESPN's `summary?event=<id>`, keyed by the event id
+    now carried on every `ScheduleGame` (`espnEventId`). It is the ONLY source
+    of the quarter line and the team figures; no box score means those two
+    blocks are absent, never estimated.
+  - `matchup/game-stats.ts` — the Sleeper weekly logs the player pages already
+    read, joined once per page in `matchup/appearances.ts`. Everything about
+    players comes from here: the stat tables, the fantasy scorings, snaps and
+    share, and the takeaways.
+  - `matchup/fpa-delta.ts` — `fantasy_points_allowed_games`, re-ranked at two
+    cutoffs (weeks before the game, weeks through it) to give each defense a
+    before and an after. Week 1 has no before, and the block renames itself
+    rather than drawing an arrow from nothing. The FPA ingest clears its cache.
+
+  **Routes run are not available** from any free source and there is no routes
+  column. **Who left the game injured** is not available either: ESPN's
+  per-game `injuries` block is the current report, not in-game exits, so
+  Injuries & Fallout says what it is rather than claiming a Q3 exit.
 - **`SC_TEAM_PATH_PREFIX` must be set for the WordPress mount** (default
   `/team/`). It is where the team switcher's 32 links point inside
   `/embed/team/:slug`, so left at the default a reader clicking a team on

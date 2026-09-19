@@ -71,8 +71,15 @@ function kickLazyIngest(): void {
   // a deployment that never needs it.
   inFlight = import("./fpa/ingest")
     .then((m) => m.ingestFpa())
-    .then((result) => {
+    .then(async (result) => {
       invalidateFpaRenderCache();
+      // The matchup pages' before/after ranks are computed from the same rows
+      // this ingest just replaced, and they are held for the life of the
+      // process — an ingest is the only event that can change one.
+      const { invalidateFpaDeltaCache } = await import("./matchup/fpa-delta");
+      invalidateFpaDeltaCache();
+      const { invalidateMatchupRenderCache } = await import("./matchup/matchup-ssr");
+      invalidateMatchupRenderCache();
       logger.info({ result }, "Lazy FPA ingest finished");
     })
     .catch((err) => {

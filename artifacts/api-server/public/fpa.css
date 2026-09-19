@@ -23,6 +23,9 @@
   --sc-muted: #64748b;
   --sc-muted-strong: #475569;
   --sc-border: #e5e7eb;
+  /* The team hub's row rule, brought over with its FAQ: a tinted hairline
+     rather than a flat grey, so a long list of them stays quiet. */
+  --sc-hairline: rgba(15, 23, 42, 0.08);
   --sc-surface: #ffffff;
   --sc-surface-soft: #f7f9fc;
   --sc-surface-sink: #f1f5f9;
@@ -244,39 +247,73 @@ body.scf-page {
 
 /* -------------------------------------------------------------------- faq */
 
+/*
+ * The FAQ, in the team hub's dress.
+ *
+ * This is the same object as the hub's "Common questions" block, so it is built
+ * from the hub's measurements rather than its own: the gold-barred heading of
+ * .sct-h2, the hairline-separated rows, the 8px chevron, the 72ch answer
+ * column. A reader meeting an FAQ on the team page and then on this one should
+ * not be able to tell the two tools apart by their appendix.
+ *
+ * The rem type sizes and the hairline token come across with the metrics, even
+ * though the rest of this sheet is px: these rules have to land on the same
+ * pixels team.css does, and a px approximation of 0.92rem is a second, slightly
+ * different FAQ.
+ *
+ * No rule above the block, and the rules inside it span the block rather than a
+ * narrower text column — both are what the hub does, and together they are what
+ * puts the heading bar and the list on the same left edge as the table.
+ */
 .scf-faq {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid var(--sc-border);
-  max-width: 78ch;
+  /* The hub opens its FAQ with 50px of padding; this one keeps the gap it was
+     given, which the border-top and its padding used to make up part of. */
+  margin-top: 77px;
 }
 
-/* Still an <h2>: the outline does not change, and the title is no longer a
-   click target because the block itself does not fold. */
+/* Still an <h2>, and still not a click target — the block does not fold, the
+   questions do. The gold bar marks the heading rather than underlining it. */
 .scf-faq-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  position: relative;
+  margin: 0 0 6px;
+  padding-bottom: 10px;
   color: var(--sc-navy);
+  font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem);
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
+.scf-faq-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+/* The list opens on a hairline and every row closes on one, so it reads as a
+   single block under the heading rather than as a run of loose rows. */
 .scf-faq-body {
-  margin-top: 4px;
+  margin: 14px 0 0;
+  border-top: 1px solid var(--sc-hairline);
 }
 
 /* One question, one fold, shut by default. The native marker is replaced with
    a chevron of our own so it sits on the question's first line rather than
    outside the heading's box. */
 .scf-faq-item {
-  border-bottom: 1px solid var(--sc-border);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-hairline);
 }
 
 .scf-faq-q-row {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 14px 0;
+  gap: 12px;
   cursor: pointer;
   list-style: none;
 }
@@ -285,12 +322,14 @@ body.scf-page {
   display: none;
 }
 
+/* Nudged down to sit on the first line of the question rather than on the
+   middle of a question that wrapped. */
 .scf-faq-q-row::before {
   content: "";
   flex: none;
-  margin-top: 4px;
-  width: 7px;
-  height: 7px;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
   border-right: 2px solid var(--sc-gold);
   border-bottom: 2px solid var(--sc-gold);
   transform: rotate(-45deg);
@@ -303,17 +342,20 @@ body.scf-page {
 
 .scf-faq-q {
   margin: 0;
-  font-size: 14px;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
   font-weight: 800;
-  color: var(--sc-navy);
+  line-height: 1.45;
 }
 
-/* Indented to the question's text rather than to the chevron. */
+/* 72ch, the measure the hub's answers read at, indented to the question's text
+   rather than to the chevron. */
 .scf-faq-a {
-  margin: 0 0 14px 17px;
-  font-size: 13px;
-  line-height: 1.6;
+  margin: 7px 0 0 20px;
+  max-width: 72ch;
   color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
 }
 
 /* -------------------------------------------------------------- data mode */
@@ -381,7 +423,13 @@ body.scf-page {
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 1px 10px;
+  /* Deliberately looser than the 2px the data rows wear (--scf-cell-pad-y).
+     The rows are dense on purpose — 32 of them in one screenful — but the
+     header is one band, not a row, and matching the body's density made it
+     read as a pinstripe rather than as the top of the table. 5px against an
+     11px label on 1.12 puts the band at roughly 23px, half again what it was,
+     and costs the table a dozen pixels once. */
+  padding: 5px 10px;
   /* The brand navy — the same one the active control pill wears, so the page
      carries one blue. It has to be opaque anyway: the header is sticky and the
      rows scroll under it. Rounded like the data cells below, because

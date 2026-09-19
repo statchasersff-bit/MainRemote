@@ -160,6 +160,147 @@ describe("player page content", () => {
     assert.ok(text.length > 1500, "the page carries real prose and numbers");
   });
 
+  /*
+   * The header's responsive contract.
+   *
+   * Ported from the start/sit tool's player header, whose rule is that
+   * breakpoints decide topology and measurement decides everything inside. The
+   * measuring itself runs in the browser and these tests execute no
+   * JavaScript, so what is asserted here is what the SERVER owes the fitter:
+   * complete, correctly sized markup that needs no script to be right, and the
+   * hooks the fitter reads.
+   */
+  test("the header arrives complete and at full size, with no script", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    const hero = doc.querySelector("[data-scp-hero]");
+    assert.ok(hero, "the header carries the hook the fitter looks for");
+
+    // No scales written by the server. The fitter writes them from what it
+    // measures; until it does, player.css's `, 1` fallbacks are the answer,
+    // and a reader with JavaScript off keeps that answer for good.
+    const style = hero.getAttribute("style") ?? "";
+    assert.ok(
+      !style.includes("--scp-hero-"),
+      "the server writes no scale — the header is full size until measured",
+    );
+
+    // And the richest form of every swap is the one showing.
+    const inner = hero.querySelector(".scp-hero-inner");
+    assert.equal(inner?.getAttribute("data-scp-form"), "full");
+
+    // The probe is built by cloning in the browser, never served: three extra
+    // copies of the player's name and club in a document whose whole job is
+    // to be indexed for that name is a cost this page will not pay.
+    assert.equal(
+      doc.querySelectorAll("[data-scp-hero-probe], .scp-hero-probe").length,
+      0,
+      "no measuring copies in the served HTML",
+    );
+  });
+
+  test("every word the header can shorten ships in all of its lengths", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const hero = doc.querySelector("[data-scp-hero]");
+
+    // The swaps are in the HTML and CSS shows one of them. Nothing here is
+    // rewritten by script, so the choice is reversible, the page is complete
+    // before it is made, and the probe can measure a form before it is shown.
+    const swaps = hero.querySelectorAll(".scp-swap");
+    if (swaps.length > 0) {
+      for (const swap of swaps) {
+        assert.match(
+          swap.className,
+          /scp-swap--(full|short|tight)/,
+          "every swap declares which length it is",
+        );
+      }
+    }
+
+    // The club's link keeps the full name answerable however short the form
+    // showing is — "ARI" is not a team name a reader has to already know.
+    const teamLink = hero.querySelector("a.scp-hero-team");
+    if (teamLink) {
+      const title = teamLink.getAttribute("title") ?? "";
+      assert.ok(title.length > 0, "the club's link carries its full name");
+      const full = teamLink.querySelector(".scp-swap--full");
+      if (full) assert.equal(full.textContent.trim(), title);
+    }
+  });
+
+  test("the heading is the player's name, whatever the header does to it", async () => {
+    // The two-line setting, the swaps and the fitter are all presentation.
+    // Nothing they do may change the string an H1 hands a crawler or a screen
+    // reader — which is the reason the name has no short form of its own.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const heading = doc.querySelector(".scp-hero h1.scp-title");
+    assert.ok(heading, "the header sets the name as the document's H1");
+    assert.equal(
+      heading.textContent.replace(/\s+/g, " ").trim(),
+      fixture.name,
+      "the H1 reads exactly the player's name",
+    );
+    assert.equal(
+      heading.querySelectorAll(".scp-swap").length,
+      0,
+      "and carries no swap, so it cannot be shortened out from under itself",
+    );
+  });
+
+  test("nothing in the header is hidden at a breakpoint", async () => {
+    // The anti-pattern this port exists to remove. The headshot used to be
+    // `display: none` under 680px; it now shrinks to 65% and, below 460px,
+    // moves behind the name. A header whose player has no face is a smaller
+    // page, not a better one.
+    const css = await get("/player.css");
+    assert.equal(css.status, 200);
+
+    const photoRules = css.body.match(/\.scp-photo\s*\{[^}]*\}/g) ?? [];
+    assert.ok(photoRules.length > 0, "the headshot has rules to check");
+    for (const rule of photoRules) {
+      assert.ok(
+        !/display:\s*none/.test(rule),
+        `the headshot is never hidden, but a rule does it: ${rule}`,
+      );
+    }
+
+    // And every size in the header is written against a scale with a
+    // fallback of 1, so the unmeasured header is the full-size one.
+    for (const variable of ["pad", "gap", "bust", "id", "tbl", "tblp"]) {
+      assert.ok(
+        css.body.includes(`var(--scp-hero-${variable}, 1)`),
+        `--scp-hero-${variable} is used with a fallback of 1`,
+      );
+    }
+  });
+
+  test("the tables a reader scrolls carry the filled header row", async () => {
+    // The fill is what makes a sticky column row read as the table's edge
+    // rather than as another row, so it belongs on the three tables with a
+    // body long enough to slide under it — and on no others.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    for (const selector of [
+      "table.scp-table--log",
+      "table.scp-table--career",
+      "table.scp-table--regions",
+    ]) {
+      for (const table of doc.querySelectorAll(selector)) {
+        assert.ok(
+          table.classList.contains("scp-table--filled"),
+          `${selector} carries the filled header row`,
+        );
+      }
+    }
+
+    for (const table of doc.querySelectorAll("table.scp-table--role")) {
+      assert.ok(
+        !table.classList.contains("scp-table--filled"),
+        "the role table has nothing to scroll under it",
+      );
+    }
+  });
+
   test("head metadata is server-rendered and self-referencing", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const canonical = doc.querySelector('link[rel="canonical"]');
@@ -699,9 +840,17 @@ describe("the game log tab", () => {
     const blocks = [...doc.querySelectorAll("#game-log .scp-archive")];
     assert.equal(blocks.length, 1, "one block under the selector");
     assert.equal(blocks[0].getAttribute("data-season"), "all");
+    // The selector rides the heading of the block it opened, so the block
+    // CONTAINS it: the row of years and the name of what they produced are one
+    // line, and the table follows both.
+    assert.equal(
+      nav.closest(".scp-archive"),
+      blocks[0],
+      "the selector sits on the heading of the block resting on All",
+    );
     assert.ok(
-      nav.compareDocumentPosition(blocks[0]) & 4,
-      "the career table opens BELOW the selector resting on All",
+      nav.compareDocumentPosition(blocks[0].querySelector("table")) & 4,
+      "and the table it opened comes after it",
     );
 
     const table = blocks[0].querySelector("table.scp-table--career");
@@ -745,6 +894,10 @@ describe("the game log tab", () => {
     assert.ok(
       table.compareDocumentPosition(nav) & 4,
       "the archive comes after the log it is an archive of",
+    );
+    assert.ok(
+      nav.closest(".scp-archive"),
+      "and it rides that archive block's heading rather than standing alone",
     );
 
     const fixtures = doc.querySelector("#game-log .scp-nexts");
@@ -808,9 +961,14 @@ describe("the game log tab", () => {
     );
 
     const nav = pinned.doc.querySelector("#game-log .scp-seasonnav");
+    assert.equal(
+      nav.closest(".scp-archive"),
+      archive,
+      "the selector sits on the heading of the season it opened",
+    );
     assert.ok(
-      nav.compareDocumentPosition(archive) & 4,
-      "the season opens BELOW the selector that opened it",
+      nav.compareDocumentPosition(archive.querySelector("table")) & 4,
+      "and that season's numbers come after it",
     );
 
     // A finished season has no fixtures and no form to read, so the blocks
@@ -1286,6 +1444,11 @@ describe("the game log tab", () => {
     assert.ok(
       nav.compareDocumentPosition(career) & 4,
       "totals come after the selector, never before the games",
+    );
+    assert.equal(
+      nav.closest(".scp-archive"),
+      career.closest(".scp-archive"),
+      "the selector is that block's own heading control",
     );
     const log = doc.querySelector("#game-log table.scp-table--log");
     assert.ok(
@@ -1887,7 +2050,7 @@ describe("the bio tab", () => {
     return pages;
   }
 
-  test("the facts a bio is searched for are the first thing on it", async () => {
+  test("the bio opens on the paragraph, then the facts it is searched for", async () => {
     const pages = await bioPages(4);
     assert.ok(pages.length > 0, "at least one player has a bio");
 
@@ -1905,8 +2068,15 @@ describe("the bio tab", () => {
         );
       }
 
+      const narrative = page.doc.querySelector("#bio .scp-bio");
       const facts = page.doc.querySelector("#bio .scp-facts");
       const timeline = page.doc.querySelector("#bio .scp-stints");
+      if (narrative) {
+        assert.ok(
+          narrative.compareDocumentPosition(facts) & 4,
+          "the paragraph opens the tab, above the fact grid",
+        );
+      }
       if (timeline) {
         assert.ok(
           facts.compareDocumentPosition(timeline) & 4,
@@ -1994,16 +2164,16 @@ describe("the bio tab", () => {
         `${page.player.slug}: the bio claims a draft status the data cannot support`,
       );
 
-      const block = page.doc.querySelector("#bio .scp-draft");
-      if (!block) continue;
+      // The draft has no block of its own — the fact grid carries it, and it
+      // names its year or it is not there at all.
+      assert.equal(page.doc.querySelector("#bio .scp-draft"), null);
 
-      const values = [...block.querySelectorAll(".scp-draft-row")].map((row) => [
-        row.querySelector("dt").textContent.trim(),
-        row.querySelector("dd").textContent.trim(),
-      ]);
-      const draft = Object.fromEntries(values);
-      assert.match(draft["Draft"], /^\d{4} NFL Draft$/, "the draft names its year");
-      assert.match(draft["Selection"], /^Round \d+ · Pick \d+$/, "round and pick");
+      const draft = [...page.doc.querySelectorAll("#bio .scp-fact")]
+        .find((fact) => fact.querySelector("dt").textContent.trim() === "Draft")
+        ?.querySelector(".scp-fact-value")
+        ?.textContent.trim();
+      if (!draft) continue;
+      assert.match(draft, /^\d{4}\b/, "the draft fact names its year");
     }
   });
 

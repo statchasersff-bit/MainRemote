@@ -159,11 +159,37 @@ body.scp-page {
  * deep-gold eyebrow and rank. The team's colours are still the only colour in
  * here, and they carry further on a light ground than they did on navy.
  */
+/*
+ * The hero's six scales, and what sets them.
+ *
+ * Ported from the start/sit tool's player header. Every size in this header is
+ * written as `calc(px * var(--scp-hero-x, 1))` and the client's `wireHeroFit`
+ * writes the multipliers — one staged squeeze, measured against an off-screen
+ * probe, spending whitespace before type and type before words.
+ *
+ * The `, 1` fallback is load-bearing in three places at once: the server's HTML
+ * is complete before any script runs, so a reader with JS off gets the header
+ * at full size; the probe resets these to 1 so it measures natural widths; and
+ * the two narrow tiers below never set them at all, because down there the
+ * topology has already solved the problem the scales exist for.
+ *
+ *   --scp-hero-pad   the row's whitespace: gutters, the inner gap, the
+ *                    figure's inset. Spent first and spent fastest.
+ *   --scp-hero-gap   the 40px the name is held clear of the figure by.
+ *   --scp-hero-bust  the headshot.
+ *   --scp-hero-id    the identity column's type, as one block.
+ *   --scp-hero-tbl   the numbers strip's type.
+ *   --scp-hero-tblp  the numbers strip's cell padding, which goes faster than
+ *                    its type — whitespace before legibility, inside the strip
+ *                    exactly as outside it.
+ */
 .scp-hero {
   position: relative;
   display: block;
   margin: 24px 0 0;
-  padding: 28px;
+  /* No bottom padding: the headshot stands on the card's floor and is cropped
+     by it. The text column puts the space back for itself. */
+  padding: 26px calc(28px * var(--scp-hero-pad, 1)) 0;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius);
   background: linear-gradient(
@@ -176,75 +202,207 @@ body.scp-page {
 }
 
 /*
- * The team's colours enter the page here and nowhere else: a soft aura behind
- * the headshot and a hairline along the top edge. The team is an accent, not a
- * repaint — a Bengals page still has to read as StatChasers.
+ * The team's colours enter the page here and nowhere else: a hairline along
+ * the top edge and an enormous, almost invisible club mark off the right. The
+ * team is an accent, not a repaint — a Bengals page still has to read as
+ * StatChasers.
  */
 .scp-hero-decor {
   position: absolute;
   inset: 0 0 auto;
   height: 3px;
   background: linear-gradient(90deg, var(--team-primary), var(--team-secondary));
+  z-index: 2;
+}
+
+/* Same device and the same 4% as .scp-prod-mark. A page should not have two
+   different ideas of how a watermark behaves. */
+.scp-hero-mark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  /* Inside the card's own gutter, not hanging off it: the hero clips its
+     overflow, so a negative inset sliced the crest's right edge off and left
+     a watermark with a straight cut down it. At the gutter the whole mark is
+     in frame. */
+  right: 28px;
+  width: 190px;
+  height: auto;
+  transform: translateY(-50%);
+  opacity: 0.045;
+  pointer-events: none;
+  user-select: none;
 }
 
 .scp-hero-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  /* Bottom, not centre: the photo is a figure standing on the floor of the
+     card, and the text sits beside it rather than around it. */
+  align-items: flex-end;
+  gap: calc(26px * var(--scp-hero-pad, 1));
+  /*
+   * One row, and only a breakpoint may say otherwise.
+   *
+   * This was `wrap`, which meant the CONTENT decided the topology: a long
+   * enough name or a wide enough set of figures silently pushed the numbers
+   * onto a second line at some width nobody had chosen, and the fitter —
+   * which models one row — had no way to see it coming. The tier at 560px
+   * turns wrapping back on, deliberately, as the answer to a question it
+   * actually asked.
+   */
+  flex-wrap: nowrap;
 }
 
+/*
+ * The headshot, whole.
+ *
+ * Sleeper's thumbnails are cut-outs on transparency, so there is no frame to
+ * draw and no disc to fit them into — the figure stands on the card's floor
+ * with the hero's gradient showing through around it.
+ *
+ * The box is the SOURCE's ratio — 350 x 254, so 148px tall is 204px wide — and
+ * that is the whole change from the 132px box this replaces. That box was
+ * portrait over a landscape source, so `cover` scaled the image to its height
+ * and cut a third of its width away at the sides. At the same height and the
+ * right width nothing is cut and nothing is resized: it is the same figure at
+ * the same scale with its own edges back.
+ */
 .scp-photo {
-  position: relative;
   flex: 0 0 auto;
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(
-    circle at 50% 40%,
-    color-mix(in srgb, var(--team-primary) 42%, transparent) 0%,
-    transparent 70%
-  );
+  /* The source's ratio, scaled as one piece so the figure never distorts. */
+  width: calc(204px * var(--scp-hero-bust, 1));
+  height: calc(148px * var(--scp-hero-bust, 1));
+  align-self: flex-end;
+  /* Off the card's left gutter. Flush against it the figure read as pinned to
+     the edge rather than standing inside the hero; 35px gives it a floor of
+     its own. The text column keeps its clearance either way, since this is a
+     margin and the gap after the photo is unchanged. */
+  margin-left: calc(35px * var(--scp-hero-pad, 1));
 }
 
 .scp-photo-img {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--sc-navy-deep);
-  border: 2px solid var(--sc-hairline);
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* `contain`, because the box is only the right ratio for the source Sleeper
+     serves today. A source of some other shape letterboxes on transparency —
+     which on this card is invisible — rather than losing an ear to a crop.
+     Anchored at the bottom so whatever it is stands on the floor. */
+  object-fit: contain;
+  object-position: 50% 100%;
 }
 
 .scp-hero-text {
-  flex: 1 1 260px;
+  /*
+   * Basis zero, not 260px.
+   *
+   * A flex item wraps on its BASIS, not on its min-width, so a 260px basis was
+   * a 260px claim on the row whatever the name inside it actually needed —
+   * and with `nowrap` above it would be a 260px claim that squeezes the figure
+   * and the numbers instead. At zero the column takes what is left after the
+   * two fixed parts, which is the geometry wireHeroFit measures and solves.
+   */
+  flex: 1 1 0;
   min-width: 0;
+  /* 40px clear of the figure, on top of the inner's 26px gap. The name is the
+     loudest thing on the page and it was starting a shoulder's width from a
+     photograph; this gives it room to start on its own. */
+  margin-left: calc(40px * var(--scp-hero-gap, 1));
+  /* The bottom padding the hero itself gives up for the headshot. */
+  padding-bottom: 26px;
 }
 
-.scp-eyebrow {
-  margin: 0 0 4px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sc-gold-ink);
+/* Clearance from a figure that is not there is just an indent. The index
+   page's header is this same component with the headshot left out. */
+.scp-hero-inner > .scp-hero-text:first-child {
+  margin-left: 0;
 }
 
+/*
+ * The name: given name small above, surname large below.
+ *
+ * One <h1>, three spans, and the spans are presentation only — the heading's
+ * text content is still exactly the player's name (plus the section phrase on
+ * a scoped URL), which is what a crawler and a screen reader read.
+ */
 .scp-title {
   margin: 0;
-  font-size: clamp(26px, 4vw, 38px);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
   color: var(--sc-navy);
 }
 
+.scp-title-first {
+  display: block;
+  font-size: calc(12px * var(--scp-hero-id, 1));
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-title-last {
+  display: block;
+  margin-top: 2px;
+  /* The clamp is the scriptless answer and the var is the measured one. A
+     viewport-sized figure is a guess — it cannot know that this row also holds
+     a bust and a three-cell table — but it is a good guess, and it is what a
+     reader with no JavaScript gets. wireHeroFit multiplies it by what it
+     actually measured. */
+  font-size: calc(clamp(34px, 5.2vw, 52px) * var(--scp-hero-id, 1));
+  font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* The section's phrase, on a scoped URL. Sentence case and a fraction of the
+   surname's size: it is what the page is about, not what it is called. */
+.scp-title-rest {
+  display: block;
+  margin-top: 8px;
+  font-size: calc(clamp(17px, 2.2vw, 21px) * var(--scp-hero-id, 1));
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--sc-navy);
+}
+
+/* Position and club — the two facts that place a player. */
+.scp-hero-billing {
+  margin: 12px 0 0;
+  font-size: calc(14.5px * var(--scp-hero-id, 1));
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.scp-hero-sep {
+  color: var(--sc-muted);
+  font-weight: 600;
+}
+
+.scp-hero-team {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.scp-hero-team:hover {
+  border-bottom-color: currentColor;
+}
+
+/* The measurements. Scanned for, not arrived for, so they are quieter than
+   the line above and quieter again at the draft. */
 .scp-hero-facts {
-  margin: 8px 0 0;
-  font-size: 14px;
+  margin: 7px 0 0;
+  font-size: calc(13px * var(--scp-hero-id, 1));
   color: var(--sc-muted-strong);
+}
+
+.scp-hero-draft {
+  margin: 5px 0 0;
+  font-size: calc(12.5px * var(--scp-hero-id, 1));
+  color: var(--sc-muted);
 }
 
 .scp-hero-meta {
@@ -253,30 +411,6 @@ body.scp-page {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 12px;
-}
-
-.scp-hero-team {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 6px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface);
-  color: var(--sc-navy);
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.scp-hero-team:hover {
-  background: var(--sc-surface-sink);
-}
-
-.scp-hero-logo {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
 }
 
 /* The injury designation. Present only when there is one — never "Healthy". */
@@ -292,28 +426,217 @@ body.scp-page {
   text-transform: uppercase;
 }
 
-.scp-hero-rank {
+/*
+ * The season, in a strip.
+ *
+ * An outlined card on the surface rather than the sunk ground, so it lifts off
+ * the hero's gradient; the cells are divided by hairlines rather than gaps,
+ * which is what makes three numbers read as one object. It replaced a single
+ * dynasty rank on a left rule — the rank is still here, as the last cell.
+ */
+.scp-hero-stats {
   flex: 0 0 auto;
-  text-align: right;
-  padding-left: 20px;
-  border-left: 1px solid var(--sc-border);
+  /*
+   * Centred on the header, while everything else in it stands on the floor.
+   *
+   * The strip used to sit on the baseline with the photo and the text, which
+   * put three small numbers at the bottom corner of a 200px card with the
+   * whole gradient empty above them. It is a reading of the season, not a
+   * figure standing in the composition, so it centres.
+   *
+   * The 26px stays, and it is what makes "centred" mean centred on the CARD:
+   * the hero gives up its bottom padding so the headshot can be cropped by the
+   * floor, so the flex line runs 26px lower than the card does. A bottom margin
+   * on a centred item lifts it by half of itself — exactly the 13px that
+   * missing padding costs.
+   */
+  align-self: center;
+  margin-bottom: 26px;
 }
 
-.scp-hero-rank-value {
-  display: block;
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--sc-gold-ink);
-  line-height: 1;
-}
-
-.scp-hero-rank-label {
-  display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+/* The year the three cells belong to. Above the box rather than inside it: it
+   governs all three, and a fourth cell reading "2026" would be a figure. */
+.scp-hero-stats-season {
+  margin: 0 0 7px;
+  font-size: calc(10px * var(--scp-hero-tbl, 1));
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sc-muted-strong);
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+.scp-hero-stats-row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  overflow: hidden;
+}
+
+.scp-hero-stat {
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  justify-items: center;
+  padding: calc(12px * var(--scp-hero-tblp, 1)) calc(20px * var(--scp-hero-tblp, 1));
+  border-left: 1px solid var(--sc-border);
+  text-align: center;
+}
+
+.scp-hero-stat:first-child {
+  border-left: 0;
+}
+
+.scp-hero-stat-value {
+  font-size: calc(23px * var(--scp-hero-tbl, 1));
+  font-weight: 800;
+  line-height: 1;
+  color: var(--sc-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-hero-stat-label {
+  font-size: calc(9.5px * var(--scp-hero-tbl, 1));
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* ----------------------------------------------- hero: forms and the probe */
+
+/*
+ * The word swaps.
+ *
+ * Three lengths of the same run of text, all three in the HTML, one shown. The
+ * showing is keyed off `data-scp-form` on .scp-hero-inner, which the client
+ * sets to "short" at stage 3 and "tight" at stage 5 — after the whitespace is
+ * gone and the first proportional shrink is spent, before the deepest cuts to
+ * the type. Cheaper concessions first, all the way down.
+ *
+ * `display: none` rather than clipping or opacity, so exactly one form is in
+ * the accessibility tree: the team's name is announced once, not three times,
+ * and the link's accessible name is whichever form is showing. The full name
+ * is on the anchor's `title` either way, which is how "NE" stays answerable.
+ *
+ * The default is `full` with no attribute set at all, so the server's HTML is
+ * already correct and nothing flashes while the client measures.
+ */
+.scp-swap--short,
+.scp-swap--tight {
+  display: none;
+}
+
+[data-scp-form="short"] .scp-swap--full,
+[data-scp-form="tight"] .scp-swap--full {
+  display: none;
+}
+
+[data-scp-form="short"] .scp-swap--short {
+  display: inline;
+}
+
+[data-scp-form="tight"] .scp-swap--tight {
+  display: inline;
+}
+
+/* At the tight form the draft line goes rather than shortening again: it is
+   the least load-bearing fact in the column, it is already on the Bio tab in
+   full, and a third abbreviation of it would be a puzzle, not a fact. */
+[data-scp-form="tight"] .scp-hero-draft {
+  display: none;
+}
+
+/*
+ * The probe.
+ *
+ * Three copies of the identity column — one per form — and one of the numbers
+ * strip, rendered off-screen at scale 1 so the fitter can read what each form
+ * would naturally take before it chooses one. Measuring the visible column
+ * instead would be measuring the thing the scales are about to change, which
+ * is the one way to make a fitter oscillate forever.
+ *
+ * `position: fixed` and far off to the left: `display: none` has no dimensions
+ * to measure, and an in-flow `visibility: hidden` copy would still take part
+ * in layout. `width: max-content` on the items is what makes the measurement a
+ * natural width rather than whatever the column happens to be.
+ *
+ * Every scale is reset to 1 here — the probe is inside .scp-hero and would
+ * otherwise inherit the very multipliers it exists to compute.
+ */
+.scp-hero-probe {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+  --scp-hero-pad: 1;
+  --scp-hero-gap: 1;
+  --scp-hero-bust: 1;
+  --scp-hero-id: 1;
+  --scp-hero-tbl: 1;
+  --scp-hero-tblp: 1;
+}
+
+.scp-hero-probe-item {
+  width: max-content;
+}
+
+/* The identity column inside the probe is not a flex child of anything, so it
+   has to be told to size to its content rather than to the 260px basis and
+   40px clearance it carries in the row. */
+.scp-hero-probe .scp-hero-text {
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
+  margin-left: 0;
+  padding-bottom: 0;
+}
+
+/* The strip, immune to the tiers below. The probe reports the one-row
+   geometry — the only geometry the fitter runs in — so a narrow-tier rule
+   reaching into it would have it measuring a layout nobody is looking at.
+   Specificity, not source order, is what keeps them out. */
+.scp-hero-probe .scp-hero-stats {
+  flex: 0 0 auto;
+  width: max-content;
+  align-self: auto;
+  margin: 0;
+}
+
+/* The padding stays on the variable here. The bare copy sets --scp-hero-tblp
+   to 0 on itself, which is how the strip's figures get measured without it —
+   a fixed padding in this rule would quietly make the two copies identical
+   and hand the fitter a padding term of zero. */
+.scp-hero-probe .scp-hero-stat {
+  flex: 0 0 auto;
+  padding: calc(12px * var(--scp-hero-tblp, 1)) calc(20px * var(--scp-hero-tblp, 1));
+}
+
+/* The name is allowed to be as wide as it is in here: a probe that wrapped
+   would report the width it wrapped to, which is not a natural width. */
+.scp-hero-probe .scp-title-last,
+.scp-hero-probe .scp-title-first,
+.scp-hero-probe .scp-hero-billing,
+.scp-hero-probe .scp-hero-facts,
+.scp-hero-probe .scp-hero-draft {
+  white-space: nowrap;
+}
+
+/*
+ * And the last concession, after every scale has bottomed out: the name wraps.
+ *
+ * Not an ellipsis and not a crop — a surname is the one string on this page a
+ * reader came for, and "Beckh…" is worse than two lines. Set by the client
+ * only when stage 5 has run out of budget.
+ */
+.scp-hero[data-scp-hero-wrap="1"] .scp-title-last {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* ------------------------------------------------------- controls and nav */
@@ -374,6 +697,43 @@ body.scp-page {
 .scp-nav-link.is-active {
   color: var(--sc-navy);
   border-bottom-color: var(--sc-gold);
+}
+
+/*
+ * The same mark, on the no-JS path.
+ *
+ * `.is-active` is the server's guess — the first tab — and client/player.ts
+ * moves it once the bundle owns the strip. With no bundle (it failed to load,
+ * or scripting is off) `:target` still switches the panel, so the reader lands
+ * on Game Log with the gold rule left behind under Overview, which is worse
+ * than no rule at all: it names the wrong tab.
+ *
+ * So whenever a panel is targeted, the server's guess is cleared and the
+ * targeted panel's own link is lit. Each section needs its own pair because a
+ * selector cannot walk from a panel to the link that points at it; the ids are
+ * the seven renderNav() can emit, and one for a section this player has no
+ * panel for simply never matches.
+ *
+ * Inside the same @supports as the panel rules: without :has() the panels all
+ * stack, nothing is "the open tab", and the server's first-tab mark is fine.
+ */
+@supports selector(:has(*)) {
+  .scp:not([data-scp-tabs="js"]):has([data-scp-panel]:target)
+    .scp-nav-link.is-active {
+    color: var(--sc-muted-strong);
+    border-bottom-color: transparent;
+  }
+
+  .scp:not([data-scp-tabs="js"]):has(#overview:target) #overview-tab,
+  .scp:not([data-scp-tabs="js"]):has(#stats:target) #stats-tab,
+  .scp:not([data-scp-tabs="js"]):has(#game-log:target) #game-log-tab,
+  .scp:not([data-scp-tabs="js"]):has(#outlook:target) #outlook-tab,
+  .scp:not([data-scp-tabs="js"]):has(#injury:target) #injury-tab,
+  .scp:not([data-scp-tabs="js"]):has(#news:target) #news-tab,
+  .scp:not([data-scp-tabs="js"]):has(#bio:target) #bio-tab {
+    color: var(--sc-navy);
+    border-bottom-color: var(--sc-gold);
+  }
 }
 
 .scp-format {
@@ -939,6 +1299,129 @@ body.scp-page {
 
 .scp-table tbody tr:hover {
   background: var(--sc-surface-soft);
+}
+
+/*
+ * The filled header row.
+ *
+ * Carried by the three tables a reader actually works down — the game log, the
+ * career-by-season table and the injury-region table — where the column row is
+ * a fixed reference that a scrolling body slides under. Filling it in the brand
+ * navy makes it read as the table's edge rather than as another row, and it is
+ * what the sticky header needs anyway: a white sticky row over white cells only
+ * looks stuck once the borders happen to line up.
+ *
+ * NOT on .scp-table--role, which is four rows under a heading and has nothing
+ * to scroll under.
+ */
+.scp-table--filled thead th,
+/*
+ * The first column, spelled out.
+ *
+ * `.scp-table thead th:first-child` above paints that head navy for a white
+ * header row, and at (0,2,2) it outweighs the (0,1,2) of the selector beside
+ * this one — so on a navy band the first head was navy on navy. It did not
+ * look broken, because the sorter marks column one `ascending` on load and the
+ * active-column rule below inks it gold; the text only vanished once a reader
+ * sorted by some other column and column one fell back to `aria-sort="none"`.
+ * Matching that selector's specificity here, and winning on order, is the fix.
+ */
+.scp-table--filled thead th:first-child {
+  background: var(--sc-navy);
+  /* Beats the colour rule above that paints the first head navy, and the game
+     log's per-column ink, which are both set for a white row. */
+  color: #ffffff;
+  border-bottom-color: var(--sc-navy);
+}
+
+/*
+ * The column the table is sorted BY.
+ *
+ * The arrow says which way; it does not say which column, and on a twelve-wide
+ * career table one small glyph in a row of white labels is a poor answer to
+ * "what am I looking at". Gold is what this page marks the current thing with
+ * everywhere else — the open tab's rule is the same token — so the active
+ * column head takes it.
+ *
+ * Both directions, and the resting state too: the sorter marks the first
+ * column `ascending` when it wires the table, because the order the server
+ * sent IS that column's order. A reader who has not clicked anything is still
+ * looking at a sorted table, and this says which column did it.
+ *
+ * Deliberately one class-level step BELOW nothing and level with the hover
+ * rule below, which follows it: hovering the active column still lifts it to
+ * the softer gold, so the control keeps answering the pointer.
+ */
+.scp-table--filled th[aria-sort="ascending"] .scp-sort,
+.scp-table--filled th[aria-sort="descending"] .scp-sort {
+  color: var(--sc-gold);
+}
+
+/*
+ * And a rule under the cell, because on the game log gold alone is ambiguous.
+ *
+ * FPTS is already inked gold there at rest — it is the column that table is
+ * built around — so a gold FPTS head says "this is the points column" and a
+ * gold WK head says "this is what the table is sorted by", in the same colour.
+ * The bar is what separates them: it is only ever under the active column, it
+ * is the device the tab strip above already uses for "you are here", and the
+ * one column that cannot imitate it is the one that was imitating the ink.
+ *
+ * Inset rather than a border so it draws inside the filled cell, above the
+ * header row's own navy edge, and cannot move the columns by a pixel.
+ */
+.scp-table--filled th[aria-sort="ascending"],
+.scp-table--filled th[aria-sort="descending"] {
+  box-shadow: inset 0 -3px 0 var(--sc-gold);
+}
+
+/* The sort control inherits the white and answers in gold rather than in the
+   navy it is now sitting on. */
+.scp-table--filled thead .scp-sort:hover,
+.scp-table--filled thead .scp-sort:focus-visible {
+  color: var(--sc-gold-soft);
+}
+
+/*
+ * The frame.
+ *
+ * Rows carry a hairline underneath them and nothing else, so the body had no
+ * left, right or closing edge: a table read to the bottom, or pushed sideways
+ * inside .scp-scroll, ran out into the page rather than ending. One pixel
+ * closes it.
+ *
+ * Carried by the filled tables and not by the table modifiers, so the three
+ * that scroll under a navy header — the game log, the career table and the
+ * injury regions — are framed by the same rule that fills them, and a fourth
+ * cannot be added filled but unframed. NOT on .scp-table--role, which is four
+ * rows under a heading: a frame around it would read as a card.
+ *
+ * border-collapse is `collapse`, so the frame's bottom edge collapses with the
+ * last row's own hairline — one line, not two — and its top edge takes the
+ * navy, because a grey hairline above the navy band reads as a seam over the
+ * header rather than as the top of the table.
+ */
+.scp-table--filled {
+  border: 1px solid var(--sc-border);
+  border-top-color: var(--sc-navy);
+}
+
+/*
+ * The career table keeps its frame on Stats too.
+ *
+ * renderCareerStats() draws one table into two tabs, and this rule used to
+ * drop the frame on Stats so the table would not read as a card among
+ * un-carded siblings. It no longer does: the table is ruled cell by cell now
+ * (see the career section below), and a ruled grid with no edge is a grid that
+ * stops mid-air. Frame and rules arrive together or not at all.
+ *
+ * Kept as a rule rather than deleted, and still scoped by the panel's id
+ * rather than by a modifier on the table, because the table is the same
+ * component in both places: what differs is the page around it.
+ */
+#stats .scp-table--career {
+  border: 1px solid var(--sc-border);
+  border-top-color: var(--sc-navy);
 }
 
 .scp-row[data-status="bye"],
@@ -3008,6 +3491,25 @@ body.scp-page {
   margin-top: 0;
 }
 
+/*
+ * A heading with its block's own control on the same line.
+ *
+ * The game log's season selector is the one that uses it. Wrapping, because
+ * eleven year chips and a heading do not share a phone's width: the chips drop
+ * under the title rather than squeezing it.
+ *
+ * Centred rather than baseline-aligned — the title carries its gold rule as
+ * 10px of padding under the text, so a baseline would hang the pill row above
+ * the block it belongs to.
+ */
+.scp-sect--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
 .scp-sect-title {
   position: relative;
   margin: 0;
@@ -3430,6 +3932,75 @@ body.scp-page {
   box-shadow: inset 0 -1px 0 var(--sc-border);
 }
 
+/* The group row is the same <thead> as the filled column row, so it takes the
+   same fill — a white band of gold labels sitting on a navy bar reads as two
+   headers. The labels keep the gold, one step up the ramp. */
+.scp-table--filled .scp-group-row td {
+  padding-top: 8px;
+  background: var(--sc-navy);
+  color: var(--sc-gold-soft);
+}
+
+.scp-table--filled .scp-group-row td:not(.scp-group-pad) {
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/*
+ * Centred, every column.
+ *
+ * The shared table sets numbers right and the two naming columns left, which
+ * is the right default for a sheet a reader runs a total down. This one is
+ * read across a season at a time — eleven short, equal-width figures — and
+ * ragged alignment down the middle of it made the columns hard to follow. So
+ * the whole grid centres: the season, GP, the group labels over their spans,
+ * the body, and the Career line.
+ *
+ * Spelled out one selector per default it overrides, because each of those
+ * defaults is specific enough that a blanket `th, td` rule would not beat it.
+ */
+.scp-table--career th,
+.scp-table--career td,
+.scp-table--career .scp-group-row td,
+.scp-table--career thead th:first-child,
+.scp-table--career thead th:nth-child(2),
+.scp-table--career tbody th[scope="row"],
+.scp-table--career tbody td:nth-child(2),
+.scp-table--career tfoot th {
+  text-align: center;
+}
+
+/*
+ * Ruled, cell by cell.
+ *
+ * The shared table draws one hairline under each row and nothing between the
+ * columns, which is enough for a sheet of four or five. This one is twelve
+ * columns wide and read across, and with no vertical rule a reader tracking
+ * 2019's INT count had only the gap between two numbers to hold the line. So
+ * every cell gets all four edges and the table gets a frame around them.
+ *
+ * border-collapse is `collapse`, so neighbouring cells share one line — the
+ * grid is 1px throughout, not 2px everywhere but the outside.
+ */
+.scp-table--career {
+  border: 1px solid var(--sc-border);
+  /* Same reading as .scp-table--filled: the navy band is the top of the
+     table, so a grey hairline above it would read as a seam. */
+  border-top-color: var(--sc-navy);
+}
+
+.scp-table--career th,
+.scp-table--career td {
+  border: 1px solid var(--sc-border);
+}
+
+/* Both header rows are navy. A grey rule inside a navy band is a smudge, so
+   the header's own grid is drawn in white at the weight the group row already
+   used for its underline. */
+.scp-table--career thead th,
+.scp-table--career .scp-group-row td {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
 .scp-table--career thead th {
   padding-top: 8px;
 }
@@ -3557,13 +4128,20 @@ body.scp-page {
 }
 
 /*
- * The archive selector, under the fixtures.
+ * The archive selector, on the heading of what it opens.
  *
- * Labelled with where it goes — "More <player> game logs" — rather than with
- * what it changes. The pill row keeps the shape it had in the control bar; the
- * active season is never in it, and the chip the reader picked is lit, because
- * picking one now opens that season directly underneath instead of navigating
- * away from the one above.
+ * It used to be a section down here of its own — a rule across the page, an
+ * eyebrow reading "More <player> game logs", the pill row under it, and then
+ * the block those pills produced. Four stacked things for one question. The
+ * pills now ride the heading row of the block itself, which already names what
+ * is on screen ("Career by season", or the pinned year), so the label and the
+ * rule both go: the heading is the label, and the archive's gold left rule is
+ * already the boundary the horizontal one was drawing.
+ *
+ * The pill row keeps the shape it had in the control bar; the active season is
+ * never in it, and the chip the reader picked is lit, because picking one opens
+ * that season directly underneath instead of navigating away from the one
+ * above.
  *
  * "All" leads the row and is lit by default. It is what gives the row an
  * unselected state to show — before it, the block underneath was simply empty
@@ -3571,18 +4149,7 @@ body.scp-page {
  * career table, one line per season.
  */
 .scp-seasonnav {
-  margin: 34px 0 0;
-  padding-top: 20px;
-  border-top: 1px solid var(--sc-border);
-}
-
-.scp-seasonnav-label {
-  margin: 0 0 10px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
+  margin: 0;
 }
 
 .scp-seasonnav .scp-seasons {
@@ -3600,7 +4167,9 @@ body.scp-page {
  * names the year — or says "Career by season" — outright for the same reason.
  */
 .scp-archive {
-  margin: 20px 0 0;
+  /* 34px, not 20: the selector's own rule and margin used to open this gap and
+     they moved inside the block. */
+  margin: 34px 0 0;
   padding: 4px 0 18px 18px;
   border-left: 3px solid var(--sc-gold);
 }
@@ -3705,6 +4274,13 @@ body.scp-page {
 .scp-table--log th.scp-col-pts,
 .scp-table--log th.scp-col-fin {
   font-weight: 800;
+}
+
+/* FPTS is the column this table is built around and the only one in gold. On a
+   white row that is --sc-gold-ink; on the navy header it is the soft tint, for
+   the same reason at the other end of the ramp. */
+.scp-table--log.scp-table--filled thead th.scp-col-pts {
+  color: var(--sc-gold-soft);
 }
 
 /* The finish pill carries its own colour, so it only needs the room. */
@@ -4012,50 +4588,6 @@ body.scp-page {
   font-size: 11px;
   font-weight: 700;
   color: var(--sc-muted-strong);
-}
-
-/* ---- the draft block ---- */
-
-.scp-draft {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px 24px;
-  margin: 0 0 28px;
-  padding: 20px 24px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-.scp-draft-row {
-  min-width: 0;
-}
-
-.scp-draft-label {
-  margin: 0;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-draft-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 5px 0 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--sc-navy);
-}
-
-.scp-draft-logo {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
 }
 
 /* --------------------------------------------------------- upcoming games */
@@ -4621,14 +5153,13 @@ body.scp-page {
     display: none;
   }
 
-  .scp-hero {
-    padding: 20px;
-  }
+  /* The hero's own gutter is in the 560/460 tiers below, with the rest of its
+     topology, rather than split across three breakpoints. */
 
-  .scp-hero-rank {
-    padding-left: 0;
-    border-left: 0;
-    text-align: left;
+  /* No width left for a watermark to be subtle in — same call the production
+     grid makes below. */
+  .scp-hero-mark {
+    display: none;
   }
 
   .scp-section {
@@ -4666,6 +5197,142 @@ body.scp-page {
   .scp-finish-gp {
     grid-column: span 1;
     text-align: left;
+  }
+}
+
+/*
+ * ==========================================================================
+ * The hero's topology tiers.
+ * ==========================================================================
+ *
+ * Two breakpoints, and they answer exactly one question each: how many rows
+ * does this header have. Nothing inside a part is sized here — the sizes are
+ * the scale variables at the top of this file, and the client measures them.
+ * A breakpoint cannot know how long "Amon-Ra St. Brown" is.
+ *
+ * 560px  one row (bust · identity · numbers) becomes two: bust and identity
+ *        on the first, the numbers full width under them. This is the width
+ *        at which the measured squeeze has spent its last stage and the next
+ *        concession would be the name wrapping — so the row splits instead.
+ *
+ * 460px  two rows become one: the bust steps BEHIND the name rather than
+ *        beside it, and the identity takes the full width. It is still on the
+ *        page, at full opacity's fraction, doing what the team's mark does on
+ *        a wider screen. It does not disappear.
+ *
+ * Neither tier sets a scale variable. Down here the topology has already made
+ * the room the scales existed to find, and a squeezed part inside a stacked
+ * layout is just a small part for no reason.
+ */
+/*
+ * The name's size, once the fitter is live.
+ *
+ * `clamp(34px, 5.2vw, 52px)` below is the scriptless answer, and it is a
+ * guess: a viewport width cannot know that this row also holds a bust and a
+ * three-cell table. Where the measured answer exists it replaces the guess
+ * rather than compounding it — left as it was, the name shrank once for the
+ * viewport and again for `--scp-hero-id`, and a 640px screen set a hero
+ * surname at 27px.
+ *
+ * Scoped to the one-row tier, because that is the only tier the fitter runs
+ * in. Below it the scales are cleared and the clamp is the answer again.
+ */
+@media (min-width: 560px) {
+  .scp-hero[data-scp-hero-fit="js"] .scp-title-last {
+    font-size: calc(52px * var(--scp-hero-id, 1));
+  }
+
+  .scp-hero[data-scp-hero-fit="js"] .scp-title-rest {
+    font-size: calc(21px * var(--scp-hero-id, 1));
+  }
+}
+
+@media (max-width: 559.98px) {
+  .scp-hero {
+    padding: 20px 20px 0;
+  }
+
+  /* The figure keeps its own line-up with the identity beside it; what goes is
+     the 40px clearance, which was room for a name to start on its own and is
+     now room the row does not have. */
+  .scp-photo {
+    width: calc(204px * 0.72);
+    height: calc(148px * 0.72);
+    margin-left: 0;
+  }
+
+  /* Wrapping is the point of this tier: the numbers take their own line. */
+  .scp-hero-inner {
+    flex-wrap: wrap;
+  }
+
+  .scp-hero-text {
+    flex: 1 1 200px;
+    margin-left: 0;
+    padding-bottom: 18px;
+  }
+
+  /* Its own row, full width. `flex-basis: 100%` rather than letting it wrap on
+     its own: a strip that wraps only sometimes is a header that jumps. */
+  .scp-hero-stats {
+    flex: 1 1 100%;
+    width: 100%;
+    align-self: stretch;
+    margin-bottom: 20px;
+  }
+
+  .scp-hero-stats-season {
+    text-align: left;
+  }
+
+  /* Three equal cells across the full width, with the padding that fits them
+     — the one place a fixed figure is right, because the cells are sharing a
+     width the tier itself set. */
+  .scp-hero-stat {
+    flex: 1 1 0;
+    padding: 11px 8px;
+  }
+}
+
+@media (max-width: 459.98px) {
+  /*
+   * The bust, behind.
+   *
+   * Out of the flex row and onto the card's floor at the right, under the name
+   * and over the gradient. Anchored bottom-right because that is where it
+   * stood when it was in the row — the figure has not moved, the text has come
+   * across it. Not `display: none`: a header whose player has no face is a
+   * smaller page, not a better one.
+   */
+  .scp-photo {
+    position: absolute;
+    /*
+     * Top right, not bottom right.
+     *
+     * The numbers strip takes the full width of this tier and it is an opaque
+     * white card, so a figure on the floor is a figure behind a wall — all
+     * that showed was a sliver of jersey under the strip's corner, which
+     * reads as a rendering fault rather than as a player. The top right is
+     * the one part of this tier the text does not occupy: the name is left
+     * aligned and none of the four lines under it reaches the edge.
+     */
+    top: 0;
+    right: 0;
+    z-index: 0;
+    width: calc(204px * 0.62);
+    height: calc(148px * 0.62);
+    opacity: 0.16;
+  }
+
+  .scp-hero-text {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 100%;
+  }
+
+  .scp-hero-stats {
+    position: relative;
+    z-index: 1;
   }
 }
 
