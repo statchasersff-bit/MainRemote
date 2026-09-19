@@ -105,23 +105,51 @@ _Replace the heading above with the project's name, and this line with one sente
 - **Team hub link configuration.** `/team/:slug` links out to the real
   StatChasers tools, and every destination is an environment variable with a
   best-guess default that this server cannot verify — see the header of
-  `artifacts/api-server/src/lib/team/links.ts`. Only `SC_TEAM_HUB_URL_TEMPLATE`
-  and `SC_SOS_URL` have any evidence behind them. Check the rest against the
-  live site and correct them here; setting one to an empty string removes that
-  link everywhere rather than pointing it at a 404:
+  `artifacts/api-server/src/lib/team/links.ts`. Only `SC_TEAM_HUB_URL_TEMPLATE`,
+  `SC_SOS_URL`, `SC_TOOLS_URL` and `SC_PLAYER_STATS_URL` have any evidence
+  behind them — the last two were given by the site's owner. Check the rest
+  against the live site and correct them here; setting one to an empty string
+  removes that link everywhere rather than pointing it at a 404:
   `SC_SITE_ORIGIN` (default `https://statchasers.com`),
   `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE`,
-  `SC_TEAM_SCHEDULE_URL_TEMPLATE`, `SC_TEAM_PLAYERS_URL_TEMPLATE`,
-  `SC_PLAYER_PROFILE_URL_TEMPLATE` (empty by default — set it and every player
-  name on a team page becomes a link), `SC_SOS_URL`, `SC_FPA_URL`,
-  `SC_NEWS_URL`.
+  `SC_TEAM_SCHEDULE_URL_TEMPLATE`,
+  `SC_TOOLS_URL` (the "Explore StatChasers" tool index),
+  `SC_PLAYER_STATS_URL` (league-wide, not team-filtered — it replaced a
+  guessed `SC_TEAM_PLAYERS_URL_TEMPLATE`, which no longer exists),
+  `SC_PLAYER_PROFILE_URL_TEMPLATE` (default `/nfl/players/outlook/{player}/`;
+  `{player}` is filled from the player dictionary's own slug, NOT slugified
+  from the name — the site spells A.J. Brown `aj-brown` and slugify gives
+  `a-j-brown`. A name the dictionary does not index gets no link rather than
+  one to a page that may not exist; set this to an empty string to switch every
+  player link off), `SC_SOS_URL`, `SC_FPA_URL`, `SC_NEWS_URL`.
 - **Section-scoped team URLs.** `/team/:slug/<section>/` is the public
   address — one panel as the whole page: hero, that section, a strip of real
   resources — with a title, description,
   self-referencing canonical, `og:url` and FAQ written for that section alone.
   Public sections are `PUBLIC_SECTIONS` in `team-render.ts` (`outlook`,
-  `stats`, `schedule`, `depth-chart`); any other segment, including `news` and
-  case variants, is a true 404 so no path can mint a copy of the hub.
+  `stats`, `schedule`, `depth-chart`, `matchups`); any other segment, including
+  `news` and case variants, is a true 404 so no path can mint a copy of the
+  hub. Three tabs carry questions: Outlook, Stats and Depth Chart, built by
+  `team/outlook-faq.ts`, `team/stats-faq.ts` and `team/depth-faq.ts` — every
+  answer restates something its own tab printed. The depth chart's are present
+  tense and name no season, because a depth chart is the roster as it stands
+  rather than a claim about a year; the outlook's carry one for the opposite
+  reason, and that is what keeps "who is the starting running back" from
+  reading as the same question twice.
+
+  Both the chart and its FAQ read `sidelinedBehind()` (`team/roster.ts`) for
+  the players Sleeper has demoted out of view. Sleeper moves an injured player
+  down its own depth chart rather than removing him, so a genuine WR1 on IR
+  lands at WR6 and falls off the four-deep preview — the column then promotes
+  everyone behind him with nothing saying why. Those players are appended to
+  their column after the numbered rows, carrying their designation badge and no
+  slot number, and named in the answers above.
+
+  **`matchups` has a public URL but is not a tab** (`hubTab: false` on its
+  Section): it listed the same fixtures the Schedule tab does, and every
+  Schedule row now carries its own "View matchup" link, so carrying both was
+  the same list twice. The page still renders and is still indexed — it is just
+  no longer linked from the hub, which leaves it orphaned by design.
   `?section=<id>` is the internal spelling: `/embed/team/:slug?section=` is
   what the WordPress plugin fetches, and on `/team/:slug` it 301s to the pretty
   path (`news` alone renders scoped there, having no public address). Neither
@@ -218,11 +246,11 @@ _Replace the heading above with the project's name, and this line with one sente
   the deployment from the upstream feed. Start there when `/api/status` shows a
   403 whose body says "Just a moment...".
 - `wordpress-plugin/statchasers-news/` — the WordPress plugin that mounts all
-  five tools into a page: `statchasers-news.php` is the plugin and the news
+  six tools into a page: `statchasers-news.php` is the plugin and the news
   shortcode, `statchasers-team.php` the hubs, `statchasers-player.php` the player
   pages, `statchasers-fpa.php` the Fantasy Points Allowed table,
-  `statchasers-rankings.php` the redraft rankings. See
-  `wordpress-plugin/README.md`.
+  `statchasers-rankings.php` the redraft rankings, `statchasers-schedule.php` the
+  NFL schedule. See `wordpress-plugin/README.md`.
 
 ### NFL Team Hub (`/team/:slug`)
 
@@ -440,7 +468,7 @@ tinted cell prints its rank.
 ### Redraft Rankings (`/rankings`)
 
 The fifth tool, ported from the standalone `Redraft-Rankings-table` repo. The
-lightest of the five: the rankings are a CSV somebody publishes, so there is no
+lightest of them: the rankings are a CSV somebody publishes, so there is no
 ingest, no database and nothing to compute — the work is reading a file and
 deciding what the tiers are.
 
@@ -487,6 +515,73 @@ is a different group, so the tints are seven distinct hues at one lightness
 rather than a ramp. All of them sit near 95% lightness, which keeps the name at
 full contrast; the rank column and the tier column carry the same information in
 text, so nothing is encoded in colour alone.
+
+### NFL Schedule (`/schedule`)
+
+The sixth tool, ported from the standalone `nfl-schedule` repo. There the
+browser fetched a JSON season and React drew the board from it; here it is a
+server module and the board arrives as markup. The normalization boundary is
+unchanged, deliberately — nflverse publishes a compact machine feed, and
+normalizing once is what keeps the weekly board, the team lens and the season
+matrix from each growing their own special cases.
+
+It is the only tool here whose data can change while somebody is reading it,
+and most of what is distinctive about it follows from that.
+
+- `src/lib/schedule/schedule-data.ts` — the normalized slate, and **two
+  upstreams on two clocks**. nflverse (`nfldata/games.csv`) is authoritative for
+  who plays whom, where, and at what posted line; it barely moves, so it is
+  cached six hours. ESPN's public scoreboard supplies the live layer — TV
+  network and in-progress score — and is cached apart on a 30-second clock while
+  a game is live. ESPN is **best-effort in the strong sense**: a game whose
+  broadcast we cannot learn ships `network: null` and renders TBD, and a
+  scoreboard that refuses us entirely leaves the slate intact. That is not
+  hypothetical on this host, where ESPN's endpoints already 403 us.
+- **It does not invent a kickoff.** A flexed future week has an empty `gameday`
+  and `gametime` in the feed, and those stay null all the way to the renderer,
+  which prints TBD. Filling them with a plausible Sunday afternoon would make
+  the page confidently wrong about the one thing a schedule is for.
+- The bye week is **derived**, not read: it is not a row in the feed. Every team
+  playing 17 games and taking exactly one bye is what `tests/schedule.test.mjs`
+  asserts, because that is the assertion a normalization bug fails.
+- `src/lib/schedule-render.ts` / `schedule-ssr.ts` / `schedule-seo.ts` — markup,
+  fragment cache and head metadata. `public/schedule.html` is the shell,
+  `public/schedule.css` the stylesheet. The canonical always points at the bare
+  path, and that matters more here than anywhere else: view, week, team and
+  filter combine into several hundred URLs, every one of them a near-duplicate.
+  The description does vary by view, because the three views are genuinely about
+  different things.
+- `src/routes/schedule.ts` — `/schedule`, `/schedule/download.csv`,
+  `/schedule/schedule.ics` and `/embed/schedule`. Both exports are built from
+  the same `getSchedule` the page renders, so the file and the screen cannot
+  disagree — the standalone app generated its CSV from a second formatter in the
+  browser, which is how they drift.
+- `src/client/schedule.ts` — kickoffs relabelled into the reader's own time zone
+  (the server says ET because it has no idea where the reader is), the week
+  strip scrolled to where you are, and a team picker that submits itself. That
+  is all; the board is complete before it runs.
+- **Two test seams**, both also operationally useful. `SC_SCHEDULE_CSV_URL`
+  redirects the slate, which is how `tests/schedule.test.mjs` serves the real
+  2024 season from `tests/fixtures/` over loopback instead of asserting against
+  whatever nflverse published this morning. `SC_SCHEDULE_ESPN=0` drops the live
+  layer — worth setting on a host ESPN refuses, where eighteen doomed requests
+  per cold season are eighteen six-second timeouts spent learning nothing.
+- `SC_SCHEDULE_SEASON` pins the season, for the weeks either side of a new
+  league year when nflverse has published next season's slate and the site still
+  wants to show the one being played.
+
+**The visual design is deliberately this app's, not the source repo's.** The
+standalone tool is React + Tailwind + shadcn/ui (DM Sans, square cards, its own
+navy and gold); `public/schedule.css` is hand-written to match `team.css`,
+`player.css`, `fpa.css` and `rankings.css` instead, because six tools on one
+WordPress site should look like one site. What IS carried over verbatim is the
+tool's structure and its layout decisions — the three views, the When/Matchup/TV
+grid, the market coverage floor, and the centred sidebar cards.
+
+**The fragment answers 503, not an empty shell, when the feed is down.** That is
+what lets the WordPress plugin tell "down right now" from "nothing to show", and
+it caches the two very differently: the last good board is kept seven days,
+because a schedule a few hours stale is still almost entirely correct.
 
 ## Architecture decisions
 

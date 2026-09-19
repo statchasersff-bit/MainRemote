@@ -138,11 +138,19 @@ export function attachRanks(
 const oppRanksCache = new Map<string, Map<string, number>>();
 
 /**
- * How generous each defence is to each position, ranked 1 (stingiest) to 32.
+ * How generous each defence is to each position, ranked 1 (softest) to 32.
  *
  * Season-long points allowed per game to the position, which is the crude but
  * honest version of this number. It is used only to tint a matchup column; the
  * page never presents it as a projection.
+ *
+ * **Rank 1 allows the MOST.** Same direction as lib/fpa/fpa-data.ts, and for
+ * the same reason it gives: it is the industry convention, and it is what a
+ * reader looking for a matchup to attack expects at the top. It is also the
+ * only direction this number may have, because the player page prints it a few
+ * inches above the upcoming-games cards, which rank the same quantity from the
+ * FPA snapshots — two opposed scales on one tab is a rank column that means
+ * whichever thing the reader guessed.
  */
 export function buildOppRanks(
   season: number,
@@ -182,7 +190,8 @@ export function buildOppRanks(
 
   const ranks = new Map<string, number>();
   for (const [pos, teams] of byPosition) {
-    teams.sort((a, b) => a.avg - b.avg);
+    // Descending: most points allowed first, so rank 1 is the softest defence.
+    teams.sort((a, b) => b.avg - a.avg);
     teams.forEach((row, i) => ranks.set(`${row.team}:${pos}`, i + 1));
   }
 

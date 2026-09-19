@@ -26,6 +26,7 @@ import {
   careerHighs,
   careerStatRows,
   careerTotals,
+  seasonGames,
   statsFaq,
   type CareerHigh,
   type CareerStatRow,
@@ -589,11 +590,7 @@ function buildCareerProfile(
   const games = points.length;
   if (games === 0) return null;
 
-  // 17-game seasons from 2021, 16 before — the denominator for availability.
-  const maxGames = tiers.reduce(
-    (sum, t) => sum + (t.season >= 2021 ? 17 : 16),
-    0,
-  );
+  const maxGames = tiers.reduce((sum, t) => sum + seasonGames(t.season), 0);
 
   const total = points.reduce((a, b) => a + b, 0);
   const ppg = total / games;

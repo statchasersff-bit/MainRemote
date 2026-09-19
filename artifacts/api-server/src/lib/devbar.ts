@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -139,6 +139,17 @@ const TOOLS: Tool[] = [
       path.startsWith("/rankings") ||
       path.startsWith("/preview/rankings") ||
       path.startsWith("/preview/raw/rankings"),
+  },
+  {
+    key: "schedule",
+    label: "NFL Schedule",
+    shortLabel: "Schedule",
+    shortcode: "statchasers_schedule",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/schedule") ||
+      path.startsWith("/preview/schedule") ||
+      path.startsWith("/preview/raw/schedule"),
   },
 ];
 
@@ -257,6 +268,14 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/rankings";
     if (mount === "shortcode") return "/preview/rankings";
     return mount === "embed" ? "/rankings?embed=1" : "/rankings";
+  }
+
+  if (tool.key === "schedule") {
+    // One board, no subject — view, week, team and filter are the board's own
+    // controls, and which of them is set is not the bar's business.
+    if (mount === "fragment") return "/preview/raw/schedule";
+    if (mount === "shortcode") return "/preview/schedule";
+    return mount === "embed" ? "/schedule?embed=1" : "/schedule";
   }
 
   if (mount === "fragment") return "/preview/raw/news";

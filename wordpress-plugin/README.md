@@ -41,6 +41,7 @@ nothing is hidden behind a click.
    [statchasers_player]   an NFL player page
    [statchasers_fpa]      the Fantasy Points Allowed table
    [statchasers_rankings] the redraft rankings board
+   [statchasers_schedule] the NFL schedule
    ```
 
 ## The team hubs — `[statchasers_team]`
@@ -200,6 +201,11 @@ no data is absent, not padded.
 **Each team hub gains a Matchups section** at `/nfl/teams/<slug>/matchups/` —
 its next opponent up top and every scheduled game as a row with the result and
 a link to the pair's page. A divisional opponent is two rows and one page.
+
+The hub no longer carries it as a tab. It duplicated the Schedule tab, whose
+rows and upcoming cards each now carry their own "View matchup" link into the
+same pair pages. The rewrite, the sitemap entry and the page itself are
+unchanged — only the tab is gone.
 
 ### Server-side configuration
 
@@ -690,6 +696,91 @@ Colour is never the only encoding. Every tinted cell's row prints its rank, and
 the per-position tables print the tier in a column of its own, so nothing is
 lost to a colour-blind reader or to a monochrome print.
 
+## NFL schedule — `[statchasers_schedule]`
+
+One page, at `/nfl/nfl-schedule/`. It mounts the board the API serves at
+`/schedule`: the full regular season by week, a team lens showing one team's
+seventeen games and its bye, a 32-by-18 season grid, and CSV and calendar
+exports.
+
+| Attribute | Default | Meaning |
+|-----------|---------|---------|
+| `view`    | `week`  | `week`, `team` or `matrix`. |
+| `week`    | current | Pin a week, 1–18. Leave it off — see below. |
+| `team`    | none    | With `view="team"`, whose season to show. `NE`, `patriots` and `new-england-patriots` all resolve. |
+| `filter`  | `all`   | `all`, `division` or `international`. |
+| `season`  | current | Pin a season. Leave it off. |
+
+```
+[statchasers_schedule]
+[statchasers_schedule view="matrix"]
+[statchasers_schedule view="team" team="NE"]
+[statchasers_schedule week="12" filter="division"]
+```
+
+**Leave `week` off.** Unpinned, the board opens on the week the season is
+actually on — it reads the slate to decide, so it rolls forward by itself. A
+pinned week is a page that still says Week 1 in December.
+
+### What the reader sees that the server cannot render
+
+Two things, and both degrade cleanly with scripting off:
+
+- **Kickoffs in their own time zone.** The server labels every kickoff ET,
+  because that is the only honest thing it can do — it does not know where the
+  reader is. The bundle relabels them, and leaves them alone for a reader who is
+  already in Eastern.
+- **A team picker that submits itself.** With no JavaScript it is an ordinary
+  `<select>` and a Show button, and it works.
+
+Nothing else is client-side. Every matchup, date, kickoff, TV mark, bye,
+division game and posted line is in the HTML the server sent.
+
+### Live scores and how long a page is cached
+
+This is the only tool here whose data can change while somebody is reading it,
+so it is the only one that does not pick a cache TTL and live with it. The
+plugin reads `max-age` off the API's own response: **30 seconds** while a game
+is being played, **5 minutes** otherwise. The API is the side that knows which
+of those is true.
+
+The scores and TV networks come from ESPN's public scoreboard, which is
+best-effort by contract. A game whose broadcast cannot be learned renders as TBD
+and a scoreboard that refuses entirely leaves the slate intact — the schedule
+itself comes from nflverse and does not depend on it.
+
+### Server-side configuration
+
+```
+SC_SCHEDULE_PATH=/nfl/nfl-schedule/
+SC_SCHEDULE_SEASON=2026
+SC_SCHEDULE_ESPN=0
+```
+
+`SC_SCHEDULE_PATH` is the WordPress page's own path, so the board's week and
+team controls link back into your page rather than out to the bare tool. The
+CSV and calendar links are the exception and are always given the API's origin
+explicitly — WordPress has never heard of `/download.csv` under your page.
+
+`SC_SCHEDULE_SEASON` pins the season. Worth setting only in the weeks either
+side of a new league year, when nflverse has published next season's slate and
+the site still wants to show the one being played.
+
+`SC_SCHEDULE_ESPN=0` switches the live layer off. Set it on a host ESPN refuses:
+the board still renders, TV shows as TBD, and scores come from nflverse — hours
+behind, but never wrong.
+
+`SC_TEAM_PATH_PREFIX` matters here too: every team name on the board links to
+its hub.
+
+### If the feed is down
+
+The API answers `/embed/schedule` with a 503 rather than an empty shell,
+precisely so the plugin can tell "down right now" from "nothing to show". The
+last good board is kept for 7 days and served instead — a schedule a few hours
+stale is still almost entirely correct, which is not true of the other tools and
+is why this one falls back further.
+
 ## Caching
 
 - Rendered fragments are cached in a transient for 5 minutes — news, team hubs
@@ -698,10 +789,14 @@ lost to a colour-blind reader or to a monochrome print.
   flip-flops). The FPA table gets **15 minutes**: it is rebuilt by a weekly
   ingest, so a five-minute TTL would mean a hundred and twenty round trips a day
   to learn nothing had changed.
-  The rankings board gets **an hour**, the longest of the five, for the same
+  The rankings board gets **an hour**, the longest fixed TTL here, for the same
   reason taken further: a rankings file moves when somebody publishes one, which
   is a handful of times a season. `statchasers_news_flush()` clears it, which is
   the path an editor who has just published takes.
+  The schedule takes its TTL from the API's own `Cache-Control` — 30 seconds
+  while a game is live, 5 minutes otherwise, clamped to that range at both ends.
+  It is the one tool whose data changes while somebody is reading it, and a
+  fixed number would be wrong all season or wrong every Sunday.
 - The last successful render is kept for 24 hours and served if the API is slow
   or unreachable, so a hiccup shows stale news rather than an empty box. A team
   hub with no cached copy yet renders nothing rather than an empty shell: unlike

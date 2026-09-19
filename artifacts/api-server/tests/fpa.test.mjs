@@ -359,6 +359,45 @@ describe("the embedded fpa fragment", () => {
     );
   });
 
+  test("the answers fold, one per question, and the questions all show", async () => {
+    requireData();
+    const res = await get("/embed/fpa");
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+
+    // The block itself does not fold — the questions are the index, and
+    // somebody scanning for the one they arrived with has to see them without
+    // opening anything. Each ANSWER folds instead, which is what kept thirteen
+    // paragraphs from stacking up under the table. The question sits in the
+    // <summary>, so the outline is the same open or shut, and the answers stay
+    // in the DOM either way: a crawler reads the DOM, not the open state.
+    assert.equal(
+      doc.querySelector("details.scf-faq"),
+      null,
+      "the FAQ block itself is not a fold",
+    );
+
+    const title = doc.querySelector(".scf-faq-title");
+    assert.ok(title, "the FAQ keeps its title");
+    assert.equal(title.closest("summary"), null, "the title is not a summary");
+
+    const items = [...doc.querySelectorAll(".scf-faq .scf-faq-item")];
+    assert.ok(items.length > 0, "the FAQ has questions");
+    for (const item of items) {
+      assert.equal(item.tagName, "DETAILS", "each question is a fold");
+      assert.equal(item.hasAttribute("open"), false, "shut by default");
+
+      const summary = item.querySelector(":scope > summary.scf-faq-q-row");
+      assert.ok(summary, "the question is the summary");
+      const question = summary.querySelector(":scope > h3.scf-faq-q");
+      assert.ok(question?.textContent.trim(), "the question has text");
+
+      assert.ok(
+        item.querySelector(":scope > .scf-faq-a"),
+        "the answer is inside the fold",
+      );
+    }
+  });
+
   test("emits no canonical, title or robots directive", async () => {
     requireData();
     const res = await get("/embed/fpa");

@@ -130,22 +130,53 @@ describe("the page follows its state", () => {
     assert.match(title, phrase);
   });
 
-  test("the snapshot compares the two teams on the Stats tab's own rows", async () => {
+  test("the snapshot is one table: a team down each side, the metric between", async () => {
     const { doc } = await dom(CANON);
-    const tables = doc.querySelectorAll(".sct-mu-table");
-    if (tables.length === 0) return; // ESPN down for both: the block is absent, not faked.
-    for (const table of tables) {
-      const heads = [...table.querySelectorAll("thead th")].map((th) => th.textContent.trim());
-      assert.equal(heads.length, 3);
-      for (const row of table.querySelectorAll("tbody tr")) {
-        assert.equal(row.querySelectorAll("td").length, 2, "one value cell per side");
-      }
+    const block = doc.querySelector(".sct-mu-snapshot");
+    if (!block) return; // ESPN down for both: the block is absent, not faked.
+
+    // One table, not the three unit-vs-unit comparisons it replaced. Three
+    // printed the same figures twice and made the reader parse a caption
+    // before any number meant anything.
+    const tables = block.querySelectorAll(".sct-mu-table");
+    assert.equal(tables.length, 1, `snapshot drew ${tables.length} tables`);
+
+    // Each column is a TEAM, named by nickname alone — no "offense"/"defense"
+    // qualifier, because both halves of the ladder are in the same column.
+    const sides = [...tables[0].querySelectorAll(".sct-mu-cmp-side")].map((n) =>
+      n.textContent.trim(),
+    );
+    assert.equal(sides.length, 2);
+    for (const side of sides) assert.doesNotMatch(side, /offense|defense/i);
+
+    const labels = [...tables[0].querySelectorAll(".sct-mu-td-label")].map((n) =>
+      n.firstChild.textContent.trim(),
+    );
+    assert.deepEqual(labels, [
+      "Record",
+      "Pts/G",
+      "Yds/G",
+      "Yds/Play",
+      "Pts/G Allowed",
+      "Yds/G Allowed",
+    ]);
+
+    for (const row of tables[0].querySelectorAll("tbody tr")) {
+      assert.equal(row.querySelectorAll("td").length, 2, "one value cell per side");
     }
+    const heads = [...tables[0].querySelectorAll("thead th")].map((th) => th.textContent.trim());
+    assert.equal(heads.length, 3);
+
+    // The record is a figure, not a ranked metric: no rank chip on that row.
+    const first = tables[0].querySelector("tbody tr");
+    assert.equal(first.querySelectorAll(".sct-stat-rank").length, 0, "record is not ranked");
   });
 
   test("the head-to-head record agrees with the meetings listed", async () => {
     const { doc } = await dom(CANON);
-    const line = doc.querySelector(".sct-mu-h2h-line")?.textContent.trim();
+    // The record is a figure now, not a sentence: the tally carries the
+    // numbers and ".sct-mu-h2h-who" names who holds them.
+    const line = doc.querySelector(".sct-mu-h2h-tally")?.textContent.trim();
     const rows = [...doc.querySelectorAll(".sct-mu-meetings .sct-mu-result:not(.is-pending)")];
     if (!line) {
       assert.equal(rows.length, 0, "no record line means no completed meetings");
@@ -238,5 +269,124 @@ describe("the WordPress fragment", () => {
     assert.ok(!/<h1\b/i.test(res.body), "the host page owns the H1");
     assert.ok(!/<link\b/i.test(res.body) && !/<script\b/i.test(res.body), "no assets of its own");
     assert.match(res.body, /data-matchup=/);
+  });
+});
+
+/**
+ * Game Leaders.
+ *
+ * Built from the per-week game logs, so what these assert is the three things
+ * the derivation cannot guarantee on its own: that a completed game finds its
+ * leaders, that a category nobody produced in is absent rather than zeroed, and
+ * that a game with no result carries no leaders block at all.
+ */
+describe("game leaders", () => {
+  const PLAYED = "/nfl/new-england-patriots-vs-seattle-seahawks/";
+
+  test("a completed game names who led it", async () => {
+    const { doc } = await dom(PLAYED);
+    const block = doc.querySelector(".sct-mu-leaders");
+    assert.ok(block, "a played matchup carries a leaders block");
+
+    const cards = [...block.querySelectorAll(".sct-mu-leader")];
+    assert.ok(cards.length > 0 && cards.length <= 4, `got ${cards.length} cards`);
+
+    const labels = cards.map((c) =>
+      c.querySelector(".sct-mu-leader-label").textContent.trim(),
+    );
+    // Only the four, only once each, and in the order the markup sets.
+    assert.deepEqual(
+      labels,
+      ["Passing", "Rushing", "Receiving", "Fantasy"].filter((l) =>
+        labels.includes(l),
+      ),
+    );
+
+    for (const card of cards) {
+      const name = card.querySelector(".sct-mu-leader-name");
+      assert.ok(name?.textContent.trim(), "a leader is a name");
+      // The same profile link every other player name on the site gets.
+      if (name.tagName === "A") {
+        assert.match(name.getAttribute("href"), /\/nfl\/players\//);
+      }
+      const value = card.querySelector(".sct-mu-leader-value").textContent.trim();
+      // A leader who led with nothing is not a leader — see best() in
+      // leaders.ts, which gates every category above zero.
+      assert.ok(Number(value) > 0, `${value} is not a leading figure`);
+      assert.ok(card.querySelector(".sct-mu-leader-unit").textContent.trim());
+    }
+  });
+
+  test("a game with no result carries no leaders", async () => {
+    // Whichever pair the fixture list has as upcoming; if every pair this
+    // season is played, the assertion below is vacuous and says so.
+    const { doc } = await dom(CANON);
+    const state = doc
+      .querySelector("[data-matchup-state]")
+      ?.getAttribute("data-matchup-state");
+    if (state !== "upcoming") return;
+    assert.equal(
+      doc.querySelector(".sct-mu-leaders"),
+      null,
+      "an unplayed game has no leaders to name",
+    );
+  });
+});
+
+describe("fantasy matchups", () => {
+  test("each defense is rated by position, once, with its scale stated", async () => {
+    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
+    const block = doc.querySelector(".sct-mu-fantasy");
+    if (!block) return; // No FPA ingest in this environment; nothing to check.
+
+    const labels = [...block.querySelectorAll(".sct-mu-td-label")].map((n) =>
+      n.textContent.trim(),
+    );
+    assert.deepEqual(labels, ["QB", "RB", "WR", "TE"]);
+
+    // The two sides are named once, in the caption, not on every row.
+    const sides = [...block.querySelectorAll(".sct-mu-cmp-side")].map((n) =>
+      n.textContent.trim(),
+    );
+    assert.equal(sides.length, 2, `named ${sides.length} times`);
+    for (const side of sides) assert.match(side, /defense$/);
+
+    // The bar means the opposite of the Snapshot's, so the block has to say so.
+    const note = block.querySelector(".sct-note")?.textContent ?? "";
+    assert.match(note, /allows the most/i, "the rank direction is stated");
+    assert.match(note, /softer defense/i, "the bar direction is stated");
+  });
+
+  test("a team's colour is the same everywhere on the page", async () => {
+    // Several pairings share a primary — Patriots and Seahawks are both
+    // #002244 — and a team that changes colour between two tables is worse
+    // than no colour at all.
+    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
+    // The Snapshot is one table now, so the comparison that matters is across
+    // BLOCKS — Snapshot against Fantasy Matchups — rather than within one.
+    const tables = [...doc.querySelectorAll(".sct-mu-table[style]")];
+    assert.ok(tables.length >= 1, "at least one comparison on the page");
+
+    const seen = new Map();
+    for (const table of tables) {
+      const style = table.getAttribute("style");
+      const left = /--mu-cmp-left:\s*([^;"]+)/.exec(style)?.[1]?.trim();
+      const right = /--mu-cmp-right:\s*([^;"]+)/.exec(style)?.[1]?.trim();
+      assert.ok(left && right, style);
+      assert.notEqual(left, right, "the two sides must be told apart");
+      for (const [side, color] of [["a", left], ["b", right]]) {
+        const name = table
+          .querySelector(`.sct-mu-cmp-side[data-side="${side}"]`)
+          ?.textContent.trim()
+          .split(" ")[0];
+        if (!name) continue;
+        if (seen.has(name)) {
+          assert.equal(seen.get(name), color, `${name} changed colour`);
+        } else {
+          seen.set(name, color);
+        }
+      }
+    }
+    assert.ok(seen.size >= 2, "both teams appeared");
   });
 });

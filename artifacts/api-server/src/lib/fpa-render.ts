@@ -60,9 +60,32 @@ const FORMAT_LABELS: Record<ScoringFormat, string> = {
   ppr: "PPR",
 };
 
+/*
+ * Shorter stand-ins for the narrowest screens. Only the two that are long
+ * enough to matter differ; PPR is already as short as it gets, so it has no
+ * entry and renders as itself either way.
+ */
+const FORMAT_ABBR: Partial<Record<ScoringFormat, string>> = {
+  standard: "Std",
+  half: "Half",
+};
+
+/*
+ * The controls name the two things by the names the rest of the page uses for
+ * them — FPA and aFPA — rather than describing them. "Raw" and "Adjusted"
+ * describe a treatment; the page, the FAQ and the column headers all talk about
+ * FPA and aFPA, and a reader who has met those two acronyms should find them on
+ * the switch that produces them.
+ */
 const VIEW_LABELS: Record<FpaView, string> = {
-  raw: "Raw",
-  adjusted: "Adjusted",
+  raw: "FPA",
+  adjusted: "aFPA",
+};
+
+/* The same two in prose, for sentences an acronym would read badly in. */
+const VIEW_NAMES: Record<FpaView, string> = {
+  raw: "raw",
+  adjusted: "adjusted",
 };
 
 function styleAttr(parts: Array<string | null | false>): string {
@@ -128,12 +151,31 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
     return query ? `${base}?${query}` : base;
   };
 
+  /*
+   * An option's text, with its narrow-screen stand-in beside it when it has
+   * one. Both are in the markup and CSS shows one — but with display:none, not
+   * clipping, so the hidden one leaves the accessibility tree too and a screen
+   * reader never reads "Standard Std".
+   */
+  const optionText = (text: string, abbr?: string): string =>
+    abbr && abbr !== text
+      ? `<span class="scf-opt-full">${escapeHtml(text)}</span>` +
+        `<span class="scf-opt-abbr">${escapeHtml(abbr)}</span>`
+      : escapeHtml(text);
+
   const group = (
     label: string,
-    items: { href: string; text: string; title: string; active: boolean }[],
+    items: {
+      href: string;
+      text: string;
+      abbr?: string;
+      title: string;
+      active: boolean;
+    }[],
   ): string =>
     `<div class="scf-control">` +
     `<span class="scf-control-label">${escapeHtml(label)}</span>` +
+    `<div class="scf-opts">` +
     items
       .map(
         (item) =>
@@ -141,15 +183,17 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
           ` href="${escapeHtml(item.href)}"` +
           ` title="${escapeHtml(item.title)}"` +
           (item.active ? ` aria-current="true"` : ` rel="nofollow"`) +
-          `>${escapeHtml(item.text)}</a>`,
+          `>${optionText(item.text, item.abbr)}</a>`,
       )
       .join("") +
+    `</div>` +
     `</div>`;
 
   const formats = (["standard", "half", "ppr"] as ScoringFormat[]).map(
     (format) => ({
       href: url(format, data.view),
       text: FORMAT_LABELS[format],
+      abbr: FORMAT_ABBR[format],
       title: `Recompute every figure in ${FORMAT_LABELS[format]} scoring`,
       active: format === data.format,
     }),
@@ -167,8 +211,13 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
 
   return (
     `<div class="scf-controls">` +
+    // The two groups are one unit: they are a single choice made twice, and
+    // splitting them across rows reads as two unrelated widgets. The wrapper
+    // refuses to wrap, and the abbreviations are what pays instead.
+    `<div class="scf-control-set">` +
     group("Scoring", formats) +
     group("View", views) +
+    `</div>` +
     `<a class="scf-csv" href="${escapeHtml(
       `${base}/download.csv?format=${data.format}&view=${data.view}`,
     )}" rel="nofollow" download>Download CSV</a>` +
@@ -277,7 +326,7 @@ function renderTable(data: FpaTableData, options: FpaRenderOptions): string {
     `<table class="scf-table" data-scf-table>` +
     `<caption class="scf-caption">${escapeHtml(
       `Fantasy points allowed per game by all 32 NFL defenses, ` +
-        `${FORMAT_LABELS[data.format]} scoring, ${VIEW_LABELS[data.view].toLowerCase()} view. ` +
+        `${FORMAT_LABELS[data.format]} scoring, ${VIEW_NAMES[data.view]} view. ` +
         `Rank 1 is the most points allowed, i.e. the softest matchup.`,
     )}</caption>` +
     `<thead>${head}</thead>` +
@@ -407,22 +456,26 @@ const FAQ: readonly (readonly [string, string])[] = [
 ] as const;
 
 function renderFaq(): string {
+  // One fold per question, not one around the lot. The questions are the index
+  // — somebody scanning for the one they arrived with has to see them without
+  // opening anything — while thirteen ANSWERS below the table is the wall this
+  // fold exists to prevent. So the questions show and the answers are shut.
+  // Indexed either way: a crawler reads the DOM, not the open state.
   const items = FAQ.map(
     ([question, answer]) =>
+      `<details class="scf-faq-item">` +
+      `<summary class="scf-faq-q-row">` +
       `<h3 class="scf-faq-q">${escapeHtml(question)}</h3>` +
-      `<p class="scf-faq-a">${escapeHtml(answer)}</p>`,
+      `</summary>` +
+      `<p class="scf-faq-a">${escapeHtml(answer)}</p>` +
+      `</details>`,
   ).join("");
 
-  // Collapsed. The questions are indexed either way — a crawler reads the DOM,
-  // not the open state — but thirteen answers below the table is a wall for
-  // someone who came to read the table.
   return (
-    `<details class="scf-faq">` +
-    `<summary class="scf-faq-summary">` +
+    `<section class="scf-faq">` +
     `<h2 class="scf-faq-title">Fantasy Points Allowed FAQ</h2>` +
-    `</summary>` +
     `<div class="scf-faq-body">${items}</div>` +
-    `</details>`
+    `</section>`
   );
 }
 

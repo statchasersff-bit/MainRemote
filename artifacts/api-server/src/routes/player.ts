@@ -46,6 +46,8 @@ function isEmbed(req: Request): boolean {
 /** This origin's own player path — the prefix used when nothing overrides it. */
 const PLAYER_PATH_PREFIX = "/player/";
 const TEAM_PATH_PREFIX = "/team/";
+const MATCHUP_PATH_PREFIX = "/nfl/";
+const FPA_PATH = "/fpa";
 
 /**
  * Query string carried onto internal links.
@@ -316,6 +318,15 @@ router.get("/embed/player/:slug", (req, res) => {
     const teamPrefix = (
       process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX
     ).trim();
+    // The same variable routes/fpa.ts reads, so the two tools agree on where
+    // the points-allowed page lives once it is mounted on WordPress.
+    const fpaPath = (process.env["SC_FPA_PATH"] ?? FPA_PATH).trim();
+    // And the same one routes/team.ts and routes/matchup.ts read, so a "View
+    // matchup" button on a player card lands on the same page the team hub's
+    // schedule sends a reader to.
+    const matchupPrefix = (
+      process.env["SC_MATCHUP_PATH_PREFIX"] ?? MATCHUP_PATH_PREFIX
+    ).trim();
 
     try {
       const result = await renderPlayerFragment(
@@ -324,6 +335,8 @@ router.get("/embed/player/:slug", (req, res) => {
           embed: true,
           playerPathPrefix: playerPrefix,
           teamPathPrefix: teamPrefix,
+          matchupPathPrefix: matchupPrefix,
+          fpaPath,
           linkQuery: fragmentLinkQuery(playerPrefix),
           section: section(req),
         },

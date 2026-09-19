@@ -10,6 +10,7 @@ import { matchupRouter } from "./routes/matchup";
 import playerRouter from "./routes/player";
 import fpaRouter from "./routes/fpa";
 import rankingsRouter from "./routes/rankings";
+import scheduleRouter from "./routes/schedule";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -87,6 +88,11 @@ app.use(fpaRouter);
 // Redraft Rankings: /rankings, /rankings/download.csv and the /embed/rankings
 // fragment. Mounted alongside the other tools, for the same reason.
 app.use(rankingsRouter);
+
+// NFL Schedule: /schedule, /schedule/download.csv, /schedule/schedule.ics and
+// the /embed/schedule fragment. Mounted alongside the other tools, for the same
+// reason.
+app.use(scheduleRouter);
 
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
@@ -201,7 +207,8 @@ app.use((req, res) => {
     ` &middot; <a href="/team">Go to the team hubs</a>` +
     ` &middot; <a href="/player">Go to the player pages</a>` +
     ` &middot; <a href="/fpa">Go to fantasy points allowed</a>` +
-    ` &middot; <a href="/rankings">Go to the redraft rankings</a></p>` +
+    ` &middot; <a href="/rankings">Go to the redraft rankings</a>` +
+    ` &middot; <a href="/schedule">Go to the NFL schedule</a></p>` +
     `</body></html>`;
   res
     .status(404)

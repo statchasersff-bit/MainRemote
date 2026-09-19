@@ -152,42 +152,59 @@ body.scf-page {
 
 .scf-controls {
   display: flex;
-  align-items: center;
+  /* Bottom, not centre: the groups are now two rows tall, and the CSV link
+     belongs on the line the pills sit on. */
+  align-items: flex-end;
   gap: 12px 20px;
   flex-wrap: wrap;
   margin-top: 20px;
 }
 
+/*
+ * Scoring and View, held together.
+ *
+ * `nowrap` is the whole point: these two are one decision made twice, and a
+ * layout that drops View onto its own line reads as two unrelated widgets
+ * rather than one control. Below the width that holds both, the option labels
+ * shorten instead — see the abbreviations further down.
+ */
+.scf-control-set {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+/* Label stacked over its pills, so each group says what is being chosen. */
 .scf-control {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/*
+ * The heading the group never had. A row of links with no fieldset left both
+ * sighted readers and screen readers to infer "Standard, Half-PPR, PPR" was a
+ * scoring choice; printing the word says it once, quietly.
+ */
+.scf-control-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scf-opts {
   display: inline-flex;
   align-items: center;
   gap: 2px;
   padding: 3px;
-  position: relative;
   border: 1px solid var(--sc-border);
   border-radius: 999px;
   /* Tinted, not white: on a white page a white pill is only its border. */
   background: var(--sc-surface-sink);
-}
-
-/*
- * "Scoring" and "View" are not printed — the options say what they are, and two
- * words of chrome in front of them earned less than the room they took.
- *
- * Clipped rather than deleted. The group is a row of links with no heading and
- * no fieldset, so without this a screen reader meets "Standard, Half-PPR, PPR"
- * with nothing saying what is being chosen. Clipping keeps that sentence for
- * anyone who needs it and costs the layout nothing.
- */
-.scf-control-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .scf-opt {
@@ -202,6 +219,13 @@ body.scf-page {
 .scf-opt.is-active {
   background: var(--sc-navy);
   color: #fff;
+}
+
+/* Wide by default: the full word shows and the abbreviation is not rendered at
+   all, so it is out of the accessibility tree as well as off the screen. The
+   400px container query below swaps which one that is. */
+.scf-opt-abbr {
+  display: none;
 }
 
 .scf-csv {
@@ -227,14 +251,9 @@ body.scf-page {
   max-width: 78ch;
 }
 
-.scf-faq-summary {
-  cursor: pointer;
-}
-
-/* Inline, so the disclosure marker sits beside the title rather than above it.
-   It is still an <h2> — the outline does not change with the open state. */
+/* Still an <h2>: the outline does not change, and the title is no longer a
+   click target because the block itself does not fold. */
 .scf-faq-title {
-  display: inline;
   margin: 0;
   font-size: 18px;
   font-weight: 800;
@@ -246,15 +265,52 @@ body.scf-page {
   margin-top: 4px;
 }
 
+/* One question, one fold, shut by default. The native marker is replaced with
+   a chevron of our own so it sits on the question's first line rather than
+   outside the heading's box. */
+.scf-faq-item {
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scf-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scf-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+.scf-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 4px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.scf-faq-item[open] > .scf-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
 .scf-faq-q {
-  margin: 22px 0 0;
+  margin: 0;
   font-size: 14px;
   font-weight: 800;
   color: var(--sc-navy);
 }
 
+/* Indented to the question's text rather than to the chevron. */
 .scf-faq-a {
-  margin: 6px 0 0;
+  margin: 0 0 14px 17px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--sc-muted-strong);
@@ -628,10 +684,10 @@ body.scf-page {
   /*
    * The CSV link goes rather than wrapping.
    *
-   * The controls row needs ~493px to hold both filter groups and the link on
-   * one line — 493 rather than the 621 it took before the labels came off — so
-   * this is where the link would start wrapping, and a lone button on a row of
-   * its own reads as a layout accident rather than a choice.
+   * The controls row needs ~471px to hold both filter groups and the link on
+   * one line — down from 621 when the option labels were long — so this is
+   * where the link would start wrapping, and a lone button on a row of its own
+   * reads as a layout accident rather than a choice.
    *
    * The file itself is not gone: /fpa/download.csv still serves it, with the
    * same format and view the page is on. What goes is the affordance, on the
@@ -639,6 +695,32 @@ body.scf-page {
    */
   .scf-csv {
     display: none;
+  }
+}
+
+/*
+ * Narrow: the scoring options shorten to Std / Half / PPR.
+ *
+ * The controls row wants ~372px to hold both groups on one line — the two
+ * labels above the pills cost no width, but "Standard" and "Half-PPR" do. 400px
+ * is that figure on the same ~8% headroom the thresholds below carry, so the
+ * swap happens a little before the row would break rather than at the moment it
+ * does. Abbreviated, the pair wants ~305px, which clears the narrowest screen
+ * this page supports.
+ *
+ * Shortening the words rather than letting the row wrap is the trade on
+ * purpose: Std and Half are still the same three options in the same order in
+ * the same place, whereas View dropping to a second line changes what the
+ * control looks like it is. The full word stays in each link's title, and the
+ * View options are already short enough to be left alone.
+ */
+@container scf (max-width: 400px) {
+  .scf-opt-full {
+    display: none;
+  }
+
+  .scf-opt-abbr {
+    display: inline;
   }
 }
 
@@ -661,6 +743,23 @@ body.scf-page {
   .scf-th-games {
     display: none;
   }
+
+  /*
+   * Below this the abbreviated row is close enough to the container that the
+   * gutters come in with it, the same trade the table made at 540px. Refusing
+   * to wrap means the set cannot pay any other way, and a controls row that
+   * overflows would put a horizontal scrollbar on the whole page rather than
+   * just the table.
+   */
+  .scf-control-set {
+    gap: 12px;
+  }
+
+  .scf-opt {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
 }
 
 /* The same rules for anything that cannot do container queries. The viewport is
@@ -701,10 +800,29 @@ body.scf-page {
     }
   }
 
+  @media (max-width: 400px) {
+    .scf-opt-full {
+      display: none;
+    }
+
+    .scf-opt-abbr {
+      display: inline;
+    }
+  }
+
   @media (max-width: 360px) {
     .scf-games,
     .scf-th-games {
       display: none;
+    }
+
+    .scf-control-set {
+      gap: 12px;
+    }
+
+    .scf-opt {
+      padding-left: 10px;
+      padding-right: 10px;
     }
   }
 }

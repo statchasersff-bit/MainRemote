@@ -167,6 +167,36 @@ export function isOutDesignation(status: string | null | undefined): boolean {
 }
 
 /**
+ * Designated players at a position who are NOT on the chart shown.
+ *
+ * The gap this fills: Sleeper demotes an injured player on its depth chart, so
+ * a genuine WR1 on IR sits at WR6 and falls off a four-deep preview entirely —
+ * the chart then shows somebody else first with nothing saying why, which reads
+ * as a wrong chart to anyone who knows the roster. See INJURY_RANK_LIMIT below,
+ * which exists for the same reason.
+ *
+ * `injuries` is Injury Watch's list rather than the raw roster because it is
+ * already filtered to players worth naming: a WR7's hamstring did not move the
+ * WR1 slot and does not belong under the chart.
+ *
+ * Shared by the chart and its FAQ so the two cannot disagree about who is
+ * missing — they are the same claim in two registers.
+ */
+export function sidelinedBehind(
+  injuries: readonly DepthChartEntry[],
+  position: SkillPosition,
+  shown: readonly DepthChartEntry[],
+): DepthChartEntry[] {
+  const visible = new Set(shown.map((entry) => entry.name));
+  return injuries.filter(
+    (entry) =>
+      entry.position === position &&
+      isOutDesignation(entry.injuryStatus) &&
+      !visible.has(entry.name),
+  );
+}
+
+/**
  * Rebuild the index from a freshly fetched dictionary.
  *
  * Called by lib/teams.ts with the payload it already has in hand, so this costs

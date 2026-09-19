@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/scripts/dev-restart-if-stale.sh\"",
+            "timeout": 120,
+            "statusMessage": "Refreshing Replit preview..."
+          }
+        ]
+      }
+    ]
+  }
+}

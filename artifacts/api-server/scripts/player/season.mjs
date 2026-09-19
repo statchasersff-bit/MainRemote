@@ -27,8 +27,17 @@ export function currentSeason(now = new Date()) {
   return now.getUTCMonth() >= 2 ? year : year - 1;
 }
 
-/** The first season this app carries data for. */
-export const FIRST_SEASON = 2023;
+/**
+ * The first season this app carries data for.
+ *
+ * 2009, which is where `player_production.json` starts. It was 2023 — where
+ * the game logs happened to start — and that gap was visible on the page: the
+ * Stats tab's career table counted eleven seasons off production while the
+ * weekly rates beneath it counted four off the logs, and called both "career".
+ * The logs were backfilled to meet production, and this is the line that says
+ * the two now agree.
+ */
+export const FIRST_SEASON = 2009;
 
 /** Every season from the first to the current one, oldest first. */
 export function allSeasons(now = new Date()) {
@@ -42,9 +51,10 @@ export function allSeasons(now = new Date()) {
  * The seasons named on the command line, or all of them.
  *
  * `node scripts/player/buildGameLogs.js 2026` rebuilds one year and leaves the
- * other three files untouched, which matters because they are committed: a
- * full rebuild rewrites four megabytes of JSON to re-derive numbers that have
- * not changed since the season ended.
+ * rest untouched, which matters more now than it did: the files are committed
+ * and there are eighteen of them, so a no-argument run refetches three hundred
+ * weeks and rewrites nineteen megabytes of JSON to re-derive numbers that have
+ * not changed since 2009.
  */
 export function seasonsFromArgs(argv = process.argv.slice(2), now = new Date()) {
   const named = argv

@@ -75,3 +75,10 @@ artifacts/api-server/.test-bundle-*/
 # files that scripts/player/outlookPrep.js regenerates and outlookMerge.js folds
 # into data/player/fantasy_outlook_2026.json. Intermediates, not data.
 artifacts/api-server/data/player/.outlook_parts/
+
+# Detached dev-server log from scripts/dev-restart.sh, which restarts whatever
+# serves the Replit preview after a src/ edit. Runtime output, not source.
+artifacts/api-server/dev-server.log
+
+# Lock file guarding scripts/dev-restart.sh against overlapping runs.
+artifacts/api-server/.dev-restart.lock

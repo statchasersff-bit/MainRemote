@@ -87,6 +87,22 @@ async function dom(pathname) {
   return { ...res, doc: new JSDOM(res.body).window.document };
 }
 
+/**
+ * A tab's questions live in its tail, which renders after the tools block — NOT
+ * inside the panel. Scoping to "#outlook" finds nothing.
+ */
+const tailOf = (id) => `[data-sct-faq-for="${id}"]`;
+
+/** Every question/answer pair on the page, or inside one scope. */
+function faqEntries(doc, scope = "") {
+  const prefix = scope ? `${scope} ` : "";
+  return [...doc.querySelectorAll(`${prefix}.sct-faq-item`)].map((item) => ({
+    question: item.querySelector(".sct-faq-q")?.textContent?.trim() ?? "",
+    answer: item.querySelector(".sct-faq-a")?.textContent?.trim() ?? "",
+  }));
+}
+
+
 describe("team routes", () => {
   test("the canonical slug serves the hub", async () => {
     const { doc } = await dom("/team/new-england-patriots");
@@ -246,6 +262,215 @@ describe("embedded mode", () => {
     assert.equal(bySlug.body, res.body);
   });
 
+  test("player names link to the site's own slug, not one derived from the name", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const links = [...doc.querySelectorAll("a.sct-player-link")];
+    assert.ok(links.length > 0, "player names are linked");
+
+    const byName = new Map(
+      links.map((a) => [a.textContent.trim(), a.getAttribute("href")]),
+    );
+    // The whole reason this goes through the player dictionary rather than
+    // slugify(): the site spells him "aj-brown", and deriving the slug from
+    // the name gives "a-j-brown" and a 404.
+    const brown = byName.get("A.J. Brown");
+    assert.ok(brown, "A.J. Brown is on the Patriots page and linked");
+    assert.match(brown, /\/nfl\/players\/outlook\/aj-brown\/$/);
+
+    for (const href of byName.values()) {
+      assert.match(href, /^https?:\/\//, "absolute, for the WordPress mount");
+      // A slug the dictionary supplied, never a name pushed through a slugifier
+      // — the giveaway is the single letters a dotted initial leaves behind.
+      const slug = href.split("/outlook/")[1]?.replace(/\/$/, "") ?? "";
+      assert.ok(slug, `no slug in ${href}`);
+      assert.ok(
+        !/(^|-)[a-z](-|$)/.test(slug),
+        `${slug} looks slugified from the name, not looked up`,
+      );
+    }
+  });
+
+  test("a player the site publishes no profile for stays plain text", async () => {
+    // The rule the empty template used to enforce wholesale, now enforced per
+    // name: the dictionary indexes ~600 players and carries ~4,000, so a name
+    // it does not index gets no link rather than a link to a page that is not
+    // there.
+    const { doc } = await dom("/team/new-england-patriots");
+    const unlinked = [...doc.querySelectorAll("span.sct-injury-name")];
+    const linked = [...doc.querySelectorAll("a.sct-injury-name")];
+    assert.ok(
+      unlinked.length + linked.length > 0,
+      "this test needs an injury list to be meaningful",
+    );
+    for (const span of unlinked) {
+      assert.equal(span.tagName, "SPAN");
+      assert.equal(span.querySelector("a"), null, "no link inside either");
+    }
+  });
+
+  test("the Schedule tab links every game to its pair page, so Matchups need not", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    // The Matchups tab was the same fixture list a second time. It came off the
+    // strip on the condition that Schedule carries the links it existed for, so
+    // that is what this asserts: every row that names a resolvable opponent
+    // offers the pair page, and the upcoming cards do too.
+    const rows = [...doc.querySelectorAll("#schedule .sct-srow:not(.is-bye)")];
+    assert.ok(rows.length > 0, "the schedule rendered rows");
+    for (const row of rows) {
+      const cell = row.querySelector(".sct-srow-view");
+      assert.ok(cell, "every row carries the cell, so the grid keeps its shape");
+      // An opponent with no canonical pair leaves the cell empty rather than
+      // dropping it; anything else is a link.
+      if (cell.tagName === "A") {
+        assert.match(cell.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
+        assert.equal(cell.textContent.trim().startsWith("View matchup"), true);
+      }
+    }
+    const linked = rows.filter((r) => r.querySelector("a.sct-srow-view"));
+    assert.ok(linked.length > 0, "at least some rows link to a pair page");
+
+    const cards = [...doc.querySelectorAll("#schedule .sct-game")];
+    assert.ok(cards.length > 0, "the upcoming cards rendered");
+    for (const card of cards) {
+      const cta = card.querySelector(".sct-game-cta a");
+      assert.ok(cta, "an upcoming card offers its matchup");
+      assert.match(cta.getAttribute("href"), /\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\//);
+    }
+  });
+
+  test("Matchups is off the tab strip but keeps its own URL", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const labels = [...doc.querySelectorAll(".sct-nav-link")].map((a) =>
+      a.textContent.trim(),
+    );
+    assert.ok(labels.length > 0, "the tab strip rendered");
+    assert.ok(!labels.includes("Matchups"), `Matchups still a tab: ${labels}`);
+    assert.equal(doc.querySelector("#matchups"), null, "and no panel for it");
+    // Still a section, though — dropping it from the strip must not take the
+    // public page with it. (matchup.test.mjs covers what that page contains.)
+    const page = await get("/team/new-england-patriots/matchups/");
+    assert.equal(page.status, 200, "the section page still renders");
+  });
+
+  test("only the long team names carry an abbreviation, and only to the eye", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const cells = [...doc.querySelectorAll("#schedule .sct-srow-name")];
+    assert.ok(cells.length > 0, "the schedule rendered opponent names");
+
+    let abbreviated = 0;
+    for (const cell of cells) {
+      const long = cell.querySelector(".sct-srow-name-long");
+      const brief = cell.querySelector(".sct-srow-name-brief");
+      if (!brief) {
+        // A name that always fits is one text node, not a pair of spans.
+        assert.equal(long, null, `${cell.textContent}: half a pair`);
+        assert.ok(cell.textContent.trim().length < 8, cell.textContent);
+        continue;
+      }
+      abbreviated += 1;
+      assert.ok(long, "the full spelling is carried alongside the code");
+      assert.ok(long.textContent.trim().length >= 8, "only the long ones");
+      // The code is decorative: the row's accessible name stays the real one,
+      // so a screen reader never reads "SEA" as the team.
+      assert.equal(brief.getAttribute("aria-hidden"), "true");
+      assert.equal(long.hasAttribute("aria-hidden"), false);
+      assert.ok(
+        brief.textContent.trim().length < long.textContent.trim().length,
+        "an abbreviation that is not shorter is not worth having",
+      );
+    }
+    assert.ok(abbreviated > 0, "this test needs a long-named opponent");
+  });
+
+  test("a designated player Sleeper demoted is still on the chart, outside the order", async () => {
+    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
+    const out = [...doc.querySelectorAll(".sct-depth-row.is-out")];
+    if (out.length === 0) return; // Nobody relevant is out for this team today.
+
+    for (const row of out) {
+      const name = row.querySelector(".sct-depth-name-long, .sct-depth-name");
+      assert.ok(name?.textContent.trim(), "an out row still names the player");
+      // No slot chip: Sleeper's number for an injured player is the demoted
+      // one, and "WR6" beside a receiver who is the WR1 when fit is the claim
+      // the row exists to correct.
+      assert.equal(
+        row.querySelector(".sct-slot-chip"),
+        null,
+        "an out row carries no slot number",
+      );
+      assert.ok(
+        row.querySelector(".sct-injury-badge"),
+        "an out row says what is wrong",
+      );
+    }
+
+    // The numbered rows keep a clean 1..n, with the out rows after them.
+    for (const col of doc.querySelectorAll(".sct-depth-col")) {
+      const rows = [...col.querySelectorAll(".sct-depth-row")];
+      const firstOut = rows.findIndex((r) => r.classList.contains("is-out"));
+      if (firstOut === -1) continue;
+      assert.ok(
+        rows.slice(firstOut).every((r) => r.classList.contains("is-out")),
+        "out rows sit after the running order, not inside it",
+      );
+      // The count above the column describes the rows under it.
+      const shown = col.querySelector(".sct-depth-count").textContent.trim();
+      assert.equal(Number.parseInt(shown, 10), rows.length);
+    }
+  });
+
+  test("the depth chart FAQ names the players the chart above it lists", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const scope = '[data-sct-faq-for="depth-chart"]';
+    const entries = faqEntries(doc, scope);
+    assert.ok(entries.length >= 5, `expected a depth FAQ, got ${entries.length}`);
+
+    for (const entry of entries) {
+      assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
+      assert.match(entry.answer, /[.!?]$/, `unpunctuated: ${entry.answer}`);
+      // Present tense throughout: a depth chart is not scoped to a season, and
+      // an answer claiming one would be a claim a trade can falsify.
+      assert.ok(
+        !/\b(19|20)\d{2}\b/.test(entry.answer),
+        `a depth chart answer should not name a season: ${entry.answer}`,
+      );
+    }
+
+    // Every name in an answer is a name the chart itself rendered — this is the
+    // one thing deriving the FAQ is supposed to guarantee.
+    const charted = new Set(
+      [...doc.querySelectorAll("#depth-chart .sct-depth-name-long, #depth-chart .sct-depth-name")]
+        .map((n) => n.textContent.trim())
+        .filter(Boolean),
+    );
+    assert.ok(charted.size > 0, "the chart rendered names to check against");
+    // Sleeper demotes an injured player on the depth chart, so a genuine WR1 on
+    // IR falls off the four-deep preview and the chart correctly shows someone
+    // else first. The answer has to say why, or it reads as a wrong answer to
+    // anyone who knows the roster.
+    const charted2 = [...doc.querySelectorAll("#depth-chart .sct-depth-name-long, #depth-chart .sct-depth-name")]
+      .map((n) => n.textContent.trim());
+    const outNames = [...doc.querySelectorAll(".sct-injury-name")]
+      .map((n) => n.textContent.trim())
+      .filter((n) => n && !charted2.includes(n));
+    if (outNames.length) {
+      const mentioned = entries.some((e) =>
+        outNames.some((who) => e.answer.includes(who)),
+      );
+      assert.ok(
+        mentioned,
+        `a designated player off the chart (${outNames[0]}) goes unmentioned`,
+      );
+    }
+
+    const starter = entries.find((e) => /starting quarterback\?$/.test(e.question));
+    assert.ok(starter, "the FAQ answers who the starting quarterback is");
+    assert.ok(
+      [...charted].some((name) => starter.answer.includes(name)),
+      `the QB answer names nobody on the chart: ${starter.answer}`,
+    );
+  });
+
   test("links into StatChasers break out of the frame", async () => {
     const { doc } = await dom("/team/new-england-patriots?embed=1");
     const resources = [...doc.querySelectorAll(".sct-resource-link")];
@@ -269,17 +494,10 @@ describe("embedded mode", () => {
  * however many tabs carry questions.
  */
 describe("tab FAQs", () => {
-  function faqEntries(doc, scope = "") {
-    const prefix = scope ? `${scope} ` : "";
-    return [...doc.querySelectorAll(`${prefix}.sct-faq-item`)].map((item) => ({
-      question: item.querySelector(".sct-faq-q")?.textContent?.trim() ?? "",
-      answer: item.querySelector(".sct-faq-a")?.textContent?.trim() ?? "",
-    }));
-  }
 
   test("the outlook carries questions answered in full sentences", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    const entries = faqEntries(doc, "#outlook");
+    const entries = faqEntries(doc, tailOf("outlook"));
     assert.ok(entries.length >= 5, `expected an FAQ, got ${entries.length} items`);
     for (const entry of entries) {
       assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
@@ -295,7 +513,7 @@ describe("tab FAQs", () => {
 
   test("the Stats tab answers from its own numbers", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    const entries = faqEntries(doc, "#stats");
+    const entries = faqEntries(doc, tailOf("stats"));
     assert.ok(entries.length >= 4, `expected a stats FAQ, got ${entries.length}`);
 
     // The point of deriving these: every figure quoted must be one the tab
@@ -315,7 +533,7 @@ describe("tab FAQs", () => {
 
   test("the Stats FAQ says how many games it is built on", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    const entries = faqEntries(doc, "#stats");
+    const entries = faqEntries(doc, tailOf("stats"));
     // A per-game rate with no denominator is the one way this block can
     // mislead, and early in a season it is the whole story.
     // Case-insensitive: the window is a leading clause in some answers and a
@@ -330,58 +548,96 @@ describe("tab FAQs", () => {
     );
   });
 
-  test("the questions sit under their section, not in one of their own", async () => {
+  test("the questions stay their own tab's, and one level under their heading", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    // A question has to be one level under whatever introduces it, and the two
-    // FAQs sit at different depths. On Outlook the block is a band closing the
-    // outlook's <h2>, so its questions are <h4> beside the player names; on
-    // Stats there is nothing to belong to, so the block takes an <h2> of its own
-    // and its questions are <h3>. Hard-coding one level for both filed the
-    // Stats questions in the outline under "Season History", which is neither
-    // where they are nor what they are about.
-    for (const [id, tag] of [
-      ["#outlook", "H4"],
-      ["#stats", "H3"],
-    ]) {
-      const questions = doc.querySelectorAll(`${id} .sct-faq-item`);
+    // The questions render after the "Explore StatChasers" block rather than
+    // inside their panel, but they are still a tab's questions, not a shared
+    // FAQ: each tail carries exactly one block, and the tail names the panel it
+    // belongs to. Both take an <h2> and put their questions at <h3>, because
+    // the tool list they follow is an <h2> — a deeper heading would file them
+    // in the outline under the tool list, which is neither where they are nor
+    // what they are about.
+    for (const id of ["outlook", "stats", "depth-chart"]) {
+      const scope = `[data-sct-faq-for="${id}"]`;
+      const questions = doc.querySelectorAll(`${scope} .sct-faq-item`);
       assert.ok(questions.length > 0, `${id} must carry questions`);
       for (const item of questions) {
-        assert.equal(item.querySelector(".sct-faq-q").tagName, tag);
+        assert.equal(item.querySelector(".sct-faq-q").tagName, "H3");
       }
-    }
-    for (const id of ["#outlook", "#stats"]) {
       assert.equal(
-        doc.querySelectorAll(`${id} .sct-faq`).length,
+        doc.querySelectorAll(`${scope} .sct-faq`).length,
         1,
-        `one FAQ block on ${id}`,
+        `one FAQ block on the ${id} tail`,
+      );
+      // Out of the panel, and after the tools block it now follows.
+      assert.equal(
+        doc.querySelector(`#${id} .sct-faq`),
+        null,
+        `${id}: the questions left the panel`,
+      );
+      // querySelectorAll returns document order, so the tool list coming back
+      // first is the assertion.
+      const order = [...doc.querySelectorAll(`#resources, ${scope}`)];
+      assert.equal(order.length, 2, `${id}: both blocks on the page`);
+      assert.equal(
+        order[0].id,
+        "resources",
+        `${id}: the questions come after the tools block`,
       );
     }
   });
 
-  test("the questions are folded shut by default, heading outside the fold", async () => {
-    // A <details> with no `open`, so the page loads with the heading showing
-    // and the answers hidden. The heading has to sit in the <summary> — it is
-    // the thing a reader clicks, and it is what keeps the outline identical
-    // whether the fold is open or not. The questions themselves stay in the
-    // DOM: the FAQPage node above is only honest if they are on the page.
+  test("the answers fold, one per question, and the questions all show", async () => {
+    // The block itself does not fold — the questions are the index, so a reader
+    // scanning for the one they arrived with sees all of them without opening
+    // anything. Each question is its own <details> with no `open`, and the
+    // question sits in the <summary>: it is the thing a reader clicks, and it
+    // keeps the outline identical whether the answer is open or not. The
+    // answers stay in the DOM: the FAQPage node above is only honest if they
+    // are on the page.
     const { doc } = await dom("/team/new-england-patriots");
     for (const [id, tag] of [
-      ["#outlook", "H3"],
-      ["#stats", "H2"],
+      ['[data-sct-faq-for="outlook"]', "H3"],
+      ['[data-sct-faq-for="stats"]', "H3"],
+      ['[data-sct-faq-for="depth-chart"]', "H3"],
     ]) {
-      const fold = doc.querySelector(`${id} details.sct-faq-fold`);
-      assert.ok(fold, `${id}: the FAQ is a <details>`);
-      assert.equal(fold.hasAttribute("open"), false, `${id}: shut by default`);
+      assert.equal(
+        doc.querySelector(`${id} details.sct-faq-fold`),
+        null,
+        `${id}: the block itself is not a fold`,
+      );
 
-      const summary = fold.querySelector(":scope > summary.sct-faq-summary");
-      assert.ok(summary, `${id}: has a summary`);
-      const heading = summary.querySelector(":scope > *");
-      assert.equal(heading.tagName, tag, `${id}: the heading is the summary`);
-      assert.equal(heading.textContent.trim(), "Common questions");
+      const items = doc.querySelectorAll(`${id} .sct-faq .sct-faq-item`);
+      assert.ok(items.length > 0, `${id} must carry questions`);
+      for (const item of items) {
+        assert.equal(item.tagName, "DETAILS", `${id}: each question is a fold`);
+        assert.equal(item.hasAttribute("open"), false, `${id}: shut by default`);
 
-      assert.ok(
-        fold.querySelector(":scope > .sct-faq .sct-faq-item"),
-        `${id}: the questions are inside the fold`,
+        const summary = item.querySelector(":scope > summary.sct-faq-q-row");
+        assert.ok(summary, `${id}: the question is the summary`);
+        const heading = summary.querySelector(":scope > .sct-faq-q");
+        assert.equal(heading.tagName, tag);
+        assert.ok(heading.textContent.trim(), `${id}: the question has text`);
+
+        const answer = item.querySelector(":scope > .sct-faq-a");
+        assert.ok(answer, `${id}: the answer is inside the fold`);
+      }
+    }
+
+    // The heading above the block stays on the page, unwrapped.
+    for (const [id, selector] of [
+      ['[data-sct-faq-for="outlook"]', ".sct-h2"],
+      ['[data-sct-faq-for="stats"]', ".sct-h2"],
+      ['[data-sct-faq-for="depth-chart"]', ".sct-h2"],
+    ]) {
+      const headings = [...doc.querySelectorAll(`${id} ${selector}`)].filter(
+        (node) => node.textContent.trim() === "Common questions",
+      );
+      assert.equal(headings.length, 1, `${id}: one "Common questions" heading`);
+      assert.equal(
+        headings[0].closest("summary"),
+        null,
+        `${id}: the heading is not a summary`,
       );
     }
   });
@@ -390,7 +646,7 @@ describe("tab FAQs", () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc);
     assert.ok(
-      faqEntries(doc, "#outlook").length > 0 && faqEntries(doc, "#stats").length > 0,
+      faqEntries(doc, tailOf("outlook")).length > 0 && faqEntries(doc, tailOf("stats")).length > 0,
       "this test is only meaningful with both tabs carrying questions",
     );
 
@@ -456,7 +712,7 @@ describe("tab FAQs", () => {
     for (const slug of ["buffalo-bills", "cincinnati-bengals", "baltimore-ravens"]) {
       const { doc } = await dom(`/team/${slug}`);
       const hasOutlook = !!doc.querySelector("#outlook .sct-outlook-player");
-      const entries = faqEntries(doc, "#outlook");
+      const entries = faqEntries(doc, tailOf("outlook"));
       if (hasOutlook) {
         assert.ok(entries.length > 0, `${slug} has an outlook but no FAQ`);
       } else {
@@ -578,6 +834,32 @@ describe("mobile layout", () => {
    * heading underneath the sticky bar. Worst on a phone, where the bar is a
    * larger share of the screen.
    */
+  /**
+   * A media query carries no specificity of its own, so a base rule further
+   * down the file beats the query that was meant to override it. That is how
+   * the team name vanished from the schedule rows in the squeeze band: the
+   * full spelling was hidden there and the abbreviation, held back by a
+   * `display: none` written later in the file, never took its place.
+   */
+  test("the schedule row always shows a team name at every width", async () => {
+    const css = await get("/team.css");
+    assert.equal(css.status, 200);
+
+    const base = css.body.indexOf(".sct-srow-name-brief {");
+    const query = css.body.indexOf("@media (min-width: 901px) and (max-width: 1080px)");
+    assert.ok(base > 0, "the abbreviation has a base rule");
+    assert.ok(query > 0, "the squeeze band has a media query");
+    assert.ok(
+      base < query,
+      "the base rule must precede the query that flips it, or neither name shows",
+    );
+
+    // And inside the band, exactly one of the pair is taken out of flow.
+    const block = css.body.slice(query, css.body.indexOf("\n}", query));
+    assert.match(block, /\.sct-srow-name-long\s*\{[^}]*position:\s*absolute/);
+    assert.match(block, /\.sct-srow-name-brief\s*\{[^}]*display:\s*inline/);
+  });
+
   test("sections clear the sticky nav when linked to", async () => {
     const css = await get("/team.css");
     assert.match(
@@ -665,6 +947,8 @@ describe("shortcode preview harness", () => {
       `/preview/raw/player/${playerSlug}`,
       "/preview/fpa",
       "/preview/raw/fpa",
+      "/preview/schedule",
+      "/preview/raw/schedule",
     ]) {
       const res = await get(route);
       assert.equal(res.status, 404, `${route} must not exist outside development`);
@@ -1037,7 +1321,7 @@ describe("team section URLs", () => {
     assert.equal(scoped.length, 1, "the outlook page carries its own FAQPage");
     assert.deepEqual(
       scoped[0].mainEntity.map((q) => q.name),
-      [...outlook.doc.querySelectorAll("#outlook .sct-faq-q")].map((q) =>
+      [...outlook.doc.querySelectorAll(`${tailOf("outlook")} .sct-faq-q`)].map((q) =>
         q.textContent.trim(),
       ),
     );

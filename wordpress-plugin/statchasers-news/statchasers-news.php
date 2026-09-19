@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the redraft rankings and the NFL schedule directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
  * Version:           1.6.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
@@ -38,21 +38,22 @@ const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 
-// The other four tools' shortcodes. Required after the constants above and
+// The other tools' shortcodes. Required after the constants above and
 // before any hook registration, because they reuse this file's origin,
 // asset-version and canonical helpers — all of which are function declarations
 // and so are available regardless of order, but the constants are not.
 //
-// The team file must come FIRST. The player, FPA and rankings files each reuse
-// its Divi detection and full-width stylesheet rather than carrying a fourth
-// copy, and while function declarations hoist within a file they do not hoist
-// across an include that has not run yet.
+// The team file must come FIRST. The player, FPA, rankings and schedule files
+// each reuse its Divi detection and full-width stylesheet rather than carrying
+// a copy apiece, and while function declarations hoist within a file they do
+// not hoist across an include that has not run yet.
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
 require_once __DIR__ . '/statchasers-matchup.php';
 require_once __DIR__ . '/statchasers-player.php';
 require_once __DIR__ . '/statchasers-fpa.php';
 require_once __DIR__ . '/statchasers-rankings.php';
+require_once __DIR__ . '/statchasers-schedule.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -683,5 +684,6 @@ function statchasers_news_flush(): void {
 	statchasers_player_flush();
 	statchasers_fpa_flush();
 	statchasers_rankings_flush();
+	statchasers_schedule_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
