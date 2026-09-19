@@ -144,6 +144,9 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // The plugin reads these to write the title for the state the page is in.
         .set("X-Matchup-State", result.state)
         .set("X-Matchup-Season", String(result.season))
+        // The score, for the postgame description the plugin mirrors. Empty
+        // header rather than an absent one so the plugin reads one shape.
+        .set("X-Matchup-Score", result.scoreLine)
         .type("html")
         .send(result.html);
     } catch (err) {

@@ -20,7 +20,10 @@ import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-da
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
 import type { MatchupPair } from "./pair";
-import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
+import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
+import { getGameBoxscore, type GameBoxscore } from "./boxscore";
+import { buildGameStats, type GameStats } from "./game-stats";
+import { getFpaDelta, type FpaDelta } from "./fpa-delta";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
 
@@ -28,6 +31,8 @@ export type MatchupState = "upcoming" | "recently_completed" | "historical";
 export interface Meeting {
   season: number;
   week: number;
+  /** ESPN's id for the game, which the box score is keyed by. Often null. */
+  espnEventId: string | null;
   kickoffMs: number | null;
   timeConfirmed: boolean;
   home: NflTeam;
@@ -88,6 +93,18 @@ export interface MatchupData {
   b: TeamPageData;
   /** What each defense gives up by position, for the Fantasy Matchups block. */
   fpa: MatchupFpa | null;
+  /**
+   * The featured game's box score, when it is final and ESPN answers.
+   *
+   * Null is the ordinary case, not an error: a meeting before the schedule
+   * carried an event id, a game not yet played, an upstream that refused. Every
+   * block built on it renders only when it is here.
+   */
+  boxscore: GameBoxscore | null;
+  /** Who played in the featured game and what it meant. Null pregame. */
+  gameStats: GameStats | null;
+  /** What the featured game did to both defenses' FPA ranks. Null pregame. */
+  fpaDelta: FpaDelta | null;
   /** Latest fetch stamp across the history schedules, for the cache key. */
   historyFetchedAt: number;
 }
@@ -121,6 +138,7 @@ function meetingFrom(game: ScheduleGame, season: number, a: NflTeam, b: NflTeam)
   return {
     season,
     week: game.week,
+    espnEventId: game.espnEventId,
     kickoffMs: game.kickoffMs,
     timeConfirmed: game.timeConfirmed,
     home,
@@ -248,6 +266,37 @@ export async function getMatchupData(
       }
     : null;
 
+  // Everything below is about the featured game and exists only once it has
+  // been played. Each piece is allowed to fail on its own, in the same way the
+  // history schedules and the FPA table above are: a postgame block that cannot
+  // be built is a block the page does not draw, never a page that does not
+  // render.
+  const isFinal = featured?.status === "final";
+  const boxscore = isFinal ? await getGameBoxscore(featured.espnEventId) : null;
+
+  // The takeaways flag a player who is on the CURRENT injury report, which is
+  // the one thing on a postgame page that is about next week. Keyed by the
+  // Sleeper id both sides of the join already use.
+  const injured = new Map<string, string>();
+  if (isFinal) {
+    for (const side of [a, b]) {
+      for (const player of side.injuries) {
+        if (player.id && player.injuryStatus) injured.set(player.id, player.injuryStatus);
+      }
+    }
+  }
+
+  const gameStats = isFinal ? buildGameStats(featured, injured) : null;
+
+  const fpaDelta =
+    isFinal && featured.season === (fpaTable?.season ?? state.season)
+      ? await getFpaDelta(
+          featured.season,
+          featured.week,
+          parseFpaFormat(fpaTable?.format),
+        ).catch(() => null)
+      : null;
+
   return {
     pair,
     state,
@@ -259,6 +308,9 @@ export async function getMatchupData(
     a,
     b,
     fpa,
+    boxscore,
+    gameStats,
+    fpaDelta,
     historyFetchedAt: prior.reduce((max, s) => Math.max(max, s?.fetchedAt ?? 0), 0),
   };
 }
@@ -271,5 +323,12 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     dataVersion(data.b, contentVersion),
     data.historyFetchedAt,
     data.matchupState,
+    // The postgame layer is keyed by the game it describes and by whether each
+    // piece resolved: an ESPN refusal that later succeeds has to redraw the
+    // page, and a cached fragment from the refusal would otherwise outlive it.
+    data.featured?.espnEventId ?? "",
+    data.boxscore ? "box" : "",
+    data.gameStats ? "stats" : "",
+    data.fpaDelta ? "delta" : "",
   ].join("|");
 }

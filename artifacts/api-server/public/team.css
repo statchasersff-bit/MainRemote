@@ -51,6 +51,17 @@
   --sc-gold-soft: #f2d36b;
   --sc-gold-deep: #a87905;
 
+  /* The skill positions, colour-coded wherever a position is named: the depth
+     chart's slot chips, the outlook cards, and the matchup page's stat tables
+     and leader cards. Defined once because three of those had the same four
+     hex values written out separately, which is how a fifth place ends up a
+     shade off. Chosen to hold their own against white at small sizes — the
+     gold is the deep one, not the brand gold, which is unreadable this small. */
+  --sct-pos-qb: #99323a;
+  --sct-pos-rb: #0f6b4f;
+  --sct-pos-wr: #1d4e8c;
+  --sct-pos-te: #a87905;
+
   /* Neutrals */
   --sc-muted: #64748b;
   --sc-muted-strong: #475569;
@@ -326,10 +337,24 @@ body.sct-page.is-embed {
 
 /* ------------------------------------------------------------------- hero */
 
-/* One dark surface on the page, and only one: the hero. It is what makes the
-   top half read as the most important part without anything below it having to
-   compete, and it is StatChasers navy rather than the team's colour — the team
-   appears on it as an aura and a watermark.
+/* The hero is a light card, in the same vocabulary as the player page's
+   (.scp-hero in player.css): the soft-to-sunk gradient, an outline rather than
+   a shadow, the team's colours entering as a hairline along the top edge, an
+   aura behind the crest and an almost invisible watermark. The page is one
+   light surface from the hero down.
+
+   It used to be the page's single dark panel — StatChasers navy, white text.
+   The navy made the top of the page shout, and it made the hub the only tool
+   on the site whose header did: the player page, which is the page most
+   visitors arrive on next, has read this way for a while. This is the team
+   hub joining it rather than a new idea.
+
+   What the change costs, and where that cost is paid: every piece of text in
+   here used to be white or a white at some opacity, which is a contrast ratio
+   that comes free. On a light ground each one has to be chosen — see the
+   colours on .sct-eyebrow, .sct-fact-label and .sct-hero-updated, all of which
+   are darker than the white-alpha they replaced rather than the same grey at a
+   different lightness.
 
    Note the absence of `overflow: hidden`; the clip lives one level in, on
    .sct-hero-decor, so that the team switcher's panel is not clipped with it. */
@@ -344,14 +369,17 @@ body.sct-page.is-embed {
      from the rounded corner. */
   padding: 18px 32px;
   border-radius: var(--sc-radius);
-  background:
-    radial-gradient(
-      120% 140% at 12% 0%,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0) 55%
-    ),
-    linear-gradient(160deg, var(--sc-navy) 0%, var(--sc-navy-deep) 100%);
-  color: #fff;
+  /* An outline, not a drop shadow. The hero sits at the top of the page with
+     nothing above it to cast onto, and on a WordPress page it sits directly
+     under the host's heading — a shadow there reads as a second card the theme
+     did not draw. The player hero is bordered for the same reason. */
+  border: 1px solid var(--sc-border);
+  background: linear-gradient(
+    180deg,
+    var(--sc-surface-soft) 0%,
+    var(--sc-surface-sink) 100%
+  );
+  color: var(--sc-ink);
 }
 
 /* Everything decorative on the hero lives in this layer, and this layer is what
@@ -385,11 +413,16 @@ body.sct-page.is-embed {
     var(--team-secondary, var(--sc-gold-soft)) 45%,
     var(--sc-gold) 100%
   );
-  opacity: 0.9;
 }
 
 /* Team-coloured aura behind the crest. Low opacity and heavily blurred: it
-   should be felt rather than seen, and it must never fight the white text. */
+   should be felt rather than seen, and it must never fight the text.
+
+   Much fainter than it was on navy, and blurred harder. A wash that read as a
+   glow against a dark ground reads as a stain against a near-white one, and
+   the colours it is painted in are not ours to moderate — several clubs are
+   pure black or a saturated red. At this weight the strongest of the 32 is a
+   tint under the crest and the quietest is still visible. */
 .sct-hero-aura {
   position: absolute;
   top: -60px;
@@ -400,17 +433,36 @@ body.sct-page.is-embed {
   background: radial-gradient(
     circle,
     var(--team-primary, #1e3a6b) 0%,
-    rgba(0, 0, 0, 0) 68%
+    rgba(255, 255, 255, 0) 68%
   );
-  opacity: 0.42;
-  filter: blur(10px);
+  opacity: 0.14;
+  filter: blur(16px);
   pointer-events: none;
 }
 
 /* Oversized crest on the far right, at the opacity of a watermark. It sits
    inside the right edge rather than bleeding past it — a mark cropped by the
    hero reads as a mistake at this opacity, where a whole one reads as a
-   watermark. */
+   watermark.
+
+   On its weight, and why that is not normalised across the league: a mark
+   drawn in the club's own colours lands differently on every one of the 32
+   pages, and on a light ground the spread is visible — the Bills' blue
+   buffalo is a whisper where the Raiders' black shield is a picture. On navy
+   it was the same problem upside down, with the dark marks disappearing, and
+   it was never worth solving.
+
+   The obvious fix does not work. Masking — the crest supplies the shape, this
+   file supplies one ink — is right in principle and cannot be done here: a
+   mask image must be CORS-clean, these crests come from a CDN that sends no
+   CORS headers, and a mask that fails to load does not fall back, it paints
+   NOTHING. The hero loses its watermark on all 32 teams while the CSS goes on
+   looking correct. If it ever has to be one ink, the crests have to be served
+   from this origin first.
+
+   So the weight is tuned for the heaviest mark rather than the average one:
+   4%, a shade under the 4.5–5% the rest of the site's watermarks carry, which
+   is where a black crest stops competing with the switcher above it. */
 .sct-hero-watermark {
   position: absolute;
   top: 50%;
@@ -422,7 +474,7 @@ body.sct-page.is-embed {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.06;
+  opacity: 0.04;
   pointer-events: none;
 }
 
@@ -433,10 +485,12 @@ body.sct-page.is-embed {
   gap: 24px;
 }
 
-/* A light disc under the crest. Team marks are drawn for light backgrounds —
-   several are black or near-black — so putting them straight onto navy would
-   make a handful of the 32 pages unreadable. The plate makes every logo read
-   the same way, and doubles as the object the aura sits behind. */
+/* A white disc under the crest. It survived the hero going light, and it is
+   not decoration: the plate is a hair brighter than the gradient behind it, so
+   every one of the 32 marks — several of which are black, several near-white —
+   is read against the same ground rather than against whatever the card's
+   gradient is doing at that point. It doubles as the object the aura sits
+   behind. */
 .sct-hero-crest {
   display: grid;
   place-items: center;
@@ -446,10 +500,10 @@ body.sct-page.is-embed {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: linear-gradient(180deg, #fff 0%, #eef2f8 100%);
+  background: linear-gradient(180deg, #fff 0%, #f4f7fb 100%);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.16),
-    0 10px 28px rgba(0, 0, 0, 0.35);
+    0 0 0 1px var(--sc-hairline),
+    0 8px 22px rgba(15, 23, 42, 0.1);
 }
 
 .sct-hero-logo {
@@ -463,10 +517,14 @@ body.sct-page.is-embed {
    gaps between them and in their own leading rather than in their type sizes.
    Line height is set explicitly on each: they inherit 1.55 from .sct, which is
    a reading measure and far too loose for a single line of 11px caps. */
+/* Not gold. The eyebrow was --sc-gold-soft on navy, and its light counterpart
+   would be --sc-gold-deep — which is 3.9:1 on this gradient and therefore
+   under AA for 11px text. The gold stays on the page as the hairline above it,
+   where nobody has to read it. */
 .sct-eyebrow {
   margin: 0 0 4px;
   line-height: 1.3;
-  color: var(--sc-gold-soft);
+  color: var(--sc-muted-strong);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -480,13 +538,13 @@ body.sct-page.is-embed {
   line-height: 1.08;
   font-weight: 900;
   letter-spacing: -0.025em;
-  color: #fff;
+  color: var(--sc-navy);
 }
 
 .sct-subtitle {
   margin: 4px 0 0;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--sc-muted);
   font-size: 0.92rem;
   font-weight: 500;
 }
@@ -506,13 +564,17 @@ body.sct-page.is-embed {
   gap: 1px;
   padding: 5px 14px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* White on the gradient rather than a tint of it: the chips are the only
+     things in the hero being compared with each other, and they need an edge
+     and a floor of their own to read as five of one object. Same construction
+     as the player hero's season strip. */
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
 }
 
 .sct-fact-label {
   line-height: 1.3;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--sc-muted);
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -521,7 +583,7 @@ body.sct-page.is-embed {
 
 .sct-fact-value {
   line-height: 1.3;
-  color: #fff;
+  color: var(--sc-navy);
   font-size: 0.94rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -530,7 +592,7 @@ body.sct-page.is-embed {
 .sct-hero-updated {
   margin: 7px 0 0;
   line-height: 1.3;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--sc-muted);
   font-size: 0.74rem;
   font-weight: 600;
 }
@@ -556,9 +618,11 @@ body.sct-page.is-embed {
   min-height: 44px;
   padding: 9px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  /* A control on the hero, so it follows it: an outlined white pill rather
+     than the white-alpha one it was on navy. */
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  color: var(--sc-navy);
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -573,8 +637,8 @@ body.sct-page.is-embed {
 }
 
 .sct-switch-summary:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(212, 175, 55, 0.55);
+  background: var(--sc-surface-sink);
+  border-color: var(--sc-gold);
 }
 
 .sct-switch-summary:focus-visible {
@@ -908,7 +972,8 @@ body.sct-page.is-embed {
 
 .sct[data-sct-tabs="js"] #outlook.is-active ~ [data-sct-faq-for="outlook"],
 .sct[data-sct-tabs="js"] #stats.is-active ~ [data-sct-faq-for="stats"],
-.sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"] {
+.sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"],
+.sct[data-sct-tabs="js"] #schedule.is-active ~ [data-sct-faq-for="schedule"] {
   display: block;
 }
 
@@ -922,7 +987,8 @@ body.sct-page.is-embed {
 
   .sct:not([data-sct-tabs="js"]) #outlook:target ~ [data-sct-faq-for="outlook"],
   .sct:not([data-sct-tabs="js"]) #stats:target ~ [data-sct-faq-for="stats"],
-  .sct:not([data-sct-tabs="js"]) #depth-chart:target ~ [data-sct-faq-for="depth-chart"] {
+  .sct:not([data-sct-tabs="js"]) #depth-chart:target ~ [data-sct-faq-for="depth-chart"],
+  .sct:not([data-sct-tabs="js"]) #schedule:target ~ [data-sct-faq-for="schedule"] {
     display: block;
   }
 
@@ -1515,15 +1581,19 @@ body.sct-page.is-embed {
 /* The same four inks .sct-slot uses, so a card edge and the chip inside it are
    never two different greens. */
 .sct-outlook-player[data-pos="QB"] {
-  --sct-pos-ink: #99323a;
+  --sct-pos-ink: var(--sct-pos-qb);
 }
 
 .sct-outlook-player[data-pos="RB"] {
-  --sct-pos-ink: #0f6b4f;
+  --sct-pos-ink: var(--sct-pos-rb);
 }
 
 .sct-outlook-player[data-pos="WR"] {
-  --sct-pos-ink: #1d4e8c;
+  --sct-pos-ink: var(--sct-pos-wr);
+}
+
+.sct-outlook-player[data-pos="TE"] {
+  --sct-pos-ink: var(--sct-pos-te);
 }
 
 .sct-outlook-player:hover {
@@ -2623,15 +2693,19 @@ body.sct-page.is-embed {
    distinguishing a position, so they are read at full strength on white and
    each clears 4.5:1 against it. TE keeps the base gold. */
 .sct-slot[data-pos="QB"] {
-  --sct-slot-ink: #99323a;
+  --sct-slot-ink: var(--sct-pos-qb);
 }
 
 .sct-slot[data-pos="RB"] {
-  --sct-slot-ink: #0f6b4f;
+  --sct-slot-ink: var(--sct-pos-rb);
 }
 
 .sct-slot[data-pos="WR"] {
-  --sct-slot-ink: #1d4e8c;
+  --sct-slot-ink: var(--sct-pos-wr);
+}
+
+.sct-slot[data-pos="TE"] {
+  --sct-slot-ink: var(--sct-pos-te);
 }
 
 .sct-slot.is-small {
@@ -3742,7 +3816,7 @@ body.sct-page.is-embed {
 .sct-depth-row:not(.is-out) + .sct-depth-row.is-out {
   margin-top: 8px;
   padding-top: 10px;
-  border-top: 1px dashed var(--sc-line);
+  border-top: 1px dashed var(--sc-border);
 }
 
 .sct-depth-row.is-out .sct-depth-photo {
@@ -4615,7 +4689,7 @@ body.sct-page.is-embed {
     right: -24px;
     width: 240px;
     height: 240px;
-    opacity: 0.05;
+    opacity: 0.04;
   }
 
   .sct-hero-actions {
@@ -5106,15 +5180,11 @@ body.sct-page.is-embed {
     display: none;
   }
 
+  /* The hero's gradient is the only thing here a printer would spend ink on
+     for nothing — the text on it is already dark. This used to also have to
+     undo white type on navy; it does not any more. */
   .sct-hero {
     background: none;
-    color: var(--sc-ink);
-    border: 1px solid var(--sc-border);
-  }
-
-  .sct-title,
-  .sct-fact-value {
-    color: var(--sc-ink);
   }
 }
 
@@ -5134,7 +5204,7 @@ body.sct-page.is-embed {
 
 .sct-mu-upnext {
   padding: 18px 20px;
-  border: 1px solid var(--sc-line);
+  border: 1px solid var(--sc-border);
   border-radius: 12px;
   background: var(--sc-surface);
 }
@@ -5331,7 +5401,7 @@ body.sct-page.is-embed {
   align-content: start;
   gap: 6px;
   padding: 16px 18px;
-  border: 1px solid var(--sc-line);
+  border: 1px solid var(--sc-border);
   border-radius: 12px;
   background: var(--sc-surface);
 }
@@ -5471,7 +5541,7 @@ body.sct-page.is-embed {
 .sct-mu-table th,
 .sct-mu-table td {
   padding: 10px 6px;
-  border-bottom: 1px solid var(--sc-line);
+  border-bottom: 1px solid var(--sc-hairline);
   text-align: center;
   vertical-align: middle;
 }
@@ -5486,15 +5556,15 @@ body.sct-page.is-embed {
 /* The pairing, named once, above the rows it governs. This replaced a header
    row that repeated both names on every table. The <thead> is still there for a
    screen reader moving cell by cell; it is just off the page. */
+/* The caption keeps its own display. Setting flex or grid on a <caption>
+   replaces `display: table-caption`, and the browser then wraps it in an
+   anonymous cell — which is why all three words used to sit at the width of
+   the first column rather than spanning the table. The grid is the row inside
+   it; see compareCaption() in matchup-render.ts. */
 .sct-mu-cmp-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--sc-line);
+  border-bottom: 1px solid var(--sc-hairline);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -5504,11 +5574,21 @@ body.sct-page.is-embed {
   text-align: center;
 }
 
+/* Three columns in the same 40/20/40 the table below uses, so each name sits
+   over its own side's numbers with the join between them. */
+.sct-mu-cmp-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  align-items: center;
+  gap: 8px;
+}
+
 /* The team's own colour, as a marker rather than a fill. A 3px rule under the
    unit name is enough to tell the two sides apart on every row below; tinting
    the cells themselves put two brand colours behind a table of numbers and made
    the numbers the second thing you saw. */
 .sct-mu-cmp-side {
+  justify-self: center;
   padding-bottom: 3px;
   border-bottom: 3px solid transparent;
 }
@@ -5521,9 +5601,12 @@ body.sct-page.is-embed {
   border-bottom-color: var(--mu-cmp-right, var(--sc-hairline));
 }
 
+/* Muted, but a word rather than a smudge — the hairline token is 8% ink and
+   disappears entirely on this ground, the same problem the hero's join had. */
 .sct-mu-cmp-vs {
-  color: var(--sc-hairline);
+  color: var(--sc-muted);
   font-weight: 700;
+  opacity: 0.6;
 }
 
 .sct-mu-td-label {
@@ -5565,7 +5648,7 @@ body.sct-page.is-embed {
   display: block;
   height: 4px;
   border-radius: 999px;
-  background: var(--sc-line);
+  background: var(--sc-surface-sink);
   overflow: hidden;
 }
 
@@ -5610,7 +5693,7 @@ body.sct-page.is-embed {
   gap: 4px 16px;
   margin: 0 0 20px;
   padding: 16px 20px;
-  border: 1px solid var(--sc-line);
+  border: 1px solid var(--sc-border);
   border-left: 4px solid var(--mu-h2h-accent, var(--sc-hairline));
   border-radius: 12px;
   background: var(--sc-surface);
@@ -5701,4 +5784,661 @@ body.sct-page.is-embed {
 .sct-game-cta {
   margin: 10px 0 0;
   font-size: 13px;
+}
+
+/* ------------------------------------------------- the postgame matchup */
+
+/* A finished game gets a different page, and it starts here: the hero IS the
+   scoreboard rather than a pair of crests with the result in a card below it.
+   The reader arriving from "patriots vs seahawks score" used to meet the
+   fixture twice and the number once, half a page down. Now there is one object
+   above the fold and it is the thing they came for. */
+.sct-mu-hero.is-final {
+  padding: 22px 28px 20px;
+}
+
+.sct-mu-final-inner {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.sct-mu-final-text {
+  text-align: center;
+}
+
+/* The title recedes a step on a final. The team names are already spelled out
+   in the board under it at display size, and the H1 set at hero scale on top of
+   a 76px score made two headlines competing for the same glance. It stays an
+   H1 — the page is still about these two teams — and stops being the loudest
+   thing on it. */
+.sct-mu-final-title {
+  font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+}
+
+.sct-mu-final-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(10px, 4vw, 40px);
+  width: 100%;
+  max-width: 640px;
+}
+
+.sct-mu-final-side {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sct-mu-final-logo {
+  width: clamp(44px, 10vw, 72px);
+  height: auto;
+  object-fit: contain;
+  /* The loser recedes a step, the way the hub's opponent crest does. Only a
+     step: this is a result, not a ranking, and a team greyed out reads as data
+     that failed to load rather than as a team that lost. */
+  opacity: 0.72;
+}
+
+.sct-mu-final-side.is-winner .sct-mu-final-logo {
+  opacity: 1;
+}
+
+.sct-mu-final-name {
+  font-size: clamp(11px, 2.4vw, 13px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+  text-align: center;
+}
+
+/* The number is the page. Tabular figures so a 7 and a 1 take the same width
+   and the two columns stay symmetrical whatever the score was. */
+.sct-mu-final-score {
+  font-size: clamp(46px, 13vw, 86px);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-final-side.is-winner .sct-mu-final-score {
+  color: var(--sc-navy);
+}
+
+.sct-mu-final-record {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+}
+
+/* The join between the two columns. It was drawn in the hairline colour, which
+   on this ground is a smudge rather than a character — and it is the only thing
+   on the board saying which side was at home. Muted, but legible. */
+.sct-mu-final-at {
+  align-self: center;
+  padding-top: clamp(26px, 6.5vw, 50px);
+  color: var(--sc-muted);
+  font-size: clamp(13px, 2.6vw, 18px);
+  font-weight: 800;
+  opacity: 0.55;
+}
+
+.sct-mu-final-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  margin: 0;
+  text-align: center;
+}
+
+.sct-mu-final-where {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-final-when {
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* The quarter line. Two rows and six columns carrying the shape of the whole
+   game — who led at the half, who scored last, whether it needed overtime — in
+   less room than the sentence describing it. This is the single biggest thing
+   the page was missing: it is what makes a result read as a game rather than
+   as a final score somebody typed in. */
+.sct-mu-linescore {
+  width: auto;
+  min-width: min(100%, 340px);
+  border-collapse: collapse;
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-mu-linescore th,
+.sct-mu-linescore td {
+  padding: 5px 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.sct-mu-linescore thead th {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--sc-hairline);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--sc-muted);
+}
+
+.sct-mu-ls-team {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-ls-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.sct-mu-ls-q {
+  color: var(--sc-muted-strong);
+  font-weight: 700;
+}
+
+/* The total is the one column that repeats a number already in the hero, so it
+   is set apart rather than louder: a rule down its left edge, and the weight
+   the quarters do not have. */
+.sct-mu-ls-total {
+  border-left: 1px solid var(--sc-hairline);
+  font-weight: 900;
+  color: var(--sc-navy);
+}
+
+.sct-mu-linescore tbody tr.is-winner .sct-mu-ls-team,
+.sct-mu-linescore tbody tr.is-winner .sct-mu-ls-q {
+  color: var(--sc-navy);
+}
+
+/* ----------------------------------------------------- how it was won */
+
+/* The sentence over the table. It is composed from the rows underneath it and
+   never says anything they do not — see glanceSentence() — so it is set as a
+   lead rather than as a note: it is a reading of the numbers, not a caveat
+   about them. */
+.sct-mu-glance-line {
+  margin: 0 0 16px;
+  font-size: clamp(15px, 2.4vw, 17px);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--sc-navy);
+}
+
+/* The better side of a row, marked on the figure rather than on the cell. The
+   bars already show the split; this is for the reader scanning the numbers
+   alone, and it has to survive a row where "better" means the smaller number. */
+.sct-mu-val.is-better {
+  color: var(--sc-navy);
+}
+
+.sct-mu-glance .sct-mu-val {
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-glance .sct-mu-val.is-better {
+  color: var(--sc-navy);
+  font-weight: 900;
+}
+
+/* ------------------------------------------------------- game leaders */
+
+/* Four cards with a face in each. The name was always the loudest thing here;
+   the photograph is what makes the strip read as four players rather than as
+   four numbers with names attached. */
+.sct-mu-leader-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* A well, not a frame. The disc is drawn by the span, so a player Sleeper has
+   no thumbnail for leaves a tinted circle rather than a broken-image glyph —
+   the same device the depth chart uses. */
+.sct-mu-leader-photo,
+.sct-mu-ps-photo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--sc-surface-sink);
+}
+
+.sct-mu-leader-photo {
+  width: 52px;
+  height: 52px;
+}
+
+.sct-mu-leader-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-mu-leader-who {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------- player stats */
+
+/* The box score, by category. Four tables that have to hold twenty rows of
+   five columns on a phone without either wrapping a name or shrinking the
+   numbers out of readability — so the block scrolls sideways and the name
+   column stays put. */
+.sct-mu-ps-block {
+  margin: 0 0 26px;
+}
+
+.sct-mu-ps-scroll {
+  overflow-x: auto;
+  /* Room for the focus ring on a link in the first row, which a tight
+     overflow box would clip. */
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* A ruled table, not a ruled list. These are box scores — five or six numeric
+   columns a reader tracks ACROSS a row and DOWN a column at the same time — and
+   horizontal rules alone leave the eye to hold the column position itself.
+   `border-collapse` so the grid is one hairline wide throughout, and the outer
+   edge a shade stronger than the inner ones so the table reads as one object. */
+.sct-mu-ps-table {
+  width: 100%;
+  min-width: 460px;
+  border-collapse: collapse;
+  border: 1px solid var(--sc-border);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* StatChasers navy, reversed. The header is the one row that is not data, and
+   at 10px uppercase in muted grey it read as a caption floating above the
+   table rather than as its top edge. */
+.sct-mu-ps-table thead th {
+  padding: 9px 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--sc-navy);
+  text-align: right;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.sct-mu-ps-table thead th:last-child {
+  border-right: 0;
+}
+
+.sct-mu-ps-table thead th:first-child {
+  text-align: left;
+}
+
+.sct-mu-ps-table td {
+  padding: 9px 8px;
+  border-top: 1px solid var(--sc-hairline);
+  border-right: 1px solid var(--sc-hairline);
+  text-align: right;
+  color: var(--sc-muted-strong);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sct-mu-ps-table td:last-child {
+  border-right: 0;
+}
+
+/* Zebra striping, very faint. With six columns ruled both ways the grid does
+   most of the work; this is for the row a finger is following on a phone. */
+.sct-mu-ps-table tbody tr:nth-child(even) {
+  background: var(--sc-surface-soft);
+}
+
+/* --- the sort control ---------------------------------------------------- */
+
+/* The header's text, turned into a button by the bundle. It inherits
+   everything, because the cell already has the size, weight, tracking and case
+   this wants — a button that restyles itself here would drift from the header
+   next to it the moment either changed. */
+.sct-sort {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* No pointer until the bundle has actually wired it. The button is built in
+   the browser, so this cannot be reached before it works — but a table left
+   half-enhanced by a script error should not advertise a control either. */
+.sct-mu-ps-table:not([data-sct-sort="js"]) .sct-sort {
+  cursor: default;
+}
+
+.sct-mu-ps-table thead .sct-sort:hover,
+.sct-mu-ps-table thead .sct-sort:focus-visible {
+  color: var(--sc-gold-soft);
+}
+
+/* The column the table is sorted by: gold ink and a gold rule inside the cell.
+   The same pair the player pages use on their own navy-headed tables, and for
+   the same reason — on a row of white-on-navy headers the ink alone is not
+   quite enough, and the rule is the device the tab strip already uses for "you
+   are here". Inset so it draws inside the filled cell and cannot move a
+   column by a pixel. */
+.sct-mu-ps-table thead th[aria-sort="ascending"],
+.sct-mu-ps-table thead th[aria-sort="descending"] {
+  box-shadow: inset 0 -3px 0 var(--sc-gold);
+}
+
+.sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort,
+.sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort {
+  color: var(--sc-gold);
+}
+
+.sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort::after {
+  content: " \2193";
+}
+
+.sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort::after {
+  content: " \2191";
+}
+
+/* The column the table is sorted by — yards, or PPR points on the fantasy
+   table. One column at full strength keeps a five-column row scannable; five
+   at full strength is a wall. */
+.sct-mu-ps-table td.is-key {
+  color: var(--sc-navy);
+  font-weight: 900;
+}
+
+/* The cell stays a cell. The flex row is the span inside it: `display:flex` on
+   a <th> drops it out of table layout, which gave the name column a width of
+   its own and left every row rule under it stopping short of the one beside
+   it. */
+.sct-mu-ps-name {
+  padding: 9px 8px;
+  border-top: 1px solid var(--sc-hairline);
+  border-right: 1px solid var(--sc-hairline);
+  text-align: left;
+  font-weight: 400;
+}
+
+.sct-mu-ps-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.sct-mu-ps-photo {
+  width: 32px;
+  height: 32px;
+}
+
+.sct-mu-ps-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-mu-ps-who {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.sct-mu-ps-link {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sc-navy);
+  line-height: 1.25;
+}
+
+.sct-mu-ps-meta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--sc-muted);
+}
+
+/* The position, wherever one is named beside a player. The four inks are the
+   site's, set once at the top of this file; a position with no ink of its own —
+   a kicker in the fantasy table — inherits the muted grey around it rather
+   than being given a fifth colour to mean "other". */
+.sct-pos {
+  font-weight: 800;
+}
+
+.sct-pos[data-pos="QB"] {
+  color: var(--sct-pos-qb);
+}
+
+.sct-pos[data-pos="RB"] {
+  color: var(--sct-pos-rb);
+}
+
+.sct-pos[data-pos="WR"] {
+  color: var(--sct-pos-wr);
+}
+
+.sct-pos[data-pos="TE"] {
+  color: var(--sct-pos-te);
+}
+
+.sct-pos-dot {
+  margin: 0 3px;
+  /* Not the hairline token: at 8% ink a "·" between two words is a gap, not a
+     separator. This is the third place on this page that had to learn it. */
+  color: var(--sc-muted);
+  opacity: 0.5;
+}
+
+.sct-pos-team {
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------ takeaways */
+
+/* What to carry into next week's lineup. Each card is a measured comparison
+   with the same player's own earlier weeks, so the card is built like evidence:
+   the mark and the name, the claim in four words, the figures it rests on, and
+   then the sentence. A reader can stop after the figures. */
+.sct-mu-take-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-mu-take {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 15px 17px;
+  border: 1px solid var(--sc-border);
+  border-left: 4px solid var(--sc-hairline);
+  border-radius: 12px;
+  background: var(--sc-surface);
+}
+
+/* The direction is carried on the card's edge as well as in the glyph: a grid
+   of these is meant to be sortable by eye before a word of it is read. */
+.sct-mu-take[data-direction="up"] {
+  border-left-color: #0f6b4f;
+}
+
+.sct-mu-take[data-direction="down"] {
+  border-left-color: #94363a;
+}
+
+.sct-mu-take[data-direction="watch"] {
+  border-left-color: var(--sc-gold-deep);
+}
+
+.sct-mu-take-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  margin: 0;
+}
+
+.sct-mu-take-mark {
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sct-mu-take[data-direction="up"] .sct-mu-take-mark {
+  color: #0f6b4f;
+}
+
+.sct-mu-take[data-direction="down"] .sct-mu-take-mark {
+  color: #94363a;
+}
+
+.sct-mu-take[data-direction="watch"] .sct-mu-take-mark {
+  color: var(--sc-gold-deep);
+}
+
+.sct-mu-take-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--sc-navy);
+}
+
+.sct-mu-take-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.sct-mu-take-line {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-take-facts {
+  margin: 1px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+.sct-mu-take-body {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+/* -------------------------------------------------------- what changed */
+
+/* A rank before the game, an arrow, and the rank after it. The arrow's colour
+   is about the MATCHUP, not about the defense: rank 1 allows the most, so a
+   rank that fell is a defense that got softer, which is good news for whoever
+   faces it next — the same direction a long bar means in the block this
+   replaces. */
+.sct-mu-move {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.sct-mu-move-from {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--sc-hairline);
+}
+
+.sct-mu-move-arrow {
+  font-weight: 900;
+  color: var(--sc-hairline);
+}
+
+.sct-mu-move-arrow[data-direction="softer"] {
+  color: #0f6b4f;
+}
+
+.sct-mu-move-arrow[data-direction="tougher"] {
+  color: #94363a;
+}
+
+.sct-mu-move-fpa {
+  width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+}
+
+@media (max-width: 640px) {
+  .sct-mu-hero.is-final {
+    padding: 18px 16px 16px;
+  }
+
+  /* The board keeps its three columns at every width — two scores side by side
+     IS the scoreboard, and stacking them makes it a list. The clamps above
+     carry it down; only the gap needs taking in. */
+  .sct-mu-final-board {
+    gap: 6px;
+  }
+
+  .sct-mu-linescore {
+    min-width: 100%;
+  }
+
+  .sct-mu-linescore th,
+  .sct-mu-linescore td {
+    padding: 5px 6px;
+  }
 }

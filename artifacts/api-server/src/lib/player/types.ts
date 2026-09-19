@@ -35,6 +35,8 @@ export interface GameLogStats {
   xpm?: number;
   xpa?: number;
   off_snp?: number;
+  /** The team's offensive snaps that week — the denominator for a snap share. */
+  tm_off_snp?: number;
   /** Derived in enrichWithTeamMetrics(), not present in the source data. */
   target_share?: number | null;
   team_pass_rate?: number | null;

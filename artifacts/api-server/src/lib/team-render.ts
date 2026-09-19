@@ -44,6 +44,7 @@ import {
 import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq } from "./team/depth-faq";
+import { scheduleFaq } from "./team/schedule-faq";
 import { sidelinedBehind } from "./team/roster";
 import type { TeamPageData } from "./team/team-data";
 import type {
@@ -1527,23 +1528,25 @@ function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
 /**
  * Every question the page has rendered, in render order.
  *
- * Collected rather than recomputed. Two tabs carry an FAQ and each decides for
+ * Collected rather than recomputed. Four tabs carry an FAQ and each decides for
  * itself whether it renders at all — the outlook drops out once its season has
- * passed, the stats block drops out when ESPN gave us nothing — so the only way
- * to be certain the structured data describes what is actually on the page is
- * for the sections to hand over the questions as they draw them. Recomputing
- * the same two lists a second time for the schema would work right up until one
- * of those guards changed on one side only.
+ * passed, the stats block drops out when ESPN gave us nothing, the schedule's
+ * questions go with its fixtures — so the only way to be certain the structured
+ * data describes what is actually on the page is for the sections to hand over
+ * the questions as they draw them. Recomputing the same lists a second time for
+ * the schema would work right up until one of those guards changed on one side
+ * only.
  */
 type FaqSink = OutlookFaq[];
 
 /**
  * The question list, and its entry in the page's FAQ.
  *
- * Shared by the Outlook tab's outlook and the Stats tab's numbers, which are
- * built in team/outlook-faq.ts and team/stats-faq.ts respectively — that is
- * where the answers come from and where the rule that they may only restate
- * what is already rendered is enforced.
+ * Shared by every tab that carries questions — the outlook, the stat lines, the
+ * depth chart and the schedule, built in team/outlook-faq.ts, team/stats-faq.ts,
+ * team/depth-faq.ts and team/schedule-faq.ts respectively. That is where the
+ * answers come from and where the rule that they may only restate what is
+ * already rendered is enforced.
  *
  * Markup only: the schema for both is emitted once, at the page level. A
  * document is allowed one FAQPage, and two nodes — one per tab — is the failure
@@ -1586,7 +1589,7 @@ function faqList(items: OutlookFaq[], sink: FaqSink, tag: "h3" | "h4"): string {
 }
 
 /**
- * An FAQ as a page-level block — the shape both tabs' questions take.
+ * An FAQ as a page-level block — the shape every tab's questions take.
  *
  * The block itself does not fold: the questions ARE the index, and a reader
  * scanning for the one they arrived with has to be able to see them without
@@ -1705,7 +1708,13 @@ function renderOutlook(
     : "";
 
   const meta = [
-    "Preseason outlook",
+    // "Preseason outlook" stops being true the moment Week 1 kicks off, and
+    // these takes are not rewritten in-season — so once the season is under way
+    // the label says when the take was written rather than implying it is
+    // current. Same honesty rule as the record in the hero: see team/nfl-state.
+    data.state.regularSeasonUnderway
+      ? "Written before Week 1"
+      : "Preseason outlook",
     ...(outlook.updated ? [`Updated ${outlook.updated}`] : []),
   ]
     .map(
@@ -2781,6 +2790,8 @@ function renderSchedule(
   data: TeamPageData,
   options: TeamRenderOptions,
   now: number,
+  faq: FaqSink,
+  tail: TailSink,
   scoped = false,
 ): string {
   const { team, schedule } = data;
@@ -2797,6 +2808,13 @@ function renderSchedule(
 
   const next = upcomingGames(schedule, now, 3);
   const full = getTeamScheduleUrl(team);
+
+  // Below the tools block with the other tabs' questions, and assigned after
+  // the early return above: a team whose fixtures did not load carries no
+  // questions about them.
+  tail.html = faqBlock(
+    faqList(scheduleFaq({ team, schedule, now }), faq, "h3"),
+  );
 
   return (
     (scoped ? "" : h2(`${schedule.season} ${team.nickname} Schedule`)) +
@@ -2903,6 +2921,8 @@ export function renderTeamPage(
   const statsTail: TailSink = { html: "" };
   const depthChartFaq: FaqSink = [];
   const depthTail: TailSink = { html: "" };
+  const scheduleFaqItems: FaqSink = [];
+  const scheduleTail: TailSink = { html: "" };
   const scopedSection = String(options.section ?? "");
   const outlook = renderOutlook(
     data,
@@ -2947,6 +2967,8 @@ export function renderTeamPage(
     data,
     options,
     now,
+    scheduleFaqItems,
+    scheduleTail,
     scopedSection === "schedule",
   );
   const matchups = renderMatchups(
@@ -2984,7 +3006,13 @@ export function renderTeamPage(
       faq: depthChartFaq,
       tail: depthTail.html,
     },
-    { id: "schedule", label: "Schedule", html: schedule },
+    {
+      id: "schedule",
+      label: "Schedule",
+      html: schedule,
+      faq: scheduleFaqItems,
+      tail: scheduleTail.html,
+    },
     { id: "matchups", label: "Matchups", html: matchups, hubTab: false },
   ].filter((section) => section.html !== "");
 

@@ -187,10 +187,15 @@ under the same flag.
 (within ten days), or neither, and the fragment returns that in an
 `X-Matchup-State` header. The page leads with the next game, the score, or the
 head-to-head accordingly, and the title says so — `… 2026: Where to Watch,
-Stats, Injuries & History` / `… 2026: Score, Stats & Head-to-Head` /
+Stats, Injuries & History` / `… 2026: Score, Player Stats & Fantasy Recap` /
 `…: Head-to-Head Record, Stats & History`. `statchasers_matchup_meta()` mirrors
 `matchupPageMeta()` in `src/lib/matchup/matchup-seo.ts`; change one and change
 the other.
+
+A finished game also returns `X-Matchup-Score` — the result in one clause,
+`Seahawks won 13-10.`, written by `matchupScoreLine()`. The postgame
+description leads with it, so the snippet carries the number the search asked
+for. An empty header simply drops the clause.
 
 **Nothing is invented.** Where to Watch appears only for an upcoming game and
 carries only what ESPN's schedule has — date, kickoff, TV network, venue. There

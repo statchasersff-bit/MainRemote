@@ -8,6 +8,23 @@ const __dirname = path.dirname(__filename);
 
 const VALID_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
 
+/**
+ * The position this player occupies in a fantasy lineup.
+ *
+ * Sleeper's `position` is the primary football position, which for a two-way
+ * player is not necessarily the fantasy one: Travis Hunter is carried as a DB
+ * with `fantasy_positions: ['DB','WR']`, and filtering on `position` alone
+ * dropped him out of the index entirely — no player page, no link from any
+ * ranking or outlook that names him. `fantasy_positions` is the field that
+ * answers the question this index is actually asking, so it is the fallback
+ * whenever the primary position is not one we carry.
+ */
+function fantasyPosition(p) {
+  if (VALID_POSITIONS.includes(p.position)) return p.position;
+  const alt = (p.fantasy_positions || []).find((pos) => VALID_POSITIONS.includes(pos));
+  return alt || null;
+}
+
 const TEAM_ALIAS_MAP = {
   JAC: 'JAX',
   WSH: 'WAS',
@@ -78,9 +95,10 @@ async function main() {
 
   for (const [playerId, p] of Object.entries(playersMap)) {
     if (!p.full_name && p.position !== 'DEF') continue;
-    if (!VALID_POSITIONS.includes(p.position)) continue;
+    const position = fantasyPosition(p);
+    if (!position) continue;
 
-    const rawName = p.position === 'DEF' ? (p.full_name || `${p.first_name} ${p.last_name}`) : p.full_name;
+    const rawName = position === 'DEF' ? (p.full_name || `${p.first_name} ${p.last_name}`) : p.full_name;
     const name = normalizeName(rawName);
     let slug = buildSlug(name);
     if (!slug) continue;
@@ -92,7 +110,7 @@ async function main() {
 
     const team = normalizeTeam(p.team);
 
-    if (p.position === 'DEF' && team !== 'FA') {
+    if (position === 'DEF' && team !== 'FA') {
       teamsWithDef.add(team);
     }
 
@@ -100,7 +118,7 @@ async function main() {
       id: playerId,
       name,
       slug,
-      position: p.position || null,
+      position,
       team,
       status: p.status || null,
       injury_status: p.injury_status || null,
