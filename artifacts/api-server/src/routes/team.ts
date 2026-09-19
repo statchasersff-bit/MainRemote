@@ -77,6 +77,7 @@ const SECTIONS = new Set([
   "news",
   "depth-chart",
   "schedule",
+  "matchups",
 ]);
 
 function section(req: Request): string | undefined {
@@ -355,6 +356,7 @@ router.get("/embed/team/:slug", (req, res) => {
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
         section: section(req),
+        matchupPathPrefix: (process.env["SC_MATCHUP_PATH_PREFIX"] ?? "/nfl/").trim(),
       });
       res.set("ETag", `W/"${result.version}"`);
       if (req.fresh) {

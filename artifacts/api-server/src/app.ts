@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import router from "./routes";
 import embedRouter from "./routes/embed";
 import teamRouter from "./routes/team";
+import { matchupRouter } from "./routes/matchup";
 import playerRouter from "./routes/player";
 import fpaRouter from "./routes/fpa";
 import rankingsRouter from "./routes/rankings";
@@ -69,6 +70,9 @@ app.use(embedRouter);
 // file is deliberate and catches everything that gets past the routes above.
 // It changes nothing about "/", which is still the news tool and nothing else.
 app.use(teamRouter);
+
+// Matchup pages: /nfl/<a>-vs-<b>/ and /embed/matchup/<a>-vs-<b>.
+app.use(matchupRouter);
 
 // NFL Player Pages: /player, /player/:slug and the /embed/player/:slug
 // fragment. Mounted alongside the team router for the same reason — the 404 at

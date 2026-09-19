@@ -4988,3 +4988,237 @@ body.sct-page.is-embed {
     color: var(--sc-ink);
   }
 }
+
+/* ------------------------------------------------------------- matchups */
+
+/* The hub's Matchups section and the pair page share one vocabulary: rows
+   are schedule rows with a verdict and a door, the scoreboard is the Next
+   Game card's, the comparison is the Stats tab's rank chips laid two abreast. */
+.sct-mu-h3 {
+  margin: 24px 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-upnext {
+  padding: 18px 20px;
+  border: 1px solid var(--sc-line);
+  border-radius: 12px;
+  background: var(--sc-surface);
+}
+
+.sct-mu-row {
+  grid-template-columns: 56px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.sct-mu-result {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--sc-navy);
+  white-space: nowrap;
+}
+
+.sct-mu-result.is-pending {
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+.sct-mu-view {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Pair page hero: the two sides with their records under the codes. */
+.sct-mu-board {
+  margin-top: 18px;
+  gap: 18px;
+}
+
+.sct-mu-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sct-mu-record {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-featured .sct-game {
+  cursor: default;
+}
+
+.sct-mu-score {
+  display: flex;
+  gap: 28px;
+  margin: 10px 0 6px;
+}
+
+.sct-mu-score-side {
+  display: flex;
+  flex-direction: column;
+}
+
+.sct-mu-score-team {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-score-num {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-score-side.is-winner .sct-mu-score-num {
+  color: var(--sc-navy);
+}
+
+/* Where to watch: a definition list read as label / value rows. */
+.sct-mu-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.sct-mu-fact dt {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-fact dd {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.sct-mu-tv {
+  display: inline-block;
+  height: 20px;
+}
+
+/* Side-by-side table: value + rank chip each side, metric name between. */
+.sct-mu-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 22px;
+  font-size: 14px;
+}
+
+.sct-mu-table th,
+.sct-mu-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--sc-line);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sct-mu-th-side {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-td-label {
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+  white-space: nowrap;
+}
+
+.sct-mu-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sct-mu-cell.is-empty {
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-val {
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--sc-navy);
+}
+
+.sct-mu-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px 32px;
+}
+
+.sct-mu-h2h {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sct-mu-h2h-line {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--sc-navy);
+}
+
+.sct-mu-row.is-featured {
+  background: var(--sc-surface);
+}
+
+@media (max-width: 640px) {
+  .sct-mu-row {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+  }
+  .sct-mu-row .sct-srow-when {
+    grid-column: 2;
+  }
+  .sct-mu-view {
+    grid-column: 2 / -1;
+  }
+}
+
+/* Real links between pages — the matchup page's way to the two hubs, and a
+   hub's way to its matchups. Underlined in gold so it reads as a way through
+   rather than an external link, which these never are. */
+.sct-pages {
+  margin: 24px 0 8px;
+}
+
+.sct-pages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-crosslink {
+  color: var(--sc-navy);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 2px solid var(--sc-gold);
+}
+
+.sct-crosslink:hover {
+  color: var(--sc-gold-deep);
+}
