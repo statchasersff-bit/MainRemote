@@ -198,6 +198,27 @@ describe("links between the family", () => {
     for (const h of shared) assert.equal(h, CANON);
   });
 
+  test("matchup links are plain anchors, not top-frame navigations", async () => {
+    // `target="_top"` is for siteLink(), which leaves the tool for the main
+    // site. These go to the tool's own pages, and carrying the target means a
+    // sandboxed preview frame blocks the navigation and the link does nothing
+    // — which is exactly how this was found.
+    for (const path of [CANON, "/team/new-england-patriots/matchups/"]) {
+      const { doc } = await dom(path);
+      const links = [
+        ...doc.querySelectorAll('.sct-pages a[href], a[href^="/nfl/"]'),
+      ];
+      assert.ok(links.length > 0, `${path}: has links`);
+      for (const link of links) {
+        assert.equal(
+          link.getAttribute("target"),
+          null,
+          `${path}: ${link.getAttribute("href")} must not break out of the frame`,
+        );
+      }
+    }
+  });
+
   test("the matchups hub is a section like the others", async () => {
     const res = await get("/team/new-england-patriots?section=matchups");
     assert.equal(res.status, 301);
