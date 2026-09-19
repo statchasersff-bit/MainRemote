@@ -70,10 +70,6 @@ end to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`
 - [ ] a section page shows **its panel and nothing else**: no tab strip, no
       content from the other panels. All five panels means `sc_section` is not
       reaching the shortcode and the URL is the hub wearing a second address.
-- [ ] a strip of real links (`.sct-pages`) is present — on the hub it points at
-      the four section pages; on a section page at the hub and its siblings,
-      with the current one marked. Missing on the hub means the fetch is not
-      sending `sections=1`.
 - [ ] at most one `FAQPage` node in the page, and it holds only that page's
       questions. The Schedule page has none — that is correct, not a gap.
 - [ ] the URL is in the **page sitemap**. If the four section URLs are absent,
@@ -87,8 +83,8 @@ Then the edges:
 - [ ] on the API origin, `/team/ne/schedule/` and `/team/ne?section=schedule`
       both 301 to `/team/new-england-patriots/schedule/`; `/team/nowhere/stats/`
       is a 404.
-- [ ] with the flag **off**: the section URLs 404, the hub prints no `.sct-pages`
-      strip, and the sitemap lists no section URLs. Off must be genuinely off.
+- [ ] with the flag **off**: the section URLs 404 and the sitemap lists no
+      section URLs. Off must be genuinely off.
 
 Once all of that holds on one team, submit the page sitemap in Search Console.
 - [ ] the hub uses the **full content column** — open the page at a desktop

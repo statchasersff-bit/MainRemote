@@ -119,9 +119,9 @@ other. The pretty path is the only public spelling: `?section=` is what the
 plugin fetches the fragment with, and the API 301s it to the pretty path.
 
 **Discovery.** The hub's tab strip is `#hash` navigation, which a crawler
-follows nowhere, so once the flag is on the plugin asks the API (`sections=1`)
-to print a strip of real anchors to the four section pages under the panels.
-Off, the hub prints none — four links to 404s is worse than none.
+follows nowhere, and neither the hub nor a section page prints a strip of
+anchors to the section pages. Their discovery rests on the sitemap below and on
+the site's own navigation — so the flag and the sitemap must move together.
 
 **Sitemap.** With the flag on, the four section URLs of every published hub
 page are appended to Rank Math's page sitemap through

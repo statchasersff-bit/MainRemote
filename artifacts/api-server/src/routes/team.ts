@@ -173,9 +173,6 @@ async function sendTeamPage(
       embed,
       linkQuery: switcherQuery(req),
       section: scoped,
-      // This origin serves the pretty section routes itself, so the hub may
-      // always link to them here.
-      sectionLinks: true,
     });
 
     // Development only: the same reload snippet the news page gets, so editing
@@ -358,9 +355,6 @@ router.get("/embed/team/:slug", (req, res) => {
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
         section: section(req),
-        // The plugin says whether its rewrite is live. Left to guesswork the
-        // hub would link to four 404s on a site that has not turned them on.
-        sectionLinks: TRUTHY.has(String(req.query["sections"] ?? "").trim().toLowerCase()),
       });
       res.set("ETag", `W/"${result.version}"`);
       if (req.fresh) {

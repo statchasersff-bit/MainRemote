@@ -94,16 +94,11 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 		return null;
 	}
 
-	// Whether the hub may print real links to /outlook/, /stats/ and so on.
-	// Only once the rewrite is live: before that they are four links to 404s.
-	$linked = statchasers_team_section_urls_enabled();
-
-	// The section and the link flag are part of the identity of what comes back
-	// — one panel or five, a different heading, links or none — so they are
-	// part of the cache key. Left out, the first request to any section address
-	// would serve its markup to the hub and to every other section on that team
-	// for the rest of the TTL.
-	$key        = md5( $origin . '|' . $slug . '|' . $section . '|' . ( $linked ? '1' : '0' ) );
+	// The section is part of the identity of what comes back — one panel or
+	// five, a different heading — so it is part of the cache key. Left out, the
+	// first request to any section address would serve its markup to the hub
+	// and to every other section on that team for the rest of the TTL.
+	$key        = md5( $origin . '|' . $slug . '|' . $section );
 	$cache_key  = 'sc_team_ssr_' . $key;
 	$backup_key = 'sc_team_ssr_bak_' . $key;
 
@@ -115,9 +110,6 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	$query = array();
 	if ( '' !== $section ) {
 		$query['section'] = $section;
-	}
-	if ( $linked ) {
-		$query['sections'] = '1';
 	}
 
 	$response = wp_remote_get(
