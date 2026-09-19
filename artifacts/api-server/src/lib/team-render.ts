@@ -2025,6 +2025,11 @@ function renderMatchups(
   if (!schedule) return "";
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const query = options.linkQuery ?? "";
+  // Plain anchors, no `target="_top"`. That attribute belongs to siteLink(),
+  // which leaves this tool for the main site; a matchup page is one of the
+  // tool's own pages, so these are switcher links and are written like them.
+  // Given the target, a sandboxed preview frame blocks the navigation outright
+  // and the link does nothing at all.
   const hrefFor = (opponent: NflTeam | null): string | null => {
     const pair = canonicalizeMatchupPair(team, opponent);
     return pair ? `${prefix}${pair.slug}/${query}` : null;
@@ -2047,7 +2052,7 @@ function renderMatchups(
         `</div>` +
         `<p class="sct-visually-hidden">${escapeHtml(`${team.nickname} ${next.neutralSite ? "vs" : next.homeAway === "away" ? "at" : "host"} ${next.opponent?.nickname ?? next.opponentName}`)}</p>` +
         `<p class="sct-nextgame-when">${escapeHtml(`Week ${next.week} · ${when.date}`)}${when.time ? `<span class="sct-nextgame-time"> · ${escapeHtml(when.time)}</span>` : ""}</p>` +
-        `<p class="sct-block-footer"><a class="sct-textlink" href="${escapeHtml(nextHref)}" target="_top">View matchup ${ARROW}</a></p>` +
+        `<p class="sct-block-footer"><a class="sct-textlink" href="${escapeHtml(nextHref)}">View matchup ${ARROW}</a></p>` +
         `</div>`
       : "";
 
@@ -2072,7 +2077,7 @@ function renderMatchups(
         `<span class="sct-srow-when">${escapeHtml(line.date)}</span>` +
         status +
         (href
-          ? `<a class="sct-textlink sct-mu-view" href="${escapeHtml(href)}" target="_top">View matchup ${ARROW}</a>`
+          ? `<a class="sct-textlink sct-mu-view" href="${escapeHtml(href)}">View matchup ${ARROW}</a>`
           : `<span class="sct-mu-view"></span>`) +
         `</li>`
       );

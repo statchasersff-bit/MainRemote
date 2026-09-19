@@ -496,8 +496,10 @@ function renderMeetings(data: MatchupData): string {
 function renderLinks(data: MatchupData, options: MatchupRenderOptions): string {
   const prefix = (options.teamPathPrefix ?? "/team/").trim();
   const query = options.linkQuery ?? "";
+  // No `target="_top"` — see renderMatchups() in team-render.ts. These go to
+  // the tool's own team hubs, not out to the main site.
   const link = (href: string, label: string): string =>
-    `<li><a class="sct-crosslink" href="${escapeHtml(href)}" target="_top">${escapeHtml(label)}</a></li>`;
+    `<li><a class="sct-crosslink" href="${escapeHtml(href)}">${escapeHtml(label)}</a></li>`;
   const items = [data.pair.a, data.pair.b]
     .map(
       (team) =>
