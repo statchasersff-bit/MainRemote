@@ -36,6 +36,7 @@ import {
   styleAttr,
   TIER_WORD,
 } from "../team-render";
+import { gameSegment, type MatchupGameRef } from "./pair";
 import type { NflTeam } from "../team/teams";
 import { headshotUrl } from "../team/roster";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
@@ -58,9 +59,10 @@ import type {
   ReceivingRow,
   RushingRow,
   Takeaway,
+  TeamUsage,
   UsageRow,
+  UsageSlice,
 } from "./game-stats";
-import { movesFor, type RankMove } from "./fpa-delta";
 import type { GameLeader, GameLeaders } from "./leaders";
 
 export interface MatchupRenderOptions {
@@ -73,11 +75,25 @@ export interface MatchupRenderOptions {
   /** Carried onto internal links so embed mode stays embed mode. */
   linkQuery?: string;
   now?: number;
+  /**
+   * The meeting this request asked for, when the URL is a game address.
+   *
+   * Strictly a description of the request rather than of the rendering — the
+   * renderer reads data.pinned, not this — but it travels with the option bag
+   * because it changes which data is built, and therefore has to reach the
+   * cache key beside everything else that does.
+   */
+  game?: MatchupGameRef | null;
 }
 
 /** The public address of a pair: `<prefix><a>-vs-<b>/`. */
 export function matchupPath(prefix: string, slug: string): string {
   return `${prefix}${slug}/`;
+}
+
+/** The public address of one meeting: `<prefix><a>-vs-<b>/2026-week-1/`. */
+export function gamePath(prefix: string, slug: string, ref: MatchupGameRef): string {
+  return `${matchupPath(prefix, slug)}${gameSegment(ref)}/`;
 }
 
 /** The pair as a heading: "New England Patriots vs Philadelphia Eagles". */
@@ -89,10 +105,31 @@ export function matchupTitle(data: MatchupData): string {
 
 const DOT = `<span class="sct-dot" aria-hidden="true"></span>`;
 
+/**
+ * The meeting list's week, short enough for a narrow column.
+ *
+ * "WK 1" where the season has weeks, and the postseason round's own short form
+ * where it does not — "Conference Championship" is four times the width of
+ * anything else in that column and would set the column's width for every row
+ * on the page.
+ */
+const SHORT_ROUNDS: Record<string, string> = {
+  "wild card": "WILD CARD",
+  "divisional round": "DIVISIONAL",
+  "conference championship": "CONF CHAMP",
+  "super bowl": "SUPER BOWL",
+};
+
+function shortWeek(meeting: Meeting): string {
+  if (meeting.seasonType === "regular") return `WK ${meeting.week}`;
+  const label = meeting.weekLabel.trim();
+  return SHORT_ROUNDS[label.toLowerCase()] ?? label.toUpperCase();
+}
+
 /** "Week 8 · Sun, Oct 25 · 4:25 PM ET", from whatever parts a meeting has. */
 function whenLine(meeting: Meeting): string {
   const when = gameDateLine(asGame(meeting));
-  const parts = [`Week ${meeting.week}`, when.date];
+  const parts = [meeting.weekLabel, when.date];
   if (when.time) parts.push(when.time);
   return parts.map(escapeHtml).join(DOT);
 }
@@ -105,6 +142,8 @@ function whenLine(meeting: Meeting): string {
 function asGame(meeting: Meeting): ScheduleGame {
   return {
     week: meeting.week,
+    seasonType: meeting.seasonType,
+    weekLabel: meeting.weekLabel,
     espnEventId: meeting.espnEventId,
     kickoffMs: meeting.kickoffMs,
     timeConfirmed: meeting.timeConfirmed,
@@ -137,11 +176,46 @@ function record(side: TeamPageData): string {
  * seasons ago still gets the result treated as a result.
  */
 function isPostgame(data: MatchupData): boolean {
+  // A game address is a recap by definition — that is the whole reason it is a
+  // separate URL. It does not age out, because nothing on it is advice: on a
+  // dated page the takeaways and the usage are what happened in that week, read
+  // by someone who came looking for that week.
+  if (data.pinned) return data.pinned.score !== null;
+
   return (
     data.matchupState === "recently_completed" &&
     data.featured?.status === "final" &&
     data.featured.score !== null
   );
+}
+
+/**
+ * Whether the blocks that describe *now* belong on this page.
+ *
+ * Season Form, the injury report and the Fantasy Matchups ranks are all read
+ * from today's data, which is right on the pair's own address and right on a
+ * game address from the season in progress — the reader asking about Week 1 in
+ * December is still playing fantasy in 2026. It is wrong on a game from an
+ * earlier season: a 2024 recap carrying 2026 injury designations is not history
+ * with a bonus, it is three blocks of the wrong answer under a heading that
+ * says 2024.
+ */
+function describesNow(data: MatchupData): boolean {
+  return !data.pinned || data.pinned.season === data.state.season;
+}
+
+/**
+ * The hero's heading.
+ *
+ * A game address says which game in its H1, because that is what separates it
+ * from the pair's page — two pages headed "New England Patriots vs Seattle
+ * Seahawks" are two pages competing for one query.
+ */
+function heroHeading(data: MatchupData): string {
+  const names = matchupTitle(data);
+  return data.pinned
+    ? `${names}, ${data.pinned.weekLabel} ${data.pinned.season}`
+    : names;
 }
 
 /**
@@ -221,30 +295,58 @@ function renderLinescore(data: MatchupData): string {
  * number once, in the second half of the page. Merging them is the whole point:
  * above the fold there is one object, and it is the scoreboard.
  *
- * The crest, the nickname, the number and the record are one column per team;
- * the status, the venue and the kickoff sit between and below them, quieter,
- * because on a final the stadium is where it happened rather than what
- * happened. The quarter line closes it when there is one.
+ * It is a SCOREBOARD STRIP, not a poster. The first version of the merge stacked
+ * crest over nickname over score in a column per team, pushed the two columns to
+ * opposite edges and hung the quarter line underneath — 426px of hero, most of it
+ * air, with the two numbers it exists for a third of a screen apart. Each side is
+ * now one horizontal row (crest, name over record, number) and the two rows meet
+ * at a dash in the middle, so "10 – 13" reads as one figure at one glance. The
+ * quarter line follows immediately under the metadata as part of the same object
+ * rather than as a table that happens to sit below it.
+ *
+ * Both sides are built by the same call in the same order and the home side is
+ * reversed in CSS, so the two are mirror images by construction rather than by
+ * two orders kept in step by hand.
  */
 function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): string {
   const meeting = data.featured;
   if (!meeting?.score) return "";
   const headingTag = options.embed ? "h2" : "h1";
 
+  // The same two inks the rest of the page resolves teams to, so a side's tint
+  // here and its bars further down are never two different navies — and so the
+  // pairs that genuinely share a primary (Patriots and Seahawks are both
+  // #002244) still come out as two distinguishable sides. See pairColors().
+  const color = matchupColors(data.pair);
+
   const side = (which: "away" | "home"): string => {
     const team = which === "home" ? meeting.home : meeting.away;
     const teamData =
       team.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
     const won = meeting.winner?.abbreviation === team.abbreviation;
+    const mark = record(teamData);
     return (
-      `<div class="sct-mu-final-side${won ? " is-winner" : ""}">` +
+      // is-home is what reverses the row, so the home crest sits on the outside
+      // and the home number beside the dash — the mirror of the away side. The
+      // ink is the side's own tint, which is what gives each half of the strip
+      // its structure without a divider ruled down the middle of it.
+      `<div class="sct-mu-final-side${which === "home" ? " is-home" : ""}${won ? " is-winner" : ""}"` +
+      styleAttr([`--mu-side-ink:${color(team)}`]) +
+      `>` +
       `<img class="sct-mu-final-logo" src="${escapeHtml(team.logo)}" alt=""` +
-      ` width="72" height="72" loading="lazy" decoding="async" />` +
+      ` width="56" height="56" loading="lazy" decoding="async" />` +
+      `<span class="sct-mu-final-who">` +
+      // Nickname and code, one of which is showing at any width. Below 640px a
+      // nickname truncates to "PATRI…" between a 34px crest and a 40px number,
+      // and an ellipsis is a worse label than the three letters every scoreboard
+      // uses. Both are in the markup because the swap is a width question and
+      // the server does not know the width; the board is aria-hidden either way,
+      // so nothing is announced twice.
       `<span class="sct-mu-final-name">${escapeHtml(team.nickname)}</span>` +
+      `<span class="sct-mu-final-code">${escapeHtml(team.code.toUpperCase())}</span>` +
+      (mark ? `<span class="sct-mu-final-record">${mark}</span>` : "") +
+      `</span>` +
       `<span class="sct-mu-final-score">${escapeHtml(String(meeting.score![which]))}</span>` +
-      (record(teamData)
-        ? `<span class="sct-mu-final-record">${record(teamData)}</span>`
-        : "") +
       `</div>`
     );
   };
@@ -256,7 +358,13 @@ function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): stri
   const periods = data.boxscore?.periodCount ?? 4;
   const status = periods > 4 ? `Final${periods > 5 ? `/${periods - 4}OT` : "/OT"}` : "Final";
 
-  const where = [status, meeting.venue].filter(Boolean).map(String);
+  // The status is NOT repeated here. It is already the last word of the eyebrow
+  // above, and it was also the first word of this line and — before the board
+  // was rebuilt — the thing the middle of the board wanted to say. Three
+  // "Final"s in forty vertical pixels is not emphasis. The eyebrow keeps it,
+  // because that is where the OT suffix belongs, and the metadata row becomes
+  // what it should always have been: where it happened and when.
+  const where = [meeting.venue].filter(Boolean).map(String);
   // gameDateLine() already spells the zone into `time`, so nothing is appended
   // here — doing it anyway printed "8:20 PM ET ET".
   const whenParts = [when.date, when.time === "Time TBD" ? "" : when.time]
@@ -271,13 +379,19 @@ function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): stri
     `<div class="sct-mu-final-inner">` +
     `<div class="sct-hero-text sct-mu-final-text">` +
     `<p class="sct-eyebrow">${escapeHtml(
-      `${meeting.season} NFL${DOT_TEXT}Week ${meeting.week}${DOT_TEXT}${status}`,
+      `${meeting.season} NFL${DOT_TEXT}${meeting.weekLabel}${DOT_TEXT}${status}`,
     )}</p>` +
-    `<${headingTag} class="sct-title sct-mu-final-title">${escapeHtml(matchupTitle(data))}</${headingTag}>` +
+    `<${headingTag} class="sct-title sct-mu-final-title">${escapeHtml(heroHeading(data))}</${headingTag}>` +
     `</div>` +
     `<div class="sct-mu-final-board" aria-hidden="true">` +
     side("away") +
-    `<span class="sct-mu-final-at">${escapeHtml(meeting.neutralSite ? "vs" : "@")}</span>` +
+    // A dash, not "@". The "@" was the only thing on the board naming the home
+    // side, but it was also a character doing that job in the one position the
+    // eye lands on first — between the two numbers, where the reader is asking
+    // "what was the score", not "who was at home". The venue answers the second
+    // question one line down, and the spoken sentence under the board answers
+    // both. On a neutral site there is no home side to name in the first place.
+    `<span class="sct-mu-final-join" aria-hidden="true">&ndash;</span>` +
     side("home") +
     `</div>` +
     // The board is three crests and four numbers; read out cell by cell it is
@@ -287,9 +401,10 @@ function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): stri
         ? `${meeting.winner.fullName} beat ` +
           `${(meeting.winner.abbreviation === meeting.home.abbreviation ? meeting.away : meeting.home).fullName} ` +
           `${Math.max(meeting.score.home, meeting.score.away)}–${Math.min(meeting.score.home, meeting.score.away)}` +
-          ` in Week ${meeting.week} of the ${meeting.season} season.`
+          ` in the ${meeting.weekLabel} of the ${meeting.season} season` +
+          (meeting.neutralSite || !meeting.venue ? "." : ` at ${meeting.venue}.`)
         : `${meeting.away.fullName} and ${meeting.home.fullName} tied ` +
-          `${meeting.score.away}–${meeting.score.home} in Week ${meeting.week} of the ${meeting.season} season.`,
+          `${meeting.score.away}–${meeting.score.home} in the ${meeting.weekLabel} of the ${meeting.season} season.`,
     )}</p>` +
     `<p class="sct-mu-final-meta">` +
     `<span class="sct-mu-final-where">${escapeHtml(where.join(" · "))}</span>` +
@@ -426,7 +541,7 @@ function renderFeatured(data: MatchupData): string {
     (meeting.network ? networkDefs([meeting.network]) : "") +
     `<div class="sct-game sct-mu-game${isResult ? " is-final" : ""}">` +
     `<div class="sct-game-head">` +
-    `<span class="sct-game-week">${escapeHtml(`${meeting.season} · Week ${meeting.week}`)}</span>` +
+    `<span class="sct-game-week">${escapeHtml(`${meeting.season} · ${meeting.weekLabel}`)}</span>` +
     `<span class="sct-game-pills">${tags.join("")}` +
     `<span class="sct-game-pill" data-kind="home">${escapeHtml(home)}</span></span>` +
     `</div>` +
@@ -543,8 +658,16 @@ function renderLeaders(data: MatchupData): string {
   const card = (label: string, leader: GameLeader | null): string => {
     if (!leader) return "";
     const code = leader.team?.code ?? "";
+    // The crest of the team he played for THAT day, as the card's watermark —
+    // the device the outlook cards already use, and the reason it is a CSS
+    // background rather than an <img>: it is texture, not a second picture of
+    // something. A leader whose team the logs could not name simply has none,
+    // and the card falls back to the plain surface it had before.
+    const logo = leader.team?.logo ?? null;
     return (
-      `<li class="sct-mu-leader">` +
+      `<li class="sct-mu-leader${logo ? " has-team-logo" : ""}"` +
+      styleAttr([logo ? `--mu-leader-logo:url('${logo}')` : null]) +
+      `>` +
       `<p class="sct-mu-leader-label">${escapeHtml(label)}</p>` +
       `<div class="sct-mu-leader-body">` +
       playerPhoto(leader.player.id, "sct-mu-leader-photo", 56) +
@@ -1036,34 +1159,60 @@ function renderPlayerStats(data: MatchupData): string {
       `</tr>`,
   );
 
-  const blocks =
+  // Two columns: passing over rushing on the left, receiving beside them.
+  //
+  // Stacked, these four tables ran to most of a screen each and the reader
+  // scrolled past three of them to reach the one they wanted. Side by side they
+  // are one object — and the pairing is not arbitrary: passing and rushing are
+  // the two SHORT tables (three quarterbacks, seven backs) and receiving is the
+  // long one, so stacking the short pair against the long one is what makes the
+  // two columns come out roughly level instead of leaving half a screen of
+  // white space under a three-row table.
+  //
+  // Fantasy stays out of the row on purpose. It is the table nobody else
+  // prints — three scorings and a positional finish — and it is the one a
+  // reader comes to this page FOR, so it gets the width rather than half of it.
+  const passingBlock =
     statTable("Passing", "Passing statistics", [
       col("C/ATT"),
       col("YDS", true),
       col("TD"),
       col("INT"),
       col("RATE"),
-    ], passing) +
+    ], passing);
+
+  const rushingBlock =
     statTable("Rushing", "Rushing statistics", [
       col("CAR"),
       col("YDS", true),
       col("AVG"),
       col("TD"),
-    ], rushing) +
+    ], rushing);
+
+  const receivingBlock =
     statTable("Receiving", "Receiving statistics", [
       col("REC"),
       col("TGT"),
       col("YDS", true),
       col("AVG"),
       col("TD"),
-    ], receiving) +
-    statTable("Fantasy", "Fantasy statistics", [
-      col("PPR", true),
-      col("HALF"),
-      col("STD"),
-      col("FINISH"),
-    ], fantasy);
-  if (!blocks) return "";
+    ], receiving);
+
+  const fantasyBlock = statTable("Fantasy", "Fantasy statistics", [
+    col("PPR", true),
+    col("HALF"),
+    col("STD"),
+    col("FINISH"),
+  ], fantasy);
+
+  // The left column is a column even when it holds one table, so the grid always
+  // has the same two children and the row cannot silently become "receiving,
+  // then passing" in a game with no rushing attempts.
+  const stack = passingBlock + rushingBlock;
+  const board =
+    (stack ? `<div class="sct-mu-ps-stack">${stack}</div>` : "") + receivingBlock;
+  if (!board && !fantasyBlock) return "";
+  const blocks = (board ? `<div class="sct-mu-ps-row">${board}</div>` : "") + fantasyBlock;
 
   return (
     `<section class="sct-block sct-mu-playerstats">` +
@@ -1136,20 +1285,258 @@ function renderTakeaways(data: MatchupData): string {
 
 /* ------------------------------------------------------------ fantasy usage */
 
+/** A share as this section writes it: "85%". Null has no percentage at all. */
+function usagePercent(share: number | null): string {
+  return share === null ? "—" : `${Math.round(share * 100)}%`;
+}
+
+/** The ring's geometry, in the user units of its own 120-square viewBox. */
+const USAGE_RING_RADIUS = 42;
+const USAGE_RING_LENGTH = 2 * Math.PI * USAGE_RING_RADIUS;
+/** The hairline of white between two neighbouring slices. */
+const USAGE_SLICE_GAP = 2;
+
+/** The pooled tail. Grey on purpose: "Other" is not a player and must not read as one. */
+const USAGE_INK_OTHER = "#c2c8d2";
+
 /**
- * Snaps and share, which is the half of a fantasy day the box score misses.
+ * One team's ink, a step lighter per slice.
  *
- * A receiver who ran a route on 82% of the dropbacks and caught two passes had
- * a better day for next week than the one who caught two on a third of the
- * snaps, and only this table can tell them apart. Quarterbacks are left out on
- * purpose — a starter plays every snap and the row would say 100% every week.
+ * Six unrelated saturated colours in a 90px ring is a pie chart from a
+ * spreadsheet. The slices of one team are one hue instead, separated by
+ * lightness, and the legend beside them carries the name and the percentage —
+ * so the colour is what groups the ring to its team, not what carries the
+ * meaning. Nothing here is legible only in colour.
+ *
+ * A pale ink — Green Bay's yellow, Cincinnati's orange — is darkened toward the
+ * page's navy before the ramp starts, because five steps lighter than #FFB612
+ * is five steps of white on white.
+ */
+function usageRamp(base: string, count: number): string[] {
+  const start = luminance(base) > 0.6 ? mixHex(base, "#0b1f33", 0.45) : base;
+  return Array.from({ length: Math.max(count, 1) }, (_, i) =>
+    mixHex(start, "#ffffff", Math.min(i * 0.15, 0.6)),
+  );
+}
+
+/** The three lines a slice's hover tooltip carries. Supplemental, never the source. */
+function usageTip(slice: UsageSlice, unit: string, metric: string): string {
+  return (
+    `${slice.label}\n` +
+    `${slice.value} ${unit}\n` +
+    `${Math.round(slice.share * 100)}% ${metric}`
+  );
+}
+
+/** What each ring is called, counts, and says when it has nothing to draw. */
+const USAGE_RINGS: ReadonlyArray<{
+  key: "targets" | "carries";
+  total: "targetTotal" | "carryTotal";
+  heading: string;
+  unit: string;
+  metric: string;
+  unavailable: string;
+}> = [
+  {
+    key: "targets",
+    total: "targetTotal",
+    heading: "Target Share",
+    unit: "targets",
+    metric: "target share",
+    unavailable: "Target share data unavailable",
+  },
+  {
+    key: "carries",
+    total: "carryTotal",
+    heading: "Carry Share",
+    unit: "carries",
+    metric: "carry share",
+    unavailable: "Carry share data unavailable",
+  },
+];
+
+/**
+ * One part-to-whole distribution: a ring, and the legend that says what it means.
+ *
+ * The ring is drawn as one dashed circle per slice — no chart library, no
+ * canvas, no dependency — and it is `aria-hidden` because everything in it is
+ * written out in the list beside it: the name, the percentage, and the raw
+ * count in the span a screen reader reads and a sighted reader does not need.
+ * The tooltips are the same three facts again, for a mouse.
+ *
+ * A zero denominator draws nothing. There is no such thing as a share of no
+ * carries, and an empty ring would be a claim that there is.
+ */
+function usageRing(
+  team: TeamUsage,
+  spec: (typeof USAGE_RINGS)[number],
+  ink: string,
+): string {
+  const total = team[spec.total];
+  const slices = team[spec.key];
+  const head =
+    `<h4 class="sct-mu-usage-metric-h">${escapeHtml(spec.heading)}` +
+    (total > 0
+      ? `<span class="sct-mu-usage-denom">${total} ${escapeHtml(spec.unit)}</span>`
+      : "") +
+    `</h4>`;
+
+  if (total <= 0 || slices.length === 0) {
+    return (
+      `<div class="sct-mu-usage-metric">${head}` +
+      `<p class="sct-mu-usage-none">${escapeHtml(spec.unavailable)}</p>` +
+      `</div>`
+    );
+  }
+
+  const ramp = usageRamp(ink, slices.filter((slice) => slice.player).length);
+  // The named slices are already highest-first and "Other" is already last, so
+  // the ramp index is the slice index and the ring reads light-ward clockwise.
+  const inked = slices.map((slice, i) => ({
+    slice,
+    tone: slice.player ? (ramp[i] ?? USAGE_INK_OTHER) : USAGE_INK_OTHER,
+  }));
+
+  let start = 0;
+  const arcs = inked.map(({ slice, tone }) => {
+    const length = slice.share * USAGE_RING_LENGTH;
+    // The gap is taken off the drawn length, not added between arcs, so the
+    // slices still sum to the circle. A ring with one slice in it keeps its
+    // full length — a gap there looks like a broken circle, not a division.
+    const drawn =
+      inked.length > 1 ? Math.max(length - USAGE_SLICE_GAP, 0.75) : length;
+    const offset = start;
+    start += length;
+    return (
+      `<circle class="sct-mu-usage-arc" cx="60" cy="60" r="${USAGE_RING_RADIUS}"` +
+      ` stroke="${escapeHtml(tone)}"` +
+      ` stroke-dasharray="${drawn.toFixed(2)} ${(USAGE_RING_LENGTH - drawn).toFixed(2)}"` +
+      ` stroke-dashoffset="${(-offset).toFixed(2)}">` +
+      `<title>${escapeHtml(usageTip(slice, spec.unit, spec.metric))}</title>` +
+      `</circle>`
+    );
+  });
+
+  const legend = inked.map(({ slice, tone }) => {
+    const name = slice.player
+      ? playerName(slice.label, "sct-mu-usage-key-name")
+      : `<span class="sct-mu-usage-key-name is-other">${escapeHtml(slice.label)}</span>`;
+    return (
+      `<li class="sct-mu-usage-key">` +
+      `<span class="sct-mu-usage-swatch" aria-hidden="true"${styleAttr([`background:${tone}`])}></span>` +
+      name +
+      `<span class="sct-mu-usage-key-pct">${usagePercent(slice.share)}</span>` +
+      `<span class="sct-visually-hidden">, ${slice.value} ${escapeHtml(spec.unit)}</span>` +
+      `</li>`
+    );
+  });
+
+  return (
+    `<div class="sct-mu-usage-metric">${head}` +
+    `<div class="sct-mu-usage-ring-row">` +
+    `<svg class="sct-mu-usage-ring" viewBox="0 0 120 120" width="96" height="96"` +
+    ` aria-hidden="true" focusable="false">` +
+    `<g transform="rotate(-90 60 60)">${arcs.join("")}</g>` +
+    `</svg>` +
+    `<ol class="sct-mu-usage-keys">${legend.join("")}</ol>` +
+    `</div>` +
+    `</div>`
+  );
+}
+
+/**
+ * Snap share, as a ranked list rather than a ring.
+ *
+ * Snap percentages are not a distribution — five players can each be on the
+ * field for 80% of the same snaps — so a pie of them would be arithmetic
+ * nonsense. Ranked bars are the honest shape: the comparison is player against
+ * player, and the eye does that down a column of left-aligned bars better than
+ * around a circle.
+ */
+function usageBars(team: TeamUsage): string {
+  if (team.snaps.length === 0) return "";
+  const rows = team.snaps.map((row) => {
+    const share = row.snapShare;
+    const tip = `${row.player.name}\n${row.snaps} snaps\n${usagePercent(share)} snap share`;
+    return (
+      `<li class="sct-mu-usage-bar" title="${escapeHtml(tip)}">` +
+      playerPhoto(row.player.id, "sct-mu-usage-face", 30) +
+      `<span class="sct-mu-usage-bar-body">` +
+      `<span class="sct-mu-usage-bar-head">` +
+      playerName(row.player.name, "sct-mu-usage-bar-name") +
+      // No team code: the player is already inside his own team's panel.
+      positionTag(row.position, null, "sct-mu-usage-bar-meta") +
+      `<span class="sct-mu-usage-bar-pct">${usagePercent(share)}</span>` +
+      `</span>` +
+      `<span class="sct-mu-usage-track" aria-hidden="true">` +
+      `<span class="sct-mu-usage-fill"${styleAttr([
+        `width:${Math.round((share ?? 0) * 100)}%`,
+      ])}></span>` +
+      `</span>` +
+      `<span class="sct-mu-usage-bar-raw">${row.snaps} snaps</span>` +
+      `</span>` +
+      `</li>`
+    );
+  });
+  return (
+    `<div class="sct-mu-usage-metric">` +
+    `<h4 class="sct-mu-usage-metric-h">Snap Share</h4>` +
+    `<ol class="sct-mu-usage-bars">${rows.join("")}</ol>` +
+    `</div>`
+  );
+}
+
+/**
+ * One team's panel: the badge, the bars, and the two rings under them.
+ *
+ * Both panels are built from the same function in the same order, which is the
+ * whole point of splitting the section by team — Target Share is in the same
+ * place on the right as it is on the left, so the two are compared by looking
+ * across rather than by reading twice.
+ */
+function usagePanel(team: TeamUsage, ink: string): string {
+  const bars = usageBars(team);
+  const rings = USAGE_RINGS.map((spec) => usageRing(team, spec, ink));
+  // A team with no snaps in the log and nothing to distribute has no panel.
+  // The rings above return their own "unavailable" line, so this asks the data
+  // rather than the markup.
+  if (!bars && team.targetTotal <= 0 && team.carryTotal <= 0) return "";
+
+  const name = team.team;
+  return (
+    `<article class="sct-mu-usage-team"${styleAttr([`--mu-usage-ink:${ink}`])}>` +
+    (name
+      ? `<h3 class="sct-mu-usage-team-name">` +
+        `<img class="sct-mu-usage-logo" src="${escapeHtml(name.logo)}" alt=""` +
+        ` width="28" height="28" loading="lazy" decoding="async" />` +
+        `${escapeHtml(name.fullName)}</h3>`
+      : "") +
+    bars +
+    `<div class="sct-mu-usage-rings">${rings.join("")}</div>` +
+    `</article>`
+  );
+}
+
+/**
+ * Who controlled the snaps, the targets and the backfield, for each side.
+ *
+ * Snaps and share are the half of a fantasy day the box score misses: a
+ * receiver who was on the field for 82% of the dropbacks and caught two passes
+ * had a better day for next week than the one who caught two on a third of the
+ * snaps. That was a six-column table on a page that already has five of them,
+ * and a table is a poor answer to a question about proportion — so the default
+ * layer is now two team panels of pictures, and the table it was built from is
+ * one click underneath, unchanged and still sortable.
+ *
+ * The visual layer and the table disagree about quarterbacks on purpose. The
+ * table is about snap counts, where a starting quarterback's row says 100%
+ * every week and is worth no space; a carry distribution that leaves him out is
+ * simply wrong. See usageByTeam() in game-stats.ts, which is where both
+ * populations are decided — the page does not recalculate a share here.
  */
 function renderUsage(data: MatchupData): string {
   const usage = data.gameStats?.usage ?? [];
   if (usage.length === 0) return "";
-
-  const share = (value: number | null): string =>
-    value === null ? "—" : `${Math.round(value * 100)}%`;
 
   const rows = usage.map(
     (row: UsageRow) =>
@@ -1158,22 +1545,74 @@ function renderUsage(data: MatchupData): string {
       statCell(row.snaps, row.snaps) +
       // The share sorts on the fraction, not on the rounded percent it prints,
       // so two rows that both read 46% still order against each other.
-      statCell(share(row.snapShare), row.snapShare, "is-key") +
+      statCell(usagePercent(row.snapShare), row.snapShare, "is-key") +
       statCell(row.targets, row.targets) +
-      statCell(share(row.targetShare), row.targetShare) +
+      statCell(usagePercent(row.targetShare), row.targetShare) +
       statCell(row.carries, row.carries) +
       `</tr>`,
   );
 
+  const table = statTable(
+    null,
+    "Offensive snaps and share for the skill positions",
+    [col("SNAPS"), col("SNAP %", true), col("TGT"), col("TGT %"), col("CAR")],
+    rows,
+  );
+
+  // One colour per team for the whole page, the same resolution the Snapshot
+  // and the Fantasy Matchups table use, so a reader learns the pair's two inks
+  // once and carries them down.
+  const color = matchupColors(data.pair);
+
+  // Pair order, not log order. usageByTeam() hands these back in the order the
+  // appearance list met the two teams, which is whoever the feed listed first
+  // and has nothing to do with the order this page reads in — on a page whose
+  // hero, linescore and every comparison table put pair.a on the left, that put
+  // the two panels the other way round from everything above them. The panels
+  // are the one place on the page where the sides were not the pair's own
+  // order, so the order is resolved here, where the pair is known.
+  const order = new Map([
+    [data.pair.a.abbreviation, 0],
+    [data.pair.b.abbreviation, 1],
+  ]);
+  // A team the pair does not name cannot be placed against it, so it keeps the
+  // position it arrived in rather than being sorted to the front.
+  const place = (team: TeamUsage): number => order.get(team.team?.abbreviation ?? "") ?? 2;
+
+  const panels = [...(data.gameStats?.usageByTeam ?? [])]
+    .sort((left, right) => place(left) - place(right))
+    .map((team) => usagePanel(team, team.team ? color(team.team) : "#0b1f33"))
+    .filter((panel) => panel !== "");
+
+  // Nothing to draw — a log with snaps but no team attribution — leaves the
+  // table as the section, open, exactly as it was before the panels existed.
+  if (panels.length === 0) {
+    return `<section class="sct-block sct-mu-usage">` + h2("Fantasy Usage") + table + `</section>`;
+  }
+
   return (
     `<section class="sct-block sct-mu-usage">` +
     h2("Fantasy Usage") +
-    statTable(
-      null,
-      "Offensive snaps and share for the skill positions",
-      [col("SNAPS"), col("SNAP %", true), col("TGT"), col("TGT %"), col("CAR")],
-      rows,
+    `<p class="sct-mu-usage-sub">` +
+    escapeHtml("How each offense distributed snaps, targets and carries.") +
+    `</p>` +
+    `<div class="sct-mu-usage-teams">${panels.join("")}</div>` +
+    `<p class="sct-mu-usage-note">` +
+    escapeHtml(
+      "Shares are based on official game usage totals. Snap share covers the skill positions.",
     ) +
+    `</p>` +
+    // <details> rather than a script: the table is in the HTML either way, so
+    // it is one copy, it is indexed, and it opens with JavaScript switched off.
+    (table
+      ? `<details class="sct-mu-usage-full">` +
+        `<summary class="sct-mu-usage-toggle">` +
+        `<span class="sct-mu-usage-toggle-more">View full usage table</span>` +
+        `<span class="sct-mu-usage-toggle-less">Hide full usage table</span>` +
+        `</summary>` +
+        table +
+        `</details>`
+      : "") +
     `</section>`
   );
 }
@@ -1323,6 +1762,35 @@ function cell(row: StatRow | null, side: "a" | "b"): string {
   );
 }
 
+/* ----------------------------------------------------------------- colour */
+
+/** A hex colour as three channels. Anything unparseable reads as black. */
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.trim().replace(/^#/, "");
+  const n = Number.parseInt(
+    clean.length === 3 ? clean.split("").map((ch) => ch + ch).join("") : clean.slice(0, 6),
+    16,
+  );
+  return Number.isFinite(n) ? [(n >> 16) & 255, (n >> 8) & 255, n & 255] : [0, 0, 0];
+}
+
+/** `from` moved `amount` of the way toward `to`, back as a hex string. */
+function mixHex(from: string, to: string, amount: number): string {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  const channel = (i: number): string =>
+    Math.round(a[i]! + (b[i]! - a[i]!) * amount)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${channel(0)}${channel(1)}${channel(2)}`;
+}
+
+/** Rough relative luminance — enough to ask "is this ink too pale for white". */
+function luminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
 /**
  * Two colours a reader can tell apart, for the two sides of a comparison.
  *
@@ -1341,18 +1809,9 @@ function cell(row: StatRow | null, side: "a" | "b"): string {
  * are not the same value and are the same colour to the eye.
  */
 function pairColors(a: NflTeam, b: NflTeam): [string, string] {
-  const rgb = (hex: string): [number, number, number] => {
-    const clean = hex.trim().replace(/^#/, "");
-    const n = Number.parseInt(clean.length === 3
-      ? clean.split("").map((ch) => ch + ch).join("")
-      : clean.slice(0, 6), 16);
-    return Number.isFinite(n)
-      ? [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-      : [0, 0, 0];
-  };
   const tooClose = (x: string, y: string): boolean => {
-    const [r1, g1, b1] = rgb(x);
-    const [r2, g2, b2] = rgb(y);
+    const [r1, g1, b1] = hexToRgb(x);
+    const [r2, g2, b2] = hexToRgb(y);
     return Math.hypot(r1 - r2, g1 - g2, b1 - b2) < 60;
   };
   if (!tooClose(a.primaryColor, b.primaryColor)) {
@@ -1438,6 +1897,7 @@ function compareTable(
  * about next time.
  */
 function renderSnapshot(data: MatchupData): string {
+  if (!describesNow(data)) return "";
   const { a, b } = data.pair;
   const sa = data.a.stats;
   const sb = data.b.stats;
@@ -1482,6 +1942,15 @@ function renderSnapshot(data: MatchupData): string {
 
 /* -------------------------------------------------------- fantasy matchups */
 
+/** How the FPA table's format id reads in a sentence. */
+function formatWord(format: string): string {
+  return format === "ppr"
+    ? "PPR"
+    : format === "standard"
+      ? "standard"
+      : "half-PPR";
+}
+
 /**
  * What each defense gives up, by position.
  *
@@ -1496,125 +1965,8 @@ function renderSnapshot(data: MatchupData): string {
  * on a fantasy page. The note under the block says so in words, and each side
  * is labelled "<team> defense" so neither bar can be read as an offense's.
  */
-/** How the FPA table's format id reads in a sentence. */
-function formatWord(format: string): string {
-  return format === "ppr"
-    ? "PPR"
-    : format === "standard"
-      ? "standard"
-      : "half-PPR";
-}
-
-/**
- * What the game did to the two defenses' ranks.
- *
- * The block above this one, before the game, answers "is my receiver in a good
- * spot" with a season-to-date figure. After the game that figure has just
- * moved, and the move is the more interesting fact: a defense that went into
- * the week 30th against quarterbacks and came out 24th did something, and a
- * manager deciding whether to stream against them next week is asking exactly
- * that.
- *
- * Both ranks come from the same rows and the same arithmetic — see fpa-delta.ts
- * — so the arrow between them is a real comparison rather than two figures from
- * different windows. A week 1 game has no "before"; the new rank prints alone
- * and no arrow is drawn, because there is nothing for it to point away from.
- */
-function renderFpaChange(data: MatchupData): string {
-  const { a, b } = data.pair;
-  const delta = data.fpaDelta;
-  const meeting = data.featured;
-  if (!delta || !meeting) return "";
-
-  const aMoves = movesFor(delta, a);
-  const bMoves = movesFor(delta, b);
-  if (!aMoves && !bMoves) return "";
-
-  // Week 1 has nothing before it, so there is no change to name. The block is
-  // still worth drawing — these are the ranks now — but it is called what it
-  // is rather than promising a before-and-after it cannot show.
-  const hasBefore = FANTASY_POSITIONS.some(
-    (position) =>
-      aMoves?.[position]?.before !== null || bMoves?.[position]?.before !== null,
-  );
-
-  const side = (
-    moves: Record<FantasyPosition, RankMove> | null,
-    position: FantasyPosition,
-    which: "a" | "b",
-  ): string => {
-    const move = moves?.[position];
-    if (!move) return `<span class="sct-mu-cell is-empty">—</span>`;
-    // Rank 1 allows the most. So a rank that got SMALLER means the defense got
-    // softer, which is good news for the offense facing it next week and is
-    // drawn as the upward, green direction — the same reading the block above
-    // gives a long bar. The arrow is about the matchup, not about the defense.
-    const change = move.before === null ? 0 : move.before - move.after;
-    const direction = change > 0 ? "softer" : change < 0 ? "tougher" : "flat";
-    // Rank 1 allows the most, which is the SOFT end and the good news for the
-    // offense facing it — so rank 1 is the green chip, exactly as the FPA
-    // tool's own legend colours it (softest 1–6 green, toughest 27–32 red).
-    // See the note below on why this is not rankTier(33 - rank).
-    const tier = rankTier(move.after);
-    return (
-      `<span class="sct-mu-cell sct-mu-move" data-side="${which}">` +
-      (move.before === null
-        ? ""
-        : `<span class="sct-mu-move-from">${escapeHtml(ordinal(move.before))}</span>` +
-          `<span class="sct-mu-move-arrow" data-direction="${direction}" aria-hidden="true">&rarr;</span>`) +
-      `<span class="sct-stat-rank" data-tier="${tier}">${escapeHtml(ordinal(move.after))}` +
-      `<span class="sct-visually-hidden">${escapeHtml(
-        move.before === null
-          ? ` of 32 most points allowed to ${position}s after this game`
-          : ` of 32 most points allowed to ${position}s, from ${ordinal(move.before)} before this game`,
-      )}</span></span>` +
-      `<span class="sct-mu-move-fpa">${escapeHtml(move.fpa.toFixed(1))}</span>` +
-      `</span>`
-    );
-  };
-
-  const color = matchupColors(data.pair);
-  const style = styleAttr([`--mu-cmp-left:${color(a)}`, `--mu-cmp-right:${color(b)}`]);
-
-  const rows = FANTASY_POSITIONS.map(
-    (position) =>
-      `<tr>` +
-      `<td class="sct-mu-td-side">${side(aMoves, position, "a")}</td>` +
-      `<th scope="row" class="sct-mu-td-label">${escapeHtml(position)}</th>` +
-      `<td class="sct-mu-td-side">${side(bMoves, position, "b")}</td>` +
-      `</tr>`,
-  ).join("");
-
-  return (
-    `<section class="sct-block sct-mu-fantasy sct-mu-fpa-change">` +
-    h2(hasBefore ? "What This Changed" : `Fantasy Matchups After Week ${meeting.week}`) +
-    `<table class="sct-mu-table"${style}>` +
-    compareCaption(
-      `${a.nickname} defense`,
-      "vs",
-      `${b.nickname} defense`,
-      " — fantasy points allowed rank before and after this game",
-    ) +
-    `<thead class="sct-visually-hidden"><tr>` +
-    `<th scope="col">${escapeHtml(`${a.nickname} defense`)}</th>` +
-    `<th scope="col">Position</th>` +
-    `<th scope="col">${escapeHtml(`${b.nickname} defense`)}</th></tr></thead>` +
-    `<tbody>${rows}</tbody></table>` +
-    `<p class="sct-note">${escapeHtml(
-      `Fantasy points allowed per game through Week ${meeting.week} of ${delta.season}, ` +
-        `${formatWord(delta.format)} scoring` +
-        (hasBefore ? `, with the rank each defense carried into this game` : "") +
-        `. 1st allows the most, so a ${hasBefore ? "rank that fell" : "lower rank"} is a softer defense.`,
-    )}</p>` +
-    `</section>`
-  );
-}
-
 function renderFantasy(data: MatchupData): string {
-  // After the game the before/after table says everything this one does and
-  // one thing more, so it replaces it rather than joining it — two tables of
-  // the same eight ranks would be the page arguing with itself.
-  if (isPostgame(data) && data.fpaDelta) return renderFpaChange(data);
+  if (!describesNow(data)) return "";
 
   const { a, b } = data.pair;  const fpa = data.fpa;
   if (!fpa || (!fpa.a && !fpa.b)) return "";
@@ -1759,6 +2111,7 @@ function injuryList(side: TeamPageData, postgame: boolean): string {
  * history behind the designation lives.
  */
 function renderInjuries(data: MatchupData): string {
+  if (!describesNow(data)) return "";
   const postgame = isPostgame(data);
   const left = injuryList(data.a, postgame);
   const right = injuryList(data.b, postgame);
@@ -1787,7 +2140,11 @@ function renderInjuries(data: MatchupData): string {
  * at full opacity — this is a result, not a ranking, and greying a team out
  * reads as missing data.
  */
-function meetingRow(meeting: Meeting, data: MatchupData): string {
+function meetingRow(
+  meeting: Meeting,
+  data: MatchupData,
+  options: MatchupRenderOptions,
+): string {
   const when = gameDateLine(asGame(meeting));
   const final = meeting.status === "final" && meeting.score !== null;
   const isFeatured = data.featured === meeting;
@@ -1831,28 +2188,68 @@ function meetingRow(meeting: Meeting, data: MatchupData): string {
 
   return (
     `<li class="sct-srow sct-mu-row${isFeatured ? " is-featured" : ""}">` +
-    `<span class="sct-srow-week">${escapeHtml(`${meeting.season} · WK ${meeting.week}`)}</span>` +
+    `<span class="sct-srow-week">${escapeHtml(`${meeting.season} · ${shortWeek(meeting)}`)}</span>` +
     `<span class="sct-mu-teams">${escapeHtml(`${meeting.away.nickname} ${meeting.neutralSite ? "vs" : "at"} ${meeting.home.nickname}`)}</span>` +
     `<span class="sct-srow-when">${escapeHtml(when.date)}</span>` +
     result +
+    recapLink(meeting, data, options) +
     `</li>`
   );
 }
 
-function renderMeetings(data: MatchupData): string {
+/**
+ * The link from a meeting to its own dated page.
+ *
+ * On every finished meeting except the one the page is already about. Two jobs,
+ * and the second is the one that matters: it is how a reader reaches a Week 1
+ * recap in December, and it is the ONLY link to a dated URL anywhere on the
+ * site — without it those pages are addressable but undiscoverable, which for a
+ * crawler is the same as absent.
+ *
+ * Suppressed while the pair's own address is still leading with that game,
+ * because the dated URL 301s back here until the window closes and a link
+ * straight into a redirect is a link that says the wrong thing about which
+ * address owns the page.
+ */
+function recapLink(
+  meeting: Meeting,
+  data: MatchupData,
+  options: MatchupRenderOptions,
+): string {
+  const empty = `<span class="sct-mu-recap"></span>`;
+  if (meeting.status !== "final" || meeting.score === null) return empty;
+  if (data.pinned === meeting) return empty;
+  if (data.matchupState === "recently_completed" && data.featured === meeting) {
+    return empty;
+  }
+
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const href = `${gamePath(prefix, data.pair.slug, {
+    season: meeting.season,
+    week: meeting.week,
+    seasonType: meeting.seasonType,
+  })}${options.linkQuery ?? ""}`;
+
+  return (
+    `<a class="sct-textlink sct-mu-recap" href="${escapeHtml(href)}">` +
+    `Recap ${ARROW}</a>`
+  );
+}
+
+function renderMeetings(data: MatchupData, options: MatchupRenderOptions): string {
   const { a, b } = data.pair;
   const blocks: string[] = [];
 
   if (data.thisSeason.length) {
     blocks.push(
       `<h3 class="sct-mu-h3">${escapeHtml(`${data.state.season} Meetings`)}</h3>` +
-        `<ol class="sct-slist sct-mu-list">${data.thisSeason.map((m) => meetingRow(m, data)).join("")}</ol>`,
+        `<ol class="sct-slist sct-mu-list">${data.thisSeason.map((m) => meetingRow(m, data, options)).join("")}</ol>`,
     );
   }
   if (data.history.length) {
     blocks.push(
       `<h3 class="sct-mu-h3">Recent Meetings</h3>` +
-        `<ol class="sct-slist sct-mu-list">${data.history.map((m) => meetingRow(m, data)).join("")}</ol>`,
+        `<ol class="sct-slist sct-mu-list">${data.history.map((m) => meetingRow(m, data, options)).join("")}</ol>`,
     );
   }
   if (blocks.length === 0) return "";
@@ -1884,7 +2281,7 @@ function renderMeetings(data: MatchupData): string {
         )}</span>` +
         `</p>` +
         `<p class="sct-mu-h2h-note">${escapeHtml(
-          `Regular-season meetings${r.fromSeason ? ` since ${r.fromSeason}` : ""} · ${r.games} game${r.games === 1 ? "" : "s"}`,
+          `Meetings${r.fromSeason ? ` since ${r.fromSeason}` : ""} · ${r.games} game${r.games === 1 ? "" : "s"}`,
         )}</p>` +
         `</div>`
       : "";
@@ -1953,16 +2350,15 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
       renderTakeaways(data) +
       renderUsage(data) +
       renderInjuries(data) +
-      renderFantasy(data) +
       renderSnapshot(data) +
-      renderMeetings(data)
+      renderMeetings(data, options)
     : hasResult(data)
       ? // No meeting this season and none coming: an evergreen rivalry page.
         // The head-to-head IS the subject here, so it leads rather than
         // closes — the same principle as above, applied to a page whose
         // reader has no current game to ask about. The last meeting's detail
         // follows it, minus the two forward-looking fantasy blocks.
-        renderMeetings(data) +
+        renderMeetings(data, options) +
         renderFeatured(data) +
         renderGlance(data) +
         renderLeaders(data) +
@@ -1975,7 +2371,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
         renderSnapshot(data) +
         renderFantasy(data) +
         renderInjuries(data) +
-        renderMeetings(data);
+        renderMeetings(data, options);
 
   return (
     `<div class="sct sct-mu${options.embed ? " is-embed" : ""}" data-sct-root="1"` +

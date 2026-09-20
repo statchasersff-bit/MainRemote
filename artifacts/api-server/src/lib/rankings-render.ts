@@ -37,7 +37,7 @@
  * encoded in colour alone.
  */
 
-import { escapeHtml } from "./render";
+import { escapeHtml, escapeJsonLd } from "./render";
 import {
   ALL_VIEW_COLLAPSED_ROWS,
   POSITIONS,
@@ -52,6 +52,11 @@ import {
   type StatPosition,
   type TierGroup,
 } from "./rankings/rankings-data";
+import {
+  RANKINGS_FAQ_HEADING,
+  rankingsFaq,
+  type RankingsFaq,
+} from "./rankings/rankings-faq";
 
 export interface RankingsRenderOptions {
   /**
@@ -280,7 +285,7 @@ function renderAllBoard(
   const table = (rows: AllRow[], withHead: boolean): string =>
     `<table class="scr-all-table">` +
     (withHead
-      ? `<caption class="scr-caption">${escapeHtml(caption)}</caption>` +
+      ? `<caption class="scr-sr-only">${escapeHtml(caption)}</caption>` +
         `<colgroup><col /><col span="4" class="scr-all-col" /></colgroup>` +
         `<thead>${head}</thead>`
       : `<caption class="scr-sr-only">${escapeHtml(
@@ -457,22 +462,135 @@ function renderLegend(data: RankingsData): string {
   );
 }
 
+/* --------------------------------------------------------------------- faq */
+
+/**
+ * The questions, and the FAQPage built from the same list.
+ *
+ * Outside the panels, not inside one. The five boards are one page — the tab
+ * strip swaps a panel, it does not navigate — so questions that belong to any
+ * of them belong to all of them, and a copy per panel would put the same nine
+ * questions in the document five times over. It sits after the last panel
+ * because that is where a reader who has finished with the board arrives.
+ *
+ * Each question is its own <details>, shut by default, exactly as the team hub
+ * does it and for the same reason: the questions are the index, so they all
+ * show, and the answer opens under the one that was actually asked. The block
+ * itself never folds. Open state is a browser concern either way — the answers
+ * are in the DOM regardless, which is what the FAQPage node describes.
+ *
+ * The <h2> is safe in both modes. The embed drops the H1 because the WordPress
+ * page owns it; an H2 under that page's own heading is where these questions
+ * belong in its outline, and the questions take <h3> beneath it.
+ */
+function renderFaq(data: RankingsData, options: RankingsRenderOptions): string {
+  const items = rankingsFaq(data);
+  if (items.length === 0) return "";
+
+  const body = items
+    .map(
+      (entry) =>
+        `<details class="scr-faq-item">` +
+        `<summary class="scr-faq-q-row">` +
+        `<h3 class="scr-faq-q">${escapeHtml(entry.question)}</h3>` +
+        `</summary>` +
+        `<p class="scr-faq-a">${escapeHtml(entry.answer)}</p>` +
+        `</details>`,
+    )
+    .join("");
+
+  return (
+    `<section class="scr-faq-block" aria-labelledby="scr-faq-title">` +
+    `<h2 class="scr-faq-title" id="scr-faq-title">${escapeHtml(
+      RANKINGS_FAQ_HEADING,
+    )}</h2>` +
+    `<div class="scr-faq">${body}</div>` +
+    `</section>` +
+    renderFaqSchema(items, options)
+  );
+}
+
+/**
+ * The FAQPage node, or the inert island the plugin builds it from.
+ *
+ * Same two-mode arrangement as team-render.ts's faqSchema(), for the reason
+ * given at length there: standalone this page owns its document and emits the
+ * node itself; embedded, WordPress owns the document and Rank Math owns its
+ * graph, so a second <script type="application/ld+json"> arriving from inside a
+ * mounted fragment competes with that graph instead of joining it. The island
+ * is the same questions as data, and statchasers-rankings.php lifts them into
+ * the one <script> the host page already prints, then strips the island.
+ *
+ * Data rather than the plugin re-reading the rendered markup: by then every
+ * answer has been escaped for display, and un-escaping prose in PHP to feed a
+ * crawler is a worse job than handing over the array it was built from.
+ *
+ * Note that the standalone page ships `noindex, indexifembedded`, so this node
+ * is not what ranks — the WordPress copy is. It is emitted anyway because a
+ * page that describes itself only when embedded is a page whose structured data
+ * nobody can check without WordPress in front of it.
+ */
+function renderFaqSchema(
+  items: RankingsFaq[],
+  options: RankingsRenderOptions,
+): string {
+  if (items.length === 0) return "";
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="scr-faq-data">` +
+      escapeJsonLd(
+        JSON.stringify(
+          items.map((entry) => ({ q: entry.question, a: entry.answer })),
+        ),
+      ) +
+      `</script>`
+    );
+  }
+
+  return (
+    `<script type="application/ld+json">` +
+    escapeJsonLd(
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((entry) => ({
+          "@type": "Question",
+          name: entry.question,
+          acceptedAnswer: { "@type": "Answer", text: entry.answer },
+        })),
+      }),
+    ) +
+    `</script>`
+  );
+}
+
 export function renderRankingsPage(
   data: RankingsData,
   options: RankingsRenderOptions = {},
 ): string {
   const active = options.position ?? "All";
 
+  /*
+   * `hideHeading` keeps the heading in the document and out of the picture. The
+   * All panel opens directly under the filter strip, where "All positions" is
+   * already the selected chip, so the line restates the control above it. It is
+   * still an <h2> so the panel keeps its place in the heading outline for
+   * anyone navigating by headings rather than by eye.
+   */
   const panel = (
     position: PositionFilter,
     heading: string,
     body: string,
+    hideHeading = false,
   ): string =>
     `<section class="scr-section${
       position === active ? " is-default is-active" : ""
     }" id="${panelId(position)}" data-scr-panel` +
     ` aria-label="${escapeHtml(heading)}">` +
-    `<h2 class="scr-section-title">${escapeHtml(heading)}</h2>` +
+    `<h2 class="${
+      hideHeading ? "scr-sr-only" : "scr-section-title"
+    }">${escapeHtml(heading)}</h2>` +
     body +
     `</section>`;
 
@@ -481,6 +599,7 @@ export function renderRankingsPage(
       "All",
       "All positions, ranked side by side",
       renderAllBoard(data, options) + renderLegend(data),
+      true,
     ) +
     STAT_POSITIONS.map((pos) =>
       panel(
@@ -496,6 +615,7 @@ export function renderRankingsPage(
     ` data-scoring="${escapeHtml(data.scoring)}">` +
     renderControls(data, options) +
     panels +
+    renderFaq(data, options) +
     `</div>`
   );
 }

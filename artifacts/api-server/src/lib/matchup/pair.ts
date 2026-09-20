@@ -14,6 +14,7 @@
  * page every season. 32 teams give 32 × 31 / 2 = 496 pairs.
  */
 
+import type { SeasonType } from "../team/schedule";
 import { getTeamBySlug, normalizeTeamName, type NflTeam } from "../team/teams";
 
 export interface MatchupPair {
@@ -78,6 +79,110 @@ export function parseMatchupSlug(segment: string): ParsedMatchupSlug | null {
   const pair = canonicalizeMatchupPair(left, right);
   if (!pair) return null;
   return { pair, canonical: pair.slug === segment };
+}
+
+/**
+ * One meeting, addressed by the season and week it was played.
+ *
+ * The pair's own address leads with whatever game is current; this is how a
+ * reader — or a search result — asks for a specific one instead. See
+ * gameSegment() for the spelling.
+ */
+export interface MatchupGameRef {
+  season: number;
+  week: number;
+  /**
+   * Which half of the season the week belongs to.
+   *
+   * Not optional, because a week number alone stopped identifying a game the
+   * moment the postseason entered the history: ESPN numbers the postseason from
+   * 1 again, so a pair that met in Week 5 and again in the Super Bowl — which
+   * is postseason week 5 — has two games that a `{season, week}` would match
+   * equally well. Defaulted nowhere: a caller that does not know which half it
+   * means has a bug rather than a reasonable fallback.
+   */
+  seasonType: SeasonType;
+}
+
+/**
+ * The postseason rounds, as they are spelled in an address.
+ *
+ * Named rather than numbered — `/2025-super-bowl/` rather than
+ * `/2025-post-week-5/` — because the name is what a reader types and what a
+ * search engine matches, and because "post week 5" is not a thing anybody calls
+ * the Super Bowl. The numbers are ESPN's week numbers within its postseason.
+ */
+const ROUND_SLUGS: ReadonlyArray<readonly [number, string]> = [
+  [1, "wild-card"],
+  [2, "divisional"],
+  [3, "conference-championship"],
+  [5, "super-bowl"],
+];
+
+const SLUG_BY_ROUND = new Map<number, string>(ROUND_SLUGS);
+const ROUND_BY_SLUG = new Map<string, number>(
+  ROUND_SLUGS.map(([week, slug]) => [slug, week]),
+);
+
+/** The URL spelling of one game: `2026-week-1`, or `2025-super-bowl`. */
+export function gameSegment(ref: MatchupGameRef): string {
+  if (ref.seasonType === "post") {
+    const slug = SLUG_BY_ROUND.get(ref.week);
+    // A round this app has no name for still needs an address, and it needs one
+    // that cannot collide with a regular-season week.
+    return `${ref.season}-${slug ?? `postseason-week-${ref.week}`}`;
+  }
+  return `${ref.season}-week-${ref.week}`;
+}
+
+/**
+ * Read a game out of a URL segment, or null.
+ *
+ * Deliberately strict, and a 404 rather than a 301 for anything near it:
+ * `2026-week-01`, `2026-WEEK-1` and `2026-wk-1` are spellings nothing on this
+ * site generates, so they are not addresses that lost their page — they are
+ * addresses that never existed. The pair slug redirects every alternate
+ * spelling because readers really do type "eagles vs patriots"; nobody types a
+ * week number three ways.
+ */
+const GAME_SEGMENT = /^(\d{4})-week-([1-9]\d?)$/;
+const ROUND_SEGMENT = /^(\d{4})-([a-z-]+)$/;
+const POST_WEEK_SEGMENT = /^(\d{4})-postseason-week-([1-9]\d?)$/;
+
+/** The schedule this app reads starts well after 1920. */
+function seasonInRange(season: number): boolean {
+  return season >= 1920 && season <= 2200;
+}
+
+export function parseGameSegment(segment: string): MatchupGameRef | null {
+  const week = GAME_SEGMENT.exec(segment);
+  if (week) {
+    const season = Number(week[1]);
+    const number = Number(week[2]);
+    // A regular season is 18 weeks; the bounds are here to keep a
+    // parsed-but-impossible ref from reaching the data layer, not to express a
+    // real limit.
+    if (!seasonInRange(season) || number > 25) return null;
+    return { season, week: number, seasonType: "regular" };
+  }
+
+  const fallback = POST_WEEK_SEGMENT.exec(segment);
+  if (fallback) {
+    const season = Number(fallback[1]);
+    const number = Number(fallback[2]);
+    if (!seasonInRange(season) || number > 25) return null;
+    return { season, week: number, seasonType: "post" };
+  }
+
+  const round = ROUND_SEGMENT.exec(segment);
+  if (round) {
+    const season = Number(round[1]);
+    const number = ROUND_BY_SLUG.get(round[2] ?? "");
+    if (!seasonInRange(season) || number === undefined) return null;
+    return { season, week: number, seasonType: "post" };
+  }
+
+  return null;
 }
 
 /** The other team in the pair. */

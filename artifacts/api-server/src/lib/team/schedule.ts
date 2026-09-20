@@ -18,13 +18,46 @@ import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
 import { getTeamByAbbreviation, TEAMS, type NflTeam } from "./teams";
 
 
-/** ESPN's regular-season season type. 1 is preseason, 3 the postseason. */
-const REGULAR_SEASON = 2;
+/** ESPN's season types. 1 is preseason, which this app never asks for. */
+const SEASON_TYPE = { regular: 2, post: 3 } as const;
+
+export type SeasonType = keyof typeof SEASON_TYPE;
+
+/**
+ * What ESPN calls each postseason week, when it does not say.
+ *
+ * It normally does — `week.text` comes back as "Super Bowl", "Wild Card" and so
+ * on — and that is what is used. This is the fallback for a response that omits
+ * it, so a postseason game never prints as a bare "Week 5", which in the
+ * postseason means nothing to anybody.
+ *
+ * Week 4 is the Pro Bowl. It is not a meeting between two teams in any sense
+ * this page means and is dropped rather than labelled — see parse().
+ */
+const POSTSEASON_WEEKS: Record<number, string> = {
+  1: "Wild Card",
+  2: "Divisional Round",
+  3: "Conference Championship",
+  5: "Super Bowl",
+};
+
+/** The Pro Bowl's week within ESPN's postseason. Not a meeting; never listed. */
+const PRO_BOWL_WEEK = 4;
 
 export type GameStatus = "scheduled" | "live" | "final";
 
 export interface ScheduleGame {
   week: number;
+  /**
+   * Which half of the season this game belongs to.
+   *
+   * Week numbers are only unique WITHIN one of these: ESPN numbers the
+   * postseason from 1 again, so a season has two week 1s and anything that
+   * identifies a game by week alone has to carry this as well.
+   */
+  seasonType: SeasonType;
+  /** "Week 4", or "Super Bowl" — what to print where a week number would go. */
+  weekLabel: string;
   /**
    * ESPN's own id for this game, which is what the box score is keyed by.
    *
@@ -80,7 +113,7 @@ interface EspnEvent {
   id?: string;
   date?: string;
   timeValid?: boolean;
-  week?: { number?: number };
+  week?: { number?: number; text?: string };
   competitions?: Array<{
     id?: string;
     date?: string;
@@ -146,6 +179,7 @@ function parse(
   team: NflTeam,
   season: number,
   payload: EspnScheduleResponse,
+  seasonType: SeasonType,
 ): TeamSchedule {
   const games: ScheduleGame[] = [];
 
@@ -162,6 +196,9 @@ function parse(
 
     const week = event.week?.number;
     if (typeof week !== "number") continue;
+    // The Pro Bowl is in the postseason response and is not a game between
+    // these two teams in any sense the head-to-head record means.
+    if (seasonType === "post" && week === PRO_BOWL_WEEK) continue;
 
     const opponent = getTeamByAbbreviation(other.team?.abbreviation);
     const dateRaw = competition.date ?? event.date;
@@ -175,6 +212,11 @@ function parse(
 
     games.push({
       week,
+      seasonType,
+      weekLabel:
+        seasonType === "post"
+          ? (event.week?.text?.trim() || POSTSEASON_WEEKS[week] || `Postseason week ${week}`)
+          : `Week ${week}`,
       espnEventId: (competition.id ?? event.id)?.trim() || null,
       kickoffMs: Number.isNaN(parsedDate) ? null : parsedDate,
       timeConfirmed: event.timeValid !== false,
@@ -218,7 +260,14 @@ function parse(
   return {
     season,
     games,
-    byeWeek: games.length ? deriveByeWeek(games.map((g) => g.week), totalWeeks) : null,
+    // A bye is a regular-season fact. The postseason has gaps by construction —
+    // a team that lost in the Wild Card round has four of five weeks missing —
+    // and putting that through deriveByeWeek() would be asking a question the
+    // data cannot answer.
+    byeWeek:
+      seasonType === "regular" && games.length
+        ? deriveByeWeek(games.map((g) => g.week), totalWeeks)
+        : null,
     fetchedAt: Date.now(),
   };
 }
@@ -237,31 +286,55 @@ const cache = createKeyedCache<TeamSchedule>({
   ttlMs: 6 * 60 * 60 * 1000,
   timeoutMs: 6_000,
   load: async (key, signal) => {
-    const [espnId, seasonRaw] = key.split(":");
+    const [espnId, seasonRaw, typeRaw] = key.split(":");
     const season = Number(seasonRaw);
+    const seasonType: SeasonType = typeRaw === "post" ? "post" : "regular";
     const url =
       `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/` +
       `${encodeURIComponent(espnId ?? "")}/schedule` +
-      `?season=${season}&seasontype=${REGULAR_SEASON}`;
+      `?season=${season}&seasontype=${SEASON_TYPE[seasonType]}`;
     const payload = await fetchJson<EspnScheduleResponse>(url, signal, TEAM_USER_AGENT);
     const team = TEAM_BY_ESPN_ID.get(espnId ?? "");
     if (!team) throw new Error(`Unknown ESPN team id ${espnId}`);
-    const parsed = parse(team, season, payload);
-    if (parsed.games.length === 0) {
+    const parsed = parse(team, season, payload, seasonType);
+    if (seasonType === "regular" && parsed.games.length === 0) {
       // A 200 with no games is a failure, not an empty season — the same rule
       // the news ingest applies to an empty feed. Throwing keeps the last good
       // schedule in the cache rather than replacing it with nothing.
+      //
+      // Only for the REGULAR season. Twenty of the thirty-two teams have no
+      // postseason in any given year, and for them an empty response is the
+      // correct answer rather than a failed fetch — throwing there would retry
+      // a working upstream on every request for two thirds of the league.
       throw new Error(`ESPN returned no ${season} games for ${team.code}`);
     }
     return parsed;
   },
 });
 
+/** One team's regular season. */
 export async function getTeamSchedule(
   team: NflTeam,
   season: number,
 ): Promise<TeamSchedule | null> {
-  return cache.ensure(`${team.espnId}:${season}`);
+  return cache.ensure(`${team.espnId}:${season}:regular`);
+}
+
+/**
+ * One team's postseason, which is empty for most teams in most years.
+ *
+ * Separate from getTeamSchedule() rather than merged into it, because almost
+ * everything that reads a schedule means the regular season by it: the bye week
+ * is derived from an unbroken run of weeks, "Week 5" means one thing in a
+ * seventeen-game schedule and another in a five-game bracket, and the team
+ * page's own schedule table is a regular-season table. The matchup page's
+ * head-to-head is the caller that genuinely wants both.
+ */
+export async function getTeamPostseason(
+  team: NflTeam,
+  season: number,
+): Promise<TeamSchedule | null> {
+  return cache.ensure(`${team.espnId}:${season}:post`);
 }
 
 /**

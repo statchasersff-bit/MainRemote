@@ -31,9 +31,16 @@ this order:
 | 9 | `buildProductionSnapshot.mjs` | `player_production.json` | Sleeper season production |
 | 10 | `buildInjurySnapshots.mjs` | `player_injuries.json` | injury history |
 | 11 | `buildFantasyOutlook2026.js` | `fantasy_outlook_2026.json` | see below |
+| 12 | `buildRosterPct.mjs` | `roster_pct.json` | Sleeper league research (ownership) |
 
 `backfillTeamInGameLogs.js` and `syncPlayerTeamsFromDepthCharts.js` are
 maintenance passes over files that already exist, not part of a cold build.
+
+`buildRosterPct.mjs` is the one builder here whose output goes stale on its own:
+every other file is a record of seasons that have already happened, and this one
+is how many leagues rostered a player in a given week. It carries the season and
+week it read inside it, so a stale file is stale visibly rather than quietly —
+rerun it whenever the number should have moved, which in season is weekly.
 
 ## Bio facts
 
@@ -123,9 +130,9 @@ authored in the same pass:
 | `restOfSeason` | `"QB3 / Matchup Play"` | the Rest-of-Season chip |
 | `confidence` | `High` \| `Moderate` \| `Low` | the Confidence chip |
 | `range` | `floor`/`expected`/`ceiling`, each `{best, worst, note}` | the range spectrum |
-| `upsideTriggers` | 3 strings | the left column of "What moves the outlook" |
+| `upsideTriggers` | 3 strings | the left column of "What Moves The Outlook" |
 | `warningSigns` | 3 strings | the right column |
-| `usage` | `{standard, deep, bestWhen, avoidWhen}` | "How to use him" |
+| `usage` | `{standard, deep, bestWhen, avoidWhen}` | "How To Use Him" |
 | `verdict` | `{call, rationale}` | the closing slab |
 
 Every one of them is **optional**, and each is validated on its own: a malformed

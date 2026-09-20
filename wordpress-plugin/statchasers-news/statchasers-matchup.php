@@ -83,6 +83,7 @@ add_filter(
 	'query_vars',
 	function ( array $vars ): array {
 		$vars[] = 'sc_matchup';
+		$vars[] = 'sc_matchup_game';
 		return $vars;
 	}
 );
@@ -98,6 +99,20 @@ add_action(
 		add_rewrite_rule(
 			'^' . STATCHASERS_MATCHUP_BASE . '/([a-z0-9-]+-vs-[a-z0-9-]+)/?$',
 			'index.php?pagename=' . STATCHASERS_MATCHUP_HOLDER . '&sc_matchup=$matches[1]',
+			'top'
+		);
+		// One address per meeting, beneath the pair: /nfl/<a>-vs-<b>/2026-week-1/.
+		// Same holder page and the same one validation path — the extra segment
+		// only names which game, and whether that game exists is a question only
+		// the API can answer, so it is asked at request time like the pair is.
+		//
+		// Registered before the pair rule would swallow it? It cannot: the pair
+		// rule is anchored to a single segment. Both are 'top' and both are
+		// exact, so their order between themselves does not matter.
+		add_rewrite_rule(
+			'^' . STATCHASERS_MATCHUP_BASE . '/([a-z0-9-]+-vs-[a-z0-9-]+)/(\d{4}-week-\d{1,2})/?$',
+			'index.php?pagename=' . STATCHASERS_MATCHUP_HOLDER .
+				'&sc_matchup=$matches[1]&sc_matchup_game=$matches[2]',
 			'top'
 		);
 	}
@@ -116,9 +131,41 @@ function statchasers_matchup_current(): ?array {
 	return $pair;
 }
 
-/** The canonical public URL of a pair. */
-function statchasers_matchup_url( string $slug ): string {
-	return user_trailingslashit( home_url( '/' . STATCHASERS_MATCHUP_BASE . '/' . $slug ) );
+/**
+ * The game segment this request is for, validated, or ''.
+ *
+ * MIRRORS parseGameSegment() in the API's src/lib/matchup/pair.ts, including
+ * its strictness: a leading zero or a different spelling of "week" is not this
+ * address and is not redirected to it.
+ */
+function statchasers_matchup_game(): string {
+	$raw = trim( (string) get_query_var( 'sc_matchup_game' ) );
+	if ( '' === $raw ) {
+		return '';
+	}
+	if ( ! preg_match( '/^(\d{4})-week-([1-9]\d?)$/', $raw, $match ) ) {
+		return '';
+	}
+	$season = (int) $match[1];
+	$week   = (int) $match[2];
+	if ( $season < 1920 || $season > 2200 || $week > 25 ) {
+		return '';
+	}
+	return $raw;
+}
+
+/**
+ * The canonical public URL of a pair, or of one meeting under it.
+ *
+ * @param string $slug Pair slug.
+ * @param string $game Validated game segment, or '' for the pair itself.
+ */
+function statchasers_matchup_url( string $slug, string $game = '' ): string {
+	$path = '/' . STATCHASERS_MATCHUP_BASE . '/' . $slug;
+	if ( '' !== $game ) {
+		$path .= '/' . $game;
+	}
+	return user_trailingslashit( home_url( $path ) );
 }
 
 /**
@@ -141,6 +188,50 @@ add_action(
 			return;
 		}
 		if ( ! $pair['canonical'] ) {
+			wp_safe_redirect(
+				statchasers_matchup_url( $pair['slug'], statchasers_matchup_game() ),
+				301
+			);
+			exit;
+		}
+
+		// A game address answers to the API, because only the API knows the
+		// schedule: whether those two played that week, and whether the pair's
+		// own page has let the game go yet. Both answers ride in on the fetch
+		// the shortcode is about to reuse from the same transient.
+		$game = statchasers_matchup_game();
+		if ( '' === $game ) {
+			// A segment that got past the rewrite but not the validator — a
+			// leading zero, a week past the end of a season. Never a page.
+			if ( '' !== trim( (string) get_query_var( 'sc_matchup_game' ) ) ) {
+				global $wp_query;
+				$wp_query->set_404();
+				status_header( 404 );
+				nocache_headers();
+			}
+			return;
+		}
+
+		$data = statchasers_matchup_fetch( $pair['slug'], $game );
+
+		// Null is the origin being unreachable, which is not an answer about
+		// this URL. Leaving the page alone keeps a cached render serving rather
+		// than turning an outage into a 404 Google will act on.
+		if ( null === $data ) {
+			return;
+		}
+
+		if ( ! empty( $data['missing'] ) ) {
+			global $wp_query;
+			$wp_query->set_404();
+			status_header( 404 );
+			nocache_headers();
+			return;
+		}
+
+		if ( 'current' === $data['game'] ) {
+			// Inside the two-week window the recap has exactly one address, and
+			// it is the pair's. Mirrors the 301 the API's own route sends.
 			wp_safe_redirect( statchasers_matchup_url( $pair['slug'] ), 301 );
 			exit;
 		}
@@ -154,13 +245,13 @@ add_action(
  *
  * @return array{html:string,version:string,state:string,season:string}|null
  */
-function statchasers_matchup_fetch( string $slug ): ?array {
+function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 	$origin = statchasers_news_origin();
 	if ( '' === $origin || '' === $slug ) {
 		return null;
 	}
 
-	$key        = md5( $origin . '|matchup|' . $slug );
+	$key        = md5( $origin . '|matchup|' . $slug . '|' . $game );
 	$cache_key  = 'sc_matchup_ssr_' . $key;
 	$backup_key = 'sc_matchup_ssr_bak_' . $key;
 
@@ -169,8 +260,15 @@ function statchasers_matchup_fetch( string $slug ): ?array {
 		return $cached;
 	}
 
+	// `?game=` is what the origin takes; the pretty path is WordPress's own
+	// spelling and never leaves this side. Same split as the team sections.
+	$url = $origin . '/embed/matchup/' . rawurlencode( $slug );
+	if ( '' !== $game ) {
+		$url = add_query_arg( 'game', rawurlencode( $game ), $url );
+	}
+
 	$response = wp_remote_get(
-		$origin . '/embed/matchup/' . rawurlencode( $slug ),
+		$url,
 		array(
 			'timeout' => STATCHASERS_MATCHUP_TIMEOUT,
 			'headers' => array( 'Accept' => 'text/html' ),
@@ -179,6 +277,23 @@ function statchasers_matchup_fetch( string $slug ): ?array {
 
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
+
+	// A 404 on a game address is an answer, not an outage: these two did not
+	// play that week. It must not fall through to the backup copy, which would
+	// serve the pair's last good render under a URL that means something else.
+	if ( 404 === $code && '' !== $game ) {
+		$missing = array(
+			'html'    => '',
+			'version' => '',
+			'state'   => '',
+			'season'  => '',
+			'score'   => '',
+			'game'    => '',
+			'missing' => true,
+		);
+		set_transient( $cache_key, $missing, STATCHASERS_MATCHUP_CACHE_TTL );
+		return $missing;
+	}
 
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
@@ -195,6 +310,10 @@ function statchasers_matchup_fetch( string $slug ): ?array {
 		'state'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-state' ) ),
 		'season'  => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-season' ) ),
 		'score'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-score' ) ),
+		// "current" means the pair's own page is still leading with this game,
+		// so this address does not exist yet. "archived" means it does.
+		'game'    => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-game' ) ),
+		'missing' => false,
 	);
 
 	set_transient( $cache_key, $payload, STATCHASERS_MATCHUP_CACHE_TTL );
@@ -219,7 +338,7 @@ function statchasers_matchup_shortcode(): string {
 			: '';
 	}
 
-	$data = statchasers_matchup_fetch( $pair['slug'] );
+	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
 	statchasers_team_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -287,13 +406,72 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	);
 }
 
+/**
+ * Title and description for one meeting's own page.
+ *
+ * MIRRORS the `data.pinned` branch of matchupPageMeta() in the API's
+ * src/lib/matchup/matchup-seo.ts. Answered before the pair's three states,
+ * there and here, because "patriots seahawks week 1 2026" is a different search
+ * from "patriots vs seahawks" and two pages must not answer it with one string.
+ *
+ * @param string $a     Pair's first team slug.
+ * @param string $b     Pair's second team slug.
+ * @param string $game  Validated game segment, e.g. `2026-week-1`.
+ * @param string $score The result in one clause, from the API, or ''.
+ * @return array{title:string,description:string}
+ */
+function statchasers_matchup_game_meta( string $a, string $b, string $game, string $score = '' ): array {
+	$table  = statchasers_team_table();
+	$name_a = $table[ $a ][0] ?? $a;
+	$name_b = $table[ $b ][0] ?? $b;
+	$nick_a = substr( strrchr( ' ' . $name_a, ' ' ), 1 );
+	$nick_b = substr( strrchr( ' ' . $name_b, ' ' ), 1 );
+	$names  = $name_a . ' vs ' . $name_b;
+
+	preg_match( '/^(\d{4})-week-(\d{1,2})$/', $game, $match );
+	$season = $match[1] ?? STATCHASERS_TEAM_SEASON;
+	$week   = $match[2] ?? '';
+
+	$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
+
+	return array(
+		'title'       => sprintf(
+			'%1$s, Week %2$s %3$s: Final Score, Player Stats & Fantasy Recap',
+			$names,
+			$week,
+			$season
+		),
+		'description' => sprintf(
+			'%1$sFull box score from %2$s vs %3$s in Week %4$s of %5$s: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
+			$lead,
+			$nick_a,
+			$nick_b,
+			$week,
+			$season
+		),
+	);
+}
+
 /** This request's metadata, or null off a matchup URL. */
 function statchasers_matchup_request_meta(): ?array {
 	$pair = statchasers_matchup_current();
 	if ( null === $pair || ! $pair['canonical'] ) {
 		return null;
 	}
-	$data = statchasers_matchup_fetch( $pair['slug'] );
+	$game = statchasers_matchup_game();
+	$data = statchasers_matchup_fetch( $pair['slug'], $game );
+
+	// A game address that got this far is an archived one — the missing and the
+	// still-current cases both left through template_redirect above.
+	if ( '' !== $game ) {
+		return statchasers_matchup_game_meta(
+			$pair['a'],
+			$pair['b'],
+			$game,
+			(string) ( $data['score'] ?? '' )
+		);
+	}
+
 	return statchasers_matchup_meta(
 		$pair['a'],
 		$pair['b'],
@@ -305,7 +483,11 @@ function statchasers_matchup_request_meta(): ?array {
 
 function statchasers_matchup_canonical(): string {
 	$pair = statchasers_matchup_current();
-	return null === $pair ? '' : statchasers_matchup_url( $pair['slug'] );
+	// A dated page is its own canonical. It is not a variant of the pair's page
+	// — it is the only address that game has, once the pair has let it go.
+	return null === $pair
+		? ''
+		: statchasers_matchup_url( $pair['slug'], statchasers_matchup_game() );
 }
 
 add_filter( 'rank_math/frontend/title', function ( $title ) {

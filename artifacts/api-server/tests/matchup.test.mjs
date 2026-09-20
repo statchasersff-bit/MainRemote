@@ -140,6 +140,108 @@ describe("one address per pair", () => {
   });
 });
 
+describe("one address per meeting", () => {
+  test("a week the two never played is a 404", async () => {
+    // 1999 is outside the seasons the history looks at at all, so this is a
+    // week that cannot exist however the schedules load.
+    const res = await get(`${CANON}1999-week-1`);
+    assert.equal(res.status, 404);
+    assert.equal(res.headers.get("x-robots-tag"), "noindex");
+    assert.ok(!/data-sct-root/.test(res.body), "no page rendered");
+  });
+
+  test("a near-miss spelling is a 404, not a redirect", async () => {
+    // The pair slug redirects every spelling a reader might type because
+    // readers really do type "eagles vs patriots". Nobody types a week number
+    // three ways, so these are addresses that never existed rather than
+    // addresses that moved.
+    for (const segment of ["2026-week-01", "2026-wk-1", "2026-WEEK-1", "week-1-2026", "2026-week-0"]) {
+      assert.equal((await get(`${CANON}${segment}`)).status, 404, segment);
+    }
+  });
+
+  test("a non-canonical pair keeps its game segment through the 301", async () => {
+    const res = await get("/nfl/philadelphia-eagles-vs-new-england-patriots/2024-week-2");
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get("location"), `${CANON}2024-week-2/`);
+  });
+
+  test("every finished meeting the pair page has let go of links to its own page", async () => {
+    const { doc } = await dom(CANON);
+    const links = [...doc.querySelectorAll("a.sct-mu-recap")];
+
+    // The pair page carries a link per archived meeting and none for the game
+    // it is still leading with — that game has one address until the window
+    // closes, and a link into a redirect would say otherwise.
+    const state = doc.querySelector("[data-sct-root]").getAttribute("data-matchup-state");
+    const featuredRow = doc.querySelector(".sct-mu-row.is-featured");
+    if (state === "recently_completed" && featuredRow) {
+      assert.equal(
+        featuredRow.querySelector("a.sct-mu-recap"),
+        null,
+        "the game the page is leading with does not link away to itself",
+      );
+    }
+
+    for (const link of links) {
+      assert.match(
+        link.getAttribute("href"),
+        /^\/nfl\/new-england-patriots-vs-philadelphia-eagles\/\d{4}-week-\d{1,2}\/$/,
+        "a recap link is the pretty dated path",
+      );
+    }
+  });
+
+  test("a dated page is a recap of that week, headed by it", async () => {
+    const { doc } = await dom(CANON);
+    const href = doc.querySelector("a.sct-mu-recap")?.getAttribute("href");
+    if (!href) return; // No archived meeting in the window the history reads.
+
+    const page = await dom(href);
+    const root = page.doc.querySelector("[data-sct-root]");
+    assert.equal(root.getAttribute("data-postgame"), "1", "a game address is always a recap");
+
+    const [, season, week] = /(\d{4})-week-(\d{1,2})\/$/.exec(href);
+    const h1 = page.doc.querySelectorAll("h1");
+    assert.equal(h1.length, 1);
+    assert.equal(
+      h1[0].textContent.trim(),
+      `New England Patriots vs Philadelphia Eagles, Week ${week} ${season}`,
+      "the H1 names the game, so it cannot compete with the pair's own page",
+    );
+
+    const canonical = page.doc.querySelector('link[rel="canonical"]').getAttribute("href");
+    assert.ok(canonical.endsWith(href), "a dated page is its own canonical");
+    assert.match(
+      page.doc.querySelector("title").textContent,
+      new RegExp(`Week ${week} ${season}`),
+      "the title names the game too",
+    );
+  });
+
+  test("a recap from an earlier season carries nothing that describes now", async () => {
+    const { doc } = await dom(CANON);
+    const pageSeason = Number(
+      doc.querySelector("[data-sct-root]").getAttribute("data-season"),
+    );
+    const href = [...doc.querySelectorAll("a.sct-mu-recap")]
+      .map((a) => a.getAttribute("href"))
+      .find((h) => Number(/(\d{4})-week-/.exec(h)[1]) !== pageSeason);
+    if (!href) return; // Every archived meeting is from the season in progress.
+
+    const page = await dom(href);
+    const headings = [...page.doc.querySelectorAll("h2")].map((h) => h.textContent.trim());
+    // Season Form, the injury report and the FPA ranks are all read from
+    // today. Under a heading that says 2024 they are the wrong answer, not a
+    // bonus.
+    for (const banned of ["Season Form", "Injuries & Fallout", "Injury Watch", "Fantasy Matchups"]) {
+      assert.ok(!headings.includes(banned), `${banned} is absent from an old recap`);
+    }
+    // What it does keep is the game itself.
+    assert.ok(headings.includes("Player Stats"), "the box score is still there");
+  });
+});
+
 describe("the page follows its state", () => {
   test("declares one of the three states and leads with the matching block", async () => {
     const { doc } = await dom(CANON);
@@ -385,8 +487,11 @@ describe("game leaders", () => {
 });
 
 describe("fantasy matchups", () => {
+  // CANON rather than the played pair: this block is the PREGAME question, and
+  // the postgame page no longer carries it at all — pointing this at a finished
+  // game would leave the test passing on an element that is never there.
   test("each defense is rated by position, once, with its scale stated", async () => {
-    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
+    const { doc } = await dom(CANON);
     const block = doc.querySelector(".sct-mu-fantasy");
     if (!block) return; // No FPA ingest in this environment; nothing to check.
 
@@ -518,6 +623,38 @@ describe("the postgame page", () => {
       .map((n) => n.textContent)
       .join(" ");
     assert.match(spoken, /\b(beat|tied)\b/, "the result is spoken as a sentence");
+
+    // Away first, home second, and the home side reversed in CSS rather than
+    // in a second copy of the markup — so exactly one side carries is-home.
+    assert.equal(sides.length, 2, "two sides");
+    assert.equal(
+      sides.filter((s) => s.classList.contains("is-home")).length,
+      1,
+      "one home side",
+    );
+    assert.equal(sides[1].classList.contains("is-home"), true, "and it is second");
+
+    // "Final" belongs to the eyebrow, and to nothing else. It used to be the
+    // last word of the eyebrow AND the centre of the board AND the first word
+    // of the metadata row — three printings of one word inside forty vertical
+    // pixels. Asserted per element rather than by counting matches across the
+    // hero's textContent, which runs the eyebrow's last word into the title's
+    // first with no space between them.
+    assert.match(
+      hero.querySelector(".sct-eyebrow").textContent,
+      /Final(\/\d?OT)?$/,
+      "the eyebrow carries the status, OT suffix and all",
+    );
+    assert.doesNotMatch(
+      hero.querySelector(".sct-mu-final-meta").textContent,
+      /Final/i,
+      "the metadata row is where and when, not what",
+    );
+    assert.doesNotMatch(
+      hero.querySelector(".sct-mu-final-join").textContent,
+      /[A-Za-z]/,
+      "the join between the scores is a separator, not a third status",
+    );
   });
 
   test("the quarter line adds up to the score beside it", async () => {
@@ -630,6 +767,139 @@ describe("the postgame page", () => {
     }
   });
 
+  test("usage leads with the charts and keeps the table behind one toggle", async () => {
+    const page = await postgamePage();
+    if (!page) return;
+    const block = page.doc.querySelector(".sct-mu-usage");
+    if (!block) return;
+
+    const panels = [...block.querySelectorAll(".sct-mu-usage-team")];
+    if (panels.length === 0) return;
+    // One panel per side, never a third, and never the two mixed into one.
+    assert.ok(panels.length <= 2, `${panels.length} team panels`);
+    for (const panel of panels) {
+      assert.ok(panel.querySelector(".sct-mu-usage-team-name"), "the panel names its team");
+    }
+
+    // Pair order, the same order the hero and every comparison table use. The
+    // panels came back in the order the game log met the two teams, which put
+    // the home side first and read backwards from everything above it.
+    const slug = page.doc
+      .querySelector("[data-sct-root]")
+      .getAttribute("data-matchup");
+    const names = panels.map((p) =>
+      p.querySelector(".sct-mu-usage-team-name").textContent.trim(),
+    );
+    const order = names.map((name) =>
+      slug.indexOf(name.toLowerCase().replace(/[^a-z0-9]+/g, "-")),
+    );
+    assert.ok(
+      order.every((at, i) => at >= 0 && (i === 0 || at > order[i - 1])),
+      `panels ${names.join(", ")} do not follow ${slug}`,
+    );
+
+    // The table is still in the HTML — one copy of it, collapsed, not a second
+    // rendering of the same rows beside the charts.
+    const tables = [...block.querySelectorAll(".sct-mu-ps-table")];
+    assert.equal(tables.length, 1, "exactly one usage table in the DOM");
+    const details = block.querySelector("details.sct-mu-usage-full");
+    assert.ok(details, "the table is inside a <details>");
+    assert.ok(details.contains(tables[0]), "…and that <details> is the one holding it");
+    assert.equal(details.hasAttribute("open"), false, "collapsed by default");
+    assert.match(
+      details.querySelector("summary")?.textContent ?? "",
+      /view full usage table/i,
+      "the control says what it opens",
+    );
+  });
+
+  // The before/after rank table was removed from this page: it answered a
+  // pregame question with postgame arithmetic, and the page already spends four
+  // tables on the same eight ranks' worth of attention. Asserted rather than
+  // merely deleted so it cannot drift back into the postgame order unnoticed.
+  test("the postgame page does not carry the fantasy rank block", async () => {
+    const page = await postgamePage();
+    if (!page) return;
+    assert.equal(page.doc.querySelector(".sct-mu-fantasy"), null);
+  });
+
+  test("every ring slice is named and measured in text, not only in colour", async () => {
+    const page = await postgamePage();
+    if (!page) return;
+    const block = page.doc.querySelector(".sct-mu-usage");
+    if (!block) return;
+
+    const rows = [...block.querySelectorAll(".sct-mu-usage-ring-row")];
+    if (rows.length === 0) return;
+
+    for (const row of rows) {
+      const arcs = [...row.querySelectorAll(".sct-mu-usage-arc")];
+      const keys = [...row.querySelectorAll(".sct-mu-usage-key")];
+      // A slice with no legend entry is a slice whose meaning is its colour.
+      assert.equal(keys.length, arcs.length, "one legend row per slice");
+
+      // The ring itself is decoration: everything in it is written beside it.
+      const svg = row.querySelector("svg");
+      assert.equal(svg.getAttribute("aria-hidden"), "true", "the ring is aria-hidden");
+
+      let sum = 0;
+      let previous = Infinity;
+      for (const key of keys) {
+        const name = key.querySelector(".sct-mu-usage-key-name")?.textContent.trim();
+        assert.ok(name, "the slice is named");
+        const printed = key.querySelector(".sct-mu-usage-key-pct")?.textContent.trim();
+        assert.match(printed ?? "", /^\d+%$/, `${name} has a percentage`);
+        const share = Number(printed.slice(0, -1));
+        sum += share;
+
+        // Highest first, with the pooled tail last however big it is.
+        if (!key.querySelector(".is-other")) {
+          assert.ok(share <= previous, `${name} at ${share}% is out of order`);
+          previous = share;
+        } else {
+          assert.equal(key, keys.at(-1), "Other is last");
+        }
+
+        // The raw count a screen reader gets, since the ring cannot give it one.
+        assert.match(
+          key.textContent,
+          /\d+\s+(targets|carries)/,
+          `${name} carries its raw count`,
+        );
+      }
+      // These are shares of one denominator, so they are a whole — give or take
+      // the rounding of six numbers.
+      assert.ok(Math.abs(sum - 100) <= 3, `slices sum to ${sum}%`);
+    }
+  });
+
+  test("snap bars are ranked, drawn to the percentage they print", async () => {
+    const page = await postgamePage();
+    if (!page) return;
+    const block = page.doc.querySelector(".sct-mu-usage");
+    if (!block) return;
+
+    for (const list of block.querySelectorAll(".sct-mu-usage-bars")) {
+      const bars = [...list.querySelectorAll(".sct-mu-usage-bar")];
+      assert.ok(bars.length > 0 && bars.length <= 5, `${bars.length} bars`);
+      let previous = Infinity;
+      for (const bar of bars) {
+        const printed = bar.querySelector(".sct-mu-usage-bar-pct").textContent.trim();
+        assert.match(printed, /^(\d+%|—)$/, `${printed} is a share`);
+        if (printed === "—") continue;
+        const share = Number(printed.slice(0, -1));
+        assert.ok(share >= 0 && share <= 100, `${printed} is a share`);
+        assert.ok(share <= previous, `${share}% is out of order`);
+        previous = share;
+
+        // The bar is the number, not a decoration next to it.
+        const width = bar.querySelector(".sct-mu-usage-fill").getAttribute("style");
+        assert.match(width, new RegExp(`width:${share}%`), `bar drawn to ${printed}`);
+        assert.match(bar.textContent, /\d+ snaps/, "the raw count is text");
+      }
+    }
+  });
+
   test("every takeaway is a player, a claim and the figures under it", async () => {
     const page = await postgamePage();
     if (!page) return;
@@ -681,6 +951,31 @@ describe("the postgame page", () => {
     }
   });
 
+  // Passing, rushing and receiving share one row; Fantasy keeps the full width
+  // under them. Asserted on the grouping rather than on the rendered geometry,
+  // which is a CSS question this suite cannot see.
+  test("the three box-score tables are one row, and Fantasy is not in it", async () => {
+    const page = await postgamePage();
+    if (!page) return;
+    const section = page.doc.querySelector(".sct-mu-playerstats");
+    if (!section) return;
+
+    const row = section.querySelector(".sct-mu-ps-row");
+    assert.ok(row, "the box-score tables are grouped");
+    const heading = (block) => block.querySelector(".sct-mu-h3")?.textContent.trim();
+    const inRow = [...row.querySelectorAll(".sct-mu-ps-block")].map(heading);
+    assert.deepEqual(
+      inRow,
+      ["Passing", "Rushing", "Receiving"].filter((h) => inRow.includes(h)),
+      `the row holds ${inRow.join(", ")}`,
+    );
+
+    const outside = [...section.querySelectorAll(".sct-mu-ps-block")]
+      .filter((block) => !row.contains(block))
+      .map(heading);
+    assert.deepEqual(outside, ["Fantasy"], `outside the row: ${outside.join(", ")}`);
+  });
+
   test("a stat table has a header row and a caption that spans its columns", async () => {
     const page = await postgamePage();
     if (!page) return;
@@ -704,36 +999,6 @@ describe("the postgame page", () => {
         "one name per side",
       );
       assert.ok(row.querySelector(".sct-mu-cmp-vs"), "and the join between them");
-    }
-  });
-
-  test("a rank that moved says where it moved from, and which way", async () => {
-    const page = await postgamePage();
-    if (!page) return;
-    const block = page.doc.querySelector(".sct-mu-fpa-change");
-    if (!block) return;
-
-    const heading = block.querySelector("h2").textContent.trim();
-    const moves = [...block.querySelectorAll(".sct-mu-move")];
-    assert.ok(moves.length >= 1, "at least one rank");
-
-    const withBefore = moves.filter((m) => m.querySelector(".sct-mu-move-from"));
-    // Week 1 has no "before", and the heading must not promise one.
-    if (withBefore.length === 0) {
-      assert.match(heading, /^Fantasy Matchups After Week/, heading);
-      return;
-    }
-    assert.equal(heading, "What This Changed");
-
-    for (const move of withBefore) {
-      const before = Number(move.querySelector(".sct-mu-move-from").textContent.replace(/\D/g, ""));
-      const after = Number(
-        move.querySelector(".sct-stat-rank").textContent.trim().replace(/\D.*$/, ""),
-      );
-      const direction = move.querySelector(".sct-mu-move-arrow").getAttribute("data-direction");
-      // 1st allows the most, so a rank that FELL is a defense that got softer.
-      const expected = before > after ? "softer" : before < after ? "tougher" : "flat";
-      assert.equal(direction, expected, `${before} -> ${after}`);
     }
   });
 });
@@ -866,6 +1131,22 @@ describe("sortable stat tables", () => {
       sorted,
       [...sorted].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
       "names are alphabetical",
+    );
+  });
+
+  test("the usage table is still wired while it is collapsed", async () => {
+    const { doc } = await hydrated("/nfl/new-england-patriots-vs-seattle-seahawks/");
+    if (doc.querySelector("[data-sct-root]").getAttribute("data-postgame") !== "1") return;
+
+    // The section defaults to its charts and the table lives in a closed
+    // <details> under them. Closed is not absent: the bundle has to find it on
+    // load, because nothing tells it to look again when the reader opens it.
+    const table = doc.querySelector(".sct-mu-usage-full table[data-sct-sortable]");
+    if (!table) return;
+    assert.equal(table.getAttribute("data-sct-sort"), "js", "the bundle claimed it");
+    assert.ok(
+      table.querySelector("thead .sct-sort"),
+      "its headers became controls like every other table's",
     );
   });
 

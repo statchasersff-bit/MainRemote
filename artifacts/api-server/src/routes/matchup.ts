@@ -5,6 +5,11 @@
  * reversed, an abbreviation, a nickname — is a 301 to it, and anything that is
  * not a pair of two different real teams is a 404. Nothing falls through to a
  * team hub: a URL under /nfl/ that is not a matchup is not a page.
+ *
+ * Beneath the pair, one address per meeting: /nfl/<a>-vs-<b>/2026-week-1/. It
+ * exists only once the pair's own page has stopped leading with that game —
+ * inside RECENT_WINDOW_MS the dated URL 301s up to the pair, so the recap has
+ * exactly one address at any moment and the two never compete.
  */
 
 import { Router, type IRouter, type Request, type Response } from "express";
@@ -14,9 +19,14 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
-import { matchupPath } from "../lib/matchup/matchup-render";
+import { gamePath, matchupPath } from "../lib/matchup/matchup-render";
 import { renderMatchupAppPage, renderMatchupFragment } from "../lib/matchup/matchup-ssr";
-import { parseMatchupSlug, type MatchupPair } from "../lib/matchup/pair";
+import {
+  parseGameSegment,
+  parseMatchupSlug,
+  type MatchupGameRef,
+  type MatchupPair,
+} from "../lib/matchup/pair";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -78,14 +88,60 @@ router.get("/nfl/:pair", (req, res) => {
   })();
 });
 
-async function sendMatchupPage(req: Request, res: Response, pair: MatchupPair): Promise<void> {
+router.get("/nfl/:pair/:game", (req, res) => {
+  void (async () => {
+    const parsed = parseMatchupSlug(String(req.params.pair ?? ""));
+    if (!parsed) {
+      notFound(res);
+      return;
+    }
+    const game = parseGameSegment(String(req.params.game ?? ""));
+    if (!game) {
+      notFound(res);
+      return;
+    }
+    if (!parsed.canonical) {
+      res.redirect(
+        301,
+        `${gamePath(MATCHUP_PATH_PREFIX, parsed.pair.slug, game)}${isEmbed(req) ? "?embed=1" : ""}`,
+      );
+      return;
+    }
+    await sendMatchupPage(req, res, parsed.pair, game);
+  })();
+});
+
+async function sendMatchupPage(
+  req: Request,
+  res: Response,
+  pair: MatchupPair,
+  game: MatchupGameRef | null = null,
+): Promise<void> {
   const embed = isEmbed(req);
   try {
     const result = await renderMatchupAppPage(publicDir, pair, {
       canonical: canonicalUrl(req),
       embed,
       linkQuery: embed ? "?embed=1" : "",
+      game,
     });
+
+    // Both answers are cheap to reach and expensive to guess: whether the week
+    // exists, and whether the pair page has let go of it, are facts about the
+    // schedule that only the data layer has. The render that produced them is
+    // discarded on these two paths, which costs one cached build on a request
+    // that was never going to be a page.
+    if (result.pinnedMissing) {
+      notFound(res);
+      return;
+    }
+    if (result.pinnedIsCurrent) {
+      res.redirect(
+        301,
+        `${matchupPath(MATCHUP_PATH_PREFIX, pair.slug)}${embed ? "?embed=1" : ""}`,
+      );
+      return;
+    }
     const dev = liveReload().enabled;
     if (!dev) {
       res.set("ETag", `W/"${result.version}"`);
@@ -126,13 +182,27 @@ router.get("/embed/matchup/:pair", (req, res) => {
     // a non-canonical fetch here is served rather than refused, since the
     // fragment carries no URL of its own.
     const prefixes = publicPrefixes();
+    // `?game=2026-week-1` is how the plugin asks for a dated page. The pretty
+    // path is the only public spelling — the same split the team sections use,
+    // where WordPress owns the URL and this origin owns the fragment.
+    const raw = String(req.query["game"] ?? "").trim();
+    const game = raw ? parseGameSegment(raw) : null;
+    if (raw && !game) {
+      res.status(404).type("text/plain").send("Unknown game");
+      return;
+    }
     try {
       const result = await renderMatchupFragment(parsed.pair, {
         embed: true,
         teamPathPrefix: prefixes.team,
         matchupPathPrefix: prefixes.matchup,
         linkQuery: prefixes.linkQuery,
+        game,
       });
+      if (result.pinnedMissing) {
+        res.status(404).type("text/plain").send("Unknown game");
+        return;
+      }
       res.set("ETag", `W/"${result.version}"`);
       if (req.fresh) {
         res.status(304).end();
@@ -147,6 +217,14 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // The score, for the postgame description the plugin mirrors. Empty
         // header rather than an absent one so the plugin reads one shape.
         .set("X-Matchup-Score", result.scoreLine)
+        // "current" tells the plugin the pair page is still leading with this
+        // game, so the dated WordPress URL must 301 up to the pair's — the
+        // mirror of what this origin's own route does above. Empty when the
+        // request was not a game address at all.
+        .set(
+          "X-Matchup-Game",
+          game ? (result.pinnedIsCurrent ? "current" : "archived") : "",
+        )
         .type("html")
         .send(result.html);
     } catch (err) {

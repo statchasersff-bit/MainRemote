@@ -590,11 +590,118 @@ a.scr-player-link:hover {
   color: var(--sc-muted);
 }
 
+/* ------------------------------------------------------------------- faq */
+
+/* The questions sit after the last panel, outside the tab strip's reach: five
+   boards are one page, so one FAQ answers for all of them.
+
+   The 40px is a page break rather than a gap between two blocks of the tool —
+   what precedes it is a table and what follows it is prose, and they should not
+   read as the same thing continued. */
+.scr-faq-block {
+  margin: 40px 0 0;
+}
+
+/* The gold rule is the same mark team.css puts under an <h2>: short and
+   fixed-width, marking the heading rather than underlining it. Restated here
+   rather than imported, like every other token in this file. */
+.scr-faq-title {
+  position: relative;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  color: var(--sc-navy);
+  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.scr-faq-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.scr-faq {
+  border-top: 1px solid var(--sc-border);
+}
+
+/* One question, one fold. Shut by default: every question shows, and the answer
+   opens under the one the reader came for. The native marker is replaced with a
+   chevron of our own because the default sits outside the heading's box and
+   ahead of a flex row it has no business being part of. */
+.scr-faq-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.scr-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scr-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+/* Nudged down to sit on the first line of the question rather than on the
+   middle of a question that wrapped: `align-items: flex-start` puts the
+   chevron's box at the top, and this centres it on that line's cap height. */
+.scr-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.scr-faq-item[open] > .scr-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
+.scr-faq-q-row:hover .scr-faq-q {
+  color: var(--sc-gold-deep);
+}
+
+.scr-faq-q {
+  margin: 0;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+/* 72ch, the measure the team pages read at. The left indent lines the answer up
+   with its question rather than with the chevron. */
+.scr-faq-a {
+  margin: 7px 0 0 20px;
+  max-width: 72ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
 /* -------------------------------------------------------------- narrow */
 
 @media (max-width: 640px) {
   body.scr-page {
     padding: 12px;
+  }
+
+  .scr-faq-block {
+    margin-top: 28px;
   }
 
   .scr-controls {
@@ -651,7 +758,8 @@ a.scr-player-link:hover {
   .scr-nav-link,
   .scr-opt,
   .scr-cta,
-  .scr-cta-arrow {
+  .scr-cta-arrow,
+  .scr-faq-q-row::before {
     transition: none;
   }
 }

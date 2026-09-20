@@ -22,6 +22,7 @@
 
 import { listNews, listNewsForTeam } from "../news-query";
 import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
+import { outlookFaq, type OutlookFaq } from "./outlook-faq";
 import {
   careerHighs,
   careerStatRows,
@@ -59,6 +60,7 @@ import {
   loadBios,
   loadDraft,
   loadDynastyRankings,
+  loadRosterPct,
   loadFantasyOutlook2026,
   loadGameLogs,
   loadPlayers,
@@ -225,9 +227,34 @@ export interface PlayerPageData {
   /** The most recent season with real participation. */
   season: number;
   seasonLabel: string | null;
-  /** Their positional finish that season, by points per game. */
+  /**
+   * Their positional finish that season, by points per game.
+   *
+   * Null until they have played four games — see positionalFinish(), where the
+   * minimum is the whole point. `seasonRankTotal` is the same field measured by
+   * points scored rather than by rate, and it carries no minimum because it
+   * cannot be gamed by a short sample: a player who has scored more than every
+   * other quarterback has scored more than every other quarterback, however
+   * many Sundays it took. It is what the header ranks by until the rate rank
+   * exists.
+   */
   seasonRank: number | null;
+  seasonRankTotal: number | null;
   availableSeasons: number[];
+
+  /**
+   * How widely Sleeper's leagues roster them, as of the ingested week.
+   *
+   * Null for anyone Sleeper has no reading for, which is most of the league —
+   * the research document is 673 players deep, so a page for a third-string
+   * tight end has no ownership figure rather than a zero.
+   */
+  rosterPct: {
+    owned: number;
+    started: number | null;
+    season: number;
+    week: number;
+  } | null;
 
   /** Every week of `season`, padded, ranked and enriched. */
   gameLog: GameLogEntry[];
@@ -302,6 +329,15 @@ export interface PlayerPageData {
    * lib/player/outlook-drivers.ts.
    */
   outlookDrivers: OutlookDriver[];
+
+  /**
+   * The Outlook tab's questions, answered from the strip above them.
+   *
+   * Derived like the other four FAQ blocks and NOT part of the authored
+   * decision layer — see lib/player/outlook-faq.ts for why the draft and
+   * start/sit answers are measurements rather than calls.
+   */
+  outlookFaq: OutlookFaq[];
 
   /**
    * The Stats tab's aggregates: the career table, its totals, the records and
@@ -475,11 +511,21 @@ function productionSeasons(
 }
 
 /**
- * Their positional finish for one season, by points per game.
+ * Their positional finish for one season, measured both ways.
  *
- * The four-game minimum is the whole reason this is not simply a sort: without
- * it, a player who caught two touchdowns in his only appearance finishes as the
- * WR1 for the season, which is arithmetically true and a lie about football.
+ * By points per game, and by points scored. The four-game minimum on the rate
+ * is the whole reason that one is not simply a sort: without it, a player who
+ * caught two touchdowns in his only appearance finishes as the WR1 for the
+ * season, which is arithmetically true and a lie about football.
+ *
+ * The total carries no minimum, because it cannot be told that lie — a player
+ * ranks where his points put him, and one big afternoon is one big afternoon
+ * rather than a season-long rate. That is what makes it the rank a page can
+ * show in September, when nobody has four games yet and the rate rank is null
+ * for the entire league.
+ *
+ * Both in one pass over the season's logs. Two passes would be two reads of a
+ * file that is measured in megabytes to sort the same numbers twice.
  */
 function positionalFinish(
   playerId: string,
@@ -487,26 +533,53 @@ function positionalFinish(
   season: number,
   format: ScoringFormat,
   allPlayers: Player[],
-): number | null {
-  if (!position) return null;
+): { ppg: number | null; total: number | null } {
+  if (!position) return { ppg: null, total: null };
   const logs = loadGameLogs(season);
   const positionById = new Map(allPlayers.map((p) => [p.id, p.position]));
 
   const ppgs: { id: string; ppg: number }[] = [];
+  const totals: { id: string; total: number }[] = [];
   for (const [id, entries] of Object.entries(logs)) {
     if (positionById.get(id) !== position) continue;
     const played = entries.filter((e) => hasParticipation(e.stats, position));
-    if (played.length < 4) continue;
+    if (played.length === 0) continue;
     const total = played.reduce(
       (sum, e) => sum + fpts(e, format),
       0,
     );
+    totals.push({ id, total });
+    if (played.length < 4) continue;
     ppgs.push({ id, ppg: total / played.length });
   }
 
+  const place = <T extends { id: string }>(rows: T[]): number | null => {
+    const index = rows.findIndex((row) => row.id === playerId);
+    return index >= 0 ? index + 1 : null;
+  };
+
   ppgs.sort((a, b) => b.ppg - a.ppg);
-  const index = ppgs.findIndex((row) => row.id === playerId);
-  return index >= 0 ? index + 1 : null;
+  totals.sort((a, b) => b.total - a.total);
+  return { ppg: place(ppgs), total: place(totals) };
+}
+
+/**
+ * How widely Sleeper's leagues roster this player, as of the ingested week.
+ *
+ * The document is one week's reading and the page says which week it is, so a
+ * stale file is visibly stale rather than quietly wrong.
+ */
+function rosterPctFor(playerId: string): PlayerPageData["rosterPct"] {
+  const doc = loadRosterPct();
+  if (!doc.week) return null;
+  const row = doc.players[playerId];
+  if (!row || !Number.isFinite(row.owned)) return null;
+  return {
+    owned: row.owned,
+    started: Number.isFinite(row.started) ? (row.started as number) : null,
+    season: doc.season,
+    week: doc.week,
+  };
 }
 
 /**
@@ -807,7 +880,11 @@ export async function getPlayerPageData(
       ranked,
       player.position,
       format,
-      positionalFinish(player.id, player.position, candidate, format, allPlayers),
+      // The career table's Finish column is the rate finish, which is the one
+      // a season is remembered by. The total finish is the header's fallback
+      // and belongs to the current season only.
+      positionalFinish(player.id, player.position, candidate, format, allPlayers)
+        .ppg,
     );
     if (totals) careerSeasons.push(totals);
   }
@@ -903,8 +980,11 @@ export async function getPlayerPageData(
 
     season,
     seasonLabel,
-    seasonRank: rank,
+    seasonRank: rank.ppg,
+    seasonRankTotal: rank.total,
     availableSeasons: seasons,
+
+    rosterPct: rosterPctFor(player.id),
 
     gameLog,
     stats,
@@ -950,7 +1030,21 @@ export async function getPlayerPageData(
       now: new Date(),
     }),
     fantasyOutlook2026: outlook2026,
-    outlookDrivers: outlookDrivers(player, outlook2026),
+    outlookDrivers: drivers,
+    // Built from the strip rather than beside it, so an answer cannot claim a
+    // rank the cards above it do not show. The season is the outlook's own,
+    // for the reason the tab's heading uses it: that record is stamped for the
+    // year it is about, and `season` here is the stats year.
+    outlookFaq: outlookFaq({
+      name: player.name,
+      position: player.position,
+      team: player.team,
+      season: outlook2026?.season ?? season,
+      drivers,
+      keyStats: outlook2026?.keyStats ?? null,
+      dynasty: loadDynastyRankings()[player.slug] ?? null,
+      rosterPct: rosterPctFor(player.id),
+    }),
 
     statsProfile: {
       career: careerRows,
@@ -963,7 +1057,7 @@ export async function getPlayerPageData(
         season,
         seasonRow: currentRow,
         totals: rowTotals,
-        seasonRank: rank,
+        seasonRank: rank.ppg,
       }),
     },
 

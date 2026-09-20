@@ -821,19 +821,103 @@ function formatHeight(height: string | null): string {
  * All three or none. The strip is a reading of one season, and there is no
  * state where a player has points but no games to have scored them in.
  */
-function heroStats(data: PlayerPageData): Array<{ value: string; label: string }> {
-  const { stats, format } = data;
+interface HeroStatCell {
+  label: string;
+  value: string;
+  /** The headline of the three, which takes the gold. */
+  lead?: boolean;
+}
+
+/**
+ * The figures in the hero's right-hand panel.
+ *
+ * Three questions, in the order a fantasy reader asks them: how much is he
+ * scoring, where does that put him, and does anyone else have him. A header is
+ * the one place on a profile where a reader will accept being told the answer
+ * before the question, and those three are the answers they came for.
+ *
+ * It used to be rate, total and games played, which answered the first
+ * question three times — the total is the rate times the games, and a reader
+ * who has the first two can do the third in their head. The rank and the
+ * ownership are the two facts on this page that cannot be derived from
+ * anything else in the header.
+ *
+ * Two rows to a cell, label over figure. The qualifiers that used to sit on a
+ * third row — the games the average is over, which way the rank was measured,
+ * whose ownership pool — are all stated in full further down the page, and a
+ * line of grey under every figure was competing with the figures for the
+ * reading the panel exists to give.
+ *
+ * The scoring cell is the only one that is always there. A rank needs a league
+ * to rank within and ownership needs a source that has heard of him, and where
+ * either is missing the panel is two cells wide rather than carrying a dash —
+ * a placeholder is a figure that says nothing while taking the room of one
+ * that would.
+ */
+/**
+ * An ownership share, as a reader would say it.
+ *
+ * Whole numbers from ten up, where a tenth of a point is noise on a figure
+ * that moves by several a week. Below ten the tenth IS the reading: 0.4% and
+ * 4% are both "barely rostered" once rounded, and they are not the same
+ * player.
+ *
+ * And 100% is reserved for 100%. Thirty players sat at 99.0 or above in the
+ * week this was written and exactly one of them was in every league; rounding
+ * would have printed the same "100%" over all thirty, which is a claim about
+ * the last league in the game rather than a reading of a number.
+ */
+function rosteredPct(value: number): string {
+  if (value < 10) return pct(value, 1);
+  return pct(Math.min(Math.round(value), value >= 100 ? 100 : 99), 0);
+}
+
+function heroStats(data: PlayerPageData): HeroStatCell[] {
+  const { stats, format, player } = data;
   if (!stats || stats.gamesPlayed === 0) return [];
 
-  return [
-    { value: num(stats.ppg), label: `${SCORING_SHORT[format]} PPG` },
-    // One decimal, like the career table's FPTS column and like the PPG beside
-    // it. Rounding the total to a whole number made a one-game header read
-    // "16.5 PPG / 16 PTS", which is the same figure disagreeing with itself.
-    { value: num(stats.totalPts), label: `${SCORING_SHORT[format]} PTS` },
-    { value: String(stats.gamesPlayed), label: "Games" },
-  ];
+  const pos = player.position ?? "";
+  const season = data.production.find((row) => row.season === data.season);
+  const cells: HeroStatCell[] = [];
+
+  /* ---- what he is scoring ---- */
+
+  cells.push({
+    label: `${SCORING_SHORT[format]} PPG`,
+    value: num(stats.ppg),
+    lead: true,
+  });
+
+  /* ---- where that puts him ---- */
+
+  // By points per game where that rank exists, by points scored until it does.
+  // Which of the two is showing is left to the career table's Finish column and
+  // the two finish tiles, where the distinction is drawn in full; the hero cell
+  // carries the figure alone.
+  const ppgRank = season?.posFinishPpg ?? data.seasonRank;
+  const totalRank = season?.posFinishTotal ?? data.seasonRankTotal;
+  const rank = ppgRank ?? totalRank;
+  if (pos && rank !== null) {
+    cells.push({
+      label: "Pos rank",
+      value: `${pos}${rank}`,
+    });
+  }
+
+  /* ---- and whether anyone else has him ---- */
+
+  if (data.rosterPct) {
+    cells.push({
+      label: "Rostered",
+      // The pool it was measured in is Sleeper's redraft cut — see
+      // scripts/player/buildRosterPct.mjs.
+      value: rosteredPct(data.rosterPct.owned),
+    });
+  }
+
+  return cells;
 }
+
 
 /*
  * The hero's responsive contract, in one place.
@@ -890,7 +974,15 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
   // Cheaper than shrinking the type beside it, which is why stage 3 spends it
   // before stage 5 touches the name's size.
   const billingParts: string[] = [];
-  if (player.position) billingParts.push(escapeHtml(player.position));
+  if (player.position) {
+    // The position in the club's own colour, which is the one place on this
+    // page the team's primary is used as ink rather than as a rule or a
+    // wash. It is the first thing read in the line and the fact that places
+    // the player, so it is the fact that takes the colour.
+    billingParts.push(
+      `<span class="scp-hero-pos">${escapeHtml(player.position)}</span>`,
+    );
+  }
   if (team) {
     billingParts.push(
       `<a class="scp-hero-team" href="${escapeHtml(
@@ -900,6 +992,11 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
         `</a>`,
     );
   }
+  // The jersey number, last in the line of identity: it is the one fact here a
+  // reader already knows the player by rather than one that places them, and
+  // it leaves the line below as what it is, the measurements.
+  if (player.number) billingParts.push(`#${escapeHtml(String(player.number))}`);
+
   const billing = billingParts.length
     ? `<p class="scp-hero-billing">` +
       billingParts.join(`<span class="scp-hero-sep"> ${DOT} </span>`) +
@@ -910,7 +1007,7 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
    * The measurements, and the one of them the header may give back.
    *
    * This line is usually the widest thing in the column — wider than the name
-   * at 52px, because it is five facts and a name is one word — which makes it
+   * at 52px, because it is four facts and a name is one word — which makes it
    * the line that decides how much room the column needs, and so the only
    * line where a word swap can actually buy anything. Swapping the club's name
    * under a wider line than itself saves exactly nothing.
@@ -922,7 +1019,6 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
    * it is a header missing a fact.
    */
   const factParts: string[] = [];
-  if (player.number) factParts.push(`#${player.number}`);
   if (player.age) factParts.push(`Age ${player.age}`);
   const height = formatHeight(player.height);
   if (height) factParts.push(height);
@@ -971,6 +1067,21 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
   // The season the strip is a reading of, said once above it rather than
   // folded into all three labels — "2026 PPR PPG" three times is the year
   // shouted and the metric lost, and at 9.5px it wraps.
+  /*
+   * The panel, in three rows to a cell.
+   *
+   * Label above the figure rather than below it, which is the order a reader
+   * needs them in: the label is the question and the figure is the answer, and
+   * an answer read before its question has to be read twice. The third row is
+   * what the figure was worth — the positional finish, or what the count is
+   * out of — because a fantasy number without its rank is a number, not a
+   * reading.
+   *
+   * The first cell takes the gold. It is the figure this header exists to
+   * report, the same accent the open tab and the section rules use for "this
+   * is the one", and it means the panel has a reading order rather than three
+   * equal numbers competing.
+   */
   const cells = heroStats(data);
   const strip = cells.length
     ? `<div class="scp-hero-stats">` +
@@ -979,9 +1090,9 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
       cells
         .map(
           (cell) =>
-            `<div class="scp-hero-stat">` +
-            `<span class="scp-hero-stat-value">${escapeHtml(cell.value)}</span>` +
+            `<div class="scp-hero-stat${cell.lead ? " is-lead" : ""}">` +
             `<span class="scp-hero-stat-label">${escapeHtml(cell.label)}</span>` +
+            `<span class="scp-hero-stat-value">${escapeHtml(cell.value)}</span>` +
             `</div>`,
         )
         .join("") +
@@ -1004,18 +1115,18 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
   /*
    * The heading, in up to three spans.
    *
-   * Given name above, surname large, and — on a section-scoped URL — the
+   * Given name and surname on one line, and — on a section-scoped URL — the
    * section's phrase under both, because "Jacoby Brissett Injury Update &
    * History" is what that page is about and what its H1 has to say. The spans
    * are separated by real spaces, so however the hero sets them the heading's
    * text is still the exact string the unscoped page's H1 has always been.
    * The section then drops its own heading; see renderInjury().
    *
-   * No word swap on the name, and no measured "J. Brissett" fallback either —
-   * the two-line setting already spends that concession by construction. The
-   * given name is 12px above a 52px surname, so the wide line is one word and
-   * there is nothing in it to shorten; what the fitter has to work with is its
-   * size, which is stage 5's last cut before the name is allowed to wrap.
+   * No word swap on the name, and no measured "J. Brissett" fallback either.
+   * A name is the one string on this page a reader came for, and an initial is
+   * a worse answer than a smaller name or a second line; what the fitter has
+   * to work with is its size, which is stage 5's last cut before the name is
+   * allowed to wrap.
    */
   const { first, last } = splitName(player.name);
   const phrase = options.section
@@ -1253,7 +1364,11 @@ function renderFantasySnapshot(data: PlayerPageData): string {
 
   return (
     `<section class="scp-read-hero">` +
-    `<h2 class="scp-read-eyebrow">${escapeHtml(`${data.season} fantasy snapshot`)}</h2>` +
+    // The page's section heading, the same one the Outlook tab and the Stats
+    // tab open on. This was an 11px gold eyebrow, which is a label worn over a
+    // display line — there is no display line here, only the strip, so the
+    // eyebrow was the tab's <h2> set six sizes below every other heading.
+    h2(`${data.season} Fantasy Snapshot`) +
     `<div class="scp-read-grid">` +
     reads
       .map(
@@ -1339,8 +1454,8 @@ function efficiencyReads(data: PlayerPageData): EfficiencyRead[] {
 /**
  * The efficiency rows, and the line that says what they are ranked against.
  *
- * ONE component, rendered on two tabs. Overview heads it "What is driving the
- * production" and Stats heads it "Efficiency profile", and underneath they are
+ * ONE component, rendered on two tabs. Overview heads it "What Is Driving The
+ * Production" and Stats heads it "Efficiency Profile", and underneath they are
  * the same four readings off the same four percentiles — which is exactly why
  * they must be the same markup. They were not: Stats drew a marker on a
  * percentile track with a two-word verdict in a fifth column, Overview drew a
@@ -1393,7 +1508,7 @@ function renderProductionDrivers(data: PlayerPageData): string {
   const rows = efficiencyRows(data);
   if (!rows) return "";
   return (
-    sectionHead("What is driving the production", efficiencyNote(data)) + rows
+    sectionHead("What Is Driving The Production", efficiencyNote(data)) + rows
   );
 }
 
@@ -1448,7 +1563,7 @@ function renderWeeklyProfile(data: PlayerPageData): string {
         `</p>`;
 
   return (
-    sectionHead("Weekly profile") +
+    sectionHead("Weekly Profile") +
     spread +
     renderDistribution(data) +
     styleRow
@@ -1473,7 +1588,7 @@ function renderFantasyProfile(data: PlayerPageData): string {
   });
 
   return (
-    sectionHead("Fantasy profile") +
+    sectionHead("Fantasy Profile") +
     /*
      * A two-column matrix rather than the Injury tab's full-width list.
      *
@@ -1503,7 +1618,7 @@ function renderFantasyProfile(data: PlayerPageData): string {
 }
 
 /**
- * Career context in one strip, and a way through to the rest.
+ * Career Context in one strip, and a way through to the rest.
  *
  * One line rather than the four-tile career block that used to sit here: the
  * career rates, the season finishes and the full year-by-year table are all on
@@ -1546,7 +1661,7 @@ function renderCareerContext(
   const href = `${prefix}${data.player.slug}${options.linkQuery ?? ""}#stats`;
 
   return (
-    sectionHead("Career context") +
+    sectionHead("Career Context") +
     `<p class="scp-strip">` +
     `<span class="scp-strip-stats">${escapeHtml(parts.join(` ${DOT} `))}</span>` +
     `<a class="scp-crosslink" href="${escapeHtml(href)}">` +
@@ -1592,7 +1707,7 @@ function renderDistribution(data: PlayerPageData): string {
         )}</p>`
       : "";
 
-  // No heading of its own: this is the evidence under "Weekly profile", and a
+  // No heading of its own: this is the evidence under "Weekly Profile", and a
   // second section head immediately below that one read as two blocks saying
   // the same thing.
   return (
@@ -1614,7 +1729,7 @@ function renderTrend(data: PlayerPageData): string {
   }));
 
   return (
-    h3("Week by week") +
+    h3("Week By Week") +
     renderSparkline(points, rollingAverage(points.map((p) => p.value), 3))
   );
 }
@@ -1653,12 +1768,12 @@ function renderProduction(data: PlayerPageData): string {
   if (!rows && !style) return "";
 
   return (
-    sectionHead("Efficiency profile", efficiencyNote(data)) + rows + style
+    sectionHead("Efficiency Profile", efficiencyNote(data)) + rows + style
   );
 }
 
 /**
- * Role direction: the usage metrics that define this position, recent vs season.
+ * Role Direction: the usage metrics that define this position, recent vs season.
  *
  * Usage rather than production, deliberately. Points are the outcome and
  * touches are the input, and a role that is growing shows up in the input
@@ -1704,7 +1819,7 @@ function renderRoleDirection(data: PlayerPageData): string {
   if (!rows) return "";
 
   return (
-    h3("Role direction") +
+    h3("Role Direction") +
     `<table class="scp-table scp-table--role">` +
     `<caption class="scp-caption">Season average against the last four games played.</caption>` +
     `<thead><tr><th scope="col">Usage</th><th scope="col">Season</th>` +
@@ -1805,7 +1920,7 @@ function renderCareerSnapshot(data: PlayerPageData): string {
       )}</p>`
     : "";
 
-  return sectionHead("Career rates") + renderRail(cells) + caveat;
+  return sectionHead("Career Rates") + renderRail(cells) + caveat;
 }
 
 
@@ -1839,43 +1954,29 @@ function renderList(items: unknown, className: string): string {
  * "6 feet 4 inches" with "TD-dependent ceiling" is topically two pages and
  * ranks as well as neither.
  *
- * Four blocks, in the order the question gets answered:
+ * Three blocks, in the order the question gets answered:
  *
  *   1. a short factual story — who he is, in a paragraph
- *   2. the facts — age, height, weight, born, college, experience, draft
- *   3. the career timeline — every club, with its years and its badge
- *   4. the questions, answered directly
+ *   2. the career timeline — every club, with its years and its badge
+ *   3. the questions, answered directly
  *
- * The draft has no block of its own: the paragraph names the round, the pick
- * and the club that made it, and the fact grid carries the year, so a separate
- * dossier under "NFL draft" was the same five facts a third time.
+ * The labelled fact grid — age, height, weight, born, college, high school,
+ * experience, draft — used to sit between one and two, and every one of those
+ * facts is a clause of the paragraph above it. "Born on December 11, 1992,
+ * Brissett attended William T. Dwyer (FL) and played college football at North
+ * Carolina State" says the same thing as three cells of the grid, in the order
+ * a person would say it. The grid is gone; bioProfile.facts is still derived
+ * for anything else that wants it.
+ *
+ * The draft has no block of its own either: the paragraph names the year, the
+ * round, the pick and the club that made it, so a dossier under "NFL draft"
+ * was the same five facts a third time.
  *
  * All of it is derived in lib/player/bio.ts and none of it is written, so it
  * stays true through a trade, a birthday or a new season with nobody rewriting
  * a paragraph. What is not in the data is not on the page: there is no hometown
  * row because the upstream source has no hometown for anybody.
  */
-
-/** The labelled fact grid. The answer, above everything else on the tab. */
-function renderBioFacts(data: PlayerPageData): string {
-  const facts = data.bioProfile.facts;
-  if (facts.length === 0) return "";
-
-  const cells = facts
-    .map(
-      (fact) =>
-        `<div class="scp-fact">` +
-        `<dt class="scp-fact-label">${escapeHtml(fact.label)}</dt>` +
-        `<dd class="scp-fact-value">${escapeHtml(fact.value)}` +
-        (fact.detail
-          ? `<span class="scp-fact-detail">${escapeHtml(fact.detail)}</span>`
-          : "") +
-        `</dd></div>`,
-    )
-    .join("");
-
-  return `<dl class="scp-facts">${cells}</dl>`;
-}
 
 /**
  * The career timeline.
@@ -1885,6 +1986,22 @@ function renderBioFacts(data: PlayerPageData): string {
  * drawing it as a sequence is what stops Bio looking like every other tab. The
  * college sits at the top with no years — we know where a player went, not
  * when, and a made-up range would be worse than none.
+ *
+ * Each stop is a full-width row, not a run of inline spans hugging the rail.
+ * The rail version put the year, the crest and the club name in the left
+ * quarter of the column and left the other three quarters blank, which reads
+ * as a sidebar that has lost its page. The row has three zones instead, and
+ * each one earns its place:
+ *
+ *   YEARS   the range, tabular, so the column scans as a column
+ *   CLUB    crest, club name, and the badge for the stop that is current
+ *   COUNT   how long it lasted — right-aligned, against the far edge
+ *
+ * and under the club, when there is one, the line that says what kind of stop
+ * it was: the draft that started the career, or the return to a club already
+ * on the list. That is the whole difference between a list of logos and a
+ * career: a reader should be able to see where he was taken, how long each
+ * stop ran, and where he is now, without counting years off a range.
  */
 function renderCareerTimeline(data: PlayerPageData): string {
   const { stints, college } = data.bioProfile;
@@ -1895,34 +2012,48 @@ function renderCareerTimeline(data: PlayerPageData): string {
       `<span class="scp-stint-mark" aria-hidden="true"></span>` +
       `<span class="scp-stint-years">College</span>` +
       `<span class="scp-stint-body">` +
+      `<span class="scp-stint-head">` +
       `<span class="scp-stint-name">${escapeHtml(college)}</span>` +
-      `</span></li>`
+      `</span></span></li>`
     : "";
 
   const stops = stints
     .map((stint) => {
       const logo = stint.team
         ? `<img class="scp-stint-logo" src="${escapeHtml(stint.team.logo)}" alt=""` +
-          ` width="26" height="26" loading="lazy" decoding="async" />`
+          ` width="28" height="28" loading="lazy" decoding="async" />`
         : "";
+
+      // The second line, when the stop has something to say beyond its years.
+      // Both halves are rare — most stints are a club and a date range — so
+      // the line is emitted only when one of them is there, never as an empty
+      // row of air under every stop.
+      const sub = [stint.note, stint.detail].filter(Boolean).join(" · ");
 
       return (
         `<li class="scp-stint" data-kind="nfl"${stint.current ? ` data-current="1"` : ""}>` +
         `<span class="scp-stint-mark" aria-hidden="true"></span>` +
         `<span class="scp-stint-years">${escapeHtml(stint.years)}</span>` +
         `<span class="scp-stint-body">` +
+        `<span class="scp-stint-head">` +
         logo +
         `<span class="scp-stint-name">${escapeHtml(stint.name)}</span>` +
-        (stint.note
-          ? `<span class="scp-stint-note">${escapeHtml(stint.note)}</span>`
+        (stint.current
+          ? `<span class="scp-stint-badge">Current team</span>`
           : "") +
-        `</span></li>`
+        `</span>` +
+        (sub ? `<span class="scp-stint-sub">${escapeHtml(sub)}</span>` : "") +
+        `</span>` +
+        `<span class="scp-stint-count">${escapeHtml(
+          stint.seasons === 1 ? "1 season" : `${stint.seasons} seasons`,
+        )}</span>` +
+        `</li>`
       );
     })
     .join("");
 
   return (
-    h3("Career timeline") +
+    h3("Career Timeline") +
     `<ol class="scp-stints">${collegeStop}${stops}</ol>`
   );
 }
@@ -1932,8 +2063,9 @@ function renderBioNarrative(data: PlayerPageData): string {
   const paragraphs = data.bioProfile.narrative;
   if (paragraphs.length === 0) return "";
 
+  // No heading over it. "About <name>" under "<name> bio" is the same words
+  // twice, and the paragraph beneath is plainly about the player.
   return (
-    h3(`About ${data.player.name}`) +
     `<div class="scp-bio">` +
     `<p class="scp-para">${escapeHtml(paragraphs.join(" "))}</p>` +
     `</div>`
@@ -1947,7 +2079,6 @@ function renderBio(
   if (data.bioProfile.empty) return "";
 
   const narrative = renderBioNarrative(data);
-  const facts = renderBioFacts(data);
   const timeline = renderCareerTimeline(data);
   const faq = renderFaq(
     data.bioProfile.faq,
@@ -1955,18 +2086,16 @@ function renderBio(
     `${data.player.name} FAQ`,
   );
 
-  if (!narrative && !facts && !timeline && !faq) return "";
+  if (!narrative && !timeline && !faq) return "";
 
   // Scoped to its own URL the hero already says this; see renderPlayerPage().
   const heading =
     options.section === "bio"
       ? ""
-      : h2(
-          `${data.player.name} bio`,
-          "Age, height, college, draft and career history.",
-        );
+      // No subtitle: it listed the facts of the table directly beneath it.
+      : h2(`${data.player.name} Bio`);
 
-  return heading + narrative + facts + timeline + faq;
+  return heading + narrative + timeline + faq;
 }
 
 /* ------------------------------------------------------------------ outlook */
@@ -2006,12 +2135,19 @@ function confidenceLevel(value: string | undefined): string {
 }
 
 /**
- * The head: the written read, in the slab that opens the tab.
+ * The head: the written read, opening the tab.
  *
  * The chips are the whole tab in one line, and under them is the outlook
  * itself, whole. There is no quick take and no repeated name: the hero above
  * has already said who this is, and a two-sentence summary sitting six inches
  * above the two paragraphs it summarises is the same argument twice.
+ *
+ * No slab around it any more. A raised card is how this page marks a thing
+ * that stands apart from the column it sits in, and the written read is the
+ * opposite of that — it is the first section of the tab, and it now opens the
+ * way every other section on the page opens: the shared h2 and its gold rule,
+ * with the prose running flush underneath. The card was also nesting a box in
+ * a box, since the chips carry their own frame.
  */
 function renderOutlookHead(data: PlayerPageData): string {
   const outlook = data.fantasyOutlook2026;
@@ -2044,9 +2180,13 @@ function renderOutlookHead(data: PlayerPageData): string {
 
   if (chips.length === 0 && paragraphs.length === 0) return "";
 
+  // The outlook stamps its own season, so the heading cannot drift from the
+  // record it is heading; data.season is the stats year and only the fallback.
+  const season = outlook?.season ?? data.season;
+
   return (
-    `<section class="scp-verdict">` +
-    `<h2 class="scp-verdict-eyebrow">The full read</h2>` +
+    `<section class="scp-outlook-head">` +
+    h2(`${season} Outlook`) +
     (chips.length
       ? `<div class="scp-verdict-chips">` +
         chips
@@ -2112,7 +2252,7 @@ function renderOutlookDrivers(data: PlayerPageData): string {
     .join("");
 
   return (
-    h3("What drives the outlook") +
+    h3("What Drives The Outlook") +
     `<p class="scp-sub">${escapeHtml(subtitle)}</p>` +
     `<div class="scp-drivers" data-count="${drivers.length}">${cells}</div>`
   );
@@ -2180,7 +2320,7 @@ function renderOutlookRange(data: PlayerPageData): string {
     .join("");
 
   return (
-    h3("Range of outcomes") +
+    h3("Range Of Outcomes") +
     `<p class="scp-sub">${escapeHtml(
       `Projected ${OUTLOOK_SEASON} positional finish. A range, not a number — nobody has the number.`,
     )}</p>` +
@@ -2203,7 +2343,7 @@ function renderOutlookRange(data: PlayerPageData): string {
 }
 
 /**
- * What moves the outlook.
+ * What Moves The Outlook.
  *
  * Two columns of plain text under two headings, split by a rule. Not a green
  * box and a red box: the two lists are not a good thing and a bad thing, they
@@ -2236,7 +2376,7 @@ function renderOutlookMoves(data: PlayerPageData): string {
       : "";
 
   return (
-    h3("What moves the outlook") +
+    h3("What Moves The Outlook") +
     `<div class="scp-moves">` +
     column("Upside triggers", "&uarr;", upside, "up") +
     column("Warning signs", "&darr;", warning, "down") +
@@ -2245,7 +2385,7 @@ function renderOutlookMoves(data: PlayerPageData): string {
 }
 
 /**
- * How to use him.
+ * How To Use Him.
  *
  * The practical section, and the one most likely to be the only thing a reader
  * came for. The two format labels adapt by position because the two questions
@@ -2267,7 +2407,7 @@ function renderOutlookUsage(data: PlayerPageData): string {
   if (rows.length === 0) return "";
 
   return (
-    h3("How to use him") +
+    h3("How To Use Him") +
     `<dl class="scp-usage">` +
     rows
       .map(
@@ -2439,7 +2579,7 @@ function renderLogControls(
  * heading that had just named 2026 and the 2026 numbers that answer it.
  *
  * It is not a block of its own down there either: the caller puts it on the
- * heading row of the block it opens — "Career by season" under All, the year's
+ * heading row of the block it opens — "Career By Season" under All, the year's
  * own heading when one is pinned — so the row of years and the name of what
  * they produced are one line rather than two stacked sections.
  *
@@ -2972,7 +3112,7 @@ function renderLogChart(data: PlayerPageData): string {
   if (!Number.isFinite(average)) return "";
 
   return (
-    h3("Fantasy points by week") +
+    h3("Fantasy Points By Week") +
     renderSparkline(
       points,
       points.map(() => average),
@@ -3000,7 +3140,7 @@ function renderRecentGames(data: PlayerPageData): string {
   const last = recent[recent.length - 1]?.week;
 
   return (
-    h3("Last five games") +
+    h3("Last Five Games") +
     renderTiles(
       [
         {
@@ -3131,7 +3271,7 @@ function renderGameLogFaq(
     otherSeasons: data.logSeasons.filter((year) => year !== data.logSeason),
   });
 
-  return renderFaq(items, options, `${data.player.name} game log FAQ`);
+  return renderFaq(items, options, `${data.player.name} Game Log FAQ`);
 }
 
 /* --------------------------------------------------------- upcoming games */
@@ -3292,10 +3432,10 @@ function renderUpcoming(
     // No sub-line. "Next on the schedule · Upcoming opponents and fantasy
     // matchup difficulty" restated the heading and then described the cards
     // directly beneath it, which say it better than a sentence can.
-    // "Upcoming matchups", not "<Name> upcoming games": the H1, the hero and
+    // "Upcoming Matchups", not "<Name> upcoming games": the H1, the hero and
     // the tab above it have all already said whose page this is, and the word
     // this block turns on is the matchup rather than the fixture.
-    sectionHead("Upcoming matchups") +
+    sectionHead("Upcoming Matchups") +
     `<ul class="scp-nexts">${cards}</ul>` +
     `<p class="scp-caption scp-next-note">` +
     scale +
@@ -3382,7 +3522,7 @@ function renderGameLog(
     // Scoped to its own URL the hero already says this; see renderPlayerPage().
     options.section === "game-log"
       ? ""
-      : h2(`${data.player.name} game log ${current.season}`);
+      : h2(`${data.player.name} Game Log ${current.season}`);
 
   return (
     heading +
@@ -3462,7 +3602,7 @@ function renderArchiveSeason(
     ` aria-label="${escapeHtml(
       `${data.player.name} ${data.logSeason} game log`,
     )}">` +
-    sectionHead(`${data.player.name} game log ${data.logSeason}`, "", seasonNav) +
+    sectionHead(`${data.player.name} Game Log ${data.logSeason}`, "", seasonNav) +
     renderLogTiles(data) +
     renderLogIntro(data) +
     renderWeeklyLog(data) +
@@ -3580,7 +3720,7 @@ function renderCareerFinishes(data: PlayerPageData): string {
   // that happen to be similar — that difference is most of what made the
   // bottom of this page read as a wall of generic boxes.
   return (
-    sectionHead("Fantasy finish history") +
+    sectionHead("Fantasy Finish History") +
     renderRail([
       {
         value: best ? `${best.position}${best.posFinishTotal}` : DASH,
@@ -3917,7 +4057,7 @@ function renderSeasonProduction(data: PlayerPageData): string {
     : "";
 
   return (
-    sectionHead(`${data.season} production`) +
+    sectionHead(`${data.season} Production`) +
     `<div class="scp-prod-grid">` +
     watermark +
     renderProdColumn(title, primary, "navy") +
@@ -4064,7 +4204,7 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
     // in PPR" — the season count is the number of rows, the games are the
     // Career row's own GP cell, and the format is named by the toggle in the
     // header. Three facts the table states, restated above the table.
-    sectionHead("Career by season", "", aside) +
+    sectionHead("Career By Season", "", aside) +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--career" data-scp-sortable>` +
     `<thead>${groupRow}${head}</thead>` +
@@ -4081,7 +4221,7 @@ function renderCareerHighs(data: PlayerPageData): string {
   // A record board: the figure, what the record is, and the season it was set
   // in. Same rail as the two sections above it.
   return (
-    sectionHead("Career bests") +
+    sectionHead("Career Bests") +
     renderRail(
       highs.map((high) => ({
         value: high.value,
@@ -4096,7 +4236,7 @@ function renderCareerHighs(data: PlayerPageData): string {
 function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
   const faq = data.statsProfile.faq;
   if (faq.length === 0) return "";
-  return renderFaq(faq, options, "Common questions");
+  return renderFaq(faq, options, "Common Questions");
 }
 
 function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string {
@@ -4130,7 +4270,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
     // Scoped to its own URL the hero carries this; see renderPlayerPage().
     options.section === "stats"
       ? ""
-      : h2(`${data.player.name} stats ${data.season}`);
+      : h2(`${data.player.name} Stats ${data.season}`);
 
   return (
     heading +
@@ -4348,7 +4488,7 @@ function renderInjuryStatus(
   );
 }
 
-/** Injuries by body part. A table, because it is tabular. */
+/** Injuries By Body Part. A table, because it is tabular. */
 function renderInjuryRegions(data: PlayerPageData): string {
   const regions = data.injury?.regions ?? [];
   if (regions.length === 0) return "";
@@ -4365,7 +4505,7 @@ function renderInjuryRegions(data: PlayerPageData): string {
     .join("");
 
   return (
-    h3("Injuries by body part") +
+    h3("Injuries By Body Part") +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--regions">` +
     `<thead><tr>` +
@@ -4434,7 +4574,7 @@ function renderInjuryHistory(data: PlayerPageData): string {
     "Games missed are regular-season games.";
 
   return (
-    h3(`${data.player.name} injury history`) +
+    h3(`${data.player.name} Injury History`) +
     `<ol class="scp-episodes">${entries}</ol>` +
     `<p class="scp-note">${escapeHtml(provenance)}</p>`
   );
@@ -4442,13 +4582,13 @@ function renderInjuryHistory(data: PlayerPageData): string {
 
 /** The questions people type, answered from the record above them. */
 function renderInjuryFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
-  // Named for the player and the subject rather than "Common questions": these
+  // Named for the player and the subject rather than "Common Questions": these
   // are the sentences somebody typed into a search box, and the heading over
   // them should read like the thing they were looking for.
   return renderFaq(
     data.injury?.faq ?? [],
     options,
-    `${data.player.name} injury FAQ`,
+    `${data.player.name} Injury FAQ`,
   );
 }
 
@@ -4468,7 +4608,7 @@ function renderInjuryFaq(data: PlayerPageData, options: PlayerRenderOptions): st
 function renderAvailabilityPair(data: PlayerPageData, riskRows: string): string {
   const profile = riskRows
     ? `<div class="scp-pair-col">` +
-      h3("Availability profile") +
+      h3("Availability Profile") +
       `<ul class="scp-avails">${riskRows}</ul>` +
       `<details class="scp-how">` +
       `<summary class="scp-how-summary">How this is calculated</summary>` +
@@ -4542,14 +4682,14 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
     options.section === "injury"
       ? ""
       : h2(
-          `${data.player.name} injury update & history`,
+          `${data.player.name} Injury Update & History`,
           "Current status, games missed and every logged injury.",
         );
 
   return (
     heading +
     renderInjuryStatus(data, options) +
-    h3("Injury history at a glance") +
+    h3("Injury History At A Glance") +
     `<div class="scp-injury-top">${grade}${tiles}</div>` +
     (insight ? `<p class="scp-note scp-note--lead">${escapeHtml(insight)}</p>` : "") +
     renderAvailabilityPair(data, riskRows) +
@@ -4763,12 +4903,12 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string 
     : "";
 
   const own = data.news.length
-    ? h3(`Latest on ${data.player.name}`) +
+    ? h3(`Latest On ${data.player.name}`) +
       renderNewsList(data.news, { lead: true, showPlayer: false })
     : "";
 
   const team = data.teamNews.length
-    ? h3(data.team ? `Around the ${data.team.nickname}` : "Around the league") +
+    ? h3(data.team ? `Around The ${data.team.nickname}` : "Around The League") +
       renderNewsList(data.teamNews, {
         lead: false,
         showPlayer: true,
@@ -4783,7 +4923,7 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string 
   if (!report && !own && !team) return "";
 
   return (
-    h2("News & analysis", `Injury status and the latest reporting on ${data.player.name}`) +
+    h2("News & Analysis", `Injury status and the latest reporting on ${data.player.name}`) +
     report +
     reportLink +
     own +
@@ -4893,7 +5033,7 @@ export function renderPlayerPage(
    * renderFantasySnapshot(). What left: the 2026 counting totals and the best
    * week (Stats owns them), the efficiency meters and the career rate tiles
    * (moved to Stats), and the season-finish timeline (the career table's own
-   * Finish column and the Fantasy finish history module already say it twice).
+   * Finish column and the Fantasy Finish History module already say it twice).
    */
   /*
    * Three bands, not seven stacked modules.

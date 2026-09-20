@@ -88,6 +88,50 @@ export interface UsageRow extends RowBase {
 }
 
 /**
+ * One slice of a team's distribution of a single kind of opportunity.
+ *
+ * `player` is null for the pooled "Other" slice, which is what the denominator
+ * has left over once the named contributors are counted — the fullback with one
+ * carry, the receiver who is not a skill-position regular, the tail that would
+ * otherwise be four unreadable slivers.
+ */
+export interface UsageSlice {
+  player: Player | null;
+  position: string | null;
+  /** The player's name, or "Other". */
+  label: string;
+  /** Targets, or carries. */
+  value: number;
+  /** 0–1 of the team's total. */
+  share: number;
+}
+
+/**
+ * One team's usage, as the visual layer reads it.
+ *
+ * Derived beside the usage table rather than from it, because the two answer
+ * different questions and need different populations. The table is about the
+ * players whose snap count is in question, so it leaves quarterbacks out — a
+ * starter plays every snap and his row says nothing. A carry distribution that
+ * leaves the quarterback out is simply wrong: his runs are a real share of the
+ * backfield, and the remaining slices would be percentages of a total that does
+ * not exist. So the shares below are built from the whole appearance list.
+ */
+export interface TeamUsage {
+  team: NflTeam | null;
+  /** Top snap-share players, highest first. */
+  snaps: UsageRow[];
+  targets: UsageSlice[];
+  carries: UsageSlice[];
+  /**
+   * The denominators. Zero is the page's cue to say the data is unavailable
+   * rather than draw a ring with nothing in it.
+   */
+  targetTotal: number;
+  carryTotal: number;
+}
+
+/**
  * One derived note about a player's role in this game.
  *
  * `direction` is the glyph the card leads with: a role that grew, one that
@@ -116,6 +160,8 @@ export interface GameStats {
   receiving: ReceivingRow[];
   fantasy: FantasyRow[];
   usage: UsageRow[];
+  /** The same game, split by team and shaped for the charts. */
+  usageByTeam: TeamUsage[];
   takeaways: Takeaway[];
 }
 
@@ -307,6 +353,118 @@ function usageRows(list: Appearance[]): UsageRow[] {
     .sort(
       (x, y) => (y.snapShare ?? 0) - (x.snapShare ?? 0) || y.snaps - x.snaps,
     );
+}
+
+/**
+ * The positions the visual layer names.
+ *
+ * Wider than USAGE_POSITIONS by one — the quarterback — because he is a real
+ * part of a backfield's carries even though his snap count says nothing. Anyone
+ * outside this set still counts toward the denominator; he simply lands in
+ * "Other" rather than taking a labelled slice.
+ */
+const SLICE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "FB"]);
+
+/** Named slices before the tail is pooled. Six segments is a readable ring. */
+const SLICE_MAX = 5;
+
+/** The stat keys these distributions are built from. */
+type StatKey = Parameters<typeof num>[1];
+
+/**
+ * A team's total of one counting stat, over every player who recorded it.
+ *
+ * The same shape and the same reasoning as teamTargets(): the sum of the rows
+ * IS the team's total, so it is the share itself rather than an estimate of it.
+ * For rushing that total includes quarterback kneels, exactly as the box score
+ * does — this is not the place to invent a second definition of a rush attempt.
+ */
+function teamTotals(list: Appearance[], stat: StatKey): Map<string, number> {
+  const totals = new Map<string, number>();
+  for (const entry of list) {
+    const code = entry.team?.abbreviation;
+    if (!code) continue;
+    totals.set(code, (totals.get(code) ?? 0) + num(entry.stats, stat));
+  }
+  return totals;
+}
+
+/**
+ * One team's distribution of one stat: the named contributors, then the rest.
+ *
+ * Sorted by value, cut at SLICE_MAX, and whatever the denominator still has
+ * left — the tail, plus anyone outside SLICE_POSITIONS — pooled into a single
+ * "Other". A slice is never drawn for a player who did not record the stat, so
+ * a two-back game draws two slices rather than twelve slivers of nothing.
+ */
+function usageSlices(
+  list: Appearance[],
+  code: string,
+  stat: StatKey,
+  total: number,
+): UsageSlice[] {
+  if (total <= 0) return [];
+
+  const named: UsageSlice[] = list
+    .filter(
+      (entry) =>
+        entry.team?.abbreviation === code &&
+        num(entry.stats, stat) > 0 &&
+        SLICE_POSITIONS.has(entry.player.position ?? ""),
+    )
+    .map((entry) => ({
+      player: entry.player,
+      position: entry.player.position ?? null,
+      label: entry.player.name,
+      value: num(entry.stats, stat),
+      share: num(entry.stats, stat) / total,
+    }))
+    .sort((x, y) => y.value - x.value)
+    .slice(0, SLICE_MAX);
+
+  const counted = named.reduce((sum, slice) => sum + slice.value, 0);
+  const rest = total - counted;
+  if (rest > 0) {
+    named.push({
+      player: null,
+      position: null,
+      label: "Other",
+      value: rest,
+      share: rest / total,
+    });
+  }
+
+  return named;
+}
+
+/** Top snap shares and both distributions, per team, in the pair's own order. */
+function usageByTeam(list: Appearance[], rows: UsageRow[]): TeamUsage[] {
+  const targetTotals = teamTotals(list, "rec_tgt");
+  const carryTotals = teamTotals(list, "rush_att");
+
+  // The teams in the order the appearance list met them, so the two panels are
+  // away-then-home like every other pair of sides on the page.
+  const teams: NflTeam[] = [];
+  for (const entry of list) {
+    if (entry.team && !teams.some((team) => team.abbreviation === entry.team!.abbreviation)) {
+      teams.push(entry.team);
+    }
+  }
+
+  return teams.map((team) => {
+    const code = team.abbreviation;
+    const targetTotal = targetTotals.get(code) ?? 0;
+    const carryTotal = carryTotals.get(code) ?? 0;
+    return {
+      team,
+      // Already sorted by share where they were built; this only narrows them.
+      snaps: rows.filter((row) => row.team?.abbreviation === code).slice(0, SLICE_MAX),
+      targets: usageSlices(list, code, "rec_tgt", targetTotal),
+      carries: usageSlices(list, code, "rush_att", carryTotal),
+      targetTotal,
+      carryTotal,
+    };
+  });
 }
 
 /* ------------------------------------------------------------ takeaways */
@@ -568,6 +726,7 @@ export function buildGameStats(
   if (list.length === 0) return null;
 
   const fantasy = fantasyRows(list, meeting.season, meeting.week);
+  const usage = usageRows(list);
   const leaders = gameLeaders(list);
 
   // The fantasy leader's supporting line is the finish that score produced —
@@ -588,7 +747,8 @@ export function buildGameStats(
     rushing: rushingRows(list),
     receiving: receivingRows(list),
     fantasy,
-    usage: usageRows(list),
+    usage,
+    usageByTeam: usageByTeam(list, usage),
     takeaways: takeawaysFrom(list, injured),
   };
 

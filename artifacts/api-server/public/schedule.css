@@ -1,72 +1,142 @@
 /*
  * StatChasers — NFL Schedule
  *
- * The sixth sibling of team.css, player.css, fpa.css and rankings.css, and a
- * sibling for the same reason: the stylesheets are enqueued independently, so a
- * page mounting [statchasers_schedule] must not need another tool's CSS. The
- * brand tokens are restated rather than imported.
+ * This stylesheet reproduces the standalone `statchasers-nfl-schedule` repo's
+ * visual design on the server-rendered markup in src/lib/schedule-render.ts.
  *
- * Light-only, matching the others.
+ * That is a deliberate exception to the rule the other five tools follow. Team,
+ * player, FPA, rankings and matchup are hand-written to one shared house look;
+ * this one is not, because the schedule is the tool people already know from
+ * the standalone app and it was asked to arrive looking like it. Everything
+ * below therefore traces to the source: the token block is
+ * `artifacts/nfl-schedule/src/styles/app.css` transcribed, the component rules
+ * are its Tailwind utility strings resolved, and the container queries are its
+ * own. Where a number here looks arbitrary it is almost always a Tailwind step
+ * (0.25rem = 4px) or an em fraction off the 16px row.
  *
- * Two things here are load-bearing rather than decorative:
+ * What did NOT come across is structure, because the markup is server-rendered
+ * and has to stay that way:
  *
- *   - **The board is a grid, and the grid is the reading order.** When /
- *     matchup / TV, at every width. On a phone the three columns stack into two
- *     rows rather than shrinking, because a matchup squeezed into 90px stops
- *     being readable well before it stops fitting.
- *   - **Home and away are never carried by position alone.** The layout puts
- *     away on the left because that is the convention, but every row also says
- *     "at" in text, and the team lens prints "vs"/"at" as words. See
- *     schedule-render.ts.
+ *   - The board is still a grid and the grid is still the reading order —
+ *     When / Matchup / TV — at every width.
+ *   - Home and away are never carried by position alone. Every row says "at" in
+ *     text and the team lens prints "vs"/"at" as words. See schedule-render.ts.
+ *   - The team lens keeps its five columns (the source has three); the extra
+ *     result and TV columns are content the source's lens does not carry.
+ *
+ * The theme is light by default and opts into dark with a class, exactly as the
+ * source does — never `prefers-color-scheme`, because this mounts inside a
+ * WordPress theme that has its own opinion and a tool that went dark on its own
+ * would be the only dark thing on the page.
  */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 :where(.scs),
 :where(body.scs-page) {
-  /* Brand */
-  --sc-navy: #0b1634;
-  --sc-navy-deep: #060d21;
-  --sc-ink: #0b1220;
-  --sc-gold: #d4af37;
-  --sc-gold-soft: #f2d36b;
-  --sc-gold-deep: #a87905;
+  /*
+   * The source's tokens, as HSL triplets so an alpha can be taken off any of
+   * them the way its Tailwind `/50` and `/15` utilities do.
+   */
+  --scs-background: 0 0% 100%;
+  --scs-foreground: 220 47% 16%;
+  --scs-border: 218 20% 83%;
+  --scs-card: 0 0% 100%;
+  --scs-card-foreground: 220 47% 16%;
+  --scs-primary: 220 56% 19%;
+  --scs-primary-foreground: 0 0% 100%;
+  --scs-secondary: 218 22% 94%;
+  --scs-secondary-foreground: 220 47% 16%;
+  --scs-muted: 218 22% 96%;
+  --scs-muted-foreground: 218 14% 45%;
+  --scs-accent: 43 83% 49%;
+  --scs-accent-foreground: 220 56% 15%;
+  --scs-destructive: 2 66% 45%;
 
-  /* Neutrals */
-  --sc-muted: #64748b;
-  --sc-muted-strong: #475569;
-  --sc-border: #e5e7eb;
-  --sc-surface: #ffffff;
-  --sc-surface-soft: #f7f9fc;
-  --sc-surface-sink: #f1f5f9;
+  /* The row hover, which the source states as a literal rather than a token. */
+  --scs-row-hover: 218 25% 97%;
 
-  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
-  --sc-radius: 16px;
-  --sc-radius-sm: 12px;
-  --sc-radius-xs: 8px;
+  --scs-radius: 0.45rem;
+  --scs-shadow-sm: 0 1px 2px rgba(22, 35, 58, 0.05);
+  --scs-shadow-card: 0 1px 2px rgba(22, 35, 58, 0.05),
+    0 6px 20px rgba(22, 35, 58, 0.05);
 
-  --sc-shell: 1180px;
-  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --scs-font: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --scs-font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+
+  --scs-shell: 1280px;
   --scs-gutter: 24px;
+  /* The weekly board's side column. The rail borrows it to stay off it. */
+  --scs-side-week: 175px;
+
+  --scs-win: 142 72% 29%;
+  --scs-loss: 0 74% 42%;
 
   /*
-   * Live is the one state that gets a colour of its own, and it is the gold
-   * rather than a red: a red dot on a schedule reads as an error, and the only
-   * thing this tool ever has to say in colour is "this one is happening now".
-   * It is never the only signal — the status text says LIVE or the quarter, and
-   * the row carries data-status="live" for anything reading the markup.
+   * Kept as aliases because the shortcode's wrapper and the WordPress plugin's
+   * own rules reach for the house names. They now resolve to the source's
+   * palette rather than this app's.
    */
-  --scs-live: #b45309;
-  --scs-win: #15803d;
-  --scs-loss: #b91c1c;
+  --sc-navy: hsl(var(--scs-primary));
+  --sc-navy-deep: hsl(220 56% 12%);
+  --sc-ink: hsl(var(--scs-foreground));
+  --sc-gold: hsl(var(--scs-accent));
+  --sc-gold-soft: hsl(43 83% 62%);
+  --sc-gold-deep: hsl(43 83% 34%);
+  --sc-muted: hsl(var(--scs-muted-foreground));
+  --sc-muted-strong: hsl(218 16% 38%);
+  --sc-border: hsl(var(--scs-border));
+  --sc-surface: hsl(var(--scs-card));
+  --sc-surface-soft: hsl(var(--scs-muted));
+  --sc-surface-sink: hsl(var(--scs-secondary));
+  --sc-shadow: var(--scs-shadow-card);
+  --sc-radius: var(--scs-radius);
+  --sc-font: var(--scs-font);
+}
+
+/*
+ * Dark, transcribed from the source's `.dark` block. Opt in by putting
+ * `scs-dark` on the shortcode wrapper (or on <body> for the standalone page).
+ *
+ * The third selector is what makes the <body> case work: the light block above
+ * re-declares every token on `.scs` itself, so a dark value inherited from an
+ * ancestor would be overwritten the moment it reached the tool's own root.
+ *
+ * The one thing worth knowing: in dark, `--scs-primary` becomes the GOLD, not a
+ * lighter navy. Navy on navy would disappear, so the source promotes the accent
+ * into the primary slot and everything that was navy text becomes gold text.
+ */
+:where(.scs.scs-dark),
+:where(body.scs-page.scs-dark),
+:where(.scs-dark) :where(.scs) {
+  --scs-background: 220 47% 10%;
+  --scs-foreground: 42 36% 96%;
+  --scs-border: 220 27% 24%;
+  --scs-card: 220 43% 14%;
+  --scs-card-foreground: 42 36% 96%;
+  --scs-primary: 43 83% 49%;
+  --scs-primary-foreground: 220 56% 15%;
+  --scs-secondary: 220 31% 20%;
+  --scs-secondary-foreground: 42 36% 96%;
+  --scs-muted: 220 31% 19%;
+  --scs-muted-foreground: 218 15% 69%;
+  --scs-accent: 43 83% 49%;
+  --scs-destructive: 2 66% 56%;
+  --scs-row-hover: 220 31% 18%;
+  --scs-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+  --sc-muted-strong: hsl(218 15% 75%);
+  --scs-win: 142 60% 55%;
+  --scs-loss: 0 74% 66%;
 }
 
 /* ------------------------------------------------------------- standalone */
 
 body.scs-page {
   margin: 0;
-  padding: var(--scs-gutter);
-  background: var(--sc-surface-soft);
-  color: var(--sc-ink);
-  font-family: var(--sc-font);
+  padding: var(--scs-gutter) 2px 48px;
+  background: hsl(var(--scs-background));
+  color: hsl(var(--scs-foreground));
+  font-family: var(--scs-font);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -76,11 +146,11 @@ body.scs-page.is-embed {
 }
 
 .scs {
-  max-width: var(--sc-shell);
+  max-width: var(--scs-shell);
   margin: 0 auto;
-  font-family: var(--sc-font);
-  color: var(--sc-ink);
-  line-height: 1.45;
+  font-family: var(--scs-font);
+  color: hsl(var(--scs-foreground));
+  line-height: 1.5;
 }
 
 .scs *,
@@ -115,40 +185,60 @@ body.scs-page.is-embed {
 
 /* ------------------------------------------------------------------ head */
 
+/*
+ * The source app has no title — it is mounted under a WordPress page heading.
+ * This one needs an h1 for the standalone page and for search, so it borrows
+ * the display face and the tight tracking the source uses on its view titles.
+ */
 .scs-head {
   margin: 0 0 20px;
 }
 
 .scs-title {
   margin: 0;
-  font-size: clamp(1.7rem, 1.2rem + 1.8vw, 2.4rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-family: var(--scs-font-display);
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
   line-height: 1.1;
-  color: var(--sc-navy);
+  color: hsl(var(--scs-primary));
 }
 
 .scs-lede {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   max-width: 68ch;
-  color: var(--sc-muted-strong);
-  font-size: 0.97rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* --------------------------------------------------------------- the bar */
 
-.scs-bar {
+/*
+ * The source's <header>: a card-coloured strip with a hairline under it and the
+ * view tabs on the left.
+ *
+ * It is `scs-controlbar`, not `scs-bar`: `scs-bar` is one meter row inside a
+ * card, and while the two shared a name this strip also picked up the meter's
+ * three-column grid and its near-white fill, which bleached the Home/Away
+ * meters on the navy snapshot card.
+ *
+ * The tabs carry their own 2px underline and it sits well clear of the strip's hairline —
+ * there is 16px of padding between them, which is what keeps the gold mark
+ * reading as "this tab" rather than as a thickening of the rule.
+ */
+.scs-controlbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--sc-border);
+  gap: 16px;
+  padding: 16px 2px;
+  border-bottom: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
 }
 
 .scs-view-list,
-.scs-chip-list,
 .scs-rail-list,
 .scs-bye-list,
 .scs-plain-list,
@@ -162,23 +252,27 @@ body.scs-page.is-embed {
 
 .scs-views {
   min-width: 0;
+  font-size: 16px;
 }
 
 .scs-view-list {
   display: flex;
+  align-items: center;
   gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: thin;
+  min-width: 0;
 }
 
 .scs-view-link {
-  display: inline-block;
-  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.6667em;
+  padding: 1em;
   border-bottom: 2px solid transparent;
-  color: var(--sc-muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
@@ -186,36 +280,33 @@ body.scs-page.is-embed {
 
 .scs-view-link:hover,
 .scs-view-link:focus-visible {
-  color: var(--sc-navy);
+  color: hsl(var(--scs-primary));
 }
 
 .scs-view-link.is-active {
-  border-bottom-color: var(--sc-gold);
-  color: var(--sc-navy);
+  border-bottom-color: hsl(var(--scs-accent));
+  color: hsl(var(--scs-primary));
 }
 
-.scs-exports {
-  display: flex;
-  gap: 8px;
+@media (min-width: 1024px) {
+  .scs-view-link {
+    padding-left: 1.3333em;
+    padding-right: 1.3333em;
+  }
 }
 
-.scs-export {
-  padding: 7px 12px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-xs);
-  background: var(--sc-surface);
-  color: var(--sc-muted-strong);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
+/* Shrink to 85% between 640px and 430px so the labels never clip. */
+@media (max-width: 640px) {
+  .scs-views {
+    font-size: clamp(13.6px, calc(16px - (640px - 100vw) / 87.5), 16px);
+  }
 }
 
-.scs-export:hover,
-.scs-export:focus-visible {
-  border-color: var(--sc-navy);
-  color: var(--sc-navy);
+@media (max-width: 430px) {
+  .scs-view-link {
+    padding-left: 0.6667em;
+    padding-right: 0.6667em;
+  }
 }
 
 /* ---------------------------------------------------------- the view head */
@@ -225,16 +316,18 @@ body.scs-page.is-embed {
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 14px;
-  margin: 18px 0 14px;
+  gap: 16px;
+  margin: 24px 0 20px;
 }
 
 .scs-view-title {
   margin: 0;
-  font-size: 1.45rem;
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-view-title a {
@@ -244,60 +337,37 @@ body.scs-page.is-embed {
 
 .scs-view-title a:hover,
 .scs-view-title a:focus-visible {
-  text-decoration: underline;
-  text-decoration-color: var(--sc-gold);
-  text-underline-offset: 3px;
+  color: hsl(var(--scs-accent));
 }
 
 .scs-view-sub {
-  color: var(--sc-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
+  margin-left: 8px;
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
 }
 
 .scs-control-label {
   margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.scs-filters {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.scs-chip-list {
-  display: flex;
-  gap: 6px;
-}
-
-.scs-chip {
-  display: inline-block;
-  padding: 6px 11px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  background: var(--sc-surface);
-  color: var(--sc-muted-strong);
-  font-size: 0.72rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 10px;
   font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.scs-chip.is-active {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-  color: #fff;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 /* -------------------------------------------------------------- the rail */
 
+/*
+ * Eighteen weeks, each button taking an equal share of the width rather than a
+ * fixed one, so the rail is flush with the board under it at every size. It is
+ * inside the main column, which is what keeps it off the side column.
+ */
 .scs-rail {
-  margin: 0 0 16px;
+  margin: 16px 0 0;
 }
 
 .scs-rail-list {
@@ -308,40 +378,59 @@ body.scs-page.is-embed {
   scrollbar-width: thin;
 }
 
+.scs-rail-list > li {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 26px;
+}
+
 .scs-rail-link {
   display: block;
-  min-width: 38px;
-  padding: 8px 6px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-xs);
-  background: var(--sc-surface);
-  color: var(--sc-muted-strong);
-  font-size: 0.84rem;
-  font-weight: 800;
+  width: 100%;
+  padding: 6px 4px;
+  border: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font-display);
+  font-size: 14px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
   text-align: center;
   text-decoration: none;
+  transition: color 150ms ease, background-color 150ms ease,
+    border-color 150ms ease;
 }
 
 .scs-rail-link:hover,
 .scs-rail-link:focus-visible {
-  border-color: var(--sc-navy);
-  color: var(--sc-navy);
+  border-color: hsl(var(--scs-primary));
+  color: hsl(var(--scs-primary));
 }
 
 .scs-rail-link.is-active {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-  color: #fff;
+  border-color: hsl(var(--scs-primary));
+  background: hsl(var(--scs-primary));
+  color: hsl(var(--scs-primary-foreground));
 }
 
 /* ------------------------------------------------------------ the layout */
 
+/*
+ * The source runs two different side columns: 175px beside the weekly board,
+ * where every card is one short claim, and 300px beside the team lens, where
+ * they are lists and tables. Both collapse, but at different widths, because
+ * what is beside them needs different room.
+ */
 .scs-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) var(--scs-side-week);
+  gap: var(--scs-gutter);
   align-items: start;
+}
+
+.scs-layout-lens {
+  grid-template-columns: minmax(0, 1fr) 300px;
 }
 
 .scs-main {
@@ -355,8 +444,33 @@ body.scs-page.is-embed {
   min-width: 0;
 }
 
-@media (max-width: 960px) {
-  .scs-layout {
+/*
+ * Both two-column views put their head row inside the main column, as the
+ * source does: the weekly board's heading and week rail, and the team lens's
+ * crest and picker. That is what keeps the rail and the picker inside the
+ * table's right edge, and what starts the first side card level with the
+ * heading beside it. The 24px the head row used to hold above itself moves to
+ * the grid, or the side column would start 24px higher than the heading it is
+ * meant to line up with.
+ */
+.scs-layout-week,
+.scs-layout-lens {
+  margin-top: 24px;
+}
+
+.scs-layout-week > .scs-main > .scs-viewhead,
+.scs-layout-lens > .scs-main > .scs-viewhead {
+  margin-top: 0;
+}
+
+@media (max-width: 570px) {
+  .scs-layout:not(.scs-layout-lens) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .scs-layout-lens {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -364,30 +478,37 @@ body.scs-page.is-embed {
 /* ------------------------------------------------------------- the board */
 
 .scs-board {
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  margin-top: 20px;
+  border: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
+  box-shadow: var(--scs-shadow-card);
   overflow: hidden;
+  /* The board sizes its own contents: a row tracks the board's width, not the
+     window's, so the side column appearing or disappearing is accounted for. */
+  container-type: inline-size;
 }
 
 .scs-board-head,
 .scs-game {
   display: grid;
-  grid-template-columns: 118px minmax(0, 1fr) 132px;
+  grid-template-columns: 4.5em minmax(0, 1fr) 5.375em;
   gap: 12px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 6px 16px;
+  font-size: 16px;
 }
 
 .scs-board-head {
-  border-bottom: 1px solid var(--sc-border);
-  background: var(--sc-surface-sink);
-  color: var(--sc-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  border-bottom: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-secondary) / 0.5);
+  color: hsl(var(--scs-muted-foreground));
+  font-weight: 700;
   text-transform: uppercase;
+}
+
+.scs-board-head span {
+  font-size: 0.5625em;
+  letter-spacing: 0.14em;
 }
 
 .scs-board-head span:last-child {
@@ -404,15 +525,32 @@ body.scs-page.is-embed {
 }
 
 .scs-game {
-  border-bottom: 1px solid var(--sc-border);
+  border-bottom: 1px solid hsl(var(--scs-border));
+  transition: background-color 160ms ease;
 }
 
 .scs-game:last-child {
   border-bottom: 0;
 }
 
-.scs-game[data-status="live"] {
-  background: rgba(212, 175, 55, 0.08);
+.scs-game:hover {
+  background: hsl(var(--scs-row-hover));
+}
+
+@media (min-width: 640px) {
+  .scs-board-head,
+  .scs-game {
+    grid-template-columns: 96px minmax(0, 1fr) 118px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .scs-board-head,
+  .scs-game {
+    grid-template-columns: 112px minmax(0, 1fr) 145px;
+  }
 }
 
 .scs-game-when {
@@ -423,38 +561,71 @@ body.scs-page.is-embed {
 }
 
 .scs-game-date {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--sc-navy);
+  font-size: 0.6875em;
+  font-weight: 700;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-game-status {
-  font-size: 0.72rem;
+  font-size: 0.625em;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-muted);
+  color: hsl(var(--scs-muted-foreground));
 }
 
+/*
+ * Live is the one state the board says in colour, and the colour is the gold.
+ *
+ * A red dot on a schedule reads as an error; the only thing this tool ever has
+ * to announce is "this one is happening now". It is never the only signal — the
+ * status text says LIVE or the quarter, the dot pulses, and the row carries
+ * data-status="live" for anything reading the markup. The source tints nothing
+ * behind the row, and neither does this.
+ */
 .scs-game[data-status="live"] .scs-game-status {
-  color: var(--scs-live);
-  font-weight: 800;
+  color: hsl(var(--scs-accent));
+  font-weight: 700;
 }
 
 .scs-live-dot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 5px;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: var(--scs-live);
+  background: hsl(var(--scs-accent));
   vertical-align: middle;
+  animation: scs-live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes scs-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scs-live-dot {
+    animation: none;
+  }
 }
 
 .scs-game-teams {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  .scs-game-teams {
+    gap: 28px;
+  }
 }
 
 .scs-game-side {
@@ -477,9 +648,11 @@ body.scs-page.is-embed {
 }
 
 .scs-game-name {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 0.8125em;
+  font-weight: 700;
+  line-height: 1.25;
+  color: hsl(var(--scs-primary));
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -488,236 +661,300 @@ body.scs-page.is-embed {
 
 a.scs-game-name:hover,
 a.scs-game-name:focus-visible {
-  text-decoration: underline;
-  text-decoration-color: var(--sc-gold);
-  text-underline-offset: 2px;
+  color: hsl(var(--scs-accent));
 }
 
 .scs-game-code {
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-size: 0.625em;
+  font-weight: 400;
   letter-spacing: 0.08em;
+  line-height: 1.3;
   text-transform: uppercase;
-  color: var(--sc-muted);
+  color: hsl(var(--scs-muted-foreground));
 }
 
 .scs-game-score {
-  font-size: 1.05rem;
-  font-weight: 900;
+  font-family: var(--scs-font-display);
+  font-size: 1em;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: hsl(var(--scs-primary));
 }
 
 .scs-game[data-status="live"] .scs-game-score {
-  color: var(--scs-live);
+  color: hsl(var(--scs-accent));
 }
 
 .scs-game-logo {
   flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
   object-fit: contain;
 }
 
 .scs-logo-blank {
   display: inline-block;
   border-radius: 50%;
-  background: var(--sc-surface-sink);
+  background: hsl(var(--scs-secondary));
 }
 
+/*
+ * "at" with a short gold rule under it. The word is the accessible statement of
+ * which side is home; the rule is the source's mark for the seam between the
+ * two teams, and it is the only place the accent appears on a settled row.
+ */
 .scs-game-at {
+  display: flex;
   flex: 0 0 auto;
-  color: var(--sc-muted);
-  font-size: 0.6rem;
-  font-weight: 800;
+  flex-direction: column;
+  align-items: center;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 0.5625em;
+  font-weight: 700;
   letter-spacing: 0.14em;
+  line-height: 1;
   text-transform: uppercase;
+}
+
+.scs-game-at::after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 1px;
+  margin-top: 3px;
+  background: hsl(var(--scs-accent));
 }
 
 .scs-game-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 /* --------------------------------------------------------------- the TV */
 
 /*
- * Two marks STACK rather than sitting side by side.
- *
- * A simulcast is "ESPN / ABC" — a 4:1 wordmark next to a roundel — and on one
- * row the pair reads as a single wide smear whose left half happens to be a
- * logo. Stacked, each mark keeps its own baseline and the cell stays narrow,
- * which is what the column beside it needs.
+ * The marks sit on ONE row with a hairline between them, as they do in the
+ * source. A simulcast is "ESPN / ABC" — a 4:1 wordmark next to a roundel — and
+ * the divider is what stops the pair reading as one wide smear.
  */
 .scs-tv {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
   min-width: 0;
+  color: hsl(var(--scs-primary));
+}
+
+/* The hairline between two simulcast marks. */
+.scs-net-sep {
+  display: block;
+  flex: 0 0 auto;
+  width: 1px;
+  height: 10px;
+  background: hsl(var(--scs-border));
 }
 
 /*
- * Each mark is drawn at the same optical AREA, not the same height.
- *
- * --scs-net-h is computed per mark by netMarkStyle() in lib/schedule-render.ts,
- * which is where the reasoning lives; the width follows from it and the
- * artwork's own cropped ratio. The fallbacks are the roundel case, so a mark
- * that somehow arrives without the custom property is small rather than huge.
+ * Each mark is drawn at the same optical AREA, not the same height: at a shared
+ * height ESPN's 4:1 wordmark carries four times the ink of the ABC roundel
+ * beside it and reads as four times the logo. --scs-net-h is computed per mark
+ * by netMarkStyle() in lib/schedule-render.ts, capped so nothing outgrows the
+ * 2em crest it shares the row with.
  */
 .scs-net-mark {
   display: block;
-  height: var(--scs-net-h, 13px);
-  width: calc(var(--scs-net-h, 13px) * var(--scs-net-aspect, 1));
+  flex: 0 0 auto;
+  height: var(--scs-net-h, 24px);
+  width: calc(var(--scs-net-h, 24px) * var(--scs-net-aspect, 1));
 }
 
 .scs-net-text {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 0.75em;
+  font-weight: 700;
+  color: hsl(var(--scs-primary));
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .scs-tv-tbd {
-  color: var(--sc-muted);
-  font-size: 0.7rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font-display);
+  font-size: 0.75em;
   font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
-/* ------------------------------------------------------------- the tags */
-
-.scs-tags {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-.scs-tag {
-  padding: 2px 6px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.scs-tag[data-kind="holiday"] {
-  border-color: var(--sc-gold);
-  color: var(--sc-gold-deep);
+/*
+ * The artwork is full colour with dark elements in it — the ABC circle, "FOX
+ * SPORTS", the NBC wordmark — which all but vanish on the dark card. A light
+ * chip keeps the column readable there; the light theme needs nothing.
+ */
+.scs-dark .scs-net-mark {
+  box-sizing: content-box;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: hsl(0 0% 100%);
 }
 
 /* -------------------------------------------------------------- the cards */
 
 /*
- * The week sidebar's cards are CENTRED, as they are in the app this was ported
- * from: each one is a single claim about the slate — a matchup, a number, a
- * line of explanation — and a centred stack is how that reads as a card rather
- * than as the start of a paragraph.
+ * The week sidebar's cards are CENTRED, as they are in the source: each one is
+ * a single claim about the slate — a matchup, a number, a line of explanation —
+ * and a centred stack is how that reads as a card rather than as the start of a
+ * paragraph.
  *
- * The team lens's cards below opt back out. They are lists and tables (a
- * division slate, an opponent breakdown, a stat grid), where a common left edge
- * is what makes the rows scannable, and the original left those ranged left
- * too.
+ * The team lens's cards are centred too, on mak's call (2026-09-20). The source
+ * ranges those left, because they are lists and tables; this is a deliberate
+ * divergence, so that one sidebar reads as one stack of cards across both
+ * views. The rows that are genuinely two-column — a label against a figure —
+ * still set their own alignment below and are unaffected.
  */
 .scs-card {
-  padding: 14px 16px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  padding: 12px 16px;
+  border: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
+  box-shadow: var(--scs-shadow-card);
   text-align: center;
 }
 
-.scs-card[data-kind="snapshot"],
-.scs-card[data-kind="path"],
-.scs-card[data-kind="slate"],
-.scs-card[data-kind="opponents"] {
-  text-align: left;
+/*
+ * The season snapshot is the one filled card in the tool — navy in light, gold
+ * in dark, because `--scs-primary` swaps. Its own label is the accent, which is
+ * the only time the gold carries text.
+ */
+.scs-card[data-kind="snapshot"] {
+  border-color: hsl(var(--scs-primary));
+  background: hsl(var(--scs-primary));
+  color: hsl(var(--scs-primary-foreground));
+  padding: 16px;
+}
+
+.scs-card[data-kind="snapshot"] .scs-card-label {
+  color: hsl(var(--scs-accent));
+  letter-spacing: 0.16em;
+}
+
+.scs-dark .scs-card[data-kind="snapshot"] .scs-card-label {
+  color: hsl(var(--scs-primary-foreground) / 0.7);
 }
 
 .scs-card-label {
-  margin: 0 0 8px;
-  color: var(--sc-muted);
-  font-size: 0.63rem;
-  font-weight: 800;
+  margin: 0;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0.15em;
+  line-height: 1.4;
   text-transform: uppercase;
 }
 
 .scs-card-figure {
-  margin: 8px 0 0;
-  font-size: 1.05rem;
-  font-weight: 900;
-  color: var(--sc-navy);
+  margin: 6px 0 0;
+  font-family: var(--scs-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-card-note {
-  margin: 5px 0 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.78rem;
+  margin: 4px 0 0;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 11px;
   line-height: 1.45;
 }
 
 .scs-card-fine {
-  margin: 6px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.7rem;
+  margin: 2px 0 0;
+  color: hsl(var(--scs-muted-foreground) / 0.75);
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .scs-card-takeaway {
   margin: 12px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--sc-border);
-  color: var(--sc-gold-deep);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--scs-border));
+  color: hsl(var(--scs-accent));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
+/* The compact matchup used inside the cards. */
 .scs-mini {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 0;
+  gap: 6px;
+  margin: 6px 0 0;
 }
 
 .scs-mini-side {
   display: inline-flex;
+  flex: 1 1 0;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.scs-mini-side[data-side="away"] {
+  flex-direction: row-reverse;
 }
 
 .scs-mini-logo {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
 .scs-mini-code {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: hsl(var(--scs-primary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scs-mini-at {
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
   text-transform: uppercase;
+}
+
+.scs-mini-at::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 1px;
+  margin-top: 2px;
+  background: hsl(var(--scs-accent));
 }
 
 .scs-plain-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .scs-bye-list {
@@ -725,27 +962,33 @@ a.scs-game-name:focus-visible {
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
+  margin-top: 6px;
 }
 
+/* Square, with the crest tucked into the left edge — the source's bye chip. */
 .scs-bye {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px 3px 4px;
-  border: 1px solid var(--sc-border);
-  border-radius: 999px;
-  color: var(--sc-navy);
-  font-size: 0.73rem;
+  gap: 6px;
+  padding: 2px 6px 2px 4px;
+  border: 1px solid hsl(var(--scs-border));
+  color: hsl(var(--scs-primary));
+  font-family: var(--scs-font-display);
+  font-size: 11px;
   font-weight: 700;
+  line-height: 1.2;
   text-decoration: none;
 }
 
 .scs-bye:hover,
 .scs-bye:focus-visible {
-  border-color: var(--sc-navy);
+  border-color: hsl(var(--scs-primary));
 }
 
 .scs-bye-logo {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
@@ -754,48 +997,78 @@ a.scs-game-name:focus-visible {
 .scs-bars {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.scs-bar {
+.scs-bars .scs-bar {
   display: grid;
-  grid-template-columns: 4.8rem minmax(0, 1fr) 1.5rem;
+  grid-template-columns: 4.6rem minmax(0, 1fr) 1.1rem;
   align-items: center;
   gap: 8px;
 }
 
 .scs-bar-label {
-  color: var(--sc-muted);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: hsl(var(--scs-primary));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Square track, square fill, gold — the source draws no rounded meters. */
 .scs-bar-track {
-  height: 7px;
-  border-radius: 999px;
-  background: var(--sc-surface-sink);
+  height: 6px;
+  background: hsl(var(--scs-secondary));
   overflow: hidden;
 }
 
 .scs-bar-fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
-  background: var(--sc-gold);
+  background: hsl(var(--scs-accent));
 }
 
 .scs-bar-value {
   text-align: right;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-family: var(--scs-font-display);
+  font-size: 11px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  color: hsl(var(--scs-primary));
+}
+
+/* The snapshot card's own bars sit on the filled navy, so they invert. */
+.scs-card[data-kind="snapshot"] .scs-bars {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--scs-primary-foreground) / 0.15);
+  gap: 6px;
+}
+
+.scs-card[data-kind="snapshot"] .scs-bars .scs-bar {
+  grid-template-columns: 2.25rem minmax(0, 1fr) 1rem;
+}
+
+.scs-card[data-kind="snapshot"] .scs-bar-label {
+  color: hsl(var(--scs-primary-foreground) / 0.55);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scs-card[data-kind="snapshot"] .scs-bar-track {
+  height: 8px;
+  background: hsl(var(--scs-primary-foreground) / 0.15);
+}
+
+.scs-card[data-kind="snapshot"] .scs-bar-value {
+  color: hsl(var(--scs-primary-foreground));
+  font-size: 12px;
 }
 
 /* ------------------------------------------------------------- the tiles */
@@ -803,51 +1076,80 @@ a.scs-game-name:focus-visible {
 .scs-tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px 8px;
-  margin: 0 0 12px;
+  gap: 12px 8px;
+  margin: 12px 0 0;
 }
 
 .scs-tiles-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 12px 0 0;
   padding-top: 10px;
-  border-top: 1px solid var(--sc-border);
+  border-top: 1px solid hsl(var(--scs-border));
 }
 
 .scs-tile dt {
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
   text-transform: uppercase;
 }
 
 .scs-tile dd {
   margin: 2px 0 0;
-  font-size: 1.15rem;
-  font-weight: 900;
+  font-family: var(--scs-font-display);
+  font-size: 15px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
+  line-height: 1.1;
+  color: hsl(var(--scs-primary));
+}
+
+/* Inside the filled snapshot the order flips: figure first, label under it. */
+.scs-card[data-kind="snapshot"] .scs-tile dt {
+  order: 2;
+  margin-top: 4px;
+  color: hsl(var(--scs-primary-foreground) / 0.55);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.scs-card[data-kind="snapshot"] .scs-tile dd {
+  order: 1;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: hsl(var(--scs-primary-foreground));
+}
+
+.scs-card[data-kind="snapshot"] .scs-tile {
+  display: flex;
+  flex-direction: column;
 }
 
 /* -------------------------------------------------------------- the path */
 
+/*
+ * Eighteen weeks as eighteen blocks: filled for home, hollow for away, dashed
+ * for the bye. Square, and never colour alone — each block carries a title with
+ * the week and the opponent in it.
+ */
 .scs-path {
   display: flex;
   gap: 3px;
-  margin: 0 0 6px;
+  margin: 10px 0 6px;
 }
 
 .scs-path-week {
   flex: 1 1 0;
   height: 20px;
-  border: 1px solid var(--sc-border);
-  border-radius: 3px;
+  border: 1px solid hsl(var(--scs-border));
 }
 
 .scs-path-week[data-kind="home"] {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
+  border-color: hsl(var(--scs-primary));
+  background: hsl(var(--scs-primary));
 }
 
 .scs-path-week[data-kind="away"] {
@@ -856,36 +1158,35 @@ a.scs-game-name:focus-visible {
 
 .scs-path-week[data-kind="bye"] {
   border-style: dashed;
-  background: var(--sc-surface-sink);
+  background: hsl(var(--scs-muted));
 }
 
 .scs-path-key {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin: 0;
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .scs-path-key span {
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--sc-border);
-  border-radius: 2px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid hsl(var(--scs-border));
 }
 
 .scs-path-key span[data-kind="home"] {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
+  border-color: hsl(var(--scs-primary));
+  background: hsl(var(--scs-primary));
 }
 
 .scs-path-key span[data-kind="bye"] {
   border-style: dashed;
-  background: var(--sc-surface-sink);
+  background: hsl(var(--scs-muted));
 }
 
 .scs-path-key span + span {
@@ -895,10 +1196,10 @@ a.scs-game-name:focus-visible {
 .scs-segs {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--sc-border);
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--scs-border));
 }
 
 .scs-seg {
@@ -909,14 +1210,15 @@ a.scs-game-name:focus-visible {
 }
 
 .scs-seg-label {
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-seg-detail {
-  color: var(--sc-muted);
-  font-size: 0.72rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 11px;
   text-align: right;
 }
 
@@ -925,19 +1227,61 @@ a.scs-game-name:focus-visible {
 .scs-lens {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
+  font-size: 30px;
+}
+
+@media (max-width: 900px) {
+  /* Shrink to 85% between 900px and 620px so nothing in the headline clips. */
+  .scs-lens {
+    font-size: clamp(25.5px, calc(30px - (900px - 100vw) / 62.2), 30px);
+  }
+}
+
+/*
+ * The crest gets the source's treatment here and nowhere else: a white disc
+ * ringed in the club's own colour. Everywhere else the artwork is set plain,
+ * because at 24px a ring is just noise.
+ */
+.scs-lens-mark {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.867em;
+  height: 1.867em;
+  border: 2px solid var(--scs-team, hsl(var(--scs-primary)));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--scs-shadow-sm);
+  transition: transform 180ms ease;
+}
+
+.scs-lens-mark:hover {
+  transform: translateY(-2px);
 }
 
 .scs-lens-logo {
-  flex: 0 0 auto;
+  width: 72%;
+  height: 72%;
   object-fit: contain;
+}
+
+.scs-lens .scs-view-title {
+  font-size: 1em;
+  line-height: 1.2;
+  letter-spacing: -0.05em;
 }
 
 .scs-lens-sub {
   margin: 4px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.8rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 12px;
+}
+
+.scs-lens .scs-control-label {
+  margin-bottom: 4px;
 }
 
 .scs-picker {
@@ -949,25 +1293,30 @@ a.scs-game-name:focus-visible {
 
 .scs-picker select {
   max-width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-xs);
-  background: var(--sc-surface);
-  color: var(--sc-ink);
-  font: inherit;
-  font-size: 0.85rem;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
+  color: hsl(var(--scs-primary));
+  font-family: var(--scs-font);
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+}
+
+.scs-picker select:focus {
+  border-color: hsl(var(--scs-primary));
 }
 
 .scs-picker-go {
-  padding: 8px 14px;
-  border: 1px solid var(--sc-navy);
-  border-radius: var(--sc-radius-xs);
-  background: var(--sc-navy);
-  color: #fff;
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  padding: 9px 14px;
+  border: 1px solid hsl(var(--scs-primary));
+  background: hsl(var(--scs-primary));
+  color: hsl(var(--scs-primary-foreground));
+  font-family: var(--scs-font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -978,56 +1327,83 @@ a.scs-game-name:focus-visible {
   display: none;
 }
 
-.scs-board-team .scs-board-head {
-  grid-template-columns: 2.6rem minmax(0, 1fr) 4.4rem 5.4rem 4.6rem;
+.scs-board-team {
+  margin-top: 0;
+}
+
+.scs-board-team .scs-board-head,
+.scs-trow {
+  grid-template-columns: 2.4rem minmax(0, 1fr) 4.2rem 5rem 4.4rem;
+  font-size: 16px;
 }
 
 .scs-trow {
   display: grid;
-  grid-template-columns: 2.6rem minmax(0, 1fr) 4.4rem 5.4rem 4.6rem;
   gap: 12px;
   align-items: center;
-  padding: 9px 16px;
-  border-bottom: 1px solid var(--sc-border);
+  padding: 4px 16px;
+  border-bottom: 1px solid hsl(var(--scs-border));
+  transition: background-color 160ms ease;
 }
 
 .scs-trow:last-child {
   border-bottom: 0;
 }
 
-.scs-trow[data-status="live"] {
-  background: rgba(212, 175, 55, 0.08);
+.scs-trow:hover {
+  background: hsl(var(--scs-row-hover));
 }
 
 .scs-trow-week {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--sc-muted);
+  font-family: var(--scs-font-display);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: hsl(var(--scs-muted-foreground));
 }
 
 .scs-trow-vs {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
 }
 
+/*
+ * "vs" or "at", stated rather than positioned, with the source's gold seam
+ * under it. The home game is the one whose word goes navy.
+ */
 .scs-trow-ha {
+  display: flex;
   flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
   width: 1.5rem;
-  color: var(--sc-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
+  color: hsl(var(--scs-muted-foreground) / 0.7);
+  font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.08em;
+  line-height: 1;
   text-transform: uppercase;
 }
 
+.scs-trow-ha::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 1px;
+  margin-top: 2px;
+  background: hsl(var(--scs-accent));
+}
+
 .scs-trow-ha[data-home="1"] {
-  color: var(--sc-navy);
+  color: hsl(var(--scs-primary));
 }
 
 .scs-trow-logo {
   flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
@@ -1036,29 +1412,35 @@ a.scs-game-name:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: hsl(var(--scs-muted-foreground));
   text-decoration: none;
 }
 
 a.scs-trow-name:hover,
 a.scs-trow-name:focus-visible {
-  text-decoration: underline;
-  text-decoration-color: var(--sc-gold);
-  text-underline-offset: 2px;
+  color: hsl(var(--scs-primary));
 }
 
-.scs-trow-date,
+.scs-trow-date {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: hsl(var(--scs-primary));
+}
+
 .scs-trow-status {
-  font-size: 0.74rem;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
-  color: var(--sc-muted-strong);
+  line-height: 1.25;
+  color: hsl(var(--scs-muted-foreground));
 }
 
 .scs-trow[data-status="live"] .scs-trow-status {
-  color: var(--scs-live);
-  font-weight: 800;
+  color: hsl(var(--scs-accent));
+  font-weight: 700;
 }
 
 .scs-trow-tv {
@@ -1067,46 +1449,51 @@ a.scs-trow-name:focus-visible {
 }
 
 .scs-result {
-  font-weight: 800;
+  font-family: var(--scs-font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .scs-result[data-outcome="W"] {
-  color: var(--scs-win);
+  color: hsl(var(--scs-win));
 }
 
 .scs-result[data-outcome="L"] {
-  color: var(--scs-loss);
+  color: hsl(var(--scs-loss));
 }
 
 .scs-slate {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  margin-top: 8px;
 }
 
 .scs-slate li {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-width: 0;
 }
 
 .scs-slate-week {
   flex: 0 0 auto;
-  width: 1.9rem;
-  color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
+  width: 1.75rem;
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font-display);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .scs-slate-name {
   min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-slate-name a {
@@ -1116,54 +1503,73 @@ a.scs-trow-name:focus-visible {
 
 .scs-slate-name a:hover,
 .scs-slate-name a:focus-visible {
-  text-decoration: underline;
-  text-decoration-color: var(--sc-gold);
-  text-underline-offset: 2px;
+  color: hsl(var(--scs-accent));
 }
 
 /* ------------------------------------------------------------- the matrix */
 
 .scs-matrix-scroll {
   overflow-x: auto;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-sm);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
+  border: 1px solid hsl(var(--scs-border));
+  background: hsl(var(--scs-card));
+  box-shadow: var(--scs-shadow-card);
   scrollbar-width: thin;
+}
+
+.scs-matrix-scroll::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.scs-matrix-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--scs-border));
+  border-radius: 4px;
 }
 
 /* A scrollable region is focusable so it can be reached and panned by keyboard;
    the outline is the only cue that it has been. */
 .scs-matrix-scroll:focus-visible {
-  outline: 2px solid var(--sc-gold);
+  outline: 2px solid hsl(var(--scs-accent));
   outline-offset: -2px;
 }
 
 .scs-matrix {
   width: 100%;
-  min-width: 760px;
+  min-width: 700px;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
 
 .scs-matrix th,
 .scs-matrix td {
-  padding: 5px 4px;
-  border-bottom: 1px solid var(--sc-border);
-  border-left: 1px solid var(--sc-border);
+  min-width: 36px;
+  padding: 3px 2px;
+  border-bottom: 1px solid hsl(var(--scs-border));
+  border-left: 1px solid hsl(var(--scs-border));
   text-align: center;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-family: var(--scs-font-display);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: hsl(var(--scs-primary));
+}
+
+.scs-matrix tbody tr:last-child th,
+.scs-matrix tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .scs-matrix thead th {
   position: sticky;
   top: 0;
-  background: var(--sc-surface-sink);
-  color: var(--sc-muted);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  background: hsl(var(--scs-secondary) / 0.5);
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .scs-matrix thead th a {
@@ -1177,98 +1583,193 @@ a.scs-trow-name:focus-visible {
   left: 0;
   z-index: 1;
   border-left: 0;
-  background: var(--sc-surface);
+  background: hsl(var(--scs-card));
   text-align: left;
 }
 
 .scs-matrix-corner {
-  background: var(--sc-surface-sink);
+  background: hsl(var(--scs-secondary));
 }
 
 .scs-matrix-team a {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px 0 6px;
-  color: var(--sc-navy);
+  padding: 2px 6px;
+  color: inherit;
   text-decoration: none;
+}
+
+.scs-matrix-team a:hover {
+  background: hsl(var(--scs-secondary));
 }
 
 .scs-matrix-logo {
   flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
+}
+
+.scs-matrix-labels {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
 }
 
 .scs-matrix-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-matrix-code {
-  color: var(--sc-muted);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
 }
 
 .scs-matrix-cell a {
   display: block;
-  color: var(--sc-navy);
+  color: inherit;
   text-decoration: none;
 }
 
-/* A road game is marked with "@" in the text; the tint is a second, redundant
-   cue and never the only one. */
-.scs-matrix-cell[data-home="0"] {
-  background: var(--sc-surface-soft);
-}
-
 .scs-matrix-cell:hover {
-  background: rgba(212, 175, 55, 0.18);
+  background: hsl(var(--scs-accent) / 0.15);
 }
 
 .scs-matrix-bye {
-  background: var(--sc-surface-sink);
-  color: var(--sc-muted);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  background: hsl(var(--scs-muted) / 0.35);
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
-@media (max-width: 900px) {
-  .scs-matrix-name {
+@media (max-width: 1023px) {
+  .scs-matrix-labels {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.scs-matrix-name {
     display: none;
+  }
+
+  .scs-matrix-code {
+    color: hsl(var(--scs-primary));
+    font-size: 11px;
+    letter-spacing: 0.04em;
   }
 }
 
 /* -------------------------------------------------------------- the rest */
 
 .scs-empty {
-  padding: 42px 20px;
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   text-align: center;
 }
 
 .scs-empty-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--sc-navy);
+  font-family: var(--scs-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--scs-primary));
 }
 
 .scs-empty-body {
-  margin: 6px auto 0;
-  max-width: 44ch;
-  color: var(--sc-muted-strong);
-  font-size: 0.83rem;
+  margin: 4px auto 0;
+  max-width: 280px;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .scs-source {
-  margin: 18px 0 0;
-  color: var(--sc-muted);
-  font-size: 0.72rem;
+  margin: 20px 0 0;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 11px;
+}
+
+/* ------------------------------------------------- the board, narrowing */
+
+/*
+ * The source's container queries, on the board rather than the window: the side
+ * column takes 175px + a 24px gap out of the viewport, so a row's width tracks
+ * the board. At 16px the widest short name ("Commanders", 82px in Space Grotesk
+ * Bold) needs 566px of board; below that, scale down toward 85%, which is flush
+ * again at 450px.
+ */
+@container (max-width: 566px) {
+  .scs-board-head,
+  .scs-game {
+    font-size: clamp(13.6px, calc(16px - (566px - 100cqw) / 48.3), 16px);
+    grid-template-columns: 4.5em minmax(0, 1fr) 5.375em;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/*
+ * Below 450cqw the row is already at its 13.6px floor and the short names would
+ * start to truncate, so the matchup drops to the compact form (crest + BUF).
+ */
+@container (max-width: 450px) {
+  .scs-game-name {
+    display: none;
+  }
+
+  .scs-game-code {
+    font-family: var(--scs-font-display);
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1.2;
+    color: hsl(var(--scs-primary));
+  }
+}
+
+/* The team lens table narrows on its own width too. */
+@container (max-width: 580px) {
+  .scs-board-team .scs-board-head,
+  .scs-trow {
+    grid-template-columns: 2.2rem minmax(0, 1fr) 4rem 4.4rem;
+    gap: 8px;
+  }
+
+  /* The TV column is the first to go: it is the least load-bearing of the five,
+     and the lens is about when this team plays, not who is showing it. */
+  .scs-trow-tv,
+  .scs-board-team .scs-board-head span:nth-child(5) {
+    display: none;
+  }
+}
+
+@container (max-width: 470px) {
+  .scs-trow {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .scs-trow-logo {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 /* ---------------------------------------------------------------- phones */
@@ -1292,7 +1793,7 @@ a.scs-trow-name:focus-visible {
   .scs-game {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 6px 10px;
-    padding: 12px 14px;
+    padding: 10px 14px;
   }
 
   .scs-game-teams {
@@ -1314,6 +1815,8 @@ a.scs-trow-name:focus-visible {
       "week vs vs"
       "week date status";
     gap: 2px 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   .scs-trow-week {
@@ -1333,13 +1836,45 @@ a.scs-trow-name:focus-visible {
     text-align: right;
   }
 
-  /* The TV column is the first thing to go: it is the least load-bearing of
-     the five, and the row is already two lines. */
   .scs-trow-tv {
     display: none;
   }
 
   .scs-viewhead {
     align-items: flex-start;
+  }
+}
+
+/* -------------------------------------------------------------- arrival */
+
+/*
+ * The source fades the board in, and the side column a beat behind it. Kept
+ * because it is part of how the tool feels; suppressed for anyone who asked for
+ * less motion, and it never gates content — the markup is already in the
+ * response, so a reader who blocks animation sees everything immediately.
+ */
+.scs-main {
+  animation: scs-fade-in 360ms ease-out both;
+}
+
+.scs-side {
+  animation: scs-fade-in 450ms 80ms ease-out both;
+}
+
+@keyframes scs-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scs-main,
+  .scs-side {
+    animation: none;
   }
 }

@@ -282,10 +282,13 @@ describe("the broadcaster marks", () => {
 
   test("no mark is taller than the row allows", () => {
     // Equal area alone would make a TALL mark (Netflix's N is 0.55:1) taller
-    // than the row to pay for being narrow.
+    // than the row to pay for being narrow. The cap is read from the module so
+    // that retuning the row's geometry does not need this test edited with it.
+    const cap = render.NET_MARK_MAX_HEIGHT;
+    assert.ok(cap > 0, "the module exports its cap");
     for (const mark of Object.values(marks.NETWORK_MARKS)) {
       assert.ok(
-        heightOf(mark.aspect) <= 13,
+        heightOf(mark.aspect) <= cap,
         `${mark.title} must fit the row`,
       );
     }
@@ -359,18 +362,34 @@ describe("the schedule page", () => {
     }
   });
 
+  // The board no longer prints a "Div" pill, so nothing on a row says what kind
+  // of game it is. The sidebar's Divisional games card still lists them, and it
+  // is built from the UNFILTERED week, which makes it an independent answer to
+  // check the filtered board against. Week 2 is a mix, so a filter that
+  // silently did nothing fails on the count before it fails on the set.
   test("the division filter shows only division games", async () => {
-    const { doc } = await page("/schedule?week=18&filter=division");
-    const games = [...doc.querySelectorAll("article.scs-game")];
-    assert.ok(games.length > 0, "week 18 has division games");
-    // Every week-18 game is a division game, which is what makes this the week
-    // worth asserting on: a filter that silently did nothing would pass on any
-    // other week only by accident.
+    const codes = (root, selector) =>
+      [...root.querySelectorAll(selector)].map((node) => node.textContent.trim());
+    const board = (doc) =>
+      [...doc.querySelectorAll("article.scs-game")].map((game) =>
+        codes(game, ".scs-game-code").join("@"),
+      );
+
+    const { doc: unfiltered } = await page("/schedule?week=2");
+    const { doc } = await page("/schedule?week=2&filter=division");
+    const listed = [
+      ...doc.querySelectorAll('.scs-card[data-kind="division"] .scs-mini'),
+    ].map((mini) => codes(mini, ".scs-mini-code").join("@"));
+
+    assert.ok(listed.length > 0, "week 2 has division games");
     assert.ok(
-      games.every((game) =>
-        game.querySelector('.scs-tag[data-kind="div"]'),
-      ),
-      "every rendered game is tagged as a division game",
+      listed.length < board(unfiltered).length,
+      "week 2 is a mix, so the filter has something to remove",
+    );
+    assert.deepEqual(
+      board(doc).sort(),
+      [...listed].sort(),
+      "the filtered board is exactly the week's divisional slate",
     );
   });
 
