@@ -2283,6 +2283,277 @@ describe("the bio tab", () => {
   });
 });
 
+/**
+ * The search above the header.
+ *
+ * It is the one control on the page that does not work without the bundle —
+ * see renderPlayerSearch() — so what the server owes it is narrow and exact:
+ * the box, SHIPPED HIDDEN so a reader without the script never meets a field
+ * that swallows typing; the whole roster beside it, because a fragment printed
+ * into a WordPress page cannot fetch one from this origin without CORS and an
+ * absolute URL it does not carry; and the link prefix, so a result inside
+ * WordPress goes to statchasers.com rather than back to the bare tool.
+ *
+ * These execute no JavaScript, like the rest of the suite. What the keyboard
+ * and the filtering do is client/player-search.ts's business; what is asserted
+ * here is that the raw materials arrive and that the page still costs what it
+ * is supposed to.
+ */
+describe("the player search", () => {
+  test("ships above the header, hidden until the bundle runs", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    const widget = doc.querySelector("[data-scp-search]");
+    assert.ok(widget, "the search is in the served HTML");
+    assert.ok(
+      widget.hasAttribute("hidden"),
+      "it must ship hidden: with no script it is a box that answers nothing",
+    );
+
+    const root = doc.querySelector("[data-scp-root]");
+    assert.equal(root.firstElementChild, widget, "it is the first thing in the tool");
+    assert.equal(
+      widget.compareDocumentPosition(doc.querySelector("[data-scp-hero]")) &
+        doc.defaultView.Node.DOCUMENT_POSITION_FOLLOWING,
+      doc.defaultView.Node.DOCUMENT_POSITION_FOLLOWING,
+      "and it comes before the header, not after it",
+    );
+
+    // One <input>, no <form>: a form with no action submits to the current URL,
+    // so Enter would mint /player/<slug>?= and hand a crawler a duplicate of a
+    // page this tool works hard to have exactly one address for.
+    assert.equal(widget.querySelectorAll("form").length, 0, "never a form");
+    assert.equal(widget.querySelectorAll("input").length, 1);
+
+    // The roles are the client's to add, because they promise behaviour that
+    // does not exist until it runs.
+    const input = widget.querySelector("input");
+    assert.equal(input.getAttribute("role"), null);
+    assert.equal(input.getAttribute("type"), "search");
+    assert.ok(widget.querySelector(".scp-sr"), "the field is labelled");
+  });
+
+  test("carries the whole roster inline, and nothing that runs", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    const island = doc.querySelector("[data-scp-roster]");
+    assert.ok(island, "the roster is inlined beside the box");
+    assert.equal(
+      island.getAttribute("type"),
+      "application/json",
+      "inert data, not a script — the page loads exactly one bundle",
+    );
+
+    const rows = JSON.parse(island.textContent);
+    assert.ok(Array.isArray(rows));
+    assert.equal(
+      rows.length,
+      roster.length,
+      "every player with a page is reachable from every other page",
+    );
+
+    const slugs = new Set();
+    for (const row of rows) {
+      const [slug, name, position, team] = row.split("|");
+      assert.match(slug, /^[a-z0-9][a-z0-9-]*$/, `slug-shaped: ${row}`);
+      assert.ok(name, `every row names somebody: ${row}`);
+      assert.ok(/^[A-Z]*$/.test(position), `position is a code or empty: ${row}`);
+      assert.ok(/^[A-Z]*$/.test(team), `team is a code or empty: ${row}`);
+      slugs.add(slug);
+    }
+    assert.equal(slugs.size, rows.length, "no player listed twice");
+    assert.ok(slugs.has(fixture.slug), "including the player being looked at");
+
+    // The slugs are the site's own, never derived from the name: "A.J. Brown"
+    // is aj-brown, not a-j-brown, and a search that guessed would hand out
+    // links to pages that do not exist.
+    for (const player of roster.slice(0, 40)) {
+      assert.ok(slugs.has(player.slug), `${player.name} is searchable`);
+    }
+  });
+
+  test("the roster is a fraction of the page, not a second one", async () => {
+    const res = await get(`/player/${fixture.slug}`);
+    const island = res.body.match(/data-scp-roster>(.*?)<\/script>/s);
+    assert.ok(island, "the island is in the raw HTML");
+
+    // It is paid for on every page, so it has a budget. Comfortable at ~575
+    // players and ~36 bytes a row; a change that doubles the row (a headshot
+    // URL, a team's full name) trips this before it ships.
+    const share = island[1].length / res.body.length;
+    assert.ok(
+      share < 0.35,
+      `the inlined roster is ${(share * 100).toFixed(1)}% of the document`,
+    );
+  });
+
+  /*
+   * Booted separately, because the behaviour IS the environment: the fragment's
+   * links are built from SC_PLAYER_PATH_PREFIX, and one server cannot answer
+   * for both configurations. Same shape as the team switcher's test.
+   */
+  test("the fragment points its results at the public site", async () => {
+    const srv = await startServer({ SC_PLAYER_PATH_PREFIX: "/nfl/players/" });
+    try {
+      const res = await fetch(`${srv.origin}/embed/player/${fixture.slug}`);
+      assert.equal(res.status, 200);
+      const doc = new JSDOM(`<body>${await res.text()}</body>`).window.document;
+
+      const widget = doc.querySelector("[data-scp-search]");
+      assert.ok(widget, "the search is in the WordPress fragment too");
+      assert.equal(widget.getAttribute("data-scp-prefix"), "/nfl/players/");
+      // `embed` is a reserved WordPress query var: /nfl/players/<slug>/?embed=1
+      // serves its oEmbed template instead of the page. Off-origin links drop
+      // it, exactly as the team switcher's do.
+      assert.equal(widget.getAttribute("data-scp-query"), "");
+
+      // The peers rail is the page's other way out, and it is built from the
+      // same prefix — a card pointing back at the bare tool would take the
+      // reader off statchasers.com mid-visit.
+      const peers = [...doc.querySelectorAll("a.scp-peer")].map((a) =>
+        a.getAttribute("href"),
+      );
+      assert.ok(peers.length > 0, "the fragment carries the rail too");
+      for (const href of peers) {
+        assert.match(href, /^\/nfl\/players\/[a-z0-9-]+$/);
+      }
+    } finally {
+      await srv.stop();
+    }
+  });
+
+  test("on this origin the results stay in embedded mode", async () => {
+    const res = await get(`/embed/player/${fixture.slug}`);
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+    const widget = doc.querySelector("[data-scp-search]");
+    assert.equal(widget.getAttribute("data-scp-prefix"), "/player/");
+    assert.equal(widget.getAttribute("data-scp-query"), "?embed=1");
+  });
+});
+
+/**
+ * The Nearby Positional Peers rail.
+ *
+ * Ported from the standalone app's RankNeighborsRail, which fetched
+ * /api/players/:slug/related from the browser. Here it is arithmetic over logs
+ * already in memory, so it ships in the HTML — which is what these assert,
+ * along with the property that makes the block trustworthy: the rank on the
+ * reader's own card is the rank the header printed. A rail built on a
+ * different measure from the header's would put two different answers to
+ * "which QB is he?" on one page.
+ */
+describe("the positional peers rail", () => {
+  test("ships in the HTML, in rank order, with the reader marked", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    const rail = doc.querySelector("[data-scp-peers]");
+    assert.ok(rail, "the rail is server-rendered, not fetched");
+
+    const cards = [...rail.querySelectorAll(".scp-peer")];
+    assert.ok(cards.length >= 2, "a neighbourhood, not a card on its own");
+    assert.ok(cards.length <= 7, "three either side and the player himself");
+
+    const ranks = cards.map((card) =>
+      Number(card.querySelector(".scp-peer-rank").textContent.replace(/^[A-Z]+/, "")),
+    );
+    assert.deepEqual(
+      ranks,
+      [...ranks].sort((a, b) => a - b),
+      "cards read down the table, best rank first",
+    );
+    assert.equal(new Set(ranks).size, ranks.length, "one card per rank");
+
+    const current = rail.querySelectorAll(".scp-peer.is-current");
+    assert.equal(current.length, 1, "exactly one card is the reader's own");
+    assert.match(current[0].textContent, /You are here/i);
+    assert.match(current[0].querySelector(".scp-peer-name").textContent, /\S/);
+    // Not a link back to the page you are standing on.
+    assert.equal(current[0].tagName, "DIV");
+    assert.equal(current[0].getAttribute("aria-current"), "page");
+
+    for (const card of cards) {
+      if (card.classList.contains("is-current")) continue;
+      assert.equal(card.tagName, "A", "every other card is a real link");
+      assert.match(card.getAttribute("href"), /^\/player\/[a-z0-9-]+$/);
+      // Same as every other link in the fragment: out of the legacy frame.
+      assert.equal(card.getAttribute("target"), "_top");
+    }
+  });
+
+  test("the card the reader is on agrees with the header", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+
+    const cells = [...doc.querySelectorAll(".scp-hero-stat")];
+    const rankCell = cells.find((cell) =>
+      /pos rank/i.test(cell.querySelector(".scp-hero-stat-label").textContent),
+    );
+    const current = doc.querySelector(".scp-peer.is-current .scp-peer-rank");
+    assert.ok(current, "the reader's card carries its rank");
+
+    // The header only prints a rank when it has one; when it does, the rail
+    // must be the slice of the table that rank came from.
+    if (rankCell) {
+      assert.equal(
+        current.textContent.trim(),
+        rankCell.querySelector(".scp-hero-stat-value").textContent.trim(),
+        "one player, one positional rank, whatever measure produced it",
+      );
+    }
+  });
+
+  test("every peer is a page that resolves", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const hrefs = [...doc.querySelectorAll("a.scp-peer")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.ok(hrefs.length > 0);
+
+    // The dictionary is thousands of names deep and only the indexed players
+    // have a page, so the neighbourhood skips the ones that do not — the whole
+    // reason it is walked outwards rather than sliced.
+    for (const href of hrefs) {
+      const res = await get(href);
+      assert.equal(res.status, 200, `${href} must not be a dead card`);
+    }
+  });
+
+  test("stands under whichever tab is open", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const rail = doc.querySelector(".scp-peers");
+    assert.ok(rail);
+    assert.equal(
+      rail.closest("[data-scp-panel]"),
+      null,
+      "outside the panels, or it would vanish with its tab",
+    );
+
+    // And on a section-scoped page too, which is that page's version of a tab.
+    const scoped = await dom(`/player/${fixture.slug}?section=bio`);
+    assert.ok(
+      scoped.doc.querySelector("[data-scp-peers]"),
+      "the section page keeps the way out of the page",
+    );
+  });
+
+  test("the subheading says which measure ranked them", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const sub = doc.querySelector(".scp-peers .scp-head-sub").textContent;
+    assert.match(sub, /points per game|points scored/);
+    assert.match(sub, /PPR|HALF|STD/);
+    // The season the rest of the page is a reading of, not some other one.
+    const season = doc.querySelector("[data-scp-root]").getAttribute("data-season");
+    assert.ok(sub.includes(season), `the subheading names ${season}`);
+
+    // Half-PPR is a different table, so it is a different neighbourhood — the
+    // format toggle must reach this block like it reaches the rest.
+    const half = await dom(`/player/${fixture.slug}?format=half`);
+    assert.match(
+      half.doc.querySelector(".scp-peers .scp-head-sub").textContent,
+      /HALF/,
+    );
+  });
+});
+
 describe("the embedded fragment", () => {
   test("serves markup with no document around it", async () => {
     const res = await get(`/embed/player/${fixture.slug}`);

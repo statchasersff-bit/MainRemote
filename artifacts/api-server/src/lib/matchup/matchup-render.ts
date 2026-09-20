@@ -286,32 +286,75 @@ function renderLinescore(data: MatchupData): string {
   );
 }
 
+/** The dot the eyebrow joins on, as text rather than as the decorative span. */
+const DOT_TEXT = " · ";
+
 /**
- * The postgame hero: the result, at the size the result deserves.
+ * The hero, on whichever side of kickoff the page is standing.
  *
- * This used to be a small pair of crests followed, one section down, by a
- * separate card repeating the same two teams with the score in it. The reader
- * arriving from "patriots vs seahawks score" met the fixture twice and the
- * number once, in the second half of the page. Merging them is the whole point:
- * above the fold there is one object, and it is the scoreboard.
+ * A finished game's hero IS the scoreboard: the reader arriving from "patriots
+ * vs seahawks score" used to meet the fixture twice and the number once, half
+ * a page down, so the two were merged into one object above the fold. The
+ * fixture hero was never brought with it. It stayed a title block on the left
+ * with a stack of crest-over-code-over-record parked on the right and the
+ * kickoff squeezed into the subtitle — a second hero, in a second shape, for
+ * the same two teams.
  *
- * It is a SCOREBOARD STRIP, not a poster. The first version of the merge stacked
- * crest over nickname over score in a column per team, pushed the two columns to
- * opposite edges and hung the quarter line underneath — 426px of hero, most of it
- * air, with the two numbers it exists for a third of a screen apart. Each side is
- * now one horizontal row (crest, name over record, number) and the two rows meet
- * at a dash in the middle, so "10 – 13" reads as one figure at one glance. The
- * quarter line follows immediately under the metadata as part of the same object
- * rather than as a table that happens to sit below it.
+ * There is one shape now, and it is the postgame one: eyebrow and title
+ * centred over a horizontal board, each side a row of crest, name over record
+ * and — on a final only — the number, the two sides meeting at a join in the
+ * middle. Under it the venue and the kickoff; under that, on a final, the
+ * quarter line. What changes between the two states is what the board has to
+ * say, not how the page is built.
  *
- * Both sides are built by the same call in the same order and the home side is
- * reversed in CSS, so the two are mirror images by construction rather than by
- * two orders kept in step by hand.
+ * Both sides are built by the same call in the same order and the right-hand
+ * one is reversed in CSS, so the two are mirror images by construction rather
+ * than by two orders kept in step by hand.
  */
-function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): string {
-  const meeting = data.featured;
-  if (!meeting?.score) return "";
+function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
   const headingTag = options.embed ? "h2" : "h1";
+  const meeting = data.featured;
+
+  // The number is printed on the page that is about the number, and nowhere
+  // else: isPostgame() is the whole condition, so a meeting three seasons old
+  // keeps the fixture board and its result stays in Head-to-Head, where the
+  // reader is asking about it in the past tense.
+  const result =
+    isPostgame(data) && meeting?.score
+      ? { meeting, score: meeting.score }
+      : null;
+
+  // Away first, home second, as every scoreboard reads. With no featured game
+  // — or one at a neutral site, where there is no host to put second — the
+  // pair's own order stands and the join is "vs".
+  const board = meeting && (result || !meeting.neutralSite) ? meeting : null;
+  const left = board ? board.away : data.pair.a;
+  const right = board ? board.home : data.pair.b;
+  const leftData = left.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
+  const rightData = right.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
+  const join = result ? "&ndash;" : board ? "@" : "vs";
+
+  // "Final", or "Final/OT" when the line score says it took longer. Read off
+  // the periods actually played rather than asserted: four quarters is four
+  // columns, and anything past that happened.
+  const periods = data.boxscore?.periodCount ?? 4;
+  const status = result
+    ? periods > 4
+      ? `Final${periods > 5 ? `/${periods - 4}OT` : "/OT"}`
+      : "Final"
+    : meeting?.status === "live"
+      ? "Live"
+      : data.matchupState === "upcoming"
+        ? "Upcoming"
+        : "";
+
+  // The meeting the hero is actually describing — which is not every meeting
+  // it can draw. An evergreen pair page boards the last one the two played,
+  // and printing that game's stadium and date under the crests would date a
+  // page whose subject is the rivalry: the meeting has its own section, with
+  // its own year on it. So the metadata row is filled from a game the reader
+  // is either waiting for or has just watched, and from nothing else.
+  const subject = result ? result.meeting : status ? meeting : null;
 
   // The same two inks the rest of the page resolves teams to, so a side's tint
   // here and its bars further down are never two different navies — and so the
@@ -319,156 +362,125 @@ function renderFinalHero(data: MatchupData, options: MatchupRenderOptions): stri
   // #002244) still come out as two distinguishable sides. See pairColors().
   const color = matchupColors(data.pair);
 
-  const side = (which: "away" | "home"): string => {
-    const team = which === "home" ? meeting.home : meeting.away;
+  const side = (team: NflTeam, which: "left" | "right"): string => {
     const teamData =
       team.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
-    const won = meeting.winner?.abbreviation === team.abbreviation;
+    const won = result?.meeting.winner?.abbreviation === team.abbreviation;
     const mark = record(teamData);
+    const points = result ? result.score[which === "left" ? "away" : "home"] : null;
     return (
-      // is-home is what reverses the row, so the home crest sits on the outside
-      // and the home number beside the dash — the mirror of the away side. The
-      // ink is the side's own tint, which is what gives each half of the strip
-      // its structure without a divider ruled down the middle of it.
-      `<div class="sct-mu-final-side${which === "home" ? " is-home" : ""}${won ? " is-winner" : ""}"` +
+      // is-right is what reverses the row, so the home crest sits on the
+      // outside and the home number beside the join — the mirror of the away
+      // side. The ink is the side's own tint, which is what gives each half of
+      // the strip its structure without a divider ruled down the middle of it.
+      `<div class="sct-mu-strip-side${which === "right" ? " is-right" : ""}${won ? " is-winner" : ""}"` +
       styleAttr([`--mu-side-ink:${color(team)}`]) +
       `>` +
-      `<img class="sct-mu-final-logo" src="${escapeHtml(team.logo)}" alt=""` +
+      `<img class="sct-mu-strip-logo" src="${escapeHtml(team.logo)}" alt=""` +
       ` width="56" height="56" loading="lazy" decoding="async" />` +
-      `<span class="sct-mu-final-who">` +
+      `<span class="sct-mu-strip-who">` +
       // Nickname and code, one of which is showing at any width. Below 640px a
       // nickname truncates to "PATRI…" between a 34px crest and a 40px number,
       // and an ellipsis is a worse label than the three letters every scoreboard
       // uses. Both are in the markup because the swap is a width question and
       // the server does not know the width; the board is aria-hidden either way,
       // so nothing is announced twice.
-      `<span class="sct-mu-final-name">${escapeHtml(team.nickname)}</span>` +
-      `<span class="sct-mu-final-code">${escapeHtml(team.code.toUpperCase())}</span>` +
-      (mark ? `<span class="sct-mu-final-record">${mark}</span>` : "") +
+      `<span class="sct-mu-strip-name">${escapeHtml(team.nickname)}</span>` +
+      `<span class="sct-mu-strip-code">${escapeHtml(team.code.toUpperCase())}</span>` +
+      (mark ? `<span class="sct-mu-strip-record">${mark}</span>` : "") +
       `</span>` +
-      `<span class="sct-mu-final-score">${escapeHtml(String(meeting.score![which]))}</span>` +
+      (points === null
+        ? ""
+        : `<span class="sct-mu-strip-score">${escapeHtml(String(points))}</span>`) +
       `</div>`
     );
   };
 
-  const when = gameDateLine(asGame(meeting));
-  // "Final", or "Final/OT" when the line score says it took longer. Read off
-  // the periods actually played rather than asserted: four quarters is four
-  // columns, and anything past that happened.
-  const periods = data.boxscore?.periodCount ?? 4;
-  const status = periods > 4 ? `Final${periods > 5 ? `/${periods - 4}OT` : "/OT"}` : "Final";
+  // Season, round, and one word for where the game stands, in that order
+  // whether it is coming or gone. The status is NOT repeated below: it was
+  // also the first word of the metadata line and — before the board was
+  // rebuilt — the thing the middle of the board wanted to say, and three
+  // "Final"s in forty vertical pixels is not emphasis. With no meeting to
+  // stand on, the pair's own line stands instead.
+  const eyebrow =
+    meeting && status
+      ? `${meeting.season} NFL${DOT_TEXT}${meeting.weekLabel}${DOT_TEXT}${status}`
+      : `NFL Matchup${DOT_TEXT}${data.state.season} Season`;
 
-  // The status is NOT repeated here. It is already the last word of the eyebrow
-  // above, and it was also the first word of this line and — before the board
-  // was rebuilt — the thing the middle of the board wanted to say. Three
-  // "Final"s in forty vertical pixels is not emphasis. The eyebrow keeps it,
-  // because that is where the OT suffix belongs, and the metadata row becomes
-  // what it should always have been: where it happened and when.
-  const where = [meeting.venue].filter(Boolean).map(String);
+  const when = subject ? gameDateLine(asGame(subject)) : null;
   // gameDateLine() already spells the zone into `time`, so nothing is appended
-  // here — doing it anyway printed "8:20 PM ET ET".
-  const whenParts = [when.date, when.time === "Time TBD" ? "" : when.time]
-    .filter(Boolean)
-    .map(String);
+  // here — doing it anyway printed "8:20 PM ET ET". On a game already played an
+  // unconfirmed kickoff is noise; on one still to come "Time TBD" is the answer
+  // to the question the reader arrived with, so it stays.
+  const whenParts = when
+    ? [when.date, result && when.time === "Time TBD" ? "" : when.time]
+        .filter(Boolean)
+        .map(String)
+    : [];
+  const where = subject ? [subject.venue].filter(Boolean).map(String) : [];
+
+  // Where it happened and when — or, on a page with no current game to put
+  // there, what the page is. Never both: an empty metadata row and a floating
+  // sentence are the same slot asked to do two jobs.
+  const meta =
+    where.length || whenParts.length
+      ? `<p class="sct-mu-strip-meta">` +
+        (where.length
+          ? `<span class="sct-mu-strip-where">${escapeHtml(where.join(" · "))}</span>`
+          : "") +
+        (where.length && whenParts.length ? DOT : "") +
+        (whenParts.length
+          ? `<span class="sct-mu-strip-when">${escapeHtml(whenParts.join(" · "))}</span>`
+          : "") +
+        `</p>`
+      : `<p class="sct-mu-strip-note">` +
+        escapeHtml("Head-to-head record, team stats, injuries and recent meetings") +
+        `</p>`;
+
+  // The board is crests and numbers; read out cell by cell it is an alphabet.
+  // This is the same fact as a sentence.
+  const spoken = result
+    ? result.meeting.winner
+      ? `${result.meeting.winner.fullName} beat ` +
+        `${(result.meeting.winner.abbreviation === result.meeting.home.abbreviation ? result.meeting.away : result.meeting.home).fullName} ` +
+        `${Math.max(result.score.home, result.score.away)}–${Math.min(result.score.home, result.score.away)}` +
+        ` in the ${result.meeting.weekLabel} of the ${result.meeting.season} season` +
+        (result.meeting.neutralSite || !result.meeting.venue
+          ? "."
+          : ` at ${result.meeting.venue}.`)
+      : `${result.meeting.away.fullName} and ${result.meeting.home.fullName} tied ` +
+        `${result.score.away}–${result.score.home} in the ${result.meeting.weekLabel} of the ${result.meeting.season} season.`
+    : `${left.fullName}${record(leftData) ? ` (${leftData.profile?.record})` : ""} ` +
+      `${join === "@" ? "at" : "versus"} ` +
+      `${right.fullName}${record(rightData) ? ` (${rightData.profile?.record})` : ""}`;
 
   return (
-    `<header class="sct-hero sct-mu-hero is-final">` +
-    `<span class="sct-hero-decor" aria-hidden="true">` +
-    `<span class="sct-hero-aura"></span>` +
-    `</span>` +
-    `<div class="sct-mu-final-inner">` +
-    `<div class="sct-hero-text sct-mu-final-text">` +
-    `<p class="sct-eyebrow">${escapeHtml(
-      `${meeting.season} NFL${DOT_TEXT}${meeting.weekLabel}${DOT_TEXT}${status}`,
-    )}</p>` +
-    `<${headingTag} class="sct-title sct-mu-final-title">${escapeHtml(heroHeading(data))}</${headingTag}>` +
+    `<header class="sct-hero sct-mu-hero${result ? " is-final" : ""}">` +
+    // No aura. It is a 320px team-coloured blur anchored to the hero's
+    // top-left corner, and on a board with two sides there is no one crest for
+    // it to sit behind; the side tints below do the same job in the right
+    // places. The decor layer stays for the hairline of team colour it draws
+    // across the top.
+    `<span class="sct-hero-decor" aria-hidden="true"></span>` +
+    `<div class="sct-mu-strip-inner">` +
+    `<div class="sct-hero-text sct-mu-strip-text">` +
+    `<p class="sct-eyebrow">${escapeHtml(eyebrow)}</p>` +
+    `<${headingTag} class="sct-title sct-mu-strip-title">${escapeHtml(heroHeading(data))}</${headingTag}>` +
     `</div>` +
-    `<div class="sct-mu-final-board" aria-hidden="true">` +
-    side("away") +
-    // A dash, not "@". The "@" was the only thing on the board naming the home
-    // side, but it was also a character doing that job in the one position the
-    // eye lands on first — between the two numbers, where the reader is asking
-    // "what was the score", not "who was at home". The venue answers the second
-    // question one line down, and the spoken sentence under the board answers
-    // both. On a neutral site there is no home side to name in the first place.
-    `<span class="sct-mu-final-join" aria-hidden="true">&ndash;</span>` +
-    side("home") +
+    `<div class="sct-mu-strip-board" aria-hidden="true">` +
+    side(left, "left") +
+    // A dash on a final, not "@". The "@" was the only thing on the board
+    // naming the home side, but it was also a character doing that job in the
+    // one position the eye lands on first — between the two numbers, where the
+    // reader is asking "what was the score", not "who was at home". Before
+    // kickoff there are no numbers to separate and the question is exactly the
+    // other one, so the fixture board keeps it.
+    `<span class="sct-mu-strip-join">${join}</span>` +
+    side(right, "right") +
     `</div>` +
-    // The board is three crests and four numbers; read out cell by cell it is
-    // an alphabet. This is the same fact as a sentence.
-    `<p class="sct-visually-hidden">${escapeHtml(
-      meeting.winner
-        ? `${meeting.winner.fullName} beat ` +
-          `${(meeting.winner.abbreviation === meeting.home.abbreviation ? meeting.away : meeting.home).fullName} ` +
-          `${Math.max(meeting.score.home, meeting.score.away)}–${Math.min(meeting.score.home, meeting.score.away)}` +
-          ` in the ${meeting.weekLabel} of the ${meeting.season} season` +
-          (meeting.neutralSite || !meeting.venue ? "." : ` at ${meeting.venue}.`)
-        : `${meeting.away.fullName} and ${meeting.home.fullName} tied ` +
-          `${meeting.score.away}–${meeting.score.home} in the ${meeting.weekLabel} of the ${meeting.season} season.`,
-    )}</p>` +
-    `<p class="sct-mu-final-meta">` +
-    `<span class="sct-mu-final-where">${escapeHtml(where.join(" · "))}</span>` +
-    (whenParts.length
-      ? DOT +
-        `<span class="sct-mu-final-when">${escapeHtml(whenParts.join(" · "))}</span>`
-      : "") +
-    `</p>` +
-    renderLinescore(data) +
-    `</div>` +
-    `</header>`
-  );
-}
-
-/** The dot the eyebrow joins on, as text rather than as the decorative span. */
-const DOT_TEXT = " · ";
-
-function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
-  if (isPostgame(data)) return renderFinalHero(data, options);
-
-  const { a, b } = data.pair;
-  const headingTag = options.embed ? "h2" : "h1";
-  const featured = data.featured;
-
-  // Away first, home second, as every scoreboard reads. With no featured game
-  // the pair's own order stands and the join is "vs".
-  const left = featured && !featured.neutralSite ? featured.away : a;
-  const right = featured && !featured.neutralSite ? featured.home : b;
-  const join = featured && !featured.neutralSite ? "@" : "vs";
-  const leftData = left.abbreviation === a.abbreviation ? data.a : data.b;
-  const rightData = right.abbreviation === a.abbreviation ? data.a : data.b;
-
-  const sub =
-    data.matchupState === "upcoming" && featured
-      ? whenLine(featured)
-      : escapeHtml("Head-to-head record, team stats, injuries and recent meetings");
-
-  const side = (team: NflTeam, teamData: TeamPageData): string =>
-    `<div class="sct-mu-side">` +
-    matchupSide(team, team.nickname, false) +
-    (record(teamData) ? `<span class="sct-mu-record">${record(teamData)}</span>` : "") +
-    `</div>`;
-
-  return (
-    `<header class="sct-hero sct-mu-hero">` +
-    `<span class="sct-hero-decor" aria-hidden="true">` +
-    `<span class="sct-hero-aura"></span>` +
-    `</span>` +
-    `<div class="sct-hero-inner sct-mu-hero-inner">` +
-    `<div class="sct-hero-text">` +
-    `<p class="sct-eyebrow">${escapeHtml(`NFL Matchup · ${data.state.season} Season`)}</p>` +
-    `<${headingTag} class="sct-title">${escapeHtml(matchupTitle(data))}</${headingTag}>` +
-    `<p class="sct-subtitle">${sub}</p>` +
-    `</div>` +
-    `<div class="sct-matchup sct-mu-board" aria-hidden="true">` +
-    side(left, leftData) +
-    `<span class="sct-matchup-at">${join}</span>` +
-    side(right, rightData) +
-    `</div>` +
-    `<p class="sct-visually-hidden">${escapeHtml(
-      `${left.fullName}${record(leftData) ? ` (${leftData.profile?.record})` : ""} ` +
-        `${join === "@" ? "at" : "versus"} ` +
-        `${right.fullName}${record(rightData) ? ` (${rightData.profile?.record})` : ""}`,
-    )}</p>` +
+    `<p class="sct-visually-hidden">${escapeHtml(spoken)}</p>` +
+    meta +
+    (result ? renderLinescore(data) : "") +
     `</div>` +
     `</header>`
   );
@@ -476,18 +488,21 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
 
 /* --------------------------------------------------------- featured game */
 
-/** The lead card: next meeting, or the one just played. */
+/** The lead card: the meeting just played, or the last one there was. */
 function renderFeatured(data: MatchupData): string {
   const meeting = data.featured;
   if (!meeting) return "";
 
   const isResult = meeting.status === "final" && meeting.score !== null;
-  const title =
-    data.matchupState === "upcoming"
-      ? "Up Next"
-      : data.matchupState === "recently_completed"
-        ? "Final"
-        : "Last Meeting";
+  // A card with no score on it. Every line the fixture version drew — season,
+  // round, stadium, kickoff — the hero had already drawn above it, and "Where
+  // to Watch" drew the kickoff and the stadium again directly below: the same
+  // four facts three times, under a heading promising a fifth. The scoreboard
+  // is the only thing this card has that the hero does not, so it renders
+  // when there is a scoreboard and not otherwise. A fixture is announced once.
+  if (!isResult) return "";
+
+  const title = data.matchupState === "recently_completed" ? "Final" : "Last Meeting";
 
   const tags = fixtureTags(asGame(meeting)).map(
     (tag) =>
@@ -510,26 +525,25 @@ function renderFeatured(data: MatchupData): string {
     );
   };
 
-  const score =
-    isResult && meeting.score
-      ? `<div class="sct-mu-scoreboard">` +
-        sbSide("away") +
-        `<span class="sct-mu-sb-sep" aria-hidden="true">–</span>` +
-        sbSide("home") +
-        `</div>` +
-        // The result as a sentence, for a screen reader reading the numbers
-        // out of a grid that only makes sense to the eye.
-        `<p class="sct-visually-hidden">${escapeHtml(
-          meeting.winner
-            ? `${meeting.winner.nickname} won ${Math.max(meeting.score.home, meeting.score.away)}–${Math.min(meeting.score.home, meeting.score.away)}`
-            : `Tied ${meeting.score.home}–${meeting.score.away}`,
-        )}</p>`
-      : "";
+  const score = meeting.score
+    ? `<div class="sct-mu-scoreboard">` +
+      sbSide("away") +
+      `<span class="sct-mu-sb-sep" aria-hidden="true">–</span>` +
+      sbSide("home") +
+      `</div>` +
+      // The result as a sentence, for a screen reader reading the numbers
+      // out of a grid that only makes sense to the eye.
+      `<p class="sct-visually-hidden">${escapeHtml(
+        meeting.winner
+          ? `${meeting.winner.nickname} won ${Math.max(meeting.score.home, meeting.score.away)}–${Math.min(meeting.score.home, meeting.score.away)}`
+          : `Tied ${meeting.score.home}–${meeting.score.away}`,
+      )}</p>`
+    : "";
 
-  const where = [
-    meeting.venue ? escapeHtml(meeting.venue) : "",
-    meeting.network && !isResult ? networkHtml(meeting.network, "sct-game-tv") : "",
-  ].filter(Boolean);
+  // The stadium alone. The broadcaster belonged to the fixture version of this
+  // card — who is showing a game that has been played is not a fact anyone
+  // needs — and that version is gone.
+  const where = meeting.venue ? escapeHtml(meeting.venue) : "";
 
   const home = meeting.neutralSite
     ? "Neutral site"
@@ -538,8 +552,7 @@ function renderFeatured(data: MatchupData): string {
   return (
     `<section class="sct-block sct-mu-featured" data-state="${data.matchupState}">` +
     h2(title) +
-    (meeting.network ? networkDefs([meeting.network]) : "") +
-    `<div class="sct-game sct-mu-game${isResult ? " is-final" : ""}">` +
+    `<div class="sct-game sct-mu-game is-final">` +
     `<div class="sct-game-head">` +
     `<span class="sct-game-week">${escapeHtml(`${meeting.season} · ${meeting.weekLabel}`)}</span>` +
     `<span class="sct-game-pills">${tags.join("")}` +
@@ -551,7 +564,7 @@ function renderFeatured(data: MatchupData): string {
     // stadium are where it happened, not what happened.
     `<div class="sct-game-meta">` +
     `<p class="sct-game-when">${whenLine(meeting)}</p>` +
-    (where.length ? `<p class="sct-game-where">${where.join(" · ")}</p>` : "") +
+    (where ? `<p class="sct-game-where">${where}</p>` : "") +
     `</div>` +
     `</div>` +
     `</section>`
@@ -1631,7 +1644,11 @@ function renderWatch(data: MatchupData): string {
 
   const rows: Array<[string, string]> = [];
   if (meeting.kickoffMs !== null) rows.push(["Date", escapeHtml(when.date)]);
-  if (when.time) rows.push(["Kickoff", escapeHtml(`${when.time} ET`)]);
+  // No " ET" appended: easternParts() already spells the zone into the time,
+  // and the row was reading "1:00 PM ET ET" — the same slip the hero's
+  // metadata line carries a note about. "Time TBD" is not a time to qualify
+  // either, which appending would have done.
+  if (when.time) rows.push(["Kickoff", escapeHtml(when.time)]);
   if (meeting.network) rows.push(["TV", networkHtml(meeting.network, "sct-mu-tv")]);
   if (meeting.venue) {
     rows.push([
@@ -1644,6 +1661,10 @@ function renderWatch(data: MatchupData): string {
   return (
     `<section class="sct-block sct-mu-watch">` +
     h2(`Where to Watch ${data.pair.a.nickname} vs ${data.pair.b.nickname}`) +
+    // The symbol the TV row's <use> points at. It used to be defined by the
+    // featured card above, which no longer draws on a fixture page — a logo
+    // whose symbol is nowhere on the page renders as an empty box.
+    (meeting.network ? networkDefs([meeting.network]) : "") +
     `<dl class="sct-mu-facts">` +
     rows
       .map(
@@ -2339,7 +2360,10 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
   // After it they are reading a result, and the questions run score, who did
   // it, what it meant, and only then what it means for the rivalry — so
   // Head-to-Head goes last rather than second. The hero has already carried the
-  // score, which is why there is no featured card in the postgame order.
+  // score, which is why there is no featured card in the postgame order — and
+  // it has already carried the fixture, which is why there is none in the
+  // upcoming order either. Only an old meeting still needs a card, because
+  // only its scoreboard is somewhere the hero is not.
   const body = isPostgame(data)
     ? // A game just played. The reader is reading a result, and the questions
       // run: score (the hero has it), how it happened, who did it, what it
@@ -2366,8 +2390,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
         renderSnapshot(data) +
         renderFantasy(data) +
         renderInjuries(data)
-      : renderFeatured(data) +
-        renderWatch(data) +
+      : renderWatch(data) +
         renderSnapshot(data) +
         renderFantasy(data) +
         renderInjuries(data) +

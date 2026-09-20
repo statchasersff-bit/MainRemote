@@ -254,11 +254,17 @@ describe("the page follows its state", () => {
       // the page printing the same fixture twice, which is what merging them
       // was for.
       assert.equal(featured, null, "no separate Final card postgame");
-      assert.ok(doc.querySelector(".sct-mu-final-score"), "the hero carries the score");
-    } else {
-      const title = featured?.querySelector("h2")?.textContent.trim();
-      const expected = { upcoming: "Up Next", historical: "Last Meeting" }[state];
-      if (featured) assert.equal(title, expected, `${state} leads with ${expected}`);
+      assert.ok(doc.querySelector(".sct-mu-strip-score"), "the hero carries the score");
+    } else if (state === "upcoming") {
+      // Same reasoning one step earlier: with no score to print, an "Up Next"
+      // card is the hero's season, round, stadium and kickoff a second time,
+      // with Where to Watch printing the last two a third.
+      assert.equal(featured, null, "no Up Next card on a fixture page");
+    } else if (featured) {
+      const title = featured.querySelector("h2")?.textContent.trim();
+      assert.equal(title, "Last Meeting", "historical leads with Last Meeting");
+      // The card exists to carry a scoreboard. Without one it is the hero again.
+      assert.ok(featured.querySelector(".sct-mu-scoreboard"), "and it carries a score");
     }
 
     // Where to Watch exists only for an upcoming game, and only from real
@@ -590,6 +596,85 @@ async function postgamePage() {
   return null;
 }
 
+/*
+ * The fixture page.
+ *
+ * Same posture as the postgame candidates above: addressed by a pair with a
+ * game still to come, and skipping cleanly when neither is in that state.
+ */
+const FIXTURE_CANDIDATES = [CANON, "/nfl/atlanta-falcons-vs-carolina-panthers/"];
+
+async function fixturePage() {
+  for (const path of FIXTURE_CANDIDATES) {
+    const page = await dom(path);
+    const root = page.doc.querySelector("[data-sct-root]");
+    if (root.getAttribute("data-matchup-state") === "upcoming") return page;
+  }
+  return null;
+}
+
+describe("the fixture page", () => {
+  test("the hero is the same strip as the final, minus the number", async () => {
+    const page = await fixturePage();
+    if (!page) return;
+    const { doc } = page;
+
+    const hero = doc.querySelector(".sct-mu-hero");
+    assert.ok(hero, "there is a matchup hero");
+    assert.equal(hero.classList.contains("is-final"), false, "not laid out as a final");
+    assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
+
+    // The same board, built by the same call. What a fixture has not got is a
+    // score, and it invents nothing to stand in its place.
+    const sides = [...hero.querySelectorAll(".sct-mu-strip-side")];
+    assert.equal(sides.length, 2, "two sides");
+    assert.equal(
+      sides.filter((s) => s.classList.contains("is-right")).length,
+      1,
+      "one reversed side",
+    );
+    assert.equal(
+      hero.querySelectorAll(".sct-mu-strip-score").length,
+      0,
+      "no score before kickoff",
+    );
+    assert.equal(
+      sides.filter((s) => s.classList.contains("is-winner")).length,
+      0,
+      "and nobody has won it",
+    );
+
+    // The join names the host, which is the one thing the board would
+    // otherwise not say — the opposite of the dash a final carries.
+    assert.match(
+      hero.querySelector(".sct-mu-strip-join").textContent.trim(),
+      /^(@|vs)$/,
+      "the fixture join is a word",
+    );
+
+    // Week in the eyebrow, kickoff in the metadata row: the two facts the old
+    // hero ran together into one unseparated subtitle ("Week 2Sun, Sep 20").
+    assert.match(
+      hero.querySelector(".sct-eyebrow").textContent,
+      /Upcoming$|Live$/,
+      "the eyebrow says where the game stands",
+    );
+    const when = hero.querySelector(".sct-mu-strip-when");
+    assert.ok(when, "the kickoff is in the metadata row");
+    assert.match(
+      when.textContent,
+      /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d+( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/,
+      `kickoff reads as a date and a time: ${when.textContent}`,
+    );
+
+    // The board is aria-hidden, so the fixture has to be a sentence somewhere.
+    const spoken = [...hero.querySelectorAll(".sct-visually-hidden")]
+      .map((n) => n.textContent)
+      .join(" ");
+    assert.match(spoken, /\b(at|versus)\b/, "the fixture is spoken as a sentence");
+  });
+});
+
 describe("the postgame page", () => {
   test("the hero is the scoreboard, and says so once", async () => {
     const page = await postgamePage();
@@ -600,7 +685,7 @@ describe("the postgame page", () => {
     assert.ok(hero, "the hero is laid out as a final");
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
 
-    const scores = [...hero.querySelectorAll(".sct-mu-final-score")].map((n) =>
+    const scores = [...hero.querySelectorAll(".sct-mu-strip-score")].map((n) =>
       Number(n.textContent.trim()),
     );
     assert.equal(scores.length, 2, "two scores");
@@ -608,11 +693,11 @@ describe("the postgame page", () => {
 
     // Exactly one winner, and it is the bigger number — not a class applied to
     // whichever side the pair ordering put first.
-    const sides = [...hero.querySelectorAll(".sct-mu-final-side")];
+    const sides = [...hero.querySelectorAll(".sct-mu-strip-side")];
     const winners = sides.filter((s) => s.classList.contains("is-winner"));
     if (scores[0] !== scores[1]) {
       assert.equal(winners.length, 1, "one winner");
-      const won = Number(winners[0].querySelector(".sct-mu-final-score").textContent);
+      const won = Number(winners[0].querySelector(".sct-mu-strip-score").textContent);
       assert.equal(won, Math.max(...scores), "the winner has the bigger score");
     } else {
       assert.equal(winners.length, 0, "a tie has no winner");
@@ -625,14 +710,14 @@ describe("the postgame page", () => {
     assert.match(spoken, /\b(beat|tied)\b/, "the result is spoken as a sentence");
 
     // Away first, home second, and the home side reversed in CSS rather than
-    // in a second copy of the markup — so exactly one side carries is-home.
+    // in a second copy of the markup — so exactly one side carries is-right.
     assert.equal(sides.length, 2, "two sides");
     assert.equal(
-      sides.filter((s) => s.classList.contains("is-home")).length,
+      sides.filter((s) => s.classList.contains("is-right")).length,
       1,
-      "one home side",
+      "one reversed side",
     );
-    assert.equal(sides[1].classList.contains("is-home"), true, "and it is second");
+    assert.equal(sides[1].classList.contains("is-right"), true, "and it is second");
 
     // "Final" belongs to the eyebrow, and to nothing else. It used to be the
     // last word of the eyebrow AND the centre of the board AND the first word
@@ -646,12 +731,12 @@ describe("the postgame page", () => {
       "the eyebrow carries the status, OT suffix and all",
     );
     assert.doesNotMatch(
-      hero.querySelector(".sct-mu-final-meta").textContent,
+      hero.querySelector(".sct-mu-strip-meta").textContent,
       /Final/i,
       "the metadata row is where and when, not what",
     );
     assert.doesNotMatch(
-      hero.querySelector(".sct-mu-final-join").textContent,
+      hero.querySelector(".sct-mu-strip-join").textContent,
       /[A-Za-z]/,
       "the join between the scores is a separator, not a third status",
     );
@@ -681,7 +766,7 @@ describe("the postgame page", () => {
     }
 
     // And the totals are the same two numbers the hero printed.
-    const heroScores = [...page.doc.querySelectorAll(".sct-mu-final-score")]
+    const heroScores = [...page.doc.querySelectorAll(".sct-mu-strip-score")]
       .map((n) => Number(n.textContent.trim()))
       .sort((x, y) => x - y);
     const lineTotals = rows

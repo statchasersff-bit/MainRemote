@@ -1753,10 +1753,11 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     season: 2026,
     updated: "September 2026",
     summary:
-      "John Harbaugh inherits a run-first offence that finished 5th in rushing and ran in twenty-two touchdowns, one more than it threw. Jaxson Dart is the reason to care: fifteen passing scores and nine on the ground in fourteen starts, with 487 rushing yards at 5.7 a carry. Malik Nabers played four games, and the backfield behind Dart is split three ways.",
+      "John Harbaugh inherits a run-first offence that finished 5th in rushing and ran in twenty-two touchdowns, one more than it threw. Jaxson Dart is the reason to care: fifteen passing scores and nine on the ground in fourteen starts, with 487 rushing yards at 5.7 a carry. Malik Nabers played four games, and Cam Skattebo's rookie season ended in Week 8 with the backfield now his alone.",
     facts: [
       { label: "Head coach", value: "John Harbaugh (first season)" },
       { label: "Arrivals", value: "Darnell Mooney, Isaiah Likely, Calvin Austin" },
+      { label: "Departures", value: "Darius Slayton" },
       { label: "Rushing", value: "129.1 yds/g", rank: "5th" },
       { label: "Passing", value: "217.1 yds/g", rank: "21st" },
       { label: "Pace", value: "63.8 plays/g", rank: "8th" },
@@ -1784,42 +1785,42 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "Thirty-five targets in four appearances, and then nothing.",
             stats: ["18 rec, 271 yds", "35 targets", "4 games"],
             note:
-              "Nearly nine targets a game at 15.1 a catch is a genuine WR1 usage rate, and there are four games of it. Everything about the profile says he is the first read whenever he plays and nothing about it has been sustained across a season. The receiving corps around him — Slayton, Mooney, Austin — is a collection of complementary pieces, so the target share is his to take. Price the games missed, not the talent.",
+              "Nearly nine targets a game at 15.1 a catch is a genuine WR1 usage rate, and there are four games of it. Everything about the profile says he is the first read whenever he plays and nothing about it has been sustained across a season. The receiving corps around him — Mooney, Austin and two tight ends — is a collection of complementary pieces, so the target share is his to take. Price the games missed, not the talent.",
           },
           {
-            name: "Tyrone Tracy",
+            name: "Cam Skattebo",
             position: "RB",
-            tier: "Committee RB3",
+            tier: "RB2 with RB1 upside",
             thesis:
-              "The largest share of a three-way backfield, and only four touchdowns.",
-            stats: ["740 rush yds", "36 rec, 288 yds", "4 total TD"],
+              "Seven touchdowns in eight games, and nobody was added to take the carries back.",
+            stats: ["410 rush yds", "5 rush TD", "24 rec, 207 yds"],
             note:
-              "One hundred and seventy-six carries and 48 targets is the biggest workload in the room, and it produced four scores while the team ran twenty-two into the end zone — Skattebo and Singletary took ten of those between them. The receiving role is what keeps him startable in PPR. Until somebody wins this backfield outright he is a flex play with a frustrating touchdown share.",
+              "One hundred and one carries producing five rushing scores, plus 24 catches on 32 targets, is a complete role compressed into half a season — nine goal-line carries and 27 red-zone touches is the trust that decides fantasy weeks. New York signed no back this offseason, so the lead job on an offence that ran in twenty-two touchdowns is his to hold. The Week 8 ankle and fibula fracture is the risk, and 4.1 a carry says he is a grinder rather than a creator; the volume is what makes that fine.",
+          },
+          {
+            name: "Isaiah Likely",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "Three years and $40 million to stop being somebody's second tight end.",
+            stats: ["27 rec, 307 yds", "36 targets", "12 games"],
+            note:
+              "Twenty-seven catches on 36 targets is the whole résumé problem — four years behind Mark Andrews and never once sixty targets in a season. What the small samples say is that the role, not the player, was the cap: a 75% catch rate, 1.29 yards a route and six touchdowns on 58 targets the year before. The Giants paid centerpiece money into a room where the only other established pass-catcher is rehabbing an ACL, and a run-leaning scheme is the one thing holding the volume down.",
           },
         ],
       },
       {
-        label: "A three-way backfield and a rebuilt receiver room",
+        label: "Secondary options",
         players: [
-          {
-            name: "Cam Skattebo",
-            position: "RB",
-            tier: "Upside RB3",
-            thesis:
-              "Seven touchdowns in eight games, on the fewest carries of the three.",
-            stats: ["410 rush yds", "5 rush TD", "24 rec, 207 yds"],
-            note:
-              "One hundred and one carries producing five rushing scores, plus 24 catches on 32 targets, is the most efficient use of a small role in this backfield — he was the goal-line and passing-down option at once across eight appearances. That is the profile that becomes valuable fastest if Harbaugh consolidates the committee. The eight games are the reason he is affordable and the reason to be careful.",
-          },
           {
             name: "Theo Johnson",
             position: "TE",
-            tier: "Back-end TE1",
+            tier: "TE2 in a split room",
             thesis:
-              "Seventy-four targets and five touchdowns, more than any receiver on the roster.",
+              "Seventy-four targets and five touchdowns, and then the Giants went out and paid for a tight end.",
             stats: ["45 rec, 528 yds", "74 targets", "5 TD"],
             note:
-              "Forty-five catches for 528 yards is solid tight-end production and five scores led all New York pass-catchers, which says as much about the receiving corps as about him. Seventy-four targets on a run-first offence is a real share. Isaiah Likely's arrival is the complication, and Likely has never held a full-time role either — Johnson keeps the job on last season's usage.",
+              "Forty-five catches for 528 yards is solid tight-end production and five scores led all New York pass-catchers, which says as much about the receiving corps as about him; fourteen red-zone targets is the part worth keeping. Isaiah Likely's contract is the complication and it is a real one — nobody pays $40 million for a rotational piece. Johnson is the cheaper half of a room that now has two mouths and a 21st-ranked passing game to feed them from.",
           },
           {
             name: "Darnell Mooney",
@@ -1831,21 +1832,11 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "A 44% catch rate on 72 targets is poor by any measure, and 13.8 yards a reception says the role was downfield rather than dysfunctional. He arrives into a room where Nabers takes the coverage and nobody else has claimed the second job. On a team that threw twenty-one touchdowns all season, his ceiling is a WR4 who occasionally hits — draft him last or not at all.",
           },
-          {
-            name: "Darius Slayton",
-            position: "WR",
-            tier: "Deep-league only",
-            thesis:
-              "14.5 a catch, sixty-three targets, one touchdown.",
-            stats: ["37 rec, 538 yds", "63 targets", "1 TD"],
-            note:
-              "The per-catch number has been consistent for years and so has everything else about him: a downfield complement who produces yardage in bursts and almost never scores. One touchdown across fourteen games on a low-volume passing offence is the ceiling, not bad luck. He matters only in leagues deep enough to start a fifth receiver.",
-          },
         ],
       },
     ],
     bottomLine:
-      "Jaxson Dart's legs make him a genuine QB1 on an offence that throws for 217 yards a game, and that is the single most useful fact on this page. The backfield is a three-way split with the touchdowns going to the man with the fewest carries, and Malik Nabers is a four-game sample you are being asked to pay a full season for.",
+      "Jaxson Dart's legs make him a genuine QB1 on an offence that throws for 217 yards a game, and that is the single most useful fact on this page. Cam Skattebo has an uncontested backfield on a team that ran in twenty-two touchdowns, and Malik Nabers is a four-game sample you are being asked to pay a full season for.",
   },
   phi: {
     season: 2026,
@@ -1895,6 +1886,16 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "A thousand yards on 113 targets across all seventeen games is a strong season and it was produced with A.J. Brown drawing the coverage. Brown's departure hands him the entire first-read share of a passing game that, admittedly, throws for only 204.7 a game. Four touchdowns is the number to expect to improve — Philadelphia threw twenty-six and he caught a small fraction of them.",
           },
           {
+            name: "Makai Lemon",
+            position: "WR",
+            tier: "Rookie WR2",
+            thesis:
+              "Philadelphia traded up in the first round for him, into a room with one established receiver.",
+            stats: ["1st-round rookie", "Biletnikoff winner", "3 drops in two years"],
+            note:
+              "Three drops on roughly 175 college targets across his final two seasons, from a 5-foot-11 USC receiver who can win from the slot or outside, is the most polished route profile in this draft class — and the Eagles moved up to take him. A.J. Brown's departure leaves one genuine target share unclaimed and Marquise Brown is the only other candidate for it. The cautions are a hamstring that cost him practice reps and an offence that runs 59.4 plays a game; the ceiling is still the highest in the room behind Smith.",
+          },
+          {
             name: "Dallas Goedert",
             position: "TE",
             tier: "Top-three TE",
@@ -1917,7 +1918,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "Arrives from Kansas City into the target share A.J. Brown left behind.",
             stats: ["49 rec, 587 yds", "74 targets", "5 TD"],
             note:
-              "Forty-nine catches and five scores on 74 targets is efficient complementary work, and the opportunity in front of him is the largest of his recent career — the Eagles have one established receiver and a vacancy opposite him. The caution is the offence itself: 59.4 plays a game and 204.7 passing yards is not an environment that supports two productive receivers. He is the WR2 on a team that may only feed one.",
+              "Forty-nine catches and five scores on 74 targets is efficient complementary work, and the opportunity in front of him is the largest of his recent career — the Eagles have one established receiver and a vacancy opposite him. The caution is the offence itself: 59.4 plays a game and 204.7 passing yards is not an environment that supports two productive receivers, and a first-round rookie wants the same job. He is competing with Makai Lemon to be the WR2 on a team that may only feed one.",
           },
           {
             name: "Tank Bigsby",
@@ -1983,6 +1984,16 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "A thousand yards across all seventeen games in New England, catching 83% of what came his way, is a remarkably efficient season and an outstanding PPR floor. The 11.9 yards a reception says this is now an underneath, chain-moving role rather than a downfield one. He lands in a passing game that ranked 24th and threw nineteen touchdowns, so expect the receptions to repeat and the yardage not to grow.",
           },
           {
+            name: "Terry McLaurin",
+            position: "WR",
+            tier: "High-variance WR2",
+            thesis:
+              "15.3 yards a catch in ten games — the only downfield role this offence has.",
+            stats: ["38 rec, 582 yds", "60 targets", "3 TD"],
+            note:
+              "Fifty-eight yards a game at 15.3 a reception is the role he has always played, and a 21% air-yards share on an offence that ranked 24th passing is a bigger claim on the deep throws than the raw totals suggest. The complication is Diggs, who caught 85 passes elsewhere last season and now shares this room — but Diggs works at 11.9 a catch, so the two jobs overlap less than the names do. Seven missed games are the reason to price him below his name rather than the reason to pass.",
+          },
+          {
             name: "Jacory Croskey-Merritt",
             position: "RB",
             tier: "RB2",
@@ -1997,16 +2008,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       {
         label: "Secondary options",
         players: [
-          {
-            name: "Terry McLaurin",
-            position: "WR",
-            tier: "Boom-or-bust WR3",
-            thesis:
-              "15.3 yards a catch in ten games, and a target competition waiting for him.",
-            stats: ["38 rec, 582 yds", "60 targets", "3 TD"],
-            note:
-              "Fifty-eight yards a game at 15.3 a reception is the downfield role he has always played, and six targets a game is a smaller share than he is used to commanding. The complication is Diggs, who caught 85 passes elsewhere last season and now signs on to share this room. Seven missed games and a genuine target competition make him a WR3 rather than the WR2 his name suggests.",
-          },
           {
             name: "Rachaad White",
             position: "RB",
@@ -2090,21 +2091,21 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "Ninety targets in twelve appearances is a seven-and-a-half-a-week rate that would have led this team over a full season, and 15.0 a reception is the downfield role. Moore's departure removes the one receiver ahead of him in the pecking order. Twelve games is the caution and the reason the price has not fully adjusted to him being the WR1 here.",
           },
+          {
+            name: "Luther Burden",
+            position: "WR",
+            tier: "Ascending WR2",
+            thesis:
+              "Caught 78% of his targets as a rookie on 39.7% of the snaps.",
+            stats: ["47 rec, 652 yds", "60 targets", "2 TD"],
+            note:
+              "Forty-seven catches on sixty targets at 13.9 a reception is outstanding efficiency in a part-time role, and 2.9 yards a route run is a number full-time starters do not often beat. DJ Moore's departure is what turns that into volume — the snap share is the only thing that was ever capping him. Two touchdowns looks wrong for a receiver producing this well on an offence that scored 25.9 a game, and it is the cheapest part of the price.",
+          },
         ],
       },
       {
         label: "Secondary options",
         players: [
-          {
-            name: "Luther Burden",
-            position: "WR",
-            tier: "Upside WR3",
-            thesis:
-              "Caught 78% of his targets as a rookie, and only sixty came his way.",
-            stats: ["47 rec, 652 yds", "60 targets", "2 TD"],
-            note:
-              "Forty-seven catches on sixty targets at 13.9 a reception is outstanding efficiency in a limited role, and the role is about to grow with DJ Moore gone. Two touchdowns is the number that looks wrong for a receiver producing this well in an offence that scored 25.9 a game. He is the cheapest way to buy into the second-fastest offence in football.",
-          },
           {
             name: "Kyle Monangai",
             position: "RB",
@@ -2188,11 +2189,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "A 1,100-yard season on 102 targets means he averaged nearly eleven yards per target, which is a top-of-the-league figure. Sixty-five receptions is a thinner PPR base than his yardage suggests, so the weekly line swings hard on whether a deep ball connected. Seven touchdowns and seventeen games of availability make him a comfortable WR2 whose ceiling on any given Sunday is higher than St. Brown's.",
           },
-        ],
-      },
-      {
-        label: "Secondary options",
-        players: [
           {
             name: "Sam LaPorta",
             position: "TE",
@@ -2203,6 +2199,11 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             note:
               "Forty catches on 49 targets is a remarkable rate and 54 yards a game is top-eight production at the position over a full year. He did not have a full year. On an offence with 172 targets going to St. Brown and 94 to Gibbs, his ceiling is capped anyway — three touchdowns in nine games is the honest scoring rate. A TE1 if healthy, priced as though that is not in doubt.",
           },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
           {
             name: "Isaac TeSlaa",
             position: "WR",
@@ -2227,7 +2228,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       },
     ],
     bottomLine:
-      "This is the deepest fantasy roster in the league — Gibbs, St. Brown, Goff and Jameson Williams are all startable every week on an offence that scored 28.3 a game. There is no bargain here and there does not need to be; take whichever of the four falls to you.",
+      "This is the deepest fantasy roster in the league — Gibbs, St. Brown, Goff and Jameson Williams are all startable every week on an offence that scored 28.3 a game, and a healthy Sam LaPorta makes five. There is no bargain here and there does not need to be; take whichever of them falls to you.",
   },
   gb: {
     season: 2026,
@@ -2326,6 +2327,897 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     ],
     bottomLine:
       "An efficient offence that does not run enough plays to make anyone a weekly must-start except Josh Jacobs, and his value rests on thirteen touchdowns rather than on 4.0 yards a carry. Tucker Kraft is the buy here — a top-five tight-end rate that the market will discount because of eight games.",
+  },
+  min: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Minnesota converted 31.8% of its third downs and gave the ball away thirty times, both the worst marks in the league, and ran the 30th-fastest offence as a consequence. Justin Jefferson commanded a 30.1% target share and caught two touchdowns. Kyler Murray arrives from Arizona as the favourite to start over J.J. McCarthy, whose rookie year produced eleven touchdowns against twelve interceptions.",
+    facts: [
+      { label: "Head coach", value: "Kevin O'Connell (fifth season)" },
+      { label: "Arrivals", value: "Kyler Murray, Jauan Jennings" },
+      { label: "Third down", value: "31.8%", rank: "32nd" },
+      { label: "Giveaways", value: "30", rank: "32nd" },
+      { label: "Passing", value: "188.7 yds/g", rank: "30th" },
+      { label: "Pace", value: "56.1 plays/g", rank: "30th" },
+      { label: "Sacks allowed", value: "60", rank: "29th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Justin Jefferson",
+            position: "WR",
+            tier: "WR1 on usage alone",
+            thesis:
+              "A 30.1% target share, eighteen red-zone looks and two touchdowns.",
+            stats: ["84 rec, 1,048 yds", "141 targets", "2 TD"],
+            note:
+              "One hundred and forty-one targets on a 94.2% snap share across all seventeen games is the same role that produced 1,533 yards and ten scores the year before — nothing about the usage moved. What moved was the quarterback: a rookie season at minus-0.151 EPA a play dragged his catch rate to 59.6% and his yards a catch to 12.5. Two touchdowns on eighteen red-zone and ten end-zone targets is not a skill, it is an accident, and it is the reason he is affordable.",
+          },
+          {
+            name: "Kyler Murray",
+            position: "QB",
+            tier: "QB1 if he holds the job",
+            thesis:
+              "Five games before a foot sprain, and the best receiving corps of his career waiting.",
+            stats: ["962 pass yds in 5 games", "6 TD, 3 INT", "173 rush yds"],
+            note:
+              "Five starts is not a season, so read the 2024 line instead: QB11 on 297.2 points, twenty-one passing scores and a positive completion rate over expected. The legs are the constant and they were still there last year at 173 yards in five appearances. Minnesota gives him Jefferson, Addison, Jennings and Hockenson, which is more than Arizona ever did — the risk is that the job is a competition rather than a coronation.",
+          },
+          {
+            name: "Jordan Mason",
+            position: "RB",
+            tier: "RB3 in a timeshare",
+            thesis:
+              "Led the team in rushing on a 42.8% snap share.",
+            stats: ["758 rush yds", "4.8 yds/carry", "6 TD"],
+            note:
+              "One hundred and fifty-nine carries at 4.77 with six scores, on fewer than half the snaps, is a genuinely efficient early-down role, and 2.42 yards after contact with thirteen broken tackles says he earned it. Sixteen targets all season means Aaron Jones keeps the passing downs and Mason keeps the goal line — thirty red-zone opportunities and seven goal-line carries. He is a touchdown-dependent flex who becomes an RB2 the moment Jones misses time.",
+          },
+          {
+            name: "Jordan Addison",
+            position: "WR",
+            tier: "Bounce-back WR3",
+            thesis:
+              "Fourteen games, a 28.8% air-yards share and a 53.2% catch rate.",
+            stats: ["42 rec, 610 yds", "79 targets", "3 TD"],
+            note:
+              "A three-game suspension and the same broken quarterback play that cost Jefferson his touchdowns left him at 93.1 points after 149.5 the year before. The downfield role never changed — 13.7 air yards a target and an eighty-one-yard long — and four interceptions thrown his way are not his to own. His 2024 baseline of nine scores and a 19.1% target share is the player; this is the discount.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Jauan Jennings",
+            position: "WR",
+            tier: "Deep-league flex",
+            thesis:
+              "Nine touchdowns in San Francisco, arriving as the third receiver here.",
+            stats: ["55 rec, 643 yds", "90 targets", "9 TD"],
+            note:
+              "Nineteen red-zone and eight end-zone targets are what produced nine scores on a 16.4% share, and that red-zone profile is the part of his game most likely to travel. The problem is the depth chart: Jefferson and Addison are ahead of him and Hockenson works the same short middle. He is a bet on an offence that threw eighteen touchdowns finding a few more of them.",
+          },
+          {
+            name: "T.J. Hockenson",
+            position: "TE",
+            tier: "Low-end TE2",
+            thesis:
+              "Sixty-six targets at 8.6 yards a catch — volume with nothing behind it.",
+            stats: ["51 rec, 438 yds", "66 targets", "3 TD"],
+            note:
+              "A 77.9% snap share and a 14.1% target share is a real role and 1.04 yards a route run is among the weakest of his career, because the ball is arriving 5.0 yards downfield. Eleven red-zone targets keep a modest scoring floor. This is a floor-only tight end now, and the 2023 version that went for 960 yards needs a quarterback change to reappear.",
+          },
+          {
+            name: "Aaron Jones",
+            position: "RB",
+            tier: "PPR flex",
+            thesis:
+              "Forty-one targets and 4.15 a carry at the end of the road.",
+            stats: ["548 rush yds", "28 rec, 199 yds", "3 total TD"],
+            note:
+              "Twelve games at minus-0.057 EPA a play, with a broken tackle once every 26.4 carries, is a back whose ground game has gone. The receiving work is the entire case: 198 routes on a 55.1% snap share and 227 yards after the catch. In PPR he is a flex when Minnesota trails; in standard scoring Mason has the job that scores.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This was the worst third-down offence in football with the most giveaways, and every fantasy asset on the roster is priced as though that is permanent. Justin Jefferson caught two touchdowns on a 30.1% target share — no receiver in the league has a wider gap between his role and his scoring, and Kyler Murray is the reason to think it closes.",
+  },
+  atl: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Atlanta ran the ball well — 125.8 yards a game, 8th — protected the quarterback better than almost anyone and still scored 20.8 points a game, because it converted a third of its third downs. Kevin Stefanski arrives from Cleveland, and Tua Tagovailoa arrives on a one-year deal into an open competition with Michael Penix Jr. Bijan Robinson finished as the RB1 in fantasy regardless.",
+    facts: [
+      { label: "Head coach", value: "Kevin Stefanski (first season)" },
+      { label: "Arrivals", value: "Tua Tagovailoa, Jahan Dotson, Brian Robinson" },
+      { label: "Departures", value: "Kirk Cousins, Darnell Mooney" },
+      { label: "Rushing", value: "125.8 yds/g", rank: "8th" },
+      { label: "Scoring", value: "20.8 pts/g", rank: "24th" },
+      { label: "Sacks allowed", value: "26", rank: "4th" },
+      { label: "Third down", value: "33.3%", rank: "30th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Bijan Robinson",
+            position: "RB",
+            tier: "Top-two overall",
+            thesis:
+              "1,478 rushing yards at 5.15 a carry and seventy-nine catches — the highest-scoring back in fantasy.",
+            stats: ["1,478 rush yds", "79 rec, 820 yds", "11 total TD"],
+            note:
+              "Two hundred and eighty-seven carries and 103 targets across all seventeen games, on a 78.2% snap share, is as close to a bell cow as the modern league produces, and the receiving half is what makes the floor immovable — a 19.8% target share means game script cannot bench him. Seven rushing touchdowns is light for that volume and ten goal-line carries say the work is there for more. He has climbed from RB6 to RB4 to the top of the board in three years.",
+          },
+          {
+            name: "Drake London",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "A 21.6% target share in twelve games, and nobody behind him to take it.",
+            stats: ["68 rec, 919 yds", "112 targets", "7 TD"],
+            note:
+              "Nine and a half targets a game on a 90.7% snap share is first-read usage, and his 2024 season at a 29.3% share and nine scores is the ceiling when he plays a full year. Fifteen red-zone targets in a partial season is the part that survives any quarterback change, which matters on a roster where the quarterback is genuinely unsettled. Darnell Mooney's departure leaves a rookie and Kyle Pitts as the competition for targets.",
+          },
+          {
+            name: "Kyle Pitts",
+            position: "TE",
+            tier: "Top-three TE",
+            thesis:
+              "A 22.7% target share and eighty-eight catches — the breakout finally arrived.",
+            stats: ["88 rec, 928 yds", "118 targets", "5 TD"],
+            note:
+              "One hundred and eighteen targets across all seventeen games, on a route run on 95.8% of dropbacks, is a receiver's usage from a tight end, and it nearly doubled his rate from the year before. Ten and a half yards a catch says the role is possession rather than vertical, so the yardage comes from volume. Five touchdowns on an offence that threw nineteen is the number with room to grow, and there is nobody in this receiving corps to take the targets back.",
+          },
+        ],
+      },
+      {
+        label: "A quarterback competition, and what is behind it",
+        players: [
+          {
+            name: "Michael Penix",
+            position: "QB",
+            tier: "Streamer until the job is settled",
+            thesis:
+              "Nine starts, a 60.1% completion rate and an arm that is not the problem.",
+            stats: ["1,982 pass yds", "9 TD, 3 INT", "9 games"],
+            note:
+              "Nine touchdowns against three interceptions is careful rather than productive, and a minus-3.6 completion rate over expected with a 24% bad-throw rate is why. Twenty-six throws of 20-plus yards in a truncated season is the reason to keep watching. He is the incumbent, he is rehabbing a knee, and Tagovailoa was signed to make it a competition — no fantasy asset should be drafted on this situation until it resolves.",
+          },
+          {
+            name: "Tua Tagovailoa",
+            position: "QB",
+            tier: "Bench until he wins it",
+            thesis:
+              "QB1 in 2023, QB22 last year, and no guarantee of the job now.",
+            stats: ["2,660 pass yds", "20 TD, 15 INT", "14 games"],
+            note:
+              "Twenty touchdowns against fifteen interceptions on a flat 0.004 EPA a play is a collapse from the 0.195 he posted the year before, and forty-three rushing yards means there is no floor underneath a bad passing week. The supporting cast is better than Miami's was at the end — London and Pitts are a genuine top two. A one-year deal into an open competition is not a fantasy asset; it is a situation to monitor.",
+          },
+          {
+            name: "Zachariah Branch",
+            position: "WR",
+            tier: "Rookie dart",
+            thesis:
+              "The runway to the second receiver job, and the fourth mouth to feed.",
+            stats: ["Rookie", "No NFL snaps", "WR2 by depth"],
+            note:
+              "Mooney's departure leaves the job opposite London genuinely open and Branch has the burst to take it. The arithmetic is the problem: Bijan Robinson's 103 targets and Kyle Pitts's 118 come first on an offence that threw nineteen touchdowns all year. He is a deep-league stash whose value is entirely in what the role becomes, not what it is.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Bijan Robinson is the first pick in most drafts and nothing on this page complicates that — eleven touchdowns and seventy-nine catches do not depend on who plays quarterback. Everything else here does. Drake London and Kyle Pitts both have first-read usage on an offence that scored 20.8 a game, and both get materially better if the quarterback competition produces an answer.",
+  },
+  car: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Carolina scored 18.3 points a game, 27th, and ran nine touchdowns in all year — only five teams ran in fewer. Bryce Young set career highs and his efficiency did not move: a second straight season at minus-0.03 EPA a play. Rico Dowdle's departure leaves the backfield to Chuba Hubbard, who averaged 3.81 a carry and scored once on the ground.",
+    facts: [
+      { label: "Head coach", value: "Dave Canales (third season)" },
+      { label: "Arrivals", value: "Kenny Pickett, AJ Dillon, John Metchie" },
+      { label: "Departures", value: "Rico Dowdle" },
+      { label: "Scoring", value: "18.3 pts/g", rank: "27th" },
+      { label: "Passing", value: "194.4 yds/g", rank: "26th" },
+      { label: "Rushing TDs", value: "9", rank: "27th" },
+      { label: "Pace", value: "59.5 plays/g", rank: "22nd" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Tetairoa McMillan",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "A 40.9% air-yards share as a rookie — the entire passing offence runs through him.",
+            stats: ["70 rec, 1,014 yds", "122 targets", "7 TD"],
+            note:
+              "A thousand yards and seven scores on a 25.4% target share across all seventeen games is a complete rookie season, and the air-yards share is the number that matters: nothing else in this offence is going downfield. Fifteen red-zone targets confirm an every-down role rather than a deep-shot novelty. The 57.4% catch rate is the quarterback's, not his, and it is the one thing that a better year from Young would fix on its own.",
+          },
+          {
+            name: "Chuba Hubbard",
+            position: "RB",
+            tier: "Volume-dependent RB3",
+            thesis:
+              "3.81 a carry and one rushing touchdown — and Rico Dowdle's carries just left the building.",
+            stats: ["511 rush yds", "30 rec, 223 yds", "4 total TD"],
+            note:
+              "A snap share that fell from 77.3% to 45.8%, one broken tackle on 134 carries and zero breakaway runs is as bad as a lead back's season looks. The case is entirely circumstantial: Dowdle is gone, Carolina signed AJ Dillon and nobody else, and the 2024 version of Hubbard was a genuine bell cow with double-digit scores. Draft the vacancy, not the tape, and do it late.",
+          },
+          {
+            name: "Jalen Coker",
+            position: "WR",
+            tier: "Breakout WR4",
+            thesis:
+              "Zero drops and 76.7% of his targets caught, on a 9% share.",
+            stats: ["33 rec, 394 yds", "43 targets", "3 TD"],
+            note:
+              "A 0.506 EPA a play and a 62.8% success rate across eleven games is the best per-snap receiving work on the roster, and it came on a target share too small to start. He is the clear second receiver behind McMillan, with a third-round rookie pushing him for the job. The efficiency is not the question — 48.9% of the routes is, and 1.85 yards a route in 2024 is what the role pays once the snaps arrive.",
+          },
+          {
+            name: "Jonathon Brooks",
+            position: "RB",
+            tier: "RB4 with lead-back upside",
+            thesis:
+              "Back in eleven-on-eleven work, behind a lead back who averaged 3.81 a carry.",
+            stats: ["9 NFL carries", "Missed all of 2025", "RB2 by depth"],
+            note:
+              "A second-round pick who has played three NFL games: nine carries for twenty-two yards on an 11% snap share, then a second ACL tear that took the rest of that season and all of the next. There is nothing on that tape worth reading, so the case is the depth chart — Rico Dowdle left, Carolina signed AJ Dillon and nobody else, and Hubbard's 3.81 a carry with one rushing touchdown is not a job anyone has locked down. Two knee reconstructions in two years is the risk, and it is the only reason the price is what it is.",
+          },
+          {
+            name: "Bryce Young",
+            position: "QB",
+            tier: "Superflex only",
+            thesis:
+              "Career highs in everything, and a second straight year underwater by EPA.",
+            stats: ["3,011 pass yds", "23 TD, 11 INT", "216 rush yds"],
+            note:
+              "Twenty-three touchdowns and a 63.6% completion rate are personal bests and they arrived with a 7.7% deep-attempt rate — this is a short, careful offence that does not generate the volume a fantasy quarterback needs. The growth is real in the margins: a positive completion rate over expected and a bad-throw rate down to 16.4%. Two hundred and sixteen rushing yards is the only thing keeping him streamable in one-quarterback leagues, and barely.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Xavier Legette",
+            position: "WR",
+            tier: "Off the board",
+            thesis:
+              "Twelve red-zone targets, three touchdowns, and 0.97 yards a route run.",
+            stats: ["35 rec, 363 yds", "64 targets", "3 TD"],
+            note:
+              "A 54.7% catch rate and a 39.1% success rate across fifteen games is the profile of a receiver going backwards, and every rate stat fell from his rookie year. The talent that produced a 16.2% target share in 2024 has not disappeared, but the trend and the offence both cut against him. There is no draft-day case here in a normal league.",
+          },
+          {
+            name: "Chris Brazzell",
+            position: "WR",
+            tier: "Rookie stash",
+            thesis:
+              "A third-round pick who led the SEC in receiving touchdowns.",
+            stats: ["3rd-round rookie", "9 college TD", "6-foot-4"],
+            note:
+              "Size, downfield speed and red-zone production is the archetype that can matter on thin volume, and this offence has thin volume to give. He is competing with Jalen Coker for the job opposite McMillan rather than walking into it. Worth a roster spot in a deep league and nothing more until the snaps arrive.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Tetairoa McMillan is the only player here who would start on a good fantasy roster, and a 40.9% air-yards share as a rookie is the kind of number that usually precedes a top-ten season. Everything else is contingent: Chuba Hubbard on a vacancy rather than on form, Jonathon Brooks on a knee, and Bryce Young on an efficiency jump that has not come in two years of trying.",
+  },
+  no: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "New Orleans threw for 236.9 yards a game, 10th, and ran for 94.3, 28th — a one-dimensional offence that still scored only eighteen points a game. Travis Etienne arrives from Jacksonville off 1,107 rushing yards and thirteen touchdowns, into a backfield where Alvin Kamara averaged 3.6 a carry. Chris Olave commanded a 38.5% air-yards share, and the second-round rookie behind him was, to several evaluators, the best receiver in his class.",
+    facts: [
+      { label: "Head coach", value: "Kellen Moore (second season)" },
+      { label: "Arrivals", value: "Travis Etienne, Jordyn Tyson, Noah Fant" },
+      { label: "Passing", value: "236.9 yds/g", rank: "10th" },
+      { label: "Rushing", value: "94.3 yds/g", rank: "28th" },
+      { label: "Scoring", value: "18.0 pts/g", rank: "28th" },
+      { label: "Pace", value: "63.2 plays/g", rank: "11th" },
+      { label: "Sacks allowed", value: "49", rank: "25th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Chris Olave",
+            position: "WR",
+            tier: "WR1",
+            thesis:
+              "A hundred catches on a 27.6% target share, and a 38.5% share of the air yards.",
+            stats: ["100 rec, 1,163 yds", "156 targets", "9 TD"],
+            note:
+              "One hundred and fifty-six targets across sixteen games on an 84.3% snap share is featured usage in every sense, and 11.8 air yards a target means the volume comes with week-winning upside rather than as checkdowns. Nine touchdowns on an offence that threw nineteen is most of the team's scoring. The only real question was ever availability, and last season answered it.",
+          },
+          {
+            name: "Travis Etienne",
+            position: "RB",
+            tier: "RB2 into an empty backfield",
+            thesis:
+              "Thirteen touchdowns and 1,399 yards from scrimmage, arriving where the rushing offence ranked 28th.",
+            stats: ["1,107 rush yds", "36 rec, 292 yds", "13 total TD"],
+            note:
+              "Two hundred and sixty carries at 4.26 with sixty-four red-zone opportunities and twelve goal-line carries is a complete workload, and it came with zero fumbles across all seventeen games. Six receiving touchdowns is unusual and unlikely to repeat; the thirty-six catches behind them are the durable part. New Orleans ran for 94.3 a game with Kamara at 3.6 a carry — the job in front of him is as open as any in the league.",
+          },
+          {
+            name: "Jordyn Tyson",
+            position: "WR",
+            tier: "Rookie WR3 with WR2 upside",
+            thesis:
+              "Regarded by several evaluators as the best receiver in the class, and the clear second read from day one.",
+            stats: ["Rookie", "No NFL snaps", "WR2 by depth"],
+            note:
+              "The landing spot is the case: New Orleans finished fifth in neutral-situation dropback rate from Week 12 on, and behind Olave there is nothing on this depth chart to hold him off. An ADP inside the top seventy says the market has already priced the opportunity, which is the risk. A rookie receiver on the tenth-ranked passing offence with a defined role is a fair bet at that cost, not a bargain.",
+          },
+          {
+            name: "Juwan Johnson",
+            position: "TE",
+            tier: "TE1 volume, TE2 scoring",
+            thesis:
+              "One hundred and two targets and three touchdowns.",
+            stats: ["77 rec, 889 yds", "102 targets", "3 TD"],
+            note:
+              "An 18.1% target share and 1.7 yards a route run across 522 routes is third-most-targeted-tight-end usage, and seventy-seven catches for 889 yards is a real PPR floor. Eight red-zone looks is the whole problem — this offence does not throw to him near the goal line, and three scores on that volume is the honest rate rather than bad luck. Noah Fant's arrival threatens the snaps, not the role.",
+          },
+          {
+            name: "Tyler Shough",
+            position: "QB",
+            tier: "QB2 with a rushing floor",
+            thesis:
+              "Three rushing touchdowns and a conservative arm in eleven rookie starts.",
+            stats: ["2,384 pass yds", "10 TD, 6 INT", "186 rush yds, 3 TD"],
+            note:
+              "Ten touchdowns in eleven games at minus-0.018 EPA a play is a league-average rookie season, and a 10.9% deep-attempt rate says the passing game was kept deliberately short. The legs are the fantasy hook: forty-five carries, three scores and twenty-seven red-zone attempts are a weekly floor a pocket passer does not have, and a positive completion rate over expected says the accuracy is real. Thirty-one sacks behind this line is the cap on all of it, and the reason this is a second year to bet on rather than a settled one.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Alvin Kamara",
+            position: "RB",
+            tier: "Dart throw",
+            thesis:
+              "3.6 a carry, one rushing touchdown and a target share that halved.",
+            stats: ["471 rush yds", "33 rec, 186 yds", "1 TD"],
+            note:
+              "Minus-0.238 EPA a play with 1.44 yards after contact and no run longer than twenty yards, across eleven games at thirty, is decline rather than variance. The receiving safety net that defined him went with it — a 6.9% target share after 17.2% the year before. Etienne's arrival makes him the second back on an offence that could not run before either.",
+          },
+          {
+            name: "Devaughn Vele",
+            position: "WR",
+            tier: "Deep bench",
+            thesis:
+              "A 0.507 EPA a play in nine games, on a 50.2% snap share.",
+            stats: ["25 rec, 293 yds", "39 targets", "2 TD"],
+            note:
+              "Six-foot-five with eleven air yards a target and a 61.5% success rate is a genuine vertical role executed well, and his Denver tape was sharper still. The snaps never came, and now Jordyn Tyson is in front of him as well as Olave. He matters in the weeks somebody ahead of him is out.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "This is a pass-first offence that scored eighteen points a game, which means the targets are real and the touchdowns are scarce — price everyone here on volume rather than on scoring. Travis Etienne walks into the league's emptiest backfield and is the surest thing on the page after Chris Olave.",
+  },
+  tb: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Tampa Bay finished 6th in turnover margin and 10th on third down, and scored 22.4 points a game doing it. Mike Evans is in San Francisco, which hands Emeka Egbuka a target share he was already close to taking — 127 looks as a rookie. Baker Mayfield threw for twenty-six touchdowns in what was, by his own standards, a bad year.",
+    facts: [
+      { label: "Head coach", value: "Todd Bowles (fifth season)" },
+      { label: "Arrivals", value: "Kenny Gainwell" },
+      { label: "Departures", value: "Mike Evans, Rachaad White" },
+      { label: "Scoring", value: "22.4 pts/g", rank: "18th" },
+      { label: "Turnover margin", value: "+7", rank: "6th" },
+      { label: "Third down", value: "41.2%", rank: "10th" },
+      { label: "Passing TDs", value: "26" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Emeka Egbuka",
+            position: "WR",
+            tier: "WR2 with WR1 volume incoming",
+            thesis:
+              "A 23.5% target share as a rookie, and the man ahead of him has left.",
+            stats: ["63 rec, 938 yds", "127 targets", "6 TD"],
+            note:
+              "One hundred and twenty-seven targets and a 34.9% air-yards share across all seventeen games is alpha usage arriving a year early, and fourteen red-zone looks say the trust was already there. The 49.6% catch rate and nine drops are the fixable part and the reason the yardage is not higher. With Evans gone there is no longer anybody on this roster who competes for the first read.",
+          },
+          {
+            name: "Baker Mayfield",
+            position: "QB",
+            tier: "Back-end QB1",
+            thesis:
+              "Twenty-six touchdowns and 382 rushing yards in a season everyone calls a disappointment.",
+            stats: ["3,693 pass yds", "26 TD, 11 INT", "382 rush yds"],
+            note:
+              "Finishing QB10 on 271.9 points after a QB3 season is a real decline — EPA a play fell from 0.171 to 0.053 and his completion rate over expected went negative — and it still left him a startable fantasy quarterback. The 543 attempts and the rushing yards are the floor. The receiving corps got worse and younger this offseason, which is the argument against paying for a bounce-back.",
+          },
+          {
+            name: "Bucky Irving",
+            position: "RB",
+            tier: "Bounce-back RB2",
+            thesis:
+              "3.4 a carry on a shoulder that needed surgery, after 5.42 as a rookie.",
+            stats: ["588 rush yds", "30 rec, 277 yds", "4 total TD"],
+            note:
+              "One hundred and seventy-three carries across ten games with rushing EPA at minus-0.129, after a rookie year at plus-0.141, is what a shoulder injury looks like in the numbers — the breakaway rate halved and the yards after contact fell almost a full yard. One rushing touchdown on twenty-two red-zone chances is the other half of the discount. The rookie tape is the real player and this is the cheapest he will ever be.",
+          },
+          {
+            name: "Chris Godwin",
+            position: "WR",
+            tier: "WR3 if the body holds",
+            thesis:
+              "Two injury-shortened seasons in a row, and Mike Evans's targets now unclaimed.",
+            stats: ["33 rec, 360 yds", "51 targets", "2 TD"],
+            note:
+              "Nine games on a 9.4% target share with 1.49 yards a route run, after 2.48 the year before, is a decline that age makes hard to dismiss, and seven air yards a target says the role had shrunk to the underneath work. What is left is the opening: Evans is gone, nobody behind Egbuka is competing for the second job, and 130 targets for 1,024 yards in 2023 is what this role paid the last time Godwin was healthy enough to hold it. Two seasons of evidence are the reason he is affordable rather than the reason to pass.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Kenny Gainwell",
+            position: "RB",
+            tier: "PPR flex",
+            thesis:
+              "Eighty-five targets in Pittsburgh, signed to do the same job here.",
+            stats: ["537 rush yds", "73 rec, 486 yds", "8 total TD"],
+            note:
+              "Seventy-three catches on eighty-five targets, a 16.3% target share and 344 routes is a defined passing-down role rather than a handcuff's workload, and 4.71 a carry says the rushing work was efficient too. He signed for two years and $14 million to back up a lead back coming off shoulder surgery. In PPR that is a startable flex most weeks and an RB2 the moment Irving sits.",
+          },
+          {
+            name: "Sean Tucker",
+            position: "RB",
+            tier: "Touchdown vulture",
+            thesis:
+              "Eight scores on eighty-six carries, at a 15.8% snap share.",
+            stats: ["320 rush yds", "7 rush TD", "11 goal-line carries"],
+            note:
+              "Eleven goal-line carries and twenty-four red-zone chances is the whole role and it produced eight touchdowns on 3.72 a carry. That is scripted scoring, not a workload, and 0.97 yards after contact says he did nothing to earn more of it. He is a nuisance to Irving's owners and a lottery ticket to everyone else.",
+          },
+          {
+            name: "Cade Otton",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Eighty-one targets, one touchdown.",
+            stats: ["59 rec, 572 yds", "81 targets", "1 TD"],
+            note:
+              "A 93.5% snap share and a route on 89.2% of dropbacks is as locked-in as tight-end usage gets, and fifty-nine catches is a usable PPR floor. One score on six red-zone looks is the ceiling problem and it halved his fantasy output year over year. Evans's vacated red-zone work is the one thing that would change the picture.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Mike Evans's departure is the fact that shapes this whole page: 127 targets already went to Emeka Egbuka as a rookie, and there is nobody left to argue for the rest. Bucky Irving at 3.4 a carry on a shoulder that has since been repaired is the best price on any lead back in the league.",
+  },
+  ari: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Arizona threw for 254.5 yards a game, 5th, ran for 93.1, 31st, and allowed fifty-nine sacks. Kyler Murray is in Minnesota and Jacoby Brissett, who finished QB14 filling in for him, has the job again on a short runway. The Cardinals spent the third overall pick on Jeremiyah Love, which is not a pick you make to run a committee.",
+    facts: [
+      { label: "Head coach", value: "Mike LaFleur (first season)" },
+      { label: "Arrivals", value: "Jeremiyah Love, Tyler Allgeier, Kendrick Bourne" },
+      { label: "Departures", value: "Kyler Murray" },
+      { label: "Passing", value: "254.5 yds/g", rank: "5th" },
+      { label: "Rushing", value: "93.1 yds/g", rank: "31st" },
+      { label: "Passing TDs", value: "29", rank: "7th" },
+      { label: "Sacks allowed", value: "59", rank: "28th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Trey McBride",
+            position: "TE",
+            tier: "The TE1",
+            thesis:
+              "One hundred and sixty-nine targets and thirty-three red-zone looks — a number one receiver who lines up inline.",
+            stats: ["126 rec, 1,239 yds", "169 targets", "11 TD"],
+            note:
+              "A 27.4% target share and a route on 94.1% of dropbacks across all seventeen games is the highest usage at the position by a distance, and two drops on 128 catchable balls is why it keeps coming. Eleven touchdowns after two the year before is the obvious regression flag, and thirty-three red-zone targets say it is not entirely luck. Halve the scoring and he is still the first tight end off the board.",
+          },
+          {
+            name: "Jeremiyah Love",
+            position: "RB",
+            tier: "Rookie RB2 with RB1 upside",
+            thesis:
+              "The third pick in the draft, into a backfield with no incumbent.",
+            stats: ["3rd overall pick", "2,497 college rush yds", "35 college TD"],
+            note:
+              "Teams do not spend the third overall selection to split carries, and the room he walks into is James Conner coming off a foot injury that cost him fourteen games and Tyler Allgeier at 3.59 a carry. Fifty-five catches across his final two college seasons say the passing-down work can be his too. The caution is the offence: Arizona ran for 93.1 yards a game, 31st, behind a line that allowed fifty-nine sacks.",
+          },
+          {
+            name: "Marvin Harrison",
+            position: "WR",
+            tier: "Buy-low WR2",
+            thesis:
+              "A 0.412 EPA a play on seventy-three targets — the efficiency never left, the volume did.",
+            stats: ["41 rec, 608 yds", "73 targets", "4 TD"],
+            note:
+              "An 11.8% target share after 22.2% as a rookie, across twelve games, is a collapse in opportunity rather than in play — his success rate and EPA both improved on his rookie marks. Nearly thirteen air yards a target and ten red-zone looks say the role is still the one you want. This is the cleanest positive-regression case on the roster, and the price reflects last season rather than the usage he had before it.",
+          },
+          {
+            name: "Michael Wilson",
+            position: "WR",
+            tier: "WR3 who produced like a WR2",
+            thesis:
+              "A thousand yards and seven scores, most of it while Harrison was out.",
+            stats: ["78 rec, 1,006 yds", "126 targets", "7 TD"],
+            note:
+              "A 20.4% target share and a 32.2% air-yards share across all seventeen games, with one drop on seventy-nine catchable balls, is a genuine WR2 season. The context is the caution: his target shares in the two prior years were 10.7% and 13.6%, and the leap coincided with the absences ahead of him. A healthy Harrison takes some of this back, which makes him the third receiver on a top-five passing offence — useful, not startable every week.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Jacoby Brissett",
+            position: "QB",
+            tier: "Streaming QB2",
+            thesis:
+              "QB14 on twenty-three touchdowns, and every underlying number says it was opportunity.",
+            stats: ["3,366 pass yds", "23 TD, 8 INT", "14 games"],
+            note:
+              "Twenty-three touchdowns against eight interceptions is a fine ratio and 0.004 EPA a play with a 45.8% success rate is replacement-level quarterbacking — the production came from 485 attempts on a pass-first offence, not from playing well. Forty-three sacks behind a 27.5% pressure rate is the other half of the job description. He is a bye-week streamer with a genuinely good receiving corps and a short leash.",
+          },
+          {
+            name: "Tyler Allgeier",
+            position: "RB",
+            tier: "Touchdown handcuff",
+            thesis:
+              "Eight rushing scores on 3.59 a carry, arriving behind a top-three pick.",
+            stats: ["514 rush yds", "8 rush TD", "10 goal-line carries"],
+            note:
+              "Thirty-three red-zone opportunities and ten goal-line carries produced eight touchdowns on a 30.2% snap share in Atlanta, which is a specific skill and a real fantasy one. Three targets a month means there is no PPR floor underneath it. Whether he keeps the goal-line work with Jeremiyah Love in the building is the entire question, and the answer is probably not.",
+          },
+          {
+            name: "James Conner",
+            position: "RB",
+            tier: "Off the board",
+            thesis:
+              "Three games, 2.97 a carry, and the Cardinals drafted his replacement third overall.",
+            stats: ["95 rush yds", "3 games", "1 rush TD"],
+            note:
+              "A foot injury ended the season after three appearances and took the burst with it — a 3.12% explosive-run rate from a back who ran at 14.41% in 2024. The 2024 season, RB9 on 1,094 yards, is what he is capable of when upright. At his age, behind that draft pick, it is not what he should be drafted for.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Trey McBride is a first-round pick at a position where nobody else is, and thirty-three red-zone targets are why. The two bets worth making after him are Jeremiyah Love, because the third overall pick does not share carries, and Marvin Harrison, because his efficiency was fine and only his target share broke.",
+  },
+  lar: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Los Angeles led the NFL in scoring at 30.5 points a game, in total offence, in passing touchdowns with forty-six and in fewest sacks allowed with twenty-three. Matthew Stafford threw for 4,707 yards and finished as the fantasy QB1 at thirty-seven. Puka Nacua led the position in fantasy points on a 28.6% target share and a league-best 3.71 yards a route run.",
+    facts: [
+      { label: "Head coach", value: "Sean McVay (tenth season)" },
+      { label: "Scoring", value: "30.5 pts/g", rank: "1st" },
+      { label: "Total offence", value: "394.6 yds/g", rank: "1st" },
+      { label: "Passing TDs", value: "46", rank: "1st" },
+      { label: "Sacks allowed", value: "23", rank: "1st" },
+      { label: "Turnover margin", value: "+11", rank: "5th" },
+      { label: "Pace", value: "63.9 plays/g", rank: "7th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Puka Nacua",
+            position: "WR",
+            tier: "Top-three overall",
+            thesis:
+              "A hundred and twenty-nine catches, 1,715 yards and the best yards-per-route figure in football.",
+            stats: ["129 rec, 1,715 yds", "166 targets", "10 TD"],
+            note:
+              "A 28.6% target share and 3.71 yards a route run, with a 0.697 EPA a play and a 70.5% success rate, is the rare profile where the volume and the efficiency are both league-leading. Sixteen games rather than seventeen is the only asterisk, and his injury-shortened 2024 came with a career-high target rate — the share has never wavered. On the highest-scoring offence in the league, with Stafford back, there is no case against him.",
+          },
+          {
+            name: "Matthew Stafford",
+            position: "QB",
+            tier: "Top-three QB1",
+            thesis:
+              "Forty-six touchdowns against eight interceptions, at thirty-seven.",
+            stats: ["4,707 pass yds", "46 TD, 8 INT", "17 games"],
+            note:
+              "Five hundred and ninety-seven attempts, 113 red-zone attempts and a 14.5% deep-attempt rate is elite volume used aggressively, and a 0.168 EPA a play means it was not empty. The jump from twenty touchdowns in 2024 to forty-six is partly touchdown variance and will not fully repeat. Nothing on the ground and seventeen years of mileage are the risks; a full season behind the league's best pass protection is the mitigation.",
+          },
+          {
+            name: "Kyren Williams",
+            position: "RB",
+            tier: "RB2 on touchdowns",
+            thesis:
+              "Sixty-three red-zone opportunities and eighteen goal-line carries — the volume is at the stripe.",
+            stats: ["1,252 rush yds", "36 rec, 281 yds", "13 total TD"],
+            note:
+              "Two hundred and fifty-nine carries at 4.83 across all seventeen games, with thirteen total touchdowns, is a fourth straight season of the same profile: usage and scoring rather than breakaway speed. Blake Corum's 5.14 a carry is the threat, and it has been the threat for two years without costing Williams the job. Draft the goal-line share, which is the most valuable thing this offence has to give a running back.",
+          },
+          {
+            name: "Davante Adams",
+            position: "WR",
+            tier: "Touchdown-dependent WR3",
+            thesis:
+              "Fourteen touchdowns on sixty catches, and a 52.6% catch rate.",
+            stats: ["60 rec, 789 yds", "114 targets", "14 TD"],
+            note:
+              "Thirty-two red-zone and twenty-three end-zone targets across fourteen games is the entire season — it funnelled into elite scoring rather than steady yardage, and the 1.94 yards a route run is the giveaway. A career-worst catch rate at his age is a trend rather than a blip. Fourteen touchdowns will not repeat, and in the weeks he does not score there is very little underneath it.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Blake Corum",
+            position: "RB",
+            tier: "The best handcuff in football",
+            thesis:
+              "5.14 a carry and a 15.9% explosive-run rate on a 29.1% snap share.",
+            stats: ["746 rush yds", "6 rush TD", "5.1 yds/carry"],
+            note:
+              "One hundred and forty-five carries for 746 yards with no fumbles, on fewer than a third of the snaps, is the most productive complementary rushing season in the league, and the EPA flipped positive on the way. Fourteen targets means there is no passing-down role to stand on. Behind a lead back carrying 259 times on the highest-scoring offence in football, he is worth holding at a price nobody else's backup commands.",
+          },
+          {
+            name: "Colby Parkinson",
+            position: "TE",
+            tier: "Streaming TE",
+            thesis:
+              "Eight touchdowns on fifty-six targets, in a room with three other tight ends.",
+            stats: ["43 rec, 408 yds", "56 targets", "8 TD"],
+            note:
+              "Twenty-two red-zone and ten end-zone looks produced eight scores on a 9.6% target share, which is a scoring rate that needs the red-zone volume to repeat exactly. The underlying work improved across the board — a 76.8% catch rate and 1.31 yards a route run. Tyler Higbee still takes starter snaps and a second-round rookie is behind him, so this is a touchdown-or-nothing tight end on an offence that scores plenty of them.",
+          },
+          {
+            name: "Terrance Ferguson",
+            position: "TE",
+            tier: "Dynasty stash",
+            thesis:
+              "Twenty-one yards a catch as a rookie, on a 36.7% snap share.",
+            stats: ["11 rec, 231 yds", "25 targets", "3 TD"],
+            note:
+              "Eighteen and a half air yards a target from a tight end is a genuinely unusual role and a 0.295 EPA a play says it worked, but a 44% catch rate is what a downfield-only usage produces. Twenty-five targets across eleven games is not a fantasy role in any format. The second-round pick and the three scores are the reason to watch the snap share this summer.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "The best offence in football by scoring, yardage, touchdowns and pass protection, which means everything here is priced accordingly and correctly. Puka Nacua is a top-three overall pick and Matthew Stafford is the safest quarterback on the board; Davante Adams's fourteen touchdowns on sixty catches is the one number on this page that is going to move the wrong way.",
+  },
+  sf: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "San Francisco converted 49.8% of its third downs — the best rate in the league by a distance — threw thirty-three touchdowns and finished 7th in total offence, while losing the turnover battle by six. Brock Purdy played nine games and posted elite efficiency in them. Mike Evans and Christian Kirk arrive to replace Jauan Jennings and Kendrick Bourne, and George Kittle is coming back from a January Achilles tear.",
+    facts: [
+      { label: "Head coach", value: "Kyle Shanahan (tenth season)" },
+      { label: "Arrivals", value: "Mike Evans, Christian Kirk" },
+      { label: "Departures", value: "Jauan Jennings, Kendrick Bourne" },
+      { label: "Third down", value: "49.8%", rank: "1st" },
+      { label: "Total offence", value: "351.4 yds/g", rank: "7th" },
+      { label: "Passing TDs", value: "33", rank: "4th" },
+      { label: "Turnover margin", value: "-6", rank: "26th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Christian McCaffrey",
+            position: "RB",
+            tier: "Top-five overall",
+            thesis:
+              "A hundred red-zone opportunities and 102 catches — every touch this offence has to give.",
+            stats: ["1,202 rush yds", "102 rec, 924 yds", "17 total TD"],
+            note:
+              "Three hundred and eleven carries and 129 targets across all seventeen games, on an 83.1% snap share, is a workload almost nobody is trusted with any more, and the 23.5% target share is what makes the floor unbreakable in PPR. Twenty goal-line carries and a hundred red-zone chances explain the seventeen scores. The warning is in the per-carry numbers: 3.86 a carry and 1.52 yards after contact, both well down on his peak, at thirty with 450 touches behind him.",
+          },
+          {
+            name: "Brock Purdy",
+            position: "QB",
+            tier: "QB1 at a discount",
+            thesis:
+              "Twenty touchdowns in nine starts, at a 0.229 EPA a play.",
+            stats: ["2,167 pass yds", "20 TD, 10 INT", "9 games"],
+            note:
+              "A 0.229 EPA a play, a 54% success rate and a 7.2 completion rate over expected is top-of-the-league efficiency, and he produced it on a turf toe that plainly bothered him — the 12.3% bad-throw rate is the tell. He cleared 290 fantasy points twice in the two seasons before it. The receiving corps has been rebuilt around him and Kittle's Achilles clouds the opening month; the price assumes the availability question rather than the ability one.",
+          },
+          {
+            name: "George Kittle",
+            position: "TE",
+            tier: "Top-five TE, on a timeline",
+            thesis:
+              "Seven touchdowns on thirteen red-zone targets, and an Achilles to get back from.",
+            stats: ["57 rec, 628 yds", "69 targets", "7 TD"],
+            note:
+              "An 82.6% catch rate and 2.12 yards a route run across eleven games is the efficiency the position is measured against, and seven scores on thirteen red-zone looks is a conversion rate nobody sustains but few match. The tight end is not the question. A January Achilles tear is, and being reportedly on track for Week 1 defies the usual timeline enough to watch through camp. The discount is real and so is the risk.",
+          },
+        ],
+      },
+      {
+        label: "A rebuilt receiver room",
+        players: [
+          {
+            name: "Mike Evans",
+            position: "WR",
+            tier: "Bench flier",
+            thesis:
+              "Eight games, a 48.4% catch rate, and the top outside job in San Francisco.",
+            stats: ["30 rec, 368 yds", "62 targets", "3 TD"],
+            note:
+              "An 11.5% target share after 19.5% the year before, with the catch rate collapsing and 1.23 yards after the catch, is a thirty-two-year-old's season rather than an unlucky one. He heads the outside depth chart and shares the field with Pearsall, Kirk and Kittle in a run-leaning offence. The name is worth more than the projection, which is exactly why somebody else will draft him.",
+          },
+          {
+            name: "Ricky Pearsall",
+            position: "WR",
+            tier: "Breakout-or-bust WR4",
+            thesis:
+              "14.67 yards a catch and a 0.504 EPA a play, on a 9.6% target share.",
+            stats: ["36 rec, 528 yds", "53 targets", "9 games"],
+            note:
+              "A 62.3% success rate and 1.98 yards a route run across nine games is a clear step up on his rookie year and the sort of per-snap work that usually earns more targets. Zero touchdowns on four red-zone looks is what capped the season. Two years under a 10% target share is the pattern to beat, and the room got more crowded rather than less this offseason.",
+          },
+          {
+            name: "Jake Tonges",
+            position: "TE",
+            tier: "Contingency TE1",
+            thesis:
+              "Five touchdowns on thirty-four catches, whenever Kittle was unavailable.",
+            stats: ["34 rec, 293 yds", "46 targets", "5 TD"],
+            note:
+              "Forty-six targets on 240 routes with a 73.9% catch rate and no drops is a tight end who did the job when handed it, and seven red-zone looks produced five scores. Standalone value is close to nothing behind a healthy Kittle. Given the Achilles, that is a more valuable roster spot this year than in a normal one.",
+          },
+          {
+            name: "De'Zhaun Stribling",
+            position: "WR",
+            tier: "Rookie stash",
+            thesis:
+              "The 33rd pick, into a receiving room that was rebuilt twice this offseason.",
+            stats: ["2nd-round rookie", "55 college rec", "811 college yds"],
+            note:
+              "Six-foot-two with real draft capital, tied to a quarterback who posts top-of-the-league efficiency when upright — the long-term case is straightforward. The short-term one is not: Evans, Kirk and Pearsall are ahead of him, and McCaffrey and Kittle take the targets that matter. A dynasty buy and a redraft afterthought.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "The best third-down offence in football, with the quarterback who drives it healthy again and a receiving corps nobody can rank with confidence. Christian McCaffrey is the draw and the risk in one player — seventeen touchdowns and 102 catches, on 3.86 yards a carry at thirty.",
+  },
+  sea: {
+    season: 2026,
+    updated: "September 2026",
+    summary:
+      "Seattle scored 28.4 points a game, third in the league, on the 21st-fastest offence and while giving the ball away twenty-eight times, 31st. Jaxon Smith-Njigba commanded a 35.8% target share — the highest in football — and 48.8% of the team's air yards. Kenneth Walker is in Kansas City, and Zach Charbonnet's knee is expected to keep him out into the season.",
+    facts: [
+      { label: "Head coach", value: "Mike Macdonald (third season)" },
+      { label: "Arrivals", value: "Jadarian Price" },
+      { label: "Departures", value: "Kenneth Walker" },
+      { label: "Scoring", value: "28.4 pts/g", rank: "3rd" },
+      { label: "Giveaways", value: "28", rank: "31st" },
+      { label: "Pace", value: "59.7 plays/g", rank: "21st" },
+      { label: "Sacks allowed", value: "27", rank: "5th" },
+    ],
+    groups: [
+      {
+        label: "Core fantasy pieces",
+        players: [
+          {
+            name: "Jaxon Smith-Njigba",
+            position: "WR",
+            tier: "Top-two overall",
+            thesis:
+              "The highest target share in football, and 48.8% of the air yards on top of it.",
+            stats: ["119 rec, 1,793 yds", "163 targets", "10 TD"],
+            note:
+              "A 35.8% target share, a 0.879 WOPR and 3.81 yards a route run across all seventeen games is not a good season, it is the whole offence — he ran a route on 93.3% of dropbacks. The efficiency matched the volume at a 0.556 EPA a play and a 63.2% success rate, both large jumps on the year before. Rashid Shaheed and a new coordinator might trim a target or two at the edges; nothing trims a share this size.",
+          },
+          {
+            name: "Zach Charbonnet",
+            position: "RB",
+            tier: "RB2 with a knee",
+            thesis:
+              "Twelve rushing touchdowns on eighteen goal-line carries, and a knee that may cost him September.",
+            stats: ["730 rush yds", "12 rush TD", "20 rec, 144 yds"],
+            note:
+              "Fifty-four red-zone opportunities and eighteen goal-line carries is the most valuable usage a back can have, and it carried a 3.97-yard average and a flat EPA — this is a scoring profile rather than a rushing one. The receiving role shrank to twenty catches, so there is no PPR cushion when the touchdowns dry up. The knee is expected to keep him out into the season, which is both the risk and the reason he is not being drafted as a back with twelve scores.",
+          },
+          {
+            name: "Jadarian Price",
+            position: "RB",
+            tier: "Rookie RB3 with a clear path",
+            thesis:
+              "A first-round pick into a backfield with Walker gone and Charbonnet hurt.",
+            stats: ["1st-round rookie", "Walker departed", "Charbonnet (knee)"],
+            note:
+              "Seattle traded Kenneth Walker to Kansas City and drafted Price to replace him, and the only bodies between him and lead duties while Charbonnet rehabs are journeymen. The offence ran nineteen touchdowns in and scored 28.4 points a game, so the job is worth having. What he does with it once Charbonnet is fit is the open question, and it is the reason to buy the early-season role rather than the season.",
+          },
+          {
+            name: "Sam Darnold",
+            position: "QB",
+            tier: "Back-end QB1",
+            thesis:
+              "Two straight top-five fantasy seasons, and ninety-five rushing yards to show for the second one.",
+            stats: ["4,048 pass yds", "25 TD, 14 INT", "95 rush yds"],
+            note:
+              "Four thousand yards and twenty-five scores across all seventeen games, with a 5.2 completion rate over expected and fifty-seven throws of 20-plus yards, is a genuine QB1 season produced on a below-average number of plays. The touchdowns fell from thirty-five to twenty-five year over year and the fourteen interceptions are part of why Seattle was 31st in giveaways. No rushing floor at all means a quiet passing week is a lost week.",
+          },
+          {
+            name: "AJ Barner",
+            position: "TE",
+            tier: "Back-end TE1",
+            thesis:
+              "A snap share that went from 45.1% to 77.3%, and the efficiency held.",
+            stats: ["52 rec, 519 yds", "68 targets", "6 TD"],
+            note:
+              "A 0.411 EPA a play and a 64.7% success rate on a 14.9% target share, with thirteen red-zone and six end-zone looks, is a tight end who earned the volume rather than inheriting it. Seattle added no pass-catchers, so behind Smith-Njigba's enormous share he is the obvious second beneficiary of any extra throwing. Six touchdowns on an offence that scored 28.4 a game is a repeatable number.",
+          },
+        ],
+      },
+      {
+        label: "Secondary options",
+        players: [
+          {
+            name: "Rashid Shaheed",
+            position: "WR",
+            tier: "Boom-or-bust WR3",
+            thesis:
+              "A 22% air-yards share, and two touchdowns to go with it.",
+            stats: ["59 rec, 687 yds", "92 targets", "2 TD"],
+            note:
+              "A 16.3% target share on a 90.7% route rate is real volume and 11.45 air yards a target is the role — he is the one player here who takes the top off a defence that has to account for Smith-Njigba first. The efficiency dipped to minus-0.047 EPA a play and a 45.7% success rate, which is what a deep-only diet produces when the throws do not connect. A 64.1% catch rate is a thin weekly floor.",
+          },
+          {
+            name: "Cooper Kupp",
+            position: "WR",
+            tier: "Deep-league only",
+            thesis:
+              "Twelve red-zone targets and two touchdowns, third in line for the ball.",
+            stats: ["47 rec, 593 yds", "70 targets", "2 TD"],
+            note:
+              "A 15.4% target share down from 18.5%, with the WOPR falling from 0.406 to 0.329, is a steady decline rather than a bad year, and at thirty-three there is no reason to expect it to reverse. He can still move the chains — 6.23 yards after the catch a reception is genuinely good. Behind Smith-Njigba and Shaheed, on an offence running 59.7 plays a game, that is a bench receiver.",
+          },
+          {
+            name: "Tory Horton",
+            position: "WR",
+            tier: "Touchdown lottery ticket",
+            thesis:
+              "Five touchdowns on thirteen catches as a rookie.",
+            stats: ["13 rec, 161 yds", "22 targets", "5 TD"],
+            note:
+              "Fifteen air yards a target and a 0.466 EPA a play with no drops, across eight games, is a genuinely promising downfield profile on a fifth-round pick. Five scores on thirteen receptions is not a rate anybody sustains, and a 4.8% target share is what is actually on offer. Worth a final pick in a deep league on the chance the snaps grow.",
+          },
+        ],
+      },
+    ],
+    bottomLine:
+      "Jaxon Smith-Njigba is the most concentrated target share in the league on the third-highest-scoring offence, and there is no argument for taking anyone else in this passing game seriously by comparison. The backfield is the opportunity: twelve touchdowns went to a back whose knee will cost him the start of the season, and the rookie replacing Kenneth Walker inherits all of it in the meantime.",
   },
 };
 

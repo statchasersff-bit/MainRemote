@@ -5302,25 +5302,6 @@ body.sct-page.is-embed {
   display: none;
 }
 
-/* Pair page hero: the two sides with their records under the codes. */
-.sct-mu-board {
-  margin-top: 18px;
-  gap: 18px;
-}
-
-.sct-mu-side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.sct-mu-record {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--sc-muted-strong);
-}
-
 .sct-mu-featured .sct-game {
   cursor: default;
 }
@@ -5846,30 +5827,40 @@ body.sct-page.is-embed {
   font-size: 13px;
 }
 
-/* ------------------------------------------------- the postgame matchup */
+/* --------------------------------------------------- the matchup strip */
 
-/* A finished game gets a different page, and it starts here: the hero IS the
-   scoreboard rather than a pair of crests with the result in a card below it.
-   The reader arriving from "patriots vs seahawks score" used to meet the
-   fixture twice and the number once, half a page down. Now there is one object
-   above the fold and it is the thing they came for. */
-.sct-mu-hero.is-final {
-  /* Tighter than the standard hero on both axes. This one carries a 70px
+/* The matchup hero, in both of its states.
+ *
+ * A finished game's hero IS the scoreboard rather than a pair of crests with
+ * the result in a card below it: the reader arriving from "patriots vs
+ * seahawks score" used to meet the fixture twice and the number once, half a
+ * page down. The fixture hero was never brought with it. It stayed a title
+ * block on the left with a stack of crest-over-code-over-record parked on the
+ * right — two headers, in two shapes, for one page.
+ *
+ * So this is the shape of the matchup hero, full stop, and `.is-final` is the
+ * variant with a number to put in it. What the two states share is written
+ * once here; what a final does differently is written against `.is-final`, and
+ * what a fixture does differently against `:not(.is-final)`.
+ *
+ * Neither carries an aura. It is a 320px team-coloured blur anchored to the
+ * hero's top-left corner, which on a board with two sides sits behind nothing,
+ * off-centre, while the two side tones below do the same job in the right
+ * places — so the markup no longer emits one. */
+.sct-mu-hero {
+  /* Tighter than the standard hero on both axes. A final carries a 70px
      number: the block padding that reads as composure around a title reads as
      emptiness around a score. */
   padding: 16px 24px 14px;
 }
 
-/* No aura on a final. It is a 320px team-coloured blur anchored to the hero's
-   top-left corner, which on the fixture hero sits behind the crest it belongs
-   to — and on this one sits behind nothing, off-centre, while the two side
-   tones below do the same job in the right places. Two washes of the same navy
-   in one header is a smudge, not depth. */
-.sct-mu-hero.is-final .sct-hero-aura {
-  display: none;
+/* A fixture board is two crests and two names, with no line score under it —
+   a shorter object, which gets back the air the number was taking. */
+.sct-mu-hero:not(.is-final) {
+  padding: 20px 24px 18px;
 }
 
-.sct-mu-final-inner {
+.sct-mu-strip-inner {
   display: grid;
   justify-items: center;
   /* 8px, not 14px. Four rows of content with 14px between them spent 56px on
@@ -5878,7 +5869,7 @@ body.sct-page.is-embed {
   gap: 8px;
 }
 
-.sct-mu-final-text {
+.sct-mu-strip-text {
   display: grid;
   gap: 2px;
   text-align: center;
@@ -5887,8 +5878,12 @@ body.sct-page.is-embed {
 /* The title recedes a step on a final. The team names are already spelled out
    in the board under it, and the H1 set at hero scale on top of a 70px score
    made two headlines competing for the same glance. It stays an H1 — the page
-   is still about these two teams — and stops being the loudest thing on it. */
-.sct-mu-final-title {
+   is still about these two teams — and stops being the loudest thing on it.
+
+   A fixture has no number to lose that contest to, so there the title keeps
+   hero scale from .sct-title and is the loudest thing on the page — which is
+   right: before kickoff the two names ARE the news. */
+.sct-mu-hero.is-final .sct-mu-strip-title {
   font-size: clamp(1.02rem, 2.2vw, 1.35rem);
   line-height: 1.2;
 }
@@ -5900,7 +5895,7 @@ body.sct-page.is-embed {
  * edges of a 640px poster. The middle column is `auto` so the dash takes only
  * the width of the character; the sides share what is left evenly, which is
  * what keeps the dash on the centre line whatever the two nicknames are. */
-.sct-mu-final-board {
+.sct-mu-strip-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
@@ -5909,7 +5904,7 @@ body.sct-page.is-embed {
   max-width: 660px;
 }
 
-.sct-mu-final-side {
+.sct-mu-strip-side {
   position: relative;
   isolation: isolate;
   display: flex;
@@ -5922,11 +5917,22 @@ body.sct-page.is-embed {
   padding: 4px 0;
 }
 
-/* The home side is the away side reversed, which is why one function in the
+/* The right side is the left side reversed, which is why one function in the
    renderer builds both. */
-.sct-mu-final-side.is-home {
+.sct-mu-strip-side.is-right {
   flex-direction: row-reverse;
   justify-content: flex-start;
+}
+
+/* A fixture's sides sit in the middle of their columns rather than hard
+   against the join. On a final the two numbers have to be adjacent — that
+   adjacency is what makes "10 – 13" one figure at one glance — and everything
+   else follows them inward. Take the numbers away and the same rule huddles
+   two crests at the centre of a 660px board with its outer half empty, so
+   before kickoff each side centres on its own half instead. */
+.sct-mu-hero:not(.is-final) .sct-mu-strip-side,
+.sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right {
+  justify-content: center;
 }
 
 /* A soft wash of the team's own ink behind each crest.
@@ -5948,7 +5954,7 @@ body.sct-page.is-embed {
  *
  * The 32 primaries are not ours to moderate — several clubs are pure black or a
  * saturated red — so this is weighted for the strongest of them. */
-.sct-mu-final-side::before {
+.sct-mu-strip-side::before {
   content: "";
   position: absolute;
   top: 50%;
@@ -5968,41 +5974,56 @@ body.sct-page.is-embed {
   pointer-events: none;
 }
 
-.sct-mu-final-side.is-home::before {
+.sct-mu-strip-side.is-right::before {
   left: auto;
   right: -34px;
 }
 
-.sct-mu-final-logo {
+/* With the row centred, the wash centres with it. Hung off the column's outer
+   edge it would sit a third of the board away from the crest it belongs to. */
+.sct-mu-hero:not(.is-final) .sct-mu-strip-side::before,
+.sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right::before {
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+}
+
+.sct-mu-strip-logo {
   flex: none;
   width: clamp(34px, 6vw, 52px);
   height: auto;
   object-fit: contain;
-  /* The loser recedes a step, the way the hub's opponent crest does. Only a
-     step: this is a result, not a ranking, and a team greyed out reads as data
-     that failed to load rather than as a team that lost. */
-  opacity: 0.72;
 }
 
-.sct-mu-final-side.is-winner .sct-mu-final-logo {
-  opacity: 1;
+/* A fixture crest is the biggest thing on its half of the board, because
+   nothing else on that half is asking to be. */
+.sct-mu-hero:not(.is-final) .sct-mu-strip-logo {
+  width: clamp(42px, 7vw, 62px);
+}
+
+/* The loser recedes a step, the way the hub's opponent crest does. Only a
+   step: this is a result, not a ranking, and a team greyed out reads as data
+   that failed to load rather than as a team that lost. Nobody has lost
+   anything before kickoff, so this is the final's alone. */
+.sct-mu-hero.is-final .sct-mu-strip-side:not(.is-winner) .sct-mu-strip-logo {
+  opacity: 0.72;
 }
 
 /* Name over record, as one block. They belong to the team rather than to the
    number, so they sit between the crest and the score and align to the crest's
    side of the row. */
-.sct-mu-final-who {
+.sct-mu-strip-who {
   display: grid;
   gap: 1px;
   min-width: 0;
   text-align: right;
 }
 
-.sct-mu-final-side.is-home .sct-mu-final-who {
+.sct-mu-strip-side.is-right .sct-mu-strip-who {
   text-align: left;
 }
 
-.sct-mu-final-name {
+.sct-mu-strip-name {
   font-size: clamp(11px, 1.9vw, 13px);
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -6015,9 +6036,21 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
+/* On a fixture the nickname is the board's headline — there is no number over
+   it — so it is set as one, in the ink the title uses rather than the grey a
+   caption to a score is written in. */
+.sct-mu-hero:not(.is-final) .sct-mu-strip-name {
+  font-size: clamp(13px, 2.2vw, 15px);
+  color: var(--sc-navy);
+}
+
+.sct-mu-hero:not(.is-final) .sct-mu-strip-record {
+  font-size: 12px;
+}
+
 /* The code stands in for the nickname below 640px — see the media query at the
    foot of this file. Exactly one of the two is ever displayed. */
-.sct-mu-final-code {
+.sct-mu-strip-code {
   display: none;
   font-size: 13px;
   font-weight: 800;
@@ -6025,7 +6058,7 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-final-record {
+.sct-mu-strip-record {
   font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -6034,7 +6067,7 @@ body.sct-page.is-embed {
 
 /* The number is the page. Tabular figures so a 7 and a 1 take the same width
    and the two halves stay symmetrical whatever the score was. */
-.sct-mu-final-score {
+.sct-mu-strip-score {
   font-size: clamp(40px, 8.5vw, 70px);
   font-weight: 900;
   line-height: 0.9;
@@ -6043,14 +6076,16 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-final-side.is-winner .sct-mu-final-score {
+.sct-mu-strip-side.is-winner .sct-mu-strip-score {
   color: var(--sc-navy);
 }
 
-/* The join. It separates the two numbers and says nothing else — the status is
-   in the eyebrow and the venue is in the row below, so a word here would be a
-   third printing of one of them. */
-.sct-mu-final-join {
+/* The join. On a final it separates the two numbers and says nothing else —
+   the status is in the eyebrow and the venue is in the row below, so a word
+   there would be a third printing of one of them. On a fixture it is the one
+   thing on the board naming the host, which is worth more ink than a dash
+   between two figures gets. */
+.sct-mu-strip-join {
   font-size: clamp(16px, 3vw, 26px);
   font-weight: 700;
   line-height: 1;
@@ -6058,7 +6093,15 @@ body.sct-page.is-embed {
   opacity: 0.45;
 }
 
-.sct-mu-final-meta {
+.sct-mu-hero:not(.is-final) .sct-mu-strip-join {
+  font-size: clamp(13px, 2vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.sct-mu-strip-meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -6072,7 +6115,7 @@ body.sct-page.is-embed {
   text-align: center;
 }
 
-.sct-mu-final-where {
+.sct-mu-strip-where {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.07em;
@@ -6080,9 +6123,22 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-final-when {
+.sct-mu-strip-when {
   font-size: 11px;
   letter-spacing: 0.02em;
+  color: var(--sc-muted);
+}
+
+/* What the metadata row carries on a pair page with no current game: not a
+   stadium and a date, which would belong to a meeting the page is not about,
+   but one line saying what is below it. It takes the row's place rather than
+   sitting under it — see renderHero(). */
+.sct-mu-strip-note {
+  max-width: 46ch;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.4;
   color: var(--sc-muted);
 }
 
@@ -6638,41 +6694,47 @@ body.sct-page.is-embed {
 }
 
 @media (max-width: 640px) {
-  .sct-mu-hero.is-final {
+  .sct-mu-hero {
     padding: 18px 16px 16px;
   }
 
   /* The board keeps its three columns at every width — two scores side by side
      IS the scoreboard, and stacking them makes it a list. The clamps above
      carry it down; only the gap needs taking in. */
-  .sct-mu-final-board {
+  .sct-mu-strip-board {
     gap: 7px;
   }
 
-  .sct-mu-final-side {
+  .sct-mu-strip-side {
     gap: 7px;
   }
 
   /* Three letters instead of a truncated nickname. */
-  .sct-mu-final-name {
+  .sct-mu-strip-name {
     display: none;
   }
 
-  .sct-mu-final-code {
+  .sct-mu-strip-code {
     display: block;
   }
 
   /* The wash follows the crest in, so it does not hang off the hero's edge on a
      board that now runs nearly its full width. */
-  .sct-mu-final-side::before {
+  .sct-mu-strip-side::before {
     left: -16px;
     width: 140px;
     height: 140px;
   }
 
-  .sct-mu-final-side.is-home::before {
+  .sct-mu-strip-side.is-right::before {
     left: auto;
     right: -16px;
+  }
+
+  .sct-mu-hero:not(.is-final) .sct-mu-strip-side::before,
+  .sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right::before {
+    left: 50%;
+    right: auto;
   }
 
   .sct-mu-linescore {

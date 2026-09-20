@@ -205,6 +205,46 @@ export interface InjuryProfile {
   faq: InjuryFaq[];
 }
 
+/**
+ * One card in the Nearby Positional Peers rail at the foot of the page.
+ *
+ * Ported from the standalone app's RankNeighborsRail: the players ranked
+ * closest to this one, with this one among them in true rank order. It is the
+ * question a positional rank immediately raises — QB16 of whom? — answered by
+ * the three names either side rather than by a link to a full table.
+ */
+export interface PositionPeer {
+  /** Sleeper's id, which is what the headshot CDN is keyed by. */
+  id: string;
+  slug: string;
+  name: string;
+  team: NflTeam | null;
+  /** Their own headshot, when the dictionary has one. */
+  headshot: string | null;
+  /** Their place in the position's table for this season. */
+  rank: number;
+  /** The figure that table is ordered by — points per game, or points. */
+  value: number;
+  /** True for the player whose page this is. */
+  isCurrent: boolean;
+}
+
+export interface PositionPeers {
+  position: string;
+  season: number;
+  format: ScoringFormat;
+  /**
+   * Which table the rail is a slice of, and so what `value` means.
+   *
+   * "ppg" once the player has the four games a rate rank needs; "total" until
+   * then. Never a mix: a rail ordered by one measure and labelled with the
+   * other is a list that looks mis-sorted.
+   */
+  measure: "ppg" | "total";
+  /** The neighbourhood in rank order, the current player included. */
+  rows: PositionPeer[];
+}
+
 export interface EfficiencyRates {
   /** Yards per catch, or per attempt for a quarterback. */
   yardsPerCatch: number;
@@ -240,6 +280,13 @@ export interface PlayerPageData {
    */
   seasonRank: number | null;
   seasonRankTotal: number | null;
+  /**
+   * The players ranked either side of them at their position this season.
+   *
+   * Null when there is no table to slice — no position, no game log, or nobody
+   * within reach who has a page of their own. See positionalFinish().
+   */
+  peers: PositionPeers | null;
   availableSeasons: number[];
 
   /**
@@ -511,7 +558,53 @@ function productionSeasons(
 }
 
 /**
- * Their positional finish for one season, measured both ways.
+ * How far either side of the player the peers rail reaches.
+ *
+ * Three, as the app this page was ported from used: with the player himself
+ * that is seven cards, which is a neighbourhood — near enough that every name
+ * on it is a player he is genuinely being compared with, and short enough to
+ * read without scrolling on a laptop.
+ */
+const PEER_RADIUS = 3;
+
+/**
+ * The players either side of this one in the position's table, with their real
+ * ranks.
+ *
+ * Walked outwards from the player's own index rather than sliced, because a
+ * player with no PAGE cannot be a card: the dictionary is four thousand names
+ * deep and the site publishes a profile for about six hundred of them, so a
+ * straight slice would produce cards linking at URLs that 404. Skipping one
+ * keeps its rank with the table — the cards then read QB14, QB16, QB17 with
+ * QB15 missing, which is the honest rendering of "the nearest players who have
+ * a page" rather than a renumbered list that claims QB15 is somebody else.
+ */
+function neighbourhood(
+  table: Array<{ id: string; value: number }>,
+  index: number,
+  playerById: Map<string, Player>,
+  indexed: Set<string>,
+): Array<{ id: string; rank: number; value: number }> {
+  const rows: Array<{ id: string; rank: number; value: number }> = [];
+
+  for (const step of [-1, 1]) {
+    let taken = 0;
+    for (let i = index + step; i >= 0 && i < table.length && taken < PEER_RADIUS; i += step) {
+      const row = table[i];
+      if (!row) break;
+      const player = playerById.get(row.id);
+      if (!player || !indexed.has(player.slug)) continue;
+      rows.push({ id: row.id, rank: i + 1, value: row.value });
+      taken += 1;
+    }
+  }
+
+  return rows.sort((a, b) => a.rank - b.rank);
+}
+
+/**
+ * Their positional finish for one season, measured both ways — and the players
+ * ranked either side of them.
  *
  * By points per game, and by points scored. The four-game minimum on the rate
  * is the whole reason that one is not simply a sort: without it, a player who
@@ -526,41 +619,89 @@ function productionSeasons(
  *
  * Both in one pass over the season's logs. Two passes would be two reads of a
  * file that is measured in megabytes to sort the same numbers twice.
+ *
+ * The peers come off whichever of the two tables the HEADER is ranking by, so
+ * the rail at the foot of the page and the "Pos rank" cell at the top of it
+ * cannot say different things about the same player. In September that means
+ * the rail is a slice of the points-scored table; from the fourth game on it
+ * is the rate table, and the block says which underneath its heading.
  */
 function positionalFinish(
-  playerId: string,
-  position: string | null,
+  player: Player,
   season: number,
   format: ScoringFormat,
   allPlayers: Player[],
-): { ppg: number | null; total: number | null } {
-  if (!position) return { ppg: null, total: null };
+): { ppg: number | null; total: number | null; peers: PositionPeers | null } {
+  const position = player.position;
+  if (!position) return { ppg: null, total: null, peers: null };
   const logs = loadGameLogs(season);
-  const positionById = new Map(allPlayers.map((p) => [p.id, p.position]));
+  const playerById = new Map(allPlayers.map((p) => [p.id, p]));
 
-  const ppgs: { id: string; ppg: number }[] = [];
-  const totals: { id: string; total: number }[] = [];
+  const ppgs: { id: string; value: number }[] = [];
+  const totals: { id: string; value: number }[] = [];
   for (const [id, entries] of Object.entries(logs)) {
-    if (positionById.get(id) !== position) continue;
+    if (playerById.get(id)?.position !== position) continue;
     const played = entries.filter((e) => hasParticipation(e.stats, position));
     if (played.length === 0) continue;
     const total = played.reduce(
       (sum, e) => sum + fpts(e, format),
       0,
     );
-    totals.push({ id, total });
+    totals.push({ id, value: total });
     if (played.length < 4) continue;
-    ppgs.push({ id, ppg: total / played.length });
+    ppgs.push({ id, value: total / played.length });
   }
 
-  const place = <T extends { id: string }>(rows: T[]): number | null => {
-    const index = rows.findIndex((row) => row.id === playerId);
-    return index >= 0 ? index + 1 : null;
-  };
+  ppgs.sort((a, b) => b.value - a.value);
+  totals.sort((a, b) => b.value - a.value);
 
-  ppgs.sort((a, b) => b.ppg - a.ppg);
-  totals.sort((a, b) => b.total - a.total);
-  return { ppg: place(ppgs), total: place(totals) };
+  const ppgIndex = ppgs.findIndex((row) => row.id === player.id);
+  const totalIndex = totals.findIndex((row) => row.id === player.id);
+
+  // The rate table when he is in it, the points table until he is — the same
+  // order of preference the header's rank cell states.
+  const measure: "ppg" | "total" = ppgIndex >= 0 ? "ppg" : "total";
+  const table = measure === "ppg" ? ppgs : totals;
+  const index = measure === "ppg" ? ppgIndex : totalIndex;
+
+  let peers: PositionPeers | null = null;
+  if (index >= 0) {
+    const indexed = new Set(loadIndexedSlugs());
+    const around = neighbourhood(table, index, playerById, indexed);
+    // One card is not a neighbourhood. A player nobody else at his position is
+    // near — the last name in the table, or one whose neighbours all lack a
+    // page — gets no rail rather than a rail of himself.
+    if (around.length > 0) {
+      const rows: PositionPeer[] = around.map((row) => {
+        const peer = playerById.get(row.id);
+        return {
+          id: row.id,
+          slug: peer?.slug ?? "",
+          name: peer?.name ?? "",
+          team: getTeamByAbbreviation(peer?.team),
+          headshot: peer?.headshotUrl ?? null,
+          rank: row.rank,
+          value: row.value,
+          isCurrent: false,
+        };
+      });
+      rows.push({
+        id: player.id,
+        slug: player.slug,
+        name: player.name,
+        team: getTeamByAbbreviation(player.team),
+        headshot: player.headshotUrl ?? null,
+        rank: index + 1,
+        value: table[index]?.value ?? 0,
+        isCurrent: true,
+      });
+      rows.sort((a, b) => a.rank - b.rank);
+      peers = { position, season, format, measure, rows };
+    }
+  }
+
+  const place = (i: number): number | null => (i >= 0 ? i + 1 : null);
+  return { ppg: place(ppgIndex), total: place(totalIndex), peers };
 }
 
 /**
@@ -883,8 +1024,7 @@ export async function getPlayerPageData(
       // The career table's Finish column is the rate finish, which is the one
       // a season is remembered by. The total finish is the header's fallback
       // and belongs to the current season only.
-      positionalFinish(player.id, player.position, candidate, format, allPlayers)
-        .ppg,
+      positionalFinish(player, candidate, format, allPlayers).ppg,
     );
     if (totals) careerSeasons.push(totals);
   }
@@ -974,7 +1114,7 @@ export async function getPlayerPageData(
   const careerRows = careerStatRows(production, careerSeasons, season);
   const rowTotals = careerTotals(careerRows);
   const currentRow = careerRows.find((row) => row.season === season) ?? null;
-  const rank = positionalFinish(player.id, player.position, season, format, allPlayers);
+  const rank = positionalFinish(player, season, format, allPlayers);
 
   return {
     player,
@@ -986,6 +1126,7 @@ export async function getPlayerPageData(
     seasonLabel,
     seasonRank: rank.ppg,
     seasonRankTotal: rank.total,
+    peers: rank.peers,
     availableSeasons: seasons,
 
     rosterPct: rosterPctFor(player.id),
@@ -1169,6 +1310,58 @@ export function indexedPlayers(): IndexedPlayer[] {
       headshot: player.headshotUrl ?? null,
     });
   }
+  return rows;
+}
+
+/* ------------------------------------------------------------ search index */
+
+/**
+ * Every player with a page, one line each, for the search bar above the header.
+ *
+ * `slug|Name|POS|TEAM` rather than an object per player, because this list is
+ * INLINED into every player page and so its shape is paid for once per row and
+ * once per page: four repeated property names across ~575 rows is roughly
+ * twice the bytes of the same facts pipe-joined, and the client splits each
+ * line once on first keystroke. TEAM is "" for a free agent, POS for the
+ * handful of indexed players the dictionary has no position for.
+ *
+ * Inlined rather than fetched from /embed/players.json, which serves the same
+ * roster as JSON. On statchasers.com the fragment is printed INTO a WordPress
+ * page, so fetching it would be a cross-origin request to this host: it would
+ * need CORS, an absolute origin the fragment does not otherwise carry (and
+ * that changes between preview and production), and a round trip before the
+ * first keystroke could match anything. Bytes that compress well are the
+ * cheaper half of that trade.
+ *
+ * Cached against dataStamp(), which covers both the dictionary and the indexed
+ * slug list — so a rebuilt roster produces a new array here AND a new page
+ * version, and the two cannot disagree.
+ */
+let searchIndexCache: { stamp: string; rows: string[] } | null = null;
+
+export function playerSearchIndex(): string[] {
+  const stamp = dataStamp();
+  if (searchIndexCache?.stamp === stamp) return searchIndexCache.rows;
+
+  const rows = indexedPlayers()
+    // Alphabetical, so the payload is stable between renders and so equally
+    // ranked matches ("Josh A..." before "Josh D...") come out in the order a
+    // reader scans a list in. The client's ranking is a stable sort on top of
+    // this, not a replacement for it.
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entry) =>
+      [
+        entry.slug,
+        // The delimiter cannot be allowed to survive inside a field: one name
+        // carrying a pipe would shift every field after it by one.
+        entry.name.replace(/\|/g, " "),
+        entry.position ?? "",
+        entry.team?.code ?? "",
+      ].join("|"),
+    );
+
+  searchIndexCache = { stamp, rows };
   return rows;
 }
 
