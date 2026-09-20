@@ -383,11 +383,46 @@ function statchasers_player_page_meta( array $row ): array {
  *
  * A parent page with no body is a thin page that still sits in the sitemap.
  * Six hundred links in one column is not much better, so they are grouped —
- * which also makes it a page a reader can use.
+ * which also makes it a page a reader can use. The grouping is the tool's now:
+ * the mount is [statchasers_player_index], which prints the same roster the
+ * standalone /player page does, so the page that lists the profiles is drawn by
+ * the thing that draws the profiles rather than by the theme's <ul> styling.
  *
- * Only written while the container is empty. An index somebody has edited is
- * theirs, the same promise every other write here makes.
+ * Written when the page is empty, and over the stub the old version of this
+ * function wrote. Anything else there is yours and is left alone — the same
+ * promise every other write here makes.
  */
+/** The intro paragraph above the index. Also the stub's signature; see below. */
+const STATCHASERS_PLAYER_INDEX_LEAD = 'Fantasy football profiles for every rostered NFL skill player: game logs, weekly finishes, advanced metrics, injury history and career production.';
+
+/**
+ * Is this body the bare list this function used to write?
+ *
+ * It used to build the index itself: a paragraph, a heading per team and a
+ * bullet per player, styled by whatever the theme does with a <ul>. That was
+ * only ever there so the parent was not a thin page in the sitemap, and it
+ * shipped looking nothing like the profiles it points at. The shortcode
+ * replaces it.
+ *
+ * Recognised by its own lead sentence plus a wall of links to the player path
+ * and no shortcode of any kind. Nobody's hand-written page looks like that,
+ * which is what makes replacing it safe: anything we do not positively
+ * recognise is left alone, because an index somebody has edited is theirs.
+ *
+ * @param string $content Page body.
+ */
+function statchasers_player_index_is_stub( string $content ): bool {
+	if ( false === strpos( $content, STATCHASERS_PLAYER_INDEX_LEAD ) ) {
+		return false;
+	}
+
+	if ( false !== strpos( $content, '[' ) ) {
+		return false;
+	}
+
+	return substr_count( $content, 'href="/' . STATCHASERS_PLAYER_PATH . '/' ) >= 50;
+}
+
 function statchasers_player_write_index( int $container ): void {
 	$post = get_post( $container );
 
@@ -395,48 +430,22 @@ function statchasers_player_write_index( int $container ): void {
 		return;
 	}
 
-	if ( '' !== trim( (string) $post->post_content ) ) {
+	$content = (string) $post->post_content;
+
+	// Already mounted. Re-running the build must not churn the page.
+	if ( has_shortcode( $content, STATCHASERS_PLAYER_INDEX_SHORTCODE ) ) {
 		return;
 	}
 
-	$roster = statchasers_player_roster();
-
-	usort(
-		$roster,
-		static function ( array $a, array $b ): int {
-			return array( $a['teamName'], $a['name'] ) <=> array( $b['teamName'], $b['name'] );
-		}
-	);
-
-	$body = '<p>Fantasy football profiles for every rostered NFL skill player: game logs, weekly finishes, advanced metrics, injury history and career production.</p>';
-	$team = null;
-
-	foreach ( $roster as $row ) {
-		if ( $row['teamName'] !== $team ) {
-			if ( null !== $team ) {
-				$body .= '</ul>';
-			}
-			$team  = $row['teamName'];
-			$body .= '<h2>' . esc_html( '' === $team ? 'Free agents' : $team ) . '</h2><ul>';
-		}
-
-		$body .= sprintf(
-			'<li><a href="/%s/%s/">%s</a>%s</li>',
-			esc_attr( STATCHASERS_PLAYER_PATH ),
-			esc_attr( $row['slug'] ),
-			esc_html( $row['name'] ),
-			'' === $row['position'] ? '' : ' (' . esc_html( $row['position'] ) . ')'
-		);
-	}
-
-	if ( null !== $team ) {
-		$body .= '</ul>';
+	if ( '' !== trim( $content ) && ! statchasers_player_index_is_stub( $content ) ) {
+		return;
 	}
 
 	wp_update_post(
 		array(
 			'ID'           => $container,
-			'post_content' => $body,
+			'post_content' => '<p>' . esc_html( STATCHASERS_PLAYER_INDEX_LEAD ) . '</p>' .
+				"\n\n[" . STATCHASERS_PLAYER_INDEX_SHORTCODE . ']',
 		)
 	);
 }

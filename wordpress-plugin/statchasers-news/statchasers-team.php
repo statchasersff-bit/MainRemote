@@ -29,6 +29,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 const STATCHASERS_TEAM_SHORTCODE = 'statchasers_team';
+
+/**
+ * The index mount: [statchasers_team_index]
+ *
+ * The container page at /nfl/teams/ needs its own shortcode because it is the
+ * one page in this hierarchy whose slug is not a team slug — [statchasers_team]
+ * there asks the API for a team called "teams" and gets nothing.
+ */
+const STATCHASERS_TEAM_INDEX_SHORTCODE = 'statchasers_team_index';
 const STATCHASERS_TEAM_HANDLE    = 'statchasers-team';
 
 /** How long a rendered team fragment is reused before we ask the API again. */
@@ -151,6 +160,108 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 }
 
 /**
+ * Fetch the rendered index of all 32 hubs, cached.
+ *
+ * Its own cache key and its own TTL. The list changes when a team relocates,
+ * which is to say never within a season, so it is held far longer than a hub
+ * fragment: a hub carries a live depth chart, and this carries 32 names.
+ *
+ * @return array{html:string,version:string}|null Null when nothing is available.
+ */
+function statchasers_team_index_fetch(): ?array {
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return null;
+	}
+
+	$key        = md5( $origin . '|index' );
+	$cache_key  = 'sc_team_idx_' . $key;
+	$backup_key = 'sc_team_idx_bak_' . $key;
+
+	$cached = get_transient( $cache_key );
+	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
+		return $cached;
+	}
+
+	$response = wp_remote_get(
+		$origin . '/embed/teams',
+		array(
+			'timeout' => STATCHASERS_TEAM_TIMEOUT,
+			'headers' => array( 'Accept' => 'text/html' ),
+		)
+	);
+
+	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
+	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
+
+	if ( 200 !== $code || '' === trim( $body ) ) {
+		$backup = get_transient( $backup_key );
+		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			return $backup;
+		}
+		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
+		return null;
+	}
+
+	$payload = array(
+		'html'    => $body,
+		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
+	);
+
+	set_transient( $cache_key, $payload, HOUR_IN_SECONDS );
+	set_transient( $backup_key, $payload, STATCHASERS_TEAM_BACKUP_TTL );
+
+	return $payload;
+}
+
+/**
+ * The shortcode: prints the index of all 32 hubs into the container page.
+ *
+ * Same omissions as the hub shortcode — no canonical, no title, no H1. The
+ * page owns those; this prints the grid beneath them.
+ *
+ * Before this existed the container page was whatever the builder wrote into it
+ * once: a stub list of 32 links in the theme's own styling, standing in front of
+ * 32 pages that look nothing like it. That stub was never meant to be the
+ * finished page — it was there so the parent was not a thin page in the sitemap.
+ *
+ * @return string HTML.
+ */
+function statchasers_team_index_shortcode(): string {
+	$origin = statchasers_news_origin();
+
+	if ( '' === $origin ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return '<p><strong>StatChasers Teams:</strong> set <code>STATCHASERS_NEWS_ORIGIN</code> in <code>wp-config.php</code> to the API origin.</p>';
+		}
+		return '';
+	}
+
+	$data = statchasers_team_index_fetch();
+
+	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	statchasers_team_enqueue_assets();
+
+	if ( null === $data || '' === $data['html'] ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return '<p><strong>StatChasers Teams:</strong> the API returned nothing for <code>/embed/teams</code>. Check that the deployment is up.</p>';
+		}
+		return '';
+	}
+
+	/**
+	 * Filters the rendered index fragment before it is printed.
+	 *
+	 * Deliberately not escaped, for the reason given on the news filter: this is
+	 * first-party markup from the origin the page already loads its bundle from.
+	 *
+	 * @param string $html Rendered fragment.
+	 */
+	return (string) apply_filters( 'statchasers_team_index_html', (string) $data['html'] );
+}
+add_shortcode( STATCHASERS_TEAM_INDEX_SHORTCODE, 'statchasers_team_index_shortcode' );
+
+/**
  * Register and enqueue the team hub's compiled bundles.
  *
  * Separate handles from the news tool: different stylesheet, different bundle,
@@ -232,10 +343,48 @@ function statchasers_team_post_has_shortcode(): bool {
 	return $answer;
 }
 
+/**
+ * Is the INDEX mounted on the page being rendered?
+ *
+ * Deliberately separate from the question above rather than folded into it.
+ * That one means "this page is a team hub", and half the plugin reads it that
+ * way: it decides whether to build an FAQ node from the page's slug, and which
+ * of two descriptions to fall back to. An index page is neither of those
+ * things — it has no team, so a hub's FAQ would be built from a slug that
+ * names no team, and a hub's description would be a sentence about a depth
+ * chart on a page that has none.
+ *
+ * What the two pages genuinely share is the stylesheet, so that is the only
+ * place they are OR'd together.
+ */
+function statchasers_team_post_has_index_shortcode(): bool {
+	static $answer = null;
+
+	if ( null !== $answer ) {
+		return $answer;
+	}
+
+	if ( ! is_singular() ) {
+		return false;
+	}
+
+	$post = get_queried_object();
+	if ( ! $post instanceof WP_Post ) {
+		return false;
+	}
+
+	$answer = has_shortcode( (string) $post->post_content, STATCHASERS_TEAM_INDEX_SHORTCODE );
+
+	return $answer;
+}
+
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {
-		if ( ! statchasers_team_post_has_shortcode() ) {
+		if (
+			! statchasers_team_post_has_shortcode()
+			&& ! statchasers_team_post_has_index_shortcode()
+		) {
 			return;
 		}
 		statchasers_team_enqueue_assets();

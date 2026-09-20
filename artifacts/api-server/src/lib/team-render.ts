@@ -3162,7 +3162,19 @@ export function renderTeamPage(
  * that every team resolves, and it gives the 404 page somewhere useful to send
  * a reader. A full document rather than a fragment, because nothing embeds it.
  */
-export function renderTeamIndex(
+/**
+ * The 32 hubs, grouped by conference and division.
+ *
+ * Shared by the standalone /team page and by the fragment the WordPress
+ * container page at /nfl/teams/ mounts, for the reason every other pair of
+ * addresses here shares a renderer: two copies of a list of 32 teams is two
+ * lists that drift, and the one nobody looks at is the one that goes stale.
+ *
+ * It is the team switcher's own grid at full page width — the same component
+ * a reader already knows from the hub, rather than a second way of showing
+ * the same 32 links.
+ */
+function renderTeamIndexGrid(
   teams: readonly NflTeam[],
   options: { linkQuery?: string; teamPathPrefix?: string } = {},
 ): string {
@@ -3200,6 +3212,34 @@ export function renderTeamIndex(
     );
   }).join("");
 
+  return `<div class="sct-switch-grid is-index">${groups}</div>`;
+}
+
+/**
+ * The index as a bare fragment, for the WordPress container page to print.
+ *
+ * No hero and no H1: the page at /nfl/teams/ supplies both, the same division
+ * of labour every other mount here follows. Without this the container page is
+ * whatever WordPress content happens to sit in it — which is what it was, a
+ * stub list of 32 links in the theme's own styling, looking nothing like the
+ * hubs it points at.
+ */
+export function renderTeamIndexFragment(
+  teams: readonly NflTeam[],
+  options: { linkQuery?: string; teamPathPrefix?: string } = {},
+): string {
+  return (
+    `<div class="sct is-embed" data-sct-index="1">` +
+    `<div class="sct-section">${renderTeamIndexGrid(teams, options)}</div>` +
+    `</div>`
+  );
+}
+
+/** The index as its own page on this origin: /team. */
+export function renderTeamIndex(
+  teams: readonly NflTeam[],
+  options: { linkQuery?: string; teamPathPrefix?: string } = {},
+): string {
   return (
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
     `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` +
@@ -3213,7 +3253,7 @@ export function renderTeamIndex(
     `<h1 class="sct-title">NFL Team Hubs</h1>` +
     `<p class="sct-subtitle">News, depth charts, schedules and fantasy outlook for all 32 teams.</p>` +
     `</div></div></header>` +
-    `<div class="sct-section"><div class="sct-switch-grid is-index">${groups}</div></div>` +
+    `<div class="sct-section">${renderTeamIndexGrid(teams, options)}</div>` +
     `</div></body></html>`
   );
 }

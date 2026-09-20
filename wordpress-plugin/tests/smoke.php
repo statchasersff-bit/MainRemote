@@ -72,7 +72,16 @@ function in_the_loop() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function is_main_query() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function get_queried_object() { return $GLOBALS['page']['post'] ?? null; }
 function get_post() { return null; }
-function has_shortcode( $content, $tag ) { return false !== strpos( (string) $content, '[' . $tag ); }
+/*
+ * Tag boundaries matter here, unlike most of these stubs. WordPress matches a
+ * whole registered tag; a strpos for "[statchasers_team" also finds
+ * "[statchasers_team_index", which would make an index page answer yes to "is
+ * this a team hub" — the exact confusion the two predicates exist to avoid. A
+ * stub that cannot tell them apart cannot test them apart.
+ */
+function has_shortcode( $content, $tag ) {
+	return 1 === preg_match( '/\[' . preg_quote( (string) $tag, '/' ) . '(?=[\s\]\/])/', (string) $content );
+}
 function current_user_can( $cap ) { return false; }
 function wp_get_theme() { return new class { public function get( $k ) { return 'X'; } }; }
 function get_stylesheet() { return 'theme'; }
@@ -278,6 +287,71 @@ is( statchasers_h1_mounts_a_tool(), true, 'and only where a tool is mounted' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
 is( statchasers_h1_should_replace(), false, 'off: never' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
+$GLOBALS['page'] = array();
+
+echo "\nteam index body\n";
+/*
+ * The one piece of this plugin that OVERWRITES a page somebody may have
+ * written. It replaces the stub the old builder wrote and nothing else, so
+ * what matters is which bodies it declines to touch.
+ */
+$lead = STATCHASERS_TEAM_INDEX_LEAD;
+$stub = '<p>' . $lead . '</p>';
+for ( $i = 0; $i < 32; $i++ ) {
+	$stub .= '<li><a href="/' . STATCHASERS_TEAM_PATH . '/team-' . $i . '/">Team</a></li>';
+}
+
+is( statchasers_team_index_is_stub( $stub ), true, 'the generated stub is recognised' );
+is( statchasers_team_index_is_stub( '' ), false, 'an empty body is not the stub' );
+is(
+	statchasers_team_index_is_stub( '<p>My own words about the teams.</p>' ),
+	false,
+	'a hand-written page is left alone'
+);
+is(
+	statchasers_team_index_is_stub( $stub . '[statchasers_team_index]' ),
+	false,
+	'a body already carrying a shortcode is not the stub'
+);
+is(
+	statchasers_team_index_is_stub( '<p>' . $lead . '</p><p>and my own note</p>' ),
+	false,
+	'the lead alone is not enough — the wall of links is the signature'
+);
+
+echo "\nplayer index body\n";
+$plead = STATCHASERS_PLAYER_INDEX_LEAD;
+$pstub = '<p>' . $plead . '</p>';
+for ( $i = 0; $i < 60; $i++ ) {
+	$pstub .= '<li><a href="/' . STATCHASERS_PLAYER_PATH . '/player-' . $i . '/">Name</a> (WR)</li>';
+}
+
+is( statchasers_player_index_is_stub( $pstub ), true, 'the generated stub is recognised' );
+is( statchasers_player_index_is_stub( '' ), false, 'an empty body is not the stub' );
+is(
+	statchasers_player_index_is_stub( '<p>My own words about the players.</p>' ),
+	false,
+	'a hand-written page is left alone'
+);
+is(
+	statchasers_player_index_is_stub( $pstub . '[statchasers_player_index]' ),
+	false,
+	'a body already carrying a shortcode is not the stub'
+);
+
+echo "\nindex mounts are their own question\n";
+/*
+ * The index predicates must NOT answer "yes" to "is this page a hub/profile".
+ * That question decides whether an FAQ node is built from the page's slug, and
+ * an index page has no team and no player to build one from.
+ */
+$post = new WP_Post();
+$post->post_content = '[statchasers_team_index]';
+$post->post_name    = 'teams';
+$GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $post );
+
+is( statchasers_team_post_has_index_shortcode(), true, 'the team index is detected' );
+is( statchasers_team_post_has_shortcode(), false, 'and is not mistaken for a hub' );
 $GLOBALS['page'] = array();
 
 echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
