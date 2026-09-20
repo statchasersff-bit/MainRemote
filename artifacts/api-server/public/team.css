@@ -792,13 +792,6 @@ body.sct-page.is-embed {
   color: var(--sc-navy) !important;
 }
 
-/* The player name on an outlook card takes the card's colour rather than a
-   colour of its own — see .sct-outlook-link — so what it needs restoring is
-   the inheritance, not a value. */
-.sct li .sct-outlook-link {
-  color: inherit !important;
-}
-
 .sct li > .sct-crosslink {
   color: var(--sc-navy) !important;
 }
@@ -7159,4 +7152,21 @@ body.sct-page.is-embed {
     height: 84px;
   }
 
+}
+
+/* An anchor that takes the colour around it, kept.
+ *
+ * `color: inherit` is inheritance, and inheritance loses to any rule that names
+ * the element — so a theme's `#main-content a { color: #fff }` repaints every
+ * one of these and they vanish into the surface behind them. On the published
+ * player page the team name beside the position was white on white.
+ *
+ * Listed by class rather than armed as `ROOT a`, deliberately: the tool has two
+ * kinds of link, the ones that take the colour around them and the ones that
+ * declare their own, and a blanket rule here would flatten the second kind into
+ * the first. These are the first kind, and there are only a few. */
+.sct .sct-outlook-link,
+.sct .sct-player-link,
+.sct .sct-news-link {
+  color: inherit !important;
 }

@@ -455,15 +455,7 @@ function statchasers_player_write_index( int $container ): void {
  * since that is a disambiguator for an admin list rather than a heading.
  */
 function statchasers_player_heading( string $slug, string $section ): string {
-	$row  = statchasers_player_roster_row( $slug );
-	$name = null !== $row ? $row['name'] : '';
-
-	if ( '' === $name ) {
-		$queried = get_queried_object();
-		if ( $queried instanceof WP_Post ) {
-			$name = trim( (string) preg_replace( '/\s*\([A-Z]{1,3}\)\s*$/', '', $queried->post_title ) );
-		}
-	}
+	$name = statchasers_player_name( $slug );
 
 	if ( '' === $name ) {
 		return '';
@@ -554,6 +546,29 @@ function statchasers_player_shortcode_heading( string $slug, string $section ): 
 }
 
 /**
+ * The player's name, from the roster if it is cached and from the page if not.
+ *
+ * Both callers need it and both used to find it separately, which is how the
+ * lead ended up empty on a site whose roster cache had not warmed yet: the
+ * heading had a fallback and the lead did not. The stored title carries the
+ * position as a disambiguator for the admin list — "Kyler Murray (QB)" — and
+ * that is a label rather than a heading, so it comes back off.
+ */
+function statchasers_player_name( string $slug ): string {
+	$row = statchasers_player_roster_row( $slug );
+
+	if ( null !== $row && '' !== $row['name'] ) {
+		return $row['name'];
+	}
+
+	$queried = get_queried_object();
+
+	return $queried instanceof WP_Post
+		? trim( (string) preg_replace( '/\s*\([A-Z]{1,3}\)\s*$/', '', $queried->post_title ) )
+		: '';
+}
+
+/**
  * The sentence under a profile's heading.
  *
  * The team pages take theirs from statchasers_team_section_meta(), which is
@@ -566,8 +581,7 @@ function statchasers_player_shortcode_heading( string $slug, string $section ): 
  * from a roster feed that does not carry one.
  */
 function statchasers_player_lead( string $slug, string $section ): string {
-	$row  = statchasers_player_roster_row( $slug );
-	$name = null !== $row ? $row['name'] : '';
+	$name = statchasers_player_name( $slug );
 
 	if ( '' === $name ) {
 		return '';
@@ -591,8 +605,18 @@ function statchasers_player_lead( string $slug, string $section ): string {
 	}
 
 	// The profile itself takes the description the builder already wrote for it,
-	// so the page and its Rank Math entry open on the same sentence.
-	return null === $row ? '' : statchasers_player_page_meta( $row )['description'];
+	// so the page and its Rank Math entry open on the same sentence. Without the
+	// roster there is no team or position to write it from, so it falls back to
+	// the one sentence that is true of every profile.
+	$row = statchasers_player_roster_row( $slug );
+
+	return null === $row
+		? sprintf(
+			'%1$s\'s %2$s fantasy football profile: game log, weekly finishes, advanced metrics, injury history and career production.',
+			$name,
+			STATCHASERS_TEAM_SEASON
+		)
+		: statchasers_player_page_meta( $row )['description'];
 }
 
 add_filter(
