@@ -4385,21 +4385,6 @@ a.scp-peer:focus-visible {
     var(--sc-surface-soft);
 }
 
-/*
- * Underneath the portrait, not instead of it.
- *
- * The server cannot know whether Sleeper has a thumbnail for a given player,
- * and an image that 404s is simply transparent — so the initials are what is
- * behind it either way, and no script is needed to swap them in.
- */
-.scp-peer-initials {
-  position: absolute;
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--peer-team, var(--sc-navy)) 55%, var(--sc-muted-strong));
-}
-
 .scp-peer-img {
   position: relative;
   width: 100%;
@@ -4486,10 +4471,10 @@ a.scp-peer:focus-visible {
 
 .scp-peer-logo {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 34px;
-  height: 34px;
+  right: 6px;
+  bottom: 6px;
+  width: 48px;
+  height: 48px;
   /* The hero's watermark opacity. One idea of how faint a club's mark goes,
      used everywhere it appears. */
   opacity: 0.12;

@@ -631,6 +631,11 @@ function positionalFinish(
   season: number,
   format: ScoringFormat,
   allPlayers: Player[],
+  // The peers belong to the CURRENT season only — the rail is a reading of
+  // where the player stands now, and the career table's caller wants the one
+  // number. Built on request rather than always, so eleven seasons of career
+  // rows do not each assemble a neighbourhood that is then thrown away.
+  wantPeers = false,
 ): { ppg: number | null; total: number | null; peers: PositionPeers | null } {
   const position = player.position;
   if (!position) return { ppg: null, total: null, peers: null };
@@ -665,7 +670,7 @@ function positionalFinish(
   const index = measure === "ppg" ? ppgIndex : totalIndex;
 
   let peers: PositionPeers | null = null;
-  if (index >= 0) {
+  if (wantPeers && index >= 0) {
     const indexed = new Set(loadIndexedSlugs());
     const around = neighbourhood(table, index, playerById, indexed);
     // One card is not a neighbourhood. A player nobody else at his position is
@@ -1114,7 +1119,7 @@ export async function getPlayerPageData(
   const careerRows = careerStatRows(production, careerSeasons, season);
   const rowTotals = careerTotals(careerRows);
   const currentRow = careerRows.find((row) => row.season === season) ?? null;
-  const rank = positionalFinish(player, season, format, allPlayers);
+  const rank = positionalFinish(player, season, format, allPlayers, true);
 
   return {
     player,

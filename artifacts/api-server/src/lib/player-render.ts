@@ -5088,14 +5088,6 @@ function renderPlayerFaqSchema(
 
 /* ------------------------------------------------------------------ peers */
 
-/** Two initials, for the well behind a headshot the CDN does not have. */
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return `${first}${last}`.toUpperCase();
-}
-
 /**
  * "Nearby Positional Peers" — the rail at the foot of every player page.
  *
@@ -5149,12 +5141,13 @@ function renderPositionPeers(
 
       const photo =
         `<span class="scp-peer-well">` +
-        // Behind the portrait rather than instead of it: nothing here knows
-        // whether the CDN has this player, and an image that 404s is
-        // transparent, so the initials are simply what is underneath.
-        `<span class="scp-peer-initials" aria-hidden="true">${escapeHtml(
-          initials(row.name),
-        )}</span>` +
+        // Nothing behind the portrait. The original app laid the player's
+        // initials under it as a fallback for a thumbnail the CDN does not
+        // have — but Sleeper's thumbnails are CUTOUTS on transparency, so the
+        // letters did not sit behind a missing image, they sat behind the
+        // player's shoulders on every card that had one. A player with no
+        // thumbnail gets the club's wash and nothing else, which is the well
+        // doing its own job.
         `<img class="scp-peer-img" src="${escapeHtml(src)}" alt=""` +
         ` width="150" height="98" loading="lazy" decoding="async" />` +
         `<span class="scp-peer-rank">${escapeHtml(`${pos}${row.rank}`)}</span>` +
@@ -5177,7 +5170,7 @@ function renderPositionPeers(
         // uses rather than a third idea of what a watermark is.
         (row.team
           ? `<img class="scp-peer-logo" src="${escapeHtml(row.team.logo)}" alt=""` +
-            ` aria-hidden="true" loading="lazy" decoding="async" width="34" height="34" />`
+            ` aria-hidden="true" loading="lazy" decoding="async" width="48" height="48" />`
           : "") +
         `</span>`;
 
