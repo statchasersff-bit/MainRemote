@@ -283,7 +283,7 @@ function statchasers_player_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
 			$origin . '/player.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}

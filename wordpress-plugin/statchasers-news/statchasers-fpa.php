@@ -189,7 +189,7 @@ function statchasers_fpa_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_FPA_HANDLE,
 			$origin . '/fpa.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}

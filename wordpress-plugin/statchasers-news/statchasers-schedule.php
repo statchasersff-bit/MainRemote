@@ -370,7 +370,7 @@ function statchasers_schedule_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_SCHEDULE_HANDLE,
 			$origin . '/schedule.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}

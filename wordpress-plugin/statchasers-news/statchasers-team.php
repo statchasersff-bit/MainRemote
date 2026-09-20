@@ -169,7 +169,7 @@ function statchasers_team_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_TEAM_HANDLE,
 			$origin . '/team.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}
