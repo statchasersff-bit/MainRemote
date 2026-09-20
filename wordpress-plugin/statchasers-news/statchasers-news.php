@@ -47,6 +47,7 @@ const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 // each reuse its Divi detection and full-width stylesheet rather than carrying
 // a copy apiece, and while function declarations hoist within a file they do
 // not hoist across an include that has not run yet.
+require_once __DIR__ . '/statchasers-assets.php';
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
 require_once __DIR__ . '/statchasers-matchup.php';
@@ -291,7 +292,7 @@ function statchasers_news_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_NEWS_HANDLE,
 			$origin . '/styles.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}

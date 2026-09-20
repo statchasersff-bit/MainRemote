@@ -188,7 +188,7 @@ function statchasers_rankings_enqueue_assets(): void {
 		wp_register_style(
 			STATCHASERS_RANKINGS_HANDLE,
 			$origin . '/rankings.css',
-			array(),
+			statchasers_font_dependency(),
 			$version
 		);
 	}

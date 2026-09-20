@@ -120,6 +120,8 @@ function trailingslashit( $s ) { return rtrim( (string) $s, '/' ) . '/'; }
 function untrailingslashit( $s ) { return rtrim( (string) $s, '/' ); }
 function wp_json_encode( $v ) { return json_encode( $v ); }
 function wp_create_nonce( $a = '' ) { return 'nonce'; }
+function wp_style_is( $h, $l = 'enqueued' ) { return (bool) ( $GLOBALS['styles'][ $h ] ?? false ); }
+function wp_script_is( $h, $l = 'enqueued' ) { return false; }
 function check_ajax_referer( $a = '', $b = false, $c = true ) { return true; }
 function wp_send_json_success( $d = null, $s = null ) {}
 function wp_send_json_error( $d = null, $s = null ) {}
@@ -174,6 +176,7 @@ $GLOBALS['wpdb'] = new class {
 
 $dir = __DIR__ . '/../statchasers-news';
 
+require_once "$dir/statchasers-assets.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";
@@ -251,6 +254,10 @@ is( statchasers_h1_should_print(), false, 'forced off' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 
 is( statchasers_h1_filter( true ), true, 'an explicit true wins' );
+
+echo "\nwebfont\n";
+is( str_contains( statchasers_font_url(), 'family=Inter' ), true, 'Inter is the family asked for' );
+is( statchasers_font_dependency(), array( STATCHASERS_FONT_HANDLE ), 'every stylesheet depends on it' );
 
 echo "\nreplace mode\n";
 // A page that mounts the team shortcode, in the loop, on the front end.
