@@ -67,12 +67,12 @@ function esc_attr( $s ) { return esc_html( $s ); }
 function esc_url( $s ) { return (string) $s; }
 function wp_strip_all_tags( $s ) { return strip_tags( (string) $s ); }
 function wp_kses_post( $s ) { return (string) $s; }
-function is_singular( $t = '' ) { return false; }
-function in_the_loop() { return false; }
-function is_main_query() { return false; }
-function get_queried_object() { return null; }
+function is_singular( $t = '' ) { return (bool) ( $GLOBALS['page']['singular'] ?? false ); }
+function in_the_loop() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
+function is_main_query() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
+function get_queried_object() { return $GLOBALS['page']['post'] ?? null; }
 function get_post() { return null; }
-function has_shortcode( $content, $tag ) { return false; }
+function has_shortcode( $content, $tag ) { return false !== strpos( (string) $content, '[' . $tag ); }
 function current_user_can( $cap ) { return false; }
 function wp_get_theme() { return new class { public function get( $k ) { return 'X'; } }; }
 function get_stylesheet() { return 'theme'; }
@@ -119,11 +119,15 @@ function home_url( $p = '' ) { return 'https://example.com' . $p; }
 function trailingslashit( $s ) { return rtrim( (string) $s, '/' ) . '/'; }
 function untrailingslashit( $s ) { return rtrim( (string) $s, '/' ); }
 function wp_json_encode( $v ) { return json_encode( $v ); }
+function wp_create_nonce( $a = '' ) { return 'nonce'; }
+function check_ajax_referer( $a = '', $b = false, $c = true ) { return true; }
+function wp_send_json_success( $d = null, $s = null ) {}
+function wp_send_json_error( $d = null, $s = null ) {}
 function wp_parse_args( $a, $b ) { return array_merge( $b, (array) $a ); }
 function shortcode_atts( $pairs, $atts, $tag = '' ) { return array_merge( $pairs, (array) $atts ); }
 function get_the_title( $id = 0 ) { return ''; }
 function get_bloginfo( $k ) { return ''; }
-function is_admin() { return true; }
+function is_admin() { return (bool) ( $GLOBALS['page']['admin'] ?? false ); }
 function did_action( $h ) { return 1; }
 function do_action( $h ) {}
 function wp_cache_get() { return false; }
@@ -155,7 +159,7 @@ function get_locale() { return 'en_US'; }
 function wp_timezone() { return new DateTimeZone( 'UTC' ); }
 function printf_( $s ) {}
 
-class WP_Post {}
+class WP_Post { public $ID = 7; public $post_title = ''; public $post_content = ''; public $post_name = ''; }
 class WP_Error {}
 class WP_Query {}
 
@@ -247,6 +251,27 @@ is( statchasers_h1_should_print(), false, 'forced off' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 
 is( statchasers_h1_filter( true ), true, 'an explicit true wins' );
+
+echo "\nreplace mode\n";
+// A page that mounts the team shortcode, in the loop, on the front end.
+$post = new WP_Post();
+$post->post_content = '[statchasers_team]';
+$post->post_name    = 'buffalo-bills';
+$GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $post );
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'on';
+is( statchasers_h1_should_print(), true, 'on: prints' );
+is( statchasers_h1_should_replace(), false, 'on: leaves the theme title alone' );
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'replace';
+is( statchasers_h1_should_print(), true, 'replace: prints' );
+is( statchasers_h1_should_replace(), true, 'replace: empties the theme title' );
+is( statchasers_h1_mounts_a_tool(), true, 'and only where a tool is mounted' );
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
+is( statchasers_h1_should_replace(), false, 'off: never' );
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
+$GLOBALS['page'] = array();
 
 echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 exit( $fail ? 1 : 0 );

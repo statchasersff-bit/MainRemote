@@ -39,8 +39,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Where the verdict lives. Keyed by theme inside, not by option name. */
 const STATCHASERS_H1_OPTION = 'statchasers_h1_verdict';
 
-/** 'auto' (follow the probe), 'on' (always print), 'off' (never print). */
+/**
+ * 'auto' (follow the probe), 'on' (always print), 'replace' (print, and blank
+ * the theme's own title), 'off' (never print).
+ */
 const STATCHASERS_H1_MODE_OPTION = 'statchasers_h1_mode';
+
+/** The modes that are a mode. Anything else read from the option is 'auto'. */
+const STATCHASERS_H1_MODES = array( 'auto', 'on', 'replace', 'off' );
 
 /** Seconds to wait on the loopback request. */
 const STATCHASERS_H1_TIMEOUT = 10;
@@ -56,7 +62,7 @@ const STATCHASERS_H1_TIMEOUT = 10;
  */
 function statchasers_h1_mode(): string {
 	$mode = (string) get_option( STATCHASERS_H1_MODE_OPTION, 'auto' );
-	return in_array( $mode, array( 'auto', 'on', 'off' ), true ) ? $mode : 'auto';
+	return in_array( $mode, STATCHASERS_H1_MODES, true ) ? $mode : 'auto';
 }
 
 /**
@@ -284,7 +290,7 @@ function statchasers_h1_probe(): array {
 function statchasers_h1_should_print(): bool {
 	$mode = statchasers_h1_mode();
 
-	if ( 'on' === $mode ) {
+	if ( 'on' === $mode || 'replace' === $mode ) {
 		return true;
 	}
 
@@ -302,6 +308,127 @@ function statchasers_h1_should_print(): bool {
 }
 
 /**
+ * Should the theme's own page title be emptied on these pages?
+ *
+ * Only in `replace`, and only ever deliberately. This is the plugin reaching
+ * into markup it does not own, which is a different kind of act from adding
+ * markup of its own, and it exists for one situation: a theme that prints a
+ * page title from its template, with no builder layout to remove it from. Divi
+ * is that theme — `<h1 class="entry-title main_title">` comes out of page.php —
+ * and on a site whose other pages carry a hand-built hero with a heading, a
+ * rule and a standfirst, the template's bare title is the one thing that cannot
+ * be made to match.
+ *
+ * What it does NOT do is hide a heading and leave the page without one. It runs
+ * only where the shortcode is printing a heading in its place, so the page ends
+ * up with exactly one, in the site's own hero markup, naming the section the
+ * reader is on.
+ */
+function statchasers_h1_should_replace(): bool {
+	return 'replace' === statchasers_h1_mode() && statchasers_h1_should_print();
+}
+
+/**
+ * Is this request a page that mounts one of the tools?
+ *
+ * The guards are the ones every `the_title` filter in this plugin carries, and
+ * they matter more here than anywhere else: `the_title` is called for menu
+ * items, admin lists, widgets and archive listings, and emptying it in any of
+ * those renames the page everywhere it is mentioned rather than unheading the
+ * one it is on.
+ */
+function statchasers_h1_mounts_a_tool(): bool {
+	static $answer = null;
+
+	if ( null !== $answer ) {
+		return $answer;
+	}
+
+	if ( is_admin() || ! is_singular() ) {
+		return false;
+	}
+
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return false;
+	}
+
+	$content = (string) $queried->post_content;
+
+	foreach ( array(
+		defined( 'STATCHASERS_TEAM_SHORTCODE' ) ? STATCHASERS_TEAM_SHORTCODE : '',
+		defined( 'STATCHASERS_PLAYER_SHORTCODE' ) ? STATCHASERS_PLAYER_SHORTCODE : '',
+		defined( 'STATCHASERS_MATCHUP_SHORTCODE' ) ? STATCHASERS_MATCHUP_SHORTCODE : '',
+	) as $tag ) {
+		if ( '' !== $tag && has_shortcode( $content, $tag ) ) {
+			$answer = true;
+			return $answer;
+		}
+	}
+
+	$answer = false;
+	return $answer;
+}
+
+/**
+ * Empty the theme's page title.
+ *
+ * Last, at PHP_INT_MAX, because the team and player files filter the same hook
+ * to rewrite that title into the section-aware phrase. In `replace` they are
+ * both right and this one is later: the phrase they produce is the phrase the
+ * shortcode is about to print in the hero, so what the template gets is
+ * nothing.
+ *
+ * The element itself survives — a filter on the text inside `<h1>` cannot
+ * remove the `<h1>` — so what the theme prints is an empty heading, and the
+ * rule below hides it. That husk is the honest cost of doing this without a
+ * builder layout, and it is why `replace` is not the default.
+ */
+add_filter(
+	'the_title',
+	static function ( $title, $id = 0 ) {
+		if ( ! statchasers_h1_should_replace() || ! in_the_loop() || ! is_main_query() ) {
+			return $title;
+		}
+
+		$queried = get_queried_object();
+		if ( ! $queried instanceof WP_Post || (int) $queried->ID !== (int) $id ) {
+			return $title;
+		}
+
+		return statchasers_h1_mounts_a_tool() ? '' : $title;
+	},
+	PHP_INT_MAX,
+	2
+);
+
+/**
+ * Hide the empty heading the filter above leaves behind.
+ *
+ * Printed rather than enqueued: which stylesheet handle is on the page depends
+ * on which tool it mounts, and this one rule belongs to none of them. It is
+ * emitted only on a page that is actually having its title replaced.
+ *
+ * `:empty` matches an element with no children at all, including text — which
+ * is exactly what `the_title` returning '' produces, and is why this cannot
+ * catch a heading that merely looks empty. A theme that wraps its title in
+ * whitespace needs one line of its own; the admin panel says so.
+ */
+add_action(
+	'wp_head',
+	static function (): void {
+		if ( ! statchasers_h1_should_replace() || ! statchasers_h1_mounts_a_tool() ) {
+			return;
+		}
+
+		echo "<style id=\"statchasers-title-replaced\">" .
+			'h1.entry-title:empty,h1.entry-title.main_title:empty{display:none!important}' .
+			'</style>' . "\n";
+	},
+	100
+);
+
+/**
  * The verdict as one sentence, for the admin screen and the notice.
  *
  * @return array{level:string,text:string}
@@ -313,6 +440,14 @@ function statchasers_h1_summary(): array {
 		return array(
 			'level' => 'info',
 			'text'  => 'Set to always print a heading, whatever the theme does.',
+		);
+	}
+
+	if ( 'replace' === $mode ) {
+		return array(
+			'level' => 'info',
+			'text'  => 'Printing the heading <strong>and emptying the theme\'s own page title</strong> on pages that mount a tool. ' .
+				'Check one of them: there should be exactly one H1, and it should be the hero\'s.',
 		);
 	}
 
@@ -511,7 +646,7 @@ add_action(
 
 			update_option(
 				STATCHASERS_H1_MODE_OPTION,
-				in_array( $mode, array( 'auto', 'on', 'off' ), true ) ? $mode : 'auto',
+				in_array( $mode, STATCHASERS_H1_MODES, true ) ? $mode : 'auto',
 				false
 			);
 		}
@@ -571,15 +706,16 @@ function statchasers_h1_panel(): void {
 
 	echo '<fieldset><legend class="screen-reader-text">Heading mode</legend>';
 	foreach ( array(
-		'auto' => 'Follow the check (recommended) — print a heading only when the theme prints none.',
-		'on'   => 'Always print a heading from the shortcode.',
-		'off'  => 'Never print one; the theme supplies the H1.',
+		'auto'    => 'Follow the check (recommended) — print a heading only when the theme prints none.',
+		'on'      => 'Always print a heading from the shortcode. Use this where the template prints no title of its own.',
+		'replace' => 'Print the heading <strong>and empty the theme\'s page title</strong> — for a theme that prints one from its template with no layout to remove it from. The emptied heading is hidden with a rule this plugin prints; a theme that pads its title with whitespace will need one line of CSS of its own.',
+		'off'     => 'Never print one; the theme supplies the H1.',
 	) as $value => $label ) {
 		printf(
 			'<p><label><input type="radio" name="statchasers_h1_mode" value="%s"%s /> %s</label></p>',
 			esc_attr( $value ),
 			checked( $mode, $value, false ),
-			esc_html( $label )
+			wp_kses_post( $label )
 		);
 	}
 	echo '</fieldset>';

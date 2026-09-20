@@ -38,8 +38,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Where the profiles live. Must match SC_PLAYER_PATH_PREFIX on the API. */
 const STATCHASERS_PLAYER_PATH = 'nfl/players';
 
-/** How many players one request writes. */
-const STATCHASERS_PLAYER_BATCH = 25;
+/**
+ * The ceiling on one request, and the time budget that usually decides it.
+ *
+ * A fixed batch size is the wrong control. Pick it low enough for the slowest
+ * host and every other host does twenty-three round trips it did not need; pick
+ * it for a fast host and a slow one dies halfway through a request. So the
+ * batch writes until the roster runs out, the ceiling is reached, or the budget
+ * is spent — whichever comes first — and what actually varies is how many pages
+ * a given host gets through in ten seconds.
+ *
+ * Ten seconds against a `max_execution_time` that is 30 on most shared hosting,
+ * leaving room for the request that is already in flight when the budget is
+ * checked. The ceiling is there so one request cannot hold a connection open
+ * for the whole roster on a fast box.
+ */
+const STATCHASERS_PLAYER_BATCH = 200;
+
+/** Seconds of writing per request before it hands control back. */
+const STATCHASERS_PLAYER_BUDGET = 10.0;
 
 /** Where the resume cursor lives while a build is running. */
 const STATCHASERS_PLAYER_CURSOR = 'statchasers_player_build_cursor';
@@ -261,10 +278,19 @@ function statchasers_player_build_batch( int $offset ): array {
 		return $result;
 	}
 
-	$status = statchasers_player_page_status( true );
-	$slice  = array_slice( $roster, max( 0, $offset ), STATCHASERS_PLAYER_BATCH );
+	$status  = statchasers_player_page_status( true );
+	$slice   = array_slice( $roster, max( 0, $offset ), STATCHASERS_PLAYER_BATCH );
+	$started = microtime( true );
+	$done    = 0;
 
 	foreach ( $slice as $row ) {
+		// Checked before the write rather than after, so the budget is what is
+		// left rather than what was left one page ago.
+		if ( $done > 0 && microtime( true ) - $started > STATCHASERS_PLAYER_BUDGET ) {
+			break;
+		}
+		++$done;
+
 		$id = $status['present'][ $row['slug'] ] ?? 0;
 
 		if ( $id ) {
@@ -306,7 +332,7 @@ function statchasers_player_build_batch( int $offset ): array {
 		statchasers_team_fill_meta( $id, 'rank_math_robots', array( 'index', 'follow' ) );
 	}
 
-	$result['next'] = min( $total, max( 0, $offset ) + STATCHASERS_PLAYER_BATCH );
+	$result['next'] = min( $total, max( 0, $offset ) + $done );
 
 	if ( $result['next'] >= $total ) {
 		statchasers_player_write_index( $container );
@@ -585,7 +611,45 @@ add_filter(
 /* --------------------------------------------------------------------- admin */
 
 /**
- * Drive the batch loop.
+ * One batch, over AJAX.
+ *
+ * This is what the loop actually runs on. The POST handler below still works
+ * and is what happens with no JavaScript, but a full admin page render between
+ * every batch is most of the cost of a build — WordPress boots the admin, the
+ * screen re-queries the page status, every other panel on it redraws — for a
+ * request whose real work is a few dozen inserts. Against ~575 players that
+ * overhead was the build.
+ *
+ * Same writes, same cursor, same idempotence; only the transport is different.
+ */
+add_action(
+	'wp_ajax_statchasers_player_build',
+	static function (): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );
+		}
+
+		check_ajax_referer( 'statchasers_player_build' );
+
+		$offset = isset( $_POST['offset'] ) ? absint( wp_unslash( $_POST['offset'] ) ) : 0;
+		$result = statchasers_player_build_batch( $offset );
+		$status = statchasers_player_page_status( true );
+
+		wp_send_json_success(
+			array(
+				'next'    => (int) $result['next'],
+				'total'   => (int) $result['total'],
+				'have'    => count( $status['present'] ),
+				'done'    => (int) $result['next'] >= (int) $result['total'],
+				'created' => (int) $result['created'],
+				'errors'  => array_values( (array) $result['errors'] ),
+			)
+		);
+	}
+);
+
+/**
+ * Drive the batch loop without JavaScript.
  *
  * One POST per batch, with the cursor in the form rather than in the session:
  * a refresh re-runs a batch that has already been written, which is a no-op,
@@ -697,47 +761,86 @@ function statchasers_player_panel(): void {
 	wp_nonce_field( 'statchasers_player_build' );
 	printf( '<input type="hidden" name="offset" value="%d" />', (int) $offset );
 
-	if ( $running ) {
-		printf(
-			'<p><progress value="%d" max="%d" style="width:320px"></progress> %d of %d</p>',
-			(int) $offset,
-			(int) $total,
-			(int) $offset,
-			(int) $total
-		);
-	}
+	printf(
+		'<p><progress id="sc-player-bar" value="%d" max="%d" style="width:320px"></progress> ' .
+		'<span id="sc-player-count">%d of %d</span></p>',
+		(int) $have,
+		(int) $total,
+		(int) $have,
+		(int) $total
+	);
 
 	printf(
-		'<p><button type="submit" name="statchasers_player_build" value="1" class="button button-primary%s">%s</button></p>',
-		$running ? '' : ' button-hero',
+		'<p><button type="submit" name="statchasers_player_build" value="1" class="button button-primary button-hero" id="sc-player-go">%s</button> ' .
+		'<button type="submit" name="statchasers_player_stop" value="1" class="button" id="sc-player-stop" hidden>Stop</button></p>',
 		$running
 			? esc_html( sprintf( 'Continue from %d', $offset ) )
 			: esc_html( sprintf( 'Create the %d missing pages', max( 0, $total - $have ) ) )
 	);
 
-	if ( $running ) {
-		echo '<p><button type="submit" name="statchasers_player_stop" value="1" class="button">Stop</button></p>';
-	}
-
-	printf(
-		'<p class="description">%d at a time, so a shared host does not time out. Safe to stop and resume: existing pages are never modified.</p>',
-		(int) STATCHASERS_PLAYER_BATCH
-	);
+	echo '<p class="description" id="sc-player-note">Writes for ten seconds at a time so a shared ' .
+		'host does not time out, then asks for the next lot. Safe to stop and resume: existing ' .
+		'pages are never modified.</p>';
 
 	echo '</form>';
 
-	if ( $running ) {
-		// The loop. Submitted from JS so the browser keeps asking for batches
-		// without anybody clicking six hundred times; the button above is what
-		// happens when there is no JS, and does the same thing one batch at a
-		// time.
-		echo '<script>setTimeout(function(){' .
-			'var f=document.getElementById("sc-player-build");' .
-			'if(f&&!f.dataset.stopped){f.submit();}' .
-			'},1200);' .
-			'document.querySelector("[name=statchasers_player_stop]")' .
-			'.addEventListener("click",function(){' .
-			'document.getElementById("sc-player-build").dataset.stopped="1";});' .
-			'</script>';
-	}
+	// The loop. Each round is one admin-ajax request that writes for ten
+	// seconds; with JS off the button above posts the form and does exactly one
+	// of those per click, which is the same build at a slower pace.
+	printf(
+		'<script>(function(){
+			var form=document.getElementById("sc-player-build");
+			var go=document.getElementById("sc-player-go");
+			var stop=document.getElementById("sc-player-stop");
+			var bar=document.getElementById("sc-player-bar");
+			var count=document.getElementById("sc-player-count");
+			var note=document.getElementById("sc-player-note");
+			var offset=%1$d, total=%2$d, stopped=false;
+			function round(){
+				if(stopped){return;}
+				var body=new FormData();
+				body.append("action","statchasers_player_build");
+				body.append("_ajax_nonce",%3$s);
+				body.append("offset",offset);
+				fetch(%4$s,{method:"POST",credentials:"same-origin",body:body})
+					.then(function(r){return r.json();})
+					.then(function(res){
+						if(!res||!res.success){throw new Error("bad response");}
+						var d=res.data;
+						offset=d.next; total=d.total;
+						bar.value=d.have; bar.max=d.total;
+						count.textContent=d.have+" of "+d.total;
+						if(d.errors&&d.errors.length){note.textContent=d.errors[0];}
+						if(d.done){
+							go.disabled=false; go.textContent="Done";
+							stop.hidden=true;
+							note.textContent="Finished. Every profile has a page.";
+							return;
+						}
+						round();
+					})
+					.catch(function(){
+						stopped=true; go.disabled=false; stop.hidden=true;
+						note.textContent="The last batch failed. Press the button to resume from where it stopped.";
+					});
+			}
+			form.addEventListener("submit",function(e){
+				if(e.submitter&&e.submitter.id==="sc-player-stop"){return;}
+				e.preventDefault();
+				stopped=false; go.disabled=true; stop.hidden=false;
+				go.textContent="Working\u2026";
+				round();
+			});
+			stop.addEventListener("click",function(e){
+				e.preventDefault();
+				stopped=true; go.disabled=false; stop.hidden=true;
+				go.textContent="Continue from "+offset;
+				note.textContent="Stopped. Nothing written so far is lost.";
+			});
+		})();</script>',
+		(int) $offset,
+		(int) $total,
+		wp_json_encode( wp_create_nonce( 'statchasers_player_build' ) ),
+		wp_json_encode( admin_url( 'admin-ajax.php' ) )
+	);
 }

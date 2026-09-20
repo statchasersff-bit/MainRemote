@@ -164,9 +164,38 @@ over HTTP as a logged-out visitor and counts the `<h1>` elements:
 | no measurement yet | nothing |
 
 The verdict is stored against the theme's stylesheet, template and version, and
-a theme switch retires it. The same panel has **Always print** and **Never
-print** for the site that is the exception — a template that prints a title on
-the team hubs and not on the player profiles, say.
+a theme switch retires it. The same panel carries three manual settings for the
+site that is the exception:
+
+| Mode | What it does |
+|------|--------------|
+| Follow the check | the default; prints a heading only where the theme prints none |
+| Always print | prints one regardless — for a template that prints no title |
+| **Replace the theme's title** | prints the hero **and empties the theme's own page title** |
+| Never print | the theme supplies the H1 |
+
+**Replace** exists for one situation: a theme that prints a page title from its
+template, with no builder layout to remove it from. Divi is that theme —
+`<h1 class="entry-title main_title">` comes out of `page.php` — and on a site
+whose other pages carry a hero with a heading, a rule and a standfirst, that
+bare title is the one thing that cannot be made to match.
+
+It filters `the_title` to '' at `PHP_INT_MAX`, after the filters that rewrite it
+into the section phrase, and only on a page that mounts one of the shortcodes,
+in the main loop, for that page's own title. A filter on the text inside an
+`<h1>` cannot remove the `<h1>`, so the theme prints an empty heading and the
+plugin prints one rule into `wp_head` to hide it:
+
+```css
+h1.entry-title:empty, h1.entry-title.main_title:empty { display: none !important }
+```
+
+`:empty` matches an element with no children at all, which is exactly what an
+emptied title is. A theme that wraps its title in whitespace produces something
+that only looks empty, and needs a line of its own. That husk is the honest cost
+of doing this without a builder layout, and it is why **Replace** is not the
+default and why a Theme Builder template with no Post Title module is still the
+cleaner answer where one is practical.
 
 This replaces the `curl | grep -o '<h1'` check the previous version told you to
 run by hand. The filters still work and still win:
