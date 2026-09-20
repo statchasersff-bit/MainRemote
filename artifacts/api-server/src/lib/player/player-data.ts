@@ -964,6 +964,10 @@ export async function getPlayerPageData(
   const teamNews = await teamNewsFor(team, news);
 
   const outlook2026 = loadFantasyOutlook2026()[player.id] ?? null;
+  // Built once and shared: the strip renders it and the outlook FAQ answers
+  // from it, and two calls could not drift apart but would say the same work
+  // twice on every player page.
+  const drivers = outlookDrivers(player, outlook2026);
   const designation = currentDesignation(player, team);
 
   const production = productionSeasons(player.id, format);

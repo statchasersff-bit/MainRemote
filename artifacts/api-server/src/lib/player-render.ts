@@ -2007,14 +2007,17 @@ function renderCareerTimeline(data: PlayerPageData): string {
   const { stints, college } = data.bioProfile;
   if (stints.length === 0) return "";
 
+  // The crest cell is emitted empty rather than skipped: it is a grid column,
+  // and a college stop that drops it would pull its name out of the line every
+  // club below it sits on.
   const collegeStop = college
     ? `<li class="scp-stint" data-kind="college">` +
       `<span class="scp-stint-mark" aria-hidden="true"></span>` +
       `<span class="scp-stint-years">College</span>` +
+      `<span class="scp-stint-crest"></span>` +
       `<span class="scp-stint-body">` +
-      `<span class="scp-stint-head">` +
       `<span class="scp-stint-name">${escapeHtml(college)}</span>` +
-      `</span></span></li>`
+      `</span></li>`
     : "";
 
   const stops = stints
@@ -2034,9 +2037,9 @@ function renderCareerTimeline(data: PlayerPageData): string {
         `<li class="scp-stint" data-kind="nfl"${stint.current ? ` data-current="1"` : ""}>` +
         `<span class="scp-stint-mark" aria-hidden="true"></span>` +
         `<span class="scp-stint-years">${escapeHtml(stint.years)}</span>` +
+        `<span class="scp-stint-crest">${logo}</span>` +
         `<span class="scp-stint-body">` +
         `<span class="scp-stint-head">` +
-        logo +
         `<span class="scp-stint-name">${escapeHtml(stint.name)}</span>` +
         (stint.current
           ? `<span class="scp-stint-badge">Current team</span>`
