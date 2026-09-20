@@ -16,6 +16,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { dataPath } from "./data-dir";
 import { logger } from "./logger";
 import {
   indexRoster,
@@ -42,7 +43,7 @@ const SLEEPER_PLAYERS_URL = "https://api.sleeper.app/v1/players/nfl";
 const REFRESH_MS = 12 * 60 * 60 * 1000;
 
 // Disk cache, so a restart (or a Sleeper outage) doesn't cost us the map.
-const CACHE_PATH = path.resolve(process.cwd(), "data", "player-teams.json");
+const CACHE_PATH = dataPath("player-teams.json");
 
 /**
  * The roster index gets its own file rather than being folded into the one
@@ -50,11 +51,7 @@ const CACHE_PATH = path.resolve(process.cwd(), "data", "player-teams.json");
  * corrupt or absent roster cache costs the team pages one refresh instead of
  * taking the news tool's team colours down with it.
  */
-const ROSTER_CACHE_PATH = path.resolve(
-  process.cwd(),
-  "data",
-  "team-roster.json",
-);
+const ROSTER_CACHE_PATH = dataPath("team-roster.json");
 
 interface CacheShape {
   fetchedAt: number;
