@@ -67,6 +67,13 @@ the page:
       print** / **Never print** settings are the way out.
 - [ ] after switching themes, the panel says the check needs running again
       rather than showing the old verdict.
+- [ ] **if the mode is Replace**, the page has exactly one H1 and it is the
+      hero's. `curl -s <url> | grep -c '<h1'` counts **elements**, so it returns
+      2 while the emptied husk is still in the markup — that is expected, and
+      what matters is that only one of them has text in it and that the husk is
+      hidden. If the husk is visible, the theme pads its title with whitespace
+      and `:empty` cannot match it; add `h1.entry-title{display:none}` scoped to
+      those pages.
 - [ ] **if the plugin is printing the heading**, the hero CSS is site-wide
       (Divi → Theme Options → Custom CSS), not inline in one page's Code
       module. Generated headings carry the `sc-lo-hero` classes; with the CSS
