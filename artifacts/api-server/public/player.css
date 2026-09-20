@@ -4522,13 +4522,17 @@ body.scp-page {
  * of tables. The rail is a left border on the list; each stop punches a dot
  * through it.
  *
- * The stop itself is a full-width row on a three-column grid — years, club,
- * season count — because the earlier version laid its spans out inline and
- * every one of them crowded into the first quarter of the column. A rail with
- * three quarters of empty canvas beside it does not read as a spine, it reads
- * as a sidebar that has lost its page. Now the years hold their own column,
- * the club runs through the middle, and the count is pinned to the far edge,
- * so the row spans the measure and the three zones line up down the list.
+ * The stop itself is a full-width row on a four-column grid — years, crest,
+ * club, season count — because the earlier version laid its spans out inline
+ * and every one of them crowded into the first quarter of the column. A rail
+ * with three quarters of empty canvas beside it does not read as a spine, it
+ * reads as a sidebar that has lost its page. Now the years hold their own
+ * column, the club runs through the middle, and the count is pinned to the far
+ * edge, so the row spans the measure and the zones line up down the list.
+ *
+ * The crest is a column of its own rather than the first thing inside the club
+ * cell, which is what puts the club name and the line under it on the same
+ * left edge — and what puts the college, which has no crest, on that edge too.
  */
 .scp-stints {
   margin: 0 0 28px;
@@ -4542,9 +4546,10 @@ body.scp-page {
   display: grid;
   /* The count column is `auto`, so "12 seasons" and "1 season" both sit flush
      to the right edge without a fixed width guessing at the longest. */
-  grid-template-columns: 92px minmax(0, 1fr) auto;
+  grid-template-columns: 88px 28px minmax(0, 1fr) auto;
+  column-gap: 14px;
   align-items: center;
-  gap: 4px 18px;
+  row-gap: 4px;
   padding: 13px 14px 13px 24px;
   border-radius: var(--sc-radius-xs);
   transition: background-color 0.12s ease;
@@ -4613,8 +4618,17 @@ body.scp-page {
   min-width: 0;
 }
 
+/* Fixed-size whether or not it holds a crest, so the college row reserves the
+   column instead of collapsing it. */
+.scp-stint-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
 .scp-stint-logo {
-  flex: 0 0 auto;
   width: 28px;
   height: 28px;
   object-fit: contain;
@@ -4669,13 +4683,20 @@ body.scp-page {
  */
 @media (max-width: 560px) {
   .scp-stint {
-    grid-template-columns: 74px minmax(0, 1fr);
-    gap: 2px 12px;
-    padding: 12px 8px 12px 22px;
+    grid-template-columns: 68px 26px minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 2px;
+    padding: 12px 6px 12px 22px;
+  }
+
+  .scp-stint-crest,
+  .scp-stint-logo {
+    width: 26px;
+    height: 26px;
   }
 
   .scp-stint-count {
-    grid-column: 2;
+    grid-column: 3;
     justify-self: start;
   }
 }
