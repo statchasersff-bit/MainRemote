@@ -68,6 +68,121 @@ const STATCHASERS_SCHEDULE_FILTERS = array( 'all', 'division', 'international' )
 /** A regular season is 18 weeks. Mirrors TOTAL_WEEKS in the API. */
 const STATCHASERS_SCHEDULE_WEEKS = 18;
 
+/* -------------------------------------------------------------- week URLs */
+
+/**
+ * Where the board lives, without its slashes.
+ *
+ * This is both the page the rewrite rules point at and the base the week URLs
+ * hang off, so it MUST match `SC_SCHEDULE_PATH` on the API — that is what the
+ * board's own week links are built from, and a mismatch means every link on
+ * the page 404s. A site that mounts the shortcode somewhere else changes both.
+ */
+function statchasers_schedule_page_path(): string {
+	$path = (string) apply_filters( 'statchasers_schedule_page_path', 'nfl/nfl-schedule' );
+	return trim( $path, '/' );
+}
+
+/**
+ * Whether the per-week addresses are live. On by default.
+ *
+ *     add_filter( 'statchasers_schedule_week_urls', '__return_false' );
+ *
+ * Same shape as the matchup switch, and like it the sitemap entries move with
+ * the same flag, so the sitemap can never advertise an address the rewrite does
+ * not serve. Turning it off leaves `[statchasers_schedule]` exactly as it was:
+ * one page, showing whatever week the season is on.
+ */
+function statchasers_schedule_week_urls_enabled(): bool {
+	return (bool) apply_filters( 'statchasers_schedule_week_urls', true );
+}
+
+/** A week's public address: /nfl/nfl-schedule/week-7/. */
+function statchasers_schedule_week_url( int $week ): string {
+	return user_trailingslashit(
+		home_url( '/' . statchasers_schedule_page_path() . '/week-' . $week )
+	);
+}
+
+add_filter(
+	'query_vars',
+	static function ( array $vars ): array {
+		$vars[] = 'sc_sched_week';
+		return $vars;
+	}
+);
+
+add_action(
+	'init',
+	static function (): void {
+		if ( ! statchasers_schedule_week_urls_enabled() ) {
+			return;
+		}
+		$page = statchasers_schedule_page_path();
+		if ( '' === $page ) {
+			return;
+		}
+		// One segment, one spelling. The leading zero is excluded HERE rather
+		// than validated later, because "week-02" is not a slow way of asking
+		// for week 2 — it is a second address for it, which is the whole thing
+		// the path was moved out of the query string to avoid. Mirrors the
+		// strictness of the /schedule/week-:week route in the API.
+		add_rewrite_rule(
+			'^' . $page . '/week-([1-9][0-9]?)/?$',
+			'index.php?pagename=' . $page . '&sc_sched_week=$matches[1]',
+			'top'
+		);
+	}
+);
+
+/**
+ * The week this request names, or 0.
+ *
+ * MIRRORS parseWeek() in the API's schedule-data.ts: a week the season does not
+ * have is not a week. The rewrite's own pattern already rejects the spellings;
+ * what is left to check is the range.
+ */
+function statchasers_schedule_request_week(): int {
+	static $week = null;
+
+	if ( null !== $week ) {
+		return $week;
+	}
+
+	$week = 0;
+	$raw  = trim( (string) get_query_var( 'sc_sched_week' ) );
+	if ( '' !== $raw && ctype_digit( $raw ) ) {
+		$asked = (int) $raw;
+		if ( $asked >= 1 && $asked <= STATCHASERS_SCHEDULE_WEEKS ) {
+			$week = $asked;
+		}
+	}
+
+	return $week;
+}
+
+/**
+ * A week the season does not have is a 404, not the current week.
+ *
+ * `/nfl/nfl-schedule/week-23/` matches the rewrite — the pattern is the shape,
+ * not the truth — and without this it would quietly render whatever week the
+ * board opens on, at an address claiming to be week 23. The API answers the
+ * same URL with a 404 for the same reason.
+ */
+add_action(
+	'template_redirect',
+	static function (): void {
+		$raw = trim( (string) get_query_var( 'sc_sched_week' ) );
+		if ( '' === $raw || statchasers_schedule_request_week() > 0 ) {
+			return;
+		}
+		global $wp_query;
+		$wp_query->set_404();
+		status_header( 404 );
+		nocache_headers();
+	}
+);
+
 /**
  * Normalise the shortcode attributes.
  *
@@ -109,6 +224,16 @@ function statchasers_schedule_args( array $atts ): array {
 	$week = (int) $atts['week'];
 	if ( $week < 1 || $week > STATCHASERS_SCHEDULE_WEEKS ) {
 		$week = 0;
+	}
+
+	// A week URL outranks the attribute, because it is an ADDRESS: a page
+	// reached at /week-7/ that rendered week 3 would be a wrong answer at a
+	// right-looking URL, and the board's own week links all point at addresses
+	// now. Where no week URL is in play — any other page mounting the
+	// shortcode — the attribute is untouched.
+	$from_url = statchasers_schedule_request_week();
+	if ( $from_url > 0 ) {
+		$week = $from_url;
 	}
 
 	$team = strtolower( trim( (string) $atts['team'] ) );
@@ -387,6 +512,11 @@ add_filter( 'body_class', 'statchasers_schedule_full_width_body_class', PHP_INT_
  * the board's own week and team controls are ordinary links back to whatever
  * SC_SCHEDULE_PATH names on the API side.
  *
+ * The one thing it does read is the week, when the request came in at a week
+ * URL: `/nfl/nfl-schedule/week-7/`. That is still the page owning its address —
+ * the rewrite rule above put the week in a query var before the shortcode ran,
+ * and the filters below give that address its own title and canonical.
+ *
  * @param array<string,mixed>|string $atts Shortcode attributes.
  * @return string HTML.
  */
@@ -432,6 +562,111 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	);
 }
 add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' );
+
+/* ----------------------------------------------------- what a week page is */
+
+/**
+ * The title a week URL should carry.
+ *
+ * Built from the page's own title rather than from the season, because the page
+ * is where the season is written ("2026 NFL Schedule") and this file has no
+ * business knowing the year. Eighteen addresses sharing one title is eighteen
+ * pages a search engine has no reason to tell apart, which is the only thing
+ * that would make the week URLs worse than the parameter they replaced.
+ */
+function statchasers_schedule_week_title(): string {
+	$week = statchasers_schedule_request_week();
+	if ( 0 === $week ) {
+		return '';
+	}
+	$page = trim( (string) get_the_title( get_queried_object_id() ) );
+	if ( '' === $page ) {
+		$page = 'NFL Schedule';
+	}
+	return sprintf( '%s: Week %d', $page, $week );
+}
+
+/** The description for a week URL, or '' when this is not one. */
+function statchasers_schedule_week_description(): string {
+	$week = statchasers_schedule_request_week();
+	return 0 === $week
+		? ''
+		: sprintf(
+			'Every Week %d game of the NFL regular season: matchups, dates, kickoff times, TV networks, the teams on bye, and the market\'s posted spreads and totals.',
+			$week
+		);
+}
+
+/** The canonical for a week URL, or '' when this is not one. */
+function statchasers_schedule_week_canonical(): string {
+	$week = statchasers_schedule_request_week();
+	// A week is its own canonical, not a variant of the board: it is a
+	// different set of games, which is the whole reason it has an address. The
+	// API says the same thing about /schedule/week-7 in routes/schedule.ts.
+	return 0 === $week ? '' : statchasers_schedule_week_url( $week );
+}
+
+add_filter( 'rank_math/frontend/title', function ( $title ) {
+	$own = statchasers_schedule_week_title();
+	return '' === $own ? $title : $own . ' | StatChasers';
+} );
+add_filter( 'rank_math/frontend/description', function ( $description ) {
+	$own = statchasers_schedule_week_description();
+	return '' === $own ? $description : $own;
+} );
+add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
+	$own = statchasers_schedule_week_canonical();
+	return '' === $own ? $canonical : $own;
+} );
+add_filter( 'rank_math/opengraph/url', function ( $url ) {
+	$own = statchasers_schedule_week_canonical();
+	return '' === $own ? $url : $own;
+} );
+add_filter( 'document_title_parts', function ( array $parts ): array {
+	$own = statchasers_schedule_week_title();
+	if ( '' !== $own && isset( $parts['title'] ) ) {
+		$parts['title'] = $own;
+	}
+	return $parts;
+} );
+add_filter( 'get_canonical_url', function ( $canonical ) {
+	$own = statchasers_schedule_week_canonical();
+	return '' === $own ? $canonical : $own;
+} );
+
+/* ------------------------------------------------------------- the sitemap */
+
+/**
+ * The eighteen week URLs, appended to Rank Math's page sitemap.
+ *
+ * The board itself is a real page and Rank Math lists it. The week addresses
+ * have no post behind them, so they have to be added — and only while the
+ * rewrite is live and the page actually exists, or the sitemap would advertise
+ * eighteen addresses that 404. Same switch as the rewrite, so the two cannot
+ * disagree. Same caveat as the team sections: `{$type}_content` is the
+ * documented filter for this and has not been verified against the installed
+ * Rank Math build.
+ */
+add_filter(
+	'rank_math/sitemap/page_content',
+	function ( $content ) {
+		if ( ! statchasers_schedule_week_urls_enabled() ) {
+			return $content;
+		}
+		$page = get_page_by_path( statchasers_schedule_page_path() );
+		if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
+			return $content;
+		}
+		$extra = '';
+		for ( $week = 1; $week <= STATCHASERS_SCHEDULE_WEEKS; $week++ ) {
+			$extra .= statchasers_team_sitemap_entry(
+				statchasers_schedule_week_url( $week ),
+				''
+			);
+		}
+		return $content . $extra;
+	}
+);
 
 /**
  * Clear cached schedule renders. Called by statchasers_news_flush().

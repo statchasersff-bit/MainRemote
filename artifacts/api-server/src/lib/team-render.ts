@@ -117,6 +117,7 @@ export const PUBLIC_SECTIONS = [
   "schedule",
   "depth-chart",
   "matchups",
+  "news",
 ] as const;
 
 /** The pretty address of one section: `<prefix><slug>/<section>/`. */
@@ -136,10 +137,11 @@ export function sectionPath(
  * label: "Fantasy Football Outlook", not "Outlook". Sections not listed here
  * can still be addressed; they just fall back to the team's own name.
  *
- * News is deliberately absent from the WordPress rewrite that mints these URLs
- * — a team whose archive is two stories is a thin page — but it is listed here
- * so that if the route is ever opened it names itself correctly rather than
- * falling back.
+ * News was the one section held back from this list's public counterpart, on
+ * the grounds that a team whose archive is two stories is a thin page. It is
+ * open now and addressed like the other five: the archive fills through the
+ * season, and a section that is thin in September is the same section that is
+ * the most-read one in November.
  */
 const SECTION_HEADINGS: Record<string, string> = {
   outlook: "Fantasy Football Outlook",

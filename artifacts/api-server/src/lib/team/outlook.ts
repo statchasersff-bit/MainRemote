@@ -448,7 +448,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Geno Smith",
             position: "QB",
-            tier: "Superflex QB2",
+            tier: "QB3",
             thesis:
               "An upgrade on what the Jets had, which is a lower bar than it sounds.",
             stats: ["3,025 pass yds", "19 TD", "17 INT"],
@@ -554,6 +554,16 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "A 50% catch rate on 38 looks is a marginal role executed badly, and it happened in a season where the WR2 job was genuinely open. Baltimore's passing volume is the ceiling on anyone who is not Flowers, and there is nothing in this line suggesting he is next in the queue. He is a bye-week name, not a bench stash.",
           },
           {
+            name: "Ja'Kobi Lane",
+            position: "WR",
+            tier: "Rookie red-zone stash",
+            thesis:
+              "Six-foot-four, drafted to be the thing this offence does not have when the field shortens.",
+            stats: ["3rd-round rookie", "No NFL snaps", "Behind Flowers and Bateman"],
+            note:
+              "A third-round pick out of USC whose measurables are most of the profile: ten-and-a-half-inch hands, one of the longest wingspans in the class, and a coaching staff that has said out loud it intends to use the size in scoring situations. Baltimore split twenty-three passing touchdowns across a receiving corps in which only Zay Flowers commanded a defence, so the job he is being asked to do is a real one. The route work is ahead of the yards after catch and an 8.6% drop rate in college is the part that needs a year — with Bateman signed through 2029 and Elijah Sarratt to climb past, this is a stash whose case is next season.",
+          },
+          {
             name: "Justice Hill",
             position: "RB",
             tier: "Handcuff with pass-game value",
@@ -619,7 +629,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Chase Brown",
             position: "RB",
-            tier: "Reception-fuelled RB2",
+            tier: "Reception-fuelled RB1",
             thesis:
               "Eighty-eight targets is what makes him startable, because 4.4 a carry is not.",
             stats: ["1,019 rush yds", "69 rec, 437 yds", "11 total TD"],
@@ -631,16 +641,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       {
         label: "Secondary options",
         players: [
-          {
-            name: "Andrei Iosivas",
-            position: "WR",
-            tier: "Bye-week fill",
-            thesis:
-              "The WR3 in a two-receiver offence, which is a smaller job than it sounds.",
-            stats: ["33 rec, 435 yds", "58 targets", "13.2 yds/rec"],
-            note:
-              "Fifty-eight targets across seventeen games is roughly three a week, and 13.2 a catch says he is being used down the field rather than as a volume outlet. That is a fine profile for a fourth receiver on your bench and a poor one for a starter, because his best games require a Chase or Higgins absence. The upside is real only in the weeks the injury report creates it.",
-          },
           {
             name: "Mike Gesicki",
             position: "TE",
@@ -693,6 +693,16 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
             stats: ["827 rush yds", "3.6 yds/carry", "7 TD"],
             note:
               "The workload is unambiguous and the efficiency is alarming: 3.6 a carry over 230 attempts is bottom-of-the-league running, and it happened on an offence that gave defences no reason to respect the pass. Seven touchdowns on a team that scored 16.4 a game says the goal-line work is his, which is the entire fantasy case. If Monken's arrival moves the passing game at all, Judkins is the player it helps most.",
+          },
+          {
+            name: "KC Concepcion",
+            position: "WR",
+            tier: "Rookie WR3 with starter upside",
+            thesis:
+              "A first-round receiver walking into a room with no established first read.",
+            stats: ["1st-round rookie", "919 college yds", "9 college TD"],
+            note:
+              "Nine hundred and nineteen yards and nine scores in his last college season, with erratic quarterback play behind them — the separation after the catch is the skill, and it is the one that survives a bad passing offence. Jerry Jeudy and fellow rookie Denzel Boston are the competition for the targets a 31st-ranked passing game has to give, and the college drops are a real caveat rather than a footnote. Nobody available this late has a clearer path to a starter's workload, which is the whole reason to spend the pick.",
           },
         ],
       },
@@ -863,12 +873,12 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "C.J. Stroud",
             position: "QB",
-            tier: "Mid-range QB1",
+            tier: "Low-end QB2",
             thesis:
               "A 92.9 rating in fourteen starts, with just enough rushing to matter.",
             stats: ["3,041 pass yds", "19 TD, 8 INT", "209 rush yds"],
             note:
-              "Two hundred and seventeen passing yards and 1.4 touchdowns a start is a solid rather than a spectacular rate, and the 209 rushing yards add a floor that his early career did not have. The pace is what makes him startable — sixty-four plays a game means attempts, and attempts are most of quarterback scoring. The three missed starts and a run-heavy red zone are why he is not in the top five.",
+              "Two hundred and seventeen passing yards and 1.4 touchdowns a start is a solid rather than a spectacular rate, and the 209 rushing yards add a floor that his early career did not have. The pace is what makes him startable — sixty-four plays a game means attempts, and attempts are most of quarterback scoring. The three missed starts, nineteen touchdowns and a red zone that belongs to David Montgomery are why this is a bench quarterback in a one-quarterback league rather than a starter you plan around.",
           },
           {
             name: "David Montgomery",
@@ -883,7 +893,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Dalton Schultz",
             position: "TE",
-            tier: "Back-end TE1",
+            tier: "TE2",
             thesis:
               "106 targets and 82 catches, and almost none of it near the end zone.",
             stats: ["82 rec, 777 yds", "106 targets", "3 TD"],
@@ -961,7 +971,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Jonathan Taylor",
             position: "RB",
-            tier: "The first pick",
+            tier: "RB1",
             thesis:
               "1,963 yards and twenty touchdowns on 369 touches — there is no comparable workload.",
             stats: ["1,585 rush yds", "18 rush TD", "46 rec, 378 yds"],
@@ -971,12 +981,12 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Daniel Jones",
             position: "QB",
-            tier: "Streaming QB1",
+            tier: "High-end QB3 with upside",
             thesis:
               "A 100.2 rating and five rushing touchdowns, on an offence that scores without him.",
             stats: ["3,101 pass yds", "19 TD, 8 INT", "5 rush TD"],
             note:
-              "Sixty-eight percent completion at a 100.2 rating is comfortably the best stretch of his career, and the five rushing touchdowns are worth more to a fantasy line than the 164 rushing yards suggest. The problem is the same one that makes Taylor great: Indianapolis runs it in from the two, so the passing touchdowns are capped. A fine QB1 in the weeks the matchup forces Indianapolis to throw.",
+              "Sixty-eight percent completion at a 100.2 rating is comfortably the best stretch of his career, and the five rushing touchdowns are worth more to a fantasy line than the 164 rushing yards suggest. The problem is the same one that makes Taylor great: Indianapolis runs it in from the two, so the passing touchdowns are capped. A quarterback worth starting in the weeks the matchup forces Indianapolis to throw, and a bench name in the rest of them.",
           },
           {
             name: "Alec Pierce",
@@ -1006,12 +1016,12 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Keenan Allen",
             position: "WR",
-            tier: "PPR WR3",
+            tier: "PPR WR4",
             thesis:
               "Team-high 122 targets, at 9.6 yards a catch.",
             stats: ["81 rec, 777 yds", "122 targets", "4 TD"],
             note:
-              "Eighty-one receptions across all seventeen games is a genuinely reliable PPR floor and the target share is the largest in the receiving corps. Everything about the yardage says short and intermediate — he is moving the chains while Pierce takes the top off. In a points-per-reception league he is a steady starter; in standard scoring 777 yards and four scores is a bench profile.",
+              "Eighty-one receptions across all seventeen games is a genuinely reliable PPR floor and the target share is the largest in the receiving corps. Everything about the yardage says short and intermediate — he is moving the chains while Pierce takes the top off. In a points-per-reception league he is a flex you can start without thinking about it; in standard scoring 777 yards and four scores is a bench profile.",
           },
           {
             name: "Josh Downs",
@@ -1050,7 +1060,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
           {
             name: "Trevor Lawrence",
             position: "QB",
-            tier: "Top-five QB1",
+            tier: "Mid-range QB1",
             thesis:
               "Twenty-nine passing touchdowns and nine on the ground, at the league's fourth-fastest pace.",
             stats: ["4,007 pass yds", "29 TD, 12 INT", "9 rush TD"],
@@ -1058,24 +1068,24 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
               "Thirty-eight total touchdowns across seventeen games is the whole case, and the nine rushing scores are the part that makes it durable — that is a floor no receiving corps can take away from him. The 60.9% completion rate is genuinely poor and it did not stop any of it, because sixty-four plays a game produces enough attempts to absorb the misses. Pace and legs are why he is a QB1 rather than a good real-life quarterback.",
           },
           {
-            name: "Brian Thomas",
-            position: "WR",
-            tier: "WR2 with WR1 upside",
-            thesis:
-              "14.7 a catch in fourteen games, on ninety-one targets he did not have to share evenly.",
-            stats: ["48 rec, 707 yds", "91 targets", "14 games"],
-            note:
-              "Fifty yards a game and 14.7 a reception is a downfield role on a fast offence, and ninety-one targets in fourteen appearances is a rate that projects past 100 over a full year. Two touchdowns is the number that will look wrong in hindsight — nothing about the usage or the depth of target explains it, and Jacksonville threw twenty-nine scores. The cheapest source of touchdown regression on this roster.",
-          },
-          {
             name: "Parker Washington",
             position: "WR",
-            tier: "WR3",
+            tier: "WR3 with upside",
             thesis:
               "Led the team's receivers in yards, which nobody expected and the price has not caught up to.",
             stats: ["58 rec, 847 yds", "95 targets", "5 TD"],
             note:
-              "Eight hundred and forty-seven yards at 14.6 a catch, with five touchdowns, is the most complete receiving season anyone here produced. Ninety-five targets is a real share on an offence with this much volume. The caution is that he has done it once, in a room where Thomas and Meyers both have stronger claims to the first read — this is a genuine three-way split, and he is the one with the least security in it.",
+              "Eight hundred and forty-seven yards at 14.6 a catch, with five touchdowns, is the most complete receiving season anyone here produced. Ninety-five targets is a real share on an offence with this much volume. The caution is that he has done it once, and that this is still a genuine three-way split: Thomas and Meyers will each take weeks off him. What he has that neither of them does is the last full season of evidence.",
+          },
+          {
+            name: "Brian Thomas",
+            position: "WR",
+            tier: "WR4 with upside",
+            thesis:
+              "14.7 a catch in fourteen games, on ninety-one targets he did not have to share evenly.",
+            stats: ["48 rec, 707 yds", "91 targets", "14 games"],
+            note:
+              "Fifty yards a game and 14.7 a reception is a downfield role on a fast offence, and ninety-one targets in fourteen appearances is a rate that projects past 100 over a full year. Two touchdowns is the number that will look wrong in hindsight — nothing about the usage or the depth of target explains it, and Jacksonville threw twenty-nine scores. A three-way split with Washington and Meyers is the cap on the role, which is what keeps him a bench receiver; the touchdowns are the reason he is the widest range of outcomes in the room.",
           },
           {
             name: "Jakobi Meyers",
@@ -1136,7 +1146,7 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       },
     ],
     bottomLine:
-      "Trevor Lawrence is the asset here and the pace is why — thirty-eight total touchdowns from a quarterback completing 60.9% of his throws is a volume story, and the volume is not going anywhere. Brian Thomas is the buy underneath him; the backfield is now two men rather than three, and Bhayshul Tuten is the one with the vacated carries in front of him.",
+      "Trevor Lawrence is the asset here and the pace is why — thirty-eight total touchdowns from a quarterback completing 60.9% of his throws is a volume story, and the volume is not going anywhere. Brian Thomas is the cheapest upside underneath him; the backfield is now two men rather than three, and Bhayshul Tuten is the one with the vacated carries in front of him.",
   },
   ten: {
     season: 2026,

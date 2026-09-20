@@ -101,6 +101,22 @@
   --scp-series-points: #2f63a8;
   --scp-series-average: #a87905;
 
+  /*
+   * The skill positions, wherever one is named beside a player.
+   *
+   * The site's four inks, the same values team.css publishes as --sct-pos-*
+   * and the depth chart, the outlook cards and the matchup tables all use.
+   * Restated rather than imported for the reason the brand tokens are: a
+   * WordPress page mounting [statchasers_player] must not need the team hub's
+   * stylesheet to render. Each clears 4.5:1 on white at the 11px they are read
+   * at here, and a position with no ink of its own — a kicker — keeps the
+   * muted grey around it rather than taking a fifth colour that means "other".
+   */
+  --sc-pos-qb: #99323a;
+  --sc-pos-rb: #0f6b4f;
+  --sc-pos-wr: #1d4e8c;
+  --sc-pos-te: #a87905;
+
   /* Status, for the injury risk rows only — never reused as a series colour. */
   --scp-risk-low: #0f6b4f;
   --scp-risk-moderate: #8a6205;
@@ -249,7 +265,9 @@ body.scp-page {
   top: calc(100% + 6px);
   right: 0;
   left: 0;
-  max-height: 336px;
+  /* Eight rows of 54px and the panel's own padding — the full result set,
+     without a scrollbar inside a list that is already short by design. */
+  max-height: 444px;
   padding: 6px;
   overflow-y: auto;
   border: 1px solid var(--sc-border);
@@ -264,13 +282,63 @@ body.scp-page {
 
 .scp-search-opt {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 9px 12px;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 10px;
   border-radius: var(--sc-radius-xs);
   color: var(--sc-ink);
   text-decoration: none;
+}
+
+/*
+ * The portrait, with the club's mark on its corner.
+ *
+ * One object at the head of the row rather than two pictures in two columns —
+ * the arrangement the app this page was ported from used, and the reason a
+ * list of eight reads as a single column of faces. The well is the sink rather
+ * than a club tint: the mark on the corner is already carrying the club, and a
+ * second, softer statement of it behind the player's head only muddies the
+ * portrait.
+ */
+.scp-search-face {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-sink);
+}
+
+.scp-search-shot {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  /* Sleeper's thumbnails are wide cutouts on transparency, so the head sits in
+     the middle of a lot of shoulder: cropped to the top of the frame, a 38px
+     square is a face rather than a chest. */
+  object-fit: cover;
+  object-position: 50% 8%;
+}
+
+.scp-search-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  /* A ring of the panel's own white, so the mark reads as a badge ON the
+     portrait rather than as something floating over its corner. */
+  border-radius: 999px;
+  background: var(--sc-surface);
+  box-shadow: 0 0 0 1.5px var(--sc-surface);
+}
+
+.scp-search-who {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
 }
 
 /*
@@ -290,19 +358,55 @@ body.scp-page {
 }
 
 .scp-search-name {
-  font-size: 15px;
+  overflow: hidden;
+  font-size: 14.5px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scp-search-meta {
-  flex: 0 0 auto;
-  color: var(--sc-muted);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
   white-space: nowrap;
+}
+
+/* The position, in its own ink. Four of them; anything else — a kicker, a
+   player the dictionary has no position for — inherits the muted grey. */
+.scp-search-pos {
+  color: var(--sc-muted);
+  text-transform: uppercase;
+}
+
+.scp-search-pos[data-pos="QB"] {
+  color: var(--sc-pos-qb);
+}
+
+.scp-search-pos[data-pos="RB"] {
+  color: var(--sc-pos-rb);
+}
+
+.scp-search-pos[data-pos="WR"] {
+  color: var(--sc-pos-wr);
+}
+
+.scp-search-pos[data-pos="TE"] {
+  color: var(--sc-pos-te);
+}
+
+.scp-search-dot {
+  color: var(--sc-border);
+}
+
+.scp-search-club {
+  color: var(--sc-muted);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .scp-search-empty {

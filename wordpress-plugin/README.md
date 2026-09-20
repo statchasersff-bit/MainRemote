@@ -23,7 +23,10 @@ nothing is hidden behind a click.
 
 ## Install
 
-1. Copy `statchasers-news/` into `wp-content/plugins/` and activate it.
+1. Upload `dist/statchasers-news.zip` at **Plugins → Add New → Upload Plugin**,
+   or copy `statchasers-news/` into `wp-content/plugins/` yourself, and
+   activate it. Activation flushes permalinks on the next request, so the
+   section and pair URLs below work without a visit to Settings → Permalinks.
 2. Point it at the news API in `wp-config.php`:
 
    ```php
@@ -43,6 +46,34 @@ nothing is hidden behind a click.
    [statchasers_rankings] the redraft rankings board
    [statchasers_schedule] the NFL schedule
    ```
+
+   Or skip step 3 and let the plugin write the pages: **Tools → StatChasers
+   Pages** creates the 32 team hubs, the ~600 player profiles and the matchup
+   holder, each with its shortcode, its Rank Math fields and nothing else. See
+   [Building the pages](#building-the-pages).
+
+## Building the pages
+
+A page on this site is what makes a tool indexable: the API serves its own copy
+`noindex, indexifembedded`, so until a WordPress page mounts the fragment there
+is no URL that can rank. **Tools → StatChasers Pages** builds all three sets.
+
+| Panel | Writes | Notes |
+|-------|--------|-------|
+| Team pages | 32 hubs under `/nfl/teams/`, plus the container and its index | One request. Optionally sideloads the 32 crests as featured images. |
+| Player pages | one page per indexed player under `/nfl/players/`, plus the container and a team-grouped index | Batched 25 at a time and resumable — the list is the API's `/embed/players.json`, roughly 600 players. |
+| Matchup pages | the single `/nfl/matchup/` holder | 496 pair URLs are rewrite rules onto that one page; no page is created per pair. |
+
+Every write makes the same promises the WP-CLI scripts did: a page that already
+exists is yours and its content is never touched, a Rank Math field is filled
+only where it is empty, and running it again is a no-op. The player build keeps
+its cursor in an option, so closing the tab halfway leaves the pages it wrote in
+place and the button comes back as **Continue from N**.
+
+`scripts/create-team-pages.sh`, `scripts/create-player-pages.sh` and
+`scripts/sc-build-pages.php` still exist and still work. They are for hosts with
+WP-CLI or no admin access; the Tools screen is the same job for Bluehost-shaped
+hosting, and writes the same strings.
 
 ## The team hubs — `[statchasers_team]`
 
@@ -99,7 +130,7 @@ from team + section + season, mirroring `teamSectionHeading()` in the API's
 | `…/matchups/` | New England Patriots Matchups 2026 |
 
 Nothing is stored and no page is edited: the heading is computed per request, so
-all 32 pages and all 160 addresses are covered the moment the plugin is active,
+all 32 pages and all 192 addresses are covered the moment the plugin is active,
 and a season rollover is the same one-line edit as the titles
 (`STATCHASERS_TEAM_SEASON`). The stored `post_title` stays `<Team> Team Page`,
 which is what the admin list and any nav menu want — a menu item is its own post
@@ -114,23 +145,88 @@ argument to hand the heading back to the stored title.
 
 If your template prints no page title at all — a Divi full-width or Theme
 Builder layout with no Post Title module — there is nothing for that filter to
-rewrite and the page's top heading is the fragment's hero `<h2>`. Check with:
+rewrite and the page's top heading is the fragment's hero `<h2>`. **The plugin
+detects this itself**; see [Page headings](#page-headings) below.
 
-```sh
-curl -s https://statchasers.com/nfl/teams/new-england-patriots/ \
-  | grep -o '<h1[^>]*>[^<]*'
-```
+### Page headings
 
-If that prints nothing, have the shortcode print the H1 itself instead:
+Every fragment steps its hero down to `<h2>` when it is embedded, because the
+page is meant to supply the `<h1>`. Whether it does is a property of the theme's
+template, which PHP cannot read — so the plugin measures it instead. After a
+build, or from the **Page headings** panel, it fetches one published team hub
+over HTTP as a logged-out visitor and counts the `<h1>` elements:
+
+| What it finds | What the shortcodes do |
+|---------------|------------------------|
+| no `<h1>` | print the heading themselves |
+| one `<h1>`, and it is the page's heading | nothing — the theme is doing its job |
+| an `<h1>` that is something else (a theme printing the site name) | nothing, and the panel says what it found |
+| no measurement yet | nothing |
+
+The verdict is stored against the theme's stylesheet, template and version, and
+a theme switch retires it. The same panel has **Always print** and **Never
+print** for the site that is the exception — a template that prints a title on
+the team hubs and not on the player profiles, say.
+
+This replaces the `curl | grep -o '<h1'` check the previous version told you to
+run by hand. The filters still work and still win:
 
 ```php
-add_filter( 'statchasers_team_shortcode_h1', '__return_true' );
+add_filter( 'statchasers_team_shortcode_h1',    '__return_true' );
+add_filter( 'statchasers_player_shortcode_h1',  '__return_true' );
+add_filter( 'statchasers_matchup_shortcode_h1', '__return_true' );
 ```
 
-Turn it on only in that case: with a title-printing template it gives the page
-two H1s.
+Nothing here ever edits the theme's markup or removes an H1 somebody else
+printed. The only decision a verdict changes is whether the plugin adds one of
+its own, because two H1s is a worse page than one that is merely in the wrong
+place — that one is fixed in the theme.
 
-### Section URLs (off by default)
+**A hand-written H1 counts.** The probe does not demand its own generated
+phrase; it asks whether the H1 on the page names the team. So a Divi Code module
+whose heading reads "New England Patriots Fantasy Football Hub" passes, and the
+plugin stays quiet. One heading reused on all 32 hubs — a site-wide hero whose
+H1 is the site's name — does not pass, and the panel says so, because that is 32
+pages sharing one heading.
+
+#### What a generated heading looks like
+
+The site's own hero block, not a bare `<h1>`:
+
+```html
+<section class="sc-lo sc-lo-hero sc-lo-hero--generated"
+         aria-labelledby="statchasers-page-title">
+  <div class="sc-lo-hero__inner"><div class="sc-lo-hero__copy">
+    <h1 id="statchasers-page-title" class="sc-lo-hero__h1">New England Patriots Schedule 2026</h1>
+    <div class="sc-lo-hero__underline" aria-hidden="true"></div>
+    <p class="sc-lo-hero__lead">The full 2026 New England Patriots schedule: every
+      opponent, kickoff time and result, plus the Patriots bye week and what is
+      next on the calendar.</p>
+  </div></div>
+</section>
+```
+
+Same class names as the hand-written hero modules, so one stylesheet dresses
+both — the few pages written by hand and the ~1,100 generated addresses nobody
+could write by hand (32 hubs × 6 sections, several hundred profiles × 7, and 496
+pair URLs that all render from one holder page).
+
+The lead sentence is the description that URL already carries: from
+`statchasers_team_section_meta()` on a team page, `statchasers_matchup_meta()`
+on a pair, and `statchasers_player_lead()` on a profile — which names what that
+panel holds rather than describing the profile seven times.
+
+**The stylesheet is not shipped, and that is the one thing to set up.** A copy
+inside the plugin would be a second definition of the design and would drift
+from the first. So the hero CSS has to live somewhere site-wide — **Divi →
+Theme Options → Custom CSS**, or a child theme stylesheet — rather than inline
+in the Code module of one page. With it still inline, a generated heading is
+correct markup with no styling: right text, no gold rule. The `--generated`
+modifier class is there if you ever want to tell the two apart.
+
+Replace the block wholesale with `statchasers_page_heading_html`.
+
+### Section URLs (on by default)
 
 The hub answers five different questions at one address, and one address gets
 one title tag. `/nfl/teams/<slug>/schedule/` and friends give four of them a
@@ -144,23 +240,22 @@ title, a description and a canonical of their own:
 /nfl/teams/new-england-patriots/depth-chart/   … Depth Chart 2026: Starters & Backups
 ```
 
-Turn them on with:
+On since 1.7.0, with the permalink flush done on activation. Turn them off
+with:
 
 ```php
-add_filter( 'statchasers_team_section_urls', '__return_true' );
+add_filter( 'statchasers_team_section_urls', '__return_false' );
 ```
-
-Then flush permalinks once (Settings → Permalinks → Save).
 
 **No pages are created.** A rewrite rule points the section URL at the team's
 existing page and sets `sc_section`, which the shortcode reads — so the same 32
-pages serve all 160 addresses, and a section is opened or closed by editing
+pages serve all 192 addresses, and a section is opened or closed by editing
 `STATCHASERS_TEAM_SECTIONS` rather than by minting rows in `wp_posts`. Identical
 in shape to `statchasers_player_section_urls`.
 
 A section page is the hero, that section, a strip of real links to the hub and
 its sibling sections, and the resources block; it does not repeat the other
-four panels, or the five addresses would be one page under five URLs. Its
+five panels, or the six addresses would be one page under six URLs. Its
 title, description, self-referencing canonical and `og:url` are generated from
 team + section + season by `statchasers_team_section_meta()`, which mirrors
 `sectionMeta()` in the API's `src/lib/team-seo.ts` — change one and change the
@@ -172,35 +267,36 @@ follows nowhere, and neither the hub nor a section page prints a strip of
 anchors to the section pages. Their discovery rests on the sitemap below and on
 the site's own navigation — so the flag and the sitemap must move together.
 
-**Sitemap.** With the flag on, the four section URLs of every published hub
+**Sitemap.** With the flag on, the six section URLs of every published hub
 page are appended to Rank Math's page sitemap through
 `rank_math/sitemap/page_content`. Off, they are not, so the sitemap can never
 advertise the URLs before the rewrite serves them. That filter name is the one
 piece of the Rank Math integration not confirmed against an installed build —
 if the page sitemap does not list them after enabling, check it first.
 
-**Unknown sections 404.** The rewrite matches the four ids and nothing else, so
+**Unknown sections 404.** The rewrite matches the six ids and nothing else, so
 `/nfl/teams/<slug>/anything-else/` falls to WordPress's own resolution and
 404s rather than serving the hub under a second name. The API's
-`/team/<slug>/<section>/` does the same, and treats `news` and any case variant
+`/team/<slug>/<section>/` does the same, and treats any case variant
 (`/Stats/`) the same way.
 
-**`news` is deliberately not in the list.** Some teams' archives are two stories
-and a standalone URL for those is a thin page. The hub still carries the tab.
-Roster and Injuries are candidates later, once the data is dense enough.
+**`news` is in the list now.** It was held back while a team's archive was two
+stories deep, which made a standalone URL a thin page; the season has since
+filled it. Roster and Injuries are the candidates still outside, for the same
+reason `news` used to be.
 
 The 32 hub pages keep their **stored** Rank Math fields: this plugin never
 silently overwrites a field an editor may have rewritten, so only the virtual
 section URLs — which have no row to store anything in — are generated. Pages
 created before the current hub wording (`<team> <season>: Record, Schedule,
 Stats & Fantasy Football`) keep the old one until you move them: **Tools →
-StatChasers Team Pages → Hub titles** shows a dry run first (`N eligible · N
+StatChasers Pages → Hub titles** shows a dry run first (`N eligible · N
 custom titles left alone`) and the button updates only pages whose stored title
 is empty or is exactly the old generated template, in any season. Anything else
 was typed by a person and is kept, and is listed by slug so you can see which.
 Descriptions are not migrated: the generated wording did not change.
 
-### Matchup pages (off by default)
+### Matchup pages (on by default)
 
 One evergreen page for every pair of teams — 32 × 31 / 2 = 496 — at:
 
@@ -221,14 +317,18 @@ holder page, `/nfl/matchup/`, which carries `[statchasers_matchup]` and is
 noindex at its own address. The shortcode reads `sc_matchup`, fetches
 `/embed/matchup/<a>-vs-<b>` and prints it; the plugin mirrors just enough of the
 pair rule to 301 the reversed spelling before fetching. Create the holder from
-**Tools → StatChasers Team Pages → Matchup pages**, then:
+**Tools → StatChasers Pages → Matchup pages**; the pair URLs are live once it
+exists. The 496 of them join Rank Math's page sitemap under the same flag,
+which is turned off with:
 
 ```php
-add_filter( 'statchasers_matchup_urls', '__return_true' );
+add_filter( 'statchasers_matchup_urls', '__return_false' );
 ```
 
-and flush permalinks once. The 496 pair URLs join Rank Math's page sitemap
-under the same flag.
+**Each pair URL gets its own H1.** One holder page serving 496 addresses used to
+mean 496 pages sharing the holder's heading; `the_title` is now rewritten per
+request to `<Team A> vs <Team B>`, or `…, Week 1 2026` on a dated meeting,
+mirroring `heroHeading()` in `src/lib/matchup/matchup-render.ts`.
 
 **The pair's page follows its state.** The API decides once, in
 `matchup-data.ts`, whether the two have an upcoming meeting, one just played
@@ -812,6 +912,43 @@ exports.
 actually on — it reads the slate to decide, so it rolls forward by itself. A
 pinned week is a page that still says Week 1 in December.
 
+### A week is a page: `/nfl/nfl-schedule/week-7/`
+
+Every week of the board has an address of its own, served by the one page
+through a rewrite rule — the same arrangement the matchup pages use, and for the
+same reason: Week 7 is a different set of games, not a different way of looking
+at one, and a page that shows it deserves a URL, a title and a canonical of its
+own. There are eighteen of them and the plugin adds them to Rank Math's page
+sitemap.
+
+```
+/nfl/nfl-schedule/            the week the season is on
+/nfl/nfl-schedule/week-7/     week 7, in June as in November
+```
+
+- **The page's own path is a constant on both sides.** `statchasers_schedule_page_path()`
+  here and `SC_SCHEDULE_PATH` on the API must name the same page, because the
+  board's week links are built on the API side from `SC_SCHEDULE_PATH`. If they
+  disagree, every week link on the page 404s. Moving the page means changing
+  both — filter `statchasers_schedule_page_path` for the first.
+- **Flush permalinks after upgrading.** The rewrite rule is registered on
+  `init`, but WordPress only rewrites its rule table when something asks it to:
+  visit Settings → Permalinks once, or deactivate and reactivate the plugin.
+  Until then the week URLs 404.
+- **A week URL beats the `week` attribute.** A page reached at `/week-7/` renders
+  week 7 whatever the shortcode says, because the address is the promise. A page
+  mounting the shortcode anywhere else is unaffected and its attribute stands.
+- **A week the season does not have is a 404**, not the current week — `week-23`,
+  `week-02` and `week-0` are all refused, here and on the API. One spelling per
+  week is the whole point of moving it out of the query string.
+- **Turn the addresses off** with `add_filter( 'statchasers_schedule_week_urls', '__return_false' )`
+  and a permalink flush. The shortcode goes back to being one page showing one
+  week; nothing else changes.
+- `?week=` still works on the API's own origin and answers with a permanent
+  redirect to the path, so old links and bookmarks survive. The plugin never
+  used it as an address — it passes the week to `/embed/schedule` as a render
+  argument, which is unchanged.
+
 ### What the reader sees that the server cannot render
 
 Two things, and both degrade cleanly with scripting off:
@@ -848,9 +985,13 @@ SC_SCHEDULE_ESPN=0
 ```
 
 `SC_SCHEDULE_PATH` is the WordPress page's own path, so the board's week and
-team controls link back into your page rather than out to the bare tool. The
-CSV and calendar links are the exception and are always given the API's origin
-explicitly — WordPress has never heard of `/download.csv` under your page.
+team controls link back into your page rather than out to the bare tool. It is
+what the week links are built from — `/nfl/nfl-schedule/` becomes
+`/nfl/nfl-schedule/week-7/`, trailing slash and all, which is the spelling the
+rewrite rule on this side expects — so it has to name the same page as
+`statchasers_schedule_page_path()`. The CSV and calendar links are the exception
+and are always given the API's origin explicitly — WordPress has never heard of
+`/download.csv` under your page.
 
 `SC_SCHEDULE_SEASON` pins the season. Worth setting only in the weeks either
 side of a new league year, when nflverse has published next season's slate and

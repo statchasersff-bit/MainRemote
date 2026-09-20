@@ -784,13 +784,14 @@ function statchasers_player_strip_faq_data( string $html ): string {
 /**
  * Per-section player URLs, e.g. /nfl/players/jacoby-brissett/injury/.
  *
- * OFF BY DEFAULT, and deliberately. Rewrite rules are site-wide and a wrong one
- * takes out URLs that have nothing to do with this plugin, so nothing here runs
- * until the site opts in:
+ * ON BY DEFAULT. It was off while the rule was new — rewrite rules are
+ * site-wide and a wrong one takes out URLs that have nothing to do with this
+ * plugin — and the rule has since been anchored to the player base and the
+ * seven section ids, so it cannot match anything else. Turn it off with:
  *
- *     add_filter( 'statchasers_player_section_urls', '__return_true' );
+ *     add_filter( 'statchasers_player_section_urls', '__return_false' );
  *
- * Then flush permalinks once (Settings > Permalinks > Save).
+ * The plugin flushes permalinks itself on activation and after a build.
  *
  * WHAT IT DOES NOT DO: create pages. The rule points the section URL at the
  * player's EXISTING page and sets a query var the shortcode reads, so one page
@@ -805,7 +806,7 @@ function statchasers_player_strip_faq_data( string $html ): string {
  * and set up 301s from the old base before you do — the old URLs are indexed.
  */
 function statchasers_player_section_urls_enabled(): bool {
-	return (bool) apply_filters( 'statchasers_player_section_urls', false );
+	return (bool) apply_filters( 'statchasers_player_section_urls', true );
 }
 
 /** The path player pages live under, with no leading or trailing slash. */

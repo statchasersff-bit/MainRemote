@@ -86,6 +86,15 @@ function sectionMeta(
     };
   }
 
+  if (section === "news") {
+    return {
+      title: `${name} News ${season}: Injuries, Roster Moves & Fantasy Impact`,
+      description:
+        `The latest ${name} news: injury designations, roster moves and depth-chart ` +
+        `changes through the ${season} season, each with what it means for ${nick} fantasy value.`,
+    };
+  }
+
   if (section === "depth-chart") {
     return {
       title: `${name} Depth Chart ${season}: Starters & Backups`,

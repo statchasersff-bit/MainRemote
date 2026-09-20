@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Mounts the StatChasers NFL player news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the redraft rankings and the NFL schedule directly into pages — server-rendered markup in the page's own HTML, with the tool's compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.6.0
+ * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, redraft rankings and the schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.7.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.6.0';
+const STATCHASERS_NEWS_VERSION       = '1.7.0';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -54,6 +54,11 @@ require_once __DIR__ . '/statchasers-player.php';
 require_once __DIR__ . '/statchasers-fpa.php';
 require_once __DIR__ . '/statchasers-rankings.php';
 require_once __DIR__ . '/statchasers-schedule.php';
+// After the three they build on: the player builder uses the team file's
+// fill_meta() and season constant, and the heading module asks the team file
+// for a page to measure.
+require_once __DIR__ . '/statchasers-player-pages.php';
+require_once __DIR__ . '/statchasers-h1.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -687,3 +692,35 @@ function statchasers_news_flush(): void {
 	statchasers_schedule_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
+
+/**
+ * Activation: ask for a permalink flush on the next request.
+ *
+ * Not flushed here. Activation runs before `init`, so the rewrite rules the
+ * team, player and matchup files add have not been registered yet and flushing
+ * now would write a rule table without them — the exact failure the manual
+ * "Settings > Permalinks > Save" step used to work around. The flag is read on
+ * the next `init`, once every rule is in place.
+ *
+ * Deactivation does not flush. A site that turns the plugin off still has
+ * WordPress's own rules; ours simply stop being registered, and rewriting the
+ * whole table on the way out is work nobody asked for.
+ */
+register_activation_hook(
+	__FILE__,
+	static function (): void {
+		update_option( 'statchasers_needs_flush', 1, false );
+	}
+);
+
+add_action(
+	'init',
+	static function (): void {
+		if ( ! get_option( 'statchasers_needs_flush' ) ) {
+			return;
+		}
+		delete_option( 'statchasers_needs_flush' );
+		flush_rewrite_rules();
+	},
+	PHP_INT_MAX
+);

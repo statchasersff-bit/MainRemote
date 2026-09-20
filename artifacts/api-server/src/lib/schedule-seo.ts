@@ -6,14 +6,20 @@
  * `noindex, indexifembedded` because the address that should rank is
  * `https://statchasers.com/nfl/nfl-schedule/`, not this origin.
  *
- * The canonical always points at the bare path. View, week, team and filter are
- * the four pieces of state this page carries in a query string, and every
- * rendering of them is the same page — the same reasoning the FPA table's
- * format toggle gets, and it matters more here, because the four combine into
- * several hundred URLs and every one of them would otherwise be a near-duplicate
- * of the others.
+ * The canonical points at the path and never at a parameter. View, team and
+ * filter are ways of looking at one board, and every rendering of them is the
+ * same page — the same reasoning the FPA table's format toggle gets, and it
+ * matters more here, because the three combine into several hundred URLs and
+ * every one of them would otherwise be a near-duplicate of the others.
  *
- * The description DOES vary with the view, though, because the three views are
+ * The week is the exception, and the reason is that it is not a way of looking
+ * at the board: Week 2 is a different set of games. It has an address of its
+ * own (`/schedule/week-2`), the route hands the canonical in already built, and
+ * the title and description below say which week they are about — eighteen
+ * pages that share one title are eighteen pages a search engine has no reason
+ * to tell apart.
+ *
+ * The description varies with the view too, because the three views are
  * genuinely about different things and a snippet that says "browse by week" on
  * the season matrix is a worse answer than one that does not.
  */
@@ -68,11 +74,12 @@ export function schedulePageMeta(
   }
 
   return {
-    title: `${season} NFL Schedule | ${SITE_NAME}`,
+    title: `${season} NFL Schedule: Week ${state.week} | ${SITE_NAME}`,
     description:
-      `The ${season} NFL regular-season schedule by week: matchups, dates, ` +
-      `kickoff times in ET, TV networks, byes, division and international ` +
-      `games, and the market's posted spreads and totals.`,
+      `Every Week ${state.week} game of the ${season} NFL regular season: ` +
+      `matchups, dates, kickoff times in ET, TV networks, the teams on bye, ` +
+      `division and international games, and the market's posted spreads and ` +
+      `totals.`,
     canonical,
     siteName: SITE_NAME,
   };

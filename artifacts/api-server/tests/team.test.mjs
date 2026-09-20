@@ -1362,6 +1362,36 @@ describe("team section URLs", () => {
     }
   });
 
+  /**
+   * The two public sections that draw no questions: `matchups` is a list of
+   * fixtures and `news` is an archive, and neither has anything an FAQ would
+   * restate. They are still addresses, so they owe everything an address owes
+   * — one panel, one H1, one self-referencing canonical — which is what the
+   * FAQ-bearing list above cannot assert for them.
+   */
+  test("the FAQ-less sections are still pages of their own", async () => {
+    for (const [id, heading] of [
+      ["matchups", /Matchups 2\d{3}$/],
+      ["news", /News 2\d{3}$/],
+    ]) {
+      const { doc } = await dom(at(id));
+
+      const panels = doc.querySelectorAll("[data-sct-panel]");
+      assert.equal(panels.length, 1, `${id}: exactly one panel`);
+      assert.equal(panels[0].getAttribute("id"), id, `${id}: it is the right one`);
+
+      const h1 = doc.querySelectorAll("h1");
+      assert.equal(h1.length, 1, `${id}: exactly one H1`);
+      assert.match(h1[0].textContent.trim(), heading, `${id}: H1 names the section`);
+
+      const canonical = doc
+        .querySelector('link[rel="canonical"]')
+        .getAttribute("href");
+      assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
+      assert.equal(doc.querySelectorAll(".sct-nav-link").length, 0, `${id}: no tab strip`);
+    }
+  });
+
   test("a section page carries no tab strip", async () => {
     // Five tabs that all leave this URL is navigation pretending to be tabs.
     // The hub and its siblings are reachable through the site's own navigation
@@ -1420,6 +1450,7 @@ describe("team section URLs", () => {
       stats: "New England Patriots Stats 2026: Offense, Defense & NFL Rankings",
       schedule: "New England Patriots Schedule 2026: Dates, Opponents & Results",
       "depth-chart": "New England Patriots Depth Chart 2026: Starters & Backups",
+      news: "New England Patriots News 2026: Injuries, Roster Moves & Fantasy Impact",
     };
     for (const [id, title] of Object.entries(expected)) {
       const { doc } = await dom(at(id));
@@ -1433,9 +1464,9 @@ describe("team section URLs", () => {
 
   test("a section that is not public is a 404, not a copy of the hub", async () => {
     // Any path segment resolving to the hub is an unbounded supply of
-    // indexable duplicates. `news` is addressable internally but has no public
-    // address yet, so it 404s here too.
-    for (const id of ["not-a-real-section", "news", "overview", "Stats"]) {
+    // indexable duplicates. `news` is public now, so the list that must 404 is
+    // the sections this page does not have and the spellings it does not use.
+    for (const id of ["not-a-real-section", "overview", "Stats", "NEWS"]) {
       const res = await get(`/team/new-england-patriots/${id}/`);
       assert.equal(res.status, 404, `${id}`);
       assert.equal(res.headers.get("x-robots-tag"), "noindex");
