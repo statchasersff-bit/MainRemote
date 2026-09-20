@@ -511,6 +511,61 @@ add_action(
 	}
 );
 
+/**
+ * Clear the cached renders.
+ *
+ * Every fragment is held in a transient for five minutes and the asset version
+ * for fifteen, so a deployment of the API is invisible on the site for up to a
+ * quarter of an hour after it lands. `statchasers_news_flush()` has always
+ * emptied both, but the only ways to call it were WP-CLI — which shared
+ * hosting often does not have — and deactivating the plugin, which is a
+ * strange thing to have to do to see a deploy.
+ */
+add_action(
+	'admin_init',
+	static function (): void {
+		if ( ! isset( $_POST['statchasers_flush'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'You do not have permission to do this.' );
+		}
+
+		check_admin_referer( 'statchasers_flush' );
+
+		if ( function_exists( 'statchasers_news_flush' ) ) {
+			statchasers_news_flush();
+		}
+
+		set_transient( 'statchasers_flushed', 1, MINUTE_IN_SECONDS );
+
+		wp_safe_redirect(
+			add_query_arg( 'page', STATCHASERS_TEAM_PAGES_SCREEN, admin_url( 'tools.php' ) )
+		);
+		exit;
+	}
+);
+
+/** The panel on the Tools screen. */
+function statchasers_flush_panel(): void {
+	if ( get_transient( 'statchasers_flushed' ) ) {
+		delete_transient( 'statchasers_flushed' );
+		echo '<div class="notice notice-success is-dismissible"><p><strong>Cleared.</strong> ' .
+			'The next page view fetches fresh markup and a fresh asset version.</p></div>';
+	}
+
+	echo '<h2>After a deploy</h2>';
+	echo '<p>Rendered fragments are cached for five minutes and the CSS/JS version for fifteen, ' .
+		'so a new build of the API takes up to a quarter of an hour to show. This empties both now. ' .
+		'It does not touch your page cache — clear that too.</p>';
+
+	echo '<form method="post">';
+	wp_nonce_field( 'statchasers_flush' );
+	echo '<p><button type="submit" name="statchasers_flush" value="1" class="button">Clear cached renders</button></p>';
+	echo '</form>';
+}
+
 /** The Tools screen. */
 function statchasers_team_pages_screen(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
@@ -587,6 +642,7 @@ function statchasers_team_pages_screen(): void {
 	statchasers_player_panel();
 	statchasers_matchup_panel();
 	statchasers_h1_panel();
+	statchasers_flush_panel();
 
 	echo '<h2>Teams</h2>';
 	echo '<table class="widefat striped"><thead><tr>' .

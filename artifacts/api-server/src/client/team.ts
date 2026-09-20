@@ -49,7 +49,11 @@ function wireTabs(root: HTMLElement): void {
   const tabs: Array<{ id: string; link: HTMLAnchorElement; panel: HTMLElement }> =
     [];
   for (const link of links) {
-    const id = link.getAttribute("href")?.replace(/^#/, "");
+    // The href is the section's own address now, so it no longer names the
+    // panel. `data-sct-panel-id` does. The hash is still read as a fallback so
+    // a cached page from before this change keeps working.
+    const id =
+      link.dataset["sctPanelId"] ?? link.getAttribute("href")?.replace(/^#/, "");
     if (!id) continue;
     const panel = document.getElementById(id);
     if (!panel) continue;
@@ -57,6 +61,11 @@ function wireTabs(root: HTMLElement): void {
   }
   // Below two there is nothing to switch between, and taking over would only
   // mean hiding the one panel there is.
+  //
+  // This is also what makes a SECTION page behave correctly without a second
+  // code path. It carries the same strip but only its own panel, so exactly one
+  // link resolves here, the takeover is declined, and every tab stays an
+  // ordinary link that loads the page it names.
   if (tabs.length < 2) return;
 
   list?.setAttribute("role", "tablist");
@@ -93,28 +102,67 @@ function wireTabs(root: HTMLElement): void {
   }
 
   /**
-   * Take the hash OUT of the address bar.
+   * The page's H1 and standfirst, which this fragment does not own.
    *
-   * The tabs used to write themselves into the URL — #depth-chart and so on —
-   * so a tab could be reloaded or shared. That is still true of a link INTO
-   * the page: fromHash() honours an arriving hash, and every tab link keeps
-   * its href, so a middle-click or a copied link still opens on the right
-   * panel. What changed is that clicking a tab no longer rewrites the URL of
-   * the page the reader is already on. The address bar shows the page, and
-   * only the page.
-   *
-   * Clearing rather than leaving alone, because a reader who arrived at
-   * #depth-chart and then clicked Stats would otherwise be looking at the
-   * stats under a URL that says depth chart.
+   * On the standalone page they are the hero's; on a WordPress page they are
+   * whatever the host printed — the plugin marks its own with these attributes
+   * and the fallback is simply the first H1 in the document. Nothing is created
+   * if there is none: a page that chose not to print a heading does not get one
+   * invented by a tab click.
    */
-  function clearHash(): void {
-    if (!location.hash) return;
+  const headingEl =
+    document.querySelector<HTMLElement>("[data-sct-page-title]") ??
+    document.querySelector<HTMLElement>("h1");
+  const leadEl = document.querySelector<HTMLElement>("[data-sct-page-lead]");
+
+  // What the page said when it loaded, so Back can put it back. Captured rather
+  // than sent by the server, because this is the heading of whatever address
+  // the reader actually arrived at.
+  const landedUrl = location.pathname + location.search;
+  const landedHeading = headingEl?.textContent ?? "";
+  const landedLead = leadEl?.textContent ?? "";
+
+  function setHeading(heading: string, lead: string): void {
+    if (headingEl && heading) headingEl.textContent = heading;
+    if (leadEl && lead) leadEl.textContent = lead;
+  }
+
+  /**
+   * Put the section's own address in the address bar.
+   *
+   * The panel switched in place, so nothing loaded — but the reader is now
+   * looking at the Depth Chart, and the URL should say so. It is the same
+   * address the link would have loaded, and the server renders that page
+   * standalone, so a reload, a share or a bookmark all land on what is on
+   * screen.
+   *
+   * `push` for a click, so Back steps through the tabs the reader opened;
+   * `replace` for the arrow keys, because holding Right through five tabs
+   * should not bury the page they arrived from under five history entries.
+   */
+  function writeUrl(url: string, mode: "push" | "replace"): void {
     try {
-      history.replaceState(null, "", location.pathname + location.search);
+      const current = location.pathname + location.search;
+      if (url === current) return;
+      if (mode === "push") history.pushState(null, "", url);
+      else history.replaceState(null, "", url);
     } catch {
       // Some embeddings disallow history writes (a sandboxed frame). The tab
-      // still switches; only the stale hash stays.
+      // still switches; only the address bar stays behind.
     }
+  }
+
+  /** The tab whose address this path is, or null for the page we landed on. */
+  function fromPath(path: string): string | null {
+    for (const tab of tabs) {
+      const href = tab.link.getAttribute("href");
+      if (!href) continue;
+      // Compared as paths rather than by string equality: the href may be
+      // relative and the location is always absolute.
+      const resolved = new URL(href, location.origin).pathname;
+      if (resolved === path) return tab.id;
+    }
+    return null;
   }
 
   // State is settled BEFORE the CSS is handed over, so there is no frame where
@@ -137,7 +185,11 @@ function wireTabs(root: HTMLElement): void {
       event.preventDefault();
       active = id;
       select(id, true);
-      clearHash();
+      setHeading(
+        link.dataset["sctHeading"] ?? "",
+        link.dataset["sctLead"] ?? "",
+      );
+      writeUrl(new URL(link.href, location.origin).pathname, "push");
     });
   }
 
@@ -169,7 +221,42 @@ function wireTabs(root: HTMLElement): void {
     active = tab.id;
     select(tab.id, false);
     tab.link.focus();
-    clearHash();
+    setHeading(
+      tab.link.dataset["sctHeading"] ?? "",
+      tab.link.dataset["sctLead"] ?? "",
+    );
+    writeUrl(new URL(tab.link.href, location.origin).pathname, "replace");
+  });
+
+  /**
+   * Back and forward through the tabs.
+   *
+   * Without this the address bar would walk back through the sections while the
+   * page kept showing the last one clicked — the failure that makes people
+   * distrust a URL that changed without a load. A path that belongs to no tab
+   * is the address the reader landed on, which restores the first panel and the
+   * heading captured at load.
+   */
+  window.addEventListener("popstate", () => {
+    const path = location.pathname;
+    const id = fromPath(path);
+
+    if (id) {
+      active = id;
+      select(id, false);
+      const link = tabs.find((tab) => tab.id === id)!.link;
+      setHeading(
+        link.dataset["sctHeading"] ?? "",
+        link.dataset["sctLead"] ?? "",
+      );
+      return;
+    }
+
+    if (path + location.search === landedUrl) {
+      active = tabs[0]!.id;
+      select(active, false);
+      setHeading(landedHeading, landedLead);
+    }
   });
 }
 

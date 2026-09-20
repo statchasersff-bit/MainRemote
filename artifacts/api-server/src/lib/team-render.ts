@@ -46,6 +46,11 @@ import { statsFaq } from "./team/stats-faq";
 import { depthFaq } from "./team/depth-faq";
 import { scheduleFaq } from "./team/schedule-faq";
 import { sidelinedBehind } from "./team/roster";
+// The tab strip's headings and standfirsts come from the same two functions the
+// WordPress side mirrors, so the heading a click swaps in and the heading that
+// URL loads with are generated from one place. team-seo.ts imports nothing from
+// here, so this does not close a cycle.
+import { teamPageMeta } from "./team-seo";
 import type { TeamPageData } from "./team/team-data";
 import type {
   HistorySeason,
@@ -425,24 +430,67 @@ interface TailSink {
 /**
  * The section bar.
  *
- * Plain anchors, deliberately. The panels below are switched by `:target` in
- * CSS, so this bar is a working tab strip with scripting disabled and needs no
- * ARIA to be honest about what it is: a list of links to sections of this page.
- * The tab roles, `aria-selected` and the roving tabindex are added by
- * client/team.ts once it can also deliver the arrow-key behaviour those roles
- * promise — announcing a tablist that does not answer arrow keys is worse than
- * announcing a list of links that does exactly what it says.
+ * Plain anchors to REAL ADDRESSES, which is what changed and why.
+ *
+ * They used to be `#stats` and friends: the panels are all in the document and
+ * CSS `:target` swapped between them, so the strip worked with scripting off
+ * and cost nothing to use. What it also did was leave the six section URLs of
+ * every team — which exist, carry their own title, description and canonical,
+ * and sit in the sitemap — with nothing on the site linking to them. Six
+ * indexable addresses per team, advertised and orphaned, is the shape of page
+ * that does not rank however good it is.
+ *
+ * So each tab is a link to its own section page. With scripting off that is
+ * exactly what it does: a page load, a different URL, a different H1. With
+ * scripting on, client/team.ts intercepts the click, switches the panel in
+ * place and pushes the same URL into the address bar — no reload, and the
+ * address still names what the reader is looking at.
+ *
+ * The data attributes are that contract. `data-sct-panel-id` is which panel to
+ * show, since the href no longer says. `data-sct-heading` and `data-sct-lead`
+ * are what the page's H1 and standfirst should read once it has — those live
+ * OUTSIDE the fragment, in the host page's own markup, so the bundle cannot
+ * derive them and the server has to hand them over.
+ *
+ * The heading strings are generated here from the same functions the WordPress
+ * side mirrors, so a swapped heading and a loaded one cannot say different
+ * things about the same address.
+ *
+ * ARIA is still added by client/team.ts rather than here: `role="tab"` promises
+ * arrow keys and a roving tabindex, and promising that in static HTML when the
+ * bundle may not load is worse for a screen-reader user than the plain list of
+ * links the server sends, which behaves exactly as announced.
  */
-function renderNav(sections: Section[]): string {
+function renderNav(
+  sections: Section[],
+  team: NflTeam,
+  season: number,
+  options: TeamRenderOptions,
+  activeId?: string,
+): string {
   if (sections.length < 2) return "";
+
+  const prefix = options.teamPathPrefix ?? "/team/";
+  const active = activeId ?? sections[0]?.id;
+
   const items = sections
-    .map(
-      (section, i) =>
-        `<li><a class="sct-nav-link${i === 0 ? " is-active" : ""}"` +
+    .map((section) => {
+      const heading =
+        teamSectionHeading(team.fullName, section.id, season) ?? team.fullName;
+      const lead = teamPageMeta(team, season, "", section.id).description;
+
+      return (
+        `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
         ` id="${escapeHtml(section.id)}-tab"` +
-        ` href="#${escapeHtml(section.id)}">${escapeHtml(section.label)}</a></li>`,
-    )
+        ` href="${escapeHtml(sectionPath(prefix, team.slug, section.id))}"` +
+        ` data-sct-panel-id="${escapeHtml(section.id)}"` +
+        ` data-sct-heading="${escapeHtml(heading)}"` +
+        ` data-sct-lead="${escapeHtml(lead)}"` +
+        `>${escapeHtml(section.label)}</a></li>`
+      );
+    })
     .join("");
+
   return (
     `<nav class="sct-nav" aria-label="Team sections" data-sct-nav>` +
     `<ul class="sct-nav-list">${items}</ul>` +
@@ -3048,10 +3096,20 @@ export function renderTeamPage(
     ? sections.find((entry) => entry.id === scopedSection)
     : undefined;
 
+  // Hoisted above the scoped branch, because a section page now carries the
+  // strip as well. It used to render without one on the grounds that five tabs
+  // all leaving the URL is navigation pretending to be tabs — true when they
+  // were `#hash` links, and the opposite of true now that they are addresses.
+  // A reader who arrives on the Schedule page with no way to reach the Depth
+  // Chart is the cost of leaving it off, and it is paid by every visitor from
+  // search, who is the reason these pages exist.
+  const tabs = sections.filter((section) => section.hubTab !== false);
+
   if (scoped) {
     return (
       `<div ${rootAttrs} data-section="${escapeHtml(scoped.id)}"${rootStyle}>` +
       renderHero(data, options) +
+      renderNav(tabs, team, data.state.season, options, scoped.id) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
       ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
       renderResources(team) +
@@ -3062,11 +3120,6 @@ export function renderTeamPage(
       `</div>`
     );
   }
-
-  // Everything the hub itself shows. `sections` stays whole above, because a
-  // section that is no longer a tab still has to resolve when its own URL is
-  // requested — the two uses of this list are not the same list.
-  const tabs = sections.filter((section) => section.hubTab !== false);
 
   // `is-default` marks the panel that shows when the URL names no section. It
   // is a class rather than :first-of-type because the CSS must not depend on
@@ -3089,7 +3142,7 @@ export function renderTeamPage(
   return (
     `<div ${rootAttrs}${rootStyle}>` +
     renderHero(data, options) +
-    renderNav(tabs) +
+    renderNav(tabs, team, data.state.season, options) +
     body +
     renderResources(team) +
     renderTails(tabs) +

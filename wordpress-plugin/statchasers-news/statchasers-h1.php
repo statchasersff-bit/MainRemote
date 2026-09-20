@@ -413,17 +413,27 @@ function statchasers_page_heading_html( string $heading, string $lead = '' ): st
 		return '';
 	}
 
+	// `data-sct-page-title` and `data-sct-page-lead` are the contract with the
+	// tool's own bundle. Switching a tab changes which section the reader is on
+	// and pushes that section's URL, so the heading above the fragment has to
+	// change with it — and the fragment cannot find a heading it does not own
+	// without being told which element it is. The bundle falls back to the
+	// document's first H1, so a hand-written hero still gets the swap; these
+	// attributes are what make it exact.
 	$html = sprintf(
 		'<section class="sc-lo sc-lo-hero sc-lo-hero--generated" aria-labelledby="%1$s">' .
 			'<div class="sc-lo-hero__inner"><div class="sc-lo-hero__copy">' .
-			'<h1 id="%1$s" class="sc-lo-hero__h1">%2$s</h1>' .
+			'<h1 id="%1$s" class="sc-lo-hero__h1" data-sct-page-title>%2$s</h1>' .
 			'<div class="sc-lo-hero__underline" aria-hidden="true"></div>',
 		esc_attr( STATCHASERS_HEADING_ID ),
 		esc_html( $heading )
 	);
 
 	if ( '' !== trim( $lead ) ) {
-		$html .= sprintf( '<p class="sc-lo-hero__lead">%s</p>', esc_html( trim( $lead ) ) );
+		$html .= sprintf(
+			'<p class="sc-lo-hero__lead" data-sct-page-lead>%s</p>',
+			esc_html( trim( $lead ) )
+		);
 	}
 
 	$html .= '</div></div></section>';
