@@ -403,27 +403,49 @@ add_filter(
 );
 
 /**
- * Hide the empty heading the filter above leaves behind.
+ * The two rules the plugin's own markup needs, and no more.
  *
  * Printed rather than enqueued: which stylesheet handle is on the page depends
- * on which tool it mounts, and this one rule belongs to none of them. It is
- * emitted only on a page that is actually having its title replaced.
+ * on which tool it mounts, and neither of these belongs to any of them. The
+ * hero's LOOK is still the site's own CSS — this file ships none of that, for
+ * the reason given on statchasers_page_heading_html().
  *
- * `:empty` matches an element with no children at all, including text — which
- * is exactly what `the_title` returning '' produces, and is why this cannot
- * catch a heading that merely looks empty. A theme that wraps its title in
- * whitespace needs one line of its own; the admin panel says so.
+ * 1. The gutter. A hand-built hero is a full-width module and carries its own
+ *    side padding — 40px on desktop, 28 and 18 further down. The generated one
+ *    is printed into the same container as the fragment beneath it, and an
+ *    embedded fragment runs flush to that container because the host owns the
+ *    page gutter (`.sct.is-embed { --sct-gutter: 0 }`). Keeping the module's
+ *    padding there indents the heading past the tool it heads. So the copy the
+ *    plugin prints has none, at every breakpoint, and the two line up.
+ *
+ * 2. The husk, when the theme's title has been emptied. `:empty` matches an
+ *    element with no children at all, including text — which is exactly what
+ *    `the_title` returning '' produces, and is why it cannot catch a heading
+ *    that merely looks empty. A theme that wraps its title in whitespace needs
+ *    a line of its own; the admin panel says so.
  */
 add_action(
 	'wp_head',
 	static function (): void {
-		if ( ! statchasers_h1_should_replace() || ! statchasers_h1_mounts_a_tool() ) {
+		if ( ! statchasers_h1_mounts_a_tool() ) {
 			return;
 		}
 
-		echo "<style id=\"statchasers-title-replaced\">" .
-			'h1.entry-title:empty,h1.entry-title.main_title:empty{display:none!important}' .
-			'</style>' . "\n";
+		$css = '';
+
+		if ( statchasers_h1_should_print() ) {
+			$css .= '.sc-lo-hero--generated .sc-lo-hero__inner{padding-left:0;padding-right:0}';
+		}
+
+		if ( statchasers_h1_should_replace() ) {
+			$css .= 'h1.entry-title:empty,h1.entry-title.main_title:empty{display:none!important}';
+		}
+
+		if ( '' === $css ) {
+			return;
+		}
+
+		echo '<style id="statchasers-heading">' . $css . '</style>' . "\n";
 	},
 	100
 );
