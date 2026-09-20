@@ -993,10 +993,10 @@ function heroSwap(full: string, short: string, tight: string): string {
  * statchasers.com/nfl/players/<slug>/ rather than back to the bare tool.
  */
 function renderPlayerSearch(options: PlayerRenderOptions): string {
-  const rows = playerSearchIndex();
+  const index = playerSearchIndex();
   // No roster, no search. A dictionary that failed to load is already a
   // degraded page; it should not also carry a control that can match nothing.
-  if (rows.length === 0) return "";
+  if (index.rows.length === 0) return "";
 
   const prefix = options.playerPathPrefix ?? "/player/";
   const query = options.linkQuery ?? "";
@@ -1025,7 +1025,7 @@ function renderPlayerSearch(options: PlayerRenderOptions): string {
     // once, and a JSON island is inert markup the browser never executes.
     // escapeJsonLd is what keeps a "</script" inside a name from ending it.
     `<script type="application/json" data-scp-roster>` +
-    escapeJsonLd(JSON.stringify(rows)) +
+    escapeJsonLd(JSON.stringify(index)) +
     `</script>` +
     `</div>`
   );

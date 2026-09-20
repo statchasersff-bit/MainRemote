@@ -34,16 +34,17 @@ const STATCHASERS_MATCHUP_BACKUP_TTL = DAY_IN_SECONDS;
 const STATCHASERS_MATCHUP_TIMEOUT    = 8;
 
 /**
- * Whether the pair URLs are live. Off by default.
+ * Whether the pair URLs are live. On by default.
  *
- *     add_filter( 'statchasers_matchup_urls', '__return_true' );
+ *     add_filter( 'statchasers_matchup_urls', '__return_false' );
  *
- * Then flush permalinks once. Same shape as the team section switch, and like
- * it, the sitemap entries move with the same flag so the sitemap can never
- * advertise an address the rewrite does not serve.
+ * Same shape as the team section switch, and like it, the sitemap entries move
+ * with the same flag so the sitemap can never advertise an address the rewrite
+ * does not serve. The holder page has to exist for any of it to resolve, which
+ * is what the Tools screen builds.
  */
 function statchasers_matchup_urls_enabled(): bool {
-	return (bool) apply_filters( 'statchasers_matchup_urls', false );
+	return (bool) apply_filters( 'statchasers_matchup_urls', true );
 }
 
 /**
@@ -353,9 +354,94 @@ function statchasers_matchup_shortcode(): string {
 	 * @param string $html Rendered fragment.
 	 * @param string $slug Pair slug.
 	 */
-	return (string) apply_filters( 'statchasers_matchup_fragment_html', (string) $data['html'], $pair['slug'] );
+	return statchasers_matchup_shortcode_heading() .
+		(string) apply_filters( 'statchasers_matchup_fragment_html', (string) $data['html'], $pair['slug'] );
 }
 add_shortcode( STATCHASERS_MATCHUP_SHORTCODE, 'statchasers_matchup_shortcode' );
+
+/* -------------------------------------------------------------- headings */
+
+/**
+ * The H1 for the pair URL this request is on.
+ *
+ * MIRRORS heroHeading() in the API's src/lib/matchup/matchup-render.ts: the
+ * two team names for the pair's own page, and the meeting named after them on
+ * a dated one, because two pages headed "Patriots vs Eagles" are two pages
+ * competing for one query.
+ *
+ * This matters more here than anywhere else in the plugin. One holder page
+ * serves 496 addresses, so without a filter rewriting the title, 496 URLs
+ * share a single H1 — the holder's — and none of them says which game it is.
+ */
+function statchasers_matchup_heading(): string {
+	$pair = statchasers_matchup_current();
+
+	if ( null === $pair ) {
+		return '';
+	}
+
+	$table = statchasers_team_table();
+	$names = sprintf(
+		'%s vs %s',
+		$table[ $pair['a'] ][0] ?? $pair['a'],
+		$table[ $pair['b'] ][0] ?? $pair['b']
+	);
+
+	$game = statchasers_matchup_game();
+
+	if ( '' === $game || ! preg_match( '/^(\d{4})-week-(\d+)$/', $game, $match ) ) {
+		return $names;
+	}
+
+	return sprintf( '%s, Week %d %s', $names, (int) $match[2], $match[1] );
+}
+
+/**
+ * Rewrite the holder page's title, which is the theme's H1.
+ *
+ * Guarded the same way the team and player filters are: the main query's own
+ * title, in the loop, and only when the request actually resolved to a pair.
+ * Off a pair URL the holder keeps its own name.
+ */
+add_filter(
+	'the_title',
+	static function ( $title, $id = 0 ) {
+		if ( ! is_singular( 'page' ) || ! in_the_loop() || ! is_main_query() ) {
+			return $title;
+		}
+
+		$queried = get_queried_object();
+		if ( ! $queried instanceof WP_Post || (int) $queried->ID !== (int) $id ) {
+			return $title;
+		}
+
+		$heading = statchasers_matchup_heading();
+
+		return '' === $heading ? $title : $heading;
+	},
+	10,
+	2
+);
+
+/**
+ * The <h1> the shortcode prints itself. Off unless the probe says to.
+ *
+ * Same contract as the team and player versions — see statchasers-h1.php for
+ * how that question is answered, and why it is answered by measurement rather
+ * than by a guess about the template.
+ */
+function statchasers_matchup_shortcode_heading(): string {
+	if ( ! apply_filters( 'statchasers_matchup_shortcode_h1', false ) ) {
+		return '';
+	}
+
+	$meta = statchasers_matchup_request_meta();
+
+	return statchasers_page_heading_html(
+		statchasers_matchup_heading(),
+		null === $meta ? '' : (string) $meta['description']
+	);
+}
 
 add_action(
 	'wp_enqueue_scripts',

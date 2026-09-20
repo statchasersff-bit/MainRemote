@@ -508,8 +508,11 @@ add_shortcode( STATCHASERS_TEAM_SHORTCODE, 'statchasers_team_shortcode' );
  *     curl -s https://statchasers.com/nfl/teams/new-england-patriots/ \
  *       | grep -o '<h1[^>]*>[^<]*'
  *
- * No class beyond `sct-page-title`, and no CSS ships for it: on a title-less
- * template the theme's own h1 rules are the ones that should style it.
+ * The markup is the site's own hero block — see statchasers_page_heading_html()
+ * — so a generated heading and a hand-written one are the same component. The
+ * lead sentence is the description this URL already carries in Rank Math,
+ * which is written per team and per section and so never says something the
+ * page below it does not hold.
  *
  * @param string $slug    Team slug.
  * @param string $section Section id, or '' for the hub.
@@ -527,12 +530,12 @@ function statchasers_team_shortcode_heading( string $slug, string $section ): st
 		return '';
 	}
 
-	$heading = statchasers_team_heading( $slug, $section );
-	if ( '' === $heading ) {
-		return '';
-	}
+	$meta = statchasers_team_section_meta( $slug, $section );
 
-	return '<h1 class="sct-page-title">' . esc_html( $heading ) . '</h1>';
+	return statchasers_page_heading_html(
+		statchasers_team_heading( $slug, $section ),
+		null === $meta ? '' : $meta['description']
+	);
 }
 
 

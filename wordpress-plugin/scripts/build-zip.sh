@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+#
+# Package statchasers-news/ as the .zip WordPress accepts at
+# Plugins -> Add New -> Upload Plugin.
+#
+#   bash wordpress-plugin/scripts/build-zip.sh
+#
+# The zip in dist/ is the artefact that actually gets uploaded, and the one
+# thing nobody notices going stale: it is built by hand, it looks fine in the
+# directory listing, and a file added to the plugin since the last build simply
+# is not in it. That is how a deployment ends up missing half its shortcodes.
+# So this script does not take a file list — it takes the directory, every time.
+#
+# Three checks before it writes anything, because a broken plugin zip takes a
+# site down on activation and the feedback loop is an FTP client:
+#
+#   1. Every .php file parses.
+#   2. The Version header and readme.txt's Stable tag agree.
+#   3. The loader requires every .php file that is not itself the loader.
+#
+# The third is the one that catches the mistake this project has actually made:
+# a new file written, tested against a stub harness, and never added to the
+# require block, so it does nothing on a real site and nothing says why.
+
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+plugin="$here/statchasers-news"
+dist="$here/dist"
+out="$dist/statchasers-news.zip"
+
+# Nix keeps PHP out of PATH on this box; use whatever is there, and skip the
+# parse check rather than fail the build if there is no interpreter at all.
+PHP="${PHP:-$(command -v php || true)}"
+if [ -z "$PHP" ]; then
+	PHP="$(ls -d /nix/store/*-php-with-extensions-*/bin/php 2>/dev/null | head -1 || true)"
+fi
+
+say()  { printf '%s\n' "$*"; }
+die()  { printf 'ERROR %s\n' "$*" >&2; exit 1; }
+
+[ -d "$plugin" ] || die "no plugin directory at $plugin"
+
+# ------------------------------------------------------------------ 1. parse
+
+if [ -n "$PHP" ]; then
+	for file in "$plugin"/*.php; do
+		"$PHP" -l "$file" >/dev/null || die "$(basename "$file") does not parse."
+	done
+	say "parse    ok ($(ls "$plugin"/*.php | wc -l | tr -d ' ') files)"
+else
+	say "parse    SKIPPED — no php binary found"
+fi
+
+# ------------------------------------------------------------------ 1b. load
+
+# Parsing is not loading. tests/smoke.php stubs the WordPress API, includes
+# every file in the order the loader does, and calls the functions whose output
+# is a string somebody reads — which is what catches a function declared twice,
+# a constant used before its file is required, or a heading that has quietly
+# stopped agreeing with the API's.
+if [ -n "$PHP" ] && [ -f "$here/tests/smoke.php" ]; then
+	"$PHP" "$here/tests/smoke.php" >/dev/null || die "tests/smoke.php failed. Run it to see why."
+	say "load     ok"
+fi
+
+# ---------------------------------------------------------------- 2. version
+
+version="$(grep -m1 -oE '^ \* Version: +[0-9.]+' "$plugin/statchasers-news.php" | grep -oE '[0-9.]+$')"
+stable="$(grep -m1 -oE '^Stable tag: [0-9.]+' "$plugin/readme.txt" | grep -oE '[0-9.]+$')"
+
+[ -n "$version" ] || die "could not read the Version header."
+[ "$version" = "$stable" ] || die "Version header is $version but readme.txt says $stable."
+
+say "version  $version"
+
+# ----------------------------------------------------------------- 3. loader
+
+missing=""
+for file in "$plugin"/*.php; do
+	name="$(basename "$file")"
+	[ "$name" = "statchasers-news.php" ] && continue
+	grep -q "require_once __DIR__ . '/$name'" "$plugin/statchasers-news.php" \
+		|| missing="$missing $name"
+done
+
+[ -z "$missing" ] || die "the loader does not require:$missing"
+
+say "loader   ok"
+
+# -------------------------------------------------------------------- 4. zip
+
+mkdir -p "$dist"
+rm -f "$out"
+
+# Zipped from the parent so the archive holds "statchasers-news/..." — WordPress
+# installs the top-level directory it finds, and a flat zip installs as a plugin
+# directory named after the zip instead.
+( cd "$here" && zip -rq "$out" statchasers-news -x '*.DS_Store' '*/.*' )
+
+say "wrote    ${out#"$here"/} ($(du -h "$out" | cut -f1 | tr -d ' '))"
+unzip -l "$out" | tail -n +4 | head -n -2 | awk '{ printf "         %s\n", $4 }'

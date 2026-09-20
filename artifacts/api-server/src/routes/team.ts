@@ -67,9 +67,8 @@ const TEAM_PATH_PREFIX = "/team/";
  * what mints these URLs, so the two lists cannot drift without a rewrite rule
  * pointing at a section the API will not scope to.
  *
- * `news` is addressable here but deliberately NOT in the plugin's rewrite: a
- * team whose archive is two stories is a thin page, and the hub already carries
- * the tab.
+ * All six are public, `news` included: it was held back while an archive was
+ * two stories deep, and the season has since filled it.
  */
 const SECTIONS = new Set([
   "outlook",

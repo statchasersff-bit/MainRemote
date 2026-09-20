@@ -47,12 +47,38 @@ building all 32:
       empty string for everyone else, so a broken mount looks like a missing
       section rather than an error.
 
+### Page headings
+
+The plugin measures this itself now — **Tools → StatChasers Pages → Page
+headings** — and the panel says what it found. Confirm the measurement matches
+the page:
+
+- [ ] the panel reports either "the theme prints the page heading as the H1" or
+      "the theme prints no H1, so the shortcodes print the heading themselves".
+      A warning about an H1 that is not the page's heading is a theme printing
+      the site name in one, and it is fixed in the theme — the plugin will not
+      add a second.
+- [ ] on a published team page, `curl -s <url> | grep -o '<h1[^>]*>[^<]*'`
+      returns **exactly one**, and it names the team.
+- [ ] the same on a player profile and on a matchup pair URL. The probe measures
+      a team hub and applies the verdict to all three, which is right for a
+      normal theme and can be wrong for a Theme Builder setup that templates
+      them differently. If one of the three differs, the panel's **Always
+      print** / **Never print** settings are the way out.
+- [ ] after switching themes, the panel says the check needs running again
+      rather than showing the old verdict.
+- [ ] **if the plugin is printing the heading**, the hero CSS is site-wide
+      (Divi → Theme Options → Custom CSS), not inline in one page's Code
+      module. Generated headings carry the `sc-lo-hero` classes; with the CSS
+      still inline they render as unstyled text — correct markup, no gold rule.
+      Compare a generated heading against a hand-written one side by side.
+
 ### Section URLs
 
-Only once `statchasers_team_section_urls` is on. Flush permalinks first
-(Settings → Permalinks → Save) or every section URL 404s. Then take one team
-end to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`,
-`/schedule/` and `/depth-chart/` — and on **every one of the five** confirm:
+On by default since 1.7.0, with the flush done on activation. Take one team end
+to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`,
+`/schedule/`, `/depth-chart/`, `/matchups/` and `/news/` — and on **every one of
+the six** confirm:
 
 - [ ] HTTP **200**.
 - [ ] the H1 is the page's phrase: the team name on the hub, "New England
@@ -72,7 +98,7 @@ end to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`
       reaching the shortcode and the URL is the hub wearing a second address.
 - [ ] at most one `FAQPage` node in the page, and it holds only that page's
       questions. The Schedule page has none — that is correct, not a gap.
-- [ ] the URL is in the **page sitemap**. If the four section URLs are absent,
+- [ ] the URL is in the **page sitemap**. If the six section URLs are absent,
       the `rank_math/sitemap/page_content` filter name is the first thing to
       check — it is the one Rank Math hook not confirmed against a live build.
 
@@ -83,17 +109,43 @@ Then the edges:
 - [ ] on the API origin, `/team/ne/schedule/` and `/team/ne?section=schedule`
       both 301 to `/team/new-england-patriots/schedule/`; `/team/nowhere/stats/`
       is a 404.
-- [ ] with the flag **off**: the section URLs 404 and the sitemap lists no
-      section URLs. Off must be genuinely off.
+- [ ] with `add_filter( 'statchasers_team_section_urls', '__return_false' )`:
+      the section URLs 404 and the sitemap lists none of them. Off must be
+      genuinely off.
 
 Once all of that holds on one team, submit the page sitemap in Search Console.
 
+### Player pages
+
+After a build finishes — **Tools → StatChasers Pages → Player pages** — on one
+profile, say `/nfl/players/kyler-murray/`:
+
+- [ ] HTTP **200**, and the count on the panel matches what the API lists.
+      A build that stopped early leaves the rest 404ing, and the panel says
+      "Continue from N" rather than "every profile has a page".
+- [ ] exactly one H1, and it is the player's name — **not** `Kyler Murray (QB)`.
+      The position is in the stored title so six hundred rows are legible in the
+      admin list; the heading filter takes it back off.
+- [ ] a section URL — `/nfl/players/kyler-murray/game-log/` — is 200, shows that
+      panel only, and its H1 names the section (`… Game Log 2026`). The six
+      addresses sharing one heading is what that filter exists to prevent.
+- [ ] robots is `index, follow`, the canonical is the page's own pretty path,
+      and the Rank Math title is `Kyler Murray Fantasy Football Stats &
+      Analysis | StatChasers`.
+- [ ] the container at `/nfl/players/` lists the roster grouped by team. An
+      empty container page is a thin page that still sits in the sitemap.
+- [ ] re-run the build: it reports everything as existing and changes nothing.
+
 ### Matchup pages
 
-Only once `statchasers_matchup_urls` is on and the holder page exists. Flush
-permalinks first. Then on `/nfl/new-england-patriots-vs-philadelphia-eagles/`:
+Only once the holder page exists — **Tools → StatChasers Pages → Matchup
+pages** creates it, and the pair URLs are live from that point. Then on
+`/nfl/new-england-patriots-vs-philadelphia-eagles/`:
 
-- [ ] HTTP **200**; H1 is `New England Patriots vs Philadelphia Eagles`.
+- [ ] HTTP **200**; H1 is `New England Patriots vs Philadelphia Eagles`, and a
+      **second** pair URL has a different one. 496 addresses share one holder
+      page, so an H1 that is the same on both means `the_title` is not being
+      rewritten and every pair page is headed with the holder's name.
 - [ ] `<title>` carries the state's phrase (Where to Watch… / Score… /
       Head-to-Head Record…) and `<link rel="canonical">` and `og:url` are this
       exact pretty URL. One of each.
@@ -103,8 +155,10 @@ permalinks first. Then on `/nfl/new-england-patriots-vs-philadelphia-eagles/`:
 - [ ] `/nfl/new-england-patriots-vs-fake-team/` and
       `/nfl/new-england-patriots-vs-new-england-patriots/` are **404**, not the
       holder, not a hub.
-- [ ] the block under the hero matches the state: Up Next with a Where to
-      Watch section (date, kickoff, TV, venue — no "check local listings"),
+- [ ] the block under the hero matches the state. An upcoming pair leads with
+      **Where to Watch** (date, kickoff, TV, venue — no "check local listings")
+      and carries no "Up Next" card: the hero already names the fixture, and the
+      card was the same four facts a second time,
       Final with the score, or Last Meeting. Nothing from a different state.
 - [ ] the page links both hubs and both `/matchups/` sections.
 - [ ] the page sitemap lists the pair URLs (496 entries).

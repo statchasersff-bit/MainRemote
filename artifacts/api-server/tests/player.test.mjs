@@ -2344,7 +2344,7 @@ describe("the player search", () => {
       "inert data, not a script — the page loads exactly one bundle",
     );
 
-    const rows = JSON.parse(island.textContent);
+    const { rows, teams } = JSON.parse(island.textContent);
     assert.ok(Array.isArray(rows));
     assert.equal(
       rows.length,
@@ -2354,13 +2354,29 @@ describe("the player search", () => {
 
     const slugs = new Set();
     for (const row of rows) {
-      const [slug, name, position, team] = row.split("|");
+      const [slug, name, position, team, id] = row.split("|");
       assert.match(slug, /^[a-z0-9][a-z0-9-]*$/, `slug-shaped: ${row}`);
       assert.ok(name, `every row names somebody: ${row}`);
       assert.ok(/^[A-Z]*$/.test(position), `position is a code or empty: ${row}`);
       assert.ok(/^[A-Z]*$/.test(team), `team is a code or empty: ${row}`);
+      // Sleeper's id, which is what the portrait CDN is keyed by. Without it
+      // the dropdown draws eight empty wells.
+      assert.match(id, /^\w+$/, `every row carries an id: ${row}`);
+      // The club is named once in `teams` and referenced from the row — a code
+      // with no entry there is a result with no badge and no club.
+      if (team) assert.ok(teams[team], `${team} is described once, beside the rows`);
       slugs.add(slug);
     }
+
+    for (const [code, club] of Object.entries(teams)) {
+      assert.match(code, /^[A-Z]{2,3}$/);
+      assert.ok(club.name, `${code} carries a nickname`);
+      assert.match(club.logo, /^https:\/\//, `${code} carries an absolute logo`);
+    }
+    assert.ok(
+      Object.keys(teams).length <= 32,
+      "one entry per club, not one per player",
+    );
     assert.equal(slugs.size, rows.length, "no player listed twice");
     assert.ok(slugs.has(fixture.slug), "including the player being looked at");
 

@@ -1,12 +1,17 @@
 /**
  * The NFL schedule routes.
  *
- *   GET /schedule                  — the standalone page
+ *   GET /schedule                  — the standalone page, on the current week
+ *   GET /schedule/week-2           — one week of the board, its own address
  *   GET /schedule?view=team&team=ne
  *   GET /schedule?embed=1          — the same page, stripped for embedding
  *   GET /schedule/download.csv     — what is on screen, as CSV
  *   GET /schedule/schedule.ics     — the same games as a calendar file
  *   GET /embed/schedule            — the bare fragment, for the WordPress mount
+ *
+ * The week is the one piece of state with a path of its own. A week is a
+ * different slate of games — a page — where the view, the team and the filter
+ * are ways of looking at one, so `?week=` is now only an old link to redirect.
  *
  * Mirrors routes/fpa.ts and routes/rankings.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does
@@ -29,6 +34,7 @@ import {
 import {
   renderScheduleCsv,
   renderScheduleIcs,
+  resolveState,
   type ScheduleRenderOptions,
 } from "../lib/schedule-render";
 import {
@@ -114,30 +120,95 @@ function noStoreHtml(res: Response, status: number, html: string): void {
     .send(html);
 }
 
-router.get("/schedule", (req, res) => {
+/**
+ * The query this page understands, and nothing else, for rebuilding a URL.
+ *
+ * Echoing `req.query` wholesale into a redirect would let anything anyone
+ * appends survive into another address — the duplicate URL space the canonical
+ * work exists to prevent. Defaults are dropped on the way out for the same
+ * reason: `?view=week&filter=all` is the bare path with extra words.
+ */
+function carriedQuery(req: Request): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const key of ["view", "team", "filter", "season", "embed"]) {
+    const raw = req.query[key];
+    if (typeof raw !== "string") continue;
+    const value = raw.trim();
+    if (value === "") continue;
+    params.set(key, value);
+  }
+  if (parseScheduleView(params.get("view") ?? "") === "week") {
+    params.delete("view");
+  }
+  if (parseGameFilter(params.get("filter") ?? "") === "all") {
+    params.delete("filter");
+  }
+  return params;
+}
+
+function withQuery(path: string, params: URLSearchParams): string {
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
+}
+
+/**
+ * The canonical for this rendering.
+ *
+ * `/schedule` and `/schedule/week-3` are the same board during week 3 — the
+ * first is the way in, the second is the page — so the way in points at the
+ * page, and the week that is current stops being an address that moves. Every
+ * other rendering is its own canonical, and the query string is discarded
+ * exactly as it was before: no view, team, filter or season can mint a second
+ * one.
+ */
+async function scheduleCanonical(
+  req: Request,
+  season: number,
+  options: ScheduleRenderOptions,
+): Promise<string> {
+  const base = canonicalUrl(req);
+  // PUBLIC_CANONICAL_URL replaces the URL outright for a deployment that lives
+  // behind another address. Hanging a week off it would invent a path that
+  // deployment has never served.
+  if (process.env["PUBLIC_CANONICAL_URL"]?.trim()) return base;
+  // Already at a week's own address, or not on the weekly board at all.
+  if (options.view !== "week" || options.week !== undefined) return base;
+  const data = await getSchedule(season);
+  return data ? `${base}/week-${resolveState(data, options).week}` : base;
+}
+
+/**
+ * The standalone page.
+ *
+ * `week` comes from the path or not at all — see the two routes below. Passing
+ * it in rather than reading it here is what keeps `/schedule` meaning "whatever
+ * week the season is on" while `/schedule/week-2` means week 2 in June.
+ */
+function sendSchedulePage(
+  req: Request,
+  res: Response,
+  week: number | null,
+): void {
   void (async () => {
     const embed = isEmbed(req);
     const query = state(req);
+    const season = seasonFrom(req);
 
     try {
-      const options: ScheduleRenderOptions & { canonical: string } = {
-        // Built from the path alone (lib/request.ts), so no combination of
-        // view, week, team or filter can mint a second canonical.
-        canonical: canonicalUrl(req),
+      const options: ScheduleRenderOptions = {
         embed,
         basePath: SCHEDULE_BASE_PATH,
         linkQuery: linkQuery(req),
         view: query.view,
         filter: query.filter,
-        ...(query.week === null ? {} : { week: query.week }),
+        ...(week === null ? {} : { week }),
         ...(query.team === null ? {} : { team: query.team }),
       };
 
-      const result = await renderScheduleAppPage(
-        publicDir,
-        seasonFrom(req),
-        options,
-      );
+      const result = await renderScheduleAppPage(publicDir, season, {
+        ...options,
+        canonical: await scheduleCanonical(req, season, options),
+      });
 
       const dev = liveReload().enabled;
 
@@ -182,6 +253,52 @@ router.get("/schedule", (req, res) => {
       );
     }
   })();
+}
+
+router.get("/schedule", (req, res) => {
+  // `?week=` was this board's address before the weeks had paths, and it is
+  // still what an old link, a bookmark or a pasted URL carries. One permanent
+  // redirect settles each of them, and the parameter never renders anything —
+  // which is what stops the two spellings from both existing.
+  const asked = parseWeek(String(req.query["week"] ?? ""));
+  if (asked !== null && state(req).view === "week") {
+    res.redirect(
+      301,
+      withQuery(`${SCHEDULE_BASE_PATH}/week-${asked}`, carriedQuery(req)),
+    );
+    return;
+  }
+  sendSchedulePage(req, res, null);
+});
+
+/**
+ * One week of the board, at its own address.
+ *
+ * The "week-" prefix cannot collide with `/schedule/download.csv` or
+ * `/schedule/schedule.ics`, so the three routes are order-independent.
+ */
+router.get("/schedule/week-:week", (req, res, next) => {
+  const raw = String(req.params["week"] ?? "");
+  const week = parseWeek(raw);
+
+  // Strict, and deliberately unforgiving: "week-02" and "week-19" are not this
+  // address rather than being redirected to one, the same call matchup/pair.ts
+  // makes about a game segment. A path is an assertion about what exists; the
+  // alternative is eighteen weeks with an unbounded number of spellings each.
+  if (week === null || String(week) !== raw) {
+    next();
+    return;
+  }
+
+  // The team lens and the matrix have nothing to do with a week. Rather than
+  // render one at an address naming a week it ignores, send it to the view's
+  // own URL and drop the week on the way.
+  if (state(req).view !== "week") {
+    res.redirect(301, withQuery(SCHEDULE_BASE_PATH, carriedQuery(req)));
+    return;
+  }
+
+  sendSchedulePage(req, res, week);
 });
 
 /**

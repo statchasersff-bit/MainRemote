@@ -221,13 +221,6 @@ body.scr-page.is-embed {
 
 /* ------------------------------------------------------------------ panels */
 
-.scr-section-title {
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--sc-navy);
-}
-
 /*
  * One panel at a time.
  *
@@ -288,16 +281,6 @@ body.scr-page.is-embed {
 .scr-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.scr-caption {
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--sc-muted);
-  background: var(--sc-surface-soft);
-  border-bottom: 1px solid var(--sc-border);
 }
 
 .scr-empty {

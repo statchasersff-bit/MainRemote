@@ -383,6 +383,13 @@ function renderPositionBoard(
     );
   }
 
+  // Screen-reader-only, on the same terms as the All board's caption. Depth,
+  // scoring and the updated date are all printed above the panels already — the
+  // controls carry the format and the date, and the tab strip names the
+  // position — so on screen this bar was the third telling. A table still owes
+  // its reader a caption, so it is hidden rather than dropped: the one route
+  // into this table that does NOT pass the controls is a screen reader landing
+  // on the table itself.
   const caption =
     `Top ${Math.min(count, POSITION_LIMITS[position])} ` +
     `${POSITION_PLURALS[position]} by tier, ${data.scoring} scoring` +
@@ -408,7 +415,7 @@ function renderPositionBoard(
   return (
     `<div class="scr-card"><div class="scr-scroll">` +
     `<table class="scr-table">` +
-    `<caption class="scr-caption">${escapeHtml(caption)}</caption>` +
+    `<caption class="scr-sr-only">${escapeHtml(caption)}</caption>` +
     `<colgroup><col class="scr-col-tier" /><col class="scr-col-rank" /><col />` +
     `<col class="scr-col-cta" /></colgroup>` +
     `<thead><tr>` +
@@ -572,25 +579,27 @@ export function renderRankingsPage(
   const active = options.position ?? "All";
 
   /*
-   * `hideHeading` keeps the heading in the document and out of the picture. The
-   * All panel opens directly under the filter strip, where "All positions" is
-   * already the selected chip, so the line restates the control above it. It is
-   * still an <h2> so the panel keeps its place in the heading outline for
-   * anyone navigating by headings rather than by eye.
+   * Every panel heading is in the document and out of the picture.
+   *
+   * The filter strip is the heading: the selected chip already says which board
+   * is open, so "Wide Receiver rankings" printed under "Wide Receiver" restates
+   * the control that put it there. The All panel was hidden on that reasoning
+   * from the start and the four position panels now follow it.
+   *
+   * Hidden, not dropped. It is still an <h2> so each panel keeps its place in
+   * the heading outline for anyone navigating by headings rather than by eye,
+   * and the section keeps the same text as its accessible name.
    */
   const panel = (
     position: PositionFilter,
     heading: string,
     body: string,
-    hideHeading = false,
   ): string =>
     `<section class="scr-section${
       position === active ? " is-default is-active" : ""
     }" id="${panelId(position)}" data-scr-panel` +
     ` aria-label="${escapeHtml(heading)}">` +
-    `<h2 class="${
-      hideHeading ? "scr-sr-only" : "scr-section-title"
-    }">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scr-sr-only">${escapeHtml(heading)}</h2>` +
     body +
     `</section>`;
 
@@ -599,7 +608,6 @@ export function renderRankingsPage(
       "All",
       "All positions, ranked side by side",
       renderAllBoard(data, options) + renderLegend(data),
-      true,
     ) +
     STAT_POSITIONS.map((pos) =>
       panel(

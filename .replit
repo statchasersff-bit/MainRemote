@@ -5,6 +5,7 @@ router = "application"
 deploymentTarget = "gce"
 build = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
 run = ["pnpm", "--filter", "@workspace/api-server", "run", "start"]
+ignorePorts = false
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]

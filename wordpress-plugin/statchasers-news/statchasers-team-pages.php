@@ -10,7 +10,7 @@
  *
  * That work used to live in scripts/create-team-pages.sh, which needs WP-CLI
  * and therefore SSH. Plenty of hosting has neither. This is the same job driven
- * from Tools → StatChasers Team Pages, with a notice on any admin screen while
+ * from Tools → StatChasers Pages, with a notice on any admin screen while
  * pages are still missing.
  *
  * The promises are the shell script's, unchanged: a page that already exists is
@@ -425,8 +425,8 @@ add_action(
 	'admin_menu',
 	static function (): void {
 		add_management_page(
-			'StatChasers Team Pages',
-			'StatChasers Team Pages',
+			'StatChasers Pages',
+			'StatChasers Pages',
 			'manage_options',
 			STATCHASERS_TEAM_PAGES_SCREEN,
 			'statchasers_team_pages_screen'
@@ -457,6 +457,13 @@ add_action(
 
 		$with_images = isset( $_POST['with_images'] );
 		$result      = statchasers_team_build_pages( $with_images );
+
+		// The probe needs a published hub to look at, and this is the moment
+		// one first exists. Running it here is what makes the headings correct
+		// without anybody being told to go and check them.
+		if ( function_exists( 'statchasers_h1_probe' ) ) {
+			statchasers_h1_probe();
+		}
 
 		set_transient( 'statchasers_team_build_result', $result, MINUTE_IN_SECONDS );
 
@@ -533,7 +540,8 @@ function statchasers_team_pages_screen(): void {
 	$origin  = statchasers_news_origin();
 
 	echo '<div class="wrap">';
-	echo '<h1>StatChasers Team Pages</h1>';
+	echo '<h1>StatChasers Pages</h1>';
+	echo '<h2>Team pages</h2>';
 
 	if ( '' === $origin ) {
 		echo '<div class="notice notice-error"><p><strong>No API origin set.</strong> Add ' .
@@ -576,7 +584,9 @@ function statchasers_team_pages_screen(): void {
 	}
 
 	statchasers_team_retitle_panel();
+	statchasers_player_panel();
 	statchasers_matchup_panel();
+	statchasers_h1_panel();
 
 	echo '<h2>Teams</h2>';
 	echo '<table class="widefat striped"><thead><tr>' .
@@ -612,10 +622,9 @@ function statchasers_team_pages_screen(): void {
  * pointing at a section the API will not scope to serves the hub under a URL
  * that promised one panel, which is duplicate content wearing a second address.
  *
- * `news` is addressable on the API but deliberately absent here. A team whose
- * archive is two stories is a thin page, and the hub already carries the tab;
- * the section is opened by adding it to this list once the data is dense enough
- * to carry its own URL.
+ * `news` was held back here while a team's archive was two stories deep. It is
+ * open now and addressed like the other five, which is why this list and the
+ * API's are once again the same six strings.
  */
 const STATCHASERS_TEAM_SECTIONS = array(
 	'outlook',
@@ -623,18 +632,23 @@ const STATCHASERS_TEAM_SECTIONS = array(
 	'schedule',
 	'depth-chart',
 	'matchups',
+	'news',
 );
 
 /**
- * Whether the nested section URLs are live. Off by default.
+ * Whether the nested section URLs are live. On by default.
  *
- *     add_filter( 'statchasers_team_section_urls', '__return_true' );
+ * It was off while the rewrite was new and the sitemap entries had not been
+ * confirmed against a live Rank Math build. Six addresses per team that the
+ * plugin renders correctly and never advertises is not a safe default, it is a
+ * quiet one, so it is on now and the plugin flushes permalinks itself on
+ * activation and after a build. To go back:
  *
- * Then flush permalinks once (Settings > Permalinks > Save).
+ *     add_filter( 'statchasers_team_section_urls', '__return_false' );
  *
  * WHAT IT DOES NOT DO: create pages. The rule points the section URL at the
  * team's EXISTING page and sets a query var the shortcode reads, so one page
- * per team serves every section address. 32 teams do not need 160 pages, and a
+ * per team serves every section address. 32 teams do not need 192 pages, and a
  * section is opened or closed by editing one list rather than by minting or
  * deleting rows in wp_posts.
  *
@@ -642,7 +656,7 @@ const STATCHASERS_TEAM_SECTIONS = array(
  * the two page types are addressed the same way.
  */
 function statchasers_team_section_urls_enabled(): bool {
-	return (bool) apply_filters( 'statchasers_team_section_urls', false );
+	return (bool) apply_filters( 'statchasers_team_section_urls', true );
 }
 
 /** A section id, or '' if it is not one we serve. */
@@ -713,8 +727,8 @@ function statchasers_team_current_slug(): string {
  * actually rank — but a reader can reach either, and the two must say the same
  * thing. Changing one means changing the other.
  *
- * Generated rather than stored: 32 teams x 5 URLs is 160 title/description
- * pairs, and storing them would mean 160 rows to migrate every time a season
+ * Generated rather than stored: 32 teams x 6 URLs is 192 title/description
+ * pairs, and storing them would mean 192 rows to migrate every time a season
  * rolls over or a phrase is reworded. The season is a constant at the top of
  * this file, so a rollover is one edit.
  *
@@ -777,6 +791,17 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 				),
 			);
 
+		case 'news':
+			return array(
+				'title'       => sprintf( '%s News %s: Injuries, Roster Moves & Fantasy Impact', $name, $season ),
+				'description' => sprintf(
+					'The latest %1$s news: injury designations, roster moves and depth-chart changes through the %2$s season, each with what it means for %3$s fantasy value.',
+					$name,
+					$season,
+					$nick
+				),
+			);
+
 		case 'depth-chart':
 			return array(
 				'title'       => sprintf( '%s Depth Chart %s: Starters & Backups', $name, $season ),
@@ -806,7 +831,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
  * comment names this side as the owner: the fragment steps its hero down to
  * <h2> when embedded, "where WordPress supplies the H1". This is that H1, and
  * until it existed there was none — the page inherited whatever the stored
- * post_title said, on the hub and on all five section addresses alike.
+ * post_title said, on the hub and on all six section addresses alike.
  *
  * The phrase alone, where statchasers_team_section_meta()'s title adds the
  * clause after the colon: "Stats 2026" here, "Stats 2026: Offense, Defense &
@@ -824,9 +849,8 @@ function statchasers_team_heading( string $slug, string $section ): string {
 		return '';
 	}
 
-	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts, including `news`,
-	// which has no rewrite rule minting URLs for it but is listed there so the
-	// route names itself correctly if it is ever opened. Same reason here.
+	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts — the same six
+	// sections, in the same order, saying the same words.
 	$phrases = array(
 		'outlook'     => 'Fantasy Football Outlook',
 		'stats'       => 'Stats',
@@ -847,7 +871,7 @@ function statchasers_team_heading( string $slug, string $section ): string {
 /**
  * Rewrite the page title on a team page, which is the theme's H1.
  *
- * One filter covers all 32 pages and all 160 addresses, with nothing stored and
+ * One filter covers all 32 pages and all 192 addresses, with nothing stored and
  * no page edited: the heading is computed per request from the slug the URL
  * resolved to and the section the rewrite rule set, so a season rollover is the
  * same one-line edit as the titles (STATCHASERS_TEAM_SEASON), and a team page

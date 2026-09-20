@@ -24,12 +24,21 @@ import { searchKey } from "../lib/render";
 /** How many results the panel shows. More than this is a list, not an answer. */
 const LIMIT = 8;
 
+/** A club, as the island carries it: named once, referenced by every player. */
+interface Club {
+  name: string;
+  logo: string;
+}
+
 /** One row of the inlined roster, split and normalised once. */
 interface Entry {
   slug: string;
   name: string;
   position: string;
   team: string;
+  /** Sleeper's id — what the portrait CDN is keyed by. */
+  id: string;
+  club: Club | null;
   /** The name as it is matched: lowercase, unaccented, punctuation folded. */
   key: string;
   /** That same key split into words, so a surname matches on its own. */
@@ -50,19 +59,21 @@ interface Entry {
 let widgetSeq = 0;
 
 function parseRoster(script: HTMLScriptElement): Entry[] {
-  let rows: unknown;
+  let island: { rows?: unknown; teams?: Record<string, Club> };
   try {
-    rows = JSON.parse(script.textContent ?? "[]");
+    island = JSON.parse(script.textContent ?? "{}");
   } catch {
     // A truncated island is a broken search, not a broken page.
     return [];
   }
+  const rows = island.rows;
   if (!Array.isArray(rows)) return [];
+  const teams = island.teams ?? {};
 
   const entries: Entry[] = [];
   for (const row of rows) {
     if (typeof row !== "string") continue;
-    const [slug, name, position, team] = row.split("|");
+    const [slug, name, position, team, id] = row.split("|");
     if (!slug || !name) continue;
     const key = searchKey(name);
     entries.push({
@@ -70,12 +81,33 @@ function parseRoster(script: HTMLScriptElement): Entry[] {
       name,
       position: position ?? "",
       team: team ?? "",
+      id: id ?? "",
+      club: (team && teams[team]) || null,
       key,
       words: key ? key.split(" ") : [],
       compact: key.replace(/ /g, ""),
     });
   }
   return entries;
+}
+
+/**
+ * An <img> that takes itself out of the row rather than leaving a broken one.
+ *
+ * Neither CDN is this app's: Sleeper has no portrait for every player on the
+ * list and its logo file for a club can move. A 404 with an empty alt is an
+ * empty box of the right size in some engines and a broken-image glyph in
+ * others, and the second of those is worse than the plain well underneath.
+ */
+function cdnImage(src: string, className: string): HTMLImageElement {
+  const img = document.createElement("img");
+  img.className = className;
+  img.src = src;
+  img.alt = "";
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.addEventListener("error", () => img.remove(), { once: true });
+  return img;
 }
 
 /**
@@ -230,19 +262,68 @@ export function wirePlayerSearch(root: HTMLElement): void {
       link.setAttribute("role", "option");
       link.setAttribute("aria-selected", "false");
 
+      /*
+       * The portrait, with the club's mark on its corner.
+       *
+       * The arrangement the app this page was ported from used for its own
+       * autocomplete, and it is the right one for a list: both images read as
+       * one object at the head of the row, so the eye runs down a single
+       * column of faces rather than two columns of small pictures.
+       */
+      const face = document.createElement("span");
+      face.className = "scp-search-face";
+      if (entry.id) {
+        face.appendChild(
+          cdnImage(
+            `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(entry.id)}.jpg`,
+            "scp-search-shot",
+          ),
+        );
+      }
+      if (entry.club?.logo) {
+        face.appendChild(cdnImage(entry.club.logo, "scp-search-badge"));
+      }
+      link.appendChild(face);
+
+      const who = document.createElement("span");
+      who.className = "scp-search-who";
+
       const name = document.createElement("span");
       name.className = "scp-search-name";
       name.textContent = entry.name;
-      link.appendChild(name);
+      who.appendChild(name);
 
-      const billing = [entry.position, entry.team].filter(Boolean).join(" · ");
-      if (billing) {
-        const meta = document.createElement("span");
-        meta.className = "scp-search-meta";
-        meta.textContent = billing;
-        link.appendChild(meta);
+      const meta = document.createElement("span");
+      meta.className = "scp-search-meta";
+      if (entry.position) {
+        const pos = document.createElement("span");
+        pos.className = "scp-search-pos";
+        // The stylesheet colours it from here — the site's four position inks,
+        // the same ones the depth chart and the matchup tables use. A position
+        // without an ink of its own (a kicker) keeps the muted grey around it
+        // rather than being given a fifth colour to mean "other".
+        pos.dataset["pos"] = entry.position;
+        pos.textContent = entry.position;
+        meta.appendChild(pos);
       }
+      if (entry.club) {
+        if (entry.position) {
+          const dot = document.createElement("span");
+          dot.className = "scp-search-dot";
+          dot.textContent = "·";
+          // Decoration between two facts, not a third one: the row is an
+          // option in a listbox and its name is read aloud as one string.
+          dot.setAttribute("aria-hidden", "true");
+          meta.appendChild(dot);
+        }
+        const club = document.createElement("span");
+        club.className = "scp-search-club";
+        club.textContent = entry.club.name;
+        meta.appendChild(club);
+      }
+      if (meta.childNodes.length > 0) who.appendChild(meta);
 
+      link.appendChild(who);
       list.appendChild(link);
       options.push(link);
     });

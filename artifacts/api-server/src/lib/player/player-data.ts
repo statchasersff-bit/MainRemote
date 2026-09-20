@@ -1320,12 +1320,27 @@ export function indexedPlayers(): IndexedPlayer[] {
 
 /* ------------------------------------------------------------ search index */
 
+/** The roster the search bar filters, in the form it is inlined in. */
+export interface PlayerSearchIndex {
+  /** `slug|Name|POS|TEAM|ID` per player. */
+  rows: string[];
+  /**
+   * The clubs those rows name, once each.
+   *
+   * Beside the rows rather than inside them: the nickname and the logo URL are
+   * the same eighty bytes for every Bengal on the list, and there are 32 clubs
+   * against ~575 players. `id` is Sleeper's, which is what both CDNs are keyed
+   * by — the player's portrait and the club's mark.
+   */
+  teams: Record<string, { name: string; logo: string }>;
+}
+
 /**
  * Every player with a page, one line each, for the search bar above the header.
  *
- * `slug|Name|POS|TEAM` rather than an object per player, because this list is
- * INLINED into every player page and so its shape is paid for once per row and
- * once per page: four repeated property names across ~575 rows is roughly
+ * `slug|Name|POS|TEAM|ID` rather than an object per player, because this list
+ * is INLINED into every player page and so its shape is paid for once per row
+ * and once per page: five repeated property names across ~575 rows is roughly
  * twice the bytes of the same facts pipe-joined, and the client splits each
  * line once on first keystroke. TEAM is "" for a free agent, POS for the
  * handful of indexed players the dictionary has no position for.
@@ -1342,11 +1357,13 @@ export function indexedPlayers(): IndexedPlayer[] {
  * slug list — so a rebuilt roster produces a new array here AND a new page
  * version, and the two cannot disagree.
  */
-let searchIndexCache: { stamp: string; rows: string[] } | null = null;
+let searchIndexCache: { stamp: string; index: PlayerSearchIndex } | null = null;
 
-export function playerSearchIndex(): string[] {
+export function playerSearchIndex(): PlayerSearchIndex {
   const stamp = dataStamp();
-  if (searchIndexCache?.stamp === stamp) return searchIndexCache.rows;
+  if (searchIndexCache?.stamp === stamp) return searchIndexCache.index;
+
+  const teams: PlayerSearchIndex["teams"] = {};
 
   const rows = indexedPlayers()
     // Alphabetical, so the payload is stable between renders and so equally
@@ -1355,19 +1372,25 @@ export function playerSearchIndex(): string[] {
     // this, not a replacement for it.
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((entry) =>
-      [
+    .map((entry) => {
+      const team = entry.team;
+      if (team && !teams[team.code]) {
+        teams[team.code] = { name: team.nickname, logo: team.logo };
+      }
+      return [
         entry.slug,
         // The delimiter cannot be allowed to survive inside a field: one name
         // carrying a pipe would shift every field after it by one.
         entry.name.replace(/\|/g, " "),
         entry.position ?? "",
-        entry.team?.code ?? "",
-      ].join("|"),
-    );
+        team?.code ?? "",
+        entry.id,
+      ].join("|");
+    });
 
-  searchIndexCache = { stamp, rows };
-  return rows;
+  const index: PlayerSearchIndex = { rows, teams };
+  searchIndexCache = { stamp, index };
+  return index;
 }
 
 /** The canonical team code for a player's current team, or "". */

@@ -110,6 +110,23 @@ function joinPath(base: string, sub: string): string {
   return `${base.replace(/\/+$/, "")}${sub}`;
 }
 
+/**
+ * The address of one week of the board: `/schedule/week-2`.
+ *
+ * The weekly board is the one view with a week of its own to name, so it gets
+ * paths rather than a parameter — eighteen pages, each about one slate, instead
+ * of eighteen spellings of one page.
+ *
+ * The trailing slash is kept where it was, because `base` is two different
+ * kinds of thing: this app's own `/schedule`, which has none, and the
+ * WordPress page's path on an embed, which conventionally does and whose
+ * rewrite rule wants it back.
+ */
+function weekPath(base: string, week: number): string {
+  const trailing = base.endsWith("/") ? "/" : "";
+  return `${joinPath(base, `/week-${week}`)}${trailing}`;
+}
+
 interface ViewState {
   view: ScheduleView;
   week: number;
@@ -120,8 +137,13 @@ interface ViewState {
 /**
  * A URL for some other state of this page.
  *
- * Only the parameters that differ from the default are written, so the common
- * links stay short and the bare path keeps meaning "the current week's board".
+ * The week lives in the path (`/schedule/week-2`) and everything else lives in
+ * the query string. That split is not cosmetic: a week is a different slate of
+ * games and deserves an address, while the view and the filter are ways of
+ * looking at one — and `week` never appears as a parameter, so no rendering has
+ * two spellings.
+ *
+ * Only what differs from the default is written, so the links stay short.
  * `linkQuery` is merged in rather than appended, because it carries `embed=1`
  * and two question marks is not a URL.
  */
@@ -137,10 +159,10 @@ function stateUrl(
   if (merged.view !== "week") params.set("view", merged.view);
   else params.delete("view");
 
-  // The week is meaningful on the weekly board only; carrying it into the team
-  // lens would mint a second URL for the same rendering.
-  if (merged.view === "week") params.set("week", String(merged.week));
-  else params.delete("week");
+  // Never a parameter, on any view: the weekly board carries it in the path and
+  // the other two views do not carry it at all, because a team lens that
+  // remembered a week would be a second URL for one rendering.
+  params.delete("week");
 
   if (merged.view === "team" && merged.team) params.set("team", merged.team);
   else params.delete("team");
@@ -149,8 +171,9 @@ function stateUrl(
     params.set("filter", merged.filter);
   } else params.delete("filter");
 
+  const path = merged.view === "week" ? weekPath(base, merged.week) : base;
   const query = params.toString();
-  return query ? `${base}?${query}` : base;
+  return query ? `${path}?${query}` : path;
 }
 
 /* ------------------------------------------------------------ formatting */

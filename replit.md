@@ -564,7 +564,7 @@ they were not on the page. Here the API renders all five panels per request and
   players and the page has no business printing all of them.
 - Team abbreviations and player links come from `data/player/players.json`, the
   dictionary the player pages already load, rather than the 700 kB Sleeper map
-  the standalone app shipped. It places all 230 displayed players; 226 of them
+  the standalone app shipped. It places all 230 displayed players; 224 of them
   also have a player page. **A player it cannot place keeps his row and loses
   his link** rather than pointing at a 404.
 - `src/lib/rankings-render.ts` / `rankings-ssr.ts` / `rankings-seo.ts` — markup,
@@ -619,16 +619,27 @@ and most of what is distinctive about it follows from that.
   asserts, because that is the assertion a normalization bug fails.
 - `src/lib/schedule-render.ts` / `schedule-ssr.ts` / `schedule-seo.ts` — markup,
   fragment cache and head metadata. `public/schedule.html` is the shell,
-  `public/schedule.css` the stylesheet. The canonical always points at the bare
-  path, and that matters more here than anywhere else: view, week, team and
+  `public/schedule.css` the stylesheet. The canonical points at a path and never
+  at a parameter, and that matters more here than anywhere else: view, team and
   filter combine into several hundred URLs, every one of them a near-duplicate.
   The description does vary by view, because the three views are genuinely about
   different things.
-- `src/routes/schedule.ts` — `/schedule`, `/schedule/download.csv`,
-  `/schedule/schedule.ics` and `/embed/schedule`. Both exports are built from
-  the same `getSchedule` the page renders, so the file and the screen cannot
-  disagree — the standalone app generated its CSV from a second formatter in the
-  browser, which is how they drift.
+- **A week is a page; everything else is a parameter.** `/schedule/week-2` is
+  week 2 — a different slate of games, with its own title, its own description
+  and its own canonical — where `?view=`, `?team=` and `?filter=` are ways of
+  looking at one board and never change the canonical. `/schedule` itself is the
+  way in rather than a nineteenth page: it renders the week the season is on and
+  points its canonical at that week's address, so the two spellings of one board
+  resolve to one page. `?week=` is answered with a 301 to the path; a week the
+  season does not have (`week-0`, `week-19`, `week-02`) is a 404 rather than a
+  second spelling of a week it does have.
+- `src/routes/schedule.ts` — `/schedule`, `/schedule/week-:week`,
+  `/schedule/download.csv`, `/schedule/schedule.ics` and `/embed/schedule`. Both
+  exports are built from the same `getSchedule` the page renders, so the file
+  and the screen cannot disagree — the standalone app generated its CSV from a
+  second formatter in the browser, which is how they drift. The fragment still
+  takes its week as a query argument, because there it is an argument to a
+  render rather than an address; the WordPress plugin owns the address.
 - `src/client/schedule.ts` — kickoffs relabelled into the reader's own time zone
   (the server says ET because it has no idea where the reader is), the week
   strip scrolled to where you are, and a team picker that submits itself. That

@@ -341,25 +341,106 @@ describe("the schedule page", () => {
     }
   });
 
-  test("view, week, team and filter never change the canonical", async () => {
-    const canonical = async (query) => {
-      const { doc } = await page(`/schedule${query}`);
+  test("view, team and filter never change the canonical", async () => {
+    const canonical = async (pathname) => {
+      const { doc } = await page(pathname);
       return doc.querySelector('link[rel="canonical"]').getAttribute("href");
     };
-    const bare = await canonical("");
-    for (const query of [
-      "?view=matrix",
-      "?view=team&team=ne",
-      "?week=12",
-      "?filter=division",
-      "?week=3&filter=international&view=week",
-    ]) {
+
+    // The three that are ways of LOOKING at a board, rather than names of a
+    // different one, all canonicalise to the path they are looked at from.
+    for (const query of ["?view=matrix", "?view=team&team=ne"]) {
       assert.equal(
-        await canonical(query),
-        bare,
+        await canonical(`/schedule${query}`),
+        `${server.origin}/schedule`,
         `${query} is the same page as the bare path`,
       );
     }
+    for (const query of [
+      "?filter=division",
+      "?filter=international",
+      "?season=2024",
+      "?embed=1",
+    ]) {
+      assert.equal(
+        await canonical(`/schedule/week-3${query}`),
+        `${server.origin}/schedule/week-3`,
+        `${query} is the same page as week 3`,
+      );
+    }
+  });
+
+  test("a week is a page, and says which week it is", async () => {
+    const { res, doc } = await page("/schedule/week-2");
+    assert.equal(res.status, 200);
+    assert.match(doc.querySelector("title").textContent, /Week 2/);
+    assert.equal(
+      doc.querySelector('link[rel="canonical"]').getAttribute("href"),
+      `${server.origin}/schedule/week-2`,
+    );
+    const active = doc.querySelector(".scs-rail-link.is-active");
+    assert.equal(active.textContent.replace(/\D/g, ""), "2");
+  });
+
+  test("the bare path is the way in, and points at the week it shows", async () => {
+    const { doc, html } = await page("/schedule");
+    const canonical = doc
+      .querySelector('link[rel="canonical"]')
+      .getAttribute("href");
+    assert.match(canonical, /\/schedule\/week-\d{1,2}$/);
+    // Same board, same links, one of them the address of the other: the pair
+    // is a duplicate only until the canonical says which one is the page.
+    const week = await page(canonical.slice(server.origin.length));
+    assert.equal(week.html, html);
+  });
+
+  test("the week strip links to paths, not parameters", async () => {
+    const { doc } = await page("/schedule/week-2");
+    const hrefs = [...doc.querySelectorAll(".scs-rail-link")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.equal(hrefs.length, 18);
+    assert.deepEqual(
+      hrefs,
+      Array.from({ length: 18 }, (_, i) => `/schedule/week-${i + 1}`),
+    );
+  });
+
+  test("the old ?week= address is redirected, once and permanently", async () => {
+    const res = await rawGet("/schedule?week=12&filter=division&view=week");
+    assert.equal(res.status, 301);
+    // The defaults are dropped on the way: view=week IS the weekly board.
+    assert.equal(res.headers.location, "/schedule/week-12?filter=division");
+    assert.equal((await rawGet(res.headers.location)).status, 200);
+  });
+
+  test("embed mode survives the redirect", async () => {
+    const res = await rawGet("/schedule?week=4&embed=1");
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, "/schedule/week-4?embed=1");
+  });
+
+  test("a week that is not in the season is not a page", async () => {
+    for (const bad of [
+      "/schedule/week-0",
+      "/schedule/week-19",
+      "/schedule/week-02",
+      "/schedule/week-two",
+      "/schedule/week-",
+    ]) {
+      assert.equal((await rawGet(bad)).status, 404, `${bad} must 404`);
+    }
+  });
+
+  test("the other views are sent back to their own addresses", async () => {
+    const res = await rawGet("/schedule/week-2?view=matrix");
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, "/schedule?view=matrix");
+  });
+
+  test("the exports are not mistaken for weeks", async () => {
+    assert.equal((await rawGet("/schedule/download.csv")).status, 200);
+    assert.equal((await rawGet("/schedule/schedule.ics")).status, 200);
   });
 
   // The board no longer prints a "Div" pill, so nothing on a row says what kind
@@ -430,6 +511,76 @@ describe("the embed fragment", () => {
     const res = await rawGet("/embed/schedule");
     assert.ok(!/<link[^>]+stylesheet/i.test(res.body));
     assert.ok(!/<script(?![^>]*type="application\/ld\+json")/i.test(res.body));
+  });
+});
+
+/* ------------------------------------------------------ the WordPress mount */
+
+/**
+ * The fragment as statchasers.com actually asks for it.
+ *
+ * The board's own controls have to link into the WordPress page rather than out
+ * to this origin, which is what SC_SCHEDULE_PATH is for — and now that a week
+ * is a path rather than a parameter, the link has to be spelled the way
+ * WordPress spells a page address, trailing slash and all, or the rewrite rule
+ * on the far end never fires.
+ */
+describe("the WordPress mount", () => {
+  let wp;
+
+  before(async () => {
+    wp = await startServer(
+      fixtureEnv(feed, {
+        SC_SCHEDULE_PATH: "/nfl/nfl-schedule/",
+        SC_TEAM_PATH_PREFIX: "/nfl/teams/",
+      }),
+    );
+  });
+
+  after(async () => {
+    await wp?.stop();
+  });
+
+  async function fragment(pathname) {
+    const res = await fetch(`${wp.origin}${pathname}`);
+    const html = await res.text();
+    return { res, doc: new JSDOM(html).window.document, html };
+  }
+
+  test("the week links land inside the WordPress page", async () => {
+    const { doc } = await fragment("/embed/schedule");
+    const hrefs = [...doc.querySelectorAll(".scs-rail-link")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.deepEqual(
+      hrefs,
+      Array.from({ length: 18 }, (_, i) => `/nfl/nfl-schedule/week-${i + 1}/`),
+      "the page's own path, a week segment, and the slash WordPress wants back",
+    );
+    // `?embed=1` is only meaningful against this origin, and `embed` is a
+    // reserved WordPress query var — so once the links point at the site, it
+    // is gone. That is fragmentLinkQuery()'s job, and it must survive the move
+    // of the week into the path.
+    assert.ok(!hrefs.some((href) => href.includes("?")));
+  });
+
+  test("the other views keep the page's bare path", async () => {
+    const { doc } = await fragment("/embed/schedule");
+    const views = [...doc.querySelectorAll(".scs-view-link")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.ok(
+      views.some((href) => href === "/nfl/nfl-schedule/?view=matrix"),
+      `the matrix hangs off the page itself: ${views.join(" ")}`,
+    );
+  });
+
+  test("the plugin still asks for a week the way it always has", async () => {
+    // The shortcode passes ?week= to the fragment — it is an argument to a
+    // render, not an address, and nothing about paths changes that.
+    const { doc } = await fragment("/embed/schedule?week=5");
+    const active = doc.querySelector(".scs-rail-link.is-active");
+    assert.equal(active.textContent.replace(/\D/g, ""), "5");
   });
 });
 
