@@ -6,28 +6,34 @@
  * the tab strip works with JavaScript disabled. Nothing here fetches anything
  * and nothing here renders a section.
  *
- * It adds four things:
+ * It adds five things:
  *   1. tab behaviour for the section bar, from client/enhance.ts;
  *   2. relative timestamps on the news list, likewise;
  *   3. height reporting for the legacy iframe mount, likewise;
- *   4. the behaviours particular to this page: a hover layer on the weekly
+ *   4. the player search above the header, from client/player-search.ts —
+ *      the one control on the page that does not exist until this file runs,
+ *      because a search box with no script behind it swallows typing and
+ *      answers nothing;
+ *   5. the behaviours particular to this page: a hover layer on the weekly
  *      chart, sortable columns on the game log and the career table, the
- *      per-week detail the game log folds away behind each week number, and
- *      the header's staged squeeze.
+ *      per-week detail the game log folds away behind each week number, the
+ *      header's staged squeeze, and centring the peers rail on the card the
+ *      reader is standing on.
  *
- * (4)'s squeeze is the one thing here that changes how the page LOOKS rather
+ * (5)'s squeeze is the one thing here that changes how the page LOOKS rather
  * than what it does, and it is still an enhancement: the header is complete
  * and correctly sized without it — see the scale fallbacks in player.css —
  * and what the fitter adds is a size measured from the header's own parts
  * instead of guessed from the viewport.
  *
  * The chart already carries a `<title>` per point, so it is readable with no
- * script at all; what (4) adds is a real tooltip with a hit target bigger than
+ * script at all; what (5) adds is a real tooltip with a hit target bigger than
  * the 4px dot, which is the difference between a chart you can inspect and one
  * you can only look at.
  */
 
 import { wireFrameHeight, wireTabs, wireTimestamps } from "./enhance";
+import { wirePlayerSearch } from "./player-search";
 
 const ROOT_SELECTOR = "[data-scp-root]";
 
@@ -818,6 +824,36 @@ function wireHeroFit(root: HTMLElement): void {
   if (document.fonts) document.fonts.ready.then(measure).catch(() => {});
 }
 
+/* ------------------------------------------------------------ peers rail */
+
+/**
+ * Centre the "You are here" card in the positional peers rail.
+ *
+ * The rail is complete and readable without this — it simply starts at its
+ * best-ranked end, which is a reasonable place to begin reading — but the card
+ * the reader is standing on is the anchor the other six are arranged around,
+ * and on a phone it starts three cards off the left edge.
+ *
+ * Measured with rects rather than offsetLeft, which is relative to whatever
+ * the nearest positioned ancestor happens to be and would silently change
+ * meaning the day something above the rail gains `position: relative`. And
+ * only the RAIL scrolls: the page must not jump to the bottom on load.
+ */
+function wirePeerRail(root: HTMLElement): void {
+  for (const rail of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-peers]"))) {
+    const current = rail.querySelector<HTMLElement>(".scp-peer.is-current");
+    if (!current) continue;
+    // A rail that fits has nothing to centre, and every card is already in
+    // view — which is the desktop case.
+    if (rail.scrollWidth <= rail.clientWidth) continue;
+
+    const railBox = rail.getBoundingClientRect();
+    const cardBox = current.getBoundingClientRect();
+    rail.scrollLeft +=
+      cardBox.left - railBox.left - (rail.clientWidth - cardBox.width) / 2;
+  }
+}
+
 /* ------------------------------------------------------------------ boot */
 
 function boot(): void {
@@ -829,10 +865,12 @@ function boot(): void {
       datasetKey: "scpTabs",
     });
     wireTimestamps(root);
+    wirePlayerSearch(root);
     wireChartTooltip(root);
     wireHeroFit(root);
     wireSortableLog(root);
     wireExpandableLog(root);
+    wirePeerRail(root);
     wireFrameHeight(root);
   }
 }

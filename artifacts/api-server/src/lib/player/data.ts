@@ -359,6 +359,11 @@ export function dataStamp(): string {
   const parts: string[] = [];
   for (const file of [
     PLAYERS_FILE,
+    // The slug list itself, not only the dictionary behind it. A player added
+    // to the index gains a page, and — since every page inlines the roster for
+    // its search bar — has to appear in the search on every OTHER page too.
+    // Without this line that is a rebuild the render cache cannot see.
+    INDEXED_FILE,
     GAME_SCORES_FILE,
     DYNASTY_FILE,
     BIOS_FILE,

@@ -1027,17 +1027,26 @@ describe("shortcode preview harness", () => {
    * <link> or executable <script>, WordPress would enqueue the assets a second
    * time and the harness above would stop representing what the plugin does.
    *
-   * The one thing that is allowed through is an FAQ's inert payload —
-   * `scp-faq-data` on the player mount, `sct-faq-data` on the team hub. Neither
-   * carries code: each is lifted into Rank Math's graph by the plugin that owns
-   * that mount and stripped from the markup before any of it is printed, so it
-   * never reaches the rendered page and cannot be enqueued as an asset. Matched
-   * exactly rather than waved past by type, so a real script that happened to
-   * sit next to one would still fail this.
+   * Two inert payloads are allowed through, neither of which carries code:
+   *
+   *   an FAQ's questions — `scp-faq-data` on the player mount, `sct-faq-data`
+   *   on the team hub — which the plugin that owns that mount lifts into Rank
+   *   Math's graph and strips before any of the markup is printed, so it never
+   *   reaches the rendered page at all;
+   *
+   *   the player search's roster, `data-scp-roster`, which does reach the page
+   *   and is meant to: it is the list the search above the header filters, and
+   *   it is inlined precisely so the fragment needs no request back to this
+   *   origin from a page on statchasers.com.
+   *
+   * Both matched exactly rather than waved past by type, so a real script that
+   * happened to sit next to one would still fail this.
    */
   test("the fragments it wraps ship no assets of their own", async () => {
-    const INERT_FAQ =
-      /<script type="application\/json" class="sc[pt]-faq-data">.*?<\/script>/gs;
+    const INERT = [
+      /<script type="application\/json" class="sc[pt]-faq-data">.*?<\/script>/gs,
+      /<script type="application\/json" data-scp-roster>.*?<\/script>/gs,
+    ];
 
     for (const route of [
       "/embed/ssr.html",
@@ -1048,10 +1057,8 @@ describe("shortcode preview harness", () => {
       const res = await get(route);
       assert.equal(res.status, 200);
       assert.ok(!/<link\b/i.test(res.body), `${route} must not carry a stylesheet`);
-      assert.ok(
-        !/<script\b/i.test(res.body.replace(INERT_FAQ, "")),
-        `${route} must not carry a script`,
-      );
+      const code = INERT.reduce((body, island) => body.replace(island, ""), res.body);
+      assert.ok(!/<script\b/i.test(code), `${route} must not carry a script`);
     }
   });
 });

@@ -469,7 +469,7 @@ function renderLegend(data: RankingsData): string {
  *
  * Outside the panels, not inside one. The five boards are one page — the tab
  * strip swaps a panel, it does not navigate — so questions that belong to any
- * of them belong to all of them, and a copy per panel would put the same nine
+ * of them belong to all of them, and a copy per panel would put the same ten
  * questions in the document five times over. It sits after the last panel
  * because that is where a reader who has finished with the board arrives.
  *

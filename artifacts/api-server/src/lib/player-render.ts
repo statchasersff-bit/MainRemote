@@ -65,6 +65,7 @@ import {
   type WeeklyTier,
 } from "./player/metrics";
 import type { UpcomingGame } from "./player/upcoming";
+import { playerSearchIndex } from "./player/player-data";
 import type {
   IndexedPlayer,
   PlayerPageData,
@@ -955,6 +956,78 @@ function heroSwap(full: string, short: string, tight: string): string {
     `<span class="scp-swap scp-swap--full">${escapeHtml(full)}</span>` +
     `<span class="scp-swap scp-swap--short">${escapeHtml(short)}</span>` +
     `<span class="scp-swap scp-swap--tight">${escapeHtml(tight)}</span>`
+  );
+}
+
+/* ----------------------------------------------------------------- search */
+
+/*
+ * The player search, above the header.
+ *
+ * Every page on this site is one player deep: a reader who arrives on Ja'Marr
+ * Chase's page and wants Tee Higgins has, until now, had to leave through a
+ * link that happens to mention him. This is the way from any player page to
+ * any other, and it sits above the header because that is where a reader looks
+ * for it — before the page's own identity, not buried inside it.
+ *
+ * Three things it deliberately is NOT:
+ *
+ *   NOT a <form>. A form with no action submits to the current URL, so one
+ *   Enter keypress would reload the page with a query string on it and mint a
+ *   second address for the same content — the exact duplication the canonical
+ *   work exists to prevent. Same call, and the same reason, as the news tool's
+ *   filters. Enter opens the highlighted player instead.
+ *
+ *   NOT a fetch. The whole roster is inlined below; see playerSearchIndex().
+ *   Nothing here talks to the network, which is what lets the same markup work
+ *   printed into a WordPress page on another origin.
+ *
+ *   NOT shipped visible. It ships `hidden` and client/player-search.ts reveals
+ *   it, because without that script it is a box that swallows typing and does
+ *   nothing — worse than no box at all. The rest of the page is complete
+ *   without script and stays that way: this is navigation, not content, and it
+ *   is the only part of the page that is allowed to depend on the bundle.
+ *
+ * The links the results point at are built from the same prefix and query as
+ * every other internal link on the page, so inside WordPress the results go to
+ * statchasers.com/nfl/players/<slug>/ rather than back to the bare tool.
+ */
+function renderPlayerSearch(options: PlayerRenderOptions): string {
+  const rows = playerSearchIndex();
+  // No roster, no search. A dictionary that failed to load is already a
+  // degraded page; it should not also carry a control that can match nothing.
+  if (rows.length === 0) return "";
+
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const query = options.linkQuery ?? "";
+
+  return (
+    `<div class="scp-search" data-scp-search` +
+    ` data-scp-prefix="${escapeHtml(prefix)}"` +
+    ` data-scp-query="${escapeHtml(query)}" hidden>` +
+    // The label wraps the control, so the two need no for/id pair — which
+    // matters here because a WordPress page may print two of these fragments
+    // and a fixed id would then be in the document twice. Every id this widget
+    // needs for its ARIA relations is minted per root by the client.
+    `<label class="scp-search-field">` +
+    `<span class="scp-sr">Search players</span>` +
+    `<svg class="scp-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
+    `<circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" />` +
+    `</svg>` +
+    `<input class="scp-search-input" type="search" autocomplete="off"` +
+    ` spellcheck="false" placeholder="Search any NFL player" />` +
+    `</label>` +
+    `<div class="scp-search-panel" hidden><div class="scp-search-list"></div></div>` +
+    // How many matches there are, for a reader who cannot see the list appear.
+    // Polite, never assertive: it must not interrupt the typing that caused it.
+    `<p class="scp-sr" role="status" data-scp-search-status></p>` +
+    // Not a <template>: the client reads this with textContent and parses it
+    // once, and a JSON island is inert markup the browser never executes.
+    // escapeJsonLd is what keeps a "</script" inside a name from ending it.
+    `<script type="application/json" data-scp-roster>` +
+    escapeJsonLd(JSON.stringify(rows)) +
+    `</script>` +
+    `</div>`
   );
 }
 
@@ -5013,6 +5086,147 @@ function renderPlayerFaqSchema(
   );
 }
 
+/* ------------------------------------------------------------------ peers */
+
+/** Two initials, for the well behind a headshot the CDN does not have. */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return `${first}${last}`.toUpperCase();
+}
+
+/**
+ * "Nearby Positional Peers" — the rail at the foot of every player page.
+ *
+ * Ported from the standalone app's RankNeighborsRail, and it answers the
+ * question the header's rank cell asks and cannot itself answer: QB16 of whom?
+ * The three players either side, with this one among them in true rank order
+ * and marked, is that answer in a form a reader can act on — every card is the
+ * next page.
+ *
+ * Three deliberate differences from the app it came from:
+ *
+ *   It is rendered here, not fetched. The original called /api/players/:slug/
+ *   related from the browser; the whole neighbourhood is arithmetic over logs
+ *   already in memory, so it ships in the HTML like the rest of the page.
+ *
+ *   It survives September. The original ranked on points per game with a
+ *   four-game minimum, which in week 2 is a rail that never appears for
+ *   anybody. This one slices whichever table the header is ranking by — the
+ *   rate once it exists, points scored until then — and the subheading says
+ *   which, so the cards and the header can never disagree.
+ *
+ *   Its cards are this site's, not that app's. Same structure — portrait well,
+ *   rank pill, name, club, the figure — in the player page's own tokens, with
+ *   the club's colour as the one accent, which is the rule the hero follows.
+ *
+ * Outside the tab panels, so it stands under whichever tab is open. That is
+ * where the original put it, and it is right for the reason a tab is not: this
+ * is not part of the argument a tab makes, it is the way out of the page.
+ */
+function renderPositionPeers(
+  data: PlayerPageData,
+  options: PlayerRenderOptions,
+): string {
+  const peers = data.peers;
+  if (!peers || peers.rows.length < 2) return "";
+
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const query = options.linkQuery ?? "";
+  const pos = peers.position;
+  const ranks = peers.rows.map((row) => row.rank);
+  const unit = peers.measure === "ppg" ? "PPG" : "PTS";
+
+  const cards = peers.rows
+    .map((row) => {
+      // The same CDN and the same fallback the hero uses: Sleeper keys its
+      // thumbnails by the player id, and the dictionary's own URL wins when it
+      // has one.
+      const src =
+        (row.headshot ? safeUrl(row.headshot) : null) ??
+        `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(row.id)}.jpg`;
+
+      const photo =
+        `<span class="scp-peer-well">` +
+        // Behind the portrait rather than instead of it: nothing here knows
+        // whether the CDN has this player, and an image that 404s is
+        // transparent, so the initials are simply what is underneath.
+        `<span class="scp-peer-initials" aria-hidden="true">${escapeHtml(
+          initials(row.name),
+        )}</span>` +
+        `<img class="scp-peer-img" src="${escapeHtml(src)}" alt=""` +
+        ` width="150" height="98" loading="lazy" decoding="async" />` +
+        `<span class="scp-peer-rank">${escapeHtml(`${pos}${row.rank}`)}</span>` +
+        (row.isCurrent
+          ? `<span class="scp-peer-here">You are here</span>`
+          : "") +
+        `</span>`;
+
+      const body =
+        `<span class="scp-peer-body">` +
+        `<span class="scp-peer-name">${escapeHtml(row.name)}</span>` +
+        `<span class="scp-peer-club">${escapeHtml(
+          row.team?.nickname ?? "Free agent",
+        )}</span>` +
+        `<span class="scp-peer-value">` +
+        `<b>${escapeHtml(num(row.value))}</b> ${escapeHtml(unit)}` +
+        `</span>` +
+        // The club's mark, faint, behind the text — the hero's watermark at
+        // card scale, and the same 4%-of-the-page device the production grid
+        // uses rather than a third idea of what a watermark is.
+        (row.team
+          ? `<img class="scp-peer-logo" src="${escapeHtml(row.team.logo)}" alt=""` +
+            ` aria-hidden="true" loading="lazy" decoding="async" width="34" height="34" />`
+          : "") +
+        `</span>`;
+
+      const style = styleAttr([
+        row.team && `--peer-team:${row.team.primaryColor}`,
+      ]);
+
+      // The card for the player whose page this is is not a link to it. The
+      // original made every card clickable including that one; a link that
+      // reloads the page you are on is a dead end wearing a pointer, and the
+      // card already says what it is.
+      if (row.isCurrent) {
+        return (
+          `<div class="scp-peer is-current" aria-current="page"${style}>` +
+          photo +
+          body +
+          `</div>`
+        );
+      }
+
+      return (
+        `<a class="scp-peer" href="${escapeHtml(
+          `${prefix}${row.slug}${query}`,
+        )}" target="_top"${style}>` +
+        photo +
+        body +
+        `</a>`
+      );
+    })
+    .join("");
+
+  const measured =
+    peers.measure === "ppg" ? "points per game" : "points scored";
+  const sub =
+    `Ranked closest to ${data.player.name} by ${peers.season} ${measured} ` +
+    `(${SCORING_SHORT[peers.format]}) ${DOT} ` +
+    `${pos}${Math.min(...ranks)}–${pos}${Math.max(...ranks)}`;
+
+  return (
+    `<section class="scp-peers" aria-label="Nearby positional peers">` +
+    h2("Nearby Positional Peers", sub) +
+    // Scrolled to centre the marked card by client/player.ts. Without it the
+    // rail simply starts at its best-ranked end, which is a fine place to
+    // start reading and needs nothing.
+    `<div class="scp-peer-rail" data-scp-peers>${cards}</div>` +
+    `</section>`
+  );
+}
+
 export function renderPlayerPage(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
@@ -5101,6 +5315,7 @@ export function renderPlayerPage(
     // the honest page: who they are, and nothing claimed beyond it.
     return (
       `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1">` +
+      renderPlayerSearch(options) +
       renderHero(data, options) +
       `<div class="scp-section is-default is-active"><p class="scp-empty">${escapeHtml(
         `No game log has been recorded for ${data.player.name}.`,
@@ -5148,10 +5363,12 @@ export function renderPlayerPage(
         : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
       ` data-format="${escapeHtml(data.format)}"` +
       ` data-section="${escapeHtml(scoped.id)}">` +
+      renderPlayerSearch(options) +
       renderHero(data, options) +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
       back +
+      renderPositionPeers(data, options) +
       renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
       `</div>`
     );
@@ -5179,12 +5396,16 @@ export function renderPlayerPage(
       ? ""
       : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
     ` data-format="${escapeHtml(data.format)}">` +
+    renderPlayerSearch(options) +
     renderHero(data, options) +
     `<div class="scp-controls">` +
     renderNav(sections) +
     renderFormatToggle(data, options) +
     `</div>` +
     body +
+    // Outside the panels: the rail stands under whichever tab is open, because
+    // it is the way out of the page rather than part of any one tab's argument.
+    renderPositionPeers(data, options) +
     // Document order, so the node reads down the page the way the questions do.
     renderPlayerFaqSchema(
       sections.flatMap((section) => faqBySection.get(section.id) ?? []),

@@ -147,6 +147,171 @@ body.scp-page {
   box-sizing: border-box;
 }
 
+/* ----------------------------------------------------------------- search */
+
+/*
+ * The player search, above the header.
+ *
+ * Ships with the `hidden` attribute and client/player-search.ts removes it —
+ * the same contract the news tool's filters run on, and it needs the same
+ * explicit rule below: a `display` declaration here would otherwise beat the
+ * user-agent `[hidden]` rule and show a box that cannot search.
+ *
+ * A pill on the page's own white rather than a card: it sits ABOVE the hero,
+ * which is the first card the page draws, and a second raised block stacked on
+ * top of it would read as two headers. What separates it from the page is its
+ * hairline and, when the reader is in it, the focus ring.
+ */
+.scp-search {
+  position: relative;
+  /* The 24px the hero used to open the page with, moved up here now that
+     something stands above it — so nothing about the page's top edge changes,
+     on either mount. The gap BETWEEN the two is then the hero's own top
+     margin, which is the same 24px and needs no rule of its own. */
+  margin: 24px 0 0;
+}
+
+.scp-search[hidden] {
+  display: none;
+}
+
+.scp-search-field {
+  position: relative;
+  display: block;
+}
+
+.scp-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--sc-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  /* Decoration in front of a text field: a click on the glass has to land in
+     the box, not on the glass. */
+  pointer-events: none;
+}
+
+.scp-search-input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: inherit;
+  /* 16px exactly, and not a relative size that could resolve below it: iOS
+     zooms the page when a focused field's text is smaller than this, and a
+     zoomed page is one the reader then has to pinch back out of. */
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  appearance: none;
+}
+
+.scp-search-input::placeholder {
+  color: var(--sc-muted);
+  font-weight: 500;
+}
+
+/* The type-to-clear button some engines add inside a search field. Removed:
+   Escape already clears the box, and the native control lands on top of this
+   one's rounded right edge. */
+.scp-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.scp-search-input:hover {
+  border-color: var(--sc-muted);
+}
+
+.scp-search-input:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 2px;
+  border-color: var(--sc-muted-strong);
+}
+
+/*
+ * The results, over the page rather than in it.
+ *
+ * Above the sticky tab bar's z-index, because the panel is long enough to
+ * reach it and a list of players sliced in half by the bar it is drawn under
+ * is not a list. Raised treatment — white on white needs its shadow — and the
+ * lift rather than the resting shadow, since this floats over other content.
+ */
+.scp-search-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  max-height: 336px;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow-lift);
+}
+
+.scp-search-panel[hidden] {
+  display: none;
+}
+
+.scp-search-opt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 12px;
+  border-radius: var(--sc-radius-xs);
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+/*
+ * One highlight for the mouse and the keyboard both.
+ *
+ * `.is-active` is written by the client as the arrow keys move, and hover
+ * moves it too — so the pointer and the keys can never light two different
+ * rows at once, which is the state that makes Enter feel unpredictable.
+ */
+.scp-search-opt.is-active {
+  background: var(--sc-surface-sink);
+}
+
+.scp-search-opt:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: -2px;
+}
+
+.scp-search-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp-search-meta {
+  flex: 0 0 auto;
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scp-search-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--sc-muted);
+  font-size: 13px;
+}
+
 /* ------------------------------------------------------------------- hero */
 
 /*
@@ -4108,6 +4273,244 @@ body.scp-page {
    Stats tab — is gone. Career rates, finish history and career bests are all
    .scp-rail now; see the note there for why three near-identical containers
    were the problem rather than the solution. */
+
+/* ----------------------------------------------------------------- peers */
+
+/*
+ * "Nearby Positional Peers" — the rail at the foot of the page.
+ *
+ * Ported from the standalone app's card rail and rebuilt in this page's own
+ * tokens: raised cards (white fill, hairline, shadow — they float over the
+ * page's white ground, so the shadow is what makes them cards), the club's
+ * colour as the one accent, and the gold the rest of the page uses for "this
+ * is the one" on the card the reader is standing on.
+ *
+ * Seven 150px cards and their six 10px gaps come to 1,110px, which fits inside
+ * the shell's 1,132px of content — so on a laptop the whole neighbourhood is
+ * one row with nothing clipped, and narrower than that it becomes a swipe. It
+ * scrolls rather than wraps because a neighbourhood is an ORDER: rank 12
+ * through rank 19 reading left to right is the whole point, and a second line
+ * of it reads as a second group.
+ */
+.scp-peers {
+  margin-top: 40px;
+  /* Clear of the last panel, and set apart from it: this is not part of the
+     tab above it, it is what comes after the page. */
+  padding-top: 28px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.scp-peer-rail {
+  display: flex;
+  gap: 10px;
+  /* Room for the cards' shadow and their 3px lift, which would otherwise be
+     clipped by the scroll box. */
+  padding: 6px 2px 14px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.scp-peer-rail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scp-peer-rail::-webkit-scrollbar-thumb {
+  background: var(--sc-track);
+  border-radius: 999px;
+}
+
+.scp-peer {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 150px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: var(--sc-shadow);
+  overflow: hidden;
+  color: var(--sc-ink);
+  text-decoration: none;
+  scroll-snap-align: center;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+a.scp-peer:hover {
+  transform: translateY(-3px);
+  border-color: var(--peer-team, var(--sc-navy));
+  box-shadow: var(--sc-shadow-lift);
+}
+
+a.scp-peer:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 3px;
+}
+
+/*
+ * The card you are standing on.
+ *
+ * The gold ring, which is this page's one mark for "this is the one" — the
+ * open tab and the lead hero cell carry the same accent. Not a fill: the card
+ * has to stay legible as a card, and a gold panel in a row of white ones reads
+ * as a different KIND of thing rather than as the same thing, marked.
+ */
+.scp-peer.is-current {
+  border-color: var(--sc-gold);
+  box-shadow:
+    0 0 0 2px var(--sc-gold),
+    var(--sc-shadow-lift);
+}
+
+.scp-peer-well {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 98px;
+  overflow: hidden;
+  /* The club's colour, washed out to a ground the portrait sits on — the
+     hero's device at card scale. */
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      color-mix(in srgb, var(--peer-team, var(--sc-navy)) 24%, transparent),
+      transparent 72%
+    ),
+    var(--sc-surface-soft);
+}
+
+/*
+ * Underneath the portrait, not instead of it.
+ *
+ * The server cannot know whether Sleeper has a thumbnail for a given player,
+ * and an image that 404s is simply transparent — so the initials are what is
+ * behind it either way, and no script is needed to swap them in.
+ */
+.scp-peer-initials {
+  position: absolute;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--peer-team, var(--sc-navy)) 55%, var(--sc-muted-strong));
+}
+
+.scp-peer-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+}
+
+.scp-peer-rank {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sc-navy);
+  color: var(--sc-surface);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.scp-peer.is-current .scp-peer-rank {
+  background: var(--sc-gold);
+  color: var(--sc-navy-deep);
+}
+
+.scp-peer-here {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--sc-gold);
+  color: var(--sc-navy-deep);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp-peer-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.scp-peer-name {
+  /* One line, clipped: the rail is a row of equal cards and a two-line name
+     would set the height of all of them for the sake of one. The full name is
+     the link's own text, so nothing is lost to anyone reading it aloud. */
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--sc-navy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scp-peer-club {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.scp-peer-value {
+  margin-top: 8px;
+  color: var(--sc-muted-strong);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.scp-peer-value b {
+  margin-right: 3px;
+  color: var(--sc-ink);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.scp-peer-logo {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 34px;
+  height: 34px;
+  /* The hero's watermark opacity. One idea of how faint a club's mark goes,
+     used everywhere it appears. */
+  opacity: 0.12;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .scp-peers {
+    margin-top: 32px;
+    padding-top: 22px;
+  }
+
+  .scp-peer {
+    width: 144px;
+  }
+
+  .scp-peer-well {
+    height: 96px;
+  }
+}
 
 /* ----------------------------------------------------------------- index */
 
