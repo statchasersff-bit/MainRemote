@@ -82,6 +82,54 @@ WordPress page owns all of those, exactly as with the news tool. The hub's tab
 strip is `:target`-based, so all five tabs are in the HTML on first response and
 the only URL state it can produce is a `#hash` — not a separate URL.
 
+### The H1
+
+The plugin supplies it, through `the_title` — so it is the theme that prints the
+heading and the page has exactly one. `statchasers_team_heading()` builds it
+from team + section + season, mirroring `teamSectionHeading()` in the API's
+`src/lib/team-render.ts`:
+
+| URL | H1 |
+|-----|-----|
+| `/nfl/teams/new-england-patriots/` | New England Patriots Team Hub 2026 |
+| `…/outlook/` | New England Patriots Fantasy Football Outlook 2026 |
+| `…/stats/` | New England Patriots Stats 2026 |
+| `…/schedule/` | New England Patriots Schedule 2026 |
+| `…/depth-chart/` | New England Patriots Depth Chart 2026 |
+| `…/matchups/` | New England Patriots Matchups 2026 |
+
+Nothing is stored and no page is edited: the heading is computed per request, so
+all 32 pages and all 160 addresses are covered the moment the plugin is active,
+and a season rollover is the same one-line edit as the titles
+(`STATCHASERS_TEAM_SEASON`). The stored `post_title` stays `<Team> Team Page`,
+which is what the admin list and any nav menu want — a menu item is its own post
+with its own id, and the filter only rewrites the queried page's own title.
+
+**A per-section H1 needs the section URLs below.** A tab is a `#hash` on one
+address, and a hash cannot change server-rendered HTML or give a crawler a
+second URL. With the section URLs off, every team page's H1 is the hub's.
+
+Override or disable it with `statchasers_team_page_heading`; return the fourth
+argument to hand the heading back to the stored title.
+
+If your template prints no page title at all — a Divi full-width or Theme
+Builder layout with no Post Title module — there is nothing for that filter to
+rewrite and the page's top heading is the fragment's hero `<h2>`. Check with:
+
+```sh
+curl -s https://statchasers.com/nfl/teams/new-england-patriots/ \
+  | grep -o '<h1[^>]*>[^<]*'
+```
+
+If that prints nothing, have the shortcode print the H1 itself instead:
+
+```php
+add_filter( 'statchasers_team_shortcode_h1', '__return_true' );
+```
+
+Turn it on only in that case: with a title-printing template it gives the page
+two H1s.
+
 ### Section URLs (off by default)
 
 The hub answers five different questions at one address, and one address gets
@@ -182,15 +230,52 @@ add_filter( 'statchasers_matchup_urls', '__return_true' );
 and flush permalinks once. The 496 pair URLs join Rank Math's page sitemap
 under the same flag.
 
-**The page follows its state, the URL does not.** The API decides once, in
+**The pair's page follows its state.** The API decides once, in
 `matchup-data.ts`, whether the two have an upcoming meeting, one just played
-(within ten days), or neither, and the fragment returns that in an
+(within two weeks), or neither, and the fragment returns that in an
 `X-Matchup-State` header. The page leads with the next game, the score, or the
 head-to-head accordingly, and the title says so — `… 2026: Where to Watch,
 Stats, Injuries & History` / `… 2026: Score, Player Stats & Fantasy Recap` /
 `…: Head-to-Head Record, Stats & History`. `statchasers_matchup_meta()` mirrors
 `matchupPageMeta()` in `src/lib/matchup/matchup-seo.ts`; change one and change
 the other.
+
+### One address per meeting
+
+Two weeks after kickoff the pair's page lets a game go: the recap layout gives
+way to the evergreen head-to-head, and the game moves to an address of its own.
+
+```
+/nfl/new-england-patriots-vs-seattle-seahawks/              the pair
+/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/  one meeting
+```
+
+The dated page is always a recap — hero score line, quarter-by-quarter scoring,
+leaders, every player-stat table, the takeaways and the snap counts — headed
+`New England Patriots vs Seattle Seahawks, Week 1 2026` so it cannot compete
+with the pair's own page for the pair's own query. It is its own canonical.
+
+**It exists only once the pair has let go.** Inside the two-week window the
+dated URL 301s up to the pair, on this origin and in the plugin both, so the
+recap has exactly one address at any moment and the two are never near
+duplicates of each other. The API answers which case a request is in through
+`X-Matchup-Game: current | archived`, and the plugin mirrors the redirect rather
+than trying to work out the window for itself. A week the two did not play, or
+one that never finished, is a 404 — and so is a near-miss spelling like
+`2026-week-01`, which no page links to and nothing generates.
+
+**Discovery is the meetings list.** Every archived meeting on the pair's page
+carries a real `Recap →` link to its own address; the game the page is still
+leading with does not, because that link would point into a redirect. Those
+links are the only route to a dated URL, so they are in the server's markup, not
+added by the bundle. The dated URLs are **not** in the sitemap: the plugin has
+no schedule of its own and will not advertise an address it cannot confirm
+exists.
+
+`statchasers_matchup_game_meta()` mirrors the `data.pinned` branch of
+`matchupPageMeta()`; change one and change the other. The rewrite rule rides the
+same `statchasers_matchup_urls` filter as the pair URLs, so enabling one enables
+both — flush permalinks once after.
 
 A finished game also returns `X-Matchup-Score` — the result in one clause,
 `Seahawks won 13-10.`, written by `matchupScoreLine()`. The postgame

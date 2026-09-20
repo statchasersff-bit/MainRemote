@@ -357,15 +357,96 @@ describe("the rankings page", () => {
     if (!hasData) return t.skip("no rankings file");
     const { doc } = await page("/rankings");
 
-    const caption = doc.querySelector("#scr-panel-all .scr-caption").textContent;
+    const caption = doc.querySelector(
+      "#scr-panel-all .scr-all-table caption",
+    ).textContent;
     // The shape of the table invites "QB7 and RB7 go at the same pick". The
-    // caption is the only thing standing between a reader and that reading.
+    // caption is the only thing standing between a reader and that reading —
+    // it is screen-reader-only now, but it is still there to be read.
     assert.match(caption, /positional rank/i);
     assert.match(caption, /not a claim/i);
+  });
+
+  test("the questions are in the markup, answers and all", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const items = [...doc.querySelectorAll(".scr-faq-item")];
+    assert.ok(items.length >= 9, "the FAQ renders its questions");
+
+    for (const item of items) {
+      const question = item.querySelector(".scr-faq-q");
+      const answer = item.querySelector(".scr-faq-a");
+      // Shut by default — the questions are the index — but never withheld.
+      // The answer is in the DOM whether or not the fold is open, which is the
+      // same claim the panels make about the four boards nobody clicked.
+      assert.equal(item.hasAttribute("open"), false);
+      assert.equal(question.tagName, "H3");
+      assert.ok(question.textContent.trim().length > 10);
+      assert.ok(answer.textContent.trim().length > 40);
+    }
+  });
+
+  test("the FAQ sits outside the panels, so no tab hides it", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const faq = doc.querySelector(".scr-faq-block");
+    assert.ok(faq, "the block is on the page");
+    // Inside a panel it would be switched off with four of the five boards.
+    assert.equal(faq.closest("[data-scr-panel]"), null);
+    assert.ok(faq.closest("[data-scr-root]"), "still inside the mount");
+  });
+
+  test("the scoring answer does not promise a switch the board lacks", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const answer = [...doc.querySelectorAll(".scr-faq-item")]
+      .map((item) => item.querySelector(".scr-faq-a").textContent)
+      .find((text) => /Half PPR/i.test(text));
+
+    assert.ok(answer, "a question covers the scoring formats");
+    // The format row marks Half PPR and Standard unavailable because there is
+    // no file behind either. An answer telling a reader to switch between them
+    // is the page contradicting its own controls.
+    assert.match(answer, /published in PPR only/i);
+    assert.match(answer, /unavailable/i);
+    assert.doesNotMatch(answer, /switch between/i);
+  });
+
+  test("one FAQPage, describing the questions actually rendered", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rankings");
+
+    const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+    // A document gets one FAQPage. Two is the failure mode that gets structured
+    // data ignored outright rather than merged.
+    assert.equal(blocks.length, 1);
+
+    const node = JSON.parse(blocks[0].textContent);
+    assert.equal(node["@type"], "FAQPage");
+
+    const rendered = [...doc.querySelectorAll(".scr-faq-q")].map((q) =>
+      q.textContent.trim(),
+    );
+    assert.deepEqual(
+      node.mainEntity.map((entry) => entry.name),
+      rendered,
+      "the node describes the page, not a second list",
+    );
+    for (const entry of node.mainEntity) {
+      assert.equal(entry["@type"], "Question");
+      assert.equal(entry.acceptedAnswer["@type"], "Answer");
+      assert.ok(entry.acceptedAnswer.text.length > 40);
+    }
   });
 });
 
 describe("the embed fragment", () => {
+  const INERT_FAQ =
+    /<script type="application\/json" class="scr-faq-data">.*?<\/script>/gs;
+
   test("is a bare fragment with no document chrome", async (t) => {
     if (!hasData) return t.skip("no rankings file");
     const res = await fetch(`${server.origin}/embed/rankings`);
@@ -374,7 +455,15 @@ describe("the embed fragment", () => {
     assert.equal(res.status, 200);
     assert.equal(res.headers.get("x-robots-tag"), "noindex, indexifembedded");
     assert.doesNotMatch(html, /<html/i, "the host page owns the document");
-    assert.doesNotMatch(html, /<script/i, "the plugin enqueues the bundle");
+    // The FAQ's inert payload is the one <script> allowed through, on the same
+    // terms team.test.mjs sets out for the team and player mounts: it carries
+    // no code, and the plugin lifts it into Rank Math's graph and strips it
+    // before printing. Matched exactly, so a real script beside it still fails.
+    assert.doesNotMatch(
+      html.replace(INERT_FAQ, ""),
+      /<script/i,
+      "the plugin enqueues the bundle",
+    );
     // No <h1>: the WordPress page supplies it.
     assert.doesNotMatch(html, /<h1/i);
     assert.match(html, /class="scr is-embed"/);
@@ -391,6 +480,30 @@ describe("the embed fragment", () => {
     });
     assert.equal(second.status, 304);
     assert.equal(second.body, "");
+  });
+
+  test("carries the questions as data, not as a second schema graph", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const res = await fetch(`${server.origin}/embed/rankings`);
+    const html = await res.text();
+
+    // WordPress owns the document and Rank Math owns its graph. A second
+    // ld+json arriving from inside a mounted fragment competes with that graph
+    // rather than joining it — the same reasoning as no canonical and no H1.
+    assert.doesNotMatch(html, /application\/ld\+json/i);
+
+    const island = html.match(
+      /<script type="application\/json" class="scr-faq-data">(.*?)<\/script>/s,
+    );
+    assert.ok(island, "the plugin needs the answers to build the node from");
+
+    const items = JSON.parse(island[1]);
+    const doc = new JSDOM(html).window.document;
+    assert.deepEqual(
+      items.map((entry) => entry.q),
+      [...doc.querySelectorAll(".scr-faq-q")].map((q) => q.textContent.trim()),
+      "the island and the markup are the same questions",
+    );
   });
 
   test("404s rather than printing a hole in the host page", async () => {

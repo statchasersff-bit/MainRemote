@@ -5271,6 +5271,19 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
+/* The dated address of one meeting, in the column the meetings grid has always
+   reserved. Every finished row carries it once the pair page has let that game
+   go — it is how a reader reaches a Week 1 recap in December, and the only
+   link to a dated URL anywhere, so it is a real <a> in the markup rather than
+   anything the client bundle adds. The empty span is the placeholder a row
+   without one prints, so the five columns stay five. */
+.sct-mu-recap {
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 /* The pair-page link on a schedule row. Right-aligned so the column ends flush
    with the table rather than raggedly against the status beside it, and
    nowrap because "View matchup" on two lines makes that row taller than the
@@ -5397,6 +5410,7 @@ body.sct-page.is-embed {
 }
 
 .sct-mu-leader {
+  position: relative;
   display: grid;
   align-content: start;
   gap: 6px;
@@ -5404,6 +5418,46 @@ body.sct-page.is-embed {
   border: 1px solid var(--sc-border);
   border-radius: 12px;
   background: var(--sc-surface);
+}
+
+/* The crest of the team he played for, as the card's watermark.
+ *
+ * The same device the outlook cards use (.sct-outlook-player::before), at the
+ * same 0.07 — painted from --mu-leader-logo, which the renderer sets per card
+ * because these four cards are four different teams, unlike a team page where
+ * one crest serves the whole document.
+ *
+ * "isolation" gives the card its own stacking context so the z-index below
+ * lands above the card background rather than behind the card entirely, and
+ * "overflow" crops the mark at the rounded corner — which is what makes it read
+ * as a watermark and not as a pasted-on logo. */
+.sct-mu-leader.has-team-logo {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.sct-mu-leader.has-team-logo::before {
+  content: "";
+  position: absolute;
+  /* Low and to the right: behind the number, not behind the headshot and the
+     name, which are the two things on this card that are already pictures of
+     something. Positioned by its CENTRE, as the outlook card is — the mark is
+     taller than the card, so anchoring its bottom edge would hang the whole
+     overhang upwards and push the crest back over the face. */
+  top: 70%;
+  right: -10px;
+  z-index: -1;
+  height: 116%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 52%;
+  transform: translateY(-50%);
+  background-image: var(--mu-leader-logo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.07;
+  pointer-events: none;
 }
 
 .sct-mu-leader-label {
@@ -5751,6 +5805,12 @@ body.sct-page.is-embed {
   .sct-mu-view {
     grid-column: 2 / -1;
   }
+  /* Under the row rather than beside it: at three columns there is no spare
+     track to put it in, and the result is the thing that must keep its place. */
+  .sct-mu-recap {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
 }
 
 /* Real links between pages — the matchup page's way to the two hubs, and a
@@ -5794,46 +5854,128 @@ body.sct-page.is-embed {
    fixture twice and the number once, half a page down. Now there is one object
    above the fold and it is the thing they came for. */
 .sct-mu-hero.is-final {
-  padding: 22px 28px 20px;
+  /* Tighter than the standard hero on both axes. This one carries a 70px
+     number: the block padding that reads as composure around a title reads as
+     emptiness around a score. */
+  padding: 16px 24px 14px;
+}
+
+/* No aura on a final. It is a 320px team-coloured blur anchored to the hero's
+   top-left corner, which on the fixture hero sits behind the crest it belongs
+   to — and on this one sits behind nothing, off-centre, while the two side
+   tones below do the same job in the right places. Two washes of the same navy
+   in one header is a smudge, not depth. */
+.sct-mu-hero.is-final .sct-hero-aura {
+  display: none;
 }
 
 .sct-mu-final-inner {
   display: grid;
   justify-items: center;
-  gap: 14px;
+  /* 8px, not 14px. Four rows of content with 14px between them spent 56px on
+     nothing, and the quarter line in particular then read as a separate table
+     parked under the hero rather than as its last row. */
+  gap: 8px;
 }
 
 .sct-mu-final-text {
+  display: grid;
+  gap: 2px;
   text-align: center;
 }
 
 /* The title recedes a step on a final. The team names are already spelled out
-   in the board under it at display size, and the H1 set at hero scale on top of
-   a 76px score made two headlines competing for the same glance. It stays an
-   H1 — the page is still about these two teams — and stops being the loudest
-   thing on it. */
+   in the board under it, and the H1 set at hero scale on top of a 70px score
+   made two headlines competing for the same glance. It stays an H1 — the page
+   is still about these two teams — and stops being the loudest thing on it. */
 .sct-mu-final-title {
-  font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+  font-size: clamp(1.02rem, 2.2vw, 1.35rem);
+  line-height: 1.2;
 }
 
+/* The board: one row, not two columns.
+ *
+ * Each side is a horizontal group and the two meet at the dash, which puts the
+ * two numbers the page exists for next to each other instead of at opposite
+ * edges of a 640px poster. The middle column is `auto` so the dash takes only
+ * the width of the character; the sides share what is left evenly, which is
+ * what keeps the dash on the centre line whatever the two nicknames are. */
 .sct-mu-final-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: start;
-  gap: clamp(10px, 4vw, 40px);
+  align-items: center;
+  gap: clamp(8px, 2vw, 20px);
   width: 100%;
-  max-width: 640px;
+  max-width: 660px;
 }
 
 .sct-mu-final-side {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  /* Toward the middle: the away side's number ends at the dash and the home
+     side's begins there. */
+  justify-content: flex-end;
+  gap: clamp(8px, 1.6vw, 14px);
   min-width: 0;
+  padding: 4px 0;
+}
+
+/* The home side is the away side reversed, which is why one function in the
+   renderer builds both. */
+.sct-mu-final-side.is-home {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+/* A soft wash of the team's own ink behind each crest.
+ *
+ * This is the structure the strip needs so the two halves read as two teams
+ * without a rule drawn down the middle of them, and it took three tries to get
+ * to something that is felt rather than seen:
+ *
+ *   - each side's LOGO as a watermark read as a blur on the crest, because a
+ *     ghost of a mark eighteen pixels behind the real one at twice the size is
+ *     not texture, it is a smeared copy;
+ *   - a linear tone across each half read as a coloured BAR, because a gradient
+ *     box has two hard edges however soft the fade between them is.
+ *
+ * So: a circle, blurred, with no edge anywhere — the same device and the same
+ * restraint as .sct-hero-aura, which this replaces on the final hero. It sits
+ * behind the crest at the outer end, which is the quiet end; the centre of the
+ * board, where the two numbers are, stays the plain hero ground.
+ *
+ * The 32 primaries are not ours to moderate — several clubs are pure black or a
+ * saturated red — so this is weighted for the strongest of them. */
+.sct-mu-final-side::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -34px;
+  z-index: -1;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    circle,
+    var(--mu-side-ink, var(--sc-navy)) 0%,
+    rgba(255, 255, 255, 0) 68%
+  );
+  opacity: 0.13;
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.sct-mu-final-side.is-home::before {
+  left: auto;
+  right: -34px;
 }
 
 .sct-mu-final-logo {
-  width: clamp(44px, 10vw, 72px);
+  flex: none;
+  width: clamp(34px, 6vw, 52px);
   height: auto;
   object-fit: contain;
   /* The loser recedes a step, the way the hub's opponent crest does. Only a
@@ -5846,21 +5988,56 @@ body.sct-page.is-embed {
   opacity: 1;
 }
 
+/* Name over record, as one block. They belong to the team rather than to the
+   number, so they sit between the crest and the score and align to the crest's
+   side of the row. */
+.sct-mu-final-who {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-align: right;
+}
+
+.sct-mu-final-side.is-home .sct-mu-final-who {
+  text-align: left;
+}
+
 .sct-mu-final-name {
-  font-size: clamp(11px, 2.4vw, 13px);
+  font-size: clamp(11px, 1.9vw, 13px);
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--sc-muted-strong);
-  text-align: center;
+  /* A long nickname truncates rather than wrapping the row to two lines and
+     taking the strip's height with it. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The code stands in for the nickname below 640px — see the media query at the
+   foot of this file. Exactly one of the two is ever displayed. */
+.sct-mu-final-code {
+  display: none;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-final-record {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
 }
 
 /* The number is the page. Tabular figures so a 7 and a 1 take the same width
-   and the two columns stay symmetrical whatever the score was. */
+   and the two halves stay symmetrical whatever the score was. */
 .sct-mu-final-score {
-  font-size: clamp(46px, 13vw, 86px);
+  font-size: clamp(40px, 8.5vw, 70px);
   font-weight: 900;
-  line-height: 0.92;
+  line-height: 0.9;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   color: var(--sc-muted-strong);
@@ -5870,44 +6047,42 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
 }
 
-.sct-mu-final-record {
-  font-size: 12px;
+/* The join. It separates the two numbers and says nothing else — the status is
+   in the eyebrow and the venue is in the row below, so a word here would be a
+   third printing of one of them. */
+.sct-mu-final-join {
+  font-size: clamp(16px, 3vw, 26px);
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--sc-muted);
-}
-
-/* The join between the two columns. It was drawn in the hairline colour, which
-   on this ground is a smudge rather than a character — and it is the only thing
-   on the board saying which side was at home. Muted, but legible. */
-.sct-mu-final-at {
-  align-self: center;
-  padding-top: clamp(26px, 6.5vw, 50px);
-  color: var(--sc-muted);
-  font-size: clamp(13px, 2.6vw, 18px);
-  font-weight: 800;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 .sct-mu-final-meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px 12px;
+  /* Centred, not baseline-aligned. The separator between the venue and the
+     kickoff is an empty 3px span, and an empty box's baseline is its bottom
+     edge — baseline alignment dropped the gold dot below the line of text it
+     divides. */
+  align-items: center;
+  gap: 2px 10px;
   margin: 0;
   text-align: center;
 }
 
 .sct-mu-final-where {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--sc-muted-strong);
 }
 
 .sct-mu-final-when {
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
   color: var(--sc-muted);
 }
 
@@ -5918,23 +6093,26 @@ body.sct-page.is-embed {
    as a final score somebody typed in. */
 .sct-mu-linescore {
   width: auto;
-  min-width: min(100%, 340px);
+  /* Narrower than it was, and narrower than the board above it. It is the
+     footnote to the score, not a second scoreboard, and at 340px it was wide
+     enough to compete with one. */
+  min-width: min(100%, 300px);
   border-collapse: collapse;
-  margin: 2px 0 0;
+  margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .sct-mu-linescore th,
 .sct-mu-linescore td {
-  padding: 5px 10px;
+  padding: 3px 9px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .sct-mu-linescore thead th {
-  padding-bottom: 3px;
+  padding-bottom: 2px;
   border-bottom: 1px solid var(--sc-hairline);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--sc-muted);
@@ -5943,17 +6121,17 @@ body.sct-page.is-embed {
 .sct-mu-ls-team {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   text-align: left;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--sc-muted-strong);
 }
 
 .sct-mu-ls-logo {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
 }
 
@@ -6057,6 +6235,89 @@ body.sct-page.is-embed {
    column stays put. */
 .sct-mu-ps-block {
   margin: 0 0 26px;
+}
+
+/* Passing over rushing, with receiving beside them.
+ *
+ * `auto-fit` rather than a fixed `repeat(2, …)` with breakpoints: each column
+ * wants about 380px to print a name and five numeric columns without the
+ * scroll wrapper taking over, and auto-fit is the rule that says exactly that —
+ * two across wherever two fit, one on anything narrower. A fixed two-column
+ * grid would hold two columns at 600px and hand both tables a scrollbar to make
+ * up the difference.
+ *
+ * `align-items: start` because the two columns are nothing like the same
+ * length, and stretching the shorter one would put its bottom rule well below
+ * its last row. */
+.sct-mu-ps-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  align-items: start;
+  gap: 8px 20px;
+}
+
+/* The left column. Passing and rushing are the two short tables, so they share
+   a column against the long one rather than each taking a third of the row and
+   leaving white space under it. */
+.sct-mu-ps-stack {
+  min-width: 0;
+}
+
+/* The gap owns the spacing BETWEEN columns; inside the left column the two
+   tables still need their own separation, and the last block in each column
+   should not add a trailing one. */
+.sct-mu-ps-row .sct-mu-ps-block {
+  margin: 0 0 22px;
+  min-width: 0;
+}
+
+.sct-mu-ps-row .sct-mu-ps-block:last-child {
+  margin-bottom: 0;
+}
+
+/* The 460px floor is what stops a table squashing on a PHONE, where the scroll
+   wrapper is the answer. In a grid column it is the wrong floor: it guarantees
+   a scrollbar in every column the grid makes narrower than that, which is all
+   three of them. Zero lets the table take the column instead, and the wrapper
+   still scrolls if one genuinely needs more room than the column has. */
+.sct-mu-ps-row .sct-mu-ps-table {
+  min-width: 0;
+}
+
+/* Two columns of padding back, across five or six columns, is most of what
+   decides whether a table fits its share of the row. */
+.sct-mu-ps-row .sct-mu-ps-table th,
+.sct-mu-ps-row .sct-mu-ps-table td {
+  padding: 8px 6px;
+}
+
+/* Below the width where two tables fit side by side, the row is a stack — and a
+   stacked table here is the table it always was: the full 460px floor, scrolling
+   rather than wrapping "Rhamondre Stevenson" onto two lines, and the padding the
+   other stat tables on the page carry. Without this the three would wrap their
+   names on a phone while the Fantasy table under them went on scrolling, which
+   is one section behaving two ways.
+
+   1000px, not 640px: between the two, auto-fit would still make two columns and
+   hand each of them a scrollbar to reach 460. One table that scrolls is the
+   design; two side by side that both scroll is not. */
+@media (max-width: 1000px) {
+  .sct-mu-ps-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-mu-ps-row .sct-mu-ps-table {
+    min-width: 460px;
+  }
+
+  .sct-mu-ps-row .sct-mu-ps-table th,
+  .sct-mu-ps-row .sct-mu-ps-table td {
+    padding: 9px 8px;
+  }
+
+  .sct-mu-ps-row .sct-mu-ps-block {
+    margin: 0 0 26px;
+  }
 }
 
 .sct-mu-ps-scroll {
@@ -6376,51 +6637,6 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
 }
 
-/* -------------------------------------------------------- what changed */
-
-/* A rank before the game, an arrow, and the rank after it. The arrow's colour
-   is about the MATCHUP, not about the defense: rank 1 allows the most, so a
-   rank that fell is a defense that got softer, which is good news for whoever
-   faces it next — the same direction a long bar means in the block this
-   replaces. */
-.sct-mu-move {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-}
-
-.sct-mu-move-from {
-  font-size: 13px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-muted);
-  text-decoration: line-through;
-  text-decoration-color: var(--sc-hairline);
-}
-
-.sct-mu-move-arrow {
-  font-weight: 900;
-  color: var(--sc-hairline);
-}
-
-.sct-mu-move-arrow[data-direction="softer"] {
-  color: #0f6b4f;
-}
-
-.sct-mu-move-arrow[data-direction="tougher"] {
-  color: #94363a;
-}
-
-.sct-mu-move-fpa {
-  width: 100%;
-  font-size: 11px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-muted);
-}
-
 @media (max-width: 640px) {
   .sct-mu-hero.is-final {
     padding: 18px 16px 16px;
@@ -6430,7 +6646,33 @@ body.sct-page.is-embed {
      IS the scoreboard, and stacking them makes it a list. The clamps above
      carry it down; only the gap needs taking in. */
   .sct-mu-final-board {
-    gap: 6px;
+    gap: 7px;
+  }
+
+  .sct-mu-final-side {
+    gap: 7px;
+  }
+
+  /* Three letters instead of a truncated nickname. */
+  .sct-mu-final-name {
+    display: none;
+  }
+
+  .sct-mu-final-code {
+    display: block;
+  }
+
+  /* The wash follows the crest in, so it does not hang off the hero's edge on a
+     board that now runs nearly its full width. */
+  .sct-mu-final-side::before {
+    left: -16px;
+    width: 140px;
+    height: 140px;
+  }
+
+  .sct-mu-final-side.is-home::before {
+    left: auto;
+    right: -16px;
   }
 
   .sct-mu-linescore {
@@ -6441,4 +6683,374 @@ body.sct-page.is-embed {
   .sct-mu-linescore td {
     padding: 5px 6px;
   }
+}
+
+/* -------------------------------------------------------- fantasy usage */
+
+/* Who controlled the snaps, the targets and the backfield, per team.
+ *
+ * This was a sixth table on a page that already had five. The numbers were
+ * right and the shape was wrong: "what share of this offence was he" is a
+ * question about proportion, and proportion is a picture. So the section is
+ * two mirrored team panels — the same metric in the same place on both sides,
+ * which is what makes the comparison a glance instead of a reading — and the
+ * table it was built from is one <details> underneath, unchanged.
+ *
+ * No cards. A panel is a rule in the team's ink across the top and hairlines
+ * between its three metrics; boxing each chart turned a compact section into a
+ * dashboard, which is the thing this replaced. */
+.sct-mu-usage-sub {
+  margin: -2px 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+.sct-mu-usage-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 8px 30px;
+}
+
+.sct-mu-usage-team {
+  min-width: 0;
+  border-top: 2px solid var(--mu-usage-ink, var(--sc-navy));
+  padding-top: 12px;
+}
+
+/* The only place the team's colour is a fill rather than a rule is the bar,
+   and even there it is held back. A panel headed by a block of club colour is
+   a club's page; this is an editorial one. */
+.sct-mu-usage-team-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+.sct-mu-usage-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.sct-mu-usage-metric {
+  min-width: 0;
+  padding: 12px 0 2px;
+}
+
+/* The divider between metrics, and only between metrics a reader reads in
+   sequence: the two rings sit beside each other inside one row, so the rule
+   belongs on the row, not between them. */
+.sct-mu-usage-team > .sct-mu-usage-metric + .sct-mu-usage-metric,
+.sct-mu-usage-rings {
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.sct-mu-usage-metric-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+/* The denominator every percentage in the block is a share OF. Small, but it
+   is the difference between a chart and a claim. */
+.sct-mu-usage-denom {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+  opacity: 0.85;
+}
+
+/* Snap share: ranked bars, not a ring. Five players can each be on the field
+   for 80% of the same snaps, so these do not sum to anything and must not be
+   drawn as if they did. */
+.sct-mu-usage-bars {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-mu-usage-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.sct-mu-usage-face {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+}
+
+.sct-mu-usage-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.sct-mu-usage-bar-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sct-mu-usage-bar-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sct-mu-usage-bar-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--sc-navy);
+}
+
+.sct-mu-usage-bar-meta {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sct-mu-usage-bar-pct {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+.sct-mu-usage-track {
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.sct-mu-usage-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--mu-usage-ink, var(--sc-navy));
+  /* Held back for the same reason the Snapshot's bars are: the percentage
+     beside it is the fact, the bar is the ranking. */
+  opacity: 0.68;
+  transition: width 0.25s ease;
+}
+
+.sct-mu-usage-bar-raw {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-muted);
+}
+
+/* Targets and carries ARE distributions, so they get rings — side by side
+   under the bars, which keeps a team's three metrics about as tall as the
+   table row they replaced. */
+.sct-mu-usage-rings {
+  display: grid;
+  /* The floor is a legend that can still finish "Rhamondre Stevenson". Below
+     it the two rings stack rather than clipping a name each — a chart whose
+     labels are elided is the pie chart this section replaced. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 20px;
+  margin-top: 12px;
+}
+
+/* Ring above, legend under it at the metric's full width. Beside it fits on a
+   wide screen and nowhere else — two rings share one team panel, so the legend
+   was inheriting about 130px and ending every third name in an ellipsis. A
+   name a reader cannot finish is not "visible without hovering". */
+.sct-mu-usage-ring-row {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.sct-mu-usage-ring {
+  width: 92px;
+  height: 92px;
+}
+
+/* Drawn here rather than in the markup: one dashed circle per slice, no chart
+   library and no canvas. The stroke width is the ring's thickness. */
+.sct-mu-usage-arc {
+  fill: none;
+  stroke-width: 17;
+  transition: opacity 0.15s ease;
+}
+
+.sct-mu-usage-ring:hover .sct-mu-usage-arc {
+  opacity: 0.55;
+}
+
+.sct-mu-usage-ring .sct-mu-usage-arc:hover {
+  opacity: 1;
+}
+
+/* The legend is the chart. Every name and percentage is here as text, in rank
+   order, so the ring can be ignored entirely — by a screen reader, by a reader
+   who cannot separate two tints of one hue, or by a print stylesheet. */
+.sct-mu-usage-keys {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  list-style: none;
+}
+
+.sct-mu-usage-key {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.sct-mu-usage-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.sct-mu-usage-key-name {
+  /* Shrink to the name. A linked name carries an underline rule, and a grid
+     item stretched to its column would draw that rule past the last letter. */
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+/* The pooled tail is not a player and must not read as one. */
+.sct-mu-usage-key-name.is-other {
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+.sct-mu-usage-key-pct {
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-navy);
+}
+
+/* A zero denominator. There is no share of no carries, and an empty ring would
+   be a claim that there is. */
+.sct-mu-usage-none {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.sct-mu-usage-note {
+  margin: 14px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--sc-muted);
+}
+
+/* The table the section used to be. <details> rather than a script: one copy
+   in the HTML, indexed, and it opens with JavaScript switched off. */
+.sct-mu-usage-full {
+  margin-top: 12px;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.sct-mu-usage-toggle {
+  display: block;
+  padding: 11px 2px 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted-strong);
+  cursor: pointer;
+  list-style: none;
+}
+
+.sct-mu-usage-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.sct-mu-usage-toggle:hover,
+.sct-mu-usage-toggle:focus-visible {
+  color: var(--sc-gold-deep);
+}
+
+.sct-mu-usage-toggle-more::after {
+  content: " \2193";
+}
+
+.sct-mu-usage-toggle-less::after {
+  content: " \2191";
+}
+
+/* One label at a time, and `display:none` rather than a visual trick — the
+   label that does not apply should not be read out either. */
+.sct-mu-usage-toggle-less,
+.sct-mu-usage-full[open] .sct-mu-usage-toggle-more {
+  display: none;
+}
+
+.sct-mu-usage-full[open] .sct-mu-usage-toggle-less {
+  display: inline;
+}
+
+.sct-mu-usage-full .sct-mu-ps-block {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  /* Stacked panels need the separation the column gap was providing. */
+  .sct-mu-usage-teams {
+    gap: 18px;
+  }
+
+  .sct-mu-usage-team + .sct-mu-usage-team {
+    padding-top: 12px;
+  }
+
+  .sct-mu-usage-ring {
+    width: 84px;
+    height: 84px;
+  }
+
 }

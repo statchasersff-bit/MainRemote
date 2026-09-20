@@ -260,9 +260,12 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 				array(
 					'post_type'    => 'page',
 					'post_status'  => 'publish',
-					// The page title is the <h1> the theme prints above the
-					// shortcode; the fragment steps down to <h2> when embedded
-					// so this one stays the page's heading.
+					// The stored title, which is what the admin list and
+					// any nav menu show. It is NOT the H1: the_title is
+					// filtered above to statchasers_team_heading(), so the
+					// heading follows the section the URL is on rather than
+					// this one fixed string. The fragment steps its hero down
+					// to <h2> when embedded either way.
 					'post_title'   => $name . ' Team Page',
 					'post_name'    => $slug,
 					'post_parent'  => $container,
@@ -795,6 +798,114 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 		),
 	);
 }
+
+/**
+ * The H1 for one team URL, built from team + section + season.
+ *
+ * MIRRORS teamSectionHeading() in the API's src/lib/team-render.ts, whose own
+ * comment names this side as the owner: the fragment steps its hero down to
+ * <h2> when embedded, "where WordPress supplies the H1". This is that H1, and
+ * until it existed there was none — the page inherited whatever the stored
+ * post_title said, on the hub and on all five section addresses alike.
+ *
+ * The phrase alone, where statchasers_team_section_meta()'s title adds the
+ * clause after the colon: "Stats 2026" here, "Stats 2026: Offense, Defense &
+ * NFL Rankings" in the <title>. Outlook is the one section whose title has no
+ * such clause, so there the two strings are identical — which is fine, and
+ * better than padding the heading to make it differ.
+ *
+ * @param string $slug    Team slug.
+ * @param string $section Section id, or '' for the hub.
+ * @return string Heading, or '' for an unknown team.
+ */
+function statchasers_team_heading( string $slug, string $section ): string {
+	$row = statchasers_team_table()[ $slug ] ?? null;
+	if ( null === $row ) {
+		return '';
+	}
+
+	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts, including `news`,
+	// which has no rewrite rule minting URLs for it but is listed there so the
+	// route names itself correctly if it is ever opened. Same reason here.
+	$phrases = array(
+		'outlook'     => 'Fantasy Football Outlook',
+		'stats'       => 'Stats',
+		'schedule'    => 'Schedule',
+		'depth-chart' => 'Depth Chart',
+		'matchups'    => 'Matchups',
+		'news'        => 'News',
+	);
+
+	// The hub's own phrase has no counterpart in the API map: on the app's own
+	// page the team name alone is the H1, because the <title> beside it already
+	// says what the page is. Embedded, the H1 is the only thing that does.
+	$phrase = $phrases[ $section ] ?? 'Team Hub';
+
+	return sprintf( '%s %s %s', $row[0], $phrase, STATCHASERS_TEAM_SEASON );
+}
+
+/**
+ * Rewrite the page title on a team page, which is the theme's H1.
+ *
+ * One filter covers all 32 pages and all 160 addresses, with nothing stored and
+ * no page edited: the heading is computed per request from the slug the URL
+ * resolved to and the section the rewrite rule set, so a season rollover is the
+ * same one-line edit as the titles (STATCHASERS_TEAM_SEASON), and a team page
+ * created tomorrow is covered the moment it exists.
+ *
+ * WHY NOT the stored post_title: it is one string and this needs five per team,
+ * chosen per request. The stored title stays "<Team> Team Page", which is what
+ * the admin list and any nav menu want — a menu item is its own post and its
+ * own id, so the guard below leaves it spelled that way.
+ *
+ * `in_the_loop()` is NOT part of the guard. Divi's Theme Builder renders the
+ * post title outside the main loop, and requiring the loop would silently do
+ * nothing on exactly the layout these pages use. Matching the queried object's
+ * id is the guard that matters: it admits the page's own title and nothing
+ * else's, in or out of the loop.
+ */
+add_filter(
+	'the_title',
+	function ( $title, $post_id = 0 ) {
+		if ( is_admin() || ! is_singular() ) {
+			return $title;
+		}
+
+		if ( (int) $post_id !== get_queried_object_id() ) {
+			return $title;
+		}
+
+		$slug = statchasers_team_current_slug();
+		if ( '' === $slug ) {
+			return $title;
+		}
+
+		$heading = statchasers_team_heading( $slug, statchasers_team_section_from_url() );
+		if ( '' === $heading ) {
+			return $title;
+		}
+
+		/**
+		 * Filters the H1 a team page prints.
+		 *
+		 * Return $title to hand the heading back to whatever the page stored.
+		 *
+		 * @param string $heading Generated heading.
+		 * @param string $slug    Team slug.
+		 * @param string $section Section id, or '' for the hub.
+		 * @param string $title   The stored post title.
+		 */
+		return (string) apply_filters(
+			'statchasers_team_page_heading',
+			$heading,
+			$slug,
+			statchasers_team_section_from_url(),
+			$title
+		);
+	},
+	10,
+	2
+);
 
 /**
  * The metadata for THIS request, or null when it is not a section URL.

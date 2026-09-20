@@ -375,12 +375,222 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 	 */
 	return (string) apply_filters(
 		'statchasers_rankings_fragment_html',
-		$data['html'],
+		statchasers_rankings_strip_faq_data( (string) $data['html'] ),
 		$args['pos'],
 		$args['season']
 	);
 }
 add_shortcode( STATCHASERS_RANKINGS_SHORTCODE, 'statchasers_rankings_shortcode' );
+
+/* ------------------------------------------------------------- faq schema */
+
+/**
+ * The questions this request's rankings fragment is carrying.
+ *
+ * Simpler than the team hub's equivalent: there is one mount, one fragment and
+ * one FAQ, and the questions do not vary by tab — the five boards are one page,
+ * so the position attribute changes which panel opens and nothing about what is
+ * asked. The fetch is the cached one the shortcode is about to hit, so this
+ * costs no second round trip, and the result is memoised because the Rank Math
+ * filter and the fallback printer both ask.
+ *
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_rankings_faq_items(): array {
+	static $items = null;
+
+	if ( null !== $items ) {
+		return $items;
+	}
+
+	$items = array();
+
+	if ( ! statchasers_rankings_post_has_shortcode() ) {
+		return $items;
+	}
+
+	// The default arguments. A page passing pos="rb" or a season gets the same
+	// nine questions — they describe the rankings, not the open panel — so the
+	// cheapest fetch that answers is the shared one.
+	$data = statchasers_rankings_fetch( statchasers_rankings_args( array() ) );
+
+	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
+		return $items;
+	}
+
+	$items = statchasers_rankings_faq_parse( (string) $data['html'] );
+
+	return $items;
+}
+
+/**
+ * Pull the Q&A island out of a rendered fragment.
+ *
+ * Validated rather than trusted, for the reason statchasers_team_faq_parse()
+ * gives: it is our own origin, but this ends up in the page's structured data
+ * and a malformed island should drop an entry rather than emit a broken node.
+ *
+ * @param string $html Rendered fragment.
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_rankings_faq_parse( string $html ): array {
+	$items = array();
+
+	if ( false === strpos( $html, 'scr-faq-data' ) ) {
+		return $items;
+	}
+
+	$found = preg_match_all(
+		'#<script type="application/json" class="scr-faq-data">(.*?)</script>#s',
+		$html,
+		$matches
+	);
+
+	if ( ! $found ) {
+		return $items;
+	}
+
+	foreach ( $matches[1] as $json ) {
+		$decoded = json_decode( $json, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		foreach ( $decoded as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['q'], $entry['a'] ) ) {
+				continue;
+			}
+			if ( ! is_string( $entry['q'] ) || ! is_string( $entry['a'] ) ) {
+				continue;
+			}
+
+			$question = trim( wp_strip_all_tags( $entry['q'] ) );
+			$answer   = trim( wp_strip_all_tags( $entry['a'] ) );
+
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $question,
+				'a' => $answer,
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+ * One FAQPage node from the questions this request is carrying.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null Null when there is nothing to describe.
+ */
+function statchasers_rankings_faq_node( string $webpage_id = '' ) {
+	$items = statchasers_rankings_faq_items();
+
+	if ( empty( $items ) ) {
+		return null;
+	}
+
+	$questions = array();
+	foreach ( $items as $item ) {
+		$questions[] = array(
+			'@type'          => 'Question',
+			'name'           => $item['q'],
+			'acceptedAnswer' => array(
+				'@type' => 'Answer',
+				'text'  => $item['a'],
+			),
+		);
+	}
+
+	$node = array(
+		'@type'      => 'FAQPage',
+		'mainEntity' => $questions,
+	);
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the FAQPage to Rank Math's graph.
+ *
+ * Same posture as the team and player files: append to the array Rank Math
+ * hands us, so what ships is one <script> containing one graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_rankings_rank_math_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_rankings_faq_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null === $node ) {
+		return $data;
+	}
+
+	$data['statchasersRankingsFaq'] = $node;
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_rankings_rank_math_schema', 20 );
+
+/**
+ * Fallback FAQPage for sites with no schema-graph plugin.
+ *
+ * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * plugin present, WebPage and Organization are a site-wide decision somebody
+ * should make deliberately rather than something this tool improvises.
+ */
+function statchasers_rankings_print_fallback_schema(): void {
+	if ( statchasers_news_graph_provider_present() ) {
+		return;
+	}
+
+	$node = statchasers_rankings_faq_node();
+	if ( null === $node ) {
+		return;
+	}
+
+	$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+	echo '<script type="application/ld+json">' .
+		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+		'</script>' . "\n";
+}
+add_action( 'wp_head', 'statchasers_rankings_print_fallback_schema', 20 );
+
+/**
+ * Drop the Q&A island from the markup that is printed.
+ *
+ * It is a transport for the node above, and once that is built it is a second
+ * copy of every answer sitting in the page for nobody. The schema reads from
+ * the cached fetch, not from this string, so removing it here costs the node
+ * nothing.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_rankings_strip_faq_data( string $html ): string {
+	if ( false === strpos( $html, 'scr-faq-data' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace(
+		'#<script type="application/json" class="scr-faq-data">.*?</script>#s',
+		'',
+		$html
+	);
+}
 
 /**
  * Clear cached rankings renders. Called by statchasers_news_flush().

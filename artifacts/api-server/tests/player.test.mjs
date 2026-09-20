@@ -228,6 +228,59 @@ describe("player page content", () => {
     }
   });
 
+  test("the header's figures each say what they are, and nothing else", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const cells = [...doc.querySelectorAll(".scp-hero-stats .scp-hero-stat")];
+
+    // A player with no season has no panel at all, which is the designed
+    // answer rather than an empty one — so there is nothing to assert about.
+    if (cells.length === 0) return;
+
+    // Scoring first and gold, because the panel is ordered: what he scores,
+    // where that puts him, who has him. A panel whose lead is not the first
+    // cell is a panel with two answers competing to be read first.
+    assert.ok(
+      cells[0].className.includes("is-lead"),
+      "the scoring cell leads the panel",
+    );
+    assert.equal(
+      doc.querySelectorAll(".scp-hero-stat.is-lead").length,
+      1,
+      "exactly one cell is the lead",
+    );
+
+    for (const cell of cells) {
+      const label = cell.querySelector(".scp-hero-stat-label")?.textContent.trim();
+      const value = cell.querySelector(".scp-hero-stat-value")?.textContent.trim();
+      assert.ok(label, "every cell says what its figure is");
+      assert.ok(value, "every cell has a figure");
+      // The panel drops a cell it has no figure for rather than filling it.
+      // A dash here would be a cell taking the room of an answer to say it
+      // has none, which is the rule the rest of this page is built on.
+      assert.ok(
+        !value.includes("\u2014"),
+        `${label} is a figure, not a placeholder`,
+      );
+
+      // The panel is three figures and their labels, nothing else. The
+      // qualifiers that used to sit under them — the games count, which way a
+      // rank was measured, whose ownership pool — are drawn in full further
+      // down the page, and a second line of grey under every figure was
+      // reading as noise against the figures themselves.
+      assert.equal(
+        cell.querySelector(".scp-hero-stat-sub"),
+        null,
+        `${label} carries no sub-line`,
+      );
+      if (label === "Rostered") {
+        assert.match(value, /^\d+(\.\d)?%$/, "ownership is a percentage");
+      }
+      if (label === "Pos rank") {
+        assert.match(value, /^[A-Z]+\d+$/, "a rank is a position and a place");
+      }
+    }
+  });
+
   test("the heading is the player's name, whatever the header does to it", async () => {
     // The two-line setting, the swaps and the fitter are all presentation.
     // Nothing they do may change the string an H1 hands a crawler or a screen
@@ -857,7 +910,7 @@ describe("the game log tab", () => {
     assert.ok(table, "All shows the Stats tab's career table");
     assert.match(
       blocks[0].querySelector(".scp-sect-title").textContent,
-      /Career by season/,
+      /Career By Season/,
     );
     // Every season the selector offers has a line in it, which is what makes
     // the table an index to the logs rather than a second copy of Stats.
@@ -1499,24 +1552,33 @@ describe("the outlook tab", () => {
 
     const heading = outlook.querySelector("h2");
     assert.ok(heading, "the tab owns an h2");
-    // The head IS the heading. The hero above has already said the player's
-    // name and the tab strip has already said which tab this is, so the slab
-    // opens on the read itself and the eyebrow over it carries the h2.
+    // The head IS the heading, and it is the page's ordinary section heading —
+    // the same .scp-h2 that heads "<name> stats <year>" on the Stats tab, not
+    // the 11px gold eyebrow this section used to wear instead of one.
     assert.equal(
       heading.className,
-      "scp-verdict-eyebrow",
-      "the slab's eyebrow is the heading",
+      "scp-h2",
+      "the written read opens on the page's section heading",
     );
-    assert.equal(heading.textContent.trim(), "The full read");
+    assert.match(
+      heading.textContent.trim(),
+      /^\d{4} Outlook$/,
+      "the heading names the season the outlook is for",
+    );
     assert.equal(outlook.querySelectorAll("h2").length, 1);
 
-    // The name, the identity line and the quick take are gone from the slab.
+    // No card around it. The read is the tab's first section, not something
+    // set apart from the column it sits in, and the chips below it carry the
+    // only frame this head needs.
+    assert.equal(outlook.querySelector(".scp-verdict"), null);
+
+    // The name, the identity line and the quick take are gone from the head.
     assert.equal(outlook.querySelector(".scp-verdict-name"), null);
     assert.equal(outlook.querySelector(".scp-verdict-id"), null);
     assert.equal(outlook.querySelector(".scp-take-label"), null);
     assert.ok(
       outlook.querySelector(".scp-take .scp-take-body"),
-      "the written read opens the slab",
+      "the written read opens the tab",
     );
   });
 
@@ -2044,43 +2106,40 @@ describe("the bio tab", () => {
       const res = await get(`/player/${player.slug}?section=bio`);
       if (res.status !== 200) continue;
       const doc = new JSDOM(res.body).window.document;
-      if (!doc.querySelector("#bio .scp-facts")) continue;
+      if (!doc.querySelector("#bio .scp-bio")) continue;
       pages.push({ player, doc, body: res.body });
     }
     return pages;
   }
 
-  test("the bio opens on the paragraph, then the facts it is searched for", async () => {
+  test("the bio opens on the paragraph, and the paragraph carries the facts", async () => {
     const pages = await bioPages(4);
     assert.ok(pages.length > 0, "at least one player has a bio");
 
     for (const page of pages) {
-      const labels = [...page.doc.querySelectorAll("#bio .scp-fact-label")].map((el) =>
-        el.textContent.trim(),
+      // The labelled fact grid is gone; the opening paragraph is the only
+      // place these answers live now, so it has to actually contain them.
+      // Born-on and the college are the two every bio derives — a birth date
+      // gives the age, and the college line is the one searched for by name.
+      const prose = page.doc.querySelector("#bio .scp-bio").textContent;
+      assert.equal(page.doc.querySelector("#bio .scp-facts"), null);
+      assert.match(
+        prose,
+        /Born on \w+ \d{1,2}, \d{4}/,
+        `${page.player.slug}: the paragraph gives the birth date`,
       );
-      // Height and weight are on every roster row upstream; age comes off a
-      // birth date. If these three ever stop rendering, the tab has lost the
-      // queries it exists for.
-      for (const label of ["Age", "Height", "Weight"]) {
-        assert.ok(
-          labels.includes(label),
-          `${page.player.slug}: the bio answers "${label}"`,
-        );
-      }
+      assert.match(
+        prose,
+        /played college football at /,
+        `${page.player.slug}: the paragraph names the college`,
+      );
 
       const narrative = page.doc.querySelector("#bio .scp-bio");
-      const facts = page.doc.querySelector("#bio .scp-facts");
       const timeline = page.doc.querySelector("#bio .scp-stints");
-      if (narrative) {
-        assert.ok(
-          narrative.compareDocumentPosition(facts) & 4,
-          "the paragraph opens the tab, above the fact grid",
-        );
-      }
       if (timeline) {
         assert.ok(
-          facts.compareDocumentPosition(timeline) & 4,
-          "the facts come before the timeline",
+          narrative.compareDocumentPosition(timeline) & 4,
+          "the paragraph opens the tab, above the timeline",
         );
       }
     }
@@ -2139,13 +2198,11 @@ describe("the bio tab", () => {
       // The bug this is here for: the upstream stats API answers for seasons a
       // player was not in the league by handing back his CURRENT team with an
       // empty stat line, which put a 2016 draftee on a roster in 2005.
-      const draftValue = [...page.doc.querySelectorAll("#bio .scp-fact")]
-        .find((fact) => fact.querySelector("dt").textContent.trim() === "Draft")
-        ?.querySelector(".scp-fact-value")
-        ?.textContent.trim();
-      if (!draftValue) continue;
-
-      const draftYear = Number(draftValue.slice(0, 4));
+      //
+      // Read off the paragraph, which is where the draft year lives now that
+      // the fact grid is gone: "... in the third round of the 2016 NFL Draft".
+      const prose = page.doc.querySelector("#bio .scp-bio")?.textContent ?? "";
+      const draftYear = Number(prose.match(/(\d{4}) NFL Draft/)?.[1]);
       if (!Number.isFinite(draftYear)) continue;
       assert.ok(
         years[0] >= draftYear,
@@ -2164,16 +2221,18 @@ describe("the bio tab", () => {
         `${page.player.slug}: the bio claims a draft status the data cannot support`,
       );
 
-      // The draft has no block of its own — the fact grid carries it, and it
-      // names its year or it is not there at all.
+      // The draft has no block of its own and no cell of its own — the
+      // paragraph carries it, and it names a year or it is not mentioned.
       assert.equal(page.doc.querySelector("#bio .scp-draft"), null);
+      assert.equal(page.doc.querySelector("#bio .scp-facts"), null);
 
-      const draft = [...page.doc.querySelectorAll("#bio .scp-fact")]
-        .find((fact) => fact.querySelector("dt").textContent.trim() === "Draft")
-        ?.querySelector(".scp-fact-value")
-        ?.textContent.trim();
-      if (!draft) continue;
-      assert.match(draft, /^\d{4}\b/, "the draft fact names its year");
+      const prose = page.doc.querySelector("#bio .scp-bio")?.textContent ?? "";
+      if (!/NFL Draft/.test(prose)) continue;
+      assert.match(
+        prose,
+        /\d{4} NFL Draft/,
+        "a draft the paragraph mentions names its year",
+      );
     }
   });
 

@@ -411,9 +411,12 @@ add_filter( 'body_class', 'statchasers_team_full_width_body_class', PHP_INT_MAX 
 /**
  * The shortcode: prints the server-rendered team hub into the page.
  *
- * Same deliberate omissions as the news shortcode — no canonical, no <h1>, no
- * title or meta description, nothing written to the URL. The page owns all of
- * it. The fragment's own tab strip is `:target`-based, so the only URL state it
+ * Same deliberate omissions as the news shortcode — no canonical, no title or
+ * meta description, nothing written to the URL. The page owns all of it,
+ * including the H1: statchasers_team_heading() supplies that through the_title,
+ * so it is the theme that prints it and there is exactly one. The exception is
+ * a template that prints no title at all — see
+ * `statchasers_team_shortcode_h1` below. The fragment's own tab strip is `:target`-based, so the only URL state it
  * can produce is a hash, which is not a separate URL to a crawler.
  *
  * @param array<string,mixed>|string $atts Shortcode attributes.
@@ -475,14 +478,64 @@ function statchasers_team_shortcode( $atts = array() ): string {
 	 * @param string $slug    Team slug.
 	 * @param string $section Section the render was scoped to, or ''.
 	 */
-	return (string) apply_filters(
+	$html = (string) apply_filters(
 		'statchasers_team_fragment_html',
 		statchasers_team_strip_faq_data( (string) $data['html'] ),
 		$slug,
 		$section
 	);
+
+	return statchasers_team_shortcode_heading( $slug, $section ) . $html;
 }
 add_shortcode( STATCHASERS_TEAM_SHORTCODE, 'statchasers_team_shortcode' );
+
+/**
+ * The <h1> the shortcode prints itself. Empty by default.
+ *
+ * On a normal template the theme prints the page title as the H1 and
+ * statchasers_team_heading() has already rewritten it to the section-aware
+ * phrase, so printing one here would give the page two. Turn this on for a
+ * template that prints no title at all — a Divi full-width or Theme Builder
+ * layout with no Post Title module is the case that happens — where the
+ * the_title filter has nothing to rewrite and the page would otherwise have no
+ * H1 at all, only the fragment's hero <h2>:
+ *
+ *     add_filter( 'statchasers_team_shortcode_h1', '__return_true' );
+ *
+ * Check before turning it on, because the two cases are indistinguishable from
+ * here and both are wrong in one direction:
+ *
+ *     curl -s https://statchasers.com/nfl/teams/new-england-patriots/ \
+ *       | grep -o '<h1[^>]*>[^<]*'
+ *
+ * No class beyond `sct-page-title`, and no CSS ships for it: on a title-less
+ * template the theme's own h1 rules are the ones that should style it.
+ *
+ * @param string $slug    Team slug.
+ * @param string $section Section id, or '' for the hub.
+ * @return string An <h1>, or ''.
+ */
+function statchasers_team_shortcode_heading( string $slug, string $section ): string {
+	if ( ! apply_filters( 'statchasers_team_shortcode_h1', false ) ) {
+		return '';
+	}
+
+	// Declared in statchasers-team-pages.php, which is required after this file
+	// — fine at call time, but guarded because a site that loads the shortcode
+	// alone should degrade to no heading rather than fatal.
+	if ( ! function_exists( 'statchasers_team_heading' ) ) {
+		return '';
+	}
+
+	$heading = statchasers_team_heading( $slug, $section );
+	if ( '' === $heading ) {
+		return '';
+	}
+
+	return '<h1 class="sct-page-title">' . esc_html( $heading ) . '</h1>';
+}
+
+
 
 /* ------------------------------------------------------------- faq schema */
 

@@ -185,6 +185,20 @@ _Replace the heading above with the project's name, and this line with one sente
   rivalry page — head-to-head first, then that meeting's detail — and is given
   the box score and the stat tables but NOT the takeaways or the usage table,
   which are advice about the coming week.
+- **Fantasy Usage is charts, not a sixth table.** One panel per team, the same
+  metrics in the same place on both sides. Snap share is ranked bars — five
+  players can each be on the field for 80% of the same snaps, so those shares
+  are not a distribution and must not be drawn as one — then target share and
+  carry share as SVG rings. `usageByTeam()` in `matchup/game-stats.ts` decides
+  both populations and both denominators: the bars follow the table and leave
+  quarterbacks out, the rings include them because a quarterback's carries are
+  a real part of a backfield. Five named slices at most, the tail pooled into a
+  grey "Other", nothing drawn for a player who did not record the stat, and a
+  zero denominator prints "Target share data unavailable" rather than an empty
+  ring. Every name, percentage and raw count is text beside the chart: the SVG
+  is `aria-hidden` and carries only tooltips. No chart dependency — a ring is
+  one dashed `<circle>` per slice. The table itself is unchanged and still
+  sortable, one copy of it, inside a closed `<details>` under the panels.
 - **Where the postgame data comes from, and what is missing.** Three sources,
   each allowed to fail on its own:
   - `matchup/boxscore.ts` — ESPN's `summary?event=<id>`, keyed by the event id
@@ -199,6 +213,18 @@ _Replace the heading above with the project's name, and this line with one sente
     cutoffs (weeks before the game, weeks through it) to give each defense a
     before and an after. Week 1 has no before, and the block renames itself
     rather than drawing an arrow from nothing. The FPA ingest clears its cache.
+
+  **Sorting.** The five player tables (the four stat tables and the usage
+  table) carry `data-sct-sortable`; `wireSortableTables()` in
+  `src/client/team.ts` turns each header into a button, the same contract the
+  FPA table and the player pages' game log use — `data-sort` on every cell
+  (because the cell's text and its sort value disagree: "16/22", "90%", "WR6"),
+  `data-sort-type` declared by the header, numeric columns opening descending.
+  Two things are specific to these tables: `data-sort-default` marks the column
+  the SERVER already ordered by, so the table announces the sort it has rather
+  than "none"; and a cell with an empty `data-sort` is a missing value, held at
+  the bottom in BOTH directions rather than treated as a zero. The buttons are
+  built in the browser — a control that cannot work does not ship in the HTML.
 
   **Routes run are not available** from any free source and there is no routes
   column. **Who left the game injured** is not available either: ESPN's
@@ -344,10 +370,21 @@ tool and the hubs work — and Rank Math keeps the SEO.
 
 - `data/player/*.json` — **the whole dataset, committed**. ~13MB across the
   player dictionary, three seasons of game logs, game scores, bios, dynasty
-  rankings, injury history, season production, the 2026 outlook and the advanced
-  stats tables. This is what makes a player page cheap: assembling one is
-  arithmetic over objects already in memory, with no upstream in the request
-  path at all. Rebuilt by `scripts/player/` — see its README for the order.
+  rankings, injury history, season production, Sleeper roster percentages, the
+  2026 outlook and the advanced stats tables. This is what makes a player page
+  cheap: assembling one is arithmetic over objects already in memory, with no
+  upstream in the request path at all. Rebuilt by `scripts/player/` — see its
+  README for the order.
+
+  **`roster_pct.json` is the one file that ages.** It is how widely Sleeper's
+  leagues rostered each player in ONE week, not a record of a finished season,
+  and it carries that season and week inside it. Sleeper publishes two cuts of
+  the research endpoint and neither is filtered by how many quarterbacks a
+  league starts: the default (673 players) and `league_type=2`, the dynasty one
+  (1662). The default is what the header reads and the figure is labelled
+  "Sleeper redraft", not "1QB", because that is the claim the source supports —
+  the same week had Jacoby Brissett at 11.8% in the default cut and 71.8% in
+  the dynasty one.
 - `src/lib/player/data.ts` — every read of that directory, in one place. Each
   file is optional (a missing one drops the section it feeds, never 500s) and
   parsed at most once. `dataStamp()` fingerprints the files and is what the
@@ -606,13 +643,29 @@ and most of what is distinctive about it follows from that.
   league year when nflverse has published next season's slate and the site still
   wants to show the one being played.
 
-**The visual design is deliberately this app's, not the source repo's.** The
-standalone tool is React + Tailwind + shadcn/ui (DM Sans, square cards, its own
-navy and gold); `public/schedule.css` is hand-written to match `team.css`,
-`player.css`, `fpa.css` and `rankings.css` instead, because six tools on one
-WordPress site should look like one site. What IS carried over verbatim is the
-tool's structure and its layout decisions — the three views, the When/Matchup/TV
-grid, the market coverage floor, and the centred sidebar cards.
+**The visual design is the source repo's, and this tool is the one exception to
+the house look.** Team, player, FPA, rankings and matchup all share one
+hand-written design system; the schedule does not, because it is the tool
+readers already know from the standalone app and it was asked to arrive looking
+like it (reversing the call made on 2026-09-19). `public/schedule.css` is
+therefore a transcription of `artifacts/nfl-schedule/src/styles/app.css` and the
+Tailwind utility strings in its `App.tsx`: DM Sans for text and Space Grotesk
+for the display face, the source's HSL token set (navy `220 56% 19%`, gold
+`43 83% 49%`), square cards and controls throughout, the source's container
+queries on the board, and its class-activated dark theme.
+
+Two things about that theme are worth knowing. It is opt-in by class
+(`scs-dark` on the wrapper or on `<body>`), never `prefers-color-scheme`,
+because this mounts inside a WordPress theme with its own opinion and a tool
+that went dark on its own would be the only dark thing on the page — the source
+is class-activated too. And in dark, `--scs-primary` becomes the **gold**, not a
+lighter navy: navy on navy disappears, so the source promotes the accent into
+the primary slot and everything that was navy text becomes gold text.
+
+What did NOT come across is structure, which stays server-rendered: the three
+views, the When/Matchup/TV grid, the market coverage floor, the centred sidebar
+cards, the team lens's extra result and TV columns, and the rule that home and
+away are always stated in words and never carried by position alone.
 
 **The fragment answers 503, not an empty shell, when the feed is down.** That is
 what lets the WordPress plugin tell "down right now" from "nothing to show", and

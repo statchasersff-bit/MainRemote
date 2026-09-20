@@ -23,7 +23,9 @@ const SITE_NAME = "StatChasers";
  */
 export function matchupScoreLine(data: MatchupData): string {
   const featured = data.featured;
-  if (data.matchupState !== "recently_completed") return "";
+  // A game address always has a score to lead with; the pair's address only
+  // while it is leading with a result.
+  if (!data.pinned && data.matchupState !== "recently_completed") return "";
   if (!featured?.score || !featured.winner) return "";
   const high = Math.max(featured.score.home, featured.score.away);
   const low = Math.min(featured.score.home, featured.score.away);
@@ -37,6 +39,29 @@ export function matchupPageMeta(data: MatchupData, canonical: string): TeamPageM
 
   let title: string;
   let description: string;
+
+  // A game address is its own page with its own subject, so it is answered
+  // before the pair's three states are consulted at all: "patriots seahawks
+  // week 1 2026" is a different search from "patriots vs seahawks", and the
+  // two must not answer it with the same string.
+  if (data.pinned) {
+    const week = data.pinned.week;
+    const gameSeason = data.pinned.season;
+    const scored = matchupScoreLine(data);
+    return {
+      title:
+        `${names}, Week ${week} ${gameSeason}: Final Score, Player Stats & ` +
+        `Fantasy Recap | ${SITE_NAME}`,
+      description:
+        `${scored ? `${scored} ` : ""}Full box score from ${a.nickname} vs ` +
+        `${b.nickname} in Week ${week} of ${gameSeason}: quarter-by-quarter ` +
+        `scoring, every passing, rushing and receiving line, snap counts and ` +
+        `fantasy points.`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
+
   switch (data.matchupState) {
     case "upcoming":
       title = `${names} ${season}: Where to Watch, Stats, Injuries & History`;

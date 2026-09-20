@@ -37,6 +37,7 @@ import type {
   GameLogEntry,
   Player,
   PlayerBio,
+  RosterPctDoc,
 } from "./types";
 
 const DATA_DIR = path.resolve(process.cwd(), "data", "player");
@@ -54,6 +55,7 @@ const DRAFT_FILE = path.join(DATA_DIR, "draft.json");
 const OUTLOOK_FILE = path.join(DATA_DIR, "fantasy_outlook_2026.json");
 const PRODUCTION_FILE = path.join(DATA_DIR, "player_production.json");
 const INJURIES_FILE = path.join(DATA_DIR, "player_injuries.json");
+const ROSTER_PCT_FILE = path.join(DATA_DIR, "roster_pct.json");
 const ADVANCED_DIR = path.join(DATA_DIR, "advanced_stats");
 
 /** How often `players.json` is re-stat'd for an out-of-band rebuild. */
@@ -279,6 +281,20 @@ export const loadProduction = lazy<Record<string, unknown>>(PRODUCTION_FILE, {})
 /** Injury history snapshots, keyed by player id. */
 export const loadInjuries = lazy<Record<string, unknown>>(INJURIES_FILE, {});
 
+/**
+ * Rostered and started percentages from Sleeper's leagues, for one week.
+ *
+ * The empty fallback carries week 0, which no season has: a deployment without
+ * the file reads as "no week has been ingested" rather than as week 1 of the
+ * current season with nobody rostered in it.
+ */
+export const loadRosterPct = lazy<RosterPctDoc>(ROSTER_PCT_FILE, {
+  season: 0,
+  week: 0,
+  readAt: "",
+  players: {},
+});
+
 /** The indexed (fantasy-relevant) slug list, and the same grouped by team. */
 export const loadIndexedSlugs = (): string[] =>
   readIndexed().slugs;
@@ -351,6 +367,7 @@ export function dataStamp(): string {
     OUTLOOK_FILE,
     PRODUCTION_FILE,
     INJURIES_FILE,
+    ROSTER_PCT_FILE,
   ]) {
     try {
       const st = fs.statSync(file);

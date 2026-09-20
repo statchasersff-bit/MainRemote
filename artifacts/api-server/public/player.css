@@ -327,41 +327,52 @@ body.scp-page {
  * text content is still exactly the player's name (plus the section phrase on
  * a scoped URL), which is what a crawler and a screen reader read.
  */
+/*
+ * The whole name on one line, and the line's type set here on the heading.
+ *
+ * It was a 12px given name letterspaced over a 52px uppercase surname — two
+ * lines, two treatments, and at 900 the surname was the loudest thing on the
+ * page by a wide margin. A player's name is what the page is OF, not what it
+ * is shouting: at 33px and 800 it is still unmistakably the heading, and it
+ * leaves the position, the club and the numbers legible beside it instead of
+ * in its shadow.
+ *
+ * The clamp is the scriptless answer and the var is the measured one. A
+ * viewport-sized figure is a guess — it cannot know that this row also holds a
+ * bust and a three-cell table — but it is a good guess, and it is what a
+ * reader with no JavaScript gets. wireHeroFit multiplies it by what it
+ * actually measured.
+ */
 .scp-title {
   margin: 0;
+  font-size: calc(clamp(26px, 3.4vw, 33px) * var(--scp-hero-id, 1));
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
   color: var(--sc-navy);
 }
 
-.scp-title-first {
-  display: block;
-  font-size: calc(12px * var(--scp-hero-id, 1));
-  font-weight: 700;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
+/*
+ * Given name and surname, both inline, both in the heading's own type.
+ *
+ * The spans stay because the fitter and the wrap fallback address them, and
+ * because a surname is still the half a reader scans for — but they no longer
+ * carry a size or a case of their own. Mixed case, as the source has it:
+ * uppercasing a name is a decision about volume, and this line has stopped
+ * making that decision.
+ */
+.scp-title-first,
 .scp-title-last {
-  display: block;
-  margin-top: 2px;
-  /* The clamp is the scriptless answer and the var is the measured one. A
-     viewport-sized figure is a guess — it cannot know that this row also holds
-     a bust and a three-cell table — but it is a good guess, and it is what a
-     reader with no JavaScript gets. wireHeroFit multiplies it by what it
-     actually measured. */
-  font-size: calc(clamp(34px, 5.2vw, 52px) * var(--scp-hero-id, 1));
-  font-weight: 900;
-  line-height: 0.96;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  display: inline;
 }
 
-/* The section's phrase, on a scoped URL. Sentence case and a fraction of the
-   surname's size: it is what the page is about, not what it is called. */
+/* The section's phrase, on a scoped URL. Sentence case and a step under the
+   name: it is what the page is about, not what it is called. Its own line,
+   which is what still separates it from the name now that the name is inline. */
 .scp-title-rest {
   display: block;
-  margin-top: 8px;
-  font-size: calc(clamp(17px, 2.2vw, 21px) * var(--scp-hero-id, 1));
+  margin-top: 6px;
+  font-size: calc(clamp(15px, 1.9vw, 18px) * var(--scp-hero-id, 1));
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -374,6 +385,23 @@ body.scp-page {
   font-size: calc(14.5px * var(--scp-hero-id, 1));
   font-weight: 700;
   color: var(--sc-navy);
+}
+
+/*
+ * The position, in the club's colour.
+ *
+ * The one place on this page the team's primary is ink rather than a rule or
+ * a wash: it is the first fact in the line and the fact that places a player,
+ * so it is the fact that takes the colour.
+ *
+ * Mixed toward the navy rather than used neat. A primary is chosen to work on
+ * a jersey, not as 13px type on white, and the palest of them (Cincinnati's
+ * orange, San Diego's powder) land near 3:1 there — under what this size owes.
+ * At 82% the hue still reads as the club's; what it loses is the lightness
+ * that made it fail.
+ */
+.scp-hero-pos {
+  color: color-mix(in srgb, var(--team-primary) 82%, var(--sc-navy));
 }
 
 .scp-hero-sep {
@@ -478,7 +506,12 @@ body.scp-page {
 
 .scp-hero-stat {
   display: grid;
+  /* Two rows, label over figure, at the spacing that reads as one cell rather
+     than a heading with a number under it. */
   gap: 5px;
+  /* Every cell is the same two rows now, so centring and starting land the
+     same labels on one line and the same figures on the next; centred is the
+     one that keeps the pair off the top edge of a stretched cell. */
   align-content: center;
   justify-items: center;
   padding: calc(12px * var(--scp-hero-tblp, 1)) calc(20px * var(--scp-hero-tblp, 1));
@@ -504,6 +537,27 @@ body.scp-page {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sc-muted);
+}
+
+/*
+ * The lead cell: the figure this header exists to report.
+ *
+ * The same gold the open tab and the section rules use for "this is the one",
+ * so the panel has a reading order rather than three equal numbers competing.
+ * A wash as well as the ink, because at 9% the tint is what carries the cell
+ * at a glance while the colour of a single figure is what confirms it.
+ *
+ * `--sc-gold-ink`, not `--sc-gold-deep`, even though this is a 23px figure:
+ * the fitter takes --scp-hero-tbl as far as 0.6, and a figure that can arrive
+ * at 14px is small text owing 4.5:1 whatever it measures at rest. The deep
+ * gold is 3.6:1 and would pass only while the header is wide.
+ */
+.scp-hero-stat.is-lead {
+  background: color-mix(in srgb, var(--sc-gold) 9%, var(--sc-surface));
+}
+
+.scp-hero-stat.is-lead .scp-hero-stat-value {
+  color: var(--sc-gold-ink);
 }
 
 /* ----------------------------------------------- hero: forms and the probe */
@@ -619,6 +673,7 @@ body.scp-page {
 
 /* The name is allowed to be as wide as it is in here: a probe that wrapped
    would report the width it wrapped to, which is not a natural width. */
+.scp-hero-probe .scp-title,
 .scp-hero-probe .scp-title-last,
 .scp-hero-probe .scp-title-first,
 .scp-hero-probe .scp-hero-billing,
@@ -634,7 +689,7 @@ body.scp-page {
  * reader came for, and "Beckh…" is worse than two lines. Set by the client
  * only when stage 5 has run out of budget.
  */
-.scp-hero[data-scp-hero-wrap="1"] .scp-title-last {
+.scp-hero[data-scp-hero-wrap="1"] .scp-title {
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -1358,14 +1413,14 @@ body.scp-page {
 }
 
 /*
- * And a rule under the cell, because on the game log gold alone is ambiguous.
+ * And a rule under the cell, because one word of colour in a twelve-wide band
+ * is a thin signal.
  *
- * FPTS is already inked gold there at rest — it is the column that table is
- * built around — so a gold FPTS head says "this is the points column" and a
- * gold WK head says "this is what the table is sorted by", in the same colour.
- * The bar is what separates them: it is only ever under the active column, it
- * is the device the tab strip above already uses for "you are here", and the
- * one column that cannot imitate it is the one that was imitating the ink.
+ * Gold on this page means "the current thing" and nothing else — no column is
+ * inked gold at rest any more — so the colour is unambiguous. The bar is what
+ * makes it legible: it is the device the tab strip above already uses for "you
+ * are here", it spans the whole cell rather than a few characters of label,
+ * and it survives a reader who does not separate gold from white at a glance.
  *
  * Inset rather than a border so it draws inside the filled cell, above the
  * header row's own navy edge, and cannot move the columns by a pixel.
@@ -1575,18 +1630,17 @@ body.scp-page {
 
 /* ------------------------------------------------------------------- bio */
 
+/*
+ * Full width, like everything around it.
+ *
+ * It read at a 76ch measure, which is the right measure for a column of prose
+ * and the wrong one here: the paragraph sits between a table and a timeline
+ * that both run the full width of the page, so the measure did not read as
+ * care, it read as a block that had failed to fill its row.
+ */
 .scp-bio {
-  max-width: 76ch;
+  max-width: none;
 }
-
-
-
-
-
-
-
-
-
 
 .scp-outlook {
   margin: 0;
@@ -1603,7 +1657,7 @@ body.scp-page {
  * built to be read in one pass top to bottom rather than scanned like the stat
  * tabs. Three devices carry it and nothing else does:
  *
- *   THE HEAD    a raised slab, the only thing above the fold.
+ *   THE HEAD    the written read, under the page's own section heading.
  *   THE STRIP   four measured readings divided by hairlines.
  *   THE SLAB    one navy block closing the tab.
  *
@@ -1611,24 +1665,23 @@ body.scp-page {
  * directions one season can go, not a good thing beside a bad thing.
  */
 
-.scp-verdict {
+/*
+ * The written read, unboxed.
+ *
+ * It used to be a raised card with an all-caps gold eyebrow for a heading, and
+ * both were saying the wrong thing. A card is how this page marks something
+ * that stands apart from the column it sits in; this is the tab's opening
+ * section, which is the most ordinary thing on it. And an eyebrow is a label
+ * over a display line — there was no display line under it, so the tab's only
+ * <h2> was set at 11px while every other section on the page carries the 22px
+ * heading and the gold rule beneath it.
+ *
+ * So the section keeps nothing but its spacing, and the heading is `h2()` —
+ * the same one that heads "<name> stats <year>" on the Stats tab. The chips
+ * below still carry their own frame, which the card was wrapping a second time.
+ */
+.scp-outlook-head {
   margin: 0 0 28px;
-  padding: 24px 26px;
-  border: 1px solid var(--sc-hairline);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow);
-}
-
-/* An <h2> worn as an eyebrow: it is the tab's heading in the outline, and the
-   name beneath it is the display line. */
-.scp-verdict-eyebrow {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sc-gold-ink);
 }
 
 .scp-verdict-name {
@@ -1695,10 +1748,11 @@ body.scp-page {
 .scp-chip[data-mod="moderate"] .scp-chip-value { color: var(--scp-risk-moderate); }
 .scp-chip[data-mod="low"] .scp-chip-value { color: var(--scp-risk-high); }
 
+/* Prose, flush to the section like the body copy anywhere else on the page.
+   The gold rail that used to run down its left edge was the inner half of the
+   same boxing the card was doing, and the h2's rule above already says gold. */
 .scp-take {
   margin: 20px 0 0;
-  padding-left: 16px;
-  border-left: 3px solid var(--sc-gold);
 }
 
 .scp-take-body {
@@ -3031,15 +3085,6 @@ body.scp-page {
   margin: 0;
 }
 
-.scp-read-eyebrow {
-  margin: 0 0 10px;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sc-gold-ink);
-}
-
 .scp-read-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
@@ -3957,6 +4002,10 @@ body.scp-page {
  *
  * Spelled out one selector per default it overrides, because each of those
  * defaults is specific enough that a blanket `th, td` rule would not beat it.
+ * The GP column takes two of them — `tbody` and `tfoot` — because the shared
+ * table's `td:nth-child(2)` is left-aligned for every row of the table at
+ * once, and a rule that only names the body leaves the Career line's games
+ * count sitting under a centred column, hard against its left edge.
  */
 .scp-table--career th,
 .scp-table--career td,
@@ -3965,6 +4014,7 @@ body.scp-page {
 .scp-table--career thead th:nth-child(2),
 .scp-table--career tbody th[scope="row"],
 .scp-table--career tbody td:nth-child(2),
+.scp-table--career tfoot td:nth-child(2),
 .scp-table--career tfoot th {
   text-align: center;
 }
@@ -4178,6 +4228,22 @@ body.scp-page {
   margin-top: 8px;
 }
 
+/*
+ * Except the career table, which carries no rule and no indent.
+ *
+ * The rule earns its place on a pinned season — that block is a second game
+ * log on a page that already has one, and the rule is what says at any scroll
+ * position which of the two is this year. The career table is not a second
+ * anything: it is one line per season, a shape nothing else on the tab has,
+ * and it cannot be mistaken for the current-season log it sits under. What the
+ * rule was doing there was drawing a 650px vertical down the side of the one
+ * table on this page wide enough to need its full width.
+ */
+.scp-archive--career {
+  padding-left: 0;
+  border-left: 0;
+}
+
 /* It is a record, not the page's subject, so it is quieter than the season
    above it — one step down in size, and the tiles shrink with it. */
 .scp-archive .scp-tile {
@@ -4236,15 +4302,24 @@ body.scp-page {
  * Fantasy points, the column this table is built around.
  *
  * It sits fourth — straight after the result and ahead of every box-score
- * column — and it is the only one that carries the brand's gold. That is the
- * whole differentiator against a generic box score, stated in one rule.
+ * column — and it is the one the reader came for. Position and weight say so;
+ * gold does not. Gold on this page means "the current thing" — the open tab,
+ * the column you sorted by — and a permanently gold column spends that word on
+ * something that is never going to change. So FPTS takes the same full-contrast
+ * ink as the rest of the row and earns its emphasis from the box-score columns
+ * stepping back below.
+ *
+ * Every per-column ink rule in this group is scoped to `td`, and has to be.
+ * These colours are chosen for a white row, but the head of a `--filled` table
+ * is a navy band whose white text comes from `.scp-table--filled thead th` at
+ * (0,1,2) — which a bare `.scp-table--log .scp-col-fin` outweighs at (0,2,0).
+ * Unscoped, each of these reached into the header and painted a label in a
+ * colour meant for white: the box-score heads went grey-on-navy, and Finish
+ * went navy-on-navy and disappeared until a pointer landed on it and the hover
+ * rule lifted it to gold.
  */
-.scp-table--log .scp-col-pts,
-.scp-table--log .scp-pts {
-  color: var(--sc-gold-ink);
-}
-
 .scp-table--log td.scp-pts {
+  color: var(--sc-navy);
   font-size: 14px;
   font-weight: 800;
 }
@@ -4257,30 +4332,23 @@ body.scp-page {
  * the separation is ink: the box-score cells sit a step down from full contrast
  * and the two fantasy columns keep it.
  */
-.scp-table--log .scp-col-box {
+.scp-table--log td.scp-col-box {
   color: var(--sc-muted-strong);
 }
 
 /* Secondary columns stay in the table — it scrolls rather than dropping them —
    but they are quieter still, so the eye lands on the line that matters. */
-.scp-table--log .scp-col-2 {
+.scp-table--log td.scp-col-2 {
   color: var(--sc-muted);
 }
 
-.scp-table--log .scp-col-fin {
+.scp-table--log td.scp-col-fin {
   color: var(--sc-navy);
 }
 
 .scp-table--log th.scp-col-pts,
 .scp-table--log th.scp-col-fin {
   font-weight: 800;
-}
-
-/* FPTS is the column this table is built around and the only one in gold. On a
-   white row that is --sc-gold-ink; on the navy header it is the soft tint, for
-   the same reason at the other end of the ramp. */
-.scp-table--log.scp-table--filled thead th.scp-col-pts {
-  color: var(--sc-gold-soft);
 }
 
 /* The finish pill carries its own colour, so it only needs the room. */
@@ -4444,90 +4512,68 @@ body.scp-page {
 
 /* -------------------------------------------------------------------- bio */
 
-/*
- * The identity block — the answer, before anything else on the tab.
- *
- * A labelled grid rather than the page's stat tiles: these are facts about a
- * person, not measurements with a shared scale, and the tiles' big-number
- * treatment would make a birth date look like a statistic.
- */
-.scp-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 18px 24px;
-  margin: 0 0 28px;
-  padding: 22px 24px;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius);
-  background: var(--sc-surface-soft);
-}
-
-.scp-fact {
-  min-width: 0;
-}
-
-.scp-fact-label {
-  margin: 0;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-fact-value {
-  margin: 4px 0 0;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--sc-navy);
-}
-
-/* The draft's team, under the round and pick it belongs to. */
-.scp-fact-detail {
-  display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--sc-muted-strong);
-}
-
 /* ---- the career timeline ---- */
 
 /*
- * A rail, not a stack of cards.
+ * A rail of rows, not a rail of labels.
  *
  * This is the one block on the player pages that is genuinely a sequence, and
  * drawing it as one is what gives Bio an identity of its own next to six tabs
  * of tables. The rail is a left border on the list; each stop punches a dot
  * through it.
+ *
+ * The stop itself is a full-width row on a three-column grid — years, club,
+ * season count — because the earlier version laid its spans out inline and
+ * every one of them crowded into the first quarter of the column. A rail with
+ * three quarters of empty canvas beside it does not read as a spine, it reads
+ * as a sidebar that has lost its page. Now the years hold their own column,
+ * the club runs through the middle, and the count is pinned to the far edge,
+ * so the row spans the measure and the three zones line up down the list.
  */
 .scp-stints {
   margin: 0 0 28px;
-  padding: 4px 0 4px 0;
+  padding: 0;
   list-style: none;
   border-left: 2px solid var(--sc-border);
 }
 
 .scp-stint {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
-  padding: 0 0 20px 22px;
+  display: grid;
+  /* The count column is `auto`, so "12 seasons" and "1 season" both sit flush
+     to the right edge without a fixed width guessing at the longest. */
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 18px;
+  padding: 13px 14px 13px 24px;
+  border-radius: var(--sc-radius-xs);
+  transition: background-color 0.12s ease;
 }
 
-.scp-stint:last-child {
-  padding-bottom: 0;
+/* A hairline between stops, so each one reads as a unit without needing a
+   border of its own. The first has nothing above it to separate from. */
+.scp-stint + .scp-stint {
+  box-shadow: inset 0 1px 0 var(--sc-border);
+}
+
+.scp-stint:hover {
+  background: var(--sc-surface-sink);
+}
+
+/* A tinted strip owns both of its edges: the hairlines above and below it
+   would otherwise cut across the tint rather than divide rows from it. */
+.scp-stint:hover,
+.scp-stint:hover + .scp-stint {
+  box-shadow: none;
 }
 
 .scp-stint-mark {
   position: absolute;
   left: -7px;
-  top: 5px;
+  top: 50%;
   width: 12px;
   height: 12px;
+  margin-top: -6px;
   border: 2px solid var(--sc-surface);
   border-radius: 50%;
   background: var(--sc-muted);
@@ -4545,7 +4591,6 @@ body.scp-page {
 }
 
 .scp-stint-years {
-  flex: 0 0 82px;
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -4554,7 +4599,13 @@ body.scp-page {
 }
 
 .scp-stint-body {
-  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.scp-stint-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -4564,8 +4615,8 @@ body.scp-page {
 
 .scp-stint-logo {
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
@@ -4575,19 +4626,58 @@ body.scp-page {
   color: var(--sc-navy);
 }
 
-.scp-stint[data-current="1"] .scp-stint-name {
-  color: var(--sc-navy);
+/* What kind of stop it was — the draft that started the career, or a return
+   to a club already on the list. Muted and small: it is the annotation on the
+   row, never competing with the club name above it. */
+.scp-stint-sub {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--sc-muted);
 }
 
-/* The draft badge, on the stop where the career started. */
-.scp-stint-note {
+/* How long the stint ran, against the right edge. The years beside the club
+   are a range, and a range is not a count. */
+.scp-stint-count {
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--sc-muted);
+}
+
+/* The one badge on the timeline. Only the current stop carries it, so it marks
+   where the career has got to rather than decorating every row. */
+.scp-stint-badge {
   flex: 0 0 auto;
   padding: 2px 9px;
   border-radius: 999px;
-  background: var(--sc-surface-sink);
+  background: rgba(212, 175, 55, 0.16);
   font-size: 11px;
-  font-weight: 700;
-  color: var(--sc-muted-strong);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  /* Gold that clears 4.5:1 at 11px on a light surface — see --sc-gold-ink. */
+  color: var(--sc-gold-ink);
+}
+
+/*
+ * On a phone the three columns become two: the years keep their own column
+ * because they are what the list is ordered by, and the count drops under the
+ * club rather than squeezing the name into nothing.
+ */
+@media (max-width: 560px) {
+  .scp-stint {
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 2px 12px;
+    padding: 12px 8px 12px 22px;
+  }
+
+  .scp-stint-count {
+    grid-column: 2;
+    justify-self: start;
+  }
 }
 
 /* --------------------------------------------------------- upcoming games */
@@ -5002,10 +5092,6 @@ body.scp-page {
     border-top: 1px solid var(--sc-border);
   }
 
-  .scp-verdict {
-    padding: 20px;
-  }
-
   /* Two columns fits three chips as two-and-a-hole, and the hole is a lit cell:
      the 1px gutters that draw the rules light the empty track too. */
   .scp-verdict-chips {
@@ -5227,23 +5313,23 @@ body.scp-page {
 /*
  * The name's size, once the fitter is live.
  *
- * `clamp(34px, 5.2vw, 52px)` below is the scriptless answer, and it is a
- * guess: a viewport width cannot know that this row also holds a bust and a
+ * `clamp(26px, 3.4vw, 33px)` on .scp-title is the scriptless answer, and it is
+ * a guess: a viewport width cannot know that this row also holds a bust and a
  * three-cell table. Where the measured answer exists it replaces the guess
  * rather than compounding it — left as it was, the name shrank once for the
  * viewport and again for `--scp-hero-id`, and a 640px screen set a hero
- * surname at 27px.
+ * name at two thirds of the size the fitter had just decided on.
  *
  * Scoped to the one-row tier, because that is the only tier the fitter runs
  * in. Below it the scales are cleared and the clamp is the answer again.
  */
 @media (min-width: 560px) {
-  .scp-hero[data-scp-hero-fit="js"] .scp-title-last {
-    font-size: calc(52px * var(--scp-hero-id, 1));
+  .scp-hero[data-scp-hero-fit="js"] .scp-title {
+    font-size: calc(33px * var(--scp-hero-id, 1));
   }
 
   .scp-hero[data-scp-hero-fit="js"] .scp-title-rest {
-    font-size: calc(21px * var(--scp-hero-id, 1));
+    font-size: calc(18px * var(--scp-hero-id, 1));
   }
 }
 

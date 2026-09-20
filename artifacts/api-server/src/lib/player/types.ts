@@ -226,6 +226,23 @@ export interface Player {
   news?: NewsEntry[];
 }
 
+/**
+ * What Sleeper's leagues have done with a player, for one week.
+ *
+ * Built by scripts/player/buildRosterPct.mjs from Sleeper's research endpoint,
+ * whose default cut is the redraft one — see that script for why there is no
+ * 1QB-only cut to read. `started` is absent where the source gave no figure;
+ * neither field is ever defaulted to zero, because "nobody rostered him" and
+ * "no reading" are different answers and only one of them is knowable.
+ */
+export interface RosterPctDoc {
+  season: number;
+  week: number;
+  /** When the builder read it, ISO. The figure is a reading of that moment. */
+  readAt: string;
+  players: Record<string, { owned: number; started?: number }>;
+}
+
 /** One season's totals, for the career table. */
 export interface CareerSeasonStat {
   season: number;

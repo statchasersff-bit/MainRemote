@@ -48,6 +48,19 @@ export interface CareerStint {
   team: NflTeam | null;
   /** "Drafted · Round 3, Pick 91", when this is where the career started. */
   note: string | null;
+  /**
+   * The second line of the stop, when the stint has something to say that the
+   * years and the club name do not: "2nd stint" for a player who left and came
+   * back. Null is the common case and renders as nothing rather than as an
+   * empty line.
+   */
+  detail: string | null;
+  /**
+   * How many seasons the stint ran. The rendered years are a range and a range
+   * is not a count — "2017–20" is four seasons and a reader should not have to
+   * do the subtraction.
+   */
+  seasons: number;
   /** The stint the player is on now. */
   current: boolean;
 }
@@ -278,6 +291,18 @@ export function careerStints(
       group.from === draftYear &&
       (!draftTeam || getTeamByAbbreviation(draftTeam)?.code === team?.code);
 
+    /*
+     * Which spell this is with the club.
+     *
+     * A player who leaves and returns gets two entries for the same team, and
+     * without saying so the timeline reads as a duplicate row rather than as
+     * the career event it is. Counted over the groups already emitted, so the
+     * first spell is silent and only a return announces itself.
+     */
+    const spell = groups
+      .slice(0, index)
+      .filter((earlier) => earlier.team === group.team).length + 1;
+
     return {
       kind: "nfl" as const,
       years: seasonRange(group.from, group.to, current),
@@ -287,6 +312,8 @@ export function careerStints(
         drafted && draft
           ? `Drafted · Round ${draft.round} · Pick ${draft.pick}`
           : null,
+      detail: spell > 1 ? `${ordinal(spell)} stint` : null,
+      seasons: group.to - group.from + 1,
       current,
     };
   });

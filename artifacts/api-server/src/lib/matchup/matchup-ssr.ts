@@ -34,6 +34,18 @@ export interface MatchupSsrResult {
    * comment at the top of matchup-seo.ts exists to prevent.
    */
   scoreLine: string;
+  /**
+   * A game address asked for a meeting that is not there — a week these two did
+   * not play, or one that never finished. The route turns this into the 404;
+   * the render is thrown away.
+   */
+  pinnedMissing: boolean;
+  /**
+   * A game address asked for the meeting the pair's own address is still
+   * leading with. The route 301s to the pair, so that inside the two-week
+   * window exactly one URL carries the recap.
+   */
+  pinnedIsCurrent: boolean;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
@@ -50,6 +62,7 @@ function optionKey(options: MatchupRenderOptions): string {
     options.teamPathPrefix ?? "",
     options.matchupPathPrefix ?? "",
     options.linkQuery ?? "",
+    options.game ? `${options.game.season}w${options.game.week}` : "",
   ]);
 }
 
@@ -64,7 +77,7 @@ export async function renderMatchupFragment(
   options: MatchupRenderOptions = {},
 ): Promise<MatchupSsrResult> {
   await ensureFreshness();
-  const data = await getMatchupData(pair, options.now);
+  const data = await getMatchupData(pair, options.now, options.game ?? null);
   const version = `${hash(matchupVersion(data, contentVersion()))}-${hash(optionKey(options))}`;
   const key = `${pair.slug}:${optionKey(options)}`;
 
@@ -77,6 +90,8 @@ export async function renderMatchupFragment(
     season: data.state.season,
     state: data.matchupState,
     scoreLine: matchupScoreLine(data),
+    pinnedMissing: data.pinnedRequested && data.pinned === null,
+    pinnedIsCurrent: data.pinnedIsCurrent,
   };
   if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
     const oldest = fragmentCache.keys().next();
@@ -111,7 +126,7 @@ export async function renderMatchupAppPage(
   const fragment = await renderMatchupFragment(pair, options);
   // The meta needs the state, which the fragment decided; re-deriving it is one
   // cached data call and keeps the title and the page reading the same state.
-  const data = await getMatchupData(pair, options.now);
+  const data = await getMatchupData(pair, options.now, options.game ?? null);
   const meta = matchupPageMeta(data, options.canonical);
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {

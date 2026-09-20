@@ -267,8 +267,8 @@ function spreadLabel(game: ScheduleGame): string {
  * square root, and `sqrt()` is too new to rely on inside somebody's WordPress
  * theme.
  */
-const NET_MARK_AREA = 320;
-const NET_MARK_MAX_HEIGHT = 13;
+const NET_MARK_AREA = 676;
+export const NET_MARK_MAX_HEIGHT = 24;
 
 export function netMarkStyle(aspect: number): string {
   const height = Math.min(
@@ -305,11 +305,11 @@ function networkHtml(network: string | null): string {
     );
   });
 
-  // Joined with nothing: the marks are STACKED (see .scs-tv), so the vertical
-  // rule that used to divide them on one row now has nothing to divide.
+  // One row, hairline between: a 4:1 wordmark beside a roundel reads as a
+  // single wide smear without a divider. See .scs-tv.
   return (
     `<span class="scs-tv" title="${escapeHtml(network)}">` +
-    rendered.join("") +
+    rendered.join(`<span class="scs-net-sep" aria-hidden="true"></span>`) +
     `</span>`
   );
 }
@@ -405,28 +405,11 @@ function renderGameRow(
     return (
       `<span class="scs-game-side" data-side="${align}">` +
       (align === "away"
-        ? text + scoreHtml + teamLogo(team, 28, "scs-game-logo")
-        : teamLogo(team, 28, "scs-game-logo") + scoreHtml + text) +
+        ? text + scoreHtml + teamLogo(team, 32, "scs-game-logo")
+        : teamLogo(team, 32, "scs-game-logo") + scoreHtml + text) +
       `</span>`
     );
   };
-
-  const tags: string[] = [];
-  if (game.holiday) {
-    tags.push(
-      `<span class="scs-tag" data-kind="holiday">${escapeHtml(game.holiday)}</span>`,
-    );
-  }
-  if (game.international) {
-    tags.push(
-      `<span class="scs-tag" data-kind="intl" title="${escapeHtml(
-        game.location ?? "International game",
-      )}">${venueFlag(game.location)} Intl</span>`,
-    );
-  }
-  if (game.divisional) {
-    tags.push(`<span class="scs-tag" data-kind="div">Div</span>`);
-  }
 
   const spoken =
     `${game.away?.fullName ?? game.awayCode} at ` +
@@ -461,7 +444,6 @@ function renderGameRow(
     `</div>` +
     `<div class="scs-game-meta">` +
     networkHtml(game.network) +
-    (tags.length ? `<span class="scs-tags">${tags.join("")}</span>` : "") +
     `</div>` +
     `</article>`
   );
@@ -505,30 +487,6 @@ const FILTER_LABELS: Record<GameFilter, string> = {
   international: "International",
 };
 
-function renderFilters(
-  base: string,
-  state: ViewState,
-  linkQuery: string,
-): string {
-  const items = (Object.keys(FILTER_LABELS) as GameFilter[])
-    .map((filter) => {
-      const on = filter === state.filter;
-      return (
-        `<li><a class="scs-chip${on ? " is-active" : ""}"` +
-        ` href="${escapeHtml(stateUrl(base, state, { filter, view: "week" }, linkQuery))}"` +
-        (on ? ` aria-current="true"` : ` rel="nofollow"`) +
-        `>${escapeHtml(FILTER_LABELS[filter])}</a></li>`
-      );
-    })
-    .join("");
-
-  return (
-    `<nav class="scs-filters" aria-label="Filter games">` +
-    `<span class="scs-control-label">Show</span>` +
-    `<ul class="scs-chip-list">${items}</ul></nav>`
-  );
-}
-
 /* --------------------------------------------------------- sidebar cards */
 
 function card(label: string, body: string, kind = ""): string {
@@ -540,16 +498,16 @@ function card(label: string, body: string, kind = ""): string {
 
 /** A compact away-at-home line, for the sidebar cards. */
 function miniMatchup(game: ScheduleGame): string {
-  const side = (team: NflTeam | null, code: string): string =>
-    `<span class="scs-mini-side">` +
-    teamLogo(team, 20, "scs-mini-logo") +
+  const side = (team: NflTeam | null, code: string, which: string): string =>
+    `<span class="scs-mini-side" data-side="${which}">` +
+    teamLogo(team, 24, "scs-mini-logo") +
     `<span class="scs-mini-code">${escapeHtml(code)}</span></span>`;
 
   return (
     `<p class="scs-mini">` +
-    side(game.away, game.awayCode) +
+    side(game.away, game.awayCode, "away") +
     `<span class="scs-mini-at">at</span>` +
-    side(game.home, game.homeCode) +
+    side(game.home, game.homeCode, "home") +
     `</p>`
   );
 }
@@ -670,7 +628,7 @@ function renderByeCard(
         `<li><a class="scs-bye" href="${escapeHtml(
           stateUrl(base, state, { view: "team", team: team.abbreviation }, linkQuery),
         )}">` +
-        teamLogo(team, 20, "scs-bye-logo") +
+        teamLogo(team, 24, "scs-bye-logo") +
         `<span>${escapeHtml(team.nickname)}</span></a></li>`,
     )
     .join("");
@@ -742,15 +700,17 @@ function renderWeekView(
             : `No ${FILTER_LABELS[state.filter].toLowerCase()} games in Week ${state.week}.`,
         );
 
+  // The heading and the rail sit INSIDE the main column, not above the grid,
+  // so the side column's first card starts level with "Week N / 18" rather
+  // than level with the board, and so the rail cannot overhang the board.
   return (
+    `<div class="scs-layout scs-layout-week">` +
+    `<div class="scs-main">` +
     `<div class="scs-viewhead">` +
     `<h2 class="scs-view-title">Week ${state.week}` +
     `<span class="scs-view-sub"> / ${TOTAL_WEEKS}</span></h2>` +
-    renderFilters(base, state, linkQuery) +
     `</div>` +
     renderWeekRail(base, state, linkQuery) +
-    `<div class="scs-layout">` +
-    `<div class="scs-main">` +
     `<div class="scs-board">` +
     `<div class="scs-board-head" aria-hidden="true">` +
     `<span>When</span><span>Matchup</span><span>TV</span></div>` +
@@ -860,11 +820,8 @@ function renderTeamRow(
     `<span class="scs-trow-ha" data-home="${atHome ? "1" : "0"}">${
       atHome ? "vs" : "at"
     }</span>` +
-    teamLogo(opponent, 22, "scs-trow-logo") +
+    teamLogo(opponent, 24, "scs-trow-logo") +
     name +
-    (game.divisional
-      ? `<span class="scs-tag" data-kind="div">Div</span>`
-      : "") +
     `</span>` +
     `<span class="scs-trow-date">${escapeHtml(
       formatShortDate(game.date, game.weekday),
@@ -1136,18 +1093,25 @@ function renderTeamView(
           "The feed has no published games for this team yet.",
         );
 
+  // Same shape as the weekly board: the head row rides INSIDE the main column,
+  // so the picker's right edge is the table's right edge and the first side
+  // card starts level with the team's name.
   return (
+    `<div class="scs-layout scs-layout-lens">` +
+    `<div class="scs-main">` +
     `<div class="scs-viewhead">` +
     `<div class="scs-lens">` +
+    `<span class="scs-lens-mark" style="--scs-team:${escapeHtml(
+      team.primaryColor,
+    )}">` +
     teamLogo(team, 56, "scs-lens-logo") +
+    `</span>` +
     `<div><p class="scs-control-label">Team lens</p>` +
     `<h2 class="scs-view-title">${heading}</h2>` +
     `<p class="scs-lens-sub">${escapeHtml(team.division)}</p></div>` +
     `</div>` +
     renderTeamPicker(base, team, options.linkQuery ?? "") +
     `</div>` +
-    `<div class="scs-layout">` +
-    `<div class="scs-main">` +
     `<div class="scs-board scs-board-team">` +
     `<div class="scs-board-head" aria-hidden="true">` +
     `<span>Wk</span><span>Opponent</span><span>Date</span><span>Result</span><span>TV</span></div>` +
@@ -1223,9 +1187,10 @@ function renderMatrixView(
       `<tr><th scope="row" class="scs-matrix-team">` +
       `<a href="${escapeHtml(
         stateUrl(base, state, { view: "team", team: team.abbreviation }, linkQuery),
-      )}">${teamLogo(team, 20, "scs-matrix-logo")}` +
+      )}">${teamLogo(team, 22, "scs-matrix-logo")}` +
+      `<span class="scs-matrix-labels">` +
       `<span class="scs-matrix-name">${escapeHtml(team.nickname)}</span>` +
-      `<span class="scs-matrix-code">${escapeHtml(team.code)}</span></a></th>` +
+      `<span class="scs-matrix-code">${escapeHtml(team.code)}</span></span></a></th>` +
       cells +
       `</tr>`
     );
@@ -1272,37 +1237,6 @@ function renderViewNav(
       })
       .join("") +
     `</ul></nav>`
-  );
-}
-
-/**
- * The exports.
- *
- * Both hang off `downloadBase`, not `basePath` — see the option's note. They
- * carry the view's own state so the file matches what is on screen: exporting
- * the Bills' season from the team lens should not hand back all 272 games.
- */
-function renderExports(
-  options: ScheduleRenderOptions,
-  state: ViewState,
-): string {
-  const base = options.downloadBase ?? options.basePath ?? DEFAULT_BASE_PATH;
-  const params = new URLSearchParams();
-  if (state.view === "team" && state.team) params.set("team", state.team);
-  if (state.view === "week") {
-    params.set("week", String(state.week));
-    if (state.filter !== "all") params.set("filter", state.filter);
-  }
-  const query = params.toString();
-  const suffix = query ? `?${query}` : "";
-
-  return (
-    `<div class="scs-exports">` +
-    `<a class="scs-export" rel="nofollow" download` +
-    ` href="${escapeHtml(joinPath(base, `/download.csv${suffix}`))}">CSV</a>` +
-    `<a class="scs-export" rel="nofollow" download` +
-    ` href="${escapeHtml(joinPath(base, `/schedule.ics${suffix}`))}">Calendar</a>` +
-    `</div>`
   );
 }
 
@@ -1392,9 +1326,8 @@ export function renderSchedulePage(
     ` aria-label="${escapeHtml(heading)}">` +
     networkDefs(drawn) +
     head +
-    `<div class="scs-bar">` +
+    `<div class="scs-controlbar">` +
     renderViewNav(base, state, linkQuery) +
-    renderExports(options, state) +
     `</div>` +
     body +
     renderSource(schedule) +
