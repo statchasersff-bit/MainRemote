@@ -25,6 +25,20 @@ export interface TabOptions {
   linkSelector: string;
   /** dataset key set on the root once JS owns the tabs, e.g. "scpTabs". */
   datasetKey: string;
+  /**
+   * The dataset key naming the panel, e.g. "scpPanelId".
+   *
+   * Its presence is what tells this function the strip links to ADDRESSES
+   * rather than to anchors, and switches on the address behaviour: the URL is
+   * pushed instead of the hash cleared, and the page's heading is rewritten
+   * from the link. Left unset — the rankings board, whose sections have no URLs
+   * of their own — everything below behaves exactly as it did.
+   */
+  panelKey?: string;
+  /** The dataset key holding the H1 text for a tab, e.g. "scpHeading". */
+  headingKey?: string;
+  /** The dataset key holding the standfirst for a tab, e.g. "scpLead". */
+  leadKey?: string;
 }
 
 /**
@@ -53,7 +67,13 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
 
   const tabs: Array<{ id: string; link: HTMLAnchorElement; panel: HTMLElement }> = [];
   for (const link of links) {
-    const id = link.getAttribute("href")?.replace(/^#/, "");
+    // The href is the section's own address when `panelKey` is in play, so it
+    // no longer names the panel; the dataset does. The hash is still read as a
+    // fallback, which is both the rankings board's normal path and what keeps a
+    // cached page from before the change working.
+    const id =
+      (options.panelKey ? link.dataset[options.panelKey] : undefined) ??
+      link.getAttribute("href")?.replace(/^#/, "");
     if (!id) continue;
     const panel = document.getElementById(id);
     if (!panel) continue;
@@ -61,6 +81,11 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   }
   // Below two there is nothing to switch between, and taking over would only
   // mean hiding the one panel there is.
+  //
+  // It is also what makes a SECTION page behave correctly with no second code
+  // path: it carries the same strip but only its own panel, so one link
+  // resolves, the takeover is declined, and every tab stays an ordinary link
+  // that loads the page it names.
   if (tabs.length < 2) return;
 
   list?.setAttribute("role", "tablist");
@@ -92,6 +117,66 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   function fromHash(): string {
     const id = location.hash.replace(/^#/, "");
     return tabs.some((tab) => tab.id === id) ? id : tabs[0]!.id;
+  }
+
+  /**
+   * The page's H1 and standfirst, which this fragment does not own.
+   *
+   * On the standalone page they are the hero's; on a WordPress page they are
+   * whatever the host printed — the plugin marks its own, and the fallback is
+   * the document's first H1. Nothing is created if there is none: a page that
+   * chose not to print a heading does not get one invented by a tab click.
+   */
+  const headingEl =
+    document.querySelector<HTMLElement>("[data-sct-page-title]") ??
+    document.querySelector<HTMLElement>("h1");
+  const leadEl = document.querySelector<HTMLElement>("[data-sct-page-lead]");
+
+  // What the page said on arrival, so Back can put it back.
+  const landedUrl = location.pathname + location.search;
+  const landedHeading = headingEl?.textContent ?? "";
+  const landedLead = leadEl?.textContent ?? "";
+
+  function setHeading(link: HTMLAnchorElement): void {
+    const heading = options.headingKey ? link.dataset[options.headingKey] : "";
+    const lead = options.leadKey ? link.dataset[options.leadKey] : "";
+    if (headingEl && heading) headingEl.textContent = heading;
+    if (leadEl && lead) leadEl.textContent = lead;
+  }
+
+  /**
+   * Put the section's own address in the address bar.
+   *
+   * Nothing loaded, but the reader is looking at the Game Log and the URL
+   * should say so. It is the address the link would have loaded and the server
+   * renders that page standalone, so a reload, a share or a bookmark all land
+   * on what is on screen.
+   *
+   * `push` for a click, so Back steps through the tabs the reader opened;
+   * `replace` for the arrow keys, because holding Right through seven tabs
+   * should not bury the page they arrived from under seven entries.
+   */
+  function writeUrl(link: HTMLAnchorElement, mode: "push" | "replace"): void {
+    try {
+      const url = new URL(link.href, location.origin);
+      const next = url.pathname + url.search;
+      if (next === location.pathname + location.search) return;
+      if (mode === "push") history.pushState(null, "", next);
+      else history.replaceState(null, "", next);
+    } catch {
+      // Some embeddings disallow history writes (a sandboxed frame). The tab
+      // still switches; only the address bar stays behind.
+    }
+  }
+
+  /** The tab whose address this path is, or null for the page we landed on. */
+  function fromPath(path: string): string | null {
+    for (const tab of tabs) {
+      const href = tab.link.getAttribute("href");
+      if (!href) continue;
+      if (new URL(href, location.origin).pathname === path) return tab.id;
+    }
+    return null;
   }
 
   /**
@@ -138,7 +223,41 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
       event.preventDefault();
       active = id;
       select(id, true);
-      clearHash();
+      if (options.panelKey) {
+        setHeading(link);
+        writeUrl(link, "push");
+      } else {
+        clearHash();
+      }
+    });
+  }
+
+  /**
+   * Back and forward through the tabs.
+   *
+   * Without it the address bar would walk back through the sections while the
+   * page kept showing the last one clicked — the failure that makes people
+   * distrust a URL that changed without a load. A path belonging to no tab is
+   * the address the reader landed on, which restores the first panel and the
+   * heading captured at load.
+   */
+  if (options.panelKey) {
+    window.addEventListener("popstate", () => {
+      const id = fromPath(location.pathname);
+
+      if (id) {
+        active = id;
+        select(id, false);
+        setHeading(tabs.find((tab) => tab.id === id)!.link);
+        return;
+      }
+
+      if (location.pathname + location.search === landedUrl) {
+        active = tabs[0]!.id;
+        select(active, false);
+        if (headingEl && landedHeading) headingEl.textContent = landedHeading;
+        if (leadEl && landedLead) leadEl.textContent = landedLead;
+      }
     });
   }
 
@@ -170,7 +289,12 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
     active = tab.id;
     select(tab.id, false);
     tab.link.focus();
-    clearHash();
+    if (options.panelKey) {
+      setHeading(tab.link);
+      writeUrl(tab.link, "replace");
+    } else {
+      clearHash();
+    }
   });
 }
 

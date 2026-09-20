@@ -47,6 +47,11 @@ import {
 } from "./render";
 import { easternParts, newsStamp, splitHeadline } from "./news-card";
 import { driverSeason } from "./player/outlook-drivers";
+// The tab strip's headings and standfirsts come from the same function the
+// document head uses, so a heading swapped in by a click and one loaded with
+// the page are generated from one place. player-seo.ts imports nothing from
+// here — only a comment mentions it — so this does not close a cycle.
+import { playerPageMeta } from "./player-seo";
 import type { NflTeam } from "./team/teams";
 import {
   finishBadge,
@@ -1271,16 +1276,54 @@ interface Section {
  * crawlable address for the same page. The tab roles and arrow-key behaviour
  * are added by client/player.ts, which can deliver what those roles promise.
  */
-function renderNav(sections: Section[]): string {
+/**
+ * The section bar.
+ *
+ * Links to the sections' own addresses, not to `#hash` — the same change the
+ * team hub's strip took, for the same reason. Seven section URLs per profile,
+ * each with its own title, description and canonical, and nothing on the site
+ * pointing at any of them is several thousand orphaned pages once the roster
+ * is multiplied out.
+ *
+ * With scripting off a tab is a link and loads that page. With it,
+ * client/player.ts switches the panel in place and pushes the same URL, so
+ * nothing reloads and the address still names what is on screen.
+ *
+ * `data-scp-panel-id` is which panel to show, since the href no longer says.
+ * `data-scp-heading` and `data-scp-lead` are what the H1 and standfirst above
+ * the fragment should read once it has — those belong to the host page, so the
+ * bundle cannot derive them and the server has to hand them over.
+ */
+function renderNav(
+  sections: Section[],
+  data: PlayerPageData,
+  options: PlayerRenderOptions,
+  activeId?: string,
+): string {
   if (sections.length < 2) return "";
+
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const active = activeId ?? sections[0]?.id;
+
   const items = sections
-    .map(
-      (section, i) =>
-        `<li><a class="scp-nav-link${i === 0 ? " is-active" : ""}"` +
+    .map((section) => {
+      const heading =
+        sectionHeading(data.player.name, section.id, data.season) ??
+        data.player.name;
+      const lead = playerPageMeta(data, "", section.id).description;
+
+      return (
+        `<li><a class="scp-nav-link${section.id === active ? " is-active" : ""}"` +
         ` id="${escapeHtml(section.id)}-tab"` +
-        ` href="#${escapeHtml(section.id)}">${escapeHtml(section.label)}</a></li>`,
-    )
+        ` href="${escapeHtml(`${prefix}${data.player.slug}/${section.id}/`)}"` +
+        ` data-scp-panel-id="${escapeHtml(section.id)}"` +
+        ` data-scp-heading="${escapeHtml(heading)}"` +
+        ` data-scp-lead="${escapeHtml(lead)}"` +
+        `>${escapeHtml(section.label)}</a></li>`
+      );
+    })
     .join("");
+
   return (
     `<nav class="scp-nav" aria-label="Player sections" data-scp-nav>` +
     `<ul class="scp-nav-list">${items}</ul>` +
@@ -1317,7 +1360,6 @@ function pageUrl(
   const params = new URLSearchParams();
 
   if ((options.linkQuery ?? "").includes("embed=1")) params.set("embed", "1");
-  if (options.section) params.set("section", options.section);
 
   const format = changes.format ?? data.format;
   if (format !== "ppr") params.set("format", format);
@@ -1326,12 +1368,17 @@ function pageUrl(
   if (log !== data.season) params.set("log", String(log));
 
   const query = params.toString();
-  // The tab strip is :target-driven, so a control inside a panel has to name
-  // that panel or following it reopens the page on the first tab — changing the
-  // season on the game log and landing on Overview. A section-scoped URL has no
-  // tab strip and needs no hash.
+  // The section is a path segment now, not a parameter. It used to be
+  // `?section=`, which is still what the WordPress plugin fetches a fragment
+  // with, but it is no longer an address — so a control on a section page has
+  // to rebuild the section's own URL or following it would land the reader back
+  // on the full profile with their format change and none of their place.
+  const section = options.section ? `${options.section}/` : "";
+  // A control inside a panel on the FULL profile has to name that panel, or
+  // following it reopens the page on the first tab — changing the season on the
+  // game log and landing on Overview. A section URL is already that page.
   const hash = !options.section && changes.hash ? `#${changes.hash}` : "";
-  return `${prefix}${data.player.slug}${query ? `?${query}` : ""}${hash}`;
+  return `${prefix}${data.player.slug}${section ? `/${section}` : ""}${query ? `?${query}` : ""}${hash}`;
 }
 
 function renderFormatToggle(
@@ -2615,35 +2662,6 @@ function playedWeeks(data: PlayerPageData): GameLogEntry[] {
 }
 
 /**
- * The season selector, and — on a scoped URL — the scoring toggle.
- *
- * Every season is a link rather than page state, for the reason the format
- * toggle is: it changes every number in the table. They carry `rel="nofollow"`
- * and the canonical stays on the profile, so one game log is the page that
- * ranks and `?log=2023` is a rendering of it rather than a second address
- * competing with it. Revisit if Search Console ever shows real demand for
- * "<player> 2023 game log" as its own query.
- *
- * The format toggle is repeated here ONLY on the section-scoped page, which has
- * no control bar above it. On the full profile it is already in the header and
- * a second copy would be two controls for one piece of state.
- */
-function renderLogControls(
-  data: PlayerPageData,
-  options: PlayerRenderOptions,
-): string {
-  // The season switcher used to sit here, between the heading and the numbers.
-  // It is an ARCHIVE, and an archive at the top of a page asks a reader which
-  // year they want before showing them the one they asked for — see
-  // renderLogSeasons(), which now draws it under the fixtures.
-  const toggle =
-    options.section === "game-log" ? renderFormatToggle(data, options) : "";
-
-  if (!toggle) return "";
-  return `<div class="scp-logbar">${toggle}</div>`;
-}
-
-/**
  * The other seasons, at the bottom.
  *
  * Two changes from the control bar this replaces, and they are the same
@@ -3602,10 +3620,12 @@ function renderGameLog(
 
   return (
     heading +
-    // Built from `data`, not from `current`: the format toggle carries the
-    // pinned season through in its URLs, so switching to Standard keeps the
-    // archive season the reader opened rather than closing it.
-    renderLogControls(data, options) +
+    // No scoring toggle here. This tab used to print its own on a scoped URL,
+    // because a section page had no control bar above it to carry one. It has
+    // one now — the strip and the toggle came back together when the sections
+    // became addresses — so a copy in the panel would be the two controls for
+    // one piece of state that the full profile has always avoided.
+    //
     // Tiles first, prose second. The paragraph reads as a gloss on the tiles —
     // the same season, in sentences, with the context a grid of six numbers
     // cannot carry — and a reader who only wants the number gets it without
@@ -5319,11 +5339,16 @@ export function renderPlayerPage(
   /*
    * A section-scoped page: one section, standing alone at its own URL.
    *
-   * The tab strip is replaced by a link back to the full profile, because a
-   * strip of six tabs that all leave this URL is navigation pretending to be
-   * tabs. Everything else — the hero, the format toggle, the markup of the
-   * section itself — is unchanged, so the two addresses render the same
-   * component and cannot drift.
+   * It carries the strip, with the current tab marked, plus a link back to the
+   * full profile. It used to carry no strip at all, on the grounds that six
+   * tabs that all leave this URL is navigation pretending to be tabs — true
+   * while they were `#hash` links and the opposite of true now they are
+   * addresses. A reader arriving here from search had no way to reach the
+   * other six, and those six had nothing linking to them.
+   *
+   * Everything else — the hero, the format toggle, the markup of the section
+   * itself — is unchanged, so the two addresses render the same component and
+   * cannot drift.
    */
   const scoped = options.section
     ? sections.find((entry) => entry.id === options.section)
@@ -5358,6 +5383,10 @@ export function renderPlayerPage(
       ` data-section="${escapeHtml(scoped.id)}">` +
       renderPlayerSearch(options) +
       renderHero(data, options) +
+      `<div class="scp-controls">` +
+      renderNav(sections, data, options, scoped.id) +
+      renderFormatToggle(data, options) +
+      `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
       back +
@@ -5392,7 +5421,7 @@ export function renderPlayerPage(
     renderPlayerSearch(options) +
     renderHero(data, options) +
     `<div class="scp-controls">` +
-    renderNav(sections) +
+    renderNav(sections, data, options) +
     renderFormatToggle(data, options) +
     `</div>` +
     body +
