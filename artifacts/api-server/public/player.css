@@ -5987,3 +5987,56 @@ a.scp-peer:focus-visible {
     border: 1px solid CanvasText;
   }
 }
+
+/* --------------------------------------------- host overrides, outranked */
+
+/* The two properties a host theme takes from this file, and why they are the
+ * only two armed with `!important`.
+ *
+ * MIRRORS the block of the same name in team.css, which was written after the
+ * published team hub hit both of these and this file was left without them —
+ * the fix went in where the bug was seen rather than everywhere it applied.
+ * The symptoms here were the same two: every heading in the tool rendered in
+ * the theme's display serif, and the section tab strip read "Overview • Stats
+ * • Game Log".
+ *
+ *   font-family  Declared on the root and inherited everywhere else, and
+ *                inheritance loses to ANY rule that names the element. A
+ *                theme's `h1, h2, h3 { font-family: <serif> }` therefore took
+ *                every heading, while this file's own colour and size rules
+ *                kept winning.
+ *   list-style   Set on the <ul>, which a theme's `li` rule outranks, because
+ *                the marker is drawn by the <li>.
+ *
+ * `!important` rather than raised specificity because a theme that sets fonts
+ * from an options panel emits `!important` itself, and no specificity beats
+ * that. The escape hatch is intact: the family is `var(--sc-font)`, so a host
+ * retunes it by setting the token rather than by outgunning this rule.
+ *
+ * Do NOT add spacing properties here. Margin and padding are varied per
+ * component, and arming them collapses every one of those rules into this. */
+:is(.scp, body.scp-page),
+:is(.scp, body.scp-page) * {
+  font-family: var(--sc-font) !important;
+}
+
+.scp :is(ul, ol, li) {
+  list-style: none !important;
+}
+
+/* An anchor that takes the colour around it, kept.
+ *
+ * `color: inherit` is inheritance, and inheritance loses to any rule that names
+ * the element — so a theme's `#main-content a { color: #fff }` repaints every
+ * one of these and they vanish into the surface behind them. On the published
+ * player page the team name beside the position was white on white.
+ *
+ * Listed by class rather than armed as `ROOT a`, deliberately: the tool has two
+ * kinds of link, the ones that take the colour around them and the ones that
+ * declare their own, and a blanket rule here would flatten the second kind into
+ * the first. These are the first kind, and there are only a few. */
+.scp .scp-hero-team,
+.scp .scp-caption-link,
+.scp .scp-news-link {
+  color: inherit !important;
+}
