@@ -5,6 +5,7 @@
  *   GET /team/:slug               — the team hub page
  *   GET /team/:slug?embed=1       — the same page, stripped for embedding
  *   GET /embed/team/:slug         — the bare fragment, for the WordPress mount
+ *   GET /embed/teams              — the index of all 32, for the container page
  *
  * A slug that is not canonical but still names a team — "/team/NE",
  * "/team/patriots", "/team/oakland" — is redirected to the canonical URL rather
@@ -22,7 +23,12 @@ import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderTeamAppPage, renderTeamFragment } from "../lib/team-ssr";
-import { PUBLIC_SECTIONS, renderTeamIndex, sectionPath } from "../lib/team-render";
+import {
+  PUBLIC_SECTIONS,
+  renderTeamIndex,
+  renderTeamIndexFragment,
+  sectionPath,
+} from "../lib/team-render";
 import {
   getTeamBySlug,
   normalizeTeamName,
@@ -336,6 +342,51 @@ router.get("/team/:slug/:section", (req, res) => {
  * fragment is always rendered in embedded mode: the host page supplies the H1
  * and the page chrome.
  */
+/** djb2, as in the *-ssr modules: short, stable, and never a security claim. */
+function indexHash(value: string): string {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) {
+    h = ((h << 5) + h + value.charCodeAt(i)) | 0;
+  }
+  return (h >>> 0).toString(36);
+}
+
+/**
+ * The index as a fragment, for the container page at /nfl/teams/.
+ *
+ * The 32 hubs each have a mount; the page that lists them did not, so it was
+ * left as whatever WordPress content the plugin wrote into it once — a stub
+ * list in the theme's styling, in front of 32 pages that look nothing like it.
+ * This is that page's mount.
+ *
+ * Links point at the public site, not at this origin, exactly as the hub
+ * fragment's switcher does: a reader clicking a team inside a WordPress page
+ * belongs on statchasers.com, not on the bare tool.
+ */
+router.get("/embed/teams", (req, res) => {
+  const prefix = (process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX).trim();
+  const html = renderTeamIndexFragment(TEAMS, {
+    teamPathPrefix: prefix,
+    linkQuery: fragmentLinkQuery(prefix),
+  });
+
+  // The list is the 32 teams and their crests — it changes when a team moves,
+  // which is to say never in a season. Fingerprinted over the markup itself, so
+  // a path-prefix change is a different fragment rather than the old one served
+  // for the rest of the TTL. Same djb2 the SSR caches key on.
+  res.set("ETag", `W/"${indexHash(html)}"`);
+  if (req.fresh) {
+    res.status(304).end();
+    return;
+  }
+
+  res
+    .set("Cache-Control", "public, max-age=300")
+    .set("X-Robots-Tag", "noindex, indexifembedded")
+    .type("html")
+    .send(html);
+});
+
 router.get("/embed/team/:slug", (req, res) => {
   void (async () => {
     const team = normalizeTeamName(String(req.params.slug ?? ""));

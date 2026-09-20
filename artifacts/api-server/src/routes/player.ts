@@ -7,6 +7,7 @@
  *   GET /player/:slug?embed=1        — the same page, stripped for embedding
  *   GET /player/:slug?format=half    — the same page in another scoring format
  *   GET /embed/player/:slug          — the bare fragment, for the WordPress mount
+ *   GET /embed/players               — the index of every profile, for /nfl/players/
  *
  * `/player/:slug/:section/` is the public spelling: the address the canonical
  * names, the tab strip links to and the WordPress rewrite mirrors under
@@ -34,7 +35,7 @@ import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
-import { renderPlayerIndex } from "../lib/player-render";
+import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import { getAvailableSeasons } from "../lib/player/data";
 import { indexedPlayers } from "../lib/player/player-data";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
@@ -246,6 +247,51 @@ router.get("/player", (req, res) => {
  * renders applies to one: no game log, no efficiency percentiles, no injury
  * history, no bio. A defence's page already exists and it is the team hub.
  */
+/** djb2, as in the *-ssr modules: short, stable, and never a security claim. */
+function indexHash(value: string): string {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) {
+    h = ((h << 5) + h + value.charCodeAt(i)) | 0;
+  }
+  return (h >>> 0).toString(36);
+}
+
+/**
+ * The index as a fragment, for the container page at /nfl/players/.
+ *
+ * Every profile has a mount; the page that lists them did not, so it was left
+ * as whatever the builder wrote into it once — a stub list in the theme's own
+ * styling, in front of the profiles it points at. This is that page's mount,
+ * and the twin of /embed/teams.
+ *
+ * Links point at the public site rather than this origin, exactly as the
+ * profile fragment's do.
+ */
+router.get("/embed/players", (req, res) => {
+  const prefix = (
+    process.env["SC_PLAYER_PATH_PREFIX"] ?? PLAYER_PATH_PREFIX
+  ).trim();
+  const players = indexedPlayers();
+  const html = renderPlayerIndexFragment(players, {
+    playerPathPrefix: prefix,
+    linkQuery: fragmentLinkQuery(prefix),
+  });
+
+  // Fingerprinted over the markup, so a roster move or a prefix change is a
+  // different fragment rather than the old one served for the rest of the TTL.
+  res.set("ETag", `W/"${indexHash(html)}"`);
+  if (req.fresh) {
+    res.status(304).end();
+    return;
+  }
+
+  res
+    .set("Cache-Control", "public, max-age=300")
+    .set("X-Robots-Tag", "noindex, indexifembedded")
+    .type("html")
+    .send(html);
+});
+
 router.get("/embed/players.json", (_req, res) => {
   const players = indexedPlayers().map((row) => ({
     id: row.id,

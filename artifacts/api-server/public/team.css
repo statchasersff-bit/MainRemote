@@ -821,6 +821,23 @@ body.sct-page.is-embed {
   gap: 32px 40px;
 }
 
+/*
+ * The index fragment leads with the grid; the standalone page leads with a
+ * hero. So on the fragment the section's 40px and the grid's own 28px are
+ * spacing held for something that is not there, and they stack under the host
+ * page's heading into a hole about as tall as the heading itself.
+ *
+ * The 30px from .sct.is-embed is the gap between the host's heading and the
+ * tool, and it stays — that one is doing a job.
+ */
+[data-sct-index] .sct-section {
+  padding-top: 0;
+}
+
+[data-sct-index] .sct-switch-grid.is-index {
+  margin-top: 0;
+}
+
 /* -------------------------------------------------------- section nav bar */
 
 .sct-nav {
@@ -4825,6 +4842,15 @@ body.sct-page.is-embed {
   .sct-switch-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 12px;
+  }
+
+  /* The index is the exception, because it prints full names rather than the
+     sheet's nicknames: "New England Patriots" in a half-width column is two
+     lines with a crest stranded beside them. One column here, and the page is
+     a list a thumb runs down — which is what an index is for, where the sheet
+     is something to get out of quickly. */
+  .sct-switch-grid.is-index {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Tapping off the sheet closes it: the click lands on the hero, which is

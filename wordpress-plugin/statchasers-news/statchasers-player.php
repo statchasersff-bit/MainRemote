@@ -36,6 +36,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 const STATCHASERS_PLAYER_SHORTCODE = 'statchasers_player';
 
 /**
+ * The index mount: [statchasers_player_index]
+ *
+ * The container page at /nfl/players/ needs its own shortcode because it is the
+ * one page in this hierarchy whose slug is not a player slug — the profile
+ * shortcode there asks the API for a player called "players" and gets nothing.
+ */
+const STATCHASERS_PLAYER_INDEX_SHORTCODE = 'statchasers_player_index';
+
+/**
  * Sections a URL can be scoped to. Mirrors SECTIONS in the API's
  * src/routes/player.ts — keep the two lists together.
  */
@@ -265,6 +274,109 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 }
 
 /**
+ * Fetch the rendered index of every profile, cached.
+ *
+ * Its own cache key and its own TTL. A profile carries a live game log and is
+ * held for five minutes; this carries names and positions, and changes when
+ * somebody signs. An hour is the difference.
+ *
+ * @return array{html:string,version:string}|null Null when nothing is available.
+ */
+function statchasers_player_index_fetch(): ?array {
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return null;
+	}
+
+	$key        = md5( $origin . '|index' );
+	$cache_key  = 'sc_player_idx_' . $key;
+	$backup_key = 'sc_player_idx_bak_' . $key;
+
+	$cached = get_transient( $cache_key );
+	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
+		return $cached;
+	}
+
+	$response = wp_remote_get(
+		$origin . '/embed/players',
+		array(
+			'timeout' => STATCHASERS_PLAYER_TIMEOUT,
+			'headers' => array( 'Accept' => 'text/html' ),
+		)
+	);
+
+	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
+	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
+
+	if ( 200 !== $code || '' === trim( $body ) ) {
+		$backup = get_transient( $backup_key );
+		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			return $backup;
+		}
+		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
+		return null;
+	}
+
+	$payload = array(
+		'html'    => $body,
+		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
+	);
+
+	set_transient( $cache_key, $payload, HOUR_IN_SECONDS );
+	set_transient( $backup_key, $payload, STATCHASERS_PLAYER_BACKUP_TTL );
+
+	return $payload;
+}
+
+/**
+ * The shortcode: prints the index of every profile into the container page.
+ *
+ * Same omissions as the profile shortcode — no canonical, no title, no H1. The
+ * page owns those; this prints the roster beneath them.
+ *
+ * Before this existed the container page was whatever the builder had written
+ * into it once: a stub list of six hundred links in the theme's own styling,
+ * standing in front of the profiles it points at. That stub was never meant to
+ * be the finished page — it was there so the parent was not a thin page in the
+ * sitemap.
+ *
+ * @return string HTML.
+ */
+function statchasers_player_index_shortcode(): string {
+	$origin = statchasers_news_origin();
+
+	if ( '' === $origin ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return '<p><strong>StatChasers Players:</strong> set <code>STATCHASERS_NEWS_ORIGIN</code> in <code>wp-config.php</code> to the API origin.</p>';
+		}
+		return '';
+	}
+
+	$data = statchasers_player_index_fetch();
+
+	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	statchasers_player_enqueue_assets();
+
+	if ( null === $data || '' === $data['html'] ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return '<p><strong>StatChasers Players:</strong> the API returned nothing for <code>/embed/players</code>. Check that the deployment is up.</p>';
+		}
+		return '';
+	}
+
+	/**
+	 * Filters the rendered index fragment before it is printed.
+	 *
+	 * Deliberately not escaped, for the reason given on the news filter: this is
+	 * first-party markup from the origin the page already loads its bundle from.
+	 *
+	 * @param string $html Rendered fragment.
+	 */
+	return (string) apply_filters( 'statchasers_player_index_html', (string) $data['html'] );
+}
+add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_shortcode' );
+
+/**
  * Register and enqueue the player page's compiled bundles.
  *
  * Separate handles from the news tool and the team hub: three stylesheets,
@@ -347,10 +459,46 @@ function statchasers_player_post_has_shortcode(): bool {
 	return $answer;
 }
 
+/**
+ * Is the INDEX mounted on the page being rendered?
+ *
+ * Deliberately separate from the question above rather than folded into it,
+ * for the reason given on its team twin: that one means "this page is a player
+ * profile", and the FAQ node and the heading filters read it that way. An
+ * index page has no player, so a profile's FAQ would be built from a slug that
+ * names nobody.
+ *
+ * What the two pages genuinely share is the stylesheet, so that is the only
+ * place they are OR'd together.
+ */
+function statchasers_player_post_has_index_shortcode(): bool {
+	static $answer = null;
+
+	if ( null !== $answer ) {
+		return $answer;
+	}
+
+	if ( ! is_singular() ) {
+		return false;
+	}
+
+	$post = get_queried_object();
+	if ( ! $post instanceof WP_Post ) {
+		return false;
+	}
+
+	$answer = has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_INDEX_SHORTCODE );
+
+	return $answer;
+}
+
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {
-		if ( ! statchasers_player_post_has_shortcode() ) {
+		if (
+			! statchasers_player_post_has_shortcode()
+			&& ! statchasers_player_post_has_index_shortcode()
+		) {
 			return;
 		}
 		statchasers_player_enqueue_assets();

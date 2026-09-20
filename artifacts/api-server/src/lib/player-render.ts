@@ -5444,7 +5444,15 @@ export function renderPlayerPage(
  * that every slug resolves, and it gives the 404 somewhere useful to send a
  * reader. A full document rather than a fragment, because nothing embeds it.
  */
-export function renderPlayerIndex(
+/**
+ * Every indexed player, grouped by team.
+ *
+ * Shared by the standalone /player page and by the fragment the WordPress
+ * container page at /nfl/players/ mounts, for the same reason the team index
+ * shares one: two renderings of a six-hundred-name roster is one that goes
+ * stale, and it is the one nobody looks at.
+ */
+function renderPlayerIndexGroups(
   entries: IndexedPlayer[],
   options: { playerPathPrefix?: string; linkQuery?: string } = {},
 ): string {
@@ -5485,6 +5493,34 @@ export function renderPlayerIndex(
     })
     .join("");
 
+  return `<div class="scp-index">${groups}</div>`;
+}
+
+/**
+ * The index as a bare fragment, for the WordPress container page to print.
+ *
+ * No hero and no H1: the page at /nfl/players/ supplies both, the same division
+ * of labour every other mount here follows. Without it that page is whatever
+ * WordPress content happens to sit in it — which is what it was, a stub list of
+ * six hundred links in the theme's own styling, in front of the profiles it
+ * points at.
+ */
+export function renderPlayerIndexFragment(
+  entries: IndexedPlayer[],
+  options: { playerPathPrefix?: string; linkQuery?: string } = {},
+): string {
+  return (
+    `<div class="scp is-embed" data-scp-index="1">` +
+    `<div class="scp-section">${renderPlayerIndexGroups(entries, options)}</div>` +
+    `</div>`
+  );
+}
+
+/** The index as its own page on this origin: /player. */
+export function renderPlayerIndex(
+  entries: IndexedPlayer[],
+  options: { playerPathPrefix?: string; linkQuery?: string } = {},
+): string {
   return (
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
     `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` +
@@ -5500,7 +5536,7 @@ export function renderPlayerIndex(
     `<span class="scp-title-last">NFL Player Pages</span></h1>` +
     `<p class="scp-hero-facts">Game logs, advanced stats, injury history and fantasy outlook.</p>` +
     `</div></div></header>` +
-    `<div class="scp-section"><div class="scp-index">${groups}</div></div>` +
+    `<div class="scp-section">${renderPlayerIndexGroups(entries, options)}</div>` +
     `</div></body></html>`
   );
 }

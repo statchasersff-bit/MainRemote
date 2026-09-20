@@ -1234,6 +1234,115 @@ describe("the WordPress fragment's team switcher", () => {
 });
 
 /**
+ * The index of all 32, and the fragment the container page mounts.
+ *
+ * /nfl/teams/ used to be a stub list the plugin wrote into the page once —
+ * eight <h2>s and 32 bullets in the theme's own styling, standing in front of
+ * 32 hubs that look nothing like it. It has a mount now, and these are what
+ * that mount owes: the switcher's grid, all 32 crests, links that leave this
+ * origin, and no document furniture, because the WordPress page supplies it.
+ */
+describe("the team index", () => {
+  async function indexFragment(env = {}) {
+    const srv = await startServer(env);
+    try {
+      const res = await fetch(`${srv.origin}/embed/teams`);
+      assert.equal(res.status, 200);
+      return { body: await res.text(), headers: res.headers };
+    } finally {
+      await srv.stop();
+    }
+  }
+
+  test("the fragment is markup with no document around it", async () => {
+    const { body } = await indexFragment();
+    assert.ok(!/<!DOCTYPE/i.test(body), "no doctype");
+    assert.ok(!/<html|<head|<body/i.test(body), "no document furniture");
+    // The container page prints the H1 and the lead; a second one inside the
+    // fragment is the duplicate-heading bug every other mount here avoids.
+    assert.ok(!/<h1\b/i.test(body), "the fragment never carries an H1");
+    assert.ok(!/<title/i.test(body), "and no title");
+  });
+
+  test("it is the switcher's grid, with all 32 and their crests", async () => {
+    const { body } = await indexFragment();
+    const doc = new JSDOM(body).window.document;
+
+    assert.ok(doc.querySelector(".sct-switch-grid.is-index"), "the index grid");
+    const links = [...doc.querySelectorAll(".sct-switch-team")];
+    assert.equal(links.length, 32, "every team is listed");
+    for (const link of links) {
+      const logo = link.querySelector("img.sct-switch-logo");
+      assert.ok(logo, `${link.textContent.trim()} has a crest`);
+      assert.equal(logo.getAttribute("alt"), "", "a crest beside its own name is decorative");
+    }
+
+    // Conference, then division: the grouping is what makes 32 links a page a
+    // reader can use rather than a column of names.
+    assert.equal(doc.querySelectorAll(".sct-switch-conf").length, 2);
+    assert.equal(doc.querySelectorAll(".sct-switch-div").length, 8);
+  });
+
+  test("the links point at the public site, not at this origin", async () => {
+    // Same rule the hub's switcher follows, and for the same reason: a reader
+    // clicking a team inside a WordPress page belongs on statchasers.com.
+    const { body } = await indexFragment({ SC_TEAM_PATH_PREFIX: "/nfl/teams/" });
+    const hrefs = [...body.matchAll(/class="sct-switch-team"\s+href="([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+    assert.equal(hrefs.length, 32);
+    for (const href of hrefs) {
+      assert.match(href, /^\/nfl\/teams\/[a-z0-9-]+$/, href);
+      assert.ok(
+        !href.includes("embed="),
+        `an off-origin link must not carry embed= (${href})`,
+      );
+    }
+  });
+
+  test("the standalone page and the fragment list the same 32", async () => {
+    // They share one renderer precisely so they cannot drift; this is the
+    // assertion that keeps it that way if someone splits them again.
+    const srv = await startServer();
+    try {
+      const teamsOf = async (path) => {
+        const res = await fetch(`${srv.origin}${path}`);
+        assert.equal(res.status, 200, path);
+        const doc = new JSDOM(await res.text()).window.document;
+        return [...doc.querySelectorAll(".sct-switch-team span")].map((el) =>
+          el.textContent.trim(),
+        );
+      };
+      const page = await teamsOf("/team");
+      const fragment = await teamsOf("/embed/teams");
+      assert.equal(page.length, 32);
+      assert.deepEqual(fragment, page, "the two mounts disagree about the league");
+    } finally {
+      await srv.stop();
+    }
+  });
+
+  test("the standalone page still has its own hero and one H1", async () => {
+    const { doc } = await dom("/team");
+    const h1 = doc.querySelectorAll("h1");
+    assert.equal(h1.length, 1);
+    assert.equal(h1[0].textContent.trim(), "NFL Team Hubs");
+    assert.ok(doc.querySelector(".sct-hero"), "the page keeps its hero");
+  });
+
+  test("it revalidates and keeps this origin out of the index", async () => {
+    const { headers } = await indexFragment();
+    const etag = headers.get("etag");
+    assert.ok(etag, "the fragment is revalidatable");
+    assert.match(headers.get("x-robots-tag"), /noindex, indexifembedded/);
+
+    const second = await rawGet("/embed/teams", { "If-None-Match": etag });
+    assert.equal(second.status, 304);
+    assert.equal(second.body, "", "a 304 carries no body");
+  });
+});
+
+/**
  * Host-page survivability.
  *
  * The hub is printed into a WordPress page whose theme this server has never

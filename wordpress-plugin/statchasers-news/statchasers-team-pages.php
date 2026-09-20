@@ -379,42 +379,66 @@ function statchasers_team_set_crest( int $id, string $name, string $abbr ): stri
 	return '';
 }
 
+/** The intro paragraph above the index. Also the stub's signature; see below. */
+const STATCHASERS_TEAM_INDEX_LEAD = 'Every NFL team hub: player news, injury designations, the offensive depth chart, the schedule and a weekly fantasy outlook.';
+
 /**
- * Give the container page a body listing all 32.
+ * Is this body the bare list this function used to write?
+ *
+ * It used to build the index itself: a paragraph, eight <h2>s and 32 bullets,
+ * styled by whatever the theme does with a <ul>. That was only ever there so
+ * the parent was not a thin page in the sitemap, and it shipped looking nothing
+ * like the 32 hubs it points at. The shortcode replaces it.
+ *
+ * Recognised by its own lead sentence plus a wall of links to the team path and
+ * no shortcode of any kind. Nobody's hand-written page looks like that, which
+ * is what makes replacing it safe: anything we do not positively recognise is
+ * left alone, because an index somebody has edited is theirs.
+ *
+ * @param string $content Page body.
+ */
+function statchasers_team_index_is_stub( string $content ): bool {
+	if ( false === strpos( $content, STATCHASERS_TEAM_INDEX_LEAD ) ) {
+		return false;
+	}
+
+	if ( false !== strpos( $content, '[' ) ) {
+		return false;
+	}
+
+	return substr_count( $content, 'href="/' . STATCHASERS_TEAM_PATH . '/' ) >= 30;
+}
+
+/**
+ * Give the container page a body: the intro, and the index mount.
  *
  * A parent page with no content is a thin page that still sits in the sitemap.
- * Only written when it is empty — if you have written your own copy there, it
- * is yours.
+ * The mount is [statchasers_team_index], which prints the same grid the hubs'
+ * own team switcher uses — so the page that lists 32 hubs is drawn by the tool
+ * that draws the hubs, rather than by the theme's <ul> styling.
+ *
+ * Written when the page is empty, and over the stub the old version of this
+ * function wrote. Anything else there is yours and is left alone.
  *
  * @param int $container Container page ID.
  */
 function statchasers_team_write_index( int $container ): void {
 	$content = (string) get_post_field( 'post_content', $container );
 
-	if ( '' !== trim( $content ) ) {
+	// Already mounted. Re-running the build must not churn the page.
+	if ( has_shortcode( $content, STATCHASERS_TEAM_INDEX_SHORTCODE ) ) {
 		return;
 	}
 
-	$body     = '<p>Every NFL team hub: player news, injury designations, the offensive depth chart, the schedule and a weekly fantasy outlook.</p>';
-	$division = '';
-
-	foreach ( statchasers_team_table() as $slug => $row ) {
-		if ( $row[2] !== $division ) {
-			if ( '' !== $division ) {
-				$body .= '</ul>';
-			}
-			$body    .= '<h2>' . esc_html( $row[2] ) . '</h2><ul>';
-			$division = $row[2];
-		}
-		$body .= '<li><a href="/' . STATCHASERS_TEAM_PATH . '/' . $slug . '/">' . esc_html( $row[0] ) . '</a></li>';
+	if ( '' !== trim( $content ) && ! statchasers_team_index_is_stub( $content ) ) {
+		return;
 	}
-
-	$body .= '</ul>';
 
 	wp_update_post(
 		array(
 			'ID'           => $container,
-			'post_content' => $body,
+			'post_content' => '<p>' . esc_html( STATCHASERS_TEAM_INDEX_LEAD ) . '</p>' .
+				"\n\n[" . STATCHASERS_TEAM_INDEX_SHORTCODE . ']',
 		)
 	);
 }
