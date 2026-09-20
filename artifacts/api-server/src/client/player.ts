@@ -863,6 +863,9 @@ function boot(): void {
       listSelector: ".scp-nav-list",
       linkSelector: ".scp-nav-link",
       datasetKey: "scpTabs",
+      panelKey: "scpPanelId",
+      headingKey: "scpHeading",
+      leadKey: "scpLead",
     });
     wireTimestamps(root);
     wirePlayerSearch(root);

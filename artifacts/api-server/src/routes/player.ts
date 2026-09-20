@@ -3,9 +3,16 @@
  *
  *   GET /player                      — index of the indexed players
  *   GET /player/:slug                — the player page
+ *   GET /player/:slug/:section/      — one section of it, at its own address
  *   GET /player/:slug?embed=1        — the same page, stripped for embedding
  *   GET /player/:slug?format=half    — the same page in another scoring format
  *   GET /embed/player/:slug          — the bare fragment, for the WordPress mount
+ *
+ * `/player/:slug/:section/` is the public spelling: the address the canonical
+ * names, the tab strip links to and the WordPress rewrite mirrors under
+ * /nfl/players/. `?section=` is the internal one, which is how the plugin
+ * fetches a scoped fragment; on the page routes it is a 301 to the pretty
+ * address, because one page gets one URL.
  *
  * Mirrors routes/team.ts, including the posture that matters most: every route
  * ships `noindex, indexifembedded`, so the bare tool URL does not compete with
@@ -25,6 +32,7 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
+import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex } from "../lib/player-render";
 import { getAvailableSeasons } from "../lib/player/data";
@@ -100,6 +108,23 @@ const SECTIONS = new Set([
   "bio",
 ]);
 
+/**
+ * The public address of one section: `/player/<slug>/<section>/`.
+ *
+ * Mirrors sectionPath() on the team side, and exists for the same reason: the
+ * profile answers seven different questions at one address, and one address
+ * gets one title tag. It is also what the tab strip links to, which is what
+ * stops those seven URLs being pages nothing on the site points at.
+ */
+function playerSectionPath(slug: string, section: string): string {
+  return `${playerPath(slug)}/${section}/`;
+}
+
+/** The profile's own address on this origin. */
+function playerPath(slug: string): string {
+  return `${PLAYER_PATH_PREFIX}${slug}`;
+}
+
 function section(req: Request): string | undefined {
   const raw = String(req.query["section"] ?? "").trim().toLowerCase();
   return SECTIONS.has(raw) ? raw : undefined;
@@ -156,6 +181,28 @@ function notFound(res: Response): void {
       `<meta name="robots" content="noindex" /><title>Player not found</title>` +
       `</head><body><h1>Player not found</h1>` +
       `<p><a href="/player">Browse NFL players</a></p></body></html>`,
+  );
+}
+
+/**
+ * A real player, a section we do not serve.
+ *
+ * A true 404, deliberately — falling through to the profile here would let any
+ * path segment mint an indexable copy of it, once per player. The way back is
+ * the profile the reader nearly reached, not the roster index: they have the
+ * right player and the wrong page, and sending them to the top of the list is
+ * answering a question they did not ask. Mirrors sectionNotFound() on the team
+ * side.
+ */
+function sectionNotFound(res: Response, slug: string): void {
+  noStoreHtml(
+    res,
+    404,
+    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+      `<meta name="robots" content="noindex" /><title>Page not found</title>` +
+      `</head><body><h1>Page not found</h1>` +
+      `<p><a href="${escapeHtml(playerPath(slug))}">Back to the player page</a></p>` +
+      `</body></html>`,
   );
 }
 
@@ -225,6 +272,26 @@ router.get("/player/:slug", (req, res) => {
       return;
     }
 
+    // `?section=` is the internal spelling — it is how the WordPress plugin
+    // fetches a scoped fragment. A reader or a crawler holding it is sent to
+    // the one public address that section has, or the same page would answer
+    // at two URLs. The rest of the query rides along: ?format=half names a
+    // different set of numbers, not a different page.
+    const scoped = section(req);
+    if (scoped) {
+      const query = new URLSearchParams(
+        Object.entries(req.query)
+          .filter(([key]) => key !== "section")
+          .map(([key, value]) => [key, String(value)]),
+      ).toString();
+
+      res.redirect(
+        301,
+        `${playerSectionPath(slug, scoped)}${query ? `?${query}` : ""}`,
+      );
+      return;
+    }
+
     const embed = isEmbed(req);
 
     try {
@@ -237,7 +304,6 @@ router.get("/player/:slug", (req, res) => {
           canonical: canonicalUrl(req),
           embed,
           linkQuery: linkQuery(req),
-          section: section(req),
         },
         {
           format: format(req),
@@ -280,6 +346,94 @@ router.get("/player/:slug", (req, res) => {
         .send(html);
     } catch (err) {
       logger.error({ err, slug }, "Failed to render player page");
+      noStoreHtml(
+        res,
+        500,
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+          `<meta name="robots" content="noindex" /><title>Temporarily unavailable</title>` +
+          `</head><body><h1>Temporarily unavailable</h1>` +
+          `<p>This player page could not be built. Please try again shortly.</p>` +
+          `</body></html>`,
+      );
+    }
+  })();
+});
+
+/**
+ * The pretty section URL: `/player/<slug>/<section>/`.
+ *
+ * The address the canonical names and the tab strip links to. The segment is
+ * checked against the closed list BEFORE the player is looked up, so an unknown
+ * section on a real player is a 404 rather than the full profile wearing a
+ * second name — an unbounded supply of duplicates is exactly what the check
+ * prevents.
+ *
+ * Everything else about the render is identical to the profile's: same hero,
+ * same format toggle, same section markup. Only the panel count and the
+ * metadata change, which is what makes the two addresses one component.
+ */
+router.get("/player/:slug/:section", (req, res) => {
+  void (async () => {
+    const slug = safeSlug(req.params.slug);
+    // Exact, not normalised: /Stats/ resolving would be a second address for
+    // the same page, and the point of this route is that there is one.
+    const scoped = String(req.params.section ?? "");
+
+    if (!slug) {
+      notFound(res);
+      return;
+    }
+    if (!SECTIONS.has(scoped)) {
+      sectionNotFound(res, slug);
+      return;
+    }
+
+    const embed = isEmbed(req);
+
+    try {
+      const result = await renderPlayerAppPage(
+        publicDir,
+        slug,
+        {
+          canonical: canonicalUrl(req),
+          embed,
+          linkQuery: linkQuery(req),
+          section: scoped,
+        },
+        {
+          format: format(req),
+          advancedSeason: advancedSeason(req),
+          logSeason: logSeason(req),
+        },
+      );
+
+      if (!result) {
+        notFound(res);
+        return;
+      }
+
+      const dev = liveReload().enabled;
+
+      if (!dev) {
+        res.set("ETag", `W/"${result.version}"`);
+        if (req.fresh) {
+          res.status(304).end();
+          return;
+        }
+      }
+
+      let html = dev ? liveReload().injectIntoHtml(result.html) : result.html;
+      if (devBarEnabled()) {
+        html = injectDevBar(html, { path: req.path, embed });
+      }
+
+      res
+        .set("Cache-Control", dev ? "no-store" : "public, max-age=60")
+        .set("X-Robots-Tag", "noindex, indexifembedded")
+        .type("html")
+        .send(html);
+    } catch (err) {
+      logger.error({ err, slug, section: scoped }, "Failed to render player section");
       noStoreHtml(
         res,
         500,

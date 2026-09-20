@@ -308,7 +308,11 @@ body.sct-page.is-embed {
      rather than split with the heading above so the gap is one number. */
   --sct-gutter: 0px;
   padding-top: 30px;
-  padding-bottom: 30px;
+  /* Clearance from whatever the host prints next. 30px read as the tool
+     finishing and the footer starting in the same breath; 50 is the gap that
+     says they are two things. Bottom only — the top gap is the one between the
+     page's heading and the hero, and it is already right. */
+  padding-bottom: 50px;
   max-width: 100%;
 }
 

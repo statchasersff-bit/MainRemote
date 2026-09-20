@@ -155,6 +155,11 @@ body.scp-page {
   max-width: none;
   padding: 0;
   background: transparent;
+  /* Clearance from whatever the host prints next. 30px read as the tool
+     finishing and the footer starting in the same breath; 50 is the gap that
+     says they are two things. Bottom only — the top gap is the one between the
+     page's heading and the hero, and it is already right. */
+  padding-bottom: 50px;
 }
 
 .scp *,
@@ -4647,27 +4652,6 @@ a.scp-peer:focus-visible {
 /* ------------------------------------------------------------ responsive */
 
 /* --------------------------------------------------------------- game log */
-
-/*
- * The Game Log's own control bar.
- *
- * Season on the left, scoring on the right — the two things that change every
- * number below them, and nothing else. It sits inside the panel rather than in
- * the page header because a section-scoped URL has no page header. The season
- * chips are the Advanced tab's, reused: two controls that pick a season should
- * not be two different controls.
- */
-/* The scoring toggle, on the scoped page that has no tab strip to carry it.
-   The season switcher used to share this bar; it is an archive, and it moved
-   to the foot of the tab — see .scp-seasonnav. */
-.scp-logbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin: 0 0 18px;
-}
 
 /*
  * The archive selector, on the heading of what it opens.

@@ -22,8 +22,10 @@
 import test, { before, after, describe } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { JSDOM } from "jsdom";
-import { startServer } from "./helpers/server.mjs";
+import { JSDOM, VirtualConsole } from "jsdom";
+import fs from "node:fs";
+import path from "node:path";
+import { startServer, APP_DIR } from "./helpers/server.mjs";
 
 /**
  * A GET with exactly the headers given.
@@ -82,6 +84,13 @@ before(async () => {
 });
 
 after(async () => {
+  for (const window of windows) {
+    try {
+      window.close();
+    } catch {
+      /* already closed */
+    }
+  }
   await server?.stop();
 });
 
@@ -97,6 +106,44 @@ async function dom(pathname) {
   const res = await get(pathname);
   assert.equal(res.status, 200, `${pathname} should be 200`);
   return { ...res, doc: new JSDOM(res.body).window.document };
+}
+
+/** The compiled player bundle, read once. */
+let playerBundle;
+const windows = [];
+
+/**
+ * The page with its own JavaScript actually run.
+ *
+ * Everything else in this file asserts on the HTML as sent, which is what a
+ * crawler reads. The tab strip is the one place where the scripted behaviour is
+ * different in kind rather than in polish — it switches the panel, rewrites the
+ * heading above the fragment and puts a different URL in the address bar — and
+ * none of that is visible in the served markup. Mirrors team.test.mjs.
+ */
+async function hydrated(pathname) {
+  const res = await fetch(`${server.origin}${pathname}`);
+  assert.equal(res.status, 200, pathname);
+
+  const virtualConsole = new VirtualConsole();
+  const errors = [];
+  virtualConsole.on("jsdomError", (e) => errors.push(String(e)));
+
+  playerBundle ??= fs.readFileSync(
+    path.join(APP_DIR, "public", "dist", "statchasers-player.js"),
+    "utf8",
+  );
+
+  const jsdom = new JSDOM(await res.text(), {
+    runScripts: "outside-only",
+    url: `${server.origin}${pathname}`,
+    pretendToBeVisual: true,
+    virtualConsole,
+  });
+  windows.push(jsdom.window);
+  jsdom.window.eval(playerBundle);
+  await new Promise((r) => setTimeout(r, 50));
+  return { window: jsdom.window, doc: jsdom.window.document, errors };
 }
 
 describe("player routes", () => {
@@ -405,15 +452,22 @@ describe("player page content", () => {
     const links = [...doc.querySelectorAll(".scp-nav-link")];
     assert.ok(links.length >= 2, "a tab strip with something to switch between");
     for (const link of links) {
-      const id = link.getAttribute("href").replace(/^#/, "");
+      // The href is the section's own address now; the panel it switches to
+      // without a load is named by the dataset.
+      const id = link.getAttribute("data-scp-panel-id");
       const panel = doc.getElementById(id);
-      assert.ok(panel, `nav points at #${id}, which must exist`);
+      assert.ok(panel, `nav names the panel ${id}, which must exist`);
+      assert.equal(
+        link.getAttribute("href"),
+        `/player/${fixture.slug}/${id}/`,
+        `${id}: the tab links to the section's own URL`,
+      );
       assert.ok(panel.textContent.trim().length > 0, `#${id} must not be empty`);
     }
     // And the converse: every panel is reachable.
     for (const panel of doc.querySelectorAll("[data-scp-panel]")) {
       assert.ok(
-        links.some((l) => l.getAttribute("href") === `#${panel.id}`),
+        links.some((l) => l.getAttribute("data-scp-panel-id") === panel.id),
         `panel #${panel.id} has no tab pointing at it`,
       );
     }
@@ -939,7 +993,7 @@ describe("the game log tab", () => {
   test("the season archive sits under the fixtures, not above the numbers", async () => {
     // It used to stand between a heading that had just named the season and the
     // numbers that answer it. A reader arriving on this tab wants this year.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const nav = doc.querySelector("#game-log .scp-seasonnav");
     if (!nav) return; // a single-season player gets no archive
 
@@ -1069,18 +1123,26 @@ describe("the game log tab", () => {
     assert.ok(rows.length > 0, "an impossible season falls back to a real one");
   });
 
-  test("the scoped page carries the scoring toggle it needs", async () => {
-    // The full profile puts the toggle above the tab strip; a section URL has no
-    // tab strip, so without this the format is a control the reader cannot reach.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
-    const toggle = doc.querySelector("#game-log .scp-format");
-    assert.ok(toggle, "the game log page can change scoring format");
+  test("the scoped page carries the scoring toggle it needs, once", async () => {
+    // The section page carries the control bar now, so the toggle is in the
+    // header where the full profile's is. It used to print a second one inside
+    // the panel, from when a section URL had no header to put one in; two
+    // controls for one piece of state is what that would be today.
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
+    const toggles = doc.querySelectorAll(".scp-format");
+    assert.equal(toggles.length, 1, "exactly one scoring control on the page");
+    const toggle = toggles[0];
+    assert.equal(
+      doc.querySelector("#game-log .scp-format"),
+      null,
+      "and it is not a second copy inside the panel",
+    );
 
     for (const link of [...toggle.querySelectorAll(".scp-format-opt")]) {
       if (link.hasAttribute("aria-current")) continue;
       assert.match(
         link.getAttribute("href"),
-        /section=game-log/,
+        /\/game-log\/?(\?|$)/,
         "changing the format stays on the game log",
       );
     }
@@ -1091,7 +1153,7 @@ describe("the game log tab", () => {
     // prose only works if the prose is the same generated restatement it always
     // was — an opening paragraph is exactly where a claim nobody measured would
     // get written.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const intro = doc.querySelector("#game-log .scp-logintro");
     assert.ok(intro, "the generated intro is in the HTML");
     assert.ok(
@@ -1150,8 +1212,8 @@ describe("the game log tab", () => {
   });
 
   /** The Game Log FAQ on a page, as {question, answer} pairs. */
-  async function logFaq(slug, query = "?section=game-log") {
-    const { doc } = await dom(`/player/${slug}${query}`);
+  async function logFaq(slug, section = "/game-log/") {
+    const { doc } = await dom(`/player/${slug}${section}`);
     return [...doc.querySelectorAll("#game-log .scp-faq-item")].map((item) => ({
       question: item.querySelector(".scp-faq-q")?.textContent.trim() ?? "",
       answer: item.querySelector(".scp-faq-a")?.textContent.trim() ?? "",
@@ -1165,7 +1227,7 @@ describe("the game log tab", () => {
     let checked = 0;
 
     for (const player of roster.slice(0, 40)) {
-      const { doc } = await dom(`/player/${player.slug}?section=game-log`);
+      const { doc } = await dom(`/player/${player.slug}/game-log/`);
       const items = [...doc.querySelectorAll("#game-log .scp-faq-item")];
       if (items.length === 0) continue;
 
@@ -1207,7 +1269,7 @@ describe("the game log tab", () => {
     // Answering a live season in the past tense, or a filed one in the present
     // continuous, is the single wrong thing this FAQ could say; keeping it on
     // one season is what makes the tense a property rather than a coin flip.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const seasons = [...doc.querySelectorAll("#game-log .scp-season-opt")]
       .map((el) => Number(el.textContent.trim()))
       .filter(Number.isFinite);
@@ -1217,8 +1279,8 @@ describe("the game log tab", () => {
     const past = seasons.find((year) => year !== current);
     if (past === undefined) return;
 
-    const plain = await logFaq(fixture.slug, "?section=game-log");
-    const pinned = await logFaq(fixture.slug, `?section=game-log&log=${past}`);
+    const plain = await logFaq(fixture.slug, "/game-log/");
+    const pinned = await logFaq(fixture.slug, `/game-log/?log=${past}`);
     assert.ok(plain.length > 0, "the season has an FAQ");
     assert.deepEqual(pinned, plain, `pinning ${past} rewrote the FAQ`);
 
@@ -1236,7 +1298,7 @@ describe("the game log tab", () => {
 
   test("the archive question names seasons the selector actually offers", async () => {
     // "You can also view 2019" is a promise the season chips have to keep.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     // Years only — All is a view of the whole career, not a season the FAQ
     // could name.
     const offered = [
@@ -1270,7 +1332,7 @@ describe("the game log tab", () => {
     // The distinction the whole block exists to keep: results are a table,
     // fixtures are cards. A future game rendered as a table row with dashes in
     // its stat columns reads exactly like a week the player was inactive.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const list = doc.querySelector("#game-log .scp-nexts");
     if (!list) return; // season over, or no schedule
 
@@ -1305,7 +1367,7 @@ describe("the game log tab", () => {
   });
 
   test("the matchup-rank caption links the table it is measured from", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const note = doc.querySelector("#game-log .scp-next-note");
     if (!note) return; // season over, or no schedule
 
@@ -1325,7 +1387,7 @@ describe("the game log tab", () => {
   });
 
   test("every fixture opens the pair's page, at its canonical address", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const cards = [...doc.querySelectorAll("#game-log .scp-next")];
     if (cards.length === 0) return;
 
@@ -1366,7 +1428,7 @@ describe("the game log tab", () => {
   });
 
   test("a fixture card carries the week, the opponent, home/away and the time", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const cards = [...doc.querySelectorAll("#game-log .scp-next")];
     if (cards.length === 0) return;
 
@@ -1406,7 +1468,7 @@ describe("the game log tab", () => {
   });
 
   test("no fixture claims a stat, and none is a finished game", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const cards = [...doc.querySelectorAll("#game-log .scp-next")];
     if (cards.length === 0) return;
 
@@ -1435,7 +1497,7 @@ describe("the game log tab", () => {
   });
 
   test("the matchup rank names its position and its direction", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const cards = [...doc.querySelectorAll("#game-log .scp-next")];
     if (cards.length === 0) return;
 
@@ -1469,8 +1531,8 @@ describe("the game log tab", () => {
     // The ranks come from a format-specific table, so the note has to name the
     // format the page is actually in — otherwise a reader on Standard is shown
     // PPR ranks under a PPR sentence.
-    for (const [query, label] of [["", "PPR"], ["&format=standard", "Standard"]]) {
-      const { doc } = await dom(`/player/${fixture.slug}?section=game-log${query}`);
+    for (const [query, label] of [["", "PPR"], ["?format=standard", "Standard"]]) {
+      const { doc } = await dom(`/player/${fixture.slug}/game-log/${query}`);
       const note = doc.querySelector("#game-log .scp-next-note");
       if (!note) continue;
       assert.ok(
@@ -1485,7 +1547,7 @@ describe("the game log tab", () => {
     // The career table is allowed back only as the All selection, under the
     // season selector at the foot — an index to the eleven logs, not a second
     // copy of the Stats tab standing in front of this week's numbers.
-    const { doc } = await dom(`/player/${fixture.slug}?section=game-log`);
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const career = doc.querySelector("#game-log .scp-table--career");
     if (!career) return; // a single-season player gets no selector and no All
 
@@ -1938,7 +2000,7 @@ describe("the injury tab", () => {
     const found = await withInjury(1);
     const slug = found[0].player.slug;
 
-    const scoped = await get(`/player/${slug}?section=injury`);
+    const scoped = await get(`/player/${slug}/injury/`);
     assert.equal(scoped.status, 200);
     const doc = new JSDOM(scoped.body).window.document;
 
@@ -2103,7 +2165,7 @@ describe("the bio tab", () => {
     const pages = [];
     for (const player of roster.slice(0, 120)) {
       if (pages.length >= limit) break;
-      const res = await get(`/player/${player.slug}?section=bio`);
+      const res = await get(`/player/${player.slug}/bio/`);
       if (res.status !== 200) continue;
       const doc = new JSDOM(res.body).window.document;
       if (!doc.querySelector("#bio .scp-bio")) continue;
@@ -2544,7 +2606,7 @@ describe("the positional peers rail", () => {
     );
 
     // And on a section-scoped page too, which is that page's version of a tab.
-    const scoped = await dom(`/player/${fixture.slug}?section=bio`);
+    const scoped = await dom(`/player/${fixture.slug}/bio/`);
     assert.ok(
       scoped.doc.querySelector("[data-scp-peers]"),
       "the section page keeps the way out of the page",
@@ -2633,7 +2695,7 @@ describe("the embedded fragment", () => {
     // node were built from everything rendered rather than from what shipped,
     // the Bio page would claim the game log's questions — present in the schema,
     // nowhere on the page.
-    const res = await get(`/player/${fixture.slug}?section=bio`);
+    const res = await get(`/player/${fixture.slug}/bio/`);
     assert.equal(res.status, 200);
     const doc = new JSDOM(res.body).window.document;
 
@@ -2885,6 +2947,284 @@ describe("caching", () => {
         /noindex, indexifembedded/,
         `${path} must ship the embed-only robots posture`,
       );
+    }
+  });
+});
+
+/**
+ * Section-scoped player URLs.
+ *
+ * `/player/<slug>/<section>/` is the public address: the one the canonical
+ * names, the tab strip links to and the WordPress rewrite mirrors as
+ * /nfl/players/<slug>/<section>/. `?section=` is the internal spelling the
+ * plugin fetches the fragment with. These assertions are what makes the pretty
+ * address a different PAGE rather than the profile wearing a second URL. Same
+ * contract as the team hubs.
+ *
+ * Which sections a given player has is not fixed — injury, news and bio all
+ * depend on data that can be absent — so the list under test is read from the
+ * fixture's own strip rather than written down here.
+ */
+describe("player section URLs", () => {
+  /** The phrase each section's H1 ends with. Mirrors SECTION_HEADINGS. */
+  const PHRASES = {
+    stats: /Stats 2\d{3}$/,
+    injury: /Injury Update & History$/,
+    "game-log": /Game Log 2\d{3}$/,
+    outlook: /Fantasy Outlook$/,
+    news: /News & Analysis$/,
+    overview: /Season Overview$/,
+    bio: /Bio$/,
+  };
+
+  let sections;
+  const at = (id) => `/player/${fixture.slug}/${id}/`;
+
+  before(async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    sections = [...doc.querySelectorAll(".scp-nav-link")].map((link) =>
+      link.getAttribute("data-scp-panel-id"),
+    );
+    assert.ok(sections.length > 1, "the fixture profile has a strip to follow");
+  });
+
+  test("each section is one panel, named for what it holds", async () => {
+    for (const id of sections) {
+      const { doc } = await dom(at(id));
+
+      const root = doc.querySelector("[data-scp-root]");
+      assert.equal(root.getAttribute("data-section"), id, `${id}: scoped root`);
+
+      const panels = doc.querySelectorAll("[data-scp-panel]");
+      assert.equal(panels.length, 1, `${id}: exactly one panel`);
+      assert.equal(panels[0].getAttribute("id"), id, `${id}: it is the right one`);
+
+      const h1 = doc.querySelectorAll("h1");
+      assert.equal(h1.length, 1, `${id}: exactly one H1`);
+      const heading = h1[0].textContent.replace(/\s+/g, " ").trim();
+      assert.ok(heading.startsWith(fixture.name), `${id}: the H1 names the player`);
+      assert.match(heading, PHRASES[id], `${id}: and says which page this is`);
+    }
+  });
+
+  test("the head names the section, once, at its pretty address", async () => {
+    // Every URL-bearing tag is the pretty self-reference — never the profile,
+    // never the ?section= spelling. The Rank Math filters on the WordPress side
+    // owe the same things; this is the origin's half.
+    for (const id of sections) {
+      const { doc } = await dom(at(id));
+      const one = (selector) => {
+        const found = doc.querySelectorAll(selector);
+        assert.equal(found.length, 1, `${id}: exactly one ${selector}`);
+        return found[0];
+      };
+      const canonical = one('link[rel="canonical"]').getAttribute("href");
+      assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
+      assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
+      assert.ok(!canonical.includes("?section="), "no query-string canonical");
+      one("title");
+      one('meta[name="description"]');
+    }
+  });
+
+  test("a section page carries the strip, marking the one it is", async () => {
+    // It used to carry none, on the grounds that six tabs all leaving the URL
+    // is navigation pretending to be tabs. That was right while they were
+    // `#hash` links and wrong once they became addresses: a reader who arrived
+    // here from search had no way to reach the other six, and those six had
+    // nothing linking to them.
+    for (const id of sections) {
+      const { doc } = await dom(at(id));
+      const links = [...doc.querySelectorAll(".scp-nav-link")];
+      assert.ok(links.length > 1, `${id}: the strip is here`);
+
+      const current = links.filter((a) => a.classList.contains("is-active"));
+      assert.equal(current.length, 1, `${id}: one tab marked current`);
+      assert.equal(
+        current[0].getAttribute("data-scp-panel-id"),
+        id,
+        `${id}: and it is this one`,
+      );
+
+      // Every tab is an address, and each names a page that resolves. One panel
+      // still: the strip navigates, it does not smuggle the other six sections
+      // onto an address that promised one.
+      for (const link of links) {
+        assert.equal(
+          link.getAttribute("href"),
+          at(link.getAttribute("data-scp-panel-id")),
+          `${id}: the strip links to section addresses`,
+        );
+      }
+      assert.equal(
+        doc.querySelectorAll("[data-scp-panel]").length,
+        1,
+        `${id}: still exactly one panel`,
+      );
+    }
+  });
+
+  test("the strip on a section page is links, not tabs", async () => {
+    // Six of the seven hrefs load a different page, so the bundle must decline
+    // the takeover here — a tablist whose tabs navigate is a promise the roles
+    // cannot keep. wireTabs() declines by finding fewer than two panels.
+    const { doc, errors } = await hydrated(at(sections[1]));
+    assert.deepEqual(errors, [], "the bundle ran without throwing");
+
+    const list = doc.querySelector(".scp-nav-list");
+    assert.equal(list.getAttribute("role"), null, "no tablist on a section page");
+    for (const link of doc.querySelectorAll(".scp-nav-link")) {
+      assert.equal(link.getAttribute("role"), null, "and no tab roles");
+    }
+  });
+
+  /**
+   * The whole point of the tab strip being addresses.
+   *
+   * Without JavaScript a tab is a link and loads the section page — which the
+   * tests above cover. With it, the panel switches in place and the URL still
+   * becomes the section's own, so what the reader is looking at and what the
+   * address bar says cannot disagree. This asserts the things that have to move
+   * together, and that Back moves them all back.
+   */
+  test("a tab click switches in place and takes the URL with it", async () => {
+    const { window, doc, errors } = await hydrated(`/player/${fixture.slug}`);
+    assert.deepEqual(errors, [], "the bundle ran without throwing");
+
+    const heading = doc.querySelector("h1");
+    const landed = heading.textContent.replace(/\s+/g, " ").trim();
+    const first = sections[0];
+    const target = sections.find((id) => id === "game-log") ?? sections[1];
+
+    const tab = doc.querySelector(`.scp-nav-link[data-scp-panel-id="${target}"]`);
+    assert.ok(tab, `the ${target} tab is there`);
+
+    tab.dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+
+    assert.equal(
+      window.location.pathname,
+      at(target),
+      "the address bar names the section",
+    );
+    assert.ok(
+      doc.getElementById(target).classList.contains("is-active"),
+      "the section's panel is the one showing",
+    );
+    assert.equal(
+      doc.getElementById(first).classList.contains("is-active"),
+      false,
+      "and the one it replaced is not",
+    );
+    assert.match(
+      heading.textContent.replace(/\s+/g, " ").trim(),
+      PHRASES[target],
+      "the H1 followed",
+    );
+
+    // Nothing loaded: the other panels are still in the document, which is what
+    // separates this from having navigated.
+    assert.ok(
+      doc.querySelectorAll("[data-scp-panel]").length > 1,
+      "the whole profile is still here",
+    );
+
+    window.history.back();
+    await new Promise((r) => setTimeout(r, 50));
+
+    assert.equal(window.location.pathname, `/player/${fixture.slug}`);
+    assert.equal(
+      heading.textContent.replace(/\s+/g, " ").trim(),
+      landed,
+      "Back restores the heading",
+    );
+    assert.ok(doc.getElementById(first).classList.contains("is-active"));
+  });
+
+  test("a section that is not one of ours is a 404, not a copy of the profile", async () => {
+    // Any path segment resolving to the profile is an unbounded supply of
+    // indexable duplicates — a whole roster of them, multiplied out.
+    for (const id of ["not-a-real-section", "Stats", "GAME-LOG", "stats.html"]) {
+      const res = await get(`/player/${fixture.slug}/${id}/`);
+      assert.equal(res.status, 404, `${id}`);
+      // The right player and the wrong page: the way back is the profile they
+      // nearly reached, not the top of the roster.
+      assert.match(res.body, new RegExp(`href="/player/${fixture.slug}"`), id);
+    }
+    const unknown = await get("/player/not-a-real-person/stats/");
+    assert.equal(unknown.status, 404, "unknown player");
+  });
+
+  test("the ?section= spelling redirects to the pretty address", async () => {
+    // One address per page. The query form is what the plugin fetches the
+    // fragment with; a reader or crawler holding it is sent to the real one.
+    // The rest of the query rides along: ?format=half names a different set of
+    // numbers, not a different page.
+    for (const [path, target] of [
+      [`/player/${fixture.slug}?section=stats`, at("stats")],
+      [`/player/${fixture.slug}?section=game-log`, at("game-log")],
+      [
+        `/player/${fixture.slug}?section=game-log&format=standard`,
+        `${at("game-log")}?format=standard`,
+      ],
+    ]) {
+      const res = await get(path);
+      assert.equal(res.status, 301, path);
+      assert.equal(res.headers.get("location"), target, path);
+    }
+  });
+
+  test("an unrecognised ?section= still falls through to the profile", async () => {
+    // Defensive: a stale link is worth a full page, not a 404 — the pretty
+    // route is where a bad section is refused.
+    for (const query of ["?section=bogus", "?section=", ""]) {
+      const { doc } = await dom(`/player/${fixture.slug}${query}`);
+      assert.ok(
+        doc.querySelectorAll(".scp-nav-link").length > 1,
+        `${query || "(none)"}: the full profile`,
+      );
+      assert.equal(
+        doc.querySelector("[data-scp-root]").getAttribute("data-section"),
+        null,
+      );
+    }
+  });
+
+  test("the WordPress fragment still scopes with ?section=", async () => {
+    // The plugin fetches it that way — see statchasers_player_fetch(). The
+    // pretty address is for readers and crawlers; this one is an internal call.
+    const scoped = await get(`/embed/player/${fixture.slug}?section=game-log`);
+    assert.equal(scoped.status, 200);
+    assert.match(scoped.body, /data-section="game-log"/);
+    assert.match(scoped.body, /scp-nav-link/, "the scoped fragment carries the strip");
+    assert.ok(!/<h1\b/i.test(scoped.body), "the fragment never carries an H1");
+  });
+
+  test("the strip in a fragment points at the public site, not this origin", async () => {
+    // Same rule every other link in a fragment follows: on a WordPress mount
+    // the sections live under /nfl/players/, and a tab pointing back here would
+    // drop the reader onto the bare tool.
+    const server = await startServer({
+      SC_PLAYER_PATH_PREFIX: "/nfl/players/",
+    });
+    try {
+      const res = await fetch(
+        `${server.origin}/embed/player/${fixture.slug}?section=game-log`,
+      );
+      const body = await res.text();
+      const doc = new JSDOM(body).window.document;
+      const links = [...doc.querySelectorAll(".scp-nav-link")];
+      assert.ok(links.length > 1, "the strip is in the fragment");
+      for (const link of links) {
+        assert.equal(
+          link.getAttribute("href"),
+          `/nfl/players/${fixture.slug}/${link.getAttribute("data-scp-panel-id")}/`,
+          "a tab names the public section address",
+        );
+      }
+    } finally {
+      await server.stop();
     }
   });
 });
