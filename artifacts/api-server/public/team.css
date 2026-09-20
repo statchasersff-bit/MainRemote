@@ -763,6 +763,50 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
 }
 
+/* A host colouring list links, outranked.
+ *
+ * The switcher's teams are `<ul><li><a>`, which is the shape a theme's own
+ * link styling is most likely to be written against — `#main-content ul li a`
+ * and its relatives are id-rooted, so no number of classes here beats them.
+ * On statchasers.com that rule paints the anchor white, and the panel under it
+ * is `--sc-surface`: thirty-two team names, invisible, on a menu whose whole
+ * job is to be read.
+ *
+ * Note which links are NOT affected and why that is the tell: the tab strip is
+ * anchors too and renders correctly, because it is not inside a list. The
+ * defect follows the markup shape rather than the fragment, so the fix is
+ * pinned to the same three shapes rather than to every anchor — a blanket
+ * `.sct a { color: … !important }` would also break a host that is retuning
+ * these colours deliberately, which the tokens exist to allow.
+ *
+ * `!important` because there is no other lever. Specificity cannot be won
+ * against an id from a stylesheet that must not know the host's selectors, and
+ * this file is enqueued only on pages that mount the hub, so the blast radius
+ * is the fragment itself. */
+.sct li > .sct-switch-team {
+  color: var(--sc-ink) !important;
+}
+
+.sct li > .sct-switch-team:hover,
+.sct li > .sct-switch-team.is-current {
+  color: var(--sc-navy) !important;
+}
+
+/* The player name on an outlook card takes the card's colour rather than a
+   colour of its own — see .sct-outlook-link — so what it needs restoring is
+   the inheritance, not a value. */
+.sct li .sct-outlook-link {
+  color: inherit !important;
+}
+
+.sct li > .sct-crosslink {
+  color: var(--sc-navy) !important;
+}
+
+.sct li > .sct-crosslink:hover {
+  color: var(--sc-gold-deep) !important;
+}
+
 .sct-switch-team:focus-visible {
   outline: 2px solid var(--sc-gold);
   outline-offset: 1px;

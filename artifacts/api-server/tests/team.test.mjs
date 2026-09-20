@@ -18,8 +18,10 @@
 import test, { before, after, describe } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { JSDOM } from "jsdom";
-import { startServer } from "./helpers/server.mjs";
+import { JSDOM, VirtualConsole } from "jsdom";
+import fs from "node:fs";
+import path from "node:path";
+import { startServer, APP_DIR } from "./helpers/server.mjs";
 
 /**
  * A GET with exactly the headers given.
@@ -70,6 +72,13 @@ before(async () => {
 });
 
 after(async () => {
+  for (const window of windows) {
+    try {
+      window.close();
+    } catch {
+      /* already closed */
+    }
+  }
   await server?.stop();
 });
 
@@ -79,6 +88,44 @@ async function get(pathname, options = {}) {
     ...options,
   });
   return { status: res.status, headers: res.headers, body: await res.text() };
+}
+
+/** The compiled team bundle, read once. */
+let teamBundle;
+const windows = [];
+
+/**
+ * The page with its own JavaScript actually run.
+ *
+ * Everything else in this file asserts on the HTML as sent, which is what a
+ * crawler reads. The tab strip is the one place where the scripted behaviour is
+ * different in kind rather than in polish — it switches the panel, rewrites the
+ * heading above the fragment and puts a different URL in the address bar — and
+ * none of that is visible in the served markup.
+ */
+async function hydrated(pathname) {
+  const res = await fetch(`${server.origin}${pathname}`);
+  assert.equal(res.status, 200, pathname);
+
+  const virtualConsole = new VirtualConsole();
+  const errors = [];
+  virtualConsole.on("jsdomError", (e) => errors.push(String(e)));
+
+  teamBundle ??= fs.readFileSync(
+    path.join(APP_DIR, "public", "dist", "statchasers-team.js"),
+    "utf8",
+  );
+
+  const jsdom = new JSDOM(await res.text(), {
+    runScripts: "outside-only",
+    url: `${server.origin}${pathname}`,
+    pretendToBeVisual: true,
+    virtualConsole,
+  });
+  windows.push(jsdom.window);
+  jsdom.window.eval(teamBundle);
+  await new Promise((r) => setTimeout(r, 50));
+  return { window: jsdom.window, doc: jsdom.window.document, errors };
 }
 
 async function dom(pathname) {
@@ -167,12 +214,28 @@ describe("team routes", () => {
 describe("crawlable HTML (no JavaScript executed)", () => {
   test("the page ships its content, not a shell", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    // Section navigation is real anchors to real sections.
+    // Section navigation is real anchors to real ADDRESSES — the section
+    // pages — each naming the panel it switches to without a load.
     const navLinks = [...doc.querySelectorAll(".sct-nav-link")];
     assert.ok(navLinks.length >= 2, "section nav rendered");
     for (const link of navLinks) {
-      const id = link.getAttribute("href").replace(/^#/, "");
-      assert.ok(doc.getElementById(id), `nav points at a real section: #${id}`);
+      const id = link.getAttribute("data-sct-panel-id");
+      assert.ok(doc.getElementById(id), `nav names a real panel: ${id}`);
+      assert.equal(
+        link.getAttribute("href"),
+        `/team/new-england-patriots/${id}/`,
+        `${id}: the tab links to the section's own URL`,
+      );
+      // What the H1 above the fragment becomes when this tab is chosen. The
+      // heading lives outside the fragment, so the bundle cannot derive it.
+      assert.ok(
+        (link.getAttribute("data-sct-heading") ?? "").includes("New England Patriots"),
+        `${id}: carries the heading its URL loads with`,
+      );
+      assert.ok(
+        (link.getAttribute("data-sct-lead") ?? "").length > 40,
+        `${id}: carries the standfirst too`,
+      );
     }
     // The team switcher is 32 crawlable internal links, not a scripted menu.
     const switcher = doc.querySelectorAll(".sct-switch-team");
@@ -810,7 +873,7 @@ describe("honest empty states", () => {
     ]) {
       const { doc } = await dom(`/team/${slug}`);
       for (const link of doc.querySelectorAll(".sct-nav-link")) {
-        const id = link.getAttribute("href").replace(/^#/, "");
+        const id = link.getAttribute("data-sct-panel-id");
         const section = doc.getElementById(id);
         assert.ok(section, `${slug}: #${id} exists`);
         assert.ok(
@@ -1388,19 +1451,86 @@ describe("team section URLs", () => {
         .querySelector('link[rel="canonical"]')
         .getAttribute("href");
       assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
-      assert.equal(doc.querySelectorAll(".sct-nav-link").length, 0, `${id}: no tab strip`);
     }
   });
 
-  test("a section page carries no tab strip", async () => {
-    // Five tabs that all leave this URL is navigation pretending to be tabs.
-    // The hub and its siblings are reachable through the site's own navigation
-    // and the sitemap; the page itself prints no strip of links to them.
+  test("a section page carries the strip, marking the one it is", async () => {
+    // It used to carry none, on the grounds that five tabs all leaving the URL
+    // is navigation pretending to be tabs. That was right while they were
+    // `#hash` links and wrong once they became addresses: a reader who arrived
+    // here from search had no way to reach the other five, and those five had
+    // nothing linking to them.
     for (const [id] of SECTIONS) {
       const { doc } = await dom(at(id));
-      assert.equal(doc.querySelectorAll(".sct-nav-link").length, 0, `${id}: no tab strip`);
+      const links = [...doc.querySelectorAll(".sct-nav-link")];
+      assert.ok(links.length > 1, `${id}: the strip is here`);
+
+      const current = links.filter((a) => a.classList.contains("is-active"));
+      assert.equal(current.length, 1, `${id}: one tab marked current`);
+      assert.equal(
+        current[0].getAttribute("data-sct-panel-id"),
+        id,
+        `${id}: and it is this one`,
+      );
+
+      // One panel still. The strip navigates; it does not smuggle the other
+      // five sections onto an address that promised one.
+      assert.equal(
+        doc.querySelectorAll("[data-sct-panel]").length,
+        1,
+        `${id}: still exactly one panel`,
+      );
       assert.equal(doc.querySelectorAll(".sct-pages").length, 0, `${id}: no link strip`);
     }
+  });
+
+  /**
+   * The whole point of the tab strip being addresses.
+   *
+   * Without JavaScript a tab is a link and loads the section page — which the
+   * tests above cover. With it, the panel switches in place and the URL still
+   * becomes the section's own, so what the reader is looking at and what the
+   * address bar says cannot disagree. This asserts the three things that have
+   * to move together, and that Back moves them all back.
+   */
+  test("a tab click switches in place and takes the URL with it", async () => {
+    const { window, doc, errors } = await hydrated("/team/new-england-patriots");
+    assert.deepEqual(errors, [], "the bundle ran without throwing");
+
+    const heading = doc.querySelector("h1");
+    const landed = heading.textContent.trim();
+
+    const stats = doc.querySelector('.sct-nav-link[data-sct-panel-id="stats"]');
+    assert.ok(stats, "the Stats tab is there");
+
+    stats.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    assert.equal(
+      window.location.pathname,
+      "/team/new-england-patriots/stats/",
+      "the address bar names the section",
+    );
+    assert.ok(
+      doc.getElementById("stats").classList.contains("is-active"),
+      "the stats panel is the one showing",
+    );
+    assert.equal(
+      doc.getElementById("outlook").classList.contains("is-active"),
+      false,
+      "and the one it replaced is not",
+    );
+    assert.match(heading.textContent, /Stats 2\d{3}$/, "the H1 followed");
+
+    // Nothing loaded: the other four panels are still in the document, which is
+    // what separates this from having navigated.
+    assert.equal(doc.querySelectorAll("[data-sct-panel]").length >= 5, true);
+
+    window.history.back();
+    await new Promise((r) => setTimeout(r, 50));
+
+    assert.equal(window.location.pathname, "/team/new-england-patriots");
+    assert.equal(heading.textContent.trim(), landed, "Back restores the heading");
+    assert.ok(doc.getElementById("outlook").classList.contains("is-active"));
   });
 
   test("the section does not print the heading the hero already carries", async () => {
@@ -1503,7 +1633,9 @@ describe("team section URLs", () => {
     const scoped = await get("/embed/team/ne?section=depth-chart");
     assert.equal(scoped.status, 200);
     assert.match(scoped.body, /data-section="depth-chart"/);
-    assert.ok(!/sct-nav-link/.test(scoped.body), "no tab strip in a scoped fragment");
+    // The strip is here too, and its links are the public section addresses —
+    // which on a WordPress mount are statchasers.com's, not this origin's.
+    assert.match(scoped.body, /sct-nav-link/, "the scoped fragment carries the strip");
     assert.ok(!/<h1\b/i.test(scoped.body), "the fragment never carries an H1");
     assert.ok(!/sct-pages/.test(scoped.body), "no link strip in a fragment");
   });
@@ -1513,6 +1645,11 @@ describe("team section URLs", () => {
     const scoped = await get("/embed/team/ne?section=schedule");
     assert.notEqual(hub.headers.get("etag"), scoped.headers.get("etag"));
     assert.match(hub.body, /sct-nav-link/);
-    assert.ok(!/sct-nav-link/.test(scoped.body));
+    // Both carry the strip now, so what separates them is the panel count: the
+    // hub ships every section, a scoped render ships one.
+    assert.ok(
+      (hub.body.match(/data-sct-panel/g) ?? []).length >
+        (scoped.body.match(/data-sct-panel/g) ?? []).length,
+    );
   });
 });
