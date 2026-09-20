@@ -28,10 +28,11 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { dataPath } from "../data-dir";
 import { logger } from "../logger";
 import { loadPlayers, loadIndexedSlugs } from "../player/data";
 
-const DATA_DIR = path.resolve(process.cwd(), "data", "rankings");
+const DATA_DIR = dataPath("rankings");
 
 /* ------------------------------------------------------------------- shape */
 

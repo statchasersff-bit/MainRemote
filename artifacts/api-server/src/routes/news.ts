@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db, newsItems, newsDedupeKey } from "../lib/db";
+import { dataDirStatus } from "../lib/data-dir";
 import { listNews } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
@@ -899,6 +900,12 @@ router.get("/status", (_req, res) => {
         feedHosts: ingest.feedHosts,
         feedKeyConfigured: ingest.feedKeyConfigured,
         pushModeAvailable: Boolean(process.env["INGEST_SECRET"]),
+        // Where the shipped data files resolved to, and whether the two that
+        // have no runtime fallback are actually there. A deployment whose
+        // `data/` is missing does not fail — the readers all default — it
+        // serves an empty player index and a rankings board with no rows, and
+        // looks healthy doing it. This is the line that says so out loud.
+        data: dataDirStatus(),
         ingest: {
           lastAttempt: iso(ingest.lastAttemptMs),
           lastSuccess: iso(ingest.lastSuccessMs),

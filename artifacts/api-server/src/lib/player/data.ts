@@ -27,6 +27,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { dataPath } from "../data-dir";
 import { logger } from "../logger";
 import { searchKey } from "../render";
 import type {
@@ -40,7 +41,7 @@ import type {
   RosterPctDoc,
 } from "./types";
 
-const DATA_DIR = path.resolve(process.cwd(), "data", "player");
+const DATA_DIR = dataPath("player");
 
 const PLAYERS_FILE = path.join(DATA_DIR, "players.json");
 const INDEXED_FILE = path.join(DATA_DIR, "indexed_players.json");

@@ -720,7 +720,7 @@ function statchasers_matchup_panel(): void {
 	$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
 	echo '<h2>Matchup pages</h2>';
 	printf(
-		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> — 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs go live with <code>add_filter( \'statchasers_matchup_urls\', \'__return_true\' )</code> and a permalink flush.</p>',
+		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> — 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs are live as soon as the holder exists; the permalink flush happens on activation.</p>',
 		esc_html( STATCHASERS_MATCHUP_BASE ),
 		esc_html( STATCHASERS_MATCHUP_HOLDER )
 	);
