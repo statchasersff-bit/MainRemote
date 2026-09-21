@@ -539,21 +539,34 @@ foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
 if ( $sc_teams_parent ) {
 	$sc_index_content = (string) get_post_field( 'post_content', $sc_teams_parent );
 
-	if ( '' === trim( $sc_index_content ) ) {
-		$sc_body     = '<p>Every NFL team hub: player news, injury designations, the offensive depth chart, the schedule and a weekly fantasy outlook.</p>';
-		$sc_division = '';
+	/*
+	 * The body is the intro and the MOUNT — not 32 links.
+	 *
+	 * This used to write the lead plus a <ul> of all 32 hubs, which is how the
+	 * published /nfl/teams/ ended up showing the wall of links in the theme's
+	 * serif and bullet styling with the tool's own grid appended underneath it:
+	 * two indexes on one page, the good one last. The plugin has done the right
+	 * thing for a while (statchasers_team_write_index()); this script is the
+	 * other way the page gets built and it was never brought in step.
+	 *
+	 * Written when the page is empty, and OVER the stub the old version of this
+	 * block wrote — recognised the same way the plugin recognises it: our own
+	 * lead sentence, a wall of links to the team path, and no shortcode of any
+	 * kind. Anything else is somebody's own page and is left alone.
+	 */
+	$sc_index_lead = 'Every NFL team hub: player news, injury designations, the offensive depth chart, the schedule and a weekly fantasy outlook.';
 
-		foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
-			if ( $sc_row[2] !== $sc_division ) {
-				if ( '' !== $sc_division ) {
-					$sc_body .= '</ul>';
-				}
-				$sc_body   .= '<h2>' . esc_html( $sc_row[2] ) . '</h2><ul>';
-				$sc_division = $sc_row[2];
-			}
-			$sc_body .= '<li><a href="/' . SC_BUILD_PARENT_PATH . '/' . $sc_slug . '/">' . esc_html( $sc_row[0] ) . '</a></li>';
-		}
-		$sc_body .= '</ul>';
+	$sc_index_is_stub = false !== strpos( $sc_index_content, $sc_index_lead )
+		&& false === strpos( $sc_index_content, '[' )
+		&& substr_count( $sc_index_content, 'href="/' . SC_BUILD_PARENT_PATH . '/' ) >= 30;
+
+	$sc_index_mounted = false !== strpos( $sc_index_content, '[statchasers_team_index' );
+
+	if ( $sc_index_mounted ) {
+		sc_say( 'skip', 'index page already mounts the grid — left alone' );
+	} elseif ( '' === trim( $sc_index_content ) || $sc_index_is_stub ) {
+		$sc_body = '<p>' . esc_html( $sc_index_lead ) . "</p>\n\n[statchasers_team_index]";
+		$sc_what = $sc_index_is_stub ? 'replaced the 32-link stub with' : 'wrote';
 
 		if ( $sc_go ) {
 			wp_update_post(
@@ -562,12 +575,12 @@ if ( $sc_teams_parent ) {
 					'post_content' => $sc_body,
 				)
 			);
-			sc_say( 'ok', 'index: wrote 32 links to /' . SC_BUILD_PARENT_PATH . '/' );
+			sc_say( 'ok', 'index: ' . $sc_what . ' the grid mount on /' . SC_BUILD_PARENT_PATH . '/' );
 		} else {
-			sc_say( 'plan', 'would write 32 links into the /' . SC_BUILD_PARENT_PATH . '/ index page' );
+			sc_say( 'plan', 'would ' . $sc_what . ' the grid mount on /' . SC_BUILD_PARENT_PATH . '/' );
 		}
 	} else {
-		sc_say( 'skip', 'index page has content already — left alone' );
+		sc_say( 'skip', 'index page has content of its own — left alone' );
 	}
 }
 

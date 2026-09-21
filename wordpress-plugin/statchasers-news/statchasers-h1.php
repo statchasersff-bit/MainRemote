@@ -131,7 +131,11 @@ function statchasers_h1_verdict_any(): ?array {
  *
  * @return array{url:string,expect:string,anchor:string,label:string}|null
  */
-function statchasers_h1_probe_target(): ?array {
+function statchasers_h1_probe_target( string $tool = 'team' ): ?array {
+	if ( 'player' === $tool ) {
+		return statchasers_h1_player_probe_target();
+	}
+
 	if ( ! function_exists( 'statchasers_team_page_status' ) ) {
 		return null;
 	}
@@ -152,6 +156,54 @@ function statchasers_h1_probe_target(): ?array {
 				? statchasers_team_heading( (string) $slug, '' )
 				: '',
 			'anchor' => (string) ( $table[ (string) $slug ][0] ?? '' ),
+			'label'  => (string) $slug,
+		);
+	}
+
+	return null;
+}
+
+/**
+ * The same question, asked of a player page.
+ *
+ * It has to be asked separately, and that is the whole point of this function.
+ * The verdict used to be one measurement taken on one team hub and then applied
+ * to every tool, on the reasoning that a theme prints its title the same way on
+ * every page. It does not: a hub whose title comes from a builder layout and a
+ * player page whose title comes from `page.php` are the same site answering the
+ * question differently, and the published player pages showed it — two H1s, the
+ * theme's plain one and the tool's designed one, on exactly the setting that is
+ * supposed to prevent that.
+ *
+ * `anchor` is the player's name for the same reason the hub uses the team's:
+ * the question worth asking is "is this heading about this player", not "is
+ * this my exact string".
+ *
+ * @return array{url:string,expect:string,anchor:string,label:string}|null
+ */
+function statchasers_h1_player_probe_target(): ?array {
+	if ( ! function_exists( 'statchasers_player_page_status' ) ) {
+		return null;
+	}
+
+	$status = statchasers_player_page_status();
+
+	foreach ( (array) ( $status['present'] ?? array() ) as $slug => $id ) {
+		$url = (string) get_permalink( (int) $id );
+		if ( '' === $url || 'publish' !== get_post_status( (int) $id ) ) {
+			continue;
+		}
+
+		// The page's own title is the closest thing to the player's name that
+		// this file can read without the tool's data to hand.
+		$name = statchasers_h1_normalise( (string) get_the_title( (int) $id ) );
+
+		return array(
+			'url'    => $url,
+			'expect' => function_exists( 'statchasers_player_heading' )
+				? statchasers_player_heading( (string) $slug, '' )
+				: '',
+			'anchor' => $name,
 			'label'  => (string) $slug,
 		);
 	}
@@ -184,7 +236,6 @@ function statchasers_h1_normalise( string $html ): string {
  */
 function statchasers_h1_probe(): array {
 	$fingerprint = statchasers_h1_fingerprint();
-	$target      = statchasers_h1_probe_target();
 
 	$verdict = array(
 		'fingerprint' => $fingerprint,
@@ -196,16 +247,64 @@ function statchasers_h1_probe(): array {
 		'expect'      => '',
 		'matched'     => false,
 		'error'       => '',
+		// One measurement per page type. See statchasers_h1_player_probe_target().
+		'tools'       => array(),
 	);
 
-	if ( null === $target ) {
-		$verdict['error'] = 'No published team hub page to probe. Create the pages first.';
-		update_option( STATCHASERS_H1_OPTION, $verdict, false );
-		return $verdict;
+	foreach ( array( 'team', 'player' ) as $tool ) {
+		$target = statchasers_h1_probe_target( $tool );
+
+		if ( null === $target ) {
+			// Only the hub's absence is worth reporting: it is the page type the
+			// screen talks about, and a site with no player pages yet is not
+			// misconfigured.
+			if ( 'team' === $tool ) {
+				$verdict['error'] = 'No published team hub page to probe. Create the pages first.';
+			}
+			continue;
+		}
+
+		$measured = statchasers_h1_measure( $target );
+
+		$verdict['tools'][ $tool ] = $measured;
+
+		// The hub also fills the top-level keys, which is the shape the admin
+		// screen and every earlier verdict already speak.
+		if ( 'team' === $tool ) {
+			$verdict['url']     = $measured['url'];
+			$verdict['expect']  = $measured['expect'];
+			$verdict['count']   = $measured['count'];
+			$verdict['texts']   = $measured['texts'];
+			$verdict['matched'] = $measured['matched'];
+			$verdict['error']   = $measured['error'];
+		}
 	}
 
-	$verdict['url']    = $target['url'];
-	$verdict['expect'] = $target['expect'];
+	update_option( STATCHASERS_H1_OPTION, $verdict, false );
+
+	return $verdict;
+}
+
+/**
+ * Fetch one page and count the H1s the theme put in it.
+ *
+ * Split out of statchasers_h1_probe() so the same measurement can be taken on
+ * more than one page type in a single run. Everything it decides is about the
+ * page it was handed and nothing else.
+ *
+ * @param array{url:string,expect:string,anchor:string,label:string} $target
+ * @return array<string,mixed>
+ */
+function statchasers_h1_measure( array $target ): array {
+	$measured = array(
+		'url'     => (string) $target['url'],
+		'expect'  => (string) $target['expect'],
+		'label'   => (string) ( $target['label'] ?? '' ),
+		'count'   => null,
+		'texts'   => array(),
+		'matched' => false,
+		'error'   => '',
+	);
 
 	$response = wp_remote_get(
 		$target['url'],
@@ -220,16 +319,14 @@ function statchasers_h1_probe(): array {
 	);
 
 	if ( is_wp_error( $response ) ) {
-		$verdict['error'] = $response->get_error_message();
-		update_option( STATCHASERS_H1_OPTION, $verdict, false );
-		return $verdict;
+		$measured['error'] = $response->get_error_message();
+		return $measured;
 	}
 
 	$code = (int) wp_remote_retrieve_response_code( $response );
 	if ( 200 !== $code ) {
-		$verdict['error'] = sprintf( 'The page answered %d.', $code );
-		update_option( STATCHASERS_H1_OPTION, $verdict, false );
-		return $verdict;
+		$measured['error'] = sprintf( 'The page answered %d.', $code );
+		return $measured;
 	}
 
 	$body = (string) wp_remote_retrieve_body( $response );
@@ -244,13 +341,13 @@ function statchasers_h1_probe(): array {
 		}
 	}
 
-	$verdict['count'] = count( $matches[0] ?? array() );
-	$verdict['texts'] = array_slice( $texts, 0, 5 );
+	$measured['count'] = count( $matches[0] ?? array() );
+	$measured['texts'] = array_slice( $texts, 0, 5 );
 
-	// Either the generated phrase, or any heading that names the team. The
+	// Either the generated phrase, or any heading that names the subject. The
 	// second is what makes a hand-written hero — a Divi Code module carrying
 	// its own <h1> — read as the page's heading rather than as a stray one.
-	$expect = statchasers_h1_normalise( $target['expect'] );
+	$expect = statchasers_h1_normalise( (string) $target['expect'] );
 	$anchor = statchasers_h1_normalise( (string) ( $target['anchor'] ?? '' ) );
 
 	foreach ( $texts as $text ) {
@@ -258,14 +355,12 @@ function statchasers_h1_probe(): array {
 			|| ( '' !== $anchor && false !== stripos( $text, $anchor ) );
 
 		if ( $hit ) {
-			$verdict['matched'] = true;
+			$measured['matched'] = true;
 			break;
 		}
 	}
 
-	update_option( STATCHASERS_H1_OPTION, $verdict, false );
-
-	return $verdict;
+	return $measured;
 }
 
 /**
@@ -287,7 +382,7 @@ function statchasers_h1_probe(): array {
  * a plugin that guesses wrong here either leaves a page with no heading or
  * gives it two, and both are worse than the state before it was installed.
  */
-function statchasers_h1_should_print(): bool {
+function statchasers_h1_should_print( string $tool = '' ): bool {
 	$mode = statchasers_h1_mode();
 
 	if ( 'on' === $mode || 'replace' === $mode ) {
@@ -300,11 +395,53 @@ function statchasers_h1_should_print(): bool {
 
 	$verdict = statchasers_h1_verdict();
 
-	if ( null === $verdict || '' !== (string) $verdict['error'] || null === $verdict['count'] ) {
+	if ( null === $verdict ) {
 		return false;
 	}
 
-	return 0 === (int) $verdict['count'];
+	$measured = statchasers_h1_measurement_for( $verdict, $tool );
+
+	if ( null === $measured || '' !== (string) $measured['error'] || null === $measured['count'] ) {
+		return false;
+	}
+
+	return 0 === (int) $measured['count'];
+}
+
+/**
+ * The measurement that answers for THIS page type.
+ *
+ * The rule that matters is the last one: a tool with no measurement of its own
+ * gets no answer rather than somebody else's. Reusing the hub's count for a
+ * player page is exactly how the published player pages ended up with two H1s —
+ * the hub's title comes from a builder layout and the player page's comes from
+ * `page.php`, so the hub honestly measured zero and the player page honestly
+ * had one, and one number was being asked to describe both.
+ *
+ * A verdict stored before this file learned to measure per tool has no `tools`
+ * key at all. That one still answers for the hub, which is the page it was
+ * taken on, and for nothing else — so an upgrade quiets the duplicate heading
+ * immediately and the screen asks for a fresh run to restore the rest.
+ *
+ * @param array<string,mixed> $verdict Stored verdict.
+ * @param string              $tool    Page type, or '' for the stored default.
+ * @return array<string,mixed>|null
+ */
+function statchasers_h1_measurement_for( array $verdict, string $tool ): ?array {
+	if ( '' === $tool ) {
+		return $verdict;
+	}
+
+	if ( isset( $verdict['tools'][ $tool ] ) && is_array( $verdict['tools'][ $tool ] ) ) {
+		return $verdict['tools'][ $tool ];
+	}
+
+	// Pre-`tools` verdict: it was taken on a hub, so it speaks for hubs only.
+	if ( ! isset( $verdict['tools'] ) && 'team' === $tool ) {
+		return $verdict;
+	}
+
+	return null;
 }
 
 /**
@@ -635,7 +772,19 @@ function statchasers_page_heading_html( string $heading, string $lead = '' ): st
  * @param mixed $value Whatever an earlier filter decided.
  */
 function statchasers_h1_filter( $value ): bool {
-	return $value ? true : statchasers_h1_should_print();
+	if ( $value ) {
+		return true;
+	}
+
+	// Which page type is asking. The check is per page type because the answer
+	// is — see statchasers_h1_measurement_for().
+	$map = array(
+		'statchasers_team_shortcode_h1'    => 'team',
+		'statchasers_player_shortcode_h1'  => 'player',
+		'statchasers_matchup_shortcode_h1' => 'matchup',
+	);
+
+	return statchasers_h1_should_print( $map[ current_filter() ] ?? '' );
 }
 add_filter( 'statchasers_team_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_player_shortcode_h1', 'statchasers_h1_filter' );

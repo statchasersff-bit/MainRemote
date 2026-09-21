@@ -139,6 +139,9 @@ function wp_send_json_error( $d = null, $s = null ) {}
 function wp_parse_args( $a, $b ) { return array_merge( $b, (array) $a ); }
 function shortcode_atts( $pairs, $atts, $tag = '' ) { return array_merge( $pairs, (array) $atts ); }
 function get_the_title( $id = 0 ) { return ''; }
+// Which hook is running. statchasers_h1_filter() reads it to know which page
+// type is asking, so the tests set it directly.
+function current_filter() { return $GLOBALS['current_filter'] ?? ''; }
 function get_bloginfo( $k ) { return ''; }
 function is_admin() { return (bool) ( $GLOBALS['page']['admin'] ?? false ); }
 function did_action( $h ) { return 1; }
@@ -287,6 +290,48 @@ is( statchasers_h1_should_print(), false, 'forced off' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 
 is( statchasers_h1_filter( true ), true, 'an explicit true wins' );
+
+/*
+ * The check is asked per page type.
+ *
+ * The bug this covers shipped: one measurement taken on a team hub answered for
+ * player pages too, so a site whose hub title comes from a builder layout (no
+ * H1) and whose player pages come from page.php (one H1) printed a second H1 on
+ * every player page — on the setting whose whole job is to prevent that.
+ */
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
+$GLOBALS['options'][ STATCHASERS_H1_OPTION ]      = array(
+	'fingerprint' => statchasers_h1_fingerprint(),
+	'count' => 0, 'error' => '', 'matched' => false, 'texts' => array(),
+	'time' => time(), 'url' => 'u', 'theme' => 'T', 'expect' => '',
+	'tools' => array(
+		// The hub prints no title of its own; the player page prints one.
+		'team'   => array( 'count' => 0, 'error' => '', 'matched' => false, 'texts' => array(), 'url' => 'u', 'expect' => '' ),
+		'player' => array( 'count' => 1, 'error' => '', 'matched' => true,  'texts' => array( 'Jacoby Brissett' ), 'url' => 'p', 'expect' => '' ),
+	),
+);
+
+is( statchasers_h1_should_print( 'team' ), true, 'the hub has no theme H1 -> prints one' );
+is( statchasers_h1_should_print( 'player' ), false, 'the player page already has one -> prints none' );
+
+$GLOBALS['current_filter'] = 'statchasers_team_shortcode_h1';
+is( statchasers_h1_filter( false ), true, 'and the hub filter says so' );
+$GLOBALS['current_filter'] = 'statchasers_player_shortcode_h1';
+is( statchasers_h1_filter( false ), false, 'and the player filter says so' );
+
+// A tool with no measurement of its own gets no answer rather than the hub's.
+$GLOBALS['current_filter'] = 'statchasers_matchup_shortcode_h1';
+is( statchasers_h1_filter( false ), false, 'an unmeasured page type prints nothing' );
+
+// A verdict stored before this split still answers for the hub it was taken on.
+$GLOBALS['options'][ STATCHASERS_H1_OPTION ] = array(
+	'fingerprint' => statchasers_h1_fingerprint(),
+	'count' => 0, 'error' => '', 'matched' => false, 'texts' => array(),
+	'time' => time(), 'url' => 'u', 'theme' => 'T', 'expect' => '',
+);
+is( statchasers_h1_should_print( 'team' ), true, 'an old verdict still speaks for the hub' );
+is( statchasers_h1_should_print( 'player' ), false, 'but not for anything else' );
+$GLOBALS['current_filter'] = '';
 
 echo "\nwebfont\n";
 is( str_contains( statchasers_font_url(), 'family=Inter' ), true, 'Inter is the family asked for' );
