@@ -116,10 +116,12 @@ const windows = [];
  * The page with its own JavaScript actually run.
  *
  * Everything else in this file asserts on the HTML as sent, which is what a
- * crawler reads. The tab strip is the one place where the scripted behaviour is
- * different in kind rather than in polish — it switches the panel, rewrites the
- * heading above the fragment and puts a different URL in the address bar — and
- * none of that is visible in the served markup. Mirrors team.test.mjs.
+ * crawler reads. Two behaviours are different in kind rather than in polish and
+ * invisible in the served markup: the tab strip, which switches the panel,
+ * rewrites the heading above the fragment and puts a different URL in the
+ * address bar; and the state swap, which re-renders the page from another
+ * scoring format or season and deliberately does NOT touch the address bar.
+ * Mirrors team.test.mjs.
  */
 async function hydrated(pathname) {
   const res = await fetch(`${server.origin}${pathname}`);
@@ -141,6 +143,16 @@ async function hydrated(pathname) {
     virtualConsole,
   });
   windows.push(jsdom.window);
+  // jsdom ships no fetch, and the bundle's state swap — the scoring toggle and
+  // the season chips — is the one behaviour that needs one. Bridged to Node's,
+  // against the same test server the page was loaded from, so a click here goes
+  // through the real route and comes back as real HTML.
+  jsdom.window.fetch = async (input, init) => {
+    const target = new URL(String(input), jsdom.window.location.href);
+    const response = await fetch(target, { headers: init?.headers });
+    const body = await response.text();
+    return { ok: response.ok, status: response.status, text: async () => body };
+  };
   jsdom.window.eval(playerBundle);
   await new Promise((r) => setTimeout(r, 50));
   return { window: jsdom.window, doc: jsdom.window.document, errors };
@@ -3366,6 +3378,130 @@ describe("player section URLs", () => {
  * rule, and both survive a position filter — because the header and the list
  * disagreeing is the one failure a reader would believe rather than notice.
  */
+/**
+ * The scoring toggle changes the page, not the address.
+ *
+ * `?format=half` is still a real URL: the server renders it, the toggle still
+ * links to it, and with scripting off following it is how the format changes —
+ * the tests above cover that side. What these cover is the side a reader sees.
+ * One player is one page with one address, and pressing a control on the page
+ * they are already on must not leave them holding a different one.
+ */
+describe("the scoring toggle", () => {
+  /** Wait for the swapped-in render, which is a real request to the server. */
+  async function settled(read, want) {
+    for (let i = 0; i < 100; i++) {
+      if (read() === want) return true;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return false;
+  }
+
+  test("switching scoring re-renders in place and leaves the URL alone", async () => {
+    const landed = `/player/${fixture.slug}`;
+    const { window, doc, errors } = await hydrated(landed);
+    assert.deepEqual(errors, [], "the bundle ran without throwing");
+
+    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
+    assert.equal(format(), "ppr", "the page arrives in the format that ranks");
+
+    const half = [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
+      /format=half/.test(link.getAttribute("href") ?? ""),
+    );
+    assert.ok(half, "Half is a real link to a real URL");
+
+    half.dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    assert.ok(await settled(format, "half"), "the page re-rendered in half-PPR");
+
+    assert.equal(window.location.pathname, landed, "the address bar did not move");
+    assert.equal(window.location.search, "", "and nothing was appended to it");
+
+    const active = doc.querySelector(".scp-format-opt.is-active");
+    assert.match(
+      active.getAttribute("href"),
+      /format=half/,
+      "the lit option is the one the reader chose",
+    );
+    assert.ok(
+      doc.querySelectorAll("[data-scp-panel]").length > 1,
+      "and it is the whole profile that came back, not one section of it",
+    );
+  });
+
+  test("switching back is the bare slug again, not a cleaned-up query", async () => {
+    const landed = `/player/${fixture.slug}`;
+    const { window, doc } = await hydrated(landed);
+    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
+
+    const pick = (test) =>
+      [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
+        test(link.getAttribute("href") ?? ""),
+      );
+
+    pick((href) => /format=standard/.test(href)).dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    assert.ok(await settled(format, "standard"), "standard scoring rendered");
+
+    // PPR is the default, so its link is the bare address — the one the reader
+    // is standing on. Following it must still swap rather than navigate.
+    pick((href) => !/format=/.test(href)).dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    assert.ok(await settled(format, "ppr"), "PPR came back");
+    assert.equal(window.location.pathname + window.location.search, landed);
+  });
+
+  test("the tab the reader is on survives the swap", async () => {
+    const { window, doc } = await hydrated(`/player/${fixture.slug}`);
+    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
+
+    const click = (el) =>
+      el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    click(doc.querySelector('.scp-nav-link[data-scp-panel-id="game-log"]'));
+    assert.ok(doc.getElementById("game-log").classList.contains("is-active"));
+
+    click(
+      [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
+        /format=half/.test(link.getAttribute("href") ?? ""),
+      ),
+    );
+    assert.ok(await settled(format, "half"));
+
+    assert.ok(
+      doc.getElementById("game-log").classList.contains("is-active"),
+      "the reader is still looking at the game log, in their scoring",
+    );
+  });
+
+  test("a modifier click is left to the browser", async () => {
+    // Ctrl- or cmd-clicking one of these is how a reader deliberately opens the
+    // other format in a new tab. Swallowing that would be taking a real link
+    // away from them.
+    const { window, doc } = await hydrated(`/player/${fixture.slug}`);
+    const half = [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
+      /format=half/.test(link.getAttribute("href") ?? ""),
+    );
+
+    const event = new window.MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      metaKey: true,
+    });
+    half.dispatchEvent(event);
+
+    assert.equal(event.defaultPrevented, false, "the navigation was not cancelled");
+    assert.equal(
+      doc.querySelector("[data-scp-root]").getAttribute("data-format"),
+      "ppr",
+      "and nothing was swapped underneath it",
+    );
+  });
+});
+
 describe("the player index", () => {
   test("it opens on the directory, with no hero of its own", async () => {
     // It used to carry one: a two-part H1 over a line of facts. Both mounts

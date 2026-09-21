@@ -250,6 +250,10 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
    */
   if (options.panelKey) {
     window.addEventListener("popstate", () => {
+      // A root the page has replaced — see wireStateSwap in client/player.ts —
+      // is still wired, and its heading element is the container page's, shared
+      // with the root that took its place. Leave the live one to answer.
+      if (!root.isConnected) return;
       const id = fromPath(location.pathname);
 
       if (id) {
@@ -271,6 +275,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   // A hash arriving from outside — an in-page link, an edit to the address bar,
   // or the back button after some other navigation wrote one.
   window.addEventListener("hashchange", () => {
+    if (!root.isConnected) return;
     const id = fromHash();
     if (id === active) return;
     active = id;

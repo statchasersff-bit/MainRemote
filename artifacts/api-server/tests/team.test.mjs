@@ -1759,6 +1759,113 @@ describe("team.css survives a host theme", () => {
  * address a different PAGE rather than the hub wearing a second URL. Same
  * contract as the player pages.
  */
+describe("the Stats heading", () => {
+  /*
+   * The heading names the season its NUMBERS describe, not the season the page
+   * asked for. getTeamSnapshot() falls back a year while ESPN has nothing for
+   * the current one, which through Week 1 is every team — and a heading reading
+   * "Bills Team Stats 2026" over a block of 2025 figures is worse than the
+   * generic "Team Snapshot" it replaced.
+   *
+   * Both the heading and the note beneath it are built from `snapshot.season`,
+   * so they cannot disagree unless someone re-keys one of them to
+   * `state.season`. Asserting that they AGREE tests it on a live page in any
+   * week, with no fixture that has to be kept in step with a real season.
+   */
+  test("the heading and the note describe the same season", async () => {
+    const { doc } = await dom("/team/new-england-patriots/stats/");
+
+    const heading = doc.querySelector("[data-sct-panel] .sct-h2");
+    assert.ok(heading, "the Stats panel heads itself");
+
+    const headingYear = heading.textContent.match(/\b(2\d{3})\b/);
+    assert.ok(headingYear, `the heading carries a season: "${heading.textContent.trim()}"`);
+
+    const note = heading.parentElement.querySelector(".sct-note");
+    assert.ok(note, "and the block states which season it is showing");
+    const noteYear = note.textContent.match(/\b(2\d{3})\b/);
+    assert.ok(noteYear, `the note names a season: "${note.textContent.trim()}"`);
+
+    assert.equal(headingYear[1], noteYear[1], "one season, stated twice");
+  });
+
+  /*
+   * Read from the SOURCE, deliberately.
+   *
+   * The test above is the real invariant but it cannot fail today: outside the
+   * fallback window `snapshot.season` and `state.season` are the same number,
+   * so a page rendered from the wrong one is indistinguishable from a page
+   * rendered from the right one. It starts biting exactly when it matters and
+   * not one day earlier — which is no use to whoever makes the change.
+   *
+   * Nothing here stubs ESPN, so there is no way to render the fallback on
+   * demand. This is the next best thing: the one line the bug would live on.
+   */
+  test("the heading is keyed to the snapshot's season, not the page's", async () => {
+    const src = fs.readFileSync(
+      new URL("../src/lib/team-render.ts", import.meta.url),
+      "utf8",
+    );
+
+    const call = src.match(/h2\(`\$\{data\.team\.nickname\} Team Stats \$\{([^}]+)\}`\)/);
+    assert.ok(call, "the Stats block heads itself with the club and a season");
+    assert.equal(
+      call[1],
+      "snapshot.season",
+      "state.season is the season the page ASKED for; through Week 1 the numbers are last season's",
+    );
+  });
+
+  /*
+   * `?h1=1` promotes the panel's opening heading to the page's <h1>. It also
+   * has to be part of the fragment cache key, or the first request for a slug
+   * decides the answer for every later one — and both directions are wrong:
+   *
+   *   - plain first: a host running "let the tool supply the heading" gets the
+   *     un-promoted render. That mode ALSO empties the theme's page title, so
+   *     the page ships with no <h1> at all.
+   *   - h1=1 first: a plain mount gets the promoted render and prints two.
+   *
+   * The order below is the regression, not decoration: the same three requests
+   * passed before the fix as long as the promoted one went first.
+   */
+  test("the promoted heading is cached apart from the plain one", async () => {
+    const at = (query) =>
+      get(`/embed/team/new-england-patriots?section=stats${query}`);
+    const h1s = (body) => (body.match(/<h1\b/g) ?? []).length;
+
+    const before = await at("");
+    const promoted = await at("&h1=1");
+    const after = await at("");
+
+    assert.equal(h1s(before.body), 0, "a plain fragment prints no H1 of its own");
+    assert.equal(h1s(promoted.body), 1, "?h1=1 promotes exactly one heading");
+    assert.equal(
+      h1s(after.body),
+      0,
+      "and the promoted render is not served back to a plain request",
+    );
+
+    // It is the Stats heading that was promoted, not some other <h2>.
+    assert.match(
+      promoted.body,
+      /<h1 class="sct-h2[^"]*">Patriots Team Stats 2\d{3}<\/h1>/,
+      "the H1 is the section's own heading",
+    );
+  });
+
+  test("it names the club, so 32 pages do not share one H1", async () => {
+    const seen = new Set();
+    for (const slug of ["new-england-patriots", "buffalo-bills", "dallas-cowboys"]) {
+      const { doc } = await dom(`/team/${slug}/stats/`);
+      const own = doc.querySelector("[data-sct-panel] .sct-h2");
+      assert.ok(own, `${slug}: the section heads itself`);
+      seen.add(own.textContent.trim());
+    }
+    assert.equal(seen.size, 3, `each club gets its own heading: ${[...seen].join(" | ")}`);
+  });
+});
+
 describe("team section URLs", () => {
   /**
    * The heading each section prints for itself — NOT the H1.
@@ -1771,7 +1878,7 @@ describe("team section URLs", () => {
    */
   const SECTIONS = [
     ["outlook", /^2\d{3} Fantasy Outlook$/],
-    ["stats", /^Team Snapshot$/],
+    ["stats", /^Patriots Team Stats 2\d{3}$/],
     ["schedule", /Patriots Schedule$/],
     ["depth-chart", /^Patriots Fantasy Depth Chart$/],
   ];

@@ -6771,9 +6771,18 @@ body.sct-page.is-embed {
   gap: 8px;
 }
 
+/* `min-width: 0` because this is a grid item holding a long heading, and the
+   automatic minimum size of a grid item is its content — without it a title
+   like "Tampa Bay Buccaneers vs Jacksonville Jaguars" sets the column's width
+   instead of wrapping inside it. It used to arrive by way of `.sct-hero-text`,
+   which this block carried until that class turned out to be dragging the hub
+   hero's `grid-area: text` along with it and tearing this hero into two
+   columns. The one useful declaration is restated here; the placement is not
+   wanted and is now not inherited. */
 .sct-mu-strip-text {
   display: grid;
   gap: 2px;
+  min-width: 0;
   text-align: center;
 }
 

@@ -3,10 +3,9 @@
  *
  * The page is complete before this file runs — every stat, every week of the
  * game log, every injury and every chart is in the HTML the server sent, and
- * the tab strip works with JavaScript disabled. Nothing here fetches anything
- * and nothing here renders a section.
+ * the tab strip works with JavaScript disabled.
  *
- * It adds five things:
+ * It adds six things:
  *   1. tab behaviour for the section bar, from client/enhance.ts;
  *   2. relative timestamps on the news list, likewise;
  *   3. height reporting for the legacy iframe mount, likewise;
@@ -18,7 +17,15 @@
  *      chart, sortable columns on the game log and the career table, the
  *      per-week detail the game log folds away behind each week number, the
  *      header's staged squeeze, and centring the peers rail on the card the
- *      reader is standing on.
+ *      reader is standing on;
+ *   6. the state swap: the scoring toggle and the two season selectors change
+ *      the page WITHOUT changing its address. See wireStateSwap.
+ *
+ * (6) is the one thing here that fetches, and it is still an enhancement: the
+ * three controls are real links to real URLs, the server still renders every
+ * one of them, and with scripting off they navigate exactly as they always
+ * did. What the fetch buys is the reader keeping their place — and the address
+ * bar keeping the one URL this page is supposed to have.
  *
  * (5)'s squeeze is the one thing here that changes how the page LOOKS rather
  * than what it does, and it is still an enhancement: the header is complete
@@ -878,27 +885,256 @@ function wirePeerRail(root: HTMLElement): void {
   }
 }
 
+/* ------------------------------------------------------------ state swap */
+
+/**
+ * The controls that re-render the page in another state.
+ *
+ * Three of them: the scoring toggle (.scp-format-opt), the game log's season
+ * chips and the advanced table's season chips (both .scp-season-opt). They are
+ * one family because they are one thing — a link to THIS page rendered from
+ * different state — and the server builds all three from pageUrl().
+ */
+const SWAP_LINK_SELECTOR = ".scp-format-opt, .scp-season-opt";
+
+/** The groups those links live in, used to find a control again after a swap. */
+const SWAP_GROUP_SELECTOR = ".scp-format, .scp-seasons";
+
+/**
+ * The URL the content on screen was rendered from.
+ *
+ * Not `location`, which is deliberately left alone: the whole point of the swap
+ * is that `/nfl/players/ashton-jeanty/` stays `/nfl/players/ashton-jeanty/`
+ * whatever scoring the reader picks. Read at parse time rather than at boot,
+ * because wireTabs rewrites the address bar as soon as a tab is clicked.
+ */
+let renderedUrl = location.pathname + location.search;
+
+/** The swap in flight. A second click makes the first one's answer stale. */
+let swapToken = 0;
+
+/**
+ * A URL reduced to the state it names, for comparing two of them.
+ *
+ * The trailing slash and the parameter order are the server's business and
+ * differ between the link (`/nfl/players/x?format=half`) and the address the
+ * reader landed on (`/nfl/players/x/`); neither difference is a different page.
+ * The hash is dropped outright — nothing navigates, so there is nothing for
+ * `#game-log` to scroll to that is not already open.
+ */
+function stateKey(url: URL): string {
+  const params = Array.from(url.searchParams.entries()).sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  );
+  const query = params.map(([k, v]) => `${k}=${v}`).join("&");
+  return url.pathname.replace(/\/+$/, "") + (query ? `?${query}` : "");
+}
+
+/**
+ * Where a control sits among the page's state controls.
+ *
+ * Group index plus link index, because the identity that matters is positional:
+ * the same three scoring options and the same season chips come back in the
+ * same order in every render of the page, whatever state it is rendered from.
+ * Anything subtler (the href, the label) changes with the state, which is the
+ * one thing this must survive.
+ */
+function controlAddress(root: HTMLElement, link: HTMLAnchorElement): string | null {
+  const group = link.closest<HTMLElement>(SWAP_GROUP_SELECTOR);
+  if (!group || !root.contains(group)) return null;
+  const groups = Array.from(root.querySelectorAll<HTMLElement>(SWAP_GROUP_SELECTOR));
+  const links = Array.from(group.querySelectorAll<HTMLAnchorElement>(SWAP_LINK_SELECTOR));
+  return `${groups.indexOf(group)}:${links.indexOf(link)}`;
+}
+
+/** The same control in a freshly rendered root, if the render still has one. */
+function controlAt(root: HTMLElement, address: string | null): HTMLAnchorElement | null {
+  if (!address) return null;
+  const [groupIndex, linkIndex] = address.split(":").map(Number);
+  const group = Array.from(root.querySelectorAll<HTMLElement>(SWAP_GROUP_SELECTOR))[
+    groupIndex!
+  ];
+  if (!group) return null;
+  return (
+    Array.from(group.querySelectorAll<HTMLAnchorElement>(SWAP_LINK_SELECTOR))[
+      linkIndex!
+    ] ?? null
+  );
+}
+
+/**
+ * Reopen the tab the reader was on.
+ *
+ * wireTabs settles the fresh root on the tab the URL names, which after a swap
+ * is the tab the page LOADED on rather than the one the reader walked to — the
+ * address bar has been left behind on purpose, so it can no longer be asked.
+ * Clicking the link goes through wireTabs' own handler, so the heading and the
+ * address bar stay in step with the panel exactly as they do for a real click.
+ */
+function restoreTab(root: HTMLElement, panelId: string): void {
+  if (!panelId) return;
+  const link = root.querySelector<HTMLAnchorElement>(
+    `.scp-nav-link[data-scp-panel-id="${panelId}"]`,
+  );
+  if (!link || link.classList.contains("is-active")) return;
+  link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+}
+
+/**
+ * Fetch this page in another state and put it on screen in place.
+ *
+ * The response is the whole page — the WordPress mount wraps the fragment in a
+ * theme — and all that is taken from it is the profile root, which is the unit
+ * the server renders and the unit every behaviour here is wired against.
+ *
+ * When anything goes wrong the browser is handed the navigation it was about to
+ * make. A reader who clicks "Half" must end up looking at half-PPR; a dirty URL
+ * is the complaint this function exists to answer, not a reason to show them
+ * the wrong numbers.
+ */
+async function swapState(
+  root: HTMLElement,
+  target: string,
+  link: HTMLAnchorElement,
+): Promise<void> {
+  const token = ++swapToken;
+  root.setAttribute("aria-busy", "true");
+
+  // Measured before the fetch, because the control the reader clicked is the
+  // one thing on screen they are certainly looking at: a render that is taller
+  // or shorter above it must not slide it out from under the pointer.
+  const anchorTop = link.getBoundingClientRect().top;
+  const address = controlAddress(root, link);
+  const openTab =
+    root.querySelector<HTMLElement>(".scp-nav-link.is-active")?.dataset["scpPanelId"] ?? "";
+
+  let next: HTMLElement | null = null;
+  try {
+    const response = await fetch(target, {
+      credentials: "same-origin",
+      headers: { "X-Requested-With": "statchasers-player" },
+    });
+    if (response.ok) {
+      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+      next = doc.querySelector<HTMLElement>(ROOT_SELECTOR);
+    }
+  } catch {
+    next = null;
+  }
+
+  // A later click already owns the page. Its own answer will land.
+  if (token !== swapToken) return;
+
+  if (!next || !root.isConnected) {
+    location.assign(target);
+    return;
+  }
+
+  const fresh = document.importNode(next, true);
+  root.replaceWith(fresh);
+  renderedUrl = target;
+
+  wireProfile(fresh);
+  restoreTab(fresh, openTab);
+
+  const moved = controlAt(fresh, address);
+  if (moved) {
+    const drift = moved.getBoundingClientRect().top - anchorTop;
+    if (drift) window.scrollBy(0, drift);
+    // The reader's focus was on a link that no longer exists. Without this it
+    // falls back to <body> and the next Tab starts again from the top.
+    moved.focus({ preventScroll: true });
+  }
+}
+
+/**
+ * Let the state controls change the page without changing its address.
+ *
+ * `?format=half` is a real address that the server renders and the canonical
+ * points away from — it has to be, or the toggle would not work with scripting
+ * off. What it should not be is the address a reader is left holding after
+ * pressing a button on the page they are already on: one page, one URL, and
+ * the scoring a reader chose is state, not a different document.
+ *
+ * Delegated from the root so it keeps working on content this same handler put
+ * there, and declined for every click the browser should handle itself —
+ * anything with a modifier key, which is how a reader deliberately opens one of
+ * these in a new tab.
+ */
+function wireStateSwap(root: HTMLElement): void {
+  root.addEventListener("click", (event: MouseEvent) => {
+    if (event.defaultPrevented) return;
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest<HTMLAnchorElement>(SWAP_LINK_SELECTOR);
+    if (!link || !root.contains(link)) return;
+    if (link.target && link.target !== "_self") return;
+
+    let url: URL;
+    try {
+      url = new URL(link.href, location.href);
+    } catch {
+      return;
+    }
+    // Another origin is somebody else's page, and fetching it would be pointless
+    // even where CORS allowed it.
+    if (url.origin !== location.origin) return;
+
+    event.preventDefault();
+
+    const next = stateKey(url);
+    // The lit scoring option, and the lit season chip on the advanced table,
+    // both link to the state already on screen. Swallow the click rather than
+    // spend a fetch re-rendering what is there. (The game log's lit chip links
+    // to the state that CLEARS it, which is a different key and does swap.)
+    if (next === stateKey(new URL(renderedUrl, location.href))) return;
+
+    void swapState(root, next, link);
+  });
+}
+
 /* ------------------------------------------------------------------ boot */
+
+/**
+ * Everything a profile root needs, in one place.
+ *
+ * Called again on the root a swap puts on screen, so a page the reader has
+ * re-rendered behaves exactly like the one they arrived on.
+ */
+function wireProfile(root: HTMLElement): void {
+  wireTabs(root, {
+    navSelector: "[data-scp-nav]",
+    listSelector: ".scp-nav-list",
+    linkSelector: ".scp-nav-link",
+    datasetKey: "scpTabs",
+    panelKey: "scpPanelId",
+    headingKey: "scpHeading",
+    leadKey: "scpLead",
+  });
+  wireTimestamps(root);
+  wirePlayerSearch(root);
+  wireChartTooltip(root);
+  wireHeroFit(root);
+  wireSortableLog(root);
+  wireExpandableLog(root);
+  wirePeerRail(root);
+  wireStateSwap(root);
+  wireFrameHeight(root);
+}
 
 function boot(): void {
   for (const root of Array.from(document.querySelectorAll<HTMLElement>(ROOT_SELECTOR))) {
-    wireTabs(root, {
-      navSelector: "[data-scp-nav]",
-      listSelector: ".scp-nav-list",
-      linkSelector: ".scp-nav-link",
-      datasetKey: "scpTabs",
-      panelKey: "scpPanelId",
-      headingKey: "scpHeading",
-      leadKey: "scpLead",
-    });
-    wireTimestamps(root);
-    wirePlayerSearch(root);
-    wireChartTooltip(root);
-    wireHeroFit(root);
-    wireSortableLog(root);
-    wireExpandableLog(root);
-    wirePeerRail(root);
-    wireFrameHeight(root);
+    wireProfile(root);
   }
 
   for (const root of Array.from(document.querySelectorAll<HTMLElement>(INDEX_SELECTOR))) {

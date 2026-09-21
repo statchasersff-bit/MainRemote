@@ -1276,3 +1276,67 @@ describe("sortable stat tables", () => {
     }
   });
 });
+
+/*
+ * The hero is ONE block, not two columns.
+ *
+ * `.sct-hero-text` is the team hub hero's named grid area — `grid-area: text`,
+ * which is only meaningful inside `.sct-hero-inner`'s `grid-template-areas`.
+ * The matchup hero borrowed the class for the `min-width: 0` on it and brought
+ * the placement along: a grid-area name that matches no line resolves against
+ * the IMPLICIT grid rather than being ignored, so the title was pushed into a
+ * column of its own while the board and the venue line auto-placed into the
+ * first. The hero came apart into two columns with the title stranded at the
+ * bottom of the right-hand one.
+ *
+ * Asserted against the STYLESHEET rather than against a list of class names
+ * here: the rule is "nothing outside `.sct-hero-inner` may carry a class that
+ * team.css gives a named grid-area", and the set of such classes is something
+ * only team.css knows.
+ */
+describe("the matchup hero is one block", () => {
+  async function placementClasses() {
+    const res = await get("/team.css");
+    assert.equal(res.status, 200, "team.css should be served");
+    const named = new Set();
+    for (const [, cls, body] of res.body.matchAll(
+      /^\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}/gm,
+    )) {
+      // A named area, not `grid-area: 1 / 2` and not `auto`.
+      if (/grid-area:\s*[a-zA-Z][a-zA-Z0-9_-]*\s*;/.test(body)) named.add(cls);
+    }
+    assert.ok(named.size > 0, "team.css defines named grid areas");
+    return named;
+  }
+
+  // Both states, through the same helpers the rest of this file uses to find a
+  // pair that is actually in each one — the hero is built by one function and
+  // `.is-final` only changes what goes in it, so a borrowed class would be in
+  // both, but a test that invents a game segment 404s instead of asserting.
+  for (const [label, page] of [
+    ["a fixture", fixturePage],
+    ["a final", postgamePage],
+  ]) {
+    test(`${label} hero borrows no grid placement`, async () => {
+      const named = await placementClasses();
+      const found = await page();
+      if (!found) return;
+      const { doc } = found;
+
+      const hero = doc.querySelector(".sct-mu-hero");
+      assert.ok(hero, "the hero renders");
+
+      const offenders = [...hero.querySelectorAll("*")]
+        .filter((el) => !el.closest(".sct-hero-inner"))
+        .flatMap((el) =>
+          [...el.classList].filter((c) => named.has(c)).map((c) => `${c}`),
+        );
+
+      assert.deepEqual(
+        [...new Set(offenders)],
+        [],
+        "these classes place themselves in a grid that has no such area",
+      );
+    });
+  }
+});

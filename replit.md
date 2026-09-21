@@ -334,7 +334,10 @@ and the deployment. It does not touch the news page.
   provider uses, plus `TEAM_USER_AGENT`.
 - `src/lib/team/schedule.ts` / `profile.ts` / `snapshot.ts` — ESPN providers:
   the regular-season fixture list (bye week derived from the gap), record and
-  head coach, and the four Team Snapshot rates with their NFL ranks.
+  head coach, and the four Team Snapshot rates with their NFL ranks. "Team
+  Snapshot" is the module's name and the data's; on the page the block is headed
+  "<Nickname> Team Stats <season>" — the Stats tab's opening heading, and the
+  <h1> of `/nfl/teams/<team>/stats/`.
 - `src/lib/team/nfl-state.ts` — season, week and season type from Sleeper.
   Gates the record and picks which season the snapshot describes.
 - `src/lib/team/team-data.ts` — composes one `TeamPageData` from all of the
