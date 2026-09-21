@@ -410,13 +410,26 @@ add_filter(
  * hero's LOOK is still the site's own CSS — this file ships none of that, for
  * the reason given on statchasers_page_heading_html().
  *
- * 1. The gutter. A hand-built hero is a full-width module and carries its own
- *    side padding — 40px on desktop, 28 and 18 further down. The generated one
- *    is printed into the same container as the fragment beneath it, and an
- *    embedded fragment runs flush to that container because the host owns the
- *    page gutter (`.sct.is-embed { --sct-gutter: 0 }`). Keeping the module's
- *    padding there indents the heading past the tool it heads. So the copy the
- *    plugin prints has none, at every breakpoint, and the two line up.
+ * 1. The gutter. A hand-built hero is a full-width module: it spans the window
+ *    and constrains its own contents, with side padding — 40px on desktop, 28
+ *    and 18 further down — and an inner shell held to the site's content width
+ *    and centred. The generated one is printed into the same container as the
+ *    fragment beneath it, and an embedded fragment runs flush to that container
+ *    because the host owns the page gutter (`.sct.is-embed { --sct-gutter: 0 }`).
+ *    So both halves of the module's own centring indent the heading past the
+ *    tool it heads, and both have to go: the padding, and the max-width with
+ *    the auto margins that go with it. Zeroing only the padding left the larger
+ *    of the two in place — a container wider than the shell still inset the
+ *    heading by half the difference, which is what a reader actually sees.
+ *
+ *    `!important`, which is not free and is worth saying why. The site's hero
+ *    CSS lives in Divi > Theme Options > Custom CSS, and Divi prints that block
+ *    from `wp_head` at the same priority this runs at; with the two rules at
+ *    equal specificity the winner is whichever hook fired last, which is not
+ *    something this file can know or should depend on. The element being forced
+ *    is one the plugin generated itself, four lines down, and the declarations
+ *    only ever undo centring — so the cost is bounded to the plugin's own copy,
+ *    and the hand-written heroes on every other page are untouched.
  *
  * 2. The husk, when the theme's title has been emptied. `:empty` matches an
  *    element with no children at all, including text — which is exactly what
@@ -434,7 +447,11 @@ add_action(
 		$css = '';
 
 		if ( statchasers_h1_should_print() ) {
-			$css .= '.sc-lo-hero--generated .sc-lo-hero__inner{padding-left:0;padding-right:0}';
+			$css .= '.sc-lo-hero--generated{padding-left:0!important;padding-right:0!important}' .
+				'.sc-lo-hero--generated .sc-lo-hero__inner{' .
+					'max-width:none!important;width:100%!important;' .
+					'margin-left:0!important;margin-right:0!important;' .
+					'padding-left:0!important;padding-right:0!important}';
 		}
 
 		if ( statchasers_h1_should_replace() ) {

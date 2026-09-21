@@ -33,9 +33,18 @@
  */
 
 import { wireFrameHeight, wireTabs, wireTimestamps } from "./enhance";
+import { wirePlayerDirectory } from "./player-index";
 import { wirePlayerSearch } from "./player-search";
 
 const ROOT_SELECTOR = "[data-scp-root]";
+
+/**
+ * The index of every profile — /player, and the fragment the container page at
+ * /nfl/players/ mounts. A different root from the one above and deliberately
+ * so: none of the profile's wiring (tabs, chart, sortable log, header fitter)
+ * has anything to do on a page with no player on it.
+ */
+const INDEX_SELECTOR = "[data-scp-index]";
 
 /* --------------------------------------------------------------- tooltip */
 
@@ -308,7 +317,8 @@ function wireExpandableLog(root: HTMLElement): void {
  *
  * Ported from the start/sit tool's player header, whose rule is the one this
  * follows: breakpoints decide topology, measurement decides everything inside.
- * The two media queries in player.css answer "one row, two rows, or stacked".
+ * The three media queries in player.css answer "one row, two columns, or
+ * stacked".
  * Everything else — how big the bust is, how wide the numbers are, how long
  * the club's name is — is decided here, from the widths the parts actually
  * take, because a viewport width cannot know how long "Amon-Ra St. Brown" is
@@ -318,10 +328,10 @@ function wireExpandableLog(root: HTMLElement): void {
  * first — whitespace, then type and column scale in proportion, then word
  * swaps, then, only at the very end, the name is allowed to wrap.
  *
- * Runs in the one-row tier only. Below 560px the layout has already made the
- * room these scales exist to find, and a squeezed part inside a stacked header
- * is a small part for no reason; the scales are cleared and the CSS fallbacks
- * of 1 take over.
+ * Runs in the one-row tier only — above 800px. Below that the layout has
+ * already made the room these scales exist to find, and a squeezed part inside
+ * a stacked header is a small part for no reason; the scales are cleared and
+ * the CSS fallbacks of 1 take over.
  */
 
 /** The six multipliers player.css writes every hero size against. */
@@ -461,15 +471,27 @@ interface HeroStage {
  *      the strip exactly as outside it
  *   3  words — "New England Patriots" becomes "Patriots", the draft line
  *      abbreviates — then the last of the name's clearance and the gutter
- *   4  the strip floors at 0.70: below that the three figures stop being the
- *      answer a reader came for and start being decoration
- *   5  "Patriots" becomes "NE", the draft line goes, and bust, type and strip
- *      take their last cut to 0.65 / 0.75 / 0.60
+ *   4  the strip's last cut, and the last of its padding
+ *   5  "Patriots" becomes "NE", the draft line goes, and bust and type take
+ *      their last cut to 0.65 / 0.75 — the strip is already at its floor
  *
- * The floors are the start/sit tool's, unchanged. They were picked from the
- * narrowest supported screen against the widest content case, and below them
- * the header stops being readable — which is why stage 5 is the last one and
- * the name wraps after it rather than anything shrinking further.
+ * The strip floors at 0.88 and takes no part in stage 5. It used to run to
+ * 0.60, which is where this came from: the label row is letter-spaced small
+ * caps at 10px, so 0.60 printed "POS RANK" at six pixels and the figure under
+ * it at fourteen — and a 620px window, which is a phone held sideways and not
+ * an edge case, sat there. A strip nobody can read is not a cheaper concession
+ * than a surname on two lines: it is the panel's whole content spent to buy
+ * the least load-bearing part of the header one more line. So the type stops
+ * at 0.88 — 8.8px on the label, 20.2px on the figure — and the CELL PADDING
+ * carries stage 4 instead, down to 0.3: the same whitespace-before-legibility
+ * rule stage 2 already follows, taken to its end. The narrow tiers are
+ * unaffected either way; at 800px and below the scales are cleared and the
+ * strip has a full-width row of its own at full size.
+ *
+ * The other floors are the start/sit tool's, unchanged. They were picked from
+ * the narrowest supported screen against the widest content case, and below
+ * them the header stops being readable — which is why stage 5 is the last one
+ * and the name wraps after it rather than anything shrinking further.
  */
 function heroStages(nat: HeroNatural): HeroStage[] {
   return [
@@ -479,14 +501,14 @@ function heroStages(nat: HeroNatural): HeroStage[] {
         { key: "gap", from: 1, to: 0.6, basis: HERO_TEXT_CLEAR },
         { key: "bust", from: 1, to: 0.85, basis: nat.photo },
         { key: "id", from: 1, to: 0.9, basis: nat.id.full },
-        { key: "tbl", from: 1, to: 0.88, basis: nat.stripText },
+        { key: "tbl", from: 1, to: 0.94, basis: nat.stripText },
       ],
     },
     {
       levers: [
         { key: "bust", from: 0.85, to: 0.75, basis: nat.photo },
         { key: "id", from: 0.9, to: 0.8, basis: nat.id.full },
-        { key: "tblp", from: 1, to: 0.6, basis: nat.stripPad },
+        { key: "tblp", from: 1, to: 0.55, basis: nat.stripPad },
       ],
     },
     {
@@ -498,8 +520,8 @@ function heroStages(nat: HeroNatural): HeroStage[] {
     },
     {
       levers: [
-        { key: "tbl", from: 0.88, to: 0.7, basis: nat.stripText },
-        { key: "tblp", from: 0.6, to: 0.4, basis: nat.stripPad },
+        { key: "tbl", from: 0.94, to: 0.88, basis: nat.stripText },
+        { key: "tblp", from: 0.55, to: 0.3, basis: nat.stripPad },
       ],
     },
     {
@@ -507,7 +529,6 @@ function heroStages(nat: HeroNatural): HeroStage[] {
       levers: [
         { key: "bust", from: 0.75, to: 0.65, basis: nat.photo },
         { key: "id", from: 0.8, to: 0.75, basis: nat.id.tight },
-        { key: "tbl", from: 0.7, to: 0.6, basis: nat.stripText },
       ],
     },
   ];
@@ -746,11 +767,14 @@ function wireHeroFit(root: HTMLElement): void {
     hero.setAttribute("data-scp-hero-wrap", "0");
   };
 
-  // The one-row tier, and the only tier this runs in. Matches the 559.98px
-  // boundary in player.css from the other side.
+  // The one-row tier, and the only tier this runs in. Matches the 800px
+  // boundary in player.css from the other side: at 800 and below the figure
+  // takes a column of its own and the strip stacks under the name, and below
+  // 560 the whole header stacks. Both tiers have already made the room these
+  // scales exist to find.
   const oneRow =
     typeof window.matchMedia === "function"
-      ? window.matchMedia("(min-width: 560px)")
+      ? window.matchMedia("(min-width: 800.02px)")
       : null;
 
   let current: HeroFit | null = null;
@@ -874,6 +898,14 @@ function boot(): void {
     wireSortableLog(root);
     wireExpandableLog(root);
     wirePeerRail(root);
+    wireFrameHeight(root);
+  }
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>(INDEX_SELECTOR))) {
+    // The same search widget the profile carries, so the box behaves the same
+    // on both pages, plus the chips that are the index's own.
+    wirePlayerSearch(root);
+    wirePlayerDirectory(root);
     wireFrameHeight(root);
   }
 }

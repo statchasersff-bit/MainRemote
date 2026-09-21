@@ -71,7 +71,8 @@ function is_singular( $t = '' ) { return (bool) ( $GLOBALS['page']['singular'] ?
 function in_the_loop() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function is_main_query() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function get_queried_object() { return $GLOBALS['page']['post'] ?? null; }
-function get_post() { return null; }
+function get_post() { return $GLOBALS['page']['current'] ?? null; }
+function get_queried_object_id() { $o = get_queried_object(); return $o instanceof WP_Post ? (int) $o->ID : 0; }
 /*
  * Tag boundaries matter here, unlike most of these stubs. WordPress matches a
  * whole registered tag; a strpos for "[statchasers_team" also finds
@@ -95,13 +96,13 @@ function admin_url( $p = '' ) { return 'https://example.com/wp-admin/' . $p; }
 function add_query_arg( $k, $v, $u ) { return $u . '?' . $k . '=' . $v; }
 function get_permalink( $id ) { return 'https://example.com/p/' . $id . '/'; }
 function get_post_status( $id ) { return 'publish'; }
-function get_page_by_path( $p ) { return null; }
+function get_page_by_path( $p ) { return $GLOBALS['pages_by_path'][ $p ] ?? null; }
 function get_page_uri( $id ) { return 'nfl'; }
 function wp_insert_post( $a, $b = false ) { return 1; }
 function wp_update_post( $a ) { return 1; }
 function is_wp_error( $t ) { return false; }
 function wp_remote_get( $u, $a = array() ) { return array(); }
-function wp_remote_retrieve_body( $r ) { return ''; }
+function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
 function wp_remote_retrieve_response_code( $r ) { return 200; }
 function get_post_meta( $id, $k, $single = false ) { return ''; }
 function update_post_meta( $id, $k, $v ) {}
@@ -113,6 +114,7 @@ function wp_unslash( $v ) { return $v; }
 function ucwords_( $s ) { return ucwords( $s ); }
 function statchasers_news_origin() { return 'https://api.example.com'; }
 function statchasers_news_flush() {}
+function statchasers_news_asset_version() { return '1'; }
 function statchasers_news_schema_page_id( $d ) { return ''; }
 function statchasers_news_schema_node() { return array(); }
 function wp_enqueue_script() {}
@@ -170,7 +172,7 @@ function get_locale() { return 'en_US'; }
 function wp_timezone() { return new DateTimeZone( 'UTC' ); }
 function printf_( $s ) {}
 
-class WP_Post { public $ID = 7; public $post_title = ''; public $post_content = ''; public $post_name = ''; }
+class WP_Post { public $ID = 7; public $post_title = ''; public $post_content = ''; public $post_name = ''; public $post_type = 'page'; }
 class WP_Error {}
 class WP_Query {}
 
@@ -352,6 +354,40 @@ $GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 
 
 is( statchasers_team_post_has_index_shortcode(), true, 'the team index is detected' );
 is( statchasers_team_post_has_shortcode(), false, 'and is not mistaken for a hub' );
+$GLOBALS['page'] = array();
+
+echo "\nthe players container mounts itself\n";
+/*
+ * The failure this covers: a container page built in Divi is neither empty nor
+ * the old stub, so statchasers_player_write_index() leaves it alone — correctly,
+ * it is the editor's page — and /nfl/players/ ships with a heading, a sentence
+ * and no roster under it. The container is the one page that mounts itself.
+ *
+ * Only the positive case is asserted, and only once: the predicate memoises,
+ * which is what makes it cheap on a Divi page that asks hundreds of times.
+ */
+$container = new WP_Post();
+$container->ID           = 42;
+$container->post_name    = 'players';
+$container->post_content = '<p>Search and explore fantasy football players.</p>';
+
+$GLOBALS['page']          = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $container, 'current' => $container );
+$GLOBALS['pages_by_path'] = array( STATCHASERS_PLAYER_PATH => $container );
+$GLOBALS['http_body']     = '<div class="scp is-embed" data-scp-index="1">roster</div>';
+
+is( statchasers_player_is_container_page(), true, 'the page at nfl/players is the container' );
+is( statchasers_player_post_has_index_shortcode(), false, 'and this one carries no mount of its own' );
+is(
+	str_contains( statchasers_player_auto_index( '<p>Copy.</p>' ), 'data-scp-index' ),
+	true,
+	'so the roster is appended to it'
+);
+is(
+	statchasers_player_auto_index( '<p>Copy.</p>' ),
+	'<p>Copy.</p>',
+	'and appended once per request, not once per the_content call'
+);
+
 $GLOBALS['page'] = array();
 
 echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );

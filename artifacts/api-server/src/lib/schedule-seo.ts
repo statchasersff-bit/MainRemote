@@ -25,7 +25,6 @@
  */
 
 import { escapeHtml } from "./render";
-import type { NflTeam } from "./team/teams";
 import type { ScheduleSeason, ScheduleView } from "./schedule/schedule-data";
 
 export interface SchedulePageMeta {
@@ -40,7 +39,6 @@ const SITE_NAME = "StatChasers";
 export interface SchedulePageMetaInput {
   view: ScheduleView;
   week: number;
-  team: NflTeam | null;
 }
 
 export function schedulePageMeta(
@@ -49,18 +47,6 @@ export function schedulePageMeta(
   state: SchedulePageMetaInput,
 ): SchedulePageMeta {
   const season = schedule?.season ?? new Date().getUTCFullYear();
-
-  if (state.view === "team" && state.team) {
-    return {
-      title: `${state.team.fullName} ${season} Schedule | ${SITE_NAME}`,
-      description:
-        `Every ${state.team.fullName} game of the ${season} regular season: ` +
-        `opponents, dates, kickoff times, TV, the bye week, and the home-road ` +
-        `split across each third of the season.`,
-      canonical,
-      siteName: SITE_NAME,
-    };
-  }
 
   if (state.view === "matrix") {
     return {

@@ -37,7 +37,7 @@ import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import { getAvailableSeasons } from "../lib/player/data";
-import { indexedPlayers } from "../lib/player/player-data";
+import { indexedPlayers, playerDirectory } from "../lib/player/player-data";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -208,7 +208,9 @@ function sectionNotFound(res: Response, slug: string): void {
 }
 
 router.get("/player", (req, res) => {
-  const index = renderPlayerIndex(indexedPlayers(), {
+  const index = renderPlayerIndex(playerDirectory(format(req)), {
+    // The standalone index links within this origin, so both prefixes are the
+    // defaults. Only the embedded twin below points anywhere else.
     linkQuery: linkQuery(req),
   });
   let html = liveReload().enabled ? liveReload().injectIntoHtml(index) : index;
@@ -271,9 +273,15 @@ router.get("/embed/players", (req, res) => {
   const prefix = (
     process.env["SC_PLAYER_PATH_PREFIX"] ?? PLAYER_PATH_PREFIX
   ).trim();
-  const players = indexedPlayers();
-  const html = renderPlayerIndexFragment(players, {
+  // Where the club headings link. Same variable the profile fragment reads, so
+  // a club named on the index and the same club named inside a profile are the
+  // same address.
+  const teamPrefix = (
+    process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX
+  ).trim();
+  const html = renderPlayerIndexFragment(playerDirectory(), {
     playerPathPrefix: prefix,
+    teamPathPrefix: teamPrefix,
     linkQuery: fragmentLinkQuery(prefix),
   });
 

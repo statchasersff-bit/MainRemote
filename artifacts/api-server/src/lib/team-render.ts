@@ -45,6 +45,7 @@ import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq } from "./team/depth-faq";
 import { scheduleFaq } from "./team/schedule-faq";
+import { seasonShape } from "./team/season-shape";
 import { sidelinedBehind } from "./team/roster";
 // The tab strip's headings and standfirsts come from the same two functions the
 // WordPress side mirrors, so the heading a click swaps in and the heading that
@@ -377,9 +378,18 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     (options.section
       ? ""
       : `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>`) +
-    heroFacts(data) +
-    updated +
     `</div>` +
+    // The chips and the timestamp are a row of their own rather than the tail
+    // of the name block, because the name block is boxed in by the switcher
+    // beside it and they are not. Sharing that column cost them about 220px —
+    // the width of the switcher and its gap — and the Bye chip was dropping to
+    // a second line at around 1000px with the whole of that width sitting
+    // empty underneath the button. On its own grid row it spans under the
+    // switcher and stays one line to roughly 780px, below which the hero
+    // restacks anyway. Kept after .sct-hero-text in the markup so the reading
+    // and tab order is still name, then facts, then the switcher; where the
+    // row lands is grid-template-areas' business.
+    `<div class="sct-hero-meta">${heroFacts(data)}${updated}</div>` +
     `<div class="sct-hero-actions">${teamSwitcher(team, options)}</div>` +
     `</div>` +
     `</header>`
@@ -2038,6 +2048,26 @@ export function gameDateLine(game: ScheduleGame): {
 }
 
 /**
+ * "Sep 13" — the date as a table column rather than as a line of prose.
+ *
+ * The cards above spell the weekday because a card is read once and "Monday"
+ * is the fact that makes it a night game. A column of seventeen dates is
+ * scanned, not read, and the weekday is the part that makes every row start
+ * with a different three letters before the month a reader is actually
+ * counting down. It also drops the time, which has moved one column right into
+ * the Result cell — see gameStatusCell().
+ *
+ * The same month/day pair lib/schedule/format.ts's formatShortDate() sets for
+ * the standalone tool, from this file's own Eastern parse so the row's date and
+ * its kickoff cannot disagree about which day a late game falls on.
+ */
+export function gameShortDate(game: ScheduleGame): string {
+  if (game.kickoffMs === null) return "TBD";
+  const parts = easternParts(game.kickoffMs);
+  return `${parts.month} ${parts.day}`;
+}
+
+/**
  * One side of the matchup: crest, code, name.
  *
  * `isTeam` marks the side this page is about, which is the whole reason the
@@ -2476,24 +2506,27 @@ function renderDepthChart(
  * site — printing both is one fact twice.
  */
 /**
- * "SEA" for a nickname too long for the schedule table's opponent column, or
- * null for one that fits.
+ * "Texans" for a full name too long for the schedule table's opponent column,
+ * or null for one that fits.
  *
  * The same trade briefName() makes for a player: the column is fluid and the
  * name is what ellipses when it narrows, so a spelling that fits beats the
- * first seven letters of one that does not. Only the long nicknames get it —
- * "Jets" was never the problem, and abbreviating it would cost a reader the
- * word for nothing.
+ * first seven letters of one that does not.
  *
- * Eight characters is the cut because that is where "Seahawks" sits, and
- * "SEAHAWKS" truncating is the case this exists for. Nine of the thirty-two
- * teams are at or above it.
+ * The fallback is one step in rather than two. The column prints the full name
+ * now — "Houston Texans", as the standalone tool's lens does — so the shorter
+ * spelling is the nickname, which is what this table printed until it took the
+ * lens's dress. The abbreviation is only reached for a name whose nickname is
+ * no shorter than the name itself, which is the unresolved-opponent case.
  *
- * Null when the opponent is not a known team: the code comes from the team
- * record, and a fixture against a name we cannot resolve has none to use.
+ * Null when the opponent is not a known team: both the nickname and the code
+ * come from the team record, and a fixture against a name we cannot resolve has
+ * neither to use.
  */
 function briefTeamName(opponent: NflTeam | null, shown: string): string | null {
-  if (!opponent || shown.length < 8) return null;
+  if (!opponent) return null;
+  const nickname = opponent.nickname.trim();
+  if (nickname && nickname.length < shown.length) return nickname;
   const code = opponent.code.trim();
   return code && code.length < shown.length ? code : null;
 }
@@ -2616,12 +2649,20 @@ export function networkDefs(networks: Array<string | null>): string {
 }
 
 /**
- * Where the game stands: the result once there is one, otherwise what it is.
+ * Where the game stands: the result once there is one, otherwise the kickoff.
  *
  * The column exists before the season does. A schedule that grows a result
  * column in Week 1 is a table that changes shape under the reader; one that
- * says "Upcoming" in August and "W 27-20" in September is the same table
- * twice. That is why the placeholder is a word rather than an empty cell.
+ * says something in August and "W 27-20" in September is the same table twice.
+ * That is why the cell is never empty.
+ *
+ * What it says before kickoff is the time, not the word "Upcoming" — the
+ * standalone tool's lens puts the clock here, and it is the better tenant: on
+ * seventeen unplayed rows "Upcoming" is the same word seventeen times, while
+ * the window is the thing a reader came to the column for. That is also what
+ * frees the date cell beside it to drop to "Sep 13". "TBD" is the fallback for
+ * a game the league has not given a window yet, which is a different fact from
+ * a game with no result.
  */
 export function gameStatusCell(game: ScheduleGame): string {
   if (game.result) {
@@ -2639,7 +2680,16 @@ export function gameStatusCell(game: ScheduleGame): string {
   if (game.status === "live") {
     return `<span class="sct-sstatus" data-state="live">Live</span>`;
   }
-  return `<span class="sct-sstatus" data-state="upcoming">Upcoming</span>`;
+  // `timeConfirmed` is the flag that separates the two: ESPN publishes a
+  // placeholder kickoff for a game whose window it has not set, and printing
+  // that placeholder as a time is the one thing this cell must not do.
+  const kickoff =
+    game.kickoffMs !== null && game.timeConfirmed
+      ? easternParts(game.kickoffMs).time
+      : "TBD";
+  return (
+    `<span class="sct-sstatus" data-state="upcoming">${escapeHtml(kickoff)}</span>`
+  );
 }
 
 /**
@@ -2739,6 +2789,28 @@ export function renderUpcomingCard(
  * Inserting the bye is what turns a list of 17 fixtures into a calendar a
  * fantasy manager can read — the week their roster loses a starter is the one
  * week that is not in the fixture list at all.
+ *
+ * ## The columns are the standalone tool's
+ *
+ * Wk, Opponent, Date, Result, TV, under a head row that names them: the five
+ * the NFL schedule tool's team lens sets, in that order, plus the link out to
+ * the pair page that only this table has. Three things came out to pay for it.
+ *
+ * 1. **The home/away chip is now "vs" / "at" inside the opponent cell.** A
+ *    column of its own was the right call while the cell held a bare nickname;
+ *    beside a full team name the preposition reads as part of the fixture,
+ *    which is what it is, and the column it vacated went to the name.
+ * 2. **The venue column is gone.** Seventeen stadium names are the column a
+ *    reader scans least and the one that costs the most width, and the three
+ *    cards above still name the venue for the games that have not been played.
+ * 3. **The DIV / INTL / NEUTRAL pills are gone from the rows.** The division
+ *    games are listed in full by the slate card in the rail beside this table,
+ *    which is where the standalone tool leaves them too — and the pills were
+ *    the first thing the old row dropped when it narrowed anyway.
+ *
+ * The head row is `aria-hidden`: these are list items with a grid over them,
+ * not table cells, so the labels are a legend for the eye and each row states
+ * its own fields to a screen reader. That is the source's arrangement as well.
  */
 function renderFullSchedule(
   data: TeamPageData,
@@ -2752,25 +2824,11 @@ function renderFullSchedule(
     html: string;
   }
   const rows: Row[] = schedule.games.map((game) => {
-    const when = gameDateLine(game);
-    // The same qualifiers the cards carry, one size down. "vs"/"at" is gone:
-    // two words that differ by one letter, set in the middle of a line of other
-    // words, is not something a reader scans — a chip in a column of its own
-    // is, which is the whole difference between reading this table and
-    // searching it.
-    const tags = fixtureTags(game)
-      .map(
-        (tag) =>
-          `<span class="sct-badge is-tiny" data-kind="${tag.kind}">` +
-          `${escapeHtml(tag.label.toUpperCase())}</span>`,
-      )
-      .join("");
-
-    // Both spellings when the nickname is one of the long ones, and team.css
-    // picks — the full name everywhere it fits, the code in the band where it
-    // does not. The full one is only ever hidden from the eye, never from a
-    // screen reader, which is why the brief one is the aria-hidden of the pair.
-    const shown = game.opponent?.nickname ?? game.opponentName;
+    // Both spellings, and team.css picks: the full name everywhere it fits, the
+    // nickname in the band where it does not. The full one is only ever hidden
+    // from the eye, never from a screen reader, which is why the brief one is
+    // the aria-hidden of the pair.
+    const shown = game.opponent?.fullName ?? game.opponentName;
     const brief = briefTeamName(game.opponent, shown);
     const nameCell = brief
       ? `<span class="sct-srow-name-long">${escapeHtml(shown)}</span>` +
@@ -2780,33 +2838,33 @@ function renderFullSchedule(
       week: game.week,
       html:
         `<li class="sct-srow">` +
-        `<span class="sct-srow-week">${escapeHtml(`WK ${game.week}`)}</span>` +
-        `<span class="sct-srow-side" data-kind="${game.homeAway}">` +
-        `${game.homeAway === "home" ? "Home" : "Away"}</span>` +
+        `<span class="sct-srow-week">${escapeHtml(`W${game.week}`)}</span>` +
         `<span class="sct-srow-opp">` +
+        // "vs" and "at" set in the muted weight the name is not, so the eye
+        // lands on the opponent and the preposition is read second.
+        `<span class="sct-srow-ha" data-kind="${game.homeAway}">` +
+        `${game.homeAway === "home" ? "vs" : "at"}</span>` +
         (game.opponent
           ? `<img class="sct-srow-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
             ` width="22" height="22" loading="lazy" decoding="async" />`
           : "") +
         `<span class="sct-srow-name">${nameCell}</span>` +
-        tags +
         `</span>` +
-        `<span class="sct-srow-when">${escapeHtml(when.date)}${when.time ? ` · ${escapeHtml(when.time)}` : ""}</span>` +
-        `<span class="sct-srow-venue">${escapeHtml(game.venue ?? "")}</span>` +
-        // Its own cell rather than trailing the venue. On the cards the network
-        // is the last thing on a line you read once; in a table it is a column
-        // people run their eye down looking for the games they can watch.
+        `<span class="sct-srow-when">${escapeHtml(gameShortDate(game))}</span>` +
+        gameStatusCell(game) +
+        // Its own cell rather than trailing the date. In a table the network is
+        // a column people run their eye down looking for the games they can
+        // watch.
         (game.network
           ? networkHtml(game.network, "sct-srow-tv")
           : // Kept, and empty. ESPN has no network for a game it has not put in
             // a window yet, and dropping the cell would shift every column to
             // its right on exactly those rows.
             `<span class="sct-srow-tv"></span>`) +
-        gameStatusCell(game) +
         // The cell is emitted even when there is no pair page to point at —
         // an opponent this server cannot resolve to a team, which is what a
         // TBD playoff slot looks like. Dropping it on those rows alone would
-        // leave a seven-column row in an eight-column table.
+        // leave a five-column row in a six-column table.
         (matchupHref(data.team, game.opponent, options)
           ? `<a class="sct-textlink sct-srow-view"` +
             ` href="${escapeHtml(matchupHref(data.team, game.opponent, options) ?? "")}">` +
@@ -2821,7 +2879,7 @@ function renderFullSchedule(
       week: schedule.byeWeek,
       html:
         `<li class="sct-srow is-bye">` +
-        `<span class="sct-srow-week">${escapeHtml(`WK ${schedule.byeWeek}`)}</span>` +
+        `<span class="sct-srow-week">${escapeHtml(`W${schedule.byeWeek}`)}</span>` +
         // One cell across the rest of the row. The bye is the only row with
         // nothing to say in five of the six columns, and filling them with
         // empty spans drew five column rules through the one row that is not a
@@ -2833,7 +2891,240 @@ function renderFullSchedule(
 
   rows.sort((a, b) => a.week - b.week);
 
-  return `<ol class="sct-slist">${rows.map((row) => row.html).join("")}</ol>`;
+  // The head and the list share one shell and one grid, so a column label sits
+  // over the column it names at every width. The shell moved out of .sct-slist
+  // onto this wrapper for that: a <div> is not allowed inside an <ol>.
+  return (
+    `<div class="sct-sboard">` +
+    `<div class="sct-slist-head" aria-hidden="true">` +
+    `<span>Wk</span><span>Opponent</span><span>Date</span>` +
+    `<span>Result</span><span>TV</span><span></span>` +
+    `</div>` +
+    `<ol class="sct-slist">${rows.map((row) => row.html).join("")}</ol>` +
+    `</div>`
+  );
+}
+
+/* ----------------------------------------------------------- season shape */
+
+/**
+ * What the eighteen weeks beside this add up to.
+ *
+ * The four cards the standalone NFL schedule tool puts in its team lens
+ * sidebar, brought onto the hub's Schedule tab in the same rail: the season in
+ * five numbers with the home/road split, the path through it, the division
+ * slate, and where the rest of the opponents come from. Everything is
+ * arithmetic on the rows to the left — team/season-shape.ts does the counting
+ * and states what it refuses to infer.
+ *
+ * ## Dress
+ *
+ * House components, not the source's: `.sct-mix` is the card, `.sct-mix-label`
+ * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the ladder's
+ * geometry. The one thing carried over intact is the colour logic — home takes
+ * the team's own primary, away takes the gold — because that is the pair
+ * `.sct-mix-seg` already uses one tab over for the pass/run split, and two
+ * different meanings for the same two colours on one page is worse than either
+ * choice.
+ *
+ * The five figures are plain `<dt>`/`<dd>` pairs inside the snapshot card
+ * rather than the `.sct-tile` cards they were when this was a full-width band.
+ * A 300px rail cannot hold five bordered cards, and a card inside a card is not
+ * a thing this design system does at any width.
+ *
+ * The bye week appears here as well as in the hero chip and as a row in the
+ * table. That is a repeat, and a deliberate one: the hero states it as a fact
+ * about the club, the table as a week with no fixture, and this as a position
+ * in the season the four cards are describing.
+ */
+function renderSeasonShape(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+): string {
+  const { team, schedule } = data;
+  if (!schedule) return "";
+  const shape = seasonShape(schedule, team);
+  if (!shape) return "";
+
+  const figures: Array<[string, string]> = [
+    ["Games", String(shape.total)],
+    ["Home", String(shape.home)],
+    ["Away", String(shape.away)],
+    ["Division", String(shape.division)],
+    // "TBD", not a guess: schedule.ts returns null for a bye it cannot
+    // establish, and a wrong bye is the one number on this card a fantasy
+    // manager would act on. "W7" rather than "Week 7" because the table's own
+    // week column now reads "W7" too.
+    ["Bye week", shape.bye ? `W${shape.bye}` : "TBD"],
+  ];
+
+  // Home against road, on the ladder's track. The pair is the only thing on the
+  // card that is a proportion rather than a count, which is why it is drawn
+  // rather than left as two of the five figures above it.
+  const splitMax = Math.max(shape.home, shape.away, 1);
+  const split = (["home", "away"] as const)
+    .map((kind) => {
+      const value = kind === "home" ? shape.home : shape.away;
+      return (
+        `<div class="sct-shape-bar" data-kind="${kind}">` +
+        `<dt class="sct-shape-bar-label">${kind === "home" ? "Home" : "Away"}</dt>` +
+        `<dd class="sct-shape-bar-body">` +
+        `<span class="sct-shape-bar-track" aria-hidden="true">` +
+        `<span class="sct-shape-bar-fill" style="${escapeHtml(
+          `width:${Math.round((value / splitMax) * 100)}%`,
+        )}"></span>` +
+        `</span>` +
+        `<span class="sct-shape-bar-value">${value}</span>` +
+        `</dd>` +
+        `</div>`
+      );
+    })
+    .join("");
+
+  const snapshotCard =
+    `<div class="sct-mix" data-kind="snapshot">` +
+    `<p class="sct-mix-label">${escapeHtml(
+      `${shape.season} season snapshot`,
+    )}</p>` +
+    `<dl class="sct-snap">` +
+    figures
+      .map(
+        ([label, value]) =>
+          `<div class="sct-snap-cell">` +
+          `<dt class="sct-snap-label">${escapeHtml(label)}</dt>` +
+          `<dd class="sct-snap-value">${escapeHtml(value)}</dd>` +
+          `</div>`,
+      )
+      .join("") +
+    `</dl>` +
+    `<dl class="sct-shape-bars sct-snap-bars">${split}</dl>` +
+    `</div>`;
+
+  // Eighteen weeks as eighteen blocks, and no number in them: filled for home,
+  // hollow for away, dashed for the bye, which is the source's strip exactly.
+  // At the rail's twelve pixels a week there is nowhere to put a number anyway.
+  // Never colour alone — every block carries its week and its opponent in a
+  // title and in a hidden label.
+  const strip =
+    `<ol class="sct-path">` +
+    shape.marks
+      .map(
+        (mark) =>
+          `<li class="sct-path-week" data-kind="${mark.kind}"` +
+          ` title="${escapeHtml(`Week ${mark.week} · ${mark.label}`)}">` +
+          `<span class="sct-visually-hidden">${escapeHtml(
+            `Week ${mark.week}: ${mark.label}`,
+          )}</span>` +
+          `</li>`,
+      )
+      .join("") +
+    `</ol>`;
+
+  const segments =
+    `<div class="sct-segs">` +
+    shape.segments
+      .map(
+        (segment) =>
+          `<div class="sct-seg">` +
+          `<span class="sct-seg-label">${escapeHtml(
+            `Weeks ${segment.from}–${segment.to}`,
+          )}</span>` +
+          `<span class="sct-seg-detail">${escapeHtml(segment.detail)}</span>` +
+          `</div>`,
+      )
+      .join("") +
+    `</div>`;
+
+  const pathCard =
+    `<div class="sct-mix" data-kind="path">` +
+    `<p class="sct-mix-label">Season path</p>` +
+    strip +
+    `<p class="sct-mix-legend" aria-hidden="true">` +
+    `<span class="sct-mix-key" data-kind="home">Home</span>` +
+    `<span class="sct-mix-key" data-kind="away">Away</span>` +
+    `<span class="sct-mix-key" data-kind="bye">Bye</span>` +
+    `</p>` +
+    segments +
+    `<p class="sct-shape-take">${escapeHtml(shape.takeaway.title)}</p>` +
+    `<p class="sct-mix-caption">${escapeHtml(shape.takeaway.body)}</p>` +
+    `</div>`;
+
+  const slateRows = shape.slate
+    .map((game) => {
+      const href = matchupHref(team, game.opponent, options);
+      const name = href
+        ? `<a class="sct-slate-link" href="${escapeHtml(href)}">${escapeHtml(game.name)}</a>`
+        : escapeHtml(game.name);
+      return (
+        `<li class="sct-slate-row">` +
+        `<span class="sct-slate-week">${escapeHtml(`W${game.week}`)}</span>` +
+        (game.opponent
+          ? `<img class="sct-slate-logo" src="${escapeHtml(game.opponent.logo)}" alt=""` +
+            ` width="20" height="20" loading="lazy" decoding="async" />`
+          : `<span class="sct-slate-logo"></span>`) +
+        `<span class="sct-slate-name">${game.atHome ? "vs " : "at "}${name}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+
+  const slateCard =
+    `<div class="sct-mix" data-kind="slate">` +
+    `<p class="sct-mix-label">${escapeHtml(`${team.division} schedule`)}</p>` +
+    (shape.slate.length
+      ? `<ul class="sct-slate">${slateRows}</ul>` +
+        `<p class="sct-mix-caption">${escapeHtml(
+          `${shape.slateHome} home · ${shape.slateAway} away`,
+        )}</p>`
+      : `<p class="sct-mix-caption">No division games scheduled.</p>`) +
+    `</div>`;
+
+  const max = shape.divisions[0]?.count ?? 1;
+  const bars = shape.divisions
+    .map(
+      (entry) =>
+        `<div class="sct-shape-bar">` +
+        `<dt class="sct-shape-bar-label">${escapeHtml(entry.division)}</dt>` +
+        `<dd class="sct-shape-bar-body">` +
+        `<span class="sct-shape-bar-track" aria-hidden="true">` +
+        `<span class="sct-shape-bar-fill" style="${escapeHtml(
+          `width:${Math.round((entry.count / max) * 100)}%`,
+        )}"></span>` +
+        `</span>` +
+        `<span class="sct-shape-bar-value">${entry.count}</span>` +
+        `</dd>` +
+        `</div>`,
+    )
+    .join("");
+
+  const opponentCard =
+    `<div class="sct-mix" data-kind="opponents">` +
+    `<p class="sct-mix-label">${escapeHtml(`Who ${team.city} plays`)}</p>` +
+    (shape.divisions.length
+      ? `<dl class="sct-shape-bars">${bars}</dl>` +
+        `<dl class="sct-shape-conf">` +
+        shape.conferences
+          .map(
+            ([conference, count]) =>
+              `<div class="sct-shape-conf-cell">` +
+              `<dt>${escapeHtml(conference)}</dt><dd>${count}</dd>` +
+              `</div>`,
+          )
+          .join("") +
+        `</dl>`
+      : `<p class="sct-mix-caption">No opponents scheduled.</p>`) +
+    `</div>`;
+
+  return (
+    `<aside class="sct-shape" aria-label="${escapeHtml(
+      `${shape.season} ${team.nickname} season shape`,
+    )}">` +
+    snapshotCard +
+    pathCard +
+    slateCard +
+    opponentCard +
+    `</aside>`
+  );
 }
 
 function renderSchedule(
@@ -2859,6 +3150,22 @@ function renderSchedule(
   const next = upcomingGames(schedule, now, 3);
   const full = getTeamScheduleUrl(team);
 
+  // The table and the four summary cards side by side, as the standalone tool's
+  // team lens lays them out: the fixtures in the fluid column, a 300px rail of
+  // cards whose first one starts level with the head row. The cards fall under
+  // the table as a band once the rail stops paying for itself — see team.css.
+  //
+  // Not a grid when there is no shape to put in the rail. seasonShape() returns
+  // null for a schedule that rendered no rows, and a two-column layout with an
+  // empty second column would take 300px off the table for nothing.
+  const shape = renderSeasonShape(data, options);
+  const board = shape
+    ? `<div class="sct-sched-grid">` +
+      `<div class="sct-sched-main">${renderFullSchedule(data, options)}</div>` +
+      shape +
+      `</div>`
+    : renderFullSchedule(data, options);
+
   // Below the tools block with the other tabs' questions, and assigned after
   // the early return above: a team whose fixtures did not load carries no
   // questions about them.
@@ -2880,7 +3187,7 @@ function renderSchedule(
           )
           .join("")}</ul>`
       : "") +
-    renderFullSchedule(data, options) +
+    board +
     (full
       ? `<p class="sct-block-footer">` +
         // "View full NFL schedule", not "See the full 2026 schedule": the
@@ -3170,9 +3477,19 @@ export function renderTeamPage(
  * addresses here shares a renderer: two copies of a list of 32 teams is two
  * lists that drift, and the one nobody looks at is the one that goes stale.
  *
- * It is the team switcher's own grid at full page width — the same component
- * a reader already knows from the hub, rather than a second way of showing
- * the same 32 links.
+ * It was the team switcher's own grid at full page width, and that is what it
+ * has stopped being. The switcher's shape is two conference columns, each a
+ * stack of four division lists — right for a 620px dropdown, wrong for a page:
+ * across a desktop shell it left the right half of the screen empty and spread
+ * eight division headings down a scroll, which reads as a sitemap rather than
+ * as the front door to 32 hubs.
+ *
+ * So the axes swap here. The conference is a full-width band with a ruled
+ * heading, and its four divisions sit side by side beneath it — the shape of
+ * the league, at about a third of the height. The rows keep the switcher's
+ * classes, because the row is genuinely the same thing in both places; only
+ * the arrangement around them is the index's own (see .sct-index-* in
+ * team.css).
  */
 function renderTeamIndexGrid(
   teams: readonly NflTeam[],
@@ -3192,12 +3509,17 @@ function renderTeamIndexGrid(
             (team) =>
               `<li><a class="sct-switch-team" href="${escapeHtml(`${prefix}${team.slug}${query}`)}">` +
               `<img class="sct-switch-logo" src="${escapeHtml(team.logo)}" alt=""` +
-              ` width="22" height="22" loading="lazy" decoding="async" />` +
-              `<span>${escapeHtml(team.fullName)}</span></a></li>`,
+              ` width="24" height="24" loading="lazy" decoding="async" />` +
+              `<span class="sct-index-name">${escapeHtml(team.fullName)}</span>` +
+              // The row has no underline and no link colour of its own, so the
+              // arrow is what says it is one. It is drawn on hover and rests
+              // visible on a touch screen; see .sct-index-div .sct-arrow.
+              ARROW +
+              `</a></li>`,
           )
           .join("");
         return (
-          `<div class="sct-switch-div">` +
+          `<div class="sct-switch-div sct-index-div">` +
           `<p class="sct-switch-div-title">${escapeHtml(division.division)}</p>` +
           `<ul class="sct-switch-list">${links}</ul>` +
           `</div>`
@@ -3207,7 +3529,7 @@ function renderTeamIndexGrid(
     return (
       `<section class="sct-switch-conf">` +
       `<h2 class="sct-switch-conf-title">${escapeHtml(conference.conference)}</h2>` +
-      divisions +
+      `<div class="sct-index-divs">${divisions}</div>` +
       `</section>`
     );
   }).join("");
@@ -3247,12 +3569,6 @@ export function renderTeamIndex(
     `<meta name="robots" content="noindex, indexifembedded" />` +
     `<link rel="stylesheet" href="/team.css" />` +
     `</head><body class="sct-page"><div class="sct">` +
-    `<header class="sct-hero"><span class="sct-hero-decor" aria-hidden="true"></span>` +
-    `<div class="sct-hero-inner"><div class="sct-hero-text">` +
-    `<p class="sct-eyebrow">StatChasers</p>` +
-    `<h1 class="sct-title">NFL Team Hubs</h1>` +
-    `<p class="sct-subtitle">News, depth charts, schedules and fantasy outlook for all 32 teams.</p>` +
-    `</div></div></header>` +
     `<div class="sct-section">${renderTeamIndexGrid(teams, options)}</div>` +
     `</div></body></html>`
   );

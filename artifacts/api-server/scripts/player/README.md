@@ -87,11 +87,17 @@ Naming one season rebuilds one file and leaves the others alone, which matters
 because they are committed: a full rebuild rewrites four megabytes of JSON to
 re-derive numbers that stopped changing when the season ended.
 
-`buildGameScores.js` needs one more thing per season — `SEASON_STARTS`, the
-Thursday of week 1, which is the anchor its date-range queries are counted from.
-A season missing from that map throws rather than fetching the wrong week's
-games and filing them under the right week's key. Sleeper reports the date as
-`season_start_date` at `https://api.sleeper.app/v1/state/nfl`.
+`buildGameScores.js` used to need one more thing per season — `SEASON_STARTS`,
+the Thursday of week 1 — because it asked ESPN for a date range and counted the
+window off that anchor. It no longer does: ESPN now answers `dates=<from>-<to>`
+with `400 Failed to get events endpoint.`, and the week is asked for directly
+(`dates=<season>&seasontype=2&week=<n>`). There is no calendar to maintain and
+nothing to add in September.
+
+It records a game only once ESPN calls it `STATUS_FINAL`. A game still being
+played carries the score as it stands, and a settled "W" printed over a game in
+progress would sit there until somebody rebuilt the file — so an in-season run
+leaves the afternoon's unfinished games out and picks them up on the next one.
 
 That script also **merges** into `game_scores.json` rather than replacing it,
 and will not overwrite a season already on disk with an empty fetch. ESPN rate

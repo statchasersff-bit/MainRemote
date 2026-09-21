@@ -71,8 +71,11 @@ import {
 } from "./player/metrics";
 import type { UpcomingGame } from "./player/upcoming";
 import { playerSearchIndex } from "./player/player-data";
+import { PPG_MIN_GAMES } from "./player/ranks";
 import type {
+  DirectoryPlayer,
   IndexedPlayer,
+  PlayerDirectory,
   PlayerPageData,
   ProductionSeason,
 } from "./player/player-data";
@@ -1004,23 +1007,27 @@ function renderPlayerSearch(options: PlayerRenderOptions): string {
   if (index.rows.length === 0) return "";
 
   const prefix = options.playerPathPrefix ?? "/player/";
+  const teamPrefix = options.teamPathPrefix ?? "/team/";
   const query = options.linkQuery ?? "";
 
   return (
     `<div class="scp-search" data-scp-search` +
     ` data-scp-prefix="${escapeHtml(prefix)}"` +
+    // The clubs in the island are destinations too, and they live under a
+    // different path — on WordPress, under a different page entirely.
+    ` data-scp-team-prefix="${escapeHtml(teamPrefix)}"` +
     ` data-scp-query="${escapeHtml(query)}" hidden>` +
     // The label wraps the control, so the two need no for/id pair — which
     // matters here because a WordPress page may print two of these fragments
     // and a fixed id would then be in the document twice. Every id this widget
     // needs for its ARIA relations is minted per root by the client.
     `<label class="scp-search-field">` +
-    `<span class="scp-sr">Search players</span>` +
+    `<span class="scp-sr">Search players and teams</span>` +
     `<svg class="scp-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
     `<circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" />` +
     `</svg>` +
     `<input class="scp-search-input" type="search" autocomplete="off"` +
-    ` spellcheck="false" placeholder="Search any NFL player" />` +
+    ` spellcheck="false" placeholder="Search any NFL player or team" />` +
     `</label>` +
     `<div class="scp-search-panel" hidden><div class="scp-search-list"></div></div>` +
     // How many matches there are, for a reader who cannot see the list appear.
@@ -5437,89 +5444,375 @@ export function renderPlayerPage(
   );
 }
 
-/**
- * A plain index of the indexed players at /player.
+/* --------------------------------------------------------------- directory */
+
+/*
+ * The index of every profile: the container page at /nfl/players/ mounts it as
+ * a fragment, and /player on this origin is the same thing in a page shell.
+ * Neither carries a heading of its own — the host page supplies it.
  *
- * Its job is navigation and verification, not presentation: it is how you check
- * that every slug resolves, and it gives the 404 somewhere useful to send a
- * reader. A full document rather than a fragment, because nothing embeds it.
+ * It used to be six hundred names in thirty-two <ul>s. That was honest about
+ * what it had — a list of slugs — and it was the one surface here that looked
+ * nothing like the pages it points at: no portrait, no club colour, no
+ * position ink, no number, and no way to find a player on it but the browser's
+ * own find-in-page.
+ *
+ * What it borrows, and from where, because none of this is a new design:
+ *
+ *   - the ROW is the search panel's result row (renderPlayerSearch above, and
+ *     the option builder in client/player-search.ts): a portrait at the head,
+ *     the name, and the position in its own ink. A reader who has used the
+ *     search box has already read this row.
+ *   - the STANDING pill is the peers rail's rank badge (renderPositionPeers),
+ *     navy on the card, and it says the same thing that rail says: where this
+ *     player stands at his position, measured the way his own profile header
+ *     measures it.
+ *   - the CLUB CARD is the recessed treatment the stylesheet's header note
+ *     describes, with the club's primary as a rule and a wash exactly as the
+ *     peer card uses --peer-team. Its heading links to the team hub, which is
+ *     the cross-link the old list had nowhere to put.
+ *   - the POSITION CHIPS are the format toggle's pill group (.scp-format),
+ *     as buttons rather than links because they filter what is already here
+ *     rather than fetching anything.
+ *
+ * Nothing here needs JavaScript to be complete: every player, every portrait,
+ * every standing is in the markup the server sends, grouped and ordered. The
+ * chips and the search box are the two things that are not, so both ship
+ * hidden and the client reveals them — the convention renderPlayerSearch()
+ * already set, and the reason is the same: a control with no script behind it
+ * is a promise the page cannot keep.
  */
+
+/** What both index renderings need to know about where links go. */
+interface PlayerIndexOptions {
+  playerPathPrefix?: string;
+  teamPathPrefix?: string;
+  linkQuery?: string;
+}
+
 /**
- * Every indexed player, grouped by team.
+ * The order rows read in within a club: the depth chart's, not the alphabet's.
+ *
+ * A roster that opens with its quarterback and ends with its kicker is the
+ * order every other surface on this site lists a team in — the depth chart,
+ * the outlook cards, the matchup tables. Alphabetical order is the order of a
+ * list that expects to be searched rather than read.
+ */
+const DIRECTORY_POSITIONS = ["QB", "RB", "WR", "TE", "K"];
+
+function positionOrder(position: string | null | undefined): number {
+  const i = DIRECTORY_POSITIONS.indexOf((position ?? "").toUpperCase());
+  return i === -1 ? DIRECTORY_POSITIONS.length : i;
+}
+
+/**
+ * The portrait for one row.
+ *
+ * The dictionary's own URL when it has one, Sleeper's thumbnail otherwise —
+ * the same two-step the hero and the peers rail make, and the same CDN keyed
+ * by the same id. A player Sleeper has no thumbnail for gets the empty well,
+ * which is the well doing its job rather than a broken image; the client
+ * removes the <img> when the CDN 404s, as it does in the search panel.
+ */
+function directoryShot(row: DirectoryPlayer): string {
+  return (
+    (row.headshot ? safeUrl(row.headshot) : null) ??
+    `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(row.id)}.jpg`
+  );
+}
+
+/**
+ * How loudly one row reads: the rank band it falls in.
+ *
+ * A card of eighteen rows all shouting equally is a card nobody scans — the
+ * eye has to read every name to find the six that matter. The band is what
+ * the stylesheet varies name weight, pill fill and row tint by, so the page
+ * can be read at a glance rather than a row at a time.
+ *
+ * The cut points are finishBadge()'s, not new ones. It already knows that a
+ * position's shape decides where "startable" ends — QB12 is an every-week
+ * starter where WR12 is a first-rounder — and it maps onto the same ordinal
+ * tier ramp this stylesheet paints finishes with everywhere else. A second,
+ * flat set of cut points here would only disagree with it.
+ *
+ * `idle` is the one band finishBadge() has no opinion about: a player who has
+ * not taken a snap, and a player who is on the list with a rank but no points
+ * to his name. Both are noise on a page about production, and both drop to
+ * the quietest treatment the card has.
+ */
+function directoryBand(row: DirectoryPlayer): string {
+  const standing = row.standing;
+  if (!standing || !row.position || standing.value <= 0) return "idle";
+  return finishBadge(standing.rank, row.position)?.tier ?? "idle";
+}
+
+/** `QB14` over `17.2 ppg`, or the dash for a player who has not played. */
+function renderDirectoryStanding(row: DirectoryPlayer): string {
+  const standing = row.standing;
+  if (!standing || !row.position) {
+    // The column still prints something, because an empty cell in a list of
+    // six hundred reads as a rendering fault rather than as "no games".
+    return `<span class="scp-dir-stand is-empty" aria-label="No games this season">${DASH}</span>`;
+  }
+
+  // Lowercase, because the pill above it is the loud half of this pair and two
+  // shouting lines read as two facts rather than as one.
+  const unit = standing.measure === "ppg" ? "ppg" : "pts";
+
+  return (
+    `<span class="scp-dir-stand">` +
+    `<b class="scp-dir-rank">${escapeHtml(`${row.position}${standing.rank}`)}</b>` +
+    `<span class="scp-dir-value">${escapeHtml(num(standing.value))} ${escapeHtml(unit)}</span>` +
+    `</span>`
+  );
+}
+
+function renderDirectoryRow(
+  row: DirectoryPlayer,
+  options: PlayerIndexOptions,
+  lead = false,
+): string {
+  const prefix = options.playerPathPrefix ?? "/player/";
+  const query = options.linkQuery ?? "";
+  const position = (row.position ?? "").toUpperCase();
+
+  return (
+    // The position is on the <li> as well as in the pill: the chips filter by
+    // it, and a filter that had to read the pill's text would be reading the
+    // rendering rather than the data.
+    `<li class="scp-dir-item"${position ? ` data-pos="${escapeHtml(position)}"` : ""}` +
+    // What the stylesheet varies the row's weight by. See directoryBand().
+    ` data-band="${escapeHtml(directoryBand(row))}"` +
+    // The first row of a position run inside this card. It takes a hairline
+    // above it, which is as much grouping as a card this size can carry
+    // without turning into five sections with five headings.
+    `${lead ? " data-lead" : ""}>` +
+    `<a class="scp-dir-row" href="${escapeHtml(`${prefix}${row.slug}${query}`)}" target="_top">` +
+    `<span class="scp-dir-face">` +
+    // 38 to match the well in the stylesheet, so the box the browser reserves
+    // before the CDN answers is the box the portrait lands in.
+    `<img class="scp-dir-shot" src="${escapeHtml(directoryShot(row))}" alt=""` +
+    ` width="38" height="38" loading="lazy" decoding="async" />` +
+    `</span>` +
+    `<span class="scp-dir-who">` +
+    `<span class="scp-dir-name">${escapeHtml(row.name)}</span>` +
+    (position
+      ? `<span class="scp-dir-pos" data-pos="${escapeHtml(position)}">${escapeHtml(position)}</span>`
+      : "") +
+    `</span>` +
+    renderDirectoryStanding(row) +
+    `</a></li>`
+  );
+}
+
+/** One club's card: its mark, its name, its count, its players. */
+function renderDirectoryClub(
+  team: NflTeam | null,
+  rows: DirectoryPlayer[],
+  options: PlayerIndexOptions,
+): string {
+  const teamPrefix = options.teamPathPrefix ?? "/team/";
+  const query = options.linkQuery ?? "";
+  const name = team?.fullName ?? "Free agents";
+
+  const ordered = rows.slice().sort((a, b) => {
+    const byPosition = positionOrder(a.position) - positionOrder(b.position);
+    if (byPosition !== 0) return byPosition;
+    // Inside a position, the table's order — and the players with no standing
+    // after the ones who have one, rather than mixed in at an arbitrary place.
+    const aRank = a.standing?.rank ?? Number.POSITIVE_INFINITY;
+    const bRank = b.standing?.rank ?? Number.POSITIVE_INFINITY;
+    if (aRank !== bRank) return aRank - bRank;
+    return a.name.localeCompare(b.name);
+  });
+
+  const heading = team
+    ? `<a class="scp-dir-club-link" href="${escapeHtml(
+        `${teamPrefix}${team.slug}${query}`,
+      )}" target="_top">${escapeHtml(name)}</a>`
+    : escapeHtml(name);
+
+  const mark = team
+    ? `<img class="scp-dir-club-logo" src="${escapeHtml(team.logo)}" alt=""` +
+      ` width="26" height="26" loading="lazy" decoding="async" />`
+    : "";
+
+  const style = styleAttr([team && `--club:${team.primaryColor}`]);
+
+  // How many of them are actually producing. The bare roster count answered a
+  // question nobody asked — thirty-two cards all saying "about seventeen" —
+  // where "6 of 18 scoring" is the one number that separates a club worth
+  // opening from a club with three names on it a reader has heard of.
+  const scoring = ordered.filter((row) => directoryBand(row) !== "idle").length;
+
+  const items = ordered
+    .map((row, i) => {
+      // A position run opens wherever this row's position differs from the one
+      // above it. The first row of the card opens nothing: a hairline across
+      // the top of a list is a border, not a grouping.
+      const previous = i > 0 ? ordered[i - 1] : undefined;
+      const lead =
+        i > 0 && positionOrder(row.position) !== positionOrder(previous?.position);
+      return renderDirectoryRow(row, options, lead);
+    })
+    .join("");
+
+  return (
+    `<section class="scp-dir-club" data-scp-club` +
+    ` data-team="${escapeHtml(team?.code ?? "FA")}"${style}>` +
+    `<header class="scp-dir-club-head">` +
+    mark +
+    `<h2 class="scp-dir-club-name">${heading}</h2>` +
+    // Both halves are updated by the client as the chips filter; the server's
+    // values are the whole roster, which is what it is before anything is.
+    `<span class="scp-dir-club-count">` +
+    `<b data-scp-club-scoring>${scoring}</b>` +
+    `<span class="scp-dir-club-of"> of <b data-scp-club-count>${ordered.length}</b></span>` +
+    `<span class="scp-visually-hidden"> players scoring this season</span>` +
+    `</span>` +
+    `</header>` +
+    `<ul class="scp-dir-list" data-scp-dir-list data-grouped>` +
+    items +
+    `</ul>` +
+    `</section>`
+  );
+}
+
+/**
+ * The position chips, one per position the roster actually has.
+ *
+ * Counted from the rows rather than hard-coded, so a list with no kickers on
+ * it has no K chip to press and find nothing behind.
+ */
+function renderDirectoryFilters(rows: DirectoryPlayer[]): string {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const position = (row.position ?? "").toUpperCase();
+    if (!position) continue;
+    counts.set(position, (counts.get(position) ?? 0) + 1);
+  }
+
+  const positions = Array.from(counts.keys()).sort(
+    (a, b) => positionOrder(a) - positionOrder(b) || a.localeCompare(b),
+  );
+
+  const chip = (value: string, label: string, count: number, active: boolean) =>
+    `<button type="button" class="scp-dir-chip${active ? " is-active" : ""}"` +
+    ` data-scp-pos="${escapeHtml(value)}" aria-pressed="${active ? "true" : "false"}">` +
+    `${escapeHtml(label)}<span class="scp-dir-chip-n">${count}</span>` +
+    `</button>`;
+
+  return (
+    // Hidden until the client reveals it: see the note at the head of this
+    // section. `hidden` rather than a class, so it is inert for a screen
+    // reader too rather than merely invisible.
+    `<div class="scp-dir-filters" data-scp-dir-filters hidden>` +
+    `<span class="scp-dir-filters-label">Position</span>` +
+    `<div class="scp-dir-chips" role="group" aria-label="Filter players by position">` +
+    chip("all", "All", rows.length, true) +
+    positions
+      .map((position) => chip(position, position, counts.get(position) ?? 0, false))
+      .join("") +
+    `</div></div>`
+  );
+}
+
+/**
+ * The line under the toolbar: how many players, and what the numbers are.
+ *
+ * It exists because the standings column is meaningless without it. "QB14" is
+ * a claim about a season, a scoring format and a measure, and a page that
+ * prints six hundred of them and says none of the three is asking to be
+ * misread — particularly in September, when the rank is over points scored in
+ * a game or two rather than the rate it will be by October.
+ */
+function renderDirectoryNote(data: PlayerDirectory, shown: number): string {
+  const rate = data.rows.some((row) => row.standing?.measure === "ppg");
+  const measured = rate
+    ? `points per game (${PPG_MIN_GAMES}-game minimum)`
+    : "points scored";
+  const through = data.week > 0 ? ` through Week ${data.week}` : "";
+  const season = data.season > 0 ? `${data.season} ` : "";
+
+  return (
+    `<p class="scp-dir-note">` +
+    `<b data-scp-dir-count>${shown}</b> players ${DOT} ` +
+    escapeHtml(
+      `ranked by ${season}${SCORING_SHORT[data.format]} ${measured}${through}`,
+    ) +
+    `</p>`
+  );
+}
+
+/**
+ * Every indexed player, grouped by club.
  *
  * Shared by the standalone /player page and by the fragment the WordPress
  * container page at /nfl/players/ mounts, for the same reason the team index
  * shares one: two renderings of a six-hundred-name roster is one that goes
  * stale, and it is the one nobody looks at.
  */
-function renderPlayerIndexGroups(
-  entries: IndexedPlayer[],
-  options: { playerPathPrefix?: string; linkQuery?: string } = {},
+function renderPlayerDirectory(
+  data: PlayerDirectory,
+  options: PlayerIndexOptions = {},
 ): string {
-  const prefix = options.playerPathPrefix ?? "/player/";
-  const query = options.linkQuery ?? "";
-
-  const byTeam = new Map<string, { team: NflTeam | null; players: IndexedPlayer[] }>();
-  for (const entry of entries) {
-    const key = entry.team?.abbreviation ?? "zz-free-agent";
+  const byTeam = new Map<string, { team: NflTeam | null; rows: DirectoryPlayer[] }>();
+  for (const row of data.rows) {
+    // Free agents key on a string no club code can collide with, and sort to
+    // the end below rather than under "F".
+    const key = row.team?.abbreviation ?? "zz-free-agent";
     const group = byTeam.get(key);
-    if (group) group.players.push(entry);
-    else byTeam.set(key, { team: entry.team, players: [entry] });
+    if (group) group.rows.push(row);
+    else byTeam.set(key, { team: row.team, rows: [row] });
   }
 
-  const groups = Array.from(byTeam.entries())
-    .sort((a, b) => (a[1].team?.fullName ?? "zzz").localeCompare(b[1].team?.fullName ?? "zzz"))
-    .map(([key, group]) => {
-      const links = group.players
-        .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(
-          (entry) =>
-            `<li><a class="scp-index-link" href="${escapeHtml(
-              `${prefix}${entry.slug}${query}`,
-            )}">${escapeHtml(entry.name)}` +
-            (entry.position
-              ? `<span class="scp-index-pos">${escapeHtml(entry.position)}</span>`
-              : "") +
-            `</a></li>`,
-        )
-        .join("");
-      return (
-        `<div class="scp-index-group">` +
-        `<h2 class="scp-index-team">${escapeHtml(group.team?.fullName ?? "Free agents")}</h2>` +
-        `<ul class="scp-index-list" data-team="${escapeHtml(key)}">${links}</ul>` +
-        `</div>`
-      );
-    })
+  const clubs = Array.from(byTeam.values())
+    .sort((a, b) =>
+      (a.team?.fullName ?? "zzz").localeCompare(b.team?.fullName ?? "zzz"),
+    )
+    .map((group) => renderDirectoryClub(group.team, group.rows, options))
     .join("");
 
-  return `<div class="scp-index">${groups}</div>`;
+  return (
+    `<div class="scp-dir-tools">` +
+    renderPlayerSearch(options) +
+    renderDirectoryFilters(data.rows) +
+    `</div>` +
+    renderDirectoryNote(data, data.rows.length) +
+    `<div class="scp-dir" data-scp-dir>${clubs}</div>` +
+    // The client unhides this when a filter matches nobody. It is in the
+    // markup rather than built on demand so the string lives with the rest of
+    // the page's words instead of inside a bundle.
+    `<p class="scp-dir-empty" data-scp-dir-empty hidden>` +
+    `No player at that position has a page yet.</p>`
+  );
 }
 
 /**
  * The index as a bare fragment, for the WordPress container page to print.
  *
- * No hero and no H1: the page at /nfl/players/ supplies both, the same division
- * of labour every other mount here follows. Without it that page is whatever
- * WordPress content happens to sit in it — which is what it was, a stub list of
- * six hundred links in the theme's own styling, in front of the profiles it
- * points at.
+ * No heading: the page at /nfl/players/ supplies it, the same division of
+ * labour every other mount here follows — and, since the hero came off the
+ * standalone page too, the only thing this fragment now drops is the shell.
  */
 export function renderPlayerIndexFragment(
-  entries: IndexedPlayer[],
-  options: { playerPathPrefix?: string; linkQuery?: string } = {},
+  data: PlayerDirectory,
+  options: PlayerIndexOptions = {},
 ): string {
   return (
+    // data-scp-index is what the client boots the directory from, and it is
+    // deliberately not data-scp-root: the profile's wiring — tabs, charts,
+    // sortable tables, the header fitter — has nothing to do on this page.
     `<div class="scp is-embed" data-scp-index="1">` +
-    `<div class="scp-section">${renderPlayerIndexGroups(entries, options)}</div>` +
+    `<div class="scp-section">${renderPlayerDirectory(data, options)}</div>` +
     `</div>`
   );
 }
 
 /** The index as its own page on this origin: /player. */
 export function renderPlayerIndex(
-  entries: IndexedPlayer[],
-  options: { playerPathPrefix?: string; linkQuery?: string } = {},
+  data: PlayerDirectory,
+  options: PlayerIndexOptions = {},
 ): string {
   return (
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
@@ -5527,16 +5820,15 @@ export function renderPlayerIndex(
     `<title>NFL Player Pages | StatChasers</title>` +
     `<meta name="robots" content="noindex, indexifembedded" />` +
     `<link rel="stylesheet" href="/player.css" />` +
-    `</head><body class="scp-page"><div class="scp">` +
-    `<header class="scp-hero"><span class="scp-hero-decor" aria-hidden="true"></span>` +
-    `<div class="scp-hero-inner"><div class="scp-hero-text">` +
-    // The same two-part heading the player hero sets, so the index and the
-    // pages it lists read as one piece of furniture.
-    `<h1 class="scp-title"><span class="scp-title-first">StatChasers</span> ` +
-    `<span class="scp-title-last">NFL Player Pages</span></h1>` +
-    `<p class="scp-hero-facts">Game logs, advanced stats, injury history and fantasy outlook.</p>` +
-    `</div></div></header>` +
-    `<div class="scp-section">${renderPlayerIndexGroups(entries, options)}</div>` +
-    `</div></body></html>`
+    `</head><body class="scp-page"><div class="scp" data-scp-index="1">` +
+    `<div class="scp-section">${renderPlayerDirectory(data, options)}</div>` +
+    `</div>` +
+    // The same bundle public/player.html gives a profile, for the same reason:
+    // the search box and the position chips are both shipped hidden for a
+    // client to reveal, and on this page there was no client to do it. They
+    // have been inert here since the index grew them — visible, because a
+    // `display` of their own beat the `hidden` attribute, and unwired.
+    `<script src="/dist/statchasers-player.js" defer></script>` +
+    `</body></html>`
   );
 }

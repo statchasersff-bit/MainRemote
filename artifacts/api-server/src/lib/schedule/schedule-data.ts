@@ -722,7 +722,7 @@ export function scheduleSeason(): number {
 
 /* ------------------------------------------------------------ the views */
 
-export const SCHEDULE_VIEWS = ["week", "team", "matrix"] as const;
+export const SCHEDULE_VIEWS = ["week", "matrix"] as const;
 export type ScheduleView = (typeof SCHEDULE_VIEWS)[number];
 
 export const GAME_FILTERS = ["all", "division", "international"] as const;
@@ -826,67 +826,6 @@ export function byeTeams(
     if (game.home) playing.add(game.home.abbreviation);
   }
   return teams.filter((team) => !playing.has(team.abbreviation));
-}
-
-export type WeekMarkKind = "home" | "away" | "bye";
-
-export interface WeekMark {
-  week: number;
-  kind: WeekMarkKind;
-  game: ScheduleGame | null;
-  /** The other team, where we know it. */
-  opponent: NflTeam | null;
-}
-
-export interface TeamSeasonStats {
-  marks: WeekMark[];
-  /** Weeks with a game, in order. */
-  scheduled: WeekMark[];
-  total: number;
-  home: number;
-  away: number;
-  division: number;
-  /** The one gap in the week numbers, or null when there is not exactly one. */
-  bye: number | null;
-}
-
-/**
- * One team's season, as the four sidebar cards need it.
- *
- * The bye is derived the way lib/team/schedule.ts derives it: it is the week
- * with no game, and it is null rather than a guess whenever the data does not
- * support exactly one answer.
- */
-export function teamSeasonStats(
-  games: ScheduleGame[],
-  team: NflTeam,
-): TeamSeasonStats {
-  const byWeek = new Map(games.map((game) => [game.week, game]));
-
-  const marks: WeekMark[] = Array.from({ length: TOTAL_WEEKS }, (_, index) => {
-    const week = index + 1;
-    const game = byWeek.get(week) ?? null;
-    if (!game) return { week, kind: "bye" as const, game: null, opponent: null };
-    const atHome = game.home?.abbreviation === team.abbreviation;
-    return {
-      week,
-      kind: atHome ? ("home" as const) : ("away" as const),
-      game,
-      opponent: atHome ? game.away : game.home,
-    };
-  });
-
-  const byes = marks.filter((mark) => mark.kind === "bye");
-
-  return {
-    marks,
-    scheduled: marks.filter((mark) => mark.kind !== "bye"),
-    total: games.length,
-    home: marks.filter((mark) => mark.kind === "home").length,
-    away: marks.filter((mark) => mark.kind === "away").length,
-    division: games.filter((game) => game.divisional).length,
-    bye: byes.length === 1 ? (byes[0]?.week ?? null) : null,
-  };
 }
 
 /** The opponent a given team faces in a game, or null. */

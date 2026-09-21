@@ -321,27 +321,48 @@ describe("the schedule page", () => {
     assert.equal(doc.querySelectorAll("thead th").length, 19);
   });
 
-  test("a team view is that team's season", async () => {
-    const { res, doc, html } = await page("/schedule?view=team&team=ne");
-    assert.equal(res.status, 200);
-    assert.match(html, /New England Patriots/);
-    const games = doc.querySelectorAll("li.scs-trow");
-    assert.equal(games.length, 17, "17 games, and the bye is not one of them");
-  });
-
-  test("a team can be named any of the ways a reader would name it", async () => {
-    const canonical = (await page("/schedule?view=team&team=ne")).html;
-    for (const alias of ["NE", "patriots", "new-england-patriots"]) {
-      const { html } = await page(`/schedule?view=team&team=${alias}`);
+  /**
+   * The team lens was this tool's third view until the team hub's Schedule tab
+   * took it over. Every link to it — a bookmark, a paste, the bye card on an
+   * old cached page — has to land on the season it asked for rather than on
+   * whatever week the board happens to be showing today.
+   */
+  test("a team lens link is redirected to that team's Schedule tab", async () => {
+    for (const alias of ["ne", "NE", "patriots", "new-england-patriots"]) {
+      const res = await fetch(
+        `${server.origin}/schedule?view=team&team=${alias}`,
+        { redirect: "manual" },
+      );
+      assert.equal(res.status, 301, `${alias} is redirected`);
       assert.equal(
-        html.length,
-        canonical.length,
-        `${alias} must resolve to the same board`,
+        res.headers.get("location"),
+        "/team/new-england-patriots/schedule/",
+        `${alias} resolves to the one canonical team`,
       );
     }
+
+    // And the address it names is a page, not a 404 waiting to happen.
+    const landed = await fetch(`${server.origin}/team/new-england-patriots/schedule/`);
+    assert.equal(landed.status, 200, "the tab it points at renders");
   });
 
-  test("view, team and filter never change the canonical", async () => {
+  test("a team lens link with no team falls back to the board", async () => {
+    const res = await fetch(`${server.origin}/schedule?view=team`, {
+      redirect: "manual",
+    });
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get("location"), "/schedule");
+  });
+
+  test("the tool offers two views, and the lens is not one", async () => {
+    const { doc } = await page("/schedule");
+    const labels = [...doc.querySelectorAll(".scs-view-link")].map((a) =>
+      a.textContent.trim(),
+    );
+    assert.deepEqual(labels, ["Weekly board", "Season matrix"]);
+  });
+
+  test("view and filter never change the canonical", async () => {
     const canonical = async (pathname) => {
       const { doc } = await page(pathname);
       return doc.querySelector('link[rel="canonical"]').getAttribute("href");
@@ -349,7 +370,7 @@ describe("the schedule page", () => {
 
     // The three that are ways of LOOKING at a board, rather than names of a
     // different one, all canonicalise to the path they are looked at from.
-    for (const query of ["?view=matrix", "?view=team&team=ne"]) {
+    for (const query of ["?view=matrix"]) {
       assert.equal(
         await canonical(`/schedule${query}`),
         `${server.origin}/schedule`,
@@ -600,8 +621,10 @@ describe("the exports", () => {
   });
 
   test("a team export is that team's season", async () => {
+    // `?team=` on an export is not the view that went away: the file has always
+    // been scoped by the request rather than by what was on screen.
     const res = await fetch(
-      `${server.origin}/schedule/download.csv?view=team&team=ne`,
+      `${server.origin}/schedule/download.csv?team=ne`,
     );
     assert.match(
       res.headers.get("content-disposition"),

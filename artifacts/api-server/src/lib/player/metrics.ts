@@ -87,6 +87,12 @@ export interface FinishBadge {
  * Coarser than the weekly badge and on a different scale, because a season and
  * a week are different questions: QB12 for a season is a every-week starter,
  * QB12 in one week is a middling afternoon.
+ *
+ * The scale a rank is read against is the POOL it came out of, which is why
+ * there are three of them rather than one. Thirty-two clubs start one
+ * quarterback and one kicker and as many as three receivers, so the same
+ * number means three different things: WR12 is a first-round pick, QB12 is a
+ * starter you could have had late, K12 is the median kicker in the league.
  */
 export function finishBadge(
   rank: number | null | undefined,
@@ -94,6 +100,31 @@ export function finishBadge(
 ): FinishBadge | null {
   if (!rank) return null;
   const pos = (position ?? "").toUpperCase();
+
+  /*
+   * Kickers, on the one-per-club scale rather than the receivers'.
+   *
+   * They used to fall through to the branch below, which is cut for a pool
+   * thirty-six deep and reads the top twelve of it as elite. There are
+   * thirty-two kickers, so that branch spent its whole scale on the top two
+   * thirds: it called twelve of the thirty-two elite, twelve more strong
+   * starters, and graded the worst kicker in the league "Flex" — a label that
+   * means nothing about a kicker in the first place. The bottom two tiers
+   * were unreachable, because no kicker has a rank to reach them with.
+   *
+   * The cuts are the QB/TE branch's, for the reason they are the QB/TE
+   * branch's: one starter per club. The wording is this branch's own, because
+   * "Backup range" describes a quarterback holding a clipboard and not a
+   * kicker whose offence does not reach field-goal range — so these say where
+   * a finish landed and leave the role out of it.
+   */
+  if (pos === "K") {
+    if (rank <= 5) return { label: "Elite", tier: "elite", descriptor: "Top-5 finish" };
+    if (rank <= 12) return { label: "Starter", tier: "starter", descriptor: "Top-12 finish" };
+    if (rank <= 20) return { label: "Streaming", tier: "streaming", descriptor: "Top-20 finish" };
+    if (rank <= 32) return { label: "Depth", tier: "depth", descriptor: "Top-32 finish" };
+    return { label: "Poor", tier: "poor", descriptor: "Outside top-32" };
+  }
 
   if (pos === "QB" || pos === "TE") {
     if (rank <= 5) return { label: "Elite", tier: "elite", descriptor: "Top-5 finish" };

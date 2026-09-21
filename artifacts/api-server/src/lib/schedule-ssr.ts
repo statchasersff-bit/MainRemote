@@ -6,12 +6,12 @@
  *   - the standalone page at /schedule, which fills public/schedule.html;
  *   - GET /embed/schedule, the bare fragment the WordPress plugin prints.
  *
- * The fragment is cached per (season, view, week, team, filter, link options)
+ * The fragment is cached per (season, view, week, filter, link options)
  * on the season's own fingerprint, so a slate refresh or a score change
  * invalidates every rendering and nothing else does. The cache is bounded
- * because the state space is not: eighteen weeks times three filters plus
- * thirty-two teams plus the matrix is around a hundred renderings, and a
- * WordPress page only ever asks for the handful its shortcodes name.
+ * because the state space is not: eighteen weeks times three filters plus the
+ * matrix is around sixty renderings, and a WordPress page only ever asks for
+ * the handful its shortcodes name.
  *
  * There is no lazy-ingest equivalent here. The FPA table has one because its
  * data lives in a database that starts empty; this tool's data is a file on
@@ -51,7 +51,6 @@ function optionKey(season: number, options: ScheduleRenderOptions): string {
     season,
     options.view ?? "week",
     options.week ?? 0,
-    options.team?.abbreviation ?? "",
     options.filter ?? "all",
     options.embed ?? false,
     options.basePath ?? "",
@@ -138,7 +137,6 @@ export async function renderScheduleAppPage(
     week: fragment.data
       ? resolveState(fragment.data, options).week
       : (options.week ?? 1),
-    team: options.team ?? null,
   });
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {

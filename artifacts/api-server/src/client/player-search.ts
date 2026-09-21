@@ -24,21 +24,34 @@ import { searchKey } from "../lib/render";
 /** How many results the panel shows. More than this is a list, not an answer. */
 const LIMIT = 8;
 
+/**
+ * How many of those may be clubs.
+ *
+ * Clubs lead the list, because there are 32 of them against ~575 players and a
+ * reader who has typed something a club answers has almost certainly asked for
+ * the club. The cap is what stops a broad query — a single letter — from
+ * spending the whole panel on hubs and burying the player the reader was
+ * actually reaching for.
+ *
+ * Four rather than three because four clubs begin with "New", and a reader who
+ * types it and is shown three of them has been told something untrue about the
+ * fourth. Half the panel is the most this may take.
+ */
+const TEAM_LIMIT = 4;
+
 /** A club, as the island carries it: named once, referenced by every player. */
 interface Club {
   name: string;
   logo: string;
 }
 
-/** One row of the inlined roster, split and normalised once. */
-interface Entry {
-  slug: string;
-  name: string;
-  position: string;
-  team: string;
-  /** Sleeper's id — what the portrait CDN is keyed by. */
-  id: string;
-  club: Club | null;
+/**
+ * What the matcher needs of anything it ranks.
+ *
+ * Both a player and a club are a name to be found by; everything that differs
+ * between them belongs to the row that is built, not to the finding of it.
+ */
+interface Searchable {
   /** The name as it is matched: lowercase, unaccented, punctuation folded. */
   key: string;
   /** That same key split into words, so a surname matches on its own. */
@@ -55,40 +68,95 @@ interface Entry {
   compact: string;
 }
 
+/** One club, as a destination rather than as a row's affiliation. */
+interface TeamEntry extends Searchable {
+  kind: "team";
+  slug: string;
+  /** "Baltimore Ravens" — the city and the nickname, as the row prints it. */
+  name: string;
+  /** "AFC North", the line under the name. */
+  division: string;
+  logo: string;
+}
+
+/** One row of the inlined roster, split and normalised once. */
+interface Entry extends Searchable {
+  kind: "player";
+  slug: string;
+  name: string;
+  position: string;
+  team: string;
+  /** Sleeper's id — what the portrait CDN is keyed by. */
+  id: string;
+  club: Club | null;
+}
+
+/** Either kind of destination the panel can offer. */
+type Hit = Entry | TeamEntry;
+
 /** Ids are minted per widget: a page may legitimately hold two fragments. */
 let widgetSeq = 0;
 
-function parseRoster(script: HTMLScriptElement): Entry[] {
-  let island: { rows?: unknown; teams?: Record<string, Club> };
+/** The three matching fields, derived from one name, in one place. */
+function searchable(text: string): Searchable {
+  const key = searchKey(text);
+  return { key, words: key ? key.split(" ") : [], compact: key.replace(/ /g, "") };
+}
+
+function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: TeamEntry[] } {
+  const empty = { players: [], teams: [] };
+  let island: { rows?: unknown; teams?: Record<string, Club>; clubs?: unknown };
   try {
     island = JSON.parse(script.textContent ?? "{}");
   } catch {
     // A truncated island is a broken search, not a broken page.
-    return [];
+    return empty;
   }
   const rows = island.rows;
-  if (!Array.isArray(rows)) return [];
+  if (!Array.isArray(rows)) return empty;
   const teams = island.teams ?? {};
 
-  const entries: Entry[] = [];
+  const players: Entry[] = [];
   for (const row of rows) {
     if (typeof row !== "string") continue;
     const [slug, name, position, team, id] = row.split("|");
     if (!slug || !name) continue;
-    const key = searchKey(name);
-    entries.push({
+    players.push({
+      kind: "player",
       slug,
       name,
       position: position ?? "",
       team: team ?? "",
       id: id ?? "",
       club: (team && teams[team]) || null,
-      key,
-      words: key ? key.split(" ") : [],
-      compact: key.replace(/ /g, ""),
+      ...searchable(name),
     });
   }
-  return entries;
+
+  const clubs: TeamEntry[] = [];
+  // An island from before the clubs were added still searches its players:
+  // this fragment is printed into a WordPress page that caches, so the two
+  // halves can legitimately be of different vintages for a while.
+  if (Array.isArray(island.clubs)) {
+    for (const row of island.clubs) {
+      if (typeof row !== "string") continue;
+      const [code, slug, city, nickname, division] = row.split("|");
+      if (!slug || !city || !nickname) continue;
+      clubs.push({
+        kind: "team",
+        slug,
+        name: `${city} ${nickname}`,
+        division: division ?? "",
+        logo: (code && teams[code]?.logo) || "",
+        // The code is matched as a word of its own, so "gb" finds Green Bay —
+        // which neither the city nor the nickname starts with. It is not part
+        // of the name the row prints, only of the name it answers to.
+        ...searchable(`${city} ${nickname} ${code ?? ""}`),
+      });
+    }
+  }
+
+  return { players, teams: clubs };
 }
 
 /**
@@ -128,7 +196,7 @@ function cdnImage(src: string, className: string): HTMLImageElement {
  * spelling.
  */
 function score(
-  entry: Entry,
+  entry: Searchable,
   query: string,
   compact: string,
   words: string[],
@@ -141,23 +209,40 @@ function score(
   return entry.compact.includes(compact) ? 1 : 0;
 }
 
-function match(entries: Entry[], value: string): Entry[] {
+/** The best `limit` of one list, still in the order the server sent them. */
+function rank<T extends Searchable>(entries: T[], value: string, limit: number): T[] {
   const query = searchKey(value);
   if (!query) return [];
   const words = query.split(" ");
   const compact = query.replace(/ /g, "");
 
-  const hits: Array<{ entry: Entry; rank: number }> = [];
+  const hits: Array<{ entry: T; rank: number }> = [];
   for (const entry of entries) {
-    const rank = score(entry, query, compact, words);
-    if (rank > 0) hits.push({ entry, rank });
+    const scored = score(entry, query, compact, words);
+    if (scored > 0) hits.push({ entry, rank: scored });
   }
 
-  // A stable sort on a list the server already put in alphabetical order, so
-  // players of equal rank stay alphabetical rather than arriving in whatever
-  // order the roster file happens to hold them.
+  // A stable sort on a list the server already put in order — alphabetical for
+  // the players, the league's own for the clubs — so equally ranked matches
+  // stay in it rather than arriving in whatever order the file happens to hold.
   hits.sort((a, b) => b.rank - a.rank);
-  return hits.slice(0, LIMIT).map((hit) => hit.entry);
+  return hits.slice(0, limit).map((hit) => hit.entry);
+}
+
+/**
+ * Clubs first, then players, to one panel's worth.
+ *
+ * Two lists ranked separately rather than one ranked together, because the
+ * two scores are not comparable: a club scores against 31 rivals and a player
+ * against 574, so the same tier means something much rarer on the player side.
+ * Interleaving them by score would push Lamar Jackson below the Jaguars for
+ * "ja" — and a reader who wanted a club got one in the first three rows
+ * either way.
+ */
+function match(entries: { players: Entry[]; teams: TeamEntry[] }, value: string): Hit[] {
+  const teams = rank(entries.teams, value, TEAM_LIMIT);
+  const players = rank(entries.players, value, LIMIT - teams.length);
+  return [...teams, ...players];
 }
 
 export function wirePlayerSearch(root: HTMLElement): void {
@@ -173,6 +258,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
 
   const id = `scp-search-${++widgetSeq}`;
   const prefix = widget.dataset["scpPrefix"] ?? "/player/";
+  const teamPrefix = widget.dataset["scpTeamPrefix"] ?? "/team/";
   const query = widget.dataset["scpQuery"] ?? "";
 
   // The roles go on now rather than in the server's markup: they promise
@@ -180,7 +266,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
   // arrow keys — and until this file runs there is none to deliver.
   list.id = id;
   list.setAttribute("role", "listbox");
-  list.setAttribute("aria-label", "Player results");
+  list.setAttribute("aria-label", "Player and team results");
   input.setAttribute("role", "combobox");
   input.setAttribute("aria-controls", id);
   input.setAttribute("aria-autocomplete", "list");
@@ -189,7 +275,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
   // Now it can filter, so now it exists.
   widget.hidden = false;
 
-  let entries: Entry[] | null = null;
+  let entries: { players: Entry[]; teams: TeamEntry[] } | null = null;
   let options: HTMLAnchorElement[] = [];
   let active = -1;
 
@@ -228,7 +314,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
     active = -1;
   };
 
-  const render = (hits: Entry[], typed: boolean): void => {
+  const render = (hits: Hit[], typed: boolean): void => {
     list.textContent = "";
     options = [];
     active = -1;
@@ -243,7 +329,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
     if (hits.length === 0) {
       const empty = document.createElement("p");
       empty.className = "scp-search-empty";
-      empty.textContent = "No player found.";
+      empty.textContent = "No player or team found.";
       list.appendChild(empty);
     }
 
@@ -251,7 +337,14 @@ export function wirePlayerSearch(root: HTMLElement): void {
       const link = document.createElement("a");
       link.className = "scp-search-opt";
       link.id = `${id}-opt-${i}`;
-      link.href = `${prefix}${entry.slug}${query}`;
+      // Marked rather than inferred from the shape of the row, so the
+      // stylesheet can size a club's mark differently from a portrait without
+      // reading the markup underneath it.
+      link.dataset["kind"] = entry.kind;
+      link.href =
+        entry.kind === "team"
+          ? `${teamPrefix}${entry.slug}${query}`
+          : `${prefix}${entry.slug}${query}`;
       // Same as every other link in this fragment: break out of the legacy
       // iframe mount rather than loading the next player inside it.
       link.target = "_top";
@@ -272,16 +365,23 @@ export function wirePlayerSearch(root: HTMLElement): void {
        */
       const face = document.createElement("span");
       face.className = "scp-search-face";
-      if (entry.id) {
-        face.appendChild(
-          cdnImage(
-            `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(entry.id)}.jpg`,
-            "scp-search-shot",
-          ),
-        );
-      }
-      if (entry.club?.logo) {
-        face.appendChild(cdnImage(entry.club.logo, "scp-search-badge"));
+      if (entry.kind === "team") {
+        // One mark, filling the well the portrait would have filled, rather
+        // than a portrait with a badge on its corner. The club IS the subject
+        // of this row, so it takes the whole of the space the subject gets.
+        if (entry.logo) face.appendChild(cdnImage(entry.logo, "scp-search-mark"));
+      } else {
+        if (entry.id) {
+          face.appendChild(
+            cdnImage(
+              `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(entry.id)}.jpg`,
+              "scp-search-shot",
+            ),
+          );
+        }
+        if (entry.club?.logo) {
+          face.appendChild(cdnImage(entry.club.logo, "scp-search-badge"));
+        }
       }
       link.appendChild(face);
 
@@ -295,6 +395,38 @@ export function wirePlayerSearch(root: HTMLElement): void {
 
       const meta = document.createElement("span");
       meta.className = "scp-search-meta";
+
+      if (entry.kind === "team") {
+        /*
+         * "Team · AFC North", in the shape a player's row uses for
+         * "QB · Cardinals".
+         *
+         * The word is not redundant with the mark beside it: this row is an
+         * option in a listbox, and a reader hearing it read aloud has no mark
+         * to look at. It is also the site's own word for these pages.
+         */
+        const kind = document.createElement("span");
+        kind.className = "scp-search-kind";
+        kind.textContent = "Team";
+        meta.appendChild(kind);
+        if (entry.division) {
+          const dot = document.createElement("span");
+          dot.className = "scp-search-dot";
+          dot.textContent = "·";
+          dot.setAttribute("aria-hidden", "true");
+          meta.appendChild(dot);
+          const division = document.createElement("span");
+          division.className = "scp-search-club";
+          division.textContent = entry.division;
+          meta.appendChild(division);
+        }
+        who.appendChild(meta);
+        link.appendChild(who);
+        list.appendChild(link);
+        options.push(link);
+        return;
+      }
+
       if (entry.position) {
         const pos = document.createElement("span");
         pos.className = "scp-search-pos";
@@ -335,8 +467,8 @@ export function wirePlayerSearch(root: HTMLElement): void {
     if (status) {
       status.textContent =
         hits.length === 0
-          ? "No player found."
-          : `${hits.length} player${hits.length === 1 ? "" : "s"} found.`;
+          ? "No player or team found."
+          : `${hits.length} result${hits.length === 1 ? "" : "s"} found.`;
     }
   };
 

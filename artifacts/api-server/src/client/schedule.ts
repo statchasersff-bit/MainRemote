@@ -87,25 +87,12 @@ function centreWeekRail(root: HTMLElement): void {
   rail.scrollLeft = Math.max(0, offset);
 }
 
-/** Submit the team picker on change, and retire its button. */
-function wirePicker(root: HTMLElement): void {
-  const form = root.querySelector<HTMLFormElement>("[data-scs-picker]");
-  const select = form?.querySelector<HTMLSelectElement>("select");
-  if (!form || !select) return;
-
-  select.addEventListener("change", () => {
-    form.submit();
-  });
-  form.dataset["scsAuto"] = "js";
-}
-
 function boot(): void {
   for (const root of Array.from(
     document.querySelectorAll<HTMLElement>(ROOT_SELECTOR),
   )) {
     localizeKickoffs(root);
     centreWeekRail(root);
-    wirePicker(root);
     wireFrameHeight(root);
   }
 }
