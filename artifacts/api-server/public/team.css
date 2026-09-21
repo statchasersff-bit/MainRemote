@@ -158,6 +158,36 @@ body.sct-page.is-embed {
   padding: 0;
 }
 
+/* Host padding on bare elements, zeroed with enough weight to mean it.
+ *
+ * Divi styles elements rather than classes — `p { padding-bottom: 1em }`, and
+ * the same gesture on headings and lists — and this file's instrument on those
+ * elements is margin: it sets padding on a handful of components and nowhere
+ * else. So on the published site every paragraph grew a gap beneath it that no
+ * rule in here asked for, and in the preview, where there is no theme, none of
+ * them did.
+ *
+ * The zero-weight reset directly above is the floor for anything a component
+ * in this file also sets, and it has to weigh nothing to lose to them. But
+ * weighing nothing also loses to the HOST, whose rules are real element
+ * selectors, so it never defended this at all: `.sct-subtitle` measured 14.72px
+ * of Divi's padding on a published page with that reset in force. This is the
+ * same reset at the one weight that beats an element selector and still loses
+ * to a class.
+ *
+ * `:where()` on the element list so the whole selector weighs `.sct` and no
+ * more. That is one class — heavier than the bare `p` it has to beat, level
+ * with the single-class component rules in this file that set padding on
+ * purpose, and above all of them in the file, so those win on source order and
+ * keep their spacing. Moving this below them would invert that and flatten
+ * every one.
+ *
+ * Padding only. Margin is already stated wherever this file cares about it,
+ * and arming margin here would collapse those rules into this one. */
+.sct :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote) {
+  padding: 0;
+}
+
 :where(.sct) :where(ul, ol) {
   list-style: none;
 }

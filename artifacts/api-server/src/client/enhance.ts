@@ -122,14 +122,21 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   /**
    * The page's H1 and standfirst, which this fragment does not own.
    *
-   * On the standalone page they are the hero's; on a WordPress page they are
-   * whatever the host printed — the plugin marks its own, and the fallback is
-   * the document's first H1. Nothing is created if there is none: a page that
-   * chose not to print a heading does not get one invented by a tab click.
+   * The HOST's, strictly: the plugin marks its own, and the fallback is the
+   * document's first H1 FROM OUTSIDE this root. A tab click rewrites the title
+   * of the page the fragment is mounted in, because that title names the
+   * address the click just pushed — it does not touch the hero, which says the
+   * player's or the team's name on every tab and is not a caption for whichever
+   * panel is open. On the standalone page the only H1 is the hero's, so there
+   * is nothing here to rewrite and nothing is invented: a page that chose not
+   * to print a heading of its own does not get one from a tab click.
    */
   const headingEl =
     document.querySelector<HTMLElement>("[data-sct-page-title]") ??
-    document.querySelector<HTMLElement>("h1");
+    Array.from(document.querySelectorAll<HTMLElement>("h1")).find(
+      (el) => !root.contains(el),
+    ) ??
+    null;
   const leadEl = document.querySelector<HTMLElement>("[data-sct-page-lead]");
 
   // What the page said on arrival, so Back can put it back.

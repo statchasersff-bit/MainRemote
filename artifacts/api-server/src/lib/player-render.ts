@@ -1198,14 +1198,18 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
   ]);
 
   /*
-   * The heading, in up to three spans.
+   * The heading: the player's name, and only ever the player's name.
    *
-   * Given name and surname on one line, and — on a section-scoped URL — the
-   * section's phrase under both, because "Jacoby Brissett Injury Update &
-   * History" is what that page is about and what its H1 has to say. The spans
-   * are separated by real spaces, so however the hero sets them the heading's
-   * text is still the exact string the unscoped page's H1 has always been.
-   * The section then drops its own heading; see renderInjury().
+   * A scoped URL used to print the section's phrase under it — "Jacoby
+   * Brissett" with "Stats 2026" beneath — so the header changed its text on
+   * every tab a reader clicked. The hero is this page's identity, and identity
+   * that rewrites itself on a tab click reads as though the page navigated
+   * somewhere else; it is also the one block on screen that has no business
+   * tracking which panel is open. The phrase belongs to the section, which
+   * prints it as its own H2 whether or not it is scoped — see renderStats(),
+   * renderGameLog(), renderInjury() and renderBio() — so the words are still
+   * on the page, under the heading that owns them. What the URL names is still
+   * said by the document title, the description and the tab strip.
    *
    * No word swap on the name, and no measured "J. Brissett" fallback either.
    * A name is the one string on this page a reader came for, and an initial is
@@ -1214,21 +1218,10 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
    * allowed to wrap.
    */
   const { first, last } = splitName(player.name);
-  const phrase = options.section
-    ? sectionHeading(
-        player.name,
-        options.section,
-        // Always the active season, including on the Game Log: ?log=2025 adds
-        // 2025 under the selector, it does not turn this into the 2025 page.
-        data.season,
-      )
-    : null;
-  const rest = phrase ? phrase.slice(player.name.length).trim() : "";
 
   const title =
     (first ? `<span class="scp-title-first">${escapeHtml(first)}</span> ` : "") +
-    `<span class="scp-title-last">${escapeHtml(last)}</span>` +
-    (rest ? ` <span class="scp-title-rest">${escapeHtml(rest)}</span>` : "");
+    `<span class="scp-title-last">${escapeHtml(last)}</span>`;
 
   const draftLine = draftFull
     ? `<p class="scp-hero-draft">` +
@@ -2218,12 +2211,12 @@ function renderBio(
 
   if (!narrative && !timeline && !faq) return "";
 
-  // Scoped to its own URL the hero already says this; see renderPlayerPage().
-  const heading =
-    options.section === "bio"
-      ? ""
-      // No subtitle: it listed the facts of the table directly beneath it.
-      : h2(`${data.player.name} Bio`);
+  // The tab's heading, on the scoped URL as well as in the full profile: the
+  // hero says the player's name and nothing else now, so this is the only
+  // place the page names the section. See renderHero().
+  //
+  // No subtitle: it listed the facts of the table directly beneath it.
+  const heading = h2(`${data.player.name} Bio`);
 
   return heading + narrative + timeline + faq;
 }
@@ -3619,11 +3612,9 @@ function renderGameLog(
   // them renders, so the page never shows two selectors.
   const seasons = renderLogSeasons(data, options);
 
-  const heading =
-    // Scoped to its own URL the hero already says this; see renderPlayerPage().
-    options.section === "game-log"
-      ? ""
-      : h2(`${data.player.name} Game Log ${current.season}`);
+  // Printed on the scoped URL too, since the hero no longer carries the
+  // section's phrase; see renderHero().
+  const heading = h2(`${data.player.name} Game Log ${current.season}`);
 
   return (
     heading +
@@ -4369,11 +4360,9 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
    * What they were for was authority — who, which season, how far in — and the
    * page earns that by being right rather than by captioning itself.
    */
-  const heading =
-    // Scoped to its own URL the hero carries this; see renderPlayerPage().
-    options.section === "stats"
-      ? ""
-      : h2(`${data.player.name} Stats ${data.season}`);
+  // Printed on the scoped URL too, since the hero no longer carries the
+  // section's phrase; see renderHero().
+  const heading = h2(`${data.player.name} Stats ${data.season}`);
 
   return (
     heading +
@@ -4779,15 +4768,12 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
     )
     .join("");
 
-  // Scoped to its own URL, the hero already says this. Unscoped, it is the
-  // tab's heading and the thing that names the panel.
-  const heading =
-    options.section === "injury"
-      ? ""
-      : h2(
-          `${data.player.name} Injury Update & History`,
-          "Current status, games missed and every logged injury.",
-        );
+  // The tab's heading, and the thing that names the panel — on the scoped URL
+  // as well, now that the hero is the player's name alone. See renderHero().
+  const heading = h2(
+    `${data.player.name} Injury Update & History`,
+    "Current status, games missed and every logged injury.",
+  );
 
   return (
     heading +

@@ -531,7 +531,23 @@ describe("the embed fragment", () => {
     // twice and would defeat the plugin's versioning.
     const res = await rawGet("/embed/schedule");
     assert.ok(!/<link[^>]+stylesheet/i.test(res.body));
-    assert.ok(!/<script(?![^>]*type="application\/ld\+json")/i.test(res.body));
+
+    // A <script> is allowed here only as INERT DATA — the FAQ island the
+    // plugin lifts into the host page's own graph, which is the arrangement
+    // team-render.ts and rankings-render.ts already use and which this
+    // assertion used to predate. What the fragment must never carry is
+    // anything the browser would run: no src, and no type a browser treats as
+    // JavaScript. Asserted per tag rather than as one negative lookahead, so
+    // the failure names the script that broke the rule.
+    const tags = res.body.match(/<script\b[^>]*>/gi) ?? [];
+    for (const tag of tags) {
+      assert.ok(!/\bsrc=/i.test(tag), `a fragment loaded a script: ${tag}`);
+      const type = /\btype="([^"]*)"/i.exec(tag)?.[1];
+      assert.ok(
+        type === "application/json" || type === "application/ld+json",
+        `a fragment shipped something that runs: ${tag}`,
+      );
+    }
   });
 });
 

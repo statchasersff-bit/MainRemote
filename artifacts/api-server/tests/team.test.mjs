@@ -1633,12 +1633,22 @@ describe("team.css survives a host theme", () => {
  * contract as the player pages.
  */
 describe("team section URLs", () => {
+  /**
+   * The heading each section prints for itself — NOT the H1.
+   *
+   * The hero is the club's name on every one of these addresses. It used to
+   * take the page's subject instead ("New England Patriots Depth Chart 2026"),
+   * which meant the header rewrote itself on every tab a reader clicked; the
+   * phrase belongs to the section, and the document title is what names the
+   * address.
+   */
   const SECTIONS = [
-    ["outlook", /Fantasy Football Outlook 2\d{3}$/],
-    ["stats", /Stats 2\d{3}$/],
-    ["schedule", /Schedule 2\d{3}$/],
-    ["depth-chart", /Depth Chart 2\d{3}$/],
+    ["outlook", /^2\d{3} Fantasy Outlook$/],
+    ["stats", /^Team Snapshot$/],
+    ["schedule", /Patriots Schedule$/],
+    ["depth-chart", /^Patriots Fantasy Depth Chart$/],
   ];
+  const TEAM = "New England Patriots";
   const at = (id) => `/team/new-england-patriots/${id}/`;
 
   test("each section is one panel, named for what it holds", async () => {
@@ -1654,7 +1664,11 @@ describe("team section URLs", () => {
 
       const h1 = doc.querySelectorAll("h1");
       assert.equal(h1.length, 1, `${id}: exactly one H1`);
-      assert.match(h1[0].textContent.trim(), heading, `${id}: H1 names the section`);
+      assert.equal(h1[0].textContent.trim(), TEAM, `${id}: the H1 is the club`);
+
+      const own = panels[0].querySelector(".sct-h2");
+      assert.ok(own, `${id}: the section heads itself`);
+      assert.match(own.textContent.trim(), heading, `${id}: and it names the section`);
     }
   });
 
@@ -1691,8 +1705,8 @@ describe("team section URLs", () => {
    */
   test("the FAQ-less sections are still pages of their own", async () => {
     for (const [id, heading] of [
-      ["matchups", /Matchups 2\d{3}$/],
-      ["news", /News 2\d{3}$/],
+      ["matchups", /^Patriots Matchups$/],
+      ["news", /^Latest Patriots News$/],
     ]) {
       const { doc } = await dom(at(id));
 
@@ -1702,7 +1716,11 @@ describe("team section URLs", () => {
 
       const h1 = doc.querySelectorAll("h1");
       assert.equal(h1.length, 1, `${id}: exactly one H1`);
-      assert.match(h1[0].textContent.trim(), heading, `${id}: H1 names the section`);
+      assert.equal(h1[0].textContent.trim(), TEAM, `${id}: the H1 is the club`);
+
+      const own = panels[0].querySelector(".sct-h2");
+      assert.ok(own, `${id}: the section heads itself`);
+      assert.match(own.textContent.trim(), heading, `${id}: and it names the section`);
 
       const canonical = doc
         .querySelector('link[rel="canonical"]')
@@ -1776,7 +1794,11 @@ describe("team section URLs", () => {
       false,
       "and the one it replaced is not",
     );
-    assert.match(heading.textContent, /Stats 2\d{3}$/, "the H1 followed");
+    assert.equal(
+      heading.textContent.trim(),
+      landed,
+      "the H1 did not follow — the hero is the club on every tab",
+    );
 
     // Nothing loaded: the other four panels are still in the document, which is
     // what separates this from having navigated.
@@ -1790,13 +1812,26 @@ describe("team section URLs", () => {
     assert.ok(doc.getElementById("outlook").classList.contains("is-active"));
   });
 
-  test("the section does not print the heading the hero already carries", async () => {
-    for (const id of ["outlook", "schedule", "depth-chart"]) {
+  test("a section page heads its panel, and never twice", async () => {
+    // The mirror of what this used to assert. While the hero carried the
+    // section's phrase, these three dropped their own heading so it was not
+    // printed twice; the hero is the club's name now, so the section's heading
+    // is back — and it is still the only one.
+    for (const id of ["outlook", "schedule", "depth-chart", "matchups"]) {
       const { doc } = await dom(at(id));
       const h1 = doc.querySelector("h1").textContent.trim();
-      for (const h2 of doc.querySelectorAll(`#${id} h2`)) {
-        assert.notEqual(h2.textContent.trim(), h1, `${id}: heading printed twice`);
+      const headings = [...doc.querySelectorAll(`#${id} h2`)].map((h) =>
+        h.textContent.trim(),
+      );
+      assert.ok(headings.length > 0, `${id}: the panel is headed`);
+      for (const text of headings) {
+        assert.notEqual(text, h1, `${id}: the hero's name printed twice`);
       }
+      assert.equal(
+        new Set(headings).size,
+        headings.length,
+        `${id}: no heading printed twice`,
+      );
     }
   });
 

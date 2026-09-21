@@ -362,7 +362,13 @@ describe("links between the family", () => {
 
   test("a team's matchups hub links every opponent to the canonical pair", async () => {
     const { doc } = await dom("/team/new-england-patriots/matchups/");
-    assert.equal(doc.querySelector("h1").textContent.trim(), "New England Patriots Matchups 2026");
+    // The club, not the section: the hero says the same thing on every tab of
+    // the hub. The panel's own H2 is what names this page.
+    assert.equal(doc.querySelector("h1").textContent.trim(), "New England Patriots");
+    assert.equal(
+      doc.querySelector("#matchups .sct-h2").textContent.trim(),
+      "Patriots Matchups",
+    );
     const hrefs = [...doc.querySelectorAll('a[href^="/nfl/"]')].map((a) => a.getAttribute("href"));
     assert.ok(hrefs.length >= 10, "one link per scheduled game");
     for (const href of hrefs) {
