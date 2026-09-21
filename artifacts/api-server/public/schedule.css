@@ -421,6 +421,22 @@ body.scs-page.is-embed {
 
 .scs-rail-link {
   display: block;
+  /*
+   * Positioned so the visually-hidden label inside it has somewhere to be.
+   *
+   * Each rail link carries a `.scs-visually-hidden` span — `position: absolute`
+   * with the 1px/clip treatment — that names the week for a screen reader. With
+   * nothing positioned between it and the document, "absolute" meant absolute
+   * against the initial containing block, and its static position is measured
+   * along the rail's SCROLLED content: on a phone that put a 1px span at
+   * x = 516 in a 485px viewport.
+   *
+   * A clipped 1px span is invisible, so nothing looked wrong at that spot —
+   * but the document was 31px wider than the screen, the page scrolled
+   * sideways, and percentage widths resolved against the wider box. The rail
+   * scrolls, so containing it here keeps it inside the part that clips.
+   */
+  position: relative;
   width: 100%;
   padding: 6px 4px;
   border: 1px solid hsl(var(--scs-border));

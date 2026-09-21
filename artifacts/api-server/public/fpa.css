@@ -549,6 +549,28 @@ body.scf-page {
 }
 
 .scf-cell {
+  /*
+   * Positioned so the rank inside it has somewhere to be.
+   *
+   * Below 540px the rank digit is taken out of the flow and hidden from sight
+   * — the figure alone is what fits, and the rank is left for screen readers.
+   * "Out of the flow" means `position: absolute`, and with nothing positioned
+   * between it and the document that resolved against the initial containing
+   * block. An absolutely positioned box whose containing block is outside a
+   * scroll container is NOT clipped by it, so while the table scrolled
+   * sideways inside .scf-scroll like it should, all 32 rank spans sat at
+   * document coordinates past the right edge of the screen and dragged the
+   * page out with them.
+   *
+   * Nothing looked wrong where they were — they are clipped to invisibility —
+   * but the page scrolled sideways, and once a document is wider than the
+   * viewport every percentage width on it resolves against the wider box. That
+   * is the grey band down the side of the tool on a phone.
+   *
+   * The cell is the right place for it: it is inside the scroller, so anything
+   * contained by it is clipped with the rest of the table.
+   */
+  position: relative;
   padding: var(--scf-cell-pad-y) 10px;
   /* The team cell is two lines now, so everything beside it centres against it
      rather than sitting on the first line's baseline. */
@@ -743,6 +765,11 @@ body.scf-page {
 @container scf (max-width: 540px) {
   .scf-rank {
     position: absolute;
+    /* `min-width: 22px` on the base rule outranks `width: 1px` — a used width
+       is clamped up to its minimum — so this box was 22px wide, not 1px, for
+       as long as it has existed. Invisible either way, which is why it went
+       unnoticed; 22px of it was not. */
+    min-width: 0;
     width: 1px;
     height: 1px;
     margin: 0;
@@ -850,68 +877,94 @@ body.scf-page {
 
 }
 
-/* The same rules for anything that cannot do container queries. The viewport is
-   a worse proxy — it is wrong for the embed — but it is the only one left. */
-@supports not (container-type: inline-size) {
-  @media (max-width: 680px) {
-    .scf-team-name {
-      display: none;
-    }
+/*
+ * The same breakpoints again, on the VIEWPORT.
+ *
+ * Not a fallback. These used to sit behind
+ * `@supports not (container-type: inline-size)`, which meant they reached only
+ * browsers that cannot do container queries — i.e. almost nobody, and in
+ * particular not the phone this matters on.
+ *
+ * The container query is still the better question for the case it was written
+ * for: a 700px WordPress column inside a 1400px window, where the viewport says
+ * "desktop" and the table has to compact anyway. But it is only half the
+ * problem, and the other half is what was reported from the live site. If the
+ * host column comes out WIDER than the phone — which it does whenever anything
+ * on the page has made the document horizontally scrollable, because a
+ * percentage width then resolves against a containing block wider than the
+ * screen — then `@container scf` is asked about 900px, answers "desktop", and
+ * the table keeps its full team names and its rank digits on a 390px screen.
+ *
+ * So the two are a union, not a primary and a fallback: compact when the
+ * container is narrow OR when the screen is. A narrow viewport always means a
+ * narrow reading area, whatever the container believes about itself, and the
+ * declarations are identical either way so a cell that matches both is set
+ * twice to the same value.
+ */
+
+@media (max-width: 680px) {
+  .scf-team-name {
+    display: none;
+  }
+}
+
+@media (max-width: 540px) {
+  .scf-rank {
+    position: absolute;
+    /* `min-width: 22px` on the base rule outranks `width: 1px` — a used width
+       is clamped up to its minimum — so this box was 22px wide, not 1px, for
+       as long as it has existed. Invisible either way, which is why it went
+       unnoticed; 22px of it was not. */
+    min-width: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
-  @media (max-width: 540px) {
-    .scf-rank {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
-    .scf-cell,
-    .scf-team,
-    .scf-games,
-    .scf-table thead th {
-      padding-left: 7px;
-      padding-right: 7px;
-    }
-
-    .scf-cell {
-      text-align: center;
-    }
-
-    .scf-csv {
-      display: none;
-    }
+  .scf-cell,
+  .scf-team,
+  .scf-games,
+  .scf-table thead th {
+    padding-left: 7px;
+    padding-right: 7px;
   }
 
-  @media (max-width: 400px) {
-    .scf-opt-full {
-      display: none;
-    }
-
-    .scf-opt-abbr {
-      display: inline;
-    }
+  .scf-cell {
+    text-align: center;
   }
 
-  @media (max-width: 360px) {
-    .scf-games,
-    .scf-th-games {
-      display: none;
-    }
+  .scf-csv {
+    display: none;
+  }
+}
 
-    .scf-control-set {
-      gap: 12px;
-    }
+@media (max-width: 400px) {
+  .scf-opt-full {
+    display: none;
+  }
 
-    .scf-opt {
-      padding-left: 10px;
-      padding-right: 10px;
-    }
+  .scf-opt-abbr {
+    display: inline;
+  }
+}
+
+@media (max-width: 360px) {
+  .scf-games,
+  .scf-th-games {
+    display: none;
+  }
+
+  .scf-control-set {
+    gap: 12px;
+  }
+
+  .scf-opt {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
 
