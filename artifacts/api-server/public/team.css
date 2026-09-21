@@ -233,6 +233,31 @@ body.sct-page.is-embed {
   list-style: none !important;
 }
 
+/* Theme armour, part one and a half: the headings, armed where they are set.
+ *
+ * Divi's typography panel styles bare elements through the content column's
+ * id — `#left-area h2 { font-size: 50px; color: #0e0c19 }` is the shape — and
+ * an id beats every class in this file. The published hub showed it exactly:
+ * `.sct-h2`'s margin, padding and weight all arrived, while its font-size and
+ * colour did not, and `line-height: 1.2` and `letter-spacing: -0.02em` then
+ * computed off the theme's 50px instead of this file's 1.7rem. A section
+ * heading meant to be 27px rendered at 50, and the depth chart's position
+ * labels with it.
+ *
+ * Only `!important` beats an id, so the two properties Divi's panel takes —
+ * font-size and colour — are armed ON the heading rules themselves rather than
+ * restated here. That keeps one value in one place: the clamp stays where a
+ * reader changes it, and the media-query variants further down the file, which
+ * are the same weight and come later, still win over the base rule.
+ *
+ * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
+ * .sct-band-label, .sct-depth-pos, .sct-ladder-title, .sct-mu-h3,
+ * .sct-news-title, .sct-outlook-name — every <h1>-<h4> the hub prints.
+ *
+ * NOT done blanket-wise as `.sct :is(h1..h6) { font-size: … !important }`,
+ * because each of those classes carries a different size and one rule here
+ * would flatten all ten into whichever value it named. */
+
 /* Theme armour, part two: the column the hub is standing in.
  *
  * Everything above defends the hub's own markup. This defends the box around
@@ -265,28 +290,17 @@ body.sct-page.is-embed {
  *
  * Inert everywhere else — no other theme has these ids, and the standalone page
  * at the API's own URL has no `#left-area` at all. */
-@media (min-width: 981px) {
-  #left-area {
-    width: 100% !important;
-    float: none !important;
-    padding-right: 0 !important;
-    padding-left: 0 !important;
-  }
-
-  /* The rule Divi draws down the column boundary. With nothing on the far side
-     of it, it is a line down the middle of the page. */
-  #main-content .container:before {
-    display: none !important;
-  }
-
-  /* CSS cannot stop page.php calling get_sidebar(), so a populated widget area
-     would otherwise land in a heap underneath the hub once the float above is
-     gone. The plugin removes the markup properly when it is installed; this is
-     for when it isn't. */
-  #sidebar {
-    display: none !important;
-  }
-}
+/* MOVED. These three rules now live in one place only: the plugin's
+ * `statchasers_team_full_width_css()`, which every tool — the hub, player
+ * pages, FPA, rankings and the schedule — adds inline beside its own
+ * stylesheet. Keeping a second copy here meant the hub alone carried the
+ * column override twice, and made this file look like the reason the hub was
+ * wider than a player page when in fact the two get byte-identical CSS from
+ * that shared function. player.css has no `#left-area` rule at all; this file
+ * now matches it.
+ *
+ * The argument above is still the argument — it is just made once, in the
+ * plugin, where the meta and body-class filters that go with it already are. */
 
 /* The host page's own <h1>, given the tool's heading mark.
  *
@@ -599,11 +613,11 @@ body.sct-page.is-embed {
 .sct-title {
   margin: 0;
   /* Strong without becoming a billboard. */
-  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.05rem);
+  font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.05rem) !important;
   line-height: 1.08;
   font-weight: 900;
   letter-spacing: -0.025em;
-  color: var(--sc-navy);
+  color: var(--sc-navy) !important;
 }
 
 .sct-subtitle {
@@ -783,8 +797,8 @@ body.sct-page.is-embed {
   margin: 0 0 8px;
   padding-bottom: 6px;
   border-bottom: 2px solid var(--sc-gold);
-  color: var(--sc-navy);
-  font-size: 0.8rem;
+  color: var(--sc-navy) !important;
+  font-size: 0.8rem !important;
   font-weight: 900;
   letter-spacing: 0.08em;
 }
@@ -902,7 +916,7 @@ body.sct-page.is-embed {
 .sct-switch-grid.is-index .sct-switch-conf-title {
   margin-bottom: 14px;
   padding-bottom: 8px;
-  font-size: 0.95rem;
+  font-size: 0.95rem !important;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1266,8 +1280,8 @@ body.sct-page.is-embed {
   position: relative;
   margin: 0 0 6px;
   padding-bottom: 10px;
-  color: var(--sc-navy);
-  font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem);
+  color: var(--sc-navy) !important;
+  font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem) !important;
   line-height: 1.2;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -1678,8 +1692,8 @@ body.sct-page.is-embed {
   align-items: center;
   gap: 12px;
   margin: 0;
-  color: var(--sc-muted-strong);
-  font-size: 0.7rem;
+  color: var(--sc-muted-strong) !important;
+  font-size: 0.7rem !important;
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1878,8 +1892,8 @@ body.sct-page.is-embed {
 
 .sct-outlook-name {
   margin: 0;
-  color: var(--sc-navy);
-  font-size: 1.06rem;
+  color: var(--sc-navy) !important;
+  font-size: 1.06rem !important;
   font-weight: 900;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -2129,8 +2143,8 @@ body.sct-page.is-embed {
   position: relative;
   margin: 0;
   padding-left: 12px;
-  color: var(--sc-navy);
-  font-size: 1.02rem;
+  color: var(--sc-navy) !important;
+  font-size: 1.02rem !important;
   font-weight: 900;
   letter-spacing: -0.01em;
 }
@@ -3259,15 +3273,15 @@ body.sct-page.is-embed {
 
 .sct-news-title {
   margin: 0;
-  color: var(--sc-navy);
-  font-size: 1.02rem;
+  color: var(--sc-navy) !important;
+  font-size: 1.02rem !important;
   line-height: 1.28;
   font-weight: 800;
   letter-spacing: -0.015em;
 }
 
 .sct-news.is-featured .sct-news-title {
-  font-size: 1.25rem;
+  font-size: 1.25rem !important;
   line-height: 1.22;
 }
 
@@ -3468,8 +3482,8 @@ body.sct-page.is-embed {
   margin: 0 0 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--sc-hairline);
-  color: var(--sc-navy);
-  font-size: 0.8rem;
+  color: var(--sc-navy) !important;
+  font-size: 0.8rem !important;
   /* 900/0.1em was the heaviest thing in the card and outweighed the content
      under it. */
   font-weight: 800;
@@ -3856,8 +3870,8 @@ body.sct-page.is-embed {
   gap: 8px;
   margin: 0 0 10px;
   padding-bottom: 9px;
-  color: var(--sc-navy);
-  font-size: 0.86rem;
+  color: var(--sc-navy) !important;
+  font-size: 0.86rem !important;
   font-weight: 900;
   letter-spacing: 0.1em;
 }
@@ -5792,7 +5806,7 @@ body.sct-page.is-embed {
   }
 
   .sct-news.is-featured .sct-news-title {
-    font-size: 1.06rem;
+    font-size: 1.06rem !important;
   }
 
   /* Full width. As a short pill this is a small target adrift in an empty row.
@@ -5836,7 +5850,7 @@ body.sct-page.is-embed {
   }
 
   .sct-news-title {
-    font-size: 0.96rem;
+    font-size: 0.96rem !important;
   }
 
   /* The time-of-day is the first thing to drop when the meta row runs out of
@@ -6054,11 +6068,11 @@ body.sct-page.is-embed {
    Game card's, the comparison is the Stats tab's rank chips laid two abreast. */
 .sct-mu-h3 {
   margin: 24px 0 10px;
-  font-size: 13px;
+  font-size: 13px !important;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--sc-muted-strong);
+  color: var(--sc-muted-strong) !important;
 }
 
 .sct-mu-upnext {
