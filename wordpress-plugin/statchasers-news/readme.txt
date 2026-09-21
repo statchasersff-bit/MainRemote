@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.7.4
+Stable tag: 1.7.6
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,12 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.7.6 =
+* The container pages are recognised after a block editor has been near them. Recognition counted only root-relative, double-quoted links (`href="/nfl/teams/`), which is how the build writes them and not how they come back from WonderBlocks, Gutenberg or Divi — those rewrite them to absolute URLs on save, the count fell to zero, and /nfl/teams/ reported as a hand-written page and was left alone through two releases while the theme printed its wall of links and the plugin appended the real grid underneath. Absolute and single-quoted links now count, a bracket in prose is no longer mistaken for a shortcode, and the Index pages panel prints what it looked at whenever it declines to touch a container.
+
+= 1.7.5 =
+* Tools -> StatChasers Pages gains an "Index pages" panel with a rebuild button. Mounting the grid on the two container pages at /nfl/teams/ and /nfl/players/ was only ever done at the end of a page build, and the build button is only offered while pages are missing — so on a site where all 32 hubs already existed the screen said "Nothing to do" and a container still carrying the old list of 32 links had no way left to be fixed. The panel now names the state of each container and writes only the two it should: an empty body, or the generated stub. A page you have edited yourself is never touched.
 
 = 1.7.4 =
 * The "print a heading only when the theme prints none" check is now taken per page type. It was one measurement, taken on a team hub and applied to player and matchup pages as well, so a site whose hub title comes from a builder layout and whose player pages get their title from the theme's template printed two H1s on every player page — the theme's plain one and the tool's designed one — on the one setting meant to prevent exactly that. A page type with no measurement of its own now prints nothing rather than borrowing the hub's answer. Re-run the check on Tools -> StatChasers Pages after updating.

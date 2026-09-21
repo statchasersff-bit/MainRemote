@@ -90,6 +90,8 @@ function get_template() { return 'theme'; }
 function human_time_diff( $t ) { return '1 minute'; }
 function checked( $a, $b, $echo = true ) { return $a === $b ? ' checked' : ''; }
 function wp_nonce_field( $a ) {}
+// Container bodies, keyed by post id. statchasers_index_state() reads them.
+function get_post_field( $field, $id = 0 ) { return $GLOBALS['post_content_by_id'][ (int) $id ] ?? ''; }
 function check_admin_referer( $a ) {}
 function wp_safe_redirect( $u ) {}
 function admin_url( $p = '' ) { return 'https://example.com/wp-admin/' . $p; }
@@ -332,6 +334,71 @@ $GLOBALS['options'][ STATCHASERS_H1_OPTION ] = array(
 is( statchasers_h1_should_print( 'team' ), true, 'an old verdict still speaks for the hub' );
 is( statchasers_h1_should_print( 'player' ), false, 'but not for anything else' );
 $GLOBALS['current_filter'] = '';
+
+echo "\nindex container state\n";
+/*
+ * The state the rebuild button reads.
+ *
+ * The button exists because the write used to be reachable only from the page
+ * build, which is only offered while pages are missing — so a container still
+ * carrying the old wall of links on a complete site had no way to be fixed.
+ * These are the five answers it distinguishes; only `empty` and `stub` are
+ * written, and `custom` is the one that must never be.
+ */
+$lead  = STATCHASERS_TEAM_INDEX_LEAD;
+$stub2 = '<p>' . $lead . '</p>';
+for ( $i = 0; $i < 32; $i++ ) {
+	$stub2 .= '<li><a href="/' . STATCHASERS_TEAM_PATH . '/team-' . $i . '/">Team</a></li>';
+}
+
+$GLOBALS['post_content_by_id'] = array(
+	1 => $stub2,
+	2 => '',
+	3 => '<p>' . $lead . "</p>\n\n[" . STATCHASERS_TEAM_INDEX_SHORTCODE . ']',
+	4 => '<p>My own words about the teams.</p>',
+);
+
+$state = static function ( int $id ): string {
+	return statchasers_index_state( $id, STATCHASERS_TEAM_INDEX_SHORTCODE, 'statchasers_team_index_is_stub' );
+};
+
+is( $state( 1 ), 'stub', 'the old 32-link body is the stub' );
+is( $state( 2 ), 'empty', 'an empty body is empty' );
+is( $state( 3 ), 'mounted', 'a body carrying the shortcode is mounted' );
+is( $state( 4 ), 'custom', "somebody's own page is theirs" );
+is( $state( 0 ), 'missing', 'no container at all' );
+
+/*
+ * The link count survives a block editor.
+ *
+ * The published /nfl/teams/ is edited in WonderBlocks, which rewrote the
+ * build script's root-relative hrefs to absolute ones on save. The old test
+ * looked for the literal `href="/nfl/teams/` and so counted zero, the page
+ * reported as hand-written, and the rebuild button never offered to touch the
+ * one container that needed it.
+ */
+$absolute = '<p>' . $lead . '</p>';
+for ( $i = 0; $i < 32; $i++ ) {
+	$absolute .= '<li><a href="https://statchasers.com/' . STATCHASERS_TEAM_PATH . '/team-' . $i . '/">Team</a></li>';
+}
+is( statchasers_team_index_is_stub( $absolute ), true, 'absolute hrefs are still the stub' );
+
+$single = str_replace( '"', "'", $absolute );
+is( statchasers_team_index_is_stub( $single ), true, 'single-quoted hrefs too' );
+
+is( statchasers_index_link_count( $absolute, STATCHASERS_TEAM_PATH ), 32, 'and all 32 are counted' );
+
+// The guard that matters is still a shortcode, not any bracket at all.
+is(
+	statchasers_team_index_is_stub( $stub2 . '<p>see [1] above</p>' ),
+	true,
+	'a bracket in prose is not a mount'
+);
+is(
+	statchasers_team_index_is_stub( $stub2 . '[contact_form]' ),
+	false,
+	'but a real shortcode still stops it'
+);
 
 echo "\nwebfont\n";
 is( str_contains( statchasers_font_url(), 'family=Inter' ), true, 'Inter is the family asked for' );

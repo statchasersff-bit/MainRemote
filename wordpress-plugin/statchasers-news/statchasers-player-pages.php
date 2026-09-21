@@ -416,11 +416,13 @@ function statchasers_player_index_is_stub( string $content ): bool {
 		return false;
 	}
 
-	if ( false !== strpos( $content, '[' ) ) {
+	// Both helpers live in statchasers-team-pages.php; see the note there for
+	// why neither test is spelled out inline any more.
+	if ( statchasers_index_has_shortcode( $content ) ) {
 		return false;
 	}
 
-	return substr_count( $content, 'href="/' . STATCHASERS_PLAYER_PATH . '/' ) >= 50;
+	return statchasers_index_link_count( $content, STATCHASERS_PLAYER_PATH ) >= 50;
 }
 
 function statchasers_player_write_index( int $container ): void {
