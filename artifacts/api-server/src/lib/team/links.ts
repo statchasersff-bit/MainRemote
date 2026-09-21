@@ -56,7 +56,7 @@ const TEMPLATES = {
   /** The site's tool index. Given by the site's owner, not guessed. */
   tools: template("SC_TOOLS_URL", "/nfl/fantasy-football-tools/"),
   sos: template("SC_SOS_URL", "/nfl/fantasy-football-strength-of-schedule/"),
-  fpa: template("SC_FPA_URL", "/nfl/fantasy-points-allowed/"),
+  fpa: template("SC_FPA_URL", "/nfl/fantasy-points-allowed-by-position/"),
   news: template("SC_NEWS_URL", "/nfl/fantasy-football-player-news/"),
 } as const;
 

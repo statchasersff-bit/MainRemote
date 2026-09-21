@@ -67,6 +67,7 @@ function delete_transient( $key ) {}
 function get_query_var( $key ) { return $GLOBALS['query'][ $key ] ?? ''; }
 function sanitize_title( $s ) { return strtolower( preg_replace( '/[^a-z0-9-]+/i', '-', (string) $s ) ); }
 function sanitize_key( $s ) { return strtolower( preg_replace( '/[^a-z0-9_-]/', '', (string) $s ) ); }
+function sanitize_text_field( $s ) { return trim( strip_tags( (string) $s ) ); }
 function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES, 'UTF-8' ); }
 function esc_attr( $s ) { return esc_html( $s ); }
 function esc_url( $s ) { return (string) $s; }
@@ -267,6 +268,9 @@ require_once "$dir/statchasers-matchup.php";
 require_once "$dir/statchasers-player.php";
 require_once "$dir/statchasers-player-pages.php";
 require_once "$dir/statchasers-h1.php";
+// Loaded for the FAQ island round trip below; it is the only part of this file
+// the smoke tests reach into.
+require_once "$dir/statchasers-fpa.php";
 
 echo "LOADED OK\n\n";
 
@@ -728,6 +732,83 @@ unset( $GLOBALS['et_options'] );
 $css = statchasers_team_full_width_css();
 is( false !== strpos( $css, 'max-width:1080px!important' ), true, 'the cap is in the CSS the tools enqueue' );
 is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar share is still taken back' );
+
+/*
+ * The FPA FAQ island survives the round trip the plugin puts it through.
+ *
+ * The fragment carries its questions as an inert JSON payload, the plugin turns
+ * that into the FAQPage it appends to Rank Math's graph, and then strips the
+ * payload so the answers are not sitting in the page twice. Three things can
+ * break silently: the parse can come back empty and leave the page with no
+ * structured data, a malformed entry can reach the node, and the strip can take
+ * the table with it. The last is the one worth a test — a greedy pattern there
+ * eats everything between the island and the next </script> on the page.
+ */
+/*
+ * Scoring format and view survive the trip from the URL to the API.
+ *
+ * The controls are links, and the bundle intercepts them so that switching
+ * scoring format does not change the page's address. This is the path when it
+ * cannot — scripting off, or a click that beat the bundle to the page — and
+ * before it existed the link went somewhere that rendered the DEFAULT table.
+ * A control that appears to work and does not is worse than one that is absent.
+ *
+ * The precedence is the part worth pinning: a page that writes an attribute has
+ * decided what it shows, and a query string must not overrule it.
+ */
+echo "\nfpa scoring and view fall back to the query string\n";
+
+$_GET = array();
+$args = statchasers_fpa_args( array() );
+is( $args['format'], 'half', 'no attribute and no query is the default' );
+is( $args['view'], 'raw', 'and so is the view' );
+
+$_GET = array( 'format' => 'ppr', 'view' => 'adjusted' );
+$args = statchasers_fpa_args( array() );
+is( $args['format'], 'ppr', 'the query string decides when the page did not' );
+is( $args['view'], 'adjusted', 'both halves of the combination' );
+
+$args = statchasers_fpa_args( array( 'format' => 'standard' ) );
+is( $args['format'], 'standard', 'an explicit attribute outranks the query string' );
+is( $args['view'], 'adjusted', 'and only the key it set' );
+
+$_GET = array( 'format' => 'PPR ', 'view' => 'Adjusted' );
+$args = statchasers_fpa_args( array() );
+is( $args['format'], 'ppr', 'case and padding are normalised' );
+is( $args['view'], 'adjusted', 'on both' );
+
+$_GET = array( 'format' => 'superflex', 'view' => '<script>' );
+$args = statchasers_fpa_args( array() );
+is( $args['format'], 'half', 'anything not one of the three is dropped, not corrected' );
+is( $args['view'], 'raw', 'and nothing from the URL reaches the API' );
+
+$_GET = array();
+
+echo "\nthe fpa faq island becomes a node and then leaves\n";
+
+$island = '<script type="application/json" class="scf-faq-data">' .
+	json_encode(
+		array(
+			array( 'q' => 'What does FPA mean in fantasy football?', 'a' => 'FPA stands for Fantasy Points Allowed.' ),
+			array( 'q' => 'What is Adjusted Fantasy Points Allowed?', 'a' => 'aFPA accounts for the strength of the opponents a defense has faced.' ),
+			// Dropped rather than emitted half-built.
+			array( 'q' => '', 'a' => 'An answer with no question.' ),
+			array( 'q' => 'A question with no answer.' ),
+		)
+	) .
+	'</script>';
+
+$fragment = '<div class="scf" data-scf-root="1"><table class="scf-table"></table></div>' . $island;
+
+$items = statchasers_fpa_faq_parse( $fragment );
+is( count( $items ), 2, 'both well-formed questions are lifted' );
+is( $items[0]['q'], 'What does FPA mean in fantasy football?', 'the question comes through' );
+is( $items[1]['a'], 'aFPA accounts for the strength of the opponents a defense has faced.', 'and so does the answer' );
+
+$stripped = statchasers_fpa_strip_faq_data( $fragment );
+is( false === strpos( $stripped, 'scf-faq-data' ), true, 'the island is gone from what is printed' );
+is( false !== strpos( $stripped, 'data-scf-root' ), true, 'and the table it was sitting next to is not' );
+is( statchasers_fpa_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
 
 /*
  * The second group. Its failures are this run's failures — a split that only

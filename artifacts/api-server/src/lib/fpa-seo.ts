@@ -4,7 +4,8 @@
  * Same posture as the other three tools: everything is in the initial HTML,
  * nothing is amended by JavaScript, and the page ships
  * `noindex, indexifembedded` because the address that should rank is
- * `https://statchasers.com/nfl/fantasy-points-allowed/`, not this origin.
+ * `https://statchasers.com/nfl/fantasy-points-allowed-by-position/`, not
+ * this origin.
  *
  * The canonical always points at the bare path. Scoring format and raw/adjusted
  * are the two pieces of state this page carries in a query string, and six

@@ -517,6 +517,15 @@ prints it, like the other three.
   and head metadata. `public/fpa.html` is the shell, `public/fpa.css` the
   stylesheet. The canonical always points at the bare path: six combinations of
   format and view are one page.
+- The FAQ at the bottom of `fpa-render.ts` is the one part of the page written
+  for search rather than for the reader already looking at the table, and the
+  only part with headings. It carries a **FAQPage** the same two ways the team
+  hub and the rankings board do: standalone the page emits the node itself;
+  embedded it ships the questions as an inert `scf-faq-data` island, and
+  `statchasers-fpa.php` lifts them into Rank Math's graph and strips the island
+  before printing, so WordPress ends up with one graph in one `<script>`. An
+  answer that runs to two paragraphs joins with a space for the node —
+  `acceptedAnswer.text` is one string.
 - `src/routes/fpa.ts` — `/fpa`, `/fpa/download.csv` (built from the same query
   the page renders, so the file and the screen cannot disagree) and `/embed/fpa`.
 - `scripts/ingest-fpa.mjs` — `pnpm --filter @workspace/api-server run ingest-fpa`.
@@ -528,6 +537,20 @@ a caveat a reader meets after forming an opinion has not done its job. For the
 same reason the games column is headed with the season (`2026 G`) rather than
 "Games Played": at week 2 most teams show 1, beside a number that is still 60%
 last season.
+
+**Changing scoring format or view does not change the URL.** The controls are
+real links — `client/fpa.ts` intercepts the click, fetches `/embed/fpa` for that
+combination and swaps three blocks (`.scf-controls`, `.scf-mode`, `.scf-scroll`)
+in place, touching neither `location` nor the history stack. The legend and the
+FAQ are left alone, so an open `<details>` survives a switch. The server stays
+the single source of truth: the numbers, ranks, tints, caption, CSV href and the
+data-mode sentence all arrive rendered, because that sentence is prose built
+from the blend weights and a client that wrote its own copy would be a second
+place for it to be wrong. The root carries `data-scf-endpoint` — absolute on the
+embed, since a relative `/embed/fpa` printed inside a statchasers.com page
+resolves against WordPress. With scripting off the links are followed, and
+`statchasers_fpa_args()` reads `?format=`/`?view=` so that lands on the right
+table; an explicit shortcode attribute outranks the query string.
 
 **A cold database does not block a request.** The first request that finds no
 snapshots kicks off one background ingest and returns the honest empty state

@@ -7,6 +7,11 @@
  *   GET /fpa/download.csv         — the table on screen, as CSV
  *   GET /embed/fpa                — the bare fragment, for the WordPress mount
  *
+ * `/embed/fpa` is also what the bundle re-fetches when a reader changes scoring
+ * format or view, which is why both page routes hand the markup an address for
+ * it: the controls are links, but following one would change the address of the
+ * page the reader is on, and six renderings of one table are one page.
+ *
  * Mirrors routes/team.ts and routes/player.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does
  * not compete with statchasers.com — and by the same token the page is
@@ -19,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
-import { canonicalUrl } from "../lib/request";
+import { canonicalUrl, publicOrigin } from "../lib/request";
 import { renderFpaAppPage, renderFpaFragment } from "../lib/fpa-ssr";
 import { renderFpaCsv } from "../lib/fpa-render";
 import {
@@ -41,6 +46,7 @@ function isEmbed(req: Request): boolean {
 }
 
 const FPA_BASE_PATH = "/fpa";
+const FPA_FRAGMENT_PATH = "/embed/fpa";
 const TEAM_PATH_PREFIX = "/team/";
 
 /**
@@ -103,6 +109,9 @@ router.get("/fpa", (req, res) => {
           embed,
           basePath: FPA_BASE_PATH,
           linkQuery: linkQuery(req),
+          // Relative is right here: this page is served from the same origin
+          // the fragment is.
+          endpoint: FPA_FRAGMENT_PATH,
         },
       );
 
@@ -193,6 +202,13 @@ router.get("/embed/fpa", (req, res) => {
         basePath,
         teamPathPrefix: teamPrefix,
         linkQuery: fragmentLinkQuery(teamPrefix),
+        // Absolute, and both have to be: this markup is printed inside a
+        // statchasers.com page, where a relative /embed/fpa resolves against
+        // WordPress. Built from the request rather than configured, so it is
+        // whatever origin the plugin actually reached us on. The CSV is the
+        // same kind of thing — a route on this server, not a page on theirs.
+        endpoint: `${publicOrigin(req)}${FPA_FRAGMENT_PATH}`,
+        csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
       });
 
       if (!result.data) {

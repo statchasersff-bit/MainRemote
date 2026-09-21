@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.8.2
+Stable tag: 1.9.0
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,11 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.9.0 =
+* Changing scoring format or view on the Fantasy Points Allowed table no longer changes the page's address. The Scoring and View controls are still ordinary links — a crawler follows them, a middle-click still opens the combination that was asked for — but the bundle now intercepts the click, fetches that combination and swaps the table in place, writing nothing to the URL and pushing nothing onto the history stack. Six renderings of one table are one page, which is what the canonical has always said. The legend and the FAQ are left alone by a swap, so a question a reader has opened stays open.
+* The same controls now work with scripting off, which they did not. The links carry the combination in a query string, and the shortcode read only its own attributes — so a reader who clicked PPR inside a WordPress page was sent to a URL that rendered the DEFAULT table, a control that appears to work and does not. `?format=` and `?view=` are now read off the URL, validated against the three formats and two views and dropped rather than corrected if they are anything else. An attribute you write still outranks them: a page carrying format="ppr" has decided what it shows.
+* The Fantasy Points Allowed FAQ is rewritten around the questions people actually search — "which teams allow the most fantasy points to RBs", "what does FPA mean in fantasy football", "is a higher number better" — and the page now carries a FAQPage node built from the same list it renders, so the questions are not merely on the page but described to a crawler. On a WordPress mount the questions arrive as an inert payload that the plugin lifts into Rank Math's graph and strips before printing, so what ships is one <script> holding one graph, the same arrangement the team hubs and the rankings board already use. Needs the matching API deploy.
 
 = 1.8.2 =
 * Every tool sits in the site's own content column. `#left-area { width: 100% }` takes back the column Divi reserves for a sidebar nobody filled — but Divi also widens the content container on any page that has been opened in the Divi Builder, so that a full-width section can bleed to the window. A tool is not a section, it is page content, so on those pages "the whole column" meant the whole screen: the team hubs rendered around 1800px wide while the player pages, carrying the same stylesheet on pages that had not been through the builder, sat in the ordinary column. The width is now capped at the site's own content width, read from Divi's Customizer setting rather than written down, so the tools line up with every hand-built row on the site. Override with the `statchasers_content_width` filter on a theme that cannot be asked.

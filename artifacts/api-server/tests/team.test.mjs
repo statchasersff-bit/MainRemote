@@ -1220,9 +1220,9 @@ describe("shortcode preview harness", () => {
    * Two inert payloads are allowed through, neither of which carries code:
    *
    *   an FAQ's questions — `scp-faq-data` on the player mount, `sct-faq-data`
-   *   on the team hub — which the plugin that owns that mount lifts into Rank
-   *   Math's graph and strips before any of the markup is printed, so it never
-   *   reaches the rendered page at all;
+   *   on the team hub, `scf-faq-data` on the FPA table — which the plugin that
+   *   owns that mount lifts into Rank Math's graph and strips before any of the
+   *   markup is printed, so it never reaches the rendered page at all;
    *
    *   the player search's roster, `data-scp-roster`, which does reach the page
    *   and is meant to: it is the list the search above the header filters, and
@@ -1234,7 +1234,7 @@ describe("shortcode preview harness", () => {
    */
   test("the fragments it wraps ship no assets of their own", async () => {
     const INERT = [
-      /<script type="application\/json" class="sc[pt]-faq-data">.*?<\/script>/gs,
+      /<script type="application\/json" class="sc[fpt]-faq-data">.*?<\/script>/gs,
       /<script type="application\/json" data-scp-roster>.*?<\/script>/gs,
     ];
 
