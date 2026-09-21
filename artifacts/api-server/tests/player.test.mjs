@@ -2450,6 +2450,35 @@ describe("the player search", () => {
     }
   });
 
+  test("the island carries all 32 clubs as destinations of their own", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const { clubs, teams } = JSON.parse(
+      doc.querySelector("[data-scp-roster]").textContent,
+    );
+
+    assert.ok(Array.isArray(clubs));
+    assert.equal(clubs.length, 32, "every hub is reachable from every page");
+    assert.equal(
+      Object.keys(teams).length,
+      32,
+      "and every one of them is described, whether or not it has a player indexed",
+    );
+
+    const slugs = new Set();
+    for (const row of clubs) {
+      const [code, slug, city, nickname, division] = row.split("|");
+      assert.match(code, /^[A-Z]{2,3}$/, row);
+      assert.match(slug, /^[a-z][a-z0-9-]*$/, row);
+      assert.ok(city && nickname, `a club is a city and a nickname: ${row}`);
+      assert.match(division, /^(AFC|NFC) (East|North|South|West)$/, row);
+      // The logo is not repeated in the row: it is already beside it, once
+      // per code, for the players on that club.
+      assert.match(teams[code].logo, /^https:\/\//, `${code} has a mark to draw`);
+      slugs.add(slug);
+    }
+    assert.equal(slugs.size, 32, "no club listed twice");
+  });
+
   test("the roster is a fraction of the page, not a second one", async () => {
     const res = await get(`/player/${fixture.slug}`);
     const island = res.body.match(/data-scp-roster>(.*?)<\/script>/s);
@@ -2471,7 +2500,10 @@ describe("the player search", () => {
    * for both configurations. Same shape as the team switcher's test.
    */
   test("the fragment points its results at the public site", async () => {
-    const srv = await startServer({ SC_PLAYER_PATH_PREFIX: "/nfl/players/" });
+    const srv = await startServer({
+      SC_PLAYER_PATH_PREFIX: "/nfl/players/",
+      SC_TEAM_PATH_PREFIX: "/nfl/teams/",
+    });
     try {
       const res = await fetch(`${srv.origin}/embed/player/${fixture.slug}`);
       assert.equal(res.status, 200);
@@ -2480,6 +2512,9 @@ describe("the player search", () => {
       const widget = doc.querySelector("[data-scp-search]");
       assert.ok(widget, "the search is in the WordPress fragment too");
       assert.equal(widget.getAttribute("data-scp-prefix"), "/nfl/players/");
+      // The box answers with clubs as well as players, and a club lives under
+      // a different WordPress page than a player does.
+      assert.equal(widget.getAttribute("data-scp-team-prefix"), "/nfl/teams/");
       // `embed` is a reserved WordPress query var: /nfl/players/<slug>/?embed=1
       // serves its oEmbed template instead of the page. Off-origin links drop
       // it, exactly as the team switcher's do.
@@ -2505,7 +2540,65 @@ describe("the player search", () => {
     const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
     const widget = doc.querySelector("[data-scp-search]");
     assert.equal(widget.getAttribute("data-scp-prefix"), "/player/");
+    assert.equal(widget.getAttribute("data-scp-team-prefix"), "/team/");
     assert.equal(widget.getAttribute("data-scp-query"), "?embed=1");
+  });
+
+  test("it answers with clubs as well as players", async () => {
+    const { doc, window } = await hydrated("/player");
+    const input = doc.querySelector(".scp-search-input");
+
+    const type = (value) => {
+      input.value = value;
+      input.dispatchEvent(new window.Event("input", { bubbles: true }));
+      return [...doc.querySelectorAll(".scp-search-opt")].map((a) => ({
+        kind: a.dataset.kind,
+        name: a.querySelector(".scp-search-name").textContent,
+        href: a.getAttribute("href"),
+      }));
+    };
+
+    // A nickname finds the club, and only the club — no player is a Raven.
+    const ravens = type("ravens");
+    assert.deepEqual(ravens, [
+      { kind: "team", name: "Baltimore Ravens", href: "/team/baltimore-ravens" },
+    ]);
+
+    // The code, which neither the city nor the nickname begins with. Without
+    // it "gb" is the one spelling of Green Bay the box cannot answer.
+    assert.ok(
+      type("gb").some((hit) => hit.name === "Green Bay Packers"),
+      "a club answers to its own code",
+    );
+
+    // A player's name still finds the player. "jackson" also opens
+    // "Jacksonville", so the club leads — the string is genuinely ambiguous
+    // and both answers are on screen together. What must not happen is the
+    // players being pushed off the list to make room for the club.
+    const jackson = type("jackson");
+    assert.equal(jackson[0].kind, "team", "the city leads an ambiguous string");
+    assert.ok(
+      jackson.some((hit) => hit.kind === "player"),
+      "the men called Jackson are still under it",
+    );
+    // A surname no city shares answers with players only.
+    const mahomes = type("mahomes");
+    assert.ok(mahomes.length > 0);
+    assert.ok(
+      mahomes.every((hit) => hit.kind === "player"),
+      "no club is named Mahomes",
+    );
+
+    // Clubs lead, and never take more than half the panel.
+    const mixed = type("b");
+    const firstPlayer = mixed.findIndex((hit) => hit.kind === "player");
+    assert.ok(firstPlayer > 0, "clubs come first");
+    assert.ok(firstPlayer <= 4, "and at most four of them");
+    assert.ok(
+      mixed.slice(firstPlayer).every((hit) => hit.kind === "player"),
+      "the two kinds are not interleaved",
+    );
+    assert.ok(mixed.length <= 8, "one panel's worth, whatever the mix");
   });
 });
 
@@ -3022,7 +3115,11 @@ describe("player section URLs", () => {
       assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
       assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
       assert.ok(!canonical.includes("?section="), "no query-string canonical");
-      one("title");
+      // `head > title`, not `title`: a <title> inside an <svg> is that
+      // graphic's accessible name and belongs there — the sparkline gives one
+      // to every dot it draws — and only a second title in the HEAD would
+      // compete with this one. The embed test above draws the same line.
+      one("head > title");
       one('meta[name="description"]');
     }
   });
@@ -3226,5 +3323,186 @@ describe("player section URLs", () => {
     } finally {
       await server.stop();
     }
+  });
+});
+
+/**
+ * The index: /player, and the fragment /nfl/players/ mounts.
+ *
+ * The page is a list of six hundred names, so the only thing worth asserting
+ * about it is the thing that makes it readable: the rank bands. Every row
+ * carries the band its standing puts it in, the club header counts by the same
+ * rule, and both survive a position filter — because the header and the list
+ * disagreeing is the one failure a reader would believe rather than notice.
+ */
+describe("the player index", () => {
+  test("it opens on the directory, with no hero of its own", async () => {
+    // It used to carry one: a two-part H1 over a line of facts. Both mounts
+    // now sit under the heading their host page supplies, which is what every
+    // other fragment here already did. Asserted rather than merely untested,
+    // because the markup is easy to put back by habit.
+    const { doc } = await dom("/player");
+    assert.equal(doc.querySelectorAll(".scp-hero").length, 0);
+    assert.equal(doc.querySelectorAll("h1").length, 0);
+    // The title tag still names the page — the heading went, not the page.
+    assert.equal(doc.title, "NFL Player Pages | StatChasers");
+    assert.ok(doc.querySelector("[data-scp-dir]"), "the directory still opens it");
+  });
+
+  test("the standalone page ships the bundle its controls need", async () => {
+    // The search box and the position chips are both sent hidden for a client
+    // to reveal. This page had no client: they were on screen — a `display` of
+    // their own beats the `hidden` attribute — and wired to nothing.
+    const { doc } = await dom("/player");
+    const src = [...doc.querySelectorAll("script[src]")].map((s) => s.getAttribute("src"));
+    assert.ok(
+      src.includes("/dist/statchasers-player.js"),
+      "the index has to carry the same bundle a profile does",
+    );
+    assert.equal(
+      doc.querySelector("[data-scp-dir-filters]").hasAttribute("hidden"),
+      true,
+      "the chips are still sent hidden for the client to reveal",
+    );
+  });
+
+  test("every row is banded, and a row with nothing to show is idle", async () => {
+    const { doc } = await dom("/player");
+    const rows = [...doc.querySelectorAll(".scp-dir-item")];
+    assert.ok(rows.length > 100, "expected a few hundred rows");
+
+    const bands = new Set(["elite", "starter", "streaming", "depth", "poor", "idle"]);
+    for (const row of rows) {
+      assert.ok(bands.has(row.dataset.band), `unknown band ${row.dataset.band}`);
+    }
+    // The page is worth banding only if the bands are actually populated.
+    for (const band of ["elite", "idle"]) {
+      assert.ok(
+        rows.some((row) => row.dataset.band === band),
+        `no row landed in the ${band} band`,
+      );
+    }
+
+    for (const row of rows) {
+      const value = row.querySelector(".scp-dir-value");
+      // A dash means no games; a 0.0 means games with nothing to show for
+      // them. Both are noise on a page about production, and both drop to the
+      // quietest band the card has.
+      if (!value || Number.parseFloat(value.textContent) === 0) {
+        assert.equal(row.dataset.band, "idle", row.textContent.trim());
+      }
+    }
+  });
+
+  test("a kicker is banded against the kickers, not against the receivers", async () => {
+    // There are 32 kickers and one starts per club, so the scale is the
+    // quarterback's and not the receivers' — which is cut for a pool 36 deep
+    // and used to read the top twelve of THIRTY-TWO as elite, spend the rest
+    // of itself on the top two thirds, and grade the worst kicker alive
+    // "Flex". The bottom two bands were unreachable. This pins the cuts.
+    const { doc } = await dom("/player");
+    const scale = [
+      [5, "elite"],
+      [12, "starter"],
+      [20, "streaming"],
+      [32, "depth"],
+      [Infinity, "poor"],
+    ];
+
+    const seen = new Set();
+    for (const row of doc.querySelectorAll('.scp-dir-item[data-pos="K"]')) {
+      const pill = row.querySelector(".scp-dir-rank");
+      // No rank, or a rank with no points behind it, is the idle band — which
+      // is about production, not about the pool, and is asserted above.
+      if (!pill || row.dataset.band === "idle") continue;
+      const rank = Number(pill.textContent.replace(/\D/g, ""));
+      const expected = scale.find(([end]) => rank <= end)[1];
+      assert.equal(row.dataset.band, expected, `K${rank}`);
+      seen.add(expected);
+    }
+
+    assert.ok(seen.size >= 3, "the kickers should spread across the scale");
+  });
+
+  test("a club header counts scoring players by the rows' own rule", async () => {
+    const { doc } = await dom("/player");
+    for (const club of doc.querySelectorAll("[data-scp-club]")) {
+      const rows = [...club.querySelectorAll(".scp-dir-item")];
+      const scoring = rows.filter((row) => row.dataset.band !== "idle").length;
+      const head = club.querySelector("[data-scp-club-scoring]");
+      assert.equal(Number(head.textContent), scoring, club.dataset.team);
+      assert.equal(
+        Number(club.querySelector("[data-scp-club-count]").textContent),
+        rows.length,
+        club.dataset.team,
+      );
+    }
+  });
+
+  test("a position run opens with a rule, and the card's first row does not", async () => {
+    const { doc } = await dom("/player");
+    for (const list of doc.querySelectorAll("[data-scp-dir-list]")) {
+      const rows = [...list.querySelectorAll(".scp-dir-item")];
+      assert.equal(
+        rows[0].hasAttribute("data-lead"),
+        false,
+        "a rule across the top of a list is a border, not a grouping",
+      );
+      for (let i = 1; i < rows.length; i += 1) {
+        assert.equal(
+          rows[i].hasAttribute("data-lead"),
+          rows[i].dataset.pos !== rows[i - 1].dataset.pos,
+          `${rows[i].textContent.trim()} is marked wrong`,
+        );
+      }
+    }
+  });
+
+  test("a position chip refilters the rows, the counts and the rules", async () => {
+    const { doc } = await hydrated("/player");
+    assert.equal(
+      doc.querySelector("[data-scp-dir-filters]").hidden,
+      false,
+      "the client reveals the chips",
+    );
+
+    const club = doc.querySelector('[data-scp-club][data-team="ARI"]');
+    const rows = [...club.querySelectorAll(".scp-dir-item")];
+    const qbs = rows.filter((row) => row.dataset.pos === "QB");
+    assert.ok(qbs.length > 0, "the fixture club has quarterbacks");
+
+    doc.querySelector('[data-scp-pos="QB"]').click();
+
+    assert.deepEqual(
+      rows.filter((row) => !row.hidden),
+      qbs,
+      "only the quarterbacks are left",
+    );
+    assert.equal(
+      Number(club.querySelector("[data-scp-club-count]").textContent),
+      qbs.length,
+    );
+    assert.equal(
+      Number(club.querySelector("[data-scp-club-scoring]").textContent),
+      qbs.filter((row) => row.dataset.band !== "idle").length,
+      "the header recounts by the same rule it was built with",
+    );
+    // Filtered to one position there are no runs, so the first rule would be a
+    // line under the header dividing nothing.
+    assert.equal(
+      doc.querySelectorAll("[data-scp-dir-list][data-grouped]").length,
+      0,
+    );
+
+    doc.querySelector('[data-scp-pos="all"]').click();
+    assert.equal(
+      rows.filter((row) => row.hidden).length,
+      0,
+      "All puts everybody back",
+    );
+    assert.ok(
+      doc.querySelectorAll("[data-scp-dir-list][data-grouped]").length > 0,
+      "and the position rules with them",
+    );
   });
 });

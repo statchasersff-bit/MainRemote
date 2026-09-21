@@ -35,7 +35,7 @@ import {
   type StatsFaq,
 } from "./stats-profile";
 import { itemTimestamp, searchKey, type NewsItem } from "../render";
-import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import { getTeamByAbbreviation, TEAMS, type NflTeam } from "../team/teams";
 import { buildBioProfile, type BioProfile } from "./bio";
 import {
   buildUpcoming,
@@ -70,12 +70,15 @@ import {
   attachOppRanks,
   attachRanks,
   buildOppRanks,
+  buildSeasonStandings,
   buildWeeklyRanks,
   enrichWithTeamMetrics,
   fillMissingWeeks,
   hasParticipation,
+  PPG_MIN_GAMES,
   resolveSeasonTeam,
   teamCode,
+  type SeasonStanding,
 } from "./ranks";
 import {
   careerSeasonTotals,
@@ -653,7 +656,7 @@ function positionalFinish(
       0,
     );
     totals.push({ id, value: total });
-    if (played.length < 4) continue;
+    if (played.length < PPG_MIN_GAMES) continue;
     ppgs.push({ id, value: total / played.length });
   }
 
@@ -1318,6 +1321,74 @@ export function indexedPlayers(): IndexedPlayer[] {
   return rows;
 }
 
+/* ------------------------------------------------------------- directory */
+
+/** An indexed player with the one number the directory prints beside him. */
+export interface DirectoryPlayer extends IndexedPlayer {
+  /**
+   * Where he stands in his position this season, or null when he has not
+   * taken part in a game — a rookie yet to debut, a player on IR since
+   * August. The row then carries his name, his position and his club and no
+   * number at all, which is what we know about him.
+   */
+  standing: SeasonStanding | null;
+}
+
+/** Everything the index page needs in one object. */
+export interface PlayerDirectory {
+  season: number;
+  format: ScoringFormat;
+  /** The newest week the season has a logged game for. */
+  week: number;
+  rows: DirectoryPlayer[];
+}
+
+/**
+ * The indexed players with their positional standings attached.
+ *
+ * The index used to be a list of names, and a list of six hundred names is a
+ * sitemap rather than a page: it sorts nobody, compares nobody and answers no
+ * question a reader arrived with. This is the same roster with the one fact
+ * that makes it a directory — where each player stands at his position right
+ * now, measured exactly as his own profile measures it.
+ *
+ * The season is the newest one with a game logged in it, so this rolls over on
+ * its own in September rather than on a constant somebody has to remember to
+ * bump. PPR unless asked otherwise, which is the default every other surface
+ * here starts from.
+ */
+export function playerDirectory(format: ScoringFormat = "ppr"): PlayerDirectory {
+  const rows = indexedPlayers();
+  const seasons = getAvailableSeasons();
+  // A season file that exists but is empty is a season that has not started.
+  // Newest first, so this is the first one with anything in it.
+  const season =
+    seasons.find((year) => Object.keys(loadGameLogs(year)).length > 0) ??
+    seasons[0] ??
+    0;
+
+  if (!season) {
+    return { season: 0, format, week: 0, rows: rows.map((row) => ({ ...row, standing: null })) };
+  }
+
+  const standings = buildSeasonStandings(
+    season,
+    loadGameLogs(season),
+    loadPlayers(),
+    format,
+  );
+
+  return {
+    season,
+    format,
+    week: standings.week,
+    rows: rows.map((row) => ({
+      ...row,
+      standing: standings.byId.get(row.id) ?? null,
+    })),
+  };
+}
+
 /* ------------------------------------------------------------ search index */
 
 /** The roster the search bar filters, in the form it is inlined in. */
@@ -1331,8 +1402,21 @@ export interface PlayerSearchIndex {
    * the same eighty bytes for every Bengal on the list, and there are 32 clubs
    * against ~575 players. `id` is Sleeper's, which is what both CDNs are keyed
    * by — the player's portrait and the club's mark.
+   *
+   * All 32 rather than only the clubs with an indexed player on them, because
+   * `clubs` below is a list of destinations rather than a lookup for the rows,
+   * and a club is a destination whether or not anybody on it has a page yet.
    */
   teams: Record<string, { name: string; logo: string }>;
+  /**
+   * The 32 hubs, as `CODE|slug|City|Nickname|Division`.
+   *
+   * The search box answers with clubs as well as players: a reader who types
+   * "ravens" is looking for something, and the club is a page here. Pipe-joined
+   * for the same reason the rows are, and without the logo, which `teams` is
+   * already carrying for the same code.
+   */
+  clubs: string[];
 }
 
 /**
@@ -1364,6 +1448,21 @@ export function playerSearchIndex(): PlayerSearchIndex {
   if (searchIndexCache?.stamp === stamp) return searchIndexCache.index;
 
   const teams: PlayerSearchIndex["teams"] = {};
+  for (const team of TEAMS) {
+    teams[team.code] = { name: team.nickname, logo: team.logo };
+  }
+
+  // The city and the nickname separately rather than the full name joined,
+  // because the client matches word by word and "New England" is two of them.
+  // The division rides along as the line under the name, the way a player's
+  // position and club do.
+  const clubs = TEAMS.map((team) =>
+    [team.code, team.slug, team.city, team.nickname, team.division]
+      // The delimiter cannot survive inside a field, for the reason it cannot
+      // inside a player's name.
+      .map((field) => field.replace(/\|/g, " "))
+      .join("|"),
+  );
 
   const rows = indexedPlayers()
     // Alphabetical, so the payload is stable between renders and so equally
@@ -1374,9 +1473,6 @@ export function playerSearchIndex(): PlayerSearchIndex {
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((entry) => {
       const team = entry.team;
-      if (team && !teams[team.code]) {
-        teams[team.code] = { name: team.nickname, logo: team.logo };
-      }
       return [
         entry.slug,
         // The delimiter cannot be allowed to survive inside a field: one name
@@ -1388,7 +1484,7 @@ export function playerSearchIndex(): PlayerSearchIndex {
       ].join("|");
     });
 
-  const index: PlayerSearchIndex = { rows, teams };
+  const index: PlayerSearchIndex = { rows, teams, clubs };
   searchIndexCache = { stamp, index };
   return index;
 }

@@ -404,6 +404,37 @@ body.scp-page {
   color: var(--sc-pos-te);
 }
 
+/*
+ * A club's mark, where a player's portrait would be.
+ *
+ * The well is the same 38px square the portraits sit in, so the eye still runs
+ * down one column of images. Contained rather than covered, and inset, because
+ * a logo is a shape on transparency and not a photograph: cropping it to fill
+ * the square would cut the Bengals' stripes off at both ends.
+ */
+.scp-search-mark {
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+
+/* The club's own colour is not available on a search row — the panel is one
+   list over many clubs — so the well behind a mark stays the neutral sink it
+   is behind a portrait. */
+.scp-search-opt[data-kind="team"] .scp-search-face {
+  background: var(--sc-surface-sink);
+}
+
+/* Where a player's row carries his position, a club's carries what it is. The
+   same slot, the same size, the muted grey a position without an ink takes —
+   this word places the row, it does not colour it. */
+.scp-search-kind {
+  color: var(--sc-muted);
+  text-transform: uppercase;
+}
+
 .scp-search-dot {
   color: var(--sc-border);
 }
@@ -805,8 +836,12 @@ body.scp-page {
   font-variant-numeric: tabular-nums;
 }
 
+/* 10px, not the 9.5 it was. This row is letter-spaced small caps and it is the
+   first thing in the strip to stop being words: the fitter floors the strip at
+   0.88, so the label's smallest is 8.8px and that is the size this figure was
+   chosen against. */
 .scp-hero-stat-label {
-  font-size: calc(9.5px * var(--scp-hero-tbl, 1));
+  font-size: calc(10px * var(--scp-hero-tbl, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -822,9 +857,11 @@ body.scp-page {
  * at a glance while the colour of a single figure is what confirms it.
  *
  * `--sc-gold-ink`, not `--sc-gold-deep`, even though this is a 23px figure:
- * the fitter takes --scp-hero-tbl as far as 0.6, and a figure that can arrive
- * at 14px is small text owing 4.5:1 whatever it measures at rest. The deep
- * gold is 3.6:1 and would pass only while the header is wide.
+ * the fitter takes --scp-hero-tbl to 0.88, which lands the figure at 20.2px —
+ * over the 18.66px bold that buys large-text's 3:1 by a pixel and a half. A
+ * pixel and a half is not a contrast argument, so the figure is inked at the
+ * 4.5:1 tone and the floor can move again without taking the contrast with it.
+ * The deep gold is 3.6:1 and would pass only while the header is wide.
  */
 .scp-hero-stat.is-lead {
   background: color-mix(in srgb, var(--sc-gold) 9%, var(--sc-surface));
@@ -4606,47 +4643,540 @@ a.scp-peer:focus-visible {
   }
 }
 
-/* ----------------------------------------------------------------- index */
+/* ------------------------------------------------------------- directory */
 
-.scp-index {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-}
+/*
+ * The index of every profile: /player, and the fragment the container page at
+ * /nfl/players/ mounts.
+ *
+ * It was six hundred links in thirty-two columns — the one surface here that
+ * looked nothing like the pages it points at. Every part of what replaced it
+ * is borrowed from somewhere else in this stylesheet rather than invented for
+ * it, which is the whole idea:
+ *
+ *   the ROW      is the search panel's result row (.scp-search-opt): the same
+ *                38px portrait well, the same name over the same position ink.
+ *   the STANDING is the peers rail's rank badge (.scp-peer-rank), navy pill
+ *                and all, because it says the same thing that rail says.
+ *   the CHIPS    are the format toggle's pill group (.scp-format), as buttons.
+ *   the CARD     is the recessed treatment described at the top of this file:
+ *                soft fill, hairline, no shadow, with the club's primary as a
+ *                left rule and a wash behind the heading — the peer card's
+ *                --peer-team device at card scale.
+ *
+ * The club colour arrives as --club on the section, from the same team table
+ * the hero paints itself with, so a club cannot be one colour here and another
+ * one page deeper.
+ */
 
-.scp-index-team {
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--sc-navy);
-}
-
-.scp-index-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 4px;
-}
-
-.scp-index-link {
+.scp-dir-tools {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/*
+ * The search box is the profile's widget, unchanged.
+ *
+ * There it opens the page and carries the 24px the hero used to; here it is
+ * the first row of a stack whose gap already spaces it, so the margin goes and
+ * the box is held to a width a name fits in rather than the grid's four
+ * columns of clubs.
+ */
+.scp-dir-tools .scp-search {
+  margin: 0;
+  max-width: 420px;
+}
+
+.scp-dir-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* The chips ship hidden and the client reveals them, exactly as the search box
+   above them does — and, exactly as .scp-search does, that needs saying here:
+   a `display` of its own beats the `hidden` attribute's, so without this rule
+   the control the server deliberately withheld is on screen anyway, and dead. */
+.scp-dir-filters[hidden] {
+  display: none;
+}
+
+.scp-dir-filters-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-dir-chips {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+}
+
+.scp-dir-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  /* A <button> does not inherit the page's type; the format toggle beside it
+     is an <a> and does, and the two have to be the same control. */
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--sc-muted-strong);
+  cursor: pointer;
+}
+
+.scp-dir-chip:hover {
+  color: var(--sc-ink);
+}
+
+.scp-dir-chip:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 2px;
+}
+
+.scp-dir-chip.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* The count rides inside the chip, a step quieter than the position it counts. */
+.scp-dir-chip-n {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--sc-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-dir-chip.is-active .scp-dir-chip-n {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/*
+ * What the standings column means, said once.
+ *
+ * "QB14" is a claim about a season, a scoring format and a measure. Six
+ * hundred of them with none of the three named is asking to be misread — most
+ * of all in September, when the rank is over points scored in a game or two
+ * rather than the rate it becomes in October.
+ */
+.scp-dir-note {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.scp-dir-note b {
+  color: var(--sc-ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-dir {
+  display: grid;
+  /* Wide enough for a name, a position and a standing without wrapping, and
+     narrow enough that a desktop shows four columns of clubs rather than two. */
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 18px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.scp-dir-club {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+  overflow: hidden;
+}
+
+.scp-dir-club-head {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  padding: 6px 10px;
-  border-radius: var(--sc-radius-xs);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--sc-hairline);
+  /* White under the wash, not the card's soft fill: the heading is the one
+     band of this card that sits on top of it. */
+  background:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--club, var(--sc-navy)) 16%, transparent),
+      transparent 68%
+    ),
+    var(--sc-surface);
+  box-shadow: inset 3px 0 0 var(--club, var(--sc-navy));
+}
+
+.scp-dir-club-logo {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.scp-dir-club-name {
+  margin: 0;
+  min-width: 0;
   font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.scp-dir-club-link {
   color: var(--sc-ink);
   text-decoration: none;
 }
 
-.scp-index-link:hover {
-  background: var(--sc-surface-sink);
+.scp-dir-club-link:hover {
+  color: var(--club, var(--sc-navy));
+  text-decoration: underline;
 }
 
-.scp-index-pos {
-  color: var(--sc-muted);
+.scp-dir-club-link:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 2px;
+}
+
+/*
+ * How many of this club's players are scoring, out of how many are listed.
+ *
+ * The roster count on its own was the same number on all thirty-two cards. The
+ * pair is the one fact the header can carry in the space it has: the ink half
+ * is the players with production behind them, the muted half is the depth
+ * under them. Both are counted by the same rule the rows are banded by, so the
+ * header and the list can never disagree.
+ */
+.scp-dir-club-count {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 11px;
   font-weight: 700;
+  color: var(--sc-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scp-dir-club-of {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sc-muted);
+}
+
+.scp-dir-list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+}
+
+/*
+ * A hairline where the depth chart turns over from one position to the next.
+ *
+ * Not five sections with five headings: a card 288px wide cannot afford four
+ * more headings, and the position ink beside every name already says which
+ * group a row is in. This only marks where the runs meet, which is the part
+ * the ink cannot say — it turns "find the tight ends" from reading eighteen
+ * labels into finding the third rule down.
+ *
+ * `data-grouped` comes off the list when a position chip is pressed, because a
+ * list filtered to one position has no runs to divide and the rule would just
+ * be a line under the header.
+ */
+.scp-dir-list[data-grouped] .scp-dir-item[data-lead] {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.scp-dir-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 7px;
+  border-radius: var(--sc-radius-xs);
+  /* One token for the row's fill, because two things set it: the band a row
+     is in (from the <li>, inherited) and the pointer (from the row itself,
+     which therefore wins without needing to out-specify the band). */
+  background: var(--row-fill, transparent);
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+/*
+ * The club's own colour, washed right out.
+ *
+ * The sink was the honest default when every row looked alike. Now that the
+ * rows carry weight of their own, a hover has to be legible over the elite
+ * row's tint as well as under the quietest one, and a wash of the club colour
+ * the card is already ruled and headed in is the one that reads as this card
+ * responding rather than as another grey.
+ */
+.scp-dir-row:hover,
+.scp-dir-row:focus-visible {
+  --row-fill: color-mix(in srgb, var(--club, var(--sc-navy)) 9%, var(--sc-surface));
+}
+
+.scp-dir-row:hover .scp-dir-name {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.scp-dir-row:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: -2px;
+}
+
+.scp-dir-face {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--sc-radius-xs);
+  overflow: hidden;
+  /* The club's colour washed out behind the portrait — the peer well's
+     device, at the search row's size. A player Sleeper has no thumbnail for
+     is left with this, which is the well doing its own job. */
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      color-mix(in srgb, var(--club, var(--sc-navy)) 22%, transparent),
+      transparent 74%
+    ),
+    var(--sc-surface-sink);
+}
+
+.scp-dir-shot {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  /* Cropped to the top of the frame for the reason .scp-search-shot is:
+     Sleeper's cutouts are mostly shoulder. */
+  object-fit: cover;
+  object-position: 50% 8%;
+}
+
+.scp-dir-who {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.scp-dir-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* The site's four position inks. A kicker keeps the muted grey rather than
+   taking a fifth colour that would only ever mean "other". */
+.scp-dir-pos {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scp-dir-pos[data-pos="QB"] {
+  color: var(--sc-pos-qb);
+}
+
+.scp-dir-pos[data-pos="RB"] {
+  color: var(--sc-pos-rb);
+}
+
+.scp-dir-pos[data-pos="WR"] {
+  color: var(--sc-pos-wr);
+}
+
+.scp-dir-pos[data-pos="TE"] {
+  color: var(--sc-pos-te);
+}
+
+/*
+ * The rank and what earned it, as one object rather than two.
+ *
+ * They were a pill and a number with air between them, which read as two
+ * separate facts about the same player. They are one fact said twice — the
+ * place and the number behind it — so they are stacked on one baseline rhythm
+ * with the unit in lowercase, and the pair is what the bands below vary.
+ */
+.scp-dir-stand {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  margin-left: auto;
+  padding-left: 8px;
+  text-align: right;
+}
+
+.scp-dir-rank {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--scp-tier-2);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp-dir-value {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--sc-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A player who has not taken part in a game this season. The column still
+   prints something, because a blank in a list of six hundred reads as a
+   rendering fault rather than as "he has not played". */
+.scp-dir-stand.is-empty {
+  color: var(--sc-muted);
+  font-size: 12px;
+}
+
+/*
+ * ---- rank bands
+ *
+ * The point of the whole card. Eighteen rows at one weight is eighteen rows a
+ * reader has to read; banded, the six that matter are found without reading
+ * any of them, and the ten who are on the roster rather than in a lineup stay
+ * out of the way without being hidden.
+ *
+ * The bands are finishBadge()'s — see directoryBand() in player-render.ts —
+ * and they are painted in the ordinal tier ramp this file already declares:
+ * ONE hue in four lightness steps, so the reader sees an ORDER in the colour
+ * rather than four identities. The same ramp, in the same order, that
+ * .scp-finish-badge uses on every profile. Weight, fill and tint all move
+ * together down the ramp; nothing here is carried by colour alone, because
+ * the pill spells the rank out and the ink beside the name spells the
+ * position out on every row regardless of band.
+ */
+
+/* elite — top-12 at a skill position, top-5 at QB or TE. The card's headline
+   names, and the only band that tints its whole row. */
+.scp-dir-item[data-band="elite"] {
+  --row-fill: color-mix(in srgb, var(--scp-tier-1) 6%, transparent);
+}
+
+.scp-dir-item[data-band="elite"] .scp-dir-name {
+  font-weight: 800;
+}
+
+.scp-dir-item[data-band="elite"] .scp-dir-rank {
+  background: var(--scp-tier-1);
+}
+
+.scp-dir-item[data-band="elite"] .scp-dir-value {
+  color: var(--sc-muted-strong);
+  font-weight: 700;
+}
+
+/* starter — top-24, or top-12 at QB/TE. The page's normal weight: the default
+   pill above is already tier 2, so this band adds nothing and says so. */
+
+/* streaming — the flex range. A step down the ramp, nothing else. */
+.scp-dir-item[data-band="streaming"] .scp-dir-rank {
+  background: var(--scp-tier-3);
+}
+
+/* depth — on a roster, not in a lineup. The ramp's pale end flips its label to
+   ink, exactly as .scp-finish-badge does, because white on tier 4 is not a
+   contrast this file is willing to print. */
+.scp-dir-item[data-band="depth"] .scp-dir-name {
+  font-weight: 600;
+}
+
+.scp-dir-item[data-band="depth"] .scp-dir-rank {
+  background: var(--scp-tier-4);
+  color: var(--sc-ink);
+}
+
+/* poor — a rank, but a rank nobody is starting. Off the ramp entirely: the
+   pill keeps its shape so the column still lines up, and loses its fill so it
+   stops competing with the pills above it. */
+.scp-dir-item[data-band="poor"] .scp-dir-name,
+.scp-dir-item[data-band="idle"] .scp-dir-name {
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.scp-dir-item[data-band="poor"] .scp-dir-rank,
+.scp-dir-item[data-band="idle"] .scp-dir-rank {
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+  font-weight: 700;
+}
+
+/* idle — no games, or games with nothing to show for them. The quietest thing
+   the card can print while still printing it: these rows are the reason the
+   directory is long, and a reader scanning for production should be able to
+   skip them without their names ever catching the eye.
+   The PORTRAIT is what fades, and only the portrait: it is decorative, carries
+   an empty alt and answers to nothing. The position ink beside the name keeps
+   its full value, because it is 10px text that clears 4.5:1 at that value and
+   at no other — a band is a reason to say something more quietly, never a
+   reason to print it below the contrast it owes. The name recedes by weight
+   and by a muted ink that clears the same bar, above. */
+.scp-dir-item[data-band="idle"] .scp-dir-face {
+  opacity: 0.55;
+}
+
+/* A hovered row is a row being considered, whatever band it is in. */
+.scp-dir-row:hover .scp-dir-face,
+.scp-dir-row:focus-visible .scp-dir-face {
+  opacity: 1;
+}
+
+.scp-dir-row:hover .scp-dir-name,
+.scp-dir-row:focus-visible .scp-dir-name {
+  color: var(--sc-ink);
+}
+
+.scp-dir-empty {
+  margin: 20px 0 0;
+  padding: 18px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .scp-dir {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .scp-dir-tools .scp-search {
+    max-width: none;
+  }
 }
 
 /* ------------------------------------------------------------ responsive */
@@ -5819,14 +6349,114 @@ a.scp-peer:focus-visible {
  *
  * Scoped to the one-row tier, because that is the only tier the fitter runs
  * in. Below it the scales are cleared and the clamp is the answer again.
+ *
+ * 800.02px, not 560px, since the two-column tier below took the range from
+ * 800 down. The .02 is the same unreachable sliver the 559.98/560 pair
+ * already leaves between tiers, kept so no width matches two of them.
  */
-@media (min-width: 560px) {
+@media (min-width: 800.02px) {
   .scp-hero[data-scp-hero-fit="js"] .scp-title {
     font-size: calc(33px * var(--scp-hero-id, 1));
   }
 
   .scp-hero[data-scp-hero-fit="js"] .scp-title-rest {
     font-size: calc(18px * var(--scp-hero-id, 1));
+  }
+}
+
+/*
+ * The two-column tier: 560px to 800px.
+ *
+ * The figure takes a column of its own and the identity column stacks — name
+ * above, numbers below — rather than the three parts sharing one line.
+ *
+ * Why a breakpoint and not another stage in the fitter. By 800px the row has
+ * spent every concession that costs nothing, and everything left to spend is
+ * type: the fitter was taking the strip down towards six pixels a label to
+ * keep a surname off a second line, which trades the panel's whole content for
+ * the least load-bearing part of the header. Changing the topology buys the
+ * same width outright — the strip drops under the name, gets the identity
+ * column's full width to be wide in, and every part goes back to full size.
+ * Breakpoints decide topology and measurement decides everything inside; this
+ * is the topology question, asked one tier earlier than it used to be.
+ *
+ * Grid, not the `flex-wrap` the tier below uses. Wrapping puts the strip under
+ * the PHOTO as well as the text, across the whole card; a figure spanning both
+ * rows of a grid is the arrangement this tier is actually for.
+ *
+ * Every rule is scoped to a header that HAS a figure. Without one there is no
+ * second column to make and no 204px to find room for — the index page's
+ * header and a player Sleeper has no thumbnail for both keep the single row
+ * they already fit in.
+ */
+@media (min-width: 560px) and (max-width: 800px) {
+  .scp-hero-inner:has(> .scp-photo) {
+    display: grid;
+    /* The figure at its natural width, the identity column taking the rest.
+       `minmax(0, 1fr)` rather than `1fr`, because a track's automatic minimum
+       is its content: a long surname would push the column past the card's
+       edge instead of wrapping inside it. */
+    grid-template-columns: auto minmax(0, 1fr);
+    /* The figure still stands on the floor of the card. */
+    align-items: end;
+    /* The inner's 26px is the gutter between the two columns and nothing else
+       — the name's own padding is what separates it from the numbers under
+       it, and 26px on top of that read as two unrelated blocks. */
+    row-gap: 0;
+  }
+
+  /*
+   * Its own column, both rows. Nothing else is placed explicitly: auto
+   * placement then lands the name in row 1 of the second column and the
+   * numbers in row 2 beneath it, which is this tier's whole arrangement.
+   *
+   * And the column gives width back as the card narrows. At a flat 204px the
+   * figure took 204 of the 470px a 560px card has to give, which left the
+   * strip a 205px column — under the three cells' own content, so "ROSTERED"
+   * lost its D to the row's clip and "PPR PPG" broke over two lines. The
+   * clamp is the same device `.scp-title` uses where the fitter is not
+   * running: a viewport-sized guess, good because this tier's geometry is
+   * fixed — one figure, one column — even though it cannot know the name.
+   * 25.5vw is 204px at the top of the tier and floors at the 147px the tier
+   * below already shrinks the figure to, so the two agree at the boundary.
+   *
+   * `aspect-ratio` and an auto height, because the base rule's height is a px
+   * figure paired with a px width and this width is neither.
+   */
+  .scp-hero-inner:has(> .scp-photo) > .scp-photo {
+    grid-row: 1 / span 2;
+    width: clamp(147px, 25.5vw, 204px);
+    height: auto;
+    aspect-ratio: 350 / 254;
+  }
+
+  /* The 40px was room for the name to start clear of a figure it stood
+     beside. Beside a column, the gutter is the clearance. */
+  .scp-hero-inner:has(> .scp-photo) > .scp-hero-text {
+    margin-left: 0;
+    padding-bottom: 18px;
+  }
+
+  /* Full width of the identity column, and the bottom margin the text gave
+     up: the strip is what stands on the card's floor in this column now. */
+  .scp-hero-inner:has(> .scp-photo) > .scp-hero-stats {
+    align-self: end;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  /* Left, with the name above it, rather than centred over a box that no
+     longer floats in the middle of anything. */
+  .scp-hero-inner:has(> .scp-photo) .scp-hero-stats-season {
+    text-align: left;
+  }
+
+  /* Three equal cells across the column, at the padding that fits them — the
+     same fixed figures the tier below uses and right for the same reason: the
+     cells are sharing a width the tier itself set, not one they asked for. */
+  .scp-hero-inner:has(> .scp-photo) .scp-hero-stat {
+    flex: 1 1 0;
+    padding: 11px 8px;
   }
 }
 

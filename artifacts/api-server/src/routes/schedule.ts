@@ -3,15 +3,16 @@
  *
  *   GET /schedule                  — the standalone page, on the current week
  *   GET /schedule/week-2           — one week of the board, its own address
- *   GET /schedule?view=team&team=ne
  *   GET /schedule?embed=1          — the same page, stripped for embedding
  *   GET /schedule/download.csv     — what is on screen, as CSV
  *   GET /schedule/schedule.ics     — the same games as a calendar file
  *   GET /embed/schedule            — the bare fragment, for the WordPress mount
  *
  * The week is the one piece of state with a path of its own. A week is a
- * different slate of games — a page — where the view, the team and the filter
- * are ways of looking at one, so `?week=` is now only an old link to redirect.
+ * different slate of games — a page — where the view and the filter are ways of
+ * looking at one, so `?week=` is now only an old link to redirect. `?view=team`
+ * is another: the team lens moved to the team hub's Schedule tab, and a link to
+ * it is redirected there rather than being dropped on the board.
  *
  * Mirrors routes/fpa.ts and routes/rankings.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does
@@ -126,11 +127,13 @@ function noStoreHtml(res: Response, status: number, html: string): void {
  * Echoing `req.query` wholesale into a redirect would let anything anyone
  * appends survive into another address — the duplicate URL space the canonical
  * work exists to prevent. Defaults are dropped on the way out for the same
- * reason: `?view=week&filter=all` is the bare path with extra words.
+ * reason: `?view=week&filter=all` is the bare path with extra words. `team` is
+ * not carried at all: the page has no team state since the lens moved, and the
+ * exports read it from the request themselves.
  */
 function carriedQuery(req: Request): URLSearchParams {
   const params = new URLSearchParams();
-  for (const key of ["view", "team", "filter", "season", "embed"]) {
+  for (const key of ["view", "filter", "season", "embed"]) {
     const raw = req.query[key];
     if (typeof raw !== "string") continue;
     const value = raw.trim();
@@ -202,7 +205,6 @@ function sendSchedulePage(
         view: query.view,
         filter: query.filter,
         ...(week === null ? {} : { week }),
-        ...(query.team === null ? {} : { team: query.team }),
       };
 
       const result = await renderScheduleAppPage(publicDir, season, {
@@ -255,7 +257,38 @@ function sendSchedulePage(
   })();
 }
 
+/**
+ * Where a team lens link goes now.
+ *
+ * `?view=team&team=ne` was this tool's third view until the team hub's Schedule
+ * tab took it over — the same table and the same four cards, on the page that
+ * is already about that team. The view is gone, so `parseScheduleView` reads
+ * "team" as the week board, and without this every one of those links would
+ * quietly land on Week 3 instead of on the season it asked for.
+ *
+ * The raw query is read rather than the parsed view for exactly that reason:
+ * by the time the state is parsed, "team" no longer exists to test for.
+ *
+ * A team that does not resolve — "?view=team" alone, or a name this table does
+ * not know — has no page to be sent to, so it falls back to the board, which is
+ * what the view it asked for now renders as.
+ */
+function movedLens(req: Request): string | null {
+  if (String(req.query["view"] ?? "").trim().toLowerCase() !== "team") {
+    return null;
+  }
+  const team = normalizeTeamName(String(req.query["team"] ?? ""));
+  if (!team) return withQuery(SCHEDULE_BASE_PATH, carriedQuery(req));
+  return `${TEAM_PATH_PREFIX}${team.slug}/schedule/`;
+}
+
 router.get("/schedule", (req, res) => {
+  const moved = movedLens(req);
+  if (moved !== null) {
+    res.redirect(301, moved);
+    return;
+  }
+
   // `?week=` was this board's address before the weeks had paths, and it is
   // still what an old link, a bookmark or a pasted URL carries. One permanent
   // redirect settles each of them, and the parameter never renders anything —
@@ -290,9 +323,16 @@ router.get("/schedule/week-:week", (req, res, next) => {
     return;
   }
 
-  // The team lens and the matrix have nothing to do with a week. Rather than
-  // render one at an address naming a week it ignores, send it to the view's
-  // own URL and drop the week on the way.
+  // A team lens link that also named a week goes where every other one goes.
+  const moved = movedLens(req);
+  if (moved !== null) {
+    res.redirect(301, moved);
+    return;
+  }
+
+  // The matrix has nothing to do with a week. Rather than render it at an
+  // address naming a week it ignores, send it to the view's own URL and drop
+  // the week on the way.
   if (state(req).view !== "week") {
     res.redirect(301, withQuery(SCHEDULE_BASE_PATH, carriedQuery(req)));
     return;
@@ -419,7 +459,6 @@ router.get("/embed/schedule", (req, res) => {
         view: query.view,
         filter: query.filter,
         ...(query.week === null ? {} : { week: query.week }),
-        ...(query.team === null ? {} : { team: query.team }),
       });
 
       if (!result.data) {

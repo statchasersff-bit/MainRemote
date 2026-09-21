@@ -29,38 +29,26 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Week 1's Thursday. The scoreboard is queried by date range, so this is the
-// anchor every week is counted from and a season missing from here cannot be
-// built — see the throw below, which is deliberate: a wrong anchor silently
-// fetches the wrong week's games and writes them under the right week's key.
-const SEASON_STARTS = {
-  2023: '2023-09-07',
-  2024: '2024-09-05',
-  2025: '2025-09-04',
-  2026: '2026-09-09',
-};
-
-function getWeekDateRange(season, week) {
-  const startStr = SEASON_STARTS[season];
-  if (!startStr) {
-    throw new Error(
-      `No week-1 date for ${season}. Add it to SEASON_STARTS — it is the ` +
-      `Thursday of week 1, and Sleeper reports it as season_start_date at ` +
-      `https://api.sleeper.app/v1/state/nfl`,
-    );
-  }
-  const start = new Date(startStr + 'T12:00:00Z');
-  const tuesdayBefore = new Date(start);
-  tuesdayBefore.setDate(start.getDate() + (week - 1) * 7 - 2);
-  const tuesdayAfter = new Date(tuesdayBefore);
-  tuesdayAfter.setDate(tuesdayBefore.getDate() + 6);
-  const fmt = d => d.toISOString().slice(0, 10).replace(/-/g, '');
-  return `${fmt(tuesdayBefore)}-${fmt(tuesdayAfter)}`;
-}
-
+/*
+ * The week is ASKED FOR, not computed from a date.
+ *
+ * This used to hold SEASON_STARTS — week 1's Thursday per season — and count a
+ * Tuesday-to-Tuesday window off it, because the scoreboard was queried as
+ * `dates=<from>-<to>`. Two things were wrong with that. ESPN now answers that
+ * form with `400 Failed to get events endpoint.` for every week of every
+ * season, which is what stopped 2026 being built at all. And the anchor was
+ * exactly the kind of hand-maintained constant the seasons list above was
+ * rewritten to stop being: a season absent from the map threw, and a season
+ * present with the wrong Thursday filed the wrong week's games under the right
+ * week's key — silently, because the fetch succeeds.
+ *
+ * `dates=<season>&seasontype=2&week=<n>` asks ESPN which games are in week n
+ * and needs no calendar of our own. seasontype 2 is the regular season.
+ */
 async function fetchWeekScores(season, week) {
-  const dateRange = getWeekDateRange(season, week);
-  const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${dateRange}&limit=50`;
+  const url =
+    `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard` +
+    `?dates=${season}&seasontype=2&week=${week}&limit=50`;
   try {
     // A named user-agent, matching TEAM_USER_AGENT in src/lib/team/cache.ts.
     // ESPN answers the server's team-hub calls and refused this script's with a
@@ -109,6 +97,13 @@ async function main() {
 
         const comp = event.competitions?.[0];
         if (!comp) continue;
+
+        // Only a game that has actually finished. A live one carries the score
+        // as it stands, and writing that is worse than writing nothing: the
+        // page would print a settled W over a game still being played, and the
+        // row would stay wrong until somebody rebuilt the file. It reappears on
+        // the next run, which in season is what the run is for.
+        if (comp.status?.type?.name !== 'STATUS_FINAL') continue;
 
         const teams = comp.competitors || [];
         if (teams.length !== 2) continue;

@@ -401,6 +401,115 @@ describe("embedded mode", () => {
     }
   });
 
+  test("the season shape rail only ever counts the rows beside it", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+    const rows = [...doc.querySelectorAll("#schedule .sct-srow:not(.is-bye)")];
+    const shape = doc.querySelector("#schedule .sct-shape");
+    if (rows.length === 0) {
+      assert.equal(shape, null, "no fixtures, nothing to draw a shape from");
+      return;
+    }
+    assert.ok(shape, "the schedule rendered rows, so the rail rendered");
+
+    // Every figure in the rail is arithmetic on the table beside it — that is
+    // the whole claim the cards make, and the one a future change to either
+    // side could break silently.
+    const figures = new Map(
+      [...shape.querySelectorAll(".sct-snap-cell")].map((cell) => [
+        cell.querySelector(".sct-snap-label").textContent.trim(),
+        cell.querySelector(".sct-snap-value").textContent.trim(),
+      ]),
+    );
+    const home = rows.filter((row) =>
+      row.querySelector('.sct-srow-ha[data-kind="home"]'),
+    ).length;
+
+    assert.equal(figures.get("Games"), String(rows.length));
+    assert.equal(figures.get("Home"), String(home));
+    assert.equal(figures.get("Away"), String(rows.length - home));
+
+    // The strip is the same season again: one cell per home and away row, and
+    // a bye cell only where the table gave the bye a row of its own.
+    const kinds = [...shape.querySelectorAll(".sct-path-week")].map((cell) =>
+      cell.getAttribute("data-kind"),
+    );
+    const byeRow = doc.querySelector("#schedule .sct-srow.is-bye");
+    assert.equal(kinds.filter((kind) => kind === "home").length, home);
+    assert.equal(
+      kinds.filter((kind) => kind === "away").length,
+      rows.length - home,
+    );
+    assert.equal(kinds.filter((kind) => kind === "bye").length, byeRow ? 1 : 0);
+    assert.equal(
+      figures.get("Bye week"),
+      byeRow
+        ? byeRow.querySelector(".sct-srow-week").textContent.trim()
+        : "TBD",
+    );
+
+    // The rows carry no DIV pill any more — the slate card IS where the table
+    // says which games are divisional, so what is checkable is that it agrees
+    // with the table about them: every meeting it lists is a week the table
+    // prints, the Division figure is that many, and the home/away split adds
+    // back up to it.
+    const weeks = new Set(
+      rows.map((row) => row.querySelector(".sct-srow-week").textContent.trim()),
+    );
+    const slate = [...shape.querySelectorAll(".sct-slate-row")];
+    assert.equal(figures.get("Division"), String(slate.length));
+    for (const game of slate) {
+      const week = game.querySelector(".sct-slate-week").textContent.trim();
+      assert.ok(week, "a slate row names its week");
+      assert.ok(
+        weeks.has(week),
+        `the slate puts a division game in ${week}, which the table does not`,
+      );
+    }
+    if (slate.length) {
+      const caption = shape
+        .querySelector('[data-kind="slate"] .sct-mix-caption')
+        .textContent.trim();
+      const [slateHome, slateAway] = caption
+        .match(/(\d+) home · (\d+) away/)
+        .slice(1)
+        .map(Number);
+      assert.equal(slateHome + slateAway, slate.length);
+    }
+
+    // Every opponent is filed under exactly one division and one conference,
+    // so both tallies have to come back to the number of games played.
+    const sum = (selector) =>
+      [...shape.querySelectorAll(selector)].reduce(
+        (total, node) => total + Number(node.textContent.trim()),
+        0,
+      );
+    const unresolved = rows.filter(
+      (row) => !row.querySelector(".sct-srow-logo"),
+    ).length;
+    // Scoped to the opponent card. The snapshot card draws its home/road split
+    // on the same bars, and an unscoped sum counts the season twice.
+    assert.equal(
+      sum('[data-kind="opponents"] .sct-shape-bar-value'),
+      rows.length - unresolved,
+    );
+    assert.equal(sum(".sct-shape-conf-cell dd"), rows.length - unresolved);
+
+    // And the split bars are the two figures above them drawn, not a third
+    // count of the same season.
+    assert.deepEqual(
+      [...shape.querySelectorAll(".sct-snap-bars .sct-shape-bar")].map(
+        (bar) => [
+          bar.querySelector(".sct-shape-bar-label").textContent.trim(),
+          bar.querySelector(".sct-shape-bar-value").textContent.trim(),
+        ],
+      ),
+      [
+        ["Home", figures.get("Home")],
+        ["Away", figures.get("Away")],
+      ],
+    );
+  });
+
   test("the schedule FAQ answers from the rows above it", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc, tailOf("schedule"));
@@ -417,7 +526,7 @@ describe("embedded mode", () => {
     // row counts — it is a week in the table with no fixture against it.
     const weeks = new Set(
       [...doc.querySelectorAll("#schedule .sct-srow-week")].map((n) =>
-        n.textContent.trim().replace(/^WK\s*/, ""),
+        n.textContent.trim().replace(/^W/, ""),
       ),
     );
     assert.ok(weeks.size > 0, "the schedule rendered weeks to check against");
@@ -434,7 +543,7 @@ describe("embedded mode", () => {
     // it has to be the week the table gives it, not a week ESPN's gaps implied.
     const byeRow = doc.querySelector("#schedule .sct-srow.is-bye .sct-srow-week");
     if (byeRow) {
-      const week = byeRow.textContent.trim().replace(/^WK\s*/, "");
+      const week = byeRow.textContent.trim().replace(/^W/, "");
       const bye = entries.find((e) => /bye week/i.test(e.question));
       assert.ok(bye, "the table shows a bye but the FAQ does not answer for it");
       assert.ok(
@@ -480,34 +589,43 @@ describe("embedded mode", () => {
     assert.equal(page.status, 200, "the section page still renders");
   });
 
-  test("only the long team names carry an abbreviation, and only to the eye", async () => {
+  test("every opponent carries a shorter spelling, and only to the eye", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const cells = [...doc.querySelectorAll("#schedule .sct-srow-name")];
     assert.ok(cells.length > 0, "the schedule rendered opponent names");
 
-    let abbreviated = 0;
+    let paired = 0;
     for (const cell of cells) {
       const long = cell.querySelector(".sct-srow-name-long");
       const brief = cell.querySelector(".sct-srow-name-brief");
       if (!brief) {
-        // A name that always fits is one text node, not a pair of spans.
+        // Only an opponent this server could not resolve to a team, which has
+        // no nickname and no code to fall back to. One text node, not half a
+        // pair of spans.
         assert.equal(long, null, `${cell.textContent}: half a pair`);
-        assert.ok(cell.textContent.trim().length < 8, cell.textContent);
+        assert.equal(
+          cell.closest(".sct-srow").querySelector(".sct-srow-logo"),
+          null,
+          `${cell.textContent}: a known team with no shorter spelling`,
+        );
         continue;
       }
-      abbreviated += 1;
-      assert.ok(long, "the full spelling is carried alongside the code");
-      assert.ok(long.textContent.trim().length >= 8, "only the long ones");
-      // The code is decorative: the row's accessible name stays the real one,
-      // so a screen reader never reads "SEA" as the team.
+      paired += 1;
+      assert.ok(long, "the full name is carried alongside the nickname");
+      // The nickname is decorative: the row's accessible name stays the full
+      // one, so a screen reader never reads "Chargers" as the team.
       assert.equal(brief.getAttribute("aria-hidden"), "true");
       assert.equal(long.hasAttribute("aria-hidden"), false);
       assert.ok(
         brief.textContent.trim().length < long.textContent.trim().length,
-        "an abbreviation that is not shorter is not worth having",
+        "a shorter spelling that is not shorter is not worth having",
+      );
+      assert.ok(
+        long.textContent.trim().endsWith(brief.textContent.trim()),
+        `${brief.textContent} is not the tail of ${long.textContent}`,
       );
     }
-    assert.ok(abbreviated > 0, "this test needs a long-named opponent");
+    assert.ok(paired > 0, "this test needs a resolvable opponent");
   });
 
   test("a designated player Sleeper demoted is still on the chart, outside the order", async () => {
@@ -965,10 +1083,10 @@ describe("mobile layout", () => {
    * larger share of the screen.
    */
   /**
-   * A media query carries no specificity of its own, so a base rule further
+   * A container query carries no specificity of its own, so a base rule further
    * down the file beats the query that was meant to override it. That is how
    * the team name vanished from the schedule rows in the squeeze band: the
-   * full spelling was hidden there and the abbreviation, held back by a
+   * full spelling was hidden there and the shorter one, held back by a
    * `display: none` written later in the file, never took its place.
    */
   test("the schedule row always shows a team name at every width", async () => {
@@ -976,9 +1094,9 @@ describe("mobile layout", () => {
     assert.equal(css.status, 200);
 
     const base = css.body.indexOf(".sct-srow-name-brief {");
-    const query = css.body.indexOf("@media (min-width: 901px) and (max-width: 1080px)");
-    assert.ok(base > 0, "the abbreviation has a base rule");
-    assert.ok(query > 0, "the squeeze band has a media query");
+    const query = css.body.indexOf("@container (max-width: 700px)");
+    assert.ok(base > 0, "the shorter spelling has a base rule");
+    assert.ok(query > 0, "the squeeze band has a container query");
     assert.ok(
       base < query,
       "the base rule must precede the query that flips it, or neither name shows",
@@ -988,6 +1106,15 @@ describe("mobile layout", () => {
     const block = css.body.slice(query, css.body.indexOf("\n}", query));
     assert.match(block, /\.sct-srow-name-long\s*\{[^}]*position:\s*absolute/);
     assert.match(block, /\.sct-srow-name-brief\s*\{[^}]*display:\s*inline/);
+
+    // The query is only answerable if something declares itself the container.
+    // Without this the rule never fires at any width and the long name just
+    // stays, ellipsed — which is the failure it exists to prevent.
+    assert.match(
+      css.body,
+      /\.sct-sboard\s*\{[^}]*container-type:\s*inline-size/,
+      "the board must be the container the row measures itself against",
+    );
   });
 
   test("sections clear the sticky nav when linked to", async () => {
@@ -1264,7 +1391,7 @@ describe("the team index", () => {
     assert.ok(!/<title/i.test(body), "and no title");
   });
 
-  test("it is the switcher's grid, with all 32 and their crests", async () => {
+  test("it is a conference band of four division cards, with all 32 and their crests", async () => {
     const { body } = await indexFragment();
     const doc = new JSDOM(body).window.document;
 
@@ -1281,6 +1408,16 @@ describe("the team index", () => {
     // reader can use rather than a column of names.
     assert.equal(doc.querySelectorAll(".sct-switch-conf").length, 2);
     assert.equal(doc.querySelectorAll(".sct-switch-div").length, 8);
+
+    // And the divisions sit four across inside their conference rather than
+    // stacked down a column, which is the switcher's shape and the thing this
+    // page stopped being. Structural, because the layout itself is CSS: what
+    // is asserted here is the wrapper the four-column rule hangs off.
+    for (const conf of doc.querySelectorAll(".sct-switch-conf")) {
+      const row = conf.querySelector(".sct-index-divs");
+      assert.ok(row, "each conference holds its divisions in one row");
+      assert.equal(row.querySelectorAll(".sct-index-div").length, 4);
+    }
   });
 
   test("the links point at the public site, not at this origin", async () => {
@@ -1309,8 +1446,10 @@ describe("the team index", () => {
         const res = await fetch(`${srv.origin}${path}`);
         assert.equal(res.status, 200, path);
         const doc = new JSDOM(await res.text()).window.document;
-        return [...doc.querySelectorAll(".sct-switch-team span")].map((el) =>
-          el.textContent.trim(),
+        // The name span specifically: the row also carries the hover arrow,
+        // which is a span too and would double every count here.
+        return [...doc.querySelectorAll(".sct-switch-team .sct-index-name")].map(
+          (el) => el.textContent.trim(),
         );
       };
       const page = await teamsOf("/team");
@@ -1322,12 +1461,18 @@ describe("the team index", () => {
     }
   });
 
-  test("the standalone page still has its own hero and one H1", async () => {
+  test("the standalone page opens on the index, with no hero of its own", async () => {
+    // It used to carry one: an eyebrow, an H1 and a subtitle over the grid.
+    // Both mounts now sit under the heading their host page supplies, which is
+    // the division of labour every other fragment here already followed — and
+    // the reason this asserts rather than merely no longer testing the hero is
+    // that the markup is easy to put back by habit.
     const { doc } = await dom("/team");
-    const h1 = doc.querySelectorAll("h1");
-    assert.equal(h1.length, 1);
-    assert.equal(h1[0].textContent.trim(), "NFL Team Hubs");
-    assert.ok(doc.querySelector(".sct-hero"), "the page keeps its hero");
+    assert.equal(doc.querySelectorAll(".sct-hero").length, 0);
+    assert.equal(doc.querySelectorAll("h1").length, 0);
+    // The title tag still names the page — the heading went, not the page.
+    assert.equal(doc.title, "NFL Team Hubs | StatChasers");
+    assert.ok(doc.querySelector(".sct-section"), "the grid still opens it");
   });
 
   test("it revalidates and keeps this origin out of the index", async () => {
@@ -1528,7 +1673,10 @@ describe("team section URLs", () => {
       assert.ok(canonical.endsWith(at(id)), `${id}: canonical is the pretty path`);
       assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
       assert.ok(!canonical.includes("?section="), "no query-string canonical");
-      one("title");
+      // Scoped to the head for the reason player.test.mjs is: an <svg> may
+      // carry a <title> of its own, and that one is a graphic's name rather
+      // than a second document title.
+      one("head > title");
       one('meta[name="description"]');
       one('meta[name="robots"]');
     }

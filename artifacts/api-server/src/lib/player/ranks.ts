@@ -360,6 +360,138 @@ export function enrichWithTeamMetrics(
   });
 }
 
+/* --------------------------------------------------- the season's standings */
+
+/**
+ * The four-game minimum on a points-per-game rank.
+ *
+ * Without it a player who caught two touchdowns in his only appearance
+ * finishes as the WR1 for the season, which is arithmetically true and a lie
+ * about football. Four is the threshold the profile header's rank cell uses,
+ * and this is the constant both sides read so they cannot drift apart.
+ */
+export const PPG_MIN_GAMES = 4;
+
+/** Where one player stands in his position's table for a season. */
+export interface SeasonStanding {
+  /** His place in it: 14 for the QB14. */
+  rank: number;
+  /** The number that put him there — a rate or a total, per `measure`. */
+  value: number;
+  /** Which of the two tables he came off. */
+  measure: "ppg" | "total";
+  /** Games he took part in, which is what the rate is over. */
+  games: number;
+}
+
+export interface SeasonStandings {
+  season: number;
+  format: ScoringFormat;
+  /** The newest week anybody in the league has a logged game for. */
+  week: number;
+  byId: Map<string, SeasonStanding>;
+}
+
+const standingsCache = new Map<string, SeasonStandings>();
+
+/**
+ * Every player's positional finish for one season, the whole league at once.
+ *
+ * The same question positionalFinish() in player-data.ts answers for ONE
+ * player, asked once for everybody — because the player index prints six
+ * hundred of these and doing it a player at a time would sort the league's
+ * points six hundred times over.
+ *
+ * Both tables are built and the rule for choosing between them is the profile
+ * header's, restated here so the index cannot disagree with the page it links
+ * to: the rate table when the player is in it, the points table until he is.
+ * In September nobody has four games and every standing is a points rank; by
+ * October most are rates, and a row says which it is rather than leaving the
+ * reader to assume. A player who has not taken part in a game this season is
+ * in neither table and gets no standing at all, which is the honest rendering
+ * of "he has not played" — not a rank of last.
+ */
+export function buildSeasonStandings(
+  season: number,
+  logs: Record<string, GameLogEntry[]>,
+  players: Player[],
+  format: ScoringFormat,
+): SeasonStandings {
+  const cacheKey = `${season}_${format}`;
+  const hit = standingsCache.get(cacheKey);
+  if (hit) return hit;
+
+  const posById = new Map<string, string>();
+  for (const p of players) if (p.position) posById.set(p.id, p.position);
+
+  interface Row {
+    id: string;
+    value: number;
+    games: number;
+  }
+
+  const byPos = new Map<string, { ppgs: Row[]; totals: Row[] }>();
+  let week = 0;
+
+  for (const [id, entries] of Object.entries(logs)) {
+    const pos = posById.get(id);
+    if (!pos) continue;
+
+    let total = 0;
+    let games = 0;
+    for (const entry of entries) {
+      if (entry.week > week) week = entry.week;
+      if (!hasParticipation(entry.stats, pos)) continue;
+      total += getEntryPoints(entry.stats, format);
+      games += 1;
+    }
+    if (games === 0) continue;
+
+    let tables = byPos.get(pos);
+    if (!tables) {
+      tables = { ppgs: [], totals: [] };
+      byPos.set(pos, tables);
+    }
+    tables.totals.push({ id, value: total, games });
+    if (games >= PPG_MIN_GAMES) {
+      tables.ppgs.push({ id, value: total / games, games });
+    }
+  }
+
+  const byId = new Map<string, SeasonStanding>();
+
+  for (const tables of byPos.values()) {
+    tables.totals.sort((a, b) => b.value - a.value);
+    tables.ppgs.sort((a, b) => b.value - a.value);
+
+    // Points first, rates second, and the second overwrites: every player who
+    // played gets a standing, and the ones who clear the minimum then take
+    // their place on the table the page prefers. Written in this order rather
+    // than as a conditional per player because the two tables are ranked
+    // independently — a player's index in one says nothing about the other.
+    tables.totals.forEach((row, i) => {
+      byId.set(row.id, {
+        rank: i + 1,
+        value: row.value,
+        measure: "total",
+        games: row.games,
+      });
+    });
+    tables.ppgs.forEach((row, i) => {
+      byId.set(row.id, {
+        rank: i + 1,
+        value: row.value,
+        measure: "ppg",
+        games: row.games,
+      });
+    });
+  }
+
+  const standings: SeasonStandings = { season, format, week, byId };
+  standingsCache.set(cacheKey, standings);
+  return standings;
+}
+
 /* ---------------------------------------------------------- missing weeks, scores */
 
 const seasonMaxWeekCache = new Map<number, number>();
@@ -501,6 +633,7 @@ export function fillMissingWeeks(
 /** Drops the per-season derived tables. Used by the tests. */
 export function resetRankCaches(): void {
   weeklyRanksCache.clear();
+  standingsCache.clear();
   oppRanksCache.clear();
   teamAggCache.clear();
   seasonMaxWeekCache.clear();

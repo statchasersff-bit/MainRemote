@@ -2,9 +2,9 @@
  * Markup for the NFL schedule.
  *
  * Server-only, like team-render.ts, player-render.ts, fpa-render.ts and
- * rankings-render.ts. The board, the team lens and the season matrix are all
- * drawn here as strings, and client/schedule.ts only smooths the controls on
- * top of what is already in the response.
+ * rankings-render.ts. The weekly board and the season matrix are both drawn
+ * here as strings, and client/schedule.ts only smooths the controls on top of
+ * what is already in the response.
  *
  * That is the substantive change from the standalone app this came from. There,
  * every view was React state over a JSON payload the browser fetched: the HTML
@@ -26,10 +26,10 @@
  * And two this tool needs specifically:
  *
  * 3. **One view at a time, and the view is in the URL.** Eighteen weekly
- *    boards, thirty-two team lenses and a matrix is far too much markup to ship
- *    at once, so — unlike the rankings, where every panel is in the document —
- *    the view, week, team and filter are ordinary query state and the controls
- *    are ordinary links. That works with scripting off, it is what makes the
+ *    boards and a matrix is far too much markup to ship at once, so — unlike
+ *    the rankings, where every panel is in the document — the view, week and
+ *    filter are ordinary query state and the controls are ordinary links. That
+ *    works with scripting off, it is what makes the
  *    shortcode's attributes mean anything, and it keeps a page weight a phone
  *    can afford. The canonical stays on the bare path regardless (see
  *    schedule-seo.ts), so this is one page with several states rather than
@@ -37,18 +37,33 @@
  * 4. **Home and away are stated, never only positioned.** "ATL at GB" reads
  *    left to right as away-then-home, which is the convention and is also
  *    invisible to anyone who cannot see the layout. Every matchup carries the
- *    word "at" in its text, and the team lens prints "vs" and "at" explicitly.
+ *    word "at" in its text.
+ *
+ * ## What used to be here
+ *
+ * A third view, the team lens: one club's season as a five-column table with
+ * four summary cards beside it. It moved to the team hub's Schedule tab, which
+ * is a page already about that team — see team-render.ts's renderFullSchedule()
+ * and renderSeasonShape(). Links to it are redirected there by routes/schedule.ts.
  */
 
-import { escapeHtml } from "./render";
+import { escapeHtml, escapeJsonLd } from "./render";
 import { networkMarkFor } from "./team/network-marks";
-import { TEAMS, TEAM_GROUPS, type NflTeam } from "./team/teams";
+import { TEAMS, type NflTeam } from "./team/teams";
+import {
+  formatGameDate,
+  formatKickoff,
+} from "./schedule/format";
+import {
+  scheduleFaq,
+  scheduleFaqHeading,
+  type ScheduleFaq,
+} from "./schedule/schedule-faq";
 import {
   byeTeams,
   currentWeek,
   opponentOf,
   teamGames,
-  teamSeasonStats,
   venueFlag,
   weekGames,
   TOTAL_WEEKS,
@@ -56,7 +71,6 @@ import {
   type ScheduleGame,
   type ScheduleSeason,
   type ScheduleView,
-  type TeamSeasonStats,
 } from "./schedule/schedule-data";
 
 export interface ScheduleRenderOptions {
@@ -84,8 +98,6 @@ export interface ScheduleRenderOptions {
   view?: ScheduleView;
   /** The week the board opens on. Defaults to the one the season is in. */
   week?: number;
-  /** The team the lens opens on. Defaults to the first team in the table. */
-  team?: NflTeam | null;
   filter?: GameFilter;
   /** Injected for testability; the cache keys on the data, not on this. */
   now?: number;
@@ -130,7 +142,6 @@ function weekPath(base: string, week: number): string {
 interface ViewState {
   view: ScheduleView;
   week: number;
-  team: string | null;
   filter: GameFilter;
 }
 
@@ -164,8 +175,10 @@ function stateUrl(
   // remembered a week would be a second URL for one rendering.
   params.delete("week");
 
-  if (merged.view === "team" && merged.team) params.set("team", merged.team);
-  else params.delete("team");
+  // Never a parameter now: the team lens that took one has moved to the team
+  // hub, and a stray ?team= on a board or a matrix URL is a second address for
+  // the same page.
+  params.delete("team");
 
   if (merged.view === "week" && merged.filter !== "all") {
     params.set("filter", merged.filter);
@@ -174,69 +187,6 @@ function stateUrl(
   const path = merged.view === "week" ? weekPath(base, merged.week) : base;
   const query = params.toString();
   return query ? `${path}?${query}` : path;
-}
-
-/* ------------------------------------------------------------ formatting */
-
-function dateParts(date: string): Date | null {
-  // Noon UTC, so no timezone the server might be in can roll the date back a
-  // day. The feed's dates are calendar dates, not instants.
-  const parsed = new Date(`${date}T12:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-/** "Sun, Sep 24" — the weekly board's date line. */
-export function formatGameDate(
-  date: string | null,
-  weekday: string | null,
-): string {
-  if (!date) return weekday ?? "Date TBD";
-  const parsed = dateParts(date);
-  if (!parsed) return weekday ?? date;
-  const day = parsed.toLocaleDateString("en-US", {
-    weekday: "short",
-    timeZone: "UTC",
-  });
-  const rest = parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-  return `${day}, ${rest}`;
-}
-
-/** "Sep 24" — the team lens's tighter date column. */
-export function formatShortDate(
-  date: string | null,
-  weekday: string | null,
-): string {
-  if (!date) return weekday ?? "TBD";
-  const parsed = dateParts(date);
-  if (!parsed) return weekday ?? date;
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-/**
- * "1:00 PM ET".
- *
- * The zone is labelled rather than converted. Every kickoff in the feed is US
- * Eastern, and the server has no idea what zone the reader is in — rendering it
- * as the server's local time would be wrong for almost everyone, and silently.
- * The client bundle converts to the reader's own zone once it can actually ask
- * the browser.
- */
-export function formatKickoff(time: string | null): string {
-  if (!time) return "Time TBD";
-  const match = /^(\d{1,2}):(\d{2})/.exec(time);
-  if (!match) return time;
-  const hour = Number(match[1]);
-  const suffix = hour >= 12 ? "PM" : "AM";
-  const display = hour % 12 === 0 ? 12 : hour % 12;
-  return `${display}:${match[2]} ${suffix} ET`;
 }
 
 /** Where the game stands: the clock while it runs, the word FINAL after. */
@@ -387,6 +337,25 @@ function teamHref(
   if (!team) return null;
   const prefix = options.teamPathPrefix ?? DEFAULT_TEAM_PREFIX;
   return `${prefix}${team.slug}${options.linkQuery ?? ""}`;
+}
+
+/**
+ * The same team, at the page that now holds its season.
+ *
+ * This tool used to answer "what does one team's year look like" with a view of
+ * its own, and the bye card and the matrix pointed at it. That view is gone —
+ * the team hub's Schedule tab holds it, with the same table and the same four
+ * cards — so those links point one level deeper instead of at the team's front
+ * page, and a reader who clicks a crest still lands on the season they clicked
+ * for.
+ */
+function teamScheduleHref(
+  team: NflTeam | null,
+  options: ScheduleRenderOptions,
+): string | null {
+  if (!team) return null;
+  const prefix = options.teamPathPrefix ?? DEFAULT_TEAM_PREFIX;
+  return `${prefix}${team.slug}/schedule/${options.linkQuery ?? ""}`;
 }
 
 /* ------------------------------------------------------------ week board */
@@ -632,9 +601,7 @@ function renderMarketCards(games: ScheduleGame[], week: number): string {
 function renderByeCard(
   schedule: ScheduleSeason,
   week: number,
-  base: string,
-  state: ViewState,
-  linkQuery: string,
+  options: ScheduleRenderOptions,
 ): string {
   const byes = byeTeams(schedule, week, TEAMS);
   if (byes.length === 0) {
@@ -649,8 +616,8 @@ function renderByeCard(
     .map(
       (team) =>
         `<li><a class="scs-bye" href="${escapeHtml(
-          stateUrl(base, state, { view: "team", team: team.abbreviation }, linkQuery),
-        )}">` +
+          teamScheduleHref(team, options) ?? "",
+        )}" target="_top">` +
         teamLogo(team, 24, "scs-bye-logo") +
         `<span>${escapeHtml(team.nickname)}</span></a></li>`,
     )
@@ -741,410 +708,9 @@ function renderWeekView(
     `</div></div>` +
     `<aside class="scs-side" aria-label="Week ${state.week} at a glance">` +
     renderMarketCards(all, state.week) +
-    renderByeCard(schedule, state.week, base, state, linkQuery) +
+    renderByeCard(schedule, state.week, options) +
     renderTravelCard(all) +
     renderDivisionCard(all) +
-    `</aside></div>`
-  );
-}
-
-/* -------------------------------------------------------------- the team */
-
-/**
- * The team picker.
- *
- * A real `<form method="get">`, so choosing a team works with scripting off —
- * the submit button is what makes that true, and the client bundle hides it and
- * submits on change once it can. The hidden `view` is what keeps the lens open
- * after the round trip; `embed` rides along the same way, because a form GET
- * discards whatever was already in the query string.
- */
-function renderTeamPicker(
-  base: string,
-  selected: NflTeam,
-  linkQuery: string,
-): string {
-  const groups = TEAM_GROUPS.map((conference) =>
-    conference.divisions
-      .map((division) => {
-        const options = division.teams
-          .map(
-            (team) =>
-              `<option value="${escapeHtml(team.abbreviation)}"${
-                team.abbreviation === selected.abbreviation ? " selected" : ""
-              }>${escapeHtml(team.fullName)}</option>`,
-          )
-          .join("");
-        return `<optgroup label="${escapeHtml(division.division)}">${options}</optgroup>`;
-      })
-      .join(""),
-  ).join("");
-
-  const carried = Array.from(
-    new URLSearchParams(linkQuery.replace(/^\?/, "")).entries(),
-  )
-    .map(
-      ([key, value]) =>
-        `<input type="hidden" name="${escapeHtml(key)}" value="${escapeHtml(value)}" />`,
-    )
-    .join("");
-
-  return (
-    `<form class="scs-picker" method="get" action="${escapeHtml(base)}" data-scs-picker>` +
-    `<input type="hidden" name="view" value="team" />` +
-    carried +
-    `<label class="scs-control-label" for="scs-team">Team</label>` +
-    `<select id="scs-team" name="team">${groups}</select>` +
-    `<button type="submit" class="scs-picker-go">Show</button>` +
-    `</form>`
-  );
-}
-
-function renderTeamRow(
-  game: ScheduleGame,
-  team: NflTeam,
-  options: ScheduleRenderOptions,
-): string {
-  const atHome = game.home?.abbreviation === team.abbreviation;
-  const opponent = opponentOf(game, team);
-  const opponentName =
-    opponent?.fullName ?? (atHome ? game.awayCode : game.homeCode);
-  const href = teamHref(opponent, options);
-  const hasScore = game.awayScore !== null && game.homeScore !== null;
-
-  // The result from this team's point of view. Only once there is one — an
-  // upcoming game says so rather than printing an empty cell, for the reason
-  // the team hub gives: a table that grows a column in Week 1 is a table that
-  // changes shape under the reader.
-  let outcome = "";
-  if (hasScore) {
-    const own = atHome ? game.homeScore! : game.awayScore!;
-    const other = atHome ? game.awayScore! : game.homeScore!;
-    const letter = own > other ? "W" : own < other ? "L" : "T";
-    outcome =
-      `<span class="scs-result" data-outcome="${letter}">` +
-      `<span aria-hidden="true">${letter} ${own}–${other}</span>` +
-      `<span class="scs-visually-hidden">${
-        letter === "W" ? "Won" : letter === "L" ? "Lost" : "Tied"
-      } ${own} to ${other}</span></span>`;
-  }
-
-  const name =
-    href === null
-      ? `<span class="scs-trow-name">${escapeHtml(opponentName)}</span>`
-      : `<a class="scs-trow-name" href="${escapeHtml(href)}" target="_top">${escapeHtml(
-          opponentName,
-        )}</a>`;
-
-  return (
-    `<li class="scs-trow" data-status="${game.status}">` +
-    `<span class="scs-trow-week">W${game.week}</span>` +
-    `<span class="scs-trow-vs">` +
-    `<span class="scs-trow-ha" data-home="${atHome ? "1" : "0"}">${
-      atHome ? "vs" : "at"
-    }</span>` +
-    teamLogo(opponent, 24, "scs-trow-logo") +
-    name +
-    `</span>` +
-    `<span class="scs-trow-date">${escapeHtml(
-      formatShortDate(game.date, game.weekday),
-    )}</span>` +
-    `<span class="scs-trow-status"${
-      game.kickoffMs === null || game.status !== "scheduled"
-        ? ""
-        : ` data-kickoff="${game.kickoffMs}"`
-    }>` +
-    (game.status === "live"
-      ? `<span class="scs-live-dot" aria-hidden="true"></span>`
-      : "") +
-    (outcome || escapeHtml(statusText(game))) +
-    `</span>` +
-    `<span class="scs-trow-tv">${networkHtml(game.network)}</span>` +
-    `</li>`
-  );
-}
-
-function renderSnapshotCard(
-  season: number,
-  stats: TeamSeasonStats,
-): string {
-  const tiles: Array<[string | number, string]> = [
-    [stats.total, "Games"],
-    [stats.home, "Home"],
-    [stats.away, "Away"],
-    [stats.division, "Division"],
-    [stats.bye ? `W${stats.bye}` : DASH, "Bye week"],
-  ];
-
-  const max = Math.max(stats.home, stats.away, 1);
-  const bar = (label: string, value: number): string =>
-    `<div class="scs-bar"><span class="scs-bar-label">${escapeHtml(label)}</span>` +
-    `<span class="scs-bar-track"><span class="scs-bar-fill" style="width:${
-      Math.round((value / max) * 100)
-    }%"></span></span>` +
-    `<span class="scs-bar-value">${value}</span></div>`;
-
-  return (
-    `<section class="scs-card" data-kind="snapshot">` +
-    `<h3 class="scs-card-label">${season} season snapshot</h3>` +
-    `<dl class="scs-tiles">` +
-    tiles
-      .map(
-        ([value, label]) =>
-          `<div class="scs-tile"><dt>${escapeHtml(label)}</dt>` +
-          `<dd>${escapeHtml(String(value))}</dd></div>`,
-      )
-      .join("") +
-    `</dl>` +
-    `<div class="scs-bars">${bar("Home", stats.home)}${bar("Away", stats.away)}</div>` +
-    `</section>`
-  );
-}
-
-/** Thirds of the season, which is how a schedule is actually talked about. */
-const PATH_SEGMENTS: Array<[number, number]> = [
-  [1, 6],
-  [7, 12],
-  [13, 18],
-];
-
-function renderPathCard(stats: TeamSeasonStats, team: NflTeam): string {
-  const strip = stats.marks
-    .map((mark) => {
-      const where =
-        mark.kind === "bye"
-          ? "Bye"
-          : mark.kind === "home"
-            ? `vs ${mark.opponent?.code ?? "TBD"}`
-            : `at ${mark.opponent?.code ?? "TBD"}`;
-      return (
-        `<li class="scs-path-week" data-kind="${mark.kind}"` +
-        ` title="${escapeHtml(`Week ${mark.week} ${DASH} ${where}`)}">` +
-        `<span class="scs-visually-hidden">${escapeHtml(
-          `Week ${mark.week}: ${where}`,
-        )}</span></li>`
-      );
-    })
-    .join("");
-
-  const segments = PATH_SEGMENTS.map(([from, to]) => {
-    const slice = stats.marks.filter(
-      (mark) => mark.week >= from && mark.week <= to,
-    );
-    const home = slice.filter((mark) => mark.kind === "home").length;
-    const away = slice.filter((mark) => mark.kind === "away").length;
-    const bye = slice.filter((mark) => mark.kind === "bye").length;
-    const detail =
-      [home ? `${home} home` : "", away ? `${away} road` : "", bye ? `${bye} bye` : ""]
-        .filter(Boolean)
-        .join(" · ") || "No games";
-    return (
-      `<div class="scs-seg"><span class="scs-seg-label">Weeks ${from}–${to}</span>` +
-      `<span class="scs-seg-detail">${escapeHtml(detail)}</span></div>`
-    );
-  }).join("");
-
-  // The takeaway is arithmetic on the marks above, not a projection: it counts
-  // home games in the opening and closing thirds and says which way the draw
-  // leans. It never says whether that makes the team good.
-  const first = stats.scheduled.slice(0, 6);
-  const last = stats.scheduled.slice(-6);
-  const homeFirst = first.filter((mark) => mark.kind === "home").length;
-  const homeLast = last.filter((mark) => mark.kind === "home").length;
-
-  const takeaway =
-    last.length === 0
-      ? { title: "Path pending", body: "No games are scheduled for this team yet." }
-      : homeLast >= 4
-        ? {
-            title: "Late-season home edge",
-            body: `${homeLast} of ${team.city}'s final ${last.length} scheduled games are at home.`,
-          }
-        : homeLast <= 2
-          ? {
-              title: "Late-season road grind",
-              body: `${last.length - homeLast} of ${team.city}'s final ${last.length} scheduled games are on the road.`,
-            }
-          : homeFirst <= 2
-            ? {
-                title: "Early road gauntlet",
-                body: `${first.length - homeFirst} of the opening ${first.length} games are away from home.`,
-              }
-            : {
-                title: "Balanced draw",
-                body: "Home and road games stay evenly spread from September through January.",
-              };
-
-  return (
-    `<section class="scs-card" data-kind="path">` +
-    `<h3 class="scs-card-label">Season path</h3>` +
-    `<ol class="scs-path">${strip}</ol>` +
-    `<p class="scs-path-key" aria-hidden="true">` +
-    `<span data-kind="home"></span>Home` +
-    `<span data-kind="away"></span>Away` +
-    `<span data-kind="bye"></span>Bye</p>` +
-    `<div class="scs-segs">${segments}</div>` +
-    `<p class="scs-card-takeaway">${escapeHtml(takeaway.title)}</p>` +
-    `<p class="scs-card-note">${escapeHtml(takeaway.body)}</p>` +
-    `</section>`
-  );
-}
-
-function renderDivisionSlateCard(
-  games: ScheduleGame[],
-  team: NflTeam,
-  options: ScheduleRenderOptions,
-): string {
-  const slate = games.filter((game) => game.divisional);
-  if (slate.length === 0) {
-    return card(
-      `${team.division} schedule`,
-      `<p class="scs-card-note">No division games scheduled.</p>`,
-      "slate",
-    );
-  }
-
-  const home = slate.filter(
-    (game) => game.home?.abbreviation === team.abbreviation,
-  ).length;
-
-  const items = slate
-    .map((game) => {
-      const atHome = game.home?.abbreviation === team.abbreviation;
-      const opponent = opponentOf(game, team);
-      const href = teamHref(opponent, options);
-      const name = opponent?.nickname ?? (atHome ? game.awayCode : game.homeCode);
-      const label =
-        href === null
-          ? escapeHtml(name)
-          : `<a href="${escapeHtml(href)}" target="_top">${escapeHtml(name)}</a>`;
-      return (
-        `<li><span class="scs-slate-week">W${game.week}</span>` +
-        teamLogo(opponent, 20, "scs-mini-logo") +
-        `<span class="scs-slate-name">${atHome ? "vs " : "at "}${label}</span></li>`
-      );
-    })
-    .join("");
-
-  return card(
-    `${team.division} schedule`,
-    `<ul class="scs-slate">${items}</ul>` +
-      `<p class="scs-card-fine">${home} home · ${slate.length - home} away</p>`,
-    "slate",
-  );
-}
-
-function renderOpponentCard(games: ScheduleGame[], team: NflTeam): string {
-  const opponents = games
-    .map((game) => opponentOf(game, team))
-    .filter((entry): entry is NflTeam => entry !== null);
-
-  if (opponents.length === 0) {
-    return card(
-      `Who ${team.city} plays`,
-      `<p class="scs-card-note">No opponents scheduled.</p>`,
-      "opponents",
-    );
-  }
-
-  const byDivision = new Map<string, number>();
-  const byConference = new Map<string, number>();
-  for (const opponent of opponents) {
-    byDivision.set(opponent.division, (byDivision.get(opponent.division) ?? 0) + 1);
-    byConference.set(
-      opponent.conference,
-      (byConference.get(opponent.conference) ?? 0) + 1,
-    );
-  }
-
-  const divisions = [...byDivision.entries()].sort(
-    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
-  );
-  const max = divisions[0]?.[1] ?? 1;
-
-  const rows = divisions
-    .map(
-      ([division, count]) =>
-        `<div class="scs-bar"><span class="scs-bar-label">${escapeHtml(division)}</span>` +
-        `<span class="scs-bar-track"><span class="scs-bar-fill" style="width:${Math.round(
-          (count / max) * 100,
-        )}%"></span></span>` +
-        `<span class="scs-bar-value">${count}</span></div>`,
-    )
-    .join("");
-
-  const conferences = (["AFC", "NFC"] as const)
-    .map(
-      (conference) =>
-        `<div class="scs-tile"><dt>${conference}</dt>` +
-        `<dd>${byConference.get(conference) ?? 0}</dd></div>`,
-    )
-    .join("");
-
-  return (
-    `<section class="scs-card" data-kind="opponents">` +
-    `<h3 class="scs-card-label">Who ${escapeHtml(team.city)} plays</h3>` +
-    `<div class="scs-bars">${rows}</div>` +
-    `<dl class="scs-tiles scs-tiles-2">${conferences}</dl>` +
-    `</section>`
-  );
-}
-
-function renderTeamView(
-  schedule: ScheduleSeason,
-  options: ScheduleRenderOptions,
-  state: ViewState,
-  team: NflTeam,
-): string {
-  const base = options.basePath ?? DEFAULT_BASE_PATH;
-  const games = teamGames(schedule, team.abbreviation);
-  const stats = teamSeasonStats(games, team);
-  const href = teamHref(team, options);
-
-  const heading =
-    href === null
-      ? escapeHtml(team.fullName)
-      : `<a href="${escapeHtml(href)}" target="_top">${escapeHtml(team.fullName)}</a>`;
-
-  const list =
-    games.length > 0
-      ? `<ul class="scs-tlist">${games
-          .map((game) => renderTeamRow(game, team, options))
-          .join("")}</ul>`
-      : renderEmpty(
-          "No schedule found",
-          "The feed has no published games for this team yet.",
-        );
-
-  // Same shape as the weekly board: the head row rides INSIDE the main column,
-  // so the picker's right edge is the table's right edge and the first side
-  // card starts level with the team's name.
-  return (
-    `<div class="scs-layout scs-layout-lens">` +
-    `<div class="scs-main">` +
-    `<div class="scs-viewhead">` +
-    `<div class="scs-lens">` +
-    `<span class="scs-lens-mark" style="--scs-team:${escapeHtml(
-      team.primaryColor,
-    )}">` +
-    teamLogo(team, 56, "scs-lens-logo") +
-    `</span>` +
-    `<div><p class="scs-control-label">Team lens</p>` +
-    `<h2 class="scs-view-title">${heading}</h2>` +
-    `<p class="scs-lens-sub">${escapeHtml(team.division)}</p></div>` +
-    `</div>` +
-    renderTeamPicker(base, team, options.linkQuery ?? "") +
-    `</div>` +
-    `<div class="scs-board scs-board-team">` +
-    `<div class="scs-board-head" aria-hidden="true">` +
-    `<span>Wk</span><span>Opponent</span><span>Date</span><span>Result</span><span>TV</span></div>` +
-    list +
-    `</div></div>` +
-    `<aside class="scs-side" aria-label="${escapeHtml(team.fullName)} season">` +
-    renderSnapshotCard(schedule.season, stats) +
-    renderPathCard(stats, team) +
-    renderDivisionSlateCard(games, team, options) +
-    renderOpponentCard(games, team) +
     `</aside></div>`
   );
 }
@@ -1209,8 +775,8 @@ function renderMatrixView(
     return (
       `<tr><th scope="row" class="scs-matrix-team">` +
       `<a href="${escapeHtml(
-        stateUrl(base, state, { view: "team", team: team.abbreviation }, linkQuery),
-      )}">${teamLogo(team, 22, "scs-matrix-logo")}` +
+        teamScheduleHref(team, options) ?? "",
+      )}" target="_top">${teamLogo(team, 22, "scs-matrix-logo")}` +
       `<span class="scs-matrix-labels">` +
       `<span class="scs-matrix-name">${escapeHtml(team.nickname)}</span>` +
       `<span class="scs-matrix-code">${escapeHtml(team.code)}</span></span></a></th>` +
@@ -1222,7 +788,7 @@ function renderMatrixView(
   return (
     `<div class="scs-viewhead">` +
     `<h2 class="scs-view-title">Every team. Every week.</h2>` +
-    `<p class="scs-lens-sub">` +
+    `<p class="scs-view-note">` +
     `A cell is the opponent; <strong>@</strong> marks a road game. Choose one to open that week's board.` +
     `</p></div>` +
     `<div class="scs-matrix-scroll" tabindex="0" role="region" aria-label="Season matrix">` +
@@ -1241,7 +807,6 @@ function renderViewNav(
 ): string {
   const items: Array<[ScheduleView, string]> = [
     ["week", "Weekly board"],
-    ["team", "Team lens"],
     ["matrix", "Season matrix"],
   ];
 
@@ -1281,14 +846,128 @@ function renderSource(schedule: ScheduleSeason): string {
   );
 }
 
+/* --------------------------------------------------------------------- faq */
+
+/**
+ * The week's questions, and the FAQPage built from the same list.
+ *
+ * **On the weekly board only.** The questions name a week and are answered from
+ * that week's rows, so they belong to `/schedule/week-3` and to nothing else —
+ * which is also what makes them worth having: the week is the one piece of this
+ * tool's state with an address of its own, and eighteen addresses that differ
+ * only in a number on a table are eighteen pages a search engine has no reason
+ * to tell apart. The matrix gets none: nobody asks a 32-by-18 grid a
+ * question in prose.
+ *
+ * It sits after the board and before the source line, which is where a reader
+ * who has finished with the week arrives.
+ *
+ * Each question is its own <details>, shut by default, exactly as the rankings
+ * and the team hub do it and for the same reason: the questions are the index,
+ * so they all show, and the answer opens under the one that was actually asked.
+ * The block itself never folds. Open state is a browser concern either way —
+ * the answers are in the DOM regardless, which is what the FAQPage node
+ * describes.
+ *
+ * The <h2> is safe in both modes. The embed drops the H1 because the WordPress
+ * page owns it; an H2 under that page's own heading is where these questions
+ * belong in its outline, and the questions take <h3> beneath it.
+ */
+function renderFaq(
+  schedule: ScheduleSeason,
+  state: ViewState,
+  options: ScheduleRenderOptions,
+): string {
+  if (state.view !== "week") return "";
+
+  const items = scheduleFaq({ schedule, week: state.week });
+  if (items.length === 0) return "";
+
+  const body = items
+    .map(
+      (entry) =>
+        `<details class="scs-faq-item">` +
+        `<summary class="scs-faq-q-row">` +
+        `<h3 class="scs-faq-q">${escapeHtml(entry.question)}</h3>` +
+        `</summary>` +
+        `<p class="scs-faq-a">${escapeHtml(entry.answer)}</p>` +
+        `</details>`,
+    )
+    .join("");
+
+  return (
+    `<section class="scs-faq-block" aria-labelledby="scs-faq-title">` +
+    `<h2 class="scs-faq-title" id="scs-faq-title">${escapeHtml(
+      scheduleFaqHeading(state.week),
+    )}</h2>` +
+    `<div class="scs-faq">${body}</div>` +
+    `</section>` +
+    renderFaqSchema(items, options)
+  );
+}
+
+/**
+ * The FAQPage node, or the inert island the plugin builds it from.
+ *
+ * Same two-mode arrangement as rankings-render.ts and team-render.ts, for the
+ * reason given at length there: standalone, this page owns its document and
+ * emits the node itself; embedded, WordPress owns the document and Rank Math
+ * owns its graph, so a second <script type="application/ld+json"> arriving from
+ * inside a mounted fragment competes with that graph instead of joining it. The
+ * island is the same questions as data, and statchasers-schedule.php lifts them
+ * into the one <script> the host page already prints, then strips the island.
+ *
+ * Data rather than the plugin re-reading the rendered markup: by then every
+ * answer has been escaped for display, and un-escaping prose in PHP to feed a
+ * crawler is a worse job than handing over the array it was built from.
+ *
+ * Note that the standalone page ships `noindex, indexifembedded`, so this node
+ * is not what ranks — the WordPress copy is. It is emitted anyway because a
+ * page that describes itself only when embedded is a page whose structured data
+ * nobody can check without WordPress in front of it.
+ */
+function renderFaqSchema(
+  items: ScheduleFaq[],
+  options: ScheduleRenderOptions,
+): string {
+  if (items.length === 0) return "";
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="scs-faq-data">` +
+      escapeJsonLd(
+        JSON.stringify(
+          items.map((entry) => ({ q: entry.question, a: entry.answer })),
+        ),
+      ) +
+      `</script>`
+    );
+  }
+
+  return (
+    `<script type="application/ld+json">` +
+    escapeJsonLd(
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((entry) => ({
+          "@type": "Question",
+          name: entry.question,
+          acceptedAnswer: { "@type": "Answer", text: entry.answer },
+        })),
+      }),
+    ) +
+    `</script>`
+  );
+}
+
 /* -------------------------------------------------------------- the page */
 
 /**
  * Resolve the requested state against the data.
  *
- * A week nobody asked for becomes the week the season is actually in, and a
- * team nobody asked for becomes the first in the table — the page always opens
- * on something real rather than on an empty Week 1 in December.
+ * A week nobody asked for becomes the week the season is actually in — the page
+ * always opens on something real rather than on an empty Week 1 in December.
  */
 export function resolveState(
   schedule: ScheduleSeason,
@@ -1300,7 +979,6 @@ export function resolveState(
       options.week && options.week >= 1 && options.week <= TOTAL_WEEKS
         ? options.week
         : currentWeek(schedule, options.now ?? Date.now()),
-    team: options.team?.abbreviation ?? null,
     filter: options.filter ?? "all",
   };
 }
@@ -1312,33 +990,24 @@ export function renderSchedulePage(
   const base = options.basePath ?? DEFAULT_BASE_PATH;
   const linkQuery = options.linkQuery ?? "";
   const state = resolveState(schedule, options);
-  const team =
-    options.team ??
-    (state.view === "team" ? (TEAMS[0] ?? null) : null);
-
-  if (state.view === "team" && team) state.team = team.abbreviation;
 
   const body =
-    state.view === "team" && team
-      ? renderTeamView(schedule, options, state, team)
-      : state.view === "matrix"
-        ? renderMatrixView(schedule, options, state)
-        : renderWeekView(schedule, options, state);
+    state.view === "matrix"
+      ? renderMatrixView(schedule, options, state)
+      : renderWeekView(schedule, options, state);
 
   // Only the games this rendering actually prints contribute symbols; the
   // matrix prints none, so it carries no artwork at all.
   const drawn =
     state.view === "week"
       ? weekGames(schedule, state.week, state.filter)
-      : state.view === "team" && team
-        ? teamGames(schedule, team.abbreviation)
-        : [];
+      : [];
 
   const heading = `${schedule.season} NFL Schedule`;
   const head = options.embed
     ? ""
     : `<header class="scs-head"><h1 class="scs-title">${escapeHtml(heading)}</h1>` +
-      `<p class="scs-lede">Every regular-season game, by week, by team, or all at once ` +
+      `<p class="scs-lede">Every regular-season game, week by week or all at once ` +
       `${DASH} with kickoff times, TV, byes, division games and the market's lines.</p></header>`;
 
   return (
@@ -1353,6 +1022,7 @@ export function renderSchedulePage(
     renderViewNav(base, state, linkQuery) +
     `</div>` +
     body +
+    renderFaq(schedule, state, options) +
     renderSource(schedule) +
     `</section>`
   );

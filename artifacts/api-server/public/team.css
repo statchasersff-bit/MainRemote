@@ -482,11 +482,41 @@ body.sct-page.is-embed {
   pointer-events: none;
 }
 
+/* Three columns, two rows: the crest holds the left of both, the name and the
+ * switcher share the top, and the fact chips get a row to themselves that runs
+ * from the name's left edge all the way to the hero's right.
+ *
+ * The chips used to be the tail of the name block, which meant they were
+ * bounded by the switcher's column — about 220px of width they were paying for
+ * and could not use, because the switcher is a 50px button pinned to the top of
+ * a hero three times that tall. Five chips need roughly 620px, so the Bye chip
+ * wrapped to a second line at about 1000px with that whole 220px sitting empty
+ * directly beneath the button. Spanning the row moves the wrap to about 780px,
+ * which is under the width where the hero restacks anyway.
+ *
+ * row-gap is zero on purpose: the space between the name and the chips is the
+ * chips' own margin, and a row-gap would stack on top of it.
+ */
 .sct-hero-inner {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "crest text actions"
+    "crest meta meta";
   align-items: center;
-  gap: 24px;
+  column-gap: 24px;
+  row-gap: 0;
+}
+
+.sct-hero-text {
+  grid-area: text;
+  min-width: 0;
+}
+
+.sct-hero-meta {
+  grid-area: meta;
+  align-self: start;
+  min-width: 0;
 }
 
 /* A white disc under the crest. It survived the hero going light, and it is
@@ -496,6 +526,7 @@ body.sct-page.is-embed {
    gradient is doing at that point. It doubles as the object the aura sits
    behind. */
 .sct-hero-crest {
+  grid-area: crest;
   display: grid;
   place-items: center;
   /* Scaled with the hero. At 112px in an 18px-padded box the plate was
@@ -602,6 +633,7 @@ body.sct-page.is-embed {
 }
 
 .sct-hero-actions {
+  grid-area: actions;
   align-self: start;
 }
 
@@ -815,10 +847,118 @@ body.sct-page.is-embed {
   font-weight: 800;
 }
 
-/* The /team index reuses the switcher's grid at full page width. */
+/* ------------------------------------------------------------- team index */
+
+/* The /team index is the switcher's rows in the league's own shape.
+ *
+ * It used to be the switcher's whole grid at full page width: AFC beside NFC,
+ * each conference a stack of four division lists. That shape is right for a
+ * 620px dropdown and wrong for a page — across the shell it left the right
+ * half empty and pushed the eight division headings down a scroll, so the page
+ * read as a sitemap rather than as the front door to 32 hubs.
+ *
+ * Here the axes swap: one conference per full-width band, its four divisions
+ * side by side underneath. Same rows, a third of the height, and the reader
+ * sees all eight groups at once.
+ */
 .sct-switch-grid.is-index {
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 28px;
-  gap: 32px 40px;
+  gap: 30px;
+}
+
+/* Now a band heading rather than a column heading, so the gold rule it already
+   carried runs the width of the page and does the dividing. */
+.sct-switch-grid.is-index .sct-switch-conf-title {
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sct-index-divs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Each division is a card rather than four lists sharing one white ground.
+   The reader is looking for one of eight groups, and an edge they can see is
+   what makes that a glance instead of a scan of the headings — which is the
+   whole difference between this and the list it replaced. */
+.sct-index-div {
+  /* .sct-switch-div carries 12px for the switcher's stacked divisions; here
+     the grid's own gap does that job. */
+  margin-top: 0;
+  padding: 12px 10px 10px;
+  border-radius: var(--sc-radius-sm);
+  border: 1px solid var(--sc-hairline);
+  background: var(--sc-surface-soft);
+}
+
+/* Louder than the switcher's: in the panel the heading only has to separate
+   two lists a reader is already scanning, on the page it is the label of the
+   card and the thing being looked for. */
+.sct-index-div .sct-switch-div-title {
+  margin: 0 2px 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--sc-hairline);
+  color: var(--sc-navy);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.sct-index-div .sct-switch-team {
+  gap: 10px;
+  min-height: 32px;
+  padding: 4px 6px;
+}
+
+/* Two pixels up from the switcher's. The crest is what a reader actually aims
+   at in a list of 32, and at 24px it is identifiable at a glance where at 22
+   it is a smudge beside a name. */
+.sct-index-div .sct-switch-logo {
+  width: 24px;
+  height: 24px;
+}
+
+/* Holds the middle of the row so the arrow keeps the right edge, and shrinks
+   rather than pushing it off in a narrow column. */
+.sct-index-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The row's only affordance. There is no underline and no link colour — the
+   crest and the name are the row — so the arrow arrives with the hover tint
+   and says it is clickable. Hidden at rest rather than dimmed, because 32
+   permanent arrows are 32 marks competing with the crests; on a touch screen,
+   where nothing hovers, it rests visible instead (see the (hover: none)
+   block). */
+.sct-index-div .sct-arrow {
+  flex: none;
+  margin-left: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 160ms ease;
+}
+
+/* White against the card's soft ground, so the row a cursor is on lifts out of
+   the list. The shared hover tint cannot do it here: --sc-surface-sink on
+   --sc-surface-soft is two greys apart, which is a difference you have to look
+   for. */
+.sct-index-div .sct-switch-team:hover {
+  background: var(--sc-surface);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+}
+
+.sct-index-div .sct-switch-team:hover .sct-arrow,
+.sct-index-div .sct-switch-team:focus-visible .sct-arrow {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /*
@@ -4148,11 +4288,18 @@ body.sct-page.is-embed {
  * contact under a wide soft drop. It sits directly under three cards built that
  * way, and in --sc-radius with a hairline and a flat drop it read as a data
  * grid that had been pasted below them rather than as the rest of the same
- * component. */
-.sct-slist {
+ * component.
+ *
+ * The shell is on the wrapper rather than on the list because the head row is a
+ * <div> and a <div> is not allowed inside an <ol>.
+ *
+ * `container-type` is the load-bearing line. This markup is printed into a
+ * WordPress column, so the board's width and the viewport's are two different
+ * numbers — a media query cannot tell a 630px board inside a 1280px window from
+ * a 1230px one. The row asks the board how wide it is instead, which is how the
+ * standalone tool's board does it too. */
+.sct-sboard {
   margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
   border-radius: 14px;
   border: 1px solid rgba(11, 22, 52, 0.09);
   overflow: hidden;
@@ -4160,27 +4307,51 @@ body.sct-page.is-embed {
   box-shadow:
     0 1px 2px rgba(11, 22, 52, 0.02),
     0 8px 24px rgba(11, 22, 52, 0.045);
+  container-type: inline-size;
 }
 
-/* Week, side, opponent, when, where, on what, and how it went.
+.sct-slist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Wk, Opponent, Date, Result, TV — and the link out to the pair page, which the
+ * standalone tool's five columns have no equivalent for and which gets no label
+ * because "View matchup →" is its own.
  *
- * Seven tracks rather than five. The two new ones are the columns a reader
- * actually scans — which games are at home, and which they can still watch —
- * and both were previously buried inside a sentence: "at" hidden mid-line in
- * the opponent cell, the network trailing the venue on the cards and absent
- * here entirely. */
+ * One grid for the head and the rows, so a label sits over the column it names
+ * at every width. The two selectors must stay together for that: a column added
+ * to one and not the other is a table whose headings are off by one. */
+.sct-slist-head,
 .sct-srow {
   display: grid;
-  /* Eight columns: the seventh is the status, the eighth the link to the pair
-     page. The link column is sized to its longest label ("View matchup →") and
-     fixed, so it does not breathe with the fluid columns to its left and leave
-     the arrows down the table out of line with each other. */
+  /* Six columns. The two fixed ones on the right are sized to their longest
+     contents — a network wordmark, and "View matchup →" — so they do not
+     breathe with the opponent column to their left and leave the arrows down
+     the table out of line with each other. */
   grid-template-columns:
-    54px 62px minmax(0, 1.5fr) minmax(0, 1.25fr)
-    minmax(0, 1.2fr) 66px 76px 104px;
+    38px minmax(0, 1fr) 70px 84px 66px 104px;
   align-items: center;
   gap: 12px;
-  padding: 11px 18px;
+  padding: 7px 16px;
+}
+
+/* The legend for the columns, on the sunk ground the depth chart's own head row
+   uses. aria-hidden: these are list items with a grid over them rather than
+   table cells, so the labels are for the eye and each row states its own fields
+   to a screen reader. */
+.sct-slist-head {
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sct-srow {
   border-bottom: 1px solid var(--sc-border);
   font-size: 0.86rem;
   transition: background 140ms ease;
@@ -4190,12 +4361,11 @@ body.sct-page.is-embed {
   border-bottom: 0;
 }
 
-.sct-srow:nth-child(even) {
-  background: var(--sc-surface-soft);
-}
-
-/* A row is not interactive, but following one across seven columns with a mouse
-   is, and the tint is what stops the eye sliding a line. */
+/* A row is not interactive, but following one across six columns with a mouse
+   is, and the tint is what stops the eye sliding a line. It is the only tint on
+   the table now — the zebra that used to stripe it is gone, because the source
+   rules its rows with a hairline and nothing else, and a striped table under an
+   unstriped head row was the loudest thing on the tab. */
 .sct-srow:hover {
   background: color-mix(in srgb, var(--sc-gold) 7%, var(--sc-surface));
 }
@@ -4209,44 +4379,59 @@ body.sct-page.is-embed {
   color: var(--sc-muted);
   font-size: 0.7rem;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  line-height: 1;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-/* The abbreviation is the exception here, not the default — the opposite of the
+/* The nickname is the exception here, not the default — the opposite of the
    depth chart, where four columns make the short spelling the normal case. The
-   table has room for the full nickname at every width except the squeeze band,
-   so the code sits in the markup unused until that band needs it.
-   
-   MUST STAY ABOVE that media query. A media query carries no specificity of its
-   own, so this rule sitting later in the file beat the one that shows the code
-   — the long name was hidden in the band and the short one never replaced it,
-   which took the team name off the row entirely. */
+   column has room for the full team name until the board itself narrows, so the
+   nickname sits in the markup unused until then.
+
+   MUST STAY ABOVE the container query that shows it. A container query carries
+   no specificity of its own, so this rule sitting later in the file beat the
+   one that reveals the nickname — the long name was hidden and the short one
+   never replaced it, which took the team name off the row entirely. */
 .sct-srow-name-brief {
   display: none;
 }
 
-/* Home filled, away outlined — the same pair as the cards above, so the two
-   halves of the tab teach one thing rather than two. Home is the state worth
-   marking: away is where two thirds of a season is played, and a filled chip on
-   two rows in three is not a signal. */
-.sct-srow-side {
-  justify-self: start;
-  padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--sc-border);
-  background: var(--sc-surface);
-  color: var(--sc-muted-strong);
-  font-size: 0.58rem;
-  font-weight: 900;
+/* "VS" / "AT", stated rather than positioned, with the source's gold seam under
+ * it.
+ *
+ * It was a Home/Away chip in a column of its own while the cell held a bare
+ * nickname. Beside a full team name the preposition reads as part of the
+ * fixture, which is what it is — so it joins the cell and its column goes to
+ * the name. Fixed width and centred so seventeen crests still line up down the
+ * table: "VS" and "AT" are two characters each but not the same two widths. */
+.sct-srow-ha {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  color: var(--sc-muted);
+  font-size: 0.56rem;
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.sct-srow-side[data-kind="home"] {
-  border-color: var(--sc-navy);
-  background: var(--sc-navy);
-  color: #fff;
+.sct-srow-ha::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 1px;
+  margin-top: 2px;
+  background: var(--sc-gold);
+}
+
+/* Home is the state worth marking: away is where two thirds of a season is
+   played, and an accent on two rows in three is not a signal. */
+.sct-srow-ha[data-kind="home"] {
+  color: var(--sc-navy);
 }
 
 .sct-srow-opp {
@@ -4256,25 +4441,27 @@ body.sct-page.is-embed {
   min-width: 0;
 }
 
-/* The opponent is the row's subject and now reads like it: the page's darkest
-   ink at the heaviest weight, against a date and a venue that stay muted. The
-   whole row used to sit within a shade and a weight of itself, which is what
-   made seventeen of them flat. */
+/* The source's weighting, which is the reverse of what this table used to do.
+   The name is set at a reading weight in the muted ink and the DATE is the bold
+   navy thing on the row — because the crest beside it has already said who, and
+   what a reader is running down the column for is when. Seventeen names at 900
+   was seventeen headlines. */
 .sct-srow-name {
   min-width: 0;
   overflow: hidden;
-  color: var(--sc-navy);
-  font-size: 0.92rem;
-  font-weight: 900;
-  letter-spacing: -0.01em;
+  color: var(--sc-muted-strong);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sct-srow-logo {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   flex: 0 0 auto;
 }
@@ -4291,14 +4478,18 @@ body.sct-page.is-embed {
   font-size: 0.75rem;
 }
 
-.sct-srow-when,
-.sct-srow-venue {
-  color: var(--sc-muted);
-  font-weight: 600;
+/* "Sep 13", and the row's bold navy note — see .sct-srow-name for why it and
+   not the opponent. The venue cell it used to share these rules with is gone. */
+.sct-srow-when {
+  color: var(--sc-navy);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.25;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* The broadcaster: a slot of a fixed size, with the logo centred in it.
@@ -4377,38 +4568,39 @@ body.sct-page.is-embed {
   --sct-net-cap: 14px;
 }
 
+/* The score as ink, not as a chip. Two played rows in a table of seventeen do
+   not need a filled pill apiece to be found — the colour is the signal, and the
+   source sets it the same way. */
 .sct-result {
   justify-self: start;
-  padding: 2px 9px;
-  border-radius: 6px;
   font-size: 0.74rem;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  background: var(--sc-surface-sink);
   color: var(--sc-muted-strong);
 }
 
 .sct-result[data-outcome="W"] {
-  background: rgba(16, 122, 87, 0.1);
   color: #0f6b4f;
 }
 
 .sct-result[data-outcome="L"] {
-  background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
 
-/* The placeholder in the same column a result will occupy. Unboxed and muted,
-   because "Upcoming" on every row before Week 1 must not read as seventeen
-   chips — it is holding the column open, not saying anything. */
+/* The kickoff, in the same column a result will occupy. Unboxed where the result
+   is a chip: seventeen times before Week 1 this column is a list of windows, and
+   seventeen chips would out-shout the two rows that have actually been played.
+   Tabular, because a column of times is read down. */
 .sct-sstatus {
   justify-self: start;
   color: var(--sc-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .sct-sstatus[data-state="live"] {
@@ -4418,6 +4610,491 @@ body.sct-page.is-embed {
   color: #94363a;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------- season shape */
+
+/*
+ * What the schedule adds up to: the season in five figures and a split, the
+ * path, the division slate and where the opponents come from.
+ *
+ * Ported from the standalone NFL schedule tool's team lens, in house dress, and
+ * in the same rail the tool puts it in. Almost nothing new is drawn here — the
+ * four cards are `.sct-mix` with its label, legend and caption, and the bars are
+ * the ladder's geometry. What the rules below add is the snapshot figures, the
+ * strip, the thirds and the slate list, which have no equivalent on the other
+ * tabs.
+ *
+ * The colour pair is the play-mix bar's, deliberately: the team's own primary
+ * mixed hard toward white for home, the gold for away. Those two already mean
+ * "the two halves of one whole" on the Stats tab, which is what a season split
+ * between home and road is, and a third pairing invented for this card would
+ * make the page carry two colour languages for the same idea.
+ */
+
+/* Fixtures and rail. 300px is the source's own figure for this column, and the
+   gap is the source's gutter. `align-items: start` is what keeps the rail its
+   own height instead of four cards stretched down the length of an
+   eighteen-row table. */
+.sct-sched-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+.sct-sched-main {
+  min-width: 0;
+}
+
+/* The rail: one column of cards, top-aligned, 18px down so the first card's
+   edge sits level with the board's head row rather than with the row above it.
+   The board's own 18px of margin is what it is levelling against. */
+.sct-shape {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+  margin-top: 18px;
+}
+
+/* Centred, which is the source's own arrangement for these four and the reason
+   they read as a rail rather than as four more left-ranged blocks under the
+   table. The bars and the slate rows range themselves back where the eye needs
+   a column to run down. */
+.sct-shape .sct-mix {
+  padding: 12px 16px 14px;
+  text-align: center;
+}
+
+/* ---- the snapshot card ------------------------------------------------- */
+
+/* The one filled card on the tab. Navy ground, gold eyebrow, white figures —
+   the source's single strongest move, and the thing that makes a rail of four
+   cards have a head. Both colours are the house pair, so nothing foreign comes
+   with it. */
+.sct-shape [data-kind="snapshot"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  box-shadow: 0 1px 2px rgba(11, 22, 52, 0.18);
+  padding: 14px 16px 16px;
+}
+
+.sct-shape [data-kind="snapshot"] .sct-mix-label {
+  color: var(--sc-gold);
+  letter-spacing: 0.16em;
+}
+
+/* --- the snapshot ------------------------------------------------------- */
+
+/* Five figures, three across. Plain dt/dd pairs rather than the `.sct-tile`
+   cards they were while this was a full-width band: a 300px rail cannot hold
+   five bordered cards, and a card inside a card is not a thing this design
+   system does at any width. The gold tick that marked a tile's label is gone
+   with them — the card's own eyebrow is already carrying that job for all
+   five. */
+.sct-snap {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 8px;
+  margin: 12px 0 0;
+}
+
+/* Figure first, label under it — the order the markup writes them in is the
+   other way round, because a definition list is a term and then its value.
+   `order` flips them for the eye without lying to a screen reader. */
+.sct-snap-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sct-snap-label {
+  order: 2;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.sct-snap-value {
+  order: 1;
+  margin: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The home/road split, ruled off below the figures it is two of, and inverted
+   because it sits on the filled ground: a gold fill on a translucent white
+   track. */
+.sct-snap-bars {
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sct-snap-bars .sct-shape-bar {
+  grid-template-columns: 36px minmax(0, 1fr);
+  padding: 3px 0;
+}
+
+.sct-snap-bars .sct-shape-bar-label {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-snap-bars .sct-shape-bar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.sct-snap-bars .sct-shape-bar-fill {
+  background: var(--sc-gold);
+}
+
+.sct-snap-bars .sct-shape-bar-value {
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+/* --- the path ----------------------------------------------------------- */
+
+/* One column per week, so the strip is the season's own proportions: a reader
+   counting three golds in a row is counting three straight road games. */
+/* One column per week, every column the same fraction of the row — stated as
+   an auto-column rather than `repeat(18, …)` because the strip is as long as
+   the fixtures reach, and as an auto-column rather than an auto-fit track
+   because auto-fit's implicit columns size to their content, which quietly
+   makes Week 18 wider than Week 1. */
+.sct-path {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 3px;
+  margin: 10px 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+/* Filled for home, hollow for away, dashed for the bye — the source's strip,
+   and a stronger one than the two-colour version this used to be: home and road
+   are not two kinds of the same thing, they are a thing and its absence, and
+   filled-against-empty says that where navy-against-gold did not. */
+.sct-path-week {
+  height: 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: 2px;
+  background: transparent;
+}
+
+.sct-path-week[data-kind="home"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+}
+
+.sct-path-week[data-kind="away"] {
+  background: transparent;
+}
+
+/* The bye reads as a gap in the run, not as a third kind of game: the sink
+   ground with a dashed edge, which is the one cell in the strip that is holding
+   a place rather than stating a fixture. A week the league has not published is
+   not a bye — see season-shape.ts — and keeps the plain hollow cell. */
+.sct-path-week[data-kind="bye"] {
+  border-style: dashed;
+  background: var(--sc-surface-sink);
+}
+
+/* The key. Its swatches repeat the three cell treatments above rather than
+   referring to them, because a legend that drifts from the thing it explains is
+   worse than no legend — keep these three in step with the three
+   `.sct-path-week` rules. */
+.sct-shape .sct-mix-legend {
+  justify-content: center;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.sct-shape .sct-mix-key {
+  gap: 5px;
+  color: var(--sc-muted);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sct-mix-key[data-kind="home"]::before,
+.sct-mix-key[data-kind="away"]::before,
+.sct-mix-key[data-kind="bye"]::before {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 1px;
+  background: transparent;
+}
+
+.sct-mix-key[data-kind="home"]::before {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+}
+
+.sct-mix-key[data-kind="bye"]::before {
+  border-style: dashed;
+  background: var(--sc-surface-sink);
+}
+
+/* --- the thirds --------------------------------------------------------- */
+
+/* The source's own arrangement: one run per line, the weeks ranged left and
+   what they hold ranged right, ruled off from the strip above. Three across is
+   the exception, taken only where the card is wide enough for the runs to be
+   compared side by side — see the container query below. */
+.sct-segs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.sct-seg {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sct-seg-label {
+  color: var(--sc-navy);
+  font-size: 0.72rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-seg-detail {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The one line on the card that asserts something rather than counting. Ruled
+   off and set centred in the gold, which is the source's treatment — the deep
+   bronze rather than the gold itself, because gold text on white does not clear
+   4.5:1 and this is the sentence the card is for. */
+.sct-shape-take {
+  display: block;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--sc-hairline);
+  color: #8a6500;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* The path card measures itself, because the same card is 264px of content in
+   the rail and about 500px when the rail has fallen under the table — and the
+   two want different things from the thirds. Asking the card rather than the
+   window is also the only question with a reliable answer here: this markup is
+   printed into a WordPress column. */
+.sct-mix[data-kind="path"] {
+  container-type: inline-size;
+}
+
+/* Three runs side by side, but only where they can be compared without either
+   one wrapping. "3 home · 2 road · 1 bye" needs about 160px, so three of them
+   need 420px of card — which the band under the table has and the rail does
+   not. Below it they fall back to the source's stacked rows above. */
+@container (min-width: 420px) {
+  .sct-segs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* Ranged left together. Stacked they are a label and its value on one line,
+     which centring reads fine; side by side they are three columns, and a
+     centred heading over a left-ranged line is two alignments in one cell. */
+  .sct-seg {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2px;
+    text-align: left;
+  }
+
+  .sct-seg-detail {
+    text-align: left;
+  }
+}
+
+/* --- the division slate ------------------------------------------------- */
+
+/* Six rows, no rules between them. The hairlines that used to separate them
+   made a table of a list of six, and the card is the thing with an edge. */
+.sct-slate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-slate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 0;
+}
+
+/* The week ranges left against the card's centred text, because six of them are
+   a column a reader runs an eye down. */
+.sct-slate-week {
+  flex: 0 0 auto;
+  width: 28px;
+  text-align: left;
+  color: var(--sc-muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-slate-logo {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Centred in what the week and the crest leave, which is the source's line. */
+.sct-slate-name {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sc-navy);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.sct-slate-link {
+  color: var(--sc-navy);
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.sct-slate-link:hover,
+.sct-slate-link:focus-visible {
+  border-bottom-color: var(--sc-gold);
+}
+
+/* --- who they play ------------------------------------------------------ */
+
+.sct-shape-bars {
+  margin: 10px 0 0;
+}
+
+.sct-shape-bar {
+  display: grid;
+  grid-template-columns: minmax(58px, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+/* Ranged left against the card's centred text: six division names are a column
+   to read down, and centring them would stagger their first letters. */
+.sct-shape-bar-label {
+  text-align: left;
+  color: var(--sc-navy);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sct-shape-bar-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+/* The ladder bar's geometry at the source's weight: these count meetings rather
+   than rank anything, so the fill takes the gold and never a tier colour. */
+.sct-shape-bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.sct-shape-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sc-gold);
+}
+
+.sct-shape-bar-value {
+  text-align: right;
+  color: var(--sc-navy);
+  font-size: 0.78rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The conference split, ruled off below the divisions it is the sum of. */
+.sct-shape-conf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+  text-align: center;
+}
+
+.sct-shape-conf-cell dt {
+  color: var(--sc-muted);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sct-shape-conf-cell dd {
+  margin: 2px 0 0;
+  color: var(--sc-navy);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* -------------------------------------------------------------- resources */
@@ -4498,29 +5175,27 @@ body.sct-page.is-embed {
    narrow for a featured card AND a 340px rail. */
 /* The band between the table being comfortable and the table becoming cards.
  *
- * The schedule row is eight columns wide and three of them are fluid, so as the
- * panel narrows the opponent cell is the one that gives — and it gives by
- * ellipsing the team name, which is the one thing in the row nobody can afford
- * to lose. DIV/INTL/NEUTRAL are qualifiers on a fixture the reader can identify
- * without them, so they are what comes out first, and the name gets their width
- * back.
+ * The schedule row is six columns wide and one of them is fluid, so as the board
+ * narrows the opponent cell is the one that gives — and it gives by ellipsing
+ * the team name, which is the one thing in the row nobody can afford to lose.
+ * The shorter spelling below is what stops it having to. */
+/* A container query, not a media query, and that is the point.
  *
- * They return below 900px: the row is cards by then, the opponent has a line of
- * its own, and the space they cost is no longer taken from the name. The band
- * is bounded at 901px for exactly that reason — it is the complement of the
- * card-view query, so the two cannot drift apart. */
-@media (min-width: 901px) and (max-width: 1080px) {
-  .sct-srow .sct-badge.is-tiny {
-    display: none;
-  }
-
-  /* With the pills gone and the name still ellipsing, the long nicknames give
-     up their spelling too: "SEA" beats "Seahaw…". Only the rows that carry a
-     brief form change — a row whose name always fitted still reads "Jets".
-
-     Visually hidden rather than display:none, exactly as the depth chart does
-     it: the row's accessible name stays "Seahawks" while the eye gets "SEA",
-     so the abbreviation never reaches a screen reader as the team's name. */
+ * The opponent column holds a full team name now, and whether "Los Angeles
+ * Chargers" fits is a question about the board's width — which is the window's
+ * minus the rail beside it, minus whatever a WordPress column has already taken.
+ * A media query cannot see any of that. The board declares itself a container
+ * and the row asks it, which is how the standalone tool's board does it.
+ *
+ * 700px is where the arithmetic runs out: the five other columns and the gaps
+ * take about 480px of the board, so below 700 the name has under 220px and
+ * "Los Angeles Chargers" wants more.
+ *
+ * Visually hidden rather than display:none, exactly as the depth chart does it:
+ * the row's accessible name stays "Los Angeles Chargers" while the eye gets
+ * "Chargers", so the shorter spelling never reaches a screen reader as the
+ * team's name. */
+@container (max-width: 700px) {
   .sct-srow-name-long {
     position: absolute;
     width: 1px;
@@ -4539,6 +5214,52 @@ body.sct-page.is-embed {
 }
 
 @media (max-width: 1080px) {
+  /* Four division cards stop fitting here rather than at 900: a column is
+     about 230px by this point, and "New England Patriots" beside a 24px crest
+     wants most of that before the card's own padding. */
+  .sct-index-divs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* The rail stops paying for itself here. 300px out of a panel this narrow
+     leaves the fixture table about 560px for six columns, and the opponent name
+     is what would pay — so the four cards come out from beside the table and go
+     under it as a band, two across, which is the arrangement they had before
+     they were a rail. */
+  .sct-sched-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-shape {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  /* Two of the four run the full width of the band. Eighteen cells and three
+     season thirds both want the whole measure, and the season's five figures
+     are read against each other — half a row of them is five figures with a
+     hole beside it. The slate and the opponents are lists, and a list half as
+     wide is still a list, so those two pair up. */
+  .sct-shape [data-kind="path"],
+  .sct-shape [data-kind="snapshot"] {
+    grid-column: 1 / -1;
+  }
+
+  /* All five across, which is the row they were in when this was a tile band:
+     games, home, away, division and the bye read against each other, and a
+     figure on a line of its own reads as a different kind of fact from the
+     four above it. */
+  .sct-shape [data-kind="snapshot"] .sct-snap {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  /* The split bars go beside the figures rather than under them — at this width
+     a full-width track is a bar chart of two things drawn a metre long. */
+  .sct-snap-bars {
+    max-width: 420px;
+  }
+
   .sct-news-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 28px;
@@ -4583,13 +5304,18 @@ body.sct-page.is-embed {
 @media (max-width: 900px) {
   .sct-hero-inner {
     grid-template-columns: auto minmax(0, 1fr);
-    row-gap: 18px;
+    grid-template-areas:
+      "crest text"
+      "crest meta"
+      "actions actions";
   }
 
   /* Switcher moves under the crest+name pair rather than being squeezed
-     beside it. */
+     beside it. Its own margin rather than the grid's row-gap, because a
+     row-gap would also land between the name and the chips, where the chips'
+     margin is already doing that job. */
   .sct-hero-actions {
-    grid-column: 1 / -1;
+    margin-top: 18px;
   }
 
   /* Two ladders side by side stop being comparable long before they stop
@@ -4607,6 +5333,14 @@ body.sct-page.is-embed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* The shape cards stack for the reason the ladders above them do: the slate
+     and the opponent bars are still legible in half a column, but they stop
+     being comparable with each other long before they stop fitting, and the
+     path already owns the full width. */
+  .sct-shape {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .sct-games {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -4615,17 +5349,23 @@ body.sct-page.is-embed {
     grid-template-columns: 1fr;
   }
 
-  /* Seven columns cannot survive a narrow screen, and scrolling a schedule
+  /* Six columns cannot survive a narrow screen, and scrolling a schedule
      sideways is worse than stacking it — so the row becomes three lines of one
      card. The first keeps what the row is identified by and how it went; the
      logistics fall underneath.
 
      Placed explicitly rather than left to auto-flow. The cells are in reading
      order in the markup, which is not the order they are wanted in here — the
-     status has to come up beside the opponent from the end of the row, and the
-     network has to come down beside the venue from ahead of it. */
+     network has to come up beside the date from the end of the row.
+
+     The head row goes with the columns it labels. Five words over three lines
+     of a card label nothing. */
+  .sct-slist-head {
+    display: none;
+  }
+
   .sct-srow {
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     row-gap: 5px;
     padding: 12px 16px;
   }
@@ -4634,35 +5374,25 @@ body.sct-page.is-embed {
     grid-area: 1 / 1;
   }
 
-  .sct-srow-side {
-    grid-area: 1 / 2;
-  }
-
   .sct-srow-opp {
-    grid-area: 1 / 3;
+    grid-area: 1 / 2;
     justify-self: start;
   }
 
   .sct-result,
   .sct-sstatus {
-    grid-area: 1 / 4;
+    grid-area: 1 / 3;
     justify-self: end;
   }
 
   .sct-srow-when {
-    grid-area: 2 / 1 / 3 / -1;
-    white-space: normal;
-    font-size: 0.8rem;
-  }
-
-  .sct-srow-venue {
-    grid-area: 3 / 1 / 4 / 4;
+    grid-area: 2 / 1 / 3 / 3;
     white-space: normal;
     font-size: 0.8rem;
   }
 
   .sct-srow-tv {
-    grid-area: 3 / 4 / 4 / -1;
+    grid-area: 2 / 3 / 3 / -1;
     justify-self: end;
   }
 
@@ -4670,7 +5400,7 @@ body.sct-page.is-embed {
      row, so it gets a full-width line rather than a corner of a shared one —
      on a phone that line is also the touch target. */
   .sct-srow-view {
-    grid-area: 4 / 1 / 5 / -1;
+    grid-area: 3 / 1 / 4 / -1;
     justify-self: end;
     padding-top: 2px;
   }
@@ -4724,7 +5454,13 @@ body.sct-page.is-embed {
 
   .sct-hero-inner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
+    grid-template-areas:
+      "crest"
+      "text"
+      "meta"
+      "actions";
+    column-gap: 14px;
+    row-gap: 14px;
   }
 
   /* Smaller than the tablet crest. Stacked above the name it is pure vertical
@@ -4750,8 +5486,10 @@ body.sct-page.is-embed {
     opacity: 0.04;
   }
 
+  /* The stack's own row-gap spaces it here; the tablet margin would double up
+     on that. */
   .sct-hero-actions {
-    grid-column: auto;
+    margin-top: 0;
   }
 
   /* Team names are two and three words; balanced wrapping keeps "New England
@@ -4767,7 +5505,9 @@ body.sct-page.is-embed {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin-top: 14px;
+    /* The chips are their own row in the stack now, so the gap above them is
+       the grid's. */
+    margin-top: 0;
   }
 
   .sct-fact {
@@ -4842,15 +5582,6 @@ body.sct-page.is-embed {
   .sct-switch-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 12px;
-  }
-
-  /* The index is the exception, because it prints full names rather than the
-     sheet's nicknames: "New England Patriots" in a half-width column is two
-     lines with a crest stranded beside them. One column here, and the page is
-     a list a thumb runs down — which is what an index is for, where the sheet
-     is something to get out of quickly. */
-  .sct-switch-grid.is-index {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Tapping off the sheet closes it: the click lands on the hero, which is
@@ -4975,6 +5706,14 @@ body.sct-page.is-embed {
     gap: 10px;
   }
 
+  /* The band above widened the season's five figures to one row; a phone takes
+     that back. Five across here is about 62px a column, which "Bye week" over
+     "W7" fills exactly and a longer label would not. Three across is the
+     arrangement the card is drawn at in the rail. */
+  .sct-shape [data-kind="snapshot"] .sct-snap {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .sct-tile {
     padding: 11px 12px 13px;
   }
@@ -5049,6 +5788,15 @@ body.sct-page.is-embed {
 }
 
 @media (max-width: 420px) {
+  /* The index prints full names rather than the sheet's nicknames, and
+     "New England Patriots" in half of a 420px screen is two lines with a crest
+     stranded beside them. One card per row, and the page is a list a thumb
+     runs down — which is what an index is for, where the sheet is something to
+     get out of quickly. */
+  .sct-index-divs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .sct-fact {
     padding: 6px 11px;
   }
@@ -5142,6 +5890,20 @@ body.sct-page.is-embed {
   .sct-switch-team:hover {
     background: transparent;
     color: var(--sc-ink);
+  }
+
+  /* Restated at the index row's own specificity: the reset above is a class
+     short of it and would leave the white lift stuck on the last row tapped. */
+  .sct-index-div .sct-switch-team:hover {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* The arrow is drawn by hover on a pointer device and there is none here, so
+     it rests visible and muted rather than never appearing at all. */
+  .sct-index-div .sct-arrow {
+    opacity: 0.4;
+    transform: none;
   }
 
   .sct-quicklink:hover {
