@@ -161,6 +161,17 @@ export interface PlayerRenderOptions {
    * stale link serving the full page rather than a 404.
    */
   section?: string;
+  /**
+   * The host has stood down: this fragment supplies the page's <h1>.
+   *
+   * Set by the WordPress plugin's "the tool supplies the heading" mode, which
+   * empties the theme's page title. Without it the theme prints the same phrase
+   * above the tool and the page carries the heading twice — once in the theme's
+   * serif, once here with the gold rule under it.
+   *
+   * Exactly one panel is promoted either way. See promoteHeading().
+   */
+  ownHeading?: boolean;
 }
 
 /**
@@ -238,6 +249,32 @@ function h2(text: string, subtitle = ""): string {
 
 function h3(text: string): string {
   return `<h3 class="scp-h3">${escapeHtml(text)}</h3>`;
+}
+
+/**
+ * Promote a panel's own heading to the page's <h1>.
+ *
+ * Every section opens with `h2()` — "Jacoby Brissett Stats 2026" and its six
+ * siblings — because the fragment is normally mounted in a page that already
+ * has an H1 of its own. On a section address the host prints that same phrase
+ * in the theme's title and the reader sees it twice: once in the theme's serif
+ * at the top, once here with the gold rule under it, saying the same words.
+ *
+ * Where the host has agreed to stand down (the plugin's "the tool supplies the
+ * heading" mode empties the theme's title), the panel's heading IS the page's
+ * heading and should be marked up as one. Only the class stays — the styling is
+ * `.scp-h2` in both cases, so this changes the document outline and nothing a
+ * reader can see.
+ *
+ * The FIRST match only, and only ever one panel's worth: a section page renders
+ * one panel, and the all-tabs page promotes just the panel it opens on, so the
+ * document has exactly one H1 either way.
+ */
+function promoteHeading(html: string): string {
+  return html.replace(
+    /<h2 class="scp-h2">([\s\S]*?)<\/h2>/,
+    '<h1 class="scp-h2">$1</h1>',
+  );
 }
 
 /**
@@ -5381,7 +5418,9 @@ export function renderPlayerPage(
       renderFormatToggle(data, options) +
       `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
-      ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
+      ` id="${escapeHtml(scoped.id)}">` +
+      (options.ownHeading ? promoteHeading(scoped.html) : scoped.html) +
+      `</section>` +
       back +
       renderPositionPeers(data, options) +
       renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
@@ -5397,7 +5436,11 @@ export function renderPlayerPage(
       (section, i) =>
         `<section class="scp-section${i === 0 ? " is-default is-active" : ""}"` +
         ` data-scp-panel id="${escapeHtml(section.id)}"` +
-        ` aria-labelledby="${escapeHtml(section.id)}-tab">${section.html}</section>`,
+        ` aria-labelledby="${escapeHtml(section.id)}-tab">` +
+        // Only the panel the page opens on. The other six keep their <h2>, so
+        // the document has one H1 whichever tab a reader switches to.
+        (options.ownHeading && i === 0 ? promoteHeading(section.html) : section.html) +
+        `</section>`,
     )
     .join("");
 

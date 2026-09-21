@@ -46,7 +46,7 @@ const STATCHASERS_H1_OPTION = 'statchasers_h1_verdict';
 const STATCHASERS_H1_MODE_OPTION = 'statchasers_h1_mode';
 
 /** The modes that are a mode. Anything else read from the option is 'auto'. */
-const STATCHASERS_H1_MODES = array( 'auto', 'on', 'replace', 'off' );
+const STATCHASERS_H1_MODES = array( 'auto', 'on', 'replace', 'tool', 'off' );
 
 /** Seconds to wait on the loopback request. */
 const STATCHASERS_H1_TIMEOUT = 10;
@@ -389,7 +389,9 @@ function statchasers_h1_should_print( string $tool = '' ): bool {
 		return true;
 	}
 
-	if ( 'off' === $mode ) {
+	// The tool prints the page's heading itself, out of its own markup, so the
+	// plugin adds nothing above it. See statchasers_h1_tool_supplies_heading().
+	if ( 'off' === $mode || 'tool' === $mode ) {
 		return false;
 	}
 
@@ -462,7 +464,34 @@ function statchasers_h1_measurement_for( array $verdict, string $tool ): ?array 
  * reader is on.
  */
 function statchasers_h1_should_replace(): bool {
-	return 'replace' === statchasers_h1_mode() && statchasers_h1_should_print();
+	$mode = statchasers_h1_mode();
+
+	// `tool` empties the theme's title too, but for the opposite reason: not so
+	// the plugin can print a heading in its place, but so the fragment's own
+	// section heading can be the page's <h1> without the theme printing the
+	// same phrase above it.
+	if ( 'tool' === $mode ) {
+		return true;
+	}
+
+	return 'replace' === $mode && statchasers_h1_should_print();
+}
+
+/**
+ * Does the mounted tool supply the page's <h1> itself?
+ *
+ * The player fragment opens each section with "<player> Stats 2026" and its
+ * siblings, normally as an <h2> because the host page has the <h1>. On a
+ * section address the theme prints that same phrase as the page title, so the
+ * reader sees it twice — once in the theme's serif at the top, once with the
+ * gold rule under it below the tab strip.
+ *
+ * In this mode the theme's title is emptied and the fragment is asked for the
+ * promoted markup instead (`?h1=1`), so the heading a reader can see IS the
+ * page's heading. One phrase, once, in the tool's own type.
+ */
+function statchasers_h1_tool_supplies_heading(): bool {
+	return 'tool' === statchasers_h1_mode();
 }
 
 /**
@@ -897,6 +926,7 @@ function statchasers_h1_panel(): void {
 		'auto'    => 'Follow the check (recommended) — print a heading only when the theme prints none.',
 		'on'      => 'Always print a heading from the shortcode. Use this where the template prints no title of its own.',
 		'replace' => 'Print the heading <strong>and empty the theme\'s page title</strong> — for a theme that prints one from its template with no layout to remove it from. The emptied heading is hidden with a rule this plugin prints; a theme that pads its title with whitespace will need one line of CSS of its own.',
+		'tool'    => '<strong>Let the tool supply the heading</strong> — empties the theme\'s page title and promotes the section heading the tool already prints (&#8220;Jacoby Brissett Stats 2026&#8221;, with the gold rule) to the page\'s H1. One heading, in the tool\'s own type, instead of the same phrase twice. Applies to player pages and team hubs; the other tools are unaffected.',
 		'off'     => 'Never print one; the theme supplies the H1.',
 	) as $value => $label ) {
 		printf(

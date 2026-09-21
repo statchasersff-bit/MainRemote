@@ -216,7 +216,17 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	// whichever is requested first wins for both.
 	// The Game Log's season is in the key for the same reason the section is: it
 	// changes the table, and two readers on two seasons must not share a render.
-	$key        = md5( $origin . '|' . $slug . '|' . $format . '|' . $section . '|' . $log );
+	// The heading mode is in the key for the same reason the section is: it
+	// changes the markup the API returns — one panel's <h2> comes back as the
+	// page's <h1> — and a fragment cached under one mode must not be served
+	// under the other.
+	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+
+	$key        = md5(
+		$origin . '|' . $slug . '|' . $format . '|' . $section . '|' . $log .
+		'|' . ( $own_heading ? 'h1' : '' )
+	);
 	$cache_key  = 'sc_player_ssr_' . $key;
 	$backup_key = 'sc_player_ssr_bak_' . $key;
 
@@ -234,6 +244,9 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	}
 	if ( '' !== $log ) {
 		$url = add_query_arg( 'log', $log, $url );
+	}
+	if ( $own_heading ) {
+		$url = add_query_arg( 'h1', '1', $url );
 	}
 
 	$response = wp_remote_get(
