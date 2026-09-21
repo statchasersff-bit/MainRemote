@@ -962,3 +962,111 @@ body.scf-page {
 .scf :is(ul, ol, li) {
   list-style: none !important;
 }
+
+/* ====================================================================== */
+/* Theme armour                                                            */
+/*                                                                         */
+/* Every declaration below RESTATES one already made above, at a           */
+/* specificity a host theme cannot reach. Nothing here is a new design     */
+/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* this block is the one that is wrong.                                    */
+/*                                                                         */
+/* Standalone this file is the only stylesheet and none of it does         */
+/* anything. Embedded, the fragment is printed inside somebody else's      */
+/* content area, and Divi styles BARE ELEMENTS in there:                   */
+/*                                                                         */
+/*     .entry-content table  { border: 1px solid #eee; margin: 0 0 15px }  */
+/*     .entry-content tr td  { border-top: 1px solid #eee; padding: 6px }  */
+/*     .entry-content tr th  { padding: 9px 24px }                         */
+/*     .entry-content a      { color: #2ea3f2 }                            */
+/*     .entry-content button { color: #666 }                               */
+/*                                                                         */
+/* Which of ours those beat is a specificity question with three answers.  */
+/* `.scf-cell` is one class and loses to one class plus two elements.      */
+/* `.scf-table thead th` TIES, and a tie is settled by which stylesheet    */
+/* WordPress enqueued last — ours, today, which is not a thing this file   */
+/* should be betting the layout on. And `border-top` we never declare at   */
+/* all, so the theme's is simply adopted.                                  */
+/*                                                                         */
+/* Two symptoms were reported from the live site and both are here: the    */
+/* column headers went grey (Divi colouring the <button> the sort control  */
+/* is built from — `.scf-sort` sets `color: inherit`, and a theme's        */
+/* `button` rule outranks it) and every row grew (Divi's 6px cell padding  */
+/* replacing our 2px, over 32 rows).                                       */
+/*                                                                         */
+/* Bare-element PADDING on p/headings/lists is already armed by the        */
+/* `:where()` reset near the top of this file; nothing about it here.      */
+/* ====================================================================== */
+
+/* The table's own frame. `.scf-table` is one class and loses to
+   `.entry-content table`, which takes the outer border, the radius and the
+   width with it, and adds 15px of margin underneath. */
+.scf .scf-table {
+  width: 100%;
+  border: 1px solid var(--sc-border);
+  border-radius: 8px;
+  margin: 0;
+}
+
+/* Row density. The table is meant to be read in one screenful; a theme's
+   comfortable 6px is several rows' worth of scroll across 32 of them. */
+.scf-table .scf-cell,
+.scf-table .scf-team,
+.scf-table .scf-games {
+  padding: var(--scf-cell-pad-y) 10px;
+}
+
+/* This table draws its grid with right and bottom lines only — see "The inner
+   grid" above. A theme's `border-top` is a line it never asked for, and
+   because nothing above declares that side, there is nothing to outrank it. */
+.scf-table thead th,
+.scf-table tbody th,
+.scf-table tbody td {
+  border-top: 0;
+}
+
+/* The header band, and the sort control the bundle builds inside it. */
+.scf-table thead th {
+  padding: 5px 10px;
+  color: #fff;
+}
+
+.scf-table thead th .scf-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.scf-table thead th .scf-sort:hover {
+  color: var(--sc-gold-soft);
+}
+
+/* Links. Each of these is a brand colour doing a job — the muted pill, the
+   active pill, the gold-ruled CSV, the team's navy — and a theme's one link
+   blue flattens the distinction between all four. */
+.scf .scf-opt {
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.scf .scf-opt.is-active {
+  color: #fff;
+}
+
+.scf .scf-csv {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.scf .scf-team-link {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.scf .scf-team-link:hover {
+  color: var(--sc-gold-deep);
+}
