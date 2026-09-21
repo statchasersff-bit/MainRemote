@@ -92,6 +92,7 @@ function checked( $a, $b, $echo = true ) { return $a === $b ? ' checked' : ''; }
 function wp_nonce_field( $a ) {}
 // Container bodies, keyed by post id. statchasers_index_state() reads them.
 function get_post_field( $field, $id = 0 ) { return $GLOBALS['post_content_by_id'][ (int) $id ] ?? ''; }
+function delete_post_meta( $id, $key ) { $GLOBALS['deleted_meta'][] = $key; return true; }
 function check_admin_referer( $a ) {}
 function wp_safe_redirect( $u ) {}
 function admin_url( $p = '' ) { return 'https://example.com/wp-admin/' . $p; }
@@ -398,6 +399,32 @@ is(
 	statchasers_team_index_is_stub( $stub2 . '[contact_form]' ),
 	false,
 	'but a real shortcode still stops it'
+);
+
+/*
+ * A page builder's wrapper is packaging, not a mount.
+ *
+ * Opening the generated stub in Divi wraps the same words in [et_pb_section]
+ * and friends. Reading that as "somebody arranged this page" is what left
+ * /nfl/teams/ alone through three releases — and it is the same wrapper that
+ * put the grid in the footer, because the_content appends after the closing
+ * [/et_pb_section], below every section the builder laid out.
+ */
+$wrapped = '[et_pb_section][et_pb_row][et_pb_column][et_pb_text]' . $stub2 . '[/et_pb_text][/et_pb_column][/et_pb_row][/et_pb_section]';
+
+is( statchasers_index_is_builder_content( $wrapped ), true, 'the body is inside a builder wrapper' );
+is( statchasers_index_has_shortcode( $wrapped ), false, 'and the wrapper is not somebody\'s mount' );
+is( statchasers_team_index_is_stub( $wrapped ), true, 'so a builder-wrapped stub is still the stub' );
+
+// A real mount inside a builder wrapper is still a real mount.
+$wrapped_mount = '[et_pb_section][et_pb_text]' . $stub2 . '[contact_form][/et_pb_text][/et_pb_section]';
+is( statchasers_index_has_shortcode( $wrapped_mount ), true, 'a real shortcode inside a wrapper still counts' );
+is( statchasers_team_index_is_stub( $wrapped_mount ), false, 'and still stops the rewrite' );
+
+is(
+	statchasers_index_shortcode_tags( $wrapped ),
+	array( 'et_pb_section', 'et_pb_row', 'et_pb_column', 'et_pb_text' ),
+	'the tags are named for the screen'
 );
 
 echo "\nwebfont\n";
