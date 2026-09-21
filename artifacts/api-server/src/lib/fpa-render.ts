@@ -32,7 +32,7 @@
  * the full derivation.
  */
 
-import { escapeHtml } from "./render";
+import { escapeHtml, escapeJsonLd } from "./render";
 import type { FpaRow, FpaTableData, FpaView } from "./fpa/fpa-data";
 import { FANTASY_POSITIONS, type ScoringFormat } from "./fpa/nflverse";
 
@@ -44,10 +44,39 @@ export interface FpaRenderOptions {
   embed?: boolean;
   /** Where the control links point. Defaults to this app's own /fpa. */
   basePath?: string;
+  /**
+   * Where the CSV lives. Defaults to this app's own /fpa.
+   *
+   * Deliberately NOT `basePath`. That one is a WordPress page path once
+   * SC_FPA_PATH is set, and the CSV is not a WordPress page — it is a route on
+   * this server. Building it from `basePath` produced
+   * `/nfl/fantasy-points-allowed-by-position//download.csv`, which is not a
+   * path on the site at all: a browser reads a leading `//` as
+   * protocol-relative and goes looking for a HOST called `download.csv`.
+   *
+   * So the embed passes an absolute URL to this origin, for the same reason
+   * `endpoint` does, and the standalone page leaves it at the default.
+   */
+  csvBase?: string;
   /** Where a team link points. Defaults to this app's own /team/. */
   teamPathPrefix?: string;
   /** Carried onto internal links so embed mode stays embed mode. */
   linkQuery?: string;
+  /**
+   * Where the bundle fetches the other five combinations from.
+   *
+   * The controls are real links and stay real links — but a click on one
+   * should not change the address of the page a reader is on, so the bundle
+   * intercepts it and swaps the table in place instead. To do that it needs
+   * an address for the fragment, and it cannot derive one: embedded, this
+   * markup is printed inside a statchasers.com page, and `/embed/fpa` there
+   * resolves against WordPress rather than against this app. So the server
+   * says where it lives, absolute for the embed and relative for its own page.
+   *
+   * Left unset the bundle does nothing and every control navigates, which is
+   * what a reader with scripting off gets either way.
+   */
+  endpoint?: string;
   /** Rendered for testability; the cache keys on the data, not on this. */
   now?: number;
 }
@@ -171,6 +200,11 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
       abbr?: string;
       title: string;
       active: boolean;
+      /* What this option selects, for the bundle. Stated rather than parsed
+         back out of the href: that href points at the WordPress page once
+         SC_FPA_PATH is set, and reading state out of somebody else's URL is
+         guessing. */
+      data: string;
     }[],
   ): string =>
     `<div class="scf-control">` +
@@ -181,6 +215,7 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
         (item) =>
           `<a class="scf-opt${item.active ? " is-active" : ""}"` +
           ` href="${escapeHtml(item.href)}"` +
+          item.data +
           ` title="${escapeHtml(item.title)}"` +
           (item.active ? ` aria-current="true"` : ` rel="nofollow"`) +
           `>${optionText(item.text, item.abbr)}</a>`,
@@ -196,6 +231,7 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
       abbr: FORMAT_ABBR[format],
       title: `Recompute every figure in ${FORMAT_LABELS[format]} scoring`,
       active: format === data.format,
+      data: ` data-scf-format="${escapeHtml(format)}"`,
     }),
   );
 
@@ -207,6 +243,7 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
         ? "Points allowed per game, as measured"
         : "The same, corrected for the strength of the offenses each defense faced",
     active: view === data.view,
+    data: ` data-scf-view="${escapeHtml(view)}"`,
   }));
 
   return (
@@ -219,7 +256,8 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
     group("View", views) +
     `</div>` +
     `<a class="scf-csv" href="${escapeHtml(
-      `${base}/download.csv?format=${data.format}&view=${data.view}`,
+      `${(options.csvBase ?? "/fpa").replace(/\/+$/, "")}` +
+        `/download.csv?format=${data.format}&view=${data.view}`,
     )}" rel="nofollow" download>Download CSV</a>` +
     `</div>`
   );
@@ -368,106 +406,203 @@ function renderLegend(): string {
  * is adjusted fantasy points allowed" gets their answer either way; somebody
  * who came to read the table should not have to scroll past an essay first.
  */
-const FAQ: readonly (readonly [string, string])[] = [
+const FAQ: readonly (readonly [string, readonly string[]])[] = [
   [
-    "What is Fantasy Points Allowed in fantasy football?",
-    "Fantasy Points Allowed, or FPA, measures how many fantasy points a defense " +
-      "gives up to a specific position. A higher FPA generally means the matchup " +
-      "has been more favorable for fantasy production, while a lower FPA suggests " +
-      "the defense has limited that position more effectively.",
+    "What is Fantasy Points Allowed by position?",
+    [
+      "Fantasy Points Allowed by position shows how many fantasy points each NFL " +
+        "defense allows to opposing quarterbacks, running backs, wide receivers " +
+        "and tight ends.",
+      "It helps fantasy managers identify favorable and difficult weekly matchups " +
+        "by position.",
+    ],
+  ],
+  [
+    "Which NFL teams allow the most fantasy points by position?",
+    [
+      "Teams near the top of the Fantasy Points Allowed rankings have surrendered " +
+        "the most fantasy production to that position. The table opens sorted by " +
+        "OFF, so the softest overall matchups are already at the top.",
+      "Sort by the QB, RB, WR or TE column to put the defenses that have been the " +
+        "most favorable matchups for that one position first.",
+    ],
+  ],
+  [
+    "Which NFL teams allow the fewest fantasy points by position?",
+    [
+      "Teams allowing the fewest fantasy points to a position have generally been " +
+        "tougher fantasy matchups. They rank nearest 32 and carry the red tints in " +
+        "the table.",
+      "A low FPA can help identify difficult matchups, but player workload, talent, " +
+        "injuries and game environment should still be considered.",
+    ],
+  ],
+  [
+    "Which teams allow the most fantasy points to RBs?",
+    [
+      "Use the RB Fantasy Points Allowed rankings to see which NFL defenses have " +
+        "surrendered the most fantasy production to opposing running backs.",
+      "You can compare teams in either the FPA or aFPA view and select the scoring " +
+        "format that matches your league.",
+    ],
+  ],
+  [
+    "Which teams allow the most fantasy points to WRs?",
+    [
+      "The WR Fantasy Points Allowed rankings show which defenses have allowed the " +
+        "most fantasy production to opposing wide receivers.",
+      "This can help identify favorable wide receiver matchups for weekly start/sit " +
+        "decisions.",
+    ],
+  ],
+  [
+    "Which teams allow the most fantasy points to QBs?",
+    [
+      "The QB Fantasy Points Allowed rankings show which NFL defenses have allowed " +
+        "the most fantasy production to opposing quarterbacks.",
+      "A higher FPA generally indicates a more favorable quarterback matchup.",
+    ],
+  ],
+  [
+    "Which teams allow the most fantasy points to TEs?",
+    [
+      "The TE Fantasy Points Allowed rankings show which defenses have surrendered " +
+        "the most fantasy production to opposing tight ends.",
+      "Because tight end production can be volatile, matchup data can be especially " +
+        "useful when choosing between similarly projected players.",
+    ],
+  ],
+  [
+    "What does FPA mean in fantasy football?",
+    [
+      "FPA stands for Fantasy Points Allowed.",
+      "It measures the fantasy production an NFL defense has allowed to opposing " +
+        "players, and is usually broken down by position.",
+    ],
+  ],
+  [
+    "Is a higher Fantasy Points Allowed number better?",
+    [
+      "Generally, yes. A higher FPA means a defense has allowed more fantasy points " +
+        "to that position, which usually represents a more favorable matchup.",
+      "A lower FPA usually indicates a more difficult matchup.",
+    ],
   ],
   [
     "What is Adjusted Fantasy Points Allowed?",
-    "Adjusted Fantasy Points Allowed, or aFPA, adjusts raw FPA for strength of " +
-      "schedule. Instead of treating every opponent equally, it accounts for " +
-      "whether a defense has faced strong or weak offenses. This makes it easier " +
-      "to compare defenses that have played very different schedules.",
+    [
+      "Adjusted Fantasy Points Allowed, or aFPA, accounts for the strength of the " +
+        "opponents a defense has faced.",
+      "A defense that has faced several elite offenses may have a high raw FPA even " +
+        "if the defense itself is not particularly weak. Adjusted FPA adds that " +
+        "opponent context to provide a better view of matchup difficulty.",
+    ],
   ],
   [
-    "Is a higher Fantasy Points Allowed number better for fantasy players?",
-    "Usually, yes. A higher FPA means that defense has allowed more fantasy " +
-      "production to the position you are evaluating. For example, a defense " +
-      "ranked near the top in FPA allowed to wide receivers may represent a more " +
-      "favorable matchup for opposing WRs.",
+    "What is the difference between Raw FPA and Adjusted FPA?",
+    [
+      "Raw FPA measures how many fantasy points a defense has actually allowed. " +
+        "Adjusted FPA accounts for the quality of the opponents that produced those " +
+        "points.",
+      "Raw FPA tells you what happened. Adjusted FPA helps provide context for why " +
+        "it happened. The View switch above the table holds both, labelled FPA and " +
+        "aFPA.",
+    ],
   ],
   [
-    "What does a low FPA mean?",
-    "A low FPA means a defense has allowed relatively few fantasy points to that " +
-      "position. That can indicate a more difficult matchup, although FPA should " +
-      "be considered alongside player talent, usage, injuries, game environment " +
-      "and sample size.",
+    "How do I use Fantasy Points Allowed for start/sit decisions?",
+    [
+      "Fantasy Points Allowed can help separate close lineup decisions.",
+      "If two players have similar projections and expected workloads, the player " +
+        "facing a defense that allows more fantasy points to his position may have " +
+        "the more favorable matchup. FPA should be used alongside projections, " +
+        "usage, injuries and game environment rather than as the only factor.",
+    ],
   ],
   [
-    "What is the difference between Raw and Adjusted FPA?",
-    "Raw FPA shows the fantasy points a defense has actually allowed. Adjusted " +
-      "FPA accounts for the quality of the offenses and players that defense has " +
-      "faced. Raw FPA tells you what happened; adjusted FPA provides more context " +
-      "for how difficult the schedule was.",
+    "Can I see Fantasy Points Allowed for PPR, Half-PPR and Standard scoring?",
+    [
+      "Yes. Fantasy Points Allowed changes with the scoring format, because " +
+        "receptions are worth different amounts in PPR, Half-PPR and Standard " +
+        "leagues.",
+      "Use the scoring controls above the table to select the format that matches " +
+        "your league before comparing defensive matchups.",
+    ],
+  ],
+  [
+    "Does Fantasy Points Allowed predict future fantasy performance?",
+    [
+      "Not by itself.",
+      "Fantasy Points Allowed describes how defenses have performed against a " +
+        "position so far. Future results also depend on player usage, injuries, " +
+        "offensive strength, game script and other factors. FPA is best used as a " +
+        "matchup indicator rather than a standalone fantasy projection.",
+    ],
   ],
   [
     "How are Fantasy Points Allowed rankings calculated?",
-    "Teams are ranked by the amount of fantasy production they allow at each " +
-      "position. StatChasers tracks FPA separately for quarterbacks, running " +
-      "backs, wide receivers and tight ends, then ranks every NFL defense against " +
-      "the rest of the league.",
-  ],
-  [
-    "Can I view Fantasy Points Allowed for PPR, Half-PPR and Standard scoring?",
-    "Yes. Use the scoring controls above the table to switch between Standard, " +
-      "Half-PPR and PPR scoring. Rankings and fantasy points allowed will update " +
-      "based on the selected scoring format.",
+    [
+      "Teams are ranked by the amount of fantasy production they allow at each " +
+        "position. StatChasers tracks FPA separately for quarterbacks, running " +
+        "backs, wide receivers and tight ends, then ranks every NFL defense against " +
+        "the rest of the league.",
+      "Rank 1 is the most points allowed, which is the softest matchup, and rank 32 " +
+        "is the fewest.",
+    ],
   ],
   [
     "Why are early-season FPA rankings blended with last season?",
-    "Early in the NFL season, one or two games can create misleading rankings. " +
+    [
+      "Early in the NFL season, one or two games can create misleading rankings.",
       "StatChasers uses the previous season as a preseason baseline and gradually " +
-      "increases the weight of current-season data as the sample becomes more " +
-      "reliable.",
+        "increases the weight of current-season data as the sample becomes more " +
+        "reliable. The note above the table always says what the figures currently " +
+        "are a mix of.",
+    ],
   ],
   [
     "When does current-season data fully replace the preseason baseline?",
-    "The weighting changes throughout the season. Early weeks use a blend of the " +
-      "previous season and current results, while later weeks rely increasingly " +
-      "on current-season and recent rolling data.",
-  ],
-  [
-    "How should I use Fantasy Points Allowed for start/sit decisions?",
-    "FPA is best used as a matchup tool, not as the only reason to start or bench " +
-      "a player. Combine matchup strength with expected volume, role, injuries, " +
-      "projected game script and the player\u2019s normal fantasy production.",
-  ],
-  [
-    "Does a favorable FPA matchup guarantee a good fantasy performance?",
-    "No. FPA describes how a defense has performed against a position, but " +
-      "individual outcomes can vary significantly. A strong matchup improves the " +
-      "environment, but player usage and game conditions still matter.",
+    [
+      "The weighting changes throughout the season. Early weeks use a blend of the " +
+        "previous season and current results, while later weeks rely increasingly " +
+        "on current-season and recent rolling data.",
+    ],
   ],
   [
     "What does OFF mean in the table?",
-    "OFF represents the overall fantasy production allowed by each defense across " +
-      "the tracked fantasy positions. It provides a quick way to compare the " +
-      "general strength or weakness of each defensive matchup.",
+    [
+      "OFF represents the overall fantasy production allowed by each defense across " +
+        "the tracked fantasy positions. It provides a quick way to compare the " +
+        "general strength or weakness of each defensive matchup.",
+    ],
   ],
   [
     "How often are Fantasy Points Allowed rankings updated?",
-    "The rankings should be updated as new NFL games are completed so that both " +
-      "raw and adjusted FPA reflect the latest available results and matchup data.",
+    [
+      "The rankings should be updated as new NFL games are completed, so that both " +
+        "raw and adjusted FPA reflect the latest available results and matchup data.",
+    ],
   ],
 ] as const;
 
 function renderFaq(): string {
   // One fold per question, not one around the lot. The questions are the index
   // — somebody scanning for the one they arrived with has to see them without
-  // opening anything — while thirteen ANSWERS below the table is the wall this
+  // opening anything — while nineteen ANSWERS below the table is the wall this
   // fold exists to prevent. So the questions show and the answers are shut.
   // Indexed either way: a crawler reads the DOM, not the open state.
   const items = FAQ.map(
-    ([question, answer]) =>
+    ([question, paragraphs]) =>
       `<details class="scf-faq-item">` +
       `<summary class="scf-faq-q-row">` +
       `<h3 class="scf-faq-q">${escapeHtml(question)}</h3>` +
       `</summary>` +
-      `<p class="scf-faq-a">${escapeHtml(answer)}</p>` +
+      // One .scf-faq-a per question even when the answer runs to two
+      // paragraphs: the block is the answer, and the <p>s inside it are its
+      // shape. A second sibling .scf-faq-a would be a second answer.
+      `<div class="scf-faq-a">` +
+      paragraphs.map((text) => `<p>${escapeHtml(text)}</p>`).join("") +
+      `</div>` +
       `</details>`,
   ).join("");
 
@@ -476,6 +611,64 @@ function renderFaq(): string {
     `<h2 class="scf-faq-title">Fantasy Points Allowed FAQ</h2>` +
     `<div class="scf-faq-body">${items}</div>` +
     `</section>`
+  );
+}
+
+/**
+ * The page's FAQPage node, or the inert island the plugin builds it from.
+ *
+ * Same two-mode arrangement as team-render.ts's faqSchema() and
+ * rankings-render.ts's renderFaqSchema(), for the reason given at length in the
+ * first: standalone this page owns its document and emits the node itself;
+ * embedded, WordPress owns the document and Rank Math owns its graph, so a
+ * second `<script type="application/ld+json">` arriving from inside a mounted
+ * fragment competes with that graph instead of joining it — the same reasoning
+ * as the embed mount adding no canonical and no H1. The island is the same
+ * questions as data, and statchasers-fpa.php lifts them into the one <script>
+ * the host page already prints, then strips the island.
+ *
+ * Data rather than the plugin re-reading the rendered markup: by then every
+ * answer has been escaped for display, and un-escaping prose in PHP to feed a
+ * crawler is a worse job than handing over the array it was built from.
+ *
+ * The two-paragraph answers join with a space rather than shipping an array.
+ * `acceptedAnswer.text` is one string, every paragraph here is a complete
+ * sentence, and a rule followed by its qualification reads as one answer when
+ * the break is taken out — which is the whole of what a crawler gets.
+ *
+ * The standalone page ships `noindex, indexifembedded`, so this node is not
+ * what ranks — the WordPress copy is. It is emitted anyway because a page that
+ * describes itself only when embedded is a page whose structured data nobody
+ * can check without WordPress in front of it.
+ */
+function renderFaqSchema(options: FpaRenderOptions): string {
+  const items = FAQ.map(([question, paragraphs]) => ({
+    q: question,
+    a: paragraphs.join(" "),
+  }));
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="scf-faq-data">` +
+      escapeJsonLd(JSON.stringify(items)) +
+      `</script>`
+    );
+  }
+
+  return (
+    `<script type="application/ld+json">` +
+    escapeJsonLd(
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((entry) => ({
+          "@type": "Question",
+          name: entry.q,
+          acceptedAnswer: { "@type": "Answer", text: entry.a },
+        })),
+      }),
+    ) +
+    `</script>`
   );
 }
 
@@ -489,13 +682,20 @@ export function renderFpaPage(
     `<div class="scf${options.embed ? " is-embed" : ""}" data-scf-root="1"` +
     ` data-season="${escapeHtml(String(data.season))}"` +
     ` data-format="${escapeHtml(data.format)}"` +
-    ` data-view="${escapeHtml(data.view)}">` +
+    ` data-view="${escapeHtml(data.view)}"` +
+    (options.endpoint
+      ? ` data-scf-endpoint="${escapeHtml(options.endpoint)}"`
+      : "") +
+    `>` +
     renderControls(data, options) +
     renderDataMode(data) +
     renderTable(data, options) +
     renderLegend() +
     renderFaq() +
-    `</div>`
+    `</div>` +
+    // Outside the root div, like the other tools put it: the node describes the
+    // page, and the plugin strips the embedded form before printing anyway.
+    renderFaqSchema(options)
   );
 }
 

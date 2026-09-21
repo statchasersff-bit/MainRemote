@@ -65,12 +65,51 @@ const STATCHASERS_FPA_FORMATS = array( 'standard', 'half', 'ppr' );
 const STATCHASERS_FPA_VIEWS = array( 'raw', 'adjusted' );
 
 /**
+ * One of a fixed set, read off the query string.
+ *
+ * The table's scoring and view controls are ordinary links, and the bundle
+ * intercepts them so that changing format does not change the address of the
+ * page. This is what happens when it cannot: scripting off, or a click that
+ * landed before the bundle did. Without it the link goes somewhere that renders
+ * the DEFAULT table, which is a control that appears to work and does not.
+ *
+ * Display state only — which of six renderings of one table to draw. It reads
+ * nothing about the reader, writes nothing, and anything not in $allowed is
+ * dropped rather than corrected, so no nonce is involved and no value from the
+ * URL reaches the API unvalidated.
+ *
+ * @param string   $key     Query variable to read.
+ * @param string[] $allowed The values that mean anything.
+ * @return string The value, or '' when it is absent or not one of them.
+ */
+function statchasers_fpa_query_choice( string $key, array $allowed ): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
+	if ( ! isset( $_GET[ $key ] ) ) {
+		return '';
+	}
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
+	$value = strtolower( trim( sanitize_text_field( wp_unslash( $_GET[ $key ] ) ) ) );
+
+	return in_array( $value, $allowed, true ) ? $value : '';
+}
+
+/**
  * Normalise the shortcode attributes.
+ *
+ * Precedence is attribute, then query string, then default. A page that writes
+ * `[statchasers_fpa format="ppr"]` has made a decision about what that page
+ * shows, and a URL should not be able to overrule it; a page that wrote no
+ * attribute has not, so the link the reader followed decides.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
  * @return array{format:string,view:string,season:int}
  */
 function statchasers_fpa_args( array $atts ): array {
+	// Which keys the page set, asked BEFORE shortcode_atts fills in the rest —
+	// afterwards "absent" and "set to the default" are the same string.
+	$given = array_change_key_case( $atts, CASE_LOWER );
+
 	$atts = shortcode_atts(
 		array(
 			'format' => 'half',
@@ -82,11 +121,23 @@ function statchasers_fpa_args( array $atts ): array {
 	);
 
 	$format = strtolower( trim( (string) $atts['format'] ) );
+	if ( ! isset( $given['format'] ) ) {
+		$from_url = statchasers_fpa_query_choice( 'format', STATCHASERS_FPA_FORMATS );
+		if ( '' !== $from_url ) {
+			$format = $from_url;
+		}
+	}
 	if ( ! in_array( $format, STATCHASERS_FPA_FORMATS, true ) ) {
 		$format = 'half';
 	}
 
 	$view = strtolower( trim( (string) $atts['view'] ) );
+	if ( ! isset( $given['view'] ) ) {
+		$from_url = statchasers_fpa_query_choice( 'view', STATCHASERS_FPA_VIEWS );
+		if ( '' !== $from_url ) {
+			$view = $from_url;
+		}
+	}
 	if ( ! in_array( $view, STATCHASERS_FPA_VIEWS, true ) ) {
 		$view = 'raw';
 	}
@@ -375,12 +426,223 @@ function statchasers_fpa_shortcode( $atts = array() ): string {
 	 */
 	return (string) apply_filters(
 		'statchasers_fpa_fragment_html',
-		$data['html'],
+		statchasers_fpa_strip_faq_data( (string) $data['html'] ),
 		$args['format'],
 		$args['view']
 	);
 }
 add_shortcode( STATCHASERS_FPA_SHORTCODE, 'statchasers_fpa_shortcode' );
+
+/* ------------------------------------------------------------- faq schema */
+
+/**
+ * The questions this request's FPA fragment is carrying.
+ *
+ * Same shape as the rankings file's equivalent, and simpler than the team hub's
+ * for the same reason: one mount, one fragment, one FAQ. The questions describe
+ * fantasy points allowed, not the open view, so this passes NO attributes and
+ * takes whatever statchasers_fpa_args() makes of that — which on a page that
+ * writes no attributes of its own is the same combination the shortcode is
+ * about to ask for, query string included, and therefore the same cached fetch.
+ * A page that hard-codes format="ppr" costs one extra fetch against a
+ * fifteen-minute TTL, and asks the same nineteen questions either way.
+ *
+ * Memoised because the Rank Math filter and the fallback printer both ask.
+ *
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_fpa_faq_items(): array {
+	static $items = null;
+
+	if ( null !== $items ) {
+		return $items;
+	}
+
+	$items = array();
+
+	if ( ! statchasers_fpa_post_has_shortcode() ) {
+		return $items;
+	}
+
+	$data = statchasers_fpa_fetch( statchasers_fpa_args( array() ) );
+
+	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
+		return $items;
+	}
+
+	$items = statchasers_fpa_faq_parse( (string) $data['html'] );
+
+	return $items;
+}
+
+/**
+ * Pull the Q&A island out of a rendered fragment.
+ *
+ * Validated rather than trusted, for the reason statchasers_team_faq_parse()
+ * gives: it is our own origin, but this ends up in the page's structured data
+ * and a malformed island should drop an entry rather than emit a broken node.
+ *
+ * @param string $html Rendered fragment.
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_fpa_faq_parse( string $html ): array {
+	$items = array();
+
+	if ( false === strpos( $html, 'scf-faq-data' ) ) {
+		return $items;
+	}
+
+	$found = preg_match_all(
+		'#<script type="application/json" class="scf-faq-data">(.*?)</script>#s',
+		$html,
+		$matches
+	);
+
+	if ( ! $found ) {
+		return $items;
+	}
+
+	foreach ( $matches[1] as $json ) {
+		$decoded = json_decode( $json, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		foreach ( $decoded as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['q'], $entry['a'] ) ) {
+				continue;
+			}
+			if ( ! is_string( $entry['q'] ) || ! is_string( $entry['a'] ) ) {
+				continue;
+			}
+
+			$question = trim( wp_strip_all_tags( $entry['q'] ) );
+			$answer   = trim( wp_strip_all_tags( $entry['a'] ) );
+
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $question,
+				'a' => $answer,
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+ * One FAQPage node from the questions this request is carrying.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null Null when there is nothing to describe.
+ */
+function statchasers_fpa_faq_node( string $webpage_id = '' ) {
+	$items = statchasers_fpa_faq_items();
+
+	if ( empty( $items ) ) {
+		return null;
+	}
+
+	$questions = array();
+	foreach ( $items as $item ) {
+		$questions[] = array(
+			'@type'          => 'Question',
+			'name'           => $item['q'],
+			'acceptedAnswer' => array(
+				'@type' => 'Answer',
+				'text'  => $item['a'],
+			),
+		);
+	}
+
+	$node = array(
+		'@type'      => 'FAQPage',
+		'mainEntity' => $questions,
+	);
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the FAQPage to Rank Math's graph.
+ *
+ * Same posture as the team, player and rankings files: append to the array Rank
+ * Math hands us, so what ships is one <script> containing one graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_fpa_rank_math_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_fpa_faq_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null === $node ) {
+		return $data;
+	}
+
+	$data['statchasersFpaFaq'] = $node;
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_fpa_rank_math_schema', 20 );
+
+/**
+ * Fallback FAQPage for sites with no schema-graph plugin.
+ *
+ * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * plugin present, WebPage and Organization are a site-wide decision somebody
+ * should make deliberately rather than something this tool improvises.
+ */
+function statchasers_fpa_print_fallback_schema(): void {
+	if ( statchasers_news_graph_provider_present() ) {
+		return;
+	}
+
+	$node = statchasers_fpa_faq_node();
+	if ( null === $node ) {
+		return;
+	}
+
+	$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+	echo '<script type="application/ld+json">' .
+		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+		'</script>' . "\n";
+}
+add_action( 'wp_head', 'statchasers_fpa_print_fallback_schema', 20 );
+
+/**
+ * Drop the Q&A island from the markup that is printed.
+ *
+ * It is a transport for the node above, and once that is built it is a second
+ * copy of every answer sitting in the page for nobody. The schema reads from
+ * the cached fetch, not from this string, so removing it here costs the node
+ * nothing.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_fpa_strip_faq_data( string $html ): string {
+	if ( false === strpos( $html, 'scf-faq-data' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace(
+		'#<script type="application/json" class="scf-faq-data">.*?</script>#s',
+		'',
+		$html
+	);
+}
 
 /**
  * Clear cached FPA renders. Called by statchasers_news_flush().

@@ -308,6 +308,71 @@ describe("fpa routes", () => {
     assert.ok(!/\bN\/A\b/.test(text));
   });
 
+  test("the controls stay links, and say what they select", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+
+    // Real links to real URLs, still. The bundle swaps the table in place so
+    // the address does not move, but a reader with scripting off — and a
+    // crawler — has to be able to reach every combination, and a middle-click
+    // has to open the one that was asked for.
+    const opts = [...doc.querySelectorAll(".scf-opt")];
+    assert.equal(opts.length, 5, "three formats and two views");
+    for (const opt of opts) {
+      assert.equal(opt.tagName, "A", "each control is a link");
+      assert.ok(opt.getAttribute("href"), "with a URL behind it");
+    }
+
+    // What each one selects is stated, not parsed back out of the href: once
+    // SC_FPA_PATH is set that href points at WordPress, and reading state out
+    // of somebody else's URL is guessing.
+    assert.deepEqual(
+      opts
+        .map((o) => o.getAttribute("data-scf-format"))
+        .filter((v) => v !== null),
+      ["standard", "half", "ppr"],
+    );
+    assert.deepEqual(
+      opts.map((o) => o.getAttribute("data-scf-view")).filter((v) => v !== null),
+      ["raw", "adjusted"],
+    );
+
+    // And the address the bundle re-fetches from. Relative here: the page and
+    // the fragment are the same origin.
+    const root = doc.querySelector("[data-scf-root]");
+    assert.equal(root.getAttribute("data-scf-endpoint"), "/embed/fpa");
+  });
+
+  test("one FAQPage, describing the questions actually rendered", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+
+    // A document gets one FAQPage. Two is the failure mode that gets structured
+    // data ignored outright rather than merged.
+    const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+    assert.equal(blocks.length, 1);
+
+    const node = JSON.parse(blocks[0].textContent);
+    assert.equal(node["@type"], "FAQPage");
+
+    assert.deepEqual(
+      node.mainEntity.map((entry) => entry.name),
+      [...doc.querySelectorAll(".scf-faq-q")].map((q) => q.textContent.trim()),
+      "the node describes the page, not a second list",
+    );
+
+    for (const entry of node.mainEntity) {
+      assert.equal(entry["@type"], "Question");
+      assert.equal(entry.acceptedAnswer["@type"], "Answer");
+      // An answer that folds to two paragraphs arrives as one string: the node
+      // is prose for a crawler, not markup.
+      assert.ok(entry.acceptedAnswer.text.length > 40);
+      assert.ok(!/<p>/.test(entry.acceptedAnswer.text));
+    }
+  });
+
   test("the other three tools are untouched", async () => {
     for (const [path, marker] of [
       ["/", "statchasers-news.js"],
@@ -322,14 +387,79 @@ describe("fpa routes", () => {
 });
 
 describe("the embedded fpa fragment", () => {
+  const INERT_FAQ =
+    /<script type="application\/json" class="scf-faq-data">.*?<\/script>/gs;
+
   test("serves markup with no document around it", async () => {
     requireData();
     const res = await get("/embed/fpa");
     assert.equal(res.status, 200);
     assert.ok(!/<html/i.test(res.body), "must not be a full document");
     assert.ok(!/<link\b/i.test(res.body), "must not carry a stylesheet");
-    assert.ok(!/<script\b/i.test(res.body), "must not carry a bundle");
+    // The FAQ's inert payload is the one <script> allowed through, on the terms
+    // rankings.test.mjs sets out for its own: it carries no code, and the plugin
+    // lifts it into Rank Math's graph and strips it before printing. Matched
+    // exactly, so a real script beside it still fails.
+    assert.ok(
+      !/<script\b/i.test(res.body.replace(INERT_FAQ, "")),
+      "must not carry a bundle",
+    );
     assert.ok(res.body.includes("data-scf-root"));
+  });
+
+  test("the CSV points at this server, not at the page it is mounted in", async () => {
+    requireData();
+    const res = await get("/embed/fpa");
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+    const href = doc.querySelector(".scf-csv").getAttribute("href");
+
+    // The CSV is a route on THIS server. Built from the page path it is
+    // mounted at — which SC_FPA_PATH makes a WordPress page path — it came out
+    // as "/nfl/fantasy-points-allowed-by-position//download.csv", and a
+    // leading "//" is not a path: a browser reads it as protocol-relative and
+    // goes looking for a host called download.csv.
+    assert.ok(!href.includes("//download.csv"), href);
+    assert.match(href, /^https?:\/\/[^/]+\/fpa\/download\.csv\?/, href);
+  });
+
+  test("the fragment's endpoint is absolute, because WordPress owns the page", async () => {
+    requireData();
+    const res = await get("/embed/fpa");
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+
+    // Printed inside a statchasers.com page, a relative /embed/fpa resolves
+    // against WordPress and 404s. Built from the request, so it is whatever
+    // origin the plugin actually reached this app on.
+    const endpoint = doc
+      .querySelector("[data-scf-root]")
+      .getAttribute("data-scf-endpoint");
+    assert.match(endpoint, /^https?:\/\/[^/]+\/embed\/fpa$/, endpoint);
+  });
+
+  test("carries the questions as data, not as a second schema graph", async () => {
+    requireData();
+    const res = await get("/embed/fpa");
+
+    // WordPress owns the document and Rank Math owns its graph. A second
+    // ld+json arriving from inside a mounted fragment competes with that graph
+    // rather than joining it — the same reasoning as no canonical and no H1.
+    assert.ok(
+      !/application\/ld\+json/i.test(res.body),
+      "the embed leaves the graph to the host page",
+    );
+
+    const island = res.body.match(
+      /<script type="application\/json" class="scf-faq-data">(.*?)<\/script>/s,
+    );
+    assert.ok(island, "the plugin needs the answers to build the node from");
+
+    const items = JSON.parse(island[1]);
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+    assert.deepEqual(
+      items.map((entry) => entry.q),
+      [...doc.querySelectorAll(".scf-faq-q")].map((q) => q.textContent.trim()),
+      "the island and the markup are the same questions",
+    );
   });
 
   test("no H1 inside a host page that already has one", async () => {
@@ -366,8 +496,8 @@ describe("the embedded fpa fragment", () => {
 
     // The block itself does not fold — the questions are the index, and
     // somebody scanning for the one they arrived with has to see them without
-    // opening anything. Each ANSWER folds instead, which is what kept thirteen
-    // paragraphs from stacking up under the table. The question sits in the
+    // opening anything. Each ANSWER folds instead, which is what keeps nineteen
+    // answers from stacking up under the table. The question sits in the
     // <summary>, so the outline is the same open or shut, and the answers stay
     // in the DOM either way: a crawler reads the DOM, not the open state.
     assert.equal(

@@ -193,6 +193,76 @@ URL to it, which reads as "View matchup goes to a blank page". Then on
       tag carries that class and not `et_right_sidebar`. Below 980px Divi
       collapses the split by itself, which is why this only shows on desktop.
 
+### Fantasy Points Allowed
+
+Unlike the hubs and the profiles there is no page to build: this is one page
+that already exists at `/nfl/fantasy-points-allowed-by-position/`. What is being
+replaced is the tool inside it, so the checks are about what the page's own HTML
+now contains.
+
+**Before touching WordPress**, on the API deployment:
+
+- [ ] `SC_FPA_PATH=/nfl/fantasy-points-allowed-by-position/` is set **on the
+      deployment**, not only the workspace. Left unset the table's own Scoring
+      and View controls point at the API's own `/fpa`, so a middle-click — or
+      any click before the bundle loads — takes the reader off the site to the
+      bare tool.
+- [ ] `SC_TEAM_PATH_PREFIX=/nfl/teams/` is set, or every defence name in the
+      table links to the bare tool instead of to its hub.
+- [ ] the ingest has run against the production database:
+      `pnpm --filter @workspace/api-server run ingest-fpa`. **Nothing renders
+      until it has.** Confirm with `curl -sI https://<api-origin>/embed/fpa` —
+      200 means there is data, 404 means there is not, and the shortcode's
+      answer to 404 is to print an empty string and leave the rest of your page
+      intact. A reader sees a page with no table; only an administrator sees why.
+
+Then on the live page, reading the **source**, not the screen — the whole point
+of the port is that the markup is in the page rather than fetched into it:
+
+- [ ] all 32 defence rows are in `view-source:`. The old build shipped an empty
+      container and drew the table in the browser; if the rows are not in the
+      source, the old plugin is still the one answering.
+- [ ] the FAQ's questions are in the source too, all of them.
+- [ ] `scf-faq-data` does **not** appear anywhere in the printed source. That is
+      the inert payload the plugin lifts into Rank Math's graph and strips; if
+      it is still there, the strip is not running and every answer is in the
+      page twice.
+- [ ] exactly **one** `FAQPage` in the page, inside Rank Math's graph rather
+      than as a second `ld+json` block. Rich Results Test, same as section 2.
+- [ ] the page's own robots directive is **indexable**. The fragment carries no
+      robots meta — the API serves its copy `noindex, indexifembedded`, so the
+      embed is the only thing that makes any of this rank.
+
+Then the controls, which is where this tool differs from the others:
+
+- [ ] click **PPR**: the address bar does **not** change, and the numbers do.
+      Check a WR or RB column — the QB column is identical in all three scoring
+      formats, because quarterbacks do not catch passes, so a QB cell that
+      stays put is correct and proves nothing.
+- [ ] the browser's Back button still leaves the page. Nothing is pushed onto
+      the history stack, so Back goes wherever the reader came from; a Back that
+      steps through scoring formats means something is calling `pushState`.
+- [ ] **with JavaScript disabled**, clicking PPR reloads and shows the PPR
+      table. Before 1.9.0 it reloaded and showed the default one.
+- [ ] the swap works at all from the live origin. It is a cross-origin fetch
+      from statchasers.com to the API, which is new surface: if whatever sits in
+      front of that origin challenges or blocks it, the click falls back to
+      following the link and the address changes. That fallback is honest, but
+      it is not what was shipped — confirm in a real browser rather than assume.
+- [ ] the CSV link downloads the combination currently on screen, not the one
+      the page loaded with.
+
+And the heading, which this tool does not manage for you:
+
+- [ ] the page has exactly one `<h1>` and it is the page's own title.
+      `statchasers_h1_mounts_a_tool()` knows only the team, player and matchup
+      shortcodes, so the **Page headings** machinery does not cover this page —
+      the same is true of the rankings board and the schedule. On a theme that
+      prints the page title this is already right and there is nothing to do.
+      On a Divi Theme Builder layout with **no Post Title module** this page
+      would carry no H1 at all, and the fix is in the template or a heading
+      module above the shortcode, not in the plugin.
+
 ## 2. Validate the structured data
 
 [Rich Results Test](https://search.google.com/test/rich-results) on the same URL.

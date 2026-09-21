@@ -596,10 +596,10 @@ it does on a hub.
 
 ## Fantasy Points Allowed — `[statchasers_fpa]`
 
-One page, at `/nfl/fantasy-points-allowed/`. It mounts the table the API serves
-at `/fpa`: how many fantasy points each of the 32 defences gives up per game to
-QBs, RBs, WRs and TEs, with ranks, three scoring formats, raw and
-schedule-adjusted views, and a CSV export.
+One page, at `/nfl/fantasy-points-allowed-by-position/`. It mounts the table
+the API serves at `/fpa`: how many fantasy points each of the 32 defences gives
+up per game to QBs, RBs, WRs and TEs, with ranks, three scoring formats, raw
+and schedule-adjusted views, and a CSV export.
 
 | Attribute | Default | Meaning |
 |-----------|---------|---------|
@@ -615,6 +615,22 @@ schedule-adjusted views, and a CSV export.
 **Leave `season` off.** The API serves whatever it is configured to treat as
 current, so an unpinned page rolls over by itself; a hard-coded season is a page
 that quietly shows last year's table next September.
+
+### Switching scoring format does not change the URL
+
+The table's Scoring and View controls are ordinary links, and the bundle
+intercepts them: it fetches that combination and swaps the table in place.
+Nothing is written to `location` and nothing is pushed onto the history stack,
+so your page keeps one address. Six renderings of one table are one page, which
+is what the canonical has always said.
+
+With scripting off — or on a click that beats the bundle to the page — the link
+is followed instead, and the shortcode reads `?format=` and `?view=` off the URL
+so that reader still lands on the table they asked for. **An attribute you write
+outranks the query string:** a page carrying `format="ppr"` has decided what it
+shows, and a URL cannot overrule it. Those links already carry `rel="nofollow"`,
+and Rank Math's canonical points at the bare page, so the query variants are not
+a second page in your index.
 
 ### Migrating from "StatChasers Data Tools"
 
@@ -658,7 +674,7 @@ viewing the page sees a note saying what to run; a reader sees no hole.
 ### Server-side configuration
 
 ```
-SC_FPA_PATH=/nfl/fantasy-points-allowed/
+SC_FPA_PATH=/nfl/fantasy-points-allowed-by-position/
 ```
 
 The table's own format and view controls are ordinary links. Left unset they

@@ -379,13 +379,23 @@ body.scf-page {
 }
 
 /* 72ch, the measure the hub's answers read at, indented to the question's text
-   rather than to the chevron. */
+   rather than to the chevron. One of these per question, holding one or two
+   paragraphs — the answers that state a rule and then qualify it break, and a
+   qualification welded onto its rule is read as part of it. */
 .scf-faq-a {
   margin: 7px 0 0 20px;
   max-width: 72ch;
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;
+}
+
+.scf-faq-a p {
+  margin: 0;
+}
+
+.scf-faq-a p + p {
+  margin-top: 8px;
 }
 
 /* -------------------------------------------------------------- data mode */
