@@ -443,6 +443,17 @@ function statchasers_player_write_index( int $container ): void {
 		return;
 	}
 
+
+	// The body we are replacing was stored inside a builder's wrapper, so the
+	// flag that says "this page is built with the builder" has to come off with
+	// it. Left on, Divi keeps claiming a layout that is no longer there: the
+	// editor opens on an empty canvas and the front end can re-wrap the plain
+	// body in section markup the page no longer has any use for.
+	if ( statchasers_index_is_builder_content( $content ) ) {
+		delete_post_meta( $container, '_et_pb_use_builder' );
+		delete_post_meta( $container, '_et_pb_old_content' );
+	}
+
 	wp_update_post(
 		array(
 			'ID'           => $container,

@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.7.6
+Stable tag: 1.7.7
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.7.7 =
+* A page builder's wrapper is no longer mistaken for somebody's own arrangement. Opening the generated container body in Divi wraps the same words in [et_pb_section] and friends, and the "does this page carry a shortcode" test read that packaging as intent — so /nfl/teams/ reported as a hand-written page and was left alone. The same wrapper is why the grid printed below everything else: the_content appends after the closing [/et_pb_section], outside every section the builder laid out. Builder tags are now told apart from real mounts, the rebuild removes the wrapper along with the body it holds, and the Index pages panel names the shortcodes it found instead of only saying there were some.
 
 = 1.7.6 =
 * The container pages are recognised after a block editor has been near them. Recognition counted only root-relative, double-quoted links (`href="/nfl/teams/`), which is how the build writes them and not how they come back from WonderBlocks, Gutenberg or Divi — those rewrite them to absolute URLs on save, the count fell to zero, and /nfl/teams/ reported as a hand-written page and was left alone through two releases while the theme printed its wall of links and the plugin appended the real grid underneath. Absolute and single-quoted links now count, a bracket in prose is no longer mistaken for a shortcode, and the Index pages panel prints what it looked at whenever it declines to touch a container.

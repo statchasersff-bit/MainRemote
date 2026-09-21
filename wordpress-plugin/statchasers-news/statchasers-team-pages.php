@@ -423,18 +423,74 @@ function statchasers_index_link_count( string $content, string $path ): int {
 }
 
 /**
+ * The shortcode tags in a body, in the order they appear, deduplicated.
+ *
+ * Named rather than counted, because "carries a shortcode" was a true statement
+ * that explained nothing: it is the difference between a page somebody mounted
+ * something on and a page a builder has wrapped, and the screen could not say
+ * which.
+ *
+ * @param string $content Page body.
+ * @return string[]
+ */
+function statchasers_index_shortcode_tags( string $content ): array {
+	preg_match_all( '/\[([a-z_][a-z0-9_-]*)/i', $content, $m );
+
+	return array_values( array_unique( array_map( 'strtolower', (array) ( $m[1] ?? array() ) ) ) );
+}
+
+/**
+ * Tags that are a page builder's scaffolding rather than somebody's mount.
+ *
+ * A builder wraps whatever is already on the page the first time it is opened,
+ * so the generated stub comes back as the same words inside `[et_pb_section]`
+ * `[et_pb_row]` `[et_pb_column]` `[et_pb_text]`. Treating that as "somebody
+ * arranged this page" is what left /nfl/teams/ untouched: the wrapper was read
+ * as intent when it is packaging.
+ *
+ * It is also why the grid was landing in the footer. `the_content` appends
+ * after the closing `[/et_pb_section]`, so the tool's markup came out beyond
+ * the last Divi section, below everything the builder had laid out.
+ */
+function statchasers_index_is_builder_tag( string $tag ): bool {
+	foreach ( array( 'et_pb_', 'et_builder', 'vc_', 'fusion_', 'wpb_', 'wonderblocks', 'wb_' ) as $prefix ) {
+		if ( 0 === strpos( $tag, $prefix ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Does this body carry a shortcode somebody put there?
  *
  * The old test was `strpos( $content, '[' )`, which is any bracket at all —
- * including one in prose, and including whatever markup an editor leaves
- * behind. This asks the question that was meant: is there a shortcode-shaped
- * token here. Still deliberately broad: any shortcode, not just ours, because
- * a body with a mount in it is a body somebody arranged.
+ * including one in prose. This asks the question that was meant, and excludes
+ * a builder's own scaffolding from the answer: those tags say how the page is
+ * stored, not what an editor chose to put on it.
  *
  * @param string $content Page body.
  */
 function statchasers_index_has_shortcode( string $content ): bool {
-	return 1 === preg_match( '/\[[a-z_][a-z0-9_-]*/i', $content );
+	foreach ( statchasers_index_shortcode_tags( $content ) as $tag ) {
+		if ( ! statchasers_index_is_builder_tag( $tag ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/** Is this body stored inside a page builder's wrapper? */
+function statchasers_index_is_builder_content( string $content ): bool {
+	foreach ( statchasers_index_shortcode_tags( $content ) as $tag ) {
+		if ( statchasers_index_is_builder_tag( $tag ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 function statchasers_team_index_is_stub( string $content ): bool {
@@ -472,6 +528,17 @@ function statchasers_team_write_index( int $container ): void {
 
 	if ( '' !== trim( $content ) && ! statchasers_team_index_is_stub( $content ) ) {
 		return;
+	}
+
+
+	// The body we are replacing was stored inside a builder's wrapper, so the
+	// flag that says "this page is built with the builder" has to come off with
+	// it. Left on, Divi keeps claiming a layout that is no longer there: the
+	// editor opens on an empty canvas and the front end can re-wrap the plain
+	// body in section markup the page no longer has any use for.
+	if ( statchasers_index_is_builder_content( $content ) ) {
+		delete_post_meta( $container, '_et_pb_use_builder' );
+		delete_post_meta( $container, '_et_pb_old_content' );
 	}
 
 	wp_update_post(
@@ -577,8 +644,14 @@ function statchasers_index_explain( string $content, string $path, string $lead 
 		sprintf( 'links to /%s/: %d', $path, $links ),
 	);
 
+	$tags = statchasers_index_shortcode_tags( $content );
+
+	if ( array() !== $tags ) {
+		$parts[] = 'shortcodes: ' . implode( ', ', array_slice( $tags, 0, 6 ) );
+	}
+
 	if ( $has_short ) {
-		$parts[] = 'carries a shortcode';
+		$parts[] = 'at least one is not a page builder wrapper, so this is left alone';
 	}
 
 	return implode( ' &middot; ', $parts );
@@ -625,6 +698,16 @@ function statchasers_index_panel(): void {
 		}
 
 		$note = $say[ $state ][1];
+
+		// Say so before the button does it, not after: replacing the body of a
+		// page a builder claims also takes the builder's claim off it.
+		if ( 'stub' === $state && (int) $row['id'] > 0
+			&& statchasers_index_is_builder_content( (string) get_post_field( 'post_content', (int) $row['id'] ) )
+		) {
+			$note .= ' <strong>The page builder layout around it is removed with it</strong> — ' .
+				'it is the generated list in a wrapper, and the wrapper is why the grid ' .
+				'was printing below everything else on the page.';
+		}
 
 		// A refusal shows its working. See statchasers_index_explain().
 		if ( 'custom' === $state && (int) $row['id'] > 0 ) {
