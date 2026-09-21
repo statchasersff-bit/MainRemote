@@ -378,12 +378,156 @@ function statchasers_team_post_has_index_shortcode(): bool {
 	return $answer;
 }
 
+/* ----------------------------------------------------- the container page */
+
+/**
+ * Is the page being rendered the container at /nfl/teams/?
+ *
+ * The one page in this hierarchy whose slug is not a team slug, and the one
+ * page the builder cannot be relied on to mount. statchasers_team_write_index()
+ * writes the index shortcode into a container that is empty or still carrying
+ * the old stub, and treats anything else as the editor's own work — which is
+ * the right promise everywhere except here, because a container somebody built
+ * in Divi before the shortcode existed IS "anything else". It has a heading and
+ * a paragraph in it, so the build steps over it, and the page ships with copy
+ * and no grid. That was /nfl/teams/: a title, a sentence, and 32 bullets in the
+ * theme's own styling.
+ *
+ * The exact twin of statchasers_player_is_container_page(), and deliberately a
+ * separate function rather than a shared one: the two containers answer to
+ * different paths and load different stylesheets, and the only thing they have
+ * in common is the shape of the problem.
+ *
+ * Matched by PATH rather than by slug. "teams" is a slug several pages could
+ * plausibly have; get_page_by_path() answers about the one page at nfl/teams,
+ * which is the one the 32 hubs hang off.
+ *
+ * Reads get_queried_object() for the reason given on the predicates above: on a
+ * Divi Theme Builder render the global post is the layout, not the page.
+ */
+function statchasers_team_is_container_page(): bool {
+	static $answer = null;
+
+	if ( null !== $answer ) {
+		return $answer;
+	}
+
+	if ( ! is_singular() ) {
+		return false;
+	}
+
+	$post = get_queried_object();
+	if ( ! $post instanceof WP_Post || 'page' !== $post->post_type ) {
+		return false;
+	}
+
+	// The constant lives in statchasers-team-pages.php, which the loader
+	// requires after this file. That is fine at call time and not at parse
+	// time, but the fallback costs nothing and keeps this file independent.
+	$path      = defined( 'STATCHASERS_TEAM_PATH' ) ? STATCHASERS_TEAM_PATH : 'nfl/teams';
+	$container = get_page_by_path( $path );
+
+	$answer = $container instanceof WP_Post && (int) $container->ID === (int) $post->ID;
+
+	return $answer;
+}
+
+/**
+ * Print the index on the container page even when nothing mounted it.
+ *
+ * Every other page in this plugin is mounted by a shortcode somebody placed,
+ * and that is the right default: an editor decides where a tool goes. The
+ * container is the exception, because it is not a page an editor chose to put a
+ * tool on — it is the parent WordPress needs to exist so that /nfl/teams/<slug>/
+ * resolves at all, and a parent with no grid on it is a thin page standing in
+ * front of 32 good ones.
+ *
+ * Three ways it declines, in order:
+ *
+ *   1. The content already renders the index — the shortcode is in the page, or
+ *      in a Divi module in the page, and has already expanded by the time this
+ *      filter runs at priority 20. Nothing to add.
+ *   2. The page's own content carries the shortcode but it produced nothing.
+ *      Then the mount is there and the API is what is broken, and appending a
+ *      second copy of the same failure helps nobody.
+ *   3. `statchasers_team_auto_index` is filtered false, for a site that wants
+ *      the container to be something else entirely.
+ *
+ * Appended rather than prepended: whatever the page already says about the hubs
+ * is an introduction to them, and the grid reads as the body.
+ *
+ * @param string $content Post content, shortcodes already expanded.
+ * @return string
+ */
+function statchasers_team_auto_index( string $content ): string {
+	static $done = false;
+
+	if ( $done || is_admin() || ! is_main_query() ) {
+		return $content;
+	}
+
+	// Past the head, or this is not the render the reader sees. An SEO plugin
+	// building a meta description runs the_content filters in wp_head, and
+	// without this the grid would be spent on that pass and the page below
+	// would come out exactly as broken as before, with nothing to show for it.
+	if ( ! did_action( 'wp_head' ) ) {
+		return $content;
+	}
+
+	if ( ! statchasers_team_is_container_page() ) {
+		return $content;
+	}
+
+	// the_content runs for whatever post is being rendered, which on a page
+	// with a loop module in it is not necessarily the page. Only the container's
+	// own body gets the grid appended to it.
+	$post = get_post();
+	if ( ! $post instanceof WP_Post || (int) $post->ID !== (int) get_queried_object_id() ) {
+		return $content;
+	}
+
+	if (
+		false !== strpos( $content, 'data-sct-index' )
+		|| statchasers_team_post_has_index_shortcode()
+	) {
+		return $content;
+	}
+
+	/**
+	 * Filters whether the container page mounts the index by itself.
+	 *
+	 * Return false to leave /nfl/teams/ as whatever the builder put there.
+	 *
+	 * @param bool $auto Whether to append the index.
+	 */
+	if ( ! (bool) apply_filters( 'statchasers_team_auto_index', true ) ) {
+		return $content;
+	}
+
+	$html = statchasers_team_index_shortcode();
+
+	if ( '' === trim( $html ) ) {
+		return $content;
+	}
+
+	$done = true;
+
+	return $content . "\n" . $html;
+}
+// After do_shortcode (priority 11), so a page that mounts the index itself has
+// already rendered it and is recognised as mounted.
+add_filter( 'the_content', 'statchasers_team_auto_index', 20 );
+
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {
 		if (
 			! statchasers_team_post_has_shortcode()
 			&& ! statchasers_team_post_has_index_shortcode()
+			// The container mounts itself (statchasers_team_auto_index), and
+			// it does it at the_content — far too late to enqueue a stylesheet
+			// into the head. Asked here so the grid arrives styled.
+			&& ! statchasers_team_is_container_page()
 		) {
 			return;
 		}
