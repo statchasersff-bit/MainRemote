@@ -206,6 +206,28 @@ function is( $got, $want, $label ) {
 	printf( "  FAIL  %s\n        got:  %s\n        want: %s\n", $label, var_export( $got, true ), var_export( $want, true ) );
 }
 
+/*
+ * Two groups, two processes.
+ *
+ * Several predicates memoise their answer in a `static` — which is right in
+ * WordPress, where a request renders one page and a Divi template asks the same
+ * question hundreds of times, and which means a process can only ever see ONE
+ * answer from each of them. `statchasers_team_post_has_index_shortcode()` is
+ * asked whether a page carrying the mount is an index (yes) and whether a bare
+ * container is (no), and those are two requests, not two calls.
+ *
+ * So the container checks run in a child of this process, which loads the
+ * plugin again with the statics unset. `main` runs everything else and then
+ * spawns `containers` at the bottom.
+ */
+$group = getenv( 'STATCHASERS_SMOKE_GROUP' ) ?: 'main';
+
+if ( 'containers' === $group ) {
+	require __DIR__ . '/smoke-containers.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 echo "team headings\n";
 is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Team Hub 2026', 'hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'news' ), 'New England Patriots News 2026', 'news' );
@@ -356,39 +378,32 @@ is( statchasers_team_post_has_index_shortcode(), true, 'the team index is detect
 is( statchasers_team_post_has_shortcode(), false, 'and is not mistaken for a hub' );
 $GLOBALS['page'] = array();
 
-echo "\nthe players container mounts itself\n";
 /*
- * The failure this covers: a container page built in Divi is neither empty nor
- * the old stub, so statchasers_player_write_index() leaves it alone — correctly,
- * it is the editor's page — and /nfl/players/ ships with a heading, a sentence
- * and no roster under it. The container is the one page that mounts itself.
- *
- * Only the positive case is asserted, and only once: the predicate memoises,
- * which is what makes it cheap on a Divi page that asks hundreds of times.
+ * The second group. Its failures are this run's failures — a split that only
+ * reported the half it felt like running would be worse than not splitting.
  */
-$container = new WP_Post();
-$container->ID           = 42;
-$container->post_name    = 'players';
-$container->post_content = '<p>Search and explore fantasy football players.</p>';
-
-$GLOBALS['page']          = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $container, 'current' => $container );
-$GLOBALS['pages_by_path'] = array( STATCHASERS_PLAYER_PATH => $container );
-$GLOBALS['http_body']     = '<div class="scp is-embed" data-scp-index="1">roster</div>';
-
-is( statchasers_player_is_container_page(), true, 'the page at nfl/players is the container' );
-is( statchasers_player_post_has_index_shortcode(), false, 'and this one carries no mount of its own' );
-is(
-	str_contains( statchasers_player_auto_index( '<p>Copy.</p>' ), 'data-scp-index' ),
-	true,
-	'so the roster is appended to it'
-);
-is(
-	statchasers_player_auto_index( '<p>Copy.</p>' ),
-	'<p>Copy.</p>',
-	'and appended once per request, not once per the_content call'
+$child = array();
+$code  = 0;
+exec(
+	'STATCHASERS_SMOKE_GROUP=containers ' . escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __FILE__ ) . ' 2>&1',
+	$child,
+	$code
 );
 
-$GLOBALS['page'] = array();
+foreach ( $child as $line ) {
+	// The child re-announces the load and prints its own verdict line. Both are
+	// this process's to print, once, about both groups.
+	if ( 'LOADED OK' === $line || 'all passed' === $line || preg_match( '/^\d+ FAILED$/', $line ) ) {
+		continue;
+	}
+	echo $line . "\n";
+}
+
+if ( 0 !== $code ) {
+	// The count is in the child's own tally, which is not reachable from here.
+	// One is enough to fail the build, and the lines above say which.
+	$fail++;
+}
 
 echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 exit( $fail ? 1 : 0 );
