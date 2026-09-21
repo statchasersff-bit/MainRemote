@@ -1554,36 +1554,163 @@ describe("team.css survives a host theme", () => {
     );
   });
 
-  test("the host's sidebar column is taken back", async () => {
+  /*
+   * Every heading class the renderer prints, armed — checked against the
+   * RENDERER rather than against a list written out here, because a list
+   * written out here is a list that goes stale. Divi's typography panel emits
+   * `#left-area h3 { font-size: 38px }`, an id, so a class in this file loses
+   * to it unless it says !important; `.sct-faq-q` did not, and shipped an FAQ
+   * whose questions rendered at 38px and read as section headings.
+   *
+   * The size is what is asserted. Colour is armed alongside it on most of
+   * these but not all — .sct-band-label and friends take a colour the theme
+   * cannot reach — whereas font-size is the one Divi always sets.
+   */
+  test("every heading class the hub prints is armoured", async () => {
     const sheet = await css();
+    const src = fs.readFileSync(
+      new URL("../src/lib/team-render.ts", import.meta.url),
+      "utf8",
+    );
+
+    // `<h3 class="sct-news-title"` and the two that pick their level at
+    // runtime, `<${tag} class="sct-faq-q"`.
+    const classes = new Set(
+      [...src.matchAll(/<(?:h[1-6]|\$\{\w+\}) class="(sct-[a-z0-9-]+)"/g)].map(
+        (m) => m[1],
+      ),
+    );
+    // h2() prints this one through a helper rather than inline.
+    classes.add("sct-h2");
+
+    assert.ok(classes.size >= 8, `found only ${classes.size} heading classes`);
+
+    const unarmed = [...classes].filter((cls) => {
+      const rule = sheet.match(
+        new RegExp(`\\.${cls} \\{[^}]*\\}`),
+      );
+      return !rule || !/font-size:[^;]*!important/.test(rule[0]);
+    });
+
+    assert.deepEqual(
+      unarmed,
+      [],
+      "these heading classes take the host theme's font-size",
+    );
+  });
+
+  /*
+   * The host column rules used to live in team.css and this test read them
+   * from the served sheet. They were moved into the plugin — one copy for all
+   * five tools, in `statchasers_team_full_width_css()` — and the assertion was
+   * left pointing at the stylesheet, where a comment ABOUT the rules still
+   * quotes them. The regex matched that prose, the test went on passing on a
+   * file that no longer carried the rules, and then failed on a comment edit.
+   * It now reads the file the rules are actually in.
+   */
+  test("the host's sidebar column is taken back", async () => {
+    const plugin = fs.readFileSync(
+      new URL(
+        "../../../wordpress-plugin/statchasers-news/statchasers-team.php",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const fn = plugin.match(
+      /function statchasers_team_full_width_css\(\): string \{[\s\S]*?\n\}/,
+    );
+    assert.ok(fn, "statchasers_team_full_width_css() is where the rules live");
+    const rules = fn[0];
 
     // Divi puts `width: 79.125%` on the BARE id, not on `.et_right_sidebar`,
     // so the class swap everyone reaches for first is a no-op and the hub
     // renders in three quarters of the page with an empty widget column beside
     // it. Only above 980px, which is why it survived every check on a phone.
-    const guard = sheet.match(
-      /@media \(min-width: 981px\) \{[\s\S]*?#left-area \{[\s\S]*?\n  \}/,
-    );
-    assert.ok(guard, "the #left-area override is inside a min-width:981px block");
     assert.match(
-      guard[0],
-      /width:\s*100%\s*!important/,
+      rules,
+      /@media\s*\(min-width:\s*981px\)/,
+      "the override is inside a min-width:981px block",
+    );
+    assert.match(
+      rules,
+      /#left-area\{[^}]*width:\s*100%\s*!important/,
       "the host column is widened, not merely unfloated",
     );
-    assert.match(guard[0], /float:\s*none\s*!important/, "and unfloated too");
+    assert.match(
+      rules,
+      /#left-area\{[^}]*float:\s*none\s*!important/,
+      "and unfloated too",
+    );
+
+    // Taking the sidebar's share back must not mean taking the window. Divi
+    // widens the content container on any page that has been through the Divi
+    // Builder, so `width: 100%` there meant the whole screen — which is how
+    // the hubs came out ~700px wider than the player pages carrying this same
+    // stylesheet. The cap is the site's own content width, read from the theme.
+    assert.match(
+      rules,
+      /#left-area\{[^}]*max-width:'\s*\.\s*statchasers_team_content_width\(\)\s*\.\s*'!important/,
+      "and held to the site's content column, not the window",
+    );
+    assert.match(
+      rules,
+      /#left-area\{[^}]*margin-left:auto!important;margin-right:auto!important/,
+      "and centred in it, as the rest of the site's content is",
+    );
 
     // Both of these are the difference between "full width" and "full width
     // with a grey line down it and the widgets dumped underneath".
     assert.match(
-      sheet,
-      /#main-content \.container:before \{\s*display:\s*none\s*!important/,
+      rules,
+      /#main-content \.container:before\{display:\s*none\s*!important/,
       "the column divider rule is removed",
     );
     assert.match(
-      sheet,
-      /#sidebar \{\s*display:\s*none\s*!important/,
+      rules,
+      /#sidebar\{display:\s*none\s*!important/,
       "an emptied sidebar cannot land under the hub",
     );
+  });
+
+  /*
+   * The hub and the player pages have to come out the same width on the same
+   * site, and the only way to guarantee that is for neither to carry a width
+   * of its own once embedded — the host column decides, and the plugin holds
+   * that column to the site's content width for both.
+   *
+   * This asserts the two stylesheets AGREE rather than asserting a number.
+   * A number here would be the same guess that made the hub 1280 while every
+   * other tool was 1180.
+   */
+  test("embedded, the hub takes its width from the host, as player pages do", async () => {
+    const sheet = await css();
+    const player = await (async () => {
+      const res = await get("/player.css");
+      assert.equal(res.status, 200, "player.css should be served");
+      return res.body;
+    })();
+
+    const embedded = (text, cls) => {
+      const rule = text.match(
+        new RegExp(`\\${cls}\\.is-embed \\{[\\s\\S]*?\\n\\}`),
+      );
+      assert.ok(rule, `${cls}.is-embed is defined`);
+      const width = rule[0].match(/max-width:\s*([^;]+);/);
+      assert.ok(width, `${cls}.is-embed states a max-width`);
+      return width[1].trim();
+    };
+
+    assert.equal(
+      embedded(sheet, ".sct"),
+      embedded(player, ".scp"),
+      "the hub and a player page hand width to the host on the same terms",
+    );
+
+    // The standalone measure, which the host never sees, still matches the
+    // other four tools. The hub carried 1280 of its own for a while.
+    const shell = sheet.match(/--sc-shell:\s*(\d+)px/);
+    assert.ok(shell, "--sc-shell is defined");
+    assert.equal(shell[1], "1180", "the standalone hub is the tools' measure");
   });
 
   test("the host page's H1 gets the tool's gold rule", async () => {

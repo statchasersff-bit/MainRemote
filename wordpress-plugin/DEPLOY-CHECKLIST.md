@@ -143,10 +143,24 @@ profile, say `/nfl/players/kyler-murray/`:
       empty container page is a thin page that still sits in the sitemap.
 - [ ] re-run the build: it reports everything as existing and changes nothing.
 
+### Width
+
+- [ ] a team hub and a player page are the **same width**, and both are the
+      width of an ordinary page on the site. They carry the same stylesheet, so
+      a difference is the host column, not the tool: Divi widens the content
+      container on a page that has been through the Divi Builder, which is what
+      `statchasers_team_content_width()` caps. If they match each other but not
+      the rest of the site, that number is wrong — filter
+      `statchasers_content_width`.
+
 ### Matchup pages
 
-Only once the holder page exists — **Tools → StatChasers Pages → Matchup
-pages** creates it, and the pair URLs are live from that point. Then on
+Only once the holder page exists **at `/nfl/matchup/`** — **Tools → StatChasers
+Pages → Matchup pages** creates it there, or moves one an older release built at
+`/nfl/teams/matchup/`, and rebuilds the permalinks. The pair URLs are live from
+that point. Check the path, not just that a holder exists: a holder one level
+deep resolves to nothing and WordPress's 404 guess quietly redirects every pair
+URL to it, which reads as "View matchup goes to a blank page". Then on
 `/nfl/new-england-patriots-vs-philadelphia-eagles/`:
 
 - [ ] HTTP **200**; H1 is `New England Patriots vs Philadelphia Eagles`, and a

@@ -108,17 +108,38 @@ function statchasers_team_find_page( string $slug, int $parent ): int {
 /**
  * The container page the 32 hubs hang off, creating it if asked.
  *
- * Resolves one path segment at a time rather than with get_page_by_path(), so
- * a partially built hierarchy — /nfl/ exists but /nfl/teams/ does not — is
- * completed rather than rejected.
- *
  * @param bool $create Whether to create missing segments.
  * @return int Page ID, or 0 when it does not exist and $create is false.
  */
 function statchasers_team_container( bool $create = false ): int {
+	return statchasers_team_path_container( STATCHASERS_TEAM_PATH, $create );
+}
+
+/**
+ * The page at an arbitrary path, creating the hierarchy if asked.
+ *
+ * Resolves one path segment at a time rather than with get_page_by_path(), so
+ * a partially built hierarchy — /nfl/ exists but /nfl/teams/ does not — is
+ * completed rather than rejected.
+ *
+ * Taking the path as an argument rather than reading STATCHASERS_TEAM_PATH is
+ * what stops the one caller that is NOT under the hubs from landing there
+ * anyway: the matchup holder lives at `nfl/matchup`, a sibling of `nfl/teams`,
+ * and building it through the hubs' own container silently put it at
+ * `nfl/teams/matchup` — a page every pair URL then failed to resolve to. See
+ * statchasers_matchup_build_holder().
+ *
+ * @param string $path   Slash-separated page path, no leading or trailing slash.
+ * @param bool   $create Whether to create missing segments.
+ * @return int Page ID, or 0 when it does not exist and $create is false.
+ */
+function statchasers_team_path_container( string $path, bool $create = false ): int {
 	$parent = 0;
 
-	foreach ( explode( '/', STATCHASERS_TEAM_PATH ) as $segment ) {
+	foreach ( explode( '/', trim( $path, '/' ) ) as $segment ) {
+		if ( '' === $segment ) {
+			continue;
+		}
 		$id = statchasers_team_find_page( $segment, $parent );
 
 		if ( ! $id ) {

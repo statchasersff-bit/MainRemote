@@ -651,23 +651,107 @@ add_filter(
 /* ---------------------------------------------------------- holder page */
 
 /**
- * Create the holder page under the /nfl/ container, once. Called from the
- * Tools screen. Noindex by its own stored robots value: nothing should ever
- * rank at /nfl/matchup/ itself.
+ * The page the holder hangs off: whatever STATCHASERS_MATCHUP_HOLDER's own
+ * parent path is, which is `nfl` — a SIBLING of the hubs' `nfl/teams`.
+ *
+ * @param bool $create Whether to create missing segments.
+ */
+function statchasers_matchup_container( bool $create = false ): int {
+	$parent = trim( dirname( STATCHASERS_MATCHUP_HOLDER ), '/.' );
+	if ( '' === $parent ) {
+		return 0;
+	}
+	return statchasers_team_path_container( $parent, $create );
+}
+
+/**
+ * A holder page that exists but sits at the wrong address, or 0.
+ *
+ * The bug this repairs: this function's caller used to resolve its parent with
+ * statchasers_team_container(), which is the HUBS' container — `nfl/teams` —
+ * so the page it built landed at `/nfl/teams/matchup/` while every other line
+ * in this file addresses it as `nfl/matchup`. Nothing complained, and the two
+ * halves failed in opposite directions:
+ *
+ *   - The Tools panel asks get_page_by_path( 'nfl/matchup' ), got null, and
+ *     kept offering "Create the holder page".
+ *   - The builder asks for the segment under the teams container, found the
+ *     page it made last time, and returned "Done" without creating anything.
+ *     Pressing the button again did nothing, forever.
+ *   - Every pair URL rewrote to `pagename=nfl/matchup`, which resolves to no
+ *     page, so WordPress 404'd it — and then, because WP_Query reduces an
+ *     unresolved `pagename` to its last segment as `name`, redirect_canonical's
+ *     404 guess matched the stray page by slug and sent the reader to
+ *     `/nfl/teams/matchup/`. Which is the holder, at its own address, with no
+ *     pair in the query — so it printed the "this page is the holder" notice.
+ *     That is the whole of the "View matchup goes nowhere" report.
+ *
+ * Scoped to the hubs' container rather than "any page called matchup", because
+ * that is the one place the old code could have put it, and re-parenting a page
+ * someone else made is not this function's business.
+ */
+function statchasers_matchup_stray_holder(): int {
+	$teams = statchasers_team_container( false );
+	if ( ! $teams ) {
+		return 0;
+	}
+	$id = statchasers_team_find_page( basename( STATCHASERS_MATCHUP_HOLDER ), $teams );
+	if ( ! $id ) {
+		return 0;
+	}
+	// Ours only: the shortcode is the signature. A page someone made by hand at
+	// that address keeps it.
+	$post = get_post( $id );
+	if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_MATCHUP_SHORTCODE ) ) {
+		return 0;
+	}
+	return $id;
+}
+
+/**
+ * Create the holder page under the /nfl/ container, once — or move one that an
+ * earlier version of this file built in the wrong place. Called from the Tools
+ * screen. Noindex by its own stored robots value: nothing should ever rank at
+ * /nfl/matchup/ itself.
  *
  * @return int Page id, or 0 with an error message in $error.
  */
 function statchasers_matchup_build_holder( string &$error ): int {
-	$container = statchasers_team_container( true );
+	$container = statchasers_matchup_container( true );
 	if ( ! $container ) {
-		$error = 'Could not create the /nfl/ container page.';
+		// Plain text: the Tools screen escapes it on the way out.
+		$error = 'Could not create the /' . trim( dirname( STATCHASERS_MATCHUP_HOLDER ), '/.' ) . '/ container page.';
 		return 0;
 	}
 	$segment = basename( STATCHASERS_MATCHUP_HOLDER );
 	$id      = statchasers_team_find_page( $segment, $container );
 	if ( $id ) {
+		statchasers_matchup_flush();
 		return $id;
 	}
+
+	// Move rather than make a second one: the stray page is this plugin's, and
+	// leaving it behind means two pages carrying the shortcode and a leftover
+	// address that the 404 guess can still reach.
+	$stray = statchasers_matchup_stray_holder();
+	if ( $stray ) {
+		$moved = wp_update_post(
+			array(
+				'ID'          => $stray,
+				'post_parent' => $container,
+				'post_name'   => $segment,
+			),
+			true
+		);
+		if ( is_wp_error( $moved ) ) {
+			$error = $moved->get_error_message();
+			return 0;
+		}
+		statchasers_team_fill_meta( $stray, 'rank_math_robots', array( 'noindex', 'follow' ) );
+		statchasers_matchup_flush();
+		return $stray;
+	}
+
 	$id = wp_insert_post(
 		array(
 			'post_type'    => 'page',
@@ -684,7 +768,21 @@ function statchasers_matchup_build_holder( string &$error ): int {
 		return 0;
 	}
 	statchasers_team_fill_meta( (int) $id, 'rank_math_robots', array( 'noindex', 'follow' ) );
+	statchasers_matchup_flush();
 	return (int) $id;
+}
+
+/**
+ * Rebuild the rewrite rules after the holder moves.
+ *
+ * The rules themselves do not change — they name the holder by path, and the
+ * path is a constant — but what they resolve TO only exists once the page is
+ * where the path says. Flushing here means the pair URLs work on the redirect
+ * back to the Tools screen rather than on the next plugin activation, which is
+ * what "the permalink flush happens on activation" quietly cost.
+ */
+function statchasers_matchup_flush(): void {
+	flush_rewrite_rules( false );
 }
 
 add_action(
@@ -705,13 +803,56 @@ add_action(
 	}
 );
 
+/**
+ * A nudge on any admin screen while the pair URLs cannot resolve.
+ *
+ * Same shape and the same argument as the team-pages notice: the holder is the
+ * one page that makes 496 addresses exist, and its absence is invisible from
+ * the front end except as a matchup link that lands on the wrong page. Nobody
+ * goes looking on the Tools screen for a problem they have not been told about,
+ * which is how a holder at the wrong address survived a deploy.
+ *
+ * Suppressed on the Tools screen itself, where the panel says more.
+ */
+add_action(
+	'admin_notices',
+	static function (): void {
+		if ( ! current_user_can( 'manage_options' ) || ! statchasers_matchup_urls_enabled() ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( $screen && false !== strpos( (string) $screen->id, STATCHASERS_TEAM_PAGES_SCREEN ) ) {
+			return;
+		}
+
+		$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
+		if ( $holder instanceof WP_Post && 'publish' === $holder->post_status ) {
+			return;
+		}
+
+		$stray = statchasers_matchup_stray_holder();
+
+		printf(
+			'<div class="notice notice-warning"><p><strong>StatChasers:</strong> the matchup holder page is %1$s, so every <code>/%2$s/&lt;team&gt;-vs-&lt;team&gt;/</code> URL — and every &ldquo;View matchup&rdquo; link on the 32 team hubs — fails to resolve. <a href="%3$s">%4$s</a>.</p></div>',
+			$stray ? 'at the wrong address' : 'missing',
+			esc_html( STATCHASERS_MATCHUP_BASE ),
+			esc_url( add_query_arg( 'page', STATCHASERS_TEAM_PAGES_SCREEN, admin_url( 'tools.php' ) ) ),
+			$stray ? 'Move it' : 'Create it'
+		);
+	}
+);
+
 /** The panel on the Tools screen. */
 function statchasers_matchup_panel(): void {
 	$result = get_transient( 'statchasers_matchup_build_result' );
 	if ( is_array( $result ) ) {
 		delete_transient( 'statchasers_matchup_build_result' );
 		if ( $result['id'] ) {
-			echo '<div class="notice notice-success is-dismissible"><p><strong>Done.</strong> Matchup holder page is in place.</p></div>';
+			printf(
+				'<div class="notice notice-success is-dismissible"><p><strong>Done.</strong> The matchup holder is at <code>/%s/</code> and the permalinks have been rebuilt. Open any <code>View matchup</code> link to check it.</p></div>',
+				esc_html( STATCHASERS_MATCHUP_HOLDER )
+			);
 		} else {
 			printf( '<div class="notice notice-error"><p>%s</p></div>', esc_html( (string) $result['error'] ) );
 		}
@@ -720,7 +861,7 @@ function statchasers_matchup_panel(): void {
 	$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
 	echo '<h2>Matchup pages</h2>';
 	printf(
-		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> — 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs are live as soon as the holder exists; the permalink flush happens on activation.</p>',
+		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> — 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs are live as soon as the holder exists at that exact path — the button below also rebuilds the permalinks, so there is nothing to do afterwards.</p>',
 		esc_html( STATCHASERS_MATCHUP_BASE ),
 		esc_html( STATCHASERS_MATCHUP_HOLDER )
 	);
@@ -730,10 +871,33 @@ function statchasers_matchup_panel(): void {
 			(int) $holder->ID,
 			statchasers_matchup_urls_enabled() ? 'on' : 'off'
 		);
-	} else {
-		echo '<form method="post">';
-		wp_nonce_field( 'statchasers_matchup_build' );
-		echo '<p><button type="submit" name="statchasers_matchup_build" value="1" class="button button-primary">Create the holder page</button></p>';
-		echo '</form>';
+		return;
 	}
+
+	// The wrong-address case gets its own words. Told only "the holder does not
+	// exist", the obvious move is to press Create — which is exactly what an
+	// earlier version of this plugin let you do over and over while the page
+	// sat one level too deep and every pair URL bounced to it. See
+	// statchasers_matchup_stray_holder().
+	$stray = statchasers_matchup_stray_holder();
+	if ( $stray ) {
+		printf(
+			'<div class="notice notice-warning inline"><p><strong>The holder page is at the wrong address.</strong> ' .
+			'Post %1$d sits at <code>%2$s</code>, one level too deep, so every ' .
+			'<code>/%3$s/&lt;team&gt;-vs-&lt;team&gt;/</code> URL fails to resolve and WordPress bounces the reader to the holder itself. ' .
+			'Moving it to <code>/%4$s/</code> fixes every pair URL at once; nothing else about the page changes.</p></div>',
+			(int) $stray,
+			esc_html( (string) wp_parse_url( (string) get_permalink( $stray ), PHP_URL_PATH ) ),
+			esc_html( STATCHASERS_MATCHUP_BASE ),
+			esc_html( STATCHASERS_MATCHUP_HOLDER )
+		);
+	}
+
+	echo '<form method="post">';
+	wp_nonce_field( 'statchasers_matchup_build' );
+	printf(
+		'<p><button type="submit" name="statchasers_matchup_build" value="1" class="button button-primary">%s</button></p>',
+		$stray ? 'Move the holder page' : 'Create the holder page'
+	);
+	echo '</form>';
 }

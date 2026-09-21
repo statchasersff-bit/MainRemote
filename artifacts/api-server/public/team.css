@@ -79,7 +79,11 @@
   --sc-radius-sm: 12px;
   --sc-radius-xs: 8px;
 
-  --sc-shell: 1280px;
+  /* The tool's measure, and the same number every other StatChasers tool
+     uses — player.css, fpa.css and rankings.css all say 1180. The hub had
+     1280 of its own, which read as "the team pages are wider than the rest
+     of the site" and was exactly that. */
+  --sc-shell: 1180px;
   --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Height of the sticky section nav, so anchors don't land underneath it. */
@@ -252,7 +256,10 @@ body.sct-page.is-embed {
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
  * .sct-band-label, .sct-depth-pos, .sct-ladder-title, .sct-mu-h3,
- * .sct-news-title, .sct-outlook-name — every <h1>-<h4> the hub prints.
+ * .sct-news-title, .sct-outlook-name, .sct-faq-q — every <h1>-<h4> the hub
+ * prints. The list is the checklist: a heading class added below and left off
+ * here is a heading that renders at the theme's size, which is how .sct-faq-q
+ * spent a release at 38px.
  *
  * NOT done blanket-wise as `.sct :is(h1..h6) { font-size: … !important }`,
  * because each of those classes carries a different size and one rule here
@@ -357,7 +364,18 @@ body.sct-page.is-embed {
      says they are two things. Bottom only — the top gap is the one between the
      page's heading and the hero, and it is already right. */
   padding-bottom: 50px;
-  max-width: 100%;
+  /* The host container owns the width, and that is deliberate: the hub has to
+   * sit in the same column as everything else on the site, which is a number
+   * only the host knows. `none` rather than `100%` so this says the same thing
+   * as `.scp.is-embed` in player.css, byte for byte — the two tools are meant
+   * to be the same width on the same site, and the way to guarantee that is for
+   * neither of them to have a width of its own.
+   *
+   * When the hub came out wider than the player pages it was NEVER this rule:
+   * both tools filled their container and the containers differed. See
+   * `statchasers_team_content_width()` in the plugin for what actually made one
+   * container the window and the other the content column. */
+  max-width: none;
 }
 
 .sct.is-embed .sct-hero {
@@ -2091,10 +2109,21 @@ body.sct-page.is-embed {
   transform: rotate(45deg);
 }
 
+/* `!important` on the two properties Divi's typography panel takes through
+   `#left-area h3 { font-size: 38px; color: #0e0c19 }` — an id, which no class
+   in this file can outweigh. This heading is the ONE the armour note at the top
+   of the file missed, and it showed: a question set at 0.92rem rendered at 38px
+   on the published hub, so the FAQ read as a run of section headings rather
+   than as a list of questions. Same fix, same two properties, as .sct-h2 and
+   the rest, and as .scp-faq-q on the player pages.
+
+   The tag is <h3> on Stats and <h4> on Outlook (faqList() picks it from where
+   the block sits), so both of Divi's sizes are in play and one rule covers
+   them, because the size lives on the class rather than on the element. */
 .sct-faq-q {
   margin: 0;
-  color: var(--sc-ink);
-  font-size: 0.92rem;
+  color: var(--sc-ink) !important;
+  font-size: 0.92rem !important;
   font-weight: 800;
   line-height: 1.45;
 }
