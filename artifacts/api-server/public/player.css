@@ -168,6 +168,34 @@ body.scp-page {
   box-sizing: border-box;
 }
 
+/*
+ * Host padding on bare elements, zeroed.
+ *
+ * Divi styles elements rather than classes — `p { padding-bottom: 1em }`, and
+ * the same gesture on headings and lists — and a bare element rule beats
+ * nothing in this file, because this file's instrument on those elements is
+ * margin and it never sets padding at all. So every paragraph in the tool grew
+ * a gap beneath it on the published site and none of them did in the preview.
+ *
+ * What it looks like is a spacing bug with no pattern: a rail cell's value and
+ * its label stand ~32px apart where the design says 8, while the third line of
+ * the same cell sits correctly, because Divi exempts `p:last-of-type` and the
+ * exemption reads as intent. It is one rule, hitting every <p> that has a
+ * sibling after it.
+ *
+ * `:where()` so this carries the weight of `.scp` and nothing more. The ten
+ * paragraph classes in this file that DO set padding on purpose — the
+ * styleline, the strip, the empty states — are single-class rules of exactly
+ * this weight and all of them are further down, so they win on order. That is
+ * why this sits at the top of the file rather than in "host overrides" at the
+ * bottom, where the same rule would outrank them instead and flatten the ten.
+ *
+ * Padding only, and deliberately: margin is already stated everywhere in here
+ * that it matters, and arming it would collapse those rules into this one. */
+.scp :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote) {
+  padding: 0;
+}
+
 /* ----------------------------------------------------------------- search */
 
 /*
@@ -669,19 +697,6 @@ body.scp-page {
 .scp-title-first,
 .scp-title-last {
   display: inline;
-}
-
-/* The section's phrase, on a scoped URL. Sentence case and a step under the
-   name: it is what the page is about, not what it is called. Its own line,
-   which is what still separates it from the name now that the name is inline. */
-.scp-title-rest {
-  display: block;
-  margin-top: 6px;
-  font-size: calc(clamp(15px, 1.9vw, 18px) * var(--scp-hero-id, 1));
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--sc-navy);
 }
 
 /* Position and club — the two facts that place a player. */
@@ -4834,6 +4849,11 @@ a.scp-peer:focus-visible {
   font-size: 13px;
   font-weight: 800;
   line-height: 1.2;
+  /* Stated rather than inherited from `.scp`, because this is a heading and a
+     host theme's heading rule beats inheritance. Not enough on its own — see
+     the armed copy in "host overrides" — but the component's own colour
+     belongs with the component. */
+  color: var(--sc-ink);
 }
 
 .scp-dir-club-link {
@@ -6358,10 +6378,6 @@ a.scp-peer:focus-visible {
   .scp-hero[data-scp-hero-fit="js"] .scp-title {
     font-size: calc(33px * var(--scp-hero-id, 1));
   }
-
-  .scp-hero[data-scp-hero-fit="js"] .scp-title-rest {
-    font-size: calc(18px * var(--scp-hero-id, 1));
-  }
 }
 
 /*
@@ -6653,4 +6669,69 @@ a.scp-peer:focus-visible {
 .scp .scp-caption-link,
 .scp .scp-news-link {
   color: inherit !important;
+}
+
+/* A heading whose colour is this file's, kept.
+ *
+ * The rule above arms the links that take the colour around them. This is the
+ * other kind, and the reason the block could not simply grow: the club name
+ * heading each card on the player index opens with states its own ink, so
+ * handing it `inherit` would hand it whatever the theme painted the <h2> —
+ * which is the white being removed.
+ *
+ * `.entry-content h2 a { color: #fff }` is the shape of the host rule: two
+ * classes and an element against this file's one class, so it takes all
+ * thirty-two names and prints them on the card's own white head band. The tell
+ * is the rows underneath, which are the same `color: var(--sc-ink)` on the same
+ * single class and stay ink — the theme's rule is scoped to headings, so the
+ * heading is the only thing in the tool that goes.
+ *
+ * Both states are armed. `!important` on the resting colour outranks the hover
+ * as readily as it outranks the theme, and an unarmed hover would leave the
+ * name the one thing on the card that stops answering the pointer.
+ *
+ * The <h2> is listed beside the <a> for the card that has no link in it: the
+ * free agents card, whose name is bare text in the heading and which a theme's
+ * plain `h2` rule reaches directly. */
+.scp .scp-dir-club-name,
+.scp .scp-dir-club-link {
+  color: var(--sc-ink) !important;
+}
+
+.scp .scp-dir-club-link:hover {
+  color: var(--club, var(--sc-navy)) !important;
+}
+
+/* The navy header band's own ink, kept.
+ *
+ * Divi styles the content column through `#left-area` — the same wrapper this
+ * project already reaches for in team.css to take the sidebar back — and an id
+ * outranks every class in this file no matter how many are stacked. A rule of
+ * the shape `#left-area th { color: #666 }` therefore takes the three tables
+ * that scroll under a filled header and greys their labels out on the navy,
+ * which is the one place in the tool where the text is white because the band
+ * behind it is dark.
+ *
+ * Only `color`, and only on the filled header. The band's background is set by
+ * the same rule that lost and is evidently still arriving, so nothing here
+ * arms it; the plain table's muted head is a grey the theme would repaint a
+ * neighbouring grey, which is not worth a rule.
+ *
+ * The two gold states come along because they are the same band and the same
+ * class of host rule, and arming the white without them would leave the sorted
+ * column marked only by the bar under it — a regression that reads as a design
+ * rather than as a bug, which is how the first-column case went unnoticed for
+ * as long as it did. */
+.scp .scp-table--filled thead th {
+  color: #ffffff !important;
+}
+
+.scp .scp-table--filled th[aria-sort="ascending"] .scp-sort,
+.scp .scp-table--filled th[aria-sort="descending"] .scp-sort {
+  color: var(--sc-gold) !important;
+}
+
+.scp .scp-table--filled thead .scp-sort:hover,
+.scp .scp-table--filled thead .scp-sort:focus-visible {
+  color: var(--sc-gold-soft) !important;
 }

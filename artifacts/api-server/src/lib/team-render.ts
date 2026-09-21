@@ -325,15 +325,17 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
   const { team } = data;
   const headingTag = options.embed ? "h2" : "h1";
 
-  // On a section-scoped URL the hero carries the page's subject, not just the
-  // team's name — "New England Patriots Depth Chart 2026" is what that page is
-  // about and what its heading should say. The section then drops its own
-  // heading so the phrase is not printed twice; see renderOutlook(),
-  // renderSchedule() and renderDepthChart().
-  const heroTitle =
-    (options.section &&
-      teamSectionHeading(team.fullName, options.section, data.state.season)) ||
-    team.fullName;
+  // The team's name, on every one of the hub's addresses.
+  //
+  // A section-scoped URL used to put the page's subject here instead — "New
+  // England Patriots Depth Chart 2026" — which meant the header rewrote itself
+  // every time a reader clicked a tab. The hero is the club's identity and it
+  // does not track which panel is open. Each section prints its own heading
+  // again, scoped or not, so the phrase is still on the page and still exactly
+  // once; see renderOutlook(), renderSchedule(), renderDepthChart() and
+  // renderMatchups(). The document title, the description and the tab strip
+  // are what say which address this is.
+  const heroTitle = team.fullName;
 
   const updated =
     data.newsUpdatedAtMs !== null
@@ -375,9 +377,10 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     `<div class="sct-hero-text">` +
     `<p class="sct-eyebrow">${escapeHtml(`${team.division} · ${data.state.season} Season`)}</p>` +
     `<${headingTag} class="sct-title">${escapeHtml(heroTitle)}</${headingTag}>` +
-    (options.section
-      ? ""
-      : `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>`) +
+    // On the section pages too: the hero is the same block wherever the reader
+    // is in the hub, and a standfirst that disappeared on four of five tabs was
+    // the other half of the header moving under them.
+    `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
     `</div>` +
     // The chips and the timestamp are a row of their own rather than the tail
     // of the name block, because the name block is boxed in by the switcher
@@ -1746,7 +1749,6 @@ function renderOutlook(
   data: TeamPageData,
   faq: FaqSink,
   tail: TailSink,
-  scoped = false,
 ): string {
   const outlook = getTeamOutlook(data.team.abbreviation);
   if (!outlook) return "";
@@ -1800,8 +1802,9 @@ function renderOutlook(
 
   return (
     `<div class="sct-block">` +
-    // The hero already says it on a section page — see renderHero().
-    (scoped ? "" : h2(`${outlook.season} Fantasy Outlook`)) +
+    // Printed on a section page too — the hero is the club's name alone and
+    // this is what names the panel. See renderHero().
+    h2(`${outlook.season} Fantasy Outlook`) +
     `<p class="sct-outlook-stamp">${meta}</p>` +
     `<p class="sct-outlook-lede">${escapeHtml(outlook.summary)}</p>` +
     facts +
@@ -2205,7 +2208,6 @@ function renderMatchups(
   data: TeamPageData,
   options: TeamRenderOptions,
   now: number,
-  scoped = false,
 ): string {
   const { team, schedule } = data;
   if (!schedule) return "";
@@ -2270,7 +2272,7 @@ function renderMatchups(
     .join("");
 
   return (
-    (scoped ? "" : h2(`${team.nickname} Matchups`)) +
+    h2(`${team.nickname} Matchups`) +
     upNext +
     `<h3 class="sct-mu-h3">${escapeHtml(`${schedule.season} Matchups`)}</h3>` +
     `<ol class="sct-slist sct-mu-list">${rows}</ol>`
@@ -2384,7 +2386,6 @@ function renderDepthChart(
   data: TeamPageData,
   faq: FaqSink,
   tail: TailSink,
-  scoped = false,
 ): string {
   const { team, depthChart } = data;
   const groups = SKILL_POSITIONS.filter(
@@ -2471,7 +2472,7 @@ function renderDepthChart(
   const full = getTeamDepthChartUrl(team);
 
   return (
-    (scoped ? "" : h2(`${team.nickname} Fantasy Depth Chart`)) +
+    h2(`${team.nickname} Fantasy Depth Chart`) +
     `<p class="sct-note">Offensive skill positions only. Order as listed on the team's depth chart.</p>` +
     `<div class="sct-depth">${columns}</div>` +
     (full
@@ -3133,13 +3134,12 @@ function renderSchedule(
   now: number,
   faq: FaqSink,
   tail: TailSink,
-  scoped = false,
 ): string {
   const { team, schedule } = data;
 
   if (!schedule) {
     return (
-      (scoped ? "" : h2(`${data.state.season} ${team.nickname} Schedule`)) +
+      h2(`${data.state.season} ${team.nickname} Schedule`) +
       `<div class="sct-empty">` +
       `<p class="sct-empty-title">Schedule information is temporarily unavailable.</p>` +
       `<p class="sct-empty-body">It will reappear here as soon as the fixture data loads.</p>` +
@@ -3174,7 +3174,7 @@ function renderSchedule(
   );
 
   return (
-    (scoped ? "" : h2(`${schedule.season} ${team.nickname} Schedule`)) +
+    h2(`${schedule.season} ${team.nickname} Schedule`) +
     networkDefs(schedule.games.map((game) => game.network)) +
     // The upcoming cards carry no label of their own. The bye note and the
     // "Next N games" eyebrow that used to sit here were both removed: the cards
@@ -3280,13 +3280,7 @@ export function renderTeamPage(
   const depthTail: TailSink = { html: "" };
   const scheduleFaqItems: FaqSink = [];
   const scheduleTail: TailSink = { html: "" };
-  const scopedSection = String(options.section ?? "");
-  const outlook = renderOutlook(
-    data,
-    outlookFaq,
-    outlookTail,
-    scopedSection === "outlook",
-  );
+  const outlook = renderOutlook(data, outlookFaq, outlookTail);
 
   const sidebar =
     renderInjuryPanel(data) +
@@ -3314,26 +3308,9 @@ export function renderTeamPage(
   // from different endpoints and fail independently.
   const stats =
     renderSnapshot(data) + renderTeamStats(data, statsFaq, statsTail);
-  const depth = renderDepthChart(
-    data,
-    depthChartFaq,
-    depthTail,
-    scopedSection === "depth-chart",
-  );
-  const schedule = renderSchedule(
-    data,
-    options,
-    now,
-    scheduleFaqItems,
-    scheduleTail,
-    scopedSection === "schedule",
-  );
-  const matchups = renderMatchups(
-    data,
-    options,
-    now,
-    scopedSection === "matchups",
-  );
+  const depth = renderDepthChart(data, depthChartFaq, depthTail);
+  const schedule = renderSchedule(data, options, now, scheduleFaqItems, scheduleTail);
+  const matchups = renderMatchups(data, options, now);
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing.
@@ -3399,6 +3376,7 @@ export function renderTeamPage(
    * An unknown id finds nothing here and falls through to the hub below, which
    * is why a stale section link degrades to the full page rather than 404ing.
    */
+  const scopedSection = String(options.section ?? "");
   const scoped = scopedSection
     ? sections.find((entry) => entry.id === scopedSection)
     : undefined;

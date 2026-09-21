@@ -2007,8 +2007,13 @@ describe("the injury tab", () => {
     const panels = [...doc.querySelectorAll("[data-scp-panel]")].map((p) => p.id);
     assert.deepEqual(panels, ["injury"], "a section URL renders one section");
 
-    const h1 = doc.querySelector("h1")?.textContent.trim() ?? "";
-    assert.match(h1, /Injury Update & History$/, "the H1 is the search phrase");
+    const h1 = doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim();
+    assert.equal(h1, found[0].player.name, "the H1 is the player, as on every tab");
+    assert.match(
+      doc.querySelector("#injury .scp-h2")?.textContent ?? "",
+      /Injury Update & History$/,
+      "and the section carries the search phrase",
+    );
     assert.match(
       doc.querySelector("title")?.textContent ?? "",
       /Injury Update, Status & History/,
@@ -2332,7 +2337,14 @@ describe("the bio tab", () => {
     const { doc } = pages[0];
     const name = pages[0].player.name;
 
-    assert.equal(doc.querySelector("h1").textContent.trim(), `${name} Bio`);
+    // The H1 is the player, whatever the tab: the hero does not caption itself
+    // with the open panel. The phrase this page answers for is the section's
+    // own heading, and the title below.
+    assert.equal(
+      doc.querySelector("h1").textContent.replace(/\s+/g, " ").trim(),
+      name,
+    );
+    assert.equal(doc.querySelector("#bio .scp-h2").textContent.trim(), `${name} Bio`);
     assert.match(
       doc.querySelector("title").textContent,
       /Bio: Age, Height, College, Draft & Career/,
@@ -3059,14 +3071,23 @@ describe("caching", () => {
  * fixture's own strip rather than written down here.
  */
 describe("player section URLs", () => {
-  /** The phrase each section's H1 ends with. Mirrors SECTION_HEADINGS. */
+  /**
+   * The heading each section prints for itself.
+   *
+   * NOT the H1 any more. The hero is the player's name on every one of these
+   * addresses — it stopped taking the section's phrase under the name, because
+   * a header that rewrites itself on a tab click reads as a different page. The
+   * phrase is the section's own H2, which is where it was always going to end
+   * up once the hero refused it, and the document title is what names the
+   * address.
+   */
   const PHRASES = {
     stats: /Stats 2\d{3}$/,
     injury: /Injury Update & History$/,
     "game-log": /Game Log 2\d{3}$/,
-    outlook: /Fantasy Outlook$/,
+    outlook: /Outlook$/,
     news: /News & Analysis$/,
-    overview: /Season Overview$/,
+    overview: /Fantasy Snapshot$/,
     bio: /Bio$/,
   };
 
@@ -3094,9 +3115,19 @@ describe("player section URLs", () => {
 
       const h1 = doc.querySelectorAll("h1");
       assert.equal(h1.length, 1, `${id}: exactly one H1`);
-      const heading = h1[0].textContent.replace(/\s+/g, " ").trim();
-      assert.ok(heading.startsWith(fixture.name), `${id}: the H1 names the player`);
-      assert.match(heading, PHRASES[id], `${id}: and says which page this is`);
+      assert.equal(
+        h1[0].textContent.replace(/\s+/g, " ").trim(),
+        fixture.name,
+        `${id}: the H1 is the player, and only the player`,
+      );
+
+      const own = panels[0].querySelector(".scp-h2");
+      assert.ok(own, `${id}: the section heads itself`);
+      assert.match(
+        own.textContent.replace(/\s+/g, " ").trim(),
+        PHRASES[id],
+        `${id}: and says which page this is`,
+      );
     }
   });
 
@@ -3214,10 +3245,10 @@ describe("player section URLs", () => {
       false,
       "and the one it replaced is not",
     );
-    assert.match(
+    assert.equal(
       heading.textContent.replace(/\s+/g, " ").trim(),
-      PHRASES[target],
-      "the H1 followed",
+      landed,
+      "the H1 did not follow — the hero is the player on every tab",
     );
 
     // Nothing loaded: the other panels are still in the document, which is what
