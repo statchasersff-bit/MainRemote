@@ -33,7 +33,7 @@
  * One "what changed" fact — the kind no stats feed can report.
  *
  * `rank` exists so the value can stay short without the league context being
- * thrown away: "61.4 plays/g" is the reading and "18th" is what makes it mean
+ * thrown away: "23.6 pts/g" is the reading and "8th" is what makes it mean
  * something, and at this size they cannot share one line at one weight.
  */
 export interface OutlookFact {
@@ -129,8 +129,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Departures", value: "Stefon Diggs, Austin Hooper" },
       { label: "Play caller", value: "Josh McDaniels" },
       { label: "Projected wins", value: "10–11" },
-      { label: "Pace", value: "61.4 plays/g", rank: "18th" },
-      { label: "Dropback rate", value: "60.8%", rank: "13th" },
     ],
     groups: [
       {
@@ -326,7 +324,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Departures", value: "Tua Tagovailoa, Jaylen Waddle, Tyreek Hill" },
       { label: "Vacated WR targets", value: "160 (67.2%)" },
       { label: "Scoring", value: "20.4 pts/g", rank: "25th" },
-      { label: "Pace", value: "55.8 plays/g", rank: "31st" },
     ],
     groups: [
       {
@@ -491,7 +488,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Rushing", value: "156.6 yds/g", rank: "2nd" },
       { label: "Passing", value: "192.8 yds/g", rank: "27th" },
       { label: "Scoring", value: "24.9 pts/g", rank: "11th" },
-      { label: "Pace", value: "57.3 plays/g", rank: "29th" },
       { label: "TD split", value: "23 pass / 23 rush" },
     ],
     groups: [
@@ -764,7 +760,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Head coach", value: "Mike McCarthy (first season)" },
       { label: "Scoring", value: "23.4 pts/g", rank: "15th" },
       { label: "Passing", value: "213.6 yds/g", rank: "22nd" },
-      { label: "Pace", value: "58.1 plays/g", rank: "28th" },
       { label: "Turnover margin", value: "+12", rank: "4th" },
       { label: "Backfield split", value: "236 / 211 carries" },
     ],
@@ -850,7 +845,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       "Houston runs the sixth-fastest offence in football and finished 2nd in turnover margin, which is a good team that has not turned into a good scoring team — 23.8 points a game, 13th. C.J. Stroud missed three starts and threw nineteen touchdowns in the fourteen he made. The one thing Houston did about it this offseason was trade for David Montgomery, which turns the league's most stubborn committee into a backfield with a lead back in it.",
     facts: [
       { label: "Head coach", value: "DeMeco Ryans (fourth season)" },
-      { label: "Pace", value: "64.0 plays/g", rank: "6th" },
       { label: "Turnover margin", value: "+17", rank: "2nd" },
       { label: "Scoring", value: "23.8 pts/g", rank: "13th" },
       { label: "Passing", value: "232.7 yds/g", rank: "14th" },
@@ -1047,7 +1041,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     facts: [
       { label: "Head coach", value: "Liam Coen (second season)" },
       { label: "Scoring", value: "27.9 pts/g", rank: "6th" },
-      { label: "Pace", value: "64.3 plays/g", rank: "4th" },
       { label: "Turnover margin", value: "+13", rank: "3rd" },
       { label: "Passing", value: "236.8 yds/g", rank: "11th" },
       { label: "Departures", value: "Travis Etienne" },
@@ -1267,7 +1260,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Head coach", value: "Sean Payton (fourth season)" },
       { label: "Arrivals", value: "Jaylen Waddle" },
       { label: "Sacks allowed", value: "23", rank: "1st" },
-      { label: "Pace", value: "64.2 plays/g", rank: "5th" },
       { label: "Scoring", value: "23.6 pts/g", rank: "14th" },
       { label: "TD split", value: "25 pass / 18 rush" },
     ],
@@ -1571,7 +1563,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     facts: [
       { label: "Head coach", value: "Jim Harbaugh (third season)" },
       { label: "Arrivals", value: "David Njoku, Keaton Mitchell" },
-      { label: "Pace", value: "64.4 plays/g", rank: "3rd" },
       { label: "Third down", value: "45.8%", rank: "3rd" },
       { label: "Sacks allowed", value: "60", rank: "29th" },
       { label: "Scoring", value: "21.6 pts/g", rank: "20th" },
@@ -1669,7 +1660,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
     facts: [
       { label: "Head coach", value: "Brian Schottenheimer (second season)" },
       { label: "Passing", value: "277.5 yds/g", rank: "1st" },
-      { label: "Pace", value: "65.9 plays/g", rank: "1st" },
       { label: "Scoring", value: "27.7 pts/g", rank: "7th" },
       { label: "Passing TDs", value: "31" },
       { label: "Turnover margin", value: "-9", rank: "29th" },
@@ -1770,7 +1760,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Departures", value: "Darius Slayton" },
       { label: "Rushing", value: "129.1 yds/g", rank: "5th" },
       { label: "Passing", value: "217.1 yds/g", rank: "21st" },
-      { label: "Pace", value: "63.8 plays/g", rank: "8th" },
       { label: "TD split", value: "21 pass / 22 rush" },
     ],
     groups: [
@@ -1857,7 +1846,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Head coach", value: "Nick Sirianni (sixth season)" },
       { label: "Arrivals", value: "Marquise Brown, Tank Bigsby" },
       { label: "Departures", value: "A.J. Brown" },
-      { label: "Pace", value: "59.4 plays/g", rank: "25th" },
       { label: "Passing", value: "204.7 yds/g", rank: "23rd" },
       { label: "Turnover margin", value: "+6", rank: "7th" },
     ],
@@ -2053,7 +2041,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Head coach", value: "Ben Johnson (second season)" },
       { label: "Departures", value: "DJ Moore" },
       { label: "Turnover margin", value: "+22", rank: "1st" },
-      { label: "Pace", value: "64.9 plays/g", rank: "2nd" },
       { label: "Rushing", value: "144.5 yds/g", rank: "3rd" },
       { label: "Sacks allowed", value: "24", rank: "3rd" },
     ],
@@ -2250,7 +2237,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Arrivals", value: "Jonnu Smith, Tyrod Taylor" },
       { label: "Third down", value: "48.8%", rank: "2nd" },
       { label: "Scoring", value: "23.0 pts/g", rank: "16th" },
-      { label: "Pace", value: "59.4 plays/g", rank: "23rd" },
       { label: "Sacks allowed", value: "29", rank: "7th" },
     ],
     groups: [
@@ -2349,7 +2335,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Third down", value: "31.8%", rank: "32nd" },
       { label: "Giveaways", value: "30", rank: "32nd" },
       { label: "Passing", value: "188.7 yds/g", rank: "30th" },
-      { label: "Pace", value: "56.1 plays/g", rank: "30th" },
       { label: "Sacks allowed", value: "60", rank: "29th" },
     ],
     groups: [
@@ -2538,7 +2523,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Scoring", value: "18.3 pts/g", rank: "27th" },
       { label: "Passing", value: "194.4 yds/g", rank: "26th" },
       { label: "Rushing TDs", value: "9", rank: "27th" },
-      { label: "Pace", value: "59.5 plays/g", rank: "22nd" },
     ],
     groups: [
       {
@@ -2636,7 +2620,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Passing", value: "236.9 yds/g", rank: "10th" },
       { label: "Rushing", value: "94.3 yds/g", rank: "28th" },
       { label: "Scoring", value: "18.0 pts/g", rank: "28th" },
-      { label: "Pace", value: "63.2 plays/g", rank: "11th" },
       { label: "Sacks allowed", value: "49", rank: "25th" },
     ],
     groups: [
@@ -2934,7 +2917,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Passing TDs", value: "46", rank: "1st" },
       { label: "Sacks allowed", value: "23", rank: "1st" },
       { label: "Turnover margin", value: "+11", rank: "5th" },
-      { label: "Pace", value: "63.9 plays/g", rank: "7th" },
     ],
     groups: [
       {
@@ -3131,7 +3113,6 @@ export const TEAM_OUTLOOKS: Record<string, TeamOutlook> = {
       { label: "Departures", value: "Kenneth Walker" },
       { label: "Scoring", value: "28.4 pts/g", rank: "3rd" },
       { label: "Giveaways", value: "28", rank: "31st" },
-      { label: "Pace", value: "59.7 plays/g", rank: "21st" },
       { label: "Sacks allowed", value: "27", rank: "5th" },
     ],
     groups: [
