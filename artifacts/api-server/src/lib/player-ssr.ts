@@ -60,6 +60,14 @@ function optionKey(
     // different heading, no tab strip. Left out of the key, a request for
     // ?section=injury poisons the cache for the full profile at the same slug.
     options.section ?? "",
+    // Whether the panel's heading was promoted to the page's <h1>. Same hazard
+    // as the section directly above, and worse in its consequences: `?h1=1`
+    // renders the opening heading as an <h1> and the plain request renders it
+    // as an <h2>, so left out of the key WHICHEVER REQUEST ARRIVES FIRST pins
+    // the answer for every later one at that slug. A host running "let the tool
+    // supply the heading" — which also empties the theme's own title — then
+    // serves pages with no <h1> at all, or a plain mount serves two.
+    options.ownHeading ?? false,
     data.format ?? "ppr",
     data.advancedSeason ?? 0,
     // The Game Log's season, for the same reason the section is here: two

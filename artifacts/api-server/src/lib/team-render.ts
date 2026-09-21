@@ -611,10 +611,10 @@ function snapshotMovement(
  * Stats tab and the tiles follow it, so a reader learns the shape once at the
  * top of the page and reads every block under it for free.
  *
- * "in NFL" is gone from the ordinal. The section is titled Team Snapshot and
- * sits under the team's own name, so the league was never in doubt, and four
- * cards each repeating it cost a line apiece to say nothing. The caption beside
- * the ordinal is the one that carries it, once, quietly.
+ * "in NFL" is gone from the ordinal. The section heading names the team and the
+ * season outright — "Bills Team Stats 2026" — so the league was never in doubt,
+ * and four cards each repeating it cost a line apiece to say nothing. The
+ * caption beside the ordinal is the one that carries it, once, quietly.
  */
 function snapshotCard(
   data: TeamPageData,
@@ -690,7 +690,17 @@ function renderSnapshot(data: TeamPageData): string {
 
   return (
     `<div class="sct-block">` +
-    h2("Team Snapshot") +
+    // The team and the year, like every other tab's opening heading — this one
+    // said "Team Snapshot", which named neither, and it is the heading the
+    // Stats section address promotes to its <h1>. Thirty-two pages shared one
+    // generic phrase while the page title beside it read "Buffalo Bills Stats
+    // 2026: Offense, Defense & NFL Rankings".
+    //
+    // `snapshot.season`, NOT `data.state.season`, for the reason the note
+    // directly above is keyed the same way: through Week 1 the numbers are last
+    // season's, and a heading that says 2026 over a block of 2025 figures is
+    // the one thing worse than a heading that says nothing.
+    h2(`${data.team.nickname} Team Stats ${snapshot.season}`) +
     seasonNote +
     `<ul class="sct-metrics">${cards}</ul>` +
     `</div>`

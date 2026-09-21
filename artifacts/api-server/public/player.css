@@ -1150,6 +1150,25 @@ body.scp-page {
   color: #fff;
 }
 
+/*
+ * A state swap in flight — see wireStateSwap in client/player.ts. The page is
+ * being re-rendered from another scoring format or another season, which takes
+ * one request, so the controls that started it say so and stop taking clicks.
+ * Only the controls dim: the numbers on screen are still the true answer to the
+ * question the reader asked a moment ago, and greying the page would suggest
+ * otherwise. With scripting off the attribute is never set and none of this
+ * applies.
+ */
+.scp[aria-busy="true"] .scp-format,
+.scp[aria-busy="true"] .scp-seasons {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.scp[aria-busy="true"] {
+  cursor: progress;
+}
+
 /* ---------------------------------------------------------------- panels */
 
 .scp-section {

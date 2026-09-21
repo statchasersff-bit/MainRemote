@@ -463,7 +463,16 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
     // across the top.
     `<span class="sct-hero-decor" aria-hidden="true"></span>` +
     `<div class="sct-mu-strip-inner">` +
-    `<div class="sct-hero-text sct-mu-strip-text">` +
+    // NOT `.sct-hero-text`. That class is the HUB hero's named grid area —
+    // `grid-area: text`, which only means anything inside `.sct-hero-inner`'s
+    // `grid-template-areas`. This grid has no named areas, and a name that
+    // matches no line is resolved against the IMPLICIT grid rather than
+    // ignored: the block was pushed into a column of its own, the board and
+    // the meta line auto-placed into the first, and the hero came apart into
+    // two columns with the title stranded at the bottom of the right-hand one.
+    // Everything the borrowed class was actually contributing — `min-width: 0`
+    // — is on `.sct-mu-strip-text` in team.css instead.
+    `<div class="sct-mu-strip-text">` +
     `<p class="sct-eyebrow">${escapeHtml(eyebrow)}</p>` +
     `<${headingTag} class="sct-title sct-mu-strip-title">${escapeHtml(heroHeading(data))}</${headingTag}>` +
     `</div>` +
