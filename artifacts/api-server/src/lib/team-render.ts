@@ -1443,7 +1443,8 @@ function briefName(name: string): string | null {
 /* ---------------------------------------------------------------- outlook */
 
 /**
- * One "what changed" fact: an offseason arrival, the play caller, the pace.
+ * One "what changed" fact: an offseason arrival, the play caller, last season's
+ * scoring rate.
  *
  * A <div> pair inside a <dl> rather than a card, because these are the page's
  * cheapest facts and dressing them as tiles would put them at the same weight
