@@ -6323,6 +6323,50 @@ a.scp-peer:focus-visible {
     align-items: stretch;
   }
 
+  /*
+   * The tab strip, given a width it cannot argue with.
+   *
+   * `.scp-nav` carries `flex: 1 1 auto; min-width: 0` so it can shrink below
+   * its content and scroll the overflow instead. That works while this bar is
+   * a ROW: min-width is then the main axis, and zeroing it is what disables
+   * the automatic minimum size that would otherwise hold the strip open at the
+   * width of seven tabs.
+   *
+   * The line above turns the bar into a COLUMN, and every part of that
+   * arrangement moves axis with it. Horizontal is now the cross axis, the
+   * shrink factor governs height, and `min-width: 0` is left describing an
+   * axis nobody is shrinking. The strip went back to being as wide as its
+   * content — 542px inside a 390px phone — and because it is in normal flow it
+   * took the document with it. That is the whole bug: the page scrolled
+   * sideways, the site's own header and banner sized themselves to the
+   * viewport while the body painted the rest, and a phone showed a stripe of
+   * background down the right of every player page.
+   *
+   * A definite width is the fix, not a smaller minimum: `100%` resolves
+   * against this bar's content box, which IS the viewport here, so there is no
+   * content-based size left to negotiate and `overflow-x: auto` gets to do its
+   * job. Stated for both axes' sake rather than relying on `align-items:
+   * stretch`, which is what was supposed to be sizing it and measurably was
+   * not.
+   */
+  .scp-nav {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Same treatment for the scoring pills, which sit in the same column and
+     have the same content-wider-than-the-phone problem once STD, HALF and PPR
+     are spelled out beside the label. */
+  .scp-format {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .scp-format::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Production stacks, and the watermark goes: there is no width left for it
      to be subtle in, and a logo behind a narrow column is just a logo. */
   .scp-prod-grid {
