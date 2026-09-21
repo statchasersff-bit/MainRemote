@@ -397,16 +397,56 @@ const STATCHASERS_TEAM_INDEX_LEAD = 'Every NFL team hub: player news, injury des
  *
  * @param string $content Page body.
  */
+/**
+ * How many links in this body point at a path, however they are written.
+ *
+ * `substr_count( $content, 'href="/nfl/teams/' )` is what this replaces, and it
+ * was wrong in a way that only showed up on a real site: it required the link
+ * to be root-relative and double-quoted, which is how the build script writes
+ * them and is NOT how a page survives a visit to a block editor. WonderBlocks,
+ * Gutenberg and Divi all happily rewrite `/nfl/teams/buffalo-bills/` to the
+ * absolute `https://example.com/nfl/teams/buffalo-bills/` on save, and the
+ * count silently became zero — so the container that most needed rebuilding
+ * reported as somebody's own page and was left alone, which is exactly the
+ * state the rebuild button was added to get out of.
+ *
+ * Matches either form, and single quotes, and whitespace around the `=`.
+ *
+ * @param string $content Page body.
+ * @param string $path    Path without leading or trailing slashes.
+ */
+function statchasers_index_link_count( string $content, string $path ): int {
+	return (int) preg_match_all(
+		'#href\s*=\s*["\'][^"\']*/' . preg_quote( $path, '#' ) . '/#i',
+		$content
+	);
+}
+
+/**
+ * Does this body carry a shortcode somebody put there?
+ *
+ * The old test was `strpos( $content, '[' )`, which is any bracket at all —
+ * including one in prose, and including whatever markup an editor leaves
+ * behind. This asks the question that was meant: is there a shortcode-shaped
+ * token here. Still deliberately broad: any shortcode, not just ours, because
+ * a body with a mount in it is a body somebody arranged.
+ *
+ * @param string $content Page body.
+ */
+function statchasers_index_has_shortcode( string $content ): bool {
+	return 1 === preg_match( '/\[[a-z_][a-z0-9_-]*/i', $content );
+}
+
 function statchasers_team_index_is_stub( string $content ): bool {
 	if ( false === strpos( $content, STATCHASERS_TEAM_INDEX_LEAD ) ) {
 		return false;
 	}
 
-	if ( false !== strpos( $content, '[' ) ) {
+	if ( statchasers_index_has_shortcode( $content ) ) {
 		return false;
 	}
 
-	return substr_count( $content, 'href="/' . STATCHASERS_TEAM_PATH . '/' ) >= 30;
+	return statchasers_index_link_count( $content, STATCHASERS_TEAM_PATH ) >= 30;
 }
 
 /**
@@ -442,6 +482,240 @@ function statchasers_team_write_index( int $container ): void {
 		)
 	);
 }
+
+
+/* ------------------------------------------------------ the index pages */
+
+/**
+ * What state a container page's body is in.
+ *
+ * The container is the parent WordPress needs so that the children resolve, and
+ * its body should be the lead sentence plus the index mount. Three of the five
+ * answers below are states the rebuild button acts on; the other two are
+ * reasons it does nothing, and both are worth printing rather than hiding,
+ * because "nothing happened" and "there was nothing to do" look identical from
+ * the outside.
+ *
+ * @param int      $container Container page ID, 0 when it does not exist.
+ * @param string   $shortcode The index shortcode the page should carry.
+ * @param callable $is_stub   Predicate recognising the generated stub.
+ * @return string  missing|mounted|empty|stub|custom
+ */
+function statchasers_index_state( int $container, string $shortcode, callable $is_stub ): string {
+	if ( $container <= 0 ) {
+		return 'missing';
+	}
+
+	$content = (string) get_post_field( 'post_content', $container );
+
+	if ( has_shortcode( $content, $shortcode ) ) {
+		return 'mounted';
+	}
+
+	if ( '' === trim( $content ) ) {
+		return 'empty';
+	}
+
+	return $is_stub( $content ) ? 'stub' : 'custom';
+}
+
+/** The two container pages, each with the state of its body. */
+function statchasers_index_containers(): array {
+	$out = array();
+
+	$team = statchasers_team_page_status();
+	$out['teams'] = array(
+		'label' => 'Teams',
+		'path'  => STATCHASERS_TEAM_PATH,
+		'lead'  => STATCHASERS_TEAM_INDEX_LEAD,
+		'id'    => (int) ( $team['container'] ?? 0 ),
+		'state' => statchasers_index_state(
+			(int) ( $team['container'] ?? 0 ),
+			STATCHASERS_TEAM_INDEX_SHORTCODE,
+			'statchasers_team_index_is_stub'
+		),
+	);
+
+	if ( function_exists( 'statchasers_player_page_status' ) ) {
+		$player = statchasers_player_page_status();
+		$out['players'] = array(
+			'label' => 'Players',
+			'path'  => STATCHASERS_PLAYER_PATH,
+			'lead'  => STATCHASERS_PLAYER_INDEX_LEAD,
+			'id'    => (int) ( $player['container'] ?? 0 ),
+			'state' => statchasers_index_state(
+				(int) ( $player['container'] ?? 0 ),
+				STATCHASERS_PLAYER_INDEX_SHORTCODE,
+				'statchasers_player_index_is_stub'
+			),
+		);
+	}
+
+	return $out;
+}
+
+/**
+ * Why a container was not recognised.
+ *
+ * "Your own content" is the right answer for a page somebody wrote, and a
+ * useless one for a page that IS the stub but fails a test — which is how the
+ * published /nfl/teams/ sat untouched through two releases. Recognition is
+ * three questions; this prints the answers so the screen can never again say
+ * "left alone" without saying what it looked at.
+ *
+ * @param string $content Page body.
+ * @param string $path    Path its links should point at.
+ * @param string $lead    The lead sentence the generated body opens with.
+ */
+function statchasers_index_explain( string $content, string $path, string $lead ): string {
+	$has_lead  = false !== strpos( $content, $lead );
+	$has_short = statchasers_index_has_shortcode( $content );
+	$links     = statchasers_index_link_count( $content, $path );
+
+	$parts = array(
+		$has_lead ? 'our lead sentence: yes' : 'our lead sentence: no',
+		sprintf( 'links to /%s/: %d', $path, $links ),
+	);
+
+	if ( $has_short ) {
+		$parts[] = 'carries a shortcode';
+	}
+
+	return implode( ' &middot; ', $parts );
+}
+
+/**
+ * The index pages, and a button that mounts the grid on them.
+ *
+ * This exists because the write was only ever reachable from the build: both
+ * `statchasers_team_write_index()` and `statchasers_player_write_index()` run
+ * at the end of a page build, and the build button is only rendered while pages
+ * are missing. On a site where all 32 hubs already exist the screen said "All
+ * 32 pages exist. Nothing to do." and there was no way left to press it — so a
+ * container still carrying the old 32-link stub stayed that way, the theme
+ * printed the wall of links in its own list styling, and the plugin appended
+ * the real grid underneath it. Two indexes on one page, and no button.
+ *
+ * Only `empty` and `stub` are written. A page somebody has edited is theirs.
+ */
+function statchasers_index_panel(): void {
+	$containers = statchasers_index_containers();
+	$actionable = 0;
+
+	echo '<h2>Index pages</h2>';
+
+	echo '<p>The parent page each set of pages hangs off. Its body should be the ' .
+		'lead sentence and the index mount, so the page that lists them is drawn by ' .
+		'the tool rather than by the theme&#8217;s list styling.</p>';
+
+	echo '<table class="widefat striped" style="max-width:52em"><tbody>';
+
+	foreach ( $containers as $row ) {
+		$say = array(
+			'missing' => array( 'not created yet', 'The build button above makes it.' ),
+			'mounted' => array( 'mounts the grid', 'Nothing to do.' ),
+			'empty'   => array( 'empty', 'The button below will write the mount.' ),
+			'stub'    => array( 'carrying the old list of links', 'The button below will replace it with the mount.' ),
+			'custom'  => array( 'your own content', 'Left alone. Add the shortcode yourself to mount the grid.' ),
+		);
+
+		$state = (string) $row['state'];
+		if ( 'empty' === $state || 'stub' === $state ) {
+			++$actionable;
+		}
+
+		$note = $say[ $state ][1];
+
+		// A refusal shows its working. See statchasers_index_explain().
+		if ( 'custom' === $state && (int) $row['id'] > 0 ) {
+			$note .= '<br /><code>' . statchasers_index_explain(
+				(string) get_post_field( 'post_content', (int) $row['id'] ),
+				(string) $row['path'],
+				(string) $row['lead']
+			) . '</code>';
+		}
+
+		printf(
+			'<tr><td style="width:7em"><strong>%s</strong></td>' .
+			'<td><code>/%s/</code></td>' .
+			'<td>%s</td><td class="description">%s</td></tr>',
+			esc_html( (string) $row['label'] ),
+			esc_html( (string) $row['path'] ),
+			esc_html( $say[ $state ][0] ),
+			wp_kses_post( $note )
+		);
+	}
+
+	echo '</tbody></table>';
+
+	if ( 0 === $actionable ) {
+		echo '<p><strong>Nothing to rebuild.</strong></p>';
+		return;
+	}
+
+	echo '<form method="post">';
+	wp_nonce_field( 'statchasers_team_reindex' );
+	printf(
+		'<p><button type="submit" name="statchasers_team_reindex" value="1" class="button button-primary">Rebuild %d index page%s</button></p>',
+		(int) $actionable,
+		1 === $actionable ? '' : 's'
+	);
+	echo '<p class="description">Writes the lead sentence and the index shortcode. ' .
+		'A container you have edited yourself is never touched.</p>';
+	echo '</form>';
+}
+
+/**
+ * Handle the rebuild button.
+ *
+ * The same shape as the build handler above and for the same reason: redirect
+ * before any output, so a refresh cannot run it twice. Both writes are
+ * idempotent and both decline on a page they do not recognise, so the worst a
+ * double press does is nothing.
+ */
+add_action(
+	'admin_init',
+	static function (): void {
+		if ( ! isset( $_POST['statchasers_team_reindex'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'You do not have permission to do this.' );
+		}
+
+		check_admin_referer( 'statchasers_team_reindex' );
+
+		$before = statchasers_index_containers();
+
+		foreach ( $before as $key => $row ) {
+			if ( (int) $row['id'] <= 0 ) {
+				continue;
+			}
+
+			if ( 'teams' === $key ) {
+				statchasers_team_write_index( (int) $row['id'] );
+			} elseif ( function_exists( 'statchasers_player_write_index' ) ) {
+				statchasers_player_write_index( (int) $row['id'] );
+			}
+		}
+
+		statchasers_team_forget_status();
+
+		if ( function_exists( 'statchasers_news_flush' ) ) {
+			statchasers_news_flush();
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				'page',
+				STATCHASERS_TEAM_PAGES_SCREEN,
+				admin_url( 'tools.php' )
+			)
+		);
+		exit;
+	}
+);
 
 /* --------------------------------------------------------------------- admin */
 
@@ -663,6 +937,7 @@ function statchasers_team_pages_screen(): void {
 	}
 
 	statchasers_team_retitle_panel();
+	statchasers_index_panel();
 	statchasers_player_panel();
 	statchasers_matchup_panel();
 	statchasers_h1_panel();
