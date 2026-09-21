@@ -406,6 +406,9 @@ router.get("/embed/team/:slug", (req, res) => {
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
         section: section(req),
+        // `?h1=1` — the host has emptied its own page title, so the panel's
+        // heading becomes the page's <h1>. Same contract as routes/player.ts.
+        ownHeading: String(req.query["h1"] ?? "").trim() === "1",
         matchupPathPrefix: (process.env["SC_MATCHUP_PATH_PREFIX"] ?? "/nfl/").trim(),
       });
       res.set("ETag", `W/"${result.version}"`);

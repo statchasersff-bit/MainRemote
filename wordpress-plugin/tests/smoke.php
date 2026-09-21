@@ -295,6 +295,27 @@ $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 is( statchasers_h1_filter( true ), true, 'an explicit true wins' );
 
 /*
+ * The mode where the tool supplies the page heading.
+ *
+ * The player fragment already prints "<player> Stats 2026" with the gold rule
+ * under it; on a section address the theme prints the same phrase above it and
+ * the reader gets it twice. This empties the theme's title and asks the API for
+ * the promoted markup, so the heading on screen IS the page's H1.
+ */
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'tool';
+is( statchasers_h1_tool_supplies_heading(), true, 'tool: the fragment owns the heading' );
+is( statchasers_h1_should_print(), false, 'tool: the plugin prints nothing of its own' );
+is( statchasers_h1_should_print( 'player' ), false, 'tool: and nothing on player pages either' );
+is( statchasers_h1_should_replace(), true, "tool: the theme's title is emptied" );
+
+// It must not depend on a verdict: the whole point is that the answer is known.
+unset( $GLOBALS['options'][ STATCHASERS_H1_OPTION ] );
+is( statchasers_h1_should_replace(), true, 'tool: and it needs no measurement' );
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
+is( statchasers_h1_tool_supplies_heading(), false, 'any other mode leaves it to the host' );
+
+/*
  * The check is asked per page type.
  *
  * The bug this covers shipped: one measurement taken on a team hub answered for

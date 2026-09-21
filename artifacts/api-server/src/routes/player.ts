@@ -126,6 +126,17 @@ function playerPath(slug: string): string {
   return `${PLAYER_PATH_PREFIX}${slug}`;
 }
 
+/**
+ * Has the host agreed to stand down its own page heading?
+ *
+ * `?h1=1` from the WordPress plugin's "the tool supplies the heading" mode.
+ * Absent, the fragment keeps every heading at <h2> and the host's title is the
+ * page's H1, which is the default and the safe answer for any other embedding.
+ */
+function ownHeading(req: Request): boolean {
+  return String(req.query["h1"] ?? "").trim() === "1";
+}
+
 function section(req: Request): string | undefined {
   const raw = String(req.query["section"] ?? "").trim().toLowerCase();
   return SECTIONS.has(raw) ? raw : undefined;
@@ -547,6 +558,7 @@ router.get("/embed/player/:slug", (req, res) => {
           fpaPath,
           linkQuery: fragmentLinkQuery(playerPrefix),
           section: section(req),
+          ownHeading: ownHeading(req),
         },
         {
           format: format(req),

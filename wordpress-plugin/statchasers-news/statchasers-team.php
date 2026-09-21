@@ -107,7 +107,15 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	// five, a different heading — so it is part of the cache key. Left out, the
 	// first request to any section address would serve its markup to the hub
 	// and to every other section on that team for the rest of the TTL.
-	$key        = md5( $origin . '|' . $slug . '|' . $section );
+	// The heading mode joins it for the same reason: it changes the markup the
+	// API returns — the panel's opening <h2> comes back as the page's <h1> —
+	// and a fragment cached under one mode must not be served under the other.
+	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+
+	$key        = md5(
+		$origin . '|' . $slug . '|' . $section . '|' . ( $own_heading ? 'h1' : '' )
+	);
 	$cache_key  = 'sc_team_ssr_' . $key;
 	$backup_key = 'sc_team_ssr_bak_' . $key;
 
@@ -119,6 +127,9 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 	$query = array();
 	if ( '' !== $section ) {
 		$query['section'] = $section;
+	}
+	if ( $own_heading ) {
+		$query['h1'] = '1';
 	}
 
 	$response = wp_remote_get(

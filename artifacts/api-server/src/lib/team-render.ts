@@ -106,6 +106,13 @@ export interface TeamRenderOptions {
    * PlayerRenderOptions.section; the two pages are addressed the same way.
    */
   section?: string;
+  /**
+   * The host has stood down: this fragment supplies the page's <h1>.
+   *
+   * Set by the WordPress plugin's "the tool supplies the heading" mode. See
+   * promoteHeading(), and the twin option in player-render.ts.
+   */
+  ownHeading?: boolean;
   /** Where matchup pages live. Defaults to this app's own /nfl/. */
   matchupPathPrefix?: string;
 }
@@ -194,6 +201,28 @@ export function styleAttr(parts: Array<string | null>): string {
  */
 export function h2(text: string, extraClass = ""): string {
   return `<h2 class="sct-h2${extraClass ? ` ${extraClass}` : ""}">${escapeHtml(text)}</h2>`;
+}
+
+/**
+ * Promote a panel's own heading to the page's <h1>.
+ *
+ * The twin of promoteHeading() in player-render.ts, and the same problem: a
+ * section address prints its phrase twice, once as the theme's page title and
+ * once here as the panel's own heading with the gold rule under it.
+ *
+ * The FIRST match only. A hub panel carries several `h2()`s — the Stats tab
+ * alone has three — and it is the one the panel opens with that names the page;
+ * the rest are blocks within it and stay where they are.
+ *
+ * `extraClass` is preserved, because some headings carry one and the styling
+ * hangs off `.sct-h2` either way: this changes the document outline and nothing
+ * a reader can see.
+ */
+function promoteHeading(html: string): string {
+  return html.replace(
+    /<h2 class="(sct-h2[^"]*)">([\s\S]*?)<\/h2>/,
+    '<h1 class="$1">$2</h1>',
+  );
 }
 
 /**
@@ -3396,7 +3425,9 @@ export function renderTeamPage(
       renderHero(data, options) +
       renderNav(tabs, team, data.state.season, options, scoped.id) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
-      ` id="${escapeHtml(scoped.id)}">${scoped.html}</section>` +
+      ` id="${escapeHtml(scoped.id)}">` +
+      (options.ownHeading ? promoteHeading(scoped.html) : scoped.html) +
+      `</section>` +
       renderResources(team) +
       renderTails([scoped]) +
       // Scoped to this section: a Schedule page carrying the Stats questions
@@ -3420,7 +3451,11 @@ export function renderTeamPage(
       (section, i) =>
         `<section class="sct-section${i === 0 ? " is-default is-active" : ""}"` +
         ` data-sct-panel id="${escapeHtml(section.id)}"` +
-        ` aria-labelledby="${escapeHtml(section.id)}-tab">${section.html}</section>`,
+        ` aria-labelledby="${escapeHtml(section.id)}-tab">` +
+        // Only the panel the page opens on, so the document has one H1
+        // whichever tab a reader switches to.
+        (options.ownHeading && i === 0 ? promoteHeading(section.html) : section.html) +
+        `</section>`,
     )
     .join("");
 
