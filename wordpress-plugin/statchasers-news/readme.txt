@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.8.2 =
+* Every tool sits in the site's own content column. `#left-area { width: 100% }` takes back the column Divi reserves for a sidebar nobody filled — but Divi also widens the content container on any page that has been opened in the Divi Builder, so that a full-width section can bleed to the window. A tool is not a section, it is page content, so on those pages "the whole column" meant the whole screen: the team hubs rendered around 1800px wide while the player pages, carrying the same stylesheet on pages that had not been through the builder, sat in the ordinary column. The width is now capped at the site's own content width, read from Divi's Customizer setting rather than written down, so the tools line up with every hand-built row on the site. Override with the `statchasers_content_width` filter on a theme that cannot be asked.
+* The matchup holder page is built where the pair URLs actually look for it. It was created under the team hubs' container, at /nfl/teams/matchup/, while every rewrite rule and every filter in the plugin addresses it as /nfl/matchup/ — so all 496 pair URLs resolved to no page, and WordPress's own 404 guess then matched the stray page by its slug and sent the reader to it. What that looked like from the front end: "View matchup" on a team hub landed on a page saying it was the holder and rendered nothing. The Tools screen could not see the problem either, because the builder looked under one parent and the panel under the other, so pressing "Create the holder page" reported success and changed nothing. The screen now detects a holder at the wrong address and offers to move it, an admin notice says so from any screen, and the build rebuilds the permalinks itself.
 
 = 1.8.1 =
 * "Let the tool supply the heading" now covers team hubs as well as player pages. A hub section address printed its phrase twice the same way — the theme's page title above, the panel's own heading with the gold rule below it — and the hub answers to it on the same terms: the theme's title is emptied and the panel the page opens on has its heading promoted to the page's H1. A hub panel carries several headings and only the one it opens with is promoted, so a section page and the whole hub both carry exactly one H1. Needs the matching API deploy.

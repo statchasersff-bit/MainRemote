@@ -54,6 +54,11 @@ function register_activation_hook( $file, $fn ) {}
 function register_deactivation_hook( $file, $fn ) {}
 function add_management_page() {}
 function get_option( $key, $default = false ) { return $GLOBALS['options'][ $key ] ?? $default; }
+// Divi's own accessor. statchasers_team_is_divi() keys off its existence, and
+// statchasers_team_content_width() reads the Customizer's content width from
+// it. $GLOBALS['et_options'] left unset is a site that has never touched the
+// setting, which is the case the fallback is for.
+function et_get_option( $key, $default = false ) { return $GLOBALS['et_options'][ $key ] ?? $default; }
 function update_option( $key, $value, $autoload = null ) { $GLOBALS['options'][ $key ] = $value; }
 function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
 function get_transient( $key ) { return false; }
@@ -71,7 +76,14 @@ function is_singular( $t = '' ) { return (bool) ( $GLOBALS['page']['singular'] ?
 function in_the_loop() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function is_main_query() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function get_queried_object() { return $GLOBALS['page']['post'] ?? null; }
-function get_post() { return $GLOBALS['page']['current'] ?? null; }
+function get_post( $id = null ) {
+	// By id when the test has built a page tree; otherwise the page being
+	// rendered, which is what every other caller in the plugin means.
+	if ( null !== $id && isset( $GLOBALS['pages'][ (int) $id ] ) ) {
+		return $GLOBALS['pages'][ (int) $id ];
+	}
+	return $GLOBALS['page']['current'] ?? null;
+}
 function get_queried_object_id() { $o = get_queried_object(); return $o instanceof WP_Post ? (int) $o->ID : 0; }
 /*
  * Tag boundaries matter here, unlike most of these stubs. WordPress matches a
@@ -101,8 +113,63 @@ function get_permalink( $id ) { return 'https://example.com/p/' . $id . '/'; }
 function get_post_status( $id ) { return 'publish'; }
 function get_page_by_path( $p ) { return $GLOBALS['pages_by_path'][ $p ] ?? null; }
 function get_page_uri( $id ) { return 'nfl'; }
-function wp_insert_post( $a, $b = false ) { return 1; }
-function wp_update_post( $a ) { return 1; }
+/*
+ * A page tree, for the handful of tests that need one: $GLOBALS['pages'] maps
+ * id => WP_Post, and the three functions below read and write it. Left unset,
+ * they behave exactly as the flat stubs they replaced, so no other test sees a
+ * difference.
+ *
+ * statchasers_team_find_page() matches on slug AND parent, which is the whole
+ * point of it — so a stub that ignores post_parent would let a page built in
+ * the wrong container pass for one built in the right one. That is the bug
+ * these exist to catch.
+ */
+function get_posts( $args = array() ) {
+	if ( ! isset( $GLOBALS['pages'] ) ) {
+		return array();
+	}
+	$name   = (string) ( $args['name'] ?? '' );
+	$parent = (int) ( $args['post_parent'] ?? 0 );
+	$found  = array();
+	foreach ( $GLOBALS['pages'] as $id => $post ) {
+		if ( $post->post_name === $name && (int) $post->post_parent === $parent ) {
+			$found[] = 'ids' === ( $args['fields'] ?? '' ) ? (int) $id : $post;
+		}
+	}
+	return array_slice( $found, 0, max( 1, (int) ( $args['numberposts'] ?? 1 ) ) );
+}
+
+function wp_insert_post( $a, $b = false ) {
+	if ( ! isset( $GLOBALS['pages'] ) ) {
+		return 1;
+	}
+	$id                 = max( array_keys( $GLOBALS['pages'] ) + array( 0 ) ) + 1;
+	$post               = new WP_Post();
+	$post->ID           = $id;
+	$post->post_name    = (string) ( $a['post_name'] ?? '' );
+	$post->post_title   = (string) ( $a['post_title'] ?? '' );
+	$post->post_content = (string) ( $a['post_content'] ?? '' );
+	$post->post_parent  = (int) ( $a['post_parent'] ?? 0 );
+	$post->post_status  = (string) ( $a['post_status'] ?? 'publish' );
+	$GLOBALS['pages'][ $id ] = $post;
+	return $id;
+}
+
+function wp_update_post( $a, $b = false ) {
+	if ( ! isset( $GLOBALS['pages'] ) ) {
+		return 1;
+	}
+	$id = (int) ( $a['ID'] ?? 0 );
+	if ( ! isset( $GLOBALS['pages'][ $id ] ) ) {
+		return 0;
+	}
+	foreach ( array( 'post_name', 'post_parent', 'post_title', 'post_content', 'post_status' ) as $field ) {
+		if ( isset( $a[ $field ] ) ) {
+			$GLOBALS['pages'][ $id ]->$field = 'post_parent' === $field ? (int) $a[ $field ] : $a[ $field ];
+		}
+	}
+	return $id;
+}
 function is_wp_error( $t ) { return false; }
 function wp_remote_get( $u, $a = array() ) { return array(); }
 function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
@@ -178,7 +245,7 @@ function get_locale() { return 'en_US'; }
 function wp_timezone() { return new DateTimeZone( 'UTC' ); }
 function printf_( $s ) {}
 
-class WP_Post { public $ID = 7; public $post_title = ''; public $post_content = ''; public $post_name = ''; public $post_type = 'page'; }
+class WP_Post { public $ID = 7; public $post_title = ''; public $post_content = ''; public $post_name = ''; public $post_type = 'page'; public $post_parent = 0; public $post_status = 'publish'; }
 class WP_Error {}
 class WP_Query {}
 
@@ -205,6 +272,16 @@ echo "LOADED OK\n\n";
 
 // ------------------------------------------------------------------ checks
 $fail = 0;
+/** The slash-separated path of a page in the test tree, walking its parents. */
+function statchasers_matchup_holder_path( int $id ): string {
+	$parts = array();
+	while ( $id && isset( $GLOBALS['pages'][ $id ] ) ) {
+		array_unshift( $parts, $GLOBALS['pages'][ $id ]->post_name );
+		$id = (int) $GLOBALS['pages'][ $id ]->post_parent;
+	}
+	return implode( '/', $parts );
+}
+
 function is( $got, $want, $label ) {
 	global $fail;
 	if ( $got === $want ) { printf( "  ok    %s\n", $label ); return; }
@@ -537,6 +614,120 @@ $GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 
 is( statchasers_team_post_has_index_shortcode(), true, 'the team index is detected' );
 is( statchasers_team_post_has_shortcode(), false, 'and is not mistaken for a hub' );
 $GLOBALS['page'] = array();
+
+/*
+ * The matchup holder is built where the rewrite rules look for it.
+ *
+ * The bug: statchasers_matchup_build_holder() resolved its parent with
+ * statchasers_team_container(), the HUBS' container, so the page landed at
+ * `nfl/teams/matchup` while every rewrite rule, filter and sitemap entry in
+ * the plugin addresses it as `nfl/matchup`. All 496 pair URLs then resolved to
+ * no page, and WordPress's 404 guess redirected each of them to the stray page
+ * by slug — so "View matchup" on a hub landed on the holder's own notice.
+ *
+ * Asserted on the PARENT rather than on "a page was created", because a page
+ * was always created; it was created in the wrong place, and the old builder
+ * reported success either way.
+ */
+echo "\nthe matchup holder is built under /nfl/, not under the hubs\n";
+
+$GLOBALS['pages'] = array();
+$error            = '';
+$id               = statchasers_matchup_build_holder( $error );
+
+is( $error, '', 'the build reports no error' );
+is( $id > 0, true, 'and returns a page id' );
+is( statchasers_matchup_holder_path( $id ), 'nfl/matchup', 'the holder is at nfl/matchup' );
+is( statchasers_matchup_build_holder( $error ), $id, 'running it again finds the same page' );
+is( count( $GLOBALS['pages'] ), 2, 'and creates nothing the second time' );
+
+/*
+ * The repair path: a holder an older release left one level too deep is MOVED,
+ * not duplicated. Two pages carrying the shortcode would leave the stray
+ * address reachable, which is the state this whole fix is undoing.
+ */
+echo "\na holder left at the old address is moved, not duplicated\n";
+
+$GLOBALS['pages'] = array();
+$nfl              = wp_insert_post( array( 'post_name' => 'nfl', 'post_parent' => 0 ) );
+$teams            = wp_insert_post( array( 'post_name' => 'teams', 'post_parent' => $nfl ) );
+$stray            = wp_insert_post(
+	array(
+		'post_name'    => 'matchup',
+		'post_parent'  => $teams,
+		'post_content' => '[statchasers_matchup]',
+	)
+);
+
+is( statchasers_matchup_stray_holder(), $stray, 'the misplaced holder is recognised' );
+
+$error = '';
+$built = statchasers_matchup_build_holder( $error );
+
+is( $built, $stray, 'the build returns the page that already existed' );
+is( count( $GLOBALS['pages'] ), 3, 'no second holder is created' );
+is( statchasers_matchup_holder_path( $stray ), 'nfl/matchup', 'and it now sits at nfl/matchup' );
+
+/*
+ * A page someone wrote themselves at that address is not this plugin's to move.
+ * The shortcode is the only signature there is.
+ */
+echo "\na page at that address that is not ours is left alone\n";
+
+$GLOBALS['pages'] = array();
+$nfl              = wp_insert_post( array( 'post_name' => 'nfl', 'post_parent' => 0 ) );
+$teams            = wp_insert_post( array( 'post_name' => 'teams', 'post_parent' => $nfl ) );
+$theirs           = wp_insert_post(
+	array(
+		'post_name'    => 'matchup',
+		'post_parent'  => $teams,
+		'post_content' => '<p>Our matchup policy.</p>',
+	)
+);
+
+is( statchasers_matchup_stray_holder(), 0, 'a page with no shortcode is not a stray holder' );
+
+$error = '';
+$built = statchasers_matchup_build_holder( $error );
+
+is( $built > 0 && $built !== $theirs, true, 'the build makes its own holder instead' );
+is( statchasers_matchup_holder_path( $built ), 'nfl/matchup', 'at the right address' );
+is( $GLOBALS['pages'][ $theirs ]->post_parent, $teams, 'and leaves theirs where it was' );
+
+unset( $GLOBALS['pages'] );
+
+/*
+ * The width a tool is held to inside its host page.
+ *
+ * The bug: `#left-area { width: 100% }` takes the sidebar's share back, which
+ * is right, and on a page Divi has widened the content container for — any
+ * page opened in the Divi Builder — it also takes the whole window. Same
+ * stylesheet on a player page that had not been through the builder gave the
+ * content column. One rule, two widths, and the team hubs came out ~700px
+ * wider than the player pages they are supposed to match.
+ *
+ * So the cap is the site's OWN content width, asked of the theme. These assert
+ * the three ways that can come back, because a bare number or an empty string
+ * in a max-width drops the declaration and puts the blowout straight back.
+ */
+echo "\nthe tools are held to the site's content column\n";
+
+is( statchasers_team_content_width(), '1080px', "Divi's default when the theme cannot be asked" );
+
+$GLOBALS['et_options']['content_width'] = '1280px';
+is( statchasers_team_content_width(), '1280px', 'the width the site actually uses' );
+
+$GLOBALS['et_options']['content_width'] = '1440';
+is( statchasers_team_content_width(), '1440px', 'a bare number is given its unit' );
+
+$GLOBALS['et_options']['content_width'] = 'wide';
+is( statchasers_team_content_width(), '1080px', 'and nonsense never reaches the stylesheet' );
+
+unset( $GLOBALS['et_options'] );
+
+$css = statchasers_team_full_width_css();
+is( false !== strpos( $css, 'max-width:1080px!important' ), true, 'the cap is in the CSS the tools enqueue' );
+is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar share is still taken back' );
 
 /*
  * The second group. Its failures are this run's failures — a split that only

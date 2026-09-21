@@ -632,7 +632,36 @@ function statchasers_team_full_width_css(): string {
 			// Same breakpoint as Divi's own rule. Outside it Divi has already
 			// collapsed the columns and there is nothing to correct.
 			'@media (min-width:981px){',
-			'#left-area{width:100%!important;float:none!important;padding-right:0!important;padding-left:0!important}',
+			// The whole row, and no wider than the site's own content column.
+			//
+			// `width: 100%` takes the sidebar's share back. The max-width is
+			// what stops that from meaning "the whole window", and it is not
+			// paranoia — it is the fix for the team hubs rendering at ~1800px
+			// beside player pages sitting in the site's ordinary column.
+			//
+			// Why one page type and not the other, when both get this exact
+			// stylesheet: Divi widens the content CONTAINER on any page that
+			// has been opened in the Divi Builder, so that a full-width SECTION
+			// can bleed to the window —
+			//
+			//     .et_pb_pagebuilder_layout #main-content .container
+			//         { width: 100%; max-width: 100% }
+			//
+			// A tool is not a section. It is page content, printed by a
+			// shortcode into the same column as a paragraph would be. So on a
+			// hub page that had been through the builder, `#left-area` at 100%
+			// meant 100% of the window, and on a player page that had not, it
+			// meant 100% of the content column — same rule, same file, two
+			// widths, and nothing in either stylesheet to blame.
+			//
+			// Capping `#left-area` rather than un-widening `.container` because
+			// it is the element the tool actually sits in, so this holds
+			// whatever made the container wide: the builder layout above, a
+			// Theme Builder template, or a content width someone raised in the
+			// Customizer.
+			'#left-area{width:100%!important;max-width:' . statchasers_team_content_width() . '!important;' .
+				'margin-left:auto!important;margin-right:auto!important;' .
+				'float:none!important;padding-right:0!important;padding-left:0!important}',
 			// The 1px grey rule Divi draws down the column boundary, which
 			// without a sidebar beside it is a line down the middle of nothing.
 			'#main-content .container:before{display:none!important}',
@@ -642,6 +671,54 @@ function statchasers_team_full_width_css(): string {
 			'}',
 		)
 	);
+}
+
+/**
+ * The site's own content column width, as a CSS length.
+ *
+ * Asked of the theme rather than written down here, because "as wide as the
+ * rest of the site" is the actual requirement and any number in this file is a
+ * guess at it. Divi keeps it in the Customizer under Website Content Width and
+ * publishes it through `et_get_option( 'content_width' )` — the same value it
+ * uses for its own `.container` and `.et_pb_row` rules, so a tool capped here
+ * lines up with every hand-built row on the site by construction.
+ *
+ * 1080px is the fallback, which is Divi's own default: a site that has never
+ * touched the setting reads back nothing and is 1080 anyway.
+ *
+ * Overridable, for a theme this cannot ask:
+ *
+ *     add_filter( 'statchasers_content_width', fn() => '1280px' );
+ *
+ * @return string A CSS length, e.g. '1080px'.
+ */
+function statchasers_team_content_width(): string {
+	$width = '';
+
+	if ( function_exists( 'et_get_option' ) ) {
+		$width = trim( (string) et_get_option( 'content_width', '' ) );
+	}
+
+	if ( '' === $width ) {
+		$width = '1080px';
+	}
+
+	// The Customizer control stores a number on some Divi versions and a length
+	// on others. A bare number in a max-width is invalid and drops the whole
+	// declaration, which would put the blowout straight back.
+	if ( is_numeric( $width ) ) {
+		$width .= 'px';
+	}
+
+	/**
+	 * Filters the width a tool is held to inside its host page.
+	 *
+	 * @param string $width A CSS length.
+	 */
+	$width = (string) apply_filters( 'statchasers_content_width', $width );
+
+	// Anything that is not a plain length is not going into a stylesheet.
+	return preg_match( '/^\d+(\.\d+)?(px|em|rem|%|vw)$/', $width ) ? $width : '1080px';
 }
 
 /**
