@@ -699,6 +699,26 @@ body.sct-page.is-embed {
   font-weight: 500;
 }
 
+/* The standfirst, when it would take a second line.
+ *
+ * Set by client/team.ts after measuring — see wireHeroLead() there for why a
+ * media query cannot answer this: the line is the club's own name plus four
+ * words, so it wraps at 470px for Washington and at 360px for Buffalo, and a
+ * single number would take it off a third of the league while it still fits.
+ *
+ * What it costs is nothing a reader had: the line repeats the <h1> above it and
+ * the eyebrow above that, which is why it is the part of the hero that goes
+ * rather than the part that wraps. It stays in the document at every width —
+ * this hides it, it never removes it — so the sentence is in the HTML a crawler
+ * reads either way.
+ *
+ * Two attributes on one name: `data-sct-lead` with no value is the hook the
+ * server prints and the bundle looks for, and "off" is the state. That is why
+ * this matches the value rather than the attribute. */
+.sct-subtitle[data-sct-lead="off"] {
+  display: none;
+}
+
 .sct-facts {
   display: flex;
   flex-wrap: wrap;
@@ -5624,20 +5644,32 @@ body.sct-page.is-embed {
     padding: 16px 18px;
   }
 
+  /* The crest stays BESIDE the name here, as it does on a desktop.
+   *
+   * It used to take a row of its own above the name — a 72px disc, then the
+   * eyebrow, then the title, then the standfirst, four things down the screen
+   * where the first of them is the one that says least. mak asked for the mark
+   * and the name back on one line, and it is the right ask twice over: the
+   * crest and the name are one statement of whose page this is, and on a phone
+   * the row it was spending is the scarcest thing the hero has.
+   *
+   * Only the top row pairs up. The chips and the switcher keep their own full
+   * rows underneath, because both are wider than what is left of a 360px
+   * screen once the crest has taken its 64: five chips in two columns, and a
+   * switcher that is as wide as the club's name. */
   .sct-hero-inner {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
-      "crest"
-      "text"
-      "meta"
-      "actions";
+      "crest text"
+      "meta meta"
+      "actions actions";
     column-gap: 14px;
     row-gap: 14px;
   }
 
-  /* One column, so there is nothing left for the flex row to decide: the
-     wrapper steps out and hands its three children back to the grid, which
-     places them by the areas above — chips before the switcher, as they read.
+  /* Two columns, but only for the first row: the wrapper steps out and hands
+     its three children back to the grid, which places them by the areas above
+     — name beside the crest, then chips, then the switcher, as they read.
      `display: contents` rather than a second copy of the stack, so the order
      lives in one place. */
   .sct-hero-head {
@@ -5652,27 +5684,61 @@ body.sct-page.is-embed {
     min-width: 0;
   }
 
-  /* Smaller than the tablet crest. Stacked above the name it is pure vertical
-     cost, and everything it pushes below the fold is the part of the hero that
-     carries information. */
+  /* Smaller than the desktop crest, and smaller than it was when it stood
+     above the name: beside the title it is no longer vertical cost, it is
+     horizontal cost, and every pixel of it comes off the line the name has to
+     wrap inside. 64px is about two lines of the title, which is what the
+     longest names take at this width — so the disc reads as the same height as
+     the block beside it rather than as a bullet next to it. */
   .sct-hero-crest {
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
   }
 
   .sct-hero-logo {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 
-  /* Still cropped at this width, just less of it. A 240px mark held fully
-     inside a 360px hero sits behind the stacked name and switcher rather than
-     beside them, which is a different device from the desktop watermark. */
+  /* The bottom-right corner, and bigger than the desktop mark rather than
+     smaller.
+     *
+     * The desktop watermark is centred on the right edge because that is the
+     * half of a 1100px hero with nothing in it. Stacked, there is no such
+     * half: the chips and the switcher are opaque white cards that fill the
+     * width, so a 240px mark centred behind them showed through the gaps
+     * between cards and nowhere else — which is what mak is describing when
+     * the mark reads as too small to see. It was also anchored by
+     * `translateY(-50%)`, so `bottom` could not be used without cancelling
+     * the transform first.
+     *
+     * The corner is the one part of a stacked hero that is reliably not a
+     * card: the gutter under the switcher and outside its rounded end. So the
+     * mark is hung there, big enough that what shows in the corner is a
+     * recognisable part of the crest rather than a sliver of one, and bled
+     * past both edges so the crop reads as a mark running off the card
+     * instead of a small logo placed badly.
+     *
+     * 7% rather than the desktop 4%: at 4% what survives here is the part of
+     * the mark NOT behind a card, which is the thinnest part of it. Nothing
+     * legible sits over this corner — the cards above it are opaque, so their
+     * text is unaffected whatever this does — and the ceiling is the club's
+     * own gradient behind it rather than any contrast requirement. */
   .sct-hero-watermark {
-    right: -24px;
-    width: 240px;
-    height: 240px;
-    opacity: 0.04;
+    top: auto;
+    /* The offsets are mak's, set by eye on the rendered page over two passes:
+       60px further down and 35px further left than the first attempt, which
+       hung the middle of the crest in the corner. What shows now is its
+       shoulder, and the right edge sits flush with the hero's rather than
+       bleeding past it — the mark runs off the BOTTOM only. */
+    bottom: -89px;
+    right: -1px;
+    width: 300px;
+    height: 300px;
+    /* The desktop rule's vertical centring, cancelled: it belongs to `top:
+       50%` and would lift this by half its own height. */
+    transform: none;
+    opacity: 0.07;
   }
 
   /* Team names are two and three words; balanced wrapping keeps "New England
@@ -5727,8 +5793,18 @@ body.sct-page.is-embed {
     overflow-wrap: anywhere;
   }
 
+  /* Centred, because the thing above it is no longer a row.
+   *
+   * On a desktop the chips are a left-aligned flex row and the timestamp is
+   * the line under its left end, which is where the row starts and where the
+   * eye comes back to. Stacked, the chips are a 2x2 grid that fills the width
+   * and has no left end in that sense — it has two columns and a centre — so a
+   * line hanging off the left of it reads as a stray caption rather than as
+   * the grid's own footnote. mak's call, and it is the same reasoning as the
+   * grid above it: what is symmetrical gets a symmetrical label. */
   .sct-hero-updated {
     margin-top: 12px;
+    text-align: center;
   }
 
   .sct-switch-summary {
@@ -5996,6 +6072,26 @@ body.sct-page.is-embed {
   }
 }
 
+/* A block of its own, between the two it sits between, so the descending order
+   of this file's breakpoints still reads down the page. */
+@media (max-width: 450px) {
+  /* No watermark at all.
+   *
+   * A 300px mark in a hero about 358px wide is not a watermark any more, it is
+   * a picture the hero's own content is printed over: at this width there is
+   * no part of the card the mark is not behind, so what shows is whatever the
+   * gaps between the chips happen to expose — a shape in pieces rather than a
+   * crest. mak's call, and the club is not lost with it: the crest beside the
+   * name is on the same row, full strength, and the switcher below carries it
+   * a third time.
+   *
+   * `display: none` rather than a zero opacity: there is nothing to animate
+   * back and no state to keep, so the box goes too. */
+  .sct-hero-watermark {
+    display: none;
+  }
+}
+
 @media (max-width: 420px) {
   /* The index prints full names rather than the sheet's nicknames, and
      "New England Patriots" in half of a 420px screen is two lines with a crest
@@ -6008,6 +6104,21 @@ body.sct-page.is-embed {
 
   .sct-fact {
     padding: 6px 11px;
+  }
+
+  /* One more step down, for the same reason as the step above: this is the
+     width where "New England Patriots" and "Jacksonville Jaguars" are deciding
+     how many lines the title takes, and the crest is what they are deciding it
+     against. 56px still reads as the club's mark; a third line of the name
+     does not read as anything. */
+  .sct-hero-crest {
+    width: 56px;
+    height: 56px;
+  }
+
+  .sct-hero-logo {
+    width: 38px;
+    height: 38px;
   }
 
   .sct-depth {

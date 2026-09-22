@@ -501,7 +501,17 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     // On the section pages too: the hero is the same block wherever the reader
     // is in the hub, and a standfirst that disappeared on four of five tabs was
     // the other half of the header moving under them.
-    `<p class="sct-subtitle">${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
+    //
+    // `data-sct-lead` is the hook the bundle drops it by when it would take a
+    // second line — the same trade the Bye chip makes, and mak's call for the
+    // same reason: this line says what the <h1> above it and the eyebrow above
+    // that have already said between them, so on a phone it is two rows of
+    // repetition where the hero has no rows to spare. It ships with no value
+    // and stays in the markup at every width; client/team.ts sets "off" after
+    // measuring, and team.css is what hides it. A width cannot decide this —
+    // the line is the club's own name plus four words, so it wraps at 470px
+    // for Washington and at 360px for Buffalo.
+    `<p class="sct-subtitle" data-sct-lead>${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
     `</div>` +
     // The chips and the timestamp are a row of their own rather than the tail
     // of the name block, because the name block is boxed in by the switcher

@@ -1166,51 +1166,66 @@ button.scp-search-opt {
 }
 
 /*
- * The label and the pill group, side by side but not one object.
+ * The start/sit button, where the scoring toggle used to stand.
  *
- * The border and the pill background belong to the three options, which are
- * the control; "Scoring" is its name and sits outside that shape. Inside it
- * the word read as a fourth, inert pill.
+ * A destination, so it is the one thing in this bar that looks like a button:
+ * the navy fill the lit format pill used to wear, at the size of the tab type
+ * beside it. Everything else up here — the tabs, the season chips — changes
+ * what is already on screen, and none of it should read as louder than the
+ * page's own heading.
+ *
+ * The label is the whole question at every width — there is no abbreviated
+ * form. Between 680px and 1000px that means the tab strip gives up room and
+ * scrolls, which it is already built to do; below 680px the bar stacks and the
+ * button takes a row of its own.
  */
-.scp-format-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  /* So the pill group is free to shrink and scroll on a phone rather than
-     holding this row open at the width of a label plus three pills. */
-  min-width: 0;
-}
-
-.scp-format {
+.scp-startsit {
+  flex: none;
+  /*
+   * Right, on whichever line it lands on.
+   *
+   * `justify-content: space-between` on the bar puts it opposite the tabs
+   * while the two share a row, and then abandons it the moment the row runs
+   * out: a wrapped flex line holds one item, space-between has nothing to
+   * space it against, and the button fell to the left margin under the tab
+   * strip. An auto margin is the rule the bar actually wants — push whatever
+   * free space there is to the left of this — and it holds on a line of its
+   * own as well as on a shared one.
+   */
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--sc-border);
+  gap: 8px;
+  padding: 9px 16px;
   border-radius: 999px;
-  background: var(--sc-surface-soft);
-}
-
-.scp-format-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.scp-format-opt {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sc-muted-strong);
-  text-decoration: none;
-}
-
-.scp-format-opt.is-active {
   background: var(--sc-navy);
   color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* The one arrow on the page: this is the only control in the bar that leaves
+   it, and the shape says so without a word of label spent on it. */
+.scp-startsit::after {
+  content: "›";
+  font-size: 15px;
+  line-height: 0.9;
+  color: var(--sc-gold-soft);
+}
+
+.scp-startsit:hover {
+  background: var(--sc-navy-deep);
+  box-shadow: var(--sc-shadow);
+}
+
+.scp-startsit:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
 }
 
 /*
@@ -1222,8 +1237,6 @@ button.scp-search-opt {
  * otherwise. With scripting off the attribute is never set and none of this
  * applies.
  */
-.scp[aria-busy="true"] .scp-format-row,
-.scp[aria-busy="true"] .scp-format,
 .scp[aria-busy="true"] .scp-seasons {
   opacity: 0.55;
   pointer-events: none;
@@ -4756,7 +4769,9 @@ a.scp-peer:focus-visible {
  *                38px portrait well, the same name over the same position ink.
  *   the STANDING is the peers rail's rank badge (.scp-peer-rank), navy pill
  *                and all, because it says the same thing that rail says.
- *   the CHIPS    are the format toggle's pill group (.scp-format), as buttons.
+ *   the CHIPS    are the pill group the scoring toggle wore before the
+ *                control bar traded it for the start/sit button — a hairline
+ *                capsule of 999px pills, lit one at a time — as buttons.
  *   the CARD     is the recessed treatment described at the top of this file:
  *                soft fill, hairline, no shadow, with the club's primary as a
  *                left rule and a wash behind the heading — the peer card's
@@ -4828,8 +4843,9 @@ a.scp-peer:focus-visible {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  /* A <button> does not inherit the page's type; the format toggle beside it
-     is an <a> and does, and the two have to be the same control. */
+  /* A <button> does not inherit the page's type, and every other pill in this
+     stylesheet is an <a> that does; without this the chips would be the one
+     control here set in the browser's default face. */
   font: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -6471,27 +6487,31 @@ a.scp-peer:focus-visible {
     max-width: 100%;
   }
 
-  /* Same treatment for the scoring pills, which sit in the same column and
-     have the same content-wider-than-the-phone problem once STD, HALF and PPR
-     are spelled out beside the label. The row is what the column stretches, so
-     it takes the width; the pills inside it are what scrolls. */
-  .scp-format-row {
+  /*
+   * The button has the bar's full width to itself once the bar is a column,
+   * so it says the whole question and centres in the row rather than sitting
+   * off to one side of it.
+   *
+   * And it stops holding the question to one line. "Should I Start or Sit
+   * Marquez Valdes-Scantling Week 3?" is wider than a phone, and a pill that
+   * cannot fit its label spends its own padding first — the text was setting
+   * flush to both edges with the chevron half off the end. A block box rather
+   * than a flex row, because the text is then an ordinary run that wraps and
+   * centres; the chevron follows the last word instead of being a flex item
+   * that refuses to give up its place.
+   */
+  .scp-startsit {
+    display: block;
     width: 100%;
-    max-width: 100%;
+    padding: 10px 14px;
+    text-align: center;
+    white-space: normal;
   }
 
-  .scp-format-label {
-    flex: none;
-  }
-
-  .scp-format {
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .scp-format::-webkit-scrollbar {
-    display: none;
+  /* Inline now, and up against the word before it, so the gap the flex row
+     provided is spelled out here. */
+  .scp-startsit::after {
+    margin-left: 6px;
   }
 
   /* Production stacks, and the watermark goes: there is no width left for it

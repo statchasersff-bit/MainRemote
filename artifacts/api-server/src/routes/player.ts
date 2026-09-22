@@ -482,7 +482,7 @@ router.get("/player/:slug", (req, res) => {
  * prevents.
  *
  * Everything else about the render is identical to the profile's: same hero,
- * same format toggle, same section markup. Only the panel count and the
+ * same control bar, same section markup. Only the panel count and the
  * metadata change, which is what makes the two addresses one component.
  */
 router.get("/player/:slug/:section", (req, res) => {

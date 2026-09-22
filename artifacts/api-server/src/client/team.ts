@@ -629,6 +629,100 @@ function wireFacts(root: HTMLElement): void {
   }
 }
 
+/* -------------------------------------------------------- hero standfirst */
+
+/**
+ * The hero's standfirst, dropped rather than wrapped.
+ *
+ * "New England Patriots fantasy football hub" is the club's own name and four
+ * words, so where it stops fitting on one line is a different width for all 32
+ * — measured: it takes a second line at 470px for Washington and at 360px for
+ * Buffalo. That 110px spread is why this is measured and not a media query,
+ * the same argument the chips ladder above makes at greater length.
+ *
+ * And the second line is what mak asked to stop seeing, which is the right
+ * call on the content as well as the layout: the line repeats what the <h1>
+ * directly above it and the eyebrow above that have already said between them
+ * — the club, and that this is its hub — so the two rows it takes on a phone
+ * are two rows of repetition in the one part of the page with no rows to
+ * spare. Dropped, the hero loses nothing a reader did not already have.
+ *
+ * It is never dropped from the DOCUMENT: the server prints it at every width
+ * and this only sets an attribute, so the line is in the HTML a crawler reads
+ * whatever the viewport was.
+ *
+ * Three things worth knowing about the measurement:
+ *
+ *   - A Range over the contents, not the element. `getClientRects()` on a
+ *     block <p> returns ONE rect for the block however many lines are in it;
+ *     the range returns one per line box, which is the actual question.
+ *   - Decided from the undropped state, like every rung of the chips ladder:
+ *     the attribute comes off, the line is measured, and it goes back on only
+ *     if it wrapped. Measuring while hidden would answer nothing at all.
+ *   - Watched on the hero, not on the column the line sits in. A hidden
+ *     standfirst can change the name block's own width — it is a flex item
+ *     sized by its content above 720px — and an observer on a box this
+ *     function can resize is an observer that feeds itself. The hero's width
+ *     is the page's to decide.
+ */
+function wireHeroLead(root: HTMLElement): void {
+  const lead = root.querySelector<HTMLElement>(".sct-hero [data-sct-lead]");
+  const hero = root.querySelector<HTMLElement>(".sct-hero-inner");
+  if (!lead || !hero) return;
+
+  const wrapped = (): boolean => {
+    // One rect per line box, which is the direct answer. Wrapped in a check
+    // rather than called outright: `Range.getClientRects` is standard in
+    // browsers and absent in jsdom, which this file is exercised in, and an
+    // uncaught TypeError in the hero would take the tabs and the switcher
+    // down with it.
+    const range = document.createRange();
+    range.selectNodeContents(lead);
+    if (typeof range.getClientRects === "function") {
+      const rects = range.getClientRects();
+      if (rects.length > 0) return rects.length > 1;
+    }
+    // The same question asked of the box: a paragraph half again as tall as
+    // one of its lines is a paragraph on two of them. Second rather than
+    // first because `line-height` can compute to "normal", which is not a
+    // number and not resolvable from here.
+    const height = lead.getBoundingClientRect().height;
+    const line = Number.parseFloat(getComputedStyle(lead).lineHeight);
+    // No layout to read — no rects, no height, an engine with neither — is
+    // not a wrap. The line stays, which is the state the server shipped.
+    if (!height || !Number.isFinite(line) || line <= 0) return false;
+    return height > line * 1.5;
+  };
+
+  let lastWidth = -1;
+  const fit = (): void => {
+    const width = Math.round(hero.getBoundingClientRect().width);
+    // Height changes are this function's own doing. Only a width change can
+    // change its answer.
+    if (width === lastWidth) return;
+    lastWidth = width;
+
+    // Undropped first, then measured, then dropped only if it wrapped
+    // without the attribute on it.
+    lead.setAttribute("data-sct-lead", "");
+    if (wrapped()) lead.setAttribute("data-sct-lead", "off");
+  };
+
+  fit();
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(() => fit()).observe(hero);
+  } else {
+    window.addEventListener("resize", fit);
+  }
+  // Web fonts land after this runs and change the width of every word in it.
+  if (document.fonts?.ready) {
+    void document.fonts.ready.then(() => {
+      lastWidth = -1;
+      fit();
+    });
+  }
+}
+
 /* ------------------------------------------------------------------ boot */
 
 function boot(): void {
@@ -639,6 +733,7 @@ function boot(): void {
     wireTabs(root);
     wireSwitcher(root);
     wireFacts(root);
+    wireHeroLead(root);
     wireTimestamps(root);
     wireSortableTables(root);
     wireFrameHeight(root);

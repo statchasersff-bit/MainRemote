@@ -27,7 +27,7 @@ export const SCORING_LABELS: Record<ScoringFormat, string> = {
   ppr: "PPR",
 };
 
-/** The short form used on the format toggle. */
+/** The short form, for a label with no room to say "Half-PPR" in full. */
 export const SCORING_SHORT: Record<ScoringFormat, string> = {
   standard: "STD",
   half: "HALF",
