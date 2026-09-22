@@ -16,6 +16,16 @@
  * frame. The combobox roles sit on top of the anchors rather than replacing
  * them.
  *
+ * ONE ROW IS NOT A LINK, on one page. The index prints `data-scp-club-filter`
+ * on the widget (see renderPlayerSearch in lib/player-render.ts) because there
+ * a club is not somewhere to go: the page below the box is the whole roster
+ * grouped by club, so picking the Chiefs means "show me the Chiefs' players".
+ * That row is a <button>, which is what a control that changes this page
+ * rather than leaving it has to be — an anchor with no address is not
+ * middle-clickable or copyable in any useful sense, it is a link that lies.
+ * The pick is handed to the directory as a bubbling event; the filtering, the
+ * counts and the pill that says a club is on are client/player-index.ts's.
+ *
  * Nothing here writes to the URL and nothing here fetches.
  */
 
@@ -72,6 +82,14 @@ interface Searchable {
 interface TeamEntry extends Searchable {
   kind: "team";
   slug: string;
+  /**
+   * "KC" — the club's display code.
+   *
+   * Carried because it is the name the club card on the index answers to
+   * (`data-scp-club` holds this exact string), so it is what a filter pick has
+   * to say. The slug addresses the hub; the code addresses the card.
+   */
+  code: string;
   /** "Baltimore Ravens" — the city and the nickname, as the row prints it. */
   name: string;
   /** "AFC North", the line under the name. */
@@ -145,6 +163,7 @@ function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: Team
       clubs.push({
         kind: "team",
         slug,
+        code: code ?? "",
         name: `${city} ${nickname}`,
         division: division ?? "",
         logo: (code && teams[code]?.logo) || "",
@@ -261,6 +280,18 @@ export function wirePlayerSearch(root: HTMLElement): void {
   const teamPrefix = widget.dataset["scpTeamPrefix"] ?? "/team/";
   const query = widget.dataset["scpQuery"] ?? "";
 
+  /*
+   * Whether a club row filters this page instead of leaving it.
+   *
+   * Both halves are required. The attribute is the page saying it is the
+   * index; the grid is the thing that would carry the pick out. A button that
+   * dispatches into nothing is worse than the link it replaced — the reader
+   * clicks a club and the page sits there — so if the roster below is missing
+   * for any reason, every row goes back to being a destination.
+   */
+  const clubsFilter =
+    "scpClubFilter" in widget.dataset && root.querySelector("[data-scp-dir]") !== null;
+
   // The roles go on now rather than in the server's markup: they promise
   // behaviour — a list that opens, an option that can be highlighted with the
   // arrow keys — and until this file runs there is none to deliver.
@@ -276,7 +307,9 @@ export function wirePlayerSearch(root: HTMLElement): void {
   widget.hidden = false;
 
   let entries: { players: Entry[]; teams: TeamEntry[] } | null = null;
-  let options: HTMLAnchorElement[] = [];
+  // Anchors, except for the club rows on the index, which are buttons. Both
+  // answer to .click(), which is all Enter on the highlighted row needs.
+  let options: HTMLElement[] = [];
   let active = -1;
 
   const setActive = (next: number): void => {
@@ -334,20 +367,54 @@ export function wirePlayerSearch(root: HTMLElement): void {
     }
 
     hits.forEach((entry, i) => {
-      const link = document.createElement("a");
+      const filters = entry.kind === "team" && clubsFilter;
+
+      // A button where the row acts on this page, an anchor where it leaves
+      // it. See the head of this file for why the two cannot be one thing.
+      let link: HTMLElement;
+      if (filters && entry.kind === "team") {
+        const button = document.createElement("button");
+        // Without this a button in a form submits it. There is no form here by
+        // design, but this fragment is printed into other people's pages.
+        button.type = "button";
+        button.dataset["club"] = entry.code;
+        button.addEventListener("click", () => {
+          // The directory does the filtering; this box only says which club
+          // was asked for. An event rather than a call, so the two files stay
+          // strangers and the order they are wired in cannot matter.
+          widget.dispatchEvent(
+            new CustomEvent("scp:club-filter", {
+              bubbles: true,
+              detail: { code: entry.code, name: entry.name },
+            }),
+          );
+          // The box has answered, so it empties: what was typed is now said by
+          // the pill in the toolbar, and leaving "kansas" in a box whose panel
+          // reopens on focus would offer the reader the filter they already
+          // have.
+          input.value = "";
+          render([], false);
+          if (status) status.textContent = `Showing ${entry.name} players.`;
+        });
+        link = button;
+      } else {
+        const anchor = document.createElement("a");
+        anchor.href =
+          entry.kind === "team"
+            ? `${teamPrefix}${entry.slug}${query}`
+            : `${prefix}${entry.slug}${query}`;
+        // Same as every other link in this fragment: break out of the legacy
+        // iframe mount rather than loading the next player inside it.
+        anchor.target = "_top";
+        link = anchor;
+      }
+
       link.className = "scp-search-opt";
       link.id = `${id}-opt-${i}`;
       // Marked rather than inferred from the shape of the row, so the
       // stylesheet can size a club's mark differently from a portrait without
       // reading the markup underneath it.
       link.dataset["kind"] = entry.kind;
-      link.href =
-        entry.kind === "team"
-          ? `${teamPrefix}${entry.slug}${query}`
-          : `${prefix}${entry.slug}${query}`;
-      // Same as every other link in this fragment: break out of the legacy
-      // iframe mount rather than loading the next player inside it.
-      link.target = "_top";
       // Reached with the arrow keys through the input, never with Tab: a
       // combobox has one stop, and eight more would put the page's own
       // navigation eight keystrokes further away.
@@ -549,7 +616,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
   });
 
   list.addEventListener("mousemove", (event) => {
-    const target = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
+    const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(
       ".scp-search-opt",
     );
     if (!target) return;

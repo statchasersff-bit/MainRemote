@@ -214,6 +214,15 @@ const DASH = "—";
 const DOT = "·";
 
 /**
+ * The multiplication sign, which is the dismiss mark on a filter pill.
+ *
+ * Not the letter x and not a hyphen: it is the mark every dismissible chip on
+ * the web uses, and at this size the letter reads as a word beside a club's
+ * name rather than as a button.
+ */
+const TIMES = "×";
+
+/**
  * The season the Outlook tab is about.
  *
  * Named once rather than written into six strings: this tab is the one place
@@ -842,6 +851,31 @@ function splitName(name: string): { first: string; last: string } {
   return { first, last };
 }
 
+/**
+ * The given name as an initial: "Jacoby" -> "J.".
+ *
+ * The tight form's saving, and the largest thing the header has left to spend
+ * to keep its three parts on one row — see the note on the heading in
+ * renderHero().
+ *
+ * Only the FIRST word contracts, and the rest of the run is kept: splitName
+ * puts every word but the surname on this side, so "Amon-Ra St. Brown" arrives
+ * here as "Amon-Ra St." and has to leave as "A. St." — "A. Brown" would have
+ * dropped a piece of the name itself. Empty when the first word is already an
+ * initial ("J.J. McCarthy", "D.K. Metcalf"): there is nothing to contract, and
+ * cutting "J.J." to "J." would lose a letter a reader uses to tell two players
+ * apart for a few pixels. The fitter drops a swap that measures no narrower
+ * anyway, so an empty return and an unchanged width come to the same thing;
+ * this states the rule where it can be read.
+ */
+function nameInitial(first: string): string {
+  const words = first.trim().split(/\s+/).filter(Boolean);
+  const head = words[0] ?? "";
+  if (!head || head.includes(".") || Array.from(head).length <= 2) return "";
+  const letter = Array.from(head)[0] ?? "";
+  return [`${letter.toLocaleUpperCase()}.`, ...words.slice(1)].join(" ");
+}
+
 /** Height stored as total inches ("73") rendered as feet and inches. */
 function formatHeight(height: string | null): string {
   if (!height) return "";
@@ -1036,8 +1070,21 @@ function heroSwap(full: string, short: string, tight: string): string {
  * The links the results point at are built from the same prefix and query as
  * every other internal link on the page, so inside WordPress the results go to
  * statchasers.com/nfl/players/<slug>/ rather than back to the bare tool.
+ *
+ * ONE EXCEPTION, and it is the index's: a club row there is not a destination.
+ * The index IS the roster, grouped by club, so a reader who picks the Chiefs
+ * out of this box has asked to be shown the Chiefs' players — not to be taken
+ * off the page they were reading to a hub that answers a different question.
+ * `clubsFilter` is what says so, the index is the only caller that passes it,
+ * and everything it changes happens in client/player-search.ts: the club row
+ * becomes a button and the pick is handed to the directory beside it. A club
+ * is still a destination from a profile, where there is no roster to filter,
+ * and the card heading on the index is still a link to the hub either way.
  */
-function renderPlayerSearch(options: PlayerRenderOptions): string {
+function renderPlayerSearch(
+  options: PlayerRenderOptions,
+  mode: { clubsFilter?: boolean } = {},
+): string {
   const index = playerSearchIndex();
   // No roster, no search. A dictionary that failed to load is already a
   // degraded page; it should not also carry a control that can match nothing.
@@ -1053,6 +1100,10 @@ function renderPlayerSearch(options: PlayerRenderOptions): string {
     // The clubs in the island are destinations too, and they live under a
     // different path — on WordPress, under a different page entirely.
     ` data-scp-team-prefix="${escapeHtml(teamPrefix)}"` +
+    // Printed only by the index, read only by the client, and meaningless
+    // without a directory in the same root to hand the pick to — which is why
+    // the client checks for one rather than trusting this on its own.
+    (mode.clubsFilter ? ` data-scp-club-filter` : "") +
     ` data-scp-query="${escapeHtml(query)}" hidden>` +
     // The label wraps the control, so the two need no for/id pair — which
     // matters here because a WordPress page may print two of these fragments
@@ -1248,16 +1299,30 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
    * on the page, under the heading that owns them. What the URL names is still
    * said by the document title, the description and the tab strip.
    *
-   * No word swap on the name, and no measured "J. Brissett" fallback either.
-   * A name is the one string on this page a reader came for, and an initial is
-   * a worse answer than a smaller name or a second line; what the fitter has
-   * to work with is its size, which is stage 5's last cut before the name is
-   * allowed to wrap.
+   * The given name abbreviates at the tight form, and only there: "Jacoby
+   * Brissett" is what a wide header says, "J. Brissett" is what the narrowest
+   * one-row header says. It buys more width than anything else left at that
+   * point — a given name is most of the widest line in the column — and it is
+   * spent to keep the numbers strip BESIDE the name rather than stacked under
+   * it, which is the trade this header is for.
+   *
+   * The initial is `::before` content off `data-initial`, not a `.scp-swap`
+   * triplet like the club's name. The H1 is the one run of text on this page
+   * that may not change: `heading.textContent` has to be exactly
+   * `player.name`, for a crawler, for a screen reader and for the test that
+   * checks it. Generated content is not text content, so the heading still
+   * reads "Jacoby Brissett" to everything that reads the document, while the
+   * rendered line says what fits. The given name's span is what hides.
    */
   const { first, last } = splitName(player.name);
+  const initial = nameInitial(first);
 
   const title =
-    (first ? `<span class="scp-title-first">${escapeHtml(first)}</span> ` : "") +
+    (first
+      ? `<span class="scp-title-first"` +
+        (initial ? ` data-initial="${escapeHtml(initial)}"` : "") +
+        `><span class="scp-title-given">${escapeHtml(first)}</span></span> `
+      : "") +
     `<span class="scp-title-last">${escapeHtml(last)}</span>`;
 
   const draftLine = draftFull
@@ -1433,9 +1498,15 @@ function renderFormatToggle(
       );
     })
     .join("");
+  // The label sits OUTSIDE the pill group. "Scoring" names the control; STD,
+  // HALF and PPR are the control. Inside the same border they read as a fourth
+  // option that happens not to be clickable, which is what the group's shape
+  // promises about everything in it.
   return (
-    `<div class="scp-format" data-scp-format>` +
-    `<span class="scp-format-label">Scoring</span>${items}</div>`
+    `<div class="scp-format-row">` +
+    `<span class="scp-format-label">Scoring</span>` +
+    `<div class="scp-format" data-scp-format>${items}</div>` +
+    `</div>`
   );
 }
 
@@ -5742,7 +5813,29 @@ function renderDirectoryFilters(rows: DirectoryPlayer[]): string {
     positions
       .map((position) => chip(position, position, counts.get(position) ?? 0, false))
       .join("") +
-    `</div></div>`
+    `</div>` +
+    /*
+     * The club filter, which is a pill rather than a chip group.
+     *
+     * There are thirty-two clubs and one is picked at a time, so a row of
+     * thirty-two chips beside the five positions would be the toolbar's whole
+     * height for a choice the search box above already makes better. This is
+     * the chosen club's name and the way back out of it, and nothing until one
+     * is chosen — which is why it ships hidden and empty rather than absent:
+     * the client fills in the name, and the words around it stay here with the
+     * rest of the page's words.
+     */
+    `<div class="scp-dir-club-filter" data-scp-dir-club hidden>` +
+    `<span class="scp-dir-filters-label">Team</span>` +
+    `<div class="scp-dir-chips">` +
+    `<button type="button" class="scp-dir-chip is-active" data-scp-dir-club-clear>` +
+    `<span data-scp-dir-club-name></span>` +
+    `<span class="scp-dir-chip-x" aria-hidden="true">${TIMES}</span>` +
+    // The mark is decoration; this is what the button actually says.
+    `<span class="scp-sr"> — clear the team filter and show every club</span>` +
+    `</button>` +
+    `</div></div>` +
+    `</div>`
   );
 }
 
@@ -5804,7 +5897,9 @@ function renderPlayerDirectory(
 
   return (
     `<div class="scp-dir-tools">` +
-    renderPlayerSearch(options) +
+    // See renderPlayerSearch(): on this page a club row filters the list
+    // below rather than leaving the page for the club's hub.
+    renderPlayerSearch(options, { clubsFilter: true }) +
     renderDirectoryFilters(data.rows) +
     `</div>` +
     renderDirectoryNote(data, data.rows.length) +

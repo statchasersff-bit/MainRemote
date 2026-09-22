@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.9.1 =
+* The 4px side gutter a phone reads the tools through now reaches the team hubs, which were still running edge to edge after 1.9.0 shipped it. The gutter was on `.container`, and a page that has been through the Divi Builder does not have one: Divi's page.php prints the `.container` / `#content-area` / `#left-area` wrappers only when the builder is unused, so on the hubs every rule naming those elements was addressed to nothing. It is on `#main-content` now — the one wrapper a plain page, a builder page and a Theme Builder body layout all print — and `.container` gives its own gutter up rather than adding a second one on the pages that do have both. Measured on the real hub fragment under both page shapes: 4px a side on each, at every width below 981px, with no change above it.
 
 = 1.9.0 =
 * Changing scoring format or view on the Fantasy Points Allowed table no longer changes the page's address. The Scoring and View controls are still ordinary links — a crawler follows them, a middle-click still opens the combination that was asked for — but the bundle now intercepts the click, fetches that combination and swaps the table in place, writing nothing to the URL and pushing nothing onto the history stack. Six renderings of one table are one page, which is what the canonical has always said. The legend and the FAQ are left alone by a swap, so a question a reader has opened stays open.

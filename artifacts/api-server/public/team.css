@@ -748,6 +748,25 @@ body.sct-page.is-embed {
   display: inline;
 }
 
+/* The rung under both of those, which is not a spelling.
+ *
+ * "W11" is the shortest true form of the bye, so a row that still will not fit
+ * it has two endings available and no third: the chip alone on a second line
+ * with the rest of that line empty, or no chip. The second is the one to take.
+ * A wrapped Bye reads as a layout that failed rather than as a fact, and the
+ * bye is the one fact in this row the hub also states in full a tab away — the
+ * Schedule tab prints it as a row of the season table and again in the summary
+ * beside it — so what goes here is a shortcut, not the information.
+ *
+ * `data-sct-drop` rather than the bye's class, because which fact may go is a
+ * decision about the facts and it is taken in heroFacts(); this rule only
+ * carries it out. Spent by client/team.ts as the last rung of the ladder, and
+ * given back on the next resize that fits, because every rung is re-decided
+ * from the full forms. */
+[data-sct-facts-form~="drop"] [data-sct-drop] {
+  display: none;
+}
+
 .sct-fact {
   display: flex;
   flex-direction: column;
@@ -5683,6 +5702,25 @@ body.sct-page.is-embed {
 
   .sct-fact {
     min-width: 0;
+  }
+
+  /* The bye, when it would be the stranded cell.
+   *
+   * Two columns and five chips leaves the fifth alone on a row of its own with
+   * an empty cell beside it, which is the same thing the ladder above spends
+   * its last rung to avoid on the flex row — and here no measuring can help,
+   * because it is not a matter of the width: the grid puts it there at every
+   * width in this block. So the stylesheet takes it off, and the bundle is not
+   * involved at all (it returns as soon as it sees this display).
+   *
+   * `:nth-child(odd):last-child` is the whole condition, and it is the real
+   * one rather than "is it the bye": a last chip in an odd position is the one
+   * that has nothing beside it. The bye is last whenever it is present, so
+   * with five chips this fires and with four — a club out of season, no record
+   * and no standing — it does not, because then the bye shares its row and
+   * there is nothing wrong with it. */
+  .sct-fact[data-sct-drop]:nth-child(odd):last-child {
+    display: none;
   }
 
   .sct-fact-value {

@@ -1154,6 +1154,13 @@ describe("mobile layout", () => {
    * "W11", under a label that still reads BYE). Both spellings ship; which one
    * shows is client/team.ts's, after it measures the row.
    *
+   * Under both rungs there is a third, and it is not a spelling: the Bye chip
+   * leaves the row. "W11" is the shortest true form of the fact, so a row that
+   * still will not fit it has only the two endings — the chip alone on a
+   * second line, which is what mak asked to stop seeing, or no chip. The bye
+   * is the one fact in this row the hub states in full a tab away, on the
+   * Schedule tab, which is what makes it the affordable one.
+   *
    * Tolerant of the providers, like the rest of this file: either fact can be
    * absent when ESPN is down, so each is asserted only if it rendered, and the
    * stylesheet half of the contract is asserted either way.
@@ -1231,6 +1238,58 @@ describe("mobile layout", () => {
         `the bundle knows the ${rung.spend} rung`,
       );
     }
+    assert.ok(bundle.body.includes('"drop"'), "and the rung under them both");
+  });
+
+  /**
+   * The last rung: the Bye chip leaves rather than wrapping.
+   *
+   * Two halves, and the reason there are two is that the row is two different
+   * layouts. Above 720px it is a flex row the bundle measures, so the chip
+   * goes only when it would actually have wrapped — which is a different width
+   * for all 32 clubs, the coach's name being the widest thing in the row. At
+   * 720px and under the row is a two-column grid where the fifth chip is
+   * ALWAYS on a row of its own with an empty cell beside it, so no measuring
+   * is needed or wanted and the stylesheet takes it off outright.
+   */
+  test("the bye chip is the one the row may drop, and does under 720px", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+
+    const chips = [...doc.querySelectorAll(".sct-facts .sct-fact")];
+    const droppable = chips.filter((chip) => chip.hasAttribute("data-sct-drop"));
+    const bye = chips.find(
+      (chip) => chip.querySelector(".sct-fact-label")?.textContent.trim() === "Bye",
+    );
+    if (bye) {
+      assert.deepEqual(droppable, [bye], "the bye, and nothing else, may go");
+      // It ships in the HTML either way: what is dropped is dropped by CSS at
+      // a width, or by the bundle after measuring, never by the renderer.
+      assert.ok(bye.querySelector(".sct-swap--short"), "it still shortens first");
+    } else {
+      assert.equal(droppable.length, 0, "no bye, nothing marked droppable");
+    }
+
+    const css = (await get("/team.css")).body;
+    assert.match(
+      css,
+      /\[data-sct-facts-form~="drop"\] \[data-sct-drop\] \{\s*display:\s*none/,
+      "the rung the bundle spends takes the chip off the flex row",
+    );
+
+    // The grid half. Asserted inside the 720px block rather than anywhere in
+    // the file, because that is the layout it is a statement about.
+    const narrow = css.slice(css.indexOf("@media (max-width: 720px)"));
+    const stanza = narrow.slice(0, narrow.indexOf("@media (max-width: 420px)"));
+    // `:nth-child(odd):last-child`, not the bye's own name: the condition is
+    // "this chip has nothing beside it in a two-column grid", which is true of
+    // the fifth of five and false of the fourth of four. A club out of season
+    // with no record and no standing keeps its bye, because there it shares a
+    // row like everything else.
+    assert.match(
+      stanza,
+      /\.sct-fact\[data-sct-drop\]:nth-child\(odd\):last-child \{\s*display:\s*none/,
+      "and at 720px and under the stranded cell goes, unmeasured",
+    );
   });
 
   /**
