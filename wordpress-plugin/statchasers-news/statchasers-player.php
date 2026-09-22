@@ -435,6 +435,15 @@ function statchasers_player_enqueue_assets(): void {
 	if ( statchasers_player_wants_full_width() ) {
 		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_team_full_width_css() );
 	}
+
+	// Both unconditional where the block above is not. A tool printing through
+	// the site's header, and a phone reading the profile through a 39px margin
+	// on each side, are wrong on every page that mounts the profile — whether
+	// or not that page also wants the sidebar's share of the row back.
+	if ( statchasers_team_is_divi() ) {
+		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_tool_header_layer_css() );
+		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_player_mobile_gutter_css() );
+	}
 }
 
 /**
@@ -686,6 +695,58 @@ function statchasers_player_wants_full_width(): bool {
 	 * @param bool $full_width Whether to take the whole column.
 	 */
 	return (bool) apply_filters( 'statchasers_player_full_width', true );
+}
+
+/**
+ * The side gutter below Divi's sidebar breakpoint.
+ *
+ * `statchasers_team_full_width_css()` only speaks inside `min-width: 981px`,
+ * because above that the problem is the empty sidebar column. Below it Divi
+ * collapses the columns by itself and the layout looks fine — but the gutter
+ * does not come from the columns. It comes from
+ *
+ *     .container { width: 80%; max-width: 1080px; margin: auto }
+ *
+ * which is not in a media query at all, so it holds at every width. On a 390px
+ * phone 80% is 312px and the profile is read through a 39px margin on each
+ * side: a tenth of the screen given away twice over, on the one device where
+ * the tables are already tight. That reads as the tool being narrow rather
+ * than the page being padded, which is why it survives a desktop check.
+ *
+ * So: the content column takes the screen, and the gutter becomes the few
+ * pixels that stop text touching glass. `max()` rather than a flat 4px so a
+ * phone held sideways still clears its notch — on a device with no inset the
+ * `env()` is 0 and the 4px wins, which is every phone held upright.
+ *
+ * Scoped to `#main-content` so the header and footer keep the site's own
+ * `.container`, and `!important` because
+ * `.et_pb_pagebuilder_layout #main-content .container` outweighs this
+ * selector on any page that has been through the Divi Builder — the same
+ * asymmetry that gave the team hubs and the player pages two different widths
+ * from one rule. See the long note in statchasers-team.php.
+ *
+ * Enqueued against STATCHASERS_PLAYER_HANDLE, so it is scoped to pages that
+ * mount the profile by the same condition that loads player.css at all.
+ *
+ * @return string
+ */
+function statchasers_player_mobile_gutter_css(): string {
+	return implode(
+		'',
+		array(
+			// Divi's own sidebar breakpoint, from the other side, so this and
+			// statchasers_team_full_width_css() meet with no width between
+			// them that neither one answers for.
+			'@media (max-width:980px){',
+			'#main-content .container{width:100%!important;max-width:100%!important;' .
+				'padding-left:max(4px,env(safe-area-inset-left,0px))!important;' .
+				'padding-right:max(4px,env(safe-area-inset-right,0px))!important}',
+			// Belt: Divi's own horizontal padding on the column lives in the
+			// min-width rule, but a child theme's need not.
+			'#left-area{padding-left:0!important;padding-right:0!important}',
+			'}',
+		)
+	);
 }
 
 /**

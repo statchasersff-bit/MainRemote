@@ -394,6 +394,13 @@ function statchasers_schedule_enqueue_assets(): void {
 	if ( statchasers_schedule_wants_full_width() ) {
 		wp_add_inline_style( STATCHASERS_SCHEDULE_HANDLE, statchasers_team_full_width_css() );
 	}
+
+	// Unconditional where the full-width block is not: a tool printing through
+	// the site's header is wrong on every page that mounts one, whether or not
+	// that page also wants the sidebar's share of the row back.
+	if ( statchasers_team_is_divi() ) {
+		wp_add_inline_style( STATCHASERS_SCHEDULE_HANDLE, statchasers_tool_header_layer_css() );
+	}
 }
 
 /**

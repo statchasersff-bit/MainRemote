@@ -48,7 +48,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
-import { networkMarkFor } from "./team/network-marks";
+import { markFrame, networkMarkFor } from "./team/network-marks";
 import { TEAMS, type NflTeam } from "./team/teams";
 import {
   formatGameDate,
@@ -270,7 +270,7 @@ function networkHtml(network: string | null): string {
       return `<span class="scs-net-text">${escapeHtml(part)}</span>`;
     }
     return (
-      `<svg class="scs-net-mark" viewBox="${mark.viewBox}"` +
+      `<svg class="scs-net-mark" viewBox="${markFrame(mark)}"` +
       ` preserveAspectRatio="xMidYMid meet"` +
       ` style="${netMarkStyle(mark.aspect)}"` +
       ` role="img" aria-label="${escapeHtml(mark.title)}">` +

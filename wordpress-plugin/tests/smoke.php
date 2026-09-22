@@ -734,6 +734,39 @@ is( false !== strpos( $css, 'max-width:1080px!important' ), true, 'the cap is in
 is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar share is still taken back' );
 
 /*
+ * And the gutter below that breakpoint.
+ *
+ * `.container { width: 80% }` is not in a media query, so on a phone the
+ * profile is read through a 39px margin on each side. The full-width CSS above
+ * cannot fix it: that block only speaks inside `min-width: 981px`. These pin
+ * the two halves meeting — one rule for every width — and the `!important`,
+ * without which a Divi Builder page's own container rule outweighs this one.
+ */
+$mobile = statchasers_player_mobile_gutter_css();
+is( false !== strpos( $mobile, '@media (max-width:980px)' ), true, 'the gutter rule starts where the full-width rule stops' );
+is( false !== strpos( $mobile, 'width:100%!important;max-width:100%!important' ), true, 'the content column takes the screen' );
+is( 2, substr_count( $mobile, 'env(safe-area-inset' ), 'and a sideways phone still clears its notch' );
+
+/*
+ * The site's header outranks the tool.
+ *
+ * Every tool's sticky furniture carries a z-index meant to be read against its
+ * own rows, and on a Theme Builder header — where Divi's 99999 sits on the menu
+ * module, inside a wrapper that is itself a stacking context — those small
+ * numbers win instead, and the tab bar prints through the open mobile menu.
+ *
+ * The second assertion is the one that matters. `position: relative` is the
+ * obvious thing to pair with a z-index and it would unstick a sticky Theme
+ * Builder header to fix a stacking bug, so the rule must not carry one.
+ */
+echo "\nthe site's header outranks the tool\n";
+
+$layer = statchasers_tool_header_layer_css();
+is( false !== strpos( $layer, '.et-l--header' ), true, 'a Theme Builder header is lifted too, not just #main-header' );
+is( false === strpos( $layer, 'position' ), true, 'and nothing here moves it' );
+is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same overlay, so no breakpoint' );
+
+/*
  * The FPA FAQ island survives the round trip the plugin puts it through.
  *
  * The fragment carries its questions as an inert JSON payload, the plugin turns
