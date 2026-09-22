@@ -1144,69 +1144,93 @@ describe("mobile layout", () => {
   });
 
   /**
-   * The standing spends its division before the row breaks.
+   * The chips row shortens itself rather than wrapping.
    *
    * Five chips need 555–617px on one line depending on the club, and under
-   * that the Bye chip drops to a row of its own. "2nd in AFC East" → "2nd"
-   * buys about 60px and costs nothing a reader cannot already see: the
-   * division is the chip immediately to its left. Both spellings ship, the
-   * short one is off until client/team.ts measures the row and turns it on.
+   * that the Bye chip drops to a row of its own for one short word. Two chips
+   * carry a shorter spelling for that, spent in the order a reader can most
+   * afford them: the standing's division first ("2nd in AFC East" → "2nd",
+   * which is the chip two to its left anyway), then the bye ("Week 11" →
+   * "W11", under a label that still reads BYE). Both spellings ship; which one
+   * shows is client/team.ts's, after it measures the row.
    *
-   * Tolerant of ESPN, like the rest of this file: the standing is one of the
-   * facts that is simply absent when the provider is down, and the stylesheet
-   * half of the contract is asserted either way.
+   * Tolerant of the providers, like the rest of this file: either fact can be
+   * absent when ESPN is down, so each is asserted only if it rendered, and the
+   * stylesheet half of the contract is asserted either way.
    */
-  test("the standing chip carries a short form for a row that will not fit", async () => {
+  test("the fact chips carry short forms for a row that will not fit", async () => {
     const { doc } = await dom("/team/new-england-patriots");
 
     const chips = [...doc.querySelectorAll(".sct-facts .sct-fact")];
-    const standing = chips.find(
-      (chip) =>
-        chip.querySelector(".sct-fact-label")?.textContent.trim() ===
-        "Standing",
-    );
-    if (standing) {
-      const full = standing.querySelector(".sct-swap--full");
-      const short = standing.querySelector(".sct-swap--short");
-      // ESPN also sends bare places ("1st"), which have nothing to shorten.
-      if (full || short) {
-        assert.ok(full && short, "both spellings ship, or neither does");
-        assert.ok(
-          full.textContent.startsWith(short.textContent),
-          `"${short.textContent}" must be the head of "${full.textContent}"`,
-        );
-        assert.ok(
-          short.textContent.length < full.textContent.length,
-          "the short form is shorter",
-        );
-        assert.equal(
-          standing.getAttribute("title"),
-          full.textContent,
-          "the full standing stays answerable on the chip's title",
-        );
-      }
+    const chipFor = (label) =>
+      chips.find(
+        (chip) =>
+          chip.querySelector(".sct-fact-label")?.textContent.trim() === label,
+      );
+
+    // Rung, and how the short form relates to the full one.
+    const ladder = [
+      // ESPN also sends bare places ("1st"), which have nothing to shorten —
+      // hence a standing chip with no swap at all is allowed.
+      { label: "Standing", spend: "short", optional: true },
+      { label: "Bye", spend: "tight", optional: false },
+    ];
+
+    for (const rung of ladder) {
+      const chip = chipFor(rung.label);
+      if (!chip) continue;
+      const full = chip.querySelector(".sct-swap--full");
+      const short = chip.querySelector(".sct-swap--short");
+      if (!full && !short && rung.optional) continue;
+
+      assert.ok(full && short, `${rung.label} ships both spellings or neither`);
+      assert.ok(
+        short.textContent.length < full.textContent.length,
+        `${rung.label}'s short form must be shorter`,
+      );
+      assert.equal(
+        chip.getAttribute("data-sct-spend"),
+        rung.spend,
+        `${rung.label} gives way at the ${rung.spend} rung`,
+      );
+      assert.equal(
+        chip.getAttribute("title"),
+        full.textContent,
+        `${rung.label}'s full text stays answerable on the chip's title`,
+      );
     }
 
     const css = await get("/team.css");
     assert.equal(css.status, 200);
     assert.ok(
       /\.sct-swap--short \{[^}]*display:\s*none/.test(css.body),
-      "the short form is off until something turns it on",
+      "the short forms are off until something turns them on",
     );
-    assert.ok(
-      /\[data-sct-facts-form="short"\] \.sct-swap--full \{[^}]*display:\s*none/.test(
-        css.body,
-      ),
-      "and the attribute is what turns it on, in place of the full one",
-    );
+    // `~=`, because the row's attribute LISTS the rungs spent: "short", then
+    // "short tight". An `=` here would put the standing back the moment the
+    // bye was spent.
+    for (const rung of ladder) {
+      assert.ok(
+        css.body.includes(
+          `[data-sct-facts-form~="${rung.spend}"] [data-sct-spend="${rung.spend}"] .sct-swap--full`,
+        ),
+        `the ${rung.spend} rung swaps the chips that spend at it`,
+      );
+    }
 
-    // The attribute the rule above waits for has to have an author.
+    // The attribute those rules wait for has to have an author.
     const bundle = await get("/dist/statchasers-team.js");
     assert.equal(bundle.status, 200);
     assert.ok(
       bundle.body.includes("data-sct-facts-form"),
       "the hub bundle is what sets the form",
     );
+    for (const rung of ladder) {
+      assert.ok(
+        bundle.body.includes(`"${rung.spend}"`),
+        `the bundle knows the ${rung.spend} rung`,
+      );
+    }
   });
 
   /**
