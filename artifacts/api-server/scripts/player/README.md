@@ -19,7 +19,8 @@ this order:
 
 | # | Script | Writes | Source |
 |---|--------|--------|--------|
-| 1 | `buildPlayersIndex.js` | `players.json` | Sleeper player dictionary |
+| 1 | `buildPlayersIndex.js` | `players.json`, `player_slugs.json` | Sleeper player dictionary |
+| 1a | `migrateSlugs.js` | the slug-keyed files, in place | `player_slugs.json` |
 | 2 | `buildDepthCharts.js` | `depth_charts.json` | OurLads (scraped, needs `cheerio`) |
 | 3 | `buildIndexedPlayers.js` | `indexed_players.json`, `indexed_players_by_team.json` | the two above |
 | 4 | `buildGameLogs.js` | `game_logs/<season>.json` | Sleeper weekly stats |
@@ -41,6 +42,44 @@ every other file is a record of seasons that have already happened, and this one
 is how many leagues rostered a player in a given week. It carries the season and
 week it read inside it, so a stale file is stale visibly rather than quietly —
 rerun it whenever the number should have moved, which in season is weekly.
+
+## Slugs, and why step 1a is not optional
+
+A slug is a URL. `/nfl/players/<slug>/` is what WordPress mounts and what Google
+has indexed, so a slug that changes is a page that moved, not a value that got
+updated.
+
+Step 1 decides them, and it will change one from time to time: two players share
+a name and the claim on the bare form moves, or a source corrects a spelling. It
+prints every change it makes and records them in `player_slugs.json`, which is
+both the freeze list (an address in use is not reassigned on a later run) and
+the redirect list (`previous`, which the API 301s from and which the WordPress
+builder uses to MOVE the existing page rather than publish a second one).
+
+**`players.json` is not the only file that stores a slug.** `bios.json`,
+`draft.json` and `bio_facts.json` are keyed by one; `fantasy_outlook_2026.json`
+and `depth_charts.json` carry one as a field. Rename a player without running
+`migrateSlugs.js` and none of that follows him — the profile renders with no
+bio, no draft row, no outlook and no depth-chart slot, which looks exactly like
+a data outage and is much harder to trace back to a URL change.
+
+Run it whenever step 1 reports a change, before step 3:
+
+```
+node scripts/player/buildPlayersIndex.js
+node scripts/player/migrateSlugs.js          # --dry-run to see it first
+node scripts/player/buildIndexedPlayers.js
+```
+
+It is a no-op when nothing moved. A successful run empties the move list, which
+is what makes running it again safe — these renames include swaps and are only
+correct to apply once. Then press the builder on the WordPress Tools screen,
+which moves the pages and leaves a 301 behind; until that runs, the site still
+serves the old address.
+
+`--reassign` on step 1 drops the freeze for one run and re-decides every shared
+name on merit. It is how a bad address gets corrected once the ledger exists,
+and it is deliberately not the default: it changes live URLs.
 
 ## Bio facts
 

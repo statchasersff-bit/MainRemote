@@ -36,7 +36,11 @@ import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
-import { getAvailableSeasons } from "../lib/player/data";
+import {
+  getAvailableSeasons,
+  previousSlugsFor,
+  resolveSlugAlias,
+} from "../lib/player/data";
 import { indexedPlayers, playerDirectory } from "../lib/player/player-data";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
 
@@ -124,6 +128,44 @@ function playerSectionPath(slug: string, section: string): string {
 /** The profile's own address on this origin. */
 function playerPath(slug: string): string {
   return `${PLAYER_PATH_PREFIX}${slug}`;
+}
+
+/** The query string as it arrived, minus the keys named. */
+function queryString(req: Request, drop: string[] = []): string {
+  return new URLSearchParams(
+    Object.entries(req.query)
+      .filter(([key]) => !drop.includes(key))
+      .map(([key, value]) => [key, String(value)]),
+  ).toString();
+}
+
+/**
+ * Send a moved slug to the address it moved to, and say whether it did.
+ *
+ * A slug changes when two players share a name and the claim on the bare form
+ * moves, or when a source corrects a spelling. The profile is the same profile,
+ * so the old URL is a 301 rather than a 404 — the pages are indexed under it
+ * and the links to them are in other people's posts.
+ *
+ * The section rides along, so `/player/<old>/injury/` lands on
+ * `/player/<new>/injury/` in one hop rather than by way of the profile.
+ */
+function redirectMovedSlug(
+  req: Request,
+  res: Response,
+  slug: string,
+  scoped: string | undefined,
+): boolean {
+  const current = resolveSlugAlias(slug);
+  if (!current) return false;
+
+  const query = queryString(req, ["section"]);
+  const target = scoped
+    ? playerSectionPath(current, scoped)
+    : playerPath(current);
+
+  res.redirect(301, `${target}${query ? `?${query}` : ""}`);
+  return true;
 }
 
 /**
@@ -321,6 +363,11 @@ router.get("/embed/players.json", (_req, res) => {
     teamName: row.team?.fullName ?? null,
     teamSlug: row.team?.slug ?? null,
     headshot: row.headshot,
+    // The addresses this player used to answer at. The WordPress builder needs
+    // them: a slug change has to MOVE the existing page, because creating a
+    // second one at the new address leaves the old page published, competing
+    // with it, and carrying every link anyone ever made.
+    previousSlugs: previousSlugsFor(row.id),
   }));
 
   res
@@ -343,12 +390,13 @@ router.get("/player/:slug", (req, res) => {
     // at two URLs. The rest of the query rides along: ?format=half names a
     // different set of numbers, not a different page.
     const scoped = section(req);
+
+    // Before the redirect below rather than after it, so an old slug holding a
+    // section is one hop to its new address instead of two.
+    if (redirectMovedSlug(req, res, slug, scoped)) return;
+
     if (scoped) {
-      const query = new URLSearchParams(
-        Object.entries(req.query)
-          .filter(([key]) => key !== "section")
-          .map(([key, value]) => [key, String(value)]),
-      ).toString();
+      const query = queryString(req, ["section"]);
 
       res.redirect(
         301,
@@ -452,6 +500,7 @@ router.get("/player/:slug/:section", (req, res) => {
       sectionNotFound(res, slug);
       return;
     }
+    if (redirectMovedSlug(req, res, slug, scoped)) return;
 
     const embed = isEmbed(req);
 
@@ -522,11 +571,17 @@ router.get("/player/:slug/:section", (req, res) => {
  */
 router.get("/embed/player/:slug", (req, res) => {
   void (async () => {
-    const slug = safeSlug(req.params.slug);
-    if (!slug) {
+    const requested = safeSlug(req.params.slug);
+    if (!requested) {
       res.status(404).type("text/plain").send("Unknown player");
       return;
     }
+
+    // Resolved rather than redirected. This address is not indexed and nobody
+    // types it — it is the fetch a WordPress page makes for its own body — so a
+    // 301 here would only cost that page a round trip. The public URLs are the
+    // ones that get the redirect.
+    const slug = resolveSlugAlias(requested) ?? requested;
 
     // Links point at the public site's pages, not at this origin — otherwise
     // clicking a team inside a WordPress page would send the reader to the bare

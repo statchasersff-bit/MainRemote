@@ -122,6 +122,17 @@ function statchasers_player_roster( bool $fresh = false ): array {
 			continue;
 		}
 
+		// Addresses this player has published at before. The API only sends one
+		// when it has been dropped by everybody, so a slug here is never a live
+		// page's — see previousSlugsFor() on the other side.
+		$previous = array();
+		foreach ( (array) ( $player['previousSlugs'] ?? array() ) as $old ) {
+			$old = sanitize_title( (string) $old );
+			if ( '' !== $old && $old !== $slug ) {
+				$previous[] = $old;
+			}
+		}
+
 		$rows[] = array(
 			'slug'     => $slug,
 			'name'     => $name,
@@ -129,6 +140,7 @@ function statchasers_player_roster( bool $fresh = false ): array {
 			'team'     => strtoupper( trim( (string) ( $player['team'] ?? '' ) ) ),
 			'teamName' => trim( (string) ( $player['teamName'] ?? '' ) ),
 			'id'       => trim( (string) ( $player['id'] ?? '' ) ),
+			'previous' => $previous,
 		);
 	}
 
@@ -249,10 +261,79 @@ function statchasers_player_page_status( bool $fresh = false ): array {
 }
 
 /**
+ * Move a profile page that is published at one of this player's old addresses.
+ *
+ * WHY MOVING AND NOT CREATING. A slug can change: two players share a name and
+ * the claim on the bare form moves — Kenneth Walker's page was at
+ * `kenneth-walker-8151` because a retired receiver with the same name had been
+ * given `kenneth-walker` first — or a source corrects a spelling. The builder's
+ * only test used to be "is there a page at the current slug", so a rename read
+ * as a new player: it published a second page and left the first one up.
+ * Two pages, both indexed, both about the same man, each holding half the
+ * links. Renaming the one that exists is the only version of this that is not
+ * a mess to undo.
+ *
+ * ONLY OURS. The page has to carry the shortcode, which is the same signature
+ * every other write in this file checks before it touches anything. A page
+ * somebody made by hand at that address keeps it, and the builder creates the
+ * new one beside it.
+ *
+ * wp_update_post() records the address it is leaving in `_wp_old_slug`, which
+ * is what statchasers_player_old_slug_redirect() reads. Any earlier address is
+ * added alongside it, so a page that has moved twice still answers at both.
+ *
+ * @param array<string,mixed>   $row     Roster row.
+ * @param array<string,int>     $present post_name => page id, for this container.
+ * @return int|WP_Error Page id when one was moved, 0 when there was none.
+ */
+function statchasers_player_move_page( array $row, array $present ) {
+	foreach ( (array) ( $row['previous'] ?? array() ) as $old ) {
+		$id = (int) ( $present[ $old ] ?? 0 );
+		if ( ! $id ) {
+			continue;
+		}
+
+		$post = get_post( $id );
+		if ( ! $post instanceof WP_Post ) {
+			continue;
+		}
+		if ( ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
+			continue;
+		}
+
+		$moved = wp_update_post(
+			array(
+				'ID'        => $id,
+				'post_name' => (string) $row['slug'],
+			),
+			true
+		);
+
+		if ( is_wp_error( $moved ) ) {
+			return $moved;
+		}
+
+		// Core stored the address it just left. The rest of the history is
+		// ours to keep: a page that moved twice is still linked from both.
+		$known = (array) get_post_meta( $id, '_wp_old_slug', false );
+		foreach ( (array) ( $row['previous'] ?? array() ) as $previous ) {
+			if ( $previous !== $row['slug'] && ! in_array( $previous, $known, true ) ) {
+				add_post_meta( $id, '_wp_old_slug', $previous );
+				$known[] = $previous;
+			}
+		}
+
+		return $id;
+	}
+
+	return 0;
+}
+
+/**
  * Write one batch of profile pages.
  *
  * @param int $offset Index into the roster to start at.
- * @return array{next:int,total:int,created:int,existing:int,errors:array<int,string>}
+ * @return array{next:int,total:int,created:int,existing:int,moved:int,errors:array<int,string>}
  */
 function statchasers_player_build_batch( int $offset ): array {
 	$roster = statchasers_player_roster();
@@ -263,6 +344,7 @@ function statchasers_player_build_batch( int $offset ): array {
 		'total'    => $total,
 		'created'  => 0,
 		'existing' => 0,
+		'moved'    => 0,
 		'errors'   => array(),
 	);
 
@@ -293,9 +375,32 @@ function statchasers_player_build_batch( int $offset ): array {
 
 		$id = $status['present'][ $row['slug'] ] ?? 0;
 
+		// Nothing at the current address does not mean there is no page. Check
+		// the addresses this player has published at before, and move the page
+		// rather than publish a second one next to it.
 		if ( $id ) {
 			++$result['existing'];
 		} else {
+			$moved = statchasers_player_move_page( $row, $status['present'] );
+
+			if ( is_wp_error( $moved ) ) {
+				$result['errors'][] = sprintf( '%s: %s', $row['name'], $moved->get_error_message() );
+				continue;
+			}
+
+			if ( $moved ) {
+				$id = (int) $moved;
+				++$result['moved'];
+				// Kept in step so a later row in this same batch cannot match
+				// the address this page has just left.
+				foreach ( (array) ( $row['previous'] ?? array() ) as $old ) {
+					unset( $status['present'][ $old ] );
+				}
+				$status['present'][ $row['slug'] ] = $id;
+			}
+		}
+
+		if ( ! $id ) {
 			// The stored title, which on a normal template is the H1. The
 			// position is in it because six hundred names in an admin list are
 			// hard to tell apart; statchasers_player_heading() takes it back off
@@ -461,6 +566,111 @@ function statchasers_player_write_index( int $container ): void {
 				"\n\n[" . STATCHASERS_PLAYER_INDEX_SHORTCODE . ']',
 		)
 	);
+}
+
+/* ----------------------------------------------------------------- redirects */
+
+/**
+ * A profile that has moved answers at its old address, as a 301.
+ *
+ * WHY NOT CORE'S. wp_old_slug_redirect() exists and is already hooked, but it
+ * does not reach these URLs. It only runs when the query carries `name`, and it
+ * looks the slug up as a POST — these are pages, nested two deep, and the
+ * section addresses (`/nfl/players/<player>/injury/`) are a rewrite of ours
+ * that core has never heard of. So the lookup is done here, scoped to the
+ * player container, and the section segment is carried across with it.
+ *
+ * WHAT IT READS. `_wp_old_slug`, which WordPress writes whenever a post_name
+ * changes and which statchasers_player_move_page() tops up with any earlier
+ * address. That is a local record: it keeps working when the API is
+ * unreachable, which is exactly when a 404 would be most expensive.
+ *
+ * Only a 404 is considered, so this can never take a URL that resolves.
+ */
+add_action( 'template_redirect', 'statchasers_player_old_slug_redirect', 9 );
+
+function statchasers_player_old_slug_redirect(): void {
+	if ( ! is_404() ) {
+		return;
+	}
+
+	$base = function_exists( 'statchasers_player_url_base' )
+		? statchasers_player_url_base()
+		: STATCHASERS_PLAYER_PATH;
+
+	$wp      = $GLOBALS['wp'] ?? null;
+	$request = $wp instanceof WP ? trim( (string) $wp->request, '/' ) : '';
+
+	if ( '' === $request || 0 !== strpos( $request . '/', $base . '/' ) ) {
+		return;
+	}
+
+	$rest = array_values( array_filter( explode( '/', trim( substr( $request, strlen( $base ) ), '/' ) ) ) );
+
+	if ( empty( $rest ) || count( $rest ) > 2 ) {
+		return;
+	}
+
+	$slug    = sanitize_title( $rest[0] );
+	$section = isset( $rest[1] ) ? sanitize_title( $rest[1] ) : '';
+
+	if ( '' === $slug ) {
+		return;
+	}
+
+	// A second segment that is not one of ours is not a section URL, and
+	// guessing at it would turn a correct 404 into a redirect to the profile.
+	if ( '' !== $section && ! in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ) {
+		return;
+	}
+
+	$container = statchasers_player_container();
+
+	if ( ! $container ) {
+		return;
+	}
+
+	$found = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_parent'      => $container,
+			'post_status'      => 'publish',
+			'numberposts'      => 1,
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_meta_query -- one indexed
+			// meta lookup, on a 404 only, against a few hundred child pages.
+			'meta_key'         => '_wp_old_slug',
+			'meta_value'       => $slug,
+		)
+	);
+
+	if ( empty( $found ) ) {
+		return;
+	}
+
+	$target = get_permalink( (int) $found[0] );
+
+	if ( ! $target ) {
+		return;
+	}
+
+	if ( '' !== $section ) {
+		$target = user_trailingslashit( trailingslashit( $target ) . $section );
+	}
+
+	// The query is the reader's, not the address's: ?format=half names a set of
+	// numbers and has to survive the move.
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+
+	if ( '' !== $query ) {
+		$target .= '?' . $query;
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
 }
 
 /* ------------------------------------------------------------------ headings */
@@ -688,6 +898,7 @@ add_action(
 				'have'    => count( $status['present'] ),
 				'done'    => (int) $result['next'] >= (int) $result['total'],
 				'created' => (int) $result['created'],
+				'moved'   => (int) $result['moved'],
 				'errors'  => array_values( (array) $result['errors'] ),
 			)
 		);
@@ -737,6 +948,7 @@ add_action(
 				'total'    => (int) $result['total'],
 				'created'  => (int) ( $running['created'] ?? 0 ) + (int) $result['created'],
 				'existing' => (int) ( $running['existing'] ?? 0 ) + (int) $result['existing'],
+				'moved'    => (int) ( $running['moved'] ?? 0 ) + (int) $result['moved'],
 				'errors'   => array_slice(
 					array_merge( (array) ( $running['errors'] ?? array() ), $result['errors'] ),
 					0,
@@ -790,10 +1002,17 @@ function statchasers_player_panel(): void {
 	$offset  = $running ? (int) $cursor['next'] : 0;
 
 	if ( ! empty( $cursor['done'] ) ) {
+		$moved = (int) ( $cursor['moved'] ?? 0 );
+
 		printf(
-			'<div class="notice notice-success inline"><p><strong>Done.</strong> %d created, %d already existed.</p></div>',
+			'<div class="notice notice-success inline"><p><strong>Done.</strong> %d created, %d already existed%s.</p></div>',
 			(int) ( $cursor['created'] ?? 0 ),
-			(int) ( $cursor['existing'] ?? 0 )
+			(int) ( $cursor['existing'] ?? 0 ),
+			// Worth naming: a move changes a live URL, and the old one is only
+			// a 301 from here on rather than a page.
+			$moved
+				? esc_html( sprintf( ', %d moved to a new address', $moved ) )
+				: ''
 		);
 		delete_option( STATCHASERS_PLAYER_CURSOR );
 	}

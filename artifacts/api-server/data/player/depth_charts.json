@@ -60,7 +60,7 @@
             "depth_order": 4,
             "sleeper_id": "11573",
             "sleeper_name": "Frank Gore",
-            "sleeper_slug": "frank-gore-11573"
+            "sleeper_slug": "frank-gore"
           }
         ]
       },
@@ -620,7 +620,7 @@
             "depth_order": 2,
             "sleeper_id": "12547",
             "sleeper_name": "Kyle Williams",
-            "sleeper_slug": "kyle-williams-12547"
+            "sleeper_slug": "kyle-williams"
           },
           {
             "name": "Nick Degennaro",
@@ -3391,7 +3391,7 @@
             "depth_order": 1,
             "sleeper_id": "8151",
             "sleeper_name": "Kenneth Walker",
-            "sleeper_slug": "kenneth-walker-8151"
+            "sleeper_slug": "kenneth-walker"
           },
           {
             "name": "Emari Demercado",
@@ -5049,7 +5049,7 @@
             "depth_order": 1,
             "sleeper_id": "13301",
             "sleeper_name": "Antonio Williams",
-            "sleeper_slug": "antonio-williams-13301"
+            "sleeper_slug": "antonio-williams"
           },
           {
             "name": "Jaylin Lane",
