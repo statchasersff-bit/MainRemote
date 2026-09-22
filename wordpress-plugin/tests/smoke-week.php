@@ -94,3 +94,32 @@ echo "\nthe address outranks the shortcode\n";
 $args = statchasers_schedule_args( array( 'view' => 'matrix' ) );
 is( $args['view'], 'week', 'a week URL forces the weekly board' );
 is( $args['week'], 7, 'at the week the address names' );
+
+/*
+ * "Let the tool supply the heading" on the schedule.
+ *
+ * The hubs and profiles answer that mode with their own promoted section
+ * heading. The schedule's would be the source repo's Space Grotesk title,
+ * which is not the site's hero and read as a second design on the page, so it
+ * answers with the site's own hero markup instead and never asks the API for
+ * `?h1=1`.
+ */
+echo "\nthe schedule answers tool mode with the site's hero\n";
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'tool';
+$hero = statchasers_schedule_shortcode_heading( 2026 );
+is( str_contains( $hero, 'class="sc-lo sc-lo-hero' ), true, 'in the site hero markup' );
+is( str_contains( $hero, '>2026 NFL Schedule: Week 7</h1>' ), true, 'headed with the week' );
+is(
+	str_contains( $hero, 'Every Week 7 game of the 2026 NFL regular season: matchups, dates, kickoff times in ET' ),
+	true,
+	'and the standfirst says the season, word for word with the API'
+);
+is(
+	str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/statchasers-news/statchasers-schedule.php' ), "\$query['h1']" ),
+	false,
+	'the fragment is never asked for its own heading'
+);
+
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
+is( statchasers_schedule_shortcode_heading( 2026 ), '', 'and with headings off it prints none' );

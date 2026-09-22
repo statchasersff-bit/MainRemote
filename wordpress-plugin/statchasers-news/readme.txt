@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.9.3 =
+* The NFL schedule's heading now wears the site's own hero — the serif H1, the gold rule and the standfirst — in the "Let the tool supply the heading" mode. That mode empties the theme's title and asks each tool for its heading; the team hubs and player pages answer with a section heading already in the site's style, but the schedule answered with its source repo's Space Grotesk title, which read as a second design at the top of the page. It now prints the same `sc-lo-hero` markup the plugin prints in the other modes, and never asks the API for `?h1=1`. The standfirst carries the season again ("View the full 2026 NFL schedule…"), read off the board, so it says what the API's own page says. Plugin only; no API deploy needed.
 
 = 1.9.2 =
 * The NFL schedule's questions now reach the page's structured data. The fragment has carried them as an inert payload since the weekly board got a FAQ, and this file was the one of the six tools with nothing to lift it — so the answers shipped as visible prose and as a dead JSON island, and never as a FAQPage node. They are lifted into Rank Math's graph and stripped before printing now, the same arrangement the team hubs, the rankings board and the FPA table already use. Unlike those three, which question set gets described depends on what the page mounts: the shortcode's own attributes are read off the post before the head is built, so the bare schedule page is described by the season grid's questions and `/nfl/nfl-schedule/week-7/` by week 7's. Needs the matching API deploy.

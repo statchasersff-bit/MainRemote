@@ -306,15 +306,13 @@ function statchasers_schedule_fetch( array $args ): ?array {
 		return null;
 	}
 
-	// The heading mode is part of the identity of what comes back — a fragment
-	// that opens with the page's <h1> against one that opens with the board —
-	// so it joins the key. Same reasoning as statchasers-team.php.
-	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
-		&& statchasers_h1_tool_supplies_heading();
-
-	$key        = md5(
-		$origin . '|' . wp_json_encode( $args ) . '|' . ( $own_heading ? 'h1' : '' )
-	);
+	// Never `?h1=1`, unlike the team hubs and player pages. Their promoted
+	// heading is a section heading already dressed in the site's style; the
+	// schedule's is the source repo's Space Grotesk title, which is not the
+	// site's hero and read as a second design on the page. In the heading mode
+	// that asks the tool for its H1, this file prints the site's own hero
+	// instead — see statchasers_schedule_shortcode_heading().
+	$key        = md5( $origin . '|' . wp_json_encode( $args ) );
 	$cache_key  = 'sc_sched_ssr_' . $key;
 	$backup_key = 'sc_sched_ssr_bak_' . $key;
 
@@ -335,9 +333,6 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	}
 	if ( $args['season'] > 0 ) {
 		$query['season'] = (string) $args['season'];
-	}
-	if ( $own_heading ) {
-		$query['h1'] = '1';
 	}
 
 	$response = wp_remote_get(
@@ -595,11 +590,16 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 		$args
 	);
 
+	// The season the board is showing, read off the board itself: the page's
+	// title is where this file otherwise learns the year, and a standfirst
+	// that can say "2026" should, as the API's own page does.
+	$season = preg_match( '/data-scs-season="(\d{4})"/', $html, $m ) ? (int) $m[1] : 0;
+
 	// Above the board, because it is the page's heading rather than the
 	// fragment's: on a page whose theme prints no title of its own, this IS the
 	// <h1>. Empty on every other site, which is every site whose theme is
 	// already printing one.
-	return statchasers_schedule_shortcode_heading() . $html;
+	return statchasers_schedule_shortcode_heading( $season ) . $html;
 }
 add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' );
 
@@ -618,14 +618,21 @@ add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' 
  * Both halves say the same phrase, from the same two functions, so a site that
  * switches modes does not switch headings.
  */
-function statchasers_schedule_shortcode_heading(): string {
-	if ( ! apply_filters( 'statchasers_schedule_shortcode_h1', false ) ) {
+function statchasers_schedule_shortcode_heading( int $season = 0 ): string {
+	// "Let the tool supply the heading" empties the theme's title on every
+	// tool page. The hubs and profiles answer with their own promoted section
+	// heading; the schedule answers with the site's hero, which is the heading
+	// every hand-built page on the site already wears.
+	$tool_mode = function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+
+	if ( ! $tool_mode && ! apply_filters( 'statchasers_schedule_shortcode_h1', false ) ) {
 		return '';
 	}
 
 	return statchasers_page_heading_html(
 		statchasers_schedule_heading(),
-		statchasers_schedule_lead()
+		statchasers_schedule_lead( $season )
 	);
 }
 
@@ -698,11 +705,19 @@ function statchasers_schedule_heading(): string {
 /**
  * The sentence under that heading.
  *
- * MIRRORS `scheduleLede()` in schedule-render.ts, minus the season, which this
- * side does not know. The week case is the description the week URLs already
- * carry — one sentence doing two jobs is better than two that can disagree.
+ * MIRRORS `scheduleLede()` in schedule-render.ts word for word when the
+ * season is known — the shortcode reads it off the fragment. Without it, the
+ * week case falls back to the description the week URLs already carry.
  */
-function statchasers_schedule_lead(): string {
+function statchasers_schedule_lead( int $season = 0 ): string {
+	$week = statchasers_schedule_request_week();
+
+	if ( $season > 0 ) {
+		return 0 === $week
+			? sprintf( 'View the full %d NFL schedule for every team in one board. Compare opponents, home and away games, and bye weeks across the entire regular season.', $season )
+			: sprintf( 'Every Week %1$d game of the %2$d NFL regular season: matchups, dates, kickoff times in ET, TV networks, the teams on bye, and the market\'s posted spreads and totals.', $week, $season );
+	}
+
 	$week = statchasers_schedule_week_description();
 
 	return '' === $week
