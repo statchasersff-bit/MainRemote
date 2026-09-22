@@ -659,7 +659,11 @@ add_action(
 
 		$css = '';
 
-		if ( statchasers_h1_should_print() ) {
+		// Also in `tool` mode, where the schedule answers with the generated
+		// hero rather than a heading of its own (statchasers-schedule.php).
+		// The hubs and profiles print no generated hero in that mode, so there
+		// the rule matches nothing.
+		if ( statchasers_h1_should_print() || statchasers_h1_tool_supplies_heading() ) {
 			$css .= '.sc-lo-hero--generated{padding-left:0!important;padding-right:0!important}' .
 				'.sc-lo-hero--generated .sc-lo-hero__inner{' .
 					'max-width:none!important;width:100%!important;' .

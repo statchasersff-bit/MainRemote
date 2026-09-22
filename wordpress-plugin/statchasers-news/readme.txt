@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.9.3
+Stable tag: 1.9.4
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.9.4 =
+* The schedule's heading now lines up with the board on desktop. 1.9.3 had it print the site's hero in the "Let the tool supply the heading" mode, but the rule that holds a generated hero flush with the tool beneath it — undoing the hand-built hero's side padding and its centred, max-width inner shell — was still printed only in the modes where the plugin normally prints a heading. So on a wide screen the heading sat inset from the board, and a Custom CSS override on the padding alone could not reach the centring. Plugin only.
 
 = 1.9.3 =
 * The NFL schedule's heading now wears the site's own hero — the serif H1, the gold rule and the standfirst — in the "Let the tool supply the heading" mode. That mode empties the theme's title and asks each tool for its heading; the team hubs and player pages answer with a section heading already in the site's style, but the schedule answered with its source repo's Space Grotesk title, which read as a second design at the top of the page. It now prints the same `sc-lo-hero` markup the plugin prints in the other modes, and never asks the API for `?h1=1`. The standfirst carries the season again ("View the full 2026 NFL schedule…"), read off the board, so it says what the API's own page says. Plugin only; no API deploy needed.
