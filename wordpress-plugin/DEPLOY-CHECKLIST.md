@@ -255,9 +255,9 @@ Then the controls, which is where this tool differs from the others:
 And the heading, which this tool does not manage for you:
 
 - [ ] the page has exactly one `<h1>` and it is the page's own title.
-      `statchasers_h1_mounts_a_tool()` knows only the team, player and matchup
-      shortcodes, so the **Page headings** machinery does not cover this page —
-      the same is true of the rankings board and the schedule. On a theme that
+      `statchasers_h1_mounts_a_tool()` knows only the team, player, matchup
+      and schedule shortcodes, so the **Page headings** machinery does not cover
+      this page — the same is true of the rankings board. On a theme that
       prints the page title this is already right and there is nothing to do.
       On a Divi Theme Builder layout with **no Post Title module** this page
       would carry no H1 at all, and the fix is in the template or a heading

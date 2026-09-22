@@ -201,9 +201,10 @@ This replaces the `curl | grep -o '<h1'` check the previous version told you to
 run by hand. The filters still work and still win:
 
 ```php
-add_filter( 'statchasers_team_shortcode_h1',    '__return_true' );
-add_filter( 'statchasers_player_shortcode_h1',  '__return_true' );
-add_filter( 'statchasers_matchup_shortcode_h1', '__return_true' );
+add_filter( 'statchasers_team_shortcode_h1',     '__return_true' );
+add_filter( 'statchasers_player_shortcode_h1',   '__return_true' );
+add_filter( 'statchasers_matchup_shortcode_h1',  '__return_true' );
+add_filter( 'statchasers_schedule_shortcode_h1', '__return_true' );
 ```
 
 Nothing here ever edits the theme's markup or removes an H1 somebody else
@@ -934,13 +935,17 @@ lost to a colour-blind reader or to a monochrome print.
 ## NFL schedule — `[statchasers_schedule]`
 
 One page, at `/nfl/nfl-schedule/`. It mounts the board the API serves at
-`/schedule`: the full regular season by week, a team lens showing one team's
-seventeen games and its bye, a 32-by-18 season grid, and CSV and calendar
+`/schedule`: a 32-by-18 season grid, the full regular season week by week, a
+team lens showing one team's seventeen games and its bye, and CSV and calendar
 exports.
 
-| Attribute | Default | Meaning |
-|-----------|---------|---------|
-| `view`    | `week`  | `week`, `team` or `matrix`. |
+The bare page is the **season grid**, and the weekly board lives at the week
+URLs below. That is the same split the API makes from its own path, and the two
+sides have to agree — see "A week is a page".
+
+| Attribute | Default  | Meaning |
+|-----------|----------|---------|
+| `view`    | `matrix` | `matrix`, `week` or `team`. A week URL forces `week`. |
 | `week`    | current | Pin a week, 1–18. Leave it off — see below. |
 | `team`    | none    | With `view="team"`, whose season to show. `NE`, `patriots` and `new-england-patriots` all resolve. |
 | `filter`  | `all`   | `all`, `division` or `international`. |
@@ -948,14 +953,40 @@ exports.
 
 ```
 [statchasers_schedule]
-[statchasers_schedule view="matrix"]
+[statchasers_schedule view="week"]
 [statchasers_schedule view="team" team="NE"]
 [statchasers_schedule week="12" filter="division"]
 ```
 
-**Leave `week` off.** Unpinned, the board opens on the week the season is
+**Leave `week` off.** Unpinned, the weekly board opens on the week the season is
 actually on — it reads the slate to decide, so it rolls forward by itself. A
 pinned week is a page that still says Week 1 in December.
+
+### The heading
+
+The board prints no heading of its own. The page's `<h1>` names it, and on a
+week URL that heading says which week:
+
+| URL | H1 |
+|-----|----|
+| `/nfl/nfl-schedule/` | 2026 NFL Schedule |
+| `/nfl/nfl-schedule/week-7/` | 2026 NFL Schedule: Week 7 |
+
+It is built from the page's own title, so renaming the page in WordPress renames
+all eighteen addresses with it, and it comes from whichever of two places is
+right for the template:
+
+- **The theme prints the title** (Divi's `page.php` does). A `the_title` filter
+  appends the week to it, guarded the way every title filter here is — the main
+  query's own title, in the loop, and only on a week URL. Nothing to configure.
+- **The theme prints no title.** The shortcode prints the hero itself — heading,
+  rule and standfirst — in the site's own `sc-lo-hero` markup. That is the H1
+  machinery above, and the schedule is measured by the same probe as the team
+  hubs and player pages.
+
+The standfirst under the heading says what is on screen: the grid's describes
+the season board, and a week's describes that week. Both are the sentences the
+API uses on its own page, so the two never disagree.
 
 ### A week is a page: `/nfl/nfl-schedule/week-7/`
 
@@ -967,7 +998,7 @@ own. There are eighteen of them and the plugin adds them to Rank Math's page
 sitemap.
 
 ```
-/nfl/nfl-schedule/            the week the season is on
+/nfl/nfl-schedule/            the season grid: all 32 teams, weeks 1–18
 /nfl/nfl-schedule/week-7/     week 7, in June as in November
 ```
 
@@ -980,15 +1011,20 @@ sitemap.
   `init`, but WordPress only rewrites its rule table when something asks it to:
   visit Settings → Permalinks once, or deactivate and reactivate the plugin.
   Until then the week URLs 404.
-- **A week URL beats the `week` attribute.** A page reached at `/week-7/` renders
-  week 7 whatever the shortcode says, because the address is the promise. A page
-  mounting the shortcode anywhere else is unaffected and its attribute stands.
+- **A week URL beats the `week` attribute, and the `view` with it.** A page
+  reached at `/week-7/` renders the weekly board on week 7 whatever the
+  shortcode says, because the address is the promise; the bare page renders the
+  grid. That pair is what makes the one page two addresses. A page mounting the
+  shortcode anywhere else is unaffected and its attributes stand.
 - **A week the season does not have is a 404**, not the current week — `week-23`,
   `week-02` and `week-0` are all refused, here and on the API. One spelling per
   week is the whole point of moving it out of the query string.
 - **Turn the addresses off** with `add_filter( 'statchasers_schedule_week_urls', '__return_false' )`
-  and a permalink flush. The shortcode goes back to being one page showing one
-  week; nothing else changes.
+  and a permalink flush. The rewrite and the sitemap entries go with it, and the
+  page becomes the grid alone: the board's week links and its "Weekly board" tab
+  are built on the API side from `SC_SCHEDULE_PATH` and still point at
+  `/week-N/`, so with the rewrite gone they 404. The flag is for a site that is
+  not serving the weekly board at all.
 - `?week=` still works on the API's own origin and answers with a permanent
   redirect to the path, so old links and bookmarks survive. The plugin never
   used it as an address — it passes the week to `/embed/schedule` as a render
@@ -1048,6 +1084,14 @@ behind, but never wrong.
 
 `SC_TEAM_PATH_PREFIX` matters here too: every team name on the board links to
 its hub.
+
+`SC_MATCHUP_PATH_PREFIX` (default `/nfl/`) is where the weekly board's last
+column points — one link per game, into that pair's own page. The default is
+already right for this plugin, whose matchup rewrite lives at `/nfl/<a>-vs-<b>/`;
+set it only if you have moved those pages. A game the pair's page has stopped
+leading with is linked at its dated address (`/nfl/<a>-vs-<b>/2026-week-3/`)
+rather than at the pair, so a reader opening an old week lands on that week's
+game and not on the latest one.
 
 ### If the feed is down
 

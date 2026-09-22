@@ -49,12 +49,17 @@ export function invalidateScheduleRenderCache(): void {
 function optionKey(season: number, options: ScheduleRenderOptions): string {
   return JSON.stringify([
     season,
-    options.view ?? "week",
+    options.view ?? "matrix",
     options.week ?? 0,
     options.filter ?? "all",
     options.embed ?? false,
+    // The heading mode changes the markup that comes back — a fragment that
+    // prints the page's <h1> against one that prints none — so a fragment
+    // cached under one must not be served under the other.
+    options.ownHeading ?? false,
     options.basePath ?? "",
     options.teamPathPrefix ?? "",
+    options.matchupPathPrefix ?? "",
     options.downloadBase ?? "",
     options.linkQuery ?? "",
   ]);
@@ -133,7 +138,7 @@ export async function renderScheduleAppPage(
   const fragment = await renderScheduleFragment(season, options);
 
   const meta = schedulePageMeta(fragment.data, options.canonical, {
-    view: options.view ?? "week",
+    view: options.view ?? "matrix",
     week: fragment.data
       ? resolveState(fragment.data, options).week
       : (options.week ?? 1),

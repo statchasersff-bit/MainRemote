@@ -331,19 +331,26 @@ function wireExpandableLog(root: HTMLElement): void {
  * take, because a viewport width cannot know how long "Amon-Ra St. Brown" is
  * or that a one-game season prints "16.5" where a full one prints "235.4".
  *
- * Nothing is truncated, hidden or scrolled. Concessions are spent cheapest
- * first — whitespace, then type and column scale in proportion, then word
- * swaps, then, only at the very end, the name is allowed to wrap.
+ * Nothing is truncated, hidden, shortened or scrolled — not the club's name,
+ * not the draft line, not the given name. The header may make its parts
+ * smaller and its whitespace tighter; it may not edit what they say. Beyond
+ * that the layout takes over: below 760px the identity has a row of its own at
+ * full size, which is where the width a word swap used to buy now comes from.
  *
- * Runs in the one-row tier only — above 620px. Below that the layout has
+ * Concessions are spent cheapest first — whitespace, then type and column
+ * scale in proportion, then, only at the very end, the name is allowed to
+ * wrap.
+ *
+ * Runs in the one-row tier only — above 670px. Below that the layout has
  * already made the room these scales exist to find, and a squeezed part inside
  * a stacked header is a small part for no reason; the scales are cleared and
  * the CSS fallbacks of 1 take over.
  */
 
-/** The six multipliers player.css writes every hero size against. */
+/** The seven multipliers player.css writes every hero size against. */
 interface HeroScales {
   pad: number;
+  inset: number;
   gap: number;
   bust: number;
   id: number;
@@ -353,12 +360,9 @@ interface HeroScales {
 
 type HeroScaleKey = keyof HeroScales;
 
-/** The three lengths the swappable runs of text come in. */
-type HeroForm = "full" | "short" | "tight";
-
 interface HeroNatural {
-  /** The identity column at each of its three forms, at scale 1. */
-  id: Record<HeroForm, number>;
+  /** The identity column, at scale 1. */
+  id: number;
   /** The numbers strip, at scale 1. Zero when the header has no strip. */
   strip: number;
   /** The strip's figures alone, with its cell padding taken to zero. */
@@ -369,13 +373,16 @@ interface HeroNatural {
   photo: number;
   /** Gutters, gaps and the name's clearance, at scale 1. */
   chrome: number;
-  /** Everything --scp-hero-pad is a multiplier of, at scale 1. */
+  /** The card's two gutters: what --scp-hero-pad is a multiplier of. */
   padBasis: number;
+  /** The figure's inset from the left gutter, for --scp-hero-inset. */
+  insetBasis: number;
+  /** The whole distance from figure to name, for --scp-hero-gap. */
+  gapBasis: number;
 }
 
 interface HeroFit {
   scales: HeroScales;
-  form: HeroForm;
   /** Which stage the squeeze got to. 0 = nothing spent. Exposed for devtools. */
   stage: number;
   /** Every stage spent and still short: the surname may wrap. */
@@ -405,34 +412,34 @@ const HERO_TEXT_CLEAR = 40;
  * be spent either. Counting a gap that does not exist would have the fitter
  * squeezing a row that already fits.
  */
-function heroChrome(hasPhoto: boolean, hasStrip: boolean): {
-  chrome: number;
-  padBasis: number;
-} {
+function heroChrome(
+  hasPhoto: boolean,
+  hasStrip: boolean,
+): { chrome: number; padBasis: number; insetBasis: number; gapBasis: number } {
   const gaps = (hasPhoto ? 1 : 0) + (hasStrip ? 1 : 0);
-  const padBasis =
-    HERO_GUTTER * 2 + (hasPhoto ? HERO_PHOTO_INSET : 0) + HERO_INNER_GAP * gaps;
-  return { chrome: padBasis + (hasPhoto ? HERO_TEXT_CLEAR : 0), padBasis };
+  const padBasis = HERO_GUTTER * 2;
+  const insetBasis = hasPhoto ? HERO_PHOTO_INSET : 0;
+  // Both halves of the figure-to-name distance, plus the gap on the strip's
+  // side, which moves with them: one lever, so the fitter can close the whole
+  // distance rather than leaving 12px of flex gap behind a spent clearance.
+  const gapBasis = HERO_INNER_GAP * gaps + (hasPhoto ? HERO_TEXT_CLEAR : 0);
+  return {
+    chrome: padBasis + insetBasis + gapBasis,
+    padBasis,
+    insetBasis,
+    gapBasis,
+  };
 }
 
 const HERO_SCALES_BASE: HeroScales = {
   pad: 1,
+  inset: 1,
   gap: 1,
   bust: 1,
   id: 1,
   tbl: 1,
   tblp: 1,
 };
-
-/**
- * Growing back is reluctant; shrinking is eager.
- *
- * A form swap is the one discrete step in an otherwise continuous response, so
- * it is the one that can flap: a pixel of jitter either side of the threshold
- * would toggle "Patriots" and "New England Patriots" forever. Widening has to
- * clear the threshold by this much before the richer form comes back.
- */
-const HERO_FORM_STICK = 10;
 
 /** Below this, a change is rounding and re-rendering on it is a loop. */
 const HERO_EPSILON = 0.005;
@@ -462,8 +469,7 @@ const HERO_SLACK = 3;
  * — and a residue of 7e-15 used to be enough to fall through into the next
  * stage, whose levers would then write their `from` values over the partial
  * spend that had just been computed. A bust squeezed to 94.8% came out at 85%.
- * And on the other side, a word swap that saves a fraction of a pixel is not a
- * concession, it is just a shorter word.
+ * It doubles as the width at which a deficit is simply settled.
  */
 const HERO_SETTLED = 0.5;
 
@@ -476,8 +482,6 @@ interface HeroLever {
 }
 
 interface HeroStage {
-  /** Spent on entry, all at once: a word swap has no in-between. */
-  form?: HeroForm;
   levers: HeroLever[];
 }
 
@@ -489,38 +493,33 @@ interface HeroStage {
  * threshold, and every lever inside a stage moves together.
  *
  *   1  whitespace, and the first proportional shrink of all three parts
- *   2  deeper on bust and type, and the strip's own cell padding, which goes
- *      faster than the type beside it: whitespace before legibility, inside
- *      the strip exactly as outside it
- *   3  words — "New England Patriots" becomes "Patriots", the draft line
- *      abbreviates — then the last of the name's clearance and the gutter
+ *   2  deeper on bust and type, the figure's inset, and the strip's own cell
+ *      padding, which goes faster than the type beside it: whitespace before
+ *      legibility, inside the strip exactly as outside it
+ *   3  most of what is left of the gutters, the inset and the gap
  *   4  the strip's last cut, and the last of its padding
- *   5  the given name becomes an initial and "Patriots" becomes "NE", the
- *      draft line goes, and bust and type take their last cut to 0.65 / 0.75
- *      — the strip is already at its floor
+ *   5  bust and type take their last cut, to 0.65 / 0.75, and the whitespace
+ *      goes to its floor: 10px gutters, no inset, 3px between the figure and
+ *      the name — the strip is already at its own floor
+ *
+ * There are no word swaps any more. Stage 3 used to shorten the club's name
+ * and the draft line, and stage 5 contracted the given name and cut the club
+ * to its code; what a reader saw was a header quietly rewriting the player's
+ * facts as the window narrowed. Every stage here changes how big a thing is
+ * drawn, never what it says, and when they run out the tier below takes over
+ * with the identity on a row of its own at full size.
  *
  * The strip floors at 0.80 and takes no part in stage 5. It used to run to
  * 0.60, which is where this came from: the label row is letter-spaced small
  * caps at 10px, so 0.60 printed "POS RANK" at six pixels and the figure under
- * it at fourteen — and a 620px window, which is a phone held sideways and not
- * an edge case, sat there. A strip nobody can read is not a cheaper concession
- * than a surname on two lines: it is the panel's whole content spent to buy
- * the least load-bearing part of the header one more line. So the type stops
- * — 8px on the label, 18.4px on the figure, which is the fifth of its size mak
- * set as the limit — and the CELL PADDING carries the rest of stage 4, down to
- * 0.3: the same whitespace-before-legibility rule stage 2 already follows,
- * taken to its end. The figure is inked at the 4.5:1 tone (see
- * `.scp-hero-stat.is-lead` in player.css) precisely so this floor could move
- * without taking the contrast with it.
- *
- * Stage 5's form swap is worth much more than it used to be: the tight form
- * now abbreviates the given name as well as the club, and the name is the
- * widest line in the identity column. That saving, and this floor, are what
- * let the one-row tier run down to 620px instead of stopping at 800 — which
- * was the point of both: the numbers stay BESIDE the name rather than stacking
- * under it while there is still room for them there. The narrow tiers are
- * unaffected either way; at 620px and below the scales are cleared and the
- * strip has a full-width row of its own at full size.
+ * it at fourteen. A strip nobody can read is not a cheaper concession than a
+ * surname on two lines: it is the panel's whole content spent to buy the least
+ * load-bearing part of the header one more line. So the type stops — 8px on
+ * the label, 18.4px on the figure — and the CELL PADDING carries the rest of
+ * stage 4, down to 0.3: the same whitespace-before-legibility rule stage 2
+ * already follows, taken to its end. The figure is inked at the 4.5:1 tone
+ * (see `.scp-hero-stat.is-lead` in player.css) precisely so this floor could
+ * move without taking the contrast with it.
  *
  * The other floors are the start/sit tool's, unchanged. They were picked from
  * the narrowest supported screen against the widest content case, and below
@@ -532,24 +531,26 @@ function heroStages(nat: HeroNatural): HeroStage[] {
     {
       levers: [
         { key: "pad", from: 1, to: 0.6, basis: nat.padBasis },
-        { key: "gap", from: 1, to: 0.6, basis: HERO_TEXT_CLEAR },
+        { key: "inset", from: 1, to: 0.6, basis: nat.insetBasis },
+        { key: "gap", from: 1, to: 0.6, basis: nat.gapBasis },
         { key: "bust", from: 1, to: 0.85, basis: nat.photo },
-        { key: "id", from: 1, to: 0.9, basis: nat.id.full },
+        { key: "id", from: 1, to: 0.9, basis: nat.id },
         { key: "tbl", from: 1, to: 0.94, basis: nat.stripText },
       ],
     },
     {
       levers: [
+        { key: "inset", from: 0.6, to: 0.3, basis: nat.insetBasis },
         { key: "bust", from: 0.85, to: 0.75, basis: nat.photo },
-        { key: "id", from: 0.9, to: 0.8, basis: nat.id.full },
+        { key: "id", from: 0.9, to: 0.8, basis: nat.id },
         { key: "tblp", from: 1, to: 0.55, basis: nat.stripPad },
       ],
     },
     {
-      form: "short",
       levers: [
-        { key: "gap", from: 0.6, to: 0.3, basis: HERO_TEXT_CLEAR },
+        { key: "gap", from: 0.6, to: 0.25, basis: nat.gapBasis },
         { key: "pad", from: 0.6, to: 0.45, basis: nat.padBasis },
+        { key: "inset", from: 0.3, to: 0.1, basis: nat.insetBasis },
       ],
     },
     {
@@ -559,10 +560,18 @@ function heroStages(nat: HeroNatural): HeroStage[] {
       ],
     },
     {
-      form: "tight",
       levers: [
         { key: "bust", from: 0.75, to: 0.65, basis: nat.photo },
-        { key: "id", from: 0.8, to: 0.75, basis: nat.id.tight },
+        { key: "id", from: 0.8, to: 0.75, basis: nat.id },
+        // The last of the whitespace, and it goes to nothing much: the figure
+        // ends up standing ON the left gutter, the gutter itself is 10px, and
+        // the distance from the figure to the name is 3px. Those three
+        // figures are mak's, and they are the whole reason this row survives
+        // another 90px of viewport before it stacks — a stacked header with
+        // 28px gutters is not a better answer than a row with 10px ones.
+        { key: "gap", from: 0.25, to: 0.045, basis: nat.gapBasis },
+        { key: "pad", from: 0.45, to: 0.357, basis: nat.padBasis },
+        { key: "inset", from: 0.1, to: 0, basis: nat.insetBasis },
       ],
     },
   ];
@@ -578,44 +587,14 @@ function heroStages(nat: HeroNatural): HeroStage[] {
  */
 function heroFit(avail: number, nat: HeroNatural): HeroFit {
   const scales: HeroScales = { ...HERO_SCALES_BASE };
-  let form: HeroForm = "full";
 
-  let deficit = nat.chrome + nat.photo + nat.id.full + nat.strip - avail;
-  if (deficit <= HERO_SETTLED) return { scales, form, stage: 0, wrap: false };
+  let deficit = nat.chrome + nat.photo + nat.id + nat.strip - avail;
+  if (deficit <= HERO_SETTLED) return { scales, stage: 0, wrap: false };
 
   const stages = heroStages(nat);
   let reached = 0;
 
   for (const stage of stages) {
-    if (stage.form) {
-      // The saving is the difference between the form we are leaving and the
-      // one we are entering, both measured off-screen before either was shown.
-      //
-      // Usually zero, and then not spent. The column's natural width is its
-      // widest LINE, and its widest line is almost always the surname — so
-      // shortening "Arizona Cardinals" to "Cardinals" under a name that is
-      // already wider than both buys no width at all. A concession that
-      // concedes nothing is not a cheaper concession; it is a worse header for
-      // free, and the club keeps its name.
-      //
-      // AT THE SCALE THE COLUMN IS ALREADY AT, not at its natural size. The
-      // naturals are measured at scale 1 and stage 2 has taken the type to
-      // 0.8 by the time a swap is reached, so a swap that saves 90 natural px
-      // saves 72 real ones. Charging the full figure had the fitter believing
-      // the row fit when it did not, and the name wrapped anyway with the
-      // fitter still reporting budget in hand — which is how the surname
-      // quietly went to two lines at 640px. It was a small error while the
-      // only swap was the club's name; the given name is worth several times
-      // that, which is what made it visible.
-      const saving = (nat.id[form] - nat.id[stage.form]) * scales.id;
-      if (saving > HERO_SETTLED) {
-        form = stage.form;
-        deficit -= saving;
-        reached += 1;
-        if (deficit <= HERO_SETTLED) return { scales, form, stage: reached, wrap: false };
-      }
-    }
-
     const budget = stage.levers.reduce(
       (sum, lever) => sum + lever.basis * (lever.from - lever.to),
       0,
@@ -632,27 +611,35 @@ function heroFit(avail: number, nat: HeroNatural): HeroFit {
     }
     reached += 1;
     deficit -= budget * spent;
-    if (deficit <= HERO_SETTLED) return { scales, form, stage: reached, wrap: false };
+    if (deficit <= HERO_SETTLED) return { scales, stage: reached, wrap: false };
   }
 
   // Every stage spent and still short. The last concession, and only now: the
-  // surname wraps. Not an ellipsis — a surname is the one string on this page
-  // a reader came for, and "Beckh…" is worse than two lines.
-  return { scales, form, stage: reached, wrap: true };
+  // surname wraps. Not an ellipsis and not an initial — a name is the one
+  // string on this page a reader came for, and "Beckh…" is worse than two
+  // lines. In practice the tier boundary is set so this is reached only by a
+  // name longer than any on the site today.
+  return { scales, stage: reached, wrap: true };
 }
 
-const HERO_KEYS: HeroScaleKey[] = ["pad", "gap", "bust", "id", "tbl", "tblp"];
+const HERO_KEYS: HeroScaleKey[] = [
+  "pad",
+  "inset",
+  "gap",
+  "bust",
+  "id",
+  "tbl",
+  "tblp",
+];
 
 /** Hysteresis: a fit that differs only by rounding is the same fit. */
 function heroFitSame(a: HeroFit | null, b: HeroFit): boolean {
   if (!a) return false;
-  if (a.form !== b.form || a.wrap !== b.wrap) return false;
+  if (a.wrap !== b.wrap) return false;
   return HERO_KEYS.every(
     (key) => Math.abs(a.scales[key] - b.scales[key]) < HERO_EPSILON,
   );
 }
-
-const HERO_RICHER: Record<HeroForm, number> = { tight: 0, short: 1, full: 2 };
 
 /**
  * A measuring copy of a finished element.
@@ -693,8 +680,8 @@ function heroProbeClone(source: HTMLElement): HTMLElement {
 }
 
 /**
- * Build the off-screen probe: the identity column at each of its three forms,
- * and the numbers strip, all at scale 1.
+ * Build the off-screen probe: the identity column and the numbers strip, at
+ * scale 1.
  *
  * Appended to the hero rather than the body so it inherits the same fonts,
  * colours and team variables the real column does — then resets the six scales
@@ -711,17 +698,11 @@ function heroBuildProbe(
   probe.setAttribute("aria-hidden", "true");
   probe.setAttribute("data-scp-hero-probe", "");
 
-  for (const form of ["full", "short", "tight"] as HeroForm[]) {
-    const item = document.createElement("div");
-    item.className = "scp-hero-probe-item";
-    item.setAttribute("data-scp-probe", form);
-    // The form attribute on the item itself, so the swap rules resolve to this
-    // copy's form and not to whatever the visible row is currently showing.
-    const copy = heroProbeClone(text);
-    copy.setAttribute("data-scp-form", form);
-    item.appendChild(copy);
-    probe.appendChild(item);
-  }
+  const item = document.createElement("div");
+  item.className = "scp-hero-probe-item";
+  item.setAttribute("data-scp-probe", "id");
+  item.appendChild(heroProbeClone(text));
+  probe.appendChild(item);
 
   if (strip) {
     // Twice: once whole, and once with the cell padding taken to zero so the
@@ -740,6 +721,59 @@ function heroBuildProbe(
 
   hero.appendChild(probe);
   return probe;
+}
+
+/**
+ * The phone tier's fitter, below 480px: the name and the club, one line each.
+ *
+ * There is no layout left to change to down here, so what gives is the words'
+ * size and then their length, in the order mak set: the name shrinks by up to
+ * 15%, then the given name becomes an initial ("J. Brissett"), and only if
+ * that still overflows does the name wrap. The club line has one step:
+ * "Arizona Cardinals" becomes "ARI Cardinals", then wraps.
+ *
+ * The short forms are generated content from attributes the server printed,
+ * so the heading's and the link's text are the full name whatever this does.
+ *
+ * Every pass starts from the unfitted state and measures that, rather than
+ * adjusting what the last pass left: a fitter that measures its own output
+ * drifts.
+ */
+const PHONE_NAME_FLOOR = 0.85;
+
+function heroPhoneFit(hero: HTMLElement): void {
+  const title = hero.querySelector<HTMLElement>(".scp-title");
+  const billing = hero.querySelector<HTMLElement>(".scp-hero-billing");
+
+  hero.style.removeProperty("--scp-hero-name");
+  hero.removeAttribute("data-scp-hero-name");
+  hero.removeAttribute("data-scp-hero-club");
+
+  // Overflow, with a half pixel of grace for subpixel text widths.
+  const over = (el: HTMLElement): boolean => el.scrollWidth - el.clientWidth > 0.5;
+
+  if (title && title.clientWidth && over(title)) {
+    const ratio = title.clientWidth / title.scrollWidth;
+    if (ratio >= PHONE_NAME_FLOOR) {
+      // A hair under the exact ratio, so rounding cannot leave it 0.2px over.
+      hero.style.setProperty("--scp-hero-name", (ratio - 0.003).toFixed(3));
+    } else {
+      hero.style.setProperty("--scp-hero-name", String(PHONE_NAME_FLOOR));
+      hero.setAttribute("data-scp-hero-name", "short");
+      if (over(title)) hero.setAttribute("data-scp-hero-name", "wrap");
+    }
+  }
+
+  if (billing && billing.clientWidth && over(billing)) {
+    hero.setAttribute("data-scp-hero-club", "short");
+    if (over(billing)) hero.setAttribute("data-scp-hero-club", "wrap");
+  }
+}
+
+function heroPhoneReset(hero: HTMLElement): void {
+  hero.style.removeProperty("--scp-hero-name");
+  hero.removeAttribute("data-scp-hero-name");
+  hero.removeAttribute("data-scp-hero-club");
 }
 
 function wireHeroFit(root: HTMLElement): void {
@@ -768,11 +802,7 @@ function wireHeroFit(root: HTMLElement): void {
     const stripW = probeWidth('[data-scp-probe="strip"] .scp-hero-stats');
     const stripText = probeWidth('[data-scp-probe="strip-bare"] .scp-hero-stats');
     const nat: HeroNatural = {
-      id: {
-        full: probeWidth('[data-scp-probe="full"] .scp-hero-text'),
-        short: probeWidth('[data-scp-probe="short"] .scp-hero-text'),
-        tight: probeWidth('[data-scp-probe="tight"] .scp-hero-text'),
-      },
+      id: probeWidth('[data-scp-probe="id"] .scp-hero-text'),
       // Zero when the player has no season to report: the strip is absent
       // from the header entirely, and its stages then have no budget to
       // spend, which is exactly right.
@@ -792,33 +822,37 @@ function wireHeroFit(root: HTMLElement): void {
     };
     // A probe that reports nothing has not been laid out yet. Writing scales
     // from it would pin the header at a size measured from an empty box.
-    return nat.id.full > 0 ? nat : null;
+    return nat.id > 0 ? nat : null;
   };
 
   const apply = (fit: HeroFit): void => {
     for (const key of HERO_KEYS) {
       hero.style.setProperty(`--scp-hero-${key}`, fit.scales[key].toFixed(3));
     }
-    inner.setAttribute("data-scp-form", fit.form);
     hero.setAttribute("data-scp-hero-stage", String(fit.stage));
     hero.setAttribute("data-scp-hero-wrap", fit.wrap ? "1" : "0");
   };
 
   const reset = (): void => {
     for (const key of HERO_KEYS) hero.style.removeProperty(`--scp-hero-${key}`);
-    inner.setAttribute("data-scp-form", "full");
     hero.setAttribute("data-scp-hero-stage", "0");
     hero.setAttribute("data-scp-hero-wrap", "0");
   };
 
-  // The one-row tier, and the only tier this runs in. Matches the 620px
-  // boundary in player.css from the other side: at 620 and below the figure
-  // takes a column of its own and the strip stacks under the name, and below
-  // 560 the whole header stacks. Both tiers have already made the room these
-  // scales exist to find.
+  // The one-row tier, and the only tier this runs in. Matches the 670px
+  // boundary in player.css from the other side: at 670 and below the identity
+  // takes a row of its own with the bust beside it and the strip goes full
+  // width underneath, which has already made the room these scales exist to
+  // find.
   const oneRow =
     typeof window.matchMedia === "function"
-      ? window.matchMedia("(min-width: 620.02px)")
+      ? window.matchMedia("(min-width: 670.02px)")
+      : null;
+
+  // The phone tier, matching the 479.98px boundary in player.css.
+  const phone =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 479.98px)")
       : null;
 
   let current: HeroFit | null = null;
@@ -842,10 +876,15 @@ function wireHeroFit(root: HTMLElement): void {
           cleared = true;
           reset();
         }
+        // The phone tier has a fitter of its own, for words rather than
+        // scales; the two-column tier has none.
+        if (phone?.matches) heroPhoneFit(hero);
+        else heroPhoneReset(hero);
         return;
       }
 
       cleared = false;
+      heroPhoneReset(hero);
 
       // Zero is how an element in a hidden tab or an unlaid-out document
       // reports itself, and a scale written from it poisons the next read.
@@ -855,13 +894,7 @@ function wireHeroFit(root: HTMLElement): void {
       const nat = natural();
       if (!nat) return;
 
-      let next = heroFit(avail - HERO_SLACK, nat);
-      // Eager to shrink, reluctant to grow back: re-fit against a slightly
-      // narrower row before letting a richer form return, so a pixel of
-      // jitter at a threshold cannot flip the club's name back and forth.
-      if (current && HERO_RICHER[next.form] > HERO_RICHER[current.form]) {
-        next = heroFit(avail - HERO_SLACK - HERO_FORM_STICK, nat);
-      }
+      const next = heroFit(avail - HERO_SLACK, nat);
 
       if (heroFitSame(current, next)) return;
       current = next;

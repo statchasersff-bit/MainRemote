@@ -98,6 +98,10 @@
   --sc-shadow: var(--scs-shadow-card);
   --sc-radius: var(--scs-radius);
   --sc-font: var(--scs-font);
+  /* The family the armour at the foot of this file pins each element to.
+     Inherited like font-family itself, so a display rule restating it is
+     all it takes for that element and its children to keep Space Grotesk. */
+  --scs-ff: var(--sc-font);
 }
 
 /*
@@ -236,6 +240,7 @@ body.scs-page.is-embed {
 .scs-title {
   margin: 0;
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.25rem);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -359,6 +364,7 @@ body.scs-page.is-embed {
 .scs-view-title {
   margin: 0;
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -380,6 +386,7 @@ body.scs-page.is-embed {
   margin-left: 8px;
   color: hsl(var(--scs-muted-foreground));
   font-family: var(--scs-font);
+  --scs-ff: var(--sc-font);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: normal;
@@ -392,6 +399,18 @@ body.scs-page.is-embed {
   margin: 4px 0 0;
   color: hsl(var(--scs-muted-foreground));
   font-size: 12px;
+}
+
+/*
+ * The grid's head is the instruction alone.
+ *
+ * It had a heading and two sentences of page copy above this line, which the
+ * page's own <h1> and standfirst now say once instead of twice. What is left is
+ * a single short line, which is what `.scs-viewhead`'s flex row was built for —
+ * so the stacked-lede wrapper it needed went with the copy.
+ */
+.scs-viewhead > .scs-view-note {
+  max-width: 72ch;
 }
 
 /* -------------------------------------------------------------- the rail */
@@ -443,6 +462,7 @@ body.scs-page.is-embed {
   background: hsl(var(--scs-card));
   color: hsl(var(--scs-muted-foreground));
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 14px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -529,7 +549,12 @@ body.scs-page.is-embed {
 .scs-board-head,
 .scs-game {
   display: grid;
-  grid-template-columns: 4.5em minmax(0, 1fr) 5.375em;
+  /* The fourth track is the "MATCHUP ›" link, which measures 4.6em at every
+     size the row's type takes. Fixed rather than max-content, because every
+     row is its own grid and the head row's fourth cell is empty: an intrinsic
+     track would be 0 there and 4.6em below it, and the TV column would not
+     line up with its heading. */
+  grid-template-columns: 4.5em minmax(0, 1fr) 5.375em 4.75em;
   gap: 12px;
   align-items: center;
   padding: 6px 16px;
@@ -549,8 +574,12 @@ body.scs-page.is-embed {
   letter-spacing: 0.14em;
 }
 
-.scs-board-head span:last-child {
-  text-align: right;
+/* TV is the third of four, and its heading is centred over the marks, which
+   are centred in the column below it (mak's call, 2026-09-22 — the source
+   ranges both right). `:nth-child` because the fourth cell is the empty
+   heading over the row's link and wants no alignment at all. */
+.scs-board-head span:nth-child(3) {
+  text-align: center;
 }
 
 /* The board's middle heading sits over a centred column, so it is centred
@@ -572,19 +601,15 @@ body.scs-page.is-embed {
   background: hsl(var(--scs-row-hover));
 }
 
+/* Padding only. The source's 96/118px and 112/145px columns were keyed to the
+   window, which embedded is not the board's width: a 1400px window with a
+   740px board took the widest columns and cut "Commanders" short. Columns are
+   decided on the board, in the container queries below. */
 @media (min-width: 640px) {
   .scs-board-head,
   .scs-game {
-    grid-template-columns: 96px minmax(0, 1fr) 118px;
     padding-left: 20px;
     padding-right: 20px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .scs-board-head,
-  .scs-game {
-    grid-template-columns: 112px minmax(0, 1fr) 145px;
   }
 }
 
@@ -657,7 +682,11 @@ body.scs-page.is-embed {
   min-width: 0;
 }
 
-@media (min-width: 1280px) {
+/* The source's wider gap, on the board rather than the window for the same
+   reason as the columns: at 1280px+ windows it took 32px out of 700–800px
+   boards that had none to give. 900px of board is where it costs nothing; a
+   1280px window standalone gives ~1030. */
+@container (min-width: 900px) {
   .scs-game-teams {
     gap: 28px;
   }
@@ -684,6 +713,7 @@ body.scs-page.is-embed {
 
 .scs-game-name {
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 0.8125em;
   font-weight: 700;
   line-height: 1.25;
@@ -710,6 +740,7 @@ a.scs-game-name:focus-visible {
 
 .scs-game-score {
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 1em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -763,10 +794,67 @@ a.scs-game-name:focus-visible {
 .scs-game-meta {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  /* Centred under the TV heading. The phone layout, which has no heading,
+     puts it back against the right edge beside the matchup link. */
+  align-items: center;
   gap: 2px;
   min-width: 0;
 }
+
+/* ----------------------------------------------------------- the matchup */
+
+/*
+ * The fourth cell: the door into the two clubs' own page.
+ *
+ * Right-aligned against the row's edge, where a "go on" control belongs, and
+ * drawn as a quiet link rather than a button: there is one on every row, and
+ * thirteen filled buttons down a board would out-shout the scores they sit
+ * beside.
+ */
+.scs-game-go {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.scs-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0 4px 6px;
+  border-radius: 2px;
+  color: hsl(var(--scs-muted-foreground));
+  font-size: 0.6875em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 160ms ease;
+}
+
+.scs-go:hover,
+.scs-go:focus-visible {
+  color: hsl(var(--scs-accent));
+}
+
+/* The chevron carries the affordance once the word is gone, so it is sized off
+   the row rather than off the label it used to follow. */
+.scs-go-chev {
+  font-size: 1.45em;
+  line-height: 1;
+  /* The glyph sits high in its box; this drops it back onto the label's
+     baseline without moving the flex row. */
+  transform: translateY(-0.06em);
+}
+
+/*
+ * The word is shown beside the chevron until the board is down to 584px, the
+ * point where the names drop to codes too; see that container query. It used
+ * to go at 800px, but that squeeze came from window-keyed columns, not from
+ * the label. The accessible name never depended on it: renderMatchupCell()
+ * puts the whole fixture in a visually hidden span.
+ */
 
 /* --------------------------------------------------------------- the TV */
 
@@ -809,6 +897,7 @@ a.scs-game-name:focus-visible {
 
 .scs-net-text {
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 0.75em;
   font-weight: 700;
   color: hsl(var(--scs-primary));
@@ -820,6 +909,7 @@ a.scs-game-name:focus-visible {
 .scs-tv-tbd {
   color: hsl(var(--scs-muted-foreground));
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 0.75em;
   font-weight: 700;
 }
@@ -859,6 +949,7 @@ a.scs-game-name:focus-visible {
 .scs-card-figure {
   margin: 6px 0 0;
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
@@ -909,6 +1000,7 @@ a.scs-game-name:focus-visible {
 
 .scs-mini-code {
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -965,6 +1057,7 @@ a.scs-game-name:focus-visible {
   border: 1px solid hsl(var(--scs-border));
   color: hsl(var(--scs-primary));
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 11px;
   font-weight: 700;
   line-height: 1.2;
@@ -1025,6 +1118,7 @@ a.scs-game-name:focus-visible {
   border-left: 1px solid hsl(var(--scs-border));
   text-align: center;
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 10px;
   font-weight: 500;
   line-height: 1.25;
@@ -1054,8 +1148,10 @@ a.scs-game-name:focus-visible {
   text-decoration: none;
 }
 
-.scs-matrix-corner,
-.scs-matrix-team {
+/* Two classes: `.scs-matrix th` above is a class and an element, so a single
+   class here lost the border and the alignment to it. */
+.scs-matrix .scs-matrix-corner,
+.scs-matrix .scs-matrix-team {
   position: sticky;
   left: 0;
   z-index: 1;
@@ -1064,8 +1160,15 @@ a.scs-game-name:focus-visible {
   text-align: left;
 }
 
-.scs-matrix-corner {
+.scs-matrix .scs-matrix-corner {
   background: hsl(var(--scs-secondary));
+}
+
+/* "Team" starts where the team links' own 6px starts, as in the source. Three
+   classes, because the armour's `.scs .scs-matrix th` restates the cell padding
+   at a class and an element above two. */
+.scs .scs-matrix .scs-matrix-corner {
+  padding-left: 6px;
 }
 
 .scs-matrix-team a {
@@ -1123,10 +1226,13 @@ a.scs-game-name:focus-visible {
   background: hsl(var(--scs-accent) / 0.15);
 }
 
-.scs-matrix-bye {
+/* Two classes for the same reason as the team column: `.scs-matrix td` set
+   the family, size and weight over this, and the source's BYE is 9px body text. */
+.scs-matrix .scs-matrix-bye {
   background: hsl(var(--scs-muted) / 0.35);
   color: hsl(var(--scs-muted-foreground));
   font-family: var(--scs-font);
+  --scs-ff: var(--sc-font);
   font-size: 9px;
   font-weight: 400;
   letter-spacing: normal;
@@ -1192,6 +1298,7 @@ a.scs-game-name:focus-visible {
   padding-bottom: 10px;
   color: hsl(var(--scs-primary));
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem);
   font-weight: 700;
   letter-spacing: -0.035em;
@@ -1299,6 +1406,7 @@ a.scs-game-name:focus-visible {
 .scs-empty-title {
   margin: 0;
   font-family: var(--scs-font-display);
+  --scs-ff: var(--scs-font-display);
   font-size: 16px;
   font-weight: 700;
   color: hsl(var(--scs-primary));
@@ -1326,32 +1434,77 @@ a.scs-game-name:focus-visible {
  * the board. At 16px the widest short name ("Commanders", 82px in Space Grotesk
  * Bold) needs 566px of board; below that, scale down toward 85%, which is flush
  * again at 450px.
+ *
+ * Both numbers are +134px on the source's, and both were measured rather than
+ * reasoned. The fourth column costs the matchup 2em and a 12px gap, and the
+ * arithmetic says that is 44px at 16px type — but the row does not shrink
+ * linearly, because two 32px crests and the "at" between them do not scale with
+ * the font at all. Set at +44 the band still truncated "Commanders" on a 679px
+ * board, and set at +74 on a 649px one.
+ *
+ * So: a page of the week board at forty widths from 200px to 1300px of board,
+ * scoring `scrollWidth > clientWidth` on every short name. 700/584 is the first
+ * pair with no truncation anywhere in that range. Re-measure the same way after
+ * any change to the row's fixed columns; the numbers do not survive being
+ * guessed at.
  */
-@container (max-width: 566px) {
+@container (max-width: 700px) {
   .scs-board-head,
   .scs-game {
-    font-size: clamp(13.6px, calc(16px - (566px - 100cqw) / 48.3), 16px);
-    grid-template-columns: 4.5em minmax(0, 1fr) 5.375em;
+    font-size: clamp(13.6px, calc(16px - (700px - 100cqw) / 48.3), 16px);
+    grid-template-columns: 4.5em minmax(0, 1fr) 5.375em 4.75em;
     padding-left: 16px;
     padding-right: 16px;
   }
 }
 
 /*
- * Below 450cqw the row is already at its 13.6px floor and the short names would
- * start to truncate, so the matchup drops to the compact form (crest + BUF).
+ * And from 800px of board the when and TV columns take the source's full
+ * widths. On the board, not the window: embedded, this tool is content in a
+ * WordPress column, so the window is wide while the board is not.
+ *
+ * The "MATCHUP" label is no longer decided here; it goes at 584px, below. The
+ * sweep that moved it (every short name, weeks 1–8, boards 440–1100px in 2px
+ * steps, at 1100, 1400 and 1920px windows) found no truncation with the label
+ * on, once the columns stopped following the window. Re-run it after changing
+ * any fixed track.
  */
-@container (max-width: 450px) {
+@container (min-width: 800px) {
+  .scs-board-head,
+  .scs-game {
+    grid-template-columns: 112px minmax(0, 1fr) 145px 5.5em;
+  }
+}
+
+/*
+ * Below 584cqw the row is already at its 13.6px floor and the short names would
+ * start to truncate, so the matchup drops to the compact form (crest + BUF).
+ * The source's 450, moved by the same measured 134px as the band above it.
+ */
+@container (max-width: 584px) {
   .scs-game-name {
     display: none;
   }
 
   .scs-game-code {
     font-family: var(--scs-font-display);
+    --scs-ff: var(--scs-font-display);
     font-size: 0.75em;
     font-weight: 700;
     line-height: 1.2;
     color: hsl(var(--scs-primary));
+  }
+
+  /* And the link drops to its chevron, handing its track back to the names.
+     The word held from here up: a sweep of every short name at 2px steps
+     found no truncation with it on above 584px of board. */
+  .scs-board-head,
+  .scs-game {
+    grid-template-columns: 4.5em minmax(0, 1fr) 5.375em 2em;
+  }
+
+  .scs-go-label {
+    display: none;
   }
 }
 
@@ -1363,7 +1516,10 @@ a.scs-game-name:focus-visible {
   }
 
   /*
-   * The three columns become two rows: when-and-TV above, matchup below.
+   * The row becomes a card: when on the left and TV in the top right, the
+   * matchup across the middle a size up, and the link centred under "at".
+   * Named areas, because the cells arrive in row order (when, teams, TV,
+   * link) and the TV has to climb above the teams.
    *
    * Shrinking the columns instead was the first attempt and it failed the only
    * test that matters here — at 360px the matchup had 90px to say who was
@@ -1375,17 +1531,50 @@ a.scs-game-name:focus-visible {
 
   .scs-game {
     grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "when meta"
+      "teams teams"
+      "go go";
     gap: 6px 10px;
     padding: 10px 14px;
   }
 
+  .scs-game-when {
+    grid-area: when;
+  }
+
+  /* Everything in the matchup is sized in em — crests, codes, "at", scores —
+     so one font-size takes the whole block up a step together. */
   .scs-game-teams {
-    grid-column: 1 / -1;
+    grid-area: teams;
     gap: 10px;
+    font-size: 1.15em;
   }
 
   .scs-game-meta {
+    grid-area: meta;
+    align-self: start;
     align-items: flex-end;
+  }
+
+  /* The two sides are equal flex tracks either side of "at", so the middle of
+     the row IS "at", and centring the link puts it directly beneath. */
+  .scs-game-go {
+    grid-area: go;
+    justify-content: center;
+  }
+
+  /* Even padding, or the link's box centres and its text sits 3px right. */
+  .scs-go {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
+  /* The head row is hidden at this width, so a bare chevron would be the only
+     thing saying what the last cell is. Here it can say it: the link has a
+     line of its own under the matchup. */
+  .scs-go-label {
+    display: inline;
   }
 
   .scs-viewhead {
@@ -1452,11 +1641,20 @@ a.scs-game-name:focus-visible {
  * that. The escape hatch is intact: the family is `var(--sc-font)`, so a host
  * retunes it by setting the token rather than by outgunning this rule.
  *
+ * Unlike fpa.css, whose one family this block was copied from, this file has
+ * TWO: DM Sans for text and Space Grotesk for titles, scores, TV marks and the
+ * matrix. Pinning every element to `--sc-font` erased the second everywhere,
+ * standalone as well as embedded, because an `!important` beats the display
+ * rules' ordinary declarations. So the pin reads `--scs-ff`, which the root
+ * sets to `--sc-font` and every display rule restates beside its font-family.
+ * A new rule that sets font-family must set `--scs-ff` to match, or this block
+ * will quietly put it back to DM Sans.
+ *
  * Do NOT add spacing properties here. Margin and padding are varied per
  * component, and arming them collapses every one of those rules into this. */
 :is(.scs, body.scs-page),
 :is(.scs, body.scs-page) * {
-  font-family: var(--sc-font) !important;
+  font-family: var(--scs-ff) !important;
 }
 
 .scs :is(ul, ol, li) {
@@ -1537,4 +1735,17 @@ a.scs-game-name:focus-visible {
 
 .scs .scs-game-name {
   color: hsl(var(--scs-primary));
+}
+
+/* And the row's matchup link. `.scs-go` is one class against Divi's
+   `.entry-content a`, which is a class and an element, so the theme wins
+   outright and every row ends in a #2ea3f2 "MATCHUP ›" — the loudest thing on
+   a board whose own accent is the gold. Restates the rule above it. */
+.scs .scs-go {
+  color: hsl(var(--scs-muted-foreground));
+}
+
+.scs .scs-go:hover,
+.scs .scs-go:focus-visible {
+  color: hsl(var(--scs-accent));
 }

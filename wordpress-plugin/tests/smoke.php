@@ -209,6 +209,40 @@ function wp_send_json_success( $d = null, $s = null ) {}
 function wp_send_json_error( $d = null, $s = null ) {}
 function wp_parse_args( $a, $b ) { return array_merge( $b, (array) $a ); }
 function shortcode_atts( $pairs, $atts, $tag = '' ) { return array_merge( $pairs, (array) $atts ); }
+/*
+ * WordPress's own two, reduced.
+ *
+ * statchasers_schedule_mounted_atts() reads the schedule shortcode's
+ * attributes off the post that is about to render, so the group numbering has
+ * to match the real get_shortcode_regex(): 2 is the tag and 3 is the attribute
+ * string. A stub that returned its own numbering would pass while production
+ * read the wrong group.
+ */
+function get_shortcode_regex( $tagnames = null ) {
+	$tagregexp = join( '|', array_map( 'preg_quote', (array) $tagnames ) );
+	return '\\[(\\[?)(' . $tagregexp . ')(?![\\w-])([^\\]\\/]*(?:\\/(?!\\])[^\\]\\/]*)*?)(?:(\\/)\\]|\\](?:([^\\[]*(?:\\[(?!\\/\\2\\])[^\\[]*)*)\\[\\/\\2\\])?)(\\]?)';
+}
+function shortcode_parse_atts( $text ) {
+	$atts    = array();
+	$pattern = '/([\\w-]+)\\s*=\\s*"([^"]*)"(?:\\s|$)|([\\w-]+)\\s*=\\s*\'([^\']*)\'(?:\\s|$)|([\\w-]+)\\s*=\\s*([^\\s\'"]+)(?:\\s|$)|"([^"]*)"(?:\\s|$)|(\\S+)(?:\\s|$)/';
+	$text    = preg_replace( "/[\x{00a0}\x{200b}]+/u", ' ', (string) $text );
+	if ( preg_match_all( $pattern, $text, $match, PREG_SET_ORDER ) ) {
+		foreach ( $match as $m ) {
+			if ( ! empty( $m[1] ) ) {
+				$atts[ strtolower( $m[1] ) ] = stripcslashes( $m[2] );
+			} elseif ( ! empty( $m[3] ) ) {
+				$atts[ strtolower( $m[3] ) ] = stripcslashes( $m[4] );
+			} elseif ( ! empty( $m[5] ) ) {
+				$atts[ strtolower( $m[5] ) ] = stripcslashes( $m[6] );
+			} elseif ( isset( $m[7] ) && strlen( $m[7] ) ) {
+				$atts[] = stripcslashes( $m[7] );
+			} elseif ( isset( $m[8] ) && strlen( $m[8] ) ) {
+				$atts[] = stripcslashes( $m[8] );
+			}
+		}
+	}
+	return $atts;
+}
 function get_the_title( $id = 0 ) { return ''; }
 // Which hook is running. statchasers_h1_filter() reads it to know which page
 // type is asking, so the tests set it directly.
@@ -268,9 +302,10 @@ require_once "$dir/statchasers-matchup.php";
 require_once "$dir/statchasers-player.php";
 require_once "$dir/statchasers-player-pages.php";
 require_once "$dir/statchasers-h1.php";
-// Loaded for the FAQ island round trip below; it is the only part of this file
-// the smoke tests reach into.
+// Loaded for the FAQ island round trips below; those are the only parts of
+// these two files the smoke tests reach into.
 require_once "$dir/statchasers-fpa.php";
+require_once "$dir/statchasers-schedule.php";
 
 echo "LOADED OK\n\n";
 
@@ -311,6 +346,12 @@ $group = getenv( 'STATCHASERS_SMOKE_GROUP' ) ?: 'main';
 
 if ( 'containers' === $group ) {
 	require __DIR__ . '/smoke-containers.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'week' === $group ) {
+	require __DIR__ . '/smoke-week.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -897,31 +938,119 @@ is( false === strpos( $stripped, 'scf-faq-data' ), true, 'the island is gone fro
 is( false !== strpos( $stripped, 'data-scf-root' ), true, 'and the table it was sitting next to is not' );
 is( statchasers_fpa_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
 
+echo "\nthe schedule faq island becomes a node and then leaves\n";
+
 /*
- * The second group. Its failures are this run's failures — a split that only
+ * The same round trip as the FPA block above, on the one tool that was missing
+ * it. The schedule fragment has carried `scs-faq-data` since the weekly board
+ * got its questions; nothing in this plugin lifted it, so the answers shipped
+ * as visible prose and as a dead JSON island and never as structured data.
+ */
+$island = '<script type="application/json" class="scs-faq-data">' .
+	json_encode(
+		array(
+			array( 'q' => 'What does @ mean on an NFL schedule?', 'a' => 'The @ symbol means that team is playing on the road.' ),
+			array( 'q' => 'How many weeks are in the 2026 NFL schedule?', 'a' => 'The 2026 NFL regular season runs 18 weeks.' ),
+			// Dropped rather than emitted half-built.
+			array( 'q' => '', 'a' => 'An answer with no question.' ),
+			array( 'q' => 'A question with no answer.' ),
+		)
+	) .
+	'</script>';
+
+$fragment = '<section class="scs" data-scs-root data-scs-view="matrix"><table class="scs-matrix"></table></section>' . $island;
+
+$items = statchasers_schedule_faq_parse( $fragment );
+is( count( $items ), 2, 'both well-formed questions are lifted' );
+is( $items[0]['q'], 'What does @ mean on an NFL schedule?', 'the question comes through' );
+is( $items[1]['a'], 'The 2026 NFL regular season runs 18 weeks.', 'and so does the answer' );
+
+$stripped = statchasers_schedule_strip_faq_data( $fragment );
+is( false === strpos( $stripped, 'scs-faq-data' ), true, 'the island is gone from what is printed' );
+is( false !== strpos( $stripped, 'data-scs-root' ), true, 'and the grid it was sitting next to is not' );
+is( statchasers_schedule_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
+
+/*
+ * Which set of questions the page is describing.
+ *
+ * The other four tools fetch their FAQ with default arguments because their
+ * questions do not vary. This one's do: `view` picks the weekly board's set or
+ * the season grid's, and the node is built in wp_head, before the shortcode
+ * has run. So the attributes are read off the post that is about to render.
+ *
+ * Asserted on the resolution as well as on the read, because these are two
+ * separate ways to get it wrong: reading the wrong regex group gives no
+ * attributes at all, and both of those fall back to `matrix` and look fine on
+ * the page that is already the grid.
+ */
+echo "\nthe schedule faq follows the view the page actually mounts\n";
+
+$post = new WP_Post();
+$post->post_content = "<p>Some page copy.</p>\n[statchasers_schedule view=\"week\" week=\"3\"]";
+$GLOBALS['page'] = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $post );
+
+// Memoised, so this process only ever sees this one post. The resolution below
+// is a pure function and can be asked as often as we like.
+$atts = statchasers_schedule_mounted_atts();
+is( $atts['view'] ?? '', 'week', 'the mounted view is read off the post' );
+is( $atts['week'] ?? '', '3', 'and so is the week' );
+
+$args = statchasers_schedule_args( $atts );
+is( $args['view'], 'week', 'which is what the fetch asks the API for' );
+is( $args['week'], 3, 'at the week the page pinned' );
+
+// A bare mount is the season grid, which is this page's real address.
+$bare = statchasers_schedule_args( array() );
+is( $bare['view'], 'matrix', 'a bare mount is the grid' );
+is( $bare['week'], 0, 'and lets the API pick the week' );
+
+/*
+ * The heading off a week URL, which is the page's own name and nothing added.
+ * The week case is in the `week` group, for the reason given there.
+ */
+echo "\nthe bare page is called what the page is called\n";
+
+$post->post_title = '2026 NFL Schedule';
+is( statchasers_schedule_heading(), '2026 NFL Schedule', 'the heading is the page title' );
+is( statchasers_schedule_week_title(), '', 'and nothing asks the theme to rename it' );
+is(
+	str_starts_with( statchasers_schedule_lead(), 'View the full NFL schedule' ),
+	true,
+	'the standfirst describes the grid'
+);
+// The filter itself is asserted in the `week` group, where the request is a
+// week URL. Running it here would measure the matchup file's `the_title`
+// filter instead: this process set a pair up earlier and that answer memoised.
+
+$GLOBALS['page'] = array();
+
+/*
+ * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-$child = array();
-$code  = 0;
-exec(
-	'STATCHASERS_SMOKE_GROUP=containers ' . escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __FILE__ ) . ' 2>&1',
-	$child,
-	$code
-);
+foreach ( array( 'containers', 'week' ) as $child_group ) {
+	$child = array();
+	$code  = 0;
+	exec(
+		'STATCHASERS_SMOKE_GROUP=' . $child_group . ' ' . escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __FILE__ ) . ' 2>&1',
+		$child,
+		$code
+	);
 
-foreach ( $child as $line ) {
-	// The child re-announces the load and prints its own verdict line. Both are
-	// this process's to print, once, about both groups.
-	if ( 'LOADED OK' === $line || 'all passed' === $line || preg_match( '/^\d+ FAILED$/', $line ) ) {
-		continue;
+	foreach ( $child as $line ) {
+		// The child re-announces the load and prints its own verdict line. Both
+		// are this process's to print, once, about every group.
+		if ( 'LOADED OK' === $line || 'all passed' === $line || preg_match( '/^\d+ FAILED$/', $line ) ) {
+			continue;
+		}
+		echo $line . "\n";
 	}
-	echo $line . "\n";
-}
 
-if ( 0 !== $code ) {
-	// The count is in the child's own tally, which is not reachable from here.
-	// One is enough to fail the build, and the lines above say which.
-	$fail++;
+	if ( 0 !== $code ) {
+		// The count is in the child's own tally, which is not reachable from
+		// here. One is enough to fail the build, and the lines above say which.
+		$fail++;
+	}
 }
 
 echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );

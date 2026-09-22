@@ -244,13 +244,9 @@ describe("player page content", () => {
       "the server writes no scale — the header is full size until measured",
     );
 
-    // And the richest form of every swap is the one showing.
-    const inner = hero.querySelector(".scp-hero-inner");
-    assert.equal(inner?.getAttribute("data-scp-form"), "full");
-
-    // The probe is built by cloning in the browser, never served: three extra
-    // copies of the player's name and club in a document whose whole job is
-    // to be indexed for that name is a cost this page will not pay.
+    // The probe is built by cloning in the browser, never served: an extra
+    // copy of the player's name and club in a document whose whole job is to
+    // be indexed for that name is a cost this page will not pay.
     assert.equal(
       doc.querySelectorAll("[data-scp-hero-probe], .scp-hero-probe").length,
       0,
@@ -258,32 +254,50 @@ describe("player page content", () => {
     );
   });
 
-  test("every word the header can shorten ships in all of its lengths", async () => {
+  test("the header's short forms are attributes, never its text", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const hero = doc.querySelector("[data-scp-hero]");
 
-    // The swaps are in the HTML and CSS shows one of them. Nothing here is
-    // rewritten by script, so the choice is reversible, the page is complete
-    // before it is made, and the probe can measure a form before it is shown.
-    const swaps = hero.querySelectorAll(".scp-swap");
-    if (swaps.length > 0) {
-      for (const swap of swaps) {
-        assert.match(
-          swap.className,
-          /scp-swap--(full|short|tight)/,
-          "every swap declares which length it is",
-        );
-      }
+    // Below 480px the phone fitter may draw "J. Brissett" and "ARI Cardinals"
+    // (mak's call: shrink the name, then initial it, rather than wrap). Both
+    // are generated content from attributes, so the served text — what a
+    // crawler indexes and a screen reader reads — is always the full form.
+    // The older multi-length swaps are still gone.
+    assert.equal(
+      hero.querySelectorAll(".scp-swap, [data-initial]").length,
+      0,
+      "no swapped copies of the text are shipped",
+    );
+
+    const first = hero.querySelector(".scp-title-first");
+    if (first) {
+      assert.equal(
+        first.getAttribute("data-scp-initial"),
+        `${first.textContent.charAt(0)}.`,
+        "the initial is the given name's first letter, as an attribute",
+      );
     }
 
-    // The club's link keeps the full name answerable however short the form
-    // showing is — "ARI" is not a team name a reader has to already know.
+    // Every fact the header states, stated whole.
+    const facts = hero.querySelector(".scp-hero-facts")?.textContent ?? "";
+    if (fixture.years_exp) {
+      assert.match(facts, /Exp \d+ yrs|Rookie/, "the experience is on the line");
+    }
+
     const teamLink = hero.querySelector("a.scp-hero-team");
     if (teamLink) {
       const title = teamLink.getAttribute("title") ?? "";
       assert.ok(title.length > 0, "the club's link carries its full name");
-      const full = teamLink.querySelector(".scp-swap--full");
-      if (full) assert.equal(full.textContent.trim(), title);
+      assert.equal(
+        teamLink.textContent.trim(),
+        title,
+        "and prints that same name, not a code standing in for it",
+      );
+      assert.match(
+        teamLink.getAttribute("data-scp-short") ?? "",
+        /^[A-Z]{2,3} \S/,
+        "the phone tier's short club form is a code and nickname attribute",
+      );
     }
   });
 
@@ -341,13 +355,10 @@ describe("player page content", () => {
   });
 
   test("the heading is the player's name, whatever the header does to it", async () => {
-    // The two-line setting, the swaps and the fitter are all presentation.
-    // Nothing they do may change the string an H1 hands a crawler or a screen
-    // reader. The header DOES contract the given name at its narrowest — see
-    // `nameInitial` — and this is the test that says how it is allowed to: as
-    // generated content, which is not text content, and never as a `.scp-swap`
-    // triplet, which would read "JacobyJacobyJ. Brissett" to everything that
-    // reads the document rather than looks at it.
+    // The two-line setting and the fitter are both presentation. Nothing they
+    // do may change the string an H1 hands a crawler or a screen reader — and
+    // nothing shortens it either: the header briefly contracted the given name
+    // at its narrowest width, and an initial is not what a reader came for.
     const { doc } = await dom(`/player/${fixture.slug}`);
     const heading = doc.querySelector(".scp-hero h1.scp-title");
     assert.ok(heading, "the header sets the name as the document's H1");
@@ -370,23 +381,10 @@ describe("player page content", () => {
         "the given name span holds the front of the player's name",
       );
       assert.equal(
-        given.querySelectorAll(".scp-title-given").length,
-        1,
-        "the given name has its own span, which is what the tight form hides",
+        given.getAttribute("data-initial"),
+        null,
+        "and no old-style swap attribute (the phone initial is data-scp-initial)",
       );
-      const initial = given.getAttribute("data-initial");
-      if (initial) {
-        assert.match(
-          initial,
-          /^[A-ZÀ-Þ]\./u,
-          "the contracted form starts with the initial of the given name",
-        );
-        assert.equal(
-          initial[0],
-          given.textContent.trim()[0].toUpperCase(),
-          "and it is this player's initial, not a stray one",
-        );
-      }
     }
   });
 

@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
@@ -19,6 +19,11 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.9.2 =
+* The NFL schedule's questions now reach the page's structured data. The fragment has carried them as an inert payload since the weekly board got a FAQ, and this file was the one of the six tools with nothing to lift it — so the answers shipped as visible prose and as a dead JSON island, and never as a FAQPage node. They are lifted into Rank Math's graph and stripped before printing now, the same arrangement the team hubs, the rankings board and the FPA table already use. Unlike those three, which question set gets described depends on what the page mounts: the shortcode's own attributes are read off the post before the head is built, so the bare schedule page is described by the season grid's questions and `/nfl/nfl-schedule/week-7/` by week 7's. Needs the matching API deploy.
+* Every game on the weekly board now has a link to the two clubs' own matchup page, in a column of its own at the end of the row. A game the pair's page has stopped leading with is linked at its dated address rather than at the pair, so a reader opening Week 3 in December lands on Week 3's game. `SC_MATCHUP_PATH_PREFIX` on the API deployment decides where those links point; its default is already this plugin's `/nfl/<a>-vs-<b>/`. API side.
+* The season grid gets its own FAQ and its own heading. The board is titled "2026 NFL Schedule Grid — All 32 Teams, Weeks 1–18" with a sentence under it saying what it is, and the questions below it answer what the grid is asked: how to read a row, what the @ means, where the byes are, how many weeks and games the season holds. Every number in them is counted off the slate rather than written in, and the count questions are withheld entirely when the feed is only part loaded. API side.
 
 = 1.9.1 =
 * The 4px side gutter a phone reads the tools through now reaches the team hubs, which were still running edge to edge after 1.9.0 shipped it. The gutter was on `.container`, and a page that has been through the Divi Builder does not have one: Divi's page.php prints the `.container` / `#content-area` / `#left-area` wrappers only when the builder is unused, so on the hubs every rule naming those elements was addressed to nothing. It is on `#main-content` now — the one wrapper a plain page, a builder page and a Theme Builder body layout all print — and `.container` gives its own gutter up rather than adding a second one on the pages that do have both. Measured on the real hub fragment under both page shapes: 4px a side on each, at every width below 981px, with no change above it.

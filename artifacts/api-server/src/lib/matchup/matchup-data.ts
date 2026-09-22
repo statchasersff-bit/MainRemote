@@ -19,7 +19,7 @@ import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/s
 import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-data";
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
-import type { MatchupGameRef, MatchupPair } from "./pair";
+import { RECENT_WINDOW_MS, type MatchupGameRef, type MatchupPair } from "./pair";
 import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
@@ -143,16 +143,7 @@ export interface MatchupData {
 /** Prior seasons searched for meetings, in both halves of each — see schedule.ts. */
 const HISTORY_SEASONS = 5;
 
-/**
- * How long after kickoff a completed meeting still leads the page.
- *
- * Two weeks: long enough that a result is still the thing a reader arriving at
- * the pair's address is asking about, and short enough that the takeaways —
- * which are advice for the coming week — come off the page while they are still
- * true. A Sunday game therefore keeps the recap layout through the Sunday after
- * it, and lets go on the second Monday.
- */
-const RECENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
 
 /** A game still counts as upcoming this long after its listed kickoff. */
 const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000;

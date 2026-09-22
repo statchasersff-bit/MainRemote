@@ -214,10 +214,11 @@ describe("the slate", () => {
   });
 
   test("query parsing clamps to what the tool can render", () => {
-    assert.equal(mod.parseScheduleView("matrix"), "matrix");
+    assert.equal(mod.parseScheduleView("week"), "week");
     assert.equal(mod.parseScheduleView("MATRIX"), "matrix");
-    assert.equal(mod.parseScheduleView("nonsense"), "week");
-    assert.equal(mod.parseScheduleView(undefined), "week");
+    // The grid is the default, because the bare path is the grid.
+    assert.equal(mod.parseScheduleView("nonsense"), "matrix");
+    assert.equal(mod.parseScheduleView(undefined), "matrix");
 
     assert.equal(mod.parseGameFilter("division"), "division");
     assert.equal(mod.parseGameFilter("nonsense"), "all");
@@ -329,18 +330,316 @@ describe("the schedule page", () => {
   test("arrives complete, with no JavaScript run", async () => {
     const { res, doc } = await page("/schedule");
     assert.equal(res.status, 200);
-    const games = doc.querySelectorAll("article.scs-game");
-    assert.ok(games.length > 0, "the week's games are in the HTML");
+    assert.equal(
+      doc.querySelectorAll("th.scs-matrix-team").length,
+      32,
+      "the grid is in the HTML the bare path serves",
+    );
     assert.match(doc.querySelector("title").textContent, /2024 NFL Schedule/);
+
+    const week = await page("/schedule/week-3");
+    const games = week.doc.querySelectorAll("article.scs-game");
+    assert.ok(games.length > 0, "the week's games are in the HTML too");
+  });
+
+  /**
+   * Every row is a door into the two clubs' own page.
+   *
+   * The link is the point, but the ADDRESS is what this asserts. There are two
+   * of them and matchup/pair.ts owns the rule that picks between them: a
+   * finished game the pair's page has let go of has a dated address of its own,
+   * and everything else is the pair. The fixture is the whole of 2024, so every
+   * row here is on the far side of that fourteen-day window — which makes this
+   * the dated case, and the one a reader opening a past week actually wants.
+   */
+  test("every game on the board opens the two clubs' own page", async () => {
+    const { doc } = await page("/schedule/week-3");
+    const rows = [...doc.querySelectorAll("article.scs-game")];
+    assert.ok(rows.length > 0);
+
+    for (const row of rows) {
+      const link = row.querySelector(".scs-game-go a.scs-go");
+      assert.ok(link, `a row with no matchup link: ${row.id}`);
+      assert.match(
+        link.getAttribute("href"),
+        /^\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\/2024-week-3\/$/,
+        "a finished game long past has a dated address of its own",
+      );
+    }
+  });
+
+  /**
+   * One page per pair, not one per direction.
+   *
+   * The board draws away-then-home, so a row's two teams arrive in playing
+   * order and the URL must not: canonicalizeMatchupPair() sorts them by slug so
+   * that the Bills at the Dolphins and the Dolphins at the Bills are one
+   * address. A board that spelled the pair in row order would mint a second
+   * address for half the league's meetings, which is the whole reason that
+   * function exists.
+   */
+  test("the pair in the URL is alphabetical, not the row's order", async () => {
+    const { doc } = await page("/schedule/week-3");
+
+    let checked = 0;
+    for (const row of [...doc.querySelectorAll("article.scs-game")]) {
+      const href = row.querySelector("a.scs-go")?.getAttribute("href") ?? "";
+      const pair = href.split("/")[2] ?? "";
+      const [a, b] = pair.split("-vs-");
+      assert.ok(a && b, `not a pair: ${href}`);
+      assert.ok(a < b, `${pair} is not in slug order`);
+      checked += 1;
+    }
+    assert.ok(checked > 10, "the whole slate was checked");
+  });
+
+  /**
+   * The link says who is playing whom, in words.
+   *
+   * Rule 4 at the top of schedule-render.ts, applied to the one control on the
+   * row whose visible text disappears: below 900px of board the label is a
+   * chevron, so without this span the link reads as "›" and thirteen of them
+   * read as thirteen identical links. Home and away are stated, never left to
+   * the order two logos were printed in.
+   */
+  test("the matchup link names both clubs and which is at home", async () => {
+    const { doc } = await page("/schedule/week-3");
+    const row = doc.querySelector("article.scs-game");
+    const link = row.querySelector("a.scs-go");
+
+    const spoken = link.querySelector(".scs-visually-hidden").textContent;
+    assert.match(spoken, /^Matchup: .+ (at|vs) .+$/, spoken);
+
+    // And the visible label is not the accessible name — it is decoration that
+    // the stylesheet is free to drop.
+    for (const hidden of link.querySelectorAll("[aria-hidden='true']")) {
+      assert.ok(
+        ["scs-go-label", "scs-go-chev"].includes(hidden.className),
+        `an unexpected aria-hidden part: ${hidden.className}`,
+      );
+    }
+  });
+
+  /**
+   * The head row still lines up with the rows under it.
+   *
+   * The board is a grid and the heading row is a sibling of the game rows
+   * sharing its template, so a fourth cell in one and three in the other is a
+   * board whose headings sit over the wrong columns — which looks like a CSS
+   * bug and is a markup one.
+   */
+  test("the board's head has one cell per column", async () => {
+    const { doc } = await page("/schedule/week-3");
+    const head = [...doc.querySelectorAll(".scs-board-head > span")];
+    assert.equal(head.length, 4);
+    assert.deepEqual(
+      head.map((cell) => cell.textContent),
+      ["When", "Game", "TV", ""],
+      "the middle column is the fixture; the last is the link to its page",
+    );
+
+    const cells = doc.querySelector("article.scs-game").children;
+    // The visually hidden line is positioned out of the grid, so the row's
+    // grid items are the four divs.
+    const divs = [...cells].filter((el) => el.tagName === "DIV");
+    assert.equal(divs.length, 4);
+  });
+
+  /**
+   * The grid has no such links, and should not.
+   *
+   * A cell there is already a link — to that week's board — and 576 of them
+   * pointing somewhere else instead would make the matrix a different tool.
+   */
+  test("the season grid carries no matchup links", async () => {
+    const { doc } = await page("/schedule?view=matrix");
+    assert.equal(doc.querySelectorAll("a.scs-go").length, 0);
   });
 
   test("the matrix carries all 32 teams and all 18 weeks", async () => {
-    const { res, doc } = await page("/schedule?view=matrix");
+    const { res, doc } = await page("/schedule");
     assert.equal(res.status, 200);
     const rows = doc.querySelectorAll("th.scs-matrix-team");
     assert.equal(rows.length, 32, "one row per team");
     // 18 week columns plus the corner cell.
     assert.equal(doc.querySelectorAll("thead th").length, 19);
+  });
+
+  /**
+   * The grid's own questions.
+   *
+   * Two things are being defended. The first is that the matrix has a FAQ at
+   * all — it is a different set from the weekly board's, it is about the board
+   * rather than about a fixture, and both are one <h2> and a stack of folds.
+   *
+   * The second is the one that matters: every number in those answers is
+   * counted off the slate rather than recited from the league's usual
+   * arithmetic. The fixture is a real, whole 2024 season, so 32, 18, 272 and 17
+   * are all derivable — and matrixFacts() withholds the count questions
+   * entirely when the rows disagree, which is the case a half-loaded feed would
+   * otherwise answer with a false claim about the season.
+   */
+  test("the matrix answers questions about the grid, counted off the grid", async () => {
+    const { doc } = await page("/schedule?view=matrix");
+
+    assert.equal(
+      doc.querySelector(".scs-faq-title").textContent,
+      `${SEASON} NFL Schedule Grid FAQ`,
+    );
+
+    const items = [...doc.querySelectorAll(".scs-faq-item")];
+    // A floor, not a count: two of the entries are withheld when the rows
+    // disagree. The ceiling is the point of the assertion — the four
+    // near-duplicate "where can I see the full schedule" phrasings were merged
+    // into one on purpose, and a set that grows back past a dozen is the
+    // thin-content regression rather than better coverage.
+    assert.ok(
+      items.length >= 9 && items.length <= 12,
+      `the grid is asked ${items.length} questions`,
+    );
+
+    const questions = items.map((item) => item.querySelector(".scs-faq-q").textContent);
+    assert.equal(
+      new Set(questions).size,
+      questions.length,
+      "no question is asked twice",
+    );
+
+    const answers = items.map((item) => item.querySelector(".scs-faq-a").textContent);
+    const prose = answers.join(" ");
+
+    assert.ok(prose.includes(`${TOTAL_GAMES} games`), "the slate is counted");
+    assert.ok(prose.includes("all 32 NFL teams"), "the rows are counted");
+    assert.ok(prose.includes("Week 1 through Week 18"), "the columns are counted");
+    assert.ok(prose.includes("17 games"), "a team's own games are counted");
+    assert.ok(prose.includes("one bye week"), "the byes are counted");
+
+    // The fixture is a finished season, so nothing claims it is still being
+    // played. "Runs 18 weeks" about 2024 is the error the verb table exists for.
+    assert.ok(
+      prose.includes("ran 18 weeks") && !prose.includes("runs 18 weeks"),
+      "a season behind us is described in the past tense",
+    );
+
+    // And none of it is a week's board: no game is described. The answers point
+    // at the weekly board for kickoffs and TV, they never stand in for it.
+    assert.ok(
+      !/\bat \d{1,2}:\d{2}\b/.test(prose),
+      "the grid answers for no fixture's kickoff",
+    );
+
+    // The FAQPage node is the same list, not a second one.
+    const nodes = [...doc.querySelectorAll('script[type="application/ld+json"]')]
+      .map((tag) => JSON.parse(tag.textContent))
+      .filter((node) => node["@type"] === "FAQPage");
+    assert.equal(nodes.length, 1, "one FAQPage node");
+    assert.equal(nodes[0].mainEntity.length, items.length);
+    assert.deepEqual(
+      nodes[0].mainEntity.map((entry) => entry.name),
+      questions,
+    );
+  });
+
+  /**
+   * The two views are asked different things, and the heading says which.
+   *
+   * A matrix that inherited "NFL Week 3 Schedule FAQ", or a board that answered
+   * "what does @ mean", would be one view describing the other — which is the
+   * whole failure mode of hanging two question sets off one renderer.
+   */
+  test("the weekly board keeps its own questions", async () => {
+    const week = await page("/schedule/week-3");
+    assert.equal(
+      week.doc.querySelector(".scs-faq-title").textContent,
+      "NFL Week 3 Schedule FAQ",
+    );
+
+    const matrix = await page("/schedule");
+    const ask = (doc) =>
+      [...doc.querySelectorAll(".scs-faq-q")].map((q) => q.textContent);
+    const shared = ask(week.doc).filter((q) => ask(matrix.doc).includes(q));
+    assert.deepEqual(shared, [], "the two sets share no question");
+  });
+
+  /**
+   * The page says what it is exactly once.
+   *
+   * The grid used to name itself again above the board — "2026 NFL Schedule
+   * Grid" under an <h1> reading "2026 NFL Schedule", with the same sentence
+   * under both. The heading and the standfirst are what the page is found by,
+   * so they are asserted here; the second copy of them is asserted gone.
+   */
+  test("the page names itself once, above the board", async () => {
+    const { doc } = await page("/schedule");
+
+    assert.equal(
+      doc.querySelector("h1.scs-title").textContent,
+      `${SEASON} NFL Schedule`,
+    );
+    assert.match(
+      doc.querySelector(".scs-head .scs-lede").textContent,
+      new RegExp(`View the full ${SEASON} NFL schedule for every team in one board`),
+    );
+
+    assert.equal(doc.querySelectorAll("h1").length, 1, "one heading, not two");
+    assert.equal(
+      doc.querySelector(".scs-viewlede"),
+      null,
+      "the grid no longer names itself a second time",
+    );
+    assert.equal(
+      [...doc.querySelectorAll(".scs-view-title")].length,
+      0,
+      "and prints no heading of its own at all",
+    );
+
+    // The instruction the reader actually needs is still there.
+    assert.match(
+      doc.querySelector(".scs-viewhead .scs-view-note").textContent,
+      /marks a road game/,
+    );
+  });
+
+  test("a week page's heading says which week", async () => {
+    const { doc } = await page("/schedule/week-3");
+    assert.equal(
+      doc.querySelector("h1.scs-title").textContent,
+      `${SEASON} NFL Schedule: Week 3`,
+    );
+    assert.match(
+      doc.querySelector(".scs-head .scs-lede").textContent,
+      /Every Week 3 game of the/,
+    );
+    // The board's own "Week 3 / 18" counter is not a second heading.
+    assert.equal(doc.querySelectorAll("h1").length, 1);
+  });
+
+  /**
+   * Embedded, the host page owns the heading — its own or the one the plugin
+   * generates — so the fragment prints none. `?h1=1` is the host saying it has
+   * stood its title down, which is the only case where the fragment's heading
+   * is the page's.
+   */
+  test("the fragment prints a heading only when the host asks for one", async () => {
+    const bare = await fetch(`${server.origin}/embed/schedule`);
+    const bareDoc = new JSDOM(await bare.text()).window.document;
+    assert.equal(bareDoc.querySelectorAll("h1").length, 0);
+    assert.equal(bareDoc.querySelector(".scs-head"), null);
+    assert.equal(bareDoc.querySelector(".scs-lede"), null, "and no standfirst");
+
+    const asked = await fetch(`${server.origin}/embed/schedule?h1=1`);
+    const askedDoc = new JSDOM(await asked.text()).window.document;
+    assert.equal(
+      askedDoc.querySelector("h1.scs-title").textContent,
+      `${SEASON} NFL Schedule`,
+    );
+
+    const week = await fetch(`${server.origin}/embed/schedule?view=week&week=7&h1=1`);
+    const weekDoc = new JSDOM(await week.text()).window.document;
+    assert.equal(
+      weekDoc.querySelector("h1.scs-title").textContent,
+      `${SEASON} NFL Schedule: Week 7`,
+    );
   });
 
   /**
@@ -368,7 +667,7 @@ describe("the schedule page", () => {
     assert.equal(landed.status, 200, "the tab it points at renders");
   });
 
-  test("a team lens link with no team falls back to the board", async () => {
+  test("a team lens link with no team falls back to the grid", async () => {
     const res = await fetch(`${server.origin}/schedule?view=team`, {
       redirect: "manual",
     });
@@ -381,7 +680,24 @@ describe("the schedule page", () => {
     const labels = [...doc.querySelectorAll(".scs-view-link")].map((a) =>
       a.textContent.trim(),
     );
-    assert.deepEqual(labels, ["Weekly board", "Season matrix"]);
+    // The grid first, because the grid is what the bare path serves: a tab
+    // order that disagreed with the URL would open on its second tab.
+    assert.deepEqual(labels, ["Season matrix", "Weekly board"]);
+    assert.equal(
+      doc.querySelector(".scs-view-link.is-active").textContent.trim(),
+      "Season matrix",
+    );
+  });
+
+  test("each view's tab is that view's own address", async () => {
+    const { doc } = await page("/schedule");
+    const hrefs = [...doc.querySelectorAll(".scs-view-link")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.equal(hrefs[0], "/schedule", "the grid is the bare path");
+    // Not `?view=week`: the board's tab points at the week the season is on,
+    // which is an address rather than a way of looking at this one.
+    assert.match(hrefs[1], /^\/schedule\/week-\d{1,2}$/);
   });
 
   test("view and filter never change the canonical", async () => {
@@ -390,9 +706,10 @@ describe("the schedule page", () => {
       return doc.querySelector('link[rel="canonical"]').getAttribute("href");
     };
 
-    // The three that are ways of LOOKING at a board, rather than names of a
-    // different one, all canonicalise to the path they are looked at from.
-    for (const query of ["?view=matrix"]) {
+    // What is left of the query string is ways of LOOKING at a page rather
+    // than names of a different one, so each canonicalises to the path it is
+    // looked at from.
+    for (const query of ["?season=2024", "?embed=1"]) {
       assert.equal(
         await canonical(`/schedule${query}`),
         `${server.origin}/schedule`,
@@ -425,16 +742,18 @@ describe("the schedule page", () => {
     assert.equal(active.textContent.replace(/\D/g, ""), "2");
   });
 
-  test("the bare path is the way in, and points at the week it shows", async () => {
-    const { doc, html } = await page("/schedule");
-    const canonical = doc
-      .querySelector('link[rel="canonical"]')
-      .getAttribute("href");
-    assert.match(canonical, /\/schedule\/week-\d{1,2}$/);
-    // Same board, same links, one of them the address of the other: the pair
-    // is a duplicate only until the canonical says which one is the page.
-    const week = await page(canonical.slice(server.origin.length));
-    assert.equal(week.html, html);
+  test("the bare path is the grid, and is its own page", async () => {
+    const { doc } = await page("/schedule");
+    assert.equal(
+      doc.querySelector('link[rel="canonical"]').getAttribute("href"),
+      `${server.origin}/schedule`,
+      "the grid is the same page all season, so it points at itself",
+    );
+    assert.match(
+      doc.querySelector("title").textContent,
+      /NFL Schedule Grid/,
+      "and it is titled as the grid, not as whatever week it is",
+    );
   });
 
   test("the week strip links to paths, not parameters", async () => {
@@ -478,7 +797,59 @@ describe("the schedule page", () => {
   test("the other views are sent back to their own addresses", async () => {
     const res = await rawGet("/schedule/week-2?view=matrix");
     assert.equal(res.status, 301);
-    assert.equal(res.headers.location, "/schedule?view=matrix");
+    assert.equal(res.headers.location, "/schedule");
+  });
+
+  /**
+   * `?view=` renders nothing on either route now: the path is the only thing
+   * that says which view a rendering is, so every spelling that used to be a
+   * second address for one of them is a redirect to it.
+   */
+  test("?view= is an old spelling, not an address", async () => {
+    const matrix = await rawGet("/schedule?view=matrix");
+    assert.equal(matrix.status, 301);
+    assert.equal(matrix.headers.location, "/schedule");
+
+    // Saying what the path already says is dropped the same way.
+    const onWeek = await rawGet("/schedule/week-2?view=week");
+    assert.equal(onWeek.status, 301);
+    assert.equal(onWeek.headers.location, "/schedule/week-2");
+
+    // `?view=week` with no week named means the week the season is on — which
+    // is a moving target, hence 302, and an address, hence a redirect at all.
+    const board = await rawGet("/schedule?view=week&filter=division");
+    assert.equal(board.status, 302);
+    assert.match(board.headers.location, /^\/schedule\/week-\d{1,2}\?filter=division$/);
+    assert.equal((await rawGet(board.headers.location)).status, 200);
+  });
+
+  test("a filter is not carried onto the grid, which cannot use it", async () => {
+    const res = await rawGet("/schedule/week-2?view=matrix&filter=division");
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, "/schedule");
+  });
+
+  /**
+   * The address the board hands out is a page, not a redirect.
+   *
+   * This is the assertion the link is worth having. Which of a pair's two
+   * addresses a finished game has is a rule with a fourteen-day constant in it,
+   * and a board that got it wrong would not look broken — every link would
+   * still work, through a 301, and nothing on the page would say so. Asked of
+   * the server rather than of the rule, so a change to either side shows up
+   * here.
+   */
+  test("a row's matchup link resolves without a redirect", async () => {
+    const { doc } = await page("/schedule/week-3");
+    const hrefs = [...doc.querySelectorAll("a.scs-go")]
+      .map((link) => link.getAttribute("href"))
+      .slice(0, 3);
+    assert.equal(hrefs.length, 3);
+
+    for (const href of hrefs) {
+      const res = await rawGet(href);
+      assert.equal(res.status, 200, `${href} answered ${res.status}`);
+    }
   });
 
   test("the exports are not mistaken for weeks", async () => {
@@ -518,7 +889,7 @@ describe("the schedule page", () => {
   });
 
   test("the tool stays out of the index unless it is embedded", async () => {
-    for (const route of ["/schedule", "/schedule?view=matrix", "/embed/schedule"]) {
+    for (const route of ["/schedule", "/schedule/week-3", "/embed/schedule"]) {
       const res = await fetch(`${server.origin}${route}`);
       assert.match(res.headers.get("x-robots-tag"), /noindex, indexifembedded/);
     }
@@ -592,6 +963,7 @@ describe("the WordPress mount", () => {
       fixtureEnv(feed, {
         SC_SCHEDULE_PATH: "/nfl/nfl-schedule/",
         SC_TEAM_PATH_PREFIX: "/nfl/teams/",
+        SC_MATCHUP_PATH_PREFIX: "/nfl/head-to-head/",
       }),
     );
   });
@@ -607,7 +979,7 @@ describe("the WordPress mount", () => {
   }
 
   test("the week links land inside the WordPress page", async () => {
-    const { doc } = await fragment("/embed/schedule");
+    const { doc } = await fragment("/embed/schedule?view=week");
     const hrefs = [...doc.querySelectorAll(".scs-rail-link")].map((a) =>
       a.getAttribute("href"),
     );
@@ -623,15 +995,44 @@ describe("the WordPress mount", () => {
     assert.ok(!hrefs.some((href) => href.includes("?")));
   });
 
+  /**
+   * And the matchup links land on the site's matchup pages.
+   *
+   * Embedded, every address in the fragment belongs to WordPress, and this one
+   * has its own env var because the pair pages are a different WordPress page
+   * from the team hubs — the same split the team hub and the pair page itself
+   * already read. A fragment that fell back to this origin's /nfl/ would send
+   * a reader on statchasers.com to a URL on the API host.
+   */
+  test("the matchup links land on the site's own pair pages", async () => {
+    const { doc } = await fragment("/embed/schedule?view=week&week=3");
+    const hrefs = [...doc.querySelectorAll("a.scs-go")].map((a) =>
+      a.getAttribute("href"),
+    );
+    assert.ok(hrefs.length > 0, "the embedded board still carries the links");
+    for (const href of hrefs) {
+      assert.match(href, /^\/nfl\/head-to-head\/[a-z0-9-]+-vs-[a-z0-9-]+\/2024-week-3\/$/, href);
+    }
+    // Same reasoning as the week rail above: ?embed=1 is meaningless once the
+    // links point at the site.
+    assert.ok(!hrefs.some((href) => href.includes("?")));
+  });
+
   test("the other views keep the page's bare path", async () => {
-    const { doc } = await fragment("/embed/schedule");
+    const { doc } = await fragment("/embed/schedule?view=week");
     const views = [...doc.querySelectorAll(".scs-view-link")].map((a) =>
       a.getAttribute("href"),
     );
     assert.ok(
-      views.some((href) => href === "/nfl/nfl-schedule/?view=matrix"),
-      `the matrix hangs off the page itself: ${views.join(" ")}`,
+      views.some((href) => href === "/nfl/nfl-schedule/"),
+      `the matrix IS the page itself: ${views.join(" ")}`,
     );
+  });
+
+  test("the fragment's bare call is the grid, like the page it mounts on", async () => {
+    const { doc } = await fragment("/embed/schedule");
+    assert.equal(doc.querySelectorAll("th.scs-matrix-team").length, 32);
+    assert.equal(doc.querySelectorAll(".scs-rail-link").length, 0);
   });
 
   test("the plugin still asks for a week the way it always has", async () => {
@@ -805,10 +1206,101 @@ describe("the schedule stylesheet outranks the host theme", () => {
     );
   });
 
+  /**
+   * The font armour pins every element with `!important`, so it must pin each
+   * one to the family its own rule chose. Pinned to `--sc-font` it turned every
+   * Space Grotesk title, score and matrix cell into DM Sans, standalone too.
+   */
+  test("the font armour keeps the display family where a rule set it", () => {
+    assert.ok(
+      css.includes("font-family: var(--scs-ff) !important;"),
+      "the armour must read the per-element token, not the one text family",
+    );
+    const bare = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const rules = bare.match(/[^{}]+\{[^}]*\}/g) ?? [];
+    for (const rule of rules) {
+      const m = rule.match(/font-family: var\((--scs-font(?:-display)?)\);/);
+      if (!m || /^\s*:where/.test(rule)) continue;
+      const selector = rule.slice(0, rule.indexOf("{")).trim();
+      if (/^\.scs\s*$|^body\.scs-page$/.test(selector)) continue;
+      assert.ok(
+        rule.includes("--scs-ff:"),
+        `${selector} sets ${m[1]} but not --scs-ff, so the armour overrides it`,
+      );
+    }
+  });
+
+  /**
+   * The board's three width thresholds stay in the order that makes them mean
+   * something.
+   *
+   * They are one mechanism in three blocks: below `compact` the row prints
+   * codes instead of names, between `compact` and `scale` it shrinks its type,
+   * and above `label` it can afford to spell out the matchup link and widen
+   * that link's column to fit. Each was measured (see the comments beside
+   * them), and a later edit that moved one without the others would not look
+   * broken — it would truncate "Commanders" on some band of widths nobody
+   * happens to open. This asserts only the relationship, which is the part that
+   * can be checked without a browser; the values themselves come from the
+   * sweep.
+   */
+  test("the row's width thresholds are ordered", () => {
+    const at = (pattern) => {
+      const found = pattern.exec(css);
+      assert.ok(found, `no threshold matched ${pattern}`);
+      return Number(found[1]);
+    };
+
+    const compact = at(/@container \(max-width: (\d+)px\) \{\s*\.scs-game-name/);
+    const scale = at(/@container \(max-width: (\d+)px\) \{\s*\.scs-board-head/);
+    const wide = at(/@container \(min-width: (\d+)px\) \{\s*\.scs-board-head/);
+
+    assert.ok(compact < scale, `compact ${compact} must sit inside the scaling band ${scale}`);
+    assert.ok(scale <= wide, `the wide columns at ${wide} must not turn on inside the squeeze at ${scale}`);
+
+    // And the scaling band's clamp counts down from its own threshold. A clamp
+    // still counting from the old number is the shape this went wrong in once.
+    assert.ok(
+      css.includes(`calc(16px - (${scale}px - 100cqw) / 48.3)`),
+      `the clamp does not count from ${scale}px`,
+    );
+  });
+
+  /**
+   * The row's "MATCHUP" label holds until the names themselves drop to codes.
+   * It was once hidden below 800px of board; a width sweep found no name
+   * truncating with it on above 584px once the row's columns followed the
+   * board instead of the window.
+   */
+  test("the matchup label goes with the names, and no row column follows the window", () => {
+    const bare = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const hides = [...bare.matchAll(/\.scs-go-label\s*\{[^}]*display:\s*none/g)];
+    assert.equal(hides.length, 1, "the label is hidden in exactly one place");
+    const compact = bare.slice(bare.lastIndexOf("@container", hides[0].index), hides[0].index);
+    assert.match(compact, /^@container \(max-width: \d+px\) \{\s*\.scs-game-name/,
+      "and that place is the block that drops the names to codes");
+    const phone = bare.slice(bare.lastIndexOf("@media (max-width: 640px)"));
+    assert.match(phone, /\.scs-go-label\s*\{\s*display:\s*inline/,
+      "the phone layout, which has a row for it, shows it again");
+
+    const media = css.match(/@media[^{]*\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g) ?? [];
+    for (const block of media) {
+      if (/max-width: 640px/.test(block)) continue; // the phone layout is its own grid
+      assert.ok(
+        !/\.scs-game\s*\{[^}]*grid-template-columns/.test(block),
+        `a media query sets the row's columns from the window: ${block.slice(0, 60)}`,
+      );
+    }
+  });
+
   test("links keep the colour of the cell they fill", () => {
     const armed = css.slice(css.indexOf("Theme armour"));
     assert.ok(armed.includes(".scs .scs-matrix a {"), "the grid's links are unarmed");
     assert.ok(armed.includes(".scs .scs-rail-link"), "the week rail is unarmed");
     assert.ok(armed.includes(".scs .scs-game-name"), "the board's game titles are unarmed");
+    // One class against Divi's `.entry-content a`, which is a class and an
+    // element: the theme wins outright, and every row ends in a bright blue
+    // MATCHUP on a board whose own accent is the gold.
+    assert.ok(armed.includes(".scs .scs-go {"), "the row's matchup link is unarmed");
   });
 });
