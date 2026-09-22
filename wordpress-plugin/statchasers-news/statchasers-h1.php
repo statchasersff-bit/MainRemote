@@ -975,7 +975,7 @@ function statchasers_h1_panel(): void {
 		'auto'    => 'Follow the check (recommended) — print a heading only when the theme prints none.',
 		'on'      => 'Always print a heading from the shortcode. Use this where the template prints no title of its own.',
 		'replace' => 'Print the heading <strong>and empty the theme\'s page title</strong> — for a theme that prints one from its template with no layout to remove it from. The emptied heading is hidden with a rule this plugin prints; a theme that pads its title with whitespace will need one line of CSS of its own.',
-		'tool'    => '<strong>Let the tool supply the heading</strong> — empties the theme\'s page title and promotes the section heading the tool already prints (&#8220;Jacoby Brissett Stats 2026&#8221;, with the gold rule) to the page\'s H1. One heading, in the tool\'s own type, instead of the same phrase twice. Applies to player pages and team hubs; the other tools are unaffected.',
+		'tool'    => '<strong>Let the tool supply the heading</strong> — empties the theme\'s page title and promotes the section heading the tool already prints (&#8220;Jacoby Brissett Stats 2026&#8221;, with the gold rule) to the page\'s H1. One heading, in the tool\'s own type, instead of the same phrase twice. Applies to player pages and team hubs. The NFL schedule prints the site&#8217;s own hero heading instead; the other tools are unaffected.',
 		'off'     => 'Never print one; the theme supplies the H1.',
 	) as $value => $label ) {
 		printf(
