@@ -48,6 +48,11 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
+import {
+  canonicalizeMatchupPair,
+  gameSegment,
+  meetingHasOwnAddress,
+} from "./matchup/pair";
 import { markFrame, networkMarkFor } from "./team/network-marks";
 import { TEAMS, type NflTeam } from "./team/teams";
 import {
@@ -55,6 +60,8 @@ import {
   formatKickoff,
 } from "./schedule/format";
 import {
+  matrixFaq,
+  matrixFaqHeading,
   scheduleFaq,
   scheduleFaqHeading,
   type ScheduleFaq,
@@ -83,6 +90,8 @@ export interface ScheduleRenderOptions {
   basePath?: string;
   /** Where a team link points. Defaults to this app's own /team/. */
   teamPathPrefix?: string;
+  /** Where matchup pages live. Defaults to this app's own /nfl/. */
+  matchupPathPrefix?: string;
   /**
    * Where the CSV and calendar exports live.
    *
@@ -95,6 +104,16 @@ export interface ScheduleRenderOptions {
   downloadBase?: string;
   /** Carried onto internal links so embed mode stays embed mode. */
   linkQuery?: string;
+  /**
+   * `?h1=1` from the WordPress plugin's "the tool supplies the heading" mode.
+   *
+   * Absent, an embedded fragment prints no heading at all, because the host
+   * page has one. Present, the host has emptied its own title and this
+   * fragment's heading is the page's <h1>. Same contract as the team and
+   * player fragments — see statchasers-h1.php for who decides and why it is
+   * decided by measuring the rendered page rather than by guessing.
+   */
+  ownHeading?: boolean;
   view?: ScheduleView;
   /** The week the board opens on. Defaults to the one the season is in. */
   week?: number;
@@ -103,9 +122,51 @@ export interface ScheduleRenderOptions {
   now?: number;
 }
 
+/**
+ * What this page is called, and the sentence under it.
+ *
+ * One pair of functions rather than a string in the markup, because three
+ * places have to agree on it: the standalone page's <h1>, the fragment's when
+ * the host stands its title down, and the WordPress plugin, which prints the
+ * same heading into the page it mounts on. MIRRORED in PHP by
+ * `statchasers_schedule_heading()` and `statchasers_schedule_lead()` — a
+ * heading that says one thing on the API's own page and another on
+ * statchasers.com is the failure this shape exists to prevent.
+ *
+ * The bare page is called what the site calls it: the grid is the schedule
+ * here, so it needs no qualifier. A week says which week, because eighteen
+ * pages under one heading are eighteen pages a reader cannot tell apart from
+ * the heading — the same argument the titles and canonicals make.
+ */
+export function scheduleHeading(
+  season: number,
+  state: { view: ScheduleView; week: number },
+): string {
+  return state.view === "week"
+    ? `${season} NFL Schedule: Week ${state.week}`
+    : `${season} NFL Schedule`;
+}
+
+/** The standfirst under the heading. Says what the reader is looking at. */
+export function scheduleLede(
+  season: number,
+  state: { view: ScheduleView; week: number },
+): string {
+  return state.view === "week"
+    ? `Every Week ${state.week} game of the ${season} NFL regular season: ` +
+        `matchups, dates, kickoff times in ET, TV networks, the teams on bye, ` +
+        `and the market's posted spreads and totals.`
+    : `View the full ${season} NFL schedule for every team in one board. ` +
+        `Compare opponents, home and away games, and bye weeks across the ` +
+        `entire regular season.`;
+}
+
 const DEFAULT_BASE_PATH = "/schedule";
 const DEFAULT_TEAM_PREFIX = "/team/";
+const DEFAULT_MATCHUP_PREFIX = "/nfl/";
 const DASH = "—";
+/* The range dash, which is a different character from the sentence one. */
+const EN_DASH = "–";
 
 /* ------------------------------------------------------------------ links */
 
@@ -148,11 +209,11 @@ interface ViewState {
 /**
  * A URL for some other state of this page.
  *
- * The week lives in the path (`/schedule/week-2`) and everything else lives in
- * the query string. That split is not cosmetic: a week is a different slate of
- * games and deserves an address, while the view and the filter are ways of
- * looking at one — and `week` never appears as a parameter, so no rendering has
- * two spellings.
+ * The path carries the view, and the only thing left in the query string is the
+ * filter. That is not cosmetic: the matrix is the whole season at the bare path
+ * and a week is one slate of games at `/schedule/week-2`, so each of the two
+ * views a reader can be looking at has exactly one address, and `view` and
+ * `week` never appear as parameters at all.
  *
  * Only what differs from the default is written, so the links stay short.
  * `linkQuery` is merged in rather than appended, because it carries `embed=1`
@@ -167,12 +228,15 @@ function stateUrl(
   const merged = { ...current, ...next };
   const params = new URLSearchParams(linkQuery.replace(/^\?/, ""));
 
-  if (merged.view !== "week") params.set("view", merged.view);
-  else params.delete("view");
+  // Never a parameter now that the path says which view this is: the matrix is
+  // the bare path and the weekly board is `/week-N`. `?view=` renders nothing
+  // on either route — it only redirects — so emitting one here would point the
+  // board's own controls at an address that bounces.
+  params.delete("view");
 
-  // Never a parameter, on any view: the weekly board carries it in the path and
-  // the other two views do not carry it at all, because a team lens that
-  // remembered a week would be a second URL for one rendering.
+  // Never a parameter either: the weekly board carries the week in the path and
+  // the matrix does not carry one at all, because a matrix that remembered a
+  // week would be a second URL for one rendering.
   params.delete("week");
 
   // Never a parameter now: the team lens that took one has moved to the team
@@ -358,19 +422,74 @@ function teamScheduleHref(
   return `${prefix}${team.slug}/schedule/${options.linkQuery ?? ""}`;
 }
 
+/**
+ * The pair page for this fixture, or null.
+ *
+ * Two addresses, and which one a row gets is not a preference — it is the
+ * rule in matchup/pair.ts read from the other side. A finished game that the
+ * pair's own page has let go of has a dated address of its own
+ * (`/nfl/<a>-vs-<b>/2024-week-3/`), and that is the page a reader clicking a
+ * Week 3 row in December is asking for; a game inside the window, or still to
+ * be played, does not have one yet and the dated URL would 301 up to the pair.
+ * So the board asks meetingHasOwnAddress() rather than keeping a second copy of
+ * the fourteen days.
+ *
+ * Null when either club is unresolved, which is the same rule the rest of this
+ * file follows: a link whose destination we cannot name is not rendered. A
+ * team against itself cannot happen in a slate and is refused anyway, by
+ * canonicalizeMatchupPair(), because the pair is the thing with the address.
+ *
+ * Plain anchors, no `target="_top"`, for the reason team-render.ts gives on its
+ * own matchupHref(): a matchup page is one of the tool's own pages, and that
+ * attribute belongs to the links that leave for the main site.
+ */
+function matchupHref(
+  game: ScheduleGame,
+  season: number,
+  options: ScheduleRenderOptions,
+  now: number,
+): string | null {
+  const pair = canonicalizeMatchupPair(game.away, game.home);
+  if (!pair) return null;
+
+  const prefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
+  const query = options.linkQuery ?? "";
+  const base = `${prefix}${pair.slug}/`;
+
+  const dated =
+    meetingHasOwnAddress(
+      game.kickoffMs,
+      game.status === "final" && game.awayScore !== null && game.homeScore !== null,
+      now,
+    ) &&
+    // Every game this tool carries is a regular-season game — schedule-data.ts
+    // drops every other game_type — so the segment is never a postseason round.
+    `${gameSegment({ season, week: game.week, seasonType: "regular" })}/`;
+
+  return `${base}${dated || ""}${query}`;
+}
+
 /* ------------------------------------------------------------ week board */
 
 /**
  * One game on the weekly board.
  *
- * Three columns: when it is, who is playing, and where to watch. The matchup
- * reads away-then-home with the word "at" between, and the visually hidden line
- * restates the whole fixture — a screen reader should not have to infer home
- * and away from the order two logos were printed in.
+ * Four columns: when it is, who is playing, where to watch, and the door into
+ * the two clubs' own page. The matchup reads away-then-home with the word "at"
+ * between, and the visually hidden line restates the whole fixture — a screen
+ * reader should not have to infer home and away from the order two logos were
+ * printed in.
+ *
+ * The fourth column is a link and not a second way of saying what the third
+ * already says. Its label collapses to a chevron on a narrow board (see
+ * schedule.css), so the accessible name is carried by text that is always in
+ * the DOM rather than by the label itself.
  */
 function renderGameRow(
   game: ScheduleGame,
+  season: number,
   options: ScheduleRenderOptions,
+  now: number,
 ): string {
   const live = game.status === "live";
   const hasScore = game.awayScore !== null && game.homeScore !== null;
@@ -437,7 +556,44 @@ function renderGameRow(
     `<div class="scs-game-meta">` +
     networkHtml(game.network) +
     `</div>` +
+    renderMatchupCell(game, season, options, now) +
     `</article>`
+  );
+}
+
+/**
+ * The fourth cell: "Matchup", pointing at the two clubs' own page.
+ *
+ * An empty cell rather than no cell when the fixture has no pair page, because
+ * the row is a grid and a missing child would slide the columns of that one row
+ * out of line with every other.
+ *
+ * The visible label is hidden on a narrow board and the chevron is not, so the
+ * anchor's text alone would read as "›" to a screen reader on a phone. The
+ * name is therefore spelled out in a visually hidden span that never leaves:
+ * "Matchup: the Buffalo Bills at the Miami Dolphins", with "at" doing the work
+ * rule 4 at the top of this file describes, or "vs" where neither club hosts.
+ */
+function renderMatchupCell(
+  game: ScheduleGame,
+  season: number,
+  options: ScheduleRenderOptions,
+  now: number,
+): string {
+  const href = matchupHref(game, season, options, now);
+  if (!href) return `<div class="scs-game-go"></div>`;
+
+  const away = game.away?.fullName ?? game.awayCode;
+  const home = game.home?.fullName ?? game.homeCode;
+  const spoken = `Matchup: ${away} ${game.neutralSite ? "vs" : "at"} ${home}`;
+
+  return (
+    `<div class="scs-game-go">` +
+    `<a class="scs-go" href="${escapeHtml(href)}">` +
+    `<span class="scs-visually-hidden">${escapeHtml(spoken)}</span>` +
+    `<span class="scs-go-label" aria-hidden="true">Matchup</span>` +
+    `<span class="scs-go-chev" aria-hidden="true">›</span>` +
+    `</a></div>`
   );
 }
 
@@ -682,7 +838,11 @@ function renderWeekView(
 
   const board =
     games.length > 0
-      ? games.map((game) => renderGameRow(game, options)).join("")
+      ? games
+          .map((game) =>
+            renderGameRow(game, schedule.season, options, options.now ?? Date.now()),
+          )
+          .join("")
       : renderEmpty(
           `No games match`,
           state.filter === "all"
@@ -703,7 +863,10 @@ function renderWeekView(
     renderWeekRail(base, state, linkQuery) +
     `<div class="scs-board">` +
     `<div class="scs-board-head" aria-hidden="true">` +
-    `<span>When</span><span>Matchup</span><span>TV</span></div>` +
+    // "Game" rather than a second "Matchup": the middle column is the fixture
+    // and the last one is the link to its page, and two identical headings on
+    // one row is a row nobody can read.
+    `<span>When</span><span>Game</span><span>TV</span><span></span></div>` +
     board +
     `</div></div>` +
     `<aside class="scs-side" aria-label="Week ${state.week} at a glance">` +
@@ -785,9 +948,14 @@ function renderMatrixView(
     );
   }).join("");
 
+  // No heading of its own. The grid IS the page at `/schedule`, so the page's
+  // own <h1> names it — printed here when this is the standalone page, and by
+  // the WordPress page when it is embedded. A second heading saying "Season
+  // Grid" under an <h1> saying "2026 NFL Schedule" was the same sentence twice.
+  // What survives is the instruction, which is not a heading: without it the @
+  // is a symbol the reader has to work out.
   return (
     `<div class="scs-viewhead">` +
-    `<h2 class="scs-view-title">Every team. Every week.</h2>` +
     `<p class="scs-view-note">` +
     `A cell is the opponent; <strong>@</strong> marks a road game. Choose one to open that week's board.` +
     `</p></div>` +
@@ -805,9 +973,12 @@ function renderViewNav(
   state: ViewState,
   linkQuery: string,
 ): string {
+  // The matrix first, because it is what the bare path shows: the tab order and
+  // the URL have to tell the same story, or the tab that is already active on
+  // arrival is the second one.
   const items: Array<[ScheduleView, string]> = [
-    ["week", "Weekly board"],
     ["matrix", "Season matrix"],
+    ["week", "Weekly board"],
   ];
 
   return (
@@ -849,18 +1020,23 @@ function renderSource(schedule: ScheduleSeason): string {
 /* --------------------------------------------------------------------- faq */
 
 /**
- * The week's questions, and the FAQPage built from the same list.
+ * The view's questions, and the FAQPage built from the same list.
  *
- * **On the weekly board only.** The questions name a week and are answered from
- * that week's rows, so they belong to `/schedule/week-3` and to nothing else —
- * which is also what makes them worth having: the week is the one piece of this
- * tool's state with an address of its own, and eighteen addresses that differ
- * only in a number on a table are eighteen pages a search engine has no reason
- * to tell apart. The matrix gets none: nobody asks a 32-by-18 grid a
- * question in prose.
+ * **One set per view, never both.** The weekly questions name a week and are
+ * answered from that week's rows, so they belong to `/schedule/week-3` and to
+ * nothing else — which is what makes them worth having: the week is the one
+ * piece of this tool's state with an address of its own, and eighteen addresses
+ * that differ only in a number on a table are eighteen pages a search engine
+ * has no reason to tell apart.
+ *
+ * The matrix has its own set and they are about the grid rather than about a
+ * game: what the board is, how to read a row, what the @ means, how many weeks
+ * and games the season holds. See schedule/schedule-faq.ts for why that is a
+ * different question from anything the weekly board is asked, and why none of
+ * it is a team's season — that belongs to the team hub.
  *
  * It sits after the board and before the source line, which is where a reader
- * who has finished with the week arrives.
+ * who has finished with the view arrives.
  *
  * Each question is its own <details>, shut by default, exactly as the rankings
  * and the team hub do it and for the same reason: the questions are the index,
@@ -878,9 +1054,10 @@ function renderFaq(
   state: ViewState,
   options: ScheduleRenderOptions,
 ): string {
-  if (state.view !== "week") return "";
-
-  const items = scheduleFaq({ schedule, week: state.week });
+  const matrix = state.view === "matrix";
+  const items = matrix
+    ? matrixFaq({ schedule })
+    : scheduleFaq({ schedule, week: state.week });
   if (items.length === 0) return "";
 
   const body = items
@@ -898,7 +1075,9 @@ function renderFaq(
   return (
     `<section class="scs-faq-block" aria-labelledby="scs-faq-title">` +
     `<h2 class="scs-faq-title" id="scs-faq-title">${escapeHtml(
-      scheduleFaqHeading(state.week),
+      matrix
+        ? matrixFaqHeading(schedule.season)
+        : scheduleFaqHeading(state.week),
     )}</h2>` +
     `<div class="scs-faq">${body}</div>` +
     `</section>` +
@@ -974,7 +1153,7 @@ export function resolveState(
   options: ScheduleRenderOptions,
 ): ViewState {
   return {
-    view: options.view ?? "week",
+    view: options.view ?? "matrix",
     week:
       options.week && options.week >= 1 && options.week <= TOTAL_WEEKS
         ? options.week
@@ -1003,12 +1182,18 @@ export function renderSchedulePage(
       ? weekGames(schedule, state.week, state.filter)
       : [];
 
-  const heading = `${schedule.season} NFL Schedule`;
-  const head = options.embed
-    ? ""
-    : `<header class="scs-head"><h1 class="scs-title">${escapeHtml(heading)}</h1>` +
-      `<p class="scs-lede">Every regular-season game, week by week or all at once ` +
-      `${DASH} with kickoff times, TV, byes, division games and the market's lines.</p></header>`;
+  const heading = scheduleHeading(schedule.season, state);
+
+  // Embedded, the host page owns the <h1> — its own, or the one the WordPress
+  // plugin generates — so the fragment prints none and does not repeat the
+  // standfirst under it. `ownHeading` is the exception the other tools already
+  // have: `?h1=1` means the host has stood its own title down and wants this
+  // heading to BE the page's, so it is printed and promoted.
+  const head =
+    options.embed && options.ownHeading !== true
+      ? ""
+      : `<header class="scs-head"><h1 class="scs-title">${escapeHtml(heading)}</h1>` +
+        `<p class="scs-lede">${escapeHtml(scheduleLede(schedule.season, state))}</p></header>`;
 
   return (
     `<section class="scs${options.embed ? " is-embed" : ""}" data-scs-root` +

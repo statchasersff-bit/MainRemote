@@ -728,11 +728,20 @@ export type ScheduleView = (typeof SCHEDULE_VIEWS)[number];
 export const GAME_FILTERS = ["all", "division", "international"] as const;
 export type GameFilter = (typeof GAME_FILTERS)[number];
 
+/**
+ * The view a request asks for, defaulting to the season matrix.
+ *
+ * The matrix is what the bare path shows: it is the whole season, it is the
+ * same board in December as in July, and it is the view that answers "when do
+ * they play" for any team without first asking which week. The weekly board is
+ * a week — one slate of games — and a week has an address of its own
+ * (`/schedule/week-7`), so nothing needs `?view=week` to reach it.
+ */
 export function parseScheduleView(value: string | undefined): ScheduleView {
   const raw = (value ?? "").trim().toLowerCase();
   return (SCHEDULE_VIEWS as readonly string[]).includes(raw)
     ? (raw as ScheduleView)
-    : "week";
+    : "matrix";
 }
 
 export function parseGameFilter(value: string | undefined): GameFilter {

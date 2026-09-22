@@ -858,31 +858,6 @@ function splitName(name: string): { first: string; last: string } {
   return { first, last };
 }
 
-/**
- * The given name as an initial: "Jacoby" -> "J.".
- *
- * The tight form's saving, and the largest thing the header has left to spend
- * to keep its three parts on one row — see the note on the heading in
- * renderHero().
- *
- * Only the FIRST word contracts, and the rest of the run is kept: splitName
- * puts every word but the surname on this side, so "Amon-Ra St. Brown" arrives
- * here as "Amon-Ra St." and has to leave as "A. St." — "A. Brown" would have
- * dropped a piece of the name itself. Empty when the first word is already an
- * initial ("J.J. McCarthy", "D.K. Metcalf"): there is nothing to contract, and
- * cutting "J.J." to "J." would lose a letter a reader uses to tell two players
- * apart for a few pixels. The fitter drops a swap that measures no narrower
- * anyway, so an empty return and an unchanged width come to the same thing;
- * this states the rule where it can be read.
- */
-function nameInitial(first: string): string {
-  const words = first.trim().split(/\s+/).filter(Boolean);
-  const head = words[0] ?? "";
-  if (!head || head.includes(".") || Array.from(head).length <= 2) return "";
-  const letter = Array.from(head)[0] ?? "";
-  return [`${letter.toLocaleUpperCase()}.`, ...words.slice(1)].join(" ");
-}
-
 /** Height stored as total inches ("73") rendered as feet and inches. */
 function formatHeight(height: string | null): string {
   if (!height) return "";
@@ -1023,28 +998,6 @@ function heroStats(data: PlayerPageData): HeroStatCell[] {
  * reference header missing its figure is a worse product, not a smaller one.
  */
 
-/**
- * A run of text in all three of its lengths.
- *
- * All three are in the HTML and CSS shows one, keyed off `data-scp-form` on
- * `.scp-hero-inner`. Two reasons it is not the client rewriting text nodes:
- * the page is complete before any script runs, so a reader with JS off gets
- * the full form and never a blank; and the probe can then render the same
- * markup at a forced form to measure what that form would cost, which is the
- * whole point — a variant has to be measured before it is chosen, or the
- * choice changes the width it was measured against.
- *
- * `display: none` on the two it is not showing, so exactly one is in the
- * accessibility tree and a screen reader reads the team's name once.
- */
-function heroSwap(full: string, short: string, tight: string): string {
-  return (
-    `<span class="scp-swap scp-swap--full">${escapeHtml(full)}</span>` +
-    `<span class="scp-swap scp-swap--short">${escapeHtml(short)}</span>` +
-    `<span class="scp-swap scp-swap--tight">${escapeHtml(tight)}</span>`
-  );
-}
-
 /* ----------------------------------------------------------------- search */
 
 /*
@@ -1164,75 +1117,91 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
     );
   }
   if (team) {
+    // The short form, "ARI Cardinals", rides as an attribute and is shown as
+    // generated content only when the phone tier's fitter finds the full
+    // name would wrap (see wireHeroFit). The link's own text is always the
+    // full name, which is what a crawler and a screen reader get.
     billingParts.push(
       `<a class="scp-hero-team" href="${escapeHtml(
         `${teamPrefix}${team.slug}${query}`,
-      )}" target="_top" title="${escapeHtml(team.fullName)}">` +
-        heroSwap(team.fullName, team.nickname, team.code) +
+      )}" target="_top" title="${escapeHtml(team.fullName)}"` +
+        ` data-scp-short="${escapeHtml(`${team.code} ${team.nickname}`)}">` +
+        `<span class="scp-hero-team-full">${escapeHtml(team.fullName)}</span>` +
         `</a>`,
     );
   }
   // The jersey number, last in the line of identity: it is the one fact here a
   // reader already knows the player by rather than one that places them, and
   // it leaves the line below as what it is, the measurements.
-  if (player.number) billingParts.push(`#${escapeHtml(String(player.number))}`);
-
-  const billing = billingParts.length
-    ? `<p class="scp-hero-billing">` +
-      billingParts.join(`<span class="scp-hero-sep"> ${DOT} </span>`) +
-      `</p>`
+  //
+  // Printed after the join rather than in it, inside a span that carries its
+  // own separator, so the phone tier can drop the number and its dot together
+  // (see the 480px tier in player.css) without leaving a dangling "·".
+  const sep = `<span class="scp-hero-sep"> ${DOT} </span>`;
+  const number = player.number
+    ? `<span class="scp-hero-num">${billingParts.length ? sep : ""}` +
+      `#${escapeHtml(String(player.number))}</span>`
     : "";
 
+  const billing =
+    billingParts.length || number
+      ? `<p class="scp-hero-billing">` + billingParts.join(sep) + number + `</p>`
+      : "";
+
   /*
-   * The measurements, and the one of them the header may give back.
+   * The measurements, whole at every width.
    *
-   * This line is usually the widest thing in the column — wider than the name
-   * at 52px, because it is four facts and a name is one word — which makes it
-   * the line that decides how much room the column needs, and so the only
-   * line where a word swap can actually buy anything. Swapping the club's name
-   * under a wider line than itself saves exactly nothing.
+   * This line is usually the widest thing in the column — wider than the name,
+   * because it is four facts and a name is one word — which is what made it
+   * the tempting one to shorten: "Exp 10 yrs" was dropped on a narrow screen
+   * and put back when the room came back.
    *
-   * "Exp 10 yrs" is what it gives back: the longest single item, the last one
-   * a reader scans, and the one fact of the five that the Bio tab prints in
-   * full a click away. It comes back the moment the room does. Nothing else
-   * here is droppable — a height without a weight is not a smaller header,
-   * it is a header missing a fact.
+   * It is not dropped above phone width (the draft line goes in the
+   * two-column tier; below 480px the experience, the draft and the jersey
+   * number go). A header that edits the player's facts to fit its own layout is
+   * answering a question the reader did not ask, and the width it buys is
+   * width the LAYOUT can find for itself — below 760px the identity takes a row of its own, at full size,
+   * with every fact on it. See the tier map at the foot of player.css.
    */
+  //
+  // The experience is the one exception, at phone width: it sits last, in a
+  // span with its own separator, and the 480px tier drops it with the draft
+  // line and the jersey number so the identity fits beside the figure.
   const factParts: string[] = [];
   if (player.age) factParts.push(`Age ${player.age}`);
   const height = formatHeight(player.height);
   if (height) factParts.push(height);
   if (player.weight) factParts.push(`${player.weight} lbs`);
-  const factsShort = factParts.join(` ${DOT} `);
-  if (player.years_exp !== null && player.years_exp !== undefined) {
-    factParts.push(player.years_exp === 0 ? "Rookie" : `Exp ${player.years_exp} yrs`);
-  }
-  const factsFull = factParts.join(` ${DOT} `);
-  const facts = factsFull
-    ? `<p class="scp-hero-facts">` +
-      (factsShort && factsShort !== factsFull
-        ? heroSwap(factsFull, factsShort, factsShort)
-        : escapeHtml(factsFull)) +
-      `</p>`
+  const exp =
+    player.years_exp !== null && player.years_exp !== undefined
+      ? player.years_exp === 0
+        ? "Rookie"
+        : `Exp ${player.years_exp} yrs`
+      : "";
+  const factsHead = escapeHtml(factParts.join(` ${DOT} `));
+  const factsExp = exp
+    ? `<span class="scp-hero-exp">${factsHead ? ` ${DOT} ` : ""}${escapeHtml(exp)}</span>`
     : "";
+  const facts =
+    factsHead || factsExp
+      ? `<p class="scp-hero-facts">${factsHead}${factsExp}</p>`
+      : "";
 
   // The draft, on the same terms the Bio tab prints it on: only when the year,
   // the round and the pick are all known. `draft.json` writes a null row both
   // for an undrafted player and for one whose draft simply is not recorded, so
   // a partial row says nothing rather than guessing which.
   //
-  // Two lengths and then gone: the long form, an abbreviated one, and at the
-  // tight form the line drops entirely — it is the least load-bearing fact in
-  // the column, which is what makes it the right thing to spend first.
+  // One length, never abbreviated. It is hidden at every width below 670px
+  // (the two-column tier and the phone tier in player.css), where the
+  // identity sits beside the figure and this is the line that made the
+  // column tallest. It is the least
+  // load-bearing fact in the column, and the Bio tab prints it in full.
   const draft = data.bioProfile.draft;
   const draftFull =
     draft && draft.year && draft.round && draft.pick
       ? `Drafted ${draft.year}: Round ${draft.round}, Pick ${draft.pick}` +
         (draft.teamCode ? ` (${draft.teamCode})` : "")
-      : "";
-  const draftShort =
-    draft && draft.year && draft.round && draft.pick
-      ? `${draft.year}: Rd ${draft.round}, Pk ${draft.pick}`
       : "";
 
   // The current injury designation, which is the one piece of the hero that can
@@ -1306,37 +1275,27 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
    * on the page, under the heading that owns them. What the URL names is still
    * said by the document title, the description and the tab strip.
    *
-   * The given name abbreviates at the tight form, and only there: "Jacoby
-   * Brissett" is what a wide header says, "J. Brissett" is what the narrowest
-   * one-row header says. It buys more width than anything else left at that
-   * point — a given name is most of the widest line in the column — and it is
-   * spent to keep the numbers strip BESIDE the name rather than stacked under
-   * it, which is the trade this header is for.
-   *
-   * The initial is `::before` content off `data-initial`, not a `.scp-swap`
-   * triplet like the club's name. The H1 is the one run of text on this page
-   * that may not change: `heading.textContent` has to be exactly
-   * `player.name`, for a crawler, for a screen reader and for the test that
-   * checks it. Generated content is not text content, so the heading still
-   * reads "Jacoby Brissett" to everything that reads the document, while the
-   * rendered line says what fits. The given name's span is what hides.
+   * No short form of the name in the one-row or two-column tiers: there the
+   * fitter works with the name's SIZE, and when that runs out the layout
+   * changes instead. On a phone (below 480px) there is no layout left to
+   * change to, so the name shrinks by up to 15% and then becomes
+   * "J. Brissett" — mak's call, and the one place the header shortens it.
    */
   const { first, last } = splitName(player.name);
-  const initial = nameInitial(first);
 
+  // The initial likewise rides as an attribute, for the phone tier alone:
+  // there the fitter shrinks the name by up to 15% first and only then
+  // swaps "Jacoby" for "J.", as generated content, so the heading's own text
+  // is the whole name at every width.
   const title =
     (first
-      ? `<span class="scp-title-first"` +
-        (initial ? ` data-initial="${escapeHtml(initial)}"` : "") +
-        `><span class="scp-title-given">${escapeHtml(first)}</span></span> `
+      ? `<span class="scp-title-first" data-scp-initial="${escapeHtml(`${first.charAt(0)}.`)}">` +
+        `<span class="scp-title-given">${escapeHtml(first)}</span></span> `
       : "") +
     `<span class="scp-title-last">${escapeHtml(last)}</span>`;
 
   const draftLine = draftFull
-    ? `<p class="scp-hero-draft">` +
-      `<span class="scp-swap scp-swap--full">${escapeHtml(draftFull)}</span>` +
-      `<span class="scp-swap scp-swap--short">${escapeHtml(draftShort)}</span>` +
-      `</p>`
+    ? `<p class="scp-hero-draft">${escapeHtml(draftFull)}</p>`
     : "";
 
   /*
@@ -1353,7 +1312,7 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
     `<header class="scp-hero" data-scp-hero${rootStyle}>` +
     `<span class="scp-hero-decor" aria-hidden="true"></span>` +
     watermark +
-    `<div class="scp-hero-inner" data-scp-form="full">` +
+    `<div class="scp-hero-inner">` +
     renderHeadshot(data) +
     `<div class="scp-hero-text">` +
     `<${Heading} class="scp-title">${title}</${Heading}>` +

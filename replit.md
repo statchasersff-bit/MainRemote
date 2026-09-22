@@ -679,18 +679,38 @@ and most of what is distinctive about it follows from that.
   fragment cache and head metadata. `public/schedule.html` is the shell,
   `public/schedule.css` the stylesheet. The canonical points at a path and never
   at a parameter, and that matters more here than anywhere else: view, team and
-  filter combine into several hundred URLs, every one of them a near-duplicate.
-  The description does vary by view, because the three views are genuinely about
-  different things.
-- **A week is a page; everything else is a parameter.** `/schedule/week-2` is
-  week 2 — a different slate of games, with its own title, its own description
-  and its own canonical — where `?view=`, `?team=` and `?filter=` are ways of
-  looking at one board and never change the canonical. `/schedule` itself is the
-  way in rather than a nineteenth page: it renders the week the season is on and
-  points its canonical at that week's address, so the two spellings of one board
-  resolve to one page. `?week=` is answered with a 301 to the path; a week the
-  season does not have (`week-0`, `week-19`, `week-02`) is a 404 rather than a
-  second spelling of a week it does have.
+  filter used to combine into several hundred URLs, every one of them a
+  near-duplicate. The description varies by view, because the two views are
+  genuinely about different things.
+- **The path says which view this is, and nothing else does.** `/schedule` is
+  the season matrix: the whole season in one 32-by-18 grid, the same page in
+  December as in July, its own canonical. `/schedule/week-2` is week 2 — a
+  different slate of games, with its own title, description and canonical. That
+  is nineteen pages and there is no twentieth, because `?view=` renders nothing:
+  `?view=matrix` is a 301 back to the bare path, `?view=week` a 302 to the week
+  the season is on, and both are dropped from any link the board prints. `?week=`
+  is answered with a 301 to the path; a week the season does not have (`week-0`,
+  `week-19`, `week-02`) is a 404 rather than a second spelling of a week it does
+  have. `?filter=` is the one parameter left, it is carried only onto the weekly
+  board, and it never changes a canonical.
+  - The matrix is the bare path because it is the view that answers "when do
+    they play" for any team without first asking which week, and because it is
+    the one that does not go stale — the board the bare path used to render was
+    a different page every Tuesday. The view tabs print the matrix first for the
+    same reason: a tab order that disagreed with the URL would open on its
+    second tab.
+- **The page names itself once.** `scheduleHeading()` and `scheduleLede()` in
+  schedule-render.ts are the only copies of the phrase: "2026 NFL Schedule" on
+  the grid, "2026 NFL Schedule: Week 7" on a week, with a standfirst under it.
+  Standalone, that is the page's `<h1>`. Embedded, the host owns the heading and
+  the fragment prints none — unless `?h1=1` says the host has stood its own
+  title down, the same contract routes/team.ts and routes/player.ts have. The
+  grid used to name itself a second time above the board ("2026 NFL Schedule
+  Grid — All 32 Teams…", with the same sentence again); what is left of that
+  block is the one line explaining what `@` means, which is an instruction
+  rather than a heading. The WordPress side mirrors the pair in
+  `statchasers_schedule_heading()` / `statchasers_schedule_lead()` and picks the
+  week up from the URL, so the H1 on statchasers.com says the same thing.
 - `src/routes/schedule.ts` — `/schedule`, `/schedule/week-:week`,
   `/schedule/download.csv`, `/schedule/schedule.ics` and `/embed/schedule`. Both
   exports are built from the same `getSchedule` the page renders, so the file

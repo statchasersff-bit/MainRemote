@@ -1,6 +1,10 @@
 /**
- * The questions one week of the schedule gets asked, answered from that week's
- * own rows.
+ * The questions the schedule gets asked, answered from the rows on the page.
+ *
+ * Two sets, one per view. `scheduleFaq()` answers a week from that week's own
+ * games; `matrixFaq()` answers the season grid from the shape of the whole
+ * slate. They share a type and a renderer and nothing else, because the two
+ * views are asked completely different things.
  *
  * Sixth sibling to team/outlook-faq.ts, team/stats-faq.ts, team/depth-faq.ts,
  * team/schedule-faq.ts and rankings/rankings-faq.ts, and it keeps the rule the
@@ -18,10 +22,17 @@
  * are the one part of this tool whose text is different at every address —
  * which is the whole point of the week having an address.
  *
- * The season matrix gets no questions at all: a 32-by-18 grid is not a thing
- * anyone asks a question about in prose. A team's season is not asked here
- * either — that is answered at length on the team's own hub page by
- * team/schedule-faq.ts, which is also where this tool's team lens went.
+ * The matrix is the other half of that argument, and it took a while to see it.
+ * Nobody asks a 32-by-18 grid a question about a game — but they do ask where
+ * the whole schedule is, what the board they are looking at is called, and what
+ * the @ in front of an opponent code means. Those are questions about the grid
+ * rather than about a fixture, they are the same on every rendering of it, and
+ * they belong to the one address the matrix has. See `matrixFaq()` at the
+ * bottom of this file.
+ *
+ * A team's season is not asked in either set — that is answered at length on
+ * the team's own hub page by team/schedule-faq.ts, which is also where this
+ * tool's team lens went. The grid's row headings link there.
  *
  * ## What it refuses to do
  *
@@ -58,6 +69,7 @@ import { TEAMS, type NflTeam } from "../team/teams";
 import {
   byeTeams,
   weekGames,
+  TOTAL_WEEKS,
   type ScheduleGame,
   type ScheduleSeason,
 } from "./schedule-data";
@@ -549,4 +561,239 @@ export function scheduleFaq(input: {
 /** Sentence case for a phrase that was built to sit mid-sentence. */
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/* ------------------------------------------------------- the season grid */
+
+/** The heading the matrix block prints, above its own questions. */
+export function matrixFaqHeading(season: number): string {
+  return `${season} NFL Schedule Grid FAQ`;
+}
+
+/**
+ * What the grid is, counted off the grid.
+ *
+ * Every number the matrix answers with comes from here rather than from the
+ * league's usual arithmetic. 32 teams, 17 games, 272 games and one bye are all
+ * true of a normal season and none of them is asserted: `teams` is the rows the
+ * table actually draws, `games` is the slate actually loaded, and `gamesPerTeam`
+ * and `byesPerTeam` are null the moment the 32 rows disagree with each other.
+ *
+ * That null is the guard the whole set leans on. A half-loaded feed would
+ * otherwise answer "the 2026 NFL regular season has 134 games", which is a
+ * false claim about the season rather than an honest description of a partial
+ * board — and unlike a missing kickoff time, nothing on screen contradicts it.
+ * When the rows disagree the count questions are simply not asked.
+ */
+interface MatrixFacts {
+  season: number;
+  /** Rows the grid draws. */
+  teams: number;
+  /** Columns the grid draws. */
+  weeks: number;
+  /** Games in the loaded slate. */
+  games: number;
+  /** Games each team plays, or null when the rows disagree. */
+  gamesPerTeam: number | null;
+  /** Byes each team gets, or null when the rows disagree. */
+  byesPerTeam: number | null;
+  /** Every game final: the season is behind us and the verbs change. */
+  played: boolean;
+}
+
+function matrixFacts(schedule: ScheduleSeason): MatrixFacts {
+  const weeksOf = new Map<string, Set<number>>();
+  const gamesOf = new Map<string, number>();
+  for (const team of TEAMS) {
+    weeksOf.set(team.abbreviation, new Set());
+    gamesOf.set(team.abbreviation, 0);
+  }
+
+  for (const game of schedule.games) {
+    for (const side of [game.away, game.home]) {
+      const code = side?.abbreviation;
+      if (!code || !gamesOf.has(code)) continue;
+      gamesOf.set(code, (gamesOf.get(code) ?? 0) + 1);
+      weeksOf.get(code)?.add(game.week);
+    }
+  }
+
+  const uniform = (values: number[]): number | null =>
+    values.length > 0 && values.every((value) => value === values[0])
+      ? (values[0] as number)
+      : null;
+
+  return {
+    season: schedule.season,
+    teams: TEAMS.length,
+    weeks: TOTAL_WEEKS,
+    games: schedule.games.length,
+    gamesPerTeam: uniform([...gamesOf.values()]),
+    byesPerTeam: uniform(
+      [...weeksOf.values()].map((weeks) => TOTAL_WEEKS - weeks.size),
+    ),
+    played:
+      schedule.games.length > 0 &&
+      schedule.games.every((game) => game.status === "final"),
+  };
+}
+
+/**
+ * The questions the season grid gets asked.
+ *
+ * Every answer describes the table directly above it: the rows are teams, the
+ * columns are weeks, a cell is an opponent, an @ is a road game and an empty
+ * week is a bye. Nothing here is about a fixture, a kickoff time or a network —
+ * the matrix prints none of those, so the matrix does not answer for them, and
+ * a reader who wants them is pointed at the week's own board, which is one
+ * click away through any column heading.
+ *
+ * ## Two tenses, on purpose
+ *
+ * A sentence about the grid stays in the present, because the grid is on the
+ * page now whatever year it describes. A sentence about the season takes the
+ * verb table, because "the 2024 NFL regular season has 272 games" is wrong in
+ * the same way team/schedule-faq.ts splits its verbs to avoid. The two kinds of
+ * sentence sit side by side in one answer more than once, and that is correct.
+ *
+ * ## One question per question
+ *
+ * "Where can I see the full NFL schedule", "...for all teams", "...every team's
+ * schedule at once" and "...every matchup" are four search queries and one
+ * question. They were drafted as four entries and are deliberately one: four
+ * answers restating the board's shape in four ways is the thin-content pattern
+ * a FAQPage gets discounted for, and the phrases still land — in the section
+ * heading and lede above the grid, and in the title and description this view
+ * carries (schedule-seo.ts), which is where they belong.
+ *
+ * What survives as its own entry is a question with its own answer: what the
+ * board is called, how to read a row, what the @ means, how many weeks and
+ * games the season holds, what is not here. The test on this file asserts the
+ * two sets share no question; nothing asserts they are short, so the rule has
+ * to be written down.
+ */
+export function matrixFaq(input: { schedule: ScheduleSeason }): ScheduleFaq[] {
+  const facts = matrixFacts(input.schedule);
+
+  // An empty slate draws an empty grid, and an empty grid is not worth
+  // describing. The board above already says so in its own words.
+  if (facts.games === 0) return [];
+
+  const { season, teams, weeks, games, gamesPerTeam, byesPerTeam } = facts;
+  const v = {
+    has: facts.played ? "had" : "has",
+    runs: facts.played ? "ran" : "runs",
+    // Every subject that takes it here is singular — "each team", "each of the
+    // 32 teams" — so the present tense is "plays", not the week set's "play".
+    plays: facts.played ? "played" : "plays",
+  };
+
+  const faq: ScheduleFaq[] = [];
+
+  faq.push({
+    question: `Where can I see the full ${season} NFL schedule?`,
+    answer:
+      `The StatChasers ${season} NFL Schedule Grid above is the complete ` +
+      `regular-season schedule for all ${teams} NFL teams in one view. Teams run ` +
+      `down the left edge and Weeks 1 through ${weeks} run across the top, so one ` +
+      `row is a team's whole season and one column is a whole week of the league ` +
+      `— which is what lets you compare opponents, road games and bye weeks ` +
+      `across the league rather than one team at a time.`,
+  });
+
+  faq.push({
+    question: `What is an NFL schedule grid?`,
+    answer:
+      `An NFL schedule grid is one table holding every team's season at once. ` +
+      `Each row is a team, each column is a week of the regular season, and each ` +
+      `cell is that team's opponent in that week — which is what lets you read ` +
+      `the whole league without opening ${teams} separate team pages.`,
+  });
+
+  faq.push({
+    question: `Is there an NFL schedule by team and week?`,
+    answer:
+      `Yes — the grid above is arranged by both. Teams are down the side and ` +
+      `weeks are across the top, so a team's opponents read across its row and a ` +
+      `week's matchups read down its column. Choosing a week number in the header ` +
+      `opens that week's full board, with dates, kickoff times in ET and TV.`,
+  });
+
+  faq.push({
+    question: `How can I see NFL opponents by week?`,
+    answer:
+      `Each cell in the grid is that team's opponent for one week. Read across a ` +
+      `team's row for its opponents from Week 1 through Week ${weeks}, or choose a ` +
+      `week number in the header row to open the complete schedule for that week.`,
+  });
+
+  faq.push({
+    question: `How can I see an NFL team's opponents for the entire season?`,
+    answer:
+      `Find the team on the left of the grid and read across its row. The ` +
+      `opponents appear in order from Week 1 through Week ${weeks}, with an @ in ` +
+      `front of every road game and BYE in the week the team is off. The team's ` +
+      `name links to its own schedule page, which adds dates, kickoff times, TV ` +
+      `and results.`,
+  });
+
+  faq.push({
+    question: `Where can I see all NFL bye weeks on one schedule?`,
+    answer:
+      `Each team's bye is marked BYE in its own row, in the week it falls. ` +
+      `Because all ${teams} teams are drawn together, byes can be compared across ` +
+      `the league without checking each team's schedule separately` +
+      (byesPerTeam === 1
+        ? `; every team ${v.has} exactly one in the ${weeks}-week season.`
+        : `.`),
+  });
+
+  faq.push({
+    question: `What does @ mean on an NFL schedule?`,
+    answer:
+      `The @ symbol means that team is playing on the road. A cell reading @BUF ` +
+      `is a game at Buffalo; an opponent code with no @ in front of it is a home ` +
+      `game for the team whose row it is in.`,
+  });
+
+  faq.push({
+    question: `How many weeks are in the ${season} NFL schedule?`,
+    answer:
+      `The ${season} NFL regular season ${v.runs} ${weeks} weeks, which is the ` +
+      `${weeks} columns of the grid above.` +
+      (gamesPerTeam !== null && byesPerTeam !== null
+        ? ` Each team ${v.plays} ${count(gamesPerTeam, "game", "games")} and ` +
+          `${v.has} ` +
+          `${byesPerTeam === 1 ? "one bye week" : count(byesPerTeam, "bye week", "bye weeks")}` +
+          ` inside them.`
+        : ``),
+  });
+
+  if (gamesPerTeam !== null) {
+    faq.push({
+      question: `How many games are on the full ${season} NFL schedule?`,
+      answer:
+        `The ${season} NFL regular season ${v.has} ${count(games, "game", "games")}. ` +
+        `Each of the ${teams} teams in the grid above ${v.plays} ` +
+        `${count(gamesPerTeam, "regular-season game", "regular-season games")} ` +
+        `across the ${weeks}-week schedule.`,
+    });
+  }
+
+  faq.push({
+    question: `Does the ${season} NFL schedule grid include bye weeks?`,
+    answer:
+      `Yes. A team's bye is drawn in its own row alongside its opponents, marked ` +
+      `BYE, so the week a team is off shows up in the same place as the rest of ` +
+      `its season rather than in a separate list.`,
+  });
+
+  faq.push({
+    question: `Does this show the NFL preseason or playoffs?`,
+    answer:
+      `No. The grid covers the ${season} NFL regular season only, Week 1 through ` +
+      `Week ${weeks}. Preseason and postseason games are not part of this board.`,
+  });
+
+  return faq;
 }

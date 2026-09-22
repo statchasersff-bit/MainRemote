@@ -6,25 +6,28 @@
  * `noindex, indexifembedded` because the address that should rank is
  * `https://statchasers.com/nfl/nfl-schedule/`, not this origin.
  *
- * The canonical points at the path and never at a parameter. View, team and
- * filter are ways of looking at one board, and every rendering of them is the
- * same page — the same reasoning the FPA table's format toggle gets, and it
- * matters more here, because the three combine into several hundred URLs and
- * every one of them would otherwise be a near-duplicate of the others.
+ * The canonical points at the path and never at a parameter, and there are
+ * exactly two kinds of path. The bare one is the season matrix: the whole
+ * season in one grid, the same page in December as in July. The other eighteen
+ * are the weeks (`/schedule/week-2`), because Week 2 is not a way of looking at
+ * the board — it is a different set of games, which is the whole reason it has
+ * an address.
  *
- * The week is the exception, and the reason is that it is not a way of looking
- * at the board: Week 2 is a different set of games. It has an address of its
- * own (`/schedule/week-2`), the route hands the canonical in already built, and
- * the title and description below say which week they are about — eighteen
- * pages that share one title are eighteen pages a search engine has no reason
- * to tell apart.
+ * Nothing else may mint one. Filter and season are ways of looking at a page
+ * and are dropped on the way in, the same reasoning the FPA table's format
+ * toggle gets; `?view=` is not read here at all, because the route redirects it
+ * rather than rendering it.
  *
- * The description varies with the view too, because the three views are
- * genuinely about different things and a snippet that says "browse by week" on
- * the season matrix is a worse answer than one that does not.
+ * The title and description say which of the nineteen pages they are about —
+ * eighteen weeks sharing one title are eighteen pages a search engine has no
+ * reason to tell apart — and the wording differs by view, because a snippet
+ * that says "browse by week" on the season grid is a worse answer than one
+ * that does not.
  */
 
 import { escapeHtml } from "./render";
+import { TEAMS } from "./team/teams";
+import { TOTAL_WEEKS } from "./schedule/schedule-data";
 import type { ScheduleSeason, ScheduleView } from "./schedule/schedule-data";
 
 export interface SchedulePageMeta {
@@ -50,10 +53,13 @@ export function schedulePageMeta(
 
   if (state.view === "matrix") {
     return {
-      title: `${season} NFL Schedule Grid: Every Team, Every Week | ${SITE_NAME}`,
+      title:
+        `${season} NFL Schedule Grid: All ${TEAMS.length} Teams, ` +
+        `Weeks 1–${TOTAL_WEEKS} | ${SITE_NAME}`,
       description:
-        `All 32 NFL teams and all 18 weeks of the ${season} regular season in ` +
-        `one grid, with byes marked and home and road games distinguished.`,
+        `The full ${season} NFL schedule for all ${TEAMS.length} teams in one ` +
+        `grid: every team's opponents by week, home and away games, and every ` +
+        `bye week from Week 1 through Week ${TOTAL_WEEKS}.`,
       canonical,
       siteName: SITE_NAME,
     };

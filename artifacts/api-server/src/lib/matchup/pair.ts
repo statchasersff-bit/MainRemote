@@ -30,6 +30,41 @@ export interface MatchupPair {
 const SEPARATOR = "-vs-";
 
 /**
+ * How long a finished meeting keeps the pair's own address to itself.
+ *
+ * Two weeks: long enough that a result is still the thing a reader arriving at
+ * the pair's address is asking about, and short enough that the takeaways —
+ * which are advice for the coming week — come off the page while they are still
+ * true. A Sunday game therefore keeps the recap layout through the Sunday after
+ * it, and lets go on the second Monday.
+ *
+ * It lives here, beside the two functions that spell an address, because it is
+ * the rule that decides WHICH address a finished game has: inside the window
+ * the recap is the pair's page and the dated URL 301s up to it, outside it the
+ * dated URL is the page. matchup-data.ts applies it when it decides what to
+ * lead with, and anything building a link to a past meeting — the schedule
+ * board's row links, for one — has to ask the same question or it generates
+ * redirects.
+ */
+export const RECENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
+/**
+ * Does this finished meeting have a dated address of its own yet?
+ *
+ * False while it is still what the pair's page leads with, and false for
+ * anything that is not a finished game with a kickoff behind it — there is no
+ * recap of a fixture, so there is no dated page for one either.
+ */
+export function meetingHasOwnAddress(
+  kickoffMs: number | null,
+  isFinal: boolean,
+  now: number,
+): boolean {
+  if (!isFinal || kickoffMs === null) return false;
+  return now - kickoffMs > RECENT_WINDOW_MS;
+}
+
+/**
  * Resolve any two team names to their one pair, or null.
  *
  * Accepts whatever normalizeTeamName() accepts — slugs, abbreviations,

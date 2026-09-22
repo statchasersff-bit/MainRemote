@@ -528,9 +528,16 @@ button.scp-search-opt {
  * the two narrow tiers below never set them at all, because down there the
  * topology has already solved the problem the scales exist for.
  *
- *   --scp-hero-pad   the row's whitespace: gutters, the inner gap, the
- *                    figure's inset. Spent first and spent fastest.
- *   --scp-hero-gap   the 40px the name is held clear of the figure by.
+ *   --scp-hero-pad   the card's two gutters, 28px each.
+ *   --scp-hero-inset the 35px of floor the figure stands off the left gutter
+ *                    by. Its own lever, not the gutters', because the row's
+ *                    last concessions are asked of exactly this: at the floor
+ *                    the figure stands ON the gutter and the card keeps 10px
+ *                    of edge.
+ *   --scp-hero-gap   everything between the figure and the name: the inner
+ *                    flex gap of 26px and the 40px the name is held clear by.
+ *                    One lever, because it is one distance to a reader, and
+ *                    it closes to 3px before the row gives up and stacks.
  *   --scp-hero-bust  the headshot.
  *   --scp-hero-id    the identity column's type, as one block.
  *   --scp-hero-tbl   the numbers strip's type.
@@ -596,7 +603,7 @@ button.scp-search-opt {
   /* Bottom, not centre: the photo is a figure standing on the floor of the
      card, and the text sits beside it rather than around it. */
   align-items: flex-end;
-  gap: calc(26px * var(--scp-hero-pad, 1));
+  gap: calc(26px * var(--scp-hero-gap, 1));
   /*
    * One row, and only a breakpoint may say otherwise.
    *
@@ -634,7 +641,7 @@ button.scp-search-opt {
      the edge rather than standing inside the hero; 35px gives it a floor of
      its own. The text column keeps its clearance either way, since this is a
      margin and the gap after the photo is unchanged. */
-  margin-left: calc(35px * var(--scp-hero-pad, 1));
+  margin-left: calc(35px * var(--scp-hero-inset, 1));
 }
 
 .scp-photo-img {
@@ -717,8 +724,7 @@ button.scp-search-opt {
  * making that decision.
  */
 .scp-title-first,
-.scp-title-last,
-.scp-title-given {
+.scp-title-last {
   display: inline;
 }
 
@@ -910,82 +916,16 @@ button.scp-search-opt {
   color: var(--sc-gold-ink);
 }
 
-/* ----------------------------------------------- hero: forms and the probe */
-
-/*
- * The word swaps.
- *
- * Three lengths of the same run of text, all three in the HTML, one shown. The
- * showing is keyed off `data-scp-form` on .scp-hero-inner, which the client
- * sets to "short" at stage 3 and "tight" at stage 5 — after the whitespace is
- * gone and the first proportional shrink is spent, before the deepest cuts to
- * the type. Cheaper concessions first, all the way down.
- *
- * `display: none` rather than clipping or opacity, so exactly one form is in
- * the accessibility tree: the team's name is announced once, not three times,
- * and the link's accessible name is whichever form is showing. The full name
- * is on the anchor's `title` either way, which is how "NE" stays answerable.
- *
- * The default is `full` with no attribute set at all, so the server's HTML is
- * already correct and nothing flashes while the client measures.
- */
-.scp-swap--short,
-.scp-swap--tight {
-  display: none;
-}
-
-[data-scp-form="short"] .scp-swap--full,
-[data-scp-form="tight"] .scp-swap--full {
-  display: none;
-}
-
-[data-scp-form="short"] .scp-swap--short {
-  display: inline;
-}
-
-[data-scp-form="tight"] .scp-swap--tight {
-  display: inline;
-}
-
-/* At the tight form the draft line goes rather than shortening again: it is
-   the least load-bearing fact in the column, it is already on the Bio tab in
-   full, and a third abbreviation of it would be a puzzle, not a fact. */
-[data-scp-form="tight"] .scp-hero-draft {
-  display: none;
-}
-
-/*
- * And the given name becomes an initial: "Jacoby Brissett" -> "J. Brissett".
- *
- * The largest saving left at the tight form, because the name is the widest
- * line in the column and the given name is most of it. It is what keeps the
- * numbers strip beside the name for another 100-odd pixels of viewport
- * instead of stacking under it.
- *
- * Not a `.scp-swap` triplet, unlike every other run of text in this header.
- * The H1's text content has to stay exactly the player's name for a crawler
- * and a screen reader, and three spans with two hidden would make it read
- * "JacobyJacobyJ. Brissett". Generated content is not text content: the
- * initial comes from `data-initial` through `::before`, and the given name's
- * own span is what hides. The space between the two spans is a real text
- * node, so "J." and the surname stay apart.
- */
-[data-scp-form="tight"] .scp-title-first[data-initial]::before {
-  content: attr(data-initial);
-}
-
-[data-scp-form="tight"] .scp-title-first[data-initial] > .scp-title-given {
-  display: none;
-}
+/* ------------------------------------------------------- hero: the probe */
 
 /*
  * The probe.
  *
- * Three copies of the identity column — one per form — and one of the numbers
- * strip, rendered off-screen at scale 1 so the fitter can read what each form
- * would naturally take before it chooses one. Measuring the visible column
- * instead would be measuring the thing the scales are about to change, which
- * is the one way to make a fitter oscillate forever.
+ * A copy of the identity column and two of the numbers strip, rendered
+ * off-screen at scale 1 so the fitter can read what each naturally takes.
+ * Measuring the visible column instead would be measuring the thing the scales
+ * are about to change, which is the one way to make a fitter oscillate
+ * forever.
  *
  * `position: fixed` and far off to the left: `display: none` has no dimensions
  * to measure, and an in-flow `visibility: hidden` copy would still take part
@@ -6553,19 +6493,23 @@ a.scp-peer:focus-visible {
  * the scale variables at the top of this file, and the client measures them.
  * A breakpoint cannot know how long "Amon-Ra St. Brown" is.
  *
- * 620px  one row (bust · identity · numbers) becomes two: bust and identity
- *        on the first, the numbers full width under them. This is the width
- *        at which the measured squeeze has spent its last stage and the next
- *        concession would be the name wrapping — so the row splits instead.
- *        It was 800px until the header learnt to say "M. Valdes-Scantling"
- *        and to take the numbers down a fifth: the longest names on the site
- *        hold one row to 620 now, and a row that fits is worth more than a
- *        tier boundary that has stopped meaning anything.
+ * 670px  one row (bust · identity · numbers) becomes two columns: the bust
+ *        in one, the identity over the numbers in the other. This is the
+ *        width at which the measured squeeze runs out for the longest name on
+ *        the site — and running out is all it does now. It used to keep going
+ *        by shortening the club, the draft line and the given name, which is
+ *        the one thing a header may not do.
  *
- * 460px  two rows become one: the bust steps BEHIND the name rather than
- *        beside it, and the identity takes the full width. It is still on the
- *        page, at full opacity's fraction, doing what the team's mark does on
- *        a wider screen. It does not disappear.
+ *        It was 760 until the row's whitespace was given somewhere to go:
+ *        with the gutters down to 10px, the figure standing on the gutter and
+ *        3px between the figure and the name, "Marquez Valdes-Scantling" now
+ *        holds one row to 650. The boundary sits 20px above that measurement
+ *        rather than on it.
+ *
+ * 480px  the numbers leave the column beside the bust and take the full
+ *        width underneath; the bust stays beside the name, smaller, at full
+ *        strength. It used to step behind the name here, faded into the top
+ *        right corner, and at 430 rather than 480.
  *
  * Neither tier sets a scale variable. Down here the topology has already made
  * the room the scales existed to find, and a squeezed part inside a stacked
@@ -6584,202 +6528,371 @@ a.scp-peer:focus-visible {
  * Scoped to the one-row tier, because that is the only tier the fitter runs
  * in. Below it the scales are cleared and the clamp is the answer again.
  *
- * 620.02px, not 560px, since the two-column tier below took the range from
- * 620 down. The .02 is the same unreachable sliver the 559.98/560 pair
- * already leaves between tiers, kept so no width matches two of them.
+ * 670.02px, since the stacked tier below takes the range from 670 down. The
+ * .02 is an unreachable sliver, kept so no width matches two tiers.
  */
-@media (min-width: 620.02px) {
+@media (min-width: 670.02px) {
   .scp-hero[data-scp-hero-fit="js"] .scp-title {
     font-size: calc(33px * var(--scp-hero-id, 1));
   }
 }
 
 /*
- * The two-column tier: 560px to 620px.
+ * ==========================================================================
+ * The stacked tier: everything below 670px.
+ * ==========================================================================
  *
- * The figure takes a column of its own and the identity column stacks — name
- * above, numbers below — rather than the three parts sharing one line.
+ * The identity on a row of its own — the bust beside it, standing where it
+ * always stands — and the season's numbers on a full-width row directly
+ * underneath, with the year centred over them.
  *
- * Why a breakpoint and not another stage in the fitter. By 620px the row has
- * spent every concession it has — whitespace, type, the club's name, the given
- * name — and everything left to spend is type below its floor: the fitter
- * would be taking the strip down towards six pixels a label to keep a surname
- * off a second line, which trades the panel's whole content for the least
- * load-bearing part of the header. Changing the topology buys the same width
- * outright — the strip drops under the name, gets the identity column's full
- * width to be wide in, and every part goes back to full size. Breakpoints
- * decide topology and measurement decides everything inside; this is the
- * topology question, asked where the measurements say to ask it. It used to be
- * asked at 800, before the name could contract and the strip could give up a
- * fifth of its size, and it was costing the header 180px of one-row range.
+ * This is the header's answer to a narrow window now, and the ONLY one. What
+ * it replaced was two further tiers of one-row: a measured squeeze that took
+ * the type down and then, when that ran out, started rewriting the player's
+ * facts — "Arizona Cardinals" to "ARI", "Jacoby" to "J.", the draft line gone
+ * and the years of experience with it. A header that edits what it says to fit
+ * the space it has is a header a reader cannot trust twice, and the width it
+ * was buying is width this arrangement has for free: the identity gets the
+ * whole card, the strip gets the whole card, and everything is printed at full
+ * size.
  *
- * Grid, not the `flex-wrap` the tier below uses. Wrapping puts the strip under
- * the PHOTO as well as the text, across the whole card; a figure spanning both
- * rows of a grid is the arrangement this tier is actually for.
- *
- * Every rule is scoped to a header that HAS a figure. Without one there is no
- * second column to make and no 204px to find room for — the index page's
- * header and a player Sleeper has no thumbnail for both keep the single row
- * they already fit in.
+ * 670px is where the measurements put the boundary: the longest name on the
+ * site (Marquez Valdes-Scantling, beside a club name and a five-item facts
+ * line) holds one row at 650 and wraps at 640, so the tier starts above both
+ * with room to spare rather than at the last pixel that fits.
  */
-@media (min-width: 560px) and (max-width: 620px) {
-  .scp-hero-inner:has(> .scp-photo) {
-    display: grid;
-    /* The figure at its natural width, the identity column taking the rest.
-       `minmax(0, 1fr)` rather than `1fr`, because a track's automatic minimum
-       is its content: a long surname would push the column past the card's
-       edge instead of wrapping inside it. */
-    grid-template-columns: auto minmax(0, 1fr);
-    /* The figure still stands on the floor of the card. */
-    align-items: end;
-    /* The inner's 26px is the gutter between the two columns and nothing else
-       — the name's own padding is what separates it from the numbers under
-       it, and 26px on top of that read as two unrelated blocks. */
-    row-gap: 0;
+@media (max-width: 670px) {
+  /* The card's gutter narrows with the card. It is a fixed 24px of nothing at
+     the top of the tier and 16px at the bottom, which is 16px of width handed
+     back to the row — see the note on the column gap below. */
+  .scp-hero {
+    padding: 22px clamp(16px, 3.2vw, 24px) 0;
   }
 
   /*
-   * Its own column, both rows. Nothing else is placed explicitly: auto
-   * placement then lands the name in row 1 of the second column and the
-   * numbers in row 2 beneath it, which is this tier's whole arrangement.
+   * The bust takes a column, both rows; the identity and the numbers share
+   * the other one.
    *
-   * And the column gives width back as the card narrows. At a flat 204px the
-   * figure took 204 of the 470px a 560px card has to give, which left the
-   * strip a 205px column — under the three cells' own content, so "ROSTERED"
-   * lost its D to the row's clip and "PPR PPG" broke over two lines. The
-   * clamp is the same device `.scp-title` uses where the fitter is not
-   * running: a viewport-sized guess, good because this tier's geometry is
-   * fixed — one figure, one column — even though it cannot know the name.
-   * 25.5vw floors at the 147px the tier below already shrinks the figure to,
-   * so the two agree at the boundary; the tier is narrow enough now that the
-   * clamp's top is never reached inside it.
+   * The figure is a column rather than a thing in a row because that is what
+   * it is on this card: a standing figure the rest of the header is set
+   * beside. It buys the two things that matter here — the name and the strip
+   * line up on one left edge, so the strip reads as the row belonging to the
+   * identity above it rather than as a band across the card; and the figure
+   * stands on the floor for the full height of both, with no pocket of empty
+   * gradient over it.
    *
-   * `aspect-ratio` and an auto height, because the base rule's height is a px
-   * figure paired with a px width and this width is neither.
+   * Grid, not the flex wrap this tier used to use. Wrapping put the strip
+   * under the FIGURE as well as the text, across the whole card; a figure
+   * spanning both rows of a grid is the arrangement this is actually for.
+   */
+  .scp-hero-inner:has(> .scp-photo) {
+    display: grid;
+    /* The figure at the width it asks for, the rest taking what is left.
+       `minmax(0, 1fr)` rather than `1fr`, because a track's automatic minimum
+       is its content: a long name would push the column past the card's edge
+       instead of wrapping inside it. */
+    grid-template-columns: auto minmax(0, 1fr);
+    /*
+     * The gutter between the figure and the name, closing as the card does —
+     * and it closes all the way: 14px of air beside a 133px bust at the top
+     * of the tier, 3px at the bottom of it.
+     *
+     * The interpolation is written against the tier's own ends rather than as
+     * a bare `vw`, because what it has to do is arrive: a slope in viewport
+     * units that reaches 3px at 200px is a slope that is still spending 8px
+     * at the width where this arrangement gives way. Every pixel it hands
+     * back is a pixel the identity keeps, and the last three are what hold
+     * the figure, the name and the numbers together down to 480.
+     */
+    column-gap: clamp(3px, calc(3px + (100vw - 480px) * 0.0579), 14px);
+    /* The name's own padding is what separates the two rows. A row gap on top
+       of it read as two unrelated blocks. */
+    row-gap: 0;
+    align-items: end;
+  }
+
+  /*
+   * Its own column, both rows, standing on the floor — and the column is
+   * two fifths of the card where the card can afford one.
+   *
+   * `40vw - 30px` is 40% of the content box at the top of this tier: the card
+   * is the viewport less its 32px of page margin, the content box is that
+   * less two gutters, and two fifths of what is left is 230px at 650, where
+   * the cap takes over. It was a third, 176px at 660, and read as a
+   * thumbnail beside a column of text that had room to give. Stacking is
+   * where the figure stops competing with the name for one line, so it is
+   * also where it can be a figure rather than a thumbnail.
+   *
+   * 205px is the floor, reached at 590, so across the tier the figure only
+   * goes from 230 to 205. It was 160, and the figure was the only thing
+   * getting smaller as the card narrowed; below the floor the width the
+   * identity column needs comes from the right gutter (10px), the gap and
+   * the figure's shift instead — those are whitespace, and whitespace is
+   * what a layout spends first.
+   *
+   * `aspect-ratio` with an auto height, because the base rule's height is a px
+   * figure paired with a px width and this one is a figure of its own.
    */
   .scp-hero-inner:has(> .scp-photo) > .scp-photo {
+    grid-column: 1;
     grid-row: 1 / span 2;
-    width: clamp(147px, 25.5vw, 204px);
+    align-self: end;
+    width: clamp(205px, calc(40vw - 30px), 230px);
     height: auto;
     aspect-ratio: 350 / 254;
+    /*
+     * And it moves left as the card narrows, past the gutter.
+     *
+     * Sleeper's cutout is a figure in the middle of a transparent frame —
+     * `object-fit: contain` on a 350x254 source whose subject is the middle
+     * half — so the box's left quarter is nothing at all. On a wide card that
+     * is just air inside the figure's own column; at 430 it is a quarter of
+     * the width the name needs. The negative margin spends it: zero at 760,
+     * growing to 24px at 460 and held there, so the FIGURE keeps sliding
+     * toward the card's edge while the transparency is what goes over it.
+     *
+     * It narrows the track as well as shifting it, so those 24px land in the
+     * identity column rather than in the gap.
+     */
+    margin-left: calc(-1 * clamp(0px, (760px - 100vw) * 0.11, 26px));
   }
 
-  /* The 40px was room for the name to start clear of a figure it stood
-     beside. Beside a column, the gutter is the clearance. */
+  /* The identity, at the top of its column. The 40px was room for a name to
+     start clear of a figure it shared a line with; beside a column, the
+     column gap is that clearance. */
   .scp-hero-inner:has(> .scp-photo) > .scp-hero-text {
+    grid-column: 2;
+    grid-row: 1;
     margin-left: 0;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
   }
 
-  /* Full width of the identity column, and the bottom margin the text gave
-     up: the strip is what stands on the card's floor in this column now. */
+  /*
+   * Directly under the name, standing on the floor of the card as the figure
+   * does, centred under the identity — and only as wide as its cells.
+   *
+   * It filled the column, which tied its width to whatever the figure left:
+   * the figure was the only part that got smaller as the card narrowed, and
+   * the strip's own padding bought nothing. At its cells' width it narrows
+   * with its padding (below), so the two shrink together.
+   */
   .scp-hero-inner:has(> .scp-photo) > .scp-hero-stats {
+    grid-column: 2;
+    grid-row: 2;
     align-self: end;
-    width: 100%;
+    justify-self: center;
+    width: auto;
+    max-width: 100%;
     margin-bottom: 20px;
   }
 
-  /* Left, with the name above it, rather than centred over a box that no
-     longer floats in the middle of anything. */
-  .scp-hero-inner:has(> .scp-photo) .scp-hero-stats-season {
-    text-align: left;
-  }
-
-  /* Three equal cells across the column, at the padding that fits them — the
-     same fixed figures the tier below uses and right for the same reason: the
-     cells are sharing a width the tier itself set, not one they asked for. */
-  .scp-hero-inner:has(> .scp-photo) .scp-hero-stat {
-    flex: 1 1 0;
-    padding: 11px 8px;
-  }
-}
-
-@media (max-width: 559.98px) {
-  .scp-hero {
-    padding: 20px 20px 0;
-  }
-
-  /* The figure keeps its own line-up with the identity beside it; what goes is
-     the 40px clearance, which was room for a name to start on its own and is
-     now room the row does not have. */
-  .scp-photo {
-    width: calc(204px * 0.72);
-    height: calc(148px * 0.72);
-    margin-left: 0;
-  }
-
-  /* Wrapping is the point of this tier: the numbers take their own line. */
-  .scp-hero-inner {
+  /*
+   * And the case with no figure — a player Sleeper has no thumbnail for.
+   *
+   * No column to stand beside, so the two parts simply stack. `flex-basis:
+   * 100%` rather than letting the strip wrap on its own: a strip that wraps
+   * only sometimes is a header that jumps.
+   */
+  .scp-hero-inner:not(:has(> .scp-photo)) {
     flex-wrap: wrap;
   }
 
-  .scp-hero-text {
-    flex: 1 1 200px;
+  .scp-hero-inner:not(:has(> .scp-photo)) > .scp-hero-text {
+    flex: 1 1 100%;
     margin-left: 0;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
   }
 
-  /* Its own row, full width. `flex-basis: 100%` rather than letting it wrap on
-     its own: a strip that wraps only sometimes is a header that jumps. */
-  .scp-hero-stats {
+  .scp-hero-inner:not(:has(> .scp-photo)) > .scp-hero-stats {
     flex: 1 1 100%;
-    width: 100%;
+    width: min(100%, 320px);
     align-self: stretch;
     margin-bottom: 20px;
   }
 
+  /*
+   * ------------------------------------------------------------------
+   * The strip, sized against the viewport rather than held at one size.
+   * ------------------------------------------------------------------
+   *
+   * Above this tier the fitter scales the strip by measurement, because up
+   * there it is competing with the name and the bust for one row and only a
+   * measurement knows who needs the width. Down here it has a row to itself
+   * and the question is simpler: a 23px figure over an 8-letter label is a
+   * desktop object, and at 500px it is the loudest thing on the card.
+   *
+   * So it shrinks with the card, continuously — no step at a breakpoint, the
+   * same continuous response the fitter gives above. The pairs are chosen so
+   * the two meet at 760: 3vw is 22.8px at the top of the tier against the
+   * fitter's 23, and 1.3vw is 9.9px against its 10.
+   *
+   * The floors are the phone's: 16px on the figure and 8px on the label,
+   * which is where the fitter's own floor (0.80 of 23 and of 10) landed and
+   * was checked for contrast — see `.scp-hero-stat.is-lead`.
+   */
   .scp-hero-stats-season {
-    text-align: left;
+    font-size: clamp(8px, 1.2vw, 9.5px);
+    text-align: center;
   }
 
-  /* Three equal cells across the full width, with the padding that fits them
-     — the one place a fixed figure is right, because the cells are sharing a
-     width the tier itself set. */
+  /*
+   * The type, set for the panel rather than for the column.
+   *
+   * A 23px figure is right at the top of the row above, where the strip is one
+   * of three things sharing a line and has to hold its own against a 33px
+   * name. Here it is a 320px panel under a 26px name, and at 23 it read as the
+   * headline of the card. Down a size, and the labels with it — the panel is
+   * quieter, and it is still the only thing on the card set in tabular
+   * figures.
+   */
+  .scp-hero-stat-value {
+    font-size: clamp(16px, 2.7vw, 20px);
+  }
+
+  .scp-hero-stat-label {
+    font-size: clamp(8px, 1.2vw, 9.5px);
+  }
+
+  /* Equal cells, each as wide as the widest one needs — a grid of `1fr`
+     columns sized to content does exactly that, where equal flex cells in a
+     shrink-wrapped row would squeeze "POS RANK" onto two lines. The side
+     padding narrows with the viewport, 14px at the top of the tier to 4px
+     at 480, which is what makes the strip narrow as the figure does. */
+  .scp-hero-stats-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
   .scp-hero-stat {
     flex: 1 1 0;
-    padding: 11px 8px;
+    padding: clamp(8px, 1.3vw, 11px)
+      clamp(4px, calc(4px + (100vw - 480px) * 0.0526), 14px);
+    gap: clamp(3px, 0.6vw, 5px);
   }
 }
 
-@media (max-width: 459.98px) {
-  /*
-   * The bust, behind.
-   *
-   * Out of the flex row and onto the card's floor at the right, under the name
-   * and over the gradient. Anchored bottom-right because that is where it
-   * stood when it was in the row — the figure has not moved, the text has come
-   * across it. Not `display: none`: a header whose player has no face is a
-   * smaller page, not a better one.
-   */
-  .scp-photo {
-    position: absolute;
-    /*
-     * Top right, not bottom right.
-     *
-     * The numbers strip takes the full width of this tier and it is an opaque
-     * white card, so a figure on the floor is a figure behind a wall — all
-     * that showed was a sliver of jersey under the strip's corner, which
-     * reads as a rendering fault rather than as a player. The top right is
-     * the one part of this tier the text does not occupy: the name is left
-     * aligned and none of the four lines under it reaches the edge.
-     */
-    top: 0;
-    right: 0;
-    z-index: 0;
-    width: calc(204px * 0.62);
-    height: calc(148px * 0.62);
-    opacity: 0.16;
+/*
+ * The two-column tier alone, 480 to 670: what it does that the stacked tier
+ * below it does not.
+ *
+ * A block of its own rather than rules in the one above, because that block
+ * reaches all the way down and the stacked tier would have to undo each of
+ * these again.
+ */
+@media (min-width: 480px) and (max-width: 670px) {
+  /* The column beside the figure runs to 10px off the card's right edge —
+     width handed to the figure, so it holds its size down the tier. The left
+     gutter stays where the tier above sets it: the figure stands on that
+     side and slides into it. */
+  .scp-hero {
+    padding-right: 10px;
   }
 
+  /* The identity centred over the strip, which now spans the same column —
+     the year above the strip is already centred, and a left-aligned name
+     over a centred panel read as two blocks sharing a column by accident. */
   .scp-hero-text {
-    position: relative;
-    z-index: 1;
-    flex: 1 1 100%;
+    text-align: center;
   }
 
-  .scp-hero-stats {
-    position: relative;
-    z-index: 1;
+  .scp-hero-meta {
+    justify-content: center;
+  }
+
+  /* The draft goes at this width. It is the least load-bearing line in the
+     column, the Bio tab prints it in full, and it is the line that pushed
+     the column tallest beside the figure. */
+  .scp-hero-draft {
+    display: none;
+  }
+}
+
+@media (max-width: 479.98px) {
+  /*
+   * The bust, beside the name, and the numbers under both.
+   *
+   * It used to step behind the name here, faded to 16% in the top right
+   * corner — a texture rather than a player. It stays a figure: its own
+   * column on the left at full strength, the identity beside it, and the
+   * strip taking the whole card underneath, since three cells in the column
+   * beside a figure is what this width no longer has room for.
+   *
+   * The grid is the tier above's; only the strip's placement and the
+   * figure's size change. The figure stands on the strip rather than the
+   * card's floor, bottom-aligned with the identity's last line.
+   */
+  .scp-hero-inner:has(> .scp-photo) {
+    column-gap: 6px;
+  }
+
+  /* 136px at 480 down to 125px at 360, and never under 125 — the smallest
+     the figure is drawn anywhere, by mak's call; a narrower card wraps the
+     name rather than shrinking the player further. No leftward shift here — the
+     tier above slides the figure into the transparent quarter of Sleeper's
+     frame, but at this size the shoulders fill the frame's bottom edge, and
+     the shift cut them off against the card's edge. */
+  .scp-hero-inner:has(> .scp-photo) > .scp-photo {
+    grid-row: 1;
+    width: clamp(125px, calc(125px + (100vw - 360px) * 0.0917), 136px);
+    margin-left: 0;
+  }
+
+  .scp-hero-inner:has(> .scp-photo) > .scp-hero-stats {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  /* The identity, cut to what fits beside the figure: the jersey number, the
+     years of experience and the draft line go, each with its separator
+     (they are printed in spans that carry their own "·" for this). */
+  .scp-hero-num,
+  .scp-hero-exp,
+  .scp-hero-draft {
+    display: none;
+  }
+
+  /* The name 7% under the 26px the clamp lands on at this width, times what
+     the phone fitter measured (down to 0.85 — see heroPhoneFit). */
+  .scp-title {
+    font-size: calc(26px * 0.93 * var(--scp-hero-name, 1));
+  }
+
+  /*
+   * One line each for the name and the club, where the fitter is live.
+   *
+   * Without the script these wrap as they always have: a nowrap line with no
+   * fitter behind it would run off the card's edge and be cut by its clip.
+   * With it, the fitter shortens before anything wraps and sets the `wrap`
+   * state itself as the last resort.
+   */
+  .scp-hero[data-scp-hero-fit="js"] .scp-title,
+  .scp-hero[data-scp-hero-fit="js"] .scp-hero-billing {
+    white-space: nowrap;
+  }
+
+  .scp-hero[data-scp-hero-name="wrap"] .scp-title,
+  .scp-hero[data-scp-hero-club="wrap"] .scp-hero-billing {
+    white-space: normal;
+  }
+
+  /* "Jacoby" to "J.": the given name hidden, its initial drawn in its place
+     from the attribute the server printed. The heading's text is unchanged. */
+  .scp-hero[data-scp-hero-name] .scp-title-given {
+    display: none;
+  }
+
+  .scp-hero[data-scp-hero-name] .scp-title-first::before {
+    content: attr(data-scp-initial);
+  }
+
+  /* "Arizona Cardinals" to "ARI Cardinals", the same way. */
+  .scp-hero[data-scp-hero-club] .scp-hero-team-full {
+    display: none;
+  }
+
+  .scp-hero[data-scp-hero-club] .scp-hero-team::before {
+    content: attr(data-scp-short);
   }
 }
 

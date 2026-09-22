@@ -136,6 +136,10 @@ function statchasers_h1_probe_target( string $tool = 'team' ): ?array {
 		return statchasers_h1_player_probe_target();
 	}
 
+	if ( 'schedule' === $tool ) {
+		return statchasers_h1_schedule_probe_target();
+	}
+
 	if ( ! function_exists( 'statchasers_team_page_status' ) ) {
 		return null;
 	}
@@ -211,6 +215,48 @@ function statchasers_h1_player_probe_target(): ?array {
 	return null;
 }
 
+/**
+ * The same question, asked of the schedule page.
+ *
+ * One page rather than a set, because that is what this tool is: one address
+ * with eighteen week URLs hanging off it, all rendered by the same page. It is
+ * found by its path rather than by a registry, because nothing creates it —
+ * somebody wrote it and put the shortcode in it, and `statchasers_schedule_page_path()`
+ * is where the plugin is told which page that is.
+ *
+ * `anchor` is the word "schedule" rather than a name. The other two probes ask
+ * "is this heading about this team, this player"; here there is only one page,
+ * so the question is whether the heading on it is about the schedule at all —
+ * which is what separates a page whose theme names it from a page whose theme
+ * prints the site name in an H1 on everything.
+ *
+ * @return array{url:string,expect:string,anchor:string,label:string}|null
+ */
+function statchasers_h1_schedule_probe_target(): ?array {
+	if ( ! function_exists( 'statchasers_schedule_page_path' ) ) {
+		return null;
+	}
+
+	$page = get_page_by_path( statchasers_schedule_page_path() );
+
+	if ( ! $page instanceof WP_Post || 'publish' !== get_post_status( $page ) ) {
+		return null;
+	}
+
+	$url = (string) get_permalink( $page );
+
+	if ( '' === $url ) {
+		return null;
+	}
+
+	return array(
+		'url'    => $url,
+		'expect' => statchasers_h1_normalise( (string) $page->post_title ),
+		'anchor' => 'schedule',
+		'label'  => 'schedule',
+	);
+}
+
 /** Text as it compares: tags gone, entities decoded, whitespace collapsed. */
 function statchasers_h1_normalise( string $html ): string {
 	$text = wp_strip_all_tags( $html );
@@ -251,7 +297,7 @@ function statchasers_h1_probe(): array {
 		'tools'       => array(),
 	);
 
-	foreach ( array( 'team', 'player' ) as $tool ) {
+	foreach ( array( 'team', 'player', 'schedule' ) as $tool ) {
 		$target = statchasers_h1_probe_target( $tool );
 
 		if ( null === $target ) {
@@ -525,6 +571,7 @@ function statchasers_h1_mounts_a_tool(): bool {
 		defined( 'STATCHASERS_TEAM_SHORTCODE' ) ? STATCHASERS_TEAM_SHORTCODE : '',
 		defined( 'STATCHASERS_PLAYER_SHORTCODE' ) ? STATCHASERS_PLAYER_SHORTCODE : '',
 		defined( 'STATCHASERS_MATCHUP_SHORTCODE' ) ? STATCHASERS_MATCHUP_SHORTCODE : '',
+		defined( 'STATCHASERS_SCHEDULE_SHORTCODE' ) ? STATCHASERS_SCHEDULE_SHORTCODE : '',
 	) as $tag ) {
 		if ( '' !== $tag && has_shortcode( $content, $tag ) ) {
 			$answer = true;
@@ -811,6 +858,7 @@ function statchasers_h1_filter( $value ): bool {
 		'statchasers_team_shortcode_h1'    => 'team',
 		'statchasers_player_shortcode_h1'  => 'player',
 		'statchasers_matchup_shortcode_h1' => 'matchup',
+		'statchasers_schedule_shortcode_h1' => 'schedule',
 	);
 
 	return statchasers_h1_should_print( $map[ current_filter() ] ?? '' );
@@ -818,6 +866,7 @@ function statchasers_h1_filter( $value ): bool {
 add_filter( 'statchasers_team_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_player_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_matchup_shortcode_h1', 'statchasers_h1_filter' );
+add_filter( 'statchasers_schedule_shortcode_h1', 'statchasers_h1_filter' );
 
 /**
  * A theme switch retires the verdict.

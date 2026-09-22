@@ -23,6 +23,14 @@
  *    `[statchasers_schedule view="team" team="NE"]` is a genuinely different
  *    page from the weekly board.
  *
+ * ## What the page's own address says
+ *
+ * The bare page is the season grid — `view` defaults to `matrix` — and a week
+ * URL (`/nfl/nfl-schedule/week-7/`) is the weekly board. The rewrite rule below
+ * puts the week in a query var, and `statchasers_schedule_args()` lets it
+ * override both the week AND the view, so the two addresses cannot disagree
+ * with what they render. The API decides the same way, from its own path.
+ *
  * @package StatChasers\News
  */
 
@@ -198,7 +206,7 @@ add_action(
 function statchasers_schedule_args( array $atts ): array {
 	$atts = shortcode_atts(
 		array(
-			'view'   => 'week',
+			'view'   => 'matrix',
 			'week'   => '',
 			'team'   => '',
 			'filter' => 'all',
@@ -210,7 +218,7 @@ function statchasers_schedule_args( array $atts ): array {
 
 	$view = strtolower( trim( (string) $atts['view'] ) );
 	if ( ! in_array( $view, STATCHASERS_SCHEDULE_VIEWS, true ) ) {
-		$view = 'week';
+		$view = 'matrix';
 	}
 
 	$filter = strtolower( trim( (string) $atts['filter'] ) );
@@ -231,9 +239,15 @@ function statchasers_schedule_args( array $atts ): array {
 	// right-looking URL, and the board's own week links all point at addresses
 	// now. Where no week URL is in play — any other page mounting the
 	// shortcode — the attribute is untouched.
+	//
+	// It outranks the view for the same reason, and this is the pair that makes
+	// the page's two addresses work: the bare page is the season grid, and
+	// /week-7/ is the weekly board. Mirrors the API, where the path is the only
+	// thing that says which view a rendering is.
 	$from_url = statchasers_schedule_request_week();
 	if ( $from_url > 0 ) {
 		$week = $from_url;
+		$view = 'week';
 	}
 
 	$team = strtolower( trim( (string) $atts['team'] ) );
@@ -292,7 +306,15 @@ function statchasers_schedule_fetch( array $args ): ?array {
 		return null;
 	}
 
-	$key        = md5( $origin . '|' . wp_json_encode( $args ) );
+	// The heading mode is part of the identity of what comes back — a fragment
+	// that opens with the page's <h1> against one that opens with the board —
+	// so it joins the key. Same reasoning as statchasers-team.php.
+	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+
+	$key        = md5(
+		$origin . '|' . wp_json_encode( $args ) . '|' . ( $own_heading ? 'h1' : '' )
+	);
 	$cache_key  = 'sc_sched_ssr_' . $key;
 	$backup_key = 'sc_sched_ssr_bak_' . $key;
 
@@ -313,6 +335,9 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	}
 	if ( $args['season'] > 0 ) {
 		$query['season'] = (string) $args['season'];
+	}
+	if ( $own_heading ) {
+		$query['h1'] = '1';
 	}
 
 	$response = wp_remote_get(
@@ -564,13 +589,45 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	 * @param string $html Rendered fragment.
 	 * @param array{view:string,week:int,team:string,filter:string,season:int} $args Render arguments.
 	 */
-	return (string) apply_filters(
+	$html = (string) apply_filters(
 		'statchasers_schedule_fragment_html',
-		$data['html'],
+		statchasers_schedule_strip_faq_data( (string) $data['html'] ),
 		$args
 	);
+
+	// Above the board, because it is the page's heading rather than the
+	// fragment's: on a page whose theme prints no title of its own, this IS the
+	// <h1>. Empty on every other site, which is every site whose theme is
+	// already printing one.
+	return statchasers_schedule_shortcode_heading() . $html;
 }
 add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' );
+
+/**
+ * The <h1> the shortcode prints itself. Off unless the probe says to.
+ *
+ * The other half of the heading story. Where the theme prints the page title,
+ * the `the_title` filter below makes that title week-aware and this prints
+ * nothing; where the theme prints no title at all — a Divi full-width layout, a
+ * Theme Builder layout with no Post Title module — this supplies the heading
+ * and the standfirst in the site's own hero markup, and the week URLs get one
+ * each. See statchasers-h1.php for how that question is answered, and why it is
+ * answered by measuring a rendered page rather than by guessing at the
+ * template.
+ *
+ * Both halves say the same phrase, from the same two functions, so a site that
+ * switches modes does not switch headings.
+ */
+function statchasers_schedule_shortcode_heading(): string {
+	if ( ! apply_filters( 'statchasers_schedule_shortcode_h1', false ) ) {
+		return '';
+	}
+
+	return statchasers_page_heading_html(
+		statchasers_schedule_heading(),
+		statchasers_schedule_lead()
+	);
+}
 
 /* ----------------------------------------------------- what a week page is */
 
@@ -588,11 +645,23 @@ function statchasers_schedule_week_title(): string {
 	if ( 0 === $week ) {
 		return '';
 	}
-	$page = trim( (string) get_the_title( get_queried_object_id() ) );
-	if ( '' === $page ) {
-		$page = 'NFL Schedule';
-	}
-	return sprintf( '%s: Week %d', $page, $week );
+	return sprintf( '%s: Week %d', statchasers_schedule_page_title(), $week );
+}
+
+/**
+ * The page's own name, as it is stored.
+ *
+ * `post_title` rather than `get_the_title()`, and that is not a detail: this
+ * file now filters `the_title` to APPEND the week, so a title read through that
+ * filter while computing what the filter should return is a title with the week
+ * on it already — "2026 NFL Schedule: Week 7: Week 7". Reading the stored
+ * string is the version of this that cannot recurse.
+ */
+function statchasers_schedule_page_title(): string {
+	$queried = get_queried_object();
+	$page    = $queried instanceof WP_Post ? trim( (string) $queried->post_title ) : '';
+
+	return '' === $page ? 'NFL Schedule' : $page;
 }
 
 /** The description for a week URL, or '' when this is not one. */
@@ -606,6 +675,41 @@ function statchasers_schedule_week_description(): string {
 		);
 }
 
+/**
+ * The heading this request's page should carry.
+ *
+ * The page's own title on the bare page — the grid is the schedule here, so it
+ * needs no qualifier — and that same title with the week appended on a week
+ * URL. MIRRORS `scheduleHeading()` in the API's schedule-render.ts, except for
+ * the season: the API knows the year because it has the slate, and this side
+ * reads it out of the page's title, for the reason given on
+ * statchasers_schedule_week_title() above.
+ *
+ * Never '' — unlike the week title, which returns '' to mean "leave what is
+ * there alone". This one is asked for a heading to print, so it always answers
+ * with one.
+ */
+function statchasers_schedule_heading(): string {
+	$week = statchasers_schedule_week_title();
+
+	return '' === $week ? statchasers_schedule_page_title() : $week;
+}
+
+/**
+ * The sentence under that heading.
+ *
+ * MIRRORS `scheduleLede()` in schedule-render.ts, minus the season, which this
+ * side does not know. The week case is the description the week URLs already
+ * carry — one sentence doing two jobs is better than two that can disagree.
+ */
+function statchasers_schedule_lead(): string {
+	$week = statchasers_schedule_week_description();
+
+	return '' === $week
+		? 'View the full NFL schedule for every team in one board. Compare opponents, home and away games, and bye weeks across the entire regular season.'
+		: $week;
+}
+
 /** The canonical for a week URL, or '' when this is not one. */
 function statchasers_schedule_week_canonical(): string {
 	$week = statchasers_schedule_request_week();
@@ -614,6 +718,41 @@ function statchasers_schedule_week_canonical(): string {
 	// API says the same thing about /schedule/week-7 in routes/schedule.ts.
 	return 0 === $week ? '' : statchasers_schedule_week_url( $week );
 }
+
+/**
+ * Rewrite the page's title on a week URL, which is the theme's H1.
+ *
+ * Guarded the way every `the_title` filter in this plugin is, and for the
+ * reason set out in statchasers-h1.php: `the_title` is called for menu items,
+ * admin lists, widgets and archive listings, and renaming the page in any of
+ * those renames it everywhere it is mentioned rather than reheading the one it
+ * is on. Off a week URL the page keeps its own name.
+ *
+ * This is the half of the job that needs no configuration: where the theme
+ * prints the page title as the H1 — Divi's page.php does — `/week-7/` now says
+ * Week 7 at the top of the page as well as in the tab. The other half, for a
+ * template that prints no title at all, is
+ * statchasers_schedule_shortcode_heading() below.
+ */
+add_filter(
+	'the_title',
+	static function ( $title, $id = 0 ) {
+		if ( ! is_singular( 'page' ) || ! in_the_loop() || ! is_main_query() ) {
+			return $title;
+		}
+
+		$queried = get_queried_object();
+		if ( ! $queried instanceof WP_Post || (int) $queried->ID !== (int) $id ) {
+			return $title;
+		}
+
+		$own = statchasers_schedule_week_title();
+
+		return '' === $own ? $title : $own;
+	},
+	10,
+	2
+);
 
 add_filter( 'rank_math/frontend/title', function ( $title ) {
 	$own = statchasers_schedule_week_title();
@@ -642,6 +781,269 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
 	$own = statchasers_schedule_week_canonical();
 	return '' === $own ? $canonical : $own;
 } );
+
+/* ------------------------------------------------------------- faq schema */
+
+/**
+ * The attributes the page's own shortcode was written with.
+ *
+ * The other four tools' FAQ sections fetch with default arguments, because
+ * their questions do not vary by attribute — the rankings' five boards are one
+ * page, and the position attribute only says which panel opens. This tool is
+ * the exception: `view` decides WHICH SET of questions the fragment carries,
+ * the weekly board's or the season grid's. Fetching with the defaults here
+ * would describe the grid on a page that had mounted the weekly board, and the
+ * page's structured data would be about a board nobody can see.
+ *
+ * So the attributes are read off the post that is about to render, with the
+ * shortcode API's own parser rather than a regular expression of our own.
+ * `statchasers_schedule_args()` then resolves them exactly as the shortcode
+ * will, including the rule that a week URL overrides both the week and the
+ * view — which is what makes `/nfl/nfl-schedule/week-7/` get week 7's
+ * questions and the bare page get the grid's.
+ *
+ * The first mount wins. A page with two schedules on it is not a thing that
+ * exists, and if it ever were, one FAQPage describing the first is a better
+ * answer than two competing nodes.
+ *
+ * @return array<string,mixed> Raw attributes, or an empty array.
+ */
+function statchasers_schedule_mounted_atts(): array {
+	static $atts = null;
+
+	if ( null !== $atts ) {
+		return $atts;
+	}
+
+	$atts = array();
+
+	if ( ! statchasers_schedule_post_has_shortcode() ) {
+		return $atts;
+	}
+
+	$post = get_queried_object();
+	if ( ! $post instanceof WP_Post ) {
+		return $atts;
+	}
+
+	$pattern = get_shortcode_regex( array( STATCHASERS_SCHEDULE_SHORTCODE ) );
+	if ( ! preg_match( '/' . $pattern . '/s', (string) $post->post_content, $match ) ) {
+		return $atts;
+	}
+
+	// Group 3 is the attribute string; shortcode_parse_atts() returns '' for a
+	// shortcode written with none.
+	$parsed = shortcode_parse_atts( isset( $match[3] ) ? $match[3] : '' );
+	if ( is_array( $parsed ) ) {
+		$atts = $parsed;
+	}
+
+	return $atts;
+}
+
+/**
+ * The questions this request's schedule fragment is carrying.
+ *
+ * The fetch is the cached one the shortcode is about to hit — same arguments,
+ * same transient key — so this costs no second round trip, and the result is
+ * memoised because the Rank Math filter and the fallback printer both ask.
+ *
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_schedule_faq_items(): array {
+	static $items = null;
+
+	if ( null !== $items ) {
+		return $items;
+	}
+
+	$items = array();
+
+	if ( ! statchasers_schedule_post_has_shortcode() ) {
+		return $items;
+	}
+
+	$data = statchasers_schedule_fetch(
+		statchasers_schedule_args( statchasers_schedule_mounted_atts() )
+	);
+
+	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
+		return $items;
+	}
+
+	$items = statchasers_schedule_faq_parse( (string) $data['html'] );
+
+	return $items;
+}
+
+/**
+ * Pull the Q&A island out of a rendered fragment.
+ *
+ * Validated rather than trusted, for the reason the other four give: it is our
+ * own origin, but this ends up in the page's structured data and a malformed
+ * island should drop an entry rather than emit a broken node.
+ *
+ * @param string $html Rendered fragment.
+ * @return array<int,array{q:string,a:string}>
+ */
+function statchasers_schedule_faq_parse( string $html ): array {
+	$items = array();
+
+	if ( false === strpos( $html, 'scs-faq-data' ) ) {
+		return $items;
+	}
+
+	$found = preg_match_all(
+		'#<script type="application/json" class="scs-faq-data">(.*?)</script>#s',
+		$html,
+		$matches
+	);
+
+	if ( ! $found ) {
+		return $items;
+	}
+
+	foreach ( $matches[1] as $json ) {
+		$decoded = json_decode( $json, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		foreach ( $decoded as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['q'], $entry['a'] ) ) {
+				continue;
+			}
+			if ( ! is_string( $entry['q'] ) || ! is_string( $entry['a'] ) ) {
+				continue;
+			}
+
+			$question = trim( wp_strip_all_tags( $entry['q'] ) );
+			$answer   = trim( wp_strip_all_tags( $entry['a'] ) );
+
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $question,
+				'a' => $answer,
+			);
+		}
+	}
+
+	return $items;
+}
+
+/**
+ * One FAQPage node from the questions this request is carrying.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null Null when there is nothing to describe.
+ */
+function statchasers_schedule_faq_node( string $webpage_id = '' ) {
+	$items = statchasers_schedule_faq_items();
+
+	if ( empty( $items ) ) {
+		return null;
+	}
+
+	$questions = array();
+	foreach ( $items as $item ) {
+		$questions[] = array(
+			'@type'          => 'Question',
+			'name'           => $item['q'],
+			'acceptedAnswer' => array(
+				'@type' => 'Answer',
+				'text'  => $item['a'],
+			),
+		);
+	}
+
+	$node = array(
+		'@type'      => 'FAQPage',
+		'mainEntity' => $questions,
+	);
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the FAQPage to Rank Math's graph.
+ *
+ * Same posture as the other four: append to the array Rank Math hands us, so
+ * what ships is one <script> containing one graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_schedule_rank_math_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_schedule_faq_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null === $node ) {
+		return $data;
+	}
+
+	$data['statchasersScheduleFaq'] = $node;
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_schedule_rank_math_schema', 20 );
+
+/**
+ * Fallback FAQPage for sites with no schema-graph plugin.
+ *
+ * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * plugin present, WebPage and Organization are a site-wide decision somebody
+ * should make deliberately rather than something this tool improvises.
+ */
+function statchasers_schedule_print_fallback_schema(): void {
+	if ( statchasers_news_graph_provider_present() ) {
+		return;
+	}
+
+	$node = statchasers_schedule_faq_node();
+	if ( null === $node ) {
+		return;
+	}
+
+	$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+	echo '<script type="application/ld+json">' .
+		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+		'</script>' . "\n";
+}
+add_action( 'wp_head', 'statchasers_schedule_print_fallback_schema', 20 );
+
+/**
+ * Drop the Q&A island from the markup that is printed.
+ *
+ * It is a transport for the node above, and once that is built it is a second
+ * copy of every answer sitting in the page for nobody. The schema reads from
+ * the cached fetch, not from this string, so removing it here costs the node
+ * nothing.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_schedule_strip_faq_data( string $html ): string {
+	if ( false === strpos( $html, 'scs-faq-data' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace(
+		'#<script type="application/json" class="scs-faq-data">.*?</script>#s',
+		'',
+		$html
+	);
+}
 
 /* ------------------------------------------------------------- the sitemap */
 
