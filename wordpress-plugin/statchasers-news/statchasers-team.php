@@ -318,6 +318,13 @@ function statchasers_team_enqueue_assets(): void {
 	if ( statchasers_team_wants_full_width() ) {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_team_full_width_css() );
 	}
+
+	// Unconditional where the full-width block is not: a tool printing through
+	// the site's header is wrong on every page that mounts one, whether or not
+	// that page also wants the sidebar's share of the row back.
+	if ( statchasers_team_is_divi() ) {
+		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_header_layer_css() );
+	}
 }
 
 /**
@@ -600,6 +607,43 @@ function statchasers_team_wants_full_width(): bool {
 	 * @param bool $full_width Whether to take the whole column.
 	 */
 	return (bool) apply_filters( 'statchasers_team_full_width', true );
+}
+
+/**
+ * Keep the site's own header above the tool.
+ *
+ * Every tool has sticky furniture — the hub's section nav, the profile's tab
+ * bar, the sticky `thead` on the FPA, schedule and rankings tables — and each
+ * carries a small z-index so it sits above the rows scrolling under it. Those
+ * numbers are only ever meant to be read against the tool's own children. On
+ * the published site they end up being read against the theme, and the tool
+ * comes out on top of the header: open the mobile menu and the tab bar is
+ * printed through the panel.
+ *
+ * Why the numbers win, when Divi's header is famously `z-index: 99999`: on a
+ * Theme Builder header that 99999 is on the menu module, INSIDE
+ * `.et-l--header`, and a wrapper with a z-index of its own is a stacking
+ * context the 99999 cannot climb out of. So the header's real height in the
+ * root stacking context is the wrapper's — 1, or 2, or nothing at all — and a
+ * tab bar at 20 clears it. The `/nfl/teams/` grid is the page that looks fine,
+ * and it is the one page with nothing sticky on it.
+ *
+ * z-index and nothing else, deliberately. The obvious companion is
+ * `position: relative`, and it is wrong here: a Theme Builder header may be
+ * `sticky`, and forcing it to `relative` would unstick the site's navigation
+ * to fix a stacking bug. Every shape this has to cover already has a position —
+ * Divi's own `#main-header` is fixed or absolute, and a Theme Builder wrapper
+ * is relative or sticky — so z-index alone lands. Verified against four of
+ * them: Divi's own header, a Theme Builder wrapper with a z-index, one with
+ * none, and no wrapper at all.
+ *
+ * No media query: a desktop dropdown is the same overlay as the mobile panel
+ * and loses to the same rule.
+ *
+ * @return string
+ */
+function statchasers_tool_header_layer_css(): string {
+	return '.et-l--header,#main-header,#top-header{z-index:99999}';
 }
 
 /**

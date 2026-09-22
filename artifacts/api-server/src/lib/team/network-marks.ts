@@ -42,6 +42,26 @@ export interface NetworkMark {
   paths: NetworkMarkPath[];
 }
 
+/**
+ * The viewBox for the outer <svg> that draws a mark through <use>.
+ *
+ * A crop is an offset as well as a size — Netflix's is "5.4 0 13.2 24", and
+ * YouTube's starts at x=409.29 — and the offset must appear exactly once.
+ * The <symbol> already carries it: `<use>` gives the symbol a viewport of
+ * 100% × 100%, which resolves against the outer viewBox's SIZE and is placed
+ * at the outer user space's ORIGIN, not at the crop's corner. So an outer
+ * viewBox that repeats the crop slides the window off the artwork by the whole
+ * offset: the Netflix N lost its left 5.4 units of 13.2, and YouTube's wordmark
+ * fell off the box entirely.
+ *
+ * The frame is the same box at the origin. The symbol maps the crop into it,
+ * the outer <svg> only has to be the right shape, and the two agree.
+ */
+export function markFrame(mark: NetworkMark): string {
+  const [, , width, height] = mark.viewBox.trim().split(/\s+/);
+  return `0 0 ${width} ${height}`;
+}
+
 export const NETWORK_MARKS: Record<string, NetworkMark> = {
   abc: {
     key: "abc",

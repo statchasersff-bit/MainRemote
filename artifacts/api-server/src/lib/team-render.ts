@@ -34,7 +34,7 @@ import {
 } from "./news-card";
 import type { NflTeam } from "./team/teams";
 import { TEAM_GROUPS } from "./team/teams";
-import { networkMarkFor } from "./team/network-marks";
+import { markFrame, networkMarkFor } from "./team/network-marks";
 import {
   getTeamOutlook,
   type OutlookFact,
@@ -2639,7 +2639,7 @@ export function networkHtml(network: string, className: string): string {
   }
   return (
     `<span class="${className}" title="${escapeHtml(network)}">` +
-    `<svg class="sct-net-mark" viewBox="${mark.viewBox}" preserveAspectRatio="xMidYMid meet"` +
+    `<svg class="sct-net-mark" viewBox="${markFrame(mark)}" preserveAspectRatio="xMidYMid meet"` +
     ` style="--sct-net-aspect:${mark.aspect}"` +
     ` role="img" aria-label="${escapeHtml(mark.title)}">` +
     `<use href="#sct-net-${mark.key}" />` +

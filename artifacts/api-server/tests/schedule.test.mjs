@@ -294,6 +294,28 @@ describe("the broadcaster marks", () => {
     }
   });
 
+  test("the frame a mark is drawn in starts at the origin", () => {
+    // The regression this exists for: the outer <svg> repeated the symbol's
+    // CROP, offset and all, while <use> places the symbol at the outer user
+    // space's origin — so the window sat one whole offset away from the
+    // artwork. The Netflix N lost its left 5.4 of 13.2 units on production and
+    // YouTube's wordmark, cropped from x=409.29, missed its box entirely.
+    for (const mark of Object.values(marks.NETWORK_MARKS)) {
+      const frame = marks.markFrame(mark).split(/\s+/).map(Number);
+      const crop = mark.viewBox.trim().split(/\s+/).map(Number);
+      assert.deepEqual(
+        frame.slice(0, 2),
+        [0, 0],
+        `${mark.title}'s frame must sit at the origin, not at its crop`,
+      );
+      assert.deepEqual(
+        frame.slice(2),
+        crop.slice(2),
+        `${mark.title}'s frame must be the size of its crop`,
+      );
+    }
+  });
+
   test("a wide wordmark loses height rather than gaining width", () => {
     // Monotonic: the wider the artwork, the shorter it is drawn.
     assert.ok(heightOf(4.48) < heightOf(2.55));
