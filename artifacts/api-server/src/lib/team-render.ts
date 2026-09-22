@@ -270,10 +270,11 @@ function shortStanding(standing: string): string | undefined {
  * is a ranking of what a reader can most afford to lose:
  *
  *   short — the standing's division, which is the chip two to its left;
- *   tight — "Week 11" down to "W11", where the label still says BYE.
+ *   tight — "Week 11" down to "W11", where the label still says BYE;
+ *   drop  — the Bye chip itself, off the row.
  *
  * Adding a rung means a name here, a rule in team.css, and its place in
- * STAGES in client/team.ts. Nothing else reads these.
+ * FACT_STAGES in client/team.ts. Nothing else reads these.
  */
 interface HeroFact {
   label: string;
@@ -281,6 +282,20 @@ interface HeroFact {
   /** The same fact, shorter. Without one the chip never changes. */
   short?: string;
   spend?: "short" | "tight";
+  /**
+   * Whether the row may take this chip off altogether at the last rung.
+   *
+   * The rung above this one has already spent every abbreviation there is, so
+   * what is left when the row still does not fit is a choice between a chip on
+   * a second line and no chip. A wrapped Bye is one short word alone on a row
+   * with the rest of the line empty beside it — it reads as a mistake, and it
+   * is mak's own call that it should go instead.
+   *
+   * Only a fact the hub states somewhere else may carry this. The bye does:
+   * the Schedule tab prints it as a row of the season table and again in the
+   * summary beside it, so what goes here is a shortcut, not the information.
+   */
+  drop?: boolean;
 }
 
 function heroFacts(data: TeamPageData): string {
@@ -312,6 +327,9 @@ function heroFacts(data: TeamPageData): string {
       value: `Week ${data.schedule.byeWeek}`,
       short: `W${data.schedule.byeWeek}`,
       spend: "tight",
+      // The last thing the row gives up, and the only chip it may give up
+      // whole. See HeroFact.drop.
+      drop: true,
     });
   }
 
@@ -336,8 +354,11 @@ function heroFacts(data: TeamPageData): string {
         const spend = swaps
           ? ` data-sct-spend="${fact.spend}" title="${escapeHtml(fact.value)}"`
           : "";
+        // Marked in the markup rather than found by label in the bundle: which
+        // chip may go is a decision about the facts, and it belongs with them.
+        const drop = fact.drop ? ` data-sct-drop` : "";
         return (
-          `<li class="sct-fact"${spend}>` +
+          `<li class="sct-fact"${spend}${drop}>` +
           `<span class="sct-fact-label">${escapeHtml(fact.label)}</span>` +
           `<span class="sct-fact-value">${value}</span>` +
           `</li>`

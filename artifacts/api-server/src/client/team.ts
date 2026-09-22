@@ -537,10 +537,20 @@ function wireFrameHeight(root: HTMLElement): void {
  *   short — "2nd in AFC East" → "2nd", about 60px. The division it drops is
  *           the chip two to its left, so nothing leaves the row.
  *   tight — "Week 11" → "W11", about 35px, under a label that reads BYE.
+ *   drop  — the Bye chip off the row entirely, which is the whole of it.
  *
  * The row stops at the first rung that fits, so most widths spend nothing and
- * a narrow one spends only what it has to. Under that it wraps, as it always
- * did — there is no third rung, and four facts in a row is not worth a puzzle.
+ * a narrow one spends only what it has to.
+ *
+ * The last rung is a chip rather than a spelling because by then there is no
+ * spelling left: "W11" is the shortest true form of the fact, and a row that
+ * still does not fit it has only the two endings. One is what this did before
+ * — the chip alone on a second line, one short word with an empty line beside
+ * it, which mak asked to stop seeing. The other is no chip, and it is the
+ * cheaper of the two here: the bye is the one fact in this row the hub also
+ * states in full a tab away, on the Schedule tab's season table and in the
+ * summary beside it. The chip comes back the moment the room does, because
+ * every rung is re-decided from the full forms on each resize.
  *
  * Measured rather than written as breakpoints because the width where five
  * chips stop fitting is a different width for all 32 clubs — the same reason
@@ -554,8 +564,14 @@ function wireFrameHeight(root: HTMLElement): void {
  * question — "does the short form fit", which stays true long after the full
  * one stopped fitting — and the row would never climb back.
  */
-/** The rungs, in the order they are spent. See `data-sct-spend` in the HTML. */
-const FACT_STAGES = ["short", "tight"];
+/**
+ * The rungs, in the order they are spent.
+ *
+ * The first two are `data-sct-spend` on a chip that has two spellings; the
+ * last is `data-sct-drop` on the one chip that may leave. Both are read by
+ * team.css off `data-sct-facts-form`, which is the list of rungs spent.
+ */
+const FACT_STAGES = ["short", "tight", "drop"];
 function wireFacts(root: HTMLElement): void {
   const facts = root.querySelector<HTMLElement>("[data-sct-facts]");
   if (!facts) return;

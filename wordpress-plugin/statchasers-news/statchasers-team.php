@@ -683,6 +683,29 @@ function statchasers_tool_header_layer_css(): string {
  * it. The teams index at /nfl/teams/ was the next one reported, and its grid
  * was reading through the same 43px margins.
  *
+ * **The gutter is on `#main-content`, not on `.container`, and that is the
+ * whole point of this rule.** The first version padded `.container`, which
+ * fixed the player pages and did nothing at all to the team hubs: the hubs
+ * still ran edge to edge on a phone after it shipped. The reason is not
+ * specificity and not enqueueing — it is that on those pages there IS no
+ * `.container`. Divi's `page.php` prints the `.container` / `#content-area` /
+ * `#left-area` wrappers only when the page builder is NOT used:
+ *
+ *     if ( ! $is_page_builder_used ) : ?><div class="container">…
+ *
+ * A hub that has been through the builder (and the container page's own
+ * history in statchasers-team-pages.php shows they have) goes straight into
+ * `#main-content`, so every rule in this file that names `.container` or
+ * `#left-area` is addressed to an element that is not on the page. The same
+ * is true of a Theme Builder body layout, which renders as
+ * `#main-content > .et-l--body`.
+ *
+ * `#main-content` is the one wrapper all three shapes print, so the gutter
+ * goes there and `.container` is explicitly zeroed — one gutter, stated once,
+ * with nothing to double up when both elements happen to exist. Measured at
+ * 500px on the real embed fragment under both shapes: builder 0px → 4px,
+ * plain 4px → 4px, desktop unchanged in both.
+ *
  * @return string
  */
 function statchasers_tool_mobile_gutter_css(): string {
@@ -693,6 +716,13 @@ function statchasers_tool_mobile_gutter_css(): string {
 			// statchasers_team_full_width_css() meet with no width between
 			// them that neither one answers for.
 			'@media (max-width:980px){',
+			// The gutter itself, on the only wrapper every Divi page shape
+			// prints: a plain page, a builder page (no `.container`, no
+			// `#left-area`) and a Theme Builder body layout all render inside
+			// `#main-content`. Padding the container instead is what left the
+			// team hubs flush against the glass while the player pages were
+			// already right.
+			//
 			// `box-sizing` is not decoration. `width: 100%` plus 8px of padding
 			// is 8px WIDER than the column under content-box, and a document
 			// wider than the screen is not merely a stray scrollbar: every
@@ -700,10 +730,19 @@ function statchasers_tool_mobile_gutter_css(): string {
 			// and `@container` answers "desktop" on a phone. Divi's own reset
 			// makes this a no-op, which is exactly why it must be stated —
 			// nothing here should depend on a theme's reset still being there.
-			'#main-content .container{box-sizing:border-box!important;' .
-				'width:100%!important;max-width:100%!important;' .
+			'#main-content{box-sizing:border-box!important;' .
 				'padding-left:max(4px,env(safe-area-inset-left,0px))!important;' .
 				'padding-right:max(4px,env(safe-area-inset-right,0px))!important}',
+			// And the container gives up its own gutter rather than adding a
+			// second one to the first. `width`/`max-width` because Divi's 80%
+			// is in no media query; the zeroed padding because the gutter now
+			// lives one element up, and two 4px gutters on the pages that have
+			// both elements would read as 8px on the player pages and 4px on
+			// the hubs — the same tool, two widths, which is the bug this file
+			// keeps being written to stop.
+			'#main-content .container{box-sizing:border-box!important;' .
+				'width:100%!important;max-width:100%!important;' .
+				'padding-left:0!important;padding-right:0!important}',
 			// Belt: Divi's own horizontal padding on the column lives in the
 			// min-width rule, but a child theme's need not.
 			'#left-area{padding-left:0!important;padding-right:0!important}',

@@ -335,7 +335,7 @@ function wireExpandableLog(root: HTMLElement): void {
  * first — whitespace, then type and column scale in proportion, then word
  * swaps, then, only at the very end, the name is allowed to wrap.
  *
- * Runs in the one-row tier only — above 800px. Below that the layout has
+ * Runs in the one-row tier only — above 620px. Below that the layout has
  * already made the room these scales exist to find, and a squeezed part inside
  * a stacked header is a small part for no reason; the scales are cleared and
  * the CSS fallbacks of 1 take over.
@@ -438,6 +438,22 @@ const HERO_FORM_STICK = 10;
 const HERO_EPSILON = 0.005;
 
 /**
+ * Width the fitter solves for and does not use.
+ *
+ * Every natural is measured at scale 1 and spent as though a part's width were
+ * exactly proportional to its scale. It nearly is — and then it is not: text
+ * is laid out in whole device pixels, so a name measuring 247.2px at 33px sets
+ * at 197.9 rather than 197.76 when the type goes to 0.8. The fitter spends the
+ * deficit to the last pixel, so a fifth of a pixel of rounding is enough to
+ * put the surname on a second line while every stage still reports a fit.
+ *
+ * Three pixels of nothing, held back from the width the stages are spent
+ * against, is what absorbs that. It costs a sliver of one stage and it is the
+ * difference between a header that fits and a header that fits on paper.
+ */
+const HERO_SLACK = 3;
+
+/**
  * Half a pixel: the width at which a deficit is settled and a saving is not
  * worth having.
  *
@@ -479,20 +495,31 @@ interface HeroStage {
  *   3  words — "New England Patriots" becomes "Patriots", the draft line
  *      abbreviates — then the last of the name's clearance and the gutter
  *   4  the strip's last cut, and the last of its padding
- *   5  "Patriots" becomes "NE", the draft line goes, and bust and type take
- *      their last cut to 0.65 / 0.75 — the strip is already at its floor
+ *   5  the given name becomes an initial and "Patriots" becomes "NE", the
+ *      draft line goes, and bust and type take their last cut to 0.65 / 0.75
+ *      — the strip is already at its floor
  *
- * The strip floors at 0.88 and takes no part in stage 5. It used to run to
+ * The strip floors at 0.80 and takes no part in stage 5. It used to run to
  * 0.60, which is where this came from: the label row is letter-spaced small
  * caps at 10px, so 0.60 printed "POS RANK" at six pixels and the figure under
  * it at fourteen — and a 620px window, which is a phone held sideways and not
  * an edge case, sat there. A strip nobody can read is not a cheaper concession
  * than a surname on two lines: it is the panel's whole content spent to buy
  * the least load-bearing part of the header one more line. So the type stops
- * at 0.88 — 8.8px on the label, 20.2px on the figure — and the CELL PADDING
- * carries stage 4 instead, down to 0.3: the same whitespace-before-legibility
- * rule stage 2 already follows, taken to its end. The narrow tiers are
- * unaffected either way; at 800px and below the scales are cleared and the
+ * — 8px on the label, 18.4px on the figure, which is the fifth of its size mak
+ * set as the limit — and the CELL PADDING carries the rest of stage 4, down to
+ * 0.3: the same whitespace-before-legibility rule stage 2 already follows,
+ * taken to its end. The figure is inked at the 4.5:1 tone (see
+ * `.scp-hero-stat.is-lead` in player.css) precisely so this floor could move
+ * without taking the contrast with it.
+ *
+ * Stage 5's form swap is worth much more than it used to be: the tight form
+ * now abbreviates the given name as well as the club, and the name is the
+ * widest line in the identity column. That saving, and this floor, are what
+ * let the one-row tier run down to 620px instead of stopping at 800 — which
+ * was the point of both: the numbers stay BESIDE the name rather than stacking
+ * under it while there is still room for them there. The narrow tiers are
+ * unaffected either way; at 620px and below the scales are cleared and the
  * strip has a full-width row of its own at full size.
  *
  * The other floors are the start/sit tool's, unchanged. They were picked from
@@ -527,7 +554,7 @@ function heroStages(nat: HeroNatural): HeroStage[] {
     },
     {
       levers: [
-        { key: "tbl", from: 0.94, to: 0.88, basis: nat.stripText },
+        { key: "tbl", from: 0.94, to: 0.8, basis: nat.stripText },
         { key: "tblp", from: 0.55, to: 0.3, basis: nat.stripPad },
       ],
     },
@@ -570,7 +597,17 @@ function heroFit(avail: number, nat: HeroNatural): HeroFit {
       // already wider than both buys no width at all. A concession that
       // concedes nothing is not a cheaper concession; it is a worse header for
       // free, and the club keeps its name.
-      const saving = nat.id[form] - nat.id[stage.form];
+      //
+      // AT THE SCALE THE COLUMN IS ALREADY AT, not at its natural size. The
+      // naturals are measured at scale 1 and stage 2 has taken the type to
+      // 0.8 by the time a swap is reached, so a swap that saves 90 natural px
+      // saves 72 real ones. Charging the full figure had the fitter believing
+      // the row fit when it did not, and the name wrapped anyway with the
+      // fitter still reporting budget in hand — which is how the surname
+      // quietly went to two lines at 640px. It was a small error while the
+      // only swap was the club's name; the given name is worth several times
+      // that, which is what made it visible.
+      const saving = (nat.id[form] - nat.id[stage.form]) * scales.id;
       if (saving > HERO_SETTLED) {
         form = stage.form;
         deficit -= saving;
@@ -774,14 +811,14 @@ function wireHeroFit(root: HTMLElement): void {
     hero.setAttribute("data-scp-hero-wrap", "0");
   };
 
-  // The one-row tier, and the only tier this runs in. Matches the 800px
-  // boundary in player.css from the other side: at 800 and below the figure
+  // The one-row tier, and the only tier this runs in. Matches the 620px
+  // boundary in player.css from the other side: at 620 and below the figure
   // takes a column of its own and the strip stacks under the name, and below
   // 560 the whole header stacks. Both tiers have already made the room these
   // scales exist to find.
   const oneRow =
     typeof window.matchMedia === "function"
-      ? window.matchMedia("(min-width: 800.02px)")
+      ? window.matchMedia("(min-width: 620.02px)")
       : null;
 
   let current: HeroFit | null = null;
@@ -818,12 +855,12 @@ function wireHeroFit(root: HTMLElement): void {
       const nat = natural();
       if (!nat) return;
 
-      let next = heroFit(avail, nat);
+      let next = heroFit(avail - HERO_SLACK, nat);
       // Eager to shrink, reluctant to grow back: re-fit against a slightly
       // narrower row before letting a richer form return, so a pixel of
       // jitter at a threshold cannot flip the club's name back and forth.
       if (current && HERO_RICHER[next.form] > HERO_RICHER[current.form]) {
-        next = heroFit(avail - HERO_FORM_STICK, nat);
+        next = heroFit(avail - HERO_SLACK - HERO_FORM_STICK, nat);
       }
 
       if (heroFitSame(current, next)) return;

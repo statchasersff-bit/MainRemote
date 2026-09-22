@@ -753,6 +753,28 @@ is(
 );
 
 /*
+ * And WHERE the gutter is, which is the whole of the bug it was shipped with.
+ *
+ * Padding `.container` fixed the player pages and left the team hubs flush
+ * against the glass, because Divi's page.php prints `.container`, `#content-area`
+ * and `#left-area` only when the page builder is NOT used — a hub that has been
+ * through the builder, and a Theme Builder body layout, both go straight into
+ * `#main-content`. So the padding belongs on `#main-content`, the one wrapper
+ * every shape prints, and `.container` has to give its own gutter up rather
+ * than add a second one on the pages that do have both.
+ */
+is(
+	1 === preg_match( '/#main-content\{[^}]*padding-left:max\(4px/', $mobile ),
+	true,
+	'the gutter is on the wrapper a builder page still prints'
+);
+is(
+	1 === preg_match( '/#main-content \.container\{[^}]*padding-left:0!important/', $mobile ),
+	true,
+	'and the container adds no second gutter on the pages that have one'
+);
+
+/*
  * The site's header outranks the tool.
  *
  * Every tool's sticky furniture carries a z-index meant to be read against its

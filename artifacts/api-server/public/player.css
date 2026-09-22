@@ -324,6 +324,28 @@ body.scp-page {
 }
 
 /*
+ * The one row in this panel that is not a link.
+ *
+ * On the index a club row filters the page instead of leaving it, so it is a
+ * <button> — see the head of client/player-search.ts for why it cannot be an
+ * anchor. A button arrives with the browser's own chrome on it: a grey fill, a
+ * border, a font of its own and a width that hugs its content rather than
+ * filling the panel. Every one of those has to be given back, because a reader
+ * scanning eight results must not be able to see which of them is which kind
+ * of control.
+ */
+button.scp-search-opt {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  /* A button centres its content; every other row in the list reads from the
+     left edge of the portrait well. */
+  text-align: left;
+  cursor: pointer;
+}
+
+/*
  * The portrait, with the club's mark on its corner.
  *
  * One object at the head of the row rather than two pictures in two columns —
@@ -695,7 +717,8 @@ body.scp-page {
  * making that decision.
  */
 .scp-title-first,
-.scp-title-last {
+.scp-title-last,
+.scp-title-given {
   display: inline;
 }
 
@@ -872,10 +895,11 @@ body.scp-page {
  * at a glance while the colour of a single figure is what confirms it.
  *
  * `--sc-gold-ink`, not `--sc-gold-deep`, even though this is a 23px figure:
- * the fitter takes --scp-hero-tbl to 0.88, which lands the figure at 20.2px —
- * over the 18.66px bold that buys large-text's 3:1 by a pixel and a half. A
- * pixel and a half is not a contrast argument, so the figure is inked at the
- * 4.5:1 tone and the floor can move again without taking the contrast with it.
+ * the fitter takes --scp-hero-tbl to 0.80, which lands the figure at 18.4px —
+ * UNDER the 18.66px bold that large-text's 3:1 needs. Which is the case this
+ * was written for: the floor moved from 0.88 to 0.80 and the contrast did not
+ * have to move with it, because the figure is inked at the 4.5:1 tone and
+ * passes as body text at any size the fitter can reach.
  * The deep gold is 3.6:1 and would pass only while the header is wide.
  */
 .scp-hero-stat.is-lead {
@@ -927,6 +951,30 @@ body.scp-page {
    the least load-bearing fact in the column, it is already on the Bio tab in
    full, and a third abbreviation of it would be a puzzle, not a fact. */
 [data-scp-form="tight"] .scp-hero-draft {
+  display: none;
+}
+
+/*
+ * And the given name becomes an initial: "Jacoby Brissett" -> "J. Brissett".
+ *
+ * The largest saving left at the tight form, because the name is the widest
+ * line in the column and the given name is most of it. It is what keeps the
+ * numbers strip beside the name for another 100-odd pixels of viewport
+ * instead of stacking under it.
+ *
+ * Not a `.scp-swap` triplet, unlike every other run of text in this header.
+ * The H1's text content has to stay exactly the player's name for a crawler
+ * and a screen reader, and three spans with two hidden would make it read
+ * "JacobyJacobyJ. Brissett". Generated content is not text content: the
+ * initial comes from `data-initial` through `::before`, and the given name's
+ * own span is what hides. The space between the two spans is a real text
+ * node, so "J." and the surname stay apart.
+ */
+[data-scp-form="tight"] .scp-title-first[data-initial]::before {
+  content: attr(data-initial);
+}
+
+[data-scp-form="tight"] .scp-title-first[data-initial] > .scp-title-given {
   display: none;
 }
 
@@ -1117,6 +1165,22 @@ body.scp-page {
   }
 }
 
+/*
+ * The label and the pill group, side by side but not one object.
+ *
+ * The border and the pill background belong to the three options, which are
+ * the control; "Scoring" is its name and sits outside that shape. Inside it
+ * the word read as a fourth, inert pill.
+ */
+.scp-format-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* So the pill group is free to shrink and scroll on a phone rather than
+     holding this row open at the width of a label plus three pills. */
+  min-width: 0;
+}
+
 .scp-format {
   display: inline-flex;
   align-items: center;
@@ -1128,7 +1192,6 @@ body.scp-page {
 }
 
 .scp-format-label {
-  padding: 0 8px 0 10px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1159,6 +1222,7 @@ body.scp-page {
  * otherwise. With scripting off the attribute is never set and none of this
  * applies.
  */
+.scp[aria-busy="true"] .scp-format-row,
 .scp[aria-busy="true"] .scp-format,
 .scp[aria-busy="true"] .scp-seasons {
   opacity: 0.55;
@@ -4800,6 +4864,46 @@ a.scp-peer:focus-visible {
   color: rgba(255, 255, 255, 0.72);
 }
 
+/* A chip the club filter has emptied is taken off the row, and a `display` of
+   its own beats the `hidden` attribute's — the same trap the search box and
+   the chip row above both had to say this for. */
+.scp-dir-chip[hidden] {
+  display: none;
+}
+
+/*
+ * The club filter: the chosen club's name, and the way out of it.
+ *
+ * It sits in the toolbar row beside the position chips, in the same label and
+ * pill-track arrangement, because it is the same kind of statement about what
+ * the list below is showing. It is one pill rather than a group of thirty-two:
+ * the search box above is how a club is chosen, so all this has to do is say
+ * which one, and be dismissible.
+ */
+.scp-dir-club-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Hidden until a club is picked, and `display: flex` above would otherwise
+   put an empty label and an empty pill on the row from the start. */
+.scp-dir-club-filter[hidden] {
+  display: none;
+}
+
+/* The dismiss mark, quieter than the name it follows and set off from it by
+   the space the chip's own gap already provides. */
+.scp-dir-chip-x {
+  font-size: 13px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.scp-dir-chip:hover .scp-dir-chip-x {
+  color: #fff;
+}
+
 /*
  * What the standings column means, said once.
  *
@@ -4828,6 +4932,19 @@ a.scp-peer:focus-visible {
   gap: 18px;
   align-items: start;
   margin-top: 18px;
+}
+
+/*
+ * Filtered to one club, this is not a grid.
+ *
+ * auto-fill lays four tracks whatever is in them, so the one card left would
+ * take the first of them and sit in a 288px column with three empty ones
+ * beside it, reading as a card that failed to load rather than as the answer.
+ * One track, wide enough to read a roster in and no wider — a single card
+ * stretched across four columns is a worse answer than a narrow one.
+ */
+.scp-dir[data-club] {
+  grid-template-columns: minmax(0, 420px);
 }
 
 .scp-dir-club {
@@ -6356,7 +6473,17 @@ a.scp-peer:focus-visible {
 
   /* Same treatment for the scoring pills, which sit in the same column and
      have the same content-wider-than-the-phone problem once STD, HALF and PPR
-     are spelled out beside the label. */
+     are spelled out beside the label. The row is what the column stretches, so
+     it takes the width; the pills inside it are what scrolls. */
+  .scp-format-row {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .scp-format-label {
+    flex: none;
+  }
+
   .scp-format {
     max-width: 100%;
     overflow-x: auto;
@@ -6406,10 +6533,14 @@ a.scp-peer:focus-visible {
  * the scale variables at the top of this file, and the client measures them.
  * A breakpoint cannot know how long "Amon-Ra St. Brown" is.
  *
- * 560px  one row (bust · identity · numbers) becomes two: bust and identity
+ * 620px  one row (bust · identity · numbers) becomes two: bust and identity
  *        on the first, the numbers full width under them. This is the width
  *        at which the measured squeeze has spent its last stage and the next
  *        concession would be the name wrapping — so the row splits instead.
+ *        It was 800px until the header learnt to say "M. Valdes-Scantling"
+ *        and to take the numbers down a fifth: the longest names on the site
+ *        hold one row to 620 now, and a row that fits is worth more than a
+ *        tier boundary that has stopped meaning anything.
  *
  * 460px  two rows become one: the bust steps BEHIND the name rather than
  *        beside it, and the identity takes the full width. It is still on the
@@ -6433,31 +6564,34 @@ a.scp-peer:focus-visible {
  * Scoped to the one-row tier, because that is the only tier the fitter runs
  * in. Below it the scales are cleared and the clamp is the answer again.
  *
- * 800.02px, not 560px, since the two-column tier below took the range from
- * 800 down. The .02 is the same unreachable sliver the 559.98/560 pair
+ * 620.02px, not 560px, since the two-column tier below took the range from
+ * 620 down. The .02 is the same unreachable sliver the 559.98/560 pair
  * already leaves between tiers, kept so no width matches two of them.
  */
-@media (min-width: 800.02px) {
+@media (min-width: 620.02px) {
   .scp-hero[data-scp-hero-fit="js"] .scp-title {
     font-size: calc(33px * var(--scp-hero-id, 1));
   }
 }
 
 /*
- * The two-column tier: 560px to 800px.
+ * The two-column tier: 560px to 620px.
  *
  * The figure takes a column of its own and the identity column stacks — name
  * above, numbers below — rather than the three parts sharing one line.
  *
- * Why a breakpoint and not another stage in the fitter. By 800px the row has
- * spent every concession that costs nothing, and everything left to spend is
- * type: the fitter was taking the strip down towards six pixels a label to
- * keep a surname off a second line, which trades the panel's whole content for
- * the least load-bearing part of the header. Changing the topology buys the
- * same width outright — the strip drops under the name, gets the identity
- * column's full width to be wide in, and every part goes back to full size.
- * Breakpoints decide topology and measurement decides everything inside; this
- * is the topology question, asked one tier earlier than it used to be.
+ * Why a breakpoint and not another stage in the fitter. By 620px the row has
+ * spent every concession it has — whitespace, type, the club's name, the given
+ * name — and everything left to spend is type below its floor: the fitter
+ * would be taking the strip down towards six pixels a label to keep a surname
+ * off a second line, which trades the panel's whole content for the least
+ * load-bearing part of the header. Changing the topology buys the same width
+ * outright — the strip drops under the name, gets the identity column's full
+ * width to be wide in, and every part goes back to full size. Breakpoints
+ * decide topology and measurement decides everything inside; this is the
+ * topology question, asked where the measurements say to ask it. It used to be
+ * asked at 800, before the name could contract and the strip could give up a
+ * fifth of its size, and it was costing the header 180px of one-row range.
  *
  * Grid, not the `flex-wrap` the tier below uses. Wrapping puts the strip under
  * the PHOTO as well as the text, across the whole card; a figure spanning both
@@ -6468,7 +6602,7 @@ a.scp-peer:focus-visible {
  * header and a player Sleeper has no thumbnail for both keep the single row
  * they already fit in.
  */
-@media (min-width: 560px) and (max-width: 800px) {
+@media (min-width: 560px) and (max-width: 620px) {
   .scp-hero-inner:has(> .scp-photo) {
     display: grid;
     /* The figure at its natural width, the identity column taking the rest.
@@ -6496,8 +6630,9 @@ a.scp-peer:focus-visible {
    * clamp is the same device `.scp-title` uses where the fitter is not
    * running: a viewport-sized guess, good because this tier's geometry is
    * fixed — one figure, one column — even though it cannot know the name.
-   * 25.5vw is 204px at the top of the tier and floors at the 147px the tier
-   * below already shrinks the figure to, so the two agree at the boundary.
+   * 25.5vw floors at the 147px the tier below already shrinks the figure to,
+   * so the two agree at the boundary; the tier is narrow enough now that the
+   * clamp's top is never reached inside it.
    *
    * `aspect-ratio` and an auto height, because the base rule's height is a px
    * figure paired with a px width and this width is neither.

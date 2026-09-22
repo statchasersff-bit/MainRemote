@@ -343,7 +343,11 @@ describe("player page content", () => {
   test("the heading is the player's name, whatever the header does to it", async () => {
     // The two-line setting, the swaps and the fitter are all presentation.
     // Nothing they do may change the string an H1 hands a crawler or a screen
-    // reader — which is the reason the name has no short form of its own.
+    // reader. The header DOES contract the given name at its narrowest — see
+    // `nameInitial` — and this is the test that says how it is allowed to: as
+    // generated content, which is not text content, and never as a `.scp-swap`
+    // triplet, which would read "JacobyJacobyJ. Brissett" to everything that
+    // reads the document rather than looks at it.
     const { doc } = await dom(`/player/${fixture.slug}`);
     const heading = doc.querySelector(".scp-hero h1.scp-title");
     assert.ok(heading, "the header sets the name as the document's H1");
@@ -357,6 +361,33 @@ describe("player page content", () => {
       0,
       "and carries no swap, so it cannot be shortened out from under itself",
     );
+
+    const given = heading.querySelector(".scp-title-first");
+    if (given) {
+      assert.equal(
+        given.textContent,
+        fixture.name.slice(0, given.textContent.length),
+        "the given name span holds the front of the player's name",
+      );
+      assert.equal(
+        given.querySelectorAll(".scp-title-given").length,
+        1,
+        "the given name has its own span, which is what the tight form hides",
+      );
+      const initial = given.getAttribute("data-initial");
+      if (initial) {
+        assert.match(
+          initial,
+          /^[A-ZÀ-Þ]\./u,
+          "the contracted form starts with the initial of the given name",
+        );
+        assert.equal(
+          initial[0],
+          given.textContent.trim()[0].toUpperCase(),
+          "and it is this player's initial, not a stray one",
+        );
+      }
+    }
   });
 
   test("nothing in the header is hidden at a breakpoint", async () => {
@@ -2578,15 +2609,21 @@ describe("the player search", () => {
       return [...doc.querySelectorAll(".scp-search-opt")].map((a) => ({
         kind: a.dataset.kind,
         name: a.querySelector(".scp-search-name").textContent,
-        href: a.getAttribute("href"),
+        tag: a.tagName,
       }));
     };
 
     // A nickname finds the club, and only the club — no player is a Raven.
+    // On THIS page the club row is a button, not a link: the index is the
+    // roster, so picking a club filters it rather than leaving for the hub.
+    // The profile's own box still links out; that is asserted below.
     const ravens = type("ravens");
     assert.deepEqual(ravens, [
-      { kind: "team", name: "Baltimore Ravens", href: "/team/baltimore-ravens" },
+      { kind: "team", name: "Baltimore Ravens", tag: "BUTTON" },
     ]);
+    const raven = doc.querySelector('.scp-search-opt[data-kind="team"]');
+    assert.equal(raven.getAttribute("href"), null, "a filter has no address");
+    assert.equal(raven.dataset.club, "BAL", "it names the card it filters to");
 
     // The code, which neither the city nor the nickname begins with. Without
     // it "gb" is the one spelling of Green Bay the box cannot answer.
@@ -2623,6 +2660,29 @@ describe("the player search", () => {
       "the two kinds are not interleaved",
     );
     assert.ok(mixed.length <= 8, "one panel's worth, whatever the mix");
+  });
+
+  test("on a profile a club is still somewhere to go", async () => {
+    // The mode is the index's alone, and the profile is where the widget
+    // behaves as it always did: there is no roster on a player's page to
+    // filter, so a club row is a link to the club's hub.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const widget = doc.querySelector("[data-scp-search]");
+    assert.equal(
+      widget.hasAttribute("data-scp-club-filter"),
+      false,
+      "a profile does not ask for filtering",
+    );
+
+    const { doc: live, window } = await hydrated(`/player/${fixture.slug}`);
+    const input = live.querySelector(".scp-search-input");
+    input.value = "ravens";
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    const hit = live.querySelector('.scp-search-opt[data-kind="team"]');
+    assert.equal(hit.tagName, "A", "still a link");
+    assert.equal(hit.getAttribute("href"), "/team/baltimore-ravens");
+    assert.equal(hit.getAttribute("target"), "_top", "and still breaks the frame");
   });
 });
 
@@ -3670,6 +3730,161 @@ describe("the player index", () => {
     assert.ok(
       doc.querySelectorAll("[data-scp-dir-list][data-grouped]").length > 0,
       "and the position rules with them",
+    );
+  });
+
+  test("the toolbar ships the club pill hidden and empty", async () => {
+    // Same contract as the chips and the box: the server sends the words, the
+    // client fills in the club. Hidden rather than absent so the string lives
+    // with the rest of the page's words instead of inside the bundle, and the
+    // widget above it asks for the filtering mode that fills it.
+    const { doc } = await dom("/player");
+    const pill = doc.querySelector("[data-scp-dir-club]");
+    assert.ok(pill, "the pill is in the served markup");
+    assert.equal(pill.hasAttribute("hidden"), true, "no club is on yet");
+    assert.equal(doc.querySelector("[data-scp-dir-club-name]").textContent, "");
+    assert.ok(doc.querySelector("[data-scp-dir-club-clear]"), "and a way out of it");
+    assert.equal(
+      doc.querySelector("[data-scp-search]").hasAttribute("data-scp-club-filter"),
+      true,
+      "the box on this page filters rather than navigates",
+    );
+  });
+
+  test("a club picked out of the box filters the list to that club", async () => {
+    const { doc, window } = await hydrated("/player");
+
+    const input = doc.querySelector(".scp-search-input");
+    input.value = "chiefs";
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    const hit = doc.querySelector('.scp-search-opt[data-kind="team"]');
+    assert.equal(hit.dataset.club, "KC", "the Chiefs are the first club answer");
+    hit.click();
+
+    const cards = [...doc.querySelectorAll("[data-scp-club]")];
+    assert.deepEqual(
+      cards.filter((card) => !card.hidden).map((card) => card.dataset.team),
+      ["KC"],
+      "one club is on the page",
+    );
+
+    const kc = doc.querySelector('[data-scp-club][data-team="KC"]');
+    const kcRows = [...kc.querySelectorAll(".scp-dir-item")];
+    assert.equal(kcRows.filter((row) => row.hidden).length, 0, "all of them");
+    assert.equal(
+      Number(doc.querySelector("[data-scp-dir-count]").textContent),
+      kcRows.length,
+      "and the count line counts the club, not the league",
+    );
+
+    // The pill names the club, off the card's own heading.
+    const pill = doc.querySelector("[data-scp-dir-club]");
+    assert.equal(pill.hidden, false);
+    assert.equal(
+      doc.querySelector("[data-scp-dir-club-name]").textContent,
+      "Kansas City Chiefs",
+    );
+    // And the grid knows it is showing one card, which is what stops auto-fill
+    // leaving it in the first of four tracks.
+    assert.equal(doc.querySelector("[data-scp-dir]").dataset.club, "KC");
+
+    // The box has answered and emptied itself rather than offering the filter
+    // the reader already has.
+    assert.equal(input.value, "");
+    assert.equal(doc.querySelector(".scp-search-panel").hidden, true);
+
+    // The chip counts are the club's now. League-wide numbers over one club's
+    // card are the lie the server avoided by counting what it actually had.
+    const chip = (pos) => doc.querySelector(`[data-scp-pos="${pos}"]`);
+    const chipN = (pos) => Number(chip(pos).querySelector(".scp-dir-chip-n").textContent);
+    assert.equal(chipN("all"), kcRows.length);
+    assert.equal(
+      chipN("QB"),
+      kcRows.filter((row) => row.dataset.pos === "QB").length,
+    );
+
+    // Both filters compose: the club stays, the position narrows it.
+    chip("QB").click();
+    assert.deepEqual(
+      kcRows.filter((row) => !row.hidden).map((row) => row.dataset.pos),
+      kcRows.filter((row) => row.dataset.pos === "QB").map((row) => row.dataset.pos),
+      "the club's quarterbacks, and nobody else's",
+    );
+    assert.deepEqual(
+      cards.filter((card) => !card.hidden).map((card) => card.dataset.team),
+      ["KC"],
+      "and still one club",
+    );
+
+    // Clearing gives the league back, including the counts.
+    doc.querySelector("[data-scp-dir-club-clear]").click();
+    assert.equal(pill.hidden, true);
+    assert.equal(doc.querySelector("[data-scp-dir]").dataset.club, undefined);
+    assert.ok(
+      cards.filter((card) => !card.hidden).length > 20,
+      "every club is back",
+    );
+    assert.equal(
+      chipN("all"),
+      doc.querySelectorAll(".scp-dir-item").length,
+      "and the chips count the league again",
+    );
+    assert.equal(
+      doc.activeElement,
+      input,
+      "focus goes to the box the next club would be typed in",
+    );
+  });
+
+  test("a position the club has nobody at loses its chip", async () => {
+    const { doc, window } = await hydrated("/player");
+
+    // Driven off the data rather than a hard-coded pair: which clubs carry a
+    // kicker or a fullback on this roster changes week to week.
+    const positions = [...doc.querySelectorAll("[data-scp-pos]")]
+      .map((c) => c.dataset.scpPos)
+      .filter((pos) => pos !== "all");
+    let found = null;
+    for (const card of doc.querySelectorAll("[data-scp-club]")) {
+      const has = new Set(
+        [...card.querySelectorAll(".scp-dir-item")].map((row) => row.dataset.pos),
+      );
+      const missing = positions.find((pos) => !has.has(pos));
+      if (missing) {
+        found = { code: card.dataset.team, missing };
+        break;
+      }
+    }
+    if (!found) return;
+
+    // Chosen league-wide first, so this also pins the other half of the rule:
+    // a club that cannot answer the reader's position resets it rather than
+    // handing them a filtered page with nothing on it.
+    doc.querySelector(`[data-scp-pos="${found.missing}"]`).click();
+
+    const input = doc.querySelector(".scp-search-input");
+    input.value = found.code;
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+    const hit = doc.querySelector(`.scp-search-opt[data-club="${found.code}"]`);
+    assert.ok(hit, `${found.code} answers to its own code`);
+    hit.click();
+
+    assert.equal(
+      doc.querySelector(`[data-scp-pos="${found.missing}"]`).hidden,
+      true,
+      "a chip with nothing behind it is off the row",
+    );
+    assert.equal(
+      doc.querySelector('[data-scp-pos="all"]').getAttribute("aria-pressed"),
+      "true",
+      "and the position the club cannot answer is not still on",
+    );
+    const card = doc.querySelector(`[data-scp-club][data-team="${found.code}"]`);
+    assert.equal(card.hidden, false, "the club the reader asked for is showing");
+    assert.ok(
+      [...card.querySelectorAll(".scp-dir-item")].some((row) => !row.hidden),
+      "with players on it",
     );
   });
 });
