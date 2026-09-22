@@ -759,3 +759,56 @@ describe("the schedule development switcher", () => {
     }
   });
 });
+
+
+/*
+ * The rules that hold the matrix's shape inside a host theme.
+ *
+ * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
+ * only because these are specificity facts — the thing a browser test would
+ * have to re-derive and a reading of the file cannot be trusted to keep.
+ *
+ * The matrix is 19 columns by 32 rows, so a few pixels of cell padding is
+ * multiplied both ways. Measured against a simulated Divi page before the
+ * armour existed: 2px of side padding became 24px on the headers and 6px on
+ * the cells, and the table went from 726px wide to 1152px — 59% wider, 400px
+ * taller, inside a scroller the reader drags half again as far.
+ *
+ * `.scs-matrix th` is one class and two elements and so is Divi's
+ * `.entry-content tr th` — a TIE, settled by whichever stylesheet WordPress
+ * enqueued last. fpa.css bet a layout on that coin toss and lost it in
+ * production, so the `.scs` in front of these is load-bearing.
+ */
+describe("the schedule stylesheet outranks the host theme", () => {
+  let css;
+
+  before(async () => {
+    css = await (await fetch(`${server.origin}/schedule.css`)).text();
+  });
+
+  test("every matrix cell is armed above Divi's tie, not level with it", () => {
+    assert.ok(
+      css.includes(".scs .scs-matrix th,\n.scs .scs-matrix td {"),
+      "the cell rule must carry the second class",
+    );
+    assert.ok(
+      css.includes(".scs .scs-matrix thead th {"),
+      "and so must the week numbers across the top",
+    );
+  });
+
+  test("the grid never adopts a border-top it does not draw", () => {
+    const armed = css.slice(css.indexOf("Theme armour"));
+    assert.ok(
+      /\.scs \.scs-matrix th,\n\.scs \.scs-matrix td \{[^}]*border-top: 0/.test(armed),
+      "the matrix draws bottom and left lines only; a theme's top line is 600 of them",
+    );
+  });
+
+  test("links keep the colour of the cell they fill", () => {
+    const armed = css.slice(css.indexOf("Theme armour"));
+    assert.ok(armed.includes(".scs .scs-matrix a {"), "the grid's links are unarmed");
+    assert.ok(armed.includes(".scs .scs-rail-link"), "the week rail is unarmed");
+    assert.ok(armed.includes(".scs .scs-game-name"), "the board's game titles are unarmed");
+  });
+});

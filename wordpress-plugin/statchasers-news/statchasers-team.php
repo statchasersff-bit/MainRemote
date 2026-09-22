@@ -319,11 +319,13 @@ function statchasers_team_enqueue_assets(): void {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_team_full_width_css() );
 	}
 
-	// Unconditional where the full-width block is not: a tool printing through
-	// the site's header is wrong on every page that mounts one, whether or not
-	// that page also wants the sidebar's share of the row back.
+	// Both unconditional where the block above is not. A tool printing through
+	// the site's header, and a phone reading it through a 43px margin on each
+	// side, are wrong on every page that mounts a tool — whether or not that
+	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_header_layer_css() );
+		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_mobile_gutter_css() );
 	}
 }
 
@@ -644,6 +646,70 @@ function statchasers_team_wants_full_width(): bool {
  */
 function statchasers_tool_header_layer_css(): string {
 	return '.et-l--header,#main-header,#top-header{z-index:99999}';
+}
+
+/**
+ * The side gutter below Divi's sidebar breakpoint.
+ *
+ * `statchasers_team_full_width_css()` only speaks inside `min-width: 981px`,
+ * because above that the problem is the empty sidebar column. Below it Divi
+ * collapses the columns by itself and the layout looks fine — but the gutter
+ * does not come from the columns. It comes from
+ *
+ *     .container { width: 80%; max-width: 1080px; margin: auto }
+ *
+ * which is not in a media query at all, so it holds at every width. On a 390px
+ * phone 80% is 312px and the tool is read through a 39px margin on each side:
+ * a tenth of the screen given away twice over, on the one device where the
+ * tables are already tight. That reads as the tool being narrow rather than
+ * the page being padded, which is why it survives a desktop check.
+ *
+ * So: the content column takes the screen, and the gutter becomes the few
+ * pixels that stop text touching glass. `max()` rather than a flat 4px so a
+ * phone held sideways still clears its notch — on a device with no inset the
+ * `env()` is 0 and the 4px wins, which is every phone held upright.
+ *
+ * Scoped to `#main-content` so the header and footer keep the site's own
+ * `.container`, and `!important` because
+ * `.et_pb_pagebuilder_layout #main-content .container` outweighs this
+ * selector on any page that has been through the Divi Builder — the same
+ * asymmetry that gave the team hubs and the player pages two different widths
+ * from one rule. See the long note in statchasers-team.php.
+ *
+ * Shared, and enqueued against each tool's own handle, so it reaches exactly
+ * the pages that already load that tool's stylesheet and no others. It started
+ * out on the player pages alone, which was the wrong shape for about a day:
+ * the gutter belongs to the HOST page, so every page that mounts a tool has
+ * it. The teams index at /nfl/teams/ was the next one reported, and its grid
+ * was reading through the same 43px margins.
+ *
+ * @return string
+ */
+function statchasers_tool_mobile_gutter_css(): string {
+	return implode(
+		'',
+		array(
+			// Divi's own sidebar breakpoint, from the other side, so this and
+			// statchasers_team_full_width_css() meet with no width between
+			// them that neither one answers for.
+			'@media (max-width:980px){',
+			// `box-sizing` is not decoration. `width: 100%` plus 8px of padding
+			// is 8px WIDER than the column under content-box, and a document
+			// wider than the screen is not merely a stray scrollbar: every
+			// percentage width on the page then resolves against the wider box,
+			// and `@container` answers "desktop" on a phone. Divi's own reset
+			// makes this a no-op, which is exactly why it must be stated —
+			// nothing here should depend on a theme's reset still being there.
+			'#main-content .container{box-sizing:border-box!important;' .
+				'width:100%!important;max-width:100%!important;' .
+				'padding-left:max(4px,env(safe-area-inset-left,0px))!important;' .
+				'padding-right:max(4px,env(safe-area-inset-right,0px))!important}',
+			// Belt: Divi's own horizontal padding on the column lives in the
+			// min-width rule, but a child theme's need not.
+			'#left-area{padding-left:0!important;padding-right:0!important}',
+			'}',
+		)
+	);
 }
 
 /**

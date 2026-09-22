@@ -549,3 +549,62 @@ describe("the CSV export", () => {
     assert.equal(res.status, 404);
   });
 });
+
+
+/*
+ * The rules that hold the boards' shape inside a host theme.
+ *
+ * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
+ * only because these are specificity facts — the thing a browser test would
+ * have to re-derive and a reading of the file cannot be trusted to keep.
+ *
+ * Measured against a simulated Divi page before the armour existed: the All
+ * board's rank column went from 28px to 62px, every cell grew, the board lost
+ * five rows off a phone screen, and every name turned Divi's link blue.
+ *
+ * `.scr-all-table thead th` is one class and two elements and so is Divi's
+ * `.entry-content tr th` — a TIE, settled by whichever stylesheet WordPress
+ * enqueued last. fpa.css bet a layout on that coin toss and lost it in
+ * production, so the `.scr` in front of these is load-bearing.
+ */
+describe("the rankings stylesheet outranks the host theme", () => {
+  let css;
+
+  before(async () => {
+    css = await (await fetch(`${server.origin}/rankings.css`)).text();
+  });
+
+  test("the header bands are armed above Divi's tie, not level with it", () => {
+    for (const rule of [
+      ".scr .scr-all-table thead th",
+      ".scr .scr-table thead th",
+    ]) {
+      assert.ok(css.includes(rule), `${rule} must carry the second class`);
+    }
+  });
+
+  test("the cells, the frames and the links are all restated", () => {
+    for (const rule of [
+      ".scr .scr-all-rank",
+      ".scr .scr-all-cell",
+      ".scr .scr-row td",
+      ".scr .scr-tier-head th",
+      ".scr .scr-all-table,",
+      ".scr .scr-all-name,",
+      ".scr .scr-csv,",
+    ]) {
+      assert.ok(css.includes(rule), `${rule} is unarmed`);
+    }
+  });
+
+  test("the narrow tier retunes the padding token rather than the padding", () => {
+    assert.ok(
+      css.includes("--scr-all-pad-y: 5px;") && css.includes("--scr-all-pad-x: 4px;"),
+      "the tier must set the token",
+    );
+    assert.ok(
+      !/\n    padding: 5px 4px;/.test(css),
+      "a literal here is overwritten by the armour and the board loses five rows",
+    );
+  });
+});

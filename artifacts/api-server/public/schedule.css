@@ -1462,3 +1462,79 @@ a.scs-game-name:focus-visible {
 .scs :is(ul, ol, li) {
   list-style: none !important;
 }
+
+/* ====================================================================== */
+/* Theme armour                                                            */
+/*                                                                         */
+/* Every declaration below RESTATES one already made above, at a           */
+/* specificity a host theme cannot reach. Nothing here is a new design     */
+/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* this block is the one that is wrong.                                    */
+/*                                                                         */
+/* Standalone this file is the only stylesheet and none of it does         */
+/* anything. Embedded, the fragment is printed inside somebody else's      */
+/* content area, and Divi styles BARE ELEMENTS in there:                   */
+/*                                                                         */
+/*     .entry-content table  { border: 1px solid #eee; margin: 0 0 15px }  */
+/*     .entry-content tr td  { border-top: 1px solid #eee; padding: 6px }  */
+/*     .entry-content tr th  { padding: 9px 24px }                         */
+/*     .entry-content a      { color: #2ea3f2 }                            */
+/*                                                                         */
+/* The matrix is the worst-hit thing in any of these tools, and for a       */
+/* structural reason: it is 19 columns by 32 rows, so a few pixels of cell  */
+/* padding is multiplied by 19 across and by 32 down. Measured against a    */
+/* simulated Divi page, 2px of side padding became 24px on the headers and  */
+/* 6px on the cells, and the table went from 726px wide to 1152px — 59%     */
+/* wider, and 400px taller, inside a scroller the reader now has to drag    */
+/* half again as far. Nothing about that reads as a theme bug; it reads as  */
+/* a grid that was drawn too big.                                          */
+/*                                                                         */
+/* `.scs-matrix th` is one class and two elements and so is Divi's          */
+/* selector: a TIE, settled by whichever stylesheet WordPress enqueued      */
+/* last. fpa.css bet a layout on winning that coin toss and lost it in      */
+/* production. Two classes and two elements is not a tie; do not take the   */
+/* `.scs` off these.                                                       */
+/*                                                                         */
+/* Bare-element PADDING on p/headings/lists is already armed by the        */
+/* `:where()` reset near the top of this file; nothing about it here.      */
+/* ====================================================================== */
+
+/* The matrix's frame. One class loses to `.entry-content table`, which brings
+   an outer border and 15px of margin; the grid is drawn per cell. */
+.scs .scs-matrix {
+  margin: 0;
+  border: 0;
+}
+
+/* Every cell in the grid — the tie described above. `border-top` is the other
+   shape: this grid is drawn with bottom and left lines only, so nothing above
+   declares that side at all and the theme's is simply adopted, on every one of
+   the 600-odd cells. */
+.scs .scs-matrix th,
+.scs .scs-matrix td {
+  padding: 3px 2px;
+  border-top: 0;
+}
+
+/* The week numbers across the top take a little more, and only on the y. */
+.scs .scs-matrix thead th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Every link in the grid is a whole cell, coloured by the cell it fills — the
+   week header's muted grey, the team's ink, the tinted home/away wash. A theme
+   repainting them one blue erases all three distinctions at once. */
+.scs .scs-matrix a {
+  color: inherit;
+}
+
+/* The week rail and the board's game titles, same argument. */
+.scs .scs-view-link,
+.scs .scs-rail-link {
+  color: hsl(var(--scs-muted-foreground));
+}
+
+.scs .scs-game-name {
+  color: hsl(var(--scs-primary));
+}

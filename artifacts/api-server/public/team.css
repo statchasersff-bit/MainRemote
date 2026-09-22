@@ -544,39 +544,82 @@ body.sct-page.is-embed {
   pointer-events: none;
 }
 
-/* Three columns, two rows: the crest holds the left of both, the name and the
- * switcher share the top, and the fact chips get a row to themselves that runs
- * from the name's left edge all the way to the hero's right.
+/* Two columns: the crest, and everything else. The crest is the only thing
+ * here with a fixed size and a fixed place, so it is the only thing the grid
+ * needs to hold; the three blocks beside it break against each other, which is
+ * a flex row's job and not a grid's.
+ */
+.sct-hero-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "crest head";
+  align-items: center;
+  column-gap: 24px;
+}
+
+/* The name, the switcher and the chips, in one row that wraps on its content.
+ *
+ * Three things share this box and only two of them can ever sit side by side:
+ * the name and the switcher on the first line, the chips on a line of their
+ * own underneath, running from the name's left edge to the hero's right.
  *
  * The chips used to be the tail of the name block, which meant they were
  * bounded by the switcher's column — about 220px of width they were paying for
  * and could not use, because the switcher is a 50px button pinned to the top of
  * a hero three times that tall. Five chips need roughly 620px, so the Bye chip
  * wrapped to a second line at about 1000px with that whole 220px sitting empty
- * directly beneath the button. Spanning the row moves the wrap to about 780px,
- * which is under the width where the hero restacks anyway.
+ * directly beneath the button. `flex: 1 0 100%` is what gives them the whole
+ * width instead, and `order` is what puts them under the switcher while
+ * leaving them BEFORE it in the markup — see the comment in renderHero().
+ * Nothing in the hero but the switcher takes focus, so painting one block out
+ * of document order costs no tab order.
  *
- * row-gap is zero on purpose: the space between the name and the chips is the
- * chips' own margin, and a row-gap would stack on top of it.
+ * ## Why the switcher drops on its own terms and not at a breakpoint
+ *
+ * This row used to restack at 900px, and 900 is a number that fits no team.
+ * The switcher is a pill as wide as the club's name, so what it leaves for the
+ * title is different on all 32: at 900px "Philadelphia Eagles" still had 100px
+ * of slack while "Washington Commanders" had been wrapping to two lines since
+ * about 950. One media query cannot be right for both, and tuned for the
+ * longest name it takes the switcher off the row for the other 31 teams while
+ * the row is half empty — which is what this replaces.
+ *
+ * A flex line breaks when its items stop fitting, and `min-width: auto` on a
+ * flex item means "no narrower than your own content". So the title's own
+ * width IS the breakpoint: it is `white-space: nowrap` (below), which makes
+ * the name block's minimum the name at full length, and the switcher drops to
+ * the next line at the exact width where it would otherwise start squeezing
+ * the title — around 950px for Washington, around 800px for Philadelphia, and
+ * wherever it falls for the other thirty.
+ *
+ * row-gap is the 9px the chips used to carry as their own margin, moved here
+ * so it is one number for both the gap under the name and the gap above a
+ * switcher that has wrapped.
  */
-.sct-hero-inner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    "crest text actions"
-    "crest meta meta";
-  align-items: center;
+.sct-hero-head {
+  grid-area: head;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   column-gap: 24px;
-  row-gap: 0;
+  row-gap: 9px;
+  min-width: 0;
 }
 
+/* No `min-width: 0` here, and that is the whole mechanism: it is the automatic
+ * minimum — the block's own content — that stops the switcher squeezing the
+ * title and pushes it to the next line instead. */
 .sct-hero-text {
   grid-area: text;
-  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .sct-hero-meta {
   grid-area: meta;
+  /* Painted after the switcher, though it comes before it in the markup. */
+  order: 1;
+  /* A line of its own, always: `100%` is wider than anything can share with. */
+  flex: 1 0 100%;
   align-self: start;
   min-width: 0;
 }
@@ -638,6 +681,16 @@ body.sct-page.is-embed {
   color: var(--sc-navy) !important;
 }
 
+/* What makes .sct-hero-head break on the name's length rather than at a width:
+ * a name that cannot wrap is a name the flex row must fit whole or move the
+ * switcher off. Scoped to the block, not to `.sct-title`, because that class is
+ * also the matchup strip's heading — "Tampa Bay Buccaneers vs Jacksonville
+ * Jaguars" is a sentence and has to wrap. Lifted in the stacked hero below
+ * 720px, where the switcher already has a row of its own. */
+.sct-hero-text .sct-title {
+  white-space: nowrap;
+}
+
 .sct-subtitle {
   margin: 4px 0 0;
   line-height: 1.4;
@@ -650,9 +703,49 @@ body.sct-page.is-embed {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 9px 0 0;
+  /* The 9px above the chips is .sct-hero-head's row-gap now, so that the gap
+     above a wrapped switcher is the same measure and not a second number. */
+  margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Two spellings of a fact, one of which is always off.
+ *
+ * The chips row gives things up in a fixed order rather than wrapping, because
+ * a wrapped Bye chip is a second row for one short word with the rest of the
+ * line left empty. `data-sct-spend` on a chip is the rung at which its short
+ * form takes over, and `data-sct-facts-form` on the row lists the rungs spent
+ * so far — so `~=` reads "has this rung been spent", and each chip's rule is
+ * independent of the ones above and below it:
+ *
+ *   short — "2nd in AFC East" → "2nd". The division is the chip two to its
+ *           left, so this costs a reader nothing and buys about 60px.
+ *   tight — "Week 11" → "W11", under a label that still reads BYE. Worth
+ *           about 35px, and the last thing here that can go: what is left is
+ *           five facts in the fewest characters that still say them.
+ *
+ * `display: none` rather than clipping, so exactly one spelling is in the
+ * accessibility tree and a fact is announced once.
+ *
+ * The form is set by client/team.ts, which measures rather than guesses: the
+ * row needs 555px for Washington and 617px for Minnesota, a spread as wide as
+ * the first rung's saving, so a width written here would spend the division on
+ * half the league while it still fits. Nothing sets the attribute without
+ * script, and the full forms are what ship.
+ */
+.sct-swap--short {
+  display: none;
+}
+
+[data-sct-facts-form~="short"] [data-sct-spend="short"] .sct-swap--full,
+[data-sct-facts-form~="tight"] [data-sct-spend="tight"] .sct-swap--full {
+  display: none;
+}
+
+[data-sct-facts-form~="short"] [data-sct-spend="short"] .sct-swap--short,
+[data-sct-facts-form~="tight"] [data-sct-spend="tight"] .sct-swap--short {
+  display: inline;
 }
 
 .sct-fact {
@@ -5375,21 +5468,8 @@ body.sct-page.is-embed {
 }
 
 @media (max-width: 900px) {
-  .sct-hero-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      "crest text"
-      "crest meta"
-      "actions actions";
-  }
-
-  /* Switcher moves under the crest+name pair rather than being squeezed
-     beside it. Its own margin rather than the grid's row-gap, because a
-     row-gap would also land between the name and the chips, where the chips'
-     margin is already doing that job. */
-  .sct-hero-actions {
-    margin-top: 18px;
-  }
+  /* The hero is not here any more. It used to restack at this width — see
+     .sct-hero-head, which now lets the switcher pick its own width per team. */
 
   /* Two ladders side by side stop being comparable long before they stop
      fitting: at this width the labels wrap and the tracks are shorter than the
@@ -5536,6 +5616,23 @@ body.sct-page.is-embed {
     row-gap: 14px;
   }
 
+  /* One column, so there is nothing left for the flex row to decide: the
+     wrapper steps out and hands its three children back to the grid, which
+     places them by the areas above — chips before the switcher, as they read.
+     `display: contents` rather than a second copy of the stack, so the order
+     lives in one place. */
+  .sct-hero-head {
+    display: contents;
+  }
+
+  /* .sct-hero-head's mechanism, and wrong once the switcher has a row of its
+     own: the automatic minimum would let a long name set the hero's width on a
+     phone, and the name has the full column to wrap into. The nowrap that goes
+     with it is lifted on .sct-title below. */
+  .sct-hero-text {
+    min-width: 0;
+  }
+
   /* Smaller than the tablet crest. Stacked above the name it is pure vertical
      cost, and everything it pushes below the fold is the part of the hero that
      carries information. */
@@ -5559,16 +5656,17 @@ body.sct-page.is-embed {
     opacity: 0.04;
   }
 
-  /* The stack's own row-gap spaces it here; the tablet margin would double up
-     on that. */
-  .sct-hero-actions {
-    margin-top: 0;
-  }
-
   /* Team names are two and three words; balanced wrapping keeps "New England
      Patriots" from breaking to a lone trailing word. */
   .sct-title {
     text-wrap: balance;
+  }
+
+  /* And here it CAN wrap: the switcher this name holds off above 720px is
+     already on a row of its own in this stack. Two classes, matching the rule
+     that set the nowrap — one class cannot undo it whatever the order. */
+  .sct-hero-text .sct-title {
+    white-space: normal;
   }
 
   /* Flex-wrapped chips leave a ragged last row and a different shape on every

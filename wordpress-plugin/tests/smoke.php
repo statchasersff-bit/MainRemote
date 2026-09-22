@@ -742,10 +742,15 @@ is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar sha
  * the two halves meeting — one rule for every width — and the `!important`,
  * without which a Divi Builder page's own container rule outweighs this one.
  */
-$mobile = statchasers_player_mobile_gutter_css();
+$mobile = statchasers_tool_mobile_gutter_css();
 is( false !== strpos( $mobile, '@media (max-width:980px)' ), true, 'the gutter rule starts where the full-width rule stops' );
 is( false !== strpos( $mobile, 'width:100%!important;max-width:100%!important' ), true, 'the content column takes the screen' );
 is( 2, substr_count( $mobile, 'env(safe-area-inset' ), 'and a sideways phone still clears its notch' );
+is(
+	false !== strpos( $mobile, 'box-sizing:border-box!important' ),
+	true,
+	'and the padding comes out of the width, not added to it'
+);
 
 /*
  * The site's header outranks the tool.
@@ -765,6 +770,33 @@ $layer = statchasers_tool_header_layer_css();
 is( false !== strpos( $layer, '.et-l--header' ), true, 'a Theme Builder header is lifted too, not just #main-header' );
 is( false === strpos( $layer, 'position' ), true, 'and nothing here moves it' );
 is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same overlay, so no breakpoint' );
+
+/*
+ * And every tool enqueues both of them.
+ *
+ * This is the assertion that would have caught the actual mistake. The gutter
+ * went in on the player pages, because that is where it was reported, and the
+ * teams index was still reading through a 43px margin on each side a day later
+ * — the same "fixed where it was seen rather than everywhere it applied" that
+ * the host-override blocks in the stylesheets already record having done once.
+ * Both rules are about the HOST page, so every file that mounts a tool wants
+ * them; a sixth tool added without these two lines is the regression.
+ */
+echo "\nevery tool enqueues the host rules\n";
+
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings' ) as $tool ) {
+	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
+	is(
+		false !== strpos( $src, 'statchasers_tool_header_layer_css()' ),
+		true,
+		"$tool lifts the site header above the tool"
+	);
+	is(
+		false !== strpos( $src, 'statchasers_tool_mobile_gutter_css()' ),
+		true,
+		"$tool takes the phone's full width"
+	);
+}
 
 /*
  * The FPA FAQ island survives the round trip the plugin puts it through.

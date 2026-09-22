@@ -628,3 +628,49 @@ describe("the fpa development switcher", () => {
     assert.ok(res.body.includes("&lt;div"), "the fragment is escaped source");
   });
 });
+
+/*
+ * The two rules that decide whether the table fits a phone.
+ *
+ * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
+ * only because both of these are specificity facts — the thing a browser test
+ * would have to re-derive and a reading of the file cannot be trusted to keep.
+ *
+ * What went wrong on the live site: Divi styles `.entry-content tr th`, one
+ * class and two elements, which is the same weight as `.scf-table thead th`.
+ * A tie goes to whichever stylesheet WordPress enqueued last, that stopped
+ * being ours, the header cells took Divi's 24px a side, and the table came out
+ * 53px wider than the column — far enough that the games column scrolled off
+ * the right of the phone. And separately: the narrow tiers tighten the gutters
+ * to 7px, but the theme armour at the foot of the file restates cell padding
+ * and lands after them, so a literal there was put straight back to 10px.
+ *
+ * Both are one edit away from returning and neither shows up in served HTML.
+ */
+describe("the fpa stylesheet outranks the host theme", () => {
+  let css;
+
+  before(async () => {
+    css = await (await fetch(`${server.origin}/fpa.css`)).text();
+  });
+
+  test("the header band is armed above Divi's tie, not level with it", () => {
+    assert.ok(
+      css.includes(".scf .scf-table thead th {"),
+      "the armed header rule must carry the second class",
+    );
+    assert.ok(
+      !/\n\.scf-table thead th \{/.test(css.slice(css.indexOf("Theme armour"))),
+      "no rule below the armour heading may sit at one class and two elements",
+    );
+  });
+
+  test("the narrow tiers retune the padding token rather than the padding", () => {
+    const tiers = css.match(/--scf-cell-pad-x: 7px;/g) ?? [];
+    assert.equal(tiers.length, 2, "both the container tier and the viewport tier");
+    assert.ok(
+      !css.includes("padding-left: 7px;"),
+      "a literal here is overwritten by the armour and the last column falls off",
+    );
+  });
+});

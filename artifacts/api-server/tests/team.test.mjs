@@ -1076,6 +1076,140 @@ describe("mobile layout", () => {
   });
 
   /**
+   * The hero's top row breaks on the name, not at a width.
+   *
+   * It used to restack at 900px, which is a number that fits no team: the
+   * switcher is a pill as wide as the club's name, so at 900 "Philadelphia
+   * Eagles" still had room to spare while "Washington Commanders" had been
+   * wrapping to two lines for fifty pixels. The row is a flex line now, and
+   * what makes it break is the name's own width — which is only true while the
+   * name cannot wrap and the block holding it keeps its automatic minimum.
+   * Both halves are asserted because either alone puts the old behaviour back:
+   * a wrapping name shrinks to nothing and the switcher never moves, and
+   * `min-width: 0` lets the row squeeze the name instead of breaking.
+   */
+  test("the hero's name and switcher share a row until the name needs it", async () => {
+    const { doc } = await dom("/team/washington-commanders");
+
+    const head = doc.querySelector(".sct-hero-inner > .sct-hero-head");
+    assert.ok(head, "the three blocks beside the crest share one flex row");
+    for (const part of ["sct-hero-text", "sct-hero-meta", "sct-hero-actions"]) {
+      assert.ok(head.querySelector(`:scope > .${part}`), `${part} is in it`);
+    }
+    // The chips stay ahead of the switcher in the markup; `order` is what puts
+    // them under it. See renderHero().
+    const order = [...head.children].map((el) => el.className);
+    assert.deepEqual(order, [
+      "sct-hero-text",
+      "sct-hero-meta",
+      "sct-hero-actions",
+    ]);
+
+    const css = await get("/team.css");
+    assert.equal(css.status, 200);
+
+    const textAt = css.body.indexOf("\n.sct-hero-text {");
+    assert.ok(textAt > 0, "located the .sct-hero-text rule");
+    const text = css.body.slice(textAt, css.body.indexOf("}", textAt));
+    assert.ok(
+      !/min-width:\s*0/.test(text),
+      ".sct-hero-text keeps its automatic minimum — that is the breakpoint",
+    );
+
+    assert.ok(
+      /\.sct-hero-text \.sct-title \{[^}]*white-space:\s*nowrap/.test(css.body),
+      "the hub hero's name is what cannot wrap",
+    );
+    // Scoped, because .sct-title is also the matchup strip's heading: "Tampa
+    // Bay Buccaneers vs Jacksonville Jaguars" is a sentence and must wrap.
+    const titleAt = css.body.indexOf("\n.sct-title {");
+    assert.ok(titleAt > 0, "located the .sct-title rule");
+    const title = css.body.slice(titleAt, css.body.indexOf("}", titleAt));
+    assert.ok(
+      !/white-space/.test(title),
+      ".sct-title itself must not be armed with it — the matchup heading wraps",
+    );
+
+    // And no width may put the switcher back on a row of its own above the
+    // phone stack, which is the rule this replaced.
+    const tablet = css.body.slice(
+      css.body.indexOf("@media (max-width: 900px)"),
+      css.body.indexOf("@media (max-width: 720px)"),
+    );
+    assert.ok(tablet.length > 0, "located the tablet block");
+    assert.ok(
+      !/\.sct-hero-(inner|actions)\s*\{/.test(tablet),
+      "the 900px block must not lay the hero out again",
+    );
+  });
+
+  /**
+   * The standing spends its division before the row breaks.
+   *
+   * Five chips need 555–617px on one line depending on the club, and under
+   * that the Bye chip drops to a row of its own. "2nd in AFC East" → "2nd"
+   * buys about 60px and costs nothing a reader cannot already see: the
+   * division is the chip immediately to its left. Both spellings ship, the
+   * short one is off until client/team.ts measures the row and turns it on.
+   *
+   * Tolerant of ESPN, like the rest of this file: the standing is one of the
+   * facts that is simply absent when the provider is down, and the stylesheet
+   * half of the contract is asserted either way.
+   */
+  test("the standing chip carries a short form for a row that will not fit", async () => {
+    const { doc } = await dom("/team/new-england-patriots");
+
+    const chips = [...doc.querySelectorAll(".sct-facts .sct-fact")];
+    const standing = chips.find(
+      (chip) =>
+        chip.querySelector(".sct-fact-label")?.textContent.trim() ===
+        "Standing",
+    );
+    if (standing) {
+      const full = standing.querySelector(".sct-swap--full");
+      const short = standing.querySelector(".sct-swap--short");
+      // ESPN also sends bare places ("1st"), which have nothing to shorten.
+      if (full || short) {
+        assert.ok(full && short, "both spellings ship, or neither does");
+        assert.ok(
+          full.textContent.startsWith(short.textContent),
+          `"${short.textContent}" must be the head of "${full.textContent}"`,
+        );
+        assert.ok(
+          short.textContent.length < full.textContent.length,
+          "the short form is shorter",
+        );
+        assert.equal(
+          standing.getAttribute("title"),
+          full.textContent,
+          "the full standing stays answerable on the chip's title",
+        );
+      }
+    }
+
+    const css = await get("/team.css");
+    assert.equal(css.status, 200);
+    assert.ok(
+      /\.sct-swap--short \{[^}]*display:\s*none/.test(css.body),
+      "the short form is off until something turns it on",
+    );
+    assert.ok(
+      /\[data-sct-facts-form="short"\] \.sct-swap--full \{[^}]*display:\s*none/.test(
+        css.body,
+      ),
+      "and the attribute is what turns it on, in place of the full one",
+    );
+
+    // The attribute the rule above waits for has to have an author.
+    const bundle = await get("/dist/statchasers-team.js");
+    assert.equal(bundle.status, 200);
+    assert.ok(
+      bundle.body.includes("data-sct-facts-form"),
+      "the hub bundle is what sets the form",
+    );
+  });
+
+  /**
    * Anchor targets. `scroll-padding-top` on .sct does nothing — scroll padding
    * applies to the scroll container and .sct is not one — so every section the
    * nav links to needs its own `scroll-margin-top`, or each link lands its
@@ -1586,8 +1720,11 @@ describe("team.css survives a host theme", () => {
     assert.ok(classes.size >= 8, `found only ${classes.size} heading classes`);
 
     const unarmed = [...classes].filter((cls) => {
+      // Anchored to the start of a line so that a DESCENDANT rule — ".sct-hero-text
+      // .sct-title", which sets one property and arms nothing — cannot be read
+      // as the class's own rule and fail a class that is in fact armoured.
       const rule = sheet.match(
-        new RegExp(`\\.${cls} \\{[^}]*\\}`),
+        new RegExp(`(?:^|\\n)\\.${cls} \\{[^}]*\\}`),
       );
       return !rule || !/font-size:[^;]*!important/.test(rule[0]);
     });
