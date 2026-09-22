@@ -1166,28 +1166,54 @@ describe("the game log tab", () => {
     assert.ok(rows.length > 0, "an impossible season falls back to a real one");
   });
 
-  test("the scoped page carries the scoring toggle it needs, once", async () => {
-    // The section page carries the control bar now, so the toggle is in the
-    // header where the full profile's is. It used to print a second one inside
-    // the panel, from when a section URL had no header to put one in; two
-    // controls for one piece of state is what that would be today.
+  test("the scoped page carries the start/sit button, once", async () => {
+    // The section page carries the control bar now, so the button is in the
+    // header where the full profile's is. The bar used to hold a scoring
+    // toggle here and it used to be printed a second time inside the panel;
+    // one control for one job, in one place, is what replaced both.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const toggles = doc.querySelectorAll(".scp-format");
-    assert.equal(toggles.length, 1, "exactly one scoring control on the page");
-    const toggle = toggles[0];
+    const buttons = doc.querySelectorAll(".scp-startsit");
+    assert.equal(buttons.length, 1, "exactly one start/sit button on the page");
     assert.equal(
-      doc.querySelector("#game-log .scp-format"),
+      doc.querySelector("#game-log .scp-startsit"),
       null,
       "and it is not a second copy inside the panel",
     );
+    assert.equal(
+      doc.querySelectorAll(".scp-format, .scp-format-opt").length,
+      0,
+      "the scoring toggle is gone, not merely hidden",
+    );
 
-    for (const link of [...toggle.querySelectorAll(".scp-format-opt")]) {
-      if (link.hasAttribute("aria-current")) continue;
-      assert.match(
-        link.getAttribute("href"),
-        /\/game-log\/?(\?|$)/,
-        "changing the format stays on the game log",
+    const href = buttons[0].getAttribute("href");
+    assert.equal(
+      href,
+      `https://statchasers.com/redraft-command/launch/who-should-i-start/${fixture.slug}`,
+      "the button opens this player in Redraft Command",
+    );
+    assert.match(
+      buttons[0].textContent.trim(),
+      new RegExp(`^Should I Start or Sit ${fixture.name}\\b.*\\?$`),
+      "and it asks the reader's question in full, naming the player",
+    );
+  });
+
+  test("the button names the week the player plays next", async () => {
+    // The week is the next fixture on this player's schedule — the one the
+    // Upcoming Matchups cards lead with — and it is dropped rather than
+    // guessed at when the schedule has nothing left on it.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const label = doc.querySelector(".scp-startsit").textContent.trim();
+    const next = doc.querySelector(".scp-next-week, .scp-nexts li");
+    const week = next ? /Week (\d+)/.exec(next.textContent)?.[1] : null;
+
+    if (week) {
+      assert.ok(
+        label.endsWith(`Week ${week}?`),
+        `the button says ${label}, the next fixture is week ${week}`,
       );
+    } else {
+      assert.ok(!/Week/.test(label), "no fixture left to name, so no week named");
     }
   });
 
@@ -3439,15 +3465,20 @@ describe("player section URLs", () => {
  * disagreeing is the one failure a reader would believe rather than notice.
  */
 /**
- * The scoring toggle changes the page, not the address.
+ * A state control changes the page, not the address.
  *
- * `?format=half` is still a real URL: the server renders it, the toggle still
- * links to it, and with scripting off following it is how the format changes —
- * the tests above cover that side. What these cover is the side a reader sees.
- * One player is one page with one address, and pressing a control on the page
- * they are already on must not leave them holding a different one.
+ * `?log=2024` is still a real URL: the server renders it, the season chips
+ * still link to it, and with scripting off following one is how the selection
+ * changes — the tests above cover that side. What these cover is the side a
+ * reader sees. One player is one page with one address, and pressing a control
+ * on the page they are already on must not leave them holding a different one.
+ *
+ * These used to be driven through the scoring toggle, which was the first and
+ * loudest member of this family. The control bar trades it for the start/sit
+ * button now (see renderStartSit), so the season chips — same wiring, same
+ * pageUrl(), same swap — are what exercises it.
  */
-describe("the scoring toggle", () => {
+describe("a state swap", () => {
   /** Wait for the swapped-in render, which is a real request to the server. */
   async function settled(read, want) {
     for (let i = 0; i < 100; i++) {
@@ -3457,32 +3488,37 @@ describe("the scoring toggle", () => {
     return false;
   }
 
-  test("switching scoring re-renders in place and leaves the URL alone", async () => {
+  /** The game log's season chips, which a single-season player does not get. */
+  function chips(doc) {
+    return [...doc.querySelectorAll("#game-log .scp-season-opt")];
+  }
+
+  test("picking a season re-renders in place and leaves the URL alone", async () => {
     const landed = `/player/${fixture.slug}`;
     const { window, doc, errors } = await hydrated(landed);
     assert.deepEqual(errors, [], "the bundle ran without throwing");
 
-    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
-    assert.equal(format(), "ppr", "the page arrives in the format that ranks");
+    const pinned = () =>
+      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
+    assert.equal(pinned(), "", "the page arrives with nothing pinned");
 
-    const half = [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
-      /format=half/.test(link.getAttribute("href") ?? ""),
-    );
-    assert.ok(half, "Half is a real link to a real URL");
+    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    if (!year) return; // a single-season player has no selector to press
+    const want = year.getAttribute("data-season");
 
-    half.dispatchEvent(
+    year.dispatchEvent(
       new window.MouseEvent("click", { bubbles: true, cancelable: true }),
     );
-    assert.ok(await settled(format, "half"), "the page re-rendered in half-PPR");
+    assert.ok(await settled(pinned, want), `the page re-rendered on ${want}`);
 
     assert.equal(window.location.pathname, landed, "the address bar did not move");
     assert.equal(window.location.search, "", "and nothing was appended to it");
 
-    const active = doc.querySelector(".scp-format-opt.is-active");
-    assert.match(
-      active.getAttribute("href"),
-      /format=half/,
-      "the lit option is the one the reader chose",
+    const active = doc.querySelector("#game-log .scp-season-opt.is-active");
+    assert.equal(
+      active.getAttribute("data-season"),
+      want,
+      "the lit chip is the one the reader chose",
     );
     assert.ok(
       doc.querySelectorAll("[data-scp-panel]").length > 1,
@@ -3490,33 +3526,35 @@ describe("the scoring toggle", () => {
     );
   });
 
-  test("switching back is the bare slug again, not a cleaned-up query", async () => {
+  test("clearing the pin is the bare slug again, not a cleaned-up query", async () => {
     const landed = `/player/${fixture.slug}`;
     const { window, doc } = await hydrated(landed);
-    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
+    const pinned = () =>
+      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
 
-    const pick = (test) =>
-      [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
-        test(link.getAttribute("href") ?? ""),
-      );
+    const pick = (season) =>
+      chips(doc).find((chip) => chip.getAttribute("data-season") === season);
 
-    pick((href) => /format=standard/.test(href)).dispatchEvent(
+    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    if (!year) return;
+    const want = year.getAttribute("data-season");
+
+    year.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    assert.ok(await settled(pinned, want), `${want} pinned`);
+
+    // All is the resting state, so its chip is the bare address — the one the
+    // reader is standing on. Following it must still swap rather than navigate.
+    pick("all").dispatchEvent(
       new window.MouseEvent("click", { bubbles: true, cancelable: true }),
     );
-    assert.ok(await settled(format, "standard"), "standard scoring rendered");
-
-    // PPR is the default, so its link is the bare address — the one the reader
-    // is standing on. Following it must still swap rather than navigate.
-    pick((href) => !/format=/.test(href)).dispatchEvent(
-      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
-    );
-    assert.ok(await settled(format, "ppr"), "PPR came back");
+    assert.ok(await settled(pinned, ""), "the pin came off");
     assert.equal(window.location.pathname + window.location.search, landed);
   });
 
   test("the tab the reader is on survives the swap", async () => {
     const { window, doc } = await hydrated(`/player/${fixture.slug}`);
-    const format = () => doc.querySelector("[data-scp-root]").getAttribute("data-format");
+    const pinned = () =>
+      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
 
     const click = (el) =>
       el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
@@ -3524,39 +3562,36 @@ describe("the scoring toggle", () => {
     click(doc.querySelector('.scp-nav-link[data-scp-panel-id="game-log"]'));
     assert.ok(doc.getElementById("game-log").classList.contains("is-active"));
 
-    click(
-      [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
-        /format=half/.test(link.getAttribute("href") ?? ""),
-      ),
-    );
-    assert.ok(await settled(format, "half"));
+    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    if (!year) return;
+    click(year);
+    assert.ok(await settled(pinned, year.getAttribute("data-season")));
 
     assert.ok(
       doc.getElementById("game-log").classList.contains("is-active"),
-      "the reader is still looking at the game log, in their scoring",
+      "the reader is still looking at the game log, on the season they picked",
     );
   });
 
   test("a modifier click is left to the browser", async () => {
-    // Ctrl- or cmd-clicking one of these is how a reader deliberately opens the
-    // other format in a new tab. Swallowing that would be taking a real link
-    // away from them.
+    // Ctrl- or cmd-clicking one of these is how a reader deliberately opens
+    // the other season in a new tab. Swallowing that would be taking a real
+    // link away from them.
     const { window, doc } = await hydrated(`/player/${fixture.slug}`);
-    const half = [...doc.querySelectorAll(".scp-format-opt")].find((link) =>
-      /format=half/.test(link.getAttribute("href") ?? ""),
-    );
+    const year = chips(doc).find((chip) => chip.getAttribute("data-season") !== "all");
+    if (!year) return;
 
     const event = new window.MouseEvent("click", {
       bubbles: true,
       cancelable: true,
       metaKey: true,
     });
-    half.dispatchEvent(event);
+    year.dispatchEvent(event);
 
     assert.equal(event.defaultPrevented, false, "the navigation was not cancelled");
     assert.equal(
-      doc.querySelector("[data-scp-root]").getAttribute("data-format"),
-      "ppr",
+      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season"),
+      null,
       "and nothing was swapped underneath it",
     );
   });

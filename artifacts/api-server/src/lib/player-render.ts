@@ -136,6 +136,13 @@ export interface PlayerRenderOptions {
   fpaPath?: string;
   /** Carried onto internal links so embed mode stays embed mode. */
   linkQuery?: string;
+  /**
+   * Where the start/sit tool lives, for the control bar's button. Defaults to
+   * Redraft Command's launcher on statchasers.com — an absolute URL rather than
+   * a path, because this one destination is on the live site whether the markup
+   * is being served standalone here or printed into a WordPress page there.
+   */
+  startSitBase?: string;
   /** Rendered for testability; the page cache keys on the data, not on this. */
   now?: number;
   /**
@@ -1444,10 +1451,14 @@ function renderNav(
 /**
  * This page's own URL, with one piece of its state changed.
  *
- * Every control that is a real link — the scoring toggle, the game log's season
- * selector — builds its href here, so none of them can drop the state the
- * others own. Assembling them by hand is how `?format=half` used to lose
- * `?embed=1`, which silently unframed the page it was rendered into.
+ * Every control that is a real link — the game log's season selector, and the
+ * scoring toggle before the control bar traded it for the start/sit button —
+ * builds its href here, so none of them can drop the state the others own.
+ * Assembling them by hand is how `?format=half` used to lose `?embed=1`, which
+ * silently unframed the page it was rendered into. The format is still carried
+ * through every link this builds: nothing on the page changes it any more, but
+ * a reader who arrived on `?format=half` must not be walked back to PPR by
+ * pinning a season.
  *
  * Only the parameters this page actually carries are emitted, and each is
  * omitted at its default: the PPR profile of the active season is the bare
@@ -1483,31 +1494,50 @@ function pageUrl(
   return `${prefix}${data.player.slug}${section ? `/${section}` : ""}${query ? `?${query}` : ""}${hash}`;
 }
 
-function renderFormatToggle(
+/**
+ * The start/sit call to action, where the scoring toggle used to stand.
+ *
+ * The toggle offered three renderings of one page and asked the reader to pick
+ * one. Almost nobody picked: PPR is what the site ranks in, it was already the
+ * default, and a control whose job is to be left alone is a control earning a
+ * place in the sticky bar for nothing. What a reader on a profile in September
+ * actually wants next is a verdict on this week, and that lives in Redraft
+ * Command — so the bar carries the way there instead.
+ *
+ * `?format=standard` and `?format=half` are still real addresses the server
+ * renders, and everything downstream of `data.format` still reads them; what
+ * went is the control that advertised them. A reader who has one bookmarked
+ * keeps it, and the page they get back is the one they asked for.
+ *
+ * The label names the player and the week because the button is a question in
+ * the reader's own words, not a destination: "Should I Start or Sit Jacoby
+ * Brissett Week 4?" is the thing they came to ask. The week is the next
+ * fixture on this player's schedule — the same one the Upcoming Matchups cards
+ * lead with — and it is dropped, rather than guessed at, when there is no
+ * fixture left to name.
+ *
+ * Written out in full at every width, with no short form. "Start or Sit ·
+ * Week 4" fitted a narrow bar and stopped being the reader's question: the
+ * player's name is the half of it that makes it theirs. Where the bar is too
+ * narrow to hold it beside the tabs, the tabs scroll — they already do — and
+ * below 680px the bar stacks and the button takes a row of its own.
+ */
+const STARTSIT_BASE =
+  "https://statchasers.com/redraft-command/launch/who-should-i-start/";
+
+function renderStartSit(
   data: PlayerPageData,
   options: PlayerRenderOptions,
 ): string {
-  const items = (["standard", "half", "ppr"] as ScoringFormat[])
-    .map((format) => {
-      const active = format === data.format;
-      return (
-        `<a class="scp-format-opt${active ? " is-active" : ""}"` +
-        ` href="${escapeHtml(pageUrl(data, options, { format }))}"` +
-        `${active ? ` aria-current="true"` : ` rel="nofollow"`}` +
-        ` title="${escapeHtml(SCORING_LABELS[format])}">${escapeHtml(SCORING_SHORT[format])}</a>`
-      );
-    })
-    .join("");
-  // The label sits OUTSIDE the pill group. "Scoring" names the control; STD,
-  // HALF and PPR are the control. Inside the same border they read as a fourth
-  // option that happens not to be clickable, which is what the group's shape
-  // promises about everything in it.
-  return (
-    `<div class="scp-format-row">` +
-    `<span class="scp-format-label">Scoring</span>` +
-    `<div class="scp-format" data-scp-format>${items}</div>` +
-    `</div>`
-  );
+  const week = data.upcoming[0]?.week ?? null;
+  const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(
+    data.player.slug,
+  )}`;
+
+  const weekPart = week === null ? "" : ` Week ${week}`;
+  const label = `Should I Start or Sit ${data.player.name}${weekPart}?`;
+
+  return `<a class="scp-startsit" href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
 /* --------------------------------------------------------------- overview */
@@ -3726,11 +3756,13 @@ function renderGameLog(
 
   return (
     heading +
-    // No scoring toggle here. This tab used to print its own on a scoped URL,
-    // because a section page had no control bar above it to carry one. It has
-    // one now — the strip and the toggle came back together when the sections
-    // became addresses — so a copy in the panel would be the two controls for
-    // one piece of state that the full profile has always avoided.
+    // No scoring control here, and none anywhere else either. This tab used to
+    // print its own toggle on a scoped URL, because a section page had no
+    // control bar above it to carry one; the bar came back when the sections
+    // became addresses, and then the toggle went from the bar (see
+    // renderStartSit). `?format=half` is still a URL the server renders — what
+    // is gone is the control that advertised it, on the page where the numbers
+    // it changes live.
     //
     // Tiles first, prose second. The paragraph reads as a gloss on the tiles —
     // the same season, in sentences, with the context a grid of six numbers
@@ -4404,8 +4436,9 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
   return (
     // No line under the heading. It read "11 seasons, 102 games. Fantasy points
     // in PPR" — the season count is the number of rows, the games are the
-    // Career row's own GP cell, and the format is named by the toggle in the
-    // header. Three facts the table states, restated above the table.
+    // Career row's own GP cell, and the format is named by the column head
+    // ("FPTS/G (PPR)") and by the hero's lead cell above it. Three facts the
+    // table states, restated above the table.
     sectionHead("Career By Season", "", aside) +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--career" data-scp-sortable>` +
@@ -5447,7 +5480,7 @@ export function renderPlayerPage(
    * addresses. A reader arriving here from search had no way to reach the
    * other six, and those six had nothing linking to them.
    *
-   * Everything else — the hero, the format toggle, the markup of the section
+   * Everything else — the hero, the control bar, the markup of the section
    * itself — is unchanged, so the two addresses render the same component and
    * cannot drift.
    */
@@ -5486,7 +5519,7 @@ export function renderPlayerPage(
       renderHero(data, options) +
       `<div class="scp-controls">` +
       renderNav(sections, data, options, scoped.id) +
-      renderFormatToggle(data, options) +
+      renderStartSit(data, options) +
       `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
@@ -5529,7 +5562,7 @@ export function renderPlayerPage(
     renderHero(data, options) +
     `<div class="scp-controls">` +
     renderNav(sections, data, options) +
-    renderFormatToggle(data, options) +
+    renderStartSit(data, options) +
     `</div>` +
     body +
     // Outside the panels: the rail stands under whichever tab is open, because
@@ -5571,9 +5604,10 @@ export function renderPlayerPage(
  *     describes, with the club's primary as a rule and a wash exactly as the
  *     peer card uses --peer-team. Its heading links to the team hub, which is
  *     the cross-link the old list had nowhere to put.
- *   - the POSITION CHIPS are the format toggle's pill group (.scp-format),
- *     as buttons rather than links because they filter what is already here
- *     rather than fetching anything.
+ *   - the POSITION CHIPS are the pill group the scoring toggle wore before
+ *     the control bar traded it for the start/sit button, as buttons rather
+ *     than links because they filter what is already here rather than
+ *     fetching anything.
  *
  * Nothing here needs JavaScript to be complete: every player, every portrait,
  * every standing is in the markup the server sends, grouped and ordered. The

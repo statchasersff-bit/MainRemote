@@ -1076,6 +1076,83 @@ describe("mobile layout", () => {
   });
 
   /**
+   * The watermark, in the stacked hero, is bottom-right and bigger.
+   *
+   * Centred on the right edge is a desktop arrangement: there, half of an
+   * 1100px hero is empty. Stacked there is no empty half — the chips and the
+   * switcher are opaque cards filling the width — so a 240px mark centred
+   * behind them showed in the gaps between cards and nowhere else, which is
+   * what mak reported as too small to see. The corner under the switcher is
+   * the one part of this hero that is reliably not a card.
+   *
+   * The transform is the trap and the reason this is pinned: the desktop rule
+   * centres with `translateY(-50%)`, which pairs with `top: 50%`. Left in
+   * place alongside `bottom`, it lifts the mark by half its own height and
+   * puts it back behind the cards — a change that looks like nothing in the
+   * diff and undoes the whole rule.
+   */
+  test("the stacked hero hangs its watermark in the corner", async () => {
+    const css = (await get("/team.css")).body;
+
+    const desktopAt = css.indexOf("\n.sct-hero-watermark {");
+    assert.ok(desktopAt > 0, "located the desktop watermark rule");
+    const desktop = css.slice(desktopAt, css.indexOf("}", desktopAt));
+    assert.match(desktop, /top:\s*50%/, "the desktop mark is centred");
+    assert.match(desktop, /transform:\s*translateY\(-50%\)/);
+
+    const phone = css.slice(
+      css.indexOf("@media (max-width: 720px)"),
+      css.indexOf("@media (max-width: 420px)"),
+    );
+    const phoneAt = phone.indexOf(".sct-hero-watermark {");
+    assert.ok(phoneAt > 0, "the phone block places it again");
+    const stacked = phone.slice(phoneAt, phone.indexOf("}", phoneAt));
+
+    assert.match(stacked, /top:\s*auto/, "off the vertical centre");
+    assert.match(stacked, /bottom:\s*-?\d+px/, "and anchored to the bottom");
+    assert.match(
+      stacked,
+      /transform:\s*none/,
+      "with the centring transform cancelled — see this test's note",
+    );
+
+    const size = (block) => Number(block.match(/width:\s*(\d+)px/)[1]);
+    assert.ok(
+      size(stacked) > size(desktop) * 0.9,
+      "and no smaller than the desktop mark: it was 240 against 300",
+    );
+    const weight = (block) => Number(block.match(/opacity:\s*([\d.]+)/)[1]);
+    assert.ok(
+      weight(stacked) > weight(desktop),
+      "at more weight, because what shows here is only the part clear of a card",
+    );
+
+    // And below 450px it is gone. A 300px mark in a 358px hero is not a
+    // watermark, it is a picture the content is printed over — there is no
+    // part of the card it is not behind, so what shows is whatever the gaps
+    // between the chips expose. The crest beside the name still carries the
+    // club at that width.
+    const small = css.slice(
+      css.indexOf("@media (max-width: 450px)"),
+      css.indexOf("@media (max-width: 420px)"),
+    );
+    assert.ok(small.length > 0, "located the 450px block");
+    assert.match(
+      small,
+      /\.sct-hero-watermark \{\s*display:\s*none/,
+      "the smallest screens have no watermark",
+    );
+    // Source order is the whole mechanism here: both rules are one class, so
+    // a 450px block written ABOVE the 720px one would be overruled by it and
+    // the mark would come back.
+    assert.ok(
+      css.indexOf("@media (max-width: 450px)") >
+        css.indexOf("@media (max-width: 720px)"),
+      "and that block has to come after the one it overrules",
+    );
+  });
+
+  /**
    * The hero's top row breaks on the name, not at a width.
    *
    * It used to restack at 900px, which is a number that fits no team: the
@@ -1140,6 +1217,136 @@ describe("mobile layout", () => {
     assert.ok(
       !/\.sct-hero-(inner|actions)\s*\{/.test(tablet),
       "the 900px block must not lay the hero out again",
+    );
+  });
+
+  /**
+   * The crest and the name stay on one row, at every width.
+   *
+   * The phone hero used to stack them — a 72px disc, then the eyebrow, then
+   * the name, then the standfirst, four things down the screen where the first
+   * says the least and the hero ran to about 400px before a reader reached the
+   * chips. mak asked for the mark and the name back on one line, which is also
+   * what they are: one statement of whose page this is.
+   *
+   * Only the top row pairs up. The chips and the switcher keep full rows of
+   * their own underneath, both being wider than what a 360px screen has left
+   * once the crest has taken its 64 — so this asserts the areas, not just that
+   * the grid has two columns.
+   */
+  test("the phone hero keeps the crest beside the name", async () => {
+    const css = (await get("/team.css")).body;
+    const phone = css.slice(
+      css.indexOf("@media (max-width: 720px)"),
+      css.indexOf("@media (max-width: 420px)"),
+    );
+    assert.ok(phone.length > 0, "located the phone block");
+
+    const innerAt = phone.indexOf(".sct-hero-inner {");
+    assert.ok(innerAt > 0, "the phone block lays the hero out");
+    const inner = phone.slice(innerAt, phone.indexOf("}", innerAt));
+
+    assert.match(
+      inner,
+      /grid-template-columns:\s*auto minmax\(0, 1fr\)/,
+      "the crest's column and the name's column",
+    );
+    // Whitespace-insensitive: the declaration is written over three lines.
+    const areas = inner.match(/grid-template-areas:([^;]*);/);
+    assert.ok(areas, "the phone hero names its areas");
+    assert.deepEqual(
+      areas[1].match(/"[^"]*"/g),
+      ['"crest text"', '"meta meta"', '"actions actions"'],
+      "crest beside the name, then the chips, then the switcher",
+    );
+
+    // The name has to be allowed to wrap beside it — the desktop nowrap is
+    // what makes the flex row break on the name's length, and inside a column
+    // that is now 64px narrower it would set the hero's width instead.
+    assert.match(
+      phone,
+      /\.sct-hero-text \.sct-title \{\s*white-space:\s*normal/,
+      "and the name may wrap in the column the crest left it",
+    );
+
+    // The timestamp is the 2x2 grid's footnote, so it is centred under it:
+    // the grid has two columns and a centre rather than a left end for a line
+    // to hang off. Left-aligned on a desktop, where the chips are a row.
+    assert.match(
+      phone,
+      /\.sct-hero-updated \{[^}]*text-align:\s*center/,
+      "the timestamp is centred under the stacked chips",
+    );
+    const deskAt = css.indexOf("\n.sct-hero-updated {");
+    assert.ok(deskAt > 0, "located the desktop timestamp rule");
+    assert.ok(
+      !/text-align/.test(css.slice(deskAt, css.indexOf("}", deskAt))),
+      "and takes the root's left alignment everywhere else",
+    );
+  });
+
+  /**
+   * The standfirst goes rather than taking a second line.
+   *
+   * "<Club> fantasy football hub" is the club's own name plus four words, so
+   * the width where it stops fitting on one line is a different width for all
+   * 32: measured at 470px for Washington and 360px for Buffalo. A media query
+   * would take it off a third of the league while it still fits, which is the
+   * same argument the chips ladder makes, so the bundle measures it — and what
+   * it measures is a Range over the contents, because getClientRects() on a
+   * block <p> returns one rect whatever is inside it.
+   *
+   * The line is never removed from the DOCUMENT. That is the half this test
+   * can assert directly: the server prints it at every width, with a hook and
+   * no value, so what a crawler reads does not depend on a viewport.
+   */
+  test("the hero standfirst ships with a hook and is only ever hidden", async () => {
+    const { doc } = await dom("/team/washington-commanders");
+
+    const lead = doc.querySelector(".sct-hero .sct-subtitle");
+    assert.ok(lead, "the standfirst is server-rendered");
+    assert.equal(
+      lead.textContent,
+      "Washington Commanders fantasy football hub",
+      "and it says what it always said",
+    );
+    assert.ok(lead.hasAttribute("data-sct-lead"), "with the bundle's hook on it");
+    assert.equal(
+      lead.getAttribute("data-sct-lead"),
+      "",
+      "and no state: nothing is dropped until something has measured it",
+    );
+
+    const css = (await get("/team.css")).body;
+    assert.match(
+      css,
+      /\.sct-subtitle\[data-sct-lead="off"\] \{\s*display:\s*none/,
+      "the stylesheet hides the dropped state, and only that state",
+    );
+    // The hook alone must not hide anything, or the line would be off for
+    // every reader with JavaScript disabled — which is the one case where
+    // nothing can ever measure it and the full line is what ships.
+    assert.ok(
+      !/\.sct-subtitle\[data-sct-lead\] \{[^}]*display:\s*none/.test(css),
+      "the bare hook must not hide it",
+    );
+    // And no width may do it either: this is measured, not a breakpoint.
+    for (const [, block] of css.matchAll(/@media[^{]*max-width[^{]*\{([\s\S]*?)\n\}/g)) {
+      assert.ok(
+        !/\.sct-subtitle[^{]*\{[^}]*display:\s*none/.test(block),
+        "no media query may hide the standfirst",
+      );
+    }
+
+    const bundle = await get("/dist/statchasers-team.js");
+    assert.equal(bundle.status, 200);
+    assert.ok(
+      bundle.body.includes("data-sct-lead"),
+      "the bundle is what sets the state",
+    );
+    assert.ok(
+      bundle.body.includes("selectNodeContents"),
+      "and it counts line boxes with a range, not the block's own rect",
     );
   });
 

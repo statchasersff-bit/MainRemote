@@ -126,9 +126,11 @@ function statchasers_player_args( array $atts ): array {
 
 	$format = strtolower( trim( (string) $atts['format'] ) );
 	if ( '' === $format ) {
-		// No attribute: take it from the URL. The API renders the scoring toggle
-		// as real links to `?format=half`, and without this they are links to a
-		// page that ignores them — a control that looks live and is not.
+		// No attribute: take it from the URL. The profile's own scoring toggle is
+		// gone — the control bar carries the start/sit button now — but
+		// `?format=half` is still a real address the API renders, and a reader
+		// holding one of those links has to get the numbers it names rather than
+		// a page that quietly ignores them.
 		$format = statchasers_player_query_value( 'format' );
 	}
 	if ( ! in_array( $format, STATCHASERS_PLAYER_FORMATS, true ) ) {

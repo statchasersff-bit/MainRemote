@@ -18,11 +18,11 @@
  *      per-week detail the game log folds away behind each week number, the
  *      header's staged squeeze, and centring the peers rail on the card the
  *      reader is standing on;
- *   6. the state swap: the scoring toggle and the two season selectors change
- *      the page WITHOUT changing its address. See wireStateSwap.
+ *   6. the state swap: the two season selectors change the page WITHOUT
+ *      changing its address. See wireStateSwap.
  *
  * (6) is the one thing here that fetches, and it is still an enhancement: the
- * three controls are real links to real URLs, the server still renders every
+ * controls are real links to real URLs, the server still renders every
  * one of them, and with scripting off they navigate exactly as they always
  * did. What the fetch buys is the reader keeping their place — and the address
  * bar keeping the one URL this page is supposed to have.
@@ -927,15 +927,21 @@ function wirePeerRail(root: HTMLElement): void {
 /**
  * The controls that re-render the page in another state.
  *
- * Three of them: the scoring toggle (.scp-format-opt), the game log's season
- * chips and the advanced table's season chips (both .scp-season-opt). They are
- * one family because they are one thing — a link to THIS page rendered from
- * different state — and the server builds all three from pageUrl().
+ * Two of them now: the game log's season chips and the advanced table's season
+ * chips (both .scp-season-opt). They are one family because they are one thing
+ * — a link to THIS page rendered from different state — and the server builds
+ * them from pageUrl().
+ *
+ * The scoring toggle used to be the third and the first. It is gone from the
+ * control bar (see renderStartSit in lib/player-render.ts), and with it the
+ * only control that ever changed `?format=`; the parameter is still a real
+ * address the server renders, and a reader who follows one gets a whole page
+ * rather than a swap, which is what a link from outside the page should do.
  */
-const SWAP_LINK_SELECTOR = ".scp-format-opt, .scp-season-opt";
+const SWAP_LINK_SELECTOR = ".scp-season-opt";
 
 /** The groups those links live in, used to find a control again after a swap. */
-const SWAP_GROUP_SELECTOR = ".scp-format, .scp-seasons";
+const SWAP_GROUP_SELECTOR = ".scp-seasons";
 
 /**
  * The URL the content on screen was rendered from.
