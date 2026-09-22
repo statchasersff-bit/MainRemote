@@ -1,1 +1,2 @@
 - [Generated asset watcher](generated-asset-watcher.md) — recursive file watching must tolerate generated frontend directories being removed and recreated during builds.
+- [Stale API listener](stale-api-listener.md) — a failed managed restart can leave an orphaned server holding the preview port.
