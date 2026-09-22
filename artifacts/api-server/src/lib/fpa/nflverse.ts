@@ -36,14 +36,28 @@ const FANTASY_POSITION_SET = new Set<string>(FANTASY_POSITIONS);
 export const NFLVERSE_RELEASE_TAGS = ["stats_player", "player_stats"] as const;
 export type NflverseReleaseTag = (typeof NFLVERSE_RELEASE_TAGS)[number];
 
+export const NFLVERSE_RELEASES =
+  "https://github.com/nflverse/nflverse-data/releases/download";
+
+/**
+ * Where the releases are read from.
+ *
+ * `NFLVERSE_BASE_URL` overrides it, for the two situations that come up with
+ * every ingest in this app: an egress that upstream refuses (the news feed's
+ * whole story — see docs/INGEST-FIX-CHECKLIST.md), which a mirror answers, and
+ * a test that needs the ingest to run without fetching 14MB from GitHub.
+ * Unset — the normal case — it is nflverse itself.
+ */
+export function nflverseBaseUrl(): string {
+  const override = (process.env["NFLVERSE_BASE_URL"] ?? "").trim();
+  return (override || NFLVERSE_RELEASES).replace(/\/+$/, "");
+}
+
 export function nflverseWeeklyUrl(
   season: number,
   releaseTag: NflverseReleaseTag,
 ): string {
-  return (
-    "https://github.com/nflverse/nflverse-data/releases/download/" +
-    `${releaseTag}/stats_player_week_${season}.csv`
-  );
+  return `${nflverseBaseUrl()}/${releaseTag}/stats_player_week_${season}.csv`;
 }
 
 export function nflverseWeeklyUrlCandidates(

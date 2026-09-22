@@ -6,6 +6,7 @@
  *   GET /fpa?embed=1              — the same page, stripped for embedding
  *   GET /fpa/download.csv         — the table on screen, as CSV
  *   GET /embed/fpa                — the bare fragment, for the WordPress mount
+ *   POST /api/fpa/ingest          — refresh the figures now
  *
  * `/embed/fpa` is also what the bundle re-fetches when a reader changes scoring
  * format or view, which is why both page routes hand the markup an address for
@@ -28,11 +29,13 @@ import { canonicalUrl, publicOrigin } from "../lib/request";
 import { renderFpaAppPage, renderFpaFragment } from "../lib/fpa-ssr";
 import { renderFpaCsv } from "../lib/fpa-render";
 import {
+  fpaSnapshotState,
   getFpaTable,
   parseFpaFormat,
   parseFpaView,
   type FpaQuery,
 } from "../lib/fpa/fpa-data";
+import { refreshFpa } from "../lib/fpa/refresh";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -73,16 +76,23 @@ function fragmentLinkQuery(prefix: string): string {
   return prefix === TEAM_PATH_PREFIX ? "?embed=1" : "";
 }
 
+/**
+ * A season, or undefined.
+ *
+ * Honoured only when it is plausibly one, so a hand-edited URL falls through to
+ * the configured current season rather than querying for the year 3000.
+ */
+function season(value: unknown): number | undefined {
+  const n = Number.parseInt(String(value ?? ""), 10);
+  return Number.isFinite(n) && n >= 1999 && n <= 2100 ? n : undefined;
+}
+
 function query(req: Request): FpaQuery {
-  const season = Number.parseInt(String(req.query["season"] ?? ""), 10);
+  const year = season(req.query["season"]);
   return {
     format: parseFpaFormat(String(req.query["format"] ?? "").trim().toLowerCase()),
     view: parseFpaView(String(req.query["view"] ?? "").trim().toLowerCase()),
-    // A season is honoured only when it is plausibly one: anything else falls
-    // through to the configured current season rather than querying for it.
-    ...(Number.isFinite(season) && season >= 1999 && season <= 2100
-      ? { season }
-      : {}),
+    ...(year === undefined ? {} : { season: year }),
   };
 }
 
@@ -234,6 +244,81 @@ router.get("/embed/fpa", (req, res) => {
     } catch (err) {
       logger.error({ err }, "Failed to render the FPA fragment");
       res.status(503).type("text/plain").send("FPA fragment unavailable");
+    }
+  })();
+});
+
+/**
+ * POST /api/fpa/ingest — refresh the figures now.
+ *
+ * The scheduled path. `scripts/ingest-fpa.mjs` writes to whatever database the
+ * process running it is pointed at, which makes it the wrong tool for
+ * production: run from a development shell it refreshes development, and the
+ * deployment goes on serving whatever seeded it. This runs the ingest INSIDE
+ * the deployment, against the database that deployment actually reads.
+ *
+ * Point a Replit Scheduled Deployment at `scripts/refresh-fpa.mjs` weekly, in
+ * season, after Monday night.
+ *
+ * Answers when the ingest has finished — two ~7MB CSVs and a transaction, which
+ * measured a second and a half from the workspace — because a scheduler needs
+ * the verdict, and a 202 that always says "accepted" would report a broken
+ * upstream as a successful refresh. A caller that gives up waiting does not
+ * cancel anything: the run finishes and `/api/status` reports it.
+ *
+ * Guarded by INGEST_SECRET exactly as POST /api/ingest is, and for a sharper
+ * reason than that one has — each call costs two large fetches from nflverse,
+ * so an open endpoint is a way to spend someone else's bandwidth. Unset means
+ * the operator has decided this deployment is not exposed.
+ */
+router.post("/api/fpa/ingest", (req, res) => {
+  void (async () => {
+    const secret = process.env["INGEST_SECRET"];
+    if (secret && req.get("x-ingest-secret") !== secret) {
+      res.status(401).json({ ok: false, error: "unauthorized" });
+      return;
+    }
+
+    // Both optional, and both plausibility-checked like the page's. They exist
+    // for the week either season rolls over, when the answer is one run with
+    // the seasons named rather than a redeploy to move an environment variable.
+    const baselineSeason = season(req.query["baseline"]);
+    const currentSeason = season(req.query["current"]);
+
+    try {
+      const { result, joined } = await refreshFpa({
+        ...(baselineSeason === undefined ? {} : { baselineSeason }),
+        ...(currentSeason === undefined ? {} : { currentSeason }),
+      });
+
+      // Read back rather than echoed from the ingest: this is the figure the
+      // page will serve, and it comes from the same place the page reads.
+      const snapshot = await fpaSnapshotState(result.currentSeason).catch(
+        () => null,
+      );
+
+      res.set("Cache-Control", "no-store").json({
+        ok: true,
+        // True when a run was already going and this request waited on it —
+        // one ingest, two callers, and nobody left guessing which.
+        joined,
+        season: result.currentSeason,
+        baselineSeason: result.baselineSeason,
+        weekNumber: result.weekNumber,
+        dataMode: result.dataMode,
+        isPreseason: result.isPreseason,
+        snapshotRows: result.snapshotRows,
+        gameRows: result.gameRows,
+        snapshotWrittenAt: snapshot?.writtenAtMs
+          ? new Date(snapshot.writtenAtMs).toISOString()
+          : null,
+      });
+    } catch (err) {
+      req.log.error({ err }, "FPA ingest failed");
+      res
+        .status(500)
+        .set("Cache-Control", "no-store")
+        .json({ ok: false, error: String(err) });
     }
   })();
 });

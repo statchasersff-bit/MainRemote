@@ -12,8 +12,15 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/api-server run ingest-fpa` — rebuild Fantasy Points
-  Allowed from nflverse. Weekly in season; idempotent. Nothing renders at `/fpa`
-  until this has run once.
+  Allowed from nflverse. Idempotent. Nothing renders at `/fpa` until this has
+  run once. **It writes to the database of the process that runs it**, so from
+  the workspace shell it refreshes the workspace and nothing else.
+- `FPA_INGEST_URL=https://<deployment>/api/fpa/ingest pnpm --filter
+  @workspace/api-server run refresh-fpa` — refresh the **deployment's** FPA
+  table. Point a Replit Scheduled Deployment at it weekly in season, after
+  Monday night, once nflverse has published the week. This is the one that
+  keeps production moving; see the FPA section for why the script above does
+  not.
 - Required env: `DATABASE_URL` — Postgres connection string (the news archive),
   `DYNASTY_NEWS_API_URL` — upstream feed. **Both must be set on the deployment,
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the
@@ -40,6 +47,12 @@ _Replace the heading above with the project's name, and this line with one sente
 - Monitoring env: `INGEST_ALERT_MAX_FAILURES` (default 3) and
   `INGEST_ALERT_MAX_AGE_MS` (default 1h) set when `GET /api/ingest/health` starts
   answering 503. Point an uptime checker at it — see below
+- FPA env: `FPA_CURRENT_SEASON` (default 2026) and `FPA_BASELINE_SEASON`
+  (default 2025) are the two seasons the figure is a blend of;
+  `POST /api/fpa/ingest?current=&baseline=` overrides them for one run, which is
+  what a rollover week needs instead of a redeploy. `NFLVERSE_BASE_URL` points
+  the ingest at a mirror of the nflverse releases — unset it is nflverse, and
+  the FPA suite uses it to run the whole ingest against a stub
 - **Seeing the team pages in the Replit preview.** The workflow serves the
   whole app on port 8080, so the preview URL already carries them. It opens at
   `/`, which is the news tool and links nowhere else (it is the embedded
@@ -529,7 +542,26 @@ prints it, like the other three.
 - `src/routes/fpa.ts` — `/fpa`, `/fpa/download.csv` (built from the same query
   the page renders, so the file and the screen cannot disagree) and `/embed/fpa`.
 - `scripts/ingest-fpa.mjs` — `pnpm --filter @workspace/api-server run ingest-fpa`.
-  Schedule it weekly in season.
+  Runs the ingest in the process that starts it.
+- `POST /api/fpa/ingest` — runs the ingest **inside the deployment**, against
+  the database the deployment reads, and answers when it has finished (a second
+  or two).
+  Guarded by `INGEST_SECRET`, like `POST /api/ingest`; set it, because each call
+  costs two ~7MB fetches from nflverse. `scripts/refresh-fpa.mjs` is the
+  scheduled caller. `lib/fpa/refresh.ts` holds the run: one at a time across
+  both paths, every affected cache dropped, the outcome kept for `/api/status`.
+
+**The table does not refresh itself, and for two days nothing said so.**
+Production served figures written on 20 September until the 22nd. Three things
+had to line up: the ingest is a script, a script writes to whatever
+`DATABASE_URL` its own process has (so weekly runs from the workspace shell
+refreshed the workspace), the lazy fallback in `fpa-ssr.ts` fires only when the
+table is **empty** so it seeds a cold database and can never refresh a stale
+one, and `/api/status` reported news and clubs but never FPA — so a table
+standing still looked exactly like a healthy one. `POST /api/fpa/ingest` fixes
+the first, and `fpa.snapshotWrittenAt` on `/api/status` fixes the last: it is
+read from the database, not from process memory, so it survives a redeploy and
+describes the numbers actually being served.
 
 **The number says what it is a mix of.** Early in a season the figure is mostly
 last season's, so the data-mode note sits ABOVE the table rather than under it —

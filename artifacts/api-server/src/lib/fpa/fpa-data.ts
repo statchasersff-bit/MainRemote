@@ -12,7 +12,7 @@
  * because a rank column with no stated direction is a coin flip.
  */
 
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db, fpaSnapshots, type FpaSnapshot } from "../db";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { FANTASY_POSITIONS, type FantasyPosition, type ScoringFormat } from "./nflverse";
@@ -185,15 +185,50 @@ export async function getFpaTable(
   };
 }
 
-/** When the served snapshots were last written, or 0. */
-export async function fpaIngestedAt(season?: number): Promise<number> {
+/**
+ * When the served rows were written, and what they are.
+ *
+ * Read from the database rather than from process memory, which is the whole
+ * point of it: `fpaRefreshStatus()` says what this process has done since it
+ * started, and a deployment that has never run an ingest looks identical there
+ * to one that ran a perfect ingest before its last redeploy. This is the figure
+ * that would have said, out loud, that production was serving a table written
+ * two days earlier — so it is what /api/status reports.
+ *
+ * Newest row rather than an aggregate: one ingest writes every row for the
+ * season inside one transaction, so the newest one carries the week and the
+ * blend mode as well as the time.
+ */
+export interface FpaSnapshotState {
+  season: number;
+  /** When the rows were written. Null when the season has no rows at all. */
+  writtenAtMs: number | null;
+  /** Weeks of the season the figure includes. Null in preseason, or with no rows. */
+  weekNumber: number | null;
+  /** What the blend was — "preseason_baseline", "week_3". Null with no rows. */
+  dataMode: string | null;
+}
+
+export async function fpaSnapshotState(
+  season?: number,
+): Promise<FpaSnapshotState> {
   const target = season ?? Number(process.env["FPA_CURRENT_SEASON"] ?? 2026);
-  const rows = await db
-    .select({ createdAt: fpaSnapshots.createdAt })
+
+  const [newest] = await db
+    .select({
+      createdAt: fpaSnapshots.createdAt,
+      weekNumber: fpaSnapshots.weekNumber,
+      dataMode: fpaSnapshots.dataMode,
+    })
     .from(fpaSnapshots)
-    .where(eq(fpaSnapshots.season, target));
-  return rows.reduce(
-    (newest, r) => Math.max(newest, r.createdAt?.getTime() ?? 0),
-    0,
-  );
+    .where(eq(fpaSnapshots.season, target))
+    .orderBy(desc(fpaSnapshots.createdAt))
+    .limit(1);
+
+  return {
+    season: target,
+    writtenAtMs: newest?.createdAt?.getTime() ?? null,
+    weekNumber: newest?.weekNumber ?? null,
+    dataMode: newest?.dataMode ?? null,
+  };
 }
