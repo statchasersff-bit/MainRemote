@@ -11,6 +11,8 @@ import { invalidateRenderCache } from "../lib/ssr";
 import { fetchClubNews } from "../lib/club-news";
 import type { RawNewsItem } from "../lib/news-item";
 import { TEAMS } from "../lib/team/teams";
+import { fpaSnapshotState } from "../lib/fpa/fpa-data";
+import { fpaRefreshStatus } from "../lib/fpa/refresh";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -882,6 +884,11 @@ router.post("/ingest/clubs", async (req, res) => {
  * as a result — enough to tell "upstream is quiet" from "this deployment has
  * never once managed to fetch the feed" without reading the logs.
  *
+ * The same question, asked of every store this deployment serves from: the two
+ * news providers, the shipped data files, and the Fantasy Points Allowed table,
+ * whose weekly ingest is triggered from outside and so is the one that can stop
+ * most quietly.
+ *
  * Deliberately unauthenticated and free of secrets: booleans, timestamps, counts
  * and an error message, never the feed URL or the connection string.
  */
@@ -889,7 +896,18 @@ router.get("/status", (_req, res) => {
   void (async () => {
     const ingest = ingestStatus();
     const clubs = clubIngestStatus();
+    const fpa = fpaRefreshStatus();
     const nowMs = Date.now();
+
+    // Its own catch, not the one below: the FPA table is a different store with
+    // a different failure, and a query against it failing must not turn the
+    // news status — the thing this endpoint was built for — into a 500. Null
+    // means the read itself failed, which the body says rather than leaving it
+    // to look like a season with no rows.
+    const fpaSnapshot = await fpaSnapshotState().catch((err: unknown) => {
+      logger.error({ err }, "Failed to read FPA snapshot state for /api/status");
+      return null;
+    });
 
     try {
       const { changedAtMs, count } = await ensureFreshness();
@@ -941,6 +959,40 @@ router.get("/status", (_req, res) => {
           // logs, "was, min, chi" is already the answer.
           feedsFailed: clubs.clubsFailed,
           feedsStale: clubs.clubsStale,
+        },
+        // Fantasy Points Allowed, which is a weekly ingest with no traffic
+        // hook behind it and so the one most able to stop without anyone
+        // noticing — as it did, serving figures two days old while everything
+        // here reported healthy. `snapshotWrittenAt` is the line that matters:
+        // it comes from the database, so it survives a redeploy and describes
+        // the numbers actually being served rather than this process's
+        // activity. The rest is this process, and resets when it restarts.
+        fpa: {
+          ...(fpaSnapshot === null
+            ? { snapshotWrittenAt: null, error: "failed to read snapshot state" }
+            : {
+                season: fpaSnapshot.season,
+                snapshotWrittenAt: iso(fpaSnapshot.writtenAtMs),
+                secondsSinceSnapshot:
+                  fpaSnapshot.writtenAtMs === null
+                    ? null
+                    : Math.round((nowMs - fpaSnapshot.writtenAtMs) / 1000),
+                weekNumber: fpaSnapshot.weekNumber,
+                dataMode: fpaSnapshot.dataMode,
+              }),
+          // Whether POST /api/fpa/ingest requires the secret here. Unset, the
+          // endpoint is open — the same posture POST /api/ingest takes.
+          ingestGuarded: Boolean(process.env["INGEST_SECRET"]),
+          running: fpa.running,
+          lastAttempt: iso(fpa.lastAttemptMs),
+          lastSuccess: iso(fpa.lastSuccessMs),
+          secondsSinceLastSuccess:
+            fpa.lastSuccessMs === null
+              ? null
+              : Math.round((nowMs - fpa.lastSuccessMs) / 1000),
+          lastResult: fpa.lastResult,
+          lastError: fpa.lastError,
+          consecutiveFailures: fpa.consecutiveFailures,
         },
         archive: {
           items: count,

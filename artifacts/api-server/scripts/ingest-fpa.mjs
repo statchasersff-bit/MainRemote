@@ -35,6 +35,12 @@ function arg(name, fallback) {
 // reason tests/helpers/bundle.mjs does it: the source uses extensionless
 // imports, which Node's own loader does not resolve.
 const dir = await mkdtemp(path.join(appDir, ".ingest-fpa-"));
+
+// The exit code is decided here and applied after the cleanup below, not inside
+// the try: `process.exit()` does not run a pending `finally`, so exiting from
+// the success path left the temporary bundle directory behind on every run.
+let code = 0;
+
 try {
   const outfile = path.join(dir, "ingest.mjs");
   await build({
@@ -64,10 +70,13 @@ try {
       `${result.gameRows} game rows, mode ${result.dataMode}` +
       (result.isPreseason ? " (preseason)" : ` (week ${result.weekNumber})`),
   );
-  process.exit(0);
 } catch (err) {
   console.error("FPA ingest failed:", err?.stack ?? err);
-  process.exit(1);
+  code = 1;
 } finally {
   await rm(dir, { recursive: true, force: true });
 }
+
+// Explicit, because the database pool keeps the loop alive and the process
+// would otherwise hang after the work is done.
+process.exit(code);

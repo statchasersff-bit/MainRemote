@@ -57,6 +57,7 @@ const OUTLOOK_FILE = path.join(DATA_DIR, "fantasy_outlook_2026.json");
 const PRODUCTION_FILE = path.join(DATA_DIR, "player_production.json");
 const INJURIES_FILE = path.join(DATA_DIR, "player_injuries.json");
 const ROSTER_PCT_FILE = path.join(DATA_DIR, "roster_pct.json");
+const SLUG_LEDGER_FILE = path.join(DATA_DIR, "player_slugs.json");
 const ADVANCED_DIR = path.join(DATA_DIR, "advanced_stats");
 
 /** How often `players.json` is re-stat'd for an out-of-band rebuild. */
@@ -141,6 +142,9 @@ export function loadPlayers(): Player[] {
   // rows, so a stale index outliving a reload would hand out slugs for players
   // the file no longer has.
   slugsByName = null;
+  // Derived from the dictionary too: they refuse any alias a live player
+  // holds, so a reload that changes who holds what has to rebuild them.
+  slugIndexes = null;
   playersMtimeMs = mtimeMs;
   logger.info({ count: rows.length }, "Loaded player dictionary");
   return rows;
@@ -149,6 +153,86 @@ export function loadPlayers(): Player[] {
 export function getPlayerBySlug(slug: string): Player | null {
   if (!playersBySlug) loadPlayers();
   return playersBySlug?.get(slug) ?? null;
+}
+
+/* -------------------------------------------------------------- slug aliases */
+
+/**
+ * The addresses a player used to answer at, from `player_slugs.json`.
+ *
+ * A slug can change: two players share a name and the better claim to the bare
+ * form moves, or a source corrects a spelling. The page is the same page, so
+ * the old address has to keep working — as a 301, not as a second copy.
+ *
+ * The ledger is the build's output and this is the only thing that reads it at
+ * runtime. A deployment without the file simply has no aliases, which is the
+ * behaviour every other optional data file here has.
+ */
+interface SlugLedger {
+  players?: Record<string, { slug?: string; previous?: string[] }>;
+}
+
+let slugIndexes: {
+  /** old slug -> the slug that answers now. */
+  aliases: Map<string, string>;
+  /** player id -> the addresses he has left behind. */
+  previous: Map<string, string[]>;
+} | null = null;
+
+function buildSlugIndexes(): NonNullable<typeof slugIndexes> {
+  const ledger = readJson<SlugLedger>(SLUG_LEDGER_FILE, {});
+  const aliases = new Map<string, string>();
+  const previous = new Map<string, string[]>();
+
+  for (const [id, entry] of Object.entries(ledger.players ?? {})) {
+    const current = entry?.slug;
+    if (!current) continue;
+
+    const left: string[] = [];
+    for (const old of entry.previous ?? []) {
+      // The builder already strips an old address that somebody else now
+      // publishes at, but these maps are what actually send a reader
+      // somewhere, so they check again rather than trusting the file.
+      // Redirecting a live page onto a different player is the one failure
+      // worth two guards.
+      if (old === current || playersBySlug?.has(old)) continue;
+      aliases.set(old, current);
+      left.push(old);
+    }
+
+    if (left.length) previous.set(id, left);
+  }
+
+  return { aliases, previous };
+}
+
+function slugIndex(): NonNullable<typeof slugIndexes> {
+  if (!playersBySlug) loadPlayers();
+  if (!slugIndexes) slugIndexes = buildSlugIndexes();
+  return slugIndexes;
+}
+
+/**
+ * The current slug for an address that has moved, or null.
+ *
+ * Null for a slug that is current, and for one that never existed — the caller
+ * cannot tell those apart and does not need to; both mean "do not redirect".
+ */
+export function resolveSlugAlias(slug: string): string | null {
+  if (!playersBySlug) loadPlayers();
+  if (playersBySlug?.has(slug)) return null;
+  const current = slugIndex().aliases.get(slug);
+  return current && current !== slug ? current : null;
+}
+
+/**
+ * Every address this player has left behind, oldest first, or [].
+ *
+ * Handed to the WordPress builder so it can move a page it already created
+ * rather than publish a second one beside it.
+ */
+export function previousSlugsFor(id: string): string[] {
+  return slugIndex().previous.get(id) ?? [];
 }
 
 /* ------------------------------------------------------- name lookup */

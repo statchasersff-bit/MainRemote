@@ -25,8 +25,10 @@
  *   - a failure is remembered for a backoff period, so a broken upstream costs
  *     one attempt a minute rather than one per page view.
  *
- * Scheduled ingest is still the intended path (scripts/ingest-fpa.mjs). This is
- * the safety net under it.
+ * Scheduled ingest is still the intended path — POST /api/fpa/ingest weekly,
+ * or scripts/ingest-fpa.mjs against the database you mean to write to. This is
+ * the safety net under it, and only that: it fires when the table is EMPTY, so
+ * it can seed a cold database and can never refresh a stale one.
  */
 
 import fs from "node:fs";
@@ -57,37 +59,33 @@ export function invalidateFpaRenderCache(): void {
 
 /* ------------------------------------------------------------ lazy ingest */
 
-let inFlight: Promise<unknown> | null = null;
+let kicking = false;
 let lastFailureAt = 0;
 const FAILURE_BACKOFF_MS = 60_000;
 
 function kickLazyIngest(): void {
-  if (inFlight) return;
+  if (kicking) return;
   if (Date.now() - lastFailureAt < FAILURE_BACKOFF_MS) return;
 
+  kicking = true;
   logger.warn("No FPA snapshots found — starting a one-time background ingest");
 
   // Imported lazily so the ingest's nflverse code is not on the startup path of
-  // a deployment that never needs it.
-  inFlight = import("./fpa/ingest")
-    .then((m) => m.ingestFpa())
-    .then(async (result) => {
-      invalidateFpaRenderCache();
-      // The matchup pages' before/after ranks are computed from the same rows
-      // this ingest just replaced, and they are held for the life of the
-      // process — an ingest is the only event that can change one.
-      const { invalidateFpaDeltaCache } = await import("./matchup/fpa-delta");
-      invalidateFpaDeltaCache();
-      const { invalidateMatchupRenderCache } = await import("./matchup/matchup-ssr");
-      invalidateMatchupRenderCache();
-      logger.info({ result }, "Lazy FPA ingest finished");
+  // a deployment that never needs it. What happens next belongs to
+  // fpa/refresh.ts, which is also what POST /api/fpa/ingest calls: it holds the
+  // one-at-a-time guarantee across both paths, drops every cache an ingest
+  // invalidates, and records the outcome for /api/status.
+  void import("./fpa/refresh")
+    .then((m) => m.refreshFpa())
+    .then(({ result, joined }) => {
+      logger.info({ result, joined }, "Lazy FPA ingest finished");
     })
     .catch((err) => {
       lastFailureAt = Date.now();
       logger.error({ err }, "Lazy FPA ingest failed");
     })
     .finally(() => {
-      inFlight = null;
+      kicking = false;
     });
 }
 

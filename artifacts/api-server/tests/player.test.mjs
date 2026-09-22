@@ -3673,3 +3673,70 @@ describe("the player index", () => {
     );
   });
 });
+
+/**
+ * A profile whose address changed still answers at the old one.
+ *
+ * Slugs move. Two players share a name and the claim on the bare form changes
+ * hands — the Kansas City running back publishes at `kenneth-walker` now, and
+ * did not before — or a source corrects a spelling. The page is the same page,
+ * so the old URL owes a 301 rather than a 404: it is indexed under that
+ * address and the links to it are in other people's posts.
+ *
+ * Driven off `previousSlugs` in /embed/players.json rather than a hard-coded
+ * pair, for the same reason the fixture above is picked at runtime. When no
+ * slug has ever moved there is nothing to assert and the block skips.
+ */
+describe("a slug that has moved", () => {
+  let moved;
+
+  before(() => {
+    moved = roster.find((player) => (player.previousSlugs ?? []).length > 0);
+  });
+
+  test("the old profile address is a 301 to the new one", async (t) => {
+    if (!moved) return t.skip("no slug in this roster has moved");
+
+    const res = await rawGet(`/player/${moved.previousSlugs[0]}`);
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, `/player/${moved.slug}`);
+  });
+
+  test("a section address moves with it, in one hop", async (t) => {
+    if (!moved) return t.skip("no slug in this roster has moved");
+
+    const res = await rawGet(`/player/${moved.previousSlugs[0]}/injury`);
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, `/player/${moved.slug}/injury/`);
+  });
+
+  test("the reader's query survives the move", async (t) => {
+    if (!moved) return t.skip("no slug in this roster has moved");
+
+    // ?section= is the internal spelling and becomes a path segment; ?format=
+    // names a set of numbers and has to arrive intact. Both in one redirect,
+    // because two 301s for one click is a round trip nobody needs.
+    const res = await rawGet(
+      `/player/${moved.previousSlugs[0]}?section=stats&format=half`,
+    );
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.location, `/player/${moved.slug}/stats/?format=half`);
+  });
+
+  test("the new address renders, and an unknown one still 404s", async (t) => {
+    if (!moved) return t.skip("no slug in this roster has moved");
+
+    assert.equal((await rawGet(`/player/${moved.slug}`)).status, 200);
+    assert.equal((await rawGet("/player/nobody-by-that-name")).status, 404);
+  });
+
+  test("the embed resolves the old slug rather than redirecting it", async (t) => {
+    if (!moved) return t.skip("no slug in this roster has moved");
+
+    // Nobody types this address and nothing indexes it — it is the fetch a
+    // WordPress page makes for its own body — so a 301 would only cost that
+    // page a round trip.
+    const res = await rawGet(`/embed/player/${moved.previousSlugs[0]}`);
+    assert.equal(res.status, 200);
+  });
+});
