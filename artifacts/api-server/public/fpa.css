@@ -38,6 +38,14 @@
      so it wants to be scanned in one screenful rather than scrolled: these two
      are what set the row height, and they are here so it stays one decision. */
   --scf-cell-pad-y: 2px;
+  /* The x half, and a token for the same reason the y half is one — but also
+     for a second: the narrow tiers tighten it to 7px, and the theme armour at
+     the foot of this file restates cell padding at a specificity Divi cannot
+     reach. A literal in both places means the armour lands AFTER the tier and
+     puts the 10px back, on the one screen where the 3px is the difference
+     between the last column fitting and scrolling off. Retuning the token
+     leaves nothing to win: both rules read whatever the tier set. */
+  --scf-cell-pad-x: 10px;
   --scf-crest: 22px;
 
   --sc-shell: 1180px;
@@ -469,7 +477,7 @@ body.scf-page {
      read as a pinstripe rather than as the top of the table. 5px against an
      11px label on 1.12 puts the band at roughly 23px, half again what it was,
      and costs the table a dozen pixels once. */
-  padding: 5px 10px;
+  padding: 5px var(--scf-cell-pad-x);
   /* The brand navy — the same one the active control pill wears, so the page
      carries one blue. It has to be opaque anyway: the header is sticky and the
      rows scroll under it. Rounded like the data cells below, because
@@ -496,7 +504,7 @@ body.scf-page {
 }
 
 .scf-team {
-  padding: var(--scf-cell-pad-y) 10px;
+  padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
   text-align: left;
   font-weight: 700;
   white-space: nowrap;
@@ -571,7 +579,7 @@ body.scf-page {
    * contained by it is clipped with the rest of the table.
    */
   position: relative;
-  padding: var(--scf-cell-pad-y) 10px;
+  padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
   /* The team cell is two lines now, so everything beside it centres against it
      rather than sitting on the first line's baseline. */
   vertical-align: middle;
@@ -638,7 +646,7 @@ body.scf-page {
 .scf-cell[data-tier="tough-2"] .scf-rank { color: var(--scf-tough-2-ink); }
 
 .scf-games {
-  padding: var(--scf-cell-pad-y) 10px;
+  padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
   vertical-align: middle;
   text-align: right;
   color: var(--sc-muted);
@@ -780,13 +788,17 @@ body.scf-page {
   }
 
   /* The columns are down to their labels and four digits; the gutters can come
-     in with them. This is what gets a 375px phone under the wire. */
+     in with them. This is what gets a 375px phone under the wire.
+
+     The token rather than `padding-left`/`padding-right`, because the theme
+     armour at the foot of this file restates cell padding at a specificity
+     nothing here can reach — a literal would be put back to 10px, and those
+     3px a side across seven columns are exactly the wire. */
   .scf-cell,
   .scf-team,
   .scf-games,
   .scf-table thead th {
-    padding-left: 7px;
-    padding-right: 7px;
+    --scf-cell-pad-x: 7px;
   }
 
   /* With the rank gone the figure is alone in the cell, so it can sit under the
@@ -929,8 +941,7 @@ body.scf-page {
   .scf-team,
   .scf-games,
   .scf-table thead th {
-    padding-left: 7px;
-    padding-right: 7px;
+    --scf-cell-pad-x: 7px;
   }
 
   .scf-cell {
@@ -1036,10 +1047,11 @@ body.scf-page {
 /*                                                                         */
 /* Which of ours those beat is a specificity question with three answers.  */
 /* `.scf-cell` is one class and loses to one class plus two elements.      */
-/* `.scf-table thead th` TIES, and a tie is settled by which stylesheet    */
-/* WordPress enqueued last — ours, today, which is not a thing this file   */
-/* should be betting the layout on. And `border-top` we never declare at   */
-/* all, so the theme's is simply adopted.                                  */
+/* `.scf-table thead th` TIED, and a tie is settled by which stylesheet    */
+/* WordPress enqueued last — which stopped being ours, and cost the table  */
+/* the games column on a phone. Every th rule below now carries a second   */
+/* class for that reason; do not take it off. And `border-top` we never    */
+/* declare at all, so the theme's is simply adopted.                       */
 /*                                                                         */
 /* Two symptoms were reported from the live site and both are here: the    */
 /* column headers went grey (Divi colouring the <button> the sort control  */
@@ -1066,25 +1078,38 @@ body.scf-page {
 .scf-table .scf-cell,
 .scf-table .scf-team,
 .scf-table .scf-games {
-  padding: var(--scf-cell-pad-y) 10px;
+  padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
 }
 
 /* This table draws its grid with right and bottom lines only — see "The inner
    grid" above. A theme's `border-top` is a line it never asked for, and
    because nothing above declares that side, there is nothing to outrank it. */
-.scf-table thead th,
-.scf-table tbody th,
-.scf-table tbody td {
+.scf .scf-table thead th,
+.scf .scf-table tbody th,
+.scf .scf-table tbody td {
   border-top: 0;
 }
 
-/* The header band, and the sort control the bundle builds inside it. */
-.scf-table thead th {
-  padding: 5px 10px;
+/*
+ * The header band, and the sort control the bundle builds inside it.
+ *
+ * `.scf` in front is load-bearing, and it is the tie this block's own preamble
+ * warned about coming due. `.scf-table thead th` is one class and two elements;
+ * so is Divi's `.entry-content tr th { padding: 9px 24px }`. A tie is settled
+ * by which stylesheet WordPress enqueued last, and on the published site that
+ * stopped being ours: the header cells took 24px a side, the table grew 53px
+ * wider than the column it sits in, and the games column scrolled off the
+ * right of the phone. Two classes and two elements is not a tie.
+ *
+ * Every other armour rule here already carries the second class, or wins on
+ * class count against a bare element. This was the one that did not.
+ */
+.scf .scf-table thead th {
+  padding: 5px var(--scf-cell-pad-x);
   color: #fff;
 }
 
-.scf-table thead th .scf-sort {
+.scf .scf-table thead th .scf-sort {
   padding: 0;
   border: 0;
   background: none;
@@ -1094,7 +1119,7 @@ body.scf-page {
   text-transform: inherit;
 }
 
-.scf-table thead th .scf-sort:hover {
+.scf .scf-table thead th .scf-sort:hover {
   color: var(--sc-gold-soft);
 }
 

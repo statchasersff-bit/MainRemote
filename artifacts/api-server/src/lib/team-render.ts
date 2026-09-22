@@ -248,8 +248,43 @@ function siteLink(
 
 /* ------------------------------------------------------------------- hero */
 
+/**
+ * The place alone, out of a standing that spells the division out after it.
+ *
+ * ESPN sends "2nd in AFC East", and the division half of that is the chip
+ * immediately to its left — so it is the one piece of text in this row that can
+ * go without taking a fact with it. Returns nothing if the string is not in
+ * that shape: ESPN also sends bare places ("1st"), and a club with no division
+ * standing at all gets whatever it does send, unshortened.
+ */
+function shortStanding(standing: string): string | undefined {
+  const place = standing.split(/\s+in\s+/)[0]?.trim();
+  return place && place !== standing.trim() ? place : undefined;
+}
+
+/**
+ * A fact chip, and the order in which the row gives things up.
+ *
+ * `spend` is the rung at which this chip's short form takes over. The row goes
+ * down the ladder one rung at a time and stops as soon as it fits, so the order
+ * is a ranking of what a reader can most afford to lose:
+ *
+ *   short — the standing's division, which is the chip two to its left;
+ *   tight — "Week 11" down to "W11", where the label still says BYE.
+ *
+ * Adding a rung means a name here, a rule in team.css, and its place in
+ * STAGES in client/team.ts. Nothing else reads these.
+ */
+interface HeroFact {
+  label: string;
+  value: string;
+  /** The same fact, shorter. Without one the chip never changes. */
+  short?: string;
+  spend?: "short" | "tight";
+}
+
 function heroFacts(data: TeamPageData): string {
-  const facts: Array<{ label: string; value: string }> = [];
+  const facts: HeroFact[] = [];
 
   facts.push({ label: "Division", value: data.team.division });
 
@@ -259,27 +294,55 @@ function heroFacts(data: TeamPageData): string {
     facts.push({ label: "Record", value: data.profile.record });
   }
   if (data.profile?.standing) {
-    facts.push({ label: "Standing", value: data.profile.standing });
+    facts.push({
+      label: "Standing",
+      value: data.profile.standing,
+      short: shortStanding(data.profile.standing),
+      spend: "short",
+    });
   }
   if (data.profile?.headCoach) {
     facts.push({ label: "Head Coach", value: data.profile.headCoach });
   }
   if (data.schedule?.byeWeek) {
-    facts.push({ label: "Bye", value: `Week ${data.schedule.byeWeek}` });
+    // "W11" only ever shows under a label that already says BYE, which is what
+    // makes a single letter readable: the chip is "BYE / W11", not "W11".
+    facts.push({
+      label: "Bye",
+      value: `Week ${data.schedule.byeWeek}`,
+      short: `W${data.schedule.byeWeek}`,
+      spend: "tight",
+    });
   }
 
   if (facts.length === 0) return "";
 
+  // Both spellings ship, and one of them is `display: none` — so exactly one is
+  // in the accessibility tree and each fact is announced once. Which one shows
+  // is client/team.ts's only layout decision: it is made by measuring this row,
+  // because the width at which five chips stop fitting depends on a coach's
+  // name as much as on the window. With no script the row keeps every full
+  // form and wraps, which is what it did before there were short ones. The
+  // full text is on the chip's `title` either way.
   return (
-    `<ul class="sct-facts">` +
+    `<ul class="sct-facts" data-sct-facts>` +
     facts
-      .map(
-        (fact) =>
-          `<li class="sct-fact">` +
+      .map((fact) => {
+        const swaps = fact.short && fact.spend;
+        const value = swaps
+          ? `<span class="sct-swap sct-swap--full">${escapeHtml(fact.value)}</span>` +
+            `<span class="sct-swap sct-swap--short">${escapeHtml(fact.short!)}</span>`
+          : escapeHtml(fact.value);
+        const spend = swaps
+          ? ` data-sct-spend="${fact.spend}" title="${escapeHtml(fact.value)}"`
+          : "";
+        return (
+          `<li class="sct-fact"${spend}>` +
           `<span class="sct-fact-label">${escapeHtml(fact.label)}</span>` +
-          `<span class="sct-fact-value">${escapeHtml(fact.value)}</span>` +
-          `</li>`,
-      )
+          `<span class="sct-fact-value">${value}</span>` +
+          `</li>`
+        );
+      })
       .join("") +
     `</ul>`
   );
@@ -403,6 +466,14 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     ` alt="${escapeHtml(`${team.fullName} logo`)}" width="88" height="88"` +
     ` fetchpriority="high" decoding="sync" />` +
     `</div>` +
+    // One wrapper around the three blocks beside the crest, because the row
+    // they share has to break on its CONTENT rather than at a width. The
+    // switcher is a pill as wide as the team's name — "Washington Commanders"
+    // is 265px, "Chicago Bears" is 190 — so the width at which it stops fitting
+    // beside the title is a different width for every team. A flex row that
+    // wraps answers that per team; a media query can only answer it once, for
+    // the worst case. See .sct-hero-head in team.css.
+    `<div class="sct-hero-head">` +
     `<div class="sct-hero-text">` +
     `<p class="sct-eyebrow">${escapeHtml(`${team.division} · ${data.state.season} Season`)}</p>` +
     `<${headingTag} class="sct-title">${escapeHtml(heroTitle)}</${headingTag}>` +
@@ -419,10 +490,11 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     // empty underneath the button. On its own grid row it spans under the
     // switcher and stays one line to roughly 780px, below which the hero
     // restacks anyway. Kept after .sct-hero-text in the markup so the reading
-    // and tab order is still name, then facts, then the switcher; where the
-    // row lands is grid-template-areas' business.
+    // and tab order is still name, then facts, then the switcher; that it is
+    // PAINTED after the switcher is one `order` declaration in team.css.
     `<div class="sct-hero-meta">${heroFacts(data)}${updated}</div>` +
     `<div class="sct-hero-actions">${teamSwitcher(team, options)}</div>` +
+    `</div>` +
     `</div>` +
     `</header>`
   );

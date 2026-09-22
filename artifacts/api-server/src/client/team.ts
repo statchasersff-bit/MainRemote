@@ -523,6 +523,96 @@ function wireFrameHeight(root: HTMLElement): void {
   }
 }
 
+/* ------------------------------------------------------------- hero facts */
+
+/**
+ * Shorten the hero's fact chips, a rung at a time, rather than let them wrap.
+ *
+ * Five chips need between 555px (Washington) and 617px (Minnesota) on one
+ * line — the spread is the coach's name, mostly — and under that the Bye chip
+ * drops to a row of its own with the rest of the line left empty. Two of the
+ * chips carry a shorter spelling of themselves for that, and they are spent in
+ * the order a reader can most afford:
+ *
+ *   short — "2nd in AFC East" → "2nd", about 60px. The division it drops is
+ *           the chip two to its left, so nothing leaves the row.
+ *   tight — "Week 11" → "W11", about 35px, under a label that reads BYE.
+ *
+ * The row stops at the first rung that fits, so most widths spend nothing and
+ * a narrow one spends only what it has to. Under that it wraps, as it always
+ * did — there is no third rung, and four facts in a row is not worth a puzzle.
+ *
+ * Measured rather than written as breakpoints because the width where five
+ * chips stop fitting is a different width for all 32 clubs — the same reason
+ * the switcher beside them wraps on its content (see .sct-hero-head in
+ * team.css). A single number would take the division off half the league while
+ * it still fits, and leave the other half wrapping before it was spent.
+ *
+ * Each rung is decided from the state above it, starting at the full forms: the
+ * attribute comes off, the row is measured, and a rung is spent only if it is
+ * still wrapping. Measuring in the short form would answer a different
+ * question — "does the short form fit", which stays true long after the full
+ * one stopped fitting — and the row would never climb back.
+ */
+/** The rungs, in the order they are spent. See `data-sct-spend` in the HTML. */
+const FACT_STAGES = ["short", "tight"];
+function wireFacts(root: HTMLElement): void {
+  const facts = root.querySelector<HTMLElement>("[data-sct-facts]");
+  if (!facts) return;
+  const chips = Array.from(facts.children) as HTMLElement[];
+  if (chips.length < 2) return;
+  // The box whose width is the row's available width. It is `flex: 1 0 100%`,
+  // so the swap below cannot change it — which is what makes it safe to watch.
+  const column = facts.parentElement;
+  if (!column) return;
+
+  const wrapped = (): boolean => {
+    const top = chips[0]!.offsetTop;
+    return chips.some((chip) => chip.offsetTop > top);
+  };
+
+  let lastWidth = -1;
+  const fit = (): void => {
+    const width = Math.round(column.getBoundingClientRect().width);
+    // Height changes are this function's own doing; only a width change can
+    // change its answer, and ignoring the rest is what stops the observer
+    // below from feeding itself.
+    if (width === lastWidth) return;
+    lastWidth = width;
+
+    facts.removeAttribute("data-sct-facts-form");
+    // Below 720px the chips are a two-column grid where every chip after the
+    // first two is legitimately on another row, so "did it wrap" means nothing
+    // and the full spellings fit their columns anyway.
+    if (getComputedStyle(facts).display !== "flex") return;
+
+    const spent: string[] = [];
+    for (const stage of FACT_STAGES) {
+      if (!wrapped()) break;
+      spent.push(stage);
+      // Applied before the next pass measures, so each rung is judged on what
+      // the one above it actually bought.
+      facts.setAttribute("data-sct-facts-form", spent.join(" "));
+    }
+  };
+
+  fit();
+  // `typeof`, not `"ResizeObserver" in window`: the `in` form narrows `window`
+  // itself, and the else branch then has no `window` left to listen on.
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(() => fit()).observe(column);
+  } else {
+    window.addEventListener("resize", fit);
+  }
+  // Web fonts land after this runs and change every one of these widths.
+  if (document.fonts?.ready) {
+    void document.fonts.ready.then(() => {
+      lastWidth = -1;
+      fit();
+    });
+  }
+}
+
 /* ------------------------------------------------------------------ boot */
 
 function boot(): void {
@@ -532,6 +622,7 @@ function boot(): void {
   for (const root of roots) {
     wireTabs(root);
     wireSwitcher(root);
+    wireFacts(root);
     wireTimestamps(root);
     wireSortableTables(root);
     wireFrameHeight(root);

@@ -36,6 +36,15 @@
   --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --scr-gutter: 24px;
 
+  /* The All board's cell padding, as a token rather than a literal, because
+     two rules want to set it and one of them must not win. The narrow tier
+     tightens it to 5px/4px; the theme armour at the foot of this file restates
+     it at a specificity Divi cannot reach, and lands AFTER the tier. A literal
+     in both places puts the desktop value back on a phone — see the same
+     lesson, learned the expensive way, in fpa.css. */
+  --scr-all-pad-y: 6px;
+  --scr-all-pad-x: 8px;
+
   /*
    * The tier scale: NOMINAL, not ordinal.
    *
@@ -363,7 +372,7 @@ body.scr-page.is-embed {
 }
 
 .scr-all-rank {
-  padding: 6px 8px;
+  padding: var(--scr-all-pad-y) var(--scr-all-pad-x);
   text-align: center;
   font-size: 12px;
   font-weight: 800;
@@ -373,7 +382,7 @@ body.scr-page.is-embed {
 }
 
 .scr-all-cell {
-  padding: 6px 8px;
+  padding: var(--scr-all-pad-y) var(--scr-all-pad-x);
   vertical-align: middle;
 }
 
@@ -732,9 +741,12 @@ a.scr-player-link:hover {
     font-size: 11px;
   }
 
+  /* The token, not the property: the theme armour restates this padding
+     further down the file and would otherwise put 6px/8px straight back. */
   .scr-all-cell,
   .scr-all-rank {
-    padding: 5px 4px;
+    --scr-all-pad-y: 5px;
+    --scr-all-pad-x: 4px;
   }
 
   /* The team badge is the first thing to go: it is the least of the three
@@ -811,4 +823,94 @@ a.scr-player-link:hover {
 
 .scr :is(ul, ol, li) {
   list-style: none !important;
+}
+
+/* ====================================================================== */
+/* Theme armour                                                            */
+/*                                                                         */
+/* Every declaration below RESTATES one already made above, at a           */
+/* specificity a host theme cannot reach. Nothing here is a new design     */
+/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* this block is the one that is wrong.                                    */
+/*                                                                         */
+/* Standalone this file is the only stylesheet and none of it does         */
+/* anything. Embedded, the fragment is printed inside somebody else's      */
+/* content area, and Divi styles BARE ELEMENTS in there:                   */
+/*                                                                         */
+/*     .entry-content table  { border: 1px solid #eee; margin: 0 0 15px }  */
+/*     .entry-content tr td  { border-top: 1px solid #eee; padding: 6px }  */
+/*     .entry-content tr th  { padding: 9px 24px }                         */
+/*     .entry-content a      { color: #2ea3f2 }                            */
+/*                                                                         */
+/* Measured against a simulated Divi page rather than guessed at: the      */
+/* All board's rank column went from 28px wide to 62px, every name cell    */
+/* grew, and the board lost five rows off a phone screen — twenty-one      */
+/* names became sixteen — because a one-class rule cannot hold `padding`   */
+/* against one class and two elements. Every name, every CSV link and      */
+/* every profile button also turned Divi's link blue.                      */
+/*                                                                         */
+/* The `thead th` rules are the dangerous shape: `.scr-all-table thead th` */
+/* is one class and two elements and so is Divi's selector, which is a TIE */
+/* settled by whichever stylesheet WordPress enqueued last. fpa.css bet a  */
+/* layout on winning that coin toss and lost it in production. Two classes */
+/* and two elements is not a tie; do not take the `.scr` off these.        */
+/*                                                                         */
+/* Bare-element PADDING on p/headings/lists is already armed by the        */
+/* `:where()` reset near the top of this file; nothing about it here.      */
+/* ====================================================================== */
+
+/* The table frames. One class loses to `.entry-content table`, which brings an
+   outer border and 15px of margin the boards do not draw. */
+.scr .scr-all-table,
+.scr .scr-table {
+  margin: 0;
+  border: 0;
+}
+
+/* The header bands — the tie described above, on both boards. */
+.scr .scr-all-table thead th,
+.scr .scr-table thead th {
+  padding: 8px 10px;
+}
+
+.scr .scr-tier-head th {
+  padding: 5px 14px;
+}
+
+/* The tier board's rows. Divi takes the padding outright and recolours the
+   separator to its own #eee, which is a heavier line than this board draws. */
+.scr .scr-row td,
+.scr .scr-row th {
+  padding: 7px 10px;
+  border-top: 1px solid rgba(229, 231, 235, 0.7);
+}
+
+/* The All board's cells, through the token so the narrow tier still lands —
+   see the note on `--scr-all-pad-x`. This is the one that costs rows: five
+   names off a phone screen when Divi's 6px replaces 4px across five columns
+   and 40 rows. */
+.scr .scr-all-rank,
+.scr .scr-all-cell {
+  padding: var(--scr-all-pad-y) var(--scr-all-pad-x);
+}
+
+/* The All board draws its row separators with `.scr-all-row + .scr-all-row`,
+   which already outranks the theme — but that selector cannot match the FIRST
+   row, so Divi's `border-top` lands there unopposed and prints a hairline
+   under the header band that this file never asks for. */
+.scr .scr-all-row:first-child > * {
+  border-top: 0;
+}
+
+/* Links. Each of these is a brand colour doing a job — the player's name in
+   the tool's ink, the muted CSV and profile controls — and a theme's one link
+   blue flattens the distinction between all of them. */
+.scr .scr-all-name,
+.scr .scr-player-link {
+  color: var(--sc-ink);
+}
+
+.scr .scr-csv,
+.scr .scr-cta {
+  color: var(--sc-muted-strong);
 }
