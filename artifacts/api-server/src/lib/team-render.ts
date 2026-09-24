@@ -68,6 +68,7 @@ import {
   type RosterPlayer,
 } from "./team/roster";
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
+import { scheduleItemList } from "./team/schedule-schema";
 import { canonicalizeMatchupPair } from "./matchup/pair";
 import {
   getFPAUrl,
@@ -133,12 +134,27 @@ export const PUBLIC_SECTIONS = [
   "news",
 ] as const;
 
-/** The pretty address of one section: `<prefix><slug>/<section>/`. */
+/**
+ * The section the hub itself is.
+ *
+ * The hub opens on the Outlook, so `/<slug>/` and `/<slug>/outlook/` were one
+ * page answering at two self-canonical addresses. The hub keeps it:
+ * `/outlook/` is a 301 to the hub, and the Outlook tab links there. It stays in
+ * PUBLIC_SECTIONS so the old address redirects instead of 404ing — it is
+ * indexed. The twin of PROFILE_SECTION in routes/player.ts.
+ */
+export const HUB_SECTION = "outlook";
+
+/**
+ * The pretty address of one section: `<prefix><slug>/<section>/`, or the hub's
+ * own `<prefix><slug>/` for the Outlook. See HUB_SECTION.
+ */
 export function sectionPath(
   prefix: string,
   slug: string,
   section: string,
 ): string {
+  if (section === HUB_SECTION) return `${prefix}${slug}/`;
   return `${prefix}${slug}/${section}/`;
 }
 
@@ -174,6 +190,19 @@ const SECTION_HEADINGS: Record<string, string> = {
  * and outlook are all read as belonging to one season, and the year is part of
  * the phrase people type for each of them.
  */
+/**
+ * The heading of the hub itself: "Buffalo Bills Fantasy Football Outlook &
+ * Stats 2026".
+ *
+ * The hub's address is the Outlook's — `/outlook/` 301s here — so this is also
+ * the Outlook tab's heading. It replaced the panel's "2026 Fantasy Outlook",
+ * which names no team, read the same on all 32 hubs, and was word for word the
+ * H1 of `/outlook/` besides. Mirrored by statchasers_team_heading() in PHP.
+ */
+export function teamHubHeading(teamName: string, season: number): string {
+  return `${teamName} Fantasy Football Outlook & Stats ${season}`;
+}
+
 export function teamSectionHeading(
   teamName: string,
   section: string,
@@ -217,11 +246,16 @@ export function h2(text: string, extraClass = ""): string {
  * `extraClass` is preserved, because some headings carry one and the styling
  * hangs off `.sct-h2` either way: this changes the document outline and nothing
  * a reader can see.
+ *
+ * `text` replaces the heading's words as well, so the H1 is in the address's
+ * words rather than the panel's: the hub's is teamHubHeading() and a section's
+ * is teamSectionHeading(), the same strings the strip hands the host's H1.
  */
-function promoteHeading(html: string): string {
+function promoteHeading(html: string, text?: string): string {
   return html.replace(
     /<h2 class="(sct-h2[^"]*)">([\s\S]*?)<\/h2>/,
-    '<h1 class="$1">$2</h1>',
+    (_, className: string, inner: string) =>
+      `<h1 class="${className}">${text === undefined ? inner : escapeHtml(text)}</h1>`,
   );
 }
 
@@ -620,9 +654,14 @@ function renderNav(
 
   const items = sections
     .map((section) => {
-      const heading =
-        teamSectionHeading(team.fullName, section.id, season) ?? team.fullName;
-      const lead = teamPageMeta(team, season, "", section.id).description;
+      // The Outlook is the hub: its address is the hub's (sectionPath) and its
+      // heading is the hub's. `/outlook/` only 301s back here.
+      const isHub = section.id === HUB_SECTION;
+      const heading = isHub
+        ? teamHubHeading(team.fullName, season)
+        : (teamSectionHeading(team.fullName, section.id, season) ?? team.fullName);
+      const lead = teamPageMeta(team, season, "", isHub ? undefined : section.id)
+        .description;
 
       return (
         `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
@@ -1820,6 +1859,33 @@ function faqBlock(list: string, note = ""): string {
     (note ? `<p class="sct-note">${escapeHtml(note)}</p>` : "") +
     list +
     `</div>`
+  );
+}
+
+/**
+ * The Schedule page's games as an ItemList — see team/schedule-schema.ts.
+ *
+ * Carried the way faqSchema() carries the questions: an inert island in an
+ * embed, for the plugin to graft into Rank Math's graph, and JSON-LD of its own
+ * on the standalone page. Only the Schedule section page emits it; the hub
+ * describes a team, and a list of games there would describe one tab of it.
+ */
+function scheduleSchema(data: TeamPageData, options: TeamRenderOptions): string {
+  const node = data.schedule ? scheduleItemList(data.team, data.schedule) : null;
+  if (!node) return "";
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="sct-schedule-data">` +
+      escapeJsonLd(JSON.stringify(node)) +
+      `</script>`
+    );
+  }
+
+  return (
+    `<script type="application/ld+json">` +
+    escapeJsonLd(JSON.stringify({ "@context": "https://schema.org", ...node })) +
+    `</script>`
   );
 }
 
@@ -3520,7 +3586,10 @@ export function renderTeamPage(
    * is why a stale section link degrades to the full page rather than 404ing.
    */
   const scopedSection = String(options.section ?? "");
-  const scoped = scopedSection
+  // The Outlook is not a section page: it is the hub, which opens on it.
+  // `/outlook/` 301s to the hub, and anything that still asks for it scoped
+  // gets the hub rather than a second copy at a second address.
+  const scoped = scopedSection && scopedSection !== HUB_SECTION
     ? sections.find((entry) => entry.id === scopedSection)
     : undefined;
 
@@ -3540,13 +3609,19 @@ export function renderTeamPage(
       renderNav(tabs, team, data.state.season, options, scoped.id) +
       `<section class="sct-section is-default is-active" data-sct-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
-      (options.ownHeading ? promoteHeading(scoped.html) : scoped.html) +
+      (options.ownHeading
+        ? promoteHeading(
+            scoped.html,
+            teamSectionHeading(team.fullName, scoped.id, data.state.season) ?? undefined,
+          )
+        : scoped.html) +
       `</section>` +
       renderResources(team) +
       renderTails([scoped]) +
       // Scoped to this section: a Schedule page carrying the Stats questions
       // would be structured data describing a page the reader is not on.
       faqSchema(scoped.faq ?? [], options) +
+      (scoped.id === "schedule" ? scheduleSchema(data, options) : "") +
       `</div>`
     );
   }
@@ -3567,8 +3642,11 @@ export function renderTeamPage(
         ` data-sct-panel id="${escapeHtml(section.id)}"` +
         ` aria-labelledby="${escapeHtml(section.id)}-tab">` +
         // Only the panel the page opens on, so the document has one H1
-        // whichever tab a reader switches to.
-        (options.ownHeading && i === 0 ? promoteHeading(section.html) : section.html) +
+        // whichever tab a reader switches to. It reads as the hub rather than
+        // as the panel: this address is the hub.
+        (options.ownHeading && i === 0
+          ? promoteHeading(section.html, teamHubHeading(team.fullName, data.state.season))
+          : section.html) +
         `</section>`,
     )
     .join("");

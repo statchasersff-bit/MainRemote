@@ -48,11 +48,12 @@ const TEMPLATES = {
   /**
    * A player's profile. `{player}` is the site's own slug, not one derived
    * from the name — see getPlayerProfileUrl().
+   *
+   * It defaulted to `/nfl/players/outlook/{player}/`, a retired layout whose
+   * old pages still resolved, so every team hub linked readers and crawlers to
+   * a stale copy. The plugin now 301s that layout to the profile.
    */
-  playerProfile: template(
-    "SC_PLAYER_PROFILE_URL_TEMPLATE",
-    "/nfl/players/outlook/{player}/",
-  ),
+  playerProfile: template("SC_PLAYER_PROFILE_URL_TEMPLATE", "/nfl/players/{player}/"),
   /** The site's tool index. Given by the site's owner, not guessed. */
   tools: template("SC_TOOLS_URL", "/nfl/fantasy-football-tools/"),
   sos: template("SC_SOS_URL", "/nfl/fantasy-football-strength-of-schedule/"),
@@ -143,6 +144,17 @@ export function getPlayerProfileUrl(
   playerName: string | null | undefined,
 ): string | null {
   const slug = getPlayerSlugByName(playerName);
+  if (!slug) return null;
+  return fill(TEMPLATES.playerProfile, { player: slug, slug });
+}
+
+/**
+ * A player's page on statchasers.com, from a slug already resolved against the
+ * dictionary — what the rankings rows carry. Null without one.
+ */
+export function getPlayerPageUrl(
+  slug: string | null | undefined,
+): string | null {
   if (!slug) return null;
   return fill(TEMPLATES.playerProfile, { player: slug, slug });
 }

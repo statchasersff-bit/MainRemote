@@ -24,6 +24,7 @@ import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderTeamAppPage, renderTeamFragment } from "../lib/team-ssr";
 import {
+  HUB_SECTION,
   PUBLIC_SECTIONS,
   renderTeamIndex,
   renderTeamIndexFragment,
@@ -105,6 +106,17 @@ function isPublicSection(id: string): id is (typeof PUBLIC_SECTIONS)[number] {
 /** The query a redirect carries: `embed` only, never the section. */
 function embedQuery(req: Request): string {
   return isEmbed(req) ? "?embed=1" : "";
+}
+
+/**
+ * A section's address on this origin. The hub is `/team/<slug>` here, without
+ * the slash sectionPath() gives it, because that is the form the hub's own
+ * canonical names — so the Outlook, which is the hub, redirects there.
+ */
+function teamSectionPath(slug: string, section: string): string {
+  return section === HUB_SECTION
+    ? `${TEAM_PATH_PREFIX}${slug}`
+    : sectionPath(TEAM_PATH_PREFIX, slug, section);
 }
 
 function teamNotFound(res: Response): void {
@@ -258,7 +270,7 @@ router.get("/team/:slug", (req, res) => {
       if (scoped && isPublicSection(scoped)) {
         res.redirect(
           301,
-          `${sectionPath(TEAM_PATH_PREFIX, canonicalTeam.slug, scoped)}${embedQuery(req)}`,
+          `${teamSectionPath(canonicalTeam.slug, scoped)}${embedQuery(req)}`,
         );
         return;
       }
@@ -277,7 +289,7 @@ router.get("/team/:slug", (req, res) => {
       if (scoped && isPublicSection(scoped)) {
         res.redirect(
           301,
-          `${sectionPath(TEAM_PATH_PREFIX, alias.slug, scoped)}${embedQuery(req)}`,
+          `${teamSectionPath(alias.slug, scoped)}${embedQuery(req)}`,
         );
         return;
       }
@@ -313,6 +325,11 @@ router.get("/team/:slug/:section", (req, res) => {
         sectionNotFound(res, canonicalTeam);
         return;
       }
+      // The Outlook is the hub. See HUB_SECTION.
+      if (scoped === HUB_SECTION) {
+        res.redirect(301, `${teamSectionPath(canonicalTeam.slug, scoped)}${embedQuery(req)}`);
+        return;
+      }
       await sendTeamPage(req, res, canonicalTeam, scoped);
       return;
     }
@@ -325,7 +342,7 @@ router.get("/team/:slug/:section", (req, res) => {
       }
       res.redirect(
         301,
-        `${sectionPath(TEAM_PATH_PREFIX, alias.slug, scoped)}${embedQuery(req)}`,
+        `${teamSectionPath(alias.slug, scoped)}${embedQuery(req)}`,
       );
       return;
     }

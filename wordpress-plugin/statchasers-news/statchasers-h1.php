@@ -620,6 +620,91 @@ add_filter(
 );
 
 /**
+ * Take the emptied title out of the document.
+ *
+ * The rule below hides the husk from readers, but not from anyone who reads
+ * the source: an SEO audit of the player pages found
+ * `<h1 class="entry-title main_title"></h1>` in View Source and reported the
+ * page's H1 as empty — a second, blank H1 beside the one the tool supplies.
+ * A filter on the text cannot remove the element, so this removes it from the
+ * output instead.
+ *
+ * Buffered, which the file header argues against, but not the document. Divi's
+ * page.php prints the title between the loop starting and `the_content()`, so
+ * the buffer opens at `loop_start` and closes the first time `the_content` is
+ * filtered: an <article> tag, the title, perhaps a thumbnail, and nothing that
+ * this plugin is not already rewriting. The same guards as the title filter
+ * decide when it opens at all, so it only ever exists on the page whose title
+ * was emptied.
+ *
+ * `loop_end` flushes whatever is still open, for a template that never calls
+ * `the_content()`. The level check keeps it from closing a buffer that
+ * somebody else opened inside ours.
+ */
+function statchasers_h1_strip_husk( string $html ): string {
+	return (string) preg_replace( '#<h1\b[^>]*\bentry-title\b[^>]*>\s*</h1>\s*#i', '', $html );
+}
+
+/** The buffer level `loop_start` opened, or 0 when none is open. */
+function statchasers_h1_husk_level( ?int $set = null ): int {
+	static $level = 0;
+
+	if ( null !== $set ) {
+		$level = $set;
+	}
+
+	return $level;
+}
+
+/** @param mixed $query The WP_Query that is starting its loop. */
+function statchasers_h1_husk_open( $query ): void {
+	if ( 0 !== statchasers_h1_husk_level() || ! statchasers_h1_should_replace() ) {
+		return;
+	}
+
+	if ( ! is_object( $query ) || ! method_exists( $query, 'is_main_query' ) || ! $query->is_main_query() ) {
+		return;
+	}
+
+	if ( ! statchasers_h1_mounts_a_tool() ) {
+		return;
+	}
+
+	ob_start();
+	statchasers_h1_husk_level( ob_get_level() );
+}
+
+/** Close the buffer, if it is still ours, and print it without the husk. */
+function statchasers_h1_husk_close(): void {
+	$level = statchasers_h1_husk_level();
+
+	if ( 0 === $level ) {
+		return;
+	}
+
+	// -1 rather than 0: the loop may run again (a second main-query loop in a
+	// template), and the page has had its title printed once already.
+	statchasers_h1_husk_level( -1 );
+
+	if ( ob_get_level() !== $level ) {
+		return;
+	}
+
+	echo statchasers_h1_strip_husk( (string) ob_get_clean() ); // phpcs:ignore WordPress.Security.EscapeOutput -- the theme's own output, minus one element.
+}
+
+add_action( 'loop_start', 'statchasers_h1_husk_open', 0 );
+add_action( 'loop_end', 'statchasers_h1_husk_close', PHP_INT_MAX );
+add_filter(
+	'the_content',
+	static function ( $content ) {
+		statchasers_h1_husk_close();
+		return $content;
+	},
+	0
+);
+
+/**
  * The two rules the plugin's own markup needs, and no more.
  *
  * Printed rather than enqueued: which stylesheet handle is on the page depends

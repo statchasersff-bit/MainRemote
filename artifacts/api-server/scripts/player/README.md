@@ -22,7 +22,7 @@ this order:
 | 1 | `buildPlayersIndex.js` | `players.json`, `player_slugs.json` | Sleeper player dictionary |
 | 1a | `migrateSlugs.js` | the slug-keyed files, in place | `player_slugs.json` |
 | 2 | `buildDepthCharts.js` | `depth_charts.json` | OurLads (scraped, needs `cheerio`) |
-| 3 | `buildIndexedPlayers.js` | `indexed_players.json`, `indexed_players_by_team.json` | the two above |
+| 3 | `buildIndexedPlayers.js` | `indexed_players.json`, `indexed_players_by_team.json` | the two above, plus its own previous output (see below) |
 | 4 | `buildGameLogs.js` | `game_logs/<season>.json` | Sleeper weekly stats |
 | 5 | `buildGameScores.js` | `game_scores.json` | ESPN scoreboard |
 | 6 | `buildDraft.js` | `draft.json` | ESPN athlete search |
@@ -33,6 +33,13 @@ this order:
 | 10 | `buildInjurySnapshots.mjs` | `player_injuries.json` | injury history |
 | 11 | `buildFantasyOutlook2026.js` | `fantasy_outlook_2026.json` | see below |
 | 12 | `buildRosterPct.mjs` | `roster_pct.json` | Sleeper league research (ownership) |
+
+Step 3 is additive. The depth chart decides who joins the index, not who
+stays: a player the previous build indexed is kept, under his current team, for
+as long as the dictionary has him on an NFL roster. Ourlads is a weekly chart,
+and replacing the list with it dropped every starter on IR from the index while
+his WordPress page stayed up. A player leaves only as a free agent, retired or
+gone from the dictionary, and the build prints who.
 
 `backfillTeamInGameLogs.js` and `syncPlayerTeamsFromDepthCharts.js` are
 maintenance passes over files that already exist, not part of a cold build.

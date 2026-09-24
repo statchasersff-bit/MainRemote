@@ -624,33 +624,13 @@ function statchasers_player_old_slug_redirect(): void {
 		return;
 	}
 
-	$container = statchasers_player_container();
+	$found = statchasers_player_page_by_old_slug( $slug );
 
-	if ( ! $container ) {
+	if ( ! $found ) {
 		return;
 	}
 
-	$found = get_posts(
-		array(
-			'post_type'        => 'page',
-			'post_parent'      => $container,
-			'post_status'      => 'publish',
-			'numberposts'      => 1,
-			'fields'           => 'ids',
-			'no_found_rows'    => true,
-			'suppress_filters' => false,
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_meta_query -- one indexed
-			// meta lookup, on a 404 only, against a few hundred child pages.
-			'meta_key'         => '_wp_old_slug',
-			'meta_value'       => $slug,
-		)
-	);
-
-	if ( empty( $found ) ) {
-		return;
-	}
-
-	$target = get_permalink( (int) $found[0] );
+	$target = get_permalink( $found );
 
 	if ( ! $target ) {
 		return;
@@ -673,14 +653,175 @@ function statchasers_player_old_slug_redirect(): void {
 	exit;
 }
 
+/**
+ * The profile page that used to answer at this slug, or 0.
+ *
+ * @param string $slug A sanitised slug.
+ * @return int
+ */
+function statchasers_player_page_by_old_slug( string $slug ): int {
+	$container = statchasers_player_container();
+
+	if ( ! $container || '' === $slug ) {
+		return 0;
+	}
+
+	$found = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_parent'      => $container,
+			'post_status'      => 'publish',
+			'numberposts'      => 1,
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_meta_query -- one indexed
+			// meta lookup, on a 404 or a legacy address only, against a few
+			// hundred child pages.
+			'meta_key'         => '_wp_old_slug',
+			'meta_value'       => $slug,
+		)
+	);
+
+	return empty( $found ) ? 0 : (int) $found[0];
+}
+
+/**
+ * The profile page for a slug, current or former, or 0.
+ *
+ * @param string $slug A sanitised slug.
+ * @return int
+ */
+function statchasers_player_page_for_slug( string $slug ): int {
+	$container = statchasers_player_container();
+
+	if ( ! $container || '' === $slug ) {
+		return 0;
+	}
+
+	$found = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_parent'      => $container,
+			'post_status'      => 'publish',
+			'name'             => $slug,
+			'numberposts'      => 1,
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+		)
+	);
+
+	return empty( $found ) ? statchasers_player_page_by_old_slug( $slug ) : (int) $found[0];
+}
+
+/**
+ * Where a retired player address lives now, or '' when it is not one.
+ *
+ * Two earlier structures are indexed and still crawled:
+ *
+ * - `/nfl/players/<section>/<slug>/` — the old section-first layout. The
+ *   Outlook half was real pages (`/nfl/players/outlook/josh-allen/`) carrying
+ *   an older implementation, and the team hubs linked to them until the API's
+ *   profile template was corrected. It becomes `/nfl/players/<slug>/<section>/`.
+ * - `/fantasy-football/players/<slug>/[<section>/]` — the redraft-era profile.
+ *   It 404s now; it becomes the profile at the same section.
+ *
+ * `overview` goes to the profile itself, as `/<slug>/overview/` does. Only a
+ * player who has a page today is redirected: an address whose player has no
+ * profile keeps answering as it does, rather than being sent to a 404. A second
+ * segment that is not one of the sections is not a match.
+ *
+ * @param string $request The request path, without the leading slash.
+ * @return string Absolute target, or ''.
+ */
+function statchasers_player_legacy_target( string $request ): string {
+	$base     = statchasers_player_url_base();
+	$segments = array_values( array_filter( explode( '/', trim( $request, '/' ) ), 'strlen' ) );
+	$request  = implode( '/', $segments );
+	$slug     = '';
+	$section  = '';
+
+	if ( 0 === strpos( $request . '/', $base . '/' ) ) {
+		$rest = array_slice( $segments, count( explode( '/', $base ) ) );
+		if ( 2 !== count( $rest ) || ! in_array( $rest[0], STATCHASERS_PLAYER_SECTIONS, true ) ) {
+			return '';
+		}
+		$section = $rest[0];
+		$slug    = $rest[1];
+	} elseif ( 0 === strpos( $request . '/', 'fantasy-football/players/' ) ) {
+		$rest = array_slice( $segments, 2 );
+		if ( 1 === count( $rest ) ) {
+			$slug = $rest[0];
+		} elseif ( 2 === count( $rest ) && in_array( $rest[1], STATCHASERS_PLAYER_SECTIONS, true ) ) {
+			$slug    = $rest[0];
+			$section = $rest[1];
+		} else {
+			return '';
+		}
+	} else {
+		return '';
+	}
+
+	$page = statchasers_player_page_for_slug( sanitize_title( $slug ) );
+	if ( ! $page ) {
+		return '';
+	}
+
+	$target = (string) get_permalink( $page );
+	if ( '' === $target ) {
+		return '';
+	}
+
+	if ( '' !== $section && 'overview' !== $section ) {
+		$target = user_trailingslashit( trailingslashit( $target ) . $section );
+	}
+
+	return $target;
+}
+
+/**
+ * 301 a retired player address to its profile. See the function above.
+ *
+ * Not limited to 404s, unlike the old-slug redirect: the old Outlook pages
+ * still resolve, and resolving is the problem.
+ */
+function statchasers_player_legacy_redirect(): void {
+	$wp      = $GLOBALS['wp'] ?? null;
+	$request = $wp instanceof WP ? (string) $wp->request : '';
+
+	if ( '' === $request ) {
+		return;
+	}
+
+	$target = statchasers_player_legacy_target( $request );
+
+	if ( '' === $target ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+
+	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'statchasers_player_legacy_redirect', 8 );
+
 /* ------------------------------------------------------------------ headings */
 
 /**
  * The H1 for one profile URL, built from the player and the section.
  *
- * MIRRORS sectionHeading() in the API's src/lib/player-render.ts, including
- * which sections carry a year: stats and the game log do, because the year is
- * part of the phrase people type for those two and not for the others.
+ * MIRRORS sectionHeading() and profileHeading() in the API's
+ * src/lib/player-render.ts, including which sections carry a year: stats, the
+ * game log and the outlook do, because the year is part of the phrase people
+ * type for those three and not for the others.
+ *
+ * The profile itself (no section) is "Josh Allen Fantasy Football Stats &
+ * Analysis" — the player and what the page is for, like the six beside it. It
+ * was the bare name, which is the hero's words and says nothing about intent.
+ * The Overview has no heading of its own: `/overview/` 301s to the profile.
  *
  * The name comes from the roster when it is cached and from the page's own
  * title when it is not — with the "(QB)" the builder appends taken back off,
@@ -699,15 +840,14 @@ function statchasers_player_heading( string $slug, string $section ): string {
 		'game-log' => 'Game Log',
 		'outlook'  => 'Fantasy Outlook',
 		'news'     => 'News & Analysis',
-		'overview' => 'Season Overview',
 		'bio'      => 'Bio',
 	);
 
 	if ( ! isset( $phrases[ $section ] ) ) {
-		return $name;
+		return $name . ' Fantasy Football Stats & Analysis';
 	}
 
-	$dated = in_array( $section, array( 'stats', 'game-log' ), true );
+	$dated = in_array( $section, array( 'stats', 'game-log', 'outlook' ), true );
 
 	return $dated
 		? sprintf( '%s %s %s', $name, $phrases[ $section ], STATCHASERS_TEAM_SEASON )

@@ -1136,24 +1136,42 @@ function statchasers_team_shortcode_heading( string $slug, string $section ): st
 function statchasers_team_faq_items(): array {
 	static $items = null;
 
-	if ( null !== $items ) {
-		return $items;
+	if ( null === $items ) {
+		$items = statchasers_team_faq_parse( statchasers_team_page_html() );
 	}
 
-	$items = array();
+	return $items;
+}
+
+/**
+ * The unprinted fragment for this request's team page, or ''.
+ *
+ * What the schema nodes read their islands from. Hits the cached fetch the
+ * shortcode is about to make rather than costing a request of its own.
+ *
+ * @return string
+ */
+function statchasers_team_page_html(): string {
+	static $html = null;
+
+	if ( null !== $html ) {
+		return $html;
+	}
+
+	$html = '';
 
 	if ( ! statchasers_team_post_has_shortcode() ) {
-		return $items;
+		return $html;
 	}
 
 	$queried = get_queried_object();
 	if ( ! $queried instanceof WP_Post ) {
-		return $items;
+		return $html;
 	}
 
 	$slug = statchasers_team_slug( array( 'slug' => (string) $queried->post_name ) );
 	if ( '' === $slug ) {
-		return $items;
+		return $html;
 	}
 
 	// Scoped to the same section the shortcode will print, or the questions in
@@ -1161,13 +1179,13 @@ function statchasers_team_faq_items(): array {
 	// URL carrying the Stats tab's eight questions.
 	$data = statchasers_team_fetch( $slug, statchasers_team_section_from_url() );
 
-	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
-		return $items;
+	if ( null === $data || ! isset( $data['html'] ) ) {
+		return $html;
 	}
 
-	$items = statchasers_team_faq_parse( (string) $data['html'] );
+	$html = (string) $data['html'];
 
-	return $items;
+	return $html;
 }
 
 /**
@@ -1292,32 +1310,97 @@ function statchasers_team_rank_math_schema( $data ) {
 add_filter( 'rank_math/json_ld', 'statchasers_team_rank_math_schema', 20 );
 
 /**
+ * The Schedule page's games: an ItemList of SportsEvents, or null.
+ *
+ * It takes the place of the SoftwareApplication node the team pages used to
+ * carry (see the structured-data comment in statchasers-news.php). The API
+ * builds the list — team/schedule-schema.ts, which keeps only the games with a
+ * kickoff and a venue — and ships it only on the Schedule section, as an inert
+ * island this lifts out. Checked for shape rather than trusted, like the FAQ
+ * islands: a malformed one drops the node rather than printing a broken one.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<string,mixed>|null
+ */
+function statchasers_team_schedule_node( string $webpage_id = '' ) {
+	$html = statchasers_team_page_html();
+
+	if ( false === strpos( $html, 'sct-schedule-data' ) ) {
+		return null;
+	}
+
+	if ( ! preg_match( '#<script type="application/json" class="sct-schedule-data">(.*?)</script>#s', $html, $match ) ) {
+		return null;
+	}
+
+	$node = json_decode( $match[1], true );
+
+	if (
+		! is_array( $node )
+		|| ( $node['@type'] ?? '' ) !== 'ItemList'
+		|| empty( $node['itemListElement'] )
+		|| ! is_array( $node['itemListElement'] )
+	) {
+		return null;
+	}
+
+	if ( '' !== $webpage_id ) {
+		$node['isPartOf'] = array( '@id' => $webpage_id );
+	}
+
+	return $node;
+}
+
+/**
+ * Append the Schedule page's game list to Rank Math's graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_team_rank_math_schedule( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$node = statchasers_team_schedule_node( statchasers_news_schema_page_id( $data ) );
+
+	if ( null !== $node ) {
+		$data['statchasersTeamSchedule'] = $node;
+	}
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_team_rank_math_schedule', 20 );
+
+/**
  * Fallback FAQPage for sites with no schema-graph plugin.
  *
- * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
- * plugin present, WebPage and Organization are a site-wide decision somebody
- * should make deliberately rather than something this tool improvises.
+ * Prints ONLY the FAQPage and the Schedule page's game list. The page's WebPage
+ * is the news fallback's; Organization and BreadcrumbList are a site-wide
+ * decision somebody should make deliberately, not something this improvises.
  */
 function statchasers_team_print_fallback_schema(): void {
 	if ( statchasers_news_graph_provider_present() ) {
 		return;
 	}
 
-	$node = statchasers_team_faq_node();
-	if ( null === $node ) {
-		return;
+	foreach ( array( statchasers_team_faq_node(), statchasers_team_schedule_node() ) as $node ) {
+		if ( null === $node ) {
+			continue;
+		}
+
+		$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+		echo '<script type="application/ld+json">' .
+			wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+			'</script>' . "\n";
 	}
-
-	$payload = array( '@context' => 'https://schema.org' ) + $node;
-
-	echo '<script type="application/ld+json">' .
-		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
-		'</script>' . "\n";
 }
 add_action( 'wp_head', 'statchasers_team_print_fallback_schema', 20 );
 
 /**
- * Drop the Q&A islands from the markup that is printed.
+ * Drop the Q&A islands, and the Schedule page's game list, from the markup that
+ * is printed.
  *
  * They are a transport for the node above, and once it is built they are a
  * second copy of every answer sitting in the page for nobody. The schema reads
@@ -1328,12 +1411,12 @@ add_action( 'wp_head', 'statchasers_team_print_fallback_schema', 20 );
  * @return string
  */
 function statchasers_team_strip_faq_data( string $html ): string {
-	if ( false === strpos( $html, 'sct-faq-data' ) ) {
+	if ( false === strpos( $html, 'sct-faq-data' ) && false === strpos( $html, 'sct-schedule-data' ) ) {
 		return $html;
 	}
 
 	return (string) preg_replace(
-		'#<script type="application/json" class="sct-faq-data">.*?</script>#s',
+		'#<script type="application/json" class="sct-(?:faq|schedule)-data">.*?</script>#s',
 		'',
 		$html
 	);

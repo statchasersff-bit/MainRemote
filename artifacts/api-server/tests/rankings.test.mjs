@@ -363,14 +363,13 @@ describe("the rankings page", () => {
     if (!hasData) return t.skip("no rankings file");
     const { doc } = await page("/rest-of-season-rankings");
 
-    const rows = [...doc.querySelectorAll("#scr-panel-wr .scr-row")];
+    const rows = [...doc.querySelectorAll("[data-scr-panel] .scr-row")];
     const unlinked = rows.filter((row) =>
       row.querySelector("span.scr-player-link"),
     );
-    assert.ok(
-      unlinked.length > 0,
-      "the current board has free agents the dictionary cannot place",
-    );
+    // Whether the board has anyone without a page depends on the week's data:
+    // once every ranked player is indexed, there is nothing to check.
+    if (unlinked.length === 0) return t.skip("every ranked player has a page");
     for (const row of unlinked) {
       assert.equal(row.querySelector("a.scr-player-link"), null);
       assert.ok(
@@ -507,13 +506,13 @@ describe("the rankings page", () => {
     if (!hasData) return t.skip("no rankings file");
     const { doc } = await page("/rest-of-season-rankings");
 
-    const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+    const nodes = [...doc.querySelectorAll('script[type="application/ld+json"]')]
+      .map((block) => JSON.parse(block.textContent));
     // A document gets one FAQPage. Two is the failure mode that gets structured
     // data ignored outright rather than merged.
-    assert.equal(blocks.length, 1);
-
-    const node = JSON.parse(blocks[0].textContent);
-    assert.equal(node["@type"], "FAQPage");
+    const faqs = nodes.filter((node) => node["@type"] === "FAQPage");
+    assert.equal(faqs.length, 1);
+    const node = faqs[0];
 
     const rendered = [...doc.querySelectorAll(".scr-faq-q")].map((q) =>
       q.textContent.trim(),
@@ -529,12 +528,49 @@ describe("the rankings page", () => {
       assert.ok(entry.acceptedAnswer.text.length > 40);
     }
   });
+  /*
+   * The boards are ranked lists, and the structured data says so — never a
+   * SoftwareApplication, which Search Console held to the software-app rich
+   * result's rules (a rating we do not have) and flagged on every page.
+   */
+  test("one ItemList per board the page shows, in the board's order", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc, html } = await page("/rest-of-season-rankings");
+    assert.doesNotMatch(html, /SoftwareApplication|WebApplication/);
+
+    const lists = [...doc.querySelectorAll('script[type="application/ld+json"]')]
+      .map((block) => JSON.parse(block.textContent))
+      .filter((node) => node["@type"] === "ItemList");
+    // Four, not one merged list: ranks are positional.
+    assert.deepEqual(
+      lists.map((list) => list.name.match(/Football (.+) Rankings$/)[1]),
+      ["Quarterback", "Running Back", "Wide Receiver", "Tight End"],
+    );
+
+    for (const list of lists) {
+      assert.equal(list.numberOfItems, list.itemListElement.length);
+      const pos = { Quarterback: "qb", "Running Back": "rb", "Wide Receiver": "wr", "Tight End": "te" }[
+        list.name.match(/Football (.+) Rankings$/)[1]
+      ];
+      const rendered = [
+        ...doc.querySelectorAll(`#scr-panel-${pos} .scr-player-link`),
+      ].map((n) => n.textContent.trim());
+      list.itemListElement.forEach((entry, i) => {
+        assert.equal(entry["@type"], "ListItem");
+        assert.equal(entry.position, i + 1, "positions are the ranks, 1 up");
+        assert.equal(entry.item["@type"], "Person");
+        assert.ok(rendered.includes(entry.item.name), `${entry.item.name} is on the board`);
+        if (entry.item.url) assert.match(entry.item.url, /^https?:\/\//, "absolute, or absent");
+      });
+    }
+  });
 });
 
 describe("the embed fragment", () => {
-  // The FAQ and the page copy (title/H1/description): the two inert islands.
+  // The FAQ, the board lists and the page copy (title/H1/description): the
+  // inert islands.
   const INERT_FAQ =
-    /<script type="application\/json" class="scr-(?:faq|page)-data">.*?<\/script>/gs;
+    /<script type="application\/json" class="scr-(?:faq|list|page)-data">.*?<\/script>/gs;
 
   test("is a bare fragment with no document chrome", async (t) => {
     if (!hasData) return t.skip("no rankings file");
@@ -608,6 +644,26 @@ describe("the embed fragment", () => {
       [...doc.querySelectorAll(".scr-faq-q")].map((q) => q.textContent.trim()),
       "the island and the markup are the same questions",
     );
+  });
+
+  test("a position page carries its own board's list alone", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const lists = async (query) => {
+      const html = await (await fetch(`${server.origin}/embed/rankings${query}`)).text();
+      const island = html.match(
+        /<script type="application\/json" class="scr-list-data">(.*?)<\/script>/s,
+      );
+      assert.ok(island, "the plugin needs the lists to graft");
+      return JSON.parse(island[1]);
+    };
+
+    const rb = await lists("?board=ros&pos=rb");
+    assert.equal(rb.length, 1);
+    assert.equal(rb[0]["@type"], "ItemList");
+    assert.match(rb[0].name, /^\d{4} Rest of Season Fantasy Football Running Back Rankings$/);
+
+    assert.equal((await lists("?board=ros")).length, 4);
+    assert.match((await lists(""))[0].name, /Redraft/);
   });
 
   test("404s rather than printing a hole in the host page", async () => {

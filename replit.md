@@ -129,7 +129,7 @@ _Replace the heading above with the project's name, and this line with one sente
   `SC_TOOLS_URL` (the "Explore StatChasers" tool index),
   `SC_PLAYER_STATS_URL` (league-wide, not team-filtered — it replaced a
   guessed `SC_TEAM_PLAYERS_URL_TEMPLATE`, which no longer exists),
-  `SC_PLAYER_PROFILE_URL_TEMPLATE` (default `/nfl/players/outlook/{player}/`;
+  `SC_PLAYER_PROFILE_URL_TEMPLATE` (default `/nfl/players/{player}/`;
   `{player}` is filled from the player dictionary's own slug, NOT slugified
   from the name — the site spells A.J. Brown `aj-brown` and slugify gives
   `a-j-brown`. A name the dictionary does not index gets no link rather than
@@ -139,9 +139,10 @@ _Replace the heading above with the project's name, and this line with one sente
   address — one panel as the whole page: hero, that section, a strip of real
   resources — with a title, description,
   self-referencing canonical, `og:url` and FAQ written for that section alone.
-  Public sections are `PUBLIC_SECTIONS` in `team-render.ts` (`outlook`,
-  `stats`, `schedule`, `depth-chart`, `matchups`); any other segment, including
-  `news` and case variants, is a true 404 so no path can mint a copy of the
+  Public sections are `PUBLIC_SECTIONS` in `team-render.ts` (`stats`,
+  `schedule`, `depth-chart`, `matchups`, `news`, plus `outlook`, which is
+  the hub: `/outlook/` 301s to it, see `HUB_SECTION`); any other segment,
+  including case variants, is a true 404 so no path can mint a copy of the
   hub. Three tabs carry questions: Outlook, Stats and Depth Chart, built by
   `team/outlook-faq.ts`, `team/stats-faq.ts` and `team/depth-faq.ts` — every
   answer restates something its own tab printed. The depth chart's are present
@@ -1134,11 +1135,15 @@ at the defaults gives back the table that was sent. Card ids are
   every URL on the host, which is an unbounded duplicate URL space. The app is
   one page and lives at `/`.
 - **The host page's SEO plugin stays the authority.** The WordPress plugin emits
-  no canonical/title/description/og/robots/breadcrumbs. Its only structured data
-  is one `SoftwareApplication`+`WebApplication` node injected into Rank Math's
-  graph via `rank_math/json_ld` (`src/lib/schema.ts` is the equivalent for
-  non-WordPress hosts, served at `/embed/schema.json`). No `aggregateRating` or
-  `review` — we have no real rating data and won't invent any.
+  no canonical/title/description/og/robots/breadcrumbs. It emits no
+  `SoftwareApplication` node: that type drew Search Console errors (no rating)
+  on every news and team URL and described none of them. What it adds to Rank
+  Math's graph via `rank_math/json_ld` is page-accurate — FAQPage where
+  questions render, an ItemList of SportsEvents on team Schedule pages
+  (`src/lib/team/schedule-schema.ts`), and an ItemList per position on the
+  rankings boards (`src/lib/rankings/rankings-schema.ts`). `src/lib/schema.ts` serves a plain
+  `WebPage` node at `/embed/schema.json` for non-WordPress hosts. No
+  `aggregateRating` or `review` — we have no real rating data and won't invent any.
 - **The card names the player once.** Every headline opens with the player's
   name, so the byline carries the team alone — printing the name again directly
   beside it said the same thing twice per card. The feed's own name is not
@@ -1198,7 +1203,7 @@ _Populate as you build — explicit user instructions worth remembering across s
   suppresses the tool's H2. It is only ever read inside a StatChasers page, which
   supplies the header; anything here restates it, and in the WordPress mount an
   H1 here would be a second H1 in the composed page. The phrase still lives in
-  `<title>`/`og:title` (`lib/seo.ts`) and in the `SoftwareApplication` name.
+  `<title>`/`og:title` (`lib/seo.ts`) and in the `/embed/schema.json` name.
   `index.html` no longer has an `<!--SSR-H1-->` marker; don't re-add one.
 - `.sc-filters` needs its own `[hidden]` rule for the same reason the pager does
   — `display: flex` beats the UA `[hidden]` rule, and a no-JS visitor would get

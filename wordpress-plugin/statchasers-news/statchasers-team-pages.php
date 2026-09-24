@@ -1159,6 +1159,38 @@ add_action(
 	}
 );
 
+/**
+ * Send `/<team>/outlook/` to the hub, 301.
+ *
+ * The hub opens on the Outlook, so the two addresses were one page, each
+ * self-canonical. The hub keeps it, the Outlook tab links there (the API
+ * renders the strip), and the old address — indexed — redirects instead of
+ * 404ing, which is why 'outlook' stays in STATCHASERS_TEAM_SECTIONS and so in
+ * the rewrite. The twin of statchasers_player_overview_redirect().
+ */
+function statchasers_team_outlook_redirect(): void {
+	if ( 'outlook' !== statchasers_team_section_from_url() ) {
+		return;
+	}
+
+	if ( '' === statchasers_team_current_slug() ) {
+		return;
+	}
+
+	$target = get_permalink( get_queried_object() );
+	if ( ! $target ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+
+	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 301 );
+	exit;
+}
+
+add_action( 'template_redirect', 'statchasers_team_outlook_redirect', 9 );
+
 /* -------------------------------------------------- section metadata */
 
 /**
@@ -1294,9 +1326,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
  *
  * The phrase alone, where statchasers_team_section_meta()'s title adds the
  * clause after the colon: "Stats 2026" here, "Stats 2026: Offense, Defense &
- * NFL Rankings" in the <title>. Outlook is the one section whose title has no
- * such clause, so there the two strings are identical — which is fine, and
- * better than padding the heading to make it differ.
+ * NFL Rankings" in the <title>.
+ *
+ * The hub (no section) is "New England Patriots Fantasy Football Outlook &
+ * Stats 2026", mirroring teamHubHeading(). The Outlook has no heading of its
+ * own: the hub opens on it, so `/outlook/` 301s to the hub (see
+ * statchasers_team_outlook_redirect()) and the hub's heading is the Outlook's.
  *
  * @param string $slug    Team slug.
  * @param string $section Section id, or '' for the hub.
@@ -1308,10 +1343,9 @@ function statchasers_team_heading( string $slug, string $section ): string {
 		return '';
 	}
 
-	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts — the same six
-	// sections, in the same order, saying the same words.
+	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts, saying the same
+	// words. The Outlook is the hub, so it takes the hub's phrase below.
 	$phrases = array(
-		'outlook'     => 'Fantasy Football Outlook',
 		'stats'       => 'Stats',
 		'schedule'    => 'Schedule',
 		'depth-chart' => 'Depth Chart',
@@ -1319,10 +1353,9 @@ function statchasers_team_heading( string $slug, string $section ): string {
 		'news'        => 'News',
 	);
 
-	// The hub's own phrase has no counterpart in the API map: on the app's own
-	// page the team name alone is the H1, because the <title> beside it already
-	// says what the page is. Embedded, the H1 is the only thing that does.
-	$phrase = $phrases[ $section ] ?? 'Team Hub';
+	// The hub's phrase mirrors teamHubHeading(). It was "Team Hub", which says
+	// nothing a reader searches for.
+	$phrase = $phrases[ $section ] ?? 'Fantasy Football Outlook & Stats';
 
 	return sprintf( '%s %s %s', $row[0], $phrase, STATCHASERS_TEAM_SEASON );
 }
@@ -1586,6 +1619,10 @@ add_filter(
 			$lastmod = (string) get_post_modified_time( 'c', true, $id );
 
 			foreach ( STATCHASERS_TEAM_SECTIONS as $section ) {
+				// The Outlook is the hub, which Rank Math lists itself.
+				if ( 'outlook' === $section ) {
+					continue;
+				}
 				$extra .= statchasers_team_sitemap_entry( user_trailingslashit( $hub . $section ), $lastmod );
 			}
 		}

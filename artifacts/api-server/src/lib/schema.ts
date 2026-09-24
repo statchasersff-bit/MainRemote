@@ -1,9 +1,9 @@
 /**
- * Structured data for the tool itself.
+ * Structured data for the page the tool is mounted on.
  *
- * Scope is deliberately narrow: one node describing the application, and
+ * Scope is deliberately narrow: one WebPage node, and
  * nothing else. In particular this does NOT emit Article, NewsArticle,
- * ItemList, Dataset, FAQPage, WebPage or BreadcrumbList. The host page's SEO
+ * ItemList, Dataset, FAQPage, SoftwareApplication or BreadcrumbList. The host page's SEO
  * plugin (Rank Math) already produces WebPage and BreadcrumbList, and adding
  * types that don't accurately describe the page — or duplicating ones that
  * already exist — is worse than adding nothing.
@@ -24,45 +24,31 @@ export interface AppSchemaOptions {
 }
 
 /**
- * A SoftwareApplication / WebApplication node.
+ * A WebPage node for the page the tool is mounted on.
  *
- * NOTE on rich results: Google's SoftwareApplication rich result requires a
- * genuine aggregateRating or review. We do not have one for this tool, and
- * inventing ratings or reviews would be both a policy violation and a lie, so
- * the node ships without them. It remains valid, accurate structured data that
- * describes the page — it simply won't produce that particular rich result
- * unless and until real review data exists to put here.
+ * It used to be a SoftwareApplication / WebApplication. Search Console holds
+ * that type to the software-app rich result's rules — offers.price plus an
+ * aggregateRating or review — and flagged every page carrying it, team
+ * schedules included. We have no genuine rating and will not invent one, and a
+ * news feed or a team hub is a page people read, not an application they run.
+ * WebPage is what it is.
+ *
+ * With `webPageId` the node takes the host page's @id, so a JSON-LD consumer
+ * merges it into the WebPage node the host already emits rather than reading a
+ * second page. Without one it stands alone at `<pageUrl>#webpage`.
  */
 export function appSchema(
   options: AppSchemaOptions,
 ): Record<string, unknown> {
   const { pageUrl, name, description, webPageId } = options;
 
-  const node: Record<string, unknown> = {
-    "@type": ["SoftwareApplication", "WebApplication"],
-    "@id": `${pageUrl}#tool`,
+  return {
+    "@type": "WebPage",
+    "@id": webPageId || `${pageUrl}#webpage`,
     name,
     description,
     url: pageUrl,
-    // SportsApplication is one of Google's documented application categories.
-    applicationCategory: "SportsApplication",
-    // It runs in the browser: no install, no particular OS.
-    operatingSystem: "Any",
-    browserRequirements: "Requires JavaScript for pagination; content renders without it.",
     isAccessibleForFree: true,
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
+    inLanguage: "en-US",
   };
-
-  // Attach to the host page's node instead of floating free, so the graph reads
-  // as one description of one page.
-  if (webPageId) {
-    node["isPartOf"] = { "@id": webPageId };
-    node["mainEntityOfPage"] = { "@id": webPageId };
-  }
-
-  return node;
 }

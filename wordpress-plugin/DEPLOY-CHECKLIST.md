@@ -83,13 +83,14 @@ the page:
 ### Section URLs
 
 On by default since 1.7.0, with the flush done on activation. Take one team end
-to end — `/nfl/teams/new-england-patriots/` and its `/outlook/`, `/stats/`,
-`/schedule/`, `/depth-chart/`, `/matchups/` and `/news/` — and on **every one of
-the six** confirm:
+to end — `/nfl/teams/new-england-patriots/` and its `/stats/`, `/schedule/`,
+`/depth-chart/`, `/matchups/` and `/news/` — and on **every one of the six**
+confirm:
 
 - [ ] HTTP **200**.
-- [ ] the H1 is the page's phrase: the team name on the hub, "New England
-      Patriots Schedule 2026" and so on below it. Exactly one H1, and no `<h2>`
+- [ ] the H1 is the page's phrase: "New England Patriots Fantasy Football
+      Outlook & Stats 2026" on the hub, "New England Patriots Schedule 2026"
+      and so on below it. Exactly one H1, and no `<h2>`
       inside the panel repeating it.
 - [ ] `<title>` matches the H1's phrase and differs across the five.
 - [ ] the meta description is present, unique to the page, and there is one.
@@ -105,6 +106,14 @@ the six** confirm:
       reaching the shortcode and the URL is the hub wearing a second address.
 - [ ] at most one `FAQPage` node in the page, and it holds only that page's
       questions. The Schedule page has none — that is correct, not a gap.
+- [ ] `/outlook/` is a **301** to the hub (the hub opens on the Outlook), and
+      the Outlook tab links to the hub. Same for a player's `/overview/`,
+      which 301s to the profile. Neither is in the sitemap.
+- [ ] Retired player addresses are **301s**: `/nfl/players/outlook/josh-allen/`
+      → `/nfl/players/josh-allen/outlook/`, and
+      `/fantasy-football/players/josh-allen/` → `/nfl/players/josh-allen/`.
+      A team hub's player links point at `/nfl/players/<player>/`, never at
+      `/nfl/players/outlook/…`.
 - [ ] the URL is in the **page sitemap**. If the six section URLs are absent,
       the `rank_math/sitemap/page_content` filter name is the first thing to
       check — it is the one Rank Math hook not confirmed against a live build.
@@ -320,12 +329,15 @@ Order matters: the API first, then the plugin, then the pages.
 
 [Rich Results Test](https://search.google.com/test/rich-results) on the same URL.
 
-- [ ] The `SoftwareApplication` / `WebApplication` node is detected.
-- [ ] It sits in **one** graph with Rank Math's `WebPage` and `BreadcrumbList` —
-      not a second, separate `ld+json` block.
-- [ ] No errors. A warning that rating/review is missing is **expected and
-      correct**: that rich result requires genuine review data, and we don't
-      fabricate it. Do not "fix" this by inventing ratings.
+- [ ] No `SoftwareApplication` / `WebApplication` node anywhere. View Source
+      and Ctrl+F for `SoftwareApplication`: zero hits. If one turns up, it is
+      not this plugin — look at Rank Math's schema templates for the page.
+- [ ] On a team Schedule URL (`/nfl/teams/<team>/schedule/`): an `ItemList`
+      of `SportsEvent`s, in **one** graph with Rank Math's `WebPage` and
+      `BreadcrumbList` — not a second, separate `ld+json` block.
+- [ ] On the rest-of-season rankings page: four `ItemList`s (QB, RB, WR, TE)
+      in that same graph; on `/rb/`, just the running backs' list.
+- [ ] No errors. Do not "fix" a missing-rating warning by inventing ratings.
 
 ## 3. Check the sitemap
 

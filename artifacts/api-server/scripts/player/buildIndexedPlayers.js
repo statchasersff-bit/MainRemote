@@ -214,6 +214,54 @@ function main() {
     }
   }
 
+  /*
+   * Once indexed, a player stays indexed while he is on an NFL roster.
+   *
+   * The depth chart is how a player gets onto this list, not how he keeps his
+   * place on it. Ourlads is a weekly chart: a starter on IR, ruled out for the
+   * week or bumped to QB3 drops off it, and replacing the list with it every
+   * run took ~135 players who already have a WordPress page off the index —
+   * out of players.json, out of the directory, unlinked everywhere a name
+   * resolves. The page stayed up and nothing pointed at it.
+   *
+   * So everyone the previous build indexed is carried forward under the team
+   * the dictionary has him on now. A player drops only when he is no longer on
+   * an NFL roster (free agent, retired, cut) or no longer in the dictionary.
+   */
+  const previousPath = path.join(dataDir, 'indexed_players_by_team.json');
+  const previous = fs.existsSync(previousPath)
+    ? JSON.parse(fs.readFileSync(previousPath, 'utf8'))
+    : {};
+  const indexedIds = new Set(
+    Object.values(indexedByTeam).flatMap((byPos) =>
+      Object.values(byPos).flatMap((list) => list.map((p) => p.id)),
+    ),
+  );
+  let retained = 0;
+  const dropped = [];
+  for (const byPos of Object.values(previous)) {
+    for (const [pos, list] of Object.entries(byPos)) {
+      if (pos === 'DEF') continue;
+      for (const old of list) {
+        if (indexedIds.has(old.id)) continue;
+        const current = playerById[old.id];
+        const team = current ? normalizeTeam(current.team) : 'FA';
+        if (!current || !NFL_TEAMS.includes(team) || !POSITION_LIMITS[current.position] || current.position === 'DEF') {
+          dropped.push(`${old.name} (${old.team} ${pos})`);
+          continue;
+        }
+        indexedIds.add(old.id);
+        indexedByTeam[team][current.position].push(buildPlayerFromSleeper(current, 'retained'));
+        allIndexedSlugs.push(current.slug);
+        counts[current.position] = (counts[current.position] || 0) + 1;
+        counts.total += 1;
+        retained += 1;
+      }
+    }
+  }
+  console.log(`Retained ${retained} previously indexed players still on a roster`);
+  if (dropped.length) console.log(`Dropped ${dropped.length} no longer on a roster: ${dropped.join(', ')}`);
+
   const indexedPlayers = {
     generated_at: new Date().toISOString(),
     source: ourladsData ? 'ourlads_depth_chart' : 'sleeper_depth_chart',
