@@ -58,13 +58,14 @@ export const DEFAULT_CURRENT_SEASON = Number(
 const ROLLING_WINDOW_WEEKS = 10;
 
 /**
- * The baseline stops at week 17.
+ * Both seasons stop at week 17.
  *
  * Mirrors the industry's "Weeks 1-17" tables: week 18 is rested starters and
  * settled playoff seeding, and including it makes several defenses look
- * materially softer than they played.
+ * materially softer than they played. The current season is capped too, so
+ * a January ingest does not fold week 18 into the table.
  */
-const BASELINE_MAX_WEEK = 17;
+const MAX_WEEK = 17;
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -349,7 +350,7 @@ export async function ingestFpa(
   logger.info({ baselineSeason, currentSeason }, "FPA ingest started");
 
   const baselineRows = (await fetchScoredWeeklyStats(baselineSeason)).filter(
-    (r) => r.week >= 1 && r.week <= BASELINE_MAX_WEEK,
+    (r) => r.week >= 1 && r.week <= MAX_WEEK,
   );
   if (baselineRows.length === 0) {
     throw new Error(`No baseline rows scored for ${baselineSeason}; aborting`);
@@ -359,7 +360,9 @@ export async function ingestFpa(
   // and not a failure.
   let currentRows: ScoredPlayerWeek[] = [];
   try {
-    currentRows = await fetchScoredWeeklyStats(currentSeason);
+    currentRows = (await fetchScoredWeeklyStats(currentSeason)).filter(
+      (r) => r.week >= 1 && r.week <= MAX_WEEK,
+    );
   } catch (err) {
     if (err instanceof NflverseSeasonUnavailableError) {
       logger.info({ currentSeason }, "current season unpublished — baseline only");

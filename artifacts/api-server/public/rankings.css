@@ -914,3 +914,92 @@ a.scr-player-link:hover {
 .scr .scr-cta {
   color: var(--sc-muted-strong);
 }
+
+/* Found 2026-09-24 by diffing computed styles against a simulated Divi page,
+   the rules below are the ones the block above missed.
+
+   Divi's table rule is `.entry-content table:not(.variations)`, not the
+   `.entry-content table` quoted above: `:not()` counts its argument, so it is
+   two classes and an element, and it beat `.scr .scr-table` — both boards
+   picked up Divi's 1px frame and 15px of margin. The selector below repeats
+   Divi's own `:not()` to stay one class ahead of it. */
+.scr table.scr-all-table:not(.variations),
+.scr table.scr-table:not(.variations) {
+  margin: 0;
+  border: 0;
+}
+
+/* Header and player cells. `.entry-content tr th` sets colour and weight as
+   well as the padding restated above, and `#left-area table th` sets colour
+   through an id, which only `!important` beats — the navy header bands'
+   labels went grey, the tier bands' too, and every player name on the tier
+   board went grey and bold. Colour is armed; weight is restated at a
+   specificity that wins. */
+.scr .scr-all-table thead th,
+.scr .scr-table thead th,
+.scr .scr-tier-head th {
+  color: #fff !important;
+}
+
+.scr .scr-all-table thead th,
+.scr .scr-table thead th {
+  font-weight: 800;
+}
+
+.scr .scr-tier-head th {
+  font-weight: 900;
+}
+
+.scr .scr-row th.scr-player {
+  color: var(--sc-ink) !important;
+  font-weight: 600;
+}
+
+.scr .scr-all-row th.scr-all-rank {
+  color: var(--sc-muted) !important;
+  font-weight: 800;
+}
+
+/* The position tabs became links in the rest-of-season rework, after this
+   block was written, and took Divi's link blue. */
+.scr .scr-nav-link {
+  color: var(--sc-muted-strong);
+}
+
+.scr .scr-nav-link:hover {
+  color: var(--sc-ink);
+}
+
+.scr .scr-nav-link.is-active {
+  color: #fff;
+}
+
+/* `#left-area ul` is id-weighted: 23px under each list, a 1em indent, and a
+   26px line-height the tabs and the legend inherit. Only these two lists, and
+   neither varies its padding in a media query, so `!important` flattens
+   nothing. */
+.scr .scr-nav-list,
+.scr .scr-legend {
+  padding: 0 !important;
+  line-height: inherit !important;
+}
+
+/* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
+   on statchasers.com — the team hub's section headings rendered at 50px from
+   it. Armed on size and colour only, as team.css does; the clamp keeps
+   scaling because the value is the same expression. */
+.scr .scr-faq-title {
+  color: var(--sc-navy) !important;
+  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem) !important;
+  line-height: 1.2 !important;
+}
+
+.scr .scr-faq-q {
+  color: var(--sc-ink) !important;
+  font-size: 0.92rem !important;
+  line-height: 1.45 !important;
+}
+
+.scr .scr-faq-q-row:hover .scr-faq-q {
+  color: var(--sc-gold-deep) !important;
+}

@@ -255,13 +255,66 @@ Then the controls, which is where this tool differs from the others:
 And the heading, which this tool does not manage for you:
 
 - [ ] the page has exactly one `<h1>` and it is the page's own title.
-      `statchasers_h1_mounts_a_tool()` knows only the team, player, matchup
-      and schedule shortcodes, so the **Page headings** machinery does not cover
-      this page — the same is true of the rankings board. On a theme that
+      `statchasers_h1_mounts_a_tool()` knows the team, player, matchup,
+      schedule, rankings and player stats shortcodes, but not this one, so the
+      **Page headings** machinery does not cover this page. On a theme that
       prints the page title this is already right and there is nothing to do.
       On a Divi Theme Builder layout with **no Post Title module** this page
       would carry no H1 at all, and the fix is in the template or a heading
       module above the shortcode, not in the plugin.
+
+### Rest-of-season rankings and advanced player stats (1.10.2)
+
+Order matters: the API first, then the plugin, then the pages.
+
+**On the API deployment**, before touching WordPress:
+
+- [ ] `SC_RANKINGS_PATH=/fantasy-football/rest-of-season-rankings/` is set **on
+      the deployment**, with the trailing slash. Unset, the position tabs point
+      at `/rest-of-season-rankings/rb?embed=1`, which is a 404 on WordPress, and
+      because the tabs push their address, a reload lands on that 404. If it was set
+      to the old `/fantasy-football/redraft-rankings/` path, change it.
+- [ ] `SC_PLAYER_PATH_PREFIX=/nfl/players/` is still set. Both tools link
+      players through it.
+- [ ] `curl -sI https://<api-origin>/embed/rankings` and
+      `/embed/player-stats` both answer 200.
+- [ ] `curl -s https://<api-origin>/embed/rankings | grep -c scr-page-data`
+      is 1. Zero means the API is older than this plugin, and the rankings H1
+      falls back to the page title plus the board.
+
+**Then upload the plugin zip**, and on the two pages:
+
+- [ ] `/fantasy-football/rest-of-season-rankings/` carries `[statchasers_rankings]`
+      (slug changed from `redraft-rankings`), and `/nfl/nfl-player-stats/` carries
+      `[statchasers_player_stats]` in place of `[statchasers_analytics]`.
+- [ ] **Delete any hand-written hero from both pages.** In the "Let the tool
+      supply the heading" mode each tool prints the site's hero itself, which is
+      what the schedule does. A hand-built one left above the shortcode is a
+      second H1, and it is the doubled heading the schedule had
+      (attached_assets/H1DESIGN2.png).
+- [ ] Deactivate and delete `statchasers-analytics`, and remove its block from
+      `.htaccess`.
+
+**On each page and one position URL of each** (`/rb/`):
+
+- [ ] exactly one H1. On the rankings, it names the board: "2026 Rest of Season
+      Fantasy Football RB Rankings" on `/rb/`. Click the WR tab: the H1 and the
+      address both change, and the page does not reload.
+- [ ] `<title>`, meta description, canonical and `og:url` are that address's
+      own. There is one of each, and none carries `?embed=1` or `?pos=`.
+- [ ] `scr-page-data`, `scr-faq-data`, `sca-page-data` and `sca-faq-data` are
+      **absent** from the source. There is one `FAQPage`, inside Rank Math's graph.
+- [ ] `/fantasy-football/redraft-rankings/` and `/nfl/nfl-player-stats/qb/`
+      both **301**. `/some-article/?sc_stats_pos=rb` is **not** retitled.
+- [ ] the page sitemap lists `/rest-of-season-rankings/qb/` … `/te/` and
+      `/nfl-player-stats/rb/` … `/te/`.
+- [ ] **Look at it on desktop above 1100px and on a phone.** The tool is as wide
+      as an ordinary page on the site, not the window, and has a hair of gutter
+      on a phone rather than ~40px. The table headers are white on navy (not
+      grey), player names are dark (not grey or blue), the RB/WR tabs are not
+      link blue, and no section heading is enormous. Those are the Divi rules
+      1.10.2 was measured against. If one shows up anyway, the site has a rule
+      the simulation did not, and the fix goes in the tool's CSS (API deploy).
 
 ## 2. Validate the structured data
 

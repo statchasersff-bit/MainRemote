@@ -1,0 +1,5713 @@
+[
+  {
+    "sleeperPlayerId": "11581",
+    "playerName": "MarShawn Lloyd",
+    "team": "GB",
+    "grade": "F",
+    "score": 3,
+    "gradeColor": "#b91c1c",
+    "nflCount": 9,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:30.232Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": null,
+          "description": "Was placed back on injured reserve on December 19th after a setback with his hamstring, ending his season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Calf",
+          "week": 14,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "moderate",
+          "description": "Sustained a calf injury in early December while rehabbing his hamstring injury.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Suffered a groin injury during training camp in the summer of 2025.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "major",
+          "description": "Injured his hamstring on a 33-yard reception during a preseason game against the Colts and was subsequently placed on Injured Reserve.",
+          "gamesMissed": 14
+        },
+        {
+          "side": "unknown",
+          "type": "Appendicitis",
+          "week": 11,
+          "season": 2024,
+          "bodyPart": "chest",
+          "severity": null,
+          "description": "Underwent an emergency appendectomy in mid-November just as he was about to return from his ankle injury, ending his rookie season.",
+          "gamesMissed": 7
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Injured his ankle during the Packers' home opener against the Colts, leading to his placement on Injured Reserve.",
+          "gamesMissed": 8
+        },
+        {
+          "side": "unknown",
+          "type": "Hip",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Sustained a hip injury shortly after rookies reported to training camp, which sidelined him for most of the summer.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Dealt with a hamstring injury during the preseason that lingered and caused him to miss Week 1.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "F",
+      "score": 3,
+      "college": [
+        {
+          "year": 2020,
+          "description": "Suffered a torn ACL during his freshman season at South Carolina, an injury that has been linked to his subsequent hamstring issues.",
+          "significance": "high"
+        },
+        {
+          "year": null,
+          "description": "Fumbled 10 times on 325 touches during his college career at both South Carolina and USC.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#b91c1c"
+    }
+  },
+  {
+    "sleeperPlayerId": "4034",
+    "playerName": "Christian McCaffrey",
+    "team": "SF",
+    "grade": "F",
+    "score": 4,
+    "gradeColor": "#b91c1c",
+    "nflCount": 9,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:39.590Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Back Injury",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Was added to the injury report on a Saturday with a back issue, making him questionable for the game against the Titans.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 1,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a calf issue ahead of the season opener but was not expected to miss time.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "PCL Sprain",
+          "week": 14,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a season-ending PCL sprain in his left knee on a snow-slicked field against the Buffalo Bills.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "bilateral",
+          "type": "Achilles Tendinitis",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Dealt with a calf injury in training camp that was later revealed to be Achilles tendinitis in both feet, causing him to miss the first nine games of the season.",
+          "gamesMissed": 9
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 12,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Suffered a season-ending ankle injury against the Miami Dolphins and was placed on Injured Reserve.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring Strain",
+          "week": 3,
+          "season": 2021,
+          "bodyPart": "hamstring",
+          "severity": "major",
+          "description": "Left the game against the Houston Texans with a hamstring strain and was subsequently placed on Injured Reserve.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "Glute Strain",
+          "week": 14,
+          "season": 2020,
+          "bodyPart": "hip",
+          "severity": null,
+          "description": "Sustained a thigh/glute strain while preparing to return from his shoulder injury, which ended his season.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "AC Joint Sprain",
+          "week": 9,
+          "season": 2020,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Injured his shoulder in his first game back from the ankle sprain.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 2,
+          "season": 2020,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Suffered a right high-ankle sprain against the Buccaneers, leading to a six-game absence.",
+          "gamesMissed": 6
+        }
+      ],
+      "grade": "F",
+      "score": 4,
+      "college": [],
+      "gradeColor": "#b91c1c"
+    }
+  },
+  {
+    "sleeperPlayerId": "4137",
+    "playerName": "James Conner",
+    "team": "ARI",
+    "grade": "C-",
+    "score": 32,
+    "gradeColor": "#f97316",
+    "nflCount": 9,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:38:40.303Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Foot Injury",
+          "week": 3,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": null,
+          "description": "Suffered a season-ending right foot injury against the 49ers that required surgery.",
+          "gamesMissed": 14
+        },
+        {
+          "side": "right",
+          "type": "Knee Hyperextension",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "major",
+          "description": "Sustained a right knee hyperextension and was placed on IR for the remainder of the season as the Cardinals were out of playoff contention.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "MCL Sprain",
+          "week": 5,
+          "season": 2023,
+          "bodyPart": "knee",
+          "severity": "major",
+          "description": "Suffered a knee injury on a 35-yard run and was subsequently placed on Injured Reserve, missing a minimum of four games.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Heel Injury",
+          "week": 15,
+          "season": 2021,
+          "bodyPart": "foot",
+          "severity": "moderate",
+          "description": "Dealt with a heel injury late in the season that caused him to miss two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 2,
+          "season": 2020,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Missed two games early in the season due to an ankle sprain.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "AC Joint Sprain",
+          "week": 8,
+          "season": 2019,
+          "bodyPart": "shoulder",
+          "severity": "moderate",
+          "description": "Suffered a significant AC joint sprain in his shoulder that sidelined him for multiple stretches of the season.",
+          "gamesMissed": 6
+        },
+        {
+          "side": "left",
+          "type": "Ankle Sprain",
+          "week": 13,
+          "season": 2018,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Sustained a left ankle sprain that caused him to miss three games down the stretch.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "right",
+          "type": "MCL Tear",
+          "week": 15,
+          "season": 2017,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Placed on Injured Reserve after tearing his right MCL, requiring season-ending surgery.",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "C-",
+      "score": 32,
+      "college": [
+        {
+          "year": 2015,
+          "description": "Suffered a torn MCL in his right knee during the first game of his junior season at Pittsburgh.",
+          "significance": "high"
+        },
+        {
+          "year": 2015,
+          "description": "Was diagnosed with Stage 2 Hodgkin lymphoma during his recovery from a knee injury and underwent successful treatment.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#f97316"
+    }
+  },
+  {
+    "sleeperPlayerId": "11583",
+    "playerName": "Jonathon Brooks",
+    "team": "CAR",
+    "grade": "C-",
+    "score": 35,
+    "gradeColor": "#f97316",
+    "nflCount": 2,
+    "collegeCount": 4,
+    "fetchedAt": "2026-06-11T19:39:30.542Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "ACL Tear",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Placed on the Physically Unable to Perform (PUP) list and missed the entire 2025 season to recover from his second ACL tear.",
+          "gamesMissed": 18
+        },
+        {
+          "side": "right",
+          "type": "ACL Tear",
+          "week": 14,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a second tear of his right ACL in a game against the Philadelphia Eagles, ending his rookie season after just three games.",
+          "gamesMissed": 4
+        }
+      ],
+      "grade": "C-",
+      "score": 35,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Considered a likely first-round prospect before his 2023 ACL tear, his injury status caused him to slide in the NFL Draft before being selected in the second round by the Panthers.",
+          "significance": "high"
+        },
+        {
+          "year": 2023,
+          "description": "Suffered a torn ACL in his right knee during a game against TCU on November 11, 2023, which ended his final season at the University of Texas.",
+          "significance": "high"
+        },
+        {
+          "year": 2023,
+          "description": "Underwent surgery to repair a torn ACL in his right knee following his injury in November 2023.",
+          "significance": "high"
+        },
+        {
+          "year": 2023,
+          "description": "Briefly entered the medical tent during a game against Kansas State after appearing to get banged up in the neck and arm area, but he later returned to the bench.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#f97316"
+    }
+  },
+  {
+    "sleeperPlayerId": "9757",
+    "playerName": "Kendre Miller",
+    "team": "NO",
+    "grade": "C-",
+    "score": 39,
+    "gradeColor": "#f97316",
+    "nflCount": 8,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:24.827Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "ACL Tear",
+          "week": 7,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a torn ACL in Week 7 against the Chicago Bears, which ended his season.",
+          "gamesMissed": 11
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Sustained a concussion in the second quarter of the Week 17 game against the Raiders and was ruled out for the season finale.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "After returning for two games, he suffered another hamstring injury that landed him on injured reserve.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Suffered a hamstring injury during the first training camp session in July, causing him to miss the first six games of the season.",
+          "gamesMissed": 6
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "An ankle injury caused him to be inactive from Week 12 through Week 15.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 1,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Was listed as questionable and missed the first two games of his rookie season with a hamstring injury.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "Knee Sprain",
+          "week": 0,
+          "season": 2023,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Suffered a right knee sprain in the preseason against the Kansas City Chiefs, but the injury did not require surgery.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "C-",
+      "score": 39,
+      "college": [
+        {
+          "year": 2023,
+          "description": "Selected by the New Orleans Saints in the third round (71st overall) of the 2023 NFL Draft despite his recent knee injury.",
+          "significance": "low"
+        },
+        {
+          "year": 2022,
+          "description": "Suffered a right knee injury in the College Football Playoff Semifinal against Michigan, which caused him to miss the National Championship game.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#f97316"
+    }
+  },
+  {
+    "sleeperPlayerId": "8122",
+    "playerName": "Zonovan Knight",
+    "team": "ARI",
+    "grade": "C",
+    "score": 45,
+    "gradeColor": "#f59e0b",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:11.988Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Ankle Sprain",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Knight suffered a season-ending left ankle sprain in Week 15 against the Texans and was placed on injured reserve.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Knight was listed as questionable with an ankle injury but played in the Week 11 game against the 49ers.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 5,
+          "season": 2023,
+          "bodyPart": "shoulder",
+          "severity": null,
+          "description": "Knight suffered a season-ending shoulder injury in Week 5 against the Panthers while with the Detroit Lions.",
+          "gamesMissed": 12
+        }
+      ],
+      "grade": "C",
+      "score": 45,
+      "college": [],
+      "gradeColor": "#f59e0b"
+    }
+  },
+  {
+    "sleeperPlayerId": "8150",
+    "playerName": "Kyren Williams",
+    "team": "LAR",
+    "grade": "C",
+    "score": 46,
+    "gradeColor": "#f59e0b",
+    "nflCount": 5,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:13.013Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Was listed as questionable for Week 18 with an ankle injury but was expected to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Metacarpal Fracture",
+          "week": 19,
+          "season": 2023,
+          "bodyPart": "wrist",
+          "severity": "moderate",
+          "description": "Broke a bone in his left hand during the NFC Wild Card game against the Detroit Lions and underwent surgery in the offseason.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "left",
+          "type": "Ankle Sprain",
+          "week": 6,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Sprained his left ankle late in the game against the Arizona Cardinals and was subsequently placed on injured reserve.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 1,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Sustained a high ankle sprain on a kick return in the season opener against the Buffalo Bills and was placed on injured reserve.",
+          "gamesMissed": 7
+        },
+        {
+          "side": "unknown",
+          "type": "Foot Fracture",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "foot",
+          "severity": "major",
+          "description": "Suffered a broken foot during OTAs and underwent surgery, causing him to miss the preseason and the start of the regular season.",
+          "gamesMissed": 8
+        }
+      ],
+      "grade": "C",
+      "score": 46,
+      "college": [
+        {
+          "year": 2022,
+          "description": "Selected by the Los Angeles Rams in the 5th round (164th overall) of the 2022 NFL Draft.",
+          "significance": "low"
+        },
+        {
+          "year": 2020,
+          "description": "Sustained a shoulder injury, reported as a mild AC sprain, on October 14, 2020, while playing for Notre Dame.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#f59e0b"
+    }
+  },
+  {
+    "sleeperPlayerId": "7021",
+    "playerName": "Rico Dowdle",
+    "team": "PIT",
+    "grade": "C+",
+    "score": 49,
+    "gradeColor": "#eab308",
+    "nflCount": 6,
+    "collegeCount": 6,
+    "fetchedAt": "2026-06-11T19:38:59.824Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Quadriceps",
+          "week": 10,
+          "season": 2025,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "Was held out of practice with a quadriceps injury but did not miss any games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Cramps",
+          "week": 5,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Exited the Week 5 game with what was reported as calf cramps but the injury was not considered major.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 17,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Missed the Week 17 game against the Detroit Lions due to an ankle injury.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Appeared on the injury report with an ankle issue but played through the injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 5,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Sustained an ankle injury in Week 5 and was subsequently placed on Injured Reserve.",
+          "gamesMissed": 12
+        },
+        {
+          "side": "unknown",
+          "type": "Hip",
+          "week": 0,
+          "season": 2021,
+          "bodyPart": "hip",
+          "severity": null,
+          "description": "Suffered a hip injury in the third preseason game against the Houston Texans and was placed on season-ending Injured Reserve.",
+          "gamesMissed": 17
+        }
+      ],
+      "grade": "C+",
+      "score": 49,
+      "college": [
+        {
+          "year": 2020,
+          "description": "Went undrafted in the 2020 NFL Draft, with his extensive injury history in college considered a major concern for NFL teams.",
+          "significance": "high"
+        },
+        {
+          "year": 2019,
+          "description": "Was limited during the offseason by a groin injury prior to his senior year.",
+          "significance": "low"
+        },
+        {
+          "year": 2019,
+          "description": "Sustained a right knee injury against Florida during his senior season which forced him to miss the next two games.",
+          "significance": "medium"
+        },
+        {
+          "year": 2018,
+          "description": "Suffered a left ankle injury against Ole Miss as a junior and was limited for the following two contests.",
+          "significance": "medium"
+        },
+        {
+          "year": 2017,
+          "description": "Broke his leg in a game against Tennessee during his sophomore season, causing him to miss the final five games of the regular season.",
+          "significance": "high"
+        },
+        {
+          "year": 2016,
+          "description": "Missed the first four games of his freshman season at South Carolina while recovering from sports hernia surgery.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#eab308"
+    }
+  },
+  {
+    "sleeperPlayerId": "12476",
+    "playerName": "Devin Neal",
+    "team": "NO",
+    "grade": "B-",
+    "score": 56,
+    "gradeColor": "#22d3ee",
+    "nflCount": 4,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:40.280Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Abdomen",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Was listed on the practice report with an abdomen injury but played in Week 15 after practicing in full ahead of the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": null,
+          "description": "Suffered a hamstring injury during the Week 15 game against the Carolina Panthers which resulted in him being placed on Injured Reserve, ending his season.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Neal missed a large portion of the final weeks of training camp due to a hamstring injury leading into the preseason.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B-",
+      "score": 56,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "12481",
+    "playerName": "Cam Skattebo",
+    "team": "NYG",
+    "grade": "B-",
+    "score": 56,
+    "gradeColor": "#22d3ee",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:40.480Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Dislocated Ankle, Fractured Fibula, Ruptured Deltoid Ligament",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Sustained a season-ending dislocated right ankle, fractured fibula, and ruptured deltoid ligament in a Week 8 game against the Philadelphia Eagles and underwent surgery.",
+          "gamesMissed": 9
+        }
+      ],
+      "grade": "B-",
+      "score": 56,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "11576",
+    "playerName": "Braelon Allen",
+    "team": "NYJ",
+    "grade": "B-",
+    "score": 57,
+    "gradeColor": "#22d3ee",
+    "nflCount": 2,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:29.654Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable: Sprain",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "MCL Sprain",
+          "week": 4,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered an MCL sprain on his left knee during a kickoff return against the Miami Dolphins, which ultimately led to him being placed on injured reserve and missing the remainder of the season.",
+          "gamesMissed": 13
+        }
+      ],
+      "grade": "B-",
+      "score": 57,
+      "college": [
+        {
+          "year": 2023,
+          "description": "Sustained a lower left leg injury in the second quarter against Ohio State, which forced him to leave the game and not return.",
+          "significance": "medium"
+        },
+        {
+          "year": 2022,
+          "description": "Injured his left shoulder in a game against Purdue, which was later described as a sprain that he played through for the final games of the season.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "11589",
+    "playerName": "Trey Benson",
+    "team": "ARI",
+    "grade": "B-",
+    "score": 57,
+    "gradeColor": "#22d3ee",
+    "nflCount": 3,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:31.103Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Meniscus Tear",
+          "week": 4,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a meniscus tear in Week 4 that required arthroscopic surgery and ultimately ended his season after being placed on Injured Reserve.",
+          "gamesMissed": 14
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 16,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "An ankle injury caused him to miss the final three games of the season (Weeks 16-18).",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "B-",
+      "score": 57,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Despite a productive career at Florida State after transferring, his significant 2020 knee injury was a point of discussion and concern for NFL teams heading into the draft.",
+          "significance": "medium"
+        },
+        {
+          "year": 2020,
+          "description": "Suffered a significant right knee injury on December 1, 2020, while at Oregon, which included a torn ACL, MCL, lateral and medial meniscus, and a torn gracilis tendon (hamstring).",
+          "significance": "high"
+        },
+        {
+          "year": 2020,
+          "description": "Underwent major reconstructive surgery on his right knee following a multi-ligament injury sustained in practice.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8143",
+    "playerName": "Jerome Ford",
+    "team": "WAS",
+    "grade": "B-",
+    "score": 60,
+    "gradeColor": "#22d3ee",
+    "nflCount": 6,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:12.644Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 14,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": null,
+          "description": "Ford was placed on injured reserve on December 9, 2025, due to a shoulder injury sustained in Week 14, ending his season.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a hamstring injury and was a limited participant in practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Wrist",
+          "week": 14,
+          "season": 2023,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a wrist injury in mid-December but played through it after X-rays were negative.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 7,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained a right high ankle sprain in Week 7, but was surprisingly active for Week 8.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 4,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Ford suffered an ankle injury in Week 4 and was subsequently placed on injured reserve on October 4, 2022.",
+          "gamesMissed": 7
+        }
+      ],
+      "grade": "B-",
+      "score": 60,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8155",
+    "playerName": "Breece Hall",
+    "team": "NYJ",
+    "grade": "B-",
+    "score": 60,
+    "gradeColor": "#22d3ee",
+    "nflCount": 4,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:13.447Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Knee Soreness",
+          "week": 15,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Was inactive for the game against the Dolphins after struggling with his surgically repaired left knee.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "left",
+          "type": "Knee Soreness",
+          "week": 13,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a knee issue related to his previous ACL surgery but was active for the game against the Seahawks.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "ACL Tear, Meniscus Injury",
+          "week": 7,
+          "season": 2022,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a torn ACL and meniscus injury in his left knee against the Denver Broncos, which ended his rookie season.",
+          "gamesMissed": 10
+        }
+      ],
+      "grade": "B-",
+      "score": 60,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "5995",
+    "playerName": "Justice Hill",
+    "team": "BAL",
+    "grade": "B-",
+    "score": 61,
+    "gradeColor": "#22d3ee",
+    "nflCount": 8,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:38:48.532Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Neck",
+          "week": 13,
+          "season": 2025,
+          "bodyPart": "back",
+          "severity": "major",
+          "description": "Hill was placed on Injured Reserve due to a neck injury sustained in practice, missing the remainder of the season.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "Toe",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "toe",
+          "severity": "minor",
+          "description": "Hill was ruled out for the game in Week 11 due to a toe injury.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "Sustained a concussion in Week 16 against the Steelers and missed the final two games of the regular season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 3,
+          "season": 2023,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "A foot injury caused Hill to miss the Week 3 contest and be listed as questionable for the following two weeks.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 5,
+          "season": 2022,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Hill suffered a hamstring strain that caused him to miss two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Torn Achilles",
+          "week": 0,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Hill tore his Achilles tendon in early September before the season began and missed the entire 2021 season.",
+          "gamesMissed": 17
+        },
+        {
+          "side": "unknown",
+          "type": "Thigh",
+          "week": 1,
+          "season": 2020,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "A thigh injury forced Hill to miss the season opener.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "B-",
+      "score": 61,
+      "college": [
+        {
+          "year": 2019,
+          "description": "Hill impressed at the NFL Combine, recording the fastest 40-yard dash time for a running back, as well as the best vertical and broad jumps.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "4199",
+    "playerName": "Aaron Jones",
+    "team": "MIN",
+    "grade": "B",
+    "score": 63,
+    "gradeColor": "#06b6d4",
+    "nflCount": 12,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:40.749Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Hip",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Jones was dealing with a hip injury at the end of the season.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "AC Joint Sprain",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Jones suffered a minor AC joint sprain in his shoulder but was expected to play the following week.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 2,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "major",
+          "description": "Jones was placed on injured reserve due to a hamstring injury, forcing him to miss a minimum of four weeks.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "MCL Sprain",
+          "week": 11,
+          "season": 2023,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "A knee injury sidelined Jones for three games late in the season.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring Strain",
+          "week": 1,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Jones suffered a hamstring injury in the season opener and missed the following three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 10,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Jones played through a minor ankle sprain.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "MCL Sprain",
+          "week": 10,
+          "season": 2021,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Jones missed one game after suffering a Grade 2 MCL sprain in his right knee.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 7,
+          "season": 2020,
+          "bodyPart": "calf",
+          "severity": "moderate",
+          "description": "Jones was sidelined for two games due to a calf strain.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "MCL Sprain",
+          "week": 15,
+          "season": 2018,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "He suffered a Grade 2 MCL sprain in his right knee, leading him to miss the final two games of the season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring Strain",
+          "week": 0,
+          "season": 2018,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Jones dealt with a hamstring strain during training camp which caused him to miss two weeks of practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "MCL Sprain",
+          "week": 17,
+          "season": 2017,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Jones sustained a Grade 2 MCL sprain in his left knee during the final game of the season but did not miss any games as it was the season finale.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "MCL Sprain",
+          "week": 10,
+          "season": 2017,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Jones suffered a Grade 2 MCL sprain in his right knee, causing him to miss two games.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "B",
+      "score": 63,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "6813",
+    "playerName": "Jonathan Taylor",
+    "team": "IND",
+    "grade": "B",
+    "score": 63,
+    "gradeColor": "#06b6d4",
+    "nflCount": 5,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:53.770Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 4,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Sustained a mild right high ankle sprain in Week 4, which caused him to be ruled out for Weeks 5, 6, and 7.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "left",
+          "type": "UCL Tear",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "wrist",
+          "severity": "moderate",
+          "description": "Suffered a torn UCL in his left thumb in Week 12, which required surgery and caused him to miss three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Started the season on the Physically Unable to Perform (PUP) list while recovering from offseason ankle surgery, missing the first four games.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 4,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Suffered a right high ankle sprain that caused him to miss a total of six games throughout the season and required offseason surgery.",
+          "gamesMissed": 6
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 11,
+          "season": 2020,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Was listed on the injury report with an ankle issue in November 2020 but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B",
+      "score": 63,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "9511",
+    "playerName": "Keaton Mitchell",
+    "team": "LAC",
+    "grade": "B",
+    "score": 64,
+    "gradeColor": "#06b6d4",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:24.545Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Dealt with a minor hamstring injury during the 2025 preseason but was expected to be ready for Week 1.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "ACL, PCL, LCL and Hamstring Tear",
+          "week": 15,
+          "season": 2023,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a season-ending complete tear of his ACL in his left knee on December 17, 2023, against the Jacksonville Jaguars.",
+          "gamesMissed": 12
+        }
+      ],
+      "grade": "B",
+      "score": 64,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "4866",
+    "playerName": "Saquon Barkley",
+    "team": "PHI",
+    "grade": "B",
+    "score": 65,
+    "gradeColor": "#06b6d4",
+    "nflCount": 11,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:38:46.961Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Suffered a groin injury in the third quarter against the New York Giants but the team had a bye the following week.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee Soreness",
+          "week": 6,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Was listed on the injury report with general knee soreness but was expected to and did play against the Giants.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Back",
+          "week": 10,
+          "season": 2024,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a back issue but was not expected to miss time.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Ankle Sprain",
+          "week": 10,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Re-aggravated his right ankle sprain but did not miss any games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Hyperextended Elbow",
+          "week": 7,
+          "season": 2023,
+          "bodyPart": "elbow",
+          "severity": "minor",
+          "description": "Sustained a hyperextended left elbow but returned to the game with a brace.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 2,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Suffered a high ankle sprain in a pileup during Week 2 and missed the next three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder Sprain",
+          "week": 5,
+          "season": 2022,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Briefly left a game with what was described as a shoulder sprain but returned to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Low Ankle Sprain",
+          "week": 5,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Injured his ankle after stepping on another player's foot and missed four games.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "right",
+          "type": "Torn ACL, MCL Sprain",
+          "week": 2,
+          "season": 2020,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a torn ACL and a sprained MCL in his right knee against the Chicago Bears, ending his season.",
+          "gamesMissed": 14
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 3,
+          "season": 2019,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Sustained a high ankle sprain against the Tampa Bay Buccaneers and missed the following three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring Strain",
+          "week": 0,
+          "season": 2018,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Suffered a hamstring strain during a training camp practice but was ready for Week 1.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B",
+      "score": 65,
+      "college": [
+        {
+          "year": 2016,
+          "description": "Injured his right ankle in the third quarter against Michigan State but was able to play the following week.",
+          "significance": "low"
+        },
+        {
+          "year": 2015,
+          "description": "Missed two games as a freshman at Penn State due to an ankle injury.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "7543",
+    "playerName": "Travis Etienne",
+    "team": "NO",
+    "grade": "B",
+    "score": 66,
+    "gradeColor": "#06b6d4",
+    "nflCount": 5,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:07.577Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Appeared on the Wednesday practice report as a limited participant with a shoulder issue but was in no jeopardy of missing the upcoming game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 7,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Dealt with a hamstring injury that made him a game-time decision for multiple weeks and caused him to miss at least two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Was listed as questionable with a rib injury but was expected to play through it.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 13,
+          "season": 2022,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Was listed as questionable for Week 13 with a foot injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Lisfranc Tear",
+          "week": 0,
+          "season": 2021,
+          "bodyPart": "foot",
+          "severity": null,
+          "description": "Suffered a significant Lisfranc tear in a preseason game that required surgery and ended his rookie season before it began.",
+          "gamesMissed": 17
+        }
+      ],
+      "grade": "B",
+      "score": 66,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "8205",
+    "playerName": "Isiah Pacheco",
+    "team": "DET",
+    "grade": "B",
+    "score": 66,
+    "gradeColor": "#06b6d4",
+    "nflCount": 8,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:13.467Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "MCL Sprain",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Suffered a right knee injury on October 27th that was diagnosed as an MCL sprain and caused him to miss three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Sustained a rib injury during a Christmas Day game against the Pittsburgh Steelers, causing him to miss one game.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "right",
+          "type": "Fractured Fibula",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Suffered a fractured right fibula in Week 2 against the Bengals which required surgery and led to him missing seven games.",
+          "gamesMissed": 7
+        },
+        {
+          "side": "unknown",
+          "type": "Finger Fracture",
+          "week": 20,
+          "season": 2023,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Broke a bone between his wrist and thumb during the AFC Championship game but played through the injury in the Super Bowl.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Turf Toe",
+          "week": 20,
+          "season": 2023,
+          "bodyPart": "toe",
+          "severity": "minor",
+          "description": "Dealt with a turf toe injury during the Divisional Round playoff game against the Buffalo Bills in January 2024.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 16,
+          "season": 2023,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Took a hard hit against the Raiders on Christmas Day, resulting in a concussion, but was able to return for the next game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "shoulder",
+          "severity": "moderate",
+          "description": "Hurt the same shoulder he had offseason surgery on during a Week 13 game against the Packers, which resulted in him missing two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Torn Labrum",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Played his entire rookie season with a torn labrum and underwent surgery two weeks after the Super Bowl to repair the damage.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B",
+      "score": 66,
+      "college": [
+        {
+          "year": 2019,
+          "description": "While at Rutgers, he suffered a deep cut on his foot while removing athletic tape after a game. He played the next week but had to sit out the following matchup.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "12512",
+    "playerName": "Quinshon Judkins",
+    "team": "CLE",
+    "grade": "B",
+    "score": 66,
+    "gradeColor": "#06b6d4",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.107Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Fractured Fibula and Dislocated Ankle",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Suffered a fractured fibula and dislocated ankle on his right leg in Week 16 against the Buffalo Bills, which required season-ending surgery.",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "B",
+      "score": 66,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "5850",
+    "playerName": "Josh Jacobs",
+    "team": "GB",
+    "grade": "B",
+    "score": 69,
+    "gradeColor": "#06b6d4",
+    "nflCount": 12,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:38:47.447Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Knee Injury",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Aggravated a pre-existing knee injury in a game against the Denver Broncos but continued to play through it.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee Bruise/Contusion",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Sustained a bone bruise and thigh contusion against the New York Giants, causing him to miss the following week's game against Minnesota.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 7,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Dealt with a calf strain in October that made his status for Week 7 uncertain, but he played through the injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 7,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Was listed with an illness leading up to the Week 7 matchup.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Injury",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained an ankle injury late in a game and was listed as questionable for the following week but was able to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Lower Back Sprain",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Endured a lower back sprain in Week 2 of the 2024 season.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Quad Bruise",
+          "week": 14,
+          "season": 2023,
+          "bodyPart": "quad",
+          "severity": "major",
+          "description": "Suffered a quad injury during a Week 14 game against the Vikings, which led to him missing the final four games of the season.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 12,
+          "season": 2022,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Was listed as questionable with a calf injury ahead of Week 12 but played through it.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Rib Bruise",
+          "week": 18,
+          "season": 2021,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Dealt with a rib bruise late in the season but was able to play through the injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 1,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Sustained an ankle injury in the season opener against the Ravens that caused him to miss the following two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 13,
+          "season": 2020,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Suffered a Grade II ankle sprain that forced him to miss the Week 13 game.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder Fracture",
+          "week": 7,
+          "season": 2019,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Sustained a fractured shoulder (growth plate) in Week 7 but played through it for several weeks before being shut down for Week 14 and the final two games of the season.",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "B",
+      "score": 69,
+      "college": [
+        {
+          "year": 2017,
+          "description": "During his sophomore season at the University of Alabama, Jacobs suffered a hamstring injury that caused him to miss the first two games of the season.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "12507",
+    "playerName": "Omarion Hampton",
+    "team": "LAC",
+    "grade": "B",
+    "score": 69,
+    "gradeColor": "#06b6d4",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.305Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Was dealing with a right ankle injury heading into the wild-card playoff game, where he was active but limited to only two snaps.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Fractured Ankle",
+          "week": 5,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Suffered a fractured left ankle in Week 5 against the Washington Commanders and was subsequently placed on Injured Reserve.",
+          "gamesMissed": 7
+        }
+      ],
+      "grade": "B",
+      "score": 69,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "12516",
+    "playerName": "Kalel Mullings",
+    "team": "TEN",
+    "grade": "B",
+    "score": 69,
+    "gradeColor": "#06b6d4",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.360Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 4,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "After playing through an ankle issue, he was placed on Injured Reserve on September 26, 2025, following the team's Week 3 game.",
+          "gamesMissed": 8
+        },
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained a right ankle injury during the preseason finale against the Minnesota Vikings but was expected to be ready for Week 1.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B",
+      "score": 69,
+      "college": [],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "12738",
+    "playerName": "Phil Mafah",
+    "team": "DAL",
+    "grade": "B",
+    "score": 69,
+    "gradeColor": "#06b6d4",
+    "nflCount": 1,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:42.400Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Shoulder",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Re-injured his surgically repaired left shoulder during the preseason finale and was placed on Injured Reserve, missing the first 17 games of his rookie season.",
+          "gamesMissed": 17
+        }
+      ],
+      "grade": "B",
+      "score": 69,
+      "college": [
+        {
+          "year": 2025,
+          "description": "The shoulder injury sustained during his final collegiate season was noted as a possible reason for his selection in the seventh round of the NFL Draft.",
+          "significance": "medium"
+        },
+        {
+          "year": 2024,
+          "description": "Played through his senior season at Clemson with a torn labrum.",
+          "significance": "high"
+        },
+        {
+          "year": 2024,
+          "description": "Underwent postseason surgery on his left shoulder in December 2024.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#06b6d4"
+    }
+  },
+  {
+    "sleeperPlayerId": "8151",
+    "playerName": "Kenneth Walker",
+    "team": "KC",
+    "grade": "B+",
+    "score": 70,
+    "gradeColor": "#22d3ee",
+    "nflCount": 9,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:13.086Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Glute Injury",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Appeared on the injury report late in the week with a glute injury but was considered precautionary and was expected to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Foot Soreness",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Sat out of some preseason practices due to foot soreness but reportedly played in all 17 regular season games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 16,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Suffered a high ankle sprain in Week 16 and was placed on injured reserve, ending his season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 14,
+          "season": 2024,
+          "bodyPart": "calf",
+          "severity": "moderate",
+          "description": "A calf injury sidelined him for the games in Week 14 and Week 15.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Oblique Injury",
+          "week": 1,
+          "season": 2024,
+          "bodyPart": "back",
+          "severity": "moderate",
+          "description": "Injured his oblique in Week 1, leading him to miss Weeks 2 and 3.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Oblique Strain",
+          "week": 11,
+          "season": 2023,
+          "bodyPart": "back",
+          "severity": "moderate",
+          "description": "Sustained an oblique muscle strain against the Rams in Week 11 and missed the subsequent two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Groin Pull",
+          "week": 0,
+          "season": 2023,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Missed over two weeks of practice during the preseason with a groin pull but did not miss any regular season games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 13,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Suffered a pedal ankle sprain in Week 13 and missed the following game.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hernia",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "hip",
+          "severity": "moderate",
+          "description": "Underwent a procedure for a sports hernia during the preseason, causing him to miss the first game of his rookie year.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "B+",
+      "score": 70,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "7588",
+    "playerName": "Javonte Williams",
+    "team": "DAL",
+    "grade": "B+",
+    "score": 71,
+    "gradeColor": "#22d3ee",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:10.013Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Shoulder Stinger",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "moderate",
+          "description": "Exited the Week 17 game against the Washington Commanders with a shoulder stinger and did not return; he was also held out of the season finale.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hip Flexor Strain",
+          "week": 5,
+          "season": 2023,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Sustained a hip flexor injury in Week 4 and was inactive for the Week 5 game against the New York Jets.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "right",
+          "type": "ACL, LCL, and PLC tear",
+          "week": 4,
+          "season": 2022,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a season-ending multi-ligament knee injury against the Las Vegas Raiders, tearing his ACL, LCL, and posterolateral corner.",
+          "gamesMissed": 13
+        }
+      ],
+      "grade": "B+",
+      "score": 71,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "11584",
+    "playerName": "Bucky Irving",
+    "team": "TB",
+    "grade": "B+",
+    "score": 74,
+    "gradeColor": "#22d3ee",
+    "nflCount": 3,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:30.484Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Lower Leg",
+          "week": 14,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Limped off the field with an apparent left lower leg injury during the Week 14 game against the Saints but later returned to the contest.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder Subluxation & Foot Sprain",
+          "week": 4,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Suffered foot and shoulder injuries in Week 4 against the Philadelphia Eagles, with the shoulder issue later reported as a subluxation that sidelined him for seven games.",
+          "gamesMissed": 7
+        }
+      ],
+      "grade": "B+",
+      "score": 74,
+      "college": [
+        {
+          "year": null,
+          "description": "Dealt with minor ankle tweaks in both 2022 and 2023 at Oregon but never missed a game.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "4035",
+    "playerName": "Alvin Kamara",
+    "team": "NO",
+    "grade": "B+",
+    "score": 75,
+    "gradeColor": "#22d3ee",
+    "nflCount": 9,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:38:39.960Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable: Sprain",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Knee and Ankle",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Sustained knee and ankle injuries in Week 12 against the Falcons, leading him to miss at least three consecutive games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 6,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Picked up an ankle injury in practice that was deemed 'nothing concerning' and did not cause him to miss any games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 15,
+          "season": 2024,
+          "bodyPart": "hip",
+          "severity": "moderate",
+          "description": "A groin injury described as 'more significant' than initially thought caused him to miss the final three games of the season.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "left",
+          "type": "Ankle Sprain",
+          "week": 18,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Suffered an ankle sprain in the final week of the regular season, which kept him out of the Pro Bowl.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Rib Fracture",
+          "week": 1,
+          "season": 2022,
+          "bodyPart": "chest",
+          "severity": "moderate",
+          "description": "Kamara dealt with a rib cartilage issue that kept him out of two early-season contests.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "MCL and PCL Sprain",
+          "week": 9,
+          "season": 2021,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Kamara suffered both an MCL and PCL sprain in his knee, which caused him to miss four games starting in Week 10.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle and Knee Sprain",
+          "week": 7,
+          "season": 2019,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Kamara sustained both an ankle and a knee injury that resulted in him missing Weeks 7 and 8 of the season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 14,
+          "season": 2017,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Kamara suffered a concussion in the first quarter of Week 14 but was able to clear protocol and play in the following game.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B+",
+      "score": 75,
+      "college": [
+        {
+          "year": 2016,
+          "description": "During his final season at the University of Tennessee, he sustained a knee injury in October.",
+          "significance": "low"
+        },
+        {
+          "year": 2012,
+          "description": "Kamara tore his knee in August of 2012, which forced him to redshirt for his freshman season at Alabama.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "4219",
+    "playerName": "Jeremy McNichols",
+    "team": "WAS",
+    "grade": "B+",
+    "score": 75,
+    "gradeColor": "#22d3ee",
+    "nflCount": 4,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:41.011Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 3,
+          "season": 2025,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "McNichols was limited in practice with a hamstring issue but was removed from the injury report ahead of the following game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "shoulder",
+          "severity": null,
+          "description": "He suffered a shoulder injury during the preseason that ultimately led to him being placed on injured reserve.",
+          "gamesMissed": 17
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 10,
+          "season": 2021,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "McNichols sustained a concussion in Week 10 and missed the following two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 5,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "He was on the injury report with an ankle sprain but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B+",
+      "score": 75,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8408",
+    "playerName": "Jordan Mason",
+    "team": "MIN",
+    "grade": "B+",
+    "score": 75,
+    "gradeColor": "#22d3ee",
+    "nflCount": 5,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:19.193Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Exited the game in the first half with an ankle injury and was subsequently ruled out.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 13,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Suffered a high ankle sprain in Week 13 and was placed on injured reserve, ending his season.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "left",
+          "type": "Shoulder",
+          "week": 8,
+          "season": 2024,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Aggravated a pre-existing left shoulder sprain during the Week 8 matchup.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Shoulder",
+          "week": 6,
+          "season": 2024,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Suffered a left shoulder injury in the second quarter, returned for one play, but then exited the game for good.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Was listed as questionable with a hamstring injury ahead of the Week 13 game.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "B+",
+      "score": 75,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "7611",
+    "playerName": "Rhamondre Stevenson",
+    "team": "NE",
+    "grade": "A-",
+    "score": 76,
+    "gradeColor": "#22d3ee",
+    "nflCount": 8,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:10.589Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Eye Injury",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "He sustained an eye injury during a playoff game against the Texans on January 18, 2026, and was questionable to return.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Toe Injury",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "toe",
+          "severity": "moderate",
+          "description": "A toe injury caused him to be ruled out for the Week 9 game and he ultimately missed three consecutive games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Foot Sprain",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "He dealt with a foot sprain in October 2024.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Stevenson suffered a season-ending high ankle sprain on his right foot in Week 13 against the Chargers, causing him to miss the final five games of the season.",
+          "gamesMissed": 5
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 14,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "He suffered an ankle sprain in December 2022 but returned for the following week's game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee Sprain",
+          "week": 12,
+          "season": 2021,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "He was diagnosed with a Grade 1 knee sprain ahead of Week 12 but did not miss any time.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 9,
+          "season": 2021,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "He suffered a head injury during the Week 9 game against the Carolina Panthers but was able to play in the following game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Dislocated Thumb",
+          "week": 0,
+          "season": 2021,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Stevenson dislocated his thumb during practice just days before the season opener but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A-",
+      "score": 76,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "5892",
+    "playerName": "David Montgomery",
+    "team": "HOU",
+    "grade": "A-",
+    "score": 79,
+    "gradeColor": "#22d3ee",
+    "nflCount": 7,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:47.824Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Torn MCL",
+          "week": 15,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "major",
+          "description": "Suffered a torn MCL during a Week 15 loss to the Buffalo Bills, with initial reports indicating it would be a season-ending injury requiring surgery.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 6,
+          "season": 2023,
+          "bodyPart": "chest",
+          "severity": "moderate",
+          "description": "Injured his ribs in a Week 6 game against the Buccaneers and missed the following two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Thigh Bruise",
+          "week": 2,
+          "season": 2023,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "Sustained a thigh injury during the third quarter of a Week 2 matchup against the Seahawks.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 3,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "An ankle sprain caused him to miss one game during the 2022 season.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "left",
+          "type": "Knee Sprain",
+          "week": 4,
+          "season": 2021,
+          "bodyPart": "knee",
+          "severity": "major",
+          "description": "Suffered a left knee sprain against the Detroit Lions in Week 4 and was subsequently placed on injured reserve.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 9,
+          "season": 2020,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "Was diagnosed with a concussion and missed the team's Week 10 game while in protocol.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Groin Strain",
+          "week": 0,
+          "season": 2020,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Sustained a groin strain during training camp but did not miss any regular season games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A-",
+      "score": 79,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "9753",
+    "playerName": "Zach Charbonnet",
+    "team": "SEA",
+    "grade": "A-",
+    "score": 79,
+    "gradeColor": "#22d3ee",
+    "nflCount": 6,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:24.747Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Torn ACL",
+          "week": 20,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Suffered a significant knee injury, reported as a torn ACL, during the NFC Divisional Round game against the 49ers, which required season-ending surgery.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "IR",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable: Surgery",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "IR",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "IR",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 3,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Was listed as doubtful for Week 3 after missing practice with a foot injury, but was a full participant later in the week and was active for the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Elbow",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "elbow",
+          "severity": "minor",
+          "description": "Was listed with an elbow injury but was a full participant in practice ahead of the Thursday night game against the Bears.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Oblique",
+          "week": 16,
+          "season": 2024,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Missed practice on a Wednesday due to an oblique injury suffered in the previous week's game against the Packers.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A-",
+      "score": 79,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8129",
+    "playerName": "Dameon Pierce",
+    "team": "PHI",
+    "grade": "A-",
+    "score": 80,
+    "gradeColor": "#22d3ee",
+    "nflCount": 5,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:12.246Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Strained Quadriceps",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "Suffered a strained quadriceps in the spring but was healthy for the start of training camp.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Was ruled out for Weeks 9 and 10 due to a groin injury.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "A hamstring injury sidelined him at the start of the season, causing him to miss Weeks 3 and 4.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 9,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Missed three games (Weeks 9-11) due to an ankle sprain.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 14,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Suffered a high ankle sprain in Week 14 against the Cowboys, which placed him on injured reserve and ended his rookie season.",
+          "gamesMissed": 4
+        }
+      ],
+      "grade": "A-",
+      "score": 80,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "11569",
+    "playerName": "Jarquez Hunter",
+    "team": "LAR",
+    "grade": "A-",
+    "score": 80,
+    "gradeColor": "#22d3ee",
+    "nflCount": 2,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:28.914Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle Injury",
+          "week": 1,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "A fan forum post suggested Hunter sustained an ankle injury in the first game and was placed on injured reserve for a couple of months.",
+          "gamesMissed": 8
+        },
+        {
+          "side": "unknown",
+          "type": "Foot Injury",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "A user on a fan forum mentioned that Hunter may have had a foot injury during training camp.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A-",
+      "score": 80,
+      "college": [
+        {
+          "year": 2022,
+          "description": "Underwent a 'cleanup' procedure on his leg during spring practice at Auburn, with an expected recovery time of eight to 10 weeks.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8154",
+    "playerName": "Brian Robinson",
+    "team": "ATL",
+    "grade": "A-",
+    "score": 80,
+    "gradeColor": "#22d3ee",
+    "nflCount": 5,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:13.142Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Ankle Sprain",
+          "week": 12,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Injured his right ankle on the first offensive play against the Dallas Cowboys, though he did return to the contest.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Missed two consecutive games (Week 9 and 10) with a hamstring injury before returning for Week 11.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Knee Strain",
+          "week": 5,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Sustained a Grade 1 knee strain on September 29th, leading him to be ruled out for the Week 6 game against the Baltimore Ravens.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Suffered a hamstring strain in a Week 13 game against the Miami Dolphins, which caused him to miss Weeks 14 and 15.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "Gunshot Wounds",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "hip",
+          "severity": "major",
+          "description": "Was shot in the right hip and knee during an attempted robbery in August and was placed on the Non-Football Injury list, missing the first four games of the season.",
+          "gamesMissed": 4
+        }
+      ],
+      "grade": "A-",
+      "score": 80,
+      "college": [
+        {
+          "year": 2021,
+          "description": "Suffered a rib bruise during a game against Florida in September 2021.",
+          "significance": "low"
+        },
+        {
+          "year": 2021,
+          "description": "Dealt with lower back muscle spasms in November of his final college season.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "9508",
+    "playerName": "Tyjae Spears",
+    "team": "TEN",
+    "grade": "A-",
+    "score": 80,
+    "gradeColor": "#22d3ee",
+    "nflCount": 5,
+    "collegeCount": 4,
+    "fetchedAt": "2026-06-11T19:39:24.167Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Spears suffered a high ankle sprain in the preseason opener and was subsequently placed on Injured Reserve, missing the first four games of the season.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "He suffered his second concussion of the season in Week 17 and was ruled out for the season finale in Week 18.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 12,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Two games after returning from a hamstring injury, Spears suffered a concussion that sidelined him for one game.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 6,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Spears sustained a hamstring injury in Week 6 that caused him to miss the following three games.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 3,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "He was listed as questionable with an ankle injury but was able to play through it.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A-",
+      "score": 80,
+      "college": [
+        {
+          "year": 2023,
+          "description": "Medical exams at the NFL Combine revealed significant long-term concerns about his knee, including the absence of a functional ACL, full-thickness cartilage loss, and early-onset arthritis.",
+          "significance": "high"
+        },
+        {
+          "year": 2023,
+          "description": "His well-documented knee condition was a major factor in his fall to the third round of the NFL Draft, with concerns about his long-term durability.",
+          "significance": "high"
+        },
+        {
+          "year": 2020,
+          "description": "Suffered a season-ending knee injury in the third game of his sophomore season at Tulane, which was later reported to be a torn ACL.",
+          "significance": "high"
+        },
+        {
+          "year": 2020,
+          "description": "Underwent at least one ACL surgery following his 2020 knee injury.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "10235",
+    "playerName": "Roschon Johnson",
+    "team": "CHI",
+    "grade": "A-",
+    "score": 80,
+    "gradeColor": "#22d3ee",
+    "nflCount": 6,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:25.600Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Thumb",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "major",
+          "description": "Was placed on Injured Reserve after missing practice during Week 12 with a thumb injury, forcing him to miss at least four games.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Back",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "back",
+          "severity": "moderate",
+          "description": "Was sidelined for Weeks 8 and 9 due to a back injury.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 1,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "moderate",
+          "description": "Missed Week 1 of the season after dealing with a foot injury during training camp and the preseason.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 13,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Left the Week 13 Thanksgiving game against the Lions to be evaluated for a concussion.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 5,
+          "season": 2023,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "Sustained a concussion during the Week 5 game against the Commanders and was subsequently ruled out for Weeks 6 and 7.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A-",
+      "score": 80,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "8800",
+    "playerName": "Malik Davis",
+    "team": "DAL",
+    "grade": "A-",
+    "score": 81,
+    "gradeColor": "#22d3ee",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:19.554Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Eye",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "major",
+          "description": "Sustained an eye poke in Week 17 that resulted in his right eye being swollen shut and was subsequently placed on injured reserve.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Calf",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "major",
+          "description": "Suffered a calf injury in Week 17 and was placed on injured reserve, ending his season.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A-",
+      "score": 81,
+      "college": [],
+      "gradeColor": "#22d3ee"
+    }
+  },
+  {
+    "sleeperPlayerId": "7594",
+    "playerName": "Chuba Hubbard",
+    "team": "CAR",
+    "grade": "A",
+    "score": 83,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:10.380Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Calf",
+          "week": 5,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Missed Week 5 and Week 6 with a nagging calf injury that he initially played through in the prior week.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Knee & Calf",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": null,
+          "description": "Placed on Injured Reserve ahead of Week 17 due to concurrent calf and knee injuries, ending his season.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A",
+      "score": 83,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11579",
+    "playerName": "Audric Estime",
+    "team": "NO",
+    "grade": "A",
+    "score": 84,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:30.005Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "major",
+          "description": "Placed on Injured Reserve with an ankle injury following Week 2, forcing him to miss a minimum of four games.",
+          "gamesMissed": 4
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Underwent a minor scope procedure on his knee during OTAs but was ready for the start of training camp.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A",
+      "score": 84,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "10219",
+    "playerName": "Chris Rodriguez",
+    "team": "JAX",
+    "grade": "A",
+    "score": 85,
+    "gradeColor": "#22c55e",
+    "nflCount": 4,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:25.054Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Rodriguez was a late addition to the injury report and ruled out with an illness just hours before the Commanders' Christmas Day game against the Cowboys.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "After not practicing to start the week and being limited in later sessions, Rodriguez was ruled out for the Week 15 game against the Giants due to a groin injury.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 17,
+          "season": 2023,
+          "bodyPart": "head",
+          "severity": "major",
+          "description": "On December 28, 2023, Rodriguez was placed on injured reserve due to concussion symptoms, ending his rookie season.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A",
+      "score": 85,
+      "college": [
+        {
+          "year": null,
+          "description": "Broke his arm in seventh grade while playing center, which prompted a move to fullback and later running back.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11435",
+    "playerName": "Emanuel Wilson",
+    "team": "SEA",
+    "grade": "A",
+    "score": 85,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:28.237Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Wilson was added to the injury report with an illness and was listed as questionable for the game against the Denver Broncos.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hip",
+          "week": 1,
+          "season": 2024,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Wilson was listed as questionable with a hip injury heading into Week 1 of the 2024 season.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "shoulder",
+          "severity": "major",
+          "description": "Wilson was placed on injured reserve on November 22, 2023, due to a shoulder injury, and was activated on January 6, 2024.",
+          "gamesMissed": 6
+        }
+      ],
+      "grade": "A",
+      "score": 85,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "5967",
+    "playerName": "Tony Pollard",
+    "team": "TEN",
+    "grade": "A",
+    "score": 89,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:48.188Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Was listed as questionable for Week 9 due to a foot injury but was expected to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Fractured Fibula and High Ankle Sprain",
+          "week": 20,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": null,
+          "description": "Suffered a fractured left fibula and a high ankle sprain in the NFC Divisional Round against the 49ers, which required surgery.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 13,
+          "season": 2019,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained an ankle injury during Week 13 and missed the subsequent game.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A",
+      "score": 89,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11571",
+    "playerName": "Isaiah Davis",
+    "team": "NYJ",
+    "grade": "A",
+    "score": 89,
+    "gradeColor": "#22c55e",
+    "nflCount": 4,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:29.282Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "major",
+          "description": "Suffered a concussion in Week 17 against the Patriots, was placed on injured reserve and missed the final game of the season.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Managed a minor ankle injury during the preseason.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Picked up a minor shoulder injury during a preseason game.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A",
+      "score": 89,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11586",
+    "playerName": "Blake Corum",
+    "team": "LAR",
+    "grade": "A",
+    "score": 89,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 4,
+    "fetchedAt": "2026-06-11T19:39:30.719Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Corum sustained a right ankle injury in the second quarter against the Atlanta Falcons and was questionable to return to the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Fractured Forearm",
+          "week": 18,
+          "season": 2024,
+          "bodyPart": "wrist",
+          "severity": "major",
+          "description": "Suffered a fractured forearm in the final game of the regular season against the Seahawks and was subsequently placed on injured reserve.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A",
+      "score": 89,
+      "college": [
+        {
+          "year": 2024,
+          "description": "NFL teams had concerns about his long-term durability due to the serious knee injury he suffered in 2022.",
+          "significance": "medium"
+        },
+        {
+          "year": 2022,
+          "description": "Underwent surgery on December 1, 2022, to repair a torn meniscus in his left knee suffered in a game against Illinois.",
+          "significance": "high"
+        },
+        {
+          "year": 2022,
+          "description": "Sustained a bone bruise and a meniscus tear in his left knee on November 19, 2022, which ended his season.",
+          "significance": "high"
+        },
+        {
+          "year": 2021,
+          "description": "Suffered a right high ankle sprain on November 6, 2021, against Indiana and missed games before returning later that month.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "3198",
+    "playerName": "Derrick Henry",
+    "team": "BAL",
+    "grade": "A+",
+    "score": 90,
+    "gradeColor": "#22c55e",
+    "nflCount": 6,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:38:39.010Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Head",
+          "week": 13,
+          "season": 2023,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Exited the Week 13 game to be evaluated for a concussion but was cleared and returned to play the following week.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hip Injury",
+          "week": 17,
+          "season": 2022,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "A hip injury suffered late in the season caused him to miss the Week 17 game.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "right",
+          "type": "Jones Fracture",
+          "week": 8,
+          "season": 2021,
+          "bodyPart": "foot",
+          "severity": null,
+          "description": "Suffered a Jones fracture in his right foot during a Week 8 victory over the Colts, which required surgery and landed him on the Injured Reserve.",
+          "gamesMissed": 9
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring Strain",
+          "week": 16,
+          "season": 2019,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "A pulled hamstring forced him to miss the Week 16 matchup against the Saints.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 0,
+          "season": 2019,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Sustained a lower leg injury during training camp that required him to wear a walking boot, but it was not considered a major issue.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Calf Strain",
+          "week": 9,
+          "season": 2016,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Picked up a calf strain during pregame warmups for the Week 9 game but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 90,
+      "college": [
+        {
+          "year": 2015,
+          "description": "Won the 2015 Heisman Trophy after rushing for 2,219 yards and 28 touchdowns in his junior season at Alabama.",
+          "significance": "high"
+        },
+        {
+          "year": null,
+          "description": "In a 2023 interview, Derrick Henry mentioned he had surgery once in college, prior to his first NFL surgery in 2021.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11655",
+    "playerName": "Tyrone Tracy",
+    "team": "NYG",
+    "grade": "A+",
+    "score": 90,
+    "gradeColor": "#22c55e",
+    "nflCount": 5,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:34.310Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Hip",
+          "week": 13,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "moderate",
+          "description": "Was carted off the field on a Monday night after being unable to put weight on his left leg due to a hip injury.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "right",
+          "type": "Dislocated Shoulder",
+          "week": 3,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "moderate",
+          "description": "Suffered a dislocated right shoulder against the Chiefs in Week 3, with an expected timeline to return of two to four weeks.",
+          "gamesMissed": 3
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 16,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Dealt with an ankle injury that made him a limited participant in practice ahead of Week 16 and a non-participant for Week 17 practice.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 9,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Suffered a concussion late in a Monday night game and entered the league's five-step protocol.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "right",
+          "type": "Ankle Sprain",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "His right leg bent awkwardly in a training camp drill, requiring an air cast, but it was later diagnosed as a minor sprain and he returned to practice fully a week later.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 90,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12534",
+    "playerName": "Kyle Monangai",
+    "team": "CHI",
+    "grade": "A+",
+    "score": 90,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:42.063Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2026,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Was reported as a non-participant in a late February practice due to an ankle injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 14,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Appeared on the injury report as a non-participant on Wednesday with an ankle injury, but returned to practice on a limited basis later in the week.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 10,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Was listed as limited in practice early in the week with an ankle issue but was removed from the injury report and played against the Giants.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 90,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11577",
+    "playerName": "Will Shipley",
+    "team": "PHI",
+    "grade": "A+",
+    "score": 95,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:30.129Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Fractured Ribs",
+          "week": 1,
+          "season": 2025,
+          "bodyPart": "chest",
+          "severity": "moderate",
+          "description": "Suffered a fractured rib (or ribs) in the season opener against the Dallas Cowboys, which was expected to sideline him for an extended period.",
+          "gamesMissed": 4
+        }
+      ],
+      "grade": "A+",
+      "score": 95,
+      "college": [
+        {
+          "year": 2023,
+          "description": "Sustained a non-contact leg injury on a kickoff return in the Gator Bowl vs. Kentucky; an MRI revealed no structural damage and no surgery was required.",
+          "significance": "low"
+        },
+        {
+          "year": 2023,
+          "description": "Exited a game against NC State after a hit to the head and was placed in concussion protocol.",
+          "significance": "medium"
+        },
+        {
+          "year": 2021,
+          "description": "Suffered a left leg injury initially feared to be a serious knee injury, but it was later diagnosed as a shin injury that did not require surgery and he returned in about a month.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12469",
+    "playerName": "Dylan Sampson",
+    "team": "CLE",
+    "grade": "A+",
+    "score": 95,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:39.769Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Calf/Hand",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "moderate",
+          "description": "Sampson suffered calf and hand injuries in Week 14 and was subsequently ruled out for the games in Week 15 and Week 16.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A+",
+      "score": 95,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Suffered a lingering left hamstring injury near the end of the regular season against Vanderbilt, which he aggravated in the first quarter of the College Football Playoff game against Ohio State. The injury limited him to two carries and he was unable to effectively return to the game.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12490",
+    "playerName": "Bhayshul Tuten",
+    "team": "JAX",
+    "grade": "A+",
+    "score": 95,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:40.736Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Finger",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "moderate",
+          "description": "Suffered a broken finger in a game against the Jets that required surgery, causing him to miss the final two games of the regular season.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Exited a game in the fourth quarter with an ankle injury and was limited in practice the following week, but did not miss any games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 5,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Was listed as a limited participant in practice due to a shoulder issue, but played through the injury.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 95,
+      "college": [
+        {
+          "year": 2025,
+          "description": "Showed significant ball security issues at Virginia Tech, fumbling 10 times on 428 touches in his final two collegiate seasons.",
+          "significance": "medium"
+        },
+        {
+          "year": 2023,
+          "description": "Dealt with an ankle injury at Virginia Tech that limited him during a game and caused him to miss one contest.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "6039",
+    "playerName": "Ty Johnson",
+    "team": "BUF",
+    "grade": "A+",
+    "score": 98,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:51.185Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 16,
+          "season": 2023,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Johnson was listed as questionable with a shoulder injury ahead of the Bills' Week 16 game but was active and played.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Torn Pectoral",
+          "week": 0,
+          "season": 2023,
+          "bodyPart": "chest",
+          "severity": "major",
+          "description": "Johnson suffered a torn pectoral muscle during an offseason workout and underwent surgery, which led to his release from the New York Jets.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 98,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "6130",
+    "playerName": "Devin Singletary",
+    "team": "NYG",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:52.289Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 4,
+          "season": 2024,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Sustained a groin injury in Week 4 against the Dallas Cowboys and missed the following two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 3,
+          "season": 2019,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Dealt with a hamstring injury as a rookie that sidelined him for four games early in the season.",
+          "gamesMissed": 4
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "4147",
+    "playerName": "Samaje Perine",
+    "team": "CIN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:38:40.571Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 14,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Left the game in the fourth quarter with a right ankle injury against the Ravens but was able to return for the team's final offensive series.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Sustained a high-ankle sprain on a kickoff return against the Bears caused by a hip-drop tackle, which resulted in him missing the next two games.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "right",
+          "type": "Thumb",
+          "week": 3,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Perine suffered a right thumb injury in the second half against the Vikings and did not return to the game, though an MRI revealed no significant damage and he did not miss the following week.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "7567",
+    "playerName": "Kenneth Gainwell",
+    "team": "TB",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:09.613Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 21,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "Sustained a concussion during the NFC Championship Game but was able to clear protocol and play in the Super Bowl.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 21,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Was listed with a knee issue following the NFC Championship game but was a full participant in practice ahead of the Super Bowl.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 2,
+          "season": 2023,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Suffered a rib injury that caused him to miss one game before returning in Week 3.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11439",
+    "playerName": "Jaleel McLaughlin",
+    "team": "DEN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:28.539Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Quad",
+          "week": 16,
+          "season": 2024,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "McLaughlin was ruled out for the Week 16 game against the Chargers due to a quad injury suffered the previous week.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "7607",
+    "playerName": "Michael Carter",
+    "team": "TEN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:10.341Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 13,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Carter was listed as doubtful and missed the game due to a low ankle sprain.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 11,
+          "season": 2021,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Suffered a high-ankle sprain against the Dolphins and was subsequently placed on Injured Reserve, missing three games.",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2018,
+          "description": "Suffered a broken wrist during a scrimmage at the University of North Carolina, which was expected to sideline him for 4-to-6 weeks.",
+          "significance": "low"
+        },
+        {
+          "year": 2017,
+          "description": "Missed one game during his freshman season at UNC due to an undisclosed injury.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "8132",
+    "playerName": "Tyler Allgeier",
+    "team": "ARI",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:12.348Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Bone Bruise",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Allgeier sustained a bone bruise to his left knee and also dealt with a hip issue, but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "8138",
+    "playerName": "James Cook",
+    "team": "BUF",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:12.602Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained an ankle injury in Week 9 against the Chiefs, had it taped on the sideline, and returned to the game.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "8136",
+    "playerName": "Rachaad White",
+    "team": "WAS",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 7,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:12.655Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Groin Strain",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Exited the first preseason game with a groin injury that was later determined to be non-severe and he was considered day-to-day.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 7,
+          "season": 2024,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Listed as questionable with a foot injury prior to the game but was able to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 6,
+          "season": 2024,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Carried a doubtful designation due to a foot issue but ultimately played.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 4,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Was listed as questionable due to an illness but did not miss the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Appeared on the injury report as questionable with a knee issue but played in the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle Sprain",
+          "week": 7,
+          "season": 2023,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Suffered a minor ankle sprain against the Atlanta Falcons and was questionable for the following game, but played through the injury.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2022,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Dealt with a minor ankle injury early in his rookie season but did not miss game time.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "8228",
+    "playerName": "Jaylen Warren",
+    "team": "PIT",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 8,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:18.788Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Warren was listed as a non-participant on the first injury report of the week with an illness ahead of the Wild Card game against the Houston Texans.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Warren was a late addition to the injury report and was questionable with an illness for the Week 15 game against the Miami Dolphins, but was ultimately active.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hip",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Warren was listed with a hip injury but practiced fully ahead of Week 15.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "left",
+          "type": "Ankle",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained a left ankle injury in the second half of the game but returned to play.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Warren was nursing a rib injury and was limited in practice ahead of Week 18.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Back",
+          "week": 11,
+          "season": 2024,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a back injury and was limited in practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 4,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Missed weeks 4 and 5 with a knee injury.",
+          "gamesMissed": 2
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Suffered a hamstring injury during the second preseason game which was expected to linger into the regular season.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "9221",
+    "playerName": "Jahmyr Gibbs",
+    "team": "DET",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:19.846Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Sustained a hamstring injury during a team practice in mid-August.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 5,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Suffered a hamstring injury in practice on October 6, 2023, which caused him to miss the games in Week 5 and Week 6.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2022,
+          "description": "While playing for Alabama, Gibbs sprained his ankle during a game against Ole Miss on November 12, 2022, and missed the following game.",
+          "significance": "low"
+        },
+        {
+          "year": 2020,
+          "description": "During his freshman season at Georgia Tech, he suffered a shoulder injury on November 28, 2020, which resulted in him missing the rest of the season.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "9224",
+    "playerName": "Chase Brown",
+    "team": "CIN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:20.215Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "High Ankle Sprain",
+          "week": 17,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained a mild high ankle sprain on his right leg in Week 17 against the Denver Broncos while sliding to run out the clock.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Quadriceps",
+          "week": 6,
+          "season": 2024,
+          "bodyPart": "quad",
+          "severity": "minor",
+          "description": "Was listed on the injury report with a quadriceps issue but did not miss any time.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 12,
+          "season": 2023,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Appeared on the injury report as questionable with a hamstring injury.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12543",
+    "playerName": "Tahj Brooks",
+    "team": "CIN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:42.027Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Sustained a concussion during a Week 12 game against the Patriots and was subsequently ruled out for the Week 13 contest.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Missed Texas Tech's week two game against Washington State due to an arm injury.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "9225",
+    "playerName": "Tank Bigsby",
+    "team": "PHI",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 4,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:20.577Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Bigsby was listed as a limited participant in practice due to an illness but was cleared to play in the week's game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 10,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Aggravated a pre-existing ankle injury in Week 10 but was able to return to the same game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 8,
+          "season": 2024,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Initially injured his ankle in Week 8 and was limited in practice leading up to Week 9, but played through the issue.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 2,
+          "season": 2024,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a shoulder injury in Week 2 and was a limited participant in practice for multiple weeks but did not miss any games.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "9506",
+    "playerName": "Sean Tucker",
+    "team": "TB",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:24.014Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Groin",
+          "week": 10,
+          "season": 2023,
+          "bodyPart": "hip",
+          "severity": "minor",
+          "description": "Tucker was limited in practice ahead of Week 10 with a groin issue but was not given a final injury status and played in the game.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2023,
+          "description": "An undisclosed medical issue was reportedly discovered during the NFL Combine's medical evaluations, which prevented him from participating in the combine and Syracuse's Pro Day.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "9509",
+    "playerName": "Bijan Robinson",
+    "team": "ATL",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 4,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:24.322Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Robinson was listed on the Week 16 injury report with an illness but was a full participant in practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 5,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "minor",
+          "description": "Appeared on the injury report with a hamstring issue and was limited in practice but did not miss any games.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 4,
+          "season": 2024,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Robinson was limited for one practice in Week 4 due to a shoulder injury but played in the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 7,
+          "season": 2023,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Played only one snap after feeling unwell with a headache, which head coach Arthur Smith decided to hold him out for as a precaution.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2021,
+          "description": "Suffered a dislocated elbow while playing for the University of Texas, which caused him to miss the final two games of the season.",
+          "significance": "medium"
+        },
+        {
+          "year": 2021,
+          "description": "Robinson reportedly sustained a strained neck during his sophomore season in college.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "10216",
+    "playerName": "Kenny McIntosh",
+    "team": "SEA",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:25.245Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11199",
+    "playerName": "Emari Demercado",
+    "team": "KC",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:25.983Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 11,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Demercado suffered a high-ankle sprain during a Week 11 loss to the 49ers and missed the following three games before returning in Week 15.",
+          "gamesMissed": 3
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11299",
+    "playerName": "Zavier Scott",
+    "team": "MIN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:27.521Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Wrist",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Underwent evaluation for a right wrist injury following the Week 7 game and was listed as questionable but played in Week 8.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 5,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Appeared on the injury report as questionable with a knee issue ahead of the Week 5 game but was active.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Ankle",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Scott suffered a right ankle injury in the preseason finale and was subsequently ruled out for the season opener.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11575",
+    "playerName": "Ray Davis",
+    "team": "BUF",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:29.921Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Calf",
+          "week": 7,
+          "season": 2024,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Was added to the Week 7 injury report with a calf issue and was limited in practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Concussion",
+          "week": 0,
+          "season": 2024,
+          "bodyPart": "head",
+          "severity": "moderate",
+          "description": "Sustained a concussion on a helmet-to-helmet hit in the AFC Wild Card game against the Denver Broncos and missed the remainder of the contest.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2021,
+          "description": "Suffered a torn ligament in his right toe during the third game of the season at Vanderbilt, which required season-ending surgery.",
+          "significance": "high"
+        },
+        {
+          "year": 2021,
+          "description": "Missed nine games at Vanderbilt after suffering a season-ending right toe injury that required surgery.",
+          "significance": "high"
+        },
+        {
+          "year": 2020,
+          "description": "Sustained a minor knee injury while at Temple but was reportedly fine after the game before entering the transfer portal.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12544",
+    "playerName": "LeQuint Allen",
+    "team": "JAX",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 0,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:42.035Z",
+    "data": {
+      "nfl": [],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2022,
+          "description": "Allen was involved in an altercation in December 2022 where he was reportedly punched twice in the face before punching the other individual in return. The incident led to a university suspension, which was later challenged in court, but no significant injuries were reported from the event.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11588",
+    "playerName": "Jawhar Jordan",
+    "team": "HOU",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:30.981Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "High Ankle Sprain",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "moderate",
+          "description": "Suffered a high-ankle sprain against the Colts in Week 18 and missed the team's two subsequent playoff games.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11643",
+    "playerName": "Jaylen Wright",
+    "team": "MIA",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:31.418Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Leg",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "moderate",
+          "description": "Underwent a minor procedure on his lower leg following an injury sustained in a preseason joint practice.",
+          "gamesMissed": 2
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11647",
+    "playerName": "Kimani Vidal",
+    "team": "LAC",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:31.819Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Neck Strain",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Vidal suffered a neck strain during the Week 16 game against the Dallas Cowboys and missed the following week's game.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "11651",
+    "playerName": "Isaac Guerendo",
+    "team": "SF",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 5,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:33.468Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "moderate",
+          "description": "Dealt with a shoulder injury during the 2025 preseason that he appeared to re-aggravate in a game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 18,
+          "season": 2024,
+          "bodyPart": "knee",
+          "severity": "moderate",
+          "description": "Sustained a knee injury at the end of the 2024 season that he was still dealing with in the subsequent preseason.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Hamstring",
+          "week": 15,
+          "season": 2024,
+          "bodyPart": "hamstring",
+          "severity": "moderate",
+          "description": "Suffered a hamstring injury in the Week 15 game against the Los Angeles Rams and was considered unlikely to play the following week.",
+          "gamesMissed": 1
+        },
+        {
+          "side": "unknown",
+          "type": "Foot Sprain",
+          "week": 14,
+          "season": 2024,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Suffered a foot sprain during his first-career start in Week 14 against the Chicago Bears.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Due to his injury history in college, his durability was considered a question mark by some analysts.",
+          "significance": "medium"
+        },
+        {
+          "year": null,
+          "description": "Guerendo was plagued by lower-body ailments throughout his college career, missing 23 games during his time at Wisconsin.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12455",
+    "playerName": "Brashard Smith",
+    "team": "KC",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:38.527Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Toe",
+          "week": 8,
+          "season": 2025,
+          "bodyPart": "toe",
+          "severity": "minor",
+          "description": "Was listed on the injury report with a toe injury ahead of Week 8, but practiced in full all week and did not have an injury designation for the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Illness",
+          "week": 7,
+          "season": 2025,
+          "bodyPart": "back",
+          "severity": "minor",
+          "description": "Did not participate in a Wednesday practice on October 15, 2025, due to an illness.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Finger",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "minor",
+          "description": "Kansas City Chiefs rookie running back Brashard Smith suffered a finger injury in August 2025.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12457",
+    "playerName": "Jaydon Blue",
+    "team": "DAL",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:38.985Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "right",
+          "type": "Bone Bruise",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Suffered a bone bruise in his right heel during a training camp practice after being stepped on, initially believed to be an ankle sprain.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "right",
+          "type": "Ankle Sprain",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Aggravated a previous right ankle injury during a preseason game against the Atlanta Falcons.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2025,
+          "description": "Disclosed at his Pro Day that he ran at the NFL Combine with what was later diagnosed as a small tear in his groin.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12467",
+    "playerName": "Jordan James",
+    "team": "SF",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:39.507Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Missed the beginning of training camp due to undisclosed 'knee issues' but returned to practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Broken Finger",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "wrist",
+          "severity": "moderate",
+          "description": "Suffered a broken finger in early August that required surgery and caused him to miss the season opener.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12471",
+    "playerName": "DJ Giddens",
+    "team": "IND",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:39.878Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Elbow",
+          "week": 1,
+          "season": 2025,
+          "bodyPart": "elbow",
+          "severity": "minor",
+          "description": "Was limited in practice with an elbow issue during the week leading up to the season opener and was listed as questionable.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2025,
+          "description": "Indicated in a July 2025 interview that he had surgery for the wrist injury sustained during the 2024 college season.",
+          "significance": "medium"
+        },
+        {
+          "year": 2025,
+          "description": "An NFL Draft profile noted that he missed some time in the spring of 2023 and the end of the final regular season game in 2024 with unspecified injuries.",
+          "significance": "low"
+        },
+        {
+          "year": 2024,
+          "description": "Dealt with a wrist injury during his final season at Kansas State that he said hindered him in pass protection.",
+          "significance": "medium"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12474",
+    "playerName": "Woody Marks",
+    "team": "HOU",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 3,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:39.933Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Exited the Week 15 game against the Cardinals with an ankle injury, but the coach stated he could have returned.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Foot",
+          "week": 13,
+          "season": 2025,
+          "bodyPart": "foot",
+          "severity": "minor",
+          "description": "Player stated he toughed out a foot injury during a game in early December.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Calf",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "calf",
+          "severity": "minor",
+          "description": "Was added to the injury report as a limited participant on a Thursday in late October with a calf issue.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12472",
+    "playerName": "Raheim Sanders",
+    "team": "CLE",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 0,
+    "collegeCount": 6,
+    "fetchedAt": "2026-06-11T19:39:40.166Z",
+    "data": {
+      "nfl": [],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2025,
+          "description": "A scouting report noted that his injury history, specifically the knee and shoulder issues from 2023, raised concerns about his long-term durability for the NFL.",
+          "significance": "high"
+        },
+        {
+          "year": 2025,
+          "description": "His extensive injury history from college was cited as a significant reason why he went undrafted.",
+          "significance": "high"
+        },
+        {
+          "year": 2024,
+          "description": "Suffered an ankle injury early in the season that limited his carries over a two-game span.",
+          "significance": "medium"
+        },
+        {
+          "year": 2023,
+          "description": "Suffered a significant knee injury in the season opener against Western Carolina which limited him to just six games for the season.",
+          "significance": "high"
+        },
+        {
+          "year": 2023,
+          "description": "Underwent a complex shoulder surgery, the Latarjet procedure, which involved a bone graft and muscle/tendon transfer to repair chronic and severe dislocations.",
+          "significance": "high"
+        },
+        {
+          "year": 2022,
+          "description": "Sustained an unspecified injury early in the AutoZone Liberty Bowl against Kansas after just three carries.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12489",
+    "playerName": "RJ Harvey",
+    "team": "DEN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:40.565Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ribs",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "chest",
+          "severity": "minor",
+          "description": "Suffered a rib injury late in the fourth quarter of the Week 15 win against the Green Bay Packers but returned to full practice the following week.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12495",
+    "playerName": "Ollie Gordon",
+    "team": "MIA",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 2,
+    "fetchedAt": "2026-06-11T19:39:40.874Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 15,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Gordon suffered an ankle injury in the second quarter against the Steelers and was questionable to return to the game.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 9,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Sustained an ankle injury in Week 9, causing him to miss the second half, but he played the following week after being limited in practice.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Suffered an apparent left shoulder injury in the third quarter against BYU, requiring assistance to leave the field, but later returned to the game.",
+          "significance": "low"
+        },
+        {
+          "year": 2024,
+          "description": "Took a hard hit to his right knee against West Virginia and did not return to the game, though the injury was not considered to be long-term.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12504",
+    "playerName": "Kaleb Johnson",
+    "team": "PIT",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 1,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.094Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Ankle",
+          "week": 7,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Johnson was listed as questionable for the Week 7 game against the Bengals with an ankle injury.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12529",
+    "playerName": "TreVeyon Henderson",
+    "team": "NE",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:41.441Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 17,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Was listed with a knee injury ahead of the Week 17 game against the Jets, but was a full participant in practice.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Head",
+          "week": 16,
+          "season": 2025,
+          "bodyPart": "head",
+          "severity": "minor",
+          "description": "Sustained a head injury during the Week 16 game against the Baltimore Ravens and was ruled out for the remainder of the contest.",
+          "gamesMissed": 1
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2023,
+          "description": "Was sidelined for three games during the 2023 season due to unspecified lower-body injuries.",
+          "significance": "medium"
+        },
+        {
+          "year": 2022,
+          "description": "Required surgery on a fractured sesamoid bone in his foot following the 2022 season.",
+          "significance": "high"
+        },
+        {
+          "year": 2022,
+          "description": "Suffered a broken bone and torn ligaments in his foot, causing him to miss five games and significantly limiting his effectiveness when he did play.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12527",
+    "playerName": "Ashton Jeanty",
+    "team": "LV",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.687Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "left",
+          "type": "Ankle",
+          "week": 12,
+          "season": 2025,
+          "bodyPart": "ankle",
+          "severity": "minor",
+          "description": "Suffered a left ankle injury in the fourth quarter against the Cleveland Browns, but the injury was not considered severe.",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Shoulder",
+          "week": 0,
+          "season": 2025,
+          "bodyPart": "shoulder",
+          "severity": "minor",
+          "description": "Sustained a shoulder injury during a preseason game against the 49ers and briefly left the game before returning to play.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12531",
+    "playerName": "Trevor Etienne",
+    "team": "CAR",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 0,
+    "collegeCount": 1,
+    "fetchedAt": "2026-06-11T19:39:41.745Z",
+    "data": {
+      "nfl": [],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2024,
+          "description": "Suffered a rib injury against the Florida Gators in early November, which caused him to miss three subsequent games before returning for the SEC Championship.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "12533",
+    "playerName": "Jacory Croskey-Merritt",
+    "team": "WAS",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 2,
+    "collegeCount": 0,
+    "fetchedAt": "2026-06-11T19:39:41.762Z",
+    "data": {
+      "nfl": [
+        {
+          "side": "unknown",
+          "type": "Questionable",
+          "week": 18,
+          "season": 2025,
+          "bodyPart": "unknown",
+          "severity": "minor",
+          "description": "Questionable",
+          "gamesMissed": 0
+        },
+        {
+          "side": "unknown",
+          "type": "Knee",
+          "week": 4,
+          "season": 2025,
+          "bodyPart": "knee",
+          "severity": "minor",
+          "description": "Was listed as questionable for Week 4 due to a knee injury but was expected to play.",
+          "gamesMissed": 0
+        }
+      ],
+      "grade": "A+",
+      "score": 100,
+      "college": [],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "13302",
+    "playerName": "Adam Randall",
+    "team": "BAL",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 0,
+    "collegeCount": 5,
+    "fetchedAt": "2026-06-11T19:39:56.705Z",
+    "data": {
+      "nfl": [],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2025,
+          "description": "Sustained a minor knee injury during a team practice in August 2025, but was expected to be ready for the season opener.",
+          "significance": "low"
+        },
+        {
+          "year": 2024,
+          "description": "Dealt with stress fractures in 2024 that resulted in sporadic action during his junior season.",
+          "significance": "medium"
+        },
+        {
+          "year": 2023,
+          "description": "Sustained a broken hand in 2023 which limited his availability during his sophomore season.",
+          "significance": "low"
+        },
+        {
+          "year": 2022,
+          "description": "Underwent surgery in April 2022 to repair a torn ACL sustained during a spring practice.",
+          "significance": "high"
+        },
+        {
+          "year": 2022,
+          "description": "Suffered a torn ACL in his knee during a non-contact drill in spring practice as a true freshman in April 2022. He returned to play in 12 games during his freshman season after a rapid recovery of 169 days.",
+          "significance": "high"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  },
+  {
+    "sleeperPlayerId": "13347",
+    "playerName": "Demond Claiborne",
+    "team": "MIN",
+    "grade": "A+",
+    "score": 100,
+    "gradeColor": "#22c55e",
+    "nflCount": 0,
+    "collegeCount": 3,
+    "fetchedAt": "2026-06-11T19:39:59.425Z",
+    "data": {
+      "nfl": [],
+      "grade": "A+",
+      "score": 100,
+      "college": [
+        {
+          "year": 2025,
+          "description": "Suffered a rib injury on the first drive of Wake Forest's season-opening game against Kennesaw State and did not return to the game after a brief attempt in the second quarter. He was considered day-to-day following the game.",
+          "significance": "low"
+        },
+        {
+          "year": 2025,
+          "description": "Sustained an arm injury in overtime against Georgia Tech. He was listed as probable for the following game against Virginia Tech but did not finish the contest.",
+          "significance": "low"
+        },
+        {
+          "year": 2025,
+          "description": "Dealt with a nagging knee issue heading into the Oregon State game. However, he was able to play and handled a full workload in the game.",
+          "significance": "low"
+        }
+      ],
+      "gradeColor": "#22c55e"
+    }
+  }
+]

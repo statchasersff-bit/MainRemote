@@ -18,10 +18,9 @@
  * If a Half-PPR file is ever published, or the board moves, the answers change
  * with the file.
  *
- * The copy is otherwise as supplied, including its rest-of-season framing. That
- * framing is a deliberate editorial choice and not an accident of this module:
- * the page's own title, meta description and CSV all say redraft. See the note
- * in replit.md under "Redraft Rankings" before rewording either side.
+ * The copy is otherwise as supplied, including its rest-of-season framing —
+ * which, since the page moved to /rest-of-season-rankings, is what its title,
+ * meta description and CSV say too. Reword them together.
  */
 
 import {

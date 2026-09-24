@@ -109,7 +109,10 @@ function delete_post_meta( $id, $key ) { $GLOBALS['deleted_meta'][] = $key; retu
 function check_admin_referer( $a ) {}
 function wp_safe_redirect( $u ) {}
 function admin_url( $p = '' ) { return 'https://example.com/wp-admin/' . $p; }
-function add_query_arg( $k, $v, $u ) { return $u . '?' . $k . '=' . $v; }
+function add_query_arg( ...$a ) {
+	// Both of WordPress's forms: (array $args, $url) and ($key, $value, $url).
+	return is_array( $a[0] ) ? $a[1] . '?' . http_build_query( $a[0] ) : $a[2] . '?' . $a[0] . '=' . $a[1];
+}
 function get_permalink( $id ) { return 'https://example.com/p/' . $id . '/'; }
 function get_post_status( $id ) { return 'publish'; }
 function get_page_by_path( $p ) { return $GLOBALS['pages_by_path'][ $p ] ?? null; }
@@ -200,6 +203,7 @@ function flush_rewrite_rules() {}
 function home_url( $p = '' ) { return 'https://example.com' . $p; }
 function trailingslashit( $s ) { return rtrim( (string) $s, '/' ) . '/'; }
 function untrailingslashit( $s ) { return rtrim( (string) $s, '/' ); }
+function user_trailingslashit( $s ) { return trailingslashit( $s ); }
 function wp_json_encode( $v ) { return json_encode( $v ); }
 function wp_create_nonce( $a = '' ) { return 'nonce'; }
 function wp_style_is( $h, $l = 'enqueued' ) { return (bool) ( $GLOBALS['styles'][ $h ] ?? false ); }
@@ -306,6 +310,10 @@ require_once "$dir/statchasers-h1.php";
 // these two files the smoke tests reach into.
 require_once "$dir/statchasers-fpa.php";
 require_once "$dir/statchasers-schedule.php";
+require_once "$dir/statchasers-player-stats.php";
+require_once "$dir/statchasers-rb-handcuffs.php";
+// And for its position URLs, near the bottom.
+require_once "$dir/statchasers-rankings.php";
 
 echo "LOADED OK\n\n";
 
@@ -346,6 +354,12 @@ $group = getenv( 'STATCHASERS_SMOKE_GROUP' ) ?: 'main';
 
 if ( 'containers' === $group ) {
 	require __DIR__ . '/smoke-containers.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'leak' === $group || 'headings' === $group ) {
+	require __DIR__ . '/smoke-headings.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -847,7 +861,7 @@ is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same 
  */
 echo "\nevery tool enqueues the host rules\n";
 
-foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings' ) as $tool ) {
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs' ) as $tool ) {
 	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
 	is(
 		false !== strpos( $src, 'statchasers_tool_header_layer_css()' ),
@@ -938,6 +952,32 @@ is( false === strpos( $stripped, 'scf-faq-data' ), true, 'the island is gone fro
 is( false !== strpos( $stripped, 'data-scf-root' ), true, 'and the table it was sitting next to is not' );
 is( statchasers_fpa_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
 
+echo "\nthe rb handcuffs faq island becomes a node and then leaves\n";
+
+$island = '<script type="application/json" class="rbh-faq-data">' .
+	json_encode(
+		array(
+			array( 'q' => 'Who are the best RB handcuffs in fantasy football?', 'a' => 'The best RB handcuffs are backup running backs who could inherit a large workload.' ),
+			array( 'q' => 'What does handcuff mean in fantasy football?', 'a' => 'A handcuff is a backup player, usually a running back.' ),
+			// Dropped rather than emitted half-built.
+			array( 'q' => '', 'a' => 'An answer with no question.' ),
+			array( 'q' => 'A question with no answer.' ),
+		)
+	) .
+	'</script>';
+
+$fragment = '<div class="rbh" data-rbh-root="1" data-season="2026"><table class="rbh-table"></table></div>' . $island;
+
+$items = statchasers_rb_handcuffs_faq_parse( $fragment );
+is( count( $items ), 2, 'both well-formed questions are lifted' );
+is( $items[0]['q'], 'Who are the best RB handcuffs in fantasy football?', 'the question comes through' );
+is( $items[1]['a'], 'A handcuff is a backup player, usually a running back.', 'and so does the answer' );
+
+$stripped = statchasers_rb_handcuffs_strip_faq_data( $fragment );
+is( false === strpos( $stripped, 'rbh-faq-data' ), true, 'the island is gone from what is printed' );
+is( false !== strpos( $stripped, 'data-rbh-root' ), true, 'and the board it was sitting next to is not' );
+is( statchasers_rb_handcuffs_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
+
 echo "\nthe schedule faq island becomes a node and then leaves\n";
 
 /*
@@ -1022,13 +1062,183 @@ is(
 // week URL. Running it here would measure the matchup file's `the_title`
 // filter instead: this process set a pair up earlier and that answer memoised.
 
+/*
+ * A rankings position URL. Not a group of its own: the position is read off
+ * the query var on every call, not memoised, so it can be set and unset here.
+ */
+echo "\nrankings position URLs\n";
+
+$rank_page               = new WP_Post();
+$rank_page->ID           = 11;
+$rank_page->post_title   = 'Rest of Season Rankings';
+$rank_page->post_content = '[statchasers_rankings]';
+$GLOBALS['page']         = array(
+	'singular' => true,
+	'loop'     => true,
+	'admin'    => false,
+	'post'     => $rank_page,
+);
+
+is( statchasers_rankings_position_title(), '', 'the page itself is not retitled' );
+is( statchasers_rankings_position_canonical(), '', 'nor given a second canonical' );
+is( statchasers_rankings_args( array( 'pos' => 'te' ) )['pos'], 'te', 'the attribute opens a board on the bare page' );
+
+$GLOBALS['query']['sc_rank_pos'] = 'rb';
+is( statchasers_rankings_request_pos(), 'rb', 'the position comes off the address' );
+is( statchasers_rankings_args( array( 'pos' => 'te' ) )['pos'], 'rb', 'and outranks the attribute' );
+is( statchasers_rankings_position_title(), 'Rest of Season Rankings: Running Backs', 'the title names the board' );
+is(
+	apply_filters( 'rank_math/frontend/title', 'Rest of Season Rankings | StatChasers' ),
+	'Rest of Season Rankings: Running Backs | StatChasers',
+	'and Rank Math prints it'
+);
+is(
+	apply_filters( 'rank_math/frontend/canonical', 'https://example.com/fantasy-football/rest-of-season-rankings/' ),
+	'https://example.com/fantasy-football/rest-of-season-rankings/rb/',
+	'the board is its own canonical'
+);
+is(
+	str_starts_with( statchasers_rankings_position_description(), 'Rest-of-season fantasy football RB rankings' ),
+	true,
+	'with its own description'
+);
+
+$GLOBALS['query']['sc_rank_pos'] = 'k';
+is( statchasers_rankings_request_pos(), '', 'a position the board lacks is not one' );
+
+unset( $GLOBALS['query']['sc_rank_pos'] );
+is( statchasers_rankings_position_url( 'all' ), 'https://example.com/fantasy-football/rest-of-season-rankings/', 'All is the page itself' );
+
+$GLOBALS['page'] = array();
+
+/*
+ * The advanced stats table: which position and season a request renders.
+ *
+ * The address outranks the attribute for the position, because /rb/ is an
+ * address and a page there that rendered quarterbacks would be a wrong answer
+ * at a right-looking URL. The attribute outranks the query string for the
+ * season, because a page that wrote season="2024" decided what it shows.
+ */
+echo "\nthe advanced stats table reads its address\n";
+
+// The position is read only on the page that mounts the table — see
+// smoke-headings.php for an article that does not.
+$stats_page               = new WP_Post();
+$stats_page->ID           = 12;
+$stats_page->post_title   = 'NFL Player Stats';
+$stats_page->post_content = '[statchasers_player_stats]';
+$GLOBALS['page']          = array(
+	'singular' => true,
+	'loop'     => true,
+	'admin'    => false,
+	'post'     => $stats_page,
+);
+$GLOBALS['http_body']     = '';
+
+$GLOBALS['query'] = array();
+$_GET             = array();
+is( statchasers_player_stats_args( array() ), array( 'pos' => 'qb', 'season' => '' ), 'the bare page is the quarterbacks, newest season' );
+is( statchasers_player_stats_title(), '', 'with no fragment, the bare page keeps its own title' );
+is( statchasers_player_stats_canonical(), '', 'and its own canonical' );
+
+// A position address — the address outranking the attribute, its title and
+// its canonical — is asserted in smoke-headings.php: the "does this page mount
+// the table" answer those read is memoised, and an earlier group has already
+// asked it about a page of its own.
+
+$GLOBALS['query'] = array( 'sc_stats_pos' => 'k' );
+is( statchasers_player_stats_request_position(), '', 'a position the table does not have is not one' );
+
+$GLOBALS['query'] = array();
+$_GET             = array( 'season' => 'all' );
+is( statchasers_player_stats_args( array() )['season'], 'all', 'the season link works with scripting off' );
+is( statchasers_player_stats_args( array( 'season' => '2024' ) )['season'], '2024', 'an attribute outranks the query string' );
+$_GET = array( 'season' => '<script>' );
+is( statchasers_player_stats_args( array() )['season'], '', 'a season that is not one is dropped' );
+$_GET = array();
+
+is(
+	statchasers_player_stats_position_url( 'qb' ),
+	'https://example.com/nfl/nfl-player-stats/',
+	'the quarterbacks are the bare page'
+);
+is(
+	1 === preg_match( '#' . statchasers_player_stats_rule() . '#', 'nfl/nfl-player-stats/rb/' ),
+	true,
+	'the rewrite rule matches a position address'
+);
+is(
+	1 === preg_match( '#' . statchasers_player_stats_rule() . '#', 'nfl/nfl-player-stats/RB/' ),
+	false,
+	'and only the lower-case spelling'
+);
+
+/*
+ * The fragment carries the page's title, H1, description and FAQ as inert
+ * islands; the plugin reads them and strips them from what it prints.
+ */
+echo "\nthe advanced stats table hands WordPress its titles and FAQ\n";
+
+$sca_fragment = '<div class="sca"><h2>2026 NFL Wide Receiver Stats</h2>' .
+	'<script type="application/json" class="sca-faq-data">[{"q":"Where can I find NFL player stats?","a":"Here."},{"q":"","a":"dropped"},{"q":"x"}]</script>' .
+	'<script type="application/json" class="sca-page-data">{"title":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","h1":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","description":"2026 NFL wide receiver stats \u003cb\u003ebold\u003c/b\u003e","extra":1}</script>' .
+	'</div>';
+is(
+	statchasers_player_stats_parse_copy( $sca_fragment ),
+	array(
+		'title'       => '2026 NFL Wide Receiver Stats & Fantasy Football Stats',
+		'h1'          => '2026 NFL Wide Receiver Stats & Fantasy Football Stats',
+		'description' => '2026 NFL wide receiver stats bold',
+	),
+	'the title island is read, tags stripped, unknown keys ignored'
+);
+is(
+	statchasers_player_stats_parse_faq( $sca_fragment ),
+	array( array( 'q' => 'Where can I find NFL player stats?', 'a' => 'Here.' ) ),
+	'the FAQ island is read, and a malformed entry dropped'
+);
+is( statchasers_player_stats_parse_copy( '<div></div>' ), array(), 'no island, no copy' );
+is(
+	statchasers_player_stats_strip_islands( $sca_fragment ),
+	'<div class="sca"><h2>2026 NFL Wide Receiver Stats</h2></div>',
+	'both islands are stripped from the printed markup'
+);
+
+/*
+ * The RB handcuff board's schema node: one CreativeWork, hung off whichever
+ * node is the page, with no rating — the standalone plugin's final answer after
+ * WebApplication earned it a Search Console error — and the season read off the
+ * fragment rather than written in.
+ */
+echo "\nthe RB handcuff board describes itself to Rank Math\n";
+
+is( statchasers_rb_handcuffs_season( '<div class="rbh" data-rbh-root="1" data-season="2026">' ), 2026, 'the season comes off the fragment' );
+
+$rbh_post               = new WP_Post();
+$rbh_post->ID           = 41;
+$rbh_post->post_content = '[statchasers_rb_handcuffs]';
+$GLOBALS['page']        = array(
+	'singular' => true,
+	'post'     => $rbh_post,
+);
+$graph = statchasers_rb_handcuffs_rank_math_schema(
+	array(
+		'WebPage'      => array( '@type' => 'WebPage', '@id' => 'https://example.com/p/41/#webpage' ),
+		'Organization' => array( '@type' => 'Organization' ),
+	)
+);
+$node = $graph['statchasersRbHandcuffs'] ?? array();
+is( $node['@type'] ?? '', 'CreativeWork', 'the tool is a CreativeWork' );
+is( isset( $node['aggregateRating'] ) || isset( $node['review'] ), false, 'with no invented rating' );
+is( $graph['WebPage']['mainEntity']['@id'] ?? '', 'https://example.com/p/41/#rb-handcuff-rankings', 'and is the page\'s main entity' );
+is( isset( $graph['Organization']['mainEntity'] ), false, 'the other nodes are left alone' );
 $GLOBALS['page'] = array();
 
 /*
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'leak', 'headings' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

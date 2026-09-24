@@ -572,6 +572,8 @@ function statchasers_h1_mounts_a_tool(): bool {
 		defined( 'STATCHASERS_PLAYER_SHORTCODE' ) ? STATCHASERS_PLAYER_SHORTCODE : '',
 		defined( 'STATCHASERS_MATCHUP_SHORTCODE' ) ? STATCHASERS_MATCHUP_SHORTCODE : '',
 		defined( 'STATCHASERS_SCHEDULE_SHORTCODE' ) ? STATCHASERS_SCHEDULE_SHORTCODE : '',
+		defined( 'STATCHASERS_RANKINGS_SHORTCODE' ) ? STATCHASERS_RANKINGS_SHORTCODE : '',
+		defined( 'STATCHASERS_PLAYER_STATS_SHORTCODE' ) ? STATCHASERS_PLAYER_STATS_SHORTCODE : '',
 	) as $tag ) {
 		if ( '' !== $tag && has_shortcode( $content, $tag ) ) {
 			$answer = true;
@@ -659,7 +661,11 @@ add_action(
 
 		$css = '';
 
-		if ( statchasers_h1_should_print() ) {
+		// Also in `tool` mode, where the schedule answers with the generated
+		// hero rather than a heading of its own (statchasers-schedule.php).
+		// The hubs and profiles print no generated hero in that mode, so there
+		// the rule matches nothing.
+		if ( statchasers_h1_should_print() || statchasers_h1_tool_supplies_heading() ) {
 			$css .= '.sc-lo-hero--generated{padding-left:0!important;padding-right:0!important}' .
 				'.sc-lo-hero--generated .sc-lo-hero__inner{' .
 					'max-width:none!important;width:100%!important;' .
@@ -859,6 +865,11 @@ function statchasers_h1_filter( $value ): bool {
 		'statchasers_player_shortcode_h1'  => 'player',
 		'statchasers_matchup_shortcode_h1' => 'matchup',
 		'statchasers_schedule_shortcode_h1' => 'schedule',
+		// No probe of their own: in `auto` they get no answer and print
+		// nothing, which leaves the theme's heading alone. See
+		// statchasers_h1_measurement_for() on why nobody borrows the hub's.
+		'statchasers_rankings_shortcode_h1'     => 'rankings',
+		'statchasers_player_stats_shortcode_h1' => 'player_stats',
 	);
 
 	return statchasers_h1_should_print( $map[ current_filter() ] ?? '' );
@@ -867,6 +878,8 @@ add_filter( 'statchasers_team_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_player_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_matchup_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_schedule_shortcode_h1', 'statchasers_h1_filter' );
+add_filter( 'statchasers_rankings_shortcode_h1', 'statchasers_h1_filter' );
+add_filter( 'statchasers_player_stats_shortcode_h1', 'statchasers_h1_filter' );
 
 /**
  * A theme switch retires the verdict.

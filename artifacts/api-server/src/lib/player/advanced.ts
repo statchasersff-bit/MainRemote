@@ -34,6 +34,8 @@ interface AdvancedTable {
   updated_at?: string;
   season?: number;
   week?: number;
+  /** Columns still on weeks 1-18 in a table cut to 1-17 (buildWeeks.mjs). */
+  fullSeason?: string[];
   table?: string;
   columns?: AdvancedColumn[];
   rows?: Record<string, unknown>[];
@@ -213,6 +215,8 @@ export interface AdvancedCell {
   value: string;
   /** 0-100, already oriented so higher is always better. Null when unrankable. */
   percentile: number | null;
+  /** Covers weeks 1-18 while the rest of the table is weeks 1-17. */
+  fullSeason: boolean;
 }
 
 export interface AdvancedGroup {
@@ -285,6 +289,7 @@ export function advancedProfile(
   if (!row) return null;
 
   const groupMap = GROUPS_BY_POSITION[pos];
+  const fullSeason = new Set(table?.fullSeason ?? []);
   const order: string[] = [];
   const byLabel = new Map<string, AdvancedCell[]>();
 
@@ -312,6 +317,7 @@ export function advancedProfile(
       label: column.label,
       value: formatAdvanced(raw, column.type),
       percentile,
+      fullSeason: fullSeason.has(column.key),
     };
     if (cells) cells.push(cell);
     else {

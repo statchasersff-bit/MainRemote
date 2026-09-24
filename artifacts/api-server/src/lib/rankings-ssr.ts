@@ -1,8 +1,9 @@
 /**
- * Server-side rendering for the redraft rankings, mirroring fpa-ssr.ts.
+ * Server-side rendering for the rest-of-season rankings, mirroring fpa-ssr.ts.
  *
  * Two consumers, as the other four tools have:
- *   - the standalone page at /rankings, which fills public/rankings.html;
+ *   - the standalone page at /rest-of-season-rankings (and /rb, /wr, …),
+ *     which fills public/rankings.html;
  *   - GET /embed/rankings, the bare fragment the WordPress plugin prints.
  *
  * The fragment is cached per (season, options) on the CSV's mtime, so replacing
@@ -48,8 +49,10 @@ function optionKey(season: number | undefined, options: RankingsRenderOptions): 
     season ?? 0,
     options.embed ?? false,
     options.basePath ?? "",
+    options.downloadBase ?? "",
     options.playerPathPrefix ?? "",
     options.linkQuery ?? "",
+    options.tabQuery ?? "",
     options.position ?? "All",
   ]);
 }
@@ -116,7 +119,11 @@ export function renderRankingsAppPage(
 ): RankingsSsrResult {
   const template = readTemplate(publicDir);
   const fragment = renderRankingsFragment(season, options);
-  const meta = rankingsPageMeta(fragment.data, options.canonical);
+  const meta = rankingsPageMeta(
+    fragment.data,
+    options.canonical,
+    options.position,
+  );
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
     if (!template.includes(marker)) {

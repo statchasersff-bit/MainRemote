@@ -121,5 +121,25 @@ is(
 	'the fragment is never asked for its own heading'
 );
 
+// And the rule that holds that hero flush with the board is printed with it.
+// It was gated on the modes where the plugin normally prints a heading, so in
+// this one the site's centred hero shell indented it on desktop only.
+ob_start();
+// Every head hook runs; the ones this stub harness cannot satisfy are skipped,
+// since only the heading rule's output is being asked about.
+foreach ( $GLOBALS['hooks']['wp_head'] ?? array() as $fn ) {
+	try {
+		$fn();
+	} catch ( \Throwable $e ) {
+		continue;
+	}
+}
+$head = (string) ob_get_clean();
+is(
+	str_contains( $head, '.sc-lo-hero--generated .sc-lo-hero__inner{max-width:none!important' ),
+	true,
+	'and the rule that holds it flush with the board is in the head'
+);
+
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
 is( statchasers_schedule_shortcode_heading( 2026 ), '', 'and with headings off it prints none' );

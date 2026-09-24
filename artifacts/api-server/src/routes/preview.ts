@@ -17,6 +17,8 @@
  *   [statchasers_fpa]     ->  /preview/fpa
  *   [statchasers_rankings] -> /preview/rankings
  *   [statchasers_schedule] -> /preview/schedule
+ *   [statchasers_player_stats] -> /preview/player-stats[/rb|wr|te]
+ *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
  *
  * The fragment is the SAME markup the plugin fetches — it comes from the same
  * renderer the /embed endpoints use, not a second code path — wrapped in a mock
@@ -43,7 +45,10 @@ import { renderTeamFragment } from "../lib/team-ssr";
 import { renderPlayerFragment } from "../lib/player-ssr";
 import { renderFpaFragment } from "../lib/fpa-ssr";
 import { renderRankingsFragment } from "../lib/rankings-ssr";
+import { POSITIONS } from "../lib/rankings/rankings-data";
 import { renderScheduleFragment } from "../lib/schedule-ssr";
+import { renderStatsFragment } from "../lib/player-stats-ssr";
+import { renderHandcuffFragment } from "../lib/rb-handcuffs-ssr";
 import { parseFpaFormat, parseFpaView } from "../lib/fpa/fpa-data";
 import {
   parseGameFilter,
@@ -52,6 +57,11 @@ import {
   scheduleSeason,
 } from "../lib/schedule/schedule-data";
 import { normalizeTeamName } from "../lib/team/teams";
+import {
+  defaultSeason as statsDefaultSeason,
+  parsePosition as parseStatsPosition,
+  parseSeason as parseStatsSeason,
+} from "../lib/player-stats/stats-data";
 
 const router: IRouter = Router();
 
@@ -337,21 +347,36 @@ router.get("/preview/fpa", (req, res) => {
   })();
 });
 
-/** [statchasers_rankings] as it renders on a page. */
-router.get("/preview/rankings", (req, res) => {
+/**
+ * [statchasers_rankings] as it renders on a page, and on each position's
+ * address beneath it — the tabs link `/preview/rankings/rb`, as they link
+ * `/fantasy-football/rest-of-season-rankings/rb/` on the real page.
+ */
+const RANKINGS_PREVIEW_PATHS = ["/preview/rankings", "/preview/rankings/:pos"];
+
+router.get(RANKINGS_PREVIEW_PATHS, (req, res, next) => {
+  const segment = String(req.params["pos"] ?? "");
+  const position = POSITIONS.find(
+    (p) => p !== "All" && p.toLowerCase() === segment,
+  );
+  if (segment !== "" && !position) {
+    next();
+    return;
+  }
   try {
     const result = renderRankingsFragment(undefined, {
       embed: true,
       // Point the board's own links back into the harness, so following a
-      // player from inside the preview keeps you inside the preview.
+      // player or a tab from inside the preview keeps you inside the preview.
       basePath: "/preview/rankings",
       playerPathPrefix: "/preview/player/",
+      position: position ?? "All",
     });
     send(
       req,
       res,
       hostPage({
-        title: "Redraft Rankings",
+        title: "Rest of Season Rankings",
         shortcode: "[statchasers_rankings]",
         styles: ["/rankings.css"],
         scripts: ["/dist/statchasers-rankings.js"],
@@ -503,6 +528,115 @@ router.get("/preview/raw/fpa", (req, res) => {
       res.status(500).type("html").send("<h1>Preview failed</h1>");
     }
   })();
+});
+
+/**
+ * [statchasers_player_stats] as it renders on a page, at /preview/player-stats
+ * for the quarterbacks and /preview/player-stats/rb (wr, te) for the rest —
+ * the same shape as the WordPress addresses, so the table's own position links
+ * stay inside the harness.
+ */
+router.get(["/preview/player-stats", "/preview/player-stats/:pos"], (req, res) => {
+  const raw = String(req.params["pos"] ?? "qb");
+  const position = parseStatsPosition(raw);
+  const season = parseStatsSeason(req.query["season"]) ?? statsDefaultSeason();
+  if (!position || season === null) {
+    res.status(404).type("text/plain").send("Not found");
+    return;
+  }
+  try {
+    const result = renderStatsFragment(position, season, {
+      embed: true,
+      basePath: "/preview/player-stats",
+      playerPathPrefix: "/preview/player/",
+      defaultSeason: statsDefaultSeason(),
+      endpoint: "/embed/player-stats",
+    });
+    send(
+      req,
+      res,
+      hostPage({
+        title: "Advanced Player Stats",
+        shortcode: "[statchasers_player_stats]",
+        styles: ["/player-stats.css"],
+        scripts: ["/dist/statchasers-player-stats.js"],
+        fragment: result.html,
+      }),
+    );
+  } catch (err) {
+    logger.error({ err }, "Advanced stats shortcode preview failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
+/** The advanced stats fragment as source. */
+router.get("/preview/raw/player-stats", (req, res) => {
+  const season = statsDefaultSeason();
+  if (season === null) {
+    res.status(404).type("text/plain").send("Not found");
+    return;
+  }
+  try {
+    const result = renderStatsFragment("QB", season, {
+      embed: true,
+      defaultSeason: season,
+    });
+    send(
+      req,
+      res,
+      sourcePage("[statchasers_player_stats]", "/embed/player-stats", result.html),
+    );
+  } catch (err) {
+    logger.error({ err }, "Advanced stats fragment source view failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
+/**
+ * [statchasers_rb_handcuffs] as it renders on a page. The player links stay in
+ * the harness; the cards come from the real endpoint, as they do on a page.
+ */
+router.get("/preview/rb-handcuffs", (req, res) => {
+  try {
+    const result = renderHandcuffFragment({
+      embed: true,
+      playerPathPrefix: "/preview/player/",
+      endpoint: "/embed/rb-handcuffs",
+    });
+    if (!result.board) {
+      res.status(404).type("text/plain").send("Not found");
+      return;
+    }
+    send(
+      req,
+      res,
+      hostPage({
+        title: "RB Handcuff Rankings",
+        shortcode: "[statchasers_rb_handcuffs]",
+        styles: ["/rb-handcuffs.css"],
+        scripts: ["/dist/statchasers-rb-handcuffs.js"],
+        fragment: result.html,
+      }),
+    );
+  } catch (err) {
+    logger.error({ err }, "RB handcuffs shortcode preview failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
+});
+
+/** The RB handcuffs fragment as source. */
+router.get("/preview/raw/rb-handcuffs", (req, res) => {
+  try {
+    const result = renderHandcuffFragment({ embed: true });
+    send(
+      req,
+      res,
+      sourcePage("[statchasers_rb_handcuffs]", "/embed/rb-handcuffs", result.html),
+    );
+  } catch (err) {
+    logger.error({ err }, "RB handcuffs fragment source view failed");
+    res.status(500).type("html").send("<h1>Preview failed</h1>");
+  }
 });
 
 /** The rankings fragment as source. */

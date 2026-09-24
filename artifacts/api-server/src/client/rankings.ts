@@ -9,9 +9,9 @@
  *
  * It adds two things:
  *   1. real tab behaviour for the position strip, from client/enhance.ts — the
- *      ARIA roles, arrow keys, and switching without navigating, so choosing
- *      "TE" does not jump the page to the anchor or leave `#scr-panel-te` in
- *      the address bar of a WordPress page;
+ *      ARIA roles, arrow keys, and switching without a reload. Each tab is the
+ *      position's own address (`/rest-of-season-rankings/te`), so choosing
+ *      "TE" pushes that address, and Back walks back through the tabs;
  *   2. height reporting for the legacy iframe mount, likewise.
  *
  * The one thing it deliberately does NOT add is sorting. The FPA table sorts
@@ -34,6 +34,9 @@ function boot(): void {
       listSelector: ".scr-nav-list",
       linkSelector: ".scr-nav-link",
       datasetKey: "scrTabs",
+      panelKey: "scrPanelId",
+      // The host page's H1 follows the board, as the address does.
+      headingKey: "scrHeading",
     });
     wireFrameHeight(root);
   }

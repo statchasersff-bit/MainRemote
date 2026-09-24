@@ -324,7 +324,7 @@ _Replace the heading above with the project's name, and this line with one sente
   six tools into a page: `statchasers-news.php` is the plugin and the news
   shortcode, `statchasers-team.php` the hubs, `statchasers-player.php` the player
   pages, `statchasers-fpa.php` the Fantasy Points Allowed table,
-  `statchasers-rankings.php` the redraft rankings, `statchasers-schedule.php` the
+  `statchasers-rankings.php` the rest-of-season rankings, `statchasers-schedule.php` the
   NFL schedule. See `wordpress-plugin/README.md`.
 
 ### NFL Team Hub (`/team/:slug`)
@@ -596,7 +596,7 @@ rather than one ramp. The poles were validated as a pair (ΔE 19.1 under
 protanopia, both above 6:1 on white) and the arms are lightness-symmetric. Every
 tinted cell prints its rank.
 
-### Redraft Rankings (`/rankings`)
+### Rest of Season Rankings (`/rest-of-season-rankings`)
 
 The fifth tool, ported from the standalone `Redraft-Rankings-table` repo. The
 lightest of them: the rankings are a CSV somebody publishes, so there is no
@@ -627,12 +627,18 @@ they were not on the page. Here the API renders all five panels per request and
   his link** rather than pointing at a 404.
 - `src/lib/rankings-render.ts` / `rankings-ssr.ts` / `rankings-seo.ts` — markup,
   fragment cache and head metadata. `public/rankings.html` is the shell,
-  `public/rankings.css` the stylesheet. The canonical always points at the bare
-  path: five boards of one set of rankings are one page.
-- `src/routes/rankings.ts` — `/rankings`, `/rankings/download.csv` (built from
-  the same load the page renders, and carrying the derived tier and team columns
-  the source file does not have) and `/embed/rankings`.
-- `src/client/rankings.ts` — tab behaviour only. Deliberately no sorting: a
+  `public/rankings.css` the stylesheet. Each board has its own address —
+  `/rest-of-season-rankings/qb`, `/rb`, `/wr`, `/te`; All is the bare path —
+  and its own title and canonical. Every one of them still carries all five
+  panels; the path only decides which is open.
+- `src/routes/rankings.ts` — `/rest-of-season-rankings` and its four position
+  pages, `/rest-of-season-rankings/download.csv` (built from the same load the
+  page renders, and carrying the derived tier and team columns the source file
+  does not have) and `/embed/rankings`. `/rankings`, `?pos=`, `/RB` and `/all`
+  301 to the one spelling of each board.
+- `src/client/rankings.ts` — tab behaviour only: switch in place, push the
+  board's address, Back walks the tabs (`wireTabs` address mode, as the player
+  pages' section bar uses it). Deliberately no sorting: a
   tiered board has one meaningful order, the one it is published in, and letting
   a reader sort it alphabetically would only take the tiers apart.
 
@@ -760,6 +766,143 @@ away are always stated in words and never carried by position alone.
 what lets the WordPress plugin tell "down right now" from "nothing to show", and
 it caches the two very differently: the last good board is kept seven days,
 because a schedule a few hours stale is still almost entirely correct.
+
+### Advanced Player Stats (`/player-stats`)
+
+The seventh tool, ported from the standalone `NFL-Advanced-Player-Stats` repo,
+which WordPress mounted as an iframe at `/nfl/nfl-player-stats/`. One grouped,
+sortable table per position (QB/RB/WR/TE) and season (2023, 2024, 2025, and
+the 2023-2025 multi-season table), with the StatChasers grades and five
+grade-leader cards. Everything is now rendered on the server, and
+`client/player-stats.ts` adds sorting, the filters, the views and swapping
+seasons in place. The controls are one command bar — position and season
+menus (real links in `<details>`), Totals / Per Game, Min Snaps and More
+Filters menus, search — over one row of views (Overview, the position's own
+views, Advanced), which replaced the section pills and the banner × buttons. The page
+around the table is open, not boxed: that bar sits over one rule, a full-width rule
+separates the leaders from the table, and Advanced Analysis and the FAQ follow
+with no rule — each opens on a small gold label and a heading, which the
+leaders and the table do not have. The leaders are an editorial
+row — "… Leader" label, figure large, a line of context (a total's per-game rate, a
+per-game figure's total, a share's targets), player — split by hairlines, not
+cards. Each counting leader also
+ships its per-game leader (from players with at least 75% of the pool's most
+games), which the stylesheet swaps in while Per Game is on; target share is a
+rate and has none.
+
+- `data/player-stats/<pos>_<season>.json`: the files that app's plugin
+  shipped. They are **not** `data/player/advanced_stats/`, which is an older cut
+  with different visible columns and no QB `airYardsPerAttempt`. The player
+  pages keep theirs. Adding a season is a data drop: seasons are discovered from
+  the filenames.
+- `src/lib/player-stats/stats-data.ts`: the column groups, labels, tooltips,
+  default thresholds and leader-card rules, copied verbatim from the source.
+  `scores/` holds the source's grade engines, unmodified. Grades are
+  percentiles over the whole season's pool, so they don't move when a reader
+  filters. Player links resolve by Sleeper id to indexed player pages.
+- `src/lib/player-stats-render.ts` / `-ssr.ts` / `-seo.ts`, with
+  `public/player-stats.html` and `.css` (house dress, source layout).
+  Numeric cells are bare `<td>` elements; the bundle reads the group from the
+  header and the sort value from the text. That cut the three-season WR page
+  from 1.1 MB to 438 KB.
+- Routes: `/player-stats` is QB, `/player-stats/rb|wr|te` are the others,
+  `/player-stats/qb` 301s to the bare path, and any other spelling is a 404.
+  `?season=` is a control and never part of the canonical.
+  `/embed/player-stats?pos=&season=` is the fragment. Its position links default
+  to `/nfl/nfl-player-stats/` (`SC_PLAYER_STATS_PATH` overrides that) and never
+  carry `?embed=1`.
+- Rows that fail the position's default filters ship `hidden`, so a reader
+  without JavaScript sees the same table the source opened on. The filter bar
+  and pills ship `hidden` until the bundle wires them.
+- No FAQ and no CSV export: the source had neither.
+
+### RB Handcuff Rankings (`/rb-handcuff-rankings`)
+
+The eighth tool. It was ported from the standalone `Redraft-RB-Handcuff-Rankings`
+repo, which is now **retired**: this app is where the board is calculated.
+`src/lib/rb-handcuffs/engine/` is that repo's server pipeline (Player Quality,
+Backfield Opportunity, Path to Opportunity, badges, reasons), ported function
+for function as pure code. Run on the last board the old app published
+(`tests/fixtures/rb-handcuffs-snapshot-2026-08-17.json`) with that board's own
+pairings, it reproduced every score, rank and badge until Player Quality was
+redrawn (2026-09-24); the test now holds it to that board's Backfield
+Opportunity only.
+
+**Inputs, all in `data/rb-handcuffs/`:**
+- `rb_stats_2026.json` is **the stats basis**, built from nflverse by
+  `node scripts/rb-handcuffs/buildStats.mjs 2026` (stats_player,
+  pfr_advstats, snap_counts, play-by-play). Its definitions were matched field
+  by field against the statchasers-data 2025 file (`buildStats.mjs 2025
+  --check`). **Routes are not available in season.** nflverse publishes
+  participation data only after the season, so routes are null. Usage and
+  backfield volume drop a missing input.
+- `rb_games_2026.json` / `rb_games_2025.json` are each back's line game by
+  game, written by the same script (`buildStats.mjs 2025 --games-only` for the
+  previous season, once). Player Quality reads its last six games from them.
+- `rb_advanced_stats_2025.json` is the statchasers-data file the model was built
+  on. It supplies the previous season: "games played last season" in the
+  starter's durability.
+- `rb_injuries.json` is the career injury history, split at 2025. Seasons
+  before it are the "prior" period.
+- `depth.json` holds this week's RB1/RB2/RB3 (Ourlads) plus Sleeper age and
+  injury status, from `node scripts/rb-handcuffs/refresh.mjs`.
+- `curation.json` is the hand-kept part (see below).
+
+**Weekly refresh:** run `buildStats.mjs 2026` (writes the stats basis and the
+2026 game log; after nflverse posts the week,
+usually by Wednesday) and `refresh.mjs`, then commit and deploy.
+
+**Role from 2026, talent from the last six games (mak's calls, 2026-09-23
+and 2026-09-24):** Backfield Opportunity, the backup's usage share, the
+starter's workload and games missed come from 2026 only, because roles
+changed. Player Quality, for the backup and the starter's vulnerability alike,
+is scored on each back's **last six games played**, never week 18, reaching
+back into 2025 when he has fewer than six in 2026 (`lastGames` in
+`engine/stats.ts`). A game played is one with a carry or a target. Counts are
+summed and rates rebuilt from the sums.
+
+**Player Quality (mak's mix, 2026-09-24):** yards per carry 30%, yards per
+reception 30%, yards after contact per attempt 10%, Elude % 5%, fumbles per
+carry 5% (inverted), and the advanced stats table's Explosiveness grade 20%.
+Every part is a percentile against qualified RBs, computed with the table's
+own functions (`lib/player-stats/scores`). The qualifier is 50 carries or 25
+targets, shrunk to 6/17 for a six-game window. **Low opportunity scores
+toward below average** (mak, 2026-09-24): a back not getting touches is
+probably not that good, so each part starts at 25 and moves to his real
+percentile as his sample grows. Yards per reception is fully trusted at 10
+catches in the six games; the rest at 40 carries (`FULL_TRUST`). A back with no
+catches is a 25 on yards per reception.
+
+**Path to Opportunity changes (mak, 2026-09-24):** starter games missed weigh
+this season so far 20%, last season 60%, career before that 20%. Starter
+workload stress and the backup's usage share are no longer fixed scales (10–25
+touches, 15–45% share). Each is the pairing's place among the board's own
+starters and backups (`poolPercentile` in `engine/path.ts`): the highest 100,
+the lowest 0. `buildBoard` gathers both pools before scoring any pairing. The
+starter's touches per game come from his **last six games, week 18
+excluded** (the same window as Player Quality), not 2026 alone. That figure
+also feeds the card's touches-per-game number and the inherited-workload line.
+
+**How it computes:** each team's RB2 is the handcuff behind its RB1.
+`handcuffs-data.ts` builds the board on first use and again whenever an input
+file changes. The starter's current injury status feeds Path to Opportunity as
+the model's 15% overlay while `depth.json` is under 8 days old. After that it
+is ignored, and the page says so. Starter age is Sleeper's current age. Starter
+YPC and inherited workload for the reasons come from the starter's 2025 stats
+(the old app used hand values and a blocked ESPN feed).
+
+**Rendering:** `rb-handcuffs-render.ts` / `-ssr.ts` / `-seo.ts`,
+`public/rb-handcuffs.html` / `.css` and `client/rb-handcuffs.ts` are unchanged
+in shape. `recompute.ts` is shared by the server and the bundle, so re-ranking
+at the defaults gives back the table that was sent. Card ids are
+`<team>-<name>`.
+
+**Known gaps:**
+- A back with few career touches (rookies, deep backups) has his Player
+  Quality shrunk toward average; that is the model's sample-size rule working.
+- Nine teams (ATL, DAL, GB, KC, LAC, LV, SEA, TB, WAS) have no offense or
+  O-line rating in `curation.json` and read as 50. That affects only the
+  reason and flag text.
 
 ## Architecture decisions
 

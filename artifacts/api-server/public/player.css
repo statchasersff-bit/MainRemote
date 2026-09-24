@@ -2556,6 +2556,12 @@ button.scp-search-opt {
   color: var(--sc-muted);
 }
 
+/* A metric still covering weeks 1-18; the note under the heading says so. */
+.scp-adv-fs {
+  margin-left: 2px;
+  color: var(--sc-gold-deep);
+}
+
 .scp-adv-value {
   margin: 6px 0 8px;
   font-size: 19px;

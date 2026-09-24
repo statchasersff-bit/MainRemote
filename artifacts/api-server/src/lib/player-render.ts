@@ -4487,7 +4487,9 @@ function renderAdvanced(data: PlayerPageData, options: PlayerRenderOptions): str
         .map(
           (cell) =>
             `<div class="scp-adv-cell">` +
-            `<p class="scp-adv-label">${escapeHtml(cell.label)}</p>` +
+            `<p class="scp-adv-label">${escapeHtml(cell.label)}` +
+            (cell.fullSeason ? `<span class="scp-adv-fs" title="Weeks 1–18">†</span>` : "") +
+            `</p>` +
             `<p class="scp-adv-value">${escapeHtml(cell.value)}</p>` +
             (cell.percentile === null
               ? ""
@@ -4544,7 +4546,10 @@ function renderAdvanced(data: PlayerPageData, options: PlayerRenderOptions): str
     )}</p>` +
     switcher +
     `<p class="scp-note">${escapeHtml(
-      "Each bar is this player's percentile among qualifying players at the position. Metrics where a lower number is better are inverted, so a longer bar is always better.",
+      "Each bar is this player's percentile among qualifying players at the position. Metrics where a lower number is better are inverted, so a longer bar is always better." +
+        (advanced.groups.some((g) => g.cells.some((c) => c.fullSeason))
+          ? " † Weeks 1–18: no week-by-week source for this metric."
+          : ""),
     )}</p>` +
     `<div class="scp-adv">${groups}</div>`
   );

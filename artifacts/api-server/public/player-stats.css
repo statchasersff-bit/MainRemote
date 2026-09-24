@@ -1,0 +1,1394 @@
+/*
+ * StatChasers — Advanced Player Stats
+ *
+ * A sibling of team.css, player.css, fpa.css and rankings.css, and a sibling
+ * for the same reason: the stylesheets are enqueued independently, so a page
+ * mounting [statchasers_player_stats] must not need another tool's CSS. The
+ * brand tokens are restated rather than imported.
+ *
+ * The TABLE is the standalone NFL-Advanced-Player-Stats app's — a grouped table with a navy banner row
+ * over a light header row, zebra rows, a pinned player column and a rule at
+ * each group's edge. The PAGE around it is open rather than boxed: one
+ * command bar between two rules, then sections — leaders, the table, the
+ * analysis, the FAQ — each opened by a rule and a small gold label, with
+ * nothing in a card. The DRESS is the house's: its tokens, its radii, its
+ * navy-for-active controls. See the note on ported tools in replit.md.
+ *
+ * Light-only, matching the others.
+ */
+
+:where(.sca),
+:where(body.sca-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-hairline: rgba(15, 23, 42, 0.08);
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sca-gutter: 24px;
+
+  /* Cell padding, as tokens rather than literals, because two rules want to
+     set it: the narrow tier tightens it, and the theme armour at the foot of
+     this file restates it at a specificity Divi cannot reach and lands AFTER
+     the tier. A literal in both places puts the desktop value back on a phone
+     — the lesson fpa.css learned the expensive way. */
+  --sca-pad-y: 6px;
+  --sca-pad-x: 7px;
+  /* The banner row's height, which is also where the header row below it
+     parks when the two stick. */
+  --sca-band-h: 30px;
+  /* The # column, which is also the player column's left offset when both
+     are pinned. */
+  --sca-rank-w: 36px;
+
+  /* Row stripes. The zebra is the house's soft surface; the hover a shade
+     past it, so a reader following one row across fifty columns keeps it. */
+  --sca-zebra: #f7f9fc;
+  --sca-hover: #eef2f8;
+  /* The header row under the navy banner. */
+  --sca-head: #f0f4fc;
+
+  /*
+   * The grade bands: 90+, 80+, 70+, 50+, below.
+   *
+   * The standalone app's scale — two greens, the brand blue, gold, grey — with
+   * each ink darkened until it clears 4.5:1 on white and on the zebra stripe.
+   * Its gold (#d4af37) was 2.1:1, a number that could not be read without
+   * the colour telling you what it said. The number is always printed, so
+   * the ink is a second reading of it and never the only one.
+   */
+  --sca-t90: #166534;
+  --sca-t80: #15803d;
+  --sca-t70: #0d4e8c;
+  --sca-t50: #8a6508;
+  --sca-t0: #64748b;
+}
+
+/* ------------------------------------------------------------- page shell */
+
+body.sca-page {
+  margin: 0;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sca {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  padding: 24px var(--sca-gutter) 64px;
+  /* The breakpoints are THIS element's width, not the window's: embedded, the
+     table lives in a WordPress column that can be 700px wide inside a 1400px
+     window, and a viewport query cannot see that. */
+  container-type: inline-size;
+  container-name: sca;
+  background: var(--sc-surface);
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.5;
+}
+
+.sca.is-embed {
+  max-width: none;
+  padding: 0 0 50px;
+}
+
+.sca *,
+.sca *::before,
+.sca *::after {
+  box-sizing: border-box;
+}
+
+/* Bare-element padding from a host theme. One class of weight via :where(),
+   so it beats a theme's bare `p` and ties the component rules below, which
+   then win on source order. */
+.sca :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote) {
+  padding: 0;
+}
+
+.sca-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sca-empty {
+  margin: 0;
+  padding: 48px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-sink);
+  text-align: center;
+  color: var(--sc-muted-strong);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------ page copy */
+
+/*
+ * Four levels, and only four:
+ *
+ *   H1              large, heavy, navy — the page's one loud line
+ *   section label   tiny uppercase gold — "2026 WIDE RECEIVERS"
+ *   section heading navy, a size down from the H1 and lighter
+ *   supporting copy muted grey, smaller than body text
+ *
+ * The H1 is printed here only standalone; embedded, the WordPress page
+ * prints it.
+ */
+
+.sca-h1 {
+  margin: 0 0 12px;
+  color: var(--sc-navy);
+  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.6rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.sca-intro {
+  margin: 0 0 24px;
+  max-width: 72ch;
+}
+
+.sca-intro p,
+.sca-copy > p {
+  margin: 0 0 6px;
+  color: var(--sc-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* A section opens on a full-width rule; the first one under the command bar
+   does not need one, the bar's own rule is right above it, and the copy
+   after the table (below) has none. */
+.sca-section {
+  margin: 44px 0 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--sc-border);
+}
+
+.sca-body > .sca-section:first-child {
+  margin-top: 32px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The copy after the table is one run of reading, not two more panels: its
+   sections are spaced apart but carry no rule. */
+.sca-copy,
+.sca-faq-block {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* With no rule to mark it, the break from the table is space: 50px more
+   than the sections' own gap. */
+.sca-copy {
+  margin-top: 94px;
+}
+
+.sca-section-head {
+  margin: 0 0 18px;
+}
+
+.sca-eyebrow {
+  margin: 0 0 6px;
+  color: var(--sc-gold-deep);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sca-section-title {
+  margin: 0 0 8px;
+  color: var(--sc-navy);
+  font-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.4rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+/* The measure is on the words, not the section, so its rule runs the full
+   width like the others. */
+.sca-copy > p,
+.sca-faq {
+  max-width: 80ch;
+}
+
+/* One question, one fold — rankings.css's FAQ, restated for this sheet. */
+.sca-faq {
+  border-top: 1px solid var(--sc-border);
+}
+
+.sca-faq-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sca-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sca-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+.sca-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.sca-faq-item[open] > .sca-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
+.sca-faq-q-row:hover .sca-faq-q {
+  color: var(--sc-gold-deep);
+}
+
+.sca-faq-q {
+  margin: 0;
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.sca-faq-a {
+  margin: 7px 0 0 20px;
+  max-width: 72ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* --------------------------------------------------------------- controls */
+
+/* The command bar and the views, over one rule rather than in a card.
+   Stacked over what follows, because the menus float down over it. */
+/* Padding, not margin, on top: 25px more clear of the header above than the
+   intro's own margin gives, and it cannot collapse into it. */
+.sca-panel {
+  position: relative;
+  z-index: 5;
+  padding-top: 25px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sca-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 0 0 14px;
+}
+
+/* `display: flex` beats the UA's [hidden] rule, and these controls must stay
+   out of sight until the bundle can make them work. */
+.sca-filters[hidden],
+.sca-views[hidden],
+.sca [hidden] {
+  display: none !important;
+}
+
+/* A dropdown: <details>, its summary the button, its body floating under. */
+.sca-menu {
+  position: relative;
+  margin: 0;
+}
+
+.sca-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface);
+  color: var(--sc-navy);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sca-menu-btn::-webkit-details-marker {
+  display: none;
+}
+
+.sca-menu-btn::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.55;
+  transform: rotate(45deg);
+}
+
+.sca-menu[open] > .sca-menu-btn::after {
+  margin-top: 3px;
+  transform: rotate(225deg);
+}
+
+.sca-menu-btn:hover,
+.sca-menu[open] > .sca-menu-btn {
+  border-color: var(--sc-navy);
+}
+
+.sca-menu-btn:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+}
+
+/* The position menu is the bar's title: "WR STATS", set in the navy. */
+.sca-menu-title > .sca-menu-btn {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sca-menu-val {
+  color: var(--sc-gold-deep);
+  font-weight: 800;
+}
+
+/* More Filters' count of floors off their defaults. */
+.sca-menu-val[data-sca-val="more"] {
+  min-width: 18px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: var(--sc-gold);
+  color: var(--sc-navy);
+  font-size: 11px;
+  text-align: center;
+}
+
+.sca-menu-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  gap: 10px;
+  min-width: 100%;
+  padding: 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+
+/* More Filters can sit at the bar's right end, so its panel opens leftward. */
+.sca-filters > .sca-menu:last-of-type > .sca-menu-pop {
+  left: auto;
+  right: 0;
+}
+
+.sca-menu-pop > nav {
+  display: grid;
+  gap: 2px;
+  margin: -6px;
+}
+
+.sca-menu-item {
+  display: block;
+  padding: 7px 12px;
+  border-radius: var(--sc-radius-xs);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.sca-menu-item:hover {
+  background: var(--sc-surface-sink);
+  color: var(--sc-navy);
+}
+
+.sca-menu-item.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* The Totals / Per Game switch: one segmented control. */
+.sca-mode {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 3px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-sink);
+}
+
+.sca-mode-btn {
+  height: 100%;
+  margin: 0;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--sc-muted-strong);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sca-mode-btn:hover {
+  color: var(--sc-navy);
+}
+
+.sca-mode-btn.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* The filter menus and the search box. The wrapper is only there so a
+   season swap can replace them as one block; for layout it steps aside, and
+   they are items of the bar like the rest. */
+.sca-filters {
+  display: contents;
+}
+
+.sca-num {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.sca-num-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+  white-space: nowrap;
+}
+
+.sca-num input,
+.sca-search input {
+  font: inherit;
+  font-size: 13px;
+  color: var(--sc-ink);
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  margin: 0;
+}
+
+.sca-num input {
+  width: 64px;
+  padding: 5px 6px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Search takes whatever the row has left — all of it, not a fixed width. */
+.sca-search {
+  margin: 0;
+  flex: 1 1 100px;
+  min-width: 0;
+}
+
+/*
+ * One row while everything fits: WR Stats, season, Totals / Per Game, More
+ * Filters, then search to the end. Narrower than that, search
+ * takes a row of its own, full width, on top, and every filter stays together
+ * on the row under it, More Filters pushed out to the right end (and, below
+ * that, see the next block).
+ *
+ * 610px is what one row needs: the four buttons (470px, with More Filters
+ * wearing its count badge), search at its 100px floor, and four 10px gaps.
+ */
+@container sca (max-width: 610px) {
+  .sca-search {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .sca-filters > .sca-menu:last-of-type {
+    margin-left: auto;
+  }
+}
+
+/*
+ * Narrower still, the four filters no longer fit one row (470px of buttons
+ * and three 10px gaps). The position menu moves up to the left of search,
+ * which grows into the rest of that row; season, Totals / Per Game and More
+ * Filters (still at the right end) make the row under it. A zero-height,
+ * full-width break item ordered after the top row starts the next; its line
+ * adds a second row gap, which the top row gives back with a negative margin.
+ */
+.sca-controls::before {
+  content: none;
+}
+
+@container sca (max-width: 500px) {
+  .sca-controls::before {
+    content: "";
+    order: -1;
+    flex: 0 0 100%;
+    height: 0;
+  }
+
+  .sca-controls > [data-sca-positions] {
+    order: -3;
+    margin-bottom: -8px;
+  }
+
+  .sca-search {
+    order: -2;
+    flex: 1 1 0;
+    margin-bottom: -8px;
+  }
+}
+
+/* A phone: season, Totals / Per Game and More Filters no longer share a row
+   (378px of them with More Filters' count, in a 342px column at 390px), so
+   the season menu moves up beside the position menu, left of search, and
+   Totals / Per Game and More Filters make the row under them. The buttons tighten a little so search keeps its room, and
+   every row is centred rather than pushed to the edges. */
+@container sca (max-width: 400px) {
+  .sca-controls {
+    column-gap: 8px;
+    justify-content: center;
+  }
+
+  .sca-filters > .sca-menu:last-of-type {
+    margin-left: 0;
+  }
+
+  .sca-controls > [data-sca-positions] {
+    order: -4;
+  }
+
+  .sca-controls > [data-sca-seasons] {
+    order: -3;
+    margin-bottom: -8px;
+  }
+
+  .sca-menu-btn {
+    padding: 0 9px;
+  }
+
+  .sca-mode-btn {
+    padding: 0 8px;
+  }
+}
+
+.sca-search input {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+}
+
+.sca-num input:focus,
+.sca-search input:focus {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 1px;
+  border-color: var(--sc-gold);
+}
+
+/* The views: one row of text tabs, the open one underlined in gold, sitting
+   on the bar's bottom rule. Scrolls
+   sideways on a phone rather than wrapping into a second row. */
+.sca-views {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sca-views::-webkit-scrollbar {
+  display: none;
+}
+
+.sca-view {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 11px 0 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--sc-muted-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sca-view:hover {
+  color: var(--sc-navy);
+}
+
+.sca-view.is-active {
+  border-bottom-color: var(--sc-gold);
+  color: var(--sc-navy);
+}
+
+.sca-view:focus-visible,
+.sca-mode-btn:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -2px;
+}
+
+.sca[aria-busy="true"] .sca-body {
+  opacity: 0.55;
+  transition: opacity 120ms ease;
+}
+
+/* --------------------------------------------------------------- leaders */
+
+/* Five columns split by hairlines rather than boxed: the category small and
+   quiet, the figure large — the one thing the eye lands on — a line of
+   context, then who, tucked close beneath. */
+.sca-leader-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  row-gap: 24px;
+}
+
+.sca-leader {
+  min-width: 0;
+  padding: 0 20px;
+}
+
+.sca-leader + .sca-leader {
+  border-left: 1px solid var(--sc-border);
+}
+
+.sca-leader:first-child {
+  padding-left: 0;
+}
+
+/* The per-game leader waits until the Per Game switch is on, and then the
+   season-total one steps aside. */
+.sca-leader-pg,
+.is-per-game .sca-leader-total {
+  display: none;
+}
+
+.is-per-game .sca-leader-pg {
+  display: block;
+}
+
+.sca-leader-cat {
+  margin: 0 0 6px;
+  color: var(--sc-muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.sca-leader-fig {
+  margin: 0 0 10px;
+  line-height: 1;
+}
+
+.sca-leader-num {
+  display: block;
+  color: var(--sc-navy);
+  font-size: clamp(1.75rem, 1.45rem + 1vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sca-leader-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--sc-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.sca-leader-who {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 9px;
+  align-items: center;
+}
+
+.sca-leader-photo {
+  grid-row: 1 / span 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sc-surface-sink);
+  object-fit: cover;
+  object-position: top;
+}
+
+.sca-leader-name {
+  margin: 0;
+  color: var(--sc-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.sca-leader-team {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sca-leader-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sca-leader-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+}
+
+/* ------------------------------------------------------------- the table */
+
+/* The table sits open on the page: no box, only the line of facts over it
+   and the footnote under it. */
+.sca-meta,
+.sca-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 8px 0;
+  font-size: 11px;
+  color: var(--sc-muted);
+}
+
+.sca-meta {
+  padding-top: 0;
+  padding-bottom: 10px;
+}
+
+.sca-meta > span + span::before {
+  content: "·";
+  margin-right: 10px;
+}
+
+.sca-meta-season {
+  font-weight: 700;
+  color: var(--sc-navy);
+}
+
+.sca-meta-updated {
+  margin-left: auto;
+}
+
+/* † on a column still covering weeks 1-18, and in the footnote naming it. */
+.sca-fs {
+  margin-left: 1px;
+  color: var(--sc-gold-deep);
+  font-weight: 800;
+}
+
+/* The flag that says the counts are per game, beside the season. */
+.sca-meta-mode {
+  display: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sc-gold);
+  color: var(--sc-navy);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.is-per-game .sca-meta-mode {
+  display: inline-block;
+}
+
+.sca-meta > .sca-meta-mode::before {
+  content: none;
+}
+
+.sca-meta > .sca-meta-updated::before {
+  content: none;
+}
+
+.sca-foot {
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.sca-foot-tag {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--sc-gold-deep);
+}
+
+.sca-scroll {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* On a screen with room for it, the table scrolls inside its own box so the
+   two header rows and the player column can stay pinned while a reader works
+   through two hundred receivers — sticky only sticks within the scroller it
+   sits in, and a scroller that never scrolls vertically pins nothing. */
+@container sca (min-width: 640px) {
+  .sca-scroll {
+    max-height: min(78vh, 920px);
+  }
+}
+
+.sca-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.sca-table th,
+.sca-table td {
+  padding: var(--sca-pad-y) var(--sca-pad-x);
+  border-bottom: 1px solid var(--sc-hairline);
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* The banner: one navy band naming each column group, with a gold rule under
+   it. Sticky at the top of the scroller. */
+.sca-banner th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: var(--sca-band-h);
+  padding: 0 8px;
+  background: var(--sc-navy);
+  border-bottom: 2px solid var(--sc-gold);
+  color: #c9d3ea;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.sca-banner th + th {
+  border-left: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+/* The header row, parked under the banner when both stick. */
+.sca-head th {
+  position: sticky;
+  top: var(--sca-band-h);
+  z-index: 2;
+  background: var(--sca-head);
+  border-bottom: 2px solid rgba(11, 22, 52, 0.14);
+  color: var(--sc-muted-strong);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.sca-head th.is-score {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+.sca-head th[title] {
+  cursor: help;
+}
+
+.sca-head th.is-sorted {
+  color: var(--sc-gold-deep);
+  background: #f6efd9;
+}
+
+/* The two-line label: a fraction for "AY / Att", two lines for three words. */
+.sca-lines,
+.sca-frac {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.sca-lines,
+.sca-frac {
+  align-items: center;
+}
+
+.sca-frac > span:first-child {
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  margin-bottom: 2px;
+}
+
+.sca-sort {
+  font: inherit;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.sca-sort:hover {
+  color: var(--sc-navy);
+}
+
+th[aria-sort="descending"] .sca-sort::after {
+  content: "\2193";
+}
+
+th[aria-sort="ascending"] .sca-sort::after {
+  content: "\2191";
+}
+
+/* A rule at each group's right edge, so fifty columns read as six ideas. */
+.sca-table .is-edge {
+  padding-right: 14px;
+  border-right: 2px solid rgba(11, 22, 52, 0.14);
+}
+
+/* Rows */
+.sca-row > * {
+  background: var(--sc-surface);
+}
+
+.sca-row:nth-child(even of :not([hidden])) > * {
+  background: var(--sca-zebra);
+}
+
+.sca-row:hover > * {
+  background: var(--sca-hover);
+}
+
+.sca-cell.is-missing,
+.sca-score.is-missing {
+  color: #cbd5e1;
+}
+
+/* The pinned cells: # and Player stay put while the table scrolls sideways. */
+.sca-th-rank,
+.sca-rank {
+  position: sticky;
+  left: 0;
+  width: var(--sca-rank-w);
+  min-width: var(--sca-rank-w);
+}
+
+.sca-th-player,
+.sca-player {
+  position: sticky;
+  left: var(--sca-rank-w);
+  min-width: 132px;
+  border-right: 1px solid var(--sc-border);
+}
+
+.sca-rank,
+.sca-player {
+  z-index: 1;
+}
+
+.sca-head .sca-th-rank,
+.sca-head .sca-th-player {
+  z-index: 4;
+}
+
+.sca-rank {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+.sca-th-rank abbr {
+  text-decoration: none;
+}
+
+.sca-player {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sc-ink);
+}
+
+.sca-player-link {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+.sca-player-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-underline-offset: 2px;
+}
+
+.sca-name-short,
+.sca-team-inline {
+  display: none;
+}
+
+.sca-team-inline {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sc-muted);
+}
+
+.sca-ls {
+  margin-left: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  vertical-align: super;
+  color: var(--sc-gold-deep);
+  text-decoration: none;
+  cursor: help;
+}
+
+.sca-foot .sca-ls {
+  vertical-align: baseline;
+  font-size: 11px;
+  margin: 0;
+}
+
+.sca-team {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+.sca-score {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sca-score.is-overall {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.sca-score.is-t90 { color: var(--sca-t90); }
+.sca-score.is-t80 { color: var(--sca-t80); }
+.sca-score.is-t70 { color: var(--sca-t70); }
+.sca-score.is-t50 { color: var(--sca-t50); }
+.sca-score.is-t0 { color: var(--sca-t0); }
+
+/* ----------------------------------------------------------- narrow tiers */
+
+@container sca (max-width: 1000px) {
+  .sca-leader-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* A row's first leader has no rule to its left. */
+  .sca-leader:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@container sca (max-width: 760px) {
+  .sca-leader-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sca-leader,
+  .sca-leader:nth-child(3n + 1) {
+    padding: 0 0 0 14px;
+    border-left: 1px solid var(--sc-border);
+  }
+
+  .sca-leader:nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .sca-controls {
+    padding: 0 0 12px;
+  }
+
+}
+
+/* A phone: # and Team go, the player column is the only pinned cell, and the
+   name shortens to "J. Allen" with the team beside it — the standalone app's
+   mobile table. */
+@container sca (max-width: 640px) {
+  .sca {
+    --sca-pad-y: 5px;
+    --sca-pad-x: 5px;
+    --sca-band-h: 26px;
+  }
+
+  .sca-th-rank,
+  .sca-rank,
+  .sca-th-team,
+  .sca-team {
+    display: none;
+  }
+
+  .sca-th-player,
+  .sca-player {
+    left: 0;
+    min-width: 96px;
+  }
+
+  .sca-name-full {
+    display: none;
+  }
+
+  .sca-name-short,
+  .sca-team-inline {
+    display: inline;
+  }
+
+  .sca-banner th {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .sca-meta-updated {
+    margin-left: 0;
+  }
+}
+
+/* --------------------------------------------------------- theme defences */
+
+/* font-family and list-style are the two properties a theme reaches through
+   inheritance. `!important` because a theme that sets fonts from an options
+   panel emits it itself; the family is still the token, so a host retunes it
+   by setting --sc-font. Do NOT add spacing here — see fpa.css. */
+:is(.sca, body.sca-page),
+:is(.sca, body.sca-page) * {
+  font-family: var(--sc-font) !important;
+}
+
+.sca :is(ul, ol, li) {
+  list-style: none !important;
+}
+
+/* ====================================================================== */
+/* Theme armour                                                            */
+/*                                                                         */
+/* Every declaration below RESTATES one already made above, at a           */
+/* specificity a host theme cannot reach. Nothing here is a new design     */
+/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* this block is the one that is wrong.                                    */
+/*                                                                         */
+/* Divi styles bare elements inside the content area:                      */
+/*                                                                         */
+/*     .entry-content table  { border: 1px solid #eee; margin: 0 0 15px }  */
+/*     .entry-content tr td  { border-top: 1px solid #eee; padding: 6px }  */
+/*     .entry-content tr th  { padding: 9px 24px }                         */
+/*     .entry-content a      { color: #2ea3f2 }                            */
+/*     .entry-content button { color: #666 }                               */
+/*                                                                         */
+/* Every th/td rule here carries two classes, because one class and two    */
+/* elements TIES Divi's, and a tie goes to whichever stylesheet WordPress  */
+/* enqueued last. Padding reads the tokens, so the narrow tier's values    */
+/* survive this block.                                                     */
+/* ====================================================================== */
+
+/* Divi's rule is `.entry-content table:not(.variations)` — `:not()` counts
+   its argument, so it is two classes and an element and beat `.sca .sca-table`
+   with a 1px frame and 15px of margin. Repeating the `:not()` keeps this one
+   class ahead. */
+.sca table.sca-table:not(.variations) {
+  width: 100%;
+  border: 0;
+  margin: 0;
+}
+
+.sca .sca-table th,
+.sca .sca-table td {
+  padding: var(--sca-pad-y) var(--sca-pad-x);
+  border-top: 0;
+  text-align: center;
+}
+
+/* Every column is centered but the names, which read down a ragged left edge. */
+.sca .sca-table .sca-th-player,
+.sca .sca-table .sca-player {
+  text-align: left;
+}
+
+.sca .sca-table .is-edge {
+  padding-right: 14px;
+}
+
+.sca .sca-table .sca-banner th {
+  padding: 0 8px;
+  color: #c9d3ea !important;
+}
+
+/* Header colours are `!important` because Divi also sets
+   `#left-area table th { color: #666 }`, and an id outranks any number of
+   classes: measured 2026-09-24, every column label went grey, the sorted
+   column lost its gold and the banner its pale blue. The order below still
+   decides between them — sorted beats score beats plain. */
+.sca .sca-table .sca-head th {
+  color: var(--sc-muted-strong) !important;
+}
+
+.sca .sca-table .sca-head th.is-score {
+  color: var(--sc-navy) !important;
+}
+
+.sca .sca-table .sca-head th.is-sorted {
+  color: var(--sc-gold-deep) !important;
+}
+
+/* The player cell is a <th>, so the same two rules grey it and embolden it. */
+.sca .sca-table tbody th.sca-player {
+  color: var(--sc-ink) !important;
+  font-weight: 700;
+}
+
+.sca .sca-table .sca-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.sca .sca-menu-item {
+  color: var(--sc-muted-strong);
+  text-decoration: none;
+}
+
+.sca .sca-mode-btn,
+.sca .sca-view {
+  color: var(--sc-muted-strong);
+}
+
+.sca .sca-menu-item:hover,
+.sca .sca-mode-btn:hover,
+.sca .sca-view:hover,
+.sca .sca-view.is-active {
+  color: var(--sc-navy);
+}
+
+.sca .sca-menu-item.is-active,
+.sca .sca-mode-btn.is-active,
+.sca .sca-menu-title > .sca-menu-btn {
+  color: #fff;
+}
+
+.sca .sca-player-link {
+  color: var(--sc-navy);
+  text-decoration: none;
+}
+
+/* Divi's `img { max-width: 100%; height: auto }` would let the headshot
+   shrink with its grid track. */
+.sca .sca-leader-photo {
+  width: 36px;
+  height: 36px;
+  max-width: none;
+}
+
+.sca .sca-leader-link {
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+.sca .sca-menu-btn {
+  list-style: none;
+}
+
+/* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
+   on statchasers.com, which only `!important` beats — measured, both section
+   headings rendered at 50px. Size and colour only, as team.css arms its own;
+   the h3s ride along because the panel styles every level. */
+.sca .sca-section-title {
+  color: var(--sc-navy) !important;
+  font-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.4rem) !important;
+  line-height: 1.2 !important;
+}
+
+.sca .sca-faq-q {
+  color: var(--sc-ink) !important;
+  font-size: 0.92rem !important;
+  line-height: 1.45 !important;
+}
+
+.sca .sca-faq-q-row:hover .sca-faq-q {
+  color: var(--sc-gold-deep) !important;
+}
+
+.sca .sca-leader-name {
+  color: var(--sc-ink) !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+}

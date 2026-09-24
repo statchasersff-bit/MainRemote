@@ -193,6 +193,22 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-schedule.js"),
   });
 
+  // The advanced player stats bundle. Separate for the same reason as the
+  // other six: one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/player-stats.ts")],
+    outfile: path.join(outDir, "statchasers-player-stats.js"),
+  });
+
+  // The RB handcuff rankings bundle. Separate for the same reason as the
+  // other seven: one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/rb-handcuffs.ts")],
+    outfile: path.join(outDir, "statchasers-rb-handcuffs.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -222,6 +238,14 @@ async function buildClient() {
   const scheduleCss = await readFile(
     path.resolve(artifactDir, "public", "schedule.css"),
   );
+  const statsJs = await readFile(path.join(outDir, "statchasers-player-stats.js"));
+  const statsCss = await readFile(
+    path.resolve(artifactDir, "public", "player-stats.css"),
+  );
+  const handcuffsJs = await readFile(path.join(outDir, "statchasers-rb-handcuffs.js"));
+  const handcuffsCss = await readFile(
+    path.resolve(artifactDir, "public", "rb-handcuffs.css"),
+  );
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -235,6 +259,10 @@ async function buildClient() {
     .update(rankingsCss)
     .update(scheduleJs)
     .update(scheduleCss)
+    .update(statsJs)
+    .update(statsCss)
+    .update(handcuffsJs)
+    .update(handcuffsCss)
     .digest("hex")
     .slice(0, 12);
 
