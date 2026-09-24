@@ -134,17 +134,17 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     );
   });
 
-  test("structured data is a valid application node with no invented ratings", async () => {
+  test("structured data is a WebPage node with no invented ratings", async () => {
     const res = await fetch(
       `${server.origin}/embed/schema.json?page_url=${encodeURIComponent("https://statchasers.com/nfl/player-news/")}`,
     );
     const { node } = await res.json();
 
-    assert.ok(node["@type"].includes("SoftwareApplication"));
-    assert.ok(node["@type"].includes("WebApplication"));
-    assert.equal(node.applicationCategory, "SportsApplication");
+    // Not SoftwareApplication: Search Console holds that type to the software-app
+    // rich result's rules, which a news page cannot meet without invented ratings.
+    assert.equal(node["@type"], "WebPage");
+    assert.equal(node["@id"], "https://statchasers.com/nfl/player-news/#webpage");
     assert.ok(node.name && node.description && node.url);
-    assert.ok(node.offers, "offer information missing");
 
     // Fabricated review data is a policy violation, not a shortcut.
     const serialised = JSON.stringify(node);
@@ -156,7 +156,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     }
 
     // Types that would not accurately describe this page.
-    for (const banned of ["Article", "ItemList", "Dataset", "FAQPage", "Product"]) {
+    for (const banned of ["Article", "ItemList", "Dataset", "FAQPage", "Product", "SoftwareApplication", "WebApplication"]) {
       assert.ok(
         !node["@type"].includes(banned),
         `structured data must not claim ${banned}`,

@@ -59,6 +59,7 @@ import {
   rankingsFaq,
   type RankingsFaq,
 } from "./rankings/rankings-faq";
+import { rankingsItemLists } from "./rankings/rankings-schema";
 
 export interface RankingsRenderOptions {
   /**
@@ -640,6 +641,38 @@ function renderFaqSchema(
   );
 }
 
+/**
+ * The boards as ItemLists — see rankings/rankings-schema.ts.
+ *
+ * The same two modes as renderFaqSchema() above: an inert island in an embed,
+ * for statchasers-rankings.php to graft into Rank Math's graph and strip, and
+ * JSON-LD of its own on the standalone page.
+ */
+function renderListSchema(
+  data: RankingsData,
+  options: RankingsRenderOptions,
+): string {
+  const lists = rankingsItemLists(data, options.position ?? "All");
+  if (lists.length === 0) return "";
+
+  if (options.embed) {
+    return (
+      `<script type="application/json" class="scr-list-data">` +
+      escapeJsonLd(JSON.stringify(lists)) +
+      `</script>`
+    );
+  }
+
+  return lists
+    .map(
+      (node) =>
+        `<script type="application/ld+json">` +
+        escapeJsonLd(JSON.stringify({ "@context": "https://schema.org", ...node })) +
+        `</script>`,
+    )
+    .join("");
+}
+
 export function renderRankingsPage(
   data: RankingsData,
   options: RankingsRenderOptions = {},
@@ -693,6 +726,7 @@ export function renderRankingsPage(
     renderControls(data, options) +
     panels +
     renderFaq(data, options) +
+    renderListSchema(data, options) +
     renderMetaIsland(data, options) +
     `</div>`
   );

@@ -1019,8 +1019,8 @@ function statchasers_player_faq_node( string $webpage_id = '' ) {
 /**
  * Append the FAQPage to Rank Math's graph.
  *
- * Same posture as statchasers_news_rank_math_schema(): append to the array Rank
- * Math hands us, so what ships is one <script> containing one graph.
+ * Append to the array Rank Math hands us, so what ships is one <script>
+ * containing one graph.
  *
  * @param array<string,mixed> $data Rank Math's schema nodes.
  * @return array<string,mixed>
@@ -1165,6 +1165,36 @@ function statchasers_player_section_from_url(): string {
 	$section = strtolower( trim( (string) get_query_var( 'sc_section' ) ) );
 	return in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ? $section : '';
 }
+
+/**
+ * Send `/<slug>/overview/` to the profile, 301.
+ *
+ * The profile opens on the Overview, so the two addresses were one page, each
+ * self-canonical. The profile keeps it, the Overview tab links there (the API
+ * renders the strip), and the old address — indexed — redirects instead of
+ * 404ing, which is why 'overview' stays in STATCHASERS_PLAYER_SECTIONS and so in
+ * the rewrite. The reader's query rides along: ?format=half is a set of numbers.
+ */
+function statchasers_player_overview_redirect(): void {
+	if ( 'overview' !== statchasers_player_section_from_url() ) {
+		return;
+	}
+
+	$queried = get_queried_object();
+	$target  = $queried instanceof WP_Post ? get_permalink( $queried ) : '';
+
+	if ( ! $target ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+
+	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 301 );
+	exit;
+}
+
+add_action( 'template_redirect', 'statchasers_player_overview_redirect', 9 );
 
 /**
  * The season the Game Log is showing, read off the fragment the page will print.

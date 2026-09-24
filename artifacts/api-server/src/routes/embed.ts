@@ -250,9 +250,9 @@ router.get("/embed/ssr.html", async (req, res) => {
 });
 
 /**
- * GET /embed/schema.json — the tool's structured-data node, on its own.
+ * GET /embed/schema.json — the tool page's structured-data node, on its own.
  *
- * Returns a single SoftwareApplication/WebApplication node, NOT a complete
+ * Returns a single WebPage node, NOT a complete
  * `@graph`. That is the point: the host page already has an SEO plugin
  * producing WebPage and BreadcrumbList nodes, and publishing a second graph
  * alongside it would duplicate and contradict them. Merge this node into the

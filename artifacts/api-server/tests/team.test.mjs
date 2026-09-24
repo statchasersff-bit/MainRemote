@@ -223,7 +223,8 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       assert.ok(doc.getElementById(id), `nav names a real panel: ${id}`);
       assert.equal(
         link.getAttribute("href"),
-        `/team/new-england-patriots/${id}/`,
+        // The Outlook is the hub, so its tab links to the hub.
+        id === "outlook" ? "/team/new-england-patriots/" : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
       );
       // What the H1 above the fragment becomes when this tab is chosen. The
@@ -338,13 +339,15 @@ describe("embedded mode", () => {
     // the name gives "a-j-brown" and a 404.
     const brown = byName.get("A.J. Brown");
     assert.ok(brown, "A.J. Brown is on the Patriots page and linked");
-    assert.match(brown, /\/nfl\/players\/outlook\/aj-brown\/$/);
+    // The profile itself — not the retired /nfl/players/outlook/<slug>/
+    // layout, whose stale pages these links kept alive.
+    assert.match(brown, /\/nfl\/players\/aj-brown\/$/);
 
     for (const href of byName.values()) {
       assert.match(href, /^https?:\/\//, "absolute, for the WordPress mount");
       // A slug the dictionary supplied, never a name pushed through a slugifier
       // — the giveaway is the single letters a dotted initial leaves behind.
-      const slug = href.split("/outlook/")[1]?.replace(/\/$/, "") ?? "";
+      const slug = href.split("/nfl/players/")[1]?.replace(/\/$/, "") ?? "";
       assert.ok(slug, `no slug in ${href}`);
       assert.ok(
         !/(^|-)[a-z](-|$)/.test(slug),
@@ -1646,7 +1649,8 @@ describe("shortcode preview harness", () => {
    *   an FAQ's questions — `scp-faq-data` on the player mount, `sct-faq-data`
    *   on the team hub, `scf-faq-data` on the FPA table — which the plugin that
    *   owns that mount lifts into Rank Math's graph and strips before any of the
-   *   markup is printed, so it never reaches the rendered page at all;
+   *   markup is printed, so it never reaches the rendered page at all — and on
+   *   the same terms, the team Schedule page's games, `sct-schedule-data`;
    *
    *   the player search's roster, `data-scp-roster`, which does reach the page
    *   and is meant to: it is the list the search above the header filters, and
@@ -1659,6 +1663,7 @@ describe("shortcode preview harness", () => {
   test("the fragments it wraps ship no assets of their own", async () => {
     const INERT = [
       /<script type="application\/json" class="sc[fpt]-faq-data">.*?<\/script>/gs,
+      /<script type="application\/json" class="sct-schedule-data">.*?<\/script>/gs,
       /<script type="application\/json" data-scp-roster>.*?<\/script>/gs,
     ];
 
@@ -2276,8 +2281,47 @@ describe("the Stats heading", () => {
     // It is the Stats heading that was promoted, not some other <h2>.
     assert.match(
       promoted.body,
-      /<h1 class="sct-h2[^"]*">Patriots Team Stats 2\d{3}<\/h1>/,
-      "the H1 is the section's own heading",
+      /<h1 class="sct-h2[^"]*">New England Patriots Stats 2\d{3}<\/h1>/,
+      "the H1 is the section's own heading, in the address's words",
+    );
+  });
+
+  /**
+   * Every address its own H1, in the words of what the address is for.
+   *
+   * The hub used to promote its opening panel's heading, "2026 Fantasy
+   * Outlook" — no team in it, the same on all 32 hubs, and word for word the
+   * H1 of `/outlook/`, which served the same page. The Outlook is the hub now,
+   * and its H1 names the club and the intent.
+   */
+  test("the hub and each section promote a heading of their own", async () => {
+    const h1 = async (query) => {
+      const { body } = await get(`/embed/team/new-england-patriots?h1=1${query}`);
+      const found = [...body.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((m) => m[1]);
+      assert.equal(found.length, 1, `${query || "(hub)"}: exactly one H1`);
+      return found[0].replace(/&amp;/g, "&");
+    };
+    const expected = {
+      "": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      // Still asked for by anything holding the old spelling: it gets the hub.
+      "&section=outlook": /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      "&section=stats": /^New England Patriots Stats 2\d{3}$/,
+      "&section=schedule": /^New England Patriots Schedule 2\d{3}$/,
+      "&section=depth-chart": /^New England Patriots Depth Chart 2\d{3}$/,
+      "&section=matchups": /^New England Patriots Matchups 2\d{3}$/,
+      "&section=news": /^New England Patriots News 2\d{3}$/,
+    };
+    for (const [query, heading] of Object.entries(expected)) {
+      assert.match(await h1(query), heading, query || "(hub)");
+    }
+
+    const { doc } = await dom("/embed/team/new-england-patriots?h1=1&section=outlook");
+    assert.equal(doc.querySelectorAll("[data-sct-panel]").length > 1, true, "the hub, not one panel");
+    const tab = doc.querySelector('.sct-nav-link[data-sct-panel-id="outlook"]');
+    assert.match(
+      tab.getAttribute("data-sct-heading"),
+      /^New England Patriots Fantasy Football Outlook & Stats 2\d{3}$/,
+      "the Outlook tab hands the host the hub's heading",
     );
   });
 
@@ -2303,8 +2347,8 @@ describe("team section URLs", () => {
    * phrase belongs to the section, and the document title is what names the
    * address.
    */
+  // No Outlook: it is the hub, and `/outlook/` 301s there.
   const SECTIONS = [
-    ["outlook", /^2\d{3} Fantasy Outlook$/],
     ["stats", /^Patriots Team Stats 2\d{3}$/],
     ["schedule", /Patriots Schedule$/],
     ["depth-chart", /^Patriots Fantasy Depth Chart$/],
@@ -2478,7 +2522,7 @@ describe("team section URLs", () => {
     // section's phrase, these three dropped their own heading so it was not
     // printed twice; the hero is the club's name now, so the section's heading
     // is back — and it is still the only one.
-    for (const id of ["outlook", "schedule", "depth-chart", "matchups"]) {
+    for (const id of ["schedule", "depth-chart", "matchups"]) {
       const { doc } = await dom(at(id));
       const h1 = doc.querySelector("h1").textContent.trim();
       const headings = [...doc.querySelectorAll(`#${id} h2`)].map((h) =>
@@ -2529,7 +2573,6 @@ describe("team section URLs", () => {
     // for Rank Math, which is what actually ranks. If these change, that
     // changes too.
     const expected = {
-      outlook: "New England Patriots Fantasy Football Outlook 2026",
       stats: "New England Patriots Stats 2026: Offense, Defense & NFL Rankings",
       schedule: "New England Patriots Schedule 2026: Dates, Opponents & Results",
       "depth-chart": "New England Patriots Depth Chart 2026: Starters & Backups",
@@ -2564,7 +2607,11 @@ describe("team section URLs", () => {
       ["/team/new-england-patriots?section=stats", "/team/new-england-patriots/stats/"],
       ["/team/ne?section=schedule", "/team/new-england-patriots/schedule/"],
       ["/team/ne/depth-chart/", "/team/new-england-patriots/depth-chart/"],
-      ["/team/ne?section=outlook&embed=1", "/team/new-england-patriots/outlook/?embed=1"],
+      // The Outlook is the hub, so both of its spellings land there.
+      ["/team/ne?section=outlook&embed=1", "/team/new-england-patriots?embed=1"],
+      ["/team/new-england-patriots/outlook/", "/team/new-england-patriots"],
+      ["/team/new-england-patriots/outlook/?embed=1", "/team/new-england-patriots?embed=1"],
+      ["/team/ne/outlook/", "/team/new-england-patriots"],
     ]) {
       const res = await get(path);
       assert.equal(res.status, 301, path);
@@ -2604,5 +2651,51 @@ describe("team section URLs", () => {
       (hub.body.match(/data-sct-panel/g) ?? []).length >
         (scoped.body.match(/data-sct-panel/g) ?? []).length,
     );
+  });
+
+  /**
+   * The Schedule page's structured data is its games, not an application.
+   *
+   * The plugin used to hang a SoftwareApplication node on every team URL, and
+   * Search Console flagged each one for the software-app rich result's missing
+   * rating. What replaced it is an ItemList of SportsEvents, carried as an inert
+   * island the plugin grafts into Rank Math's graph — and only on the Schedule
+   * page, because on the hub it would describe one tab of five.
+   */
+  test("the Schedule fragment carries its games as an ItemList of SportsEvents", async (t) => {
+    const scoped = await get("/embed/team/ne?section=schedule");
+    assert.equal(scoped.status, 200);
+    assert.ok(!/SoftwareApplication|WebApplication/.test(scoped.body));
+
+    const island = scoped.body.match(
+      /<script type="application\/json" class="sct-schedule-data">(.*?)<\/script>/s,
+    );
+    if (/temporarily unavailable/.test(scoped.body)) {
+      assert.equal(island, null, "no schedule, no list");
+      t.skip("schedule provider unreachable from this host");
+      return;
+    }
+    assert.ok(island, "the Schedule fragment must carry the schedule island");
+
+    const list = JSON.parse(island[1]);
+    assert.equal(list["@type"], "ItemList");
+    assert.ok(list.itemListElement.length > 0);
+    assert.equal(list.numberOfItems, list.itemListElement.length);
+    list.itemListElement.forEach((entry, i) => {
+      assert.equal(entry.position, i + 1);
+      const game = entry.item;
+      assert.equal(game["@type"], "SportsEvent");
+      // Google reads these as Events: without either, Search Console errors.
+      assert.ok(game.startDate, "every game has a startDate");
+      assert.ok(game.location?.name, "every game has a location");
+      assert.match(game.name, /New England Patriots/);
+      assert.ok(
+        [game.homeTeam.name, game.awayTeam.name].includes("New England Patriots"),
+      );
+    });
+    assert.ok(!/aggregateRating|review/i.test(island[1]));
+
+    const hub = await get("/embed/team/ne");
+    assert.ok(!/sct-schedule-data/.test(hub.body), "the hub carries no game list");
   });
 });

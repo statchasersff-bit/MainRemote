@@ -867,29 +867,45 @@ add_shortcode( STATCHASERS_ROS_RANKINGS_SHORTCODE, 'statchasers_ros_rankings_sho
 function statchasers_rankings_faq_items(): array {
 	static $items = null;
 
-	if ( null !== $items ) {
-		return $items;
+	if ( null === $items ) {
+		$items = statchasers_rankings_faq_parse( statchasers_rankings_page_html() );
 	}
-
-	$items = array();
-
-	if ( ! statchasers_rankings_post_has_shortcode() ) {
-		return $items;
-	}
-
-	// The default arguments — which on a position URL include its position,
-	// so this is the fetch the shortcode is about to make. A page passing a
-	// season gets the same nine questions: they describe the rankings, not the
-	// open panel.
-	$data = statchasers_rankings_fetch( statchasers_rankings_args( array() ) );
-
-	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
-		return $items;
-	}
-
-	$items = statchasers_rankings_faq_parse( (string) $data['html'] );
 
 	return $items;
+}
+
+/**
+ * The unprinted fragment for this request's board, or ''.
+ *
+ * What the schema nodes read their islands from. The default arguments —
+ * which on a position URL include its position, so this is the fetch the
+ * shortcode is about to make. A page passing a season gets the same questions:
+ * they describe the rankings, not the open panel.
+ *
+ * @return string
+ */
+function statchasers_rankings_page_html(): string {
+	static $html = null;
+
+	if ( null !== $html ) {
+		return $html;
+	}
+
+	$html = '';
+
+	if ( ! statchasers_rankings_post_has_shortcode() ) {
+		return $html;
+	}
+
+	$data = statchasers_rankings_fetch( statchasers_rankings_args( array() ) );
+
+	if ( null === $data || ! isset( $data['html'] ) ) {
+		return $html;
+	}
+
+	$html = (string) $data['html'];
+
+	return $html;
 }
 
 /**
@@ -1014,9 +1030,76 @@ function statchasers_rankings_rank_math_schema( $data ) {
 add_filter( 'rank_math/json_ld', 'statchasers_rankings_rank_math_schema', 20 );
 
 /**
- * Fallback FAQPage for sites with no schema-graph plugin.
+ * The boards as ItemLists: one per position the page shows, or none.
  *
- * Prints ONLY the FAQPage, for the reason the news fallback gives: with no SEO
+ * The API builds them — rankings/rankings-schema.ts — and ships them as an
+ * inert island this lifts out: four on the All board, one on a position page.
+ * Checked for shape rather than trusted, like the FAQ island: a malformed list
+ * is dropped rather than printed.
+ *
+ * @param string $webpage_id The graph's page node, or '' when there is none.
+ * @return array<int,array<string,mixed>>
+ */
+function statchasers_rankings_list_nodes( string $webpage_id = '' ): array {
+	$html = statchasers_rankings_page_html();
+
+	if ( false === strpos( $html, 'scr-list-data' ) ) {
+		return array();
+	}
+
+	if ( ! preg_match( '#<script type="application/json" class="scr-list-data">(.*?)</script>#s', $html, $match ) ) {
+		return array();
+	}
+
+	$decoded = json_decode( $match[1], true );
+	if ( ! is_array( $decoded ) ) {
+		return array();
+	}
+
+	$nodes = array();
+	foreach ( $decoded as $node ) {
+		if (
+			! is_array( $node )
+			|| ( $node['@type'] ?? '' ) !== 'ItemList'
+			|| empty( $node['itemListElement'] )
+			|| ! is_array( $node['itemListElement'] )
+		) {
+			continue;
+		}
+
+		if ( '' !== $webpage_id ) {
+			$node['isPartOf'] = array( '@id' => $webpage_id );
+		}
+
+		$nodes[] = $node;
+	}
+
+	return $nodes;
+}
+
+/**
+ * Append the board lists to Rank Math's graph.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_rankings_rank_math_lists( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	foreach ( statchasers_rankings_list_nodes( statchasers_news_schema_page_id( $data ) ) as $i => $node ) {
+		$data[ 'statchasersRankingsList' . $i ] = $node;
+	}
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_rankings_rank_math_lists', 20 );
+
+/**
+ * Fallback FAQPage and board lists for sites with no schema-graph plugin.
+ *
+ * Prints ONLY those, for the reason the news fallback gives: with no SEO
  * plugin present, WebPage and Organization are a site-wide decision somebody
  * should make deliberately rather than something this tool improvises.
  */
@@ -1025,16 +1108,20 @@ function statchasers_rankings_print_fallback_schema(): void {
 		return;
 	}
 
-	$node = statchasers_rankings_faq_node();
-	if ( null === $node ) {
-		return;
+	$nodes = statchasers_rankings_list_nodes();
+	array_unshift( $nodes, statchasers_rankings_faq_node() );
+
+	foreach ( $nodes as $node ) {
+		if ( null === $node ) {
+			continue;
+		}
+
+		$payload = array( '@context' => 'https://schema.org' ) + $node;
+
+		echo '<script type="application/ld+json">' .
+			wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
+			'</script>' . "\n";
 	}
-
-	$payload = array( '@context' => 'https://schema.org' ) + $node;
-
-	echo '<script type="application/ld+json">' .
-		wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) .
-		'</script>' . "\n";
 }
 add_action( 'wp_head', 'statchasers_rankings_print_fallback_schema', 20 );
 
@@ -1050,14 +1137,18 @@ add_action( 'wp_head', 'statchasers_rankings_print_fallback_schema', 20 );
  * @return string
  */
 function statchasers_rankings_strip_faq_data( string $html ): string {
-	if ( false === strpos( $html, 'scr-faq-data' ) && false === strpos( $html, 'scr-page-data' ) ) {
+	if (
+		false === strpos( $html, 'scr-faq-data' )
+		&& false === strpos( $html, 'scr-page-data' )
+		&& false === strpos( $html, 'scr-list-data' )
+	) {
 		return $html;
 	}
 
-	// The page-copy island too: the title, H1 and description it carries are
-	// read from the cached fetch, and printed they are dead weight.
+	// The page-copy and board-list islands too: what they carry is read from
+	// the cached fetch, and printed they are dead weight.
 	return (string) preg_replace(
-		'#<script type="application/json" class="scr-(?:faq|page)-data">.*?</script>#s',
+		'#<script type="application/json" class="scr-(?:faq|page|list)-data">.*?</script>#s',
 		'',
 		$html
 	);

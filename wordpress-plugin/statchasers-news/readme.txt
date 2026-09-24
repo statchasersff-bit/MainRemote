@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.3
+Stable tag: 1.10.6
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,24 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.6 =
+* Every player and team URL has an H1 of its own. On a player's profile the H1 was the Overview panel's "2026 Fantasy Snapshot" (the 1.10.4 entry below made it the bare name), which named nobody or repeated the hero. It is now "Josh Allen Fantasy Football Stats & Analysis". The section pages keep their phrase ("Josh Allen Stats 2026", "Josh Allen Game Log 2026"), and the Outlook gains its year: "Josh Allen Fantasy Outlook 2026". The hero still shows the name.
+* A team hub's H1 was the Outlook panel's "2026 Fantasy Outlook": no team in it, the same on all 32 hubs, and word for word the H1 of the hub's own /outlook/ page. It is now "New England Patriots Fantasy Football Outlook & Stats 2026". The section pages' H1s now use the same words as their titles ("New England Patriots Stats 2026" instead of "Patriots Team Stats 2026").
+* /nfl/players/<player>/overview/ now 301s to the profile, and /nfl/teams/<team>/outlook/ now 301s to the hub. Each pair served the same page at two self-canonical addresses. The tab now links to the profile or hub, and /outlook/ is no longer in the sitemap. The query string is kept through the redirect.
+* Retired player addresses 301 to the profile. /nfl/players/outlook/<player>/ was an older layout whose pages still resolved with a stale implementation; it now goes to /nfl/players/<player>/outlook/, and the rest of that layout (/nfl/players/stats/<player>/, /game-log/, /injury/, /news/, /bio/) goes to the same section in the current one. The redraft-era /fantasy-football/players/<player>/ (404 today, still in Google's index) goes to the profile, keeping a section if the URL had one. Only a player with a profile today is redirected; the rest are left as they are, rather than sent to a 404.
+* API side: the team hubs linked every player name to the old /nfl/players/outlook/<player>/ address, which is how Google kept finding it. They now link to /nfl/players/<player>/.
+* Needs the matching API deploy for the headings and the tab links. The redirects and the sitemap change work with the plugin alone.
+
+= 1.10.5 =
+* No more SoftwareApplication schema. The plugin added a SoftwareApplication / WebApplication node to every page that mounts the news tool or a team hub, which covers every team URL including /nfl/teams/<team>/schedule/. Search Console held it to the software-app rich result's rules (offers.price plus an aggregateRating or review) and flagged each page. These are pages, not applications, and there is no genuine rating to give, so the node is gone. With Rank Math present, the page's WebPage and BreadcrumbList are Rank Math's and the plugin adds nothing to them. Without an SEO plugin it prints a plain WebPage.
+* A team's Schedule page now adds an ItemList of SportsEvents to Rank Math's graph, one per game: both teams, kickoff, venue, and the final score once a game is played. Games with no kickoff or venue yet are left out, because an Event without those is its own Search Console error. The list is only on the Schedule page. The hub and the other sections are unchanged.
+* The rankings pages (redraft and rest-of-season) add an ItemList of their players to Rank Math's graph: one per position the page shows, so four on the All board and one on a position page such as /rb/. Each entry is the player at their positional rank, linked to their page on the site. There are four lists rather than one merged list because ranks are positional, and QB7 and RB7 are not the same pick.
+* Needs the matching API deploy for the schedule and rankings lists. The removal works with the plugin alone.
+
+= 1.10.4 =
+* Player pages have a populated H1 in the page source. An SEO audit of /nfl/players/josh-allen/ found `<h1 class="entry-title main_title"></h1>` in View Source. In "Let the tool supply the heading" (the site's mode) the plugin empties Divi's page title, and a title filter can't remove the element, so a blank H1 was left in the HTML. A CSS rule hid it on screen but not from crawlers. The plugin now removes that emptied element from the output, so it never reaches the page. The buffer is scoped to the few hundred bytes page.php prints between the loop starting and the content. It only applies on pages that mount a tool, and only when the title has been emptied.
+* API side, needs the matching API deploy: on a player's main profile, the tool's H1 was the Overview panel's heading, "2026 Fantasy Snapshot". That heading names no player and was identical on every profile. The H1 is now the player's name in the hero ("Josh Allen"), the same H1 the standalone page carries. The hero looks the same, measured in a simulated Divi page at 1440px and 500px. Section pages are unchanged; they already promote their own phrase ("Josh Allen Stats 2026").
 
 = 1.10.3 =
 * The page heading lines up with the tool beneath it on a page built with the Divi Builder. 1.10.2 capped each tool at the site's content width and centred it, but the heading the plugin prints (the "Let the tool supply the heading" hero) sits just outside the tool, so it kept the full width of the window and started at its left edge while the table sat centred beneath it. The heading now takes the same cap. Measured on a builder page at 1780px: the H1 moved from 0px to 343px, level with the table. Plain pages were already aligned and are unchanged. This also covers the schedule's heading. Plugin only; no API deploy needed.

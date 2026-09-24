@@ -165,8 +165,10 @@ function wireTabs(root: HTMLElement): void {
       if (!href) continue;
       // Compared as paths rather than by string equality: the href may be
       // relative and the location is always absolute.
+      // The trailing slash is dropped from both: the Outlook tab links to the
+      // hub as `/team/<slug>/`, and the hub's own address has none.
       const resolved = new URL(href, location.origin).pathname;
-      if (resolved === path) return tab.id;
+      if (resolved.replace(/\/+$/, "") === path.replace(/\/+$/, "")) return tab.id;
     }
     return null;
   }

@@ -47,7 +47,7 @@ echo "\nboth tools supply the page heading in tool mode\n";
 $both               = new WP_Post();
 $both->ID           = 91;
 $both->post_title   = 'Rankings and Stats';
-$both->post_content = '[statchasers_rankings][statchasers_player_stats]';
+$both->post_content = '[statchasers_ros_rankings][statchasers_player_stats]';
 $GLOBALS['page']    = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $both );
 $GLOBALS['query']   = array( 'sc_rank_pos' => 'rb', 'sc_stats_pos' => 'wr' );
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'tool';
@@ -67,7 +67,7 @@ is( statchasers_rankings_position_title(), '2026 Rest of Season Fantasy Football
 is( statchasers_rankings_position_description(), 'RB board.', 'and so is its description' );
 is( statchasers_rankings_position_canonical(), 'https://example.com/fantasy-football/rest-of-season-rankings/rb/', 'and the board is its own canonical' );
 
-$rank_html = statchasers_rankings_shortcode();
+$rank_html = statchasers_ros_rankings_shortcode();
 is( substr_count( $rank_html, '<h1' ), 1, 'the rankings shortcode prints exactly one H1' );
 is( str_contains( $rank_html, 'sc-lo-hero--generated' ), true, 'in the site\'s hero markup' );
 is( str_contains( $rank_html, '>2026 Rest of Season Fantasy Football RB Rankings</h1>' ), true, 'naming the board' );
@@ -84,5 +84,5 @@ is( str_contains( $stats_html, '>2026 NFL Wide Receiver Stats &amp; Fantasy Foot
 is( statchasers_h1_should_replace(), true, 'and the theme\'s title is emptied' );
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
-is( str_contains( statchasers_rankings_shortcode(), '<h1' ), false, 'in auto, with no measurement of its own, rankings prints none' );
+is( str_contains( statchasers_ros_rankings_shortcode(), '<h1' ), false, 'in auto, with no measurement of its own, rankings prints none' );
 is( str_contains( statchasers_player_stats_shortcode(), '<h1' ), false, 'nor does the stats table' );

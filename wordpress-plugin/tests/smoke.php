@@ -371,7 +371,8 @@ if ( 'week' === $group ) {
 }
 
 echo "team headings\n";
-is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Team Hub 2026', 'hub' );
+is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'hub' );
+is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'outlook is the hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'news' ), 'New England Patriots News 2026', 'news' );
 is( statchasers_team_heading( 'new-england-patriots', 'depth-chart' ), 'New England Patriots Depth Chart 2026', 'depth chart' );
 
@@ -606,6 +607,59 @@ is( statchasers_h1_mounts_a_tool(), true, 'and only where a tool is mounted' );
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
 is( statchasers_h1_should_replace(), false, 'off: never' );
+
+/*
+ * The emptied title leaves the source, not just the screen.
+ *
+ * An SEO audit read View Source on /nfl/players/josh-allen/ and found Divi's
+ * `<h1 class="entry-title main_title"></h1>` — the :empty rule hid it from
+ * readers and from nobody else. The buffer runs from loop_start to the first
+ * the_content, which is exactly the span page.php prints the title in.
+ */
+$GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'tool';
+$main  = new class { public function is_main_query() { return true; } };
+$other = new class { public function is_main_query() { return false; } };
+
+ob_start();
+statchasers_h1_husk_open( $other );
+echo '<h1 class="entry-title main_title"></h1>';
+statchasers_h1_husk_close();
+is( ob_get_clean(), '<h1 class="entry-title main_title"></h1>', 'husk: a secondary loop is left alone' );
+
+ob_start();
+statchasers_h1_husk_open( $main );
+echo "<article id=\"post-7\"><h1 class=\"entry-title main_title\"></h1>\n\t<div class=\"entry-content\">";
+apply_filters( 'the_content', '' );
+echo '<h1 class="scp-title">Josh Allen</h1></div></article>';
+$printed = ob_get_clean();
+is( substr_count( $printed, '<h1' ), 1, 'husk: the page source carries one H1' );
+is( false !== strpos( $printed, '<h1 class="scp-title">Josh Allen</h1>' ), true, "husk: and it is the tool's" );
+is( false !== strpos( $printed, '<article id="post-7"><div class="entry-content">' ), true, 'husk: the rest of the markup is untouched' );
+
+// Once per request: a second loop does not reopen it.
+ob_start();
+statchasers_h1_husk_open( $main );
+echo '<h1 class="entry-title"></h1>';
+statchasers_h1_husk_close();
+is( ob_get_clean(), '<h1 class="entry-title"></h1>', 'husk: the buffer opens once' );
+
+is( statchasers_h1_strip_husk( '<h1 class="entry-title main_title">Josh Allen</h1>' ), '<h1 class="entry-title main_title">Josh Allen</h1>', 'husk: a title with words in it is never removed' );
+
+/*
+ * Every profile address has an H1 naming the player and the page's intent. The
+ * profile's was the bare name, the same words as the hero. The Overview has no
+ * heading of its own any more: /overview/ 301s to the profile.
+ */
+$allen             = new WP_Post();
+$allen->ID         = 71;
+$allen->post_name  = 'josh-allen-h1-test';
+$allen->post_title = 'Josh Allen (QB)';
+$GLOBALS['page']   = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $allen );
+is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen Fantasy Football Stats & Analysis', 'player H1: the profile names its intent' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats ' . STATCHASERS_TEAM_SEASON, 'player H1: stats is dated' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook ' . STATCHASERS_TEAM_SEASON, 'player H1: so is the outlook' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Update & History', 'player H1: injury is not' );
+
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 $GLOBALS['page'] = array();
 
@@ -1011,6 +1065,35 @@ is( false !== strpos( $stripped, 'data-scs-root' ), true, 'and the grid it was s
 is( statchasers_schedule_strip_faq_data( '<div>no island</div>' ), '<div>no island</div>', 'a fragment without one is untouched' );
 
 /*
+ * A team Schedule page's games: the ItemList that replaced the
+ * SoftwareApplication node Search Console flagged on every team URL. The island
+ * is grafted into Rank Math's graph and must never reach the printed page.
+ */
+$fragment = '<div class="sct" data-sct-root="1" data-section="schedule"></div>' .
+	'<script type="application/json" class="sct-faq-data">[]</script>' .
+	'<script type="application/json" class="sct-schedule-data">{"@type":"ItemList","itemListElement":[]}</script>';
+$stripped = statchasers_team_strip_faq_data( $fragment );
+is( false === strpos( $stripped, 'sct-schedule-data' ), true, 'the team schedule island is gone from what is printed' );
+is( false === strpos( $stripped, 'sct-faq-data' ), true, 'and so is the FAQ island beside it' );
+is( false !== strpos( $stripped, 'data-sct-root' ), true, 'and the hub it was sitting in is not' );
+is( in_array( 'statchasers_team_rank_math_schedule', $GLOBALS['hooks']['rank_math/json_ld'], true ), true, 'the schedule list is grafted into Rank Math' );
+is( in_array( 'statchasers_news_rank_math_schema', $GLOBALS['hooks']['rank_math/json_ld'] ?? array(), true ), false, 'and no application node is' );
+
+/*
+ * The rankings boards' ItemLists: the same island arrangement, one list per
+ * position the page shows.
+ */
+$fragment = '<div class="scr" data-scr-root="1"></div>' .
+	'<script type="application/json" class="scr-faq-data">[]</script>' .
+	'<script type="application/json" class="scr-list-data">[{"@type":"ItemList","itemListElement":[]}]</script>' .
+	'<script type="application/json" class="scr-page-data">{}</script>';
+$stripped = statchasers_rankings_strip_faq_data( $fragment );
+is( false === strpos( $stripped, 'scr-list-data' ), true, 'the rankings list island is gone from what is printed' );
+is( false === strpos( $stripped, 'scr-faq-data' ) && false === strpos( $stripped, 'scr-page-data' ), true, 'and so are the islands beside it' );
+is( false !== strpos( $stripped, 'data-scr-root' ), true, 'and the board is not' );
+is( in_array( 'statchasers_rankings_rank_math_lists', $GLOBALS['hooks']['rank_math/json_ld'], true ), true, 'the board lists are grafted into Rank Math' );
+
+/*
  * Which set of questions the page is describing.
  *
  * The other four tools fetch their FAQ with default arguments because their
@@ -1063,6 +1146,49 @@ is(
 // filter instead: this process set a pair up earlier and that answer memoised.
 
 /*
+ * Retired player addresses. The old section-first layout
+ * (/nfl/players/outlook/josh-allen/) still resolved to stale pages, and the
+ * redraft-era /fantasy-football/players/<slug>/ is indexed and 404s.
+ */
+echo "\nretired player addresses redirect to the profile\n";
+
+$saved_pages   = $GLOBALS['pages'] ?? null;
+$saved_by_path = $GLOBALS['pages_by_path'] ?? null;
+
+$nfl                 = new WP_Post();
+$nfl->ID             = 500;
+$players             = new WP_Post();
+$players->ID         = 501;
+$allen               = new WP_Post();
+$allen->ID           = 502;
+$allen->post_name    = 'josh-allen';
+$allen->post_parent  = 501;
+$GLOBALS['pages_by_path'] = array( 'nfl' => $nfl, 'nfl/players' => $players );
+$GLOBALS['pages']         = array( 502 => $allen );
+
+$profile = 'https://example.com/p/502/';
+is( statchasers_player_legacy_target( 'nfl/players/outlook/josh-allen' ), $profile . 'outlook/', 'the old Outlook page goes to the Outlook section' );
+is( statchasers_player_legacy_target( 'nfl/players/game-log/josh-allen/' ), $profile . 'game-log/', 'and so does every section in that layout' );
+is( statchasers_player_legacy_target( 'nfl/players/overview/josh-allen' ), $profile, 'the overview is the profile itself' );
+is( statchasers_player_legacy_target( 'fantasy-football/players/josh-allen' ), $profile, 'the redraft-era profile goes to the profile' );
+is( statchasers_player_legacy_target( 'fantasy-football/players/josh-allen/stats' ), $profile . 'stats/', 'keeping its section' );
+is( statchasers_player_legacy_target( 'nfl/players/outlook/nobody' ), '', 'a player with no page is left alone' );
+is( statchasers_player_legacy_target( 'fantasy-football/players/josh-allen/rankings' ), '', 'an unknown second segment is not a match' );
+is( statchasers_player_legacy_target( 'nfl/players/josh-allen/outlook' ), '', 'the current layout is never redirected' );
+is( statchasers_player_legacy_target( 'nfl/players/josh-allen' ), '', 'nor the profile' );
+is( statchasers_player_legacy_target( 'nfl/players/outlook' ), '', 'nor a bare section word' );
+is( in_array( 'statchasers_player_legacy_redirect', $GLOBALS['hooks']['template_redirect'] ?? array(), true ), true, 'it runs on template_redirect' );
+
+$GLOBALS['pages']         = $saved_pages;
+$GLOBALS['pages_by_path'] = $saved_by_path;
+if ( null === $saved_pages ) {
+	unset( $GLOBALS['pages'] );
+}
+if ( null === $saved_by_path ) {
+	unset( $GLOBALS['pages_by_path'] );
+}
+
+/*
  * A rankings position URL. Not a group of its own: the position is read off
  * the query var on every call, not memoised, so it can be set and unset here.
  */
@@ -1071,7 +1197,7 @@ echo "\nrankings position URLs\n";
 $rank_page               = new WP_Post();
 $rank_page->ID           = 11;
 $rank_page->post_title   = 'Rest of Season Rankings';
-$rank_page->post_content = '[statchasers_rankings]';
+$rank_page->post_content = '[statchasers_ros_rankings]';
 $GLOBALS['page']         = array(
 	'singular' => true,
 	'loop'     => true,

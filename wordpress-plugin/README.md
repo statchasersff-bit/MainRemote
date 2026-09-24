@@ -122,12 +122,13 @@ from team + section + season, mirroring `teamSectionHeading()` in the API's
 
 | URL | H1 |
 |-----|-----|
-| `/nfl/teams/new-england-patriots/` | New England Patriots Team Hub 2026 |
-| `…/outlook/` | New England Patriots Fantasy Football Outlook 2026 |
+| `/nfl/teams/new-england-patriots/` | New England Patriots Fantasy Football Outlook & Stats 2026 |
+| `…/outlook/` | 301 to the hub, which opens on the Outlook |
 | `…/stats/` | New England Patriots Stats 2026 |
 | `…/schedule/` | New England Patriots Schedule 2026 |
 | `…/depth-chart/` | New England Patriots Depth Chart 2026 |
 | `…/matchups/` | New England Patriots Matchups 2026 |
+| `…/news/` | New England Patriots News 2026 |
 
 Nothing is stored and no page is edited: the heading is computed per request, so
 all 32 pages and all 192 addresses are covered the moment the plugin is active,
@@ -263,8 +264,8 @@ one title tag. `/nfl/teams/<slug>/schedule/` and friends give four of them a
 title, a description and a canonical of their own:
 
 ```
-/nfl/teams/new-england-patriots/               the hub
-/nfl/teams/new-england-patriots/outlook/       New England Patriots Fantasy Football Outlook 2026
+/nfl/teams/new-england-patriots/               the hub, which opens on the Outlook
+/nfl/teams/new-england-patriots/outlook/       301 to the hub (1.10.6)
 /nfl/teams/new-england-patriots/stats/         … Stats 2026: Offense, Defense & NFL Rankings
 /nfl/teams/new-england-patriots/schedule/      … Schedule 2026: Dates, Opponents & Results
 /nfl/teams/new-england-patriots/depth-chart/   … Depth Chart 2026: Starters & Backups
@@ -742,49 +743,52 @@ The plugin does not compete with your SEO plugin. It emits **no** canonical, no
 breadcrumbs — Rank Math already produces all of those, and a second set would be
 a conflicting signal rather than a stronger one.
 
-The one thing Rank Math cannot know about is the interactive tool embedded in
-the page. So the plugin adds a single `SoftwareApplication` / `WebApplication`
-node **into Rank Math's own graph** via the `rank_math/json_ld` filter. The page
-ends up with one `<script type="application/ld+json">`, not two competing ones.
-The node attaches to whichever page-level node Rank Math produced (`WebPage`,
-`CollectionPage`, `ItemPage`, …) through `isPartOf`, and its description
-defaults to Rank Math's own description for the page so the two can't disagree.
+The plugin adds **no** application node. It used to hang a
+`SoftwareApplication` / `WebApplication` node on every news and team page, and
+Search Console held it to the software-app rich result's rules — `offers.price`
+plus an `aggregateRating` or `review` — flagging every URL that carried it, the
+team Schedule pages included. A news feed and a team hub are pages people read,
+not applications they install, and the only rating we could supply is an
+invented one. So with Rank Math present, the page's `WebPage` and
+`BreadcrumbList` are Rank Math's and this plugin adds nothing to them.
 
-If Rank Math is not installed, the plugin prints that single node by itself. It
-still does not invent `WebPage`, `BreadcrumbList` or `Organization` nodes — if
-your site has no SEO plugin, that is a site-wide decision to make deliberately.
+What it does add goes **into Rank Math's own graph** via the `rank_math/json_ld`
+filter, so the page keeps one `<script type="application/ld+json">`:
+
+| Page | Added to the graph |
+| --- | --- |
+| Team Schedule (`/nfl/teams/<team>/schedule/`) | `ItemList` of `SportsEvent`s — one per game with a kickoff and a venue |
+| Rankings (redraft and rest-of-season) | `ItemList` of the players, one per position the page shows — four on the All board, one on `/rb/` and the rest |
+| Team hub and its other sections, player pages, tools | `FAQPage`, where the page renders questions |
+| RB handcuffs | `CreativeWork` for the board |
+
+The schedule list is built by the API (`src/lib/team/schedule-schema.ts`) and
+shipped as an inert JSON island that `statchasers-team.php` lifts into the graph
+and strips from the printed markup. A game is left out if it has no kickoff or
+no venue: Google reads `SportsEvent` as an `Event`, and an `Event` without
+`startDate` or `location` is itself a Search Console error.
+
+The rankings lists travel the same way (`src/lib/rankings/rankings-schema.ts`,
+lifted by `statchasers-rankings.php`). Each entry is a `Person` at its
+positional rank, linked to the player's page when the site has one. The All
+board gets four lists rather than one merged list, because ranks are positional:
+QB7 and RB7 are not the same pick.
+
+If Rank Math is not installed, the plugin prints a lone `WebPage` node (plus the
+lists above) by itself. It still does not invent `BreadcrumbList` or
+`Organization` nodes — if your site has no SEO plugin, that is a site-wide
+decision to make deliberately.
 
 Using a different SEO plugin? Hook its graph filter (Yoast's is
-`wpseo_schema_graph`) with the node from `statchasers_news_schema_node()`, and
-return `true` from the `statchasers_news_graph_provider_present` filter so the
-standalone fallback stays off.
+`wpseo_schema_graph`) and return `true` from the
+`statchasers_news_graph_provider_present` filter so the standalone fallback
+stays off.
 
-### What the schema says — and what it deliberately doesn't
+There is **no `aggregateRating` and no `review`** anywhere, and no
+`SoftwareApplication`. Put one back only for a page that is genuinely an
+application *and* has real rating data to go in it.
 
-```jsonc
-{
-  "@type": ["SoftwareApplication", "WebApplication"],
-  "applicationCategory": "SportsApplication",
-  "operatingSystem": "Any",
-  "browserRequirements": "...",
-  "isAccessibleForFree": true,
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "isPartOf": { "@id": "…#webpage" }
-}
-```
-
-There is **no `aggregateRating` and no `review`**. Google's SoftwareApplication
-rich result requires genuine rating data alongside the offer, and there is none
-for this tool. Fabricating it would be a policy violation, so the node ships
-without: it is accurate structured data describing the page, and it will qualify
-for that rich result only once real review data exists to put in it.
-
-Equally deliberately absent: `Article`, `NewsArticle`, `ItemList`, `Dataset`,
-`FAQPage`, `Product`. Several would be easy to generate from the news items, but
-they would not accurately describe the page, and irrelevant markup is a
-liability rather than a ranking benefit.
-
-Customise the node with the `statchasers_news_schema_node` filter.
+Customise the fallback `WebPage` with the `statchasers_news_schema_node` filter.
 
 ## Headings, title and canonical
 

@@ -500,7 +500,8 @@ describe("player page content", () => {
       assert.ok(panel, `nav names the panel ${id}, which must exist`);
       assert.equal(
         link.getAttribute("href"),
-        `/player/${fixture.slug}/${id}/`,
+        // The Overview is the profile, so its tab links to the profile.
+        id === "overview" ? `/player/${fixture.slug}/` : `/player/${fixture.slug}/${id}/`,
         `${id}: the tab links to the section's own URL`,
       );
       assert.ok(panel.textContent.trim().length > 0, `#${id} must not be empty`);
@@ -2345,6 +2346,39 @@ describe("the bio tab", () => {
     }
   });
 
+  /*
+   * A player who went back to a club. Deebo Samuel: drafted by the 49ers, a
+   * 2025 season in Washington, back in San Francisco. The FAQ used to answer
+   * "the San Francisco 49ers, Washington Commanders and San Francisco 49ers",
+   * and the paragraph said he had "since played for the Washington Commanders
+   * and San Francisco 49ers", as if the first spell had not happened.
+   */
+  test("a club he went back to is named once, and the return is said", async (t) => {
+    const res = await get("/player/deebo-samuel/bio/");
+    if (res.status !== 200) return t.skip("no deebo-samuel profile in this data");
+    const doc = new JSDOM(res.body).window.document;
+    const clubs = [...doc.querySelectorAll("#bio .scp-stint[data-kind='nfl']")].map((n) =>
+      n.textContent,
+    );
+    const sf = clubs.filter((text) => /49ers/.test(text)).length;
+    if (sf < 2 || !clubs.some((text) => /Commanders/.test(text))) {
+      return t.skip("the data no longer has him leaving and returning");
+    }
+
+    const prose = doc.querySelector("#bio .scp-bio").textContent;
+    assert.match(prose, /has since played for the Washington Commanders and returned to the San Francisco 49ers\./);
+
+    const answer = [...doc.querySelectorAll("script, .scp-faq-a, [class*='faq'] p")]
+      .map((n) => n.textContent)
+      .join(" ")
+      .match(/Deebo Samuel has played for the [^."]*\./)?.[0];
+    assert.ok(answer, "the FAQ answers which teams");
+    assert.equal(
+      answer,
+      "Deebo Samuel has played for the San Francisco 49ers (two stints) and Washington Commanders.",
+    );
+  });
+
   test("a draft is printed only when it is known, never guessed", async () => {
     // draft.json writes year: null both for a player who went undrafted and for
     // one it could not resolve — Marvin Harrison Jr. went fourth overall and
@@ -2962,6 +2996,41 @@ describe("the embedded fragment", () => {
     assert.ok(doc.querySelector("h2"), "the name steps down to an H2");
   });
 
+  /*
+   * `?h1=1` is the plugin's "the tool supplies the heading" mode: the host has
+   * emptied its own title, so the fragment carries the page's only H1. Every
+   * indexable address gets one naming the player AND what that address is for.
+   * On the profile that H1 used to be the opening panel's "2026 Fantasy
+   * Snapshot" — the same words on every profile, naming nobody. An SEO audit
+   * of /nfl/players/josh-allen/ found it.
+   */
+  const h1Of = (body) => {
+    const doc = new JSDOM(`<body>${body}</body>`).window.document;
+    const h1 = doc.querySelectorAll("h1");
+    assert.equal(h1.length, 1, "exactly one H1");
+    return { doc, h1: h1[0], text: h1[0].textContent.replace(/\s+/g, " ").trim() };
+  };
+
+  test("?h1=1: the profile's one H1 names the player and the page", async () => {
+    const { doc, h1, text } = h1Of((await get(`/embed/player/${fixture.slug}?h1=1`)).body);
+    assert.equal(text, `${fixture.name} Fantasy Football Stats & Analysis`);
+    assert.ok(h1.matches("#overview h1.scp-h2"), "the opening panel's heading, promoted");
+    assert.ok(doc.querySelector(".scp-hero h2.scp-title"), "the hero's name stays an H2");
+  });
+
+  test("?h1=1: each section page's H1 is its own phrase", async () => {
+    for (const [section, want] of [
+      ["stats", new RegExp(`^${fixture.name} Stats 2\\d{3}$`)],
+      ["game-log", new RegExp(`^${fixture.name} Game Log 2\\d{3}$`)],
+      ["outlook", new RegExp(`^${fixture.name} Fantasy Outlook 2\\d{3}$`)],
+    ]) {
+      const res = await get(`/embed/player/${fixture.slug}?section=${section}&h1=1`);
+      const { doc, text } = h1Of(res.body);
+      assert.match(text, want, section);
+      assert.ok(doc.querySelector(".scp-hero h2.scp-title"), `${section}: the name stays an H2`);
+    }
+  });
+
   test("emits no canonical, document title or robots directive", async () => {
     const res = await get(`/embed/player/${fixture.slug}`);
     assert.ok(!/rel="canonical"/i.test(res.body));
@@ -3183,12 +3252,19 @@ describe("player section URLs", () => {
     "game-log": /Game Log 2\d{3}$/,
     outlook: /Outlook$/,
     news: /News & Analysis$/,
-    overview: /Fantasy Snapshot$/,
     bio: /Bio$/,
   };
 
+  /*
+   * Every tab id in the strip, and the ones that are pages of their own. The
+   * Overview is the profile — its tab links to the profile and `/overview/`
+   * 301s there — so it has no section page to assert about.
+   */
   let sections;
+  let pages;
   const at = (id) => `/player/${fixture.slug}/${id}/`;
+  const tabHref = (id, base = "/player/") =>
+    id === "overview" ? `${base}${fixture.slug}/` : `${base}${fixture.slug}/${id}/`;
 
   before(async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
@@ -3196,10 +3272,11 @@ describe("player section URLs", () => {
       link.getAttribute("data-scp-panel-id"),
     );
     assert.ok(sections.length > 1, "the fixture profile has a strip to follow");
+    pages = sections.filter((id) => id !== "overview");
   });
 
   test("each section is one panel, named for what it holds", async () => {
-    for (const id of sections) {
+    for (const id of pages) {
       const { doc } = await dom(at(id));
 
       const root = doc.querySelector("[data-scp-root]");
@@ -3231,7 +3308,7 @@ describe("player section URLs", () => {
     // Every URL-bearing tag is the pretty self-reference — never the profile,
     // never the ?section= spelling. The Rank Math filters on the WordPress side
     // owe the same things; this is the origin's half.
-    for (const id of sections) {
+    for (const id of pages) {
       const { doc } = await dom(at(id));
       const one = (selector) => {
         const found = doc.querySelectorAll(selector);
@@ -3257,7 +3334,7 @@ describe("player section URLs", () => {
     // `#hash` links and wrong once they became addresses: a reader who arrived
     // here from search had no way to reach the other six, and those six had
     // nothing linking to them.
-    for (const id of sections) {
+    for (const id of pages) {
       const { doc } = await dom(at(id));
       const links = [...doc.querySelectorAll(".scp-nav-link")];
       assert.ok(links.length > 1, `${id}: the strip is here`);
@@ -3276,7 +3353,7 @@ describe("player section URLs", () => {
       for (const link of links) {
         assert.equal(
           link.getAttribute("href"),
-          at(link.getAttribute("data-scp-panel-id")),
+          tabHref(link.getAttribute("data-scp-panel-id")),
           `${id}: the strip links to section addresses`,
         );
       }
@@ -3292,7 +3369,7 @@ describe("player section URLs", () => {
     // Six of the seven hrefs load a different page, so the bundle must decline
     // the takeover here — a tablist whose tabs navigate is a promise the roles
     // cannot keep. wireTabs() declines by finding fewer than two panels.
-    const { doc, errors } = await hydrated(at(sections[1]));
+    const { doc, errors } = await hydrated(at(pages[0]));
     assert.deepEqual(errors, [], "the bundle ran without throwing");
 
     const list = doc.querySelector(".scp-nav-list");
@@ -3399,6 +3476,41 @@ describe("player section URLs", () => {
     }
   });
 
+  /*
+   * The profile opens on the Overview, so `/overview/` was the same page at a
+   * second self-canonical address. The profile keeps it: `/overview/` is a
+   * 301, and the old URL is indexed, so it must not become a 404.
+   */
+  test("the Overview's address is the profile's", async () => {
+    for (const [path, target] of [
+      [at("overview"), `/player/${fixture.slug}`],
+      [`${at("overview")}?format=standard`, `/player/${fixture.slug}?format=standard`],
+      [`/player/${fixture.slug}?section=overview`, `/player/${fixture.slug}`],
+    ]) {
+      const res = await get(path);
+      assert.equal(res.status, 301, path);
+      assert.equal(res.headers.get("location"), target, path);
+    }
+
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const tab = doc.querySelector('.scp-nav-link[data-scp-panel-id="overview"]');
+    assert.equal(tab.getAttribute("href"), tabHref("overview"), "the tab links to the profile");
+    assert.equal(
+      tab.getAttribute("data-scp-heading"),
+      `${fixture.name} Fantasy Football Stats & Analysis`,
+      "and carries the profile's heading",
+    );
+  });
+
+  test("a fragment asked for the Overview is the whole profile", async () => {
+    // The plugin redirects /overview/ before it fetches, but a cached or stale
+    // ?section=overview must not mint a one-panel copy of the profile.
+    const res = await get(`/embed/player/${fixture.slug}?section=overview`);
+    const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
+    assert.equal(doc.querySelector("[data-scp-root]").getAttribute("data-section"), null);
+    assert.ok(doc.querySelectorAll("[data-scp-panel]").length > 1);
+  });
+
   test("an unrecognised ?section= still falls through to the profile", async () => {
     // Defensive: a stale link is worth a full page, not a 404 — the pretty
     // route is where a bad section is refused.
@@ -3443,7 +3555,7 @@ describe("player section URLs", () => {
       for (const link of links) {
         assert.equal(
           link.getAttribute("href"),
-          `/nfl/players/${fixture.slug}/${link.getAttribute("data-scp-panel-id")}/`,
+          tabHref(link.getAttribute("data-scp-panel-id"), "/nfl/players/"),
           "a tab names the public section address",
         );
       }

@@ -214,6 +214,13 @@ function listWords(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+/** Each stint's club name once, in the order first reached. */
+function uniqueNames(stints: CareerStint[]): string[] {
+  return [...new Set(stints.map((stint) => stint.name))];
+}
+
+const SPELL_WORDS: Record<number, string> = { 2: "two", 3: "three", 4: "four" };
+
 /** A season range: "2016", or "2017–20" with an en dash and a short end. */
 function seasonRange(from: number, to: number, current: boolean): string {
   if (current) return `${from}–`;
@@ -422,10 +429,22 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
    * there was no draft to say it, the list is the whole career instead.
    */
   const drafted = draftYear !== null && stints[0]?.note !== null;
-  const since = drafted ? clubNames.slice(1) : clubNames;
-  if (since.length > 0) {
+  const since = stints.slice(drafted ? 1 : 0);
+  // A club he had already played for is a return, and says so. Listed flat,
+  // "has since played for the Commanders and 49ers" under a sentence saying
+  // the 49ers drafted him reads as though the first spell never happened.
+  const isReturn = (stint: CareerStint): boolean =>
+    stints.slice(0, stints.indexOf(stint)).some((s) => s.name === stint.name);
+  const joined = uniqueNames(since.filter((stint) => !isReturn(stint)));
+  const returned = uniqueNames(since.filter(isReturn));
+  if (joined.length > 0 || returned.length > 0) {
+    const verbs: string[] = [];
+    if (joined.length > 0) verbs.push(`played for the ${listWords(joined)}`);
+    if (returned.length > 0) verbs.push(`returned to the ${listWords(returned)}`);
     narrative.push(
-      `${last} has ${drafted ? "since " : ""}played for the ${listWords(since)}.`,
+      `${last} has ${drafted ? "since " : ""}` +
+        verbs.join(joined.length > 1 ? ", and " : " and ") +
+        ".",
     );
   }
 
@@ -483,9 +502,15 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
   }
 
   if (clubNames.length > 0) {
+    // Each club once, in the order he first joined it; a club he had two
+    // spells with says so rather than being named twice.
+    const clubs = uniqueNames(stints).map((clubName) => {
+      const spells = clubNames.filter((n) => n === clubName).length;
+      return spells > 1 ? `${clubName} (${SPELL_WORDS[spells] ?? spells} stints)` : clubName;
+    });
     faq.push({
       question: `What teams has ${name} played for?`,
-      answer: `${name} has played for the ${listWords(clubNames)}.`,
+      answer: `${name} has played for the ${listWords(clubs)}.`,
     });
   }
 

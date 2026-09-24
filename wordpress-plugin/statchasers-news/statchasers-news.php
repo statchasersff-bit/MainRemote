@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats and RB handcuff rankings. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.3
+ * Version:           1.10.6
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -417,10 +417,17 @@ add_shortcode( STATCHASERS_NEWS_SHORTCODE, 'statchasers_news_shortcode' );
  * robots directives, and a schema graph containing WebPage / BreadcrumbList /
  * Organization nodes. This plugin does not reproduce ANY of that.
  *
- * What it adds is one node Rank Math has no way to know about: a description of
- * the interactive tool embedded in the page. That node is injected INTO Rank
- * Math's existing graph via its own filter, so the page ends up with a single
- * coherent `@graph` rather than two competing ones.
+ * It used to add a SoftwareApplication / WebApplication node for the tool on
+ * every news and team page. Search Console held that type to the software-app
+ * rich result's rules — offers.price plus an aggregateRating or review — and
+ * flagged every URL carrying it, the team Schedule pages included. A news feed
+ * and a team hub are pages people read, not applications, and the only rating
+ * we could give is an invented one. So the node is gone: with Rank Math present
+ * the page's WebPage + BreadcrumbList are Rank Math's and this adds nothing of
+ * its own, and without it the fallback below prints a lone WebPage.
+ *
+ * A team's Schedule page adds an ItemList of SportsEvents — its games — on the
+ * same terms as the FAQ below: statchasers_team_rank_math_schedule().
  *
  * The player and team mounts add one more, on the same terms: an FAQPage built
  * from the questions their fragment is actually rendering, injected into the
@@ -442,49 +449,32 @@ function statchasers_news_is_active(): bool {
 }
 
 /**
- * The SoftwareApplication / WebApplication node for the tool.
+ * The WebPage node the fallback prints when no SEO plugin is publishing a graph.
  *
- * No aggregateRating and no review: Google's SoftwareApplication rich result
- * requires genuine rating data, and we have none. Inventing it is not an
- * option, so the node is accurate structured data that simply doesn't qualify
- * for that specific rich result.
+ * Not a SoftwareApplication: see the section comment above. And not added to
+ * Rank Math's graph, which already has this page's WebPage node.
  *
- * @param string $webpage_id @id of the host page's WebPage node, if found.
  * @return array<string,mixed>
  */
-function statchasers_news_schema_node( string $webpage_id = '' ): array {
+function statchasers_news_schema_node(): array {
 	$page_url = statchasers_news_canonical_guess();
 
 	$node = array(
-		'@type'               => array( 'SoftwareApplication', 'WebApplication' ),
-		'@id'                 => $page_url . '#statchasers-news-tool',
+		'@type'               => 'WebPage',
+		'@id'                 => $page_url . '#webpage',
 		'name'                => wp_strip_all_tags( get_the_title() ),
 		'description'         => statchasers_news_schema_description(),
 		'url'                 => $page_url,
-		// SportsApplication is one of Google's documented application categories.
-		'applicationCategory' => 'SportsApplication',
-		'operatingSystem'     => 'Any',
-		'browserRequirements' => 'Requires JavaScript for pagination; content renders without it.',
 		'isAccessibleForFree' => true,
-		'offers'              => array(
-			'@type'         => 'Offer',
-			'price'         => '0',
-			'priceCurrency' => 'USD',
-		),
+		'inLanguage'          => 'en-US',
 	);
 
-	if ( '' !== $webpage_id ) {
-		$node['isPartOf']         = array( '@id' => $webpage_id );
-		$node['mainEntityOfPage'] = array( '@id' => $webpage_id );
-	}
-
 	/**
-	 * Filters the tool's schema node before it joins the graph.
+	 * Filters the fallback WebPage node before it is printed.
 	 *
-	 * @param array  $node       The node.
-	 * @param string $webpage_id @id of the host WebPage node, or ''.
+	 * @param array $node The node.
 	 */
-	return (array) apply_filters( 'statchasers_news_schema_node', $node, $webpage_id );
+	return (array) apply_filters( 'statchasers_news_schema_node', $node );
 }
 
 /**
@@ -525,29 +515,6 @@ function statchasers_news_canonical_guess(): string {
 	}
 	return home_url( '/' );
 }
-
-/**
- * Extend Rank Math's JSON-LD graph.
- *
- * Rank Math passes its assembled node array through this filter, so appending
- * to it puts our node inside the graph Rank Math already prints — one
- * `<script type="application/ld+json">` on the page, not two.
- *
- * @param array<string,mixed> $data  Rank Math's schema nodes.
- * @return array<string,mixed>
- */
-function statchasers_news_rank_math_schema( $data ) {
-	if ( ! is_array( $data ) || ! statchasers_news_is_active() ) {
-		return $data;
-	}
-
-	$data['statchasersNewsTool'] = statchasers_news_schema_node(
-		statchasers_news_schema_page_id( $data )
-	);
-
-	return $data;
-}
-add_filter( 'rank_math/json_ld', 'statchasers_news_rank_math_schema', 20 );
 
 /**
  * The @id of the page-level node in a schema graph, or ''.
@@ -600,9 +567,9 @@ function statchasers_news_graph_provider_present(): bool {
 /**
  * Fallback JSON-LD for sites with no schema-graph plugin.
  *
- * Prints ONLY the application node. It does not add WebPage, BreadcrumbList or
- * Organization — if the site has no SEO plugin, that's a site-wide decision to
- * make deliberately, not something this tool should improvise.
+ * Prints ONLY a WebPage node. It does not add BreadcrumbList or Organization —
+ * if the site has no SEO plugin, that's a site-wide decision to make
+ * deliberately, not something this tool should improvise.
  */
 function statchasers_news_print_fallback_schema(): void {
 	if ( ! statchasers_news_is_active() || statchasers_news_graph_provider_present() ) {

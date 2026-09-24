@@ -122,8 +122,20 @@ const SECTIONS = new Set([
  * stops those seven URLs being pages nothing on the site points at.
  */
 function playerSectionPath(slug: string, section: string): string {
+  // The Overview's address is the profile's. See PROFILE_SECTION.
+  if (section === PROFILE_SECTION) return playerPath(slug);
   return `${playerPath(slug)}/${section}/`;
 }
+
+/**
+ * The section the profile itself is.
+ *
+ * The profile opens on the Overview, so `/<slug>/` and `/<slug>/overview/` were
+ * one page answering at two self-canonical addresses. The profile keeps it:
+ * `/overview/` is a 301 to the profile, and the Overview tab links there. Kept
+ * in SECTIONS so the old address redirects instead of 404ing — it is indexed.
+ */
+const PROFILE_SECTION = "overview";
 
 /** The profile's own address on this origin. */
 function playerPath(slug: string): string {
@@ -501,6 +513,12 @@ router.get("/player/:slug/:section", (req, res) => {
       return;
     }
     if (redirectMovedSlug(req, res, slug, scoped)) return;
+
+    if (scoped === PROFILE_SECTION) {
+      const query = queryString(req);
+      res.redirect(301, `${playerPath(slug)}${query ? `?${query}` : ""}`);
+      return;
+    }
 
     const embed = isEmbed(req);
 

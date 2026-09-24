@@ -195,9 +195,21 @@ const SECTION_HEADINGS: Record<string, string> = {
   "game-log": "Game Log",
   outlook: "Fantasy Outlook",
   news: "News & Analysis",
-  overview: "Season Overview",
   bio: "Bio",
 };
+
+/**
+ * The heading of the profile itself: "Josh Allen Fantasy Football Stats & Analysis".
+ *
+ * The profile's address is the Overview's address — `/overview/` 301s here — so
+ * this is also the Overview tab's heading. It names the player and the intent,
+ * like the six section headings beside it. The two it replaced did not: the
+ * panel's "2026 Fantasy Snapshot" was the same words on every profile, and the
+ * bare name was the same words as the hero.
+ */
+export function profileHeading(playerName: string): string {
+  return `${playerName} Fantasy Football Stats & Analysis`;
+}
 
 /** The public heading for a section page, e.g. "Jacoby Brissett Injury Update & History". */
 export function sectionHeading(
@@ -208,7 +220,9 @@ export function sectionHeading(
   const phrase = SECTION_HEADINGS[section];
   if (!phrase) return null;
   // "Jacoby Brissett Stats 2026" — the year is part of the phrase people type
-  // for stats and for a game log, and not for the others.
+  // for stats, a game log and an outlook, and not for the others. The outlook's
+  // year is the one it projects, which is not always the season on the page.
+  if (section === "outlook") return `${playerName} ${phrase} ${OUTLOOK_SEASON}`;
   const dated = season && (section === "stats" || section === "game-log");
   return dated ? `${playerName} ${phrase} ${season}` : `${playerName} ${phrase}`;
 }
@@ -285,11 +299,16 @@ function h3(text: string): string {
  * The FIRST match only, and only ever one panel's worth: a section page renders
  * one panel, and the all-tabs page promotes just the panel it opens on, so the
  * document has exactly one H1 either way.
+ *
+ * `text` replaces the heading's words as well. The all-tabs page passes
+ * profileHeading(): its opening panel is headed "2026 Fantasy Snapshot", which
+ * names nobody and read the same on every profile once it was the H1.
  */
-function promoteHeading(html: string): string {
+function promoteHeading(html: string, text?: string): string {
   return html.replace(
     /<h2 class="scp-h2">([\s\S]*?)<\/h2>/,
-    '<h1 class="scp-h2">$1</h1>',
+    (_, inner: string) =>
+      `<h1 class="scp-h2">${text === undefined ? inner : escapeHtml(text)}</h1>`,
   );
 }
 
@@ -1375,15 +1394,23 @@ function renderNav(
 
   const items = sections
     .map((section) => {
-      const heading =
-        sectionHeading(data.player.name, section.id, data.season) ??
-        data.player.name;
-      const lead = playerPageMeta(data, "", section.id).description;
+      // The Overview is the profile: its address is the profile's own and its
+      // heading is the profile's. `/overview/` only 301s back here.
+      const isProfile = section.id === "overview";
+      const heading = isProfile
+        ? profileHeading(data.player.name)
+        : (sectionHeading(data.player.name, section.id, data.season) ??
+          data.player.name);
+      const lead = playerPageMeta(data, "", isProfile ? undefined : section.id)
+        .description;
+      const href = isProfile
+        ? `${prefix}${data.player.slug}/`
+        : `${prefix}${data.player.slug}/${section.id}/`;
 
       return (
         `<li><a class="scp-nav-link${section.id === active ? " is-active" : ""}"` +
         ` id="${escapeHtml(section.id)}-tab"` +
-        ` href="${escapeHtml(`${prefix}${data.player.slug}/${section.id}/`)}"` +
+        ` href="${escapeHtml(href)}"` +
         ` data-scp-panel-id="${escapeHtml(section.id)}"` +
         ` data-scp-heading="${escapeHtml(heading)}"` +
         ` data-scp-lead="${escapeHtml(lead)}"` +
@@ -5448,9 +5475,13 @@ export function renderPlayerPage(
    * itself — is unchanged, so the two addresses render the same component and
    * cannot drift.
    */
-  const scoped = options.section
-    ? sections.find((entry) => entry.id === options.section)
-    : undefined;
+  // The Overview is not a section page: it is the profile, which opens on it.
+  // `/overview/` 301s to the profile, and anything that still asks for it
+  // scoped gets the profile rather than a second copy at a second address.
+  const scoped =
+    options.section && options.section !== "overview"
+      ? sections.find((entry) => entry.id === options.section)
+      : undefined;
 
   if (scoped) {
     const prefix = options.playerPathPrefix ?? "/player/";
@@ -5487,7 +5518,15 @@ export function renderPlayerPage(
       `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
-      (options.ownHeading ? promoteHeading(scoped.html) : scoped.html) +
+      // In the address's words, not the panel's: the Outlook panel opens on
+      // "2026 Outlook", which names nobody. The words are the ones the strip
+      // hands the host's H1 for this tab, so the two cannot disagree.
+      (options.ownHeading
+        ? promoteHeading(
+            scoped.html,
+            sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
+          )
+        : scoped.html) +
       `</section>` +
       back +
       renderPositionPeers(data, options) +
@@ -5506,8 +5545,11 @@ export function renderPlayerPage(
         ` data-scp-panel id="${escapeHtml(section.id)}"` +
         ` aria-labelledby="${escapeHtml(section.id)}-tab">` +
         // Only the panel the page opens on. The other six keep their <h2>, so
-        // the document has one H1 whichever tab a reader switches to.
-        (options.ownHeading && i === 0 ? promoteHeading(section.html) : section.html) +
+        // the document has one H1 whichever tab a reader switches to. It reads
+        // as the profile rather than as the panel: this address is the profile.
+        (options.ownHeading && i === 0
+          ? promoteHeading(section.html, profileHeading(data.player.name))
+          : section.html) +
         `</section>`,
     )
     .join("");
