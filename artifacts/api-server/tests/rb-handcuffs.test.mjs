@@ -352,7 +352,7 @@ describe("the pages", () => {
   test("player names link to this app's player pages", async () => {
     const { doc } = await page("/rb-handcuff-rankings");
     const link = doc.querySelector("tr.rbh-row a.rbh-name");
-    assert.match(link.getAttribute("href"), /^\/player\/[a-z0-9-]+$/);
+    assert.match(link.getAttribute("href"), /^\/player\/[a-z0-9-]+\/$/);
     const embed = await page("/rb-handcuff-rankings?embed=1");
     assert.match(embed.doc.querySelector("tr.rbh-row a.rbh-name").getAttribute("href"), /\?embed=1$/);
   });

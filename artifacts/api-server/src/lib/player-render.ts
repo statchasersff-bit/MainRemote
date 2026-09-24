@@ -1142,7 +1142,7 @@ function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string 
     // full name, which is what a crawler and a screen reader get.
     billingParts.push(
       `<a class="scp-hero-team" href="${escapeHtml(
-        `${teamPrefix}${team.slug}${query}`,
+        `${teamPrefix}${team.slug}/${query}`,
       )}" target="_top" title="${escapeHtml(team.fullName)}"` +
         ` data-scp-short="${escapeHtml(`${team.code} ${team.nickname}`)}">` +
         `<span class="scp-hero-team-full">${escapeHtml(team.fullName)}</span>` +
@@ -1403,6 +1403,12 @@ function renderNav(
           data.player.name);
       const lead = playerPageMeta(data, "", isProfile ? undefined : section.id)
         .description;
+      // The document title the tab's own address carries on WordPress, set by
+      // the bundle before it pushes that address (see enhance.ts). The profile's
+      // is the one the page builder stores; a section's is playerPageMeta's.
+      const title = isProfile
+        ? `${profileHeading(data.player.name)} | StatChasers`
+        : playerPageMeta(data, "", section.id).title;
       const href = isProfile
         ? `${prefix}${data.player.slug}/`
         : `${prefix}${data.player.slug}/${section.id}/`;
@@ -1414,6 +1420,7 @@ function renderNav(
         ` data-scp-panel-id="${escapeHtml(section.id)}"` +
         ` data-scp-heading="${escapeHtml(heading)}"` +
         ` data-scp-lead="${escapeHtml(lead)}"` +
+        ` data-sc-title="${escapeHtml(title)}"` +
         `>${escapeHtml(section.label)}</a></li>`
       );
     })
@@ -1477,7 +1484,7 @@ function pageUrl(
   // following it reopens the page on the first tab — changing the season on the
   // game log and landing on Overview. A section URL is already that page.
   const hash = !options.section && changes.hash ? `#${changes.hash}` : "";
-  return `${prefix}${data.player.slug}${section ? `/${section}` : ""}${query ? `?${query}` : ""}${hash}`;
+  return `${prefix}${data.player.slug}/${section}${query ? `?${query}` : ""}${hash}`;
 }
 
 /**
@@ -1899,10 +1906,10 @@ function renderCareerContext(
 
   if (parts.length === 0) return "";
 
-  // Into the Stats tab's own URL when one is configured, otherwise the in-page
-  // anchor — both work, and the anchor works with scripting disabled.
+  // The Stats section's own URL. An in-page #stats anchor is dead on every
+  // section page but Stats, where the panel it names is not rendered.
   const prefix = options.playerPathPrefix ?? "/player/";
-  const href = `${prefix}${data.player.slug}${options.linkQuery ?? ""}#stats`;
+  const href = `${prefix}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
 
   return (
     sectionHead("Career Context") +
@@ -4547,8 +4554,9 @@ function renderAdvanced(data: PlayerPageData, options: PlayerRenderOptions): str
           .map((season) => {
             const active = season === advanced.season;
             const href =
-              `${prefix}${data.player.slug}` +
-              `?adv=${season}${data.format === "ppr" ? "" : `&format=${data.format}`}#stats`;
+              `${prefix}${data.player.slug}/${options.section ? `${options.section}/` : ""}` +
+              `?adv=${season}${data.format === "ppr" ? "" : `&format=${data.format}`}` +
+              `${options.section ? "" : "#stats"}`;
             return (
               `<a class="scp-season-opt${active ? " is-active" : ""}"` +
               ` href="${escapeHtml(href)}"${active ? ` aria-current="true"` : ` rel="nofollow"`}>` +
@@ -5115,10 +5123,12 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string 
   // The full status, this season's availability and the whole history lead the
   // Injury tab; this card is the same designation kept beside the reporting
   // that explains it, and it should hand a reader on rather than be the end of
-  // the road. A real in-page anchor, so it works with scripting disabled.
+  // the road. The Injury section's own URL: an in-page #injury anchor is dead
+  // on the /news/ page, where the injury panel is not rendered.
+  const injuryHref = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/injury/${options.linkQuery ?? ""}`;
   const reportLink = report
     ? `<p class="scp-note">` +
-      `<a class="scp-crosslink" href="#injury">` +
+      `<a class="scp-crosslink" href="${escapeHtml(injuryHref)}">` +
       escapeHtml(`See ${data.player.name}'s full injury history`) +
       `</a></p>`
     : "";
@@ -5152,11 +5162,11 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string 
   );
 }
 
-/** A way through to the team hub, which is where the rest of this lives. */
+/** A way through to the team hub's News section, which is where the rest of this lives. */
 function teamHubLink(data: PlayerPageData, options: PlayerRenderOptions): string {
   if (!data.team) return "";
   const prefix = options.teamPathPrefix ?? "/team/";
-  const href = `${prefix}${data.team.slug}${options.linkQuery ?? ""}`;
+  const href = `${prefix}${data.team.slug}/news/${options.linkQuery ?? ""}`;
   return (
     `<p class="scp-news-more">` +
     siteLink(href, `All ${data.team.fullName} news`, "scp-news-more-link") +
@@ -5338,7 +5348,7 @@ function renderPositionPeers(
 
       return (
         `<a class="scp-peer" href="${escapeHtml(
-          `${prefix}${row.slug}${query}`,
+          `${prefix}${row.slug}/${query}`,
         )}" target="_top"${style}>` +
         photo +
         body +
@@ -5488,7 +5498,7 @@ export function renderPlayerPage(
     const back =
       `<p class="scp-back">` +
       `<a class="scp-crosslink" href="${escapeHtml(
-        `${prefix}${data.player.slug}${options.linkQuery ?? ""}`,
+        `${prefix}${data.player.slug}/${options.linkQuery ?? ""}`,
       )}" target="_top">${escapeHtml(`All ${data.player.name} stats & analysis`)}</a>` +
       `</p>`;
 
@@ -5727,7 +5737,7 @@ function renderDirectoryRow(
     // above it, which is as much grouping as a card this size can carry
     // without turning into five sections with five headings.
     `${lead ? " data-lead" : ""}>` +
-    `<a class="scp-dir-row" href="${escapeHtml(`${prefix}${row.slug}${query}`)}" target="_top">` +
+    `<a class="scp-dir-row" href="${escapeHtml(`${prefix}${row.slug}/${query}`)}" target="_top">` +
     `<span class="scp-dir-face">` +
     // 38 to match the well in the stylesheet, so the box the browser reserves
     // before the CDN answers is the box the portrait lands in.
@@ -5768,7 +5778,7 @@ function renderDirectoryClub(
 
   const heading = team
     ? `<a class="scp-dir-club-link" href="${escapeHtml(
-        `${teamPrefix}${team.slug}${query}`,
+        `${teamPrefix}${team.slug}/${query}`,
       )}" target="_top">${escapeHtml(name)}</a>`
     : escapeHtml(name);
 

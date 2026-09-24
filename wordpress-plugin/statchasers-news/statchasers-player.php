@@ -872,14 +872,33 @@ add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
 function statchasers_player_faq_items(): array {
 	static $items = null;
 
-	if ( null !== $items ) {
-		return $items;
+	if ( null === $items ) {
+		$items = statchasers_player_faq_parse( statchasers_player_page_html() );
 	}
 
-	$items = array();
+	return $items;
+}
+
+/**
+ * The unprinted fragment for THIS request, or ''.
+ *
+ * What the FAQ node and the section metadata read their islands from. Resolved
+ * the way the shortcode will resolve it, so this warms the transient the
+ * shortcode then hits rather than costing a second request.
+ *
+ * @return string
+ */
+function statchasers_player_page_html(): string {
+	static $html = null;
+
+	if ( null !== $html ) {
+		return $html;
+	}
+
+	$html = '';
 
 	if ( ! statchasers_player_post_has_shortcode() ) {
-		return $items;
+		return $html;
 	}
 
 	// The slug comes off the QUERIED object rather than being left to
@@ -899,7 +918,7 @@ function statchasers_player_faq_items(): array {
 	);
 
 	if ( '' === $args['slug'] ) {
-		return $items;
+		return $html;
 	}
 
 	$data = statchasers_player_fetch(
@@ -909,13 +928,13 @@ function statchasers_player_faq_items(): array {
 		$args['log']
 	);
 
-	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
-		return $items;
+	if ( null === $data || ! isset( $data['html'] ) ) {
+		return $html;
 	}
 
-	$items = statchasers_player_faq_parse( (string) $data['html'] );
+	$html = (string) $data['html'];
 
-	return $items;
+	return $html;
 }
 
 /**
@@ -1079,12 +1098,14 @@ add_action( 'wp_head', 'statchasers_player_print_fallback_schema', 20 );
  * @return string
  */
 function statchasers_player_strip_faq_data( string $html ): string {
-	if ( false === strpos( $html, 'scp-faq-data' ) ) {
+	if ( false === strpos( $html, 'scp-faq-data' ) && false === strpos( $html, 'scp-page-data' ) ) {
 		return $html;
 	}
 
+	// The section's title/description island too: read from the cached fetch,
+	// and dead weight once printed.
 	return (string) preg_replace(
-		'#<script type="application/json" class="scp-faq-data">.*?</script>#s',
+		'#<script type="application/json" class="scp-(?:faq|page)-data">.*?</script>#s',
 		'',
 		$html
 	);
@@ -1302,4 +1323,239 @@ function statchasers_player_flush(): void {
 			$wpdb->esc_like( '_transient_timeout_sc_player_ssr_' ) . '%'
 		)
 	);
+
+	// The page builder's copy of the API's player list, so a build run after
+	// a deploy sees the players the deploy added.
+	delete_transient( 'sc_player_roster' );
 }
+
+/* ------------------------------------------------------ section-URL metadata */
+
+/**
+ * The section URLs that are pages of their own. Overview is not: it 301s to the
+ * profile.
+ */
+const STATCHASERS_PLAYER_INDEXED_SECTIONS = array( 'stats', 'game-log', 'outlook', 'injury', 'news', 'bio' );
+
+/**
+ * The indexed section this request is scoped to, or ''.
+ *
+ * Scoped to a page that mounts the player shortcode, because `sc_section` is
+ * shared with the team hubs and their sections are theirs.
+ */
+function statchasers_player_indexed_section(): string {
+	if ( ! statchasers_player_section_urls_enabled() || ! statchasers_player_post_has_shortcode() ) {
+		return '';
+	}
+
+	$section = statchasers_player_section_from_url();
+
+	return in_array( $section, STATCHASERS_PLAYER_INDEXED_SECTIONS, true ) ? $section : '';
+}
+
+/**
+ * A section URL's own title and description, from the fragment, or null.
+ *
+ * A section URL is a rewrite onto the profile page, so without this Rank Math
+ * gives all six of them the profile's stored title, description and canonical:
+ * six addresses telling Google they are one page. The words are the API's
+ * (player-seo.ts, shipped as `scp-page-data`), so the plugin keeps no copy.
+ *
+ * The profile itself is left alone: its title and description are stored on
+ * its page by the builder, where an editor may have changed them.
+ *
+ * @return array{title:string,description:string}|null
+ */
+function statchasers_player_request_meta(): ?array {
+	static $meta = false;
+
+	if ( false !== $meta ) {
+		return $meta;
+	}
+
+	$meta = null;
+
+	if ( '' === statchasers_player_indexed_section() ) {
+		return $meta;
+	}
+
+	$html = statchasers_player_page_html();
+	if ( ! preg_match( '#<script type="application/json" class="scp-page-data">(.*?)</script>#s', $html, $match ) ) {
+		return $meta;
+	}
+
+	$copy = json_decode( $match[1], true );
+	if ( ! is_array( $copy ) || ! is_string( $copy['title'] ?? null ) || ! is_string( $copy['description'] ?? null ) ) {
+		return $meta;
+	}
+
+	$title       = trim( wp_strip_all_tags( $copy['title'] ) );
+	$description = trim( wp_strip_all_tags( $copy['description'] ) );
+
+	if ( '' !== $title && '' !== $description ) {
+		$meta = array(
+			'title'       => $title,
+			'description' => $description,
+		);
+	}
+
+	return $meta;
+}
+
+/**
+ * The self-referencing canonical for a section URL, or ''.
+ *
+ * Built from the profile's permalink, so it follows the site's scheme, host and
+ * trailing-slash convention. Needs no fetch: a section URL is its own page
+ * whether or not the API answered.
+ */
+function statchasers_player_section_canonical(): string {
+	$section = statchasers_player_indexed_section();
+	if ( '' === $section ) {
+		return '';
+	}
+
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return '';
+	}
+
+	return user_trailingslashit( trailingslashit( (string) get_permalink( $queried->ID ) ) . $section );
+}
+
+add_filter(
+	'rank_math/frontend/title',
+	function ( $title ) {
+		$meta = statchasers_player_request_meta();
+		return $meta ? $meta['title'] . ' | StatChasers' : $title;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/description',
+	function ( $description ) {
+		$meta = statchasers_player_request_meta();
+		return $meta ? $meta['description'] : $description;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/canonical',
+	function ( $canonical ) {
+		$url = statchasers_player_section_canonical();
+		return '' === $url ? $canonical : $url;
+	}
+);
+
+add_filter(
+	'rank_math/opengraph/url',
+	function ( $url ) {
+		$section = statchasers_player_section_canonical();
+		return '' === $section ? $url : $section;
+	}
+);
+
+add_filter(
+	'rank_math/frontend/robots',
+	function ( $robots ) {
+		if ( '' === statchasers_player_indexed_section() ) {
+			return $robots;
+		}
+
+		// These exist to be indexed, stated rather than inherited, as the team
+		// sections do.
+		$robots['index']  = 'index';
+		$robots['follow'] = 'follow';
+		return $robots;
+	}
+);
+
+/** The canonical without Rank Math: core would print the profile's. */
+add_filter(
+	'get_canonical_url',
+	function ( $canonical ) {
+		$url = statchasers_player_section_canonical();
+		return '' === $url ? $canonical : $url;
+	}
+);
+
+/**
+ * The section as the last breadcrumb.
+ *
+ * Rank Math's trail on a section URL ends at the profile — the page the rewrite
+ * resolves to — so its BreadcrumbList says a Stats page is the profile. The
+ * section is appended, at its canonical URL.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_player_breadcrumbs( $crumbs ) {
+	$url = statchasers_player_section_canonical();
+	if ( ! is_array( $crumbs ) || '' === $url ) {
+		return $crumbs;
+	}
+
+	$labels = array(
+		'stats'    => 'Stats',
+		'game-log' => 'Game Log',
+		'outlook'  => 'Fantasy Outlook',
+		'injury'   => 'Injury',
+		'news'     => 'News',
+		'bio'      => 'Bio',
+	);
+
+	$crumbs[] = array( $labels[ statchasers_player_indexed_section() ], $url, 'hide_in_schema' => false );
+
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_breadcrumbs', 20 );
+
+/**
+ * The section URLs, appended to Rank Math's page sitemap.
+ *
+ * The profiles are pages and Rank Math lists them itself. Their six sections
+ * have no post of their own, so without this no sitemap names them. Overview is
+ * left out: it redirects. Only while the rewrite is live, or this would list
+ * addresses that 404.
+ *
+ * @param string $content Entries Rank Math has already built.
+ * @return string
+ */
+function statchasers_player_sitemap_sections( $content ) {
+	if ( ! statchasers_player_section_urls_enabled() || ! statchasers_sitemap_first_page() ) {
+		return $content;
+	}
+
+	$container = statchasers_player_container();
+	if ( ! $container ) {
+		return $content;
+	}
+
+	$ids = get_posts(
+		array(
+			'post_type'      => 'page',
+			'post_parent'    => $container,
+			'post_status'    => 'publish',
+			'numberposts'    => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		)
+	);
+
+	$extra = '';
+	foreach ( $ids as $id ) {
+		$profile = trailingslashit( (string) get_permalink( (int) $id ) );
+		$lastmod = (string) get_post_modified_time( 'c', true, (int) $id );
+
+		foreach ( STATCHASERS_PLAYER_INDEXED_SECTIONS as $section ) {
+			$extra .= "\t<url>\n\t\t<loc>" . esc_url( user_trailingslashit( $profile . $section ) ) . "</loc>\n" .
+				( '' === $lastmod ? '' : "\t\t<lastmod>" . esc_html( $lastmod ) . "</lastmod>\n" ) .
+				"\t</url>\n";
+		}
+	}
+
+	return $content . $extra;
+}
+add_filter( 'rank_math/sitemap/page_content', 'statchasers_player_sitemap_sections' );

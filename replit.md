@@ -124,8 +124,10 @@ _Replace the heading above with the project's name, and this line with one sente
   against the live site and correct them here; setting one to an empty string
   removes that link everywhere rather than pointing it at a 404:
   `SC_SITE_ORIGIN` (default `https://statchasers.com`),
-  `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE`,
-  `SC_TEAM_SCHEDULE_URL_TEMPLATE`,
+  `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE` (default
+  `/nfl/nfl-depth-charts/fantasy/{slug}/`, the depth-charts plugin's team route),
+  `SC_TEAM_SCHEDULE_URL_TEMPLATE` (default `/nfl/nfl-schedule/`: the link reads
+  "View full NFL schedule"; the old `/nfl/schedule/{slug}/` never existed),
   `SC_TOOLS_URL` (the "Explore StatChasers" tool index),
   `SC_PLAYER_STATS_URL` (league-wide, not team-filtered — it replaced a
   guessed `SC_TEAM_PLAYERS_URL_TEMPLATE`, which no longer exists),

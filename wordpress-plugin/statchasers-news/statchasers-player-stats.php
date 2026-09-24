@@ -931,6 +931,10 @@ function statchasers_player_stats_strip_islands( string $html ): string {
 add_filter(
 	'rank_math/sitemap/page_content',
 	static function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+
 		$page = get_page_by_path( statchasers_player_stats_page_path() );
 		if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
 			return $content;

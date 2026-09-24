@@ -1076,6 +1076,10 @@ function statchasers_schedule_strip_faq_data( string $html ): string {
 add_filter(
 	'rank_math/sitemap/page_content',
 	function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+
 		if ( ! statchasers_schedule_week_urls_enabled() ) {
 			return $content;
 		}

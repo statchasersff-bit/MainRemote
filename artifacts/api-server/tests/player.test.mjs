@@ -2212,7 +2212,8 @@ describe("the news tab", () => {
 
       const link = news.querySelector(".scp-crosslink");
       assert.ok(link, "a designated player's news tab links to the history");
-      assert.equal(link.getAttribute("href"), "#injury");
+      // The Injury section's own URL: an in-page anchor is dead on /news/.
+      assert.equal(link.getAttribute("href"), `/player/${player.slug}/injury/`);
       if (checked >= 2) break;
     }
     assert.ok(checked > 0, "expected at least one designated player");
@@ -2641,7 +2642,7 @@ describe("the player search", () => {
       );
       assert.ok(peers.length > 0, "the fragment carries the rail too");
       for (const href of peers) {
-        assert.match(href, /^\/nfl\/players\/[a-z0-9-]+$/);
+        assert.match(href, /^\/nfl\/players\/[a-z0-9-]+\/$/);
       }
     } finally {
       await srv.stop();
@@ -2739,7 +2740,7 @@ describe("the player search", () => {
 
     const hit = live.querySelector('.scp-search-opt[data-kind="team"]');
     assert.equal(hit.tagName, "A", "still a link");
-    assert.equal(hit.getAttribute("href"), "/team/baltimore-ravens");
+    assert.equal(hit.getAttribute("href"), "/team/baltimore-ravens/");
     assert.equal(hit.getAttribute("target"), "_top", "and still breaks the frame");
   });
 });
@@ -2787,7 +2788,7 @@ describe("the positional peers rail", () => {
     for (const card of cards) {
       if (card.classList.contains("is-current")) continue;
       assert.equal(card.tagName, "A", "every other card is a real link");
-      assert.match(card.getAttribute("href"), /^\/player\/[a-z0-9-]+$/);
+      assert.match(card.getAttribute("href"), /^\/player\/[a-z0-9-]+\/$/);
       // Same as every other link in the fragment: out of the legacy frame.
       assert.equal(card.getAttribute("target"), "_top");
     }
@@ -3059,6 +3060,51 @@ describe("the embedded fragment", () => {
     const res = await get("/embed/player/nobody-at-all");
     assert.equal(res.status, 404);
     assert.ok(!/data-scp-root/.test(res.body));
+  });
+
+  /*
+   * On WordPress a section URL is a rewrite onto the profile page, so without
+   * its own copy Rank Math gives all six the profile's title, description and
+   * canonical. The fragment hands the plugin each section's words.
+   */
+  test("a section fragment carries its own title and description for the host page", async () => {
+    const copies = new Map();
+    for (const section of ["stats", "game-log", "outlook", "injury", "news", "bio"]) {
+      const res = await get(`/embed/player/${fixture.slug}?section=${section}`);
+      const island = res.body.match(
+        /<script type="application\/json" class="scp-page-data">(.*?)<\/script>/s,
+      );
+      assert.ok(island, `${section}: no page-data island`);
+      const copy = JSON.parse(island[1]);
+      assert.ok(copy.title.length > 10 && copy.description.length > 40, `${section}: thin copy`);
+      assert.doesNotMatch(copy.title, /StatChasers$/, "the plugin appends the site name");
+      copies.set(section, copy);
+    }
+    assert.equal(new Set([...copies.values()].map((c) => c.title)).size, 6, "six distinct titles");
+    assert.equal(new Set([...copies.values()].map((c) => c.description)).size, 6, "six distinct descriptions");
+
+    const profile = await get(`/embed/player/${fixture.slug}`);
+    assert.doesNotMatch(profile.body, /scp-page-data/, "the profile's title is the one stored on its page");
+  });
+
+  test("each tab carries the title its own address wears, for the history push", async () => {
+    const res = await get(`/embed/player/${fixture.slug}`);
+    const doc = new JSDOM(res.body).window.document;
+    const titles = [...doc.querySelectorAll("[data-scp-nav] a")].map((a) => a.dataset.scTitle);
+    assert.ok(titles.length >= 5 && titles.every(Boolean), "every tab has a title");
+    assert.equal(new Set(titles).size, titles.length, "and no two share one");
+  });
+
+  test("links point at final URLs: trailing slash, section pages rather than in-page anchors", async () => {
+    const res = await get(`/embed/player/${fixture.slug}?section=news`);
+    const hrefs = [...res.body.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    for (const href of hrefs) {
+      if (/^https?:\/\//.test(href) && !href.includes("statchasers.com")) continue;
+      const path = href.replace(/^https?:\/\/[^/]+/, "").split(/[?#]/)[0];
+      if (!path.startsWith("/") || /\.\w+$/.test(path) || /redraft-command/.test(path)) continue;
+      assert.ok(path.endsWith("/"), `${href} has no trailing slash`);
+    }
+    assert.ok(!hrefs.includes("#injury"), "no in-page anchor to a panel this page does not render");
   });
 });
 

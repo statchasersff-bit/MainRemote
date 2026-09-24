@@ -1565,6 +1565,36 @@ add_filter(
 );
 
 
+/**
+ * The section as the last breadcrumb, at its canonical URL. Rank Math's trail
+ * on a section URL ends at the hub the rewrite resolves to.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_team_breadcrumbs( $crumbs ) {
+	$meta = statchasers_team_request_meta();
+	$url  = statchasers_team_section_canonical();
+	if ( ! is_array( $crumbs ) || null === $meta || '' === $url ) {
+		return $crumbs;
+	}
+
+	$labels = array(
+		'stats'       => 'Stats',
+		'schedule'    => 'Schedule',
+		'depth-chart' => 'Depth Chart',
+		'matchups'    => 'Matchups',
+		'news'        => 'News',
+	);
+
+	if ( isset( $labels[ $meta['section'] ] ) ) {
+		$crumbs[] = array( $labels[ $meta['section'] ], $url, 'hide_in_schema' => false );
+	}
+
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_team_breadcrumbs', 20 );
+
 /* ------------------------------------------------------------- sitemap */
 
 /**
@@ -1599,6 +1629,10 @@ function statchasers_team_sitemap_entry( string $loc, string $lastmod ): string 
 add_filter(
 	'rank_math/sitemap/page_content',
 	function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+
 		if ( ! statchasers_team_section_urls_enabled() ) {
 			return $content;
 		}

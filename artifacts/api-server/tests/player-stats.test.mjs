@@ -381,7 +381,7 @@ describe("the pages", () => {
       (a) => a.querySelector(".sca-name-full").textContent === "Drake Maye",
     );
     assert.ok(maye, "Drake Maye is linked");
-    assert.equal(maye.getAttribute("href"), "/player/drake-maye");
+    assert.equal(maye.getAttribute("href"), "/player/drake-maye/");
     assert.equal(maye.getAttribute("target"), "_top");
   });
 

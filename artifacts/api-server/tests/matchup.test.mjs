@@ -353,9 +353,9 @@ describe("links between the family", () => {
     const { doc } = await dom(CANON);
     const hrefs = [...doc.querySelectorAll(".sct-pages a")].map((a) => a.getAttribute("href"));
     assert.deepEqual(hrefs, [
-      "/team/new-england-patriots",
+      "/team/new-england-patriots/",
       "/team/new-england-patriots/matchups/",
-      "/team/philadelphia-eagles",
+      "/team/philadelphia-eagles/",
       "/team/philadelphia-eagles/matchups/",
     ]);
   });

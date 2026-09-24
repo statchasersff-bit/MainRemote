@@ -115,6 +115,7 @@ function add_query_arg( ...$a ) {
 }
 function get_permalink( $id ) { return 'https://example.com/p/' . $id . '/'; }
 function get_post_status( $id ) { return 'publish'; }
+if ( ! function_exists( 'get_post_modified_time' ) ) { function get_post_modified_time( $f = '', $g = false, $id = 0 ) { return '2026-09-24T00:00:00+00:00'; } }
 function get_page_by_path( $p ) { return $GLOBALS['pages_by_path'][ $p ] ?? null; }
 function get_page_uri( $id ) { return 'nfl'; }
 /*
@@ -132,15 +133,22 @@ function get_posts( $args = array() ) {
 	if ( ! isset( $GLOBALS['pages'] ) ) {
 		return array();
 	}
+	// A meta lookup (the old-slug redirect) matches nothing: no page here has
+	// an old slug. A query with no name lists every child, as WordPress does.
+	if ( isset( $args['meta_key'] ) ) {
+		return array();
+	}
+	$any    = ! array_key_exists( 'name', $args );
 	$name   = (string) ( $args['name'] ?? '' );
 	$parent = (int) ( $args['post_parent'] ?? 0 );
 	$found  = array();
 	foreach ( $GLOBALS['pages'] as $id => $post ) {
-		if ( $post->post_name === $name && (int) $post->post_parent === $parent ) {
+		if ( ( $any || $post->post_name === $name ) && (int) $post->post_parent === $parent ) {
 			$found[] = 'ids' === ( $args['fields'] ?? '' ) ? (int) $id : $post;
 		}
 	}
-	return array_slice( $found, 0, max( 1, (int) ( $args['numberposts'] ?? 1 ) ) );
+	$limit = (int) ( $args['numberposts'] ?? 1 );
+	return $limit < 0 ? $found : array_slice( $found, 0, max( 1, $limit ) );
 }
 
 function wp_insert_post( $a, $b = false ) {
@@ -360,6 +368,12 @@ if ( 'containers' === $group ) {
 
 if ( 'leak' === $group || 'headings' === $group ) {
 	require __DIR__ . '/smoke-headings.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'playersection' === $group ) {
+	require __DIR__ . '/smoke-player-section.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -1364,7 +1378,7 @@ $GLOBALS['page'] = array();
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'leak', 'headings' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'leak', 'headings', 'playersection' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

@@ -125,7 +125,7 @@ function headshotUrl(sleeperId: string): string {
 
 function playerHref(slug: string, options: HandcuffRenderOptions): string {
   const prefix = options.playerPathPrefix ?? DEFAULT_PLAYER_PREFIX;
-  return `${prefix}${slug}${options.linkQuery ?? ""}`;
+  return `${prefix}${slug}/${options.linkQuery ?? ""}`;
 }
 
 /**

@@ -175,7 +175,7 @@ function withQuery(
 
 function playerHref(slug: string, options: StatsRenderOptions): string {
   const prefix = options.playerPathPrefix ?? DEFAULT_PLAYER_PREFIX;
-  return `${prefix}${slug}${options.linkQuery ?? ""}`;
+  return `${prefix}${slug}/${options.linkQuery ?? ""}`;
 }
 
 /**

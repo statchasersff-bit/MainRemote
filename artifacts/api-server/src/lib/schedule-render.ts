@@ -400,7 +400,7 @@ function teamHref(
 ): string | null {
   if (!team) return null;
   const prefix = options.teamPathPrefix ?? DEFAULT_TEAM_PREFIX;
-  return `${prefix}${team.slug}${options.linkQuery ?? ""}`;
+  return `${prefix}${team.slug}/${options.linkQuery ?? ""}`;
 }
 
 /**
