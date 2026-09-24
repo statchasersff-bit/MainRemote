@@ -31,8 +31,8 @@ export interface TabOptions {
    * Its presence is what tells this function the strip links to ADDRESSES
    * rather than to anchors, and switches on the address behaviour: the URL is
    * pushed instead of the hash cleared, and the page's heading is rewritten
-   * from the link. Left unset — the rankings board, whose sections have no URLs
-   * of their own — everything below behaves exactly as it did.
+   * from the link (when `headingKey` names one). Left unset, the strip is
+   * anchors and everything below behaves exactly as it did.
    */
   panelKey?: string;
   /** The dataset key holding the H1 text for a tab, e.g. "scpHeading". */
@@ -113,10 +113,22 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
     }
   }
 
-  /** The tab the URL asks for, or the first one. */
+  /**
+   * The tab the URL asks for, or the first one.
+   *
+   * A hash naming a panel wins, which keeps old `#scr-panel-rb` links working.
+   * Then, where tabs are addresses, the path: a reader landing on
+   * /rest-of-season-rankings/rb has every panel in the page and must open on
+   * RB, not on the first tab.
+   */
   function fromHash(): string {
     const id = location.hash.replace(/^#/, "");
-    return tabs.some((tab) => tab.id === id) ? id : tabs[0]!.id;
+    if (tabs.some((tab) => tab.id === id)) return id;
+    if (options.panelKey) {
+      const byPath = fromPath(location.pathname);
+      if (byPath) return byPath;
+    }
+    return tabs[0]!.id;
   }
 
   /**
@@ -176,12 +188,20 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
     }
   }
 
-  /** The tab whose address this path is, or null for the page we landed on. */
+  /**
+   * The tab whose address this path is, or null for the page we landed on.
+   *
+   * Trailing slashes are ignored: WordPress hands out `/rb/` and a reader can
+   * type `/rb`, and both are the same tab.
+   */
   function fromPath(path: string): string | null {
+    const trim = (p: string): string => p.replace(/\/+$/, "") || "/";
     for (const tab of tabs) {
       const href = tab.link.getAttribute("href");
       if (!href) continue;
-      if (new URL(href, location.origin).pathname === path) return tab.id;
+      if (trim(new URL(href, location.origin).pathname) === trim(path)) {
+        return tab.id;
+      }
     }
     return null;
   }
@@ -209,6 +229,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   // :target has been switched off and .is-active still names the server's guess
   // — which on a deep link would flash the first panel.
   let active = fromHash();
+  const landedId = active;
   select(active, false);
   root.dataset[options.datasetKey] = "js";
 
@@ -264,7 +285,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
       }
 
       if (location.pathname + location.search === landedUrl) {
-        active = tabs[0]!.id;
+        active = landedId;
         select(active, false);
         if (headingEl && landedHeading) headingEl.textContent = landedHeading;
         if (leadEl && landedLead) leadEl.textContent = landedLead;

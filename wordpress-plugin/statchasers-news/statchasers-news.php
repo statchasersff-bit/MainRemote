@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, redraft rankings and the schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.9.4
+ * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats and RB handcuff rankings. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.10.2
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,10 +43,10 @@ const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 // asset-version and canonical helpers — all of which are function declarations
 // and so are available regardless of order, but the constants are not.
 //
-// The team file must come FIRST. The player, FPA, rankings and schedule files
-// each reuse its Divi detection and full-width stylesheet rather than carrying
-// a copy apiece, and while function declarations hoist within a file they do
-// not hoist across an include that has not run yet.
+// The team file must come FIRST. The player, FPA, rankings, schedule and
+// advanced stats files each reuse its Divi detection and full-width stylesheet
+// rather than carrying a copy apiece, and while function declarations hoist
+// within a file they do not hoist across an include that has not run yet.
 require_once __DIR__ . '/statchasers-assets.php';
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
@@ -55,6 +55,8 @@ require_once __DIR__ . '/statchasers-player.php';
 require_once __DIR__ . '/statchasers-fpa.php';
 require_once __DIR__ . '/statchasers-rankings.php';
 require_once __DIR__ . '/statchasers-schedule.php';
+require_once __DIR__ . '/statchasers-player-stats.php';
+require_once __DIR__ . '/statchasers-rb-handcuffs.php';
 // After the three they build on: the player builder uses the team file's
 // fill_meta() and season constant, and the heading module asks the team file
 // for a page to measure.
@@ -691,6 +693,8 @@ function statchasers_news_flush(): void {
 	statchasers_fpa_flush();
 	statchasers_rankings_flush();
 	statchasers_schedule_flush();
+	statchasers_player_stats_flush();
+	statchasers_rb_handcuffs_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
 

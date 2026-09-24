@@ -1,5 +1,8 @@
 /**
- * Redraft rankings regression tests.
+ * Rest-of-season rankings regression tests.
+ *
+ * The page lives at /rest-of-season-rankings, one address per board beneath
+ * it; /rankings is the old address and only redirects.
  *
  * Same posture as fpa.test.mjs: assert on the served HTML without executing any
  * JavaScript, because the whole point of this rewrite is that the boards arrive
@@ -168,7 +171,7 @@ describe("the CSV parser", () => {
 describe("the rankings page", () => {
   test("serves the boards with the embedding posture", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { res, doc } = await page("/rankings");
+    const { res, doc } = await page("/rest-of-season-rankings");
 
     assert.equal(res.status, 200);
     assert.equal(
@@ -180,25 +183,40 @@ describe("the rankings page", () => {
       doc.querySelector("meta[name=robots]").getAttribute("content"),
       /noindex, indexifembedded/,
     );
-    assert.match(doc.title, /Redraft Rankings/);
+    assert.match(doc.title, /Rest of Season Fantasy Football Rankings/);
+    assert.doesNotMatch(doc.title, /redraft/i, "the page says what its URL says");
     assert.ok(doc.querySelector("link[rel=canonical]"), "needs a canonical");
   });
 
-  test("the canonical ignores every piece of page state", async (t) => {
+  test("each position is its own canonical, and nothing else mints one", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const bare = await page("/rankings");
-    const stated = await page("/rankings?pos=te&season=2026&embed=1");
+    const canonical = (doc) => doc.querySelector("link[rel=canonical]").href;
 
+    const bare = await page("/rest-of-season-rankings");
+    const rb = await page("/rest-of-season-rankings/rb");
+    assert.match(canonical(bare.doc), /\/rest-of-season-rankings$/);
+    assert.match(canonical(rb.doc), /\/rest-of-season-rankings\/rb$/);
+
+    const stated = await page("/rest-of-season-rankings/rb?season=2026&embed=1");
     assert.equal(
-      stated.doc.querySelector("link[rel=canonical]").href,
-      bare.doc.querySelector("link[rel=canonical]").href,
-      "five boards of one set of rankings are one page",
+      canonical(stated.doc),
+      canonical(rb.doc),
+      "season and embed are page state, not addresses",
     );
+  });
+
+  test("a position page has its own title", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const bare = await page("/rest-of-season-rankings");
+    const te = await page("/rest-of-season-rankings/te");
+
+    assert.match(te.doc.title, /Rest of Season Fantasy Football TE Rankings: Tight Ends/);
+    assert.notEqual(te.doc.title, bare.doc.title);
   });
 
   test("all five panels are in the HTML, unexecuted", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const panels = [...doc.querySelectorAll("[data-scr-panel]")].map((p) => p.id);
     assert.deepEqual(panels, [
@@ -223,7 +241,7 @@ describe("the rankings page", () => {
 
   test("the tail of the All board is disclosed, not withheld", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
     const all = doc.querySelector("#scr-panel-all");
 
     const rows = all.querySelectorAll(".scr-all-row");
@@ -234,36 +252,77 @@ describe("the rankings page", () => {
     );
   });
 
-  test("exactly one panel opens by default, and ?pos chooses it", async (t) => {
+  test("exactly one panel opens by default, and the path chooses it", async (t) => {
     if (!hasData) return t.skip("no rankings file");
 
-    const bare = await page("/rankings");
+    const bare = await page("/rest-of-season-rankings");
     const defaults = bare.doc.querySelectorAll("[data-scr-panel].is-default");
     assert.equal(defaults.length, 1);
     assert.equal(defaults[0].id, "scr-panel-all");
 
-    const te = await page("/rankings?pos=te");
+    const te = await page("/rest-of-season-rankings/te");
+    assert.equal(te.res.status, 200);
+    const open = te.doc.querySelectorAll("[data-scr-panel].is-default");
+    assert.equal(open.length, 1);
+    assert.equal(open[0].id, "scr-panel-te");
     assert.equal(
-      te.doc.querySelector("[data-scr-panel].is-default").id,
-      "scr-panel-te",
-    );
-
-    const nonsense = await page("/rankings?pos=kicker");
-    assert.equal(
-      nonsense.doc.querySelector("[data-scr-panel].is-default").id,
-      "scr-panel-all",
-      "an unknown position falls back rather than opening nothing",
+      te.doc.querySelectorAll("[data-scr-panel]").length,
+      5,
+      "a position page still carries every board, so the tabs switch in place",
     );
   });
 
-  test("the tab strip is links, and carries no ARIA roles server-side", async (t) => {
+  test("each board has exactly one address", async () => {
+    for (const [from, to] of [
+      ["/rest-of-season-rankings/RB", "/rest-of-season-rankings/rb"],
+      ["/rest-of-season-rankings/all", "/rest-of-season-rankings"],
+      ["/rest-of-season-rankings?pos=wr", "/rest-of-season-rankings/wr"],
+      ["/rest-of-season-rankings?pos=kicker", "/rest-of-season-rankings"],
+      ["/rest-of-season-rankings/qb?pos=te", "/rest-of-season-rankings/qb"],
+    ]) {
+      const res = await rawGet(from);
+      assert.equal(res.status, 301, from);
+      assert.equal(res.headers.location, to, from);
+    }
+
+    const kicker = await rawGet("/rest-of-season-rankings/k");
+    assert.equal(kicker.status, 404, "a position the board lacks is not a page");
+  });
+
+  test("the old /rankings addresses move permanently, query and all", async () => {
+    for (const [from, to] of [
+      ["/rankings", "/rest-of-season-rankings"],
+      ["/rankings?pos=te", "/rest-of-season-rankings/te"],
+      ["/rankings?pos=rb&embed=1", "/rest-of-season-rankings/rb?embed=1"],
+      ["/rankings?pos=kicker", "/rest-of-season-rankings"],
+      ["/rankings/download.csv?season=2026", "/rest-of-season-rankings/download.csv?season=2026"],
+    ]) {
+      const res = await rawGet(from);
+      assert.equal(res.status, 301, from);
+      assert.equal(res.headers.location, to, from);
+    }
+  });
+
+  test("the tab strip is links to each board's address, with no ARIA roles", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings/wr");
 
     const links = [...doc.querySelectorAll(".scr-nav-link")];
-    assert.equal(links.length, 5);
+    assert.deepEqual(
+      links.map((link) => [link.getAttribute("href"), link.dataset.scrPanelId]),
+      [
+        ["/rest-of-season-rankings", "scr-panel-all"],
+        ["/rest-of-season-rankings/qb", "scr-panel-qb"],
+        ["/rest-of-season-rankings/rb", "scr-panel-rb"],
+        ["/rest-of-season-rankings/wr", "scr-panel-wr"],
+        ["/rest-of-season-rankings/te", "scr-panel-te"],
+      ],
+    );
+    assert.equal(
+      doc.querySelector(".scr-nav-link.is-active").dataset.scrPanelId,
+      "scr-panel-wr",
+    );
     for (const link of links) {
-      assert.match(link.getAttribute("href"), /^#scr-panel-/);
       // role="tab" promises arrow keys. The server cannot keep that promise,
       // so it does not make it — client/rankings.ts adds the roles when it
       // adds the behaviour.
@@ -271,9 +330,18 @@ describe("the rankings page", () => {
     }
   });
 
+  test("embed mode stays embed mode across the tabs", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rest-of-season-rankings?embed=1");
+    const rb = [...doc.querySelectorAll(".scr-nav-link")].find(
+      (link) => link.dataset.scrPanelId === "scr-panel-rb",
+    );
+    assert.equal(rb.getAttribute("href"), "/rest-of-season-rankings/rb?embed=1");
+  });
+
   test("a player with no page is named, not linked", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const rows = [...doc.querySelectorAll("#scr-panel-wr .scr-row")];
     const unlinked = rows.filter((row) =>
@@ -294,7 +362,7 @@ describe("the rankings page", () => {
 
   test("the View profile button is a pointer target, not a second link", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const rows = [...doc.querySelectorAll("#scr-panel-rb .scr-row")];
     assert.ok(rows.length > 0);
@@ -326,7 +394,7 @@ describe("the rankings page", () => {
 
   test("the tier tables carry a fourth column for the button", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const table = doc.querySelector("#scr-panel-te .scr-table");
     assert.equal(table.querySelectorAll("colgroup col").length, 4);
@@ -343,7 +411,7 @@ describe("the rankings page", () => {
 
   test("tiers are announced as rowgroups, not as styled rows", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const heads = [...doc.querySelectorAll("#scr-panel-qb .scr-tier-head th")];
     assert.ok(heads.length >= 5);
@@ -355,7 +423,7 @@ describe("the rankings page", () => {
 
   test("the side-by-side caption says the ranks are positional", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const caption = doc.querySelector(
       "#scr-panel-all .scr-all-table caption",
@@ -369,7 +437,7 @@ describe("the rankings page", () => {
 
   test("the questions are in the markup, answers and all", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const items = [...doc.querySelectorAll(".scr-faq-item")];
     assert.ok(items.length >= 9, "the FAQ renders its questions");
@@ -389,7 +457,7 @@ describe("the rankings page", () => {
 
   test("the FAQ sits outside the panels, so no tab hides it", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const faq = doc.querySelector(".scr-faq-block");
     assert.ok(faq, "the block is on the page");
@@ -400,7 +468,7 @@ describe("the rankings page", () => {
 
   test("the scoring answer does not promise a switch the board lacks", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const answer = [...doc.querySelectorAll(".scr-faq-item")]
       .map((item) => item.querySelector(".scr-faq-a").textContent)
@@ -417,7 +485,7 @@ describe("the rankings page", () => {
 
   test("one FAQPage, describing the questions actually rendered", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
 
     const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')];
     // A document gets one FAQPage. Two is the failure mode that gets structured
@@ -444,8 +512,9 @@ describe("the rankings page", () => {
 });
 
 describe("the embed fragment", () => {
+  // The FAQ and the page copy (title/H1/description): the two inert islands.
   const INERT_FAQ =
-    /<script type="application\/json" class="scr-faq-data">.*?<\/script>/gs;
+    /<script type="application\/json" class="scr-(?:faq|page)-data">.*?<\/script>/gs;
 
   test("is a bare fragment with no document chrome", async (t) => {
     if (!hasData) return t.skip("no rankings file");
@@ -467,6 +536,21 @@ describe("the embed fragment", () => {
     // No <h1>: the WordPress page supplies it.
     assert.doesNotMatch(html, /<h1/i);
     assert.match(html, /class="scr is-embed"/);
+  });
+
+  test("hands the page its heading, which follows the board", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const html = await (await fetch(`${server.origin}/embed/rankings?pos=rb`)).text();
+    const copy = JSON.parse(
+      html.match(/<script type="application\/json" class="scr-page-data">(.*?)<\/script>/s)[1],
+    );
+    assert.match(copy.h1, /^\d{4} Rest of Season Fantasy Football RB Rankings$/);
+    assert.equal(copy.title, `${copy.h1}: Running Backs`, "the title is the heading's phrase");
+    assert.ok(copy.description.length > 50);
+    // Each tab carries its board's heading, for the bundle to swap into the
+    // host's H1 when the tab switches boards in place.
+    assert.match(html, /data-scr-heading="\d{4} Rest of Season Fantasy Football Rankings"/);
+    assert.match(html, new RegExp(`data-scr-heading="${copy.h1}"`));
   });
 
   test("revalidates with an ETag", async (t) => {
@@ -513,19 +597,61 @@ describe("the embed fragment", () => {
     const res = await fetch(`${server.origin}/embed/rankings?season=1999`);
     assert.equal(res.status, 404);
   });
+
+  /*
+   * Booted separately, because the behaviour IS the environment: the tabs are
+   * built from SC_RANKINGS_PATH, and one server cannot answer for both.
+   */
+  test("the tabs link the WordPress page's own addresses", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const srv = await startServer({
+      SC_RANKINGS_PATH: "/fantasy-football/rest-of-season-rankings/",
+    });
+    try {
+      const res = await fetch(`${srv.origin}/embed/rankings?pos=rb`);
+      assert.equal(res.status, 200);
+      const doc = new JSDOM(`<body>${await res.text()}</body>`).window.document;
+
+      // Trailing slash and all, which is WordPress's spelling and what the
+      // plugin's rewrite rule answers.
+      assert.deepEqual(
+        [...doc.querySelectorAll(".scr-nav-link")].map((a) => a.getAttribute("href")),
+        [
+          "/fantasy-football/rest-of-season-rankings/",
+          "/fantasy-football/rest-of-season-rankings/qb/",
+          "/fantasy-football/rest-of-season-rankings/rb/",
+          "/fantasy-football/rest-of-season-rankings/wr/",
+          "/fantasy-football/rest-of-season-rankings/te/",
+        ],
+      );
+      assert.equal(
+        doc.querySelector("[data-scr-panel].is-default").id,
+        "scr-panel-rb",
+        "the plugin passes the URL's position as ?pos=",
+      );
+
+      // WordPress has never heard of /download.csv under its page.
+      assert.equal(
+        doc.querySelector(".scr-csv").getAttribute("href"),
+        `${srv.origin}/rest-of-season-rankings/download.csv`,
+      );
+    } finally {
+      await srv.stop();
+    }
+  });
 });
 
 describe("the CSV export", () => {
   test("matches what is on screen, with the derived columns", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const res = await fetch(`${server.origin}/rankings/download.csv`);
+    const res = await fetch(`${server.origin}/rest-of-season-rankings/download.csv`);
     const body = await res.text();
 
     assert.equal(res.status, 200);
     assert.match(res.headers.get("content-type"), /text\/csv/);
     assert.match(
       res.headers.get("content-disposition"),
-      /attachment; filename="statchasers-redraft-\d{4}\.csv"/,
+      /attachment; filename="statchasers-rest-of-season-\d{4}\.csv"/,
     );
 
     const lines = body.trim().split("\n");
@@ -534,7 +660,7 @@ describe("the CSV export", () => {
     // to 713, and a CSV deeper than the page would be a second set of rankings.
     assert.equal(lines.length - 1, 40 + 50 + 100 + 40);
 
-    const { doc } = await page("/rankings");
+    const { doc } = await page("/rest-of-season-rankings");
     const firstQb = doc
       .querySelector("#scr-panel-qb .scr-row .scr-player")
       .textContent.trim();
@@ -545,7 +671,7 @@ describe("the CSV export", () => {
   });
 
   test("404s for a season with no file", async () => {
-    const res = await fetch(`${server.origin}/rankings/download.csv?season=1999`);
+    const res = await fetch(`${server.origin}/rest-of-season-rankings/download.csv?season=1999`);
     assert.equal(res.status, 404);
   });
 });

@@ -455,7 +455,7 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
       ? (() => {
           const parts = easternParts(data.newsUpdatedAtMs);
           return (
-            `<p class="sct-hero-updated">Latest report ` +
+            `<p class="sct-hero-updated">Last updated ` +
             `<time datetime="${escapeHtml(new Date(data.newsUpdatedAtMs).toISOString())}"` +
             ` data-ts="${data.newsUpdatedAtMs}">` +
             `${escapeHtml(`${parts.month} ${parts.day}, ${parts.time}`)}</time></p>`

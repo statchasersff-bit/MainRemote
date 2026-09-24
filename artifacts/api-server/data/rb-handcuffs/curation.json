@@ -1,0 +1,283 @@
+{
+  "_comment": "Hand-kept inputs to the RB handcuff model. See the Curation type in src/lib/rb-handcuffs/engine/build.ts. Every per-player value except talentBackup, playerQualityScore and playerQualityPercentile applies only while 'starter' is still his starter.",
+  "teams": {
+    "ARI": {
+      "offenseQuality": 38,
+      "oLine": 68
+    },
+    "BAL": {
+      "offenseQuality": 71,
+      "oLine": 75
+    },
+    "BUF": {
+      "offenseQuality": 88,
+      "oLine": 81
+    },
+    "CAR": {
+      "offenseQuality": 34,
+      "oLine": 78
+    },
+    "CHI": {
+      "offenseQuality": 75,
+      "oLine": 87
+    },
+    "CIN": {
+      "oLine": 80
+    },
+    "CLE": {
+      "offenseQuality": 18
+    },
+    "DEN": {
+      "offenseQuality": 56,
+      "oLine": 81
+    },
+    "DET": {
+      "offenseQuality": 75,
+      "oLine": 73
+    },
+    "HOU": {
+      "offenseQuality": 52,
+      "oLine": 67
+    },
+    "IND": {
+      "offenseQuality": 68,
+      "oLine": 76
+    },
+    "JAX": {
+      "offenseQuality": 68,
+      "oLine": 67
+    },
+    "LAR": {
+      "offenseQuality": 86,
+      "oLine": 90
+    },
+    "MIA": {
+      "offenseQuality": 42,
+      "oLine": 75
+    },
+    "MIN": {
+      "offenseQuality": 35,
+      "oLine": 65
+    },
+    "NE": {
+      "offenseQuality": 80,
+      "oLine": 75
+    },
+    "NO": {
+      "offenseQuality": 28,
+      "oLine": 66
+    },
+    "NYG": {
+      "offenseQuality": 55,
+      "oLine": 74
+    },
+    "NYJ": {
+      "offenseQuality": 30,
+      "oLine": 72
+    },
+    "PHI": {
+      "offenseQuality": 48,
+      "oLine": 74
+    },
+    "PIT": {
+      "offenseQuality": 46,
+      "oLine": 85
+    },
+    "SF": {
+      "offenseQuality": 60,
+      "oLine": 74
+    },
+    "TEN": {
+      "offenseQuality": 17,
+      "oLine": 69
+    }
+  },
+  "players": {
+    "Alvin Kamara": {
+      "starter": "Travis Etienne Jr.",
+      "roleClarity": 81,
+      "talentBackup": 64,
+      "notes": "Kamara profiles as a declining but still useful PPR back entering his age-31 season in New Orleans. His receiving role can still provide a playable weekly floor, but reduced efficiency, age-related concerns, and a struggling Saints offense have lowered his ceiling. He is no longer a locked-in RB1/RB2, but remains a matchup-dependent flex option if his passing-game usage holds."
+    },
+    "Blake Corum": {
+      "starter": "Kyren Williams",
+      "roleClarity": 82,
+      "talentBackup": 85,
+      "notes": "Corum profiles as one of the cleaner high-upside handcuffs in fantasy behind Kyren Williams. His standalone role is limited while Williams handles workhorse volume, but Corum's early-down efficiency and trust within Sean McVay's offense make him a strong contingency stash. If Williams misses time, Corum has the skill set and offensive environment to quickly become a high-end weekly fantasy option."
+    },
+    "Braelon Allen": {
+      "starter": "Breece Hall",
+      "roleClarity": 76,
+      "talentBackup": 68,
+      "notes": "Powerful ball-carrier who could handle a lead back role. Hall has missed time before."
+    },
+    "Brian Robinson Jr.": {
+      "starter": "Bijan Robinson",
+      "notes": "Robinson profiles as a pure high-upside handcuff behind Bijan Robinson in Atlanta's backfield. He likely lacks consistent standalone value while Bijan is healthy, but his physical rushing style gives the Falcons a reliable early-down replacement if needed. If Bijan misses time, Brian Robinson could step into a volume-heavy role and immediately become a strong weekly fantasy starter."
+    },
+    "Chris Brooks": {
+      "starter": "Josh Jacobs",
+      "notes": "Brooks profiles as a deep handcuff stash behind Josh Jacobs in a strong Green Bay offense. His bruising running style and pass-protection ability give him a realistic path to the RB2 role, especially with MarShawn Lloyd struggling to stay healthy. Brooks has little standalone value while Jacobs dominates touches, but if Jacobs misses time, he could quickly step into a valuable volume-based role."
+    },
+    "Chris Rodriguez Jr.": {
+      "starter": "Bhayshul Tuten",
+      "roleClarity": 76,
+      "talentBackup": 64,
+      "notes": "Rodriguez profiles as a physical early-down stash with touchdown upside in Jacksonville's backfield. His tackle-breaking ability and familiarity with Liam Coen's offense give him a realistic path to short-yardage and goal-line work, even if Bhayshul Tuten offers more explosiveness. The lack of receiving usage limits his PPR ceiling, but Rodriguez could become a useful volume-and-touchdown play if he earns more early-down work."
+    },
+    "DJ Giddens": {
+      "starter": "Jonathan Taylor",
+      "roleClarity": 60,
+      "talentBackup": 58,
+      "notes": "Giddens profiles as a pure injury-contingent handcuff behind Jonathan Taylor in Indianapolis. He has little to no standalone fantasy value while Taylor is healthy, but his size and elusiveness give him a path to volume-based production if the lead role opens up. For now, he is best viewed as a deep bench lottery ticket, especially for managers already rostering Taylor."
+    },
+    "Dylan Sampson": {
+      "starter": "Quinshon Judkins",
+      "roleClarity": 69,
+      "talentBackup": 35,
+      "starterDurabilityHistoryRisk": 60,
+      "notes": "Sampson profiles as a PPR-friendly handcuff and passing-down specialist behind Quinshon Judkins in Cleveland. His rushing volume is likely capped while Judkins controls the early-down role, but Jerome Ford's departure gives Sampson a clearer path to third-down and receiving work. He has some standalone appeal in deeper PPR formats, with strong RB2/FLEX upside if Judkins misses time."
+    },
+    "Emari Demercado": {
+      "starter": "Kenneth Walker",
+      "handcuffType": "",
+      "notes": "Demercado profiles as a deep backup stash with limited standalone fantasy value while Kenneth Walker III remains healthy. He will need to win the No. 2 role over Emmett Johnson and Brashard Smith to become a draftable handcuff, and even then, his value would be mostly injury-contingent. His 2025 production showed he can contribute when opportunity opens, but for now he is best viewed as a training camp watchlist name in deeper leagues."
+    },
+    "Isiah Pacheco": {
+      "starter": "Jahmyr Gibbs",
+      "roleClarity": 78,
+      "notes": "Pacheco profiles as a physical complementary back behind Jahmyr Gibbs in Detroit's backfield. His between-the-tackles role should give him some weekly touch volume, but Gibbs' lead role and high-value usage likely cap Pacheco's standalone ceiling. If Gibbs misses time, Pacheco could step into a much larger workload, though his recent efficiency decline adds some risk to the profile."
+    },
+    "Jadarian Price": {
+      "starter": "Zach Charbonnet",
+      "starterDurabilityHistoryRisk": 60,
+      "notes": "Price profiles as a high-upside rookie with a clear early-season path to featured volume in Seattle. With Zach Charbonnet recovering from a torn ACL, Price could immediately step into valuable carries and become a strong volume-based fantasy option. His limited receiving profile and Charbonnet's eventual return may cap his full-season ceiling, but the short-term opportunity makes him one of the more exciting rookie RB stashes."
+    },
+    "Jaydon Blue": {
+      "starter": "Javonte Williams",
+      "notes": "Blue profiles as a high-upside dynasty stash with explosive change-of-pace ability behind Javonte Williams in Dallas. His sub-4.4 speed gives him home-run potential, but he still needs to separate from the rest of the backup competition before earning meaningful weekly touches. He has limited early-season redraft value, but his burst and contingency upside make him a name to monitor if the Cowboys' backfield opens up."
+    },
+    "Jaylen Wright": {
+      "starter": "De'Von Achane",
+      "roleClarity": 81,
+      "talentBackup": 59,
+      "notes": "Premium handcuff behind injury-prone Achane. Explosive athlete in a pass-heavy scheme."
+    },
+    "Jonathon Brooks": {
+      "starter": "Chuba Hubbard",
+      "roleClarity": 68,
+      "talentBackup": 58,
+      "notes": "Brooks profiles as a high-risk, high-reward stash whose fantasy value depends heavily on his recovery from multiple ACL injuries. Chuba Hubbard may open the season with the lead role, but Brooks' strong collegiate profile gives him the upside to carve out a larger share as the year progresses. He carries real injury and workload risk, but the payoff could be significant if he regains form and earns featured-back usage."
+    },
+    "Jordan James": {
+      "starter": "Christian McCaffrey",
+      "roleClarity": 63,
+      "talentBackup": 49,
+      "playerQualityScore": 20,
+      "notes": "James profiles as a high-upside handcuff behind Christian McCaffrey in one of fantasy's most valuable RB environments. His physical running style fits Kyle Shanahan's offense, and the departure of Brian Robinson Jr. gives him a clearer path to the primary backup role. While he has limited standalone value as long as McCaffrey is healthy, James could become an immediate fantasy priority if the 49ers' backfield opens up."
+    },
+    "Jordan Mason": {
+      "starter": "Aaron Jones SR.",
+      "roleClarity": 81,
+      "talentBackup": 64,
+      "notes": "Mason profiles as a premium handcuff behind Aaron Jones with some standalone touchdown and early-down appeal. His physical rushing style and short-yardage value should keep him involved in Minnesota's backfield, even if his receiving role remains limited. If Jones misses time, Mason has the workload profile and efficiency to quickly become a strong weekly fantasy starter."
+    },
+    "Justice Hill": {
+      "starter": "Derrick Henry",
+      "roleClarity": 65,
+      "talentBackup": 80,
+      "notes": "Hill profiles as Baltimore's passing-down specialist and change-of-pace back behind 32-year-old Derrick Henry. His receiving role gives him some PPR and best ball appeal, but limited carry volume keeps his standalone fantasy ceiling low. If Henry misses time or the Ravens manage his workload more carefully, Hill could see a larger role, though he is best viewed as a late-round depth piece rather than a priority handcuff."
+    },
+    "Keaton Mitchell": {
+      "starter": "Omarion Hampton",
+      "notes": "Mitchell is a high-upside handcuff with elite speed and a clear path to complementary touches behind Omarion Hampton. He may not be built for heavy between-the-tackles volume, but his explosiveness makes him dangerous in space and valuable in PPR formats. If Hampton misses time, Mitchell could quickly become a boom-or-bust RB2/FLEX option."
+    },
+    "Kenny Gainwell": {
+      "starter": "Bucky Irving",
+      "notes": "Gainwell is a PPR-friendly handcuff behind Bucky Irving with a defined third-down and two-minute role. His receiving profile gives him more standalone value than a typical backup, especially in deeper PPR formats. He likely needs Irving to miss time to reach a true ceiling outcome, but his pass-catching usage makes him a strong stash with weekly flex potential."
+    },
+    "Kyle Monangai": {
+      "starter": "D'Andre Swift",
+      "roleClarity": 74,
+      "talentBackup": 77,
+      "notes": "Monangai profiles as a physical early-down back with a meaningful role in Chicago's backfield. His vision, contact balance, and projected goal-line usage give him solid RB2/RB3 appeal, even while sharing work with D'Andre Swift. If Monangai earns the heavier red-zone role or pushes beyond a true split, he has a realistic path to a top-24 fantasy finish."
+    },
+    "MarShawn Lloyd": {
+      "starter": "Josh Jacobs"
+    },
+    "Mike Washington Jr.": {
+      "starter": "Ashton Jeanty",
+      "notes": "Washington profiles as a high-upside rookie handcuff behind Ashton Jeanty in Las Vegas. His size-speed profile gives him rare big-play and workload upside if the starting role opens, but his standalone redraft value is limited while Jeanty remains healthy. He still needs to win the primary backup job over Roman Hemby, but Washington's athletic traits make him an intriguing late-round stash with major contingent upside."
+    },
+    "Ollie Gordon II": {
+      "starter": "De'Von Achane",
+      "notes": "Gordon profiles as a low-priority power-back stash with touchdown-dependent upside in Miami's backfield. His size gives him a potential path to short-yardage and goal-line work, but De'Von Achane blocks his path to consistent touches and Gordon offers little receiving value. He is mostly a deep bench dart throw unless injuries create a clearer early-down role."
+    },
+    "Rachaad White": {
+      "starter": "Jacory Croskey-Merritt",
+      "notes": "White profiles as a PPR-friendly receiving back with a strong passing-down role in Washington's backfield. His pass-catching ability and blocking reliability give him a safer weekly floor than many committee backs, especially if he remains the preferred third-down option. His ceiling depends on whether he can win enough early-down work from Jacory Croskey-Merritt, but White has the reception volume to remain a useful flex option in PPR formats."
+    },
+    "Rico Dowdle": {
+      "starter": "Jaylen Warren",
+      "roleClarity": 77,
+      "talentBackup": 58,
+      "notes": "Dowdle profiles as a steady early-down and goal-line option in Pittsburgh's projected committee with Jaylen Warren. His recent production and familiarity with Mike McCarthy's offense give him a reliable path to weekly flex value, especially in a run-friendly scheme. Warren may limit his receiving ceiling, but Dowdle's touch volume and three-down contingency upside make him a dependable fantasy asset."
+    },
+    "RJ Harvey": {
+      "starter": "J.K. Dobbins",
+      "roleClarity": 79,
+      "talentBackup": 79,
+      "notes": "Harvey profiles as a pass-catching RB2/handcuff in Denver's committee backfield. His receiving ability gives him standalone PPR appeal, especially in a Sean Payton offense that can feature backs through the air. However, his rushing efficiency and pass-protection concerns may limit his early-down workload if J.K. Dobbins stays healthy. Harvey's ceiling rises significantly if Dobbins misses time, but for now he is best viewed as a committee back with strong contingent upside."
+    },
+    "Samaje Perine": {
+      "starter": "Chase Brown",
+      "roleClarity": 72,
+      "talentBackup": 70,
+      "notes": "Perine profiles as a low-ceiling insurance back behind Chase Brown in Cincinnati's backfield. His pass-blocking, third-down experience, and veteran reliability give him a path to situational snaps, but he lacks meaningful standalone fantasy value while Brown is healthy. If Brown misses time, Perine could provide stable volume and short-term flex value, though his upside is more floor-based than explosive."
+    },
+    "Tank Bigsby": {
+      "starter": "Saquon Barkley",
+      "roleClarity": 66,
+      "talentBackup": 85,
+      "notes": "Bigsby profiles as an elite contingency handcuff behind Saquon Barkley in Philadelphia's high-powered rushing offense. His standalone role is limited while Barkley handles workhorse volume, but Bigsby's physical running style and efficiency after contact make him a strong fit if called upon. If Barkley misses time, Bigsby could immediately step into a heavy-volume role with RB1/RB2 fantasy upside."
+    },
+    "TreVeyon Henderson": {
+      "starter": "Rhamondre Stevenson",
+      "roleClarity": 77,
+      "talentBackup": 89,
+      "notes": "Henderson profiles as an explosive committee back with legitimate RB2 upside in New England. His rushing burst and receiving ability give him weekly splash-play potential, while Rhamondre Stevenson's presence may keep the workload split and create some floor volatility. If Henderson earns a larger touch share or improves near the goal line, he has the talent to outperform his mid-round fantasy cost."
+    },
+    "Ty Johnson": {
+      "starter": "James Cook III",
+      "roleClarity": 67,
+      "talentBackup": 68,
+      "notes": "Johnson profiles as a deep-league pass-catching depth back in Buffalo's crowded backfield. His third-down and two-minute role can create occasional PPR or best ball spike value, but James Cook and Ray Davis block his path to consistent touches. He is not a priority stash in standard leagues, but could become relevant in deeper formats if injuries open up more passing-down work."
+    },
+    "Tyjae Spears": {
+      "starter": "Tony Pollard",
+      "roleClarity": 82,
+      "talentBackup": 74,
+      "notes": "Spears profiles as a versatile pass-catching complement with useful PPR depth value in Tennessee's backfield. His third-down role and receiving ability give him a safer weekly floor than many late-round backs, but durability concerns and a committee setup limit his path to consistent RB2 production. If the backfield shifts in his favor, Spears has enough elusiveness and pass-game usage to become a valuable flex option."
+    },
+    "Tyler Allgeier": {
+      "starter": "Jeremiyah Love",
+      "roleClarity": 83,
+      "talentBackup": 46,
+      "pathToOpportunityScore": 4,
+      "notes": "Allgeier profiles as a physical rotational back with touchdown-dependent value in Arizona's crowded backfield. His lack of receiving usage and competition from James Conner and Trey Benson limit his weekly standalone appeal, but his early-down style gives him some deeper-league flex potential if he earns goal-line work. With Conner aging and carrying durability concerns, Allgeier remains a cheap contingency stash if the Cardinals' backfield opens up."
+    },
+    "Tyrone Tracy Jr.": {
+      "starter": "Cam Skattebo",
+      "roleClarity": 78,
+      "talentBackup": 58,
+      "notes": "Tracy profiles as a high-upside PPR handcuff with standalone committee value in New York's backfield. His explosiveness and receiving ability give him a useful weekly floor, even while sharing touches with Cam Skattebo. The Giants' scoring environment may cap his touchdown ceiling, but if Skattebo misses time, Tracy has the versatility and workload upside to become a strong RB2 or better."
+    },
+    "Woody Marks": {
+      "starter": "David Montgomery",
+      "roleClarity": 78,
+      "talentBackup": 47,
+      "notes": "Marks profiles as a PPR-friendly backup and passing-down specialist behind David Montgomery in Houston's backfield. His standalone value may be limited if Montgomery controls the early-down and short-yardage work, but Marks' receiving role gives him some deep-league appeal. If Montgomery misses time, Marks has already shown he can handle expanded volume, making him an intriguing late-round handcuff with RB2 upside."
+    }
+  },
+  "depth": {}
+}

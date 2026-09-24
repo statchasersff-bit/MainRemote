@@ -1,0 +1,2468 @@
+/*
+ * StatChasers — RB Handcuff Rankings
+ *
+ * A sibling of team.css, fpa.css, rankings.css and player-stats.css, and a
+ * sibling for the same reason: the stylesheets are enqueued independently, so
+ * a page mounting [statchasers_rb_handcuffs] must not need another tool's CSS.
+ * The brand tokens are restated rather than imported.
+ *
+ * The LAYOUT is the standalone Redraft-RB-Handcuff-Rankings app's — the weight
+ * model on top (allocation bar, three pillar sliders, Re-rank), the model
+ * reference and badge guide under it, then the board: Rk, Player, Team,
+ * Handcuff For, Score, Note and Comp, a row that opens into its breakdown, a
+ * compare tray along the bottom of the window, and a player card over the
+ * page. The DRESS is the house's: its tokens, its radii, its navy-for-active
+ * controls. See the note on ported tools in replit.md.
+ *
+ * Light-only, matching the others.
+ */
+
+:where(.rbh, .rbh-layer),
+:where(body.rbh-page) {
+  /* Brand */
+  --sc-navy: #0b1634;
+  --sc-navy-deep: #060d21;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  /* Neutrals */
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-hairline: rgba(15, 23, 42, 0.08);
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-radius-xs: 8px;
+
+  --sc-shell: 1180px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --rbh-gutter: 24px;
+
+  /* Cell padding, as tokens: the narrow tier tightens it, and the theme
+     armour at the foot of this file restates it at a specificity Divi cannot
+     reach. See player-stats.css. */
+  --rbh-pad-y: 9px;
+  --rbh-pad-x: 12px;
+
+  --rbh-zebra: #f7f9fc;
+  --rbh-hover: #eef2f8;
+  --rbh-open: #fbf6e6;
+
+  /* The three pillars' accents: the app's blue, teal and gold. */
+  --rbh-blue: #2563eb;
+  --rbh-teal: #0f766e;
+  --rbh-gold: #c98a0a;
+
+  /*
+   * The tier bars under each score: the app's gold, blue, green and slate.
+   * Bars only — a tier colour never carries text, so it needs no contrast
+   * against white, and the number above it is always printed.
+   */
+  --rbh-tier-elite: #e8b21e;
+  --rbh-tier-great: #3b82f6;
+  --rbh-tier-good: #10b981;
+  --rbh-tier-deep: #94a3b8;
+
+  /* The breakdown bars: 76+ green, 51+ navy, 26+ yellow, below that red. */
+  --rbh-bar-hi: #10b981;
+  --rbh-bar-mid: #0b1f3a;
+  --rbh-bar-low: #facc15;
+  --rbh-bar-bad: #ef4444;
+  --rbh-bar-none: #cbd5e1;
+
+  /*
+   * The handcuff types. The app's hues — emerald, purple, sky, amber, red,
+   * orange, zinc — each darkened until it clears 4.5:1 on white and on the
+   * zebra stripe: they are text colours here, and the app's were drawn on
+   * navy.
+   */
+  --rbh-type-premium: #047857;
+  --rbh-type-contingency: #7e22ce;
+  --rbh-type-talent: #0369a1;
+  --rbh-type-opportunity: #b45309;
+  --rbh-type-trap: #b91c1c;
+  --rbh-type-ceiling: #c2410c;
+  --rbh-type-deadzone: #52525b;
+
+  /* Good, moderate, concern: the card's one colour language. */
+  --rbh-good: #047857;
+  --rbh-warn: #a16207;
+  --rbh-bad: #b91c1c;
+}
+
+/* ------------------------------------------------------------- page shell */
+
+body.rbh-page {
+  margin: 0;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.rbh {
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+  padding: 24px var(--rbh-gutter) 64px;
+  /* The breakpoints are THIS element's width, not the window's: embedded, the
+     board lives in a WordPress column that can be 700px wide inside a 1400px
+     window, and a viewport query cannot see that. */
+  container-type: inline-size;
+  container-name: rbh;
+  background: var(--sc-surface);
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.5;
+}
+
+.rbh.is-embed {
+  max-width: none;
+  padding: 0 0 40px;
+}
+
+.rbh *,
+.rbh *::before,
+.rbh *::after,
+.rbh-layer,
+.rbh-layer *,
+.rbh-layer *::before,
+.rbh-layer *::after {
+  box-sizing: border-box;
+}
+
+/* Bare-element padding from a host theme. One class of weight via :where(),
+   so it beats a theme's bare `p` and ties the component rules below, which
+   then win on source order. */
+.rbh :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd),
+.rbh-layer :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote, dl, dd) {
+  padding: 0;
+  margin: 0;
+}
+
+.rbh-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rbh-empty {
+  margin: 0;
+  padding: 32px 0;
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+.rbh-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  vertical-align: -2px;
+}
+
+.rbh-icon.is-muted {
+  color: var(--sc-muted);
+}
+
+.rbh-chev {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--sc-muted);
+  transition: transform 0.2s ease;
+}
+
+details[open] > summary > .rbh-chev {
+  transform: rotate(180deg);
+}
+
+.rbh-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.rbh-muted {
+  color: var(--sc-muted);
+  font-size: 12px;
+}
+
+.rbh-na {
+  color: #94a3b8;
+}
+
+.rbh-note-small {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--sc-muted);
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------------ the panel */
+
+.rbh-panel {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+
+.rbh-updated {
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.rbh-weights {
+  display: grid;
+  gap: 14px;
+}
+
+.rbh-weights[hidden] {
+  display: none;
+}
+
+.rbh-hint {
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.rbh-alloc {
+  display: grid;
+  gap: 8px;
+}
+
+.rbh-alloc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rbh-reset {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sc-navy);
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: var(--sc-radius-xs);
+  cursor: pointer;
+}
+
+.rbh-reset:hover:not(:disabled) {
+  background: var(--sc-surface-sink);
+}
+
+.rbh-reset:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
+.rbh-alloc-bar {
+  display: flex;
+  gap: 3px;
+  height: 14px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.rbh-alloc-seg {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.rbh-alloc-seg.is-blue,
+.rbh-dot.is-blue {
+  background: var(--rbh-blue);
+}
+
+.rbh-alloc-seg.is-teal,
+.rbh-dot.is-teal {
+  background: var(--rbh-teal);
+}
+
+.rbh-alloc-seg.is-gold,
+.rbh-dot.is-gold {
+  background: var(--rbh-gold);
+}
+
+.rbh-alloc-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 11px;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-alloc-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rbh-alloc-key strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-ink);
+}
+
+.rbh-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.rbh-sliders {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.rbh-slider {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-slider.is-blue {
+  --rbh-accent: var(--rbh-blue);
+}
+
+.rbh-slider.is-teal {
+  --rbh-accent: var(--rbh-teal);
+}
+
+.rbh-slider.is-gold {
+  --rbh-accent: var(--rbh-gold);
+}
+
+.rbh-slider-cat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.rbh-slider-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rbh-slider-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--sc-ink);
+}
+
+.rbh-slider-pct {
+  flex: none;
+  min-width: 46px;
+  padding: 4px 8px;
+  border-radius: var(--sc-radius-xs);
+  background: var(--rbh-accent);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.rbh-slider-desc {
+  margin-top: 4px;
+  min-height: 2.8em;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--sc-muted-strong);
+}
+
+/*
+ * The range is drawn here, not left to accent-color. With accent-color alone
+ * Chrome picks the unfilled track's shade from the accent's lightness: blue
+ * and teal got a light track, gold a dark charcoal one. Drawing it pins one
+ * light track for all three, in every engine. --rbh-fill is the value as a
+ * percentage: the server prints it and the client repaints it on input.
+ */
+.rbh-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 16px;
+  margin: 10px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rbh-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--rbh-accent) 0 var(--rbh-fill, 0%),
+    var(--sc-border) var(--rbh-fill, 0%) 100%
+  );
+}
+
+.rbh-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rbh-accent);
+}
+
+.rbh-slider input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sc-border);
+}
+
+.rbh-slider input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--rbh-accent);
+}
+
+.rbh-slider input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rbh-accent);
+}
+
+.rbh-slider input[type="range"]:focus {
+  outline: none;
+}
+
+.rbh-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--rbh-accent);
+}
+
+.rbh-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--rbh-accent);
+}
+
+.rbh-apply {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-status {
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.rbh-status-main {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rbh-status-main.is-ok {
+  color: var(--rbh-good);
+}
+
+.rbh-status-main.is-dirty {
+  color: var(--sc-navy);
+}
+
+.rbh-status-main.is-bad {
+  color: var(--rbh-bad);
+}
+
+.rbh-status-sub {
+  font-size: 10px;
+  color: var(--sc-muted);
+}
+
+.rbh-rerank,
+.rbh-tray-go,
+.rbh-card-cta,
+.rbh-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: var(--sc-radius-xs);
+  cursor: pointer;
+}
+
+.rbh-rerank {
+  flex: none;
+  min-width: 150px;
+  padding: 10px 16px;
+  border: 1px solid var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.rbh-rerank:hover:not(:disabled) {
+  background: var(--sc-navy-deep);
+}
+
+.rbh-rerank:disabled {
+  border-color: #cbd5e1;
+  background: var(--sc-surface-sink);
+  color: #94a3b8;
+  cursor: default;
+}
+
+/* -------------------------------------------------------- the reference */
+
+.rbh-reference {
+  display: grid;
+  gap: 6px;
+}
+
+.rbh-accordions {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: hidden;
+}
+
+.rbh-accordion + .rbh-accordion {
+  border-top: 1px solid var(--sc-border);
+}
+
+.rbh-accordion > summary,
+.rbh-more > summary,
+.rbh-section > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.rbh-accordion > summary::-webkit-details-marker,
+.rbh-more > summary::-webkit-details-marker,
+.rbh-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.rbh-accordion > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-accordion > summary > span {
+  flex: 1;
+}
+
+.rbh-accordion > summary:hover {
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+}
+
+.rbh-accordion-body {
+  display: grid;
+  gap: 12px;
+  padding: 12px 14px 18px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.rbh-ref-intro {
+  font-size: 12px;
+  color: var(--sc-muted-strong);
+  line-height: 1.45;
+}
+
+.rbh-pillars,
+.rbh-badge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.rbh-pillar,
+.rbh-badge-card {
+  padding: 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-pillar-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rbh-pillar-tag {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--sc-muted-strong);
+  line-height: 1.4;
+}
+
+.rbh-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.rbh-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  font-size: 10px;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-more {
+  margin-top: 10px;
+}
+
+.rbh-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-more-hide,
+.rbh-more[open] .rbh-more-show {
+  display: none;
+}
+
+.rbh-more[open] .rbh-more-hide {
+  display: inline;
+}
+
+.rbh-more-body {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.rbh-pillar-intro {
+  font-size: 11px;
+  color: var(--sc-muted-strong);
+  line-height: 1.45;
+}
+
+.rbh-factor {
+  display: grid;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.rbh-factor strong {
+  color: var(--sc-ink);
+}
+
+.rbh-factor span {
+  color: var(--sc-muted);
+}
+
+.rbh-badge-group {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rbh-badge-group.is-priority {
+  color: var(--rbh-good);
+}
+
+.rbh-badge-group.is-caution {
+  color: var(--rbh-bad);
+}
+
+.rbh-badge-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rbh-badge-meaning {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sc-ink);
+}
+
+.rbh-badge-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sc-muted-strong);
+}
+
+/* --------------------------------------------------------- handcuff types */
+
+.rbh-type-premium { color: var(--rbh-type-premium); }
+.rbh-type-contingency { color: var(--rbh-type-contingency); }
+.rbh-type-talent { color: var(--rbh-type-talent); }
+.rbh-type-opportunity { color: var(--rbh-type-opportunity); }
+.rbh-type-trap { color: var(--rbh-type-trap); }
+.rbh-type-ceiling { color: var(--rbh-type-ceiling); }
+.rbh-type-deadzone { color: var(--rbh-type-deadzone); }
+
+/* The icon legend is for the narrow table only, where Note is an icon. */
+.rbh-legend {
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
+  margin: 0 0 8px;
+  font-size: 11px;
+}
+
+.rbh-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rbh-legend-item > span {
+  color: var(--sc-muted-strong);
+}
+
+/* --------------------------------------------------------------- the table */
+
+.rbh-table-card {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: hidden;
+  background: var(--sc-surface);
+}
+
+.rbh-scroll {
+  overflow-x: auto;
+}
+
+.rbh-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.rbh-table th,
+.rbh-table td {
+  padding: var(--rbh-pad-y) var(--rbh-pad-x);
+  text-align: left;
+  vertical-align: middle;
+  border: 0;
+}
+
+.rbh-table thead th {
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rbh-table thead th.is-sorted {
+  color: var(--sc-gold-soft);
+}
+
+.rbh-table thead abbr {
+  text-decoration: none;
+  border: 0;
+}
+
+.rbh-sort {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rbh-sort:hover {
+  color: var(--sc-gold-soft);
+}
+
+.rbh-th-comp {
+  text-align: center;
+  font-size: 9px;
+}
+
+.rbh-row {
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.rbh-row.is-alt {
+  background: var(--rbh-zebra);
+}
+
+.rbh.is-live .rbh-row {
+  cursor: pointer;
+}
+
+.rbh.is-live .rbh-row:hover {
+  background: var(--rbh-hover);
+}
+
+.rbh .rbh-row.is-open {
+  background: var(--rbh-open);
+}
+
+.rbh-row:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: -2px;
+}
+
+.rbh-rank {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--sc-ink);
+}
+
+.rbh-player {
+  font-weight: 600;
+}
+
+.rbh-name {
+  display: block;
+  color: var(--sc-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.rbh-name:hover {
+  color: var(--sc-navy);
+  text-decoration: underline;
+}
+
+.rbh-name-short,
+.rbh-for {
+  display: none;
+}
+
+.rbh-for {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--sc-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The starter's status on this week's injury report. */
+.rbh-inj {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(161, 98, 7, 0.1);
+  color: var(--rbh-warn);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-decoration: none;
+  vertical-align: 1px;
+  cursor: help;
+}
+
+.rbh-inj.is-severe {
+  background: rgba(185, 28, 28, 0.1);
+  color: var(--rbh-bad);
+}
+
+.rbh-team {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-team > * {
+  vertical-align: middle;
+}
+
+.rbh-logo {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  object-fit: contain;
+}
+
+.rbh-starter {
+  font-size: 13px;
+  color: var(--sc-muted-strong);
+  white-space: nowrap;
+}
+
+.rbh-score {
+  width: 1%;
+}
+
+.rbh-score-num {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--sc-ink);
+}
+
+.rbh-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  overflow: hidden;
+}
+
+.rbh-bar.is-thin {
+  width: 48px;
+  height: 4px;
+  margin-top: 5px;
+}
+
+.rbh-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.rbh-bar-fill.is-tier-elite { background: var(--rbh-tier-elite); }
+.rbh-bar-fill.is-tier-great { background: var(--rbh-tier-great); }
+.rbh-bar-fill.is-tier-good { background: var(--rbh-tier-good); }
+.rbh-bar-fill.is-tier-deep { background: var(--rbh-tier-deep); }
+.rbh-bar-fill.is-hi { background: var(--rbh-bar-hi); }
+.rbh-bar-fill.is-mid { background: var(--rbh-bar-mid); }
+.rbh-bar-fill.is-low { background: var(--rbh-bar-low); }
+.rbh-bar-fill.is-bad { background: var(--rbh-bar-bad); }
+.rbh-bar-fill.is-none { background: var(--rbh-bar-none); }
+
+.rbh-note {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rbh-note-icon {
+  display: none;
+  width: 16px;
+  height: 16px;
+}
+
+.rbh-note-text {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.rbh-comp {
+  text-align: center;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.rbh-comp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  cursor: pointer;
+}
+
+.rbh-comp-btn:hover:not(:disabled) {
+  border-color: var(--sc-navy);
+  color: var(--sc-navy);
+}
+
+.rbh-comp-btn.is-on {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.rbh-comp-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rbh-comp-btn .rbh-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* The expanded row. */
+.rbh-detail > td {
+  padding: 0;
+  background: var(--sc-surface-soft);
+  border-top: 1px solid var(--sc-hairline);
+}
+
+.rbh-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 18px 20px;
+}
+
+.rbh-detail-col {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.rbh-metric {
+  display: grid;
+  gap: 4px;
+}
+
+.rbh-metric-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rbh-metric-label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.rbh-metric-rank {
+  font-weight: 400;
+  color: var(--sc-muted);
+}
+
+.rbh-metric-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rbh-metric-desc {
+  font-size: 11px;
+  color: var(--sc-muted);
+  line-height: 1.4;
+}
+
+.rbh-reasons {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.rbh-reasons li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-reasons li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sc-gold);
+}
+
+.rbh-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rbh-flag {
+  padding: 2px 8px;
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  border-radius: 999px;
+  background: rgba(185, 28, 28, 0.06);
+  font-size: 10px;
+  color: var(--rbh-bad);
+}
+
+.rbh-profile-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-size: 12px;
+}
+
+.rbh-profile-btn:hover {
+  border-color: var(--sc-navy);
+  color: var(--sc-navy);
+}
+
+.rbh-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 10px 2px 0;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------ the dek, best and faq */
+
+/* The standfirst under the page's heading. The heading is the WordPress page
+   title; this is the tool's first line, and reads as copy, not a control. */
+.rbh-dek {
+  max-width: 72ch;
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sc-muted-strong);
+}
+
+/* The best handcuffs and the FAQ follow the table as prose. The 40px is a
+   page break, as on the rankings page: a table ends and reading begins. */
+.rbh-best,
+.rbh-faq-block {
+  margin: 40px 0 0;
+}
+
+/* The gold rule under an <h2>, as team.css and rankings.css draw it. */
+.rbh-best-title,
+.rbh-faq-title {
+  position: relative;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  color: var(--sc-navy);
+  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.rbh-best-title::after,
+.rbh-faq-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sc-gold);
+}
+
+.rbh-best-note {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: var(--sc-muted);
+}
+
+.rbh-best-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 24px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.rbh-best-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.rbh-best-rank {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rbh-best-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.rbh-best-name {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+a.rbh-best-name:hover {
+  color: var(--sc-gold-deep);
+}
+
+.rbh-best-meta {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-best-meta [class^="rbh-type-"] {
+  font-weight: 700;
+}
+
+.rbh-best-score {
+  flex: none;
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sc-ink);
+}
+
+.rbh-faq {
+  border-top: 1px solid var(--sc-border);
+}
+
+/* One question, one fold, shut by default: every question shows, and the
+   answer opens under the one the reader came for. The native marker is
+   replaced by a chevron of our own. */
+.rbh-faq-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.rbh-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.rbh-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+.rbh-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+}
+
+.rbh-faq-item[open] > .rbh-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
+.rbh-faq-q-row:hover .rbh-faq-q {
+  color: var(--sc-gold-deep);
+}
+
+.rbh-faq-q {
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.rbh-faq-a {
+  margin: 7px 0 0 20px;
+  max-width: 72ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rbh-faq-q-row::before {
+    transition: none;
+  }
+}
+
+/* Two columns of five once there is room: the list reads down, then across. */
+@container rbh (min-width: 768px) {
+  .rbh-best-list {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(5, auto);
+  }
+}
+
+@container rbh (max-width: 639.98px) {
+  .rbh-best,
+  .rbh-faq-block {
+    margin-top: 28px;
+  }
+}
+
+/* ------------------------------------------------------------ width tiers */
+
+/* 640+: the app's `sm`. The sliders and cards go three across, the table
+   goes fixed-layout, and Note is a word again. */
+@container rbh (min-width: 640px) {
+  .rbh-sliders,
+  .rbh-pillars {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rbh-badge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rbh-table {
+    table-layout: fixed;
+  }
+
+  /* Six columns: Handcuff For is still out. */
+  .rbh-th-rank { width: 8%; }
+  .rbh-th-player { width: 30%; }
+  .rbh-th-team { width: 15%; }
+  .rbh-th-score { width: 14%; }
+  .rbh-th-type { width: 25%; }
+  .rbh-th-comp { width: 8%; }
+
+  .rbh-score {
+    width: auto;
+  }
+}
+
+/* 768+: the app's `md`. Handcuff For comes in, the names go full, and the
+   starter under the name goes away because he has his own column. */
+@container rbh (min-width: 768px) {
+  .rbh-th-rank { width: 6%; }
+  .rbh-th-player { width: 24%; }
+  .rbh-th-team { width: 11%; }
+  .rbh-th-starter { width: 22%; }
+  .rbh-th-score { width: 10%; }
+  .rbh-th-type { width: 20%; }
+  .rbh-th-comp { width: 7%; }
+
+  .rbh-detail-grid {
+    grid-template-columns: 1.3fr 1fr auto;
+  }
+
+  .rbh-detail-col.is-actions {
+    text-align: right;
+  }
+
+  .rbh-profile-btn {
+    width: auto;
+  }
+}
+
+/* Below 1024 the starter's name is abbreviated in its column. */
+@container rbh (max-width: 1023.98px) {
+  .rbh-starter .rbh-name-full {
+    display: none;
+  }
+
+  .rbh-starter .rbh-name-short {
+    display: inline;
+  }
+}
+
+@container rbh (max-width: 767.98px) {
+  .rbh-th-starter,
+  .rbh-starter {
+    display: none;
+  }
+
+  .rbh-player .rbh-name-full {
+    display: none;
+  }
+
+  .rbh-player .rbh-name-short,
+  .rbh-for {
+    display: block;
+  }
+
+  /* The app's 90% type scale for the narrow table, as one number. */
+  .rbh-table {
+    font-size: 12.6px;
+  }
+
+  .rbh-score-num {
+    font-size: 14.4px;
+  }
+}
+
+@container rbh (max-width: 639.98px) {
+  .rbh {
+    --rbh-pad-x: 5px;
+  }
+
+  /* Fixed widths, the app's w-6 / w-14 / w-14 / w-9, so the player column
+     takes what is left and a long starter name truncates instead of pushing
+     Note and Comp off the edge. */
+  .rbh-table {
+    table-layout: fixed;
+  }
+
+  .rbh-th-rank { width: 28px; }
+  .rbh-th-team { width: 54px; }
+  .rbh-th-score { width: 56px; }
+  .rbh-th-type { width: 36px; }
+  .rbh-th-comp { width: 42px; }
+
+  /* The app shrank these two headers rather than drop them. */
+  .rbh-table thead .rbh-th-type,
+  .rbh-table thead .rbh-th-comp {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+
+  .rbh-player .rbh-name,
+  .rbh-for {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rbh-legend {
+    display: flex;
+  }
+
+  .rbh-note-icon {
+    display: block;
+  }
+
+  .rbh-note {
+    justify-content: center;
+  }
+
+  .rbh-type .rbh-note-text {
+    display: none;
+  }
+
+  .rbh-player {
+    padding-left: 10px;
+  }
+
+  .rbh-apply {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rbh-rerank {
+    min-width: 0;
+  }
+}
+
+@container rbh (max-width: 480px) {
+  .rbh:not(.is-embed) {
+    --rbh-gutter: 12px;
+  }
+}
+
+/* ------------------------------------------------------ the compare tray */
+
+html.rbh-has-tray body {
+  padding-bottom: 72px;
+}
+
+html.rbh-locked,
+html.rbh-locked body {
+  overflow: hidden;
+}
+
+.rbh-layer {
+  font-family: var(--sc-font);
+  color: var(--sc-ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Over Divi's header, which the plugin raises to 99999 on tool pages. */
+.rbh-tray {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100000;
+  padding: 10px 16px;
+  border-top: 1px solid var(--sc-border);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.rbh-tray-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: var(--sc-shell);
+  margin: 0 auto;
+}
+
+.rbh-tray-chips {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.rbh-chip-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 4px 3px 6px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rbh-chip-player img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.rbh-chip-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rbh-chip-team {
+  display: none;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--sc-muted);
+}
+
+.rbh-chip-x,
+.rbh-ccol-x,
+.rbh-dialog-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--sc-muted);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rbh-chip-x {
+  width: 18px;
+  height: 18px;
+  font-size: 14px;
+}
+
+.rbh-chip-x:hover,
+.rbh-ccol-x:hover,
+.rbh-dialog-x:hover {
+  background: var(--sc-surface-sink);
+  color: var(--sc-ink);
+}
+
+.rbh-chip-slot {
+  flex: none;
+  padding: 3px 12px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.rbh-tray-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.rbh-tray-clear {
+  padding: 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--sc-muted-strong);
+  cursor: pointer;
+}
+
+.rbh-tray-go {
+  padding: 9px 14px;
+  border: 1px solid var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+.rbh-tray-go span {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.rbh-tray-go:disabled {
+  border-color: #cbd5e1;
+  background: var(--sc-surface-sink);
+  color: #94a3b8;
+  cursor: default;
+}
+
+@media (max-width: 639.98px) {
+  .rbh-chip-name,
+  .rbh-chip-slot {
+    display: none;
+  }
+
+  .rbh-chip-team {
+    display: inline;
+  }
+}
+
+/* ------------------------------------------------------------- the layers */
+
+.rbh-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.rbh-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 13, 33, 0.6);
+}
+
+.rbh-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow: 0 24px 60px rgba(6, 13, 33, 0.35);
+  overflow: hidden;
+}
+
+.rbh-dialog:focus {
+  outline: none;
+}
+
+.rbh-dialog-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.rbh-dialog-x {
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  font-size: 22px;
+}
+
+.rbh-dialog-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-navy);
+}
+
+.rbh-dialog-body {
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+  overscroll-behavior: contain;
+}
+
+.rbh-loading {
+  padding: 24px 0;
+  font-size: 13px;
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+.rbh-loading a {
+  color: var(--sc-navy);
+}
+
+/* The card is the whole screen on a phone, as the app's drawer was. */
+@media (max-width: 639.98px) {
+  .rbh-modal.is-drawer {
+    padding: 0;
+  }
+
+  .rbh-modal.is-drawer .rbh-dialog {
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .rbh-modal.is-compare {
+    padding: 10px;
+  }
+
+  .rbh-dialog-body {
+    padding: 16px;
+  }
+}
+
+/* --------------------------------------------------------------- the card */
+
+.rbh-card {
+  display: grid;
+  gap: 22px;
+}
+
+.rbh-hero {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: 150px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: linear-gradient(135deg, #fff 0%, #fff 55%, var(--sc-surface-sink) 100%);
+  box-shadow: var(--sc-shadow);
+  overflow: hidden;
+}
+
+.rbh-hero-mark {
+  position: absolute;
+  right: -3px;
+  bottom: -27px;
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.rbh-hero-photo {
+  position: relative;
+  flex: none;
+  width: 33%;
+  max-width: 180px;
+  background: var(--sc-surface-sink);
+}
+
+.rbh-hero-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sc-muted);
+}
+
+.rbh-hero-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.rbh-hero-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.rbh-hero-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.rbh-hero-id {
+  flex: 1;
+  min-width: 0;
+}
+
+.rbh-layer .rbh-hero-name {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--sc-ink);
+}
+
+.rbh-hero-team {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sc-muted);
+}
+
+.rbh-hero-arch {
+  margin-top: 8px;
+  max-width: 34ch;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-card-cta {
+  flex: none;
+  padding: 8px 12px;
+  border: 1px solid var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 12px;
+}
+
+.rbh-card-cta:hover {
+  background: var(--sc-navy-deep);
+}
+
+/* A phone's card is too narrow for the name and the button side by side. */
+@media (max-width: 519.98px) {
+  .rbh-hero-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rbh-hero-photo {
+    width: 36%;
+  }
+}
+
+.rbh-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rbh-pill {
+  padding: 3px 8px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.rbh-pill.is-good { color: var(--rbh-good); border-color: rgba(4, 120, 87, 0.3); background: rgba(4, 120, 87, 0.06); }
+.rbh-pill.is-warn { color: var(--rbh-warn); border-color: rgba(161, 98, 7, 0.3); background: rgba(161, 98, 7, 0.06); }
+.rbh-pill.is-bad { color: var(--rbh-bad); border-color: rgba(185, 28, 28, 0.3); background: rgba(185, 28, 28, 0.06); }
+.rbh-pill.is-none { color: var(--sc-muted-strong); border-color: var(--sc-border); background: var(--sc-surface-soft); }
+
+.rbh-card-block {
+  display: grid;
+  gap: 10px;
+}
+
+.rbh-layer .rbh-card-h {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.rbh-summary {
+  padding-left: 12px;
+  border-left: 2px solid var(--sc-border);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-why {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-why-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px 20px;
+  list-style: none;
+}
+
+.rbh-why-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.rbh-why-list .rbh-icon {
+  width: 13px;
+  height: 13px;
+  margin-top: 3px;
+}
+
+.rbh-why-list li.is-ok .rbh-icon { color: var(--rbh-good); }
+.rbh-why-list li.is-warn .rbh-icon { color: var(--rbh-warn); }
+.rbh-why-list li.is-warn { color: var(--sc-muted-strong); }
+
+@media (min-width: 640px) {
+  .rbh-why-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rbh-section {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  overflow: hidden;
+}
+
+.rbh-section > summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.rbh-section > summary:hover {
+  background: var(--sc-surface-soft);
+}
+
+.rbh-section > summary > .rbh-chev {
+  margin-top: 3px;
+}
+
+.rbh-section-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.rbh-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rbh-section-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rbh-section-rank {
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rbh-section-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--sc-muted);
+}
+
+.rbh-section-body {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--sc-border);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-driver {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.rbh-driver-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sc-muted-strong);
+  cursor: help;
+}
+
+.rbh-icon.is-tip {
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
+}
+
+.rbh-driver-vals {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.rbh-driver-measure {
+  font-size: 11px;
+  color: var(--sc-muted);
+}
+
+.rbh-driver-score {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.is-good.rbh-driver-score, .is-good.rbh-section-rank, .rbh-trend.is-good { color: var(--rbh-good); }
+.is-warn.rbh-driver-score, .is-warn.rbh-section-rank { color: var(--rbh-warn); }
+.is-bad.rbh-driver-score, .is-bad.rbh-section-rank, .rbh-trend.is-bad { color: var(--rbh-bad); }
+.is-none.rbh-driver-score, .is-none.rbh-section-rank, .rbh-trend.is-none { color: var(--sc-muted); }
+
+.rbh-warn-note {
+  padding-top: 2px;
+  font-size: 11px;
+  color: var(--rbh-warn);
+}
+
+.rbh-kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+  font-size: 12px;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-kv span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ the compare */
+
+.rbh-modal.is-compare .rbh-dialog {
+  max-width: 768px;
+}
+
+.rbh-compare {
+  display: grid;
+  gap: 20px;
+}
+
+.rbh-compare.is-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rbh-compare.is-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 639.98px) {
+  .rbh-compare.is-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rbh-ccol {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+.rbh-ccol-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.rbh-ccol-head img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex: none;
+}
+
+.rbh-ccol-id {
+  flex: 1;
+  min-width: 0;
+}
+
+.rbh-ccol-name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rbh-ccol-meta {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--sc-muted);
+}
+
+.rbh-ccol-x {
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+}
+
+.rbh-ccol-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rbh-tier {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.rbh-tier.is-elite { background: linear-gradient(135deg, #ffd166, #e6b800); color: #1a1200; }
+.rbh-tier.is-great { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+.rbh-tier.is-good { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.rbh-tier.is-deep { background: var(--sc-surface-sink); color: var(--sc-muted-strong); }
+
+.rbh-committee {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--rbh-warn);
+}
+
+.rbh-committee .rbh-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.rbh-ccol-score {
+  display: grid;
+  justify-items: center;
+  padding: 8px 0;
+  border-radius: var(--sc-radius-xs);
+  background: var(--sc-surface-soft);
+}
+
+.rbh-ccol-score strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rbh-ccol-score span {
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.rbh-cbars {
+  display: grid;
+  gap: 10px;
+}
+
+.rbh-cbar {
+  display: grid;
+  gap: 4px;
+}
+
+.rbh-cbar-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--sc-muted-strong);
+}
+
+.rbh-cbar-rank {
+  color: var(--sc-muted);
+}
+
+.rbh-cbar-head strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--sc-ink);
+}
+
+.rbh-cbar .rbh-bar {
+  height: 6px;
+}
+
+.rbh-cbar.is-dim strong {
+  color: var(--sc-muted);
+}
+
+.rbh-cbar.is-dim .rbh-bar-fill {
+  opacity: 0.55;
+}
+
+.rbh-cstats {
+  display: grid;
+  padding-top: 8px;
+  border-top: 1px solid var(--sc-border);
+}
+
+.rbh-cstats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  font-size: 12px;
+}
+
+.rbh-cstats > div:last-child {
+  border-bottom: 0;
+}
+
+.rbh-cstats dt {
+  flex: none;
+  color: var(--sc-muted);
+}
+
+.rbh-cstats dd {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* --------------------------------------------------------- theme defences */
+
+/* font-family and list-style are the two properties a theme reaches through
+   inheritance. `!important` because a theme that sets fonts from an options
+   panel emits it itself; the family is still the token, so a host retunes it
+   by setting --sc-font. Do NOT add spacing here — see fpa.css. */
+:is(.rbh, .rbh-layer, body.rbh-page),
+:is(.rbh, .rbh-layer, body.rbh-page) * {
+  font-family: var(--sc-font) !important;
+}
+
+.rbh :is(ul, ol, li),
+.rbh-layer :is(ul, ol, li) {
+  list-style: none !important;
+}
+
+/* ====================================================================== */
+/* Theme armour                                                            */
+/*                                                                         */
+/* Every declaration below RESTATES one already made above, at a           */
+/* specificity a host theme cannot reach. Nothing here is a new design     */
+/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* this block is the one that is wrong.                                    */
+/*                                                                         */
+/* Divi styles bare elements inside the content area (see                  */
+/* player-stats.css for the list). Every th/td rule here carries two       */
+/* classes, because one class and two elements TIES Divi's.                */
+/* ====================================================================== */
+
+.rbh .rbh-table {
+  border: 0;
+  margin: 0;
+}
+
+.rbh .rbh-table th,
+.rbh .rbh-table td {
+  padding: var(--rbh-pad-y) var(--rbh-pad-x);
+  border-top: 0;
+}
+
+.rbh .rbh-table .rbh-detail > td {
+  padding: 0;
+}
+
+.rbh .rbh-table thead th {
+  color: #fff;
+}
+
+.rbh .rbh-table thead th.is-sorted {
+  color: var(--sc-gold-soft);
+}
+
+.rbh .rbh-table .rbh-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.rbh .rbh-name {
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+/* Divi's heading rules (`h2`, `.entry-content h2`, `h3`) set size, colour,
+   weight and line height; a second class clears `.entry-content h2`. */
+.rbh .rbh-best-title,
+.rbh .rbh-faq-title {
+  color: var(--sc-navy);
+  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.rbh .rbh-faq-q {
+  color: var(--sc-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.rbh .rbh-faq-q-row:hover .rbh-faq-q {
+  color: var(--sc-gold-deep);
+}
+
+.rbh .rbh-best-name {
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+.rbh a.rbh-best-name:hover {
+  color: var(--sc-gold-deep);
+}
+
+.rbh .rbh-comp-btn {
+  color: var(--sc-muted-strong);
+}
+
+.rbh .rbh-comp-btn.is-on {
+  color: #fff;
+}
+
+.rbh .rbh-rerank {
+  color: #fff;
+}
+
+.rbh .rbh-rerank:disabled {
+  color: #94a3b8;
+}
+
+.rbh .rbh-reset {
+  color: var(--sc-navy);
+}
+
+.rbh .rbh-reset:disabled {
+  color: #94a3b8;
+}
+
+.rbh .rbh-profile-btn {
+  color: var(--sc-ink);
+}
+
+.rbh-layer .rbh-card-cta,
+.rbh-layer .rbh-tray-go {
+  color: #fff;
+}
+
+.rbh-layer .rbh-tray-go:disabled {
+  color: #94a3b8;
+}
+
+.rbh-layer .rbh-tray-clear {
+  color: var(--sc-muted-strong);
+}

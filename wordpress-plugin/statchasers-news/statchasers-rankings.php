@@ -1,9 +1,9 @@
 <?php
 /**
- * The redraft rankings shortcode: [statchasers_rankings]
+ * The rest-of-season rankings shortcode: [statchasers_rankings]
  *
  * Same posture as the team hub, the player pages and the FPA table. The API
- * serves /rankings with `noindex, indexifembedded`, so the boards are invisible
+ * serves /rest-of-season-rankings with `noindex, indexifembedded`, so the boards are invisible
  * to search until something embeds them — this file is that something.
  *
  * ## What this replaces
@@ -36,6 +36,15 @@
  * the rankings are published in PPR only — so the single piece of state worth
  * an attribute is which position panel opens first, for a page that wants to be
  * about running backs.
+ *
+ * ## Position URLs
+ *
+ * Each board has an address under the page:
+ * `/fantasy-football/rest-of-season-rankings/rb/` and so on. One page serves
+ * all five — a rewrite rule points the position URL at the page and sets a
+ * query var the shortcode reads — and each gets its own title, description and
+ * canonical. The API builds the tabs from SC_RANKINGS_PATH, so that has to
+ * name the same page as statchasers_rankings_page_path().
  *
  * @package StatChasers\News
  */
@@ -94,6 +103,14 @@ function statchasers_rankings_args( array $atts ): array {
 		$pos = 'all';
 	}
 
+	// The address outranks the attribute, the way a week URL outranks the
+	// schedule's: /rb/ is a page about running backs whatever the shortcode
+	// on it was written to open.
+	$from_url = statchasers_rankings_request_pos();
+	if ( '' !== $from_url ) {
+		$pos = $from_url;
+	}
+
 	// A season is honoured only when it is plausibly one. Left at 0 the API
 	// serves the newest board it has, which is what a page should normally do —
 	// a hard-coded season is a page that silently shows last year's rankings
@@ -108,6 +125,367 @@ function statchasers_rankings_args( array $atts ): array {
 		'season' => $season,
 	);
 }
+
+/* ---------------------------------------------------------- position URLs */
+
+/**
+ * The page the board lives at, with no leading or trailing slash.
+ *
+ *     add_filter( 'statchasers_rankings_page_path', fn() => 'rankings' );
+ *
+ * Must name the same page as SC_RANKINGS_PATH on the API, which is what the
+ * tabs are built from.
+ */
+function statchasers_rankings_page_path(): string {
+	$path = (string) apply_filters(
+		'statchasers_rankings_page_path',
+		'fantasy-football/rest-of-season-rankings'
+	);
+	return trim( $path, '/' );
+}
+
+/**
+ * Whether the per-position addresses are live. On by default.
+ *
+ *     add_filter( 'statchasers_rankings_position_urls', '__return_false' );
+ *
+ * Off, the page is one address again and the tabs' links 404 — so turn it off
+ * together with SC_RANKINGS_PATH, not on its own.
+ */
+function statchasers_rankings_position_urls_enabled(): bool {
+	return (bool) apply_filters( 'statchasers_rankings_position_urls', true );
+}
+
+/**
+ * Where the page used to live, with no leading or trailing slash.
+ *
+ * WordPress keeps old slugs for posts, not for pages, so a renamed page's old
+ * address is a 404 unless something answers it. This does, with a 301 — and
+ * only once WordPress has found nothing there, so the redirect cannot shadow a
+ * page that still exists. Return '' to switch it off.
+ */
+function statchasers_rankings_legacy_path(): string {
+	$path = (string) apply_filters(
+		'statchasers_rankings_legacy_path',
+		'fantasy-football/redraft-rankings'
+	);
+	return trim( $path, '/' );
+}
+
+/** A position's public address: /fantasy-football/rest-of-season-rankings/rb/. */
+function statchasers_rankings_position_url( string $pos ): string {
+	$path = '/' . statchasers_rankings_page_path();
+	if ( 'all' !== $pos ) {
+		$path .= '/' . $pos;
+	}
+	return user_trailingslashit( home_url( $path ) );
+}
+
+add_filter(
+	'query_vars',
+	static function ( array $vars ): array {
+		$vars[] = 'sc_rank_pos';
+		return $vars;
+	}
+);
+
+add_action(
+	'init',
+	static function (): void {
+		if ( ! statchasers_rankings_position_urls_enabled() ) {
+			return;
+		}
+		$page = statchasers_rankings_page_path();
+		if ( '' === $page ) {
+			return;
+		}
+		// Lower case and no `all`: the All board is the page itself. Mirrors
+		// the /rest-of-season-rankings/:pos route in the API, which redirects
+		// the other spellings rather than serving them.
+		add_rewrite_rule(
+			'^' . preg_quote( $page, '#' ) . '/(qb|rb|wr|te)/?$',
+			'index.php?pagename=' . $page . '&sc_rank_pos=$matches[1]',
+			'top'
+		);
+
+		// A new rule is dead until the rule table is rebuilt, and an upgrade
+		// does not run the activation hook that asks for that. So the rule's
+		// own signature is remembered, and a change to it — a first install of
+		// this version, or a filtered page path — asks for the flush that
+		// statchasers-news.php performs at the end of this same `init`.
+		$signature = md5( $page );
+		if ( get_option( 'statchasers_rankings_rules' ) !== $signature ) {
+			update_option( 'statchasers_rankings_rules', $signature, false );
+			update_option( 'statchasers_needs_flush', 1, false );
+		}
+	}
+);
+
+/**
+ * The position this request's address names, or '' on the page itself.
+ *
+ * Not memoised, unlike the schedule's week: it is one array lookup, and a
+ * static here is a value no test can change within a process.
+ */
+function statchasers_rankings_request_pos(): string {
+	// Only on the page that mounts the board. The query var is public, so
+	// without this `?sc_rank_pos=rb` on any article on the site retitled it
+	// and pointed its canonical at the running back board.
+	if ( ! statchasers_rankings_post_has_shortcode() ) {
+		return '';
+	}
+	$raw = strtolower( trim( (string) get_query_var( 'sc_rank_pos' ) ) );
+	return in_array( $raw, array( 'qb', 'rb', 'wr', 'te' ), true ) ? $raw : '';
+}
+
+/**
+ * The old address, answered with a 301 to the new one.
+ *
+ * `/fantasy-football/redraft-rankings/` and anything the old page had beneath
+ * it that now means something — `/redraft-rankings/rb/` never existed, but
+ * costs nothing to send to the right board.
+ */
+add_action(
+	'template_redirect',
+	static function (): void {
+		if ( ! is_404() ) {
+			return;
+		}
+		$legacy = statchasers_rankings_legacy_path();
+		if ( '' === $legacy ) {
+			return;
+		}
+		$path = trim( (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH ), '/' );
+		if ( ! preg_match( '#^' . preg_quote( $legacy, '#' ) . '(?:/(qb|rb|wr|te))?$#i', $path, $match ) ) {
+			return;
+		}
+		$pos = strtolower( $match[1] ?? '' );
+		// The old board kept its position in the query string.
+		// phpcs:ignore WordPress.Security.NonceVerification -- a read-only redirect.
+		$from_query = strtolower( sanitize_key( (string) ( $_GET['pos'] ?? '' ) ) );
+		if ( '' === $pos && in_array( $from_query, array( 'qb', 'rb', 'wr', 'te' ), true ) ) {
+			$pos = $from_query;
+		}
+		wp_safe_redirect( statchasers_rankings_position_url( '' === $pos ? 'all' : $pos ), 301 );
+		exit;
+	},
+	// Before core's redirect_canonical (10), whose 404 guesser would otherwise
+	// send /redraft-rankings/ to any post whose slug merely starts with it —
+	// "redraft-rankings-2025", on a fantasy site, is not a far-fetched slug.
+	1
+);
+
+/**
+ * The board's title, H1 and description, as the API wrote them.
+ *
+ * The fragment carries them in an inert `scr-page-data` island
+ * (renderMetaIsland() in the API's rankings-render.ts), so the words — and the
+ * season in them — live in one place, rankings-seo.ts, the way the player
+ * stats page's do. Read from the same cached fetch the shortcode prints, so it
+ * costs no second request. Empty on any page that does not mount the board,
+ * and against an API older than the island, where the functions below fall
+ * back to the page's own title plus the board's name.
+ *
+ * @return array{title?:string,h1?:string,description?:string}
+ */
+function statchasers_rankings_page_copy(): array {
+	static $copy = null;
+
+	if ( null !== $copy ) {
+		return $copy;
+	}
+
+	$copy = array();
+	if ( ! statchasers_rankings_post_has_shortcode() ) {
+		return $copy;
+	}
+
+	$data = statchasers_rankings_fetch( statchasers_rankings_args( array() ) );
+	$copy = statchasers_rankings_parse_copy( null === $data ? '' : (string) $data['html'] );
+
+	return $copy;
+}
+
+/**
+ * The title/H1/description island out of a rendered fragment.
+ *
+ * @param string $html Rendered fragment.
+ * @return array{title?:string,h1?:string,description?:string}
+ */
+function statchasers_rankings_parse_copy( string $html ): array {
+	$copy = array();
+
+	if ( '' === $html || ! preg_match( '#<script type="application/json" class="scr-page-data">(.*?)</script>#s', $html, $m ) ) {
+		return $copy;
+	}
+
+	$decoded = json_decode( $m[1], true );
+	if ( ! is_array( $decoded ) ) {
+		return $copy;
+	}
+
+	foreach ( array( 'title', 'h1', 'description' ) as $key ) {
+		if ( isset( $decoded[ $key ] ) && is_string( $decoded[ $key ] ) ) {
+			$value = trim( wp_strip_all_tags( $decoded[ $key ] ) );
+			if ( '' !== $value ) {
+				$copy[ $key ] = $value;
+			}
+		}
+	}
+
+	return $copy;
+}
+
+/**
+ * The page's H1, or '' to leave the theme's.
+ *
+ * Follows the board, as the title does: on /rb/ the heading names the running
+ * back rankings. Without it the address, the title and the tab all said
+ * running backs while the heading at the top of the page still named the whole
+ * board. The bundle swaps it again when a tab switches boards in place.
+ */
+function statchasers_rankings_h1(): string {
+	$copy = statchasers_rankings_page_copy();
+	return isset( $copy['h1'] ) ? $copy['h1'] : statchasers_rankings_position_title();
+}
+
+/**
+ * Rewrite the page's title, which is the theme's H1.
+ *
+ * Guarded the way every `the_title` filter in this plugin is: it is called for
+ * menu items, admin lists and widgets, and renaming the page in any of those
+ * renames it everywhere it is mentioned.
+ */
+add_filter(
+	'the_title',
+	static function ( $title, $id = 0 ) {
+		if ( ! is_singular( 'page' ) || ! in_the_loop() || ! is_main_query() ) {
+			return $title;
+		}
+
+		$queried = get_queried_object();
+		if ( ! $queried instanceof WP_Post || (int) $queried->ID !== (int) $id ) {
+			return $title;
+		}
+
+		$own = statchasers_rankings_h1();
+
+		return '' === $own ? $title : $own;
+	},
+	10,
+	2
+);
+
+/**
+ * The heading the shortcode prints itself, in the site's own hero markup.
+ *
+ * The schedule's arrangement (statchasers_schedule_shortcode_heading()), for
+ * the same reason: "Let the tool supply the heading" empties the theme's title
+ * on every tool page, and a tool that answers with nothing leaves the page with
+ * no H1. Off in every other mode unless the probe or a filter says to print.
+ */
+function statchasers_rankings_shortcode_heading(): string {
+	$tool_mode = function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+
+	if ( ! $tool_mode && ! apply_filters( 'statchasers_rankings_shortcode_h1', false ) ) {
+		return '';
+	}
+
+	if ( ! function_exists( 'statchasers_page_heading_html' ) ) {
+		return '';
+	}
+
+	return statchasers_page_heading_html( statchasers_rankings_h1() );
+}
+
+/** Plural board names, for titles. */
+const STATCHASERS_RANKINGS_POSITION_NAMES = array(
+	'qb' => 'Quarterbacks',
+	'rb' => 'Running Backs',
+	'wr' => 'Wide Receivers',
+	'te' => 'Tight Ends',
+);
+
+/**
+ * The title on a position URL, or '' when this is not one.
+ *
+ * The page's stored name — `post_title`, not `get_the_title()`, for the
+ * recursion reason statchasers_schedule_page_title() gives — plus the board.
+ */
+function statchasers_rankings_position_title(): string {
+	$copy = statchasers_rankings_page_copy();
+	if ( isset( $copy['title'] ) ) {
+		return $copy['title'];
+	}
+	$pos = statchasers_rankings_request_pos();
+	if ( '' === $pos ) {
+		return '';
+	}
+	$queried = get_queried_object();
+	$page    = $queried instanceof WP_Post ? trim( (string) $queried->post_title ) : '';
+	if ( '' === $page ) {
+		$page = 'Rest of Season Rankings';
+	}
+	return sprintf( '%s: %s', $page, STATCHASERS_RANKINGS_POSITION_NAMES[ $pos ] );
+}
+
+/** The description on a position URL, or '' when this is not one. */
+function statchasers_rankings_position_description(): string {
+	$copy = statchasers_rankings_page_copy();
+	if ( isset( $copy['description'] ) ) {
+		return $copy['description'];
+	}
+	$pos = statchasers_rankings_request_pos();
+	if ( '' === $pos ) {
+		return '';
+	}
+	return sprintf(
+		'Rest-of-season fantasy football %s rankings for PPR leagues: every ranked %s by tier, with the other positions a tab away.',
+		strtoupper( $pos ),
+		strtolower( rtrim( STATCHASERS_RANKINGS_POSITION_NAMES[ $pos ], 's' ) )
+	);
+}
+
+/**
+ * The canonical on a position URL, or '' when this is not one.
+ *
+ * A board is its own canonical, not a variant of the page: it is the page
+ * someone asking for RB rankings should land on. The API says the same about
+ * /rest-of-season-rankings/rb.
+ */
+function statchasers_rankings_position_canonical(): string {
+	$pos = statchasers_rankings_request_pos();
+	return '' === $pos ? '' : statchasers_rankings_position_url( $pos );
+}
+
+add_filter( 'rank_math/frontend/title', function ( $title ) {
+	$own = statchasers_rankings_position_title();
+	return '' === $own ? $title : $own . ' | StatChasers';
+} );
+add_filter( 'rank_math/frontend/description', function ( $description ) {
+	$own = statchasers_rankings_position_description();
+	return '' === $own ? $description : $own;
+} );
+add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
+	$own = statchasers_rankings_position_canonical();
+	return '' === $own ? $canonical : $own;
+} );
+add_filter( 'rank_math/opengraph/url', function ( $url ) {
+	$own = statchasers_rankings_position_canonical();
+	return '' === $own ? $url : $own;
+} );
+add_filter( 'document_title_parts', function ( array $parts ): array {
+	$own = statchasers_rankings_position_title();
+	if ( '' !== $own && isset( $parts['title'] ) ) {
+		$parts['title'] = $own;
+	}
+	return $parts;
+} );
+add_filter( 'get_canonical_url', function ( $canonical ) {
+	$own = statchasers_rankings_position_canonical();
+	return '' === $own ? $canonical : $own;
+} );
 
 /**
  * Fetch the server-rendered rankings fragment, cached.
@@ -382,7 +760,7 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 	 * @param string $pos    The position panel opened first.
 	 * @param int    $season The season requested, or 0 for the newest.
 	 */
-	return (string) apply_filters(
+	return statchasers_rankings_shortcode_heading() . (string) apply_filters(
 		'statchasers_rankings_fragment_html',
 		statchasers_rankings_strip_faq_data( (string) $data['html'] ),
 		$args['pos'],
@@ -397,9 +775,8 @@ add_shortcode( STATCHASERS_RANKINGS_SHORTCODE, 'statchasers_rankings_shortcode' 
  * The questions this request's rankings fragment is carrying.
  *
  * Simpler than the team hub's equivalent: there is one mount, one fragment and
- * one FAQ, and the questions do not vary by tab — the five boards are one page,
- * so the position attribute changes which panel opens and nothing about what is
- * asked. The fetch is the cached one the shortcode is about to hit, so this
+ * one FAQ, and the questions do not vary by tab — the position changes which
+ * panel opens and nothing about what is asked. The fetch is the cached one the shortcode is about to hit, so this
  * costs no second round trip, and the result is memoised because the Rank Math
  * filter and the fallback printer both ask.
  *
@@ -418,9 +795,10 @@ function statchasers_rankings_faq_items(): array {
 		return $items;
 	}
 
-	// The default arguments. A page passing pos="rb" or a season gets the same
-	// nine questions — they describe the rankings, not the open panel — so the
-	// cheapest fetch that answers is the shared one.
+	// The default arguments — which on a position URL include its position,
+	// so this is the fetch the shortcode is about to make. A page passing a
+	// season gets the same nine questions: they describe the rankings, not the
+	// open panel.
 	$data = statchasers_rankings_fetch( statchasers_rankings_args( array() ) );
 
 	if ( null === $data || ! isset( $data['html'] ) || '' === $data['html'] ) {
@@ -590,16 +968,49 @@ add_action( 'wp_head', 'statchasers_rankings_print_fallback_schema', 20 );
  * @return string
  */
 function statchasers_rankings_strip_faq_data( string $html ): string {
-	if ( false === strpos( $html, 'scr-faq-data' ) ) {
+	if ( false === strpos( $html, 'scr-faq-data' ) && false === strpos( $html, 'scr-page-data' ) ) {
 		return $html;
 	}
 
+	// The page-copy island too: the title, H1 and description it carries are
+	// read from the cached fetch, and printed they are dead weight.
 	return (string) preg_replace(
-		'#<script type="application/json" class="scr-faq-data">.*?</script>#s',
+		'#<script type="application/json" class="scr-(?:faq|page)-data">.*?</script>#s',
 		'',
 		$html
 	);
 }
+
+/* ------------------------------------------------------------- the sitemap */
+
+/**
+ * The four board URLs, appended to Rank Math's page sitemap.
+ *
+ * Each board is its own canonical, and an address with no post behind it is
+ * one Rank Math cannot list by itself — the player stats table adds its three
+ * the same way. Only while the page exists and still mounts the board, and
+ * only while the position URLs are on.
+ */
+add_filter(
+	'rank_math/sitemap/page_content',
+	static function ( $content ) {
+		if ( ! statchasers_rankings_position_urls_enabled() ) {
+			return $content;
+		}
+		$page = get_page_by_path( statchasers_rankings_page_path() );
+		if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
+			return $content;
+		}
+		if ( ! has_shortcode( (string) $page->post_content, STATCHASERS_RANKINGS_SHORTCODE ) ) {
+			return $content;
+		}
+		$extra = '';
+		foreach ( array( 'qb', 'rb', 'wr', 'te' ) as $pos ) {
+			$extra .= statchasers_team_sitemap_entry( statchasers_rankings_position_url( $pos ), '' );
+		}
+		return $content . $extra;
+	}
+);
 
 /**
  * Clear cached rankings renders. Called by statchasers_news_flush().

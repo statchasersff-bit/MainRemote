@@ -2,10 +2,10 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.9.4
+Stable tag: 1.10.2
 License: GPL-2.0-or-later
 
-Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table and the redraft rankings into WordPress pages.
+Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
 
 == Why this file exists ==
 
@@ -19,6 +19,29 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.2 =
+Launch prep for the rest-of-season rankings and the advanced player stats, checked against every problem the team hubs, player pages, FPA and schedule hit on the live site. Needs the matching API deploy.
+
+* Both tools now fit the site's content column on every kind of Divi page. On a page built with the Divi Builder (or a Theme Builder body layout) Divi prints no #left-area, so the width cap there applied to nothing and a tool ran the full width of the window. That is the ~1800px the team hubs showed. The cap is now also on each tool's own root, which is present on every page shape. On a phone, a shortcode inside a Divi row was held to the row's 80% width (about 40px of margin a side on a 390px screen); the row that holds a tool now takes the full width, with the same 4px gutter as everywhere else. Measured in a simulated Divi page on all four page shapes: 1080px on desktop, 4px gutters on a phone. This rule is shared, so it also covers the hubs, player pages, FPA and the schedule.
+* Both tools' headings work with every "Page headings" mode. In "Let the tool supply the heading" (the site's mode), the theme's title is emptied and each tool prints the site's own hero, as the schedule does, so each page has exactly one H1. Before, neither tool was on the list the heading modes check. On a template with no Post Title module the pages would have had no H1, and on any other the heading could not follow the page's address. The rankings H1 now names the board (for example "2026 Rest of Season Fantasy Football RB Rankings" on /rb/) and changes when a tab switches boards in place. Its title, H1 and description now come from the API, the way the player stats page's do. In "auto" neither tool prints a heading, so the theme's heading is left alone.
+* The rankings board's four position URLs are added to Rank Math's page sitemap, as the player stats page's three already were.
+* The position query vars mean something only on their own pages. Before, `?sc_stats_pos=rb` or `?sc_rank_pos=rb` on any article renamed that article and pointed its canonical at the stats or rankings page, and `?sc_stats_pos=qb` redirected it.
+* The old /fantasy-football/redraft-rankings/ 301 now runs before WordPress's own 404 guesser. That guesser would otherwise send the old address to any post whose slug starts with "redraft-rankings". The old board's `?pos=rb` now lands on the RB board.
+* API side: rankings.css and player-stats.css now hold up against Divi's own rules. The tables had picked up Divi's 1px frame and 15px margin (Divi's selector is `.entry-content table:not(.variations)`, which beat both files' existing armour). Header labels turned grey on the navy bands, rankings player names turned grey and bold, the new position tabs took the link blue, and the stats section headings and the rankings FAQ heading rendered at 50px from `#left-area h2`. Each tool was diffed in a simulated Divi page against the bare tool, and the remaining differences are zero.
+
+= 1.10.1 =
+* The advanced player stats page is now titled for what people search for: "<season> NFL Player Stats & Fantasy Football Stats" on /nfl/nfl-player-stats/, and "<season> NFL Wide Receiver Stats & Fantasy Football Stats" (and so on) on the position addresses. The title, H1 and meta description now come from the API, which ships them with the table, so the season in them is always the one being shown and this plugin keeps no copy of the words. The bare page's title is now set this way too, replacing whatever the page was titled in WordPress.
+* The table's FAQ ("NFL Player Stats FAQ", twelve questions) reaches the page's structured data: it is lifted into Rank Math's graph as a FAQPage node (or printed alone on a site with no schema plugin), and the data it travels in is stripped from the page, as on the other tools. Needs the matching API deploy.
+
+= 1.10.0 =
+* The RB handcuff rankings carry a FAQ: fifteen questions under the board, with the answers that can go stale (who the best handcuffs are, the model's weights, when the board was updated) read off the current rankings. The fragment ships them as a JSON island; the plugin adds them to Rank Math's graph as a FAQPage node (or prints that node alone on a site with no schema plugin) and strips the island from the page. The board also gains a one-line standfirst and a "Best RB Handcuffs for <season>" top-10 list. The copy ships from the API; the schema needs this plugin.
+* New shortcode: [statchasers_rb_handcuffs], the RB handcuff rankings, ported from the standalone Redraft-RB-Handcuff-Rankings app. That app's own plugin (statchasers-handcuffs, [statchasers_handcuffs]) printed a snapshot table and then had its React bundle clear it and draw its own; now the API renders the board once and the shortcode prints it, like the other tools. Every backup, the starter he backs up, his score, tier, handcuff type and the reasons behind his rank are in the page's HTML. The weight sliders, Re-rank, sorting, the expandable rows, compare (up to three) and the player card work in the browser on top of that markup; the card is fetched from the API the first time it is opened. The tool's CreativeWork schema node and the "Related tools" links carry over.
+* To switch over: replace [statchasers_handcuffs] with [statchasers_rb_handcuffs] on /rb-handcuff-rankings/, then deactivate and delete the statchasers-handcuffs plugin. Both add a schema node for the tool, so do not leave both on the page. Needs the matching API deploy.
+* New shortcode: [statchasers_player_stats], the advanced player stats table, ported from the standalone NFL-Advanced-Player-Stats app. That app was mounted at /nfl/nfl-player-stats/ by its own plugin (statchasers-analytics) as an iframe, so the page's HTML was an empty frame and not one player or number on it reached a crawler. The API now renders the table and the shortcode prints it into the page, like the other tools: every player in the open table is in the HTML, with the StatChasers grades, the five grade-leader cards, the column groups and the default qualifiers the app had. Sorting, the filter bar, the section pills and switching season work in the browser on top of that markup, without reloading the page.
+* Each position keeps its own address, as in the app: /nfl/nfl-player-stats/ is the quarterbacks, /rb/, /wr/ and /te/ the other three, each with its own title, description and canonical, and listed in Rank Math's page sitemap once the page carries the new shortcode. /qb/ redirects to the bare page. The rewrite rule checks itself into the permalink table, so updating by zip is enough; no Settings > Permalinks save needed.
+* To switch over: replace [statchasers_analytics] with [statchasers_player_stats] on the page, then deactivate and delete the statchasers-analytics plugin and remove the block it wrote into .htaccess. Needs the matching API deploy.
+* The rankings page moves to /fantasy-football/rest-of-season-rankings/, and each board gets an address of its own beneath it: /qb/, /rb/, /wr/ and /te/. One page still serves all five — a rewrite rule points each position URL at it — and each has its own title, description and canonical in Rank Math. The tabs switch in place and push the board's address, so a reload or a shared link opens the board that was on screen. The old /fantasy-football/redraft-rankings/ answers with a 301 once the page has moved. To switch over: change the page's slug to rest-of-season-rankings in WordPress and set SC_RANKINGS_PATH=/fantasy-football/rest-of-season-rankings/ on the API. Needs the matching API deploy; the permalinks rebuild themselves on the first request after the upload.
 
 = 1.9.4 =
 * The schedule's heading now lines up with the board on desktop. 1.9.3 had it print the site's hero in the "Let the tool supply the heading" mode, but the rule that holds a generated hero flush with the tool beneath it — undoing the hand-built hero's side padding and its centred, max-width inner shell — was still printed only in the modes where the plugin normally prints a heading. So on a wide screen the heading sat inset from the board, and a Custom CSS override on the padding alone could not reach the centring. Plugin only.
@@ -78,7 +101,7 @@ upload landed. Keep "Stable tag" in step with the Version header.
 * The team News tab has a public address, /nfl/teams/<team>/news/, like the other five.
 
 = 1.6.0 =
-* [statchasers_rankings]: the redraft rankings board, ported from the standalone Redraft-Rankings-table app. All five position panels are server-rendered into the page, not filled in by React after load.
+* [statchasers_rankings]: the rest-of-season rankings board, ported from the standalone Redraft-Rankings-table app. All five position panels are server-rendered into the page, not filled in by React after load.
 
 = 1.3.1 =
 * Renamed from "StatChasers News" to "StatChasers" — the plugin has carried the team hubs as well as the news tool since 1.0.0, and the old name sent people looking for a second plugin that does not exist.

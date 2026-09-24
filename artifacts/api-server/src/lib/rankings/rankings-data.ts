@@ -421,7 +421,7 @@ export function getRankings(season?: number): RankingsData | null {
   dataCache.set(resolved, data);
   logger.info(
     { season: data.season, players: rows.length },
-    "Loaded redraft rankings",
+    "Loaded rest-of-season rankings",
   );
   return data;
 }

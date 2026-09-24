@@ -43,7 +43,7 @@ nothing is hidden behind a click.
    [statchasers_team]     an NFL team hub
    [statchasers_player]   an NFL player page
    [statchasers_fpa]      the Fantasy Points Allowed table
-   [statchasers_rankings] the redraft rankings board
+   [statchasers_rankings] the rest-of-season rankings board
    [statchasers_schedule] the NFL schedule
    ```
 
@@ -825,16 +825,33 @@ If you later add controls that *should* be indexed as their own landing pages,
 make them real links to real server-rendered URLs with their own canonicals —
 don't let tool state leak into the existing page's URL.
 
-## Redraft rankings — `[statchasers_rankings]`
+## Rest-of-season rankings — `[statchasers_rankings]`
 
-One page, at `/fantasy-football/redraft-rankings/`. It mounts the board the API
-serves at `/rankings`: tiered quarterback, running back, wide receiver and tight
-end rankings, plus an all-positions view that aligns the four by positional
-rank, and a CSV export.
+One page, at `/fantasy-football/rest-of-season-rankings/`. It mounts the board
+the API serves at `/rest-of-season-rankings`: tiered quarterback, running back,
+wide receiver and tight end rankings, plus an all-positions view that aligns
+the four by positional rank, and a CSV export.
+
+Each board also has an address of its own under the page —
+`/fantasy-football/rest-of-season-rankings/qb/`, `/rb/`, `/wr/` and `/te/` —
+with its own title, description and canonical. There is one page, not five: a
+rewrite rule points each position URL at it and the shortcode opens that board.
+The tabs switch in place and push the board's address, so a reload or a shared
+link lands on the board that was on screen. The plugin rebuilds the permalinks
+itself the first time it sees the rule. Change the page path with
+`statchasers_rankings_page_path`, and turn the addresses off with
+`statchasers_rankings_position_urls` (together with `SC_RANKINGS_PATH`, or the
+tabs link to URLs that 404).
+
+The page used to be `/fantasy-football/redraft-rankings/`. WordPress keeps old
+slugs for posts, not pages, so the plugin answers that address — and
+`/redraft-rankings/rb/` and so on — with a 301 to the new one, only once
+WordPress has found nothing there. `statchasers_rankings_legacy_path` moves or
+(returning `''`) disables it.
 
 | Attribute | Default | Meaning |
 |-----------|---------|---------|
-| `pos`     | `all`   | Which panel opens first: `all`, `qb`, `rb`, `wr` or `te`. |
+| `pos`     | `all`   | Which panel opens first on the bare page: `all`, `qb`, `rb`, `wr` or `te`. A position URL overrides it. |
 | `season`  | newest  | Pin a season. Leave it off — see below. |
 
 ```
@@ -908,12 +925,16 @@ page sees a note saying what is missing; a reader sees no hole.
 ### Server-side configuration
 
 ```
-SC_RANKINGS_PATH=/fantasy-football/redraft-rankings/
+SC_RANKINGS_PATH=/fantasy-football/rest-of-season-rankings/
 ```
 
-The board's CSV link is an ordinary link. Left unset it points at the API's own
-`/rankings`, so a reader downloading from inside your page would leave the site
-for the bare tool.
+The position tabs are built from it: `/fantasy-football/rest-of-season-rankings/`
+becomes `/fantasy-football/rest-of-season-rankings/rb/`, trailing slash and all,
+which is the spelling the rewrite rule expects — so it has to name the same page
+as `statchasers_rankings_page_path()`. Left unset, the tabs point at the API's
+own `/rest-of-season-rankings`, so a reader clicking one would leave the site
+for the bare tool. The CSV link is always given the API's origin — WordPress
+has never heard of `/download.csv` under your page.
 
 `SC_PLAYER_PATH_PREFIX` matters here too: every player's name links to his
 player page. A player the API's dictionary cannot place — a free agent, usually
@@ -1100,6 +1121,65 @@ precisely so the plugin can tell "down right now" from "nothing to show". The
 last good board is kept for 7 days and served instead — a schedule a few hours
 stale is still almost entirely correct, which is not true of the other tools and
 is why this one falls back further.
+
+## Advanced player stats — `[statchasers_player_stats]`
+
+One page, at `/nfl/nfl-player-stats/`: the page the old `statchasers-analytics`
+iframe plugin used. The bare page is the quarterback table, and `/rb/`, `/wr/`
+and `/te/` are the other three positions, each with its own title, description,
+canonical and sitemap entry. `/qb/` 301s to the bare page. The rewrite rule
+flushes itself into the permalink table if it's missing, so no Settings >
+Permalinks save is needed.
+
+```
+[statchasers_player_stats]
+[statchasers_player_stats pos="wr" season="all"]
+```
+
+The address wins over `pos`, and `season` wins over `?season=`. Leave `season`
+off so the page follows the newest season the API has.
+
+**Titles, H1 and FAQ come from the API.** The fragment carries the address's
+title, H1 and meta description in an inert JSON island, and the FAQ in
+another; the plugin reads both, prints the title through Rank Math and the H1
+through `the_title`, adds the FAQ to Rank Math's graph as a FAQPage node, and
+strips the islands before printing. The words live in the API's
+`src/lib/player-stats/stats-copy.ts`, with the season the API is serving, so
+reword them there — not in WordPress. This includes the bare page: its title
+is "<season> NFL Player Stats & Fantasy Football Stats" whatever the page is
+called in WordPress. An API without the island leaves the bare page's own
+title alone.
+
+**Migrating from the iframe:** replace `[statchasers_analytics]` with
+`[statchasers_player_stats]` on the page, deactivate and delete the
+`statchasers-analytics` plugin, and remove the "StatChasers – route deep-link
+sub-paths" block it wrote into `.htaccess`. On the API, `SC_PLAYER_STATS_PATH`
+defaults to `/nfl/nfl-player-stats/`. Change it and the
+`statchasers_player_stats_page_path` filter together if you mount the page
+anywhere else.
+
+## RB handcuff rankings — `[statchasers_rb_handcuffs]`
+
+One page, at `/rb-handcuff-rankings/`: the page the old `statchasers-handcuffs`
+plugin used. One board and one address. The weights, sort, open rows and
+compare tray are controls, and none of them goes into the URL.
+
+```
+[statchasers_rb_handcuffs]
+```
+
+The shortcode takes no attributes. It prints the fragment from
+`/embed/rb-handcuffs`, cached for an hour with a 30-day fallback, and then a
+"Related tools" line (`statchasers_rb_handcuffs_related_links` filters it, and
+an empty array removes it). It also hangs a `CreativeWork` node for the tool off
+Rank Math's WebPage node, or prints the node on its own when Rank Math is
+absent. The bundle fetches each player card from
+`/embed/rb-handcuffs/player/<id>` on the API the first time it is opened.
+
+**Migrating from the old plugin:** replace `[statchasers_handcuffs]` with
+`[statchasers_rb_handcuffs]` on the page, then deactivate and delete the
+`statchasers-handcuffs` plugin. The shortcode tags don't collide, but both
+plugins add a schema node for the tool.
 
 ## Caching
 

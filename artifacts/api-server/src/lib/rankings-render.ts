@@ -1,5 +1,5 @@
 /**
- * Markup for the redraft rankings board.
+ * Markup for the rest-of-season rankings board.
  *
  * Server-only, like team-render.ts, player-render.ts and fpa-render.ts. Every
  * board — all five panels, 230 players, every tier header — is in the response,
@@ -38,6 +38,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
+import { rankingsHeading, rankingsPageCopy } from "./rankings-seo";
 import {
   ALL_VIEW_COLLAPSED_ROWS,
   POSITIONS,
@@ -64,21 +65,59 @@ export interface RankingsRenderOptions {
    * because the host page supplies the H1 and the surrounding copy.
    */
   embed?: boolean;
-  /** Where the board's own links point. Defaults to this app's own /rankings. */
+  /**
+   * The page the board lives at, and so where its position tabs point:
+   * `<basePath>/rb` and so on. Defaults to this app's own
+   * /rest-of-season-rankings.
+   */
   basePath?: string;
+  /**
+   * Where the CSV link hangs, when that is not `basePath`.
+   *
+   * On a WordPress mount `basePath` is the page, and WordPress has never heard
+   * of `/download.csv` under it — so the fragment route passes this app's own
+   * origin here, the way the schedule's exports do.
+   */
+  downloadBase?: string;
   /** Where a player link points. Defaults to this app's own /player/. */
   playerPathPrefix?: string;
   /** Carried onto internal links so embed mode stays embed mode. */
   linkQuery?: string;
+  /**
+   * Carried onto the position tabs instead, when they need a different rule.
+   *
+   * The player links and the tabs can point at different hosts: on a
+   * WordPress mount the tabs are the page's own addresses, where `?embed=1`
+   * is a reserved query var that serves the oEmbed template instead of the
+   * page. Defaults to `linkQuery`.
+   */
+  tabQuery?: string;
   /** Which panel opens first. The tab strip owns this once JS is up. */
   position?: PositionFilter;
 }
 
-const DEFAULT_BASE_PATH = "/rankings";
+const DEFAULT_BASE_PATH = "/rest-of-season-rankings";
 const DEFAULT_PLAYER_PREFIX = "/player/";
 
 function panelId(position: PositionFilter): string {
   return `scr-panel-${position.toLowerCase()}`;
+}
+
+/**
+ * A position's own address: the base for All, `<base>/rb` for the rest.
+ *
+ * The base's trailing slash is the spelling to follow. WordPress page paths
+ * carry one and the rewrite rule on that side accepts `/rb/`, so a WordPress
+ * base gives `/fantasy-football/rest-of-season-rankings/rb/`; this app's own
+ * routes are slashless and give `/rest-of-season-rankings/rb`.
+ */
+export function rankingsPositionPath(
+  base: string,
+  position: PositionFilter,
+): string {
+  if (position === "All") return base;
+  const slash = base.endsWith("/") ? "/" : "";
+  return `${joinPath(base, `/${position.toLowerCase()}`)}${slash}`;
 }
 
 /**
@@ -100,15 +139,22 @@ function renderUpdated(data: RankingsData): string {
 /**
  * The position tab strip.
  *
- * Plain anchors switched by `:target` in CSS, exactly as the player pages and
- * the team hub do it — so the board works with scripting off, and client's
- * wireTabs() upgrades it to a real ARIA tablist with arrow keys when the bundle
- * lands. The roles are deliberately NOT in this markup: `role="tab"` promises
- * arrow-key navigation, and promising it in static HTML that may never get a
- * bundle is worse than the honest list of links.
+ * Each tab is the position's own address — `/rest-of-season-rankings/rb` —
+ * the way the player pages' section bar links `/injury`. With scripting off a
+ * tab is an ordinary link to a page the server renders with that panel open;
+ * client's wireTabs() upgrades the strip to a real ARIA tablist that switches
+ * in place and pushes the address, reading the panel from
+ * `data-scr-panel-id`. The roles are deliberately NOT in this markup:
+ * `role="tab"` promises arrow-key navigation, and promising it in static HTML
+ * that may never get a bundle is worse than the honest list of links.
  */
-function renderNav(options: RankingsRenderOptions): string {
+function renderNav(
+  data: RankingsData,
+  options: RankingsRenderOptions,
+): string {
   const active = options.position ?? "All";
+  const base = options.basePath ?? DEFAULT_BASE_PATH;
+  const query = options.tabQuery ?? options.linkQuery ?? "";
 
   const items = POSITIONS.map((position) => {
     const on = position === active;
@@ -118,7 +164,11 @@ function renderNav(options: RankingsRenderOptions): string {
         : `${POSITION_NAMES[position as StatPosition]}s`;
     return (
       `<li><a class="scr-nav-link${on ? " is-active" : ""}"` +
-      ` href="#${panelId(position)}"` +
+      ` href="${escapeHtml(rankingsPositionPath(base, position) + query)}"` +
+      ` data-scr-panel-id="${panelId(position)}"` +
+      // The board's heading, for the host page's H1 when a tab switches
+      // boards in place — see rankingsHeading().
+      ` data-scr-heading="${escapeHtml(rankingsHeading(data.season, position))}"` +
       ` title="${escapeHtml(label)}">${escapeHtml(position)}</a></li>`
     );
   }).join("");
@@ -176,12 +226,12 @@ function renderControls(
   data: RankingsData,
   options: RankingsRenderOptions,
 ): string {
-  const base = options.basePath ?? DEFAULT_BASE_PATH;
+  const base = options.downloadBase ?? options.basePath ?? DEFAULT_BASE_PATH;
   const updated = renderUpdated(data);
 
   return (
     `<div class="scr-controls">` +
-    renderNav(options) +
+    renderNav(data, options) +
     renderScoring(data) +
     `<a class="scr-csv" href="${escapeHtml(
       joinPath(base, "/download.csv"),
@@ -624,7 +674,26 @@ export function renderRankingsPage(
     renderControls(data, options) +
     panels +
     renderFaq(data, options) +
+    renderMetaIsland(data, options) +
     `</div>`
+  );
+}
+
+/**
+ * The title, H1 and description of the board this fragment opens on, as an
+ * inert island the WordPress plugin reads and strips — player-stats-render.ts
+ * ships the same thing as `sca-page-data`. Embedded only: standalone, they are
+ * already in the page's own <head>.
+ */
+function renderMetaIsland(
+  data: RankingsData,
+  options: RankingsRenderOptions,
+): string {
+  if (!options.embed) return "";
+  return (
+    `<script type="application/json" class="scr-page-data">` +
+    escapeJsonLd(JSON.stringify(rankingsPageCopy(data, options.position ?? "All"))) +
+    `</script>`
   );
 }
 
@@ -642,7 +711,7 @@ export function renderRankingsEmpty(
   return (
     `<div class="scr${options.embed ? " is-embed" : ""}" data-scr-root="1" data-empty="1">` +
     `<p class="scr-empty">${escapeHtml(
-      "No redraft rankings have been published yet. Add a " +
+      "No rest-of-season rankings have been published yet. Add a " +
         "data/rankings/redraft-<season>.csv file.",
     )}</p></div>`
   );

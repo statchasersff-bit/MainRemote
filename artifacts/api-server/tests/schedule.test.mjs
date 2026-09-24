@@ -1111,7 +1111,7 @@ describe("the schedule development switcher", () => {
   }
 
   test("the tool is reachable from every other tool", async () => {
-    for (const path of ["/", "/fpa", "/rankings", "/schedule"]) {
+    for (const path of ["/", "/fpa", "/rest-of-season-rankings", "/schedule"]) {
       const res = await devGet(path);
       assert.equal(res.status, 200);
       assert.ok(

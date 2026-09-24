@@ -746,6 +746,15 @@ function statchasers_tool_mobile_gutter_css(): string {
 			// Belt: Divi's own horizontal padding on the column lives in the
 			// min-width rule, but a child theme's need not.
 			'#left-area{padding-left:0!important;padding-right:0!important}',
+			// A shortcode dropped into a Divi Code or Text module sits inside
+			// `.et_pb_row`, and Divi's `.et_pb_row { width: 80% }` holds at
+			// every width, like `.container`'s — on a 390px phone that is 39px
+			// of margin each side, the bug this function exists for, one
+			// wrapper further in. Only the row that holds a tool is widened;
+			// the rest of the page keeps its layout. Measured in the Divi sim,
+			// 2026-09-24: 382px → 477px of tool at a 500px window.
+			'#main-content .et_pb_row:has(' . statchasers_tool_root_selector() . '){' .
+				'width:100%!important;max-width:100%!important}',
 			'}',
 		)
 	);
@@ -813,6 +822,19 @@ function statchasers_team_full_width_css(): string {
 				'float:none!important;padding-right:0!important;padding-left:0!important}',
 			// The 1px grey rule Divi draws down the column boundary, which
 			// without a sidebar beside it is a line down the middle of nothing.
+			// And the tool itself, capped at the same width. The rule above
+			// caps `#left-area`, which Divi prints only on a page that has NOT
+			// been through the builder: on a builder page or a Theme Builder
+			// body layout the shortcode lands straight in `#main-content`, the
+			// `#left-area` cap styles nothing, and the tool runs the width of
+			// the window. The tool's root is on the page in every shape, so the
+			// cap there is the one that always holds; on a plain page it is
+			// already inside a capped column and changes nothing. Measured in
+			// the Divi sim, 2026-09-24, on the rankings and player stats
+			// fragments at a 1440px window: builder page 1425px → 1080px,
+			// plain page 1080px → 1080px.
+			'#main-content ' . statchasers_tool_root_selector() . '{max-width:' . statchasers_team_content_width() . '!important;' .
+				'margin-left:auto!important;margin-right:auto!important}',
 			'#main-content .container:before{display:none!important}',
 			// Belt: if some other plugin fills the widget area, the hub still
 			// owns the row. Overridable through statchasers_team_full_width.
@@ -820,6 +842,21 @@ function statchasers_team_full_width_css(): string {
 			'}',
 		)
 	);
+}
+
+/**
+ * Every embedded tool's root element, as one selector.
+ *
+ * Each tool prints one root with its own short class and `is-embed` when it is
+ * mounted on a WordPress page. The host rules above size that root, so a tool
+ * added to the plugin and left off this list renders at whatever width its
+ * page shape happens to give it — which is how the first four tools each
+ * shipped with a width bug of their own.
+ *
+ * @return string
+ */
+function statchasers_tool_root_selector(): string {
+	return ':is(.sct,.scp,.scf,.scr,.scs,.sca,.rbh).is-embed';
 }
 
 /**

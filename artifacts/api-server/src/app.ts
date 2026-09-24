@@ -11,6 +11,8 @@ import playerRouter from "./routes/player";
 import fpaRouter from "./routes/fpa";
 import rankingsRouter from "./routes/rankings";
 import scheduleRouter from "./routes/schedule";
+import playerStatsRouter from "./routes/player-stats";
+import rbHandcuffsRouter from "./routes/rb-handcuffs";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -85,14 +87,25 @@ app.use(playerRouter);
 // Mounted alongside the other two tools, for the same reason.
 app.use(fpaRouter);
 
-// Redraft Rankings: /rankings, /rankings/download.csv and the /embed/rankings
-// fragment. Mounted alongside the other tools, for the same reason.
+// Rest of Season Rankings: /rest-of-season-rankings (and /qb, /rb, /wr, /te beneath
+// it), its /download.csv, the /embed/rankings fragment, and 301s from the old
+// /rankings. Mounted alongside the other tools, for the same reason.
 app.use(rankingsRouter);
 
 // NFL Schedule: /schedule, /schedule/download.csv, /schedule/schedule.ics and
 // the /embed/schedule fragment. Mounted alongside the other tools, for the same
 // reason.
 app.use(scheduleRouter);
+
+// Advanced player stats: /player-stats, /player-stats/:pos and the
+// /embed/player-stats fragment. Mounted alongside the other tools, for the same
+// reason.
+app.use(playerStatsRouter);
+
+// RB handcuff rankings: /rb-handcuff-rankings, the /embed/rb-handcuffs fragment
+// and the player cards beneath it. Mounted alongside the other tools, for the
+// same reason.
+app.use(rbHandcuffsRouter);
 
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
@@ -207,8 +220,10 @@ app.use((req, res) => {
     ` &middot; <a href="/team">Go to the team hubs</a>` +
     ` &middot; <a href="/player">Go to the player pages</a>` +
     ` &middot; <a href="/fpa">Go to fantasy points allowed</a>` +
-    ` &middot; <a href="/rankings">Go to the redraft rankings</a>` +
-    ` &middot; <a href="/schedule">Go to the NFL schedule</a></p>` +
+    ` &middot; <a href="/rest-of-season-rankings">Go to the rest-of-season rankings</a>` +
+    ` &middot; <a href="/schedule">Go to the NFL schedule</a>` +
+    ` &middot; <a href="/player-stats">Go to the advanced player stats</a>` +
+    ` &middot; <a href="/rb-handcuff-rankings">Go to the RB handcuff rankings</a></p>` +
     `</body></html>`;
   res
     .status(404)

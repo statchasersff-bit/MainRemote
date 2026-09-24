@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -111,12 +111,14 @@ const TOOLS: Tool[] = [
     shortLabel: "Players",
     shortcode: "statchasers_player",
     hasEmbedMode: true,
-    // Ordered after the two /team tests above only for readability; the paths
-    // are disjoint, so `toolFor` finding this one first would be equivalent.
+    // Ordered after the two /team tests above only for readability. The
+    // advanced stats tool's paths also start "/player", so they are excluded
+    // here by name — `toolFor` takes the first entry that answers.
     active: (path) =>
-      path.startsWith("/player") ||
-      path.startsWith("/preview/player") ||
-      path.startsWith("/preview/raw/player"),
+      !/^\/(?:preview\/(?:raw\/)?)?player-stats(?:\/|$)/.test(path) &&
+      (path.startsWith("/player") ||
+        path.startsWith("/preview/player") ||
+        path.startsWith("/preview/raw/player")),
   },
   {
     key: "fpa",
@@ -131,12 +133,12 @@ const TOOLS: Tool[] = [
   },
   {
     key: "rankings",
-    label: "Redraft Rankings",
+    label: "Rest of Season Rankings",
     shortLabel: "Rankings",
     shortcode: "statchasers_rankings",
     hasEmbedMode: true,
     active: (path) =>
-      path.startsWith("/rankings") ||
+      path.startsWith("/rest-of-season-rankings") ||
       path.startsWith("/preview/rankings") ||
       path.startsWith("/preview/raw/rankings"),
   },
@@ -150,6 +152,30 @@ const TOOLS: Tool[] = [
       path.startsWith("/schedule") ||
       path.startsWith("/preview/schedule") ||
       path.startsWith("/preview/raw/schedule"),
+  },
+  {
+    key: "stats",
+    label: "Advanced Player Stats",
+    shortLabel: "Adv Stats",
+    shortcode: "statchasers_player_stats",
+    hasEmbedMode: true,
+    // The player pages' entry above excludes these paths by name; without
+    // that, its "/player" prefix test would claim them first.
+    active: (path) =>
+      path.startsWith("/player-stats") ||
+      path.startsWith("/preview/player-stats") ||
+      path.startsWith("/preview/raw/player-stats"),
+  },
+  {
+    key: "handcuffs",
+    label: "RB Handcuff Rankings",
+    shortLabel: "Handcuffs",
+    shortcode: "statchasers_rb_handcuffs",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/rb-handcuff-rankings") ||
+      path.startsWith("/preview/rb-handcuffs") ||
+      path.startsWith("/preview/raw/rb-handcuffs"),
   },
 ];
 
@@ -264,10 +290,12 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
 
   if (tool.key === "rankings") {
     // Five boards, no subject — which panel is open is the strip's business,
-    // not the bar's, and it is a fragment link rather than a URL.
+    // not the bar's, so the bar always offers the All board.
     if (mount === "fragment") return "/preview/raw/rankings";
     if (mount === "shortcode") return "/preview/rankings";
-    return mount === "embed" ? "/rankings?embed=1" : "/rankings";
+    return mount === "embed"
+      ? "/rest-of-season-rankings?embed=1"
+      : "/rest-of-season-rankings";
   }
 
   if (tool.key === "schedule") {
@@ -276,6 +304,22 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/schedule";
     if (mount === "shortcode") return "/preview/schedule";
     return mount === "embed" ? "/schedule?embed=1" : "/schedule";
+  }
+
+  if (tool.key === "stats") {
+    // Four positions, and which one is open is the table's own strip. The bar
+    // lands on the quarterback table, which is the tool's bare address.
+    if (mount === "fragment") return "/preview/raw/player-stats";
+    if (mount === "shortcode") return "/preview/player-stats";
+    return mount === "embed" ? "/player-stats?embed=1" : "/player-stats";
+  }
+
+  if (tool.key === "handcuffs") {
+    // One board, no subject — the weights, the sort and the open rows are the
+    // board's own controls.
+    if (mount === "fragment") return "/preview/raw/rb-handcuffs";
+    if (mount === "shortcode") return "/preview/rb-handcuffs";
+    return mount === "embed" ? "/rb-handcuff-rankings?embed=1" : "/rb-handcuff-rankings";
   }
 
   if (mount === "fragment") return "/preview/raw/news";
