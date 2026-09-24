@@ -41,8 +41,15 @@ function template(envKey: string, fallback: string): string {
 const TEMPLATES = {
   /** The team hub itself — the URL these pages are embedded at. */
   teamHub: template("SC_TEAM_HUB_URL_TEMPLATE", "/nfl/teams/{slug}/"),
-  depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/depth-charts/{slug}/"),
-  teamSchedule: template("SC_TEAM_SCHEDULE_URL_TEMPLATE", "/nfl/schedule/{slug}/"),
+  /** The depth-charts plugin's team route: /<page>/<view>/<team>/, fantasy view. */
+  depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/nfl-depth-charts/fantasy/{slug}/"),
+  /**
+   * "View full NFL schedule": the league schedule page. The team's own schedule
+   * is the hub's /schedule/ section, which is the page this link is printed on.
+   * The old default, /nfl/schedule/{slug}/, was a guess at a page that never
+   * existed.
+   */
+  teamSchedule: template("SC_TEAM_SCHEDULE_URL_TEMPLATE", "/nfl/nfl-schedule/"),
   /** League-wide advanced player stats. Given by the site's owner, not guessed. */
   playerStats: template("SC_PLAYER_STATS_URL", "/nfl/nfl-player-stats/"),
   /**

@@ -1776,7 +1776,7 @@ describe("the WordPress fragment's team switcher", () => {
     );
     assert.equal(hrefs.length, 32);
     for (const href of hrefs) {
-      assert.match(href, /^\/team\/[a-z0-9-]+\?embed=1$/);
+      assert.match(href, /^\/team\/[a-z0-9-]+\/\?embed=1$/);
     }
   });
 
@@ -1785,7 +1785,7 @@ describe("the WordPress fragment's team switcher", () => {
       SC_TEAM_PATH_PREFIX: "/nfl/teams/",
       SC_TEAM_LINK_QUERY: "?src=hub",
     });
-    assert.match(html, /href="\/nfl\/teams\/dallas-cowboys\?src=hub"/);
+    assert.match(html, /href="\/nfl\/teams\/dallas-cowboys\/\?src=hub"/);
   });
 });
 
@@ -1858,7 +1858,7 @@ describe("the team index", () => {
     );
     assert.equal(hrefs.length, 32);
     for (const href of hrefs) {
-      assert.match(href, /^\/nfl\/teams\/[a-z0-9-]+$/, href);
+      assert.match(href, /^\/nfl\/teams\/[a-z0-9-]+\/$/, href);
       assert.ok(
         !href.includes("embed="),
         `an off-origin link must not carry embed= (${href})`,

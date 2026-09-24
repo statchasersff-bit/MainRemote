@@ -155,12 +155,21 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   const landedUrl = location.pathname + location.search;
   const landedHeading = headingEl?.textContent ?? "";
   const landedLead = leadEl?.textContent ?? "";
+  const landedTitle = document.title;
 
+  /*
+   * The document title too. A tab click pushes the section's own address, and
+   * GA4 records a history change as a page view with whatever document.title
+   * says at that moment — so it is set BEFORE the push, or every tab would be
+   * reported under the title of the tab the reader landed on.
+   */
   function setHeading(link: HTMLAnchorElement): void {
     const heading = options.headingKey ? link.dataset[options.headingKey] : "";
     const lead = options.leadKey ? link.dataset[options.leadKey] : "";
+    const title = link.dataset["scTitle"];
     if (headingEl && heading) headingEl.textContent = heading;
     if (leadEl && lead) leadEl.textContent = lead;
+    if (title) document.title = title;
   }
 
   /**
@@ -289,6 +298,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
         select(active, false);
         if (headingEl && landedHeading) headingEl.textContent = landedHeading;
         if (leadEl && landedLead) leadEl.textContent = landedLead;
+        document.title = landedTitle;
       }
     });
   }

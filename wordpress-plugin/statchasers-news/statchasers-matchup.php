@@ -633,6 +633,10 @@ function statchasers_matchup_all_slugs(): array {
 add_filter(
 	'rank_math/sitemap/page_content',
 	function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+
 		if ( ! statchasers_matchup_urls_enabled() ) {
 			return $content;
 		}

@@ -401,8 +401,8 @@ export function wirePlayerSearch(root: HTMLElement): void {
         const anchor = document.createElement("a");
         anchor.href =
           entry.kind === "team"
-            ? `${teamPrefix}${entry.slug}${query}`
-            : `${prefix}${entry.slug}${query}`;
+            ? `${teamPrefix}${entry.slug}/${query}`
+            : `${prefix}${entry.slug}/${query}`;
         // Same as every other link in this fragment: break out of the legacy
         // iframe mount rather than loading the next player inside it.
         anchor.target = "_top";

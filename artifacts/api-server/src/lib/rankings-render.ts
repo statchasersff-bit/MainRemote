@@ -187,6 +187,9 @@ function renderNav(
       // The board's heading, for the host page's H1 when a tab switches
       // boards in place — see rankingsHeading().
       ` data-scr-heading="${escapeHtml(rankingsHeading(data.season, position))}"` +
+      // And its document title, set before the address is pushed so an
+      // analytics page view on the history change carries the board's title.
+      ` data-sc-title="${escapeHtml(`${rankingsPageCopy(data, position).title} | StatChasers`)}"` +
       ` title="${escapeHtml(label)}">${escapeHtml(position)}</a></li>`
     );
   }).join("");
@@ -283,7 +286,7 @@ function renderName(
   const query = options.linkQuery ?? "";
   return (
     `<a class="${className}" href="${escapeHtml(
-      `${prefix}${player.slug}${query}`,
+      `${prefix}${player.slug}/${query}`,
     )}" target="_top">${name}</a>`
   );
 }
@@ -427,7 +430,7 @@ function renderProfileCta(
   return (
     `<td class="scr-cta-cell">` +
     `<a class="scr-cta" href="${escapeHtml(
-      `${prefix}${player.slug}${query}`,
+      `${prefix}${player.slug}/${query}`,
     )}" target="_top" tabindex="-1" aria-hidden="true">` +
     `<span class="scr-cta-text">View profile</span>` +
     `<span class="scr-cta-arrow">&rarr;</span>` +

@@ -127,10 +127,14 @@ function wireTabs(root: HTMLElement): void {
   const landedUrl = location.pathname + location.search;
   const landedHeading = headingEl?.textContent ?? "";
   const landedLead = leadEl?.textContent ?? "";
+  const landedTitle = document.title;
 
-  function setHeading(heading: string, lead: string): void {
+  // The document title with the heading, and before the URL is pushed: GA4
+  // records a history change as a page view under the title it reads then.
+  function setHeading(heading: string, lead: string, title = ""): void {
     if (headingEl && heading) headingEl.textContent = heading;
     if (leadEl && lead) leadEl.textContent = lead;
+    document.title = title || landedTitle;
   }
 
   /**
@@ -196,6 +200,7 @@ function wireTabs(root: HTMLElement): void {
       setHeading(
         link.dataset["sctHeading"] ?? "",
         link.dataset["sctLead"] ?? "",
+        link.dataset["scTitle"] ?? "",
       );
       writeUrl(new URL(link.href, location.origin).pathname, "push");
     });
@@ -232,6 +237,7 @@ function wireTabs(root: HTMLElement): void {
     setHeading(
       tab.link.dataset["sctHeading"] ?? "",
       tab.link.dataset["sctLead"] ?? "",
+      tab.link.dataset["scTitle"] ?? "",
     );
     writeUrl(new URL(tab.link.href, location.origin).pathname, "replace");
   });
@@ -256,6 +262,7 @@ function wireTabs(root: HTMLElement): void {
       setHeading(
         link.dataset["sctHeading"] ?? "",
         link.dataset["sctLead"] ?? "",
+        link.dataset["scTitle"] ?? "",
       );
       return;
     }

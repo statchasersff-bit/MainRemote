@@ -2337,7 +2337,7 @@ function renderLinks(data: MatchupData, options: MatchupRenderOptions): string {
   const items = [data.pair.a, data.pair.b]
     .map(
       (team) =>
-        link(`${prefix}${team.slug}${query}`, `${team.fullName} hub`) +
+        link(`${prefix}${team.slug}/${query}`, `${team.fullName} hub`) +
         ((PUBLIC_SECTIONS as readonly string[]).includes("matchups")
           ? link(`${sectionPath(prefix, team.slug, "matchups")}${query}`, `All ${team.nickname} matchups`)
           : ""),

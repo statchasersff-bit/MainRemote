@@ -91,6 +91,24 @@ function sectionMeta(
     };
   }
 
+  if (section === "outlook") {
+    return {
+      title: `${player.name} Fantasy Outlook ${season}: Role, Usage & Draft Value | ${SITE_NAME}`,
+      description:
+        `${player.name} ${season} fantasy outlook: his ${position}role, the ` +
+        `usage behind it and what it is worth on draft day.`,
+    };
+  }
+
+  if (section === "news") {
+    return {
+      title: `${player.name} News & Fantasy Analysis | ${SITE_NAME}`,
+      description:
+        `The latest ${player.name} news and updates, and what each item ` +
+        `changes for fantasy.`,
+    };
+  }
+
   if (section === "game-log") {
     // The ACTIVE season, on every rendering of this page. `?log=2023` adds
     // 2023's table under the season selector and leaves the current season

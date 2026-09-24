@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.6
+Stable tag: 1.10.8
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,17 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.8 =
+* The player-page builder works from the API's current player list. It kept the list for six hours and never refreshed it on demand, so a build run right after an API deploy used the list from before: players the deploy added (Deebo Samuel, Stefon Diggs and 70 others) got no page and still 404ed, and the screen said "602 of 575" with every profile present. A build that starts from the top now fetches the list fresh, "Clear cached renders" clears it too, and a fetch that fails falls back to the list it had rather than to none. Plugin only.
+
+= 1.10.7 =
+* Player section URLs are pages of their own to Google. /nfl/players/<player>/stats/, /game-log/, /outlook/, /injury/, /news/ and /bio/ are rewrites onto the profile page, and Rank Math gave all six the profile's title, description and canonical, which told Google they were one page. Each now gets its own title and description (written by the API, shipped with the fragment), a self-referencing canonical and og:url, index,follow stated outright, and a last breadcrumb naming the section. Needs the matching API deploy for the titles and descriptions; the canonical, robots and breadcrumb work with the plugin alone.
+* The page sitemap lists the six player section URLs for every published profile (not /overview/, which redirects). Team section URLs gain the same last breadcrumb.
+* The URLs the tools append to the page sitemap (player and team sections, schedule weeks, rankings and stats positions, matchups) are listed once, on the first page of the page sitemap. With several hundred player pages the page sitemap paginates, and each file was listing every appended URL again.
+* The retired /nfl/players/<section>/<player>/ pages are dropped from the sitemap. They redirect since 1.10.6, and only final URLs belong in a sitemap.
+* An old player slug's /overview/ now goes straight to the profile in one hop, instead of through the new slug's /overview/ first.
+* API side, needs the API deploy: every internal player and team link ends in a slash, the URL WordPress serves, so no link goes through WordPress's slash redirect first. Two in-page anchors that were dead on section pages ("full injury history" on News, "Career Context" into Stats) link to the section URLs, and "All <Team> news" goes to the team's News section. The team hub's depth chart link goes to /nfl/nfl-depth-charts/fantasy/<team>/ and its "View full NFL schedule" link to /nfl/nfl-schedule/; both defaults pointed at pages that do not exist. A tab switch sets the document title to the tab's own before it changes the address, so GA4's history page views carry the right title.
 
 = 1.10.6 =
 * Every player and team URL has an H1 of its own. On a player's profile the H1 was the Overview panel's "2026 Fantasy Snapshot" (the 1.10.4 entry below made it the bare name), which named nobody or repeated the hero. It is now "Josh Allen Fantasy Football Stats & Analysis". The section pages keep their phrase ("Josh Allen Stats 2026", "Josh Allen Game Log 2026"), and the Outlook gains its year: "Josh Allen Fantasy Outlook 2026". The hero still shows the name.

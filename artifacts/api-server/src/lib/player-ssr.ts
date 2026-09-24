@@ -26,7 +26,9 @@ import {
   getPlayerPageData,
   playerDataVersion,
   type PlayerDataOptions,
+  type PlayerPageData,
 } from "./player/player-data";
+import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
 
 export interface PlayerSsrResult {
@@ -97,7 +99,7 @@ export async function renderPlayerFragment(
   if (hit && hit.version === version) return hit;
 
   const result: PlayerSsrResult = {
-    html: renderPlayerPage(data, options),
+    html: renderPlayerPage(data, options) + pageDataIsland(data, options),
     version,
     season: data.season,
     name: data.player.name,
@@ -109,6 +111,37 @@ export async function renderPlayerFragment(
   }
   fragmentCache.set(key, result);
   return result;
+}
+
+/** The section URLs that are pages of their own: every section but Overview. */
+const INDEXED_SECTIONS = new Set(["stats", "game-log", "outlook", "injury", "news", "bio"]);
+
+/**
+ * A section URL's title and description, as an inert island for the plugin.
+ *
+ * On WordPress a section URL is a rewrite onto the profile page, so Rank Math
+ * would give it the profile's title, description and canonical: six pages
+ * claiming to be one. The plugin reads this and hands Rank Math the section's
+ * own copy — written here, once, by playerPageMeta(), the same words this
+ * server's standalone page wears. The title goes without the site name; the
+ * plugin appends its own. Embedded section fragments only: the profile's
+ * title is the one stored on its page.
+ */
+function pageDataIsland(data: PlayerPageData, options: PlayerRenderOptions): string {
+  if (!options.embed || !options.section || !INDEXED_SECTIONS.has(options.section)) {
+    return "";
+  }
+  const meta = playerPageMeta(data, "", options.section);
+  return (
+    `<script type="application/json" class="scp-page-data">` +
+    escapeJsonLd(
+      JSON.stringify({
+        title: meta.title.replace(/ \| StatChasers$/, ""),
+        description: meta.description,
+      }),
+    ) +
+    `</script>`
+  );
 }
 
 const HEAD_MARKER = "<!--SSR-HEAD-->";

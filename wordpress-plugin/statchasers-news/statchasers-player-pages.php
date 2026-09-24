@@ -85,9 +85,14 @@ function statchasers_player_roster( bool $fresh = false ): array {
 		}
 	}
 
+	// What a fresh fetch falls back to when the API does not answer: the list
+	// it had, rather than none. An empty list would have the builder report
+	// every profile present because it was asked about nobody.
+	$fallback = $fresh && is_array( get_transient( $key ) ) ? get_transient( $key ) : array();
+
 	$origin = statchasers_news_origin();
 	if ( '' === $origin ) {
-		return array();
+		return $fallback;
 	}
 
 	$response = wp_remote_get(
@@ -99,13 +104,13 @@ function statchasers_player_roster( bool $fresh = false ): array {
 	);
 
 	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-		return array();
+		return $fallback;
 	}
 
 	$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 
 	if ( ! is_array( $body ) || empty( $body['players'] ) || ! is_array( $body['players'] ) ) {
-		return array();
+		return $fallback;
 	}
 
 	$rows = array();
@@ -336,7 +341,11 @@ function statchasers_player_move_page( array $row, array $present ) {
  * @return array{next:int,total:int,created:int,existing:int,moved:int,errors:array<int,string>}
  */
 function statchasers_player_build_batch( int $offset ): array {
-	$roster = statchasers_player_roster();
+	// A build that starts from the top asks the API afresh. The list is cached
+	// for six hours, and a build run right after an API deploy used to work from
+	// the list before it: the players the deploy added got no page. The batches
+	// after the first reuse what the first fetched, so one build sees one list.
+	$roster = statchasers_player_roster( 0 === $offset );
 	$total  = count( $roster );
 
 	$result = array(
@@ -636,7 +645,9 @@ function statchasers_player_old_slug_redirect(): void {
 		return;
 	}
 
-	if ( '' !== $section ) {
+	// Overview is the profile itself, so an old slug's /overview/ goes straight
+	// there rather than through the new slug's /overview/ and a second 301.
+	if ( '' !== $section && 'overview' !== $section ) {
 		$target = user_trailingslashit( trailingslashit( $target ) . $section );
 	}
 

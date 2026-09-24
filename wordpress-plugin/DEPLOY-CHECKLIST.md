@@ -109,6 +109,17 @@ confirm:
 - [ ] `/outlook/` is a **301** to the hub (the hub opens on the Outlook), and
       the Outlook tab links to the hub. Same for a player's `/overview/`,
       which 301s to the profile. Neither is in the sitemap.
+- [ ] A player section URL (`/nfl/players/josh-allen/stats/`): View Source
+      shows its own `<title>` ("Josh Allen Stats 2026: …"), its own meta
+      description, `<link rel="canonical">` to **itself** (not the profile),
+      `index, follow`, and a BreadcrumbList whose last item is "Stats". Repeat
+      on `/injury/`: a different title and description again.
+- [ ] `page-sitemap1.xml` lists `/nfl/players/josh-allen/stats/` (and the
+      other five sections) exactly once; `page-sitemap2.xml` does not repeat
+      it. No `/overview/` and no `/nfl/players/outlook/<player>/` anywhere.
+- [ ] From a machine the site answers (not Replit):
+      `cd artifacts/api-server && node scripts/seo-verify.mjs` — every line
+      PASS.
 - [ ] Retired player addresses are **301s**: `/nfl/players/outlook/josh-allen/`
       → `/nfl/players/josh-allen/outlook/`, and
       `/fantasy-football/players/josh-allen/` → `/nfl/players/josh-allen/`.

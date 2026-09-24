@@ -416,7 +416,7 @@ function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
             return (
               `<li>` +
               `<a class="sct-switch-team${current ? " is-current" : ""}"` +
-              ` href="${escapeHtml(`${prefix}${entry.slug}${query}`)}"` +
+              ` href="${escapeHtml(`${prefix}${entry.slug}/${query}`)}"` +
               (current ? ` aria-current="page"` : "") +
               `>` +
               // Decorative: the team's name is right beside it in text, so a
@@ -662,6 +662,9 @@ function renderNav(
         : (teamSectionHeading(team.fullName, section.id, season) ?? team.fullName);
       const lead = teamPageMeta(team, season, "", isHub ? undefined : section.id)
         .description;
+      // The title the tab's address carries on WordPress, for the bundle to set
+      // before it pushes that address. The hub's stored title is the Outlook's.
+      const title = teamPageMeta(team, season, "", isHub ? "outlook" : section.id).title;
 
       return (
         `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
@@ -670,6 +673,7 @@ function renderNav(
         ` data-sct-panel-id="${escapeHtml(section.id)}"` +
         ` data-sct-heading="${escapeHtml(heading)}"` +
         ` data-sct-lead="${escapeHtml(lead)}"` +
+        ` data-sc-title="${escapeHtml(title)}"` +
         `>${escapeHtml(section.label)}</a></li>`
       );
     })
@@ -3712,7 +3716,7 @@ function renderTeamIndexGrid(
           )
           .map(
             (team) =>
-              `<li><a class="sct-switch-team" href="${escapeHtml(`${prefix}${team.slug}${query}`)}">` +
+              `<li><a class="sct-switch-team" href="${escapeHtml(`${prefix}${team.slug}/${query}`)}">` +
               `<img class="sct-switch-logo" src="${escapeHtml(team.logo)}" alt=""` +
               ` width="24" height="24" loading="lazy" decoding="async" />` +
               `<span class="sct-index-name">${escapeHtml(team.fullName)}</span>` +

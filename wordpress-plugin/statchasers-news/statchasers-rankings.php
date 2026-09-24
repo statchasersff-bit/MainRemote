@@ -1167,6 +1167,10 @@ function statchasers_rankings_strip_faq_data( string $html ): string {
 add_filter(
 	'rank_math/sitemap/page_content',
 	static function ( $content ) {
+		if ( ! statchasers_sitemap_first_page() ) {
+			return $content;
+		}
+
 		if ( ! statchasers_rankings_position_urls_enabled() ) {
 			return $content;
 		}

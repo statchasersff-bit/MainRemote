@@ -317,7 +317,7 @@ function renderRow(row: FpaRow, options: FpaRenderOptions): string {
 
   const name = row.team
     ? `<a class="scf-team-link" href="${escapeHtml(
-        `${prefix}${row.team.slug}${query}`,
+        `${prefix}${row.team.slug}/${query}`,
       )}" target="_top">` +
       `<img class="scf-team-logo" src="${escapeHtml(row.team.logo)}" alt=""` +
       ` width="22" height="22" loading="lazy" decoding="async" />` +
