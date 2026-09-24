@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.2
+Stable tag: 1.10.3
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.3 =
+* The page heading lines up with the tool beneath it on a page built with the Divi Builder. 1.10.2 capped each tool at the site's content width and centred it, but the heading the plugin prints (the "Let the tool supply the heading" hero) sits just outside the tool, so it kept the full width of the window and started at its left edge while the table sat centred beneath it. The heading now takes the same cap. Measured on a builder page at 1780px: the H1 moved from 0px to 343px, level with the table. Plain pages were already aligned and are unchanged. This also covers the schedule's heading. Plugin only; no API deploy needed.
 
 = 1.10.2 =
 Launch prep for the rest-of-season rankings and the advanced player stats, checked against every problem the team hubs, player pages, FPA and schedule hit on the live site. Needs the matching API deploy.

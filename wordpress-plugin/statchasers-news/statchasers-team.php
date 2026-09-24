@@ -833,7 +833,14 @@ function statchasers_team_full_width_css(): string {
 			// the Divi sim, 2026-09-24, on the rankings and player stats
 			// fragments at a 1440px window: builder page 1425px → 1080px,
 			// plain page 1080px → 1080px.
-			'#main-content ' . statchasers_tool_root_selector() . '{max-width:' . statchasers_team_content_width() . '!important;' .
+			//
+			// The generated hero (statchasers_page_heading_html()) is printed
+			// just before the tool, outside its root, so it takes the same cap
+			// or the page's H1 starts at the window's edge while the tool beneath
+			// it sits centred — measured on a builder page at 1780px, H1 at 0px
+			// and the table at 343px. Both are block siblings in one column, so
+			// the same cap and auto margins put their left edges together.
+			'#main-content ' . statchasers_tool_root_selector() . ',#main-content .sc-lo-hero--generated{max-width:' . statchasers_team_content_width() . '!important;' .
 				'margin-left:auto!important;margin-right:auto!important}',
 			'#main-content .container:before{display:none!important}',
 			// Belt: if some other plugin fills the widget area, the hub still

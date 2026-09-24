@@ -49,6 +49,7 @@ import {
   type AllRow,
   type PositionFilter,
   type RankedPlayer,
+  type RankingsBoard,
   type RankingsData,
   type StatPosition,
   type TierGroup,
@@ -94,9 +95,15 @@ export interface RankingsRenderOptions {
   tabQuery?: string;
   /** Which panel opens first. The tab strip owns this once JS is up. */
   position?: PositionFilter;
+  /** Which rankings file to render. The redraft board unless told otherwise. */
+  board?: RankingsBoard;
 }
 
-const DEFAULT_BASE_PATH = "/rest-of-season-rankings";
+/** Each board's own address on this app, which is where its links default to. */
+export const RANKINGS_BOARD_PATHS: Record<RankingsBoard, string> = {
+  redraft: "/rankings",
+  ros: "/rest-of-season-rankings",
+};
 const DEFAULT_PLAYER_PREFIX = "/player/";
 
 function panelId(position: PositionFilter): string {
@@ -153,7 +160,7 @@ function renderNav(
   options: RankingsRenderOptions,
 ): string {
   const active = options.position ?? "All";
-  const base = options.basePath ?? DEFAULT_BASE_PATH;
+  const base = options.basePath ?? RANKINGS_BOARD_PATHS[data.board];
   const query = options.tabQuery ?? options.linkQuery ?? "";
 
   const items = POSITIONS.map((position) => {
@@ -162,6 +169,16 @@ function renderNav(
       position === "All"
         ? "All positions"
         : `${POSITION_NAMES[position as StatPosition]}s`;
+    // The redraft board's tabs are in-page, as they always were: one page,
+    // switched by `:target` with scripting off. Only the rest-of-season board
+    // gives each position an address of its own.
+    if (data.board === "redraft") {
+      return (
+        `<li><a class="scr-nav-link${on ? " is-active" : ""}"` +
+        ` href="#${panelId(position)}"` +
+        ` title="${escapeHtml(label)}">${escapeHtml(position)}</a></li>`
+      );
+    }
     return (
       `<li><a class="scr-nav-link${on ? " is-active" : ""}"` +
       ` href="${escapeHtml(rankingsPositionPath(base, position) + query)}"` +
@@ -226,7 +243,8 @@ function renderControls(
   data: RankingsData,
   options: RankingsRenderOptions,
 ): string {
-  const base = options.downloadBase ?? options.basePath ?? DEFAULT_BASE_PATH;
+  const base =
+    options.downloadBase ?? options.basePath ?? RANKINGS_BOARD_PATHS[data.board];
   const updated = renderUpdated(data);
 
   return (
@@ -669,6 +687,7 @@ export function renderRankingsPage(
 
   return (
     `<div class="scr${options.embed ? " is-embed" : ""}" data-scr-root="1"` +
+    ` data-scr-board="${data.board}"` +
     ` data-season="${escapeHtml(String(data.season))}"` +
     ` data-scoring="${escapeHtml(data.scoring)}">` +
     renderControls(data, options) +
@@ -689,7 +708,8 @@ function renderMetaIsland(
   data: RankingsData,
   options: RankingsRenderOptions,
 ): string {
-  if (!options.embed) return "";
+  // The redraft page keeps the title and heading its editor gave it.
+  if (!options.embed || data.board !== "ros") return "";
   return (
     `<script type="application/json" class="scr-page-data">` +
     escapeJsonLd(JSON.stringify(rankingsPageCopy(data, options.position ?? "All"))) +

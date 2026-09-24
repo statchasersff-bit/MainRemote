@@ -63,7 +63,18 @@ export interface TierGroup {
   players: RankedPlayer[];
 }
 
+/**
+ * Which set of rankings: the redraft board (the preseason rankings, at
+ * /fantasy-football/redraft-rankings/) or the rest-of-season board, which is
+ * updated through the season at /fantasy-football/rest-of-season-rankings/.
+ * Two files, two pages, one renderer: `data/rankings/<board>-<season>.csv`.
+ */
+export type RankingsBoard = "redraft" | "ros";
+export const RANKINGS_BOARDS: readonly RankingsBoard[] = ["redraft", "ros"];
+
 export interface RankingsData {
+  /** Which file this came from. */
+  board: RankingsBoard;
   season: number;
   scoring: string;
   /** The human line the boards print, e.g. "August 31, 2026 9:33am ET". */
@@ -257,7 +268,7 @@ function resolver(): Map<string, Resolved> {
 export function invalidateRankingsCache(): void {
   resolverCache = null;
   dataCache.clear();
-  seasonsCache = null;
+  seasonsCache.clear();
 }
 
 /* ------------------------------------------------------------ the boards */
@@ -329,11 +340,12 @@ interface RankingsMeta {
   updatedAtIso?: string;
 }
 
-let seasonsCache: number[] | null = null;
+const seasonsCache = new Map<RankingsBoard, number[]>();
 
-/** Seasons with a rankings file, newest first. */
-export function getRankingsSeasons(): number[] {
-  if (seasonsCache) return seasonsCache;
+/** Seasons with a rankings file for this board, newest first. */
+export function getRankingsSeasons(board: RankingsBoard = "redraft"): number[] {
+  const cached = seasonsCache.get(board);
+  if (cached) return cached;
 
   let names: string[] = [];
   try {
@@ -342,16 +354,18 @@ export function getRankingsSeasons(): number[] {
     logger.warn("No data/rankings directory; the rankings board will be empty");
   }
 
-  seasonsCache = names
-    .map((name) => /^redraft-(\d{4})\.csv$/.exec(name)?.[1])
+  const pattern = new RegExp(`^${board}-(\\d{4})\\.csv$`);
+  const seasons = names
+    .map((name) => pattern.exec(name)?.[1])
     .map((year) => Number.parseInt(year ?? "", 10))
     .filter((year) => Number.isFinite(year))
     .sort((a, b) => b - a);
 
-  return seasonsCache;
+  seasonsCache.set(board, seasons);
+  return seasons;
 }
 
-const dataCache = new Map<number, RankingsData>();
+const dataCache = new Map<string, RankingsData>();
 
 /**
  * The board for one season, or null when there is no file for it.
@@ -361,11 +375,15 @@ const dataCache = new Map<number, RankingsData>();
  * A rankings update is a commit, so this costs one stat per request and never
  * re-parses a file that has not moved.
  */
-export function getRankings(season?: number): RankingsData | null {
-  const resolved = season ?? getRankingsSeasons()[0];
+export function getRankings(
+  season?: number,
+  board: RankingsBoard = "redraft",
+): RankingsData | null {
+  const resolved = season ?? getRankingsSeasons(board)[0];
   if (resolved === undefined) return null;
 
-  const csvFile = path.join(DATA_DIR, `redraft-${resolved}.csv`);
+  const csvFile = path.join(DATA_DIR, `${board}-${resolved}.csv`);
+  const cacheKey = `${board}-${resolved}`;
 
   let mtimeMs = 0;
   try {
@@ -374,8 +392,8 @@ export function getRankings(season?: number): RankingsData | null {
     return null;
   }
 
-  const version = `${resolved}-${Math.round(mtimeMs).toString(36)}`;
-  const hit = dataCache.get(resolved);
+  const version = `${cacheKey}-${Math.round(mtimeMs).toString(36)}`;
+  const hit = dataCache.get(cacheKey);
   if (hit && hit.version === version) return hit;
 
   let csv: string;
@@ -389,7 +407,7 @@ export function getRankings(season?: number): RankingsData | null {
   let meta: RankingsMeta = {};
   try {
     meta = JSON.parse(
-      fs.readFileSync(path.join(DATA_DIR, `redraft-${resolved}.meta.json`), "utf8"),
+      fs.readFileSync(path.join(DATA_DIR, `${board}-${resolved}.meta.json`), "utf8"),
     ) as RankingsMeta;
   } catch {
     // Optional, like every file on the player side: without it the board still
@@ -409,6 +427,7 @@ export function getRankings(season?: number): RankingsData | null {
   for (const pos of STAT_POSITIONS) byPosition[pos] = groupByTier(boards[pos]);
 
   const data: RankingsData = {
+    board,
     season: meta.season ?? resolved,
     scoring: meta.scoring ?? "PPR",
     updatedAt: meta.updatedAt ?? "",
@@ -418,10 +437,10 @@ export function getRankings(season?: number): RankingsData | null {
     version,
   };
 
-  dataCache.set(resolved, data);
+  dataCache.set(cacheKey, data);
   logger.info(
-    { season: data.season, players: rows.length },
-    "Loaded rest-of-season rankings",
+    { board, season: data.season, players: rows.length },
+    "Loaded rankings",
   );
   return data;
 }

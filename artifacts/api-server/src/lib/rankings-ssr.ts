@@ -1,5 +1,6 @@
 /**
- * Server-side rendering for the rest-of-season rankings, mirroring fpa-ssr.ts.
+ * Server-side rendering for the rankings boards (redraft and rest-of-season),
+ * mirroring fpa-ssr.ts.
  *
  * Two consumers, as the other four tools have:
  *   - the standalone page at /rest-of-season-rankings (and /rb, /wr, …),
@@ -54,6 +55,7 @@ function optionKey(season: number | undefined, options: RankingsRenderOptions): 
     options.linkQuery ?? "",
     options.tabQuery ?? "",
     options.position ?? "All",
+    options.board ?? "redraft",
   ]);
 }
 
@@ -71,7 +73,7 @@ export function renderRankingsFragment(
   options: RankingsRenderOptions = {},
 ): RankingsSsrResult {
   const key = optionKey(season, options);
-  const data = getRankings(season);
+  const data = getRankings(season, options.board ?? "redraft");
 
   if (!data) {
     return { html: renderRankingsEmpty(options), version: "empty", data: null };

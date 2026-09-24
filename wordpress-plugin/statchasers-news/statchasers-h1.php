@@ -572,7 +572,9 @@ function statchasers_h1_mounts_a_tool(): bool {
 		defined( 'STATCHASERS_PLAYER_SHORTCODE' ) ? STATCHASERS_PLAYER_SHORTCODE : '',
 		defined( 'STATCHASERS_MATCHUP_SHORTCODE' ) ? STATCHASERS_MATCHUP_SHORTCODE : '',
 		defined( 'STATCHASERS_SCHEDULE_SHORTCODE' ) ? STATCHASERS_SCHEDULE_SHORTCODE : '',
-		defined( 'STATCHASERS_RANKINGS_SHORTCODE' ) ? STATCHASERS_RANKINGS_SHORTCODE : '',
+		// The rest-of-season board only. The redraft page's heading is its
+		// editor's, as it was before the two boards were split.
+		defined( 'STATCHASERS_ROS_RANKINGS_SHORTCODE' ) ? STATCHASERS_ROS_RANKINGS_SHORTCODE : '',
 		defined( 'STATCHASERS_PLAYER_STATS_SHORTCODE' ) ? STATCHASERS_PLAYER_STATS_SHORTCODE : '',
 	) as $tag ) {
 		if ( '' !== $tag && has_shortcode( $content, $tag ) ) {

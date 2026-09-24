@@ -29,14 +29,21 @@ function boot(): void {
   for (const root of Array.from(
     document.querySelectorAll<HTMLElement>(ROOT_SELECTOR),
   )) {
+    // Only the rest-of-season board's tabs are addresses. The redraft board's
+    // are in-page anchors, switched without touching the URL or the heading.
+    const addressed = root.dataset["scrBoard"] === "ros";
     wireTabs(root, {
       navSelector: "[data-scr-nav]",
       listSelector: ".scr-nav-list",
       linkSelector: ".scr-nav-link",
       datasetKey: "scrTabs",
-      panelKey: "scrPanelId",
-      // The host page's H1 follows the board, as the address does.
-      headingKey: "scrHeading",
+      ...(addressed
+        ? {
+            panelKey: "scrPanelId",
+            // The host page's H1 follows the board, as the address does.
+            headingKey: "scrHeading",
+          }
+        : {}),
     });
     wireFrameHeight(root);
   }
