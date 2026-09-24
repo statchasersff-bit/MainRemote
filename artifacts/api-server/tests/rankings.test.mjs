@@ -289,18 +289,38 @@ describe("the rankings page", () => {
     assert.equal(kicker.status, 404, "a position the board lacks is not a page");
   });
 
-  test("the old /rankings addresses move permanently, query and all", async () => {
-    for (const [from, to] of [
-      ["/rankings", "/rest-of-season-rankings"],
-      ["/rankings?pos=te", "/rest-of-season-rankings/te"],
-      ["/rankings?pos=rb&embed=1", "/rest-of-season-rankings/rb?embed=1"],
-      ["/rankings?pos=kicker", "/rest-of-season-rankings"],
-      ["/rankings/download.csv?season=2026", "/rest-of-season-rankings/download.csv?season=2026"],
-    ]) {
-      const res = await rawGet(from);
-      assert.equal(res.status, 301, from);
-      assert.equal(res.headers.location, to, from);
-    }
+  /*
+   * /rankings is the redraft board — its own file, its own page — and reads
+   * exactly as it did before the rest-of-season board was split off: one
+   * address, in-page tabs, the redraft title.
+   */
+  test("/rankings is the redraft board, one address with in-page tabs", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { res, doc } = await page("/rankings?pos=te");
+    assert.equal(res.status, 200);
+    assert.match(doc.title, /^\d{4} Fantasy Football Redraft Rankings \| StatChasers$/);
+    assert.equal(doc.querySelector("[data-scr-root]").dataset.scrBoard, "redraft");
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scr-nav-link")].map((a) => a.getAttribute("href")),
+      ["#scr-panel-all", "#scr-panel-qb", "#scr-panel-rb", "#scr-panel-wr", "#scr-panel-te"],
+    );
+    assert.equal(doc.querySelector("[data-scr-panel].is-default").id, "scr-panel-te", "?pos= still opens a panel");
+    assert.equal(
+      doc.querySelector('link[rel="canonical"]').getAttribute("href").replace(/^https?:\/\/[^/]+/, ""),
+      "/rankings",
+      "one canonical for every panel",
+    );
+
+    const csv = await fetch(`${server.origin}/rankings/download.csv`);
+    assert.equal(csv.status, 200);
+    assert.match(csv.headers.get("content-disposition"), /statchasers-redraft-\d{4}\.csv/);
+  });
+
+  test("/rest-of-season-rankings is the rest-of-season board", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const { doc } = await page("/rest-of-season-rankings");
+    assert.equal(doc.querySelector("[data-scr-root]").dataset.scrBoard, "ros");
+    assert.match(doc.title, /Rest of Season Fantasy Football Rankings/);
   });
 
   test("the tab strip is links to each board's address, with no ARIA roles", async (t) => {
@@ -540,7 +560,7 @@ describe("the embed fragment", () => {
 
   test("hands the page its heading, which follows the board", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const html = await (await fetch(`${server.origin}/embed/rankings?pos=rb`)).text();
+    const html = await (await fetch(`${server.origin}/embed/rankings?board=ros&pos=rb`)).text();
     const copy = JSON.parse(
       html.match(/<script type="application\/json" class="scr-page-data">(.*?)<\/script>/s)[1],
     );
@@ -599,16 +619,28 @@ describe("the embed fragment", () => {
   });
 
   /*
-   * Booted separately, because the behaviour IS the environment: the tabs are
-   * built from SC_RANKINGS_PATH, and one server cannot answer for both.
+   * The redraft board is the default, because it is what the live page has
+   * always mounted: an API deploy must not change that page before the plugin
+   * that knows about two boards is uploaded.
    */
-  test("the tabs link the WordPress page's own addresses", async (t) => {
+  test("with no board named, the fragment is the redraft board as it was", async (t) => {
     if (!hasData) return t.skip("no rankings file");
-    const srv = await startServer({
-      SC_RANKINGS_PATH: "/fantasy-football/rest-of-season-rankings/",
-    });
-    try {
-      const res = await fetch(`${srv.origin}/embed/rankings?pos=rb`);
+    const html = await (await fetch(`${server.origin}/embed/rankings`)).text();
+    assert.match(html, /data-scr-board="redraft"/);
+    assert.match(html, /href="#scr-panel-rb"/);
+    assert.doesNotMatch(html, /scr-page-data/, "the redraft page keeps its own title and heading");
+    assert.doesNotMatch(html, /rest-of-season-rankings\/rb/);
+  });
+
+  /*
+   * No environment needed: the rest-of-season tabs default to the WordPress
+   * page's own addresses, so a deployment that sets nothing still links them.
+   */
+  test("the rest-of-season tabs link the WordPress page's own addresses", async (t) => {
+    if (!hasData) return t.skip("no rankings file");
+    const srv = server;
+    {
+      const res = await fetch(`${srv.origin}/embed/rankings?board=ros&pos=rb`);
       assert.equal(res.status, 200);
       const doc = new JSDOM(`<body>${await res.text()}</body>`).window.document;
 
@@ -635,8 +667,6 @@ describe("the embed fragment", () => {
         doc.querySelector(".scr-csv").getAttribute("href"),
         `${srv.origin}/rest-of-season-rankings/download.csv`,
       );
-    } finally {
-      await srv.stop();
     }
   });
 });

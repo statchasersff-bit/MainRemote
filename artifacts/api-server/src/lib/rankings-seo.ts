@@ -1,5 +1,8 @@
 /**
- * Metadata for the rest-of-season rankings page.
+ * Metadata for the two rankings pages: the redraft board at /rankings and the
+ * rest-of-season board at /rest-of-season-rankings. The redraft page reads as
+ * it did before the rest-of-season board existed — one address, one title —
+ * and everything below about positions applies to the rest-of-season board.
  *
  * Same posture as the other four tools: everything is in the initial HTML,
  * nothing is amended by JavaScript, and the page ships
@@ -73,6 +76,20 @@ export function rankingsPageMeta(
   const season = data?.season ?? new Date().getUTCFullYear();
   const scoring = data?.scoring ?? "PPR";
   const updated = data && data.updatedAt !== "" ? ` Updated ${data.updatedAt}.` : "";
+
+  // The preseason board, worded exactly as it was before the rest-of-season
+  // page was split off: its tabs are in-page, so it has no position pages.
+  if (data?.board === "redraft") {
+    return {
+      title: `${season} Fantasy Football Redraft Rankings | ${SITE_NAME}`,
+      description:
+        `Free ${season} fantasy football redraft rankings for ${scoring} leagues: ` +
+        `tiered quarterback, running back, wide receiver and tight end boards, ` +
+        `plus an all-positions view and a CSV export.${updated}`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
 
   if (position !== "All") {
     const plural = POSITION_PLURALS[position];

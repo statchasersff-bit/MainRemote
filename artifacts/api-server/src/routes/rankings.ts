@@ -1,20 +1,29 @@
 /**
- * The rest-of-season rankings routes.
+ * The rankings routes: two boards, each from its own file.
  *
+ * The redraft board (data/rankings/redraft-<season>.csv), as it always was:
+ *   GET /rankings                             — the standalone page; `?pos=rb` opens a panel
+ *   GET /rankings/download.csv                — the boards on screen, as CSV
+ *
+ * The rest-of-season board (data/rankings/ros-<season>.csv):
  *   GET /rest-of-season-rankings              — the standalone page, All board
  *   GET /rest-of-season-rankings/qb|rb|wr|te  — the same page, that board open
- *   GET /rest-of-season-rankings?season=2026  — an older published board, if kept
- *   GET /rest-of-season-rankings?embed=1      — the same page, stripped for embedding
  *   GET /rest-of-season-rankings/download.csv — the boards on screen, as CSV
- *   GET /embed/rankings                       — the bare fragment, for the WordPress mount
  *
- * Every position page carries all five boards — the tabs switch in place once
- * the bundle is up — so the path only decides which one is open, and what the
- * title and canonical say.
+ * And for the WordPress mounts:
+ *   GET /embed/rankings                       — the redraft board's fragment
+ *   GET /embed/rankings?board=ros             — the rest-of-season board's
  *
- * The old addresses answer with a 301: `/rankings` and its `?pos=` to the path
- * form, `/rankings/download.csv` to its new home. `/embed/rankings` keeps its
- * name; it is an API the plugin calls, not a page anyone visits.
+ * Either page takes `?season=` for an older file and `?embed=1` for the legacy
+ * iframe. The rest-of-season board's position pages carry all five boards —
+ * the tabs switch in place once the bundle is up — so the path only decides
+ * which one is open, and what the title and canonical say. The redraft board's
+ * tabs are in-page anchors, so it is one address.
+ *
+ * The redraft board is the default everywhere a board is not named, because it
+ * is the one the live page at /fantasy-football/redraft-rankings/ has always
+ * mounted: an API deploy must not change what that page shows before the
+ * plugin that knows about two boards is installed.
  *
  * Mirrors routes/fpa.ts, including the posture that matters: every route ships
  * `noindex, indexifembedded`, so this origin does not compete with
@@ -34,6 +43,7 @@ import {
   renderRankingsFragment,
 } from "../lib/rankings-ssr";
 import {
+  RANKINGS_BOARD_PATHS,
   rankingsPositionPath,
   renderRankingsCsv,
 } from "../lib/rankings-render";
@@ -41,6 +51,7 @@ import {
   getRankings,
   POSITIONS,
   type PositionFilter,
+  type RankingsBoard,
 } from "../lib/rankings/rankings-data";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,9 +65,29 @@ function isEmbed(req: Request): boolean {
   return TRUTHY.has(String(req.query["embed"] ?? "").trim().toLowerCase());
 }
 
-const RANKINGS_BASE_PATH = "/rest-of-season-rankings";
-const LEGACY_BASE_PATH = "/rankings";
+const REDRAFT_BASE_PATH = RANKINGS_BOARD_PATHS.redraft;
+const ROS_BASE_PATH = RANKINGS_BOARD_PATHS.ros;
 const PLAYER_PATH_PREFIX = "/player/";
+
+/**
+ * Where the rest-of-season board's tabs point in the WordPress fragment: the
+ * page on statchasers.com, whose rewrite rule answers `/rb/` and the rest.
+ * The default IS that page, so nothing has to be set for the tabs to work;
+ * SC_ROS_RANKINGS_PATH is for a page that moves.
+ */
+const ROS_WORDPRESS_PATH = "/fantasy-football/rest-of-season-rankings/";
+
+/** Which board a fragment request names. Anything but `ros` is the redraft board. */
+function boardParam(req: Request): RankingsBoard {
+  return String(req.query["board"] ?? "").trim().toLowerCase() === "ros"
+    ? "ros"
+    : "redraft";
+}
+
+const BOARD_NAMES: Record<RankingsBoard, string> = {
+  redraft: "redraft",
+  ros: "rest-of-season",
+};
 
 /**
  * Only `embed`, and only as the canonical `?embed=1`.
@@ -135,7 +166,7 @@ function redirectTo(
 ): void {
   res.redirect(
     301,
-    rankingsPositionPath(RANKINGS_BASE_PATH, position) + queryWithoutPos(req),
+    rankingsPositionPath(ROS_BASE_PATH, position) + queryWithoutPos(req),
   );
 }
 
@@ -152,6 +183,7 @@ function renderPage(
   req: Request,
   res: Response,
   position: PositionFilter,
+  board: RankingsBoard,
 ): void {
   const embed = isEmbed(req);
   try {
@@ -160,9 +192,10 @@ function renderPage(
       // own canonical and no combination of season or embed mints another.
       canonical: canonicalUrl(req),
       embed,
-      basePath: RANKINGS_BASE_PATH,
+      basePath: RANKINGS_BOARD_PATHS[board],
       linkQuery: linkQuery(req),
       position,
+      board,
     });
 
     const dev = liveReload().enabled;
@@ -201,14 +234,26 @@ function renderPage(
   }
 }
 
-router.get(RANKINGS_BASE_PATH, (req, res) => {
-  // `?pos=rb` was the old way to open a board. It is the path's job now, and
-  // a query that can do it too is a second address for every board.
+/* ------------------------------------------------------ the redraft board */
+
+/**
+ * The redraft board, one address. `?pos=` opens a panel, as it always has: the
+ * canonical is built from the path alone, so it never mints a second one.
+ */
+router.get(REDRAFT_BASE_PATH, (req, res) => {
+  renderPage(req, res, queryPosition(req) ?? "All", "redraft");
+});
+
+/* ----------------------------------------------- the rest-of-season board */
+
+router.get(ROS_BASE_PATH, (req, res) => {
+  // `?pos=rb` is the path's job on this board, and a query that can do it
+  // too is a second address for every position.
   if (req.query["pos"] !== undefined) {
     redirectTo(req, res, queryPosition(req) ?? "All");
     return;
   }
-  renderPage(req, res, "All");
+  renderPage(req, res, "All", "ros");
 });
 
 /**
@@ -218,9 +263,9 @@ router.get(RANKINGS_BASE_PATH, (req, res) => {
  * screen can never disagree — and it carries the derived tier and team columns,
  * which the source file does not have.
  */
-router.get(`${RANKINGS_BASE_PATH}/download.csv`, (req, res) => {
+function sendCsv(req: Request, res: Response, board: RankingsBoard): void {
   try {
-    const data = getRankings(season(req));
+    const data = getRankings(season(req), board);
     if (!data) {
       res.status(404).type("text/plain").send("No rankings have been published");
       return;
@@ -228,16 +273,24 @@ router.get(`${RANKINGS_BASE_PATH}/download.csv`, (req, res) => {
     res
       .set(
         "Content-Disposition",
-        `attachment; filename="statchasers-rest-of-season-${data.season}.csv"`,
+        `attachment; filename="statchasers-${BOARD_NAMES[board]}-${data.season}.csv"`,
       )
       .set("Cache-Control", "public, max-age=300")
       .set("X-Robots-Tag", "noindex")
       .type("text/csv")
       .send(renderRankingsCsv(data));
   } catch (err) {
-    logger.error({ err }, "Failed to build the rankings CSV");
+    logger.error({ err, board }, "Failed to build the rankings CSV");
     res.status(503).type("text/plain").send("CSV unavailable");
   }
+}
+
+router.get(`${REDRAFT_BASE_PATH}/download.csv`, (req, res) => {
+  sendCsv(req, res, "redraft");
+});
+
+router.get(`${ROS_BASE_PATH}/download.csv`, (req, res) => {
+  sendCsv(req, res, "ros");
 });
 
 /**
@@ -247,7 +300,7 @@ router.get(`${RANKINGS_BASE_PATH}/download.csv`, (req, res) => {
  * path. Those spellings redirect rather than render, so each board has exactly
  * one address. Anything else is not a position and falls through to the 404.
  */
-router.get(`${RANKINGS_BASE_PATH}/:pos`, (req, res, next) => {
+router.get(`${ROS_BASE_PATH}/:pos`, (req, res, next) => {
   const segment = String(req.params["pos"] ?? "");
   const position = pathPosition(segment);
   if (position !== null) {
@@ -255,7 +308,7 @@ router.get(`${RANKINGS_BASE_PATH}/:pos`, (req, res, next) => {
       redirectTo(req, res, position);
       return;
     }
-    renderPage(req, res, position);
+    renderPage(req, res, position, "ros");
     return;
   }
 
@@ -270,19 +323,6 @@ router.get(`${RANKINGS_BASE_PATH}/:pos`, (req, res, next) => {
   next();
 });
 
-/* ------------------------------------------------------ the old addresses */
-
-router.get(LEGACY_BASE_PATH, (req, res) => {
-  redirectTo(req, res, queryPosition(req) ?? "All");
-});
-
-router.get(`${LEGACY_BASE_PATH}/download.csv`, (req, res) => {
-  res.redirect(
-    301,
-    `${RANKINGS_BASE_PATH}/download.csv${queryWithoutPos(req)}`,
-  );
-});
-
 /**
  * The bare fragment, for the WordPress plugin to print into a page.
  *
@@ -295,23 +335,29 @@ router.get("/embed/rankings", (req, res) => {
   const playerPrefix = (
     process.env["SC_PLAYER_PATH_PREFIX"] ?? PLAYER_PATH_PREFIX
   ).trim();
-  const basePath = (
-    process.env["SC_RANKINGS_PATH"] ?? RANKINGS_BASE_PATH
-  ).trim();
+  const board = boardParam(req);
+  // The redraft board's tabs are in-page anchors, so its base only names this
+  // app's page. The rest-of-season board's tabs are the WordPress page's own
+  // position addresses.
+  const basePath =
+    board === "ros"
+      ? (process.env["SC_ROS_RANKINGS_PATH"] ?? ROS_WORDPRESS_PATH).trim()
+      : REDRAFT_BASE_PATH;
 
   try {
     const result = renderRankingsFragment(season(req), {
       embed: true,
+      board,
       basePath,
       playerPathPrefix: playerPrefix,
       // WordPress has never heard of `/download.csv` under its page, so the
       // CSV link is given this origin outright — the schedule's exports do
       // the same.
-      downloadBase: `${publicOrigin(req)}${RANKINGS_BASE_PATH}`,
+      downloadBase: `${publicOrigin(req)}${RANKINGS_BOARD_PATHS[board]}`,
       linkQuery: fragmentLinkQuery(playerPrefix),
-      // `?embed=1` means something only to this app. Once SC_RANKINGS_PATH
-      // points the tabs at the WordPress page they must not carry it.
-      tabQuery: basePath === RANKINGS_BASE_PATH ? "?embed=1" : "",
+      // `?embed=1` means something only to this app, and is a reserved query
+      // var on WordPress. Only a base pointing back here may carry it.
+      tabQuery: basePath === ROS_BASE_PATH ? "?embed=1" : "",
       position: queryPosition(req) ?? "All",
     });
 
@@ -320,7 +366,7 @@ router.get("/embed/rankings", (req, res) => {
         .status(404)
         .set("Cache-Control", "no-store")
         .type("text/plain")
-        .send("No rankings have been published");
+        .send(`No ${BOARD_NAMES[board]} rankings have been published`);
       return;
     }
 

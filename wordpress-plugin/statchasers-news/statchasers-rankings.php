@@ -1,9 +1,13 @@
 <?php
 /**
- * The rest-of-season rankings shortcode: [statchasers_rankings]
+ * The rankings shortcodes: [statchasers_rankings] (the redraft board) and
+ * [statchasers_ros_rankings] (the rest-of-season board).
+ *
+ * Two boards, each from its own file on the API, each on its own page:
+ * /fantasy-football/redraft-rankings/ and /fantasy-football/rest-of-season-rankings/.
  *
  * Same posture as the team hub, the player pages and the FPA table. The API
- * serves /rest-of-season-rankings with `noindex, indexifembedded`, so the boards are invisible
+ * serves both boards with `noindex, indexifembedded`, so they are invisible
  * to search until something embeds them — this file is that something.
  *
  * ## What this replaces
@@ -37,14 +41,16 @@
  * an attribute is which position panel opens first, for a page that wants to be
  * about running backs.
  *
- * ## Position URLs
+ * ## Position URLs (rest-of-season board only)
  *
- * Each board has an address under the page:
+ * Each position has an address under the rest-of-season page:
  * `/fantasy-football/rest-of-season-rankings/rb/` and so on. One page serves
  * all five — a rewrite rule points the position URL at the page and sets a
  * query var the shortcode reads — and each gets its own title, description and
- * canonical. The API builds the tabs from SC_RANKINGS_PATH, so that has to
- * name the same page as statchasers_rankings_page_path().
+ * canonical. The API builds the tabs from its default of that page's path
+ * (SC_ROS_RANKINGS_PATH overrides it), so the two have to name the same page
+ * as statchasers_rankings_page_path(). The redraft board's tabs are in-page
+ * anchors, as they always were, and it has no position URLs.
  *
  * @package StatChasers\News
  */
@@ -54,6 +60,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 const STATCHASERS_RANKINGS_SHORTCODE = 'statchasers_rankings';
+
+/**
+ * The rest-of-season board: [statchasers_ros_rankings].
+ *
+ * Two boards, two pages, one implementation. [statchasers_rankings] is the
+ * redraft board, the preseason rankings at /fantasy-football/redraft-rankings/,
+ * and prints exactly what it printed before the rest-of-season board existed:
+ * one address, in-page tabs, the page's own title and heading. This tag is the
+ * rest-of-season board, from its own file on the API, and everything in this
+ * file about position URLs, headings and the sitemap applies to it alone.
+ */
+const STATCHASERS_ROS_RANKINGS_SHORTCODE = 'statchasers_ros_rankings';
 const STATCHASERS_RANKINGS_HANDLE    = 'statchasers-rankings';
 
 /**
@@ -86,9 +104,16 @@ const STATCHASERS_RANKINGS_POSITIONS = array( 'all', 'qb', 'rb', 'wr', 'te' );
  * Normalise the shortcode attributes.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
- * @return array{pos:string,season:int}
+ * @param string              $board 'redraft', 'ros', or '' for the page's.
+ * @return array{pos:string,season:int,board:string}
  */
-function statchasers_rankings_args( array $atts ): array {
+function statchasers_rankings_args( array $atts, string $board = '' ): array {
+	// Which board: the tag says so when the shortcode is rendering; otherwise
+	// (titles, schema) it is the board the page mounts.
+	if ( 'ros' !== $board && 'redraft' !== $board ) {
+		$board = statchasers_rankings_page_is_ros() ? 'ros' : 'redraft';
+	}
+
 	$atts = shortcode_atts(
 		array(
 			'pos'    => 'all',
@@ -106,7 +131,7 @@ function statchasers_rankings_args( array $atts ): array {
 	// The address outranks the attribute, the way a week URL outranks the
 	// schedule's: /rb/ is a page about running backs whatever the shortcode
 	// on it was written to open.
-	$from_url = statchasers_rankings_request_pos();
+	$from_url = 'ros' === $board ? statchasers_rankings_request_pos() : '';
 	if ( '' !== $from_url ) {
 		$pos = $from_url;
 	}
@@ -123,6 +148,7 @@ function statchasers_rankings_args( array $atts ): array {
 	return array(
 		'pos'    => $pos,
 		'season' => $season,
+		'board'  => $board,
 	);
 }
 
@@ -133,7 +159,7 @@ function statchasers_rankings_args( array $atts ): array {
  *
  *     add_filter( 'statchasers_rankings_page_path', fn() => 'rankings' );
  *
- * Must name the same page as SC_RANKINGS_PATH on the API, which is what the
+ * Must name the same page as SC_ROS_RANKINGS_PATH on the API (default: this page), which is what the
  * tabs are built from.
  */
 function statchasers_rankings_page_path(): string {
@@ -150,7 +176,7 @@ function statchasers_rankings_page_path(): string {
  *     add_filter( 'statchasers_rankings_position_urls', '__return_false' );
  *
  * Off, the page is one address again and the tabs' links 404 — so turn it off
- * together with SC_RANKINGS_PATH, not on its own.
+ * together with SC_ROS_RANKINGS_PATH, not on its own.
  */
 function statchasers_rankings_position_urls_enabled(): bool {
 	return (bool) apply_filters( 'statchasers_rankings_position_urls', true );
@@ -167,7 +193,10 @@ function statchasers_rankings_position_urls_enabled(): bool {
 function statchasers_rankings_legacy_path(): string {
 	$path = (string) apply_filters(
 		'statchasers_rankings_legacy_path',
-		'fantasy-football/redraft-rankings'
+		// Off: the redraft page stays at its address, with its own board, so
+		// there is nothing there to redirect. Kept as a filter for the day it
+		// is retired.
+		''
 	);
 	return trim( $path, '/' );
 }
@@ -228,10 +257,10 @@ add_action(
  * static here is a value no test can change within a process.
  */
 function statchasers_rankings_request_pos(): string {
-	// Only on the page that mounts the board. The query var is public, so
-	// without this `?sc_rank_pos=rb` on any article on the site retitled it
-	// and pointed its canonical at the running back board.
-	if ( ! statchasers_rankings_post_has_shortcode() ) {
+	// Only on the page that mounts the rest-of-season board. The query var is
+	// public, so without this `?sc_rank_pos=rb` on any article on the site
+	// retitled it and pointed its canonical at the running back board.
+	if ( ! statchasers_rankings_page_is_ros() ) {
 		return '';
 	}
 	$raw = strtolower( trim( (string) get_query_var( 'sc_rank_pos' ) ) );
@@ -295,8 +324,10 @@ function statchasers_rankings_page_copy(): array {
 		return $copy;
 	}
 
+	// The rest-of-season board only: the redraft page keeps the title, H1
+	// and description its editor gave it.
 	$copy = array();
-	if ( ! statchasers_rankings_post_has_shortcode() ) {
+	if ( ! statchasers_rankings_page_is_ros() ) {
 		return $copy;
 	}
 
@@ -509,6 +540,9 @@ function statchasers_rankings_fetch( array $args ): ?array {
 	}
 
 	$query = array( 'pos' => $args['pos'] );
+	if ( 'ros' === ( $args['board'] ?? '' ) ) {
+		$query['board'] = 'ros';
+	}
 	if ( $args['season'] > 0 ) {
 		$query['season'] = (string) $args['season'];
 	}
@@ -609,6 +643,21 @@ function statchasers_rankings_enqueue_assets(): void {
  * Theme Builder layout. Memoised for the same reason too.
  */
 function statchasers_rankings_post_has_shortcode(): bool {
+	return '' !== statchasers_rankings_page_board();
+}
+
+/** Does the request being rendered mount the rest-of-season board? */
+function statchasers_rankings_page_is_ros(): bool {
+	return 'ros' === statchasers_rankings_page_board();
+}
+
+/**
+ * Which board the request's page mounts: 'ros', 'redraft', or '' for neither.
+ *
+ * The rest-of-season tag wins on a page that somehow carries both, because
+ * it is the one whose addresses and headings this file manages.
+ */
+function statchasers_rankings_page_board(): string {
 	static $answer = null;
 
 	if ( null !== $answer ) {
@@ -616,15 +665,22 @@ function statchasers_rankings_post_has_shortcode(): bool {
 	}
 
 	if ( ! is_singular() ) {
-		return false;
+		return '';
 	}
 
 	$post = get_queried_object();
 	if ( ! $post instanceof WP_Post ) {
-		return false;
+		return '';
 	}
 
-	$answer = has_shortcode( (string) $post->post_content, STATCHASERS_RANKINGS_SHORTCODE );
+	$content = (string) $post->post_content;
+	if ( has_shortcode( $content, STATCHASERS_ROS_RANKINGS_SHORTCODE ) ) {
+		$answer = 'ros';
+	} elseif ( has_shortcode( $content, STATCHASERS_RANKINGS_SHORTCODE ) ) {
+		$answer = 'redraft';
+	} else {
+		$answer = '';
+	}
 
 	return $answer;
 }
@@ -725,6 +781,27 @@ add_filter( 'body_class', 'statchasers_rankings_full_width_body_class', PHP_INT_
  * @return string HTML.
  */
 function statchasers_rankings_shortcode( $atts = array() ): string {
+	return statchasers_rankings_render( is_array( $atts ) ? $atts : array(), 'redraft' );
+}
+
+/**
+ * [statchasers_ros_rankings]: the rest-of-season board.
+ *
+ * @param array<string,mixed>|string $atts Shortcode attributes.
+ * @return string HTML.
+ */
+function statchasers_ros_rankings_shortcode( $atts = array() ): string {
+	return statchasers_rankings_render( is_array( $atts ) ? $atts : array(), 'ros' );
+}
+
+/**
+ * Both shortcodes' body.
+ *
+ * @param array<string,mixed> $atts  Shortcode attributes.
+ * @param string              $board 'redraft' or 'ros'.
+ * @return string HTML.
+ */
+function statchasers_rankings_render( array $atts, string $board ): string {
 	$origin = statchasers_news_origin();
 
 	if ( '' === $origin ) {
@@ -734,7 +811,7 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 		return '';
 	}
 
-	$args = statchasers_rankings_args( is_array( $atts ) ? $atts : array() );
+	$args = statchasers_rankings_args( $atts, $board );
 	$data = statchasers_rankings_fetch( $args );
 
 	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
@@ -745,7 +822,7 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 		// behaviour to markup that is already there. An empty string leaves the
 		// rest of the page — the H1, the copy, the internal links — intact.
 		if ( current_user_can( 'manage_options' ) ) {
-			return '<p><strong>StatChasers Rankings:</strong> the API returned nothing. Check that the deployment is up and that it has a <code>data/rankings/redraft-&lt;season&gt;.csv</code> file.</p>';
+			return '<p><strong>StatChasers Rankings:</strong> the API returned nothing. Check that the deployment is up and that it has a <code>data/rankings/' . ( 'ros' === $board ? 'ros' : 'redraft' ) . '-&lt;season&gt;.csv</code> file.</p>';
 		}
 		return '';
 	}
@@ -760,7 +837,11 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 	 * @param string $pos    The position panel opened first.
 	 * @param int    $season The season requested, or 0 for the newest.
 	 */
-	return statchasers_rankings_shortcode_heading() . (string) apply_filters(
+	// The heading is the rest-of-season board's alone; the redraft page's is
+	// whatever its editor built, as it always was.
+	$heading = 'ros' === $board ? statchasers_rankings_shortcode_heading() : '';
+
+	return $heading . (string) apply_filters(
 		'statchasers_rankings_fragment_html',
 		statchasers_rankings_strip_faq_data( (string) $data['html'] ),
 		$args['pos'],
@@ -768,6 +849,7 @@ function statchasers_rankings_shortcode( $atts = array() ): string {
 	);
 }
 add_shortcode( STATCHASERS_RANKINGS_SHORTCODE, 'statchasers_rankings_shortcode' );
+add_shortcode( STATCHASERS_ROS_RANKINGS_SHORTCODE, 'statchasers_ros_rankings_shortcode' );
 
 /* ------------------------------------------------------------- faq schema */
 
@@ -1001,7 +1083,7 @@ add_filter(
 		if ( ! $page instanceof WP_Post || 'publish' !== $page->post_status ) {
 			return $content;
 		}
-		if ( ! has_shortcode( (string) $page->post_content, STATCHASERS_RANKINGS_SHORTCODE ) ) {
+		if ( ! has_shortcode( (string) $page->post_content, STATCHASERS_ROS_RANKINGS_SHORTCODE ) ) {
 			return $content;
 		}
 		$extra = '';
