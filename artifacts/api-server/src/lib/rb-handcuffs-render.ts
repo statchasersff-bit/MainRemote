@@ -41,6 +41,7 @@ import {
   HANDCUFF_TYPES,
   METHODOLOGY_NOTE,
   PILLARS,
+  rankTone,
   scoreTone,
   statusBadges,
   tierFor,
@@ -352,6 +353,31 @@ function renderName(p: HandcuffPlayer, options: HandcuffRenderOptions): string {
   );
 }
 
+/**
+ * The StatChasers note, when curation.json gives him one: an icon beside his
+ * name that opens the note as a native popover. The top layer puts it above
+ * the table's scroll box and any host stacking context, and the browser
+ * handles Escape and click-away. The row's click handler ignores buttons, so
+ * opening it does not also expand the row.
+ */
+function renderStatchasersNote(p: HandcuffPlayer): string {
+  if (!p.statchasersNote) return "";
+  const id = `rbh-scnote-${p.id}`;
+  return (
+    `<button type="button" class="rbh-scnote-btn" popovertarget="${escapeHtml(id)}"` +
+    ` aria-label="StatChasers note on ${escapeHtml(p.playerName)}" title="StatChasers note">` +
+    icon("note", "rbh-icon") +
+    `</button>` +
+    `<div class="rbh-scnote" id="${escapeHtml(id)}" popover>` +
+    `<p class="rbh-scnote-head">${icon("note", "rbh-icon")}StatChasers Note` +
+    `<button type="button" class="rbh-scnote-close" popovertarget="${escapeHtml(id)}"` +
+    ` popovertargetaction="hide" aria-label="Close">&times;</button></p>` +
+    `<p class="rbh-scnote-player">${escapeHtml(p.playerName)} · ${escapeHtml(p.team)}</p>` +
+    `<p class="rbh-scnote-body">${escapeHtml(p.statchasersNote)}</p>` +
+    `</div>`
+  );
+}
+
 function renderStarter(p: HandcuffPlayer, fresh: boolean): string {
   if (!p.starterName) return `<span class="rbh-na">N/A</span>`;
   return (
@@ -484,7 +510,9 @@ function renderRow(p: HandcuffPlayer, fresh: boolean, options: HandcuffRenderOpt
     ` data-score="${p.handcuffScore}" data-rank="${p.rank}">` +
     `<td class="rbh-rank">${p.rank}</td>` +
     `<th scope="row" class="rbh-player">` +
-    renderName(p, options) +
+    (p.statchasersNote
+      ? `<span class="rbh-name-line">${renderName(p, options)}${renderStatchasersNote(p)}</span>`
+      : renderName(p, options)) +
     // Mobile parity, as the standalone table had it: the Handcuff For column
     // drops out on a narrow table, and which starter a backup is behind is
     // the whole point of the tool — so it moves under the name.
@@ -709,16 +737,17 @@ function renderSection(
   subLabel: string,
   score: number | null,
   rank: number | null,
+  poolSize: number,
   body: string,
   open: boolean,
 ): string {
-  const tone = toneOf(score);
+  const tone = rank != null ? rankTone(rank, poolSize) : toneOf(score).key;
   return (
     `<details class="rbh-section"${open ? " open" : ""}>` +
     `<summary>${icon("chevron", "rbh-chev")}` +
     `<span class="rbh-section-text"><span class="rbh-section-head">` +
     `<span class="rbh-section-name">${escapeHtml(name)}</span>` +
-    `<span class="rbh-section-rank is-${tone.key}">${rank != null ? `#${rank}` : "—"}</span>` +
+    `<span class="rbh-section-rank is-${tone}">${rank != null ? `#${rank}` : "—"}</span>` +
     `</span>` +
     `<span class="rbh-section-sub">${escapeHtml(subLabel)}</span></span>` +
     `</summary>` +
@@ -750,6 +779,11 @@ function rankText(rank: { rank: number } | undefined, fallback: string): string 
   return rank ? `#${rank.rank}` : fallback;
 }
 
+/** Coloured by the rank the row shows; by the score only when it shows the score. */
+function driverTone(rank: { rank: number; poolSize: number } | undefined, score: number | null): string {
+  return rank ? rankTone(rank.rank, rank.poolSize) : scoreTone(score);
+}
+
 function renderPathSection(p: HandcuffPlayer, season: number): string {
   const pto = p.pathToOpportunityDetail;
   const ranks = p.pathComponentRanks ?? {};
@@ -767,7 +801,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
         renderDriver(
           "Starter Durability History",
           rankText(ranks["starterDurabilityHistoryRisk"], String(c.starterDurabilityHistoryRisk.score)),
-          scoreTone(c.starterDurabilityHistoryRisk.score),
+          driverTone(ranks["starterDurabilityHistoryRisk"], c.starterDurabilityHistoryRisk.score),
           `The current starter's missed-game rate: ${season} so far 20%, ${season - 1} 60%, career before that 20% (plus current status when fresh). Higher = the starter is more likely to open a path. (25% of Path to Opportunity)`,
         ),
       );
@@ -778,7 +812,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
         renderDriver(
           "Starter Workload Stress",
           rankText(ranks["starterWorkloadStress"], String(c.starterWorkloadStress.score)),
-          scoreTone(c.starterWorkloadStress.score),
+          driverTone(ranks["starterWorkloadStress"], c.starterWorkloadStress.score),
           `The current starter's touches per game over his last six games (week 18 excluded), ranked against every other starter on the board (heaviest 100, lightest 0). Heavier usage raises wear-and-tear opportunity risk. (20% of Path to Opportunity)`,
           tpg != null ? `${tpg.toFixed(1)} tch/g` : undefined,
         ),
@@ -790,7 +824,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
         renderDriver(
           "Starter Age Risk",
           rankText(ranks["starterAgeRisk"], String(c.starterAgeRisk.score)),
-          scoreTone(c.starterAgeRisk.score),
+          driverTone(ranks["starterAgeRisk"], c.starterAgeRisk.score),
           "RB-specific age curve for the current starter — older starters are likelier to decline or miss time.",
           age != null ? `age ${age}` : undefined,
         ),
@@ -802,7 +836,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
         renderDriver(
           "Backup Usage Ratio",
           rankText(ranks["backupUsageRatio"], String(c.backupUsageRatio.score)),
-          scoreTone(c.backupUsageRatio.score),
+          driverTone(ranks["backupUsageRatio"], c.backupUsageRatio.score),
           `The share of the two-back workload (touches, snaps, routes, targets, red-zone) ${p.playerName} holds vs the current starter in ${season}, ranked against every other backup on the board (biggest share 100, smallest 0). A bigger share means a clearer path. Dropped when ${p.playerName} has no ${season} snaps for this team. (25% of Path to Opportunity)`,
           share != null ? `${Math.round(share * 100)}% of backfield` : undefined,
         ),
@@ -813,7 +847,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
         renderDriver(
           "Starter Quality Vulnerability",
           rankText(ranks["starterQualityVulnerability"], String(c.starterQualityVulnerability.score)),
-          scoreTone(c.starterQualityVulnerability.score),
+          driverTone(ranks["starterQualityVulnerability"], c.starterQualityVulnerability.score),
           "Inverted Player Quality of the current starter — a weaker starter is easier to unseat. Backup Player Quality is NOT included here.",
         ),
       );
@@ -833,6 +867,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
     "How likely the backup is to gain a bigger role.",
     p.pathScore,
     p.pathToOpportunityRank,
+    p.poolSize,
     body,
     true,
   );
@@ -902,7 +937,7 @@ function renderBackfieldSection(p: HandcuffPlayer, season: number): string {
         return renderDriver(
           row.label,
           rankText(ranks[row.key], c.percentile != null ? String(c.percentile) : "—"),
-          scoreTone(c.percentile),
+          driverTone(ranks[row.key], c.percentile),
           row.tooltip.replace(/\{season\}/g, String(season)),
           backfieldValue(c.perGame, row.kind),
         );
@@ -913,6 +948,7 @@ function renderBackfieldSection(p: HandcuffPlayer, season: number): string {
     `How much total RB opportunity this offense has produced in ${season} between the team's two highest-usage RBs`,
     p.contingentUpsideScore,
     p.contingentUpsideRank,
+    p.poolSize,
     body,
     false,
   );
@@ -959,7 +995,7 @@ function renderQualitySection(p: HandcuffPlayer): string {
         return renderDriver(
           row.label,
           rank != null ? `#${rank}` : String(score),
-          scoreTone(score),
+          rank != null ? rankTone(rank, p.playerQualityCategoryPoolSize) : scoreTone(score),
           row.tooltip,
         );
       }).join("")
@@ -970,6 +1006,7 @@ function renderQualitySection(p: HandcuffPlayer): string {
     "How good this backup is as a player — independent of his current role behind the starter.",
     p.playerQualityScore,
     p.playerQualityRank,
+    p.poolSize,
     body,
     false,
   );

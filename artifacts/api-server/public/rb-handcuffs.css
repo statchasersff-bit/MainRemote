@@ -908,6 +908,109 @@ a.rbh-name:hover {
   text-overflow: ellipsis;
 }
 
+/* The StatChasers note: an icon after the name, opening a popover. */
+.rbh-name-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rbh-name-line .rbh-name {
+  min-width: 0;
+}
+
+.rbh-scnote-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(212, 175, 55, 0.16);
+  color: var(--sc-gold-deep);
+  cursor: pointer;
+}
+
+.rbh-scnote-btn:hover,
+.rbh-scnote-btn:focus-visible {
+  background: var(--sc-gold-soft);
+  color: var(--sc-navy);
+}
+
+.rbh-scnote-btn .rbh-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.rbh-scnote {
+  width: min(360px, calc(100vw - 32px));
+  margin: auto;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--sc-border);
+  border-top: 3px solid var(--sc-gold);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  text-align: left;
+  white-space: normal;
+  font-family: var(--sc-font);
+  font-weight: 400;
+}
+
+.rbh-scnote::backdrop {
+  background: rgba(6, 13, 33, 0.35);
+}
+
+.rbh-scnote-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rbh-scnote-head .rbh-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--sc-gold-deep);
+}
+
+.rbh-scnote-close {
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--sc-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rbh-scnote-close:hover {
+  color: var(--sc-ink);
+}
+
+.rbh-scnote-player {
+  margin-top: 2px;
+  color: var(--sc-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rbh-scnote-body {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 /* The starter's status on this week's injury report. */
 .rbh-inj {
   display: inline-block;
@@ -2394,6 +2497,28 @@ html.rbh-locked body {
 .rbh .rbh-name {
   color: var(--sc-ink);
   text-decoration: none;
+}
+
+.rbh .rbh-scnote-btn,
+.rbh .rbh-scnote-close {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  text-transform: none;
+}
+
+.rbh .rbh-scnote-close {
+  padding: 0 4px;
+}
+
+.rbh .rbh-scnote-body,
+.rbh .rbh-scnote-player {
+  padding: 0;
+  color: inherit;
+}
+
+.rbh .rbh-scnote-player {
+  color: var(--sc-muted);
 }
 
 /* Divi's heading rules (`h2`, `.entry-content h2`, `h3`) set size, colour,

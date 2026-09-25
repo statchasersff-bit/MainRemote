@@ -90,6 +90,8 @@ export interface CuratedPlayer {
   roleClarity?: number;
   talentBackup?: number;
   notes?: string;
+  /** A short editor's note, shown from an icon beside his name on the board. */
+  statchasersNote?: string;
   handcuffType?: string;
   starterDurabilityHistoryRisk?: number;
   pathToOpportunityScore?: number | null;
@@ -155,6 +157,7 @@ export interface EnginePlayer {
   committeeRisk: boolean;
   roleTrend: string | null;
   notes: string | null;
+  statchasersNote: string | null;
   offenseQuality: number;
   starterTouchesPerGame: number | null;
   adpOrCost: number | null;
@@ -358,6 +361,7 @@ export function buildBoard(inputs: EngineInputs): EnginePlayer[] {
       committeeRisk,
       roleTrend: backupData?.role_trend ?? null,
       notes: override?.notes ?? null,
+      statchasersNote: override?.statchasersNote?.trim() || null,
       offenseQuality: ctx.offenseQuality,
       starterTouchesPerGame:
         starterTouchesPerGame != null ? Math.round(starterTouchesPerGame * 10) / 10 : null,

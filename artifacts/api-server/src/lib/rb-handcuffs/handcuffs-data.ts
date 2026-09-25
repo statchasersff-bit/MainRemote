@@ -466,6 +466,21 @@ export function toneOf(score: number | null | undefined): { key: string; band: s
   return { key: "bad", band: "Concern" };
 }
 
+/**
+ * The colour for a displayed rank, by where it sits in its pool: top third
+ * green, middle amber, bottom third red. The card shows ranks, not scores, and
+ * the scores sit on different scales per metric (Durability is absolute,
+ * Workload is percentiled), so colouring by score put a gold #4 beside a
+ * green #10.
+ */
+export function rankTone(rank: number | null | undefined, poolSize: number | null | undefined): string {
+  if (rank == null || !poolSize) return "none";
+  const third = poolSize / 3;
+  if (rank <= third) return "good";
+  if (rank > poolSize - third) return "bad";
+  return "warn";
+}
+
 /** A driver's score colour. scoreToneText(), which has no "Elite" step. */
 export function scoreTone(v: number | null | undefined): string {
   if (v == null) return "none";
