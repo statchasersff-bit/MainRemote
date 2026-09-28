@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats and RB handcuff rankings. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.8
+ * Version:           1.10.9
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -152,6 +152,24 @@ function statchasers_news_args( array $atts ): array {
 }
 
 /**
+ * What a failed fetch returns: the last good render instead of a hole in the
+ * page. Either way the outcome is held under the fresh key for a minute, so
+ * while the origin is down each view does not retry it and wait out the
+ * timeout — once a minute is enough to notice it is back.
+ *
+ * @return array{html:string,version:string}|null
+ */
+function statchasers_news_fetch_failed( string $cache_key, string $backup_key ): ?array {
+	$backup = get_transient( $backup_key );
+	if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+		set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
+		return $backup;
+	}
+	set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
+	return null;
+}
+
+/**
  * Fetch the server-rendered fragment, cached.
  *
  * @param array{limit:int,page_size:int,heading:int} $args Render arguments.
@@ -169,7 +187,8 @@ function statchasers_news_fetch( array $args ): ?array {
 
 	$cached = get_transient( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
-		return $cached;
+		// An empty render is a failure remembered for a minute (below).
+		return '' === $cached['html'] ? null : $cached;
 	}
 
 	$query = array(
@@ -202,16 +221,13 @@ function statchasers_news_fetch( array $args ): ?array {
 	);
 
 	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-		// Serve the last good render instead of a hole in the page.
-		$backup = get_transient( $backup_key );
-		return is_array( $backup ) && isset( $backup['html'] ) ? $backup : null;
+		return statchasers_news_fetch_failed( $cache_key, $backup_key );
 	}
 
 	$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 
 	if ( ! is_array( $body ) || empty( $body['ok'] ) || ! isset( $body['html'] ) || ! is_string( $body['html'] ) ) {
-		$backup = get_transient( $backup_key );
-		return is_array( $backup ) && isset( $backup['html'] ) ? $backup : null;
+		return statchasers_news_fetch_failed( $cache_key, $backup_key );
 	}
 
 	$payload = array(

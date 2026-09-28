@@ -268,6 +268,10 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;
 		}
 		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
@@ -326,6 +330,10 @@ function statchasers_player_index_fetch(): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;
 		}
 		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
@@ -1210,6 +1218,9 @@ function statchasers_player_overview_redirect(): void {
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+	// Not the section itself: `?sc_section=overview` would otherwise ride along to
+	// the target, match again there, and redirect to itself forever.
+	$query = trim( (string) preg_replace( '/(^|&)sc_section=[^&]*/', '', $query ), '&' );
 
 	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 301 );
 	exit;
@@ -1327,6 +1338,7 @@ function statchasers_player_flush(): void {
 	// The page builder's copy of the API's player list, so a build run after
 	// a deploy sees the players the deploy added.
 	delete_transient( 'sc_player_roster' );
+	delete_transient( 'sc_player_roster_fail' );
 }
 
 /* ------------------------------------------------------ section-URL metadata */

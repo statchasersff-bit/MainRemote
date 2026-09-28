@@ -64,6 +64,16 @@ const STATCHASERS_PLAYER_CURSOR = 'statchasers_player_build_cursor';
 /** How long the fetched roster is kept before it is asked for again. */
 const STATCHASERS_PLAYER_ROSTER_TTL = 6 * HOUR_IN_SECONDS;
 
+/** The last good roster, for when the API does not answer. */
+const STATCHASERS_PLAYER_ROSTER_BACKUP_TTL = 7 * DAY_IN_SECONDS;
+
+/**
+ * How long a failed fetch is remembered. The roster is read from the_title on
+ * every player page, so without this each view during an outage would retry
+ * and wait out the timeout.
+ */
+const STATCHASERS_PLAYER_ROSTER_RETRY = 5 * MINUTE_IN_SECONDS;
+
 /**
  * The indexed players, as the API lists them.
  *
@@ -78,17 +88,24 @@ const STATCHASERS_PLAYER_ROSTER_TTL = 6 * HOUR_IN_SECONDS;
 function statchasers_player_roster( bool $fresh = false ): array {
 	$key = 'sc_player_roster';
 
+	$backup = get_transient( $key . '_bak' );
+
 	if ( ! $fresh ) {
 		$cached = get_transient( $key );
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
+		// A recent fetch failed: the last good list, without asking again.
+		if ( get_transient( $key . '_fail' ) ) {
+			return is_array( $backup ) ? $backup : array();
+		}
 	}
 
-	// What a fresh fetch falls back to when the API does not answer: the list
-	// it had, rather than none. An empty list would have the builder report
-	// every profile present because it was asked about nobody.
-	$fallback = $fresh && is_array( get_transient( $key ) ) ? get_transient( $key ) : array();
+	// What a fetch falls back to when the API does not answer: the list it had,
+	// rather than none. An empty list would have the builder report every
+	// profile present because it was asked about nobody.
+	$current  = get_transient( $key );
+	$fallback = is_array( $current ) ? $current : ( is_array( $backup ) ? $backup : array() );
 
 	$origin = statchasers_news_origin();
 	if ( '' === $origin ) {
@@ -98,18 +115,18 @@ function statchasers_player_roster( bool $fresh = false ): array {
 	$response = wp_remote_get(
 		$origin . '/embed/players.json',
 		array(
-			'timeout' => 20,
+			// The builder can afford to wait; a reader's page view cannot.
+			'timeout' => $fresh ? 20 : 8,
 			'headers' => array( 'Accept' => 'application/json' ),
 		)
 	);
 
-	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-		return $fallback;
-	}
-
-	$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+	$body = is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response )
+		? null
+		: json_decode( (string) wp_remote_retrieve_body( $response ), true );
 
 	if ( ! is_array( $body ) || empty( $body['players'] ) || ! is_array( $body['players'] ) ) {
+		set_transient( $key . '_fail', 1, STATCHASERS_PLAYER_ROSTER_RETRY );
 		return $fallback;
 	}
 
@@ -150,6 +167,8 @@ function statchasers_player_roster( bool $fresh = false ): array {
 	}
 
 	set_transient( $key, $rows, STATCHASERS_PLAYER_ROSTER_TTL );
+	set_transient( $key . '_bak', $rows, STATCHASERS_PLAYER_ROSTER_BACKUP_TTL );
+	delete_transient( $key . '_fail' );
 
 	return $rows;
 }

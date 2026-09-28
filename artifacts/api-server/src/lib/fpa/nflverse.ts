@@ -221,6 +221,9 @@ export class NflverseSeasonUnavailableError extends Error {
   }
 }
 
+/** Per download, body included. */
+const NFLVERSE_TIMEOUT_MS = 120_000;
+
 /**
  * Fetch and score one season's weekly player stats.
  *
@@ -240,7 +243,9 @@ export async function fetchScoredWeeklyStats(
   for (const { tag, url } of candidates) {
     let res: Response;
     try {
-      res = await fetch(url);
+      // A release download is ~7MB from GitHub; bounded so a stalled
+      // connection cannot hold an ingest, and its one-at-a-time slot, forever.
+      res = await fetch(url, { signal: AbortSignal.timeout(NFLVERSE_TIMEOUT_MS) });
     } catch (err) {
       logger.warn({ season, tag, err }, "nflverse request failed — trying next tag");
       continue;

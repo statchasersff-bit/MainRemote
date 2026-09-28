@@ -564,6 +564,10 @@ function statchasers_rankings_fetch( array $args ): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;
 		}
 		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );

@@ -171,4 +171,41 @@ describe("upstream editing a story it already sent", () => {
 
     feedItems = [];
   });
+
+  test("a story re-sent unchanged is seen, not updated, and moves no cache", async () => {
+    // Every wire run re-sends the ~25 stories it sent last time and every club
+    // sweep ~1,800. Counting those as updates reset the news ETag and render
+    // cache on every run and wrote them back a row at a time.
+    const story = {
+      id: TEST_ID,
+      title: "Test Player: Same headline twice",
+      link: "https://example.com/b",
+      pubDate: new Date(1787000100000).toISOString(),
+      playerName: "Test Player",
+      image: "https://sleepercdn.com/content/nfl/players/thumb/1.jpg",
+    };
+    feedItems = [story];
+    const first = await ingest();
+    assert.equal(first.status, 200, JSON.stringify(first.body));
+
+    const etagBefore = (await fetch(`${server.origin}/`)).headers.get("etag");
+
+    const again = await ingest();
+    assert.equal(again.status, 200, JSON.stringify(again.body));
+    assert.equal(again.body.updated, 0, "re-seeing a story is not an update");
+    assert.equal(again.body.unchanged, 1);
+    assert.equal(again.body.inserted, 0);
+
+    const etagAfter = (await fetch(`${server.origin}/`)).headers.get("etag");
+    assert.ok(etagBefore, "the page carries an ETag");
+    assert.equal(etagAfter, etagBefore, "a no-op ingest must not change the page's version");
+
+    // A real edit still lands, and still counts.
+    feedItems = [{ ...story, image: "https://sleepercdn.com/content/nfl/players/thumb/2.jpg" }];
+    const edited = await ingest();
+    assert.equal(edited.body.updated, 1, "a changed image is an update");
+    assert.equal(edited.body.unchanged, 0);
+
+    feedItems = [];
+  });
 });

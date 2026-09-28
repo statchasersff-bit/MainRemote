@@ -104,6 +104,9 @@ function statchasers_rb_handcuffs_fetch(): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute, so the next views do not
+			// each retry the origin and wait out the timeout.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			$memo = $backup;
 			return $memo;
 		}

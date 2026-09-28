@@ -22,7 +22,7 @@ const router: IRouter = Router();
  * uses it as the `ver` on the enqueued script/style so a deploy busts caches
  * without the filenames having to change.
  */
-function assetVersion(): string {
+export function assetVersion(): string {
   try {
     const raw = fs.readFileSync(
       path.resolve(process.cwd(), "public", "dist", "version.json"),

@@ -76,7 +76,9 @@ export async function renderMatchupFragment(
   pair: MatchupPair,
   options: MatchupRenderOptions = {},
 ): Promise<MatchupSsrResult> {
-  await ensureFreshness();
+  // Best effort: a database that cannot answer costs this page its news, not
+  // the page. The version then keys on the last value loaded, or the empty one.
+  await ensureFreshness().catch(() => undefined);
   const data = await getMatchupData(pair, options.now, options.game ?? null);
   const version = `${hash(matchupVersion(data, contentVersion()))}-${hash(optionKey(options))}`;
   const key = `${pair.slug}:${optionKey(options)}`;

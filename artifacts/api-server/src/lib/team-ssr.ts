@@ -69,7 +69,9 @@ export async function renderTeamFragment(
   // key — the same ordering lib/ssr.ts needs, and for the same reason: a cold
   // first render would otherwise key itself on the empty version and then serve
   // that entry to requests looking at a different one.
-  await ensureFreshness();
+  // Best effort: a database that cannot answer costs this page its news, not
+  // the page. The version then keys on the last value loaded, or the empty one.
+  await ensureFreshness().catch(() => undefined);
 
   const data = await getTeamPageData(team);
   const version = `${dataVersion(data, contentVersion())}-${hash(optionKey(options))}`;

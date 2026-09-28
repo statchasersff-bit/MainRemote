@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.8
+Stable tag: 1.10.9
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,13 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.9 =
+* A slow or down API no longer stalls every page view. When a fetch failed and a saved copy existed, the saved copy was served but nothing remembered the failure, so every view, and every caller within a view (Rank Math's title, the schema, the shortcode), asked the API again and waited out the timeout: up to 3 × 6s on the rest-of-season board, 2 × 12s on the schedule, 4 or more on a matchup. The saved copy is now also held for a minute, on every tool. The news tool, which had no failure memory at all, gains the same minute.
+* The player list behind player-page headings is no longer fetched on every view while the API is down. It was read from the page title with a 20-second timeout and never remembered a failure. A failure is now remembered for five minutes, a copy of the last good list is kept for a week and used meanwhile, and a reader's page view waits at most 8 seconds (the admin builder keeps 20).
+* ?season= on the player stats page accepts 1999 to the current year and "all", instead of any four digits. Each value was its own cached copy and its own API request, so a crawler could fill the options table one URL at a time.
+* ?sc_sched_week= only means something on the schedule page. On any other URL it retitled the page "…: Week N", pointed its canonical at the schedule week, and an out-of-range value made the page a 404 — the bug the rankings and player stats pages already had fixed.
+* ?sc_section=overview on a player page and ?sc_section=outlook on a team hub no longer redirect to themselves forever.
 
 = 1.10.8 =
 * The player-page builder works from the API's current player list. It kept the list for six hours and never refreshed it on demand, so a build run right after an API deploy used the list from before: players the deploy added (Deebo Samuel, Stefon Diggs and 70 others) got no page and still 404ed, and the screen said "602 of 575" with every profile present. A build that starts from the top now fetches the list fresh, "Clear cached renders" clears it too, and a fetch that fails falls back to the list it had rather than to none. Plugin only.

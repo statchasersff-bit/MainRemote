@@ -61,11 +61,19 @@ export function invalidateFpaRenderCache(): void {
 
 let kicking = false;
 let lastFailureAt = 0;
+let lastSuccessAt = 0;
 const FAILURE_BACKOFF_MS = 60_000;
+/**
+ * A run that succeeded and still left the default table empty (a season
+ * rollover before its first games, say) would otherwise be followed by
+ * another, and another, one per request.
+ */
+const SUCCESS_BACKOFF_MS = 60 * 60_000;
 
 function kickLazyIngest(): void {
   if (kicking) return;
   if (Date.now() - lastFailureAt < FAILURE_BACKOFF_MS) return;
+  if (Date.now() - lastSuccessAt < SUCCESS_BACKOFF_MS) return;
 
   kicking = true;
   logger.warn("No FPA snapshots found — starting a one-time background ingest");
@@ -78,6 +86,7 @@ function kickLazyIngest(): void {
   void import("./fpa/refresh")
     .then((m) => m.refreshFpa())
     .then(({ result, joined }) => {
+      lastSuccessAt = Date.now();
       logger.info({ result, joined }, "Lazy FPA ingest finished");
     })
     .catch((err) => {
@@ -111,7 +120,10 @@ export async function renderFpaFragment(
   const data = await getFpaTable(query);
 
   if (!data) {
-    kickLazyIngest();
+    // Only for the default table. `season` comes off the query string, and an
+    // ingest never writes a season it was not configured for, so a request for
+    // ?season=2099 would re-run the whole ingest without ever filling it.
+    if (query.season === undefined) kickLazyIngest();
     return { html: renderFpaEmpty(options), version: "empty", data: null };
   }
 
