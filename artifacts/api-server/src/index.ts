@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { runClubIngest, runIngest } from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
+import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 
 const rawPort = process.env["PORT"];
 
@@ -69,6 +70,10 @@ app.listen(port, (err) => {
   // process is idle and nobody is waiting.
   setTimeout(clubSweep, 60 * 1000);
   setInterval(clubSweep, 30 * 60 * 1000);
+
+  // Player game logs, refreshed after each game window. Production only unless
+  // SC_PLAYER_LIVE_REFRESH says otherwise; see lib/player/live-refresh.ts.
+  startPlayerRefreshScheduler();
 
   // The X poller, if it is switched on (X_NEWS_INGESTION_ENABLED).
   //

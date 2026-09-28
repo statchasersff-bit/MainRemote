@@ -13,6 +13,9 @@ import type { RawNewsItem } from "../lib/news-item";
 import { TEAMS } from "../lib/team/teams";
 import { fpaSnapshotState } from "../lib/fpa/fpa-data";
 import { fpaRefreshStatus } from "../lib/fpa/refresh";
+import { playerRefreshStatus } from "../lib/player/live-refresh";
+import { loadGameLogs } from "../lib/player/data";
+import { seasonYear } from "../lib/seo";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -1049,6 +1052,15 @@ router.get("/status", (_req, res) => {
           lastError: fpa.lastError,
           consecutiveFailures: fpa.consecutiveFailures,
         },
+        // The after-game refresh of the player pages' game logs. `latestWeek`
+        // is what the pages are actually serving: the newest week with any
+        // rows in this season's file, the first number to check when a
+        // reader says last night's game is missing.
+        playerStats: {
+          ...playerRefreshStatus(),
+          season: seasonYear(),
+          latestWeek: latestLoggedWeek(seasonYear()),
+        },
         archive: {
           items: count,
           newestContentAt: iso(changedAtMs),
@@ -1113,6 +1125,15 @@ router.get("/ingest/health", (_req, res) => {
       },
     });
 });
+
+/** The newest week with any rows in a season's game-log file, or 0. */
+function latestLoggedWeek(season: number): number {
+  let latest = 0;
+  for (const rows of Object.values(loadGameLogs(season))) {
+    for (const row of rows) if (row.week > latest) latest = row.week;
+  }
+  return latest;
+}
 
 function iso(ms: number | null): string | null {
   return ms === null ? null : new Date(ms).toISOString();

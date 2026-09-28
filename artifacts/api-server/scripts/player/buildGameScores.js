@@ -84,7 +84,9 @@ async function main() {
 
   for (const season of SEASONS) {
     console.log(`\n=== Season ${season} ===`);
-    const seasonScores = {};
+    // Starts from what is on disk: a final score never changes, so a week ESPN
+    // does not answer keeps the results it already had instead of losing them.
+    const seasonScores = { ...(allScores[season] ?? {}) };
 
     for (let week = 1; week <= REGULAR_WEEKS; week++) {
       process.stdout.write(`  Week ${week}... `);
@@ -162,7 +164,8 @@ async function main() {
   // Season keys in order, so a rebuilt file diffs against the old one.
   const sorted = {};
   for (const key of Object.keys(allScores).sort()) sorted[key] = allScores[key];
-  fs.writeFileSync(outFile, JSON.stringify(sorted, null, 0));
+  fs.writeFileSync(`${outFile}.tmp`, JSON.stringify(sorted, null, 0));
+  fs.renameSync(`${outFile}.tmp`, outFile);
   console.log(`\nWrote ${outFile}`);
 
   for (const season of SEASONS) {
