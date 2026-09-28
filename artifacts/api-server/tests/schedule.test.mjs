@@ -241,6 +241,64 @@ describe("the slate", () => {
       else process.env.SC_SCHEDULE_SEASON = previous;
     }
   });
+
+  /**
+   * ESPN switched on against a stub, counting scoreboard calls. The slate
+   * still comes from the fixture feed; only ESPN's URL is intercepted.
+   */
+  async function withEspn(respond, run) {
+    const realFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = async (url, init) => {
+      if (String(url).includes("site.api.espn.com")) {
+        calls += 1;
+        return respond();
+      }
+      return realFetch(url, init);
+    };
+    process.env.SC_SCHEDULE_ESPN = "1";
+    mod.invalidateScheduleCaches();
+    try {
+      await run(() => calls);
+    } finally {
+      globalThis.fetch = realFetch;
+      process.env.SC_SCHEDULE_ESPN = "0";
+      mod.invalidateScheduleCaches();
+    }
+  }
+
+  test("concurrent requests share one ESPN sweep", async () => {
+    await withEspn(
+      async () => {
+        await new Promise((r) => setTimeout(r, 30));
+        return new Response(JSON.stringify({ events: [] }), { status: 200 });
+      },
+      async (calls) => {
+        const now = Date.now();
+        await Promise.all(
+          Array.from({ length: 5 }, () => mod.getSchedule(SEASON, now)),
+        );
+        assert.equal(calls(), mod.TOTAL_WEEKS, "one 18-week sweep, not five");
+      },
+    );
+  });
+
+  test("a refused sweep is not repeated at the next idle expiry", async () => {
+    // ESPN refuses this host for hours at a time. The idle clock is 15
+    // minutes, and every expiry used to repeat the whole 18-week sweep.
+    await withEspn(
+      async () => new Response("forbidden", { status: 403 }),
+      async (calls) => {
+        const now = Date.now();
+        await mod.getSchedule(SEASON, now);
+        assert.equal(calls(), mod.TOTAL_WEEKS);
+        await mod.getSchedule(SEASON, now + 16 * 60 * 1000);
+        assert.equal(calls(), mod.TOTAL_WEEKS, "backed off, not retried");
+        await mod.getSchedule(SEASON, now + 61 * 60 * 1000);
+        assert.equal(calls(), 2 * mod.TOTAL_WEEKS, "and tried again after the hour");
+      },
+    );
+  });
 });
 
 /* -------------------------------------------------------- broadcaster marks */
@@ -698,6 +756,14 @@ describe("the schedule page", () => {
     // Not `?view=week`: the board's tab points at the week the season is on,
     // which is an address rather than a way of looking at this one.
     assert.match(hrefs[1], /^\/schedule\/week-\d{1,2}$/);
+  });
+
+  test("a season past the current one is the current board, not an empty one", async () => {
+    // A future season has no rows. It used to render an empty 200 and cost a
+    // fresh download of the whole games.csv every minute it was asked for.
+    const bare = await (await fetch(`${server.origin}/schedule`)).text();
+    const future = await (await fetch(`${server.origin}/schedule?season=2099`)).text();
+    assert.equal(future, bare);
   });
 
   test("view and filter never change the canonical", async () => {

@@ -98,6 +98,48 @@ export async function getFpaTable(
   const format = query.format ?? "half";
   const view = query.view ?? "raw";
 
+  const key = `${season}|${baselineSeason}|${format}|${view}`;
+  const now = Date.now();
+  const memo = tableMemo.get(key);
+  if (memo && now - memo.at < TABLE_MEMO_MS) return memo.table;
+
+  let running = tableInFlight.get(key);
+  if (!running) {
+    running = readFpaTable(season, baselineSeason, format, view).finally(() => {
+      tableInFlight.delete(key);
+    });
+    tableInFlight.set(key, running);
+  }
+  const table = await running;
+  // An empty table is not held: it is the state the first ingest is about to
+  // change, and the page should show the numbers as soon as they land.
+  if (table) tableMemo.set(key, { table, at: now });
+  return table;
+}
+
+/**
+ * The table, held briefly. It changes once a week, when an ingest runs, and
+ * was read from the database on every FPA page, every matchup page (twice)
+ * and every player page's upcoming games. An in-process ingest drops it
+ * straight away (fpa/refresh.ts); the window only bounds how long an ingest
+ * run from another process — scripts/ingest-fpa.mjs — takes to show.
+ */
+const TABLE_MEMO_MS = 5 * 60 * 1000;
+const tableMemo = new Map<string, { table: FpaTableData; at: number }>();
+const tableInFlight = new Map<string, Promise<FpaTableData | null>>();
+
+export function invalidateFpaTableCache(): void {
+  tableMemo.clear();
+  tableInFlight.clear();
+}
+
+async function readFpaTable(
+  season: number,
+  baselineSeason: number,
+  format: ScoringFormat,
+  view: FpaView,
+): Promise<FpaTableData | null> {
+
   const snapshots: FpaSnapshot[] = await db
     .select()
     .from(fpaSnapshots)

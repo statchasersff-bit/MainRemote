@@ -73,11 +73,15 @@ const MATCHUP_PATH_PREFIX = "/nfl/";
 
 function seasonFrom(req: Request): number {
   const asked = Number.parseInt(String(req.query["season"] ?? ""), 10);
-  // A season is honoured only when it is plausibly one; anything else falls
-  // through to the configured current season rather than querying for it.
-  return Number.isFinite(asked) && asked >= 1999 && asked <= 2100
+  const current = scheduleSeason();
+  // A season is honoured only when it can have a schedule: nflverse starts in
+  // 1999 and has nothing past the one being played. Anything else falls
+  // through to the current season rather than querying for it — a future
+  // season has no rows, and each one asked for re-downloaded the whole
+  // games.csv once a minute to find that out again.
+  return Number.isFinite(asked) && asked >= 1999 && asked <= current
     ? asked
-    : scheduleSeason();
+    : current;
 }
 
 interface ScheduleQueryState {
