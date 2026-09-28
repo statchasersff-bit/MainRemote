@@ -62,7 +62,9 @@ Paths are relative to the repo root.
 >   - The FPA table is memoised for 5 min, with in-flight dedupe, and dropped by every in-process ingest.
 >   - Not done: a version check before the data build. WordPress sends no conditional requests, and a crawl rarely repeats a key within a minute, so it would add risk for little saving. The per-build cost that remains is P1-2.
 >
-> Still open: everything else, notably P1-2 (the 4,000-row news scan).
+> - **Found at deploy check, pre-existing:** `/embed/assets.json` answered `"version":"0"` in production. `assetVersion()` read version.json from `process.cwd()`, the same bug class `lib/data-dir.ts` fixed for `data/`. As a result WordPress enqueued every asset as `?ver=1.7.0`, and no deploy ever busted an asset cache. Fixed by resolving from the module (`tests/asset-version.test.mjs`); needs the next deploy.
+>
+> Still open: everything else, notably P1-2 (the 4,000-row news scan; production has 1,111 wire rows in 180 days, growing ~176/week, so it reaches the cap around mid-January).
 
 # Executive Summary
 

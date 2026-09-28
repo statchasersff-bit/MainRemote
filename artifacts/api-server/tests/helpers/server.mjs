@@ -30,12 +30,14 @@ async function freePort() {
 
 /**
  * @param {Record<string,string>} env Extra environment for the server process.
+ * @param {{cwd?: string}} [options] `cwd` starts the server from another
+ *   directory, as the deployment does, to catch paths resolved from cwd.
  * @returns {Promise<{origin: string, stop: () => Promise<void>}>}
  */
-export async function startServer(env = {}) {
+export async function startServer(env = {}, options = {}) {
   const port = await freePort();
-  const child = spawn(process.execPath, ["./dist/index.mjs"], {
-    cwd: APP_DIR,
+  const child = spawn(process.execPath, [path.join(APP_DIR, "dist", "index.mjs")], {
+    cwd: options.cwd ?? APP_DIR,
     env: {
       ...process.env,
       // No live ingest during tests. Two reasons: the suite shouldn't depend on
