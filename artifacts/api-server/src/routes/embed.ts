@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { renderNewsFragment } from "../lib/ssr";
 import { DEFAULT_PAGE_SIZE } from "../lib/render";
 import { MAX_LIMIT } from "../lib/news-query";
@@ -23,18 +24,33 @@ const router: IRouter = Router();
  * without the filenames having to change.
  */
 export function assetVersion(): string {
-  try {
-    const raw = fs.readFileSync(
-      path.resolve(process.cwd(), "public", "dist", "version.json"),
-      "utf8",
-    );
-    const parsed = JSON.parse(raw) as { version?: string };
-    if (parsed.version) return parsed.version;
-  } catch {
-    // Not built yet (or running from an unexpected cwd) — fall through.
+  for (const candidate of VERSION_FILES) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(candidate, "utf8")) as {
+        version?: string;
+      };
+      if (parsed.version) return parsed.version;
+    } catch {
+      // Not there, or not built yet. Try the next one.
+    }
   }
   return "0";
 }
+
+/**
+ * Where version.json can be, resolved from this module first — the bug
+ * lib/data-dir.ts describes, a second time. This read from process.cwd(),
+ * which is the package in development and something else on the deployment,
+ * so production always answered "0" and WordPress fell back to its own
+ * constant for every `ver=`: no deploy ever busted a cached asset. Bundled,
+ * HERE is `<package>/dist`; unbundled it is `<package>/src/routes`.
+ */
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const VERSION_FILES = [
+  path.resolve(HERE, "..", "public", "dist", "version.json"),
+  path.resolve(HERE, "..", "..", "public", "dist", "version.json"),
+  path.resolve(process.cwd(), "public", "dist", "version.json"),
+];
 
 // The external resize listener, served as a standalone .js file. Hosting it as a
 // file (rather than inline) is what makes the embed survive WordPress/Divi: the
