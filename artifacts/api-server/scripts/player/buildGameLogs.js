@@ -15,7 +15,8 @@ const PLAYERS_FILE = path.resolve(DATA_DIR, 'players.json');
 // on the command line to rebuild one year: `node buildGameLogs.js 2026`.
 const SEASONS = seasonsFromArgs();
 const REGULAR_WEEKS = 18;
-const STATS_BASE = 'https://api.sleeper.com/stats/nfl';
+// Overridable for the builder's tests, which serve a stub.
+const STATS_BASE = process.env.SC_SLEEPER_STATS_BASE?.trim() || 'https://api.sleeper.com/stats/nfl';
 const DELAY_MS = 250;
 
 const TEAM_ALIAS_MAP = {
@@ -34,7 +35,7 @@ function sleep(ms) {
 
 async function fetchWeekStats(season, week) {
   const url = `${STATS_BASE}/${season}/${week}?season_type=regular`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (!res.ok) {
     console.warn(`  Failed to fetch ${url}: ${res.status}`);
     return null;
@@ -142,12 +143,30 @@ async function main() {
   for (const season of SEASONS) {
     console.log(`\n=== Season ${season} ===`);
     const seasonData = {};
+    const outFile = path.resolve(GAME_LOGS_DIR, `${season}.json`);
+    // What is on disk now. A week Sleeper fails to return keeps these rows
+    // rather than vanishing: this rebuilds the whole season from scratch, and
+    // it now runs unattended after every game window (src/lib/player/
+    // live-refresh.ts), so one failed request must not erase a week of stats.
+    const previous = fs.existsSync(outFile)
+      ? JSON.parse(fs.readFileSync(outFile, 'utf-8'))
+      : {};
+    let failedWeeks = 0;
 
     for (let week = 1; week <= REGULAR_WEEKS; week++) {
       process.stdout.write(`  Week ${week}... `);
-      const weekData = await fetchWeekStats(season, week);
+      const weekData = await fetchWeekStats(season, week).catch(() => null);
       if (!weekData) {
-        console.log('skipped');
+        failedWeeks++;
+        let kept = 0;
+        for (const [playerId, rows] of Object.entries(previous)) {
+          for (const row of rows) {
+            if (row.week !== week) continue;
+            (seasonData[playerId] ??= []).push(row);
+            kept++;
+          }
+        }
+        console.log(`failed; kept ${kept} entries from disk`);
         continue;
       }
 
@@ -182,8 +201,15 @@ async function main() {
       await sleep(DELAY_MS);
     }
 
-    const outFile = path.resolve(GAME_LOGS_DIR, `${season}.json`);
-    fs.writeFileSync(outFile, JSON.stringify(seasonData, null, 0));
+    if (failedWeeks === REGULAR_WEEKS) {
+      console.warn(`  Every week failed for ${season}; leaving the file on disk alone.`);
+      continue;
+    }
+    for (const rows of Object.values(seasonData)) rows.sort((a, b) => a.week - b.week);
+    // Written beside the target and renamed over it, so the server never reads
+    // a half-written file.
+    fs.writeFileSync(`${outFile}.tmp`, JSON.stringify(seasonData, null, 0));
+    fs.renameSync(`${outFile}.tmp`, outFile);
     const playerIds = Object.keys(seasonData).length;
     const totalEntries = Object.values(seasonData).reduce((sum, arr) => sum + arr.length, 0);
     console.log(`Wrote ${outFile}: ${playerIds} players, ${totalEntries} week entries`);

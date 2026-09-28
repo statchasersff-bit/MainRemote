@@ -91,8 +91,14 @@ function readJson<T>(file: string, fallback: T): T {
 }
 
 /** A lazily-loaded, permanently-held JSON document. */
+/** Every lazy loader's reset, so resetPlayerData() can drop them all. */
+const lazyResets: Array<() => void> = [];
+
 function lazy<T>(file: string, fallback: T): () => T {
   let value: T | null = null;
+  lazyResets.push(() => {
+    value = null;
+  });
   return () => {
     if (value === null) value = readJson<T>(file, fallback);
     return value;
@@ -483,6 +489,7 @@ export function resetPlayerData(): void {
   seasonsCache = null;
   stamp = null;
   warned.clear();
+  for (const reset of lazyResets) reset();
 }
 
 /** Short, stable, non-cryptographic — this only has to differ, not resist. */

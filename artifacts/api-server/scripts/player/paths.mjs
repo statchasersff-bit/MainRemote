@@ -23,7 +23,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const APP_DIR = path.resolve(here, "..", "..");
 
 /** artifacts/api-server/data/player — read by src/lib/player/data.ts. */
-export const DATA_DIR = path.resolve(APP_DIR, "data", "player");
+export const DATA_DIR =
+  // A test seam: the builders' tests point this at a temporary directory so a
+  // run against a stub API cannot touch the committed data.
+  process.env.SC_PLAYER_DATA_DIR?.trim() || path.resolve(APP_DIR, "data", "player");
 
 export const GAME_LOGS_DIR = path.resolve(DATA_DIR, "game_logs");
 export const ADVANCED_STATS_DIR = path.resolve(DATA_DIR, "advanced_stats");

@@ -178,6 +178,12 @@ export function appearances(meeting: Meeting): Appearance[] {
  */
 const finishCache = new Map<string, Map<string, number>>();
 
+/** Drops what was derived from the game logs, after they are rebuilt. */
+export function resetAppearanceCaches(): void {
+  finishCache.clear();
+  byId = null;
+}
+
 export function positionFinishes(season: number, week: number): Map<string, number> {
   const key = `${season}:${week}`;
   const cached = finishCache.get(key);
