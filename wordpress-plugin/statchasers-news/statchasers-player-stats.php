@@ -211,8 +211,10 @@ add_action(
 
 /**
  * The season the reader asked for with scripting off: `?season=2024` or
- * `?season=all`. Validated for shape only — the API knows which seasons it
- * has and falls back to the newest for anything else.
+ * `?season=all`. Validated for shape and range only — the API knows which
+ * seasons it has and falls back to the newest for anything else. The range
+ * matters: each value is its own cached copy and its own origin fetch, so an
+ * unbounded year would let any crawler fill wp_options one URL at a time.
  */
 function statchasers_player_stats_query_season(): string {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
@@ -221,7 +223,14 @@ function statchasers_player_stats_query_season(): string {
 	}
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
 	$value = strtolower( trim( sanitize_text_field( wp_unslash( $_GET['season'] ) ) ) );
-	return ( 'all' === $value || 1 === preg_match( '/^\d{4}$/', $value ) ) ? $value : '';
+	if ( 'all' === $value ) {
+		return $value;
+	}
+	if ( 1 !== preg_match( '/^\d{4}$/', $value ) ) {
+		return '';
+	}
+	$year = (int) $value;
+	return ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) ) ? $value : '';
 }
 
 /**
@@ -310,6 +319,10 @@ function statchasers_player_stats_fetch( array $args ): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;
 		}
 		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );

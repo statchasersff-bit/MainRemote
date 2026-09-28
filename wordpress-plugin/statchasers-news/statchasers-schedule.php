@@ -158,7 +158,14 @@ function statchasers_schedule_request_week(): int {
 	}
 
 	$week = 0;
-	$raw  = trim( (string) get_query_var( 'sc_sched_week' ) );
+	// Only on the page that mounts the schedule. The query var is public, so
+	// without this `?sc_sched_week=7` on any article on the site retitled it
+	// and pointed its canonical at week 7 — the bug rankings and player stats
+	// already had fixed.
+	if ( ! statchasers_schedule_post_has_shortcode() ) {
+		return $week;
+	}
+	$raw = trim( (string) get_query_var( 'sc_sched_week' ) );
 	if ( '' !== $raw && ctype_digit( $raw ) ) {
 		$asked = (int) $raw;
 		if ( $asked >= 1 && $asked <= STATCHASERS_SCHEDULE_WEEKS ) {
@@ -181,7 +188,8 @@ add_action(
 	'template_redirect',
 	static function (): void {
 		$raw = trim( (string) get_query_var( 'sc_sched_week' ) );
-		if ( '' === $raw || statchasers_schedule_request_week() > 0 ) {
+		// Elsewhere the var means nothing, so it cannot make a page a 404 either.
+		if ( '' === $raw || ! statchasers_schedule_post_has_shortcode() || statchasers_schedule_request_week() > 0 ) {
 			return;
 		}
 		global $wp_query;
@@ -354,6 +362,10 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
 			return $backup;
 		}
 		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );

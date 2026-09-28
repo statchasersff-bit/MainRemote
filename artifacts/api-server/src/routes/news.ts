@@ -214,7 +214,7 @@ let ingestInFlight: Promise<unknown> | null = null;
 interface IngestState {
   lastAttemptMs: number | null;
   lastSuccessMs: number | null;
-  lastResult: { inserted: number; updated: number; total: number } | null;
+  lastResult: IngestResult | null;
   lastError: string | null;
   consecutiveFailures: number;
   /** Which configured route last worked, or "push" — see runIngest(). */
@@ -332,7 +332,10 @@ export function refreshIfStale(): void {
 
 export interface IngestResult {
   inserted: number;
+  /** Rows the feed changed. */
   updated: number;
+  /** Rows re-sent exactly as stored: seen again, not changed. */
+  unchanged: number;
   total: number;
 }
 
@@ -498,7 +501,7 @@ const CLUB_MIN_OK = 8;
 interface ClubIngestState {
   lastAttemptMs: number | null;
   lastSuccessMs: number | null;
-  lastResult: { inserted: number; updated: number; total: number } | null;
+  lastResult: IngestResult | null;
   lastError: string | null;
   consecutiveFailures: number;
   /** Clubs that answered on the last sweep, out of 32. */
@@ -607,6 +610,18 @@ export const WIRE_SOURCE_TYPE = "wire";
 export const CLUB_SOURCE_TYPE = "club";
 
 /**
+ * Whether an update would write exactly what is already stored. Compared on
+ * every column the update sets, so any real edit upstream (a reworded
+ * headline, a new image, a corrected time) still lands and still counts.
+ */
+function sameFields(
+  stored: Record<string, unknown>,
+  fields: Record<string, unknown>,
+): boolean {
+  return Object.entries(fields).every(([key, value]) => stored[key] === value);
+}
+
+/**
  * Write a batch of feed items into the archive. Never fetches anything.
  *
  * `provider` names whoever relayed this batch. An item may override it with its
@@ -652,6 +667,7 @@ export async function storeItems(
 
   let inserted = 0;
   let updated = 0;
+  let unchanged = 0;
 
   await db.transaction(async (tx) => {
     const keys = [...incoming.keys()];
@@ -668,14 +684,37 @@ export async function storeItems(
     // One lookup for the whole batch, so the work is two round trips plus the
     // writes rather than a query per item.
     const ids = [...incoming.values()].map((entry) => entry.id);
+    // With the columns an update would write, so a row the feed merely
+    // re-sent can be told apart from one it changed.
     const existing = await tx
-      .select({ id: newsItems.id, dedupeKey: newsItems.dedupeKey })
+      .select({
+        id: newsItems.id,
+        dedupeKey: newsItems.dedupeKey,
+        title: newsItems.title,
+        link: newsItems.link,
+        pubDate: newsItems.pubDate,
+        pubDateMs: newsItems.pubDateMs,
+        playerName: newsItems.playerName,
+        image: newsItems.image,
+        teamAbbr: newsItems.teamAbbr,
+        sourceType: newsItems.sourceType,
+        authorHandle: newsItems.authorHandle,
+        source: newsItems.source,
+      })
       .from(newsItems)
       .where(
         or(inArray(newsItems.dedupeKey, keys), inArray(newsItems.id, ids)),
       );
     const idByKey = new Map(existing.map((row) => [row.dedupeKey, row.id]));
     const keyById = new Map(existing.map((row) => [row.id, row.dedupeKey]));
+    const rowById = new Map(existing.map((row) => [row.id, row]));
+
+    // Rows re-sent exactly as stored. They get one lastSeenAt touch for the
+    // whole batch, after the loop, and do not count as updates: every wire run
+    // re-sends ~25 known stories and every club sweep ~1,800, and counting those
+    // as changes reset the freshness version and the render cache on every run
+    // while writing a row at a time.
+    const seenIds: string[] = [];
 
     const inserts: (typeof newsItems.$inferInsert)[] = [];
 
@@ -709,7 +748,16 @@ export async function storeItems(
       const attribution = outlet ? { source: outlet } : {};
 
       const existingId = idByKey.get(dedupeKey);
-      if (existingId) {
+      const stored = existingId ? rowById.get(existingId) : undefined;
+      if (
+        existingId &&
+        stored &&
+        sameFields(stored, fields) &&
+        (outlet === null || stored.source === outlet)
+      ) {
+        seenIds.push(existingId);
+        unchanged++;
+      } else if (existingId) {
         // firstSeenAt, summary and the original id are deliberately untouched.
         await tx
           .update(newsItems)
@@ -745,6 +793,13 @@ export async function storeItems(
       }
     }
 
+    if (seenIds.length > 0) {
+      await tx
+        .update(newsItems)
+        .set({ lastSeenAt: now })
+        .where(inArray(newsItems.id, seenIds));
+    }
+
     if (inserts.length > 0) {
       // DO NOTHING rather than an error: a concurrent ingest (the 10-minute
       // timer overlapping a manual POST /api/ingest) can insert the same story
@@ -771,7 +826,7 @@ export async function storeItems(
   }
 
   logger.info(
-    { total: rawItems.length, inserted, updated },
+    { total: rawItems.length, inserted, updated, unchanged },
     "Ingest complete",
   );
 
@@ -781,7 +836,7 @@ export async function storeItems(
   // to once a day and never throws, so this is just a convenient heartbeat.
   await ensureTeams();
 
-  return { inserted, updated, total: rawItems.length };
+  return { inserted, updated, unchanged, total: rawItems.length };
 }
 
 /**
@@ -1077,6 +1132,11 @@ router.get("/news", (req, res) => {
         search,
       });
 
+      // Every open news tab polls this every two minutes. A short shared
+      // lifetime lets browsers and any cache in front answer the repeats
+      // without a query; the ingest runs every ten minutes, so 30s costs
+      // nothing in freshness.
+      res.set("Cache-Control", "public, max-age=30");
       res.json({ ok: true, count: items.length, items });
     } catch (err) {
       // The client falls back to the markup already on the page, so a failed

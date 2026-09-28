@@ -42,6 +42,10 @@ const SLEEPER_PLAYERS_URL = "https://api.sleeper.app/v1/players/nfl";
  */
 const REFRESH_MS = 12 * 60 * 60 * 1000;
 
+/** How long a failed refresh is left alone before the next attempt. */
+const FAILURE_BACKOFF_MS = 10 * 60 * 1000;
+let lastFailureAt = 0;
+
 // Disk cache, so a restart (or a Sleeper outage) doesn't cost us the map.
 const CACHE_PATH = dataPath("player-teams.json");
 
@@ -194,17 +198,27 @@ export async function ensureTeams(): Promise<void> {
   // look warm for twelve hours while every ingested post was filed under
   // nobody. The tagging happens once, on the way in, so "it will be right after
   // the next refresh" is not a recovery — those rows stay untagged for good.
-  if (warm && rosterFetchedAt() > 0 && namedPlayerCount() > 0) return;
+  const complete =
+    Object.keys(teams).length > 0 && rosterFetchedAt() > 0 && namedPlayerCount() > 0;
+  if (warm && complete) return;
+  // A failed refresh is not retried until the backoff runs out. Without it
+  // every page request started another 14MB download and waited on it for as
+  // long as Sleeper stayed down.
+  if (Date.now() - lastFailureAt < FAILURE_BACKOFF_MS) return;
   // Collapse concurrent callers onto one request; the payload is large.
   if (!inFlight) {
     inFlight = fetchTeams()
       .catch((err) => {
+        lastFailureAt = Date.now();
         logger.warn({ err }, "Player team map refresh failed");
       })
       .finally(() => {
         inFlight = null;
       });
   }
+  // Merely stale, with every part present: serve what we have and let the
+  // refresh land for the next caller, rather than hold this request on it.
+  if (complete) return;
   await inFlight;
 }
 

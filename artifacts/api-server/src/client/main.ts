@@ -32,6 +32,7 @@ import {
 } from "../lib/render";
 
 const REFRESH_MS = 2 * 60 * 1000;
+const REFOCUS_MIN_GAP_MS = 60 * 1000;
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
 /** A relative label for recent items; older ones keep the server's absolute text. */
@@ -55,6 +56,8 @@ class NewsWidget {
   private readonly links: LinkTemplates;
   private currentPage = 0;
   private refreshTimer: number | null = null;
+  /** When the last refresh started, so a tab flicked back and forth asks once. */
+  private lastRefreshMs = 0;
   /** Signature of the data currently rendered; guards needless re-renders. */
   private signature: string | null = null;
 
@@ -531,7 +534,14 @@ class NewsWidget {
     this.wireFilters();
     this.startAutoRefresh();
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") void this.refresh();
+      // Only when the list could actually be out of date: a return to the tab
+      // within a minute of the last fetch would ask for the same items.
+      if (
+        document.visibilityState === "visible" &&
+        Date.now() - this.lastRefreshMs >= REFOCUS_MIN_GAP_MS
+      ) {
+        void this.refresh();
+      }
     });
 
     // Delegated so it survives a re-render replacing the pager element.
@@ -660,6 +670,7 @@ class NewsWidget {
    * the replacement markup matches what SSR would have produced.
    */
   private async refresh(): Promise<void> {
+    this.lastRefreshMs = Date.now();
     try {
       const res = await fetch(this.apiUrl(`/api/news?limit=${this.limit}`), {
         headers: { Accept: "application/json" },

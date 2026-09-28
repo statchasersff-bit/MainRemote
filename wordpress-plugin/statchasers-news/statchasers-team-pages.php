@@ -1184,6 +1184,9 @@ function statchasers_team_outlook_redirect(): void {
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+	// Not the section itself: `?sc_section=outlook` would otherwise ride along to
+	// the target, match again there, and redirect to itself forever.
+	$query = trim( (string) preg_replace( '/(^|&)sc_section=[^&]*/', '', $query ), '&' );
 
 	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 301 );
 	exit;

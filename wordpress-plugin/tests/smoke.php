@@ -384,6 +384,12 @@ if ( 'week' === $group ) {
 	exit( $fail ? 1 : 0 );
 }
 
+if ( 'weekstray' === $group ) {
+	require __DIR__ . '/smoke-week-stray.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 echo "team headings\n";
 is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots Fantasy Football Outlook & Stats 2026', 'outlook is the hub' );
@@ -1378,7 +1384,7 @@ $GLOBALS['page'] = array();
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'leak', 'headings', 'playersection' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
