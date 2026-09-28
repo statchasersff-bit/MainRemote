@@ -89,6 +89,10 @@ export function fpaRefreshStatus(): FpaRefreshState & { running: boolean } {
  */
 async function dropCaches(): Promise<void> {
   try {
+    // The table itself first: every cache below re-reads it.
+    const { invalidateFpaTableCache } = await import("./fpa-data");
+    invalidateFpaTableCache();
+
     const { invalidateFpaRenderCache } = await import("../fpa-ssr");
     invalidateFpaRenderCache();
 

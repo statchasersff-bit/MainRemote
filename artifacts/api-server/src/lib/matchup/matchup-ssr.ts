@@ -13,7 +13,7 @@ import path from "node:path";
 import { contentVersion, ensureFreshness } from "../freshness";
 import { logger } from "../logger";
 import { renderTeamHeadTags } from "../team-seo";
-import { getMatchupData, matchupVersion } from "./matchup-data";
+import { getMatchupData, matchupVersion, type MatchupData } from "./matchup-data";
 import { renderMatchupPage, type MatchupRenderOptions } from "./matchup-render";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import type { MatchupPair } from "./pair";
@@ -76,6 +76,18 @@ export async function renderMatchupFragment(
   pair: MatchupPair,
   options: MatchupRenderOptions = {},
 ): Promise<MatchupSsrResult> {
+  return (await renderWithData(pair, options)).result;
+}
+
+/**
+ * The fragment and the data it was drawn from. The app page needs both — the
+ * meta reads the state the fragment decided — and building the data is two
+ * teams' news plus the FPA table, so it is built once and handed over.
+ */
+async function renderWithData(
+  pair: MatchupPair,
+  options: MatchupRenderOptions,
+): Promise<{ result: MatchupSsrResult; data: MatchupData }> {
   // Best effort: a database that cannot answer costs this page its news, not
   // the page. The version then keys on the last value loaded, or the empty one.
   await ensureFreshness().catch(() => undefined);
@@ -84,7 +96,7 @@ export async function renderMatchupFragment(
   const key = `${pair.slug}:${optionKey(options)}`;
 
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return hit;
+  if (hit && hit.version === version) return { result: hit, data };
 
   const result: MatchupSsrResult = {
     html: renderMatchupPage(data, options),
@@ -100,7 +112,7 @@ export async function renderMatchupFragment(
     if (!oldest.done) fragmentCache.delete(oldest.value);
   }
   fragmentCache.set(key, result);
-  return result;
+  return { result, data };
 }
 
 const HEAD_MARKER = "<!--SSR-HEAD-->";
@@ -125,10 +137,9 @@ export async function renderMatchupAppPage(
   options: RenderMatchupAppPageOptions,
 ): Promise<MatchupSsrResult> {
   const template = readTemplate(publicDir);
-  const fragment = await renderMatchupFragment(pair, options);
-  // The meta needs the state, which the fragment decided; re-deriving it is one
-  // cached data call and keeps the title and the page reading the same state.
-  const data = await getMatchupData(pair, options.now, options.game ?? null);
+  // The meta reads the same data the fragment was drawn from, so the title
+  // and the page cannot disagree about the state.
+  const { result: fragment, data } = await renderWithData(pair, options);
   const meta = matchupPageMeta(data, options.canonical);
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {

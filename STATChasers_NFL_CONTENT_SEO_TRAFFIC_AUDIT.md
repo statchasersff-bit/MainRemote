@@ -50,7 +50,19 @@ Paths are relative to the repo root.
 >
 > - **P1-5:** news ingest counts only real changes. Re-sent rows get one batched `lastSeenAt` touch, and no longer invalidate the freshness version or the render cache. On dev, a club sweep went from `updated: 1790` to `updated: 1, unchanged: 1787`.
 >
-> Still open: everything else, notably P1-1, P1-2 and P1-4.
+> - **P1-4, mostly:**
+>   - `?season=` is limited to 1999 through the current season; future seasons fall back to the current board.
+>   - Concurrent requests share one ESPN sweep per season.
+>   - A sweep that reaches nothing backs off for 1 h instead of repeating every 15 min.
+>   - Past seasons refresh ESPN weekly instead of every 6 h.
+>   - Not done: `season` is still carried into week links, and the March–May empty-season window (rollover) still re-downloads games.csv every 60 s.
+>
+> - **P1-1, rescoped:**
+>   - The player and matchup app pages build their data once instead of twice.
+>   - The FPA table is memoised for 5 min, with in-flight dedupe, and dropped by every in-process ingest.
+>   - Not done: a version check before the data build. WordPress sends no conditional requests, and a crawl rarely repeats a key within a minute, so it would add risk for little saving. The per-build cost that remains is P1-2.
+>
+> Still open: everything else, notably P1-2 (the 4,000-row news scan).
 
 # Executive Summary
 

@@ -83,6 +83,19 @@ export async function renderPlayerFragment(
   options: PlayerRenderOptions = {},
   dataOptions: PlayerDataOptions = {},
 ): Promise<PlayerSsrResult | null> {
+  return (await renderWithData(slug, options, dataOptions))?.result ?? null;
+}
+
+/**
+ * The fragment and the data it was drawn from. The app page needs both for
+ * its meta, and building the data is three news queries, so it is built once
+ * per request and handed over rather than built again.
+ */
+async function renderWithData(
+  slug: string,
+  options: PlayerRenderOptions,
+  dataOptions: PlayerDataOptions,
+): Promise<{ result: PlayerSsrResult; data: PlayerPageData } | null> {
   // Warm the news freshness snapshot before its version is read into the cache
   // key — the same ordering lib/ssr.ts and lib/team-ssr.ts need, and for the
   // same reason: a cold first render would otherwise key itself on the empty
@@ -98,7 +111,7 @@ export async function renderPlayerFragment(
   const version = playerDataVersion(data, contentVersion());
 
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return hit;
+  if (hit && hit.version === version) return { result: hit, data };
 
   const result: PlayerSsrResult = {
     html: renderPlayerPage(data, options) + pageDataIsland(data, options),
@@ -112,7 +125,7 @@ export async function renderPlayerFragment(
     if (!oldest.done) fragmentCache.delete(oldest.value);
   }
   fragmentCache.set(key, result);
-  return result;
+  return { result, data };
 }
 
 /** The section URLs that are pages of their own: every section but Overview. */
@@ -169,12 +182,10 @@ export async function renderPlayerAppPage(
   options: RenderPlayerAppPageOptions,
   dataOptions: PlayerDataOptions = {},
 ): Promise<PlayerSsrResult | null> {
-  const data = await getPlayerPageData(slug, dataOptions);
-  if (!data) return null;
-
   const template = readTemplate(publicDir);
-  const fragment = await renderPlayerFragment(slug, options, dataOptions);
-  if (!fragment) return null;
+  const rendered = await renderWithData(slug, options, dataOptions);
+  if (!rendered) return null;
+  const { result: fragment, data } = rendered;
 
   const meta = playerPageMeta(data, options.canonical, options.section);
 

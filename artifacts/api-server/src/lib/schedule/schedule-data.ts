@@ -316,6 +316,18 @@ const ESPN_FULL_TTL_MS = 6 * 60 * 60 * 1000;
 /** While a game is in progress the score is the point of the page. */
 const ESPN_LIVE_TTL_MS = 30 * 1000;
 const ESPN_IDLE_TTL_MS = 15 * 60 * 1000;
+/**
+ * After a sweep that reached nothing. ESPN refuses this host for hours at a
+ * time, and on the idle clock every expiry repeated the whole 18-week sweep —
+ * about 1,700 doomed requests a day, which is also how a refusal becomes a ban.
+ */
+const ESPN_FAILURE_BACKOFF_MS = 60 * 60 * 1000;
+/**
+ * A season that is over. Its scores and networks cannot change, so one full
+ * sweep a week is plenty — anyone can ask for ?season=2019, and each season
+ * asked for used to cost 18 ESPN calls every six hours.
+ */
+const ESPN_PAST_SEASON_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const ESPN_TIMEOUT_MS = 6_000;
 
 interface EspnEntry {
@@ -327,6 +339,14 @@ interface EspnEntry {
 }
 
 const espnCache = new Map<number, EspnEntry>();
+
+/**
+ * The refresh running for each season. Requests that arrive while it is out
+ * share it: without this, every request between the cache expiring and the
+ * sweep landing started its own 18 calls — and during a live game the cache
+ * expires every 30 seconds.
+ */
+const espnInFlight = new Map<number, Promise<Map<string, EspnGame>>>();
 
 /**
  * Is the live layer switched on?
@@ -402,6 +422,22 @@ async function loadEspn(
   const cached = espnCache.get(season);
   if (cached && cached.expiresAt > nowMs) return cached.games;
 
+  const running = espnInFlight.get(season);
+  if (running) return running;
+
+  const refresh = refreshEspn(season, rows, nowMs, cached).finally(() => {
+    espnInFlight.delete(season);
+  });
+  espnInFlight.set(season, refresh);
+  return refresh;
+}
+
+async function refreshEspn(
+  season: number,
+  rows: RawGame[],
+  nowMs: number,
+  cached: EspnEntry | undefined,
+): Promise<Map<string, EspnGame>> {
   const games = cached?.games ?? new Map<string, EspnGame>();
   const fullRefresh = !cached || nowMs - cached.fullRefreshAt > ESPN_FULL_TTL_MS;
   const weeks = fullRefresh
@@ -423,11 +459,18 @@ async function loadEspn(
   }
 
   const live = [...games.values()].some((game) => game.state === "in");
+  const past = season < scheduleSeason();
   espnCache.set(season, {
     games,
-    // A failed sweep backs off on the idle clock rather than retrying 18 weeks
-    // on the next request.
-    expiresAt: nowMs + (live ? ESPN_LIVE_TTL_MS : ESPN_IDLE_TTL_MS),
+    expiresAt:
+      nowMs +
+      (!reached
+        ? ESPN_FAILURE_BACKOFF_MS
+        : live
+          ? ESPN_LIVE_TTL_MS
+          : past
+            ? ESPN_PAST_SEASON_TTL_MS
+            : ESPN_IDLE_TTL_MS),
     fullRefreshAt: fullRefresh && reached ? nowMs : (cached?.fullRefreshAt ?? 0),
     failedAt: reached ? 0 : nowMs,
   });
@@ -438,6 +481,7 @@ async function loadEspn(
 /** Test seam: drops the live layer so a suite never depends on ESPN. */
 export function invalidateScheduleCaches(): void {
   espnCache.clear();
+  espnInFlight.clear();
 }
 
 /* ------------------------------------------------------------- the slate */
