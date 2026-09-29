@@ -45,7 +45,7 @@ class SCDC_Footballguys {
 		$response = wp_remote_get(
 			self::ALL_URL,
 			array(
-				'timeout'    => 20,
+				'timeout'    => 15,
 				'user-agent' => 'Mozilla/5.0 (compatible; StatChasers/1.0)',
 				'headers'    => array( 'Accept' => 'text/html' ),
 			)

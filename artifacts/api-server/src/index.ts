@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { runClubIngest, runIngest } from "./routes/news";
+import { runClubIngest, runIngest, wireIngestEnabled } from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 
@@ -26,25 +26,27 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 
-  // Run ingest on startup
-  runIngest()
-    .then((result) => {
-      logger.info(result, "Startup ingest complete");
-    })
-    .catch((err) => {
-      logger.error({ err }, "Startup ingest failed");
-    });
-
-  // Re-run every 10 minutes
-  setInterval(() => {
+  // The wire: on startup, then every 10 minutes. Not in the development
+  // workspace unless asked for — see wireIngestEnabled().
+  if (wireIngestEnabled()) {
     runIngest()
       .then((result) => {
-        logger.info(result, "Scheduled ingest complete");
+        logger.info(result, "Startup ingest complete");
       })
       .catch((err) => {
-        logger.error({ err }, "Scheduled ingest failed");
+        logger.error({ err }, "Startup ingest failed");
       });
-  }, 10 * 60 * 1000);
+
+    setInterval(() => {
+      runIngest()
+        .then((result) => {
+          logger.info(result, "Scheduled ingest complete");
+        })
+        .catch((err) => {
+          logger.error({ err }, "Scheduled ingest failed");
+        });
+    }, 10 * 60 * 1000);
+  }
 
   // The 32 club feeds, on their own slower cadence.
   //

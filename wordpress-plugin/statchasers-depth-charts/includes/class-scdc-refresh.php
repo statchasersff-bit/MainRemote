@@ -18,28 +18,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SCDC_Refresh {
 
 	/**
+	 * Worst case for one team, in seconds: the ESPN request plus the FantasyPros
+	 * request, each at its own timeout (10s + 10s). A run with a deadline stops
+	 * starting new teams once less than this is left.
+	 */
+	const TEAM_BUDGET = 20;
+
+	/**
 	 * Run a full blended refresh.
 	 *
+	 * A team whose ESPN fetch fails keeps its entry from the previous payload, so
+	 * a partial refresh never makes a chart disappear; it is still reported in
+	 * teams_failed (and in teams_kept when there was an entry to keep). Teams not
+	 * reached before $deadline are treated the same way.
+	 *
 	 * @param array|null $previous Previous decoded payload (for movement diffing).
-	 * @return array{payload:array,teams_ok:int,teams_failed:array,status:string,error:string}
+	 * @param float      $deadline Unix time (microtime) to stop starting new teams by; 0 = none.
+	 * @return array{payload:array,teams_ok:int,teams_failed:array,teams_kept:array,status:string,error:string}
 	 */
-	public static function run( $previous = null ) {
+	public static function run( $previous = null, $deadline = 0 ) {
 		$prev_positions = self::index_previous_positions( $previous );
+		$prev_teams     = self::index_previous_teams( $previous );
 
 		// Footballguys: one fetch for all 32 teams (null on failure -> ESPN stands).
 		$footballguys = SCDC_Footballguys::fetch_all();
 
 		$teams_out    = array();
 		$teams_failed = array();
+		$teams_kept   = array();
+		$ok           = 0;
+		$out_of_time  = false;
 		$season       = (int) gmdate( 'Y' );
 
 		foreach ( SCDC_Espn::teams() as $team ) {
 			$abbr = $team['abbr'];
 			$name = $team['name'];
 
-			$normalized = SCDC_Espn::fetch_team( $abbr, $name, $team['slug'] );
+			// Near the deadline, stop starting teams; the rest fall back below.
+			if ( ! $out_of_time && $deadline > 0 && microtime( true ) + self::TEAM_BUDGET > $deadline ) {
+				$out_of_time = true;
+			}
+
+			$normalized = $out_of_time ? null : SCDC_Espn::fetch_team( $abbr, $name, $team['slug'] );
 			if ( null === $normalized ) {
 				$teams_failed[] = $abbr;
+				if ( isset( $prev_teams[ $abbr ] ) ) {
+					$teams_out[]  = $prev_teams[ $abbr ];
+					$teams_kept[] = $abbr;
+				}
 				continue;
 			}
 			if ( ! empty( $normalized['season'] ) ) {
@@ -73,17 +99,30 @@ class SCDC_Refresh {
 				'team'      => $normalized['team'],
 				'positions' => $positions,
 			);
+			++$ok;
 		}
 
-		$ok = count( $teams_out );
-
+		// Status counts fresh fetches only: a run where nothing was fetched is an
+		// error (and is not written) even if every team could be kept.
 		if ( 0 === $ok ) {
 			$status = 'error';
 			$error  = __( 'No teams could be fetched. Please try again.', 'statchasers-depth-charts' );
 		} elseif ( ! empty( $teams_failed ) ) {
 			$status = 'partial';
-			/* translators: %s: comma-separated team abbreviations. */
-			$error = sprintf( __( 'Some teams failed to refresh: %s', 'statchasers-depth-charts' ), implode( ', ', $teams_failed ) );
+			$lost   = array_diff( $teams_failed, $teams_kept );
+			$parts  = array();
+			if ( $out_of_time ) {
+				$parts[] = __( 'Stopped early to stay within the time limit.', 'statchasers-depth-charts' );
+			}
+			if ( ! empty( $teams_kept ) ) {
+				/* translators: %s: comma-separated team abbreviations. */
+				$parts[] = sprintf( __( 'Some teams failed to refresh and were kept from the last refresh: %s.', 'statchasers-depth-charts' ), implode( ', ', $teams_kept ) );
+			}
+			if ( ! empty( $lost ) ) {
+				/* translators: %s: comma-separated team abbreviations. */
+				$parts[] = sprintf( __( 'Some teams failed to refresh and have no earlier data to keep: %s.', 'statchasers-depth-charts' ), implode( ', ', $lost ) );
+			}
+			$error = implode( ' ', $parts );
 		} else {
 			$status = 'success';
 			$error  = '';
@@ -100,9 +139,30 @@ class SCDC_Refresh {
 			'payload'      => $payload,
 			'teams_ok'     => $ok,
 			'teams_failed' => $teams_failed,
+			'teams_kept'   => $teams_kept,
 			'status'       => $status,
 			'error'        => $error,
 		);
+	}
+
+	/**
+	 * Index a previous payload as abbr => team entry, for carrying a failed team
+	 * forward unchanged.
+	 *
+	 * @param array|null $previous Decoded prior payload.
+	 * @return array
+	 */
+	private static function index_previous_teams( $previous ) {
+		$index = array();
+		if ( ! is_array( $previous ) || empty( $previous['teams'] ) ) {
+			return $index;
+		}
+		foreach ( $previous['teams'] as $team ) {
+			if ( isset( $team['team']['abbr'], $team['positions'] ) ) {
+				$index[ $team['team']['abbr'] ] = $team;
+			}
+		}
+		return $index;
 	}
 
 	/**

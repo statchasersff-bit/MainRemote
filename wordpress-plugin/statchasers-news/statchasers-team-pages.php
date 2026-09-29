@@ -960,6 +960,7 @@ function statchasers_flush_panel(): void {
 	echo '<h2>After a deploy</h2>';
 	echo '<p>Rendered fragments are cached for five minutes and the CSS/JS version for fifteen, ' .
 		'so a new build of the API takes up to a quarter of an hour to show. This empties both now. ' .
+		'The last good copy of each render is kept, so the pages still fill if the API is down. ' .
 		'It does not touch your page cache — clear that too.</p>';
 
 	echo '<form method="post">';
@@ -1623,6 +1624,10 @@ function statchasers_team_sitemap_entry( string $loc, string $lastmod ): string 
  *
  * Built from the pages that actually exist: a team whose hub has not been
  * created has no section URLs either, because they resolve THROUGH the hub.
+ * And only from pages that ARE hubs — carrying [statchasers_team], the same
+ * test statchasers_team_post_has_shortcode() applies — so a page someone made
+ * at a team's slug for another purpose does not have five section addresses
+ * advertised beneath it.
  *
  * NOT VERIFIED against the installed Rank Math build: `{$type}_content` is the
  * documented filter for appending entries to a post-type sitemap. If the page
@@ -1651,6 +1656,10 @@ add_filter(
 			if ( ! $id || 'publish' !== get_post_status( $id ) ) {
 				continue;
 			}
+			$post = get_post( $id );
+			if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_TEAM_SHORTCODE ) ) {
+				continue;
+			}
 
 			$hub     = trailingslashit( (string) get_permalink( $id ) );
 			$lastmod = (string) get_post_modified_time( 'c', true, $id );
@@ -1673,8 +1682,19 @@ add_filter(
 /**
  * Whether a stored hub title is one this plugin wrote, in any season.
  *
- * The old template was "<season> <team> Fantasy Football Hub | StatChasers".
- * Anything else that is not empty was typed by a person and is theirs.
+ * Two templates, both with the season as any four digits:
+ *
+ *   - the old one, "<season> <team> Fantasy Football Hub | StatChasers";
+ *   - the current one, "<team> <season>: Record, Schedule, Stats & Fantasy
+ *     Football | StatChasers" — statchasers_team_section_meta() with no
+ *     section, which is what the builder has written since.
+ *
+ * The second is what makes the season rollover a button press. Recognising
+ * only the old wording meant every hub built with the current one read as
+ * CUSTOM the moment STATCHASERS_TEAM_SEASON moved on — "New England Patriots
+ * 2026: Record, …" is not the 2027 title, and nothing said it was ours — so
+ * the retitle left all 32 on last season's year. Anything else that is not
+ * empty was typed by a person and is theirs.
  *
  * @param string $title Stored rank_math_title.
  * @param string $name  Team full name, e.g. "New England Patriots".
@@ -1684,8 +1704,9 @@ function statchasers_team_title_is_generated( string $title, string $name ): boo
 	if ( '' === $title ) {
 		return true;
 	}
+	$team = preg_quote( $name, '/' );
 	return 1 === preg_match(
-		'/^\d{4} ' . preg_quote( $name, '/' ) . ' Fantasy Football Hub \| StatChasers$/',
+		'/^(?:\d{4} ' . $team . ' Fantasy Football Hub|' . $team . ' \d{4}: Record, Schedule, Stats & Fantasy Football) \| StatChasers$/',
 		$title
 	);
 }
@@ -1784,7 +1805,8 @@ function statchasers_team_retitle_panel(): void {
 	echo '<h2>Hub titles</h2>';
 	printf(
 		'<p>The hub title is now <code>%s</code>. Pages still carrying the old ' .
-		'<code>&lt;season&gt; &lt;team&gt; Fantasy Football Hub</code> wording, or no title, can be moved to it here. ' .
+		'<code>&lt;season&gt; &lt;team&gt; Fantasy Football Hub</code> wording, this wording with an earlier season, ' .
+		'or no title, can be moved to it here. ' .
 		'A title someone typed by hand is never touched.</p>',
 		esc_html( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] . ' | StatChasers' )
 	);

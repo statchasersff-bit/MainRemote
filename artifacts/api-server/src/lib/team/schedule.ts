@@ -14,7 +14,8 @@
  * reported as null whenever the response does not have exactly one gap.
  */
 
-import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
+import { createKeyedCache, fetchJson, PAST_SEASON_TTL_MS, TEAM_USER_AGENT } from "./cache";
+import { seasonYear } from "../seo";
 import { getTeamByAbbreviation, TEAMS, type NflTeam } from "./teams";
 
 
@@ -284,6 +285,8 @@ const cache = createKeyedCache<TeamSchedule>({
   // after the first is served from memory. Six hours is well inside the window
   // in which a flex change would still be picked up before kickoff.
   ttlMs: 6 * 60 * 60 * 1000,
+  // A finished season does not change; see ttlFor in ./cache.
+  ttlFor: (key) => (Number(key.split(":")[1]) < seasonYear() ? PAST_SEASON_TTL_MS : 6 * 60 * 60 * 1000),
   timeoutMs: 6_000,
   load: async (key, signal) => {
     const [espnId, seasonRaw, typeRaw] = key.split(":");

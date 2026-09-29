@@ -29,6 +29,37 @@ const STATCHASERS_MATCHUP_HOLDER = 'nfl/matchup';
 /** Public base for pair URLs. Must match SC_MATCHUP_PATH_PREFIX on the API. */
 const STATCHASERS_MATCHUP_BASE = 'nfl';
 
+/**
+ * The postseason rounds, as they are spelled in a game address, keyed by
+ * ESPN's week number within its postseason, with the name the page prints.
+ *
+ * MIRRORS ROUND_SLUGS in the API's src/lib/matchup/pair.ts (the slugs) and
+ * POSTSEASON_WEEKS in src/lib/team/schedule.ts (the labels). Week 4 is the Pro
+ * Bowl, which has no name here because it is never a meeting between a pair.
+ */
+const STATCHASERS_MATCHUP_ROUNDS = array(
+	1 => array( 'wild-card', 'Wild Card' ),
+	2 => array( 'divisional', 'Divisional Round' ),
+	3 => array( 'conference-championship', 'Conference Championship' ),
+	5 => array( 'super-bowl', 'Super Bowl' ),
+);
+
+/**
+ * The SHAPE of a game segment, for the rewrite rule: every spelling
+ * gameSegment() in pair.ts can produce — `2026-week-1`, `2025-super-bowl`, and
+ * `2025-postseason-week-4` for a round the API has no name for.
+ *
+ * Only the shape. The rewrite cannot say "a week no higher than 25" or "a
+ * season after 1920", so a segment that matches this can still be a 404:
+ * statchasers_matchup_game() is the validator, and it decides at request time
+ * exactly as the pair's own validity is decided. What this must never do is
+ * be NARROWER than the API, which is what it was: the rule knew only the
+ * regular-season spelling, so every postseason link the API printed — and it
+ * prints them on every pair that has met in January — was a WordPress 404
+ * before the validator was ever asked.
+ */
+const STATCHASERS_MATCHUP_GAME_SHAPE = '\d{4}-(?:week-\d{1,2}|postseason-week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl)';
+
 const STATCHASERS_MATCHUP_CACHE_TTL  = 5 * MINUTE_IN_SECONDS;
 const STATCHASERS_MATCHUP_BACKUP_TTL = DAY_IN_SECONDS;
 const STATCHASERS_MATCHUP_TIMEOUT    = 8;
@@ -110,12 +141,28 @@ add_action(
 		// Registered before the pair rule would swallow it? It cannot: the pair
 		// rule is anchored to a single segment. Both are 'top' and both are
 		// exact, so their order between themselves does not matter.
+		//
+		// The game group is non-capturing inside, so the game is still
+		// $matches[2] whichever half of the season it names.
+		$game_rule = '^' . STATCHASERS_MATCHUP_BASE . '/([a-z0-9-]+-vs-[a-z0-9-]+)/(' . STATCHASERS_MATCHUP_GAME_SHAPE . ')/?$';
 		add_rewrite_rule(
-			'^' . STATCHASERS_MATCHUP_BASE . '/([a-z0-9-]+-vs-[a-z0-9-]+)/(\d{4}-week-\d{1,2})/?$',
+			$game_rule,
 			'index.php?pagename=' . STATCHASERS_MATCHUP_HOLDER .
 				'&sc_matchup=$matches[1]&sc_matchup_game=$matches[2]',
 			'top'
 		);
+
+		// A changed rule is dead until the rule table is rebuilt, and an
+		// upgrade does not run the activation hook that asks for that — so the
+		// postseason addresses would have gone on 404ing on every site that
+		// updated rather than installed. Same remedy as the rankings file: the
+		// rule's own signature is remembered, and a change to it asks for the
+		// flush that statchasers-news.php performs at the end of this `init`.
+		$signature = md5( $game_rule . '|' . STATCHASERS_MATCHUP_HOLDER );
+		if ( get_option( 'statchasers_matchup_rules' ) !== $signature ) {
+			update_option( 'statchasers_matchup_rules', $signature, false );
+			update_option( 'statchasers_needs_flush', 1, false );
+		}
 	}
 );
 
@@ -133,26 +180,72 @@ function statchasers_matchup_current(): ?array {
 }
 
 /**
- * The game segment this request is for, validated, or ''.
+ * A game segment, read: season, which half of the season, the week within that
+ * half, and what to call it. Null for anything that is not an address.
  *
  * MIRRORS parseGameSegment() in the API's src/lib/matchup/pair.ts, including
- * its strictness: a leading zero or a different spelling of "week" is not this
- * address and is not redirected to it.
+ * its strictness: a leading zero, a capital letter or a different spelling of
+ * "week" is not this address and is not redirected to it. The order matters
+ * the same way it does there — `postseason-week-N` is tried before the named
+ * rounds, because the round pattern's `[a-z-]+` would otherwise swallow it and
+ * then fail to find it in the table.
+ *
+ * @return array{season:int,week:int,post:bool,label:string}|null
+ */
+function statchasers_matchup_parse_game( string $raw ): ?array {
+	if ( preg_match( '/^(\d{4})-week-([1-9]\d?)$/', $raw, $match ) ) {
+		$post  = false;
+		$week  = (int) $match[2];
+		$label = 'Week ' . $week;
+	} elseif ( preg_match( '/^(\d{4})-postseason-week-([1-9]\d?)$/', $raw, $match ) ) {
+		$post  = true;
+		$week  = (int) $match[2];
+		$label = array_key_exists( $week, STATCHASERS_MATCHUP_ROUNDS ) ? STATCHASERS_MATCHUP_ROUNDS[ $week ][1] : 'Postseason week ' . $week;
+	} elseif ( preg_match( '/^(\d{4})-([a-z-]+)$/', $raw, $match ) ) {
+		$post  = true;
+		$week  = 0;
+		$label = '';
+		foreach ( STATCHASERS_MATCHUP_ROUNDS as $number => $round ) {
+			if ( $round[0] === $match[2] ) {
+				$week  = $number;
+				$label = $round[1];
+			}
+		}
+		if ( 0 === $week ) {
+			return null;
+		}
+	} else {
+		return null;
+	}
+
+	$season = (int) $match[1];
+	// The bounds keep a parsed-but-impossible ref from reaching the API, not
+	// express a real limit — the same two numbers pair.ts uses.
+	if ( $season < 1920 || $season > 2200 || $week > 25 ) {
+		return null;
+	}
+
+	return array(
+		'season' => $season,
+		'week'   => $week,
+		'post'   => $post,
+		'label'  => $label,
+	);
+}
+
+/**
+ * The game segment this request is for, validated, or ''.
+ *
+ * Handed to the API's `?game=` exactly as the URL spelled it: only a segment
+ * statchasers_matchup_parse_game() accepts gets this far, and every such
+ * segment is one the API parses to the same game.
  */
 function statchasers_matchup_game(): string {
 	$raw = trim( (string) get_query_var( 'sc_matchup_game' ) );
 	if ( '' === $raw ) {
 		return '';
 	}
-	if ( ! preg_match( '/^(\d{4})-week-([1-9]\d?)$/', $raw, $match ) ) {
-		return '';
-	}
-	$season = (int) $match[1];
-	$week   = (int) $match[2];
-	if ( $season < 1920 || $season > 2200 || $week > 25 ) {
-		return '';
-	}
-	return $raw;
+	return null === statchasers_matchup_parse_game( $raw ) ? '' : $raw;
 }
 
 /**
@@ -384,20 +477,31 @@ function statchasers_matchup_heading(): string {
 		return '';
 	}
 
+	$names  = statchasers_matchup_names( $pair );
+	$parsed = statchasers_matchup_parse_game( statchasers_matchup_game() );
+
+	if ( null === $parsed ) {
+		return $names;
+	}
+
+	// "Week 1 2026" or "Super Bowl 2025": the API's meeting.weekLabel, which
+	// is what heroHeading() prints after the names.
+	return sprintf( '%s, %s %d', $names, $parsed['label'], $parsed['season'] );
+}
+
+/**
+ * "New England Patriots vs Philadelphia Eagles": the pair's two full names, in
+ * the pair's own order.
+ *
+ * @param array{a:string,b:string} $pair A validated pair.
+ */
+function statchasers_matchup_names( array $pair ): string {
 	$table = statchasers_team_table();
-	$names = sprintf(
+	return sprintf(
 		'%s vs %s',
 		$table[ $pair['a'] ][0] ?? $pair['a'],
 		$table[ $pair['b'] ][0] ?? $pair['b']
 	);
-
-	$game = statchasers_matchup_game();
-
-	if ( '' === $game || ! preg_match( '/^(\d{4})-week-(\d+)$/', $game, $match ) ) {
-		return $names;
-	}
-
-	return sprintf( '%s, Week %d %s', $names, (int) $match[2], $match[1] );
 }
 
 /**
@@ -504,9 +608,14 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
  * there and here, because "patriots seahawks week 1 2026" is a different search
  * from "patriots vs seahawks" and two pages must not answer it with one string.
  *
+ * One deliberate difference: a postseason game is named by its round here
+ * ("Super Bowl 2025"), where the API's pinned branch still prints ESPN's
+ * postseason week number ("Week 5 2025"). The heading already used the round
+ * on both sides; the API's meta is the half that has yet to catch up.
+ *
  * @param string $a     Pair's first team slug.
  * @param string $b     Pair's second team slug.
- * @param string $game  Validated game segment, e.g. `2026-week-1`.
+ * @param string $game  Validated game segment, e.g. `2026-week-1` or `2025-super-bowl`.
  * @param string $score The result in one clause, from the API, or ''.
  * @return array{title:string,description:string}
  */
@@ -518,25 +627,29 @@ function statchasers_matchup_game_meta( string $a, string $b, string $game, stri
 	$nick_b = substr( strrchr( ' ' . $name_b, ' ' ), 1 );
 	$names  = $name_a . ' vs ' . $name_b;
 
-	preg_match( '/^(\d{4})-week-(\d{1,2})$/', $game, $match );
-	$season = $match[1] ?? STATCHASERS_TEAM_SEASON;
-	$week   = $match[2] ?? '';
+	// The round's name rather than its number in the postseason: "Week 5
+	// 2025" is not what anybody calls a Super Bowl. For a regular-season
+	// game the label IS "Week N", so those strings are the API's exactly.
+	$parsed = statchasers_matchup_parse_game( $game );
+	$season = null === $parsed ? STATCHASERS_TEAM_SEASON : (string) $parsed['season'];
+	$label  = null === $parsed ? 'Week' : $parsed['label'];
+	$in     = null !== $parsed && $parsed['post'] ? 'the ' . $label : $label;
 
 	$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
 
 	return array(
 		'title'       => sprintf(
-			'%1$s, Week %2$s %3$s: Final Score, Player Stats & Fantasy Recap',
+			'%1$s, %2$s %3$s: Final Score, Player Stats & Fantasy Recap',
 			$names,
-			$week,
+			$label,
 			$season
 		),
 		'description' => sprintf(
-			'%1$sFull box score from %2$s vs %3$s in Week %4$s of %5$s: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
+			'%1$sFull box score from %2$s vs %3$s in %4$s of %5$s: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
 			$lead,
 			$nick_a,
 			$nick_b,
-			$week,
+			$in,
 			$season
 		),
 	);
@@ -617,6 +730,61 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
 	$url = statchasers_matchup_canonical();
 	return '' === $url ? $canonical : $url;
 } );
+
+/**
+ * The breadcrumb trail for a pair URL, or for one meeting under it.
+ *
+ * Rank Math builds the trail from the page the rewrite resolved to, which is
+ * the holder — so every one of the 496 pairs, and every dated game, carried a
+ * BreadcrumbList ending at /nfl/matchup/: a noindex template, named as the
+ * page's parent, in a trail that is meant to say where the page sits. The
+ * holder's crumb is taken out, and the pair is appended in its place, then the
+ * game on a dated address: Home › NFL › Patriots vs Eagles › Week 1 2026.
+ *
+ * The holder is recognised by its address rather than by position, because
+ * which crumbs Rank Math prints (a Home label, the ancestors) is a setting.
+ * Only on a canonical pair: the reversed spelling and a bad game segment have
+ * already left through the 301 and 404 in template_redirect.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_matchup_breadcrumbs( $crumbs ) {
+	$pair = statchasers_matchup_current();
+	if ( ! is_array( $crumbs ) || null === $pair || ! $pair['canonical'] ) {
+		return $crumbs;
+	}
+
+	$raw_game = trim( (string) get_query_var( 'sc_matchup_game' ) );
+	$game     = statchasers_matchup_game();
+	if ( '' !== $raw_game && '' === $game ) {
+		return $crumbs;
+	}
+
+	$holder = untrailingslashit( home_url( '/' . STATCHASERS_MATCHUP_HOLDER ) );
+	$kept   = array();
+	foreach ( $crumbs as $crumb ) {
+		$url = is_array( $crumb ) && isset( $crumb[1] ) ? untrailingslashit( (string) $crumb[1] ) : '';
+		if ( $url === $holder ) {
+			continue;
+		}
+		$kept[] = $crumb;
+	}
+
+	$kept[] = array( statchasers_matchup_names( $pair ), statchasers_matchup_url( $pair['slug'] ), 'hide_in_schema' => false );
+
+	$parsed = '' === $game ? null : statchasers_matchup_parse_game( $game );
+	if ( null !== $parsed ) {
+		$kept[] = array(
+			$parsed['label'] . ' ' . $parsed['season'],
+			statchasers_matchup_url( $pair['slug'], $game ),
+			'hide_in_schema' => false,
+		);
+	}
+
+	return $kept;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_matchup_breadcrumbs', 20 );
 
 /* --------------------------------------------------------------- sitemap */
 

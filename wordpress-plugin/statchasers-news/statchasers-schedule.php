@@ -135,11 +135,25 @@ add_action(
 		// for week 2 — it is a second address for it, which is the whole thing
 		// the path was moved out of the query string to avoid. Mirrors the
 		// strictness of the /schedule/week-:week route in the API.
+		$rule = '^' . $page . '/week-([1-9][0-9]?)/?$';
 		add_rewrite_rule(
-			'^' . $page . '/week-([1-9][0-9]?)/?$',
+			$rule,
 			'index.php?pagename=' . $page . '&sc_sched_week=$matches[1]',
 			'top'
 		);
+
+		// A new rule is dead until the rule table is rebuilt, and an upgrade
+		// does not run the activation hook that asks for that — which is why
+		// the week URLs used to need a Settings > Permalinks save before they
+		// stopped 404ing. Same self-heal as the rankings file: the rule's own
+		// signature is remembered, and a change to it — a first install of this
+		// version, or a filtered page path — asks for the flush that
+		// statchasers-news.php performs at the end of this same `init`.
+		$signature = md5( $rule );
+		if ( get_option( 'statchasers_schedule_rules' ) !== $signature ) {
+			update_option( 'statchasers_schedule_rules', $signature, false );
+			update_option( 'statchasers_needs_flush', 1, false );
+		}
 	}
 );
 
@@ -809,6 +823,32 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
 	return '' === $own ? $canonical : $own;
 } );
 
+/**
+ * The week as the last breadcrumb, at its own address.
+ *
+ * Rank Math's trail on a week URL ends at the schedule page — the page the
+ * rewrite resolves to — so the BreadcrumbList on /nfl/nfl-schedule/week-4/
+ * said the page was the season grid, while its title and canonical said Week
+ * 4. Same fix as the team and player section crumbs. Scoped exactly as the
+ * title and canonical are, through statchasers_schedule_request_week(): only
+ * on the page that mounts the schedule and only for a week the season has, so
+ * the public query var cannot add a crumb to anything else.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_schedule_breadcrumbs( $crumbs ) {
+	$week = statchasers_schedule_request_week();
+	if ( ! is_array( $crumbs ) || 0 === $week ) {
+		return $crumbs;
+	}
+
+	$crumbs[] = array( 'Week ' . $week, statchasers_schedule_week_url( $week ), 'hide_in_schema' => false );
+
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_schedule_breadcrumbs', 20 );
+
 /* ------------------------------------------------------------- faq schema */
 
 /**
@@ -1112,15 +1152,9 @@ add_filter(
 
 /**
  * Clear cached schedule renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_schedule_flush(): void {
-	global $wpdb;
-
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_sched_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_sched_ssr_' ) . '%'
-		)
-	);
+function statchasers_schedule_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_sched_ssr_', $all );
 }

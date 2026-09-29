@@ -103,7 +103,7 @@ function set_transient( $key, $value, $ttl = 0 ) { $GLOBALS['wp_transients'][ $k
 function wp_parse_args( $args, $defaults ) { return array_merge( $defaults, (array) $args ); }
 function wp_upload_dir() {
 	return array(
-		'basedir' => __DIR__ . '/fixtures',
+		'basedir' => isset( $GLOBALS['scdc_test_basedir'] ) ? $GLOBALS['scdc_test_basedir'] : __DIR__ . '/fixtures',
 		'baseurl' => 'https://statchasers.com/wp-content/uploads',
 	);
 }

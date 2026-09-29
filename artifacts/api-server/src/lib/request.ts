@@ -9,13 +9,41 @@ import type { Request } from "express";
  * of which are wrong if they point at the internal host.
  */
 export function publicOrigin(req: Request): string {
-  const proto = (
-    req.get("x-forwarded-proto")?.split(",")[0] ??
-    req.protocol ??
-    "https"
-  ).trim();
-  const host = req.get("x-forwarded-host") ?? req.get("host") ?? "localhost";
+  const forwardedProto = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const proto =
+    forwardedProto === "http" || forwardedProto === "https"
+      ? forwardedProto
+      : (req.protocol ?? "https");
+  const forwarded = req.get("x-forwarded-host")?.split(",")[0]?.trim();
+  // A forwarded host is only believed when it is one of ours. Anybody can send
+  // the header, and it goes into the canonical and og:url: a request carrying
+  // `X-Forwarded-Host: evil.example` got `<link rel="canonical"
+  // href="http://evil.example/…">` back, which a shared cache would then serve
+  // to everyone. The Host header needs no such check — a request only reaches
+  // this app through a router that matched it.
+  const host =
+    (forwarded && trustedHost(forwarded) ? forwarded : undefined) ??
+    req.get("host") ??
+    "localhost";
   return `${proto}://${host}`;
+}
+
+/**
+ * Hosts this app is published at. `PUBLIC_HOSTS` (comma-separated, `*.` for
+ * subdomains) replaces the default list for a deployment behind another name.
+ */
+function trustedHost(host: string): boolean {
+  const bare = host.toLowerCase().replace(/:\d+$/, "");
+  const patterns = (
+    process.env["PUBLIC_HOSTS"]?.trim() ||
+    "*.replit.app,*.replit.dev,*.repl.co,statchasers.com,*.statchasers.com,localhost,127.0.0.1"
+  )
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean);
+  return patterns.some((p) =>
+    p.startsWith("*.") ? bare.endsWith(p.slice(1)) : bare === p,
+  );
 }
 
 /**
@@ -33,6 +61,8 @@ export function canonicalUrl(req: Request): string {
 
   // req.path excludes the query string; normalise so "/index.html" and "/" —
   // the two ways to reach the app — agree on one canonical.
-  const path = req.path === "/index.html" ? "/" : req.path;
+  // Lower-cased: routing matches /Schedule and /player/Lamar-Jackson too, and
+  // each used to name itself as its own canonical.
+  const path = req.path === "/index.html" ? "/" : req.path.toLowerCase();
   return `${publicOrigin(req)}${path}`;
 }

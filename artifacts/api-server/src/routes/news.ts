@@ -315,7 +315,22 @@ export function evaluateIngestHealth(args: {
  * Start an ingest if one is due. Returns immediately — the caller is a request
  * that has already been answered, and must never wait on this.
  */
+/**
+ * Whether this process pulls the wire on its own (startup, timer, traffic).
+ *
+ * Not in the development workspace unless SC_DEV_INGEST=1. The workspace runs
+ * the same schedulers as the deployment, so it doubled the upstream traffic —
+ * and both wire hosts refuse it (403), so every ten minutes it asked
+ * dynasty-command and then api.statchasers.com for a refusal. POST /api/ingest
+ * still works there, for pushing items by hand.
+ */
+export function wireIngestEnabled(): boolean {
+  if (process.env["NODE_ENV"] !== "development") return true;
+  return ["1", "true", "on"].includes((process.env["SC_DEV_INGEST"] ?? "").trim().toLowerCase());
+}
+
 export function refreshIfStale(): void {
+  if (!wireIngestEnabled()) return;
   if (ingestInFlight) return;
   if (!shouldRefresh(Date.now(), lastIngestStartedMs)) return;
 

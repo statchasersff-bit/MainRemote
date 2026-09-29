@@ -221,14 +221,23 @@ class SCDC_Admin {
 		}
 		check_admin_referer( SCDC_REFRESH_ACTION, self::NONCE );
 
-		// Blended refresh hits ESPN (32) + Footballguys (1) + FantasyPros (32),
-		// so give it plenty of room where the host allows it.
-		if ( function_exists( 'set_time_limit' ) ) {
-			@set_time_limit( 300 ); // phpcs:ignore
+		// Blended refresh hits ESPN (32) + Footballguys (1) + FantasyPros (32).
+		// A healthy run takes about a minute; the worst case, every request timing
+		// out, is 15s + 32 × (10s + 10s) = 655s. Ask for 720s where the host allows
+		// it, otherwise work within its own max_execution_time. Either way the run
+		// gets a deadline 15s short of the limit: it stops starting new teams there
+		// and keeps the rest from the last refresh, so a slow run still writes what
+		// it fetched instead of dying with nothing written.
+		$budget = 720;
+		$start  = microtime( true );
+		if ( ! function_exists( 'set_time_limit' ) || false === @set_time_limit( $budget ) ) { // phpcs:ignore
+			$budget = (int) ini_get( 'max_execution_time' );
+			$start  = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] : $start;
 		}
+		$deadline = $budget > 0 ? $start + $budget - 15 : 0;
 
 		$previous = SCDC_Store::read();
-		$result   = SCDC_Refresh::run( $previous );
+		$result   = SCDC_Refresh::run( $previous, $deadline );
 
 		$saved = false;
 		if ( 'error' !== $result['status'] ) {
@@ -255,6 +264,7 @@ class SCDC_Admin {
 				'last_refreshed_ts' => $now,
 				'teams_ok'          => (int) $result['teams_ok'],
 				'teams_failed'      => $result['teams_failed'],
+				'teams_kept'        => $result['teams_kept'],
 			);
 		}
 		SCDC_Store::set_meta( $meta );

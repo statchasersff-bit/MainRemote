@@ -15,7 +15,8 @@
 # site down on activation and the feedback loop is an FTP client:
 #
 #   1. Every .php file parses.
-#   2. The Version header and readme.txt's Stable tag agree.
+#   2. The Version header, readme.txt's Stable tag and STATCHASERS_NEWS_VERSION
+#      all agree.
 #   3. The loader requires every .php file that is not itself the loader.
 #
 # The third is the one that catches the mistake this project has actually made:
@@ -71,6 +72,11 @@ stable="$(grep -m1 -oE '^Stable tag: [0-9.]+' "$plugin/readme.txt" | grep -oE '[
 
 [ -n "$version" ] || die "could not read the Version header."
 [ "$version" = "$stable" ] || die "Version header is $version but readme.txt says $stable."
+
+# The constant is the asset-version fallback when assets.json cannot be read,
+# so a release that forgot it would keep serving the last release's ver=.
+constant="$(grep -m1 -oE "^const STATCHASERS_NEWS_VERSION += '[0-9.]+'" "$plugin/statchasers-news.php" | grep -oE "[0-9.]+" || true)"
+[ "$version" = "$constant" ] || die "Version header is $version but STATCHASERS_NEWS_VERSION is '${constant}'."
 
 say "version  $version"
 

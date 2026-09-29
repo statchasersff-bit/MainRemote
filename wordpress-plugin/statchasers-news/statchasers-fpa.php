@@ -659,15 +659,9 @@ function statchasers_fpa_strip_faq_data( string $html ): string {
 
 /**
  * Clear cached FPA renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_fpa_flush(): void {
-	global $wpdb;
-
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_fpa_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_fpa_ssr_' ) . '%'
-		)
-	);
+function statchasers_fpa_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_fpa_ssr_', $all );
 }

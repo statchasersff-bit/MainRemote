@@ -77,7 +77,7 @@ class SCDC_Espn {
 		$response = wp_remote_get(
 			$api_url,
 			array(
-				'timeout'    => 15,
+				'timeout'    => 10,
 				'user-agent' => 'Mozilla/5.0 (compatible; StatChasers/1.0)',
 				'headers'    => array( 'Accept' => 'application/json' ),
 			)

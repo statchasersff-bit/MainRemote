@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats and RB handcuff rankings. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.10
+ * Version:           1.10.11
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -33,7 +33,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const STATCHASERS_NEWS_VERSION       = '1.7.0';
+/**
+ * The plugin's own version: the Version header above, repeated.
+ *
+ * It is the enqueue `ver` whenever /embed/assets.json cannot be read, so it
+ * has to change when the plugin does — it sat at 1.7.0 through every release
+ * since, which pinned the fallback ver= to one string for good and made a
+ * browser's cached CSS and JS outlive every upgrade that happened during an
+ * outage. scripts/build-zip.sh refuses to build when this and the header
+ * disagree, so a release bumps both or ships neither.
+ */
+const STATCHASERS_NEWS_VERSION       = '1.10.11';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -656,30 +666,50 @@ add_filter( 'wp_resource_hints', 'statchasers_news_resource_hints', 10, 2 );
 
 /**
  * Clear cached renders. Handy after a deploy: wp eval 'statchasers_news_flush();'
+ *
+ * Deletes the fresh copies only. The outage backups every tool keeps beside
+ * them survive, so a flush followed by an API hiccup still serves yesterday's
+ * render rather than an empty box — see statchasers_flush_transients(). This
+ * is what "Clear cached renders" and the team build both call.
+ *
+ * @param bool $all Also delete the backups. statchasers_news_flush_all() is
+ *                  the way to ask for that; this parameter is its plumbing.
  */
-function statchasers_news_flush(): void {
-	global $wpdb;
-
+function statchasers_news_flush( bool $all = false ): void {
 	delete_transient( 'sc_news_asset_version' );
 
 	// Fragment transients are hashed per argument set, so match on the prefix.
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_news_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_news_ssr_' ) . '%'
-		)
-	);
+	statchasers_flush_transients( 'sc_news_ssr_', $all );
 
-	statchasers_team_flush();
-	statchasers_player_flush();
-	statchasers_fpa_flush();
-	statchasers_rankings_flush();
-	statchasers_schedule_flush();
-	statchasers_player_stats_flush();
-	statchasers_rb_handcuffs_flush();
+	statchasers_team_flush( $all );
+	statchasers_player_flush( $all );
+	statchasers_fpa_flush( $all );
+	statchasers_rankings_flush( $all );
+	statchasers_schedule_flush( $all );
+	statchasers_player_stats_flush( $all );
+	statchasers_rb_handcuffs_flush( $all );
+
+	// The matchup renders have no flush of their own (statchasers_matchup_
+	// flush() is the permalink table, not the cache), so they were never
+	// cleared here at all and only ever cleared by the next deactivation.
+	// Left that way for a routine flush; swept on the way out.
+	if ( $all ) {
+		statchasers_flush_transients( 'sc_matchup_ssr_', true );
+	}
 }
-register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
+
+/**
+ * Everything the plugin cached, backups included. The deactivation cleanup.
+ *
+ * Its own function rather than statchasers_news_flush( true ) hooked directly,
+ * because WordPress calls a deactivation callback WITH an argument — whether
+ * the deactivation is network-wide — and that boolean would land in $all and
+ * make an ordinary deactivation keep its backups.
+ */
+function statchasers_news_flush_all(): void {
+	statchasers_news_flush( true );
+}
+register_deactivation_hook( __FILE__, 'statchasers_news_flush_all' );
 
 // The daily player-page build (statchasers-player-pages.php) stops with the
 // plugin rather than firing into a missing callback.

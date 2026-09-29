@@ -95,7 +95,8 @@
 	color: var(--sc-ink);
 	transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
 }
-.scdc-hub-card:hover {
+.scdc-hub-card:hover,
+.scdc-hub-card:focus-within {
 	box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
 	transform: translateY(-2px);
 	border-color: var(--sc-gold);
@@ -124,6 +125,9 @@
 	color: var(--sc-navy);
 }
 .scdc-hub-card-featured .scdc-hub-card-title { font-size: 1.5rem; }
+/* The card is a <div>; its title link covers the whole card so it still clicks as one. */
+.scdc-hub-card-link { color: inherit; }
+.scdc-hub-card-link::after { content: ""; position: absolute; inset: 0; }
 .scdc-hub-card-desc { margin: 0 0 0.75rem; color: var(--sc-muted); font-size: 0.95rem; }
 .scdc-hub-card-cta { font-weight: 700; color: var(--sc-blue); font-size: 0.9rem; }
 
@@ -147,6 +151,8 @@
 	gap: 0.4rem;
 }
 .scdc-hub-views li a {
+	position: relative; /* above the card link's overlay */
+	z-index: 1;
 	display: inline-block;
 	background: #fff;
 	border: 1px solid var(--sc-border);

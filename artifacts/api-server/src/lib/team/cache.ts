@@ -49,6 +49,12 @@ export interface KeyedCacheOptions<T> {
    * outage becomes a full one.
    */
   errorBackoffMs?: number;
+  /**
+   * A per-key lifetime, when some keys never change: a finished season's
+   * schedule or league stats is the same document forever, and refetching it
+   * every six hours is load on ESPN for nothing. Falls back to ttlMs.
+   */
+  ttlFor?(key: string): number;
   load(key: string, signal: AbortSignal): Promise<T>;
 }
 
@@ -59,6 +65,9 @@ const EMPTY: Entry<never> = {
   errorAt: 0,
 };
 
+/** How long a finished season's documents are kept: they do not change. */
+export const PAST_SEASON_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function createKeyedCache<T>(
   options: KeyedCacheOptions<T>,
 ): KeyedCache<T> {
@@ -67,6 +76,7 @@ export function createKeyedCache<T>(
     ttlMs,
     timeoutMs = 6_000,
     errorBackoffMs = 60_000,
+    ttlFor,
     load,
   } = options;
 
@@ -117,7 +127,7 @@ export function createKeyedCache<T>(
     const entry = peek(key);
     const now = Date.now();
 
-    if (entry.value !== null && now - entry.fetchedAt < ttlMs) {
+    if (entry.value !== null && now - entry.fetchedAt < (ttlFor?.(key) ?? ttlMs)) {
       return entry.value;
     }
 
@@ -131,7 +141,12 @@ export function createKeyedCache<T>(
     if (entry.value !== null) {
       // Stale but usable: hand back what we have and refresh behind the
       // response. void, not await — this is the whole point of the cache.
-      void refresh(key);
+      // Not while a refresh of it has just failed, though: the backoff applies
+      // to a stale value too, or a down upstream got one attempt per request
+      // for as long as it stayed down.
+      if (!(entry.errorAt > 0 && now - entry.errorAt < errorBackoffMs)) {
+        void refresh(key);
+      }
       return entry.value;
     }
 

@@ -198,12 +198,14 @@ class SCDC_Hub {
 						$featured  = ! empty( $tool['featured'] );
 						$card_cls  = 'scdc-hub-card' . ( $featured ? ' scdc-hub-card-featured' : '' );
 						$cta_label = ! empty( $tool['cta'] ) ? $tool['cta'] : __( 'View', 'statchasers-depth-charts' );
+						// The card is a <div>, not an <a>: the popular-view links can't nest
+						// inside an anchor. The title link stretches over the card (hub.css).
 						?>
-						<a class="<?php echo esc_attr( $card_cls ); ?>" href="<?php echo esc_url( $tool['url'] ); ?>">
+						<div class="<?php echo esc_attr( $card_cls ); ?>">
 							<?php if ( $featured ) : ?>
 								<span class="scdc-hub-badge"><?php esc_html_e( 'Featured', 'statchasers-depth-charts' ); ?></span>
 							<?php endif; ?>
-							<h3 class="scdc-hub-card-title"><?php echo esc_html( $tool['title'] ); ?></h3>
+							<h3 class="scdc-hub-card-title"><a class="scdc-hub-card-link" href="<?php echo esc_url( $tool['url'] ); ?>"><?php echo esc_html( $tool['title'] ); ?></a></h3>
 							<?php if ( ! empty( $tool['desc'] ) ) : ?>
 								<p class="scdc-hub-card-desc"><?php echo esc_html( $tool['desc'] ); ?></p>
 							<?php endif; ?>
@@ -222,7 +224,7 @@ class SCDC_Hub {
 							<?php endif; ?>
 
 							<span class="scdc-hub-card-cta"><?php echo esc_html( $cta_label ); ?> &rarr;</span>
-						</a>
+						</div>
 					<?php endforeach; ?>
 				</div>
 			</section>

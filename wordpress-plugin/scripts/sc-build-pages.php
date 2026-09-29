@@ -12,25 +12,33 @@
  *
  *   1. Upload this file to the WordPress root — the directory holding
  *      wp-load.php, usually public_html/.
- *   2. Log in to /wp-admin in the same browser. The script refuses to run for
+ *   2. Give it a token. Add a line to wp-config.php, above "That's all, stop
+ *      editing!":
+ *
+ *        define( 'SC_BUILD_PAGES_TOKEN', '<32 or more random characters>' );
+ *
+ *      or set an SC_BUILD_PAGES_TOKEN environment variable for PHP, if the host
+ *      lets you. `openssl rand -hex 16` makes a good one. With neither, the
+ *      script answers every request with a 403 and does nothing else.
+ *   3. Log in to /wp-admin in the same browser. The script refuses to run for
  *      anyone who is not an administrator, token or no token.
- *   3. Visit it WITHOUT ?go=1 first. That prints the plan and writes nothing:
+ *   4. Visit it WITHOUT ?go=1 first. That prints the plan and writes nothing:
  *
  *        https://example.com/sc-build-pages.php?key=<token>
  *
- *   4. When the plan looks right, add &go=1 to do it:
+ *   5. When the plan looks right, add &go=1 to do it:
  *
  *        https://example.com/sc-build-pages.php?key=<token>&go=1
  *
- *   5. Optionally add &images=1 to also sideload the 32 team crests as featured
+ *   6. Optionally add &images=1 to also sideload the 32 team crests as featured
  *      images. Off by default: it is 32 remote downloads in one request, and on
  *      shared hosting that is the one step likely to hit max_execution_time.
  *      It is resumable — pages that already have a featured image are skipped —
  *      so if it dies partway, just load the same URL again.
  *
- *   6. DELETE THIS FILE. It is a page-creating endpoint sitting in your web
- *      root; the token and the admin check are seatbelts, not a reason to leave
- *      it there.
+ *   7. DELETE THIS FILE, and take the define() back out of wp-config.php. It
+ *      is a page-creating endpoint sitting in your web root; the token and the
+ *      admin check are seatbelts, not a reason to leave it there.
  *
  * WHAT IT DOES NOT DO
  *
@@ -41,11 +49,17 @@
  * @package StatChasers\Scripts
  */
 
-/**
- * Shared secret for this run. Regenerate it if you ever reuse this file:
- * any 32 hex characters will do.
+/*
+ * No token lives in this file. It used to: a fixed secret, committed, which
+ * made it the same secret on every site this file was ever uploaded to and
+ * readable by anyone who could read the repository. The token now comes from
+ * the site itself — SC_BUILD_PAGES_TOKEN in wp-config.php, or the environment
+ * variable of the same name — so each install has its own and it is never in
+ * version control. See step 2 above.
  */
-const SC_BUILD_TOKEN = '12a09e9aca37d8e042d2bc3c5b6d27f5';
+
+/** Shortest token accepted. A guessable one is a seatbelt with no buckle. */
+const SC_BUILD_TOKEN_MIN = 16;
 
 /** Season, used in the Rank Math title and description only. */
 const SC_BUILD_SEASON = '2026';
@@ -94,13 +108,70 @@ $sc_build_teams = array(
 
 /* ------------------------------------------------------------------ bootstrap */
 
-// The token is checked before WordPress is even loaded, so a wrong guess costs
-// an attacker nothing but a 403 and costs the server nothing at all.
-if ( ! isset( $_GET['key'] ) || ! hash_equals( SC_BUILD_TOKEN, (string) $_GET['key'] ) ) {
+/**
+ * Refuse the request: a 403 with a plain-text reason, and nothing else.
+ *
+ * @param string $message What to print.
+ */
+function sc_forbidden( $message ) {
 	header( 'HTTP/1.1 403 Forbidden' );
 	header( 'Content-Type: text/plain; charset=utf-8' );
-	exit( "Forbidden.\n" );
+	exit( $message );
 }
+
+/**
+ * The token this site has configured, or '' for none.
+ *
+ * The environment first, because it can be read before WordPress loads; the
+ * wp-config.php constant only exists once it has.
+ *
+ * @return string
+ */
+function sc_build_token() {
+	$env = getenv( 'SC_BUILD_PAGES_TOKEN' );
+	if ( is_string( $env ) && '' !== trim( $env ) ) {
+		return trim( $env );
+	}
+	if ( defined( 'SC_BUILD_PAGES_TOKEN' ) && is_string( SC_BUILD_PAGES_TOKEN ) ) {
+		return trim( SC_BUILD_PAGES_TOKEN );
+	}
+	return '';
+}
+
+/**
+ * Check ?key= against the configured token, or stop with a 403.
+ *
+ * No token configured is a refusal, not an open door: the script does nothing
+ * until the site has said what its secret is.
+ *
+ * @return string The token, for the links in the report.
+ */
+function sc_require_token() {
+	$token = sc_build_token();
+	if ( '' === $token ) {
+		sc_forbidden(
+			"Forbidden: no build token is configured, so this script will not run.\n\n" .
+			"Add this line to wp-config.php, then load this URL again with ?key=<that token>:\n\n" .
+			"  define( 'SC_BUILD_PAGES_TOKEN', '<32 or more random characters>' );\n\n" .
+			"(An SC_BUILD_PAGES_TOKEN environment variable works too.)\n"
+		);
+	}
+	if ( strlen( $token ) < SC_BUILD_TOKEN_MIN ) {
+		sc_forbidden(
+			'Forbidden: SC_BUILD_PAGES_TOKEN is shorter than ' . SC_BUILD_TOKEN_MIN . " characters. Use a longer, random one.\n"
+		);
+	}
+	if ( ! isset( $_GET['key'] ) || ! hash_equals( $token, (string) $_GET['key'] ) ) {
+		sc_forbidden( "Forbidden.\n" );
+	}
+	return $token;
+}
+
+// With the token in the environment it is checked before WordPress is even
+// loaded, so a wrong guess costs an attacker nothing but a 403 and costs the
+// server nothing at all. A wp-config.php token can only be checked once
+// WordPress has loaded, which is below.
+$sc_token = '' !== sc_build_token() ? sc_require_token() : '';
 
 /**
  * Find the WordPress root from wherever this file happens to have been dropped.
@@ -149,6 +220,17 @@ function sc_find_wp_root() {
 $sc_build_root = sc_find_wp_root();
 
 if ( null === $sc_build_root ) {
+	// No WordPress, so no wp-config.php, so no token to have checked unless the
+	// environment supplied one. The directory listing below stays behind a
+	// token either way; without one this is all anybody learns.
+	if ( '' === $sc_token ) {
+		sc_forbidden(
+			"Forbidden: could not find wp-load.php, so no token from wp-config.php can be read.\n\n" .
+			"Move this file to the WordPress root (the directory holding wp-admin, wp-content\n" .
+			"and wp-includes) and load this URL again.\n"
+		);
+	}
+
 	// Rather than repeat "put it in the root", show what is actually here so the
 	// root can be picked out of the listing. Behind the token, names only.
 	header( 'Content-Type: text/plain; charset=utf-8' );
@@ -176,6 +258,12 @@ if ( null === $sc_build_root ) {
 }
 
 require_once $sc_build_root . '/wp-load.php';
+
+// wp-config.php has run, so its constant is readable now. Before anything else
+// — the admin check included — so an unconfigured install says so plainly.
+if ( '' === $sc_token ) {
+	$sc_token = sc_require_token();
+}
 
 if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_options' ) ) {
 	header( 'HTTP/1.1 403 Forbidden' );
@@ -518,7 +606,11 @@ foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
 	// Rank Math. The plugin emits no title/description/robots of its own by
 	// design, so these three are the page's only ones — and the robots value is
 	// the difference between a hub that ranks and 32 pages that quietly don't.
-	sc_set_meta( $sc_id, 'rank_math_title', SC_BUILD_SEASON . ' ' . $sc_name . ' Fantasy Football Hub | StatChasers', $sc_go );
+	//
+	// The title is the one the plugin's own builder writes (the no-section
+	// branch of statchasers_team_section_meta()), so a hub built here and one
+	// built from Tools cannot carry two titles for the same page.
+	sc_set_meta( $sc_id, 'rank_math_title', $sc_name . ' ' . SC_BUILD_SEASON . ': Record, Schedule, Stats & Fantasy Football | StatChasers', $sc_go );
 	sc_set_meta(
 		$sc_id,
 		'rank_math_description',
@@ -599,7 +691,7 @@ if ( $sc_go ) {
 /* ---------------------------------------------------------------- the report */
 
 $sc_self = esc_url( strtok( (string) $_SERVER['REQUEST_URI'], '?' ) );
-$sc_key  = rawurlencode( SC_BUILD_TOKEN );
+$sc_key  = rawurlencode( $sc_token );
 
 header( 'Content-Type: text/html; charset=utf-8' );
 ?>

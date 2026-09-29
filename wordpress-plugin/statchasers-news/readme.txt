@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.10
+Stable tag: 1.10.11
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,19 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.11 =
+* Postseason matchup games have pages on WordPress. The API links each pair's playoff meetings as /nfl/<a>-vs-<b>/2025-wild-card/, -divisional/, -conference-championship/, -super-bowl/ (and 2025-postseason-week-N/ for a round with no name), but the plugin's rewrite only knew 2026-week-1, so every one of those links was a 404. They now resolve, are headed and titled by the round ("…, Super Bowl 2025"), and are passed to the API as spelled. Near misses such as 2026-week-01 or 2025-superbowl are still 404s. The rule flushes itself into the permalink table; no Settings > Permalinks save is needed.
+* A matchup's breadcrumb no longer ends at /nfl/matchup/, the noindex holder page every pair is served from. It is now Home › NFL › the pair, and the game after it on a dated address.
+* The season chips in a player's Advanced section work. The API links them as ?adv=2024, and the plugin read ?log= but not ?adv=, so every chip reloaded the latest season. ?adv= is now read, range-checked and cached exactly like ?log=. The canonical still drops it.
+* "Clear cached renders", the team build and wp eval 'statchasers_news_flush();' keep the day-long backup copies. They used to delete them with the fresh copies, so an API outage straight after a flush left every tool empty. Deactivating the plugin still removes everything, backups included.
+* The RB handcuffs board is the mainEntity of the page's WebPage node only. It was hung on the first node whose type contained "Page", which could be the FAQPage, replacing its questions. A mainEntity another filter already set is no longer overwritten.
+* A schedule week's breadcrumb ends at the week. On /nfl/nfl-schedule/week-4/ the trail ended at the schedule page; it now ends "Week 4" at the week's own URL. Schedule page only, and only for a week the season has.
+* The schedule's week URLs no longer need a Settings > Permalinks save after an upgrade. The rule flushes itself, as the rankings and player stats positions do.
+* The page sitemap lists player section URLs only under pages that carry [statchasers_player], and team section URLs only under hubs that carry [statchasers_team]. Any other page parked under /nfl/players/ got six section URLs it does not serve.
+* The asset-version fallback (used as the CSS/JS ver= when the API's assets.json can't be read) is the plugin's own version. It was stuck at 1.7.0. The build script now refuses to package a release where it and the Version header disagree.
+* Hub titles: the retitle tool recognises the current generated title ("<Team> 2026: Record, Schedule, Stats & Fantasy Football") as well as the old one, for any season, so after the season constant moves on it can bring all 32 hubs forward. Custom titles are still left alone. create-team-pages.sh and sc-build-pages.php now write the same title the Tools screen does.
+* scripts/sc-build-pages.php no longer carries an access token. It reads SC_BUILD_PAGES_TOKEN from wp-config.php (or the environment) and answers 403 until one is set. The token that was in the file should be treated as public.
 
 = 1.10.10 =
 * New players get their pages on their own. Once a day, an hour after the API rebuilds its player index, WP-cron runs the same batches as the "Build player pages" button: new signings get a page, renamed players' pages move (with their redirects), and nothing is touched on a day the roster did not change. A long build continues a minute later rather than hitting the host's time limit. The button still works for an immediate build. Needs the matching API deploy for the daily index rebuild.

@@ -35,3 +35,6 @@ echo "\nthe week var on any other page means nothing\n";
 is( statchasers_schedule_request_week(), 0, 'no week off an article\'s query string' );
 is( statchasers_schedule_week_title(), '', 'so the article keeps its own title' );
 is( statchasers_schedule_week_canonical(), '', 'and its own canonical' );
+
+$stray_trail = array( array( 'Home', 'https://example.com/', 'hide_in_schema' => false ) );
+is( statchasers_schedule_breadcrumbs( $stray_trail ), $stray_trail, 'and its own breadcrumb trail' );
