@@ -53,6 +53,7 @@ import {
   type OverviewMeters,
   type Teammate,
 } from "./overview-data";
+import { statsTabAdvanced, type LogSeason, type StatsTabAdvanced } from "./stats-tab-data";
 import { logger } from "../logger";
 import { ensureTeams } from "../teams";
 import {
@@ -71,9 +72,14 @@ import {
   loadDynastyRankings,
   loadRosterPct,
   loadFantasyOutlook2026,
+  gameLogUpdatedMs,
+  loadCollegeStats,
   loadGameLogs,
   loadPlayers,
   loadProduction,
+  loadStatsCopy,
+  type CollegeProfile,
+  type StatsCopy,
 } from "./data";
 import {
   attachOppRanks,
@@ -427,6 +433,16 @@ export interface PlayerPageData {
    * totals, Game Log is games, and this is the totals side.
    */
   statsProfile: StatsProfile;
+  /** Every season's played weeks, for the Stats tab's career sections. */
+  logCareer: LogSeason[];
+  /** The Stats tab's two advanced cards. */
+  statsAdvanced: StatsTabAdvanced;
+  /** When the page's season of game logs was last written: the Stats tab's "Updated" date. */
+  statsUpdatedMs: number | null;
+  /** Analyst-written Stats tab copy (data/player/stats_copy.json), when there is any. */
+  statsCopy: StatsCopy | null;
+  /** His college seasons (data/player/college_stats.json); built for rookies. */
+  college: CollegeProfile | null;
 
   /** Null when the player is not in the advanced table — the tab is hidden. */
   advanced: AdvancedProfile | null;
@@ -1046,6 +1062,7 @@ export async function getPlayerPageData(
 
   const seasonTiers: SeasonTierStat[] = [];
   const careerSeasons: CareerSeasonStat[] = [];
+  const logCareer: LogSeason[] = [];
 
   for (const candidate of seasons) {
     const logs = loadGameLogs(candidate);
@@ -1061,6 +1078,7 @@ export async function getPlayerPageData(
     const tier = seasonTierStats(candidate, ranked, player.position, format);
     if (tier) seasonTiers.push(tier);
 
+    const finish = positionalFinish(player, candidate, format, allPlayers);
     const totals = careerSeasonTotals(
       candidate,
       ranked,
@@ -1069,9 +1087,18 @@ export async function getPlayerPageData(
       // The career table's Finish column is the rate finish, which is the one
       // a season is remembered by. The total finish is the header's fallback
       // and belongs to the current season only.
-      positionalFinish(player, candidate, format, allPlayers).ppg,
+      finish.ppg,
     );
     if (totals) careerSeasons.push(totals);
+
+    // The Stats tab's lower sections sum every career figure from these.
+    logCareer.push({
+      season: candidate,
+      weeks: ranked
+        .filter((e) => hasParticipation(e.stats, player.position))
+        .sort((a, b) => a.week - b.week),
+      finish: finish.total,
+    });
   }
 
   seasonTiers.sort((a, b) => b.season - a.season);
@@ -1287,6 +1314,16 @@ export async function getPlayerPageData(
     teammates: overviewTeammates(player, season, allPlayers),
     depth: depthRole(player, team),
     seasonClubs: seasonClubs(player.id, logSeasons),
+    logCareer,
+    statsUpdatedMs: gameLogUpdatedMs(season),
+    statsCopy: loadStatsCopy()[player.slug] ?? null,
+    college: loadCollegeStats().players?.[player.id] ?? null,
+    statsAdvanced: statsTabAdvanced(
+      player.id,
+      player.position,
+      leagueSeason,
+      season === leagueSeason && played.length > 0,
+    ),
 
     version: "",
   };

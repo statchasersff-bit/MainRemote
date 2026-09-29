@@ -587,6 +587,109 @@ function wireScoring(root: HTMLElement): void {
   }
 }
 
+/* ------------------------------------------------ recap: format switch ---- */
+
+/**
+ * The recap's PPR / Half PPR / Standard switch.
+ *
+ * The radios are in the server's HTML (recap fantasy-section.ts), and so is
+ * every value: each points figure carries data-ppr, data-half and data-std,
+ * and this swaps the text in place — the widths are tabular, so nothing moves.
+ * Then each fantasy table is re-sorted by its rows' data-sort-<format>, the
+ * top-scorer marker moves to the new first row, and the +/- cells are
+ * recoloured by their new sign. The choice is shared with the matchup page's
+ * own switch through the same storage key.
+ */
+function wireFantasyFormat(root: HTMLElement): void {
+  const section = root.querySelector<HTMLElement>("[data-fp-root]");
+  if (!section) return;
+  const radios = Array.from(section.querySelectorAll<HTMLInputElement>('input[name="sct-fp-format"]'));
+  if (radios.length === 0) return;
+
+  const apply = (format: ScoringFormat): void => {
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>("[data-ppr][data-half][data-std]"))) {
+      el.textContent = el.getAttribute(`data-${format}`) ?? el.textContent;
+      if (el.classList.contains("sct-fp-diff")) {
+        const text = el.textContent ?? "";
+        el.classList.toggle("is-pos", text.startsWith("+"));
+        el.classList.toggle("is-neg", text.startsWith("\u2212"));
+      }
+    }
+    for (const unit of Array.from(root.querySelectorAll<HTMLElement>(".sct-ls-unit"))) {
+      unit.textContent = POINTS_UNIT[format];
+    }
+    for (const table of Array.from(section.querySelectorAll<HTMLTableElement>("table[data-fp-table]"))) {
+      const body = table.tBodies[0];
+      if (!body) continue;
+      const rows = Array.from(body.rows);
+      const value = (row: HTMLTableRowElement): number =>
+        Number.parseFloat(row.getAttribute(`data-sort-${format}`) ?? "0") || 0;
+      rows.sort((a, b) => value(b) - value(a));
+      for (const row of rows) body.appendChild(row);
+      if (table.hasAttribute("data-fp-notop")) continue;
+      const top = rows.length ? value(rows[0]!) : 0;
+      for (const row of rows) {
+        row.querySelector(".sct-fp-pts")?.classList.toggle("is-top", top > 0 && value(row) === top);
+      }
+    }
+  };
+
+  section.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.name !== "sct-fp-format") return;
+    const value = target.value as ScoringFormat;
+    apply(value);
+    try {
+      window.localStorage.setItem(SCORING_KEY, value);
+    } catch {
+      // Blocked storage: the switch still works, it is just not remembered.
+    }
+  });
+
+  let saved: string | null = null;
+  try {
+    saved = window.localStorage.getItem(SCORING_KEY);
+  } catch {
+    saved = null;
+  }
+  if (saved === "half" || saved === "std") {
+    const input = radios.find((r) => r.value === saved);
+    if (input) input.checked = true;
+    apply(saved);
+  }
+}
+
+/**
+ * The highlights box: a thumbnail button until pressed, then the player. The
+ * iframe is never in the HTML, so nothing from YouTube loads for a reader who
+ * does not ask for it. A thumbnail that fails leaves the team-colour ground.
+ */
+function wireHighlights(root: HTMLElement): void {
+  for (const img of Array.from(root.querySelectorAll<HTMLImageElement>("img[data-hl-thumb]"))) {
+    if (img.complete && img.naturalWidth === 0) img.remove();
+    else img.addEventListener("error", () => img.remove(), { once: true });
+  }
+  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("button.sct-hl-play[data-yt]"))) {
+    button.addEventListener(
+      "click",
+      () => {
+        const id = button.getAttribute("data-yt") ?? "";
+        if (!/^[\w-]{6,20}$/.test(id)) return;
+        const frame = document.createElement("iframe");
+        frame.className = "sct-hl-frame";
+        frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+        frame.title = button.getAttribute("data-yt-title") ?? "Game highlights";
+        frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        frame.allowFullscreen = true;
+        frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        button.replaceWith(frame);
+        frame.focus();
+      },
+      { once: true },
+    );
+  }
+}
+
 /* -------------------------------------------------------- iframe height ---- */
 
 /**
@@ -851,6 +954,8 @@ function boot(): void {
     wireSortableTables(root);
     // After the sort buttons exist, so the relabelled header is the button.
     wireScoring(root);
+    wireFantasyFormat(root);
+    wireHighlights(root);
     wireFrameHeight(root);
   }
 }

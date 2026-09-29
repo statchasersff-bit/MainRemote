@@ -175,14 +175,9 @@ function postseasonCaption(s: AllTimeSummary, away: RivalryTeam, home: RivalryTe
   if (sw.length === 0) {
     return total <= 3
       ? `${first.short} won in ${years(fw)}`
-      : `${first.short} won all ${total}, most recently in ${fw[fw.length - 1]}`;
+      : `${first.short} won all ${total}`;
   }
-  if (total >= 4) {
-    const lastA = fw[fw.length - 1]!;
-    const lastB = sw[sw.length - 1]!;
-    const [who, when] = lastB > lastA ? [second, lastB] : [first, lastA];
-    return `Split ${fw.length}${DASH}${sw.length}, most recently ${who.short} in ${when}`;
-  }
+  if (total >= 4) return `Split ${fw.length}${DASH}${sw.length}`;
   return `${first.short} won in ${years(fw)}; ${second.short} won in ${years(sw)}`;
 }
 
@@ -271,14 +266,13 @@ function largestTile(s: AllTimeSummary, team: RivalryTeam): string {
 /** The four tiles, away side's largest win before the home side's. */
 export function renderAllTimeTiles(s: AllTimeSummary, away: RivalryTeam, home: RivalryTeam): string {
   const r = record(s, away, home);
-  const since = `${s.meetings} meeting${s.meetings === 1 ? "" : "s"} since ${s.firstMeetingSeason}`;
   const post = postseason(s, away, home);
   return (
     `<dl class="sct-rb-alltime">` +
     tile(
       "All-time series",
       escapeHtml(r.text),
-      r.leader ? `${r.leader.short} lead, ${since}` : `Series tied, ${since}`,
+      r.leader ? `${r.leader.short} lead` : "Series tied",
     ) +
     tile(
       "Postseason",

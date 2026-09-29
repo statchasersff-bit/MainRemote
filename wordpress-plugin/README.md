@@ -1222,6 +1222,51 @@ absent. The bundle fetches each player card from
 `statchasers-handcuffs` plugin. The shortcode tags don't collide, but both
 plugins add a schema node for the tool.
 
+## Locking the app to WordPress
+
+The app is a public address of its own. Without a key, anyone can skip this
+site and pull every fragment, the player index and the standalone pages
+straight from it, outside Cloudflare. With a key, the app answers those only to
+requests that carry it:
+
+- this plugin (`statchasers-proxy.php` adds the `X-StatChasers-Key` header to
+  every request it makes to `STATCHASERS_NEWS_ORIGIN`);
+- `scripts/create-player-pages.sh`, run with `SC_EMBED_KEY=<key>` in its
+  environment;
+- a browser that has opened any protected app URL once with `?key=<key>`,
+  which sets a 30-day cookie, so you can still look at the standalone pages.
+
+Still public: the stylesheets and scripts, `/embed.js`, the app's root news
+page (the deployment health check requests it), the FPA and schedule CSV
+downloads, the `.ics` calendar, and the health and ingest routes (which have
+their own secret).
+
+Four widgets fetch from the reader's browser, where a key cannot be kept: the
+Player Stats table, FPA, RB Handcuffs player cards and the news refresh. They go
+through this site's proxy, `/wp-json/statchasers/v1/p/<path>`, which forwards
+only those four paths, adds the key and caches each answer for five minutes.
+Those four answers are therefore still public, but at statchasers.com, behind
+Cloudflare's bot rules and rate limits, rather than at the app.
+
+**Rollout.** Three switches, each safe on its own, in this order:
+
+1. Install this plugin version (1.10.14 or later). Nothing changes yet.
+2. On the app, set `SC_BROWSER_PROXY=https://statchasers.com/wp-json/statchasers/v1/p`
+   and redeploy. Then clear the plugin's cached fragments so pages pick up the
+   new widget addresses: `wp eval 'statchasers_news_flush();'`. Check that the
+   four widgets still switch (Player Stats position or season, FPA format, an
+   RB Handcuffs card, the news "load more") and that in the browser's network
+   panel they now call `/wp-json/statchasers/v1/p/…`.
+3. Pick a long random secret (for example `openssl rand -hex 32`). Put it in
+   wp-config.php as `define( 'STATCHASERS_EMBED_KEY', '<secret>' );` first,
+   then set `SC_EMBED_KEY=<secret>` on the app and redeploy. In that order the
+   plugin is already sending the key when the app starts asking for it.
+   Check: a player page, a team page, the schedule, rankings and a matchup load
+   on statchasers.com; `curl -I https://<app>/embed/players.json` returns 403.
+
+To undo, remove `SC_EMBED_KEY` from the app and redeploy; the plugin's header
+is then ignored.
+
 ## Caching
 
 - Rendered fragments are cached in a transient for 5 minutes — news, team hubs

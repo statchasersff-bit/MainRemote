@@ -519,8 +519,10 @@ class NewsWidget {
     return Math.max(1, this.pages.length);
   }
 
+  /** The feed's own base: the WordPress proxy when the server named one, else the origin. */
   private apiUrl(path: string): string {
-    return `${this.origin}${path}`;
+    const api = (this.root.dataset["scApi"] ?? "").replace(/\/+$/, "");
+    return `${api || this.origin}${path}`;
   }
 
   init(): void {

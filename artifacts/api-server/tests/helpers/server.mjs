@@ -46,6 +46,10 @@ export async function startServer(env = {}, options = {}) {
       // and "last updated" assertions flap for reasons that aren't bugs. The
       // tests read the data already in the database.
       DYNASTY_NEWS_API_URL: "",
+      // Open unless a test locks it (tests/embed-key.test.mjs). A key set as a
+      // Replit secret reaches this shell too, and would 403 every other suite.
+      SC_EMBED_KEY: "",
+      SC_BROWSER_PROXY: "",
       ...env,
       PORT: String(port),
       // Overridable, because the development-only surfaces — the preview

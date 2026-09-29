@@ -178,6 +178,15 @@ function sentence(parts: Part[], url: (name: string) => string | null): string {
   return lastText.endsWith(".") ? html : `${html}.`;
 }
 
+/** The play alone (no try) as linked HTML, for the win-probability list. */
+export function playHtml(
+  play: ScoringPlay,
+  teamShort: string,
+  url: (name: string) => string | null,
+): string {
+  return sentence(playParts(play, teamShort), url);
+}
+
 /** The play and its try as plain text, for tests and the log. */
 export function playSentence(play: ScoringPlay, teamShort: string): string {
   const plain = (parts: Part[]): string => {

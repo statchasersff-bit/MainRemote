@@ -325,6 +325,10 @@ require_once "$dir/statchasers-player-stats.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
 // And for its position URLs, near the bottom.
 require_once "$dir/statchasers-rankings.php";
+// The key header and the browser proxy's allowlist, against the stubbed
+// statchasers_news_origin() above (https://api.example.com).
+define( 'STATCHASERS_EMBED_KEY', 'smoke-key' );
+require_once "$dir/statchasers-proxy.php";
 
 echo "LOADED OK\n\n";
 
@@ -362,6 +366,24 @@ function is( $got, $want, $label ) {
  * spawns `containers` at the bottom.
  */
 $group = getenv( 'STATCHASERS_SMOKE_GROUP' ) ?: 'main';
+
+if ( 'main' === $group ) {
+	echo "embed key + proxy\n";
+	$with = statchasers_add_embed_key( array( 'headers' => array( 'Accept' => 'text/html' ) ), 'https://api.example.com/embed/player/x' );
+	is( $with['headers']['X-StatChasers-Key'] ?? null, 'smoke-key', 'a request to the app carries the key' );
+	is( $with['headers']['Accept'], 'text/html', 'and keeps its own headers' );
+	$other = statchasers_add_embed_key( array(), 'https://api.example.com.attacker.net/embed/players.json' );
+	is( isset( $other['headers']['X-StatChasers-Key'] ), false, 'a look-alike host never gets the key' );
+	$third = statchasers_add_embed_key( array(), 'https://api.sleeper.app/v1/players' );
+	is( isset( $third['headers']['X-StatChasers-Key'] ), false, 'another service never gets the key' );
+	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
+		is( statchasers_proxy_allowed( $ok_path ), true, "proxy forwards $ok_path" );
+	}
+	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'api/x/accounts', '' ) as $no_path ) {
+		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
+	}
+	echo "\n";
+}
 
 if ( 'containers' === $group ) {
 	require __DIR__ . '/smoke-containers.php';

@@ -147,7 +147,11 @@ command -v "$WP" >/dev/null 2>&1 || die "wp-cli not found. Set WP_CLI=/path/to/w
 roster_json="$(mktemp)"
 trap 'rm -f "$roster_json"' EXIT
 
-curl -fsS --max-time 30 "${ORIGIN%/}/embed/players.json" -o "$roster_json" \
+# SC_EMBED_KEY: the app's key, when it is locked to WordPress (the same value
+# as STATCHASERS_EMBED_KEY in wp-config.php). Unset, no header is sent.
+key_header=()
+[ -n "${SC_EMBED_KEY:-}" ] && key_header=(-H "X-StatChasers-Key: ${SC_EMBED_KEY}")
+curl -fsS --max-time 30 ${key_header[@]+"${key_header[@]}"} "${ORIGIN%/}/embed/players.json" -o "$roster_json" \
 	|| die "could not read ${ORIGIN%/}/embed/players.json — is the deployment up?"
 
 # Parsed with wp-cli's PHP rather than jq: jq is not installed on every managed

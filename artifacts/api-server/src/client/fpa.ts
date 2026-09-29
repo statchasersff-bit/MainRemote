@@ -143,7 +143,9 @@ async function swapTo(root: HTMLElement, format: string, view: string): Promise<
   try {
     const res = await fetch(url.toString(), {
       headers: { Accept: "text/html" },
-      credentials: "omit",
+      // Same-origin, not omit: on this origin's own pages the key cookie
+      // (lib/embed-key.ts) must ride along. Cross-origin it sends nothing.
+      credentials: "same-origin",
     });
     // A 404 is the honest answer from a deployment with nothing ingested, and
     // an offline reader throws. Both land on the caller's fallback, which is

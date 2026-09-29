@@ -59,6 +59,8 @@ const PRODUCTION_FILE = path.join(DATA_DIR, "player_production.json");
 const INJURIES_FILE = path.join(DATA_DIR, "player_injuries.json");
 const ROSTER_PCT_FILE = path.join(DATA_DIR, "roster_pct.json");
 const SLUG_LEDGER_FILE = path.join(DATA_DIR, "player_slugs.json");
+const STATS_COPY_FILE = path.join(DATA_DIR, "stats_copy.json");
+const COLLEGE_FILE = path.join(DATA_DIR, "college_stats.json");
 const ADVANCED_DIR = path.join(DATA_DIR, "advanced_stats");
 
 /** How often `players.json` is re-stat'd for an out-of-band rebuild. */
@@ -313,6 +315,15 @@ export function loadGameLogs(season: number): Record<string, GameLogEntry[]> {
   return data;
 }
 
+/** When a season's game-log file was last written, or null when there is none. */
+export function gameLogUpdatedMs(season: number): number | null {
+  try {
+    return fs.statSync(path.join(GAME_LOGS_DIR, `${season}.json`)).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
 let seasonsCache: number[] | null = null;
 
 /** Seasons with a game-log file, newest first. */
@@ -378,6 +389,46 @@ export const loadFantasyOutlook2026 = lazy<Record<string, FantasyOutlook2026>>(
   OUTLOOK_FILE,
   {},
 );
+
+/**
+ * Analyst-written copy for the Stats tab, keyed by slug. Hand-edited, like the
+ * outlooks; see docs/STATS-COPY.md. Every field is optional and each one
+ * replaces only its own template text.
+ */
+export interface StatsCopy {
+  prod_lede?: string;
+  adv_lede?: string;
+  adv_fantasy_note?: string;
+  /** One to three paragraphs; the Redraft Command paragraph always follows. */
+  career_paragraphs?: string[];
+  /** "2026-09-29": the byline's date. */
+  updated_date?: string;
+  /** The byline's name; "the StatChasers staff" without one. */
+  author?: string;
+}
+
+export const loadStatsCopy = lazy<Record<string, StatsCopy>>(STATS_COPY_FILE, {});
+
+/** One college season from CollegeFootballData.com (scripts/player/buildCollegeStats.mjs). */
+export interface CollegeSeason {
+  season: number;
+  school: string;
+  pass: { cmp: number; att: number; yds: number; td: number; int: number } | null;
+  rush: { att: number; yds: number; td: number; long: number } | null;
+  rec: { rec: number; yds: number; td: number; long: number } | null;
+}
+
+export interface CollegeProfile {
+  name: string;
+  school: string;
+  finalSeason: number;
+  seasons: CollegeSeason[];
+  /** Final-season metrics by key, with rank and percentile when he qualified. */
+  final: Record<string, { value: number; rank?: number; of?: number; pct?: number }>;
+  poolSize: number;
+}
+
+export const loadCollegeStats = lazy<{ players?: Record<string, CollegeProfile> }>(COLLEGE_FILE, {});
 
 /** Sleeper-backed season production snapshots, keyed by player id. */
 export const loadProduction = lazy<Record<string, unknown>>(PRODUCTION_FILE, {});
@@ -478,6 +529,8 @@ export function dataStamp(): string {
     INJURIES_FILE,
     ROSTER_PCT_FILE,
     DEPTH_CHARTS_FILE,
+    STATS_COPY_FILE,
+    COLLEGE_FILE,
   ]) {
     try {
       const st = fs.statSync(file);

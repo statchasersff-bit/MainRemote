@@ -529,6 +529,18 @@ describe("fantasy matchups", () => {
     const block = doc.querySelector(".sct-mu-fantasy");
     if (!block) return; // No FPA ingest in this environment; nothing to check.
 
+    if (block.querySelector(".sct-rb-table")) {
+      // A recap draws it in the "Why won" design: one row per position, the
+      // two teams named once, in the header.
+      const labels = [...block.querySelectorAll(".sct-rb-stat-name")].map((n) => n.textContent.trim());
+      assert.deepEqual(labels, ["QB", "RB", "WR", "TE"].map((p) => `Points allowed to ${p}s`));
+      const heads = [...block.querySelectorAll("thead th")].map((n) => n.textContent.trim());
+      assert.equal(heads.length, 3);
+      assert.match(block.querySelector("caption")?.textContent ?? "", /defense vs .* defense$/);
+      assert.match(block.querySelector(".sct-rb-sub")?.textContent ?? "", /scoring\.$/, "the scale is stated");
+      return;
+    }
+
     const labels = [...block.querySelectorAll(".sct-mu-td-label")].map((n) =>
       n.textContent.trim(),
     );
@@ -574,6 +586,24 @@ describe("fantasy matchups", () => {
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
     // The Snapshot is one table now, so the comparison that matters is across
     // BLOCKS — Snapshot against Fantasy Matchups — rather than within one.
+    // On a recap every comparison is a "Why won" table, coloured by
+    // --rb-away / --rb-home and named in its header.
+    const recapTables = [...doc.querySelectorAll(".sct-rb-table[style*='--rb-away']")];
+    if (recapTables.length) {
+      const seen = new Map();
+      for (const table of recapTables) {
+        const style = table.getAttribute("style");
+        const colors = [/--rb-away:\s*([^;"]+)/.exec(style)?.[1]?.trim(), /--rb-home:\s*([^;"]+)/.exec(style)?.[1]?.trim()];
+        assert.notEqual(colors[0], colors[1], "the two sides must be told apart");
+        const names = [...table.querySelectorAll("thead th")].map((n) => n.textContent.trim().split(" ")[0]);
+        for (const [i, name] of [[0, names[0]], [1, names[2]]]) {
+          if (seen.has(name)) assert.equal(seen.get(name), colors[i], `${name} changed colour`);
+          else seen.set(name, colors[i]);
+        }
+      }
+      assert.ok(seen.size >= 2, "both teams appeared");
+      return;
+    }
     const tables = [...doc.querySelectorAll(".sct-mu-table[style]")];
     assert.ok(tables.length >= 1, "at least one comparison on the page");
 
@@ -1455,7 +1485,7 @@ describe("the Cardinals–Rams games", () => {
         t.querySelector(".sct-rb-at-cap").textContent,
       ]),
       [
-        ["53\u201341\u20132", "Rams lead, 96 meetings since 1937"],
+        ["53\u201341\u20132", "Rams lead"],
         ["2\u20130", "Rams won in 1975 and 2021"],
         ["44\u20136", "2016"],
         ["34\u20130", "2018"],

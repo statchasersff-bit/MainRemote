@@ -111,6 +111,8 @@ import {
   type MatchupBand,
 } from "./player/header";
 import { renderOverviewSections } from "./player/overview";
+import { renderStatsTab } from "./player/stats-tab";
+import { renderOutlookTab } from "./player/outlook-tab";
 
 export interface PlayerRenderOptions {
   /**
@@ -3630,8 +3632,12 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
   const finishes = renderCareerFinishes(data);
   const highs = renderCareerHighs(data);
   const faq = renderStatsFaq(data, options);
+  // Under everything the tab already had: the sections of mak's Stats tab
+  // spec of 2026-09-29 (lib/player/stats-tab.ts). For a rookie before his
+  // first NFL game it is his college card and table, and it is the whole tab.
+  const spec = renderStatsTab(data, options);
 
-  if (!snapshot && !season && !career && !efficiency) return "";
+  if (!snapshot && !season && !career && !efficiency && !spec) return "";
 
   /*
    * The heading, and nothing under it.
@@ -3660,7 +3666,8 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
     careerRates +
     finishes +
     highs +
-    faq
+    faq +
+    spec
   );
 }
 
@@ -4536,7 +4543,11 @@ export function renderPlayerPage(
   // block on the page that says what to expect rather than what happened, and
   // buried at the bottom of a long overview nobody scrolled to it. Players
   // without a written outlook simply do not get the tab — same rule as the rest.
-  const outlook = renderOutlook2026(data);
+  // Under everything the tab already had: the sections of mak's Outlook tab
+  // spec of 2026-09-29 (lib/player/outlook-tab.ts). Only on a tab that exists
+  // already, so no player gains an Outlook URL from this.
+  const existingOutlook = renderOutlook2026(data);
+  const outlook = existingOutlook ? existingOutlook + renderOutlookTab(data, options) : "";
 
   /*
    * Overview is the interpretation layer now — see the note above

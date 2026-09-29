@@ -49,3 +49,92 @@ export function fantasyPoints(stats: FantasyStatLine, format: ScoringFormat): nu
   // Rounded through an integer so 24.28 prints 24.3 and 0.1 * 3 is not 0.30000000000000004.
   return Math.round(points * 10) / 10;
 }
+
+/* ---------------------------------------------------------------- kickers */
+
+/**
+ * A kicker's game. Made field goals are listed by distance because the tiers
+ * pay by distance; a miss costs the same from anywhere, so misses are a count.
+ */
+export interface KickerLine {
+  fgMade: number[];
+  fgAtt: number;
+  xpMade: number;
+  xpAtt: number;
+}
+
+/** 0–39 yards 3, 40–49 4, 50+ 5; a made extra point 1; any miss −1. Same in every format. */
+export function kickerPoints(line: KickerLine): number {
+  const made = line.fgMade.reduce((sum, yards) => sum + (yards >= 50 ? 5 : yards >= 40 ? 4 : 3), 0);
+  const misses =
+    Math.max(0, line.fgAtt - line.fgMade.length) + Math.max(0, line.xpAtt - line.xpMade);
+  return Math.round((made + line.xpMade - misses) * 10) / 10;
+}
+
+/* ------------------------------------------------------ defense / special teams */
+
+export interface DefenseLine {
+  sacks: number;
+  ints: number;
+  fumRec: number;
+  safeties: number;
+  defTd: number;
+  retTd: number;
+  pointsAllowed: number;
+}
+
+/** The points-allowed tier: a shutout 10, 1–6 7, 7–13 4, 14–20 1, 21–27 0, 28–34 −1, 35+ −4. */
+export function pointsAllowedTier(allowed: number): number {
+  if (allowed <= 0) return 10;
+  if (allowed <= 6) return 7;
+  if (allowed <= 13) return 4;
+  if (allowed <= 20) return 1;
+  if (allowed <= 27) return 0;
+  if (allowed <= 34) return -1;
+  return -4;
+}
+
+export function defensePoints(line: DefenseLine): number {
+  const points =
+    line.sacks +
+    (line.ints + line.fumRec + line.safeties) * 2 +
+    (line.defTd + line.retTd) * 6 +
+    pointsAllowedTier(line.pointsAllowed);
+  return Math.round(points * 10) / 10;
+}
+
+/* ------------------------------------------------ individual defensive players */
+
+export interface IdpLine {
+  solo?: number;
+  ast?: number;
+  tfl?: number;
+  sacks?: number;
+  qbHits?: number;
+  pd?: number;
+  int?: number;
+  ff?: number;
+  fr?: number;
+  td?: number;
+}
+
+/**
+ * 1 per solo tackle, 0.5 per assist, +1 per tackle for loss, 2 per sack, 1 per
+ * QB hit, 1 per pass defended, 3 per interception, 2 per forced fumble or
+ * recovery, 6 per touchdown.
+ */
+export function idpPoints(line: IdpLine): number {
+  const n = (value: number | undefined): number =>
+    typeof value === "number" && Number.isFinite(value) ? value : 0;
+  const points =
+    n(line.solo) +
+    n(line.ast) * 0.5 +
+    n(line.tfl) +
+    n(line.sacks) * 2 +
+    n(line.qbHits) +
+    n(line.pd) +
+    n(line.int) * 3 +
+    (n(line.ff) + n(line.fr)) * 2 +
+    n(line.td) * 6;
+  return Math.round(points * 10) / 10;
+}

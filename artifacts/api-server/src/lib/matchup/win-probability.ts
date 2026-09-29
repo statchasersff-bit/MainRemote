@@ -1,0 +1,340 @@
+/**
+ * How the game swung: the home side's win probability from kickoff to the
+ * final whistle, as a server-drawn chart and a list of the plays that moved it.
+ *
+ * The score-only model. With nothing but the score, the clock and the closing
+ * line, the home side's chance is
+ *
+ *   WP = Φ((margin + spread × f) / (13.5 × √f))
+ *
+ * where margin is home minus away, spread is the points the home side was
+ * favoured by (negative when it was the underdog), and f is the fraction of
+ * the game left. At f = 0 it is 1, 0 or ½. Overtime is a fresh period of its
+ * own length, with f measured against a full game so a tied overtime starts
+ * close to a coin flip. The line drifts as the clock runs and jumps only at a
+ * score, and the page says so: a sack on third down moves nothing here.
+ *
+ * Pure: the game, its scoring plays and the line in, HTML out.
+ */
+
+import { escapeHtml } from "../render";
+import type { GameOdds } from "./boxscore";
+import { playPoints, type ScoringPlay } from "./scoring-plays";
+import { playHtml } from "./scoring-summary";
+import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
+
+export interface WinProbabilityInput {
+  game: ScoreboardGame;
+  plays: ScoringPlay[];
+  odds: GameOdds | null;
+  playerUrl: (name: string) => string | null;
+}
+
+const REGULATION = 3600;
+const QUARTER = 900;
+const SIGMA = 13.5;
+
+/* ------------------------------------------------------------------ model */
+
+/** The standard normal CDF, to about seven places (Abramowitz and Stegun 7.1.26). */
+export function normalCdf(x: number): number {
+  const z = Math.abs(x) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * z);
+  const poly =
+    t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429))));
+  const erf = 1 - poly * Math.exp(-z * z);
+  return x >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+}
+
+/** The home side's chance, from the margin, its spread in points favoured and the fraction left. */
+export function homeWinProbability(margin: number, spread: number, fraction: number): number {
+  if (fraction <= 0) return margin > 0 ? 1 : margin < 0 ? 0 : 0.5;
+  return normalCdf((margin + spread * fraction) / (SIGMA * Math.sqrt(fraction)));
+}
+
+/** Points the home side was favoured by: 3.5 for "LAR −3.5" at home, −3.5 for the road favourite. */
+export function homeSpread(game: ScoreboardGame, odds: GameOdds | null): number {
+  if (!odds || odds.favorite === null) return 0;
+  if (odds.favorite === game.home.abbr) return odds.line;
+  if (odds.favorite === game.away.abbr) return -odds.line;
+  return 0;
+}
+
+function overtimeLength(game: ScoreboardGame): number {
+  // Ten minutes in the regular season since 2017; the postseason still plays fifteen.
+  return game.gameType === "playoff" ? QUARTER : 600;
+}
+
+function clockSeconds(clock: string): number {
+  const [m, s] = clock.split(":").map((n) => Number.parseInt(n, 10));
+  return (Number.isFinite(m) ? m! : 0) * 60 + (Number.isFinite(s) ? s! : 0);
+}
+
+/** Seconds played when a play happened. */
+function elapsedAt(game: ScoreboardGame, quarter: number, clock: string): number {
+  const left = clockSeconds(clock);
+  if (quarter <= 4) return (quarter - 1) * QUARTER + (QUARTER - Math.min(left, QUARTER));
+  const ot = overtimeLength(game);
+  return REGULATION + (quarter - 5) * ot + (ot - Math.min(left, ot));
+}
+
+/** The fraction of a full game left at `elapsed`, restarting at each overtime period. */
+function fractionLeft(game: ScoreboardGame, elapsed: number, end: number): number {
+  if (elapsed >= end) return 0;
+  if (elapsed < REGULATION) return (REGULATION - elapsed) / REGULATION;
+  const ot = overtimeLength(game);
+  const periodEnd = REGULATION + (Math.floor((elapsed - REGULATION) / ot) + 1) * ot;
+  return (Math.min(periodEnd, end) - elapsed) / REGULATION;
+}
+
+export interface WpSwing {
+  play: ScoringPlay;
+  elapsed: number;
+  before: number;
+  after: number;
+  /** The swing in whole percentage points, home side's terms: what the list prints. */
+  points: number;
+}
+
+export interface WpModel {
+  spread: number;
+  kickoff: number;
+  /** Where the chart is drawn to: the end of regulation, or of the last overtime played. */
+  end: number;
+  swings: WpSwing[];
+  /** [seconds, home WP] pairs, jumps as two points at one time. */
+  curve: Array<[number, number]>;
+}
+
+export function winProbabilityModel(input: Pick<WinProbabilityInput, "game" | "plays" | "odds">): WpModel | null {
+  const { game, plays } = input;
+  const result = scoreboardResult(game);
+  if (!result) return null;
+  const spread = homeSpread(game, input.odds);
+  const lastPeriod = Math.max(4, ...plays.map((p) => p.quarter), game.home.ot !== null || game.away.ot !== null ? 5 : 4);
+  // The last overtime ends when its winning score does, which is sudden death.
+  const ot = overtimeLength(game);
+  const lastPlay = plays[plays.length - 1];
+  const end =
+    lastPeriod > 4
+      ? lastPlay && lastPlay.quarter === lastPeriod
+        ? elapsedAt(game, lastPlay.quarter, lastPlay.clock)
+        : REGULATION + (lastPeriod - 4) * ot
+      : REGULATION;
+
+  const events = plays
+    .map((play) => ({ play, elapsed: elapsedAt(game, play.quarter, play.clock) }))
+    .sort((a, b) => a.elapsed - b.elapsed);
+
+  let margin = 0;
+  const swings: WpSwing[] = [];
+  const curve: Array<[number, number]> = [];
+  let t = 0;
+  const kickoff = homeWinProbability(0, spread, 1);
+  const sampleTo = (until: number): void => {
+    for (; t < until; t += 60) curve.push([t, homeWinProbability(margin, spread, fractionLeft(game, t, end))]);
+    t = until;
+  };
+
+  for (const { play, elapsed } of events) {
+    sampleTo(elapsed);
+    const f = fractionLeft(game, elapsed, end);
+    const before = homeWinProbability(margin, spread, f);
+    margin += (play.team === game.home.abbr ? 1 : play.team === game.away.abbr ? -1 : 0) * playPoints(play);
+    const after = homeWinProbability(margin, spread, f);
+    curve.push([elapsed, before], [elapsed, after]);
+    swings.push({
+      play,
+      elapsed,
+      before,
+      after,
+      points: Math.round((after - before) * 100),
+    });
+  }
+  sampleTo(end);
+  curve.push([end, homeWinProbability(margin, spread, 0)]);
+  return { spread, kickoff, end, swings, curve };
+}
+
+/** ">99%" and "<1%" at the ends, so a game still going never reads as settled. */
+export function formatWp(p: number): string {
+  if (p > 0.995) return ">99%";
+  if (p < 0.005) return "<1%";
+  return `${Math.round(p * 100)}%`;
+}
+
+/* ----------------------------------------------------------------- copy */
+
+function periodPhrase(elapsed: number): string {
+  if (elapsed < 1800) return "before halftime";
+  if (elapsed < 2700) return "in the third quarter";
+  if (elapsed < REGULATION) return "in the fourth quarter";
+  return "in overtime";
+}
+
+/** The subtitle's second sentence: where the home side started, then the one fact worth saying. */
+export function wpSubtitle(game: ScoreboardGame, model: WpModel): string {
+  const result = scoreboardResult(game);
+  const kick = model.kickoff;
+  const role =
+    Math.round(kick * 100) === 50
+      ? `${homeCity(game)} started as a coin flip`
+      : kick > 0.5
+        ? `${homeCity(game)} was a ${Math.round(kick * 100)}% favorite at kickoff`
+        : `${homeCity(game)} was a ${Math.round((1 - kick) * 100)}% underdog at kickoff`;
+
+  let fact = "";
+  const homeWon = result?.winner === "home";
+  const awayWon = result?.winner === "away";
+  const points = model.curve;
+  if (homeWon) {
+    const low = Math.min(...points.map(([, p]) => p));
+    const safe = points.find(([, p]) => p >= 0.98);
+    fact =
+      low < 0.2
+        ? `came back after its chances fell to ${formatWp(low)}`
+        : safe
+          ? `passed 98% ${periodPhrase(safe[0])}`
+          : "held on to the end";
+  } else if (awayWon) {
+    const high = Math.max(...points.map(([, p]) => p));
+    const gone = points.find(([, p]) => p <= 0.02);
+    fact =
+      high > 0.8
+        ? `lost after reaching ${formatWp(high)}`
+        : gone
+          ? `fell below 2% ${periodPhrase(gone[0])}`
+          : "lost a game that stayed in reach";
+  } else {
+    fact = "the game finished level";
+  }
+  return `${game.home.short} win probability through the game. ${role} and ${fact}.`;
+}
+
+function homeCity(game: ScoreboardGame): string {
+  // The hero's team object has no city; the name minus the nickname is it.
+  const name = game.home.name;
+  return name.endsWith(` ${game.home.short}`) ? name.slice(0, -game.home.short.length - 1) : game.home.short;
+}
+
+/* ----------------------------------------------------------------- chart */
+
+const W = 640;
+const H = 220;
+const PAD = { left: 40, right: 10, top: 12, bottom: 26 };
+
+function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof pairColors>): string {
+  const x = (s: number): number => PAD.left + (s / model.end) * (W - PAD.left - PAD.right);
+  const y = (p: number): number => PAD.top + (1 - p) * (H - PAD.top - PAD.bottom);
+  const r = (n: number): string => n.toFixed(1);
+
+  const line = model.curve.map(([s, p], i) => `${i ? "L" : "M"}${r(x(s))} ${r(y(p))}`).join(" ");
+  const area = `${line} L${r(x(model.end))} ${r(y(0))} L${r(x(0))} ${r(y(0))} Z`;
+
+  const periods: Array<{ at: number; label: string }> = [0, 1, 2, 3].map((q) => ({ at: q * QUARTER, label: `Q${q + 1}` }));
+  const ot = overtimeLength(game);
+  for (let at = REGULATION; at < model.end; at += ot) periods.push({ at, label: "OT" });
+
+  const grid = periods
+    .map(
+      ({ at, label }, i) =>
+        (i ? `<line class="sct-wp-grid" x1="${r(x(at))}" x2="${r(x(at))}" y1="${PAD.top}" y2="${H - PAD.bottom}"/>` : "") +
+        `<text class="sct-wp-axis" x="${r(x(at + Math.min(QUARTER, model.end - at) / 2))}" y="${H - 8}" text-anchor="middle">${label}</text>`,
+    )
+    .join("");
+  const yLabels = [1, 0.5, 0]
+    .map((p) => `<text class="sct-wp-axis" x="${PAD.left - 6}" y="${r(y(p) + 4)}" text-anchor="end">${p * 100}%</text>`)
+    .join("");
+  const dots = model.swings
+    .map((s) => {
+      const fill = s.play.team === game.home.abbr ? colors.home.fill : colors.away.fill;
+      return `<circle cx="${r(x(s.elapsed))}" cy="${r(y(s.after))}" r="4" fill="${fill}" stroke="#fff" stroke-width="1.5"/>`;
+    })
+    .join("");
+
+  const desc = wpDescription(game, model);
+  return (
+    `<svg class="sct-wp-chart" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="sct-wp-t sct-wp-d" preserveAspectRatio="none">` +
+    `<title id="sct-wp-t">${escapeHtml(`${game.home.short} win probability by game minute`)}</title>` +
+    `<desc id="sct-wp-d">${escapeHtml(desc)}</desc>` +
+    grid +
+    `<line class="sct-wp-half" x1="${PAD.left}" x2="${W - PAD.right}" y1="${r(y(0.5))}" y2="${r(y(0.5))}"/>` +
+    yLabels +
+    `<path d="${area}" fill="${colors.home.ink}" fill-opacity="0.08" stroke="none"/>` +
+    `<path d="${line}" fill="none" stroke="${colors.home.ink}" stroke-width="2.5" stroke-linejoin="round"/>` +
+    dots +
+    `</svg>`
+  );
+}
+
+function wpDescription(game: ScoreboardGame, model: WpModel): string {
+  const half = model.curve.filter(([s]) => s <= 1800).pop();
+  const final = model.curve[model.curve.length - 1];
+  return (
+    `${game.home.short} started at ${formatWp(model.kickoff)}` +
+    (half ? `, stood at ${formatWp(half[1])} at halftime` : "") +
+    (final ? ` and finished at ${final[1] >= 0.5 ? "100%" : "0%"}` : "") +
+    `, across ${model.swings.length} scoring play${model.swings.length === 1 ? "" : "s"}.`
+  );
+}
+
+/* ---------------------------------------------------------------- section */
+
+export function renderWinProbability(input: WinProbabilityInput): string {
+  const { game } = input;
+  if (input.plays.length === 0) return "";
+  const model = winProbabilityModel(input);
+  if (!model) return "";
+  const colors = pairColors(game.away.abbr, game.home.abbr);
+  const shortOf = (abbr: string): string =>
+    abbr === game.home.abbr ? game.home.short : abbr === game.away.abbr ? game.away.short : abbr;
+
+  const deciding = model.swings
+    .filter((s) => Math.abs(s.after - s.before) >= 0.01)
+    .sort((a, b) => Math.abs(b.points) - Math.abs(a.points) || a.elapsed - b.elapsed)
+    .slice(0, 5);
+  const list = deciding.length
+    ? `<h3 class="sct-rb-h3">Plays that decided it</h3>` +
+      `<ol class="sct-wp-plays">` +
+      deciding
+        .map((s) => {
+          const up = s.points > 0;
+          const ink = up ? colors.home.ink : colors.away.ink;
+          const period = s.play.quarter <= 4 ? `Q${s.play.quarter}` : "OT";
+          return (
+            `<li class="sct-wp-play">` +
+            `<span class="sct-wp-when">${escapeHtml(`${period} ${s.play.clock}`)}</span> ` +
+            `<b class="sct-wp-swing" style="color:${ink}">${up ? "+" : "−"}${Math.abs(s.points)} ${Math.abs(s.points) === 1 ? "pt" : "pts"}</b> ` +
+            // playHtml() ends the sentence itself, without doubling the stop after "Jr.".
+            `<span class="sct-wp-text">${playHtml(s.play, shortOf(s.play.team), input.playerUrl)} ` +
+            `<span class="sct-wp-move">${escapeHtml(`${game.home.short} ${formatWp(s.before)} → ${formatWp(s.after)}.`)}</span></span>` +
+            `</li>`
+          );
+        })
+        .join("") +
+      `</ol>`
+    : "";
+
+  const favored =
+    model.spread === 0
+      ? "With no closing line on file, both sides start at 50%."
+      : `It starts from the closing line (${model.spread > 0 ? game.home.abbr : game.away.abbr} −${Math.abs(model.spread)}).`;
+  const quietLate = !model.swings.some((s) => s.elapsed >= 1800 && Math.abs(s.after - s.before) >= 0.01);
+  const late =
+    quietLate && model.swings.some((s) => s.elapsed >= 1800)
+      ? ` After halftime no score moved the ${game.home.short}' chances by even one point.`
+      : "";
+
+  return (
+    `<section class="sct-rb-section sct-wp" aria-labelledby="wp">` +
+    `<h2 class="sct-rb-h2" id="wp">How the game swung</h2>` +
+    `<p class="sct-rb-sub">${escapeHtml(wpSubtitle(game, model))}</p>` +
+    `<div class="sct-wp-frame">${chart(game, model, colors)}</div>` +
+    list +
+    `<p class="sct-rb-note">${escapeHtml(
+      `Score-only model: win probability is estimated from the score, the time left and the closing spread, ` +
+        `so it moves only on scoring plays. ${favored}${late}`,
+    )}</p>` +
+    `</section>`
+  );
+}

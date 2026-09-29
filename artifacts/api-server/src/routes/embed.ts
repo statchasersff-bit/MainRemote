@@ -6,6 +6,7 @@ import { renderNewsFragment } from "../lib/ssr";
 import { DEFAULT_PAGE_SIZE } from "../lib/render";
 import { MAX_LIMIT } from "../lib/news-query";
 import { publicOrigin } from "../lib/request";
+import { browserEndpoint } from "../lib/embed-key";
 import {
   linkTemplatesFromEnv,
   parseRelatedLinks,
@@ -204,12 +205,17 @@ function fragmentOptions(req: Parameters<typeof publicOrigin>[0]) {
     String(req.query["vitals_endpoint"] ?? "").trim() ||
     (process.env["VITALS_ENDPOINT"] ?? "").trim();
   const pageUrl = String(req.query["page_url"] ?? "").trim();
+  // Where the reader's browser refreshes the feed from: the WordPress proxy
+  // once SC_BROWSER_PROXY is set (lib/embed-key.ts), otherwise this origin.
+  const origin = publicOrigin(req);
+  const apiBase = browserEndpoint(req, "");
 
   return {
     limit: clampInt(req.query["limit"], MAX_LIMIT, 1, MAX_LIMIT),
     pageSize: clampInt(req.query["page_size"], DEFAULT_PAGE_SIZE, 1, 50),
     heading: req.query["heading"] !== "0",
-    origin: publicOrigin(req),
+    origin,
+    ...(apiBase !== origin ? { apiBase } : {}),
     // Cap it so a stray query can't inject a wall of text into the heading.
     ...(headingText ? { headingText: headingText.slice(0, 120) } : {}),
     ...(relatedHeading ? { relatedHeading: relatedHeading.slice(0, 120) } : {}),

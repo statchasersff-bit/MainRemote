@@ -115,6 +115,13 @@ export interface MatchupData {
    * or a document ESPN would not serve.
    */
   winnerPostseason: ScheduleGame[] | null;
+  /**
+   * Both clubs' whole seasons — regular season then postseason — for the
+   * featured final: what the result meant, the game before and after it, and
+   * where the winner went next. Null pregame; a side is empty when ESPN would
+   * not serve its schedule.
+   */
+  seasonGames: { a: ScheduleGame[]; b: ScheduleGame[] } | null;
   /** Who played in the featured game and what it meant. Null pregame. */
   gameStats: GameStats | null;
   /** What the featured game did to both defenses' FPA ranks. Null pregame. */
@@ -399,6 +406,18 @@ export async function getMatchupData(
           ?.games ?? null)
       : null;
 
+  const seasonGames = isFinal
+    ? await Promise.all(
+        [pair.a, pair.b].map(async (team) => {
+          const [regular, post] = await Promise.all([
+            getTeamSchedule(team, featured.season).catch(() => null),
+            getTeamPostseason(team, featured.season).catch(() => null),
+          ]);
+          return [...(regular?.games ?? []), ...(post?.games ?? [])];
+        }),
+      ).then(([ga, gb]) => ({ a: ga ?? [], b: gb ?? [] }))
+    : null;
+
   const fpaDelta =
     isFinal && featured.season === (fpaTable?.season ?? state.season)
       ? await getFpaDelta(
@@ -421,6 +440,7 @@ export async function getMatchupData(
     fpa,
     boxscore,
     winnerPostseason,
+    seasonGames,
     gameStats,
     fpaDelta,
     pinned,
