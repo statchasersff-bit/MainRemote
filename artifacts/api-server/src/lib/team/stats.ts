@@ -34,7 +34,8 @@
  * not report is null and its row is dropped, and nothing is defaulted to zero.
  */
 
-import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
+import { createKeyedCache, fetchJson, PAST_SEASON_TTL_MS, TEAM_USER_AGENT } from "./cache";
+import { seasonYear } from "../seo";
 import type { NflTeam } from "./teams";
 
 /**
@@ -816,6 +817,8 @@ const cache = createKeyedCache<LeagueStats>({
   // tab's snapshot; six hours matches it deliberately so the two tabs cannot
   // drift apart within a page view.
   ttlMs: 6 * 60 * 60 * 1000,
+  // A finished season does not change; see ttlFor in ./cache.
+  ttlFor: (key) => (Number(key) < seasonYear() ? PAST_SEASON_TTL_MS : 6 * 60 * 60 * 1000),
   // Larger than its neighbours: this is 370KB rather than a few KB, and the one
   // caller who pays for it is the first visitor to any team page in the season.
   timeoutMs: 10_000,

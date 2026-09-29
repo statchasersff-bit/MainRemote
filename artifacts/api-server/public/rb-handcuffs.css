@@ -2464,7 +2464,11 @@ html.rbh-locked body {
 /* classes, because one class and two elements TIES Divi's.                */
 /* ====================================================================== */
 
-.rbh .rbh-table {
+/* Divi's table rule is `.entry-content table:not(.variations)` — (0,2,1),
+   because `:not()` counts its argument — and it beat the `.rbh .rbh-table`
+   this used to be: measured 2026-09-29, the grey frame and 15px of margin were
+   still arriving. The repeated `:not()` keeps this one class ahead. */
+.rbh table.rbh-table:not(.variations) {
   border: 0;
   margin: 0;
 }
@@ -2479,12 +2483,23 @@ html.rbh-locked body {
   padding: 0;
 }
 
+/* `!important` on the header colours: `#left-area table th { color: #666 }`
+   is an id, which no number of classes beats, and every label on the navy
+   band went grey. The sorted column's gold keeps its place above the white
+   because its selector is the heavier of the two. */
 .rbh .rbh-table thead th {
-  color: #fff;
+  color: #fff !important;
 }
 
 .rbh .rbh-table thead th.is-sorted {
-  color: var(--sc-gold-soft);
+  color: var(--sc-gold-soft) !important;
+}
+
+/* The player column is a <th> too. It took the theme's #666 and weight 700,
+   and the name link inside inherits the weight — every name went bold. */
+.rbh .rbh-table tbody th {
+  color: var(--sc-ink) !important;
+  font-weight: 600;
 }
 
 .rbh .rbh-table .rbh-sort {

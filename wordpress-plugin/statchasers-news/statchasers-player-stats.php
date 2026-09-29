@@ -965,15 +965,9 @@ add_filter(
 
 /**
  * Clear cached renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_player_stats_flush(): void {
-	global $wpdb;
-
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_stats_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_stats_ssr_' ) . '%'
-		)
-	);
+function statchasers_player_stats_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_stats_ssr_', $all );
 }

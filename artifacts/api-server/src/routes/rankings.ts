@@ -198,6 +198,22 @@ function renderPage(
       board,
     });
 
+    // A season asked for by name that has no board is not the empty board of
+    // the current one: it is a page that does not exist. It used to answer 200
+    // with an empty shell (and the rest-of-season title on the redraft URL).
+    if (!result.data && season(req) !== undefined) {
+      noStoreHtml(
+        res,
+        404,
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+          `<meta name="robots" content="noindex" /><title>Not found</title>` +
+          `</head><body><h1>Not found</h1>` +
+          `<p>There is no ranking board for that season.</p>` +
+          `</body></html>`,
+      );
+      return;
+    }
+
     const dev = liveReload().enabled;
 
     if (!dev) {

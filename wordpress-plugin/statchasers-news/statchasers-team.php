@@ -532,7 +532,9 @@ function statchasers_team_auto_index( string $content ): string {
 		return $content;
 	}
 
-	$html = statchasers_team_index_shortcode();
+	// Called directly, not through do_shortcode, so the unlinking that
+	// do_shortcode_tag does for every other mount is done here.
+	$html = statchasers_player_unlink_missing( statchasers_team_index_shortcode() );
 
 	if ( '' === trim( $html ) ) {
 		return $content;
@@ -1432,15 +1434,15 @@ function statchasers_team_strip_faq_data( string $html ): string {
 
 /**
  * Clear cached team renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_team_flush(): void {
-	global $wpdb;
+function statchasers_team_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_team_ssr_', $all );
 
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_team_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_team_ssr_' ) . '%'
-		)
-	);
+	// The team index is only ever cleared on the way out. It has never been
+	// part of the routine flush, and this is not the change to start.
+	if ( $all ) {
+		statchasers_flush_transients( 'sc_team_idx_', true );
+	}
 }

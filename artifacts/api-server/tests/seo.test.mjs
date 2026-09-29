@@ -371,6 +371,14 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     }
   });
 
+  test("robots.txt keeps crawlers off the ?season= space", async () => {
+    // Each uncached season is upstream fetches on this server; the URLs are
+    // noindex, so the crawl buys nothing. Both positions of the parameter.
+    const robots = await (await fetch(`${server.origin}/robots.txt`)).text();
+    assert.match(robots, /^Disallow: \/\*\?season=$/m);
+    assert.match(robots, /^Disallow: \/\*&season=$/m);
+  });
+
   test("unknown paths 404 instead of duplicating the page", async () => {
     const res = await fetch(`${server.origin}/nfl/some/other/thing`);
     assert.equal(res.status, 404);

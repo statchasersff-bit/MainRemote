@@ -183,7 +183,8 @@ function wp_update_post( $a, $b = false ) {
 	return $id;
 }
 function is_wp_error( $t ) { return false; }
-function wp_remote_get( $u, $a = array() ) { return array(); }
+// The URL is kept so a test can see what the plugin asked the API for.
+function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; return array(); }
 function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
 function wp_remote_retrieve_response_code( $r ) { return 200; }
 function get_post_meta( $id, $k, $single = false ) { return ''; }
@@ -277,7 +278,8 @@ function status_header() {}
 function nocache_headers() {}
 function is_page() { return false; }
 function get_children() { return array(); }
-function wp_remote_retrieve_header() { return ''; }
+// Headers by lower-case name, for the tests that read what the API sent.
+function wp_remote_retrieve_header( $r = null, $name = '' ) { return $GLOBALS['http_headers'][ $name ] ?? ''; }
 function wp_remote_post() { return array(); }
 function set_url_scheme( $u ) { return $u; }
 function wp_parse_url( $u, $c = -1 ) { return parse_url( $u, $c ); }
@@ -301,6 +303,7 @@ $GLOBALS['wpdb'] = new class {
 	public $options = 'wp_options';
 	public function prepare( $q, ...$a ) { return $q; }
 	public function get_results( $q ) { return array(); }
+	public function get_col( $q ) { return array(); }
 	public function query( $q ) { return 0; }
 	public function esc_like( $s ) { return $s; }
 };
@@ -380,6 +383,18 @@ if ( 'playersection' === $group ) {
 
 if ( 'week' === $group ) {
 	require __DIR__ . '/smoke-week.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'rules' === $group ) {
+	require __DIR__ . '/smoke-rules.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'playerlinks' === $group ) {
+	require __DIR__ . '/smoke-player-links.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -1381,10 +1396,404 @@ is( isset( $graph['Organization']['mainEntity'] ), false, 'the other nodes are l
 $GLOBALS['page'] = array();
 
 /*
+ * Postseason game addresses. The API links `/2025-super-bowl/` and its
+ * siblings from every pair that has met in January; the rewrite used to know
+ * only `-week-N`, so each of those links was a WordPress 404 before the
+ * validator was asked. The shape and the validator both mirror
+ * parseGameSegment() in the API's pair.ts.
+ */
+echo "\npostseason game addresses resolve, near misses do not\n";
+
+$shape = '#^' . STATCHASERS_MATCHUP_GAME_SHAPE . '$#';
+foreach ( array( '2026-week-1', '2022-wild-card', '2022-divisional', '2022-conference-championship', '2025-super-bowl', '2025-postseason-week-4' ) as $segment ) {
+	is( 1 === preg_match( $shape, $segment ), true, "the rewrite takes $segment" );
+	$GLOBALS['query']['sc_matchup_game'] = $segment;
+	is( statchasers_matchup_game(), $segment, "and the validator passes $segment to ?game= as spelled" );
+}
+foreach ( array( '2026-week-01', '2026-WEEK-1', '2026-wk-1', '2025-pro-bowl', '2025-postseason-week-0', '2025-postseason-week-26', '1919-super-bowl', '2025-superbowl', '25-super-bowl', '2026-week-26' ) as $segment ) {
+	$GLOBALS['query']['sc_matchup_game'] = $segment;
+	is( statchasers_matchup_game(), '', "$segment is not a game (a 404)" );
+}
+
+$GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Super Bowl 2025', 'a Super Bowl is headed by its round' );
+is(
+	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
+	'New England Patriots vs Philadelphia Eagles, Super Bowl 2025 Box Score',
+	'and titled by it'
+);
+
+// Every matchup title fits in 70 characters: all 496 pairs, every state, and
+// the longest game labels. Site audits flag longer titles, and there were 1,280.
+$longest = '';
+foreach ( array_keys( statchasers_team_table() ) as $ta ) {
+	foreach ( array_keys( statchasers_team_table() ) as $tb ) {
+		if ( $ta >= $tb ) {
+			continue;
+		}
+		$titles = array(
+			statchasers_matchup_meta( $ta, $tb, 'upcoming', '2026' )['title'],
+			statchasers_matchup_meta( $ta, $tb, 'recently_completed', '2026' )['title'],
+			statchasers_matchup_meta( $ta, $tb, 'historical', '2026' )['title'],
+		);
+		foreach ( array( '2026-week-18', '2025-conference-championship', '2025-divisional', '2025-postseason-week-4' ) as $g ) {
+			$titles[] = statchasers_matchup_game_meta( $ta, $tb, $g )['title'];
+		}
+		foreach ( $titles as $t ) {
+			if ( strlen( $t ) > strlen( $longest ) ) {
+				$longest = $t;
+			}
+		}
+	}
+}
+is( strlen( $longest ) <= 70, true, "no matchup title is over 70 characters (longest: $longest)" );
+is(
+	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
+	'Miami Dolphins vs New York Jets, Week 1 2026 Box Score | StatChasers',
+	'the brand stays when it fits'
+);
+$GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'a regular-season game is still "Week N"' );
+is(
+	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2026-week-1' )['description'],
+	'Full box score from Patriots vs Eagles in Week 1 of 2026: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
+	'with the API\'s own regular-season description'
+);
+
+/*
+ * The scoreboard hero. The API renders its heading as an H2 in an embed and
+ * sends the page's H1 and <title> as headers; the plugin promotes the H2 so
+ * the page's one H1 is inside the hero, prints the API's words, and lifts the
+ * SportsEvent island into the head.
+ */
+echo "\nthe scoreboard hero carries the page's H1, title and SportsEvent\n";
+
+$hero_html = '<div class="sct sct-mu"><header class="sct-sbh" aria-labelledby="sct-mu-title">'
+	. '<h2 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>Philadelphia Eagles vs New England Patriots, Week 1 2026</h2>'
+	. '</header><section><h2 class="sct-h2">Player Stats</h2></section>'
+	. '<script type="application/json" class="sct-matchup-event-data">'
+	. '{"@type":"SportsEvent","name":"x","startDate":"2026-09-13T17:00:00.000Z","location":{"@type":"StadiumOrArena","name":"Gillette Stadium"},"homeTeam":{"@type":"SportsTeam","name":"New England Patriots"},"awayTeam":{"@type":"SportsTeam","name":"Philadelphia Eagles"}}'
+	. '</script></div>';
+
+$promoted = statchasers_matchup_promote_heading( $hero_html );
+is( substr_count( (string) $promoted, '<h1' ), 1, 'the hero heading is promoted to the one H1' );
+is( 1 === preg_match( '#<header class="sct-sbh"[^>]*><h1 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>#', (string) $promoted ), true, 'in place, inside the hero, id kept for aria-labelledby' );
+is( substr_count( (string) $promoted, '<h2' ), 1, 'and only that heading: the section H2 stays an H2' );
+is( statchasers_matchup_promote_heading( '<div class="sct"><h2 class="sct-mu-strip-title">x</h2></div>' ), null, 'an older render with no hero heading promotes nothing' );
+
+$stripped = statchasers_matchup_strip_event_data( $hero_html );
+is( false === strpos( $stripped, 'sct-matchup-event-data' ), true, 'the SportsEvent island is stripped from the printed markup' );
+is( false !== strpos( $stripped, 'data-sct-hero-heading' ), true, 'and nothing else is' );
+
+$GLOBALS['http_body']    = $hero_html;
+$GLOBALS['http_headers'] = array(
+	'x-matchup-heading' => rawurlencode( 'Philadelphia Eagles vs New England Patriots, Week 1 2026' ),
+	'x-matchup-title'   => rawurlencode( "Eagles vs Patriots Week 1 2026: Final Score 24\u{2013}20, Stats & Recap" ),
+	'x-matchup-score'   => 'Eagles won 24-20.',
+	'x-matchup-game'    => 'archived',
+);
+is( statchasers_matchup_heading(), 'Philadelphia Eagles vs New England Patriots, Week 1 2026', "the H1 is the API's, away then home" );
+is(
+	statchasers_matchup_request_meta()['title'],
+	"Eagles vs Patriots Week 1 2026: Final Score 24\u{2013}20, Stats & Recap",
+	"the title is the API's, en dash and all"
+);
+$event = statchasers_matchup_event_node();
+is( $event['@type'] ?? '', 'SportsEvent', 'the SportsEvent is lifted for the head' );
+is(
+	statchasers_matchup_rank_math_schema( array() )['statchasersMatchupEvent']['homeTeam']['name'] ?? '',
+	'New England Patriots',
+	"and joins Rank Math's graph"
+);
+// The FAQ island: lifted into the graph beside the event, stripped from the markup.
+$faq_island = '<script type="application/json" class="sct-matchup-faq-data">'
+	. '{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Who won?","acceptedAnswer":{"@type":"Answer","text":"The Eagles won 24\u201320."}}]}'
+	. '</script>';
+$GLOBALS['http_body'] = $hero_html . $faq_island;
+is( statchasers_matchup_rank_math_schema( array() )['statchasersMatchupFaq']['mainEntity'][0]['name'] ?? '', 'Who won?', 'the FAQ joins the graph too' );
+is( false === strpos( statchasers_matchup_strip_event_data( $hero_html . $faq_island ), 'sct-matchup-faq-data' ), true, 'and its island is stripped from the markup' );
+$GLOBALS['http_body'] = $hero_html . str_replace( '"text":"The Eagles won 24\u201320."', '"text":""', $faq_island );
+is( statchasers_matchup_faq_node(), null, 'a question with no answer drops the FAQ node' );
+$GLOBALS['http_body'] = str_replace( '"startDate":"2026-09-13T17:00:00.000Z",', '', $hero_html );
+is( statchasers_matchup_event_node(), null, 'an Event with no startDate is dropped, not printed broken' );
+
+// An API from before the headers: the plugin's own builders stand in.
+$GLOBALS['http_headers'] = array();
+$GLOBALS['http_body']    = $hero_html;
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'with no heading header, the pair order stands' );
+unset( $GLOBALS['http_body'] );
+$GLOBALS['http_headers'] = array();
+
+/*
+ * The matchup trail. Rank Math builds it from the holder, so it ended at the
+ * noindex /nfl/matchup/ template. The holder comes out; the pair, and the game
+ * on a dated address, go in.
+ */
+echo "\nthe matchup breadcrumb never names the holder\n";
+
+$rank_math_trail = array(
+	array( 'Home', 'https://example.com/', 'hide_in_schema' => false ),
+	array( 'NFL', 'https://example.com/nfl/', 'hide_in_schema' => false ),
+	array( 'NFL Matchups', 'https://example.com/nfl/matchup/', 'hide_in_schema' => false ),
+);
+
+$GLOBALS['query']['sc_matchup_game'] = '';
+$crumbs = statchasers_matchup_breadcrumbs( $rank_math_trail );
+is( array_column( $crumbs, 0 ), array( 'Home', 'NFL', 'New England Patriots vs Philadelphia Eagles' ), 'pair: Home › NFL › the pair' );
+is( $crumbs[2][1], 'https://example.com/nfl/new-england-patriots-vs-philadelphia-eagles/', 'at the pair\'s own address' );
+
+$GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
+$crumbs = statchasers_matchup_breadcrumbs( $rank_math_trail );
+is( array_column( $crumbs, 0 ), array( 'Home', 'NFL', 'New England Patriots vs Philadelphia Eagles', 'Super Bowl 2025' ), 'game: … › the pair › the game' );
+is( $crumbs[3][1], 'https://example.com/nfl/new-england-patriots-vs-philadelphia-eagles/2025-super-bowl/', 'at the game\'s own address' );
+
+$GLOBALS['query']['sc_matchup_game'] = '2026-week-01';
+is( statchasers_matchup_breadcrumbs( $rank_math_trail ), $rank_math_trail, 'a 404 game address is not given a trail' );
+unset( $GLOBALS['query']['sc_matchup_game'] );
+
+/*
+ * `?adv=` on a player page. The API prints Advanced-section season chips as
+ * `?adv=<season>` links; the plugin read `log` and not `adv`, so every chip
+ * reloaded the same season. Read, bounded and forwarded exactly like `log`.
+ */
+echo "\n?adv= reaches the API the way ?log= does\n";
+
+$_GET = array( 'adv' => '2024', 'log' => '2023' );
+$args = statchasers_player_args( array( 'slug' => 'josh-allen' ) );
+is( $args['adv'], '2024', 'the Advanced season comes off the URL' );
+is( $args['log'], '2023', 'beside the Game Log\'s' );
+$GLOBALS['remote_urls'] = array();
+statchasers_player_fetch( $args['slug'], $args['format'], $args['section'], $args['log'], $args['adv'] );
+is( end( $GLOBALS['remote_urls'] ), 'https://api.example.com/embed/player/josh-allen?log=2023?adv=2024', 'and both are forwarded to /embed/player' );
+
+$_GET = array( 'adv' => '1998' );
+is( statchasers_player_args( array( 'slug' => 'josh-allen' ) )['adv'], '', 'a season before 1999 is dropped' );
+$_GET = array( 'adv' => (string) ( (int) gmdate( 'Y' ) + 2 ) );
+is( statchasers_player_args( array( 'slug' => 'josh-allen' ) )['adv'], '', 'and one two years out' );
+$_GET = array( 'adv' => array( '2024' ) );
+is( statchasers_player_args( array( 'slug' => 'josh-allen' ) )['adv'], '', 'and an array' );
+$_GET = array();
+is( statchasers_player_args( array( 'slug' => 'josh-allen' ) )['adv'], '', 'absent is absent' );
+
+/*
+ * A routine flush keeps the outage backups. The sweeps used to LIKE-delete
+ * `_transient_sc_<tool>_ssr_%`, which is also the backups' prefix, so "Clear
+ * cached renders" left nothing to serve if the API went down straight after.
+ * The fake $wpdb below runs the DELETE's LIKE clauses against a list of rows.
+ */
+echo "\nclearing cached renders keeps the outage backups\n";
+
+$saved_wpdb     = $GLOBALS['wpdb'];
+$GLOBALS['wpdb'] = new class {
+	public $options = 'wp_options';
+	public $rows    = array();
+	public function esc_like( $s ) { return addcslashes( (string) $s, '_%\\' ); }
+	public function prepare( $q, ...$a ) {
+		foreach ( $a as $arg ) {
+			$q = preg_replace( '/%s/', "'" . str_replace( '\\', '\\\\', $arg ) . "'", $q, 1 );
+		}
+		return $q;
+	}
+	/** MySQL's LIKE, with backslash as the escape. */
+	private function like( $pattern, $name ) {
+		$regex = '';
+		$len   = strlen( $pattern );
+		for ( $i = 0; $i < $len; $i++ ) {
+			$c = $pattern[ $i ];
+			if ( '\\' === $c && $i + 1 < $len ) {
+				$regex .= preg_quote( $pattern[ ++$i ], '/' );
+			} elseif ( '%' === $c ) {
+				$regex .= '.*';
+			} elseif ( '_' === $c ) {
+				$regex .= '.';
+			} else {
+				$regex .= preg_quote( $c, '/' );
+			}
+		}
+		return 1 === preg_match( '/^' . $regex . '$/s', $name );
+	}
+	public function query( $q ) {
+		// Every sweep is (LIKE OR LIKE ...) AND NOT LIKE AND NOT LIKE ...
+		preg_match_all( "/option_name (NOT )?LIKE '((?:[^'\\\\]|\\\\.)*)'/", $q, $m, PREG_SET_ORDER );
+		$in  = array();
+		$out = array();
+		foreach ( $m as $clause ) {
+			$pattern = $clause[2];
+			if ( '' === $clause[1] ) {
+				$in[] = $pattern;
+			} else {
+				$out[] = $pattern;
+			}
+		}
+		foreach ( $this->rows as $i => $name ) {
+			$hit = false;
+			foreach ( $in as $p ) { $hit = $hit || $this->like( $p, $name ); }
+			foreach ( $out as $p ) { $hit = $hit && ! $this->like( $p, $name ); }
+			if ( $hit ) {
+				unset( $this->rows[ $i ] );
+			}
+		}
+		return 0;
+	}
+};
+$flush_rows = array(
+	'_transient_sc_team_ssr_abc123',
+	'_transient_timeout_sc_team_ssr_abc123',
+	'_transient_sc_team_ssr_bak_abc123',
+	'_transient_timeout_sc_team_ssr_bak_abc123',
+	'_transient_sc_player_ssr_def456',
+	'_transient_sc_player_ssr_bak_def456',
+	'_transient_sc_player_idx_bak_aaa',
+	'_transient_sc_team_idx_bak_bbb',
+	'_transient_sc_teamXssr_ccc',
+	'_transient_sc_fpa_ssr_1',
+	'_transient_sc_fpa_ssr_bak_1',
+	'_transient_sc_rank_ssr_2',
+	'_transient_sc_rank_ssr_bak_2',
+	'_transient_sc_sched_ssr_3',
+	'_transient_sc_sched_ssr_bak_3',
+	'_transient_sc_stats_ssr_4',
+	'_transient_sc_stats_ssr_bak_4',
+	'_transient_sc_rbh_ssr_5',
+	'_transient_sc_rbh_ssr_bak_5',
+);
+$GLOBALS['wpdb']->rows = $flush_rows;
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush' ) as $flush ) {
+	$flush();
+}
+is(
+	array_values( $GLOBALS['wpdb']->rows ),
+	array(
+		'_transient_sc_team_ssr_bak_abc123',
+		'_transient_timeout_sc_team_ssr_bak_abc123',
+		'_transient_sc_player_ssr_bak_def456',
+		'_transient_sc_player_idx_bak_aaa',
+		'_transient_sc_team_idx_bak_bbb',
+		'_transient_sc_teamXssr_ccc',
+		'_transient_sc_fpa_ssr_bak_1',
+		'_transient_sc_rank_ssr_bak_2',
+		'_transient_sc_sched_ssr_bak_3',
+		'_transient_sc_stats_ssr_bak_4',
+		'_transient_sc_rbh_ssr_bak_5',
+	),
+	'every tool\'s fresh copies go and every backup stays'
+);
+
+$GLOBALS['wpdb']->rows = $flush_rows;
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush' ) as $flush ) {
+	$flush( true );
+}
+is( array_values( $GLOBALS['wpdb']->rows ), array( '_transient_sc_teamXssr_ccc' ), 'the full cleanup takes the backups and indexes too, and nothing that only looks similar' );
+$GLOBALS['wpdb'] = $saved_wpdb;
+
+/*
+ * The RB handcuff board as mainEntity: a WebPage (or kin) only. The old test
+ * was "any @type containing Page", and FAQPage contains it — its mainEntity is
+ * its questions.
+ */
+echo "\nthe RB handcuff board never takes the FAQPage's mainEntity\n";
+
+$GLOBALS['page'] = array( 'singular' => true, 'post' => $rbh_post );
+$faq_questions   = array( array( '@type' => 'Question', 'name' => 'Q?' ) );
+$graph           = statchasers_rb_handcuffs_rank_math_schema(
+	array(
+		'faq'     => array( '@type' => 'FAQPage', 'mainEntity' => $faq_questions ),
+		'WebPage' => array( '@type' => 'WebPage', '@id' => 'https://example.com/p/41/#webpage' ),
+	)
+);
+is( $graph['faq']['mainEntity'], $faq_questions, 'the FAQPage keeps its questions' );
+is( $graph['WebPage']['mainEntity']['@id'] ?? '', 'https://example.com/p/41/#rb-handcuff-rankings', 'and the WebPage after it gets the board' );
+
+$graph = statchasers_rb_handcuffs_rank_math_schema(
+	array( 'WebPage' => array( '@type' => array( 'WebPage', 'CollectionPage' ), 'mainEntity' => array( '@id' => '#other' ) ) )
+);
+is( $graph['WebPage']['mainEntity'], array( '@id' => '#other' ), 'a mainEntity already set is not overwritten' );
+
+$graph = statchasers_rb_handcuffs_rank_math_schema( array( 'faq' => array( '@type' => 'FAQPage' ) ) );
+is( isset( $graph['faq']['mainEntity'] ), false, 'and a graph with only an FAQPage gets no mainEntity at all' );
+$GLOBALS['page'] = array();
+
+/*
+ * Sitemap section URLs belong to pages that mount the tool. Every published
+ * child of /nfl/players/ used to get six, shortcode or not.
+ */
+echo "\nsitemap sections only under pages that mount the tool\n";
+
+$saved_pages    = $GLOBALS['pages'] ?? null;
+$saved_by_path  = $GLOBALS['pages_by_path'] ?? null;
+$sm_nfl             = new WP_Post();
+$sm_nfl->ID         = 900;
+$sm_players         = new WP_Post();
+$sm_players->ID     = 901;
+$sm_profile               = new WP_Post();
+$sm_profile->ID           = 902;
+$sm_profile->post_parent  = 901;
+$sm_profile->post_content = '[statchasers_player]';
+$sm_other                 = new WP_Post();
+$sm_other->ID             = 903;
+$sm_other->post_parent    = 901;
+$sm_other->post_content   = '<p>How we rank players.</p>';
+$GLOBALS['pages_by_path'] = array( 'nfl' => $sm_nfl, 'nfl/players' => $sm_players );
+$GLOBALS['pages']         = array( 902 => $sm_profile, 903 => $sm_other );
+
+$sitemap = statchasers_player_sitemap_sections( '' );
+is( substr_count( $sitemap, 'https://example.com/p/902/' ), count( STATCHASERS_PLAYER_INDEXED_SECTIONS ), 'the profile gets its section URLs' );
+is( false === strpos( $sitemap, '/p/903/' ), true, 'the page without the shortcode gets none' );
+
+// The team hubs, through the filter: two pages at team slugs, one a hub.
+$sm_teams                = new WP_Post();
+$sm_teams->ID            = 910;
+$sm_teams->post_name     = 'teams';
+$sm_teams->post_parent   = 0;
+$sm_root                 = new WP_Post();
+$sm_root->ID             = 909;
+$sm_root->post_name      = 'nfl';
+$sm_teams->post_parent   = 909;
+$sm_bills                = new WP_Post();
+$sm_bills->ID            = 911;
+$sm_bills->post_name     = 'buffalo-bills';
+$sm_bills->post_parent   = 910;
+$sm_bills->post_content  = '[statchasers_team]';
+$sm_fins                 = new WP_Post();
+$sm_fins->ID             = 912;
+$sm_fins->post_name      = 'miami-dolphins';
+$sm_fins->post_parent    = 910;
+$sm_fins->post_content   = '<p>Our Dolphins coverage.</p>';
+$GLOBALS['pages']         = array( 909 => $sm_root, 910 => $sm_teams, 911 => $sm_bills, 912 => $sm_fins );
+$GLOBALS['pages_by_path'] = array();
+
+$sitemap = apply_filters( 'rank_math/sitemap/page_content', '' );
+is( false !== strpos( $sitemap, 'https://example.com/p/911/stats/' ), true, 'a team hub gets its section URLs' );
+is( false === strpos( $sitemap, '/p/912/' ), true, 'a page at a team slug without the hub shortcode gets none' );
+
+$GLOBALS['pages']         = $saved_pages;
+$GLOBALS['pages_by_path'] = $saved_by_path;
+if ( null === $saved_pages ) {
+	unset( $GLOBALS['pages'] );
+}
+
+/*
+ * The season rollover's retitle. It knew only the OLD generated title, so the
+ * current one read as custom the moment the season moved on and all 32 hubs
+ * stayed on last season's year.
+ */
+echo "\nthe hub retitle recognises both generated titles, any season\n";
+
+$patriots = 'New England Patriots';
+is( statchasers_team_title_is_generated( '2025 New England Patriots Fantasy Football Hub | StatChasers', $patriots ), true, 'the old template' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), true, 'the current template' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2025: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), true, 'the current template on an earlier season' );
+is( statchasers_team_title_is_generated( '', $patriots ), true, 'no title' );
+is( statchasers_team_title_is_generated( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] . ' | StatChasers', $patriots ), true, 'exactly what the builder writes today' );
+is( statchasers_team_title_is_generated( 'Patriots 2026: Our Take | StatChasers', $patriots ), false, 'a custom title stays custom' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football', $patriots ), false, 'even one a suffix away' );
+is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), false, 'and another team\'s title is not this team\'s' );
+
+/*
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

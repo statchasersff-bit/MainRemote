@@ -134,7 +134,8 @@ describe("one address per pair", () => {
     const canonical = one('link[rel="canonical"]').getAttribute("href");
     assert.ok(canonical.endsWith(CANON), "canonical is the pretty pair path");
     assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
-    assert.match(one("title").textContent, /^New England Patriots vs Philadelphia Eagles/);
+    // The head's <title>: the usage charts carry SVG <title>s of their own.
+    assert.match(one("head > title").textContent, /^New England Patriots vs Philadelphia Eagles/);
     one('meta[name="description"]');
     one('meta[name="robots"]');
   });
@@ -204,11 +205,15 @@ describe("one address per meeting", () => {
     const [, season, week] = /(\d{4})-week-(\d{1,2})\/$/.exec(href);
     const h1 = page.doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(
+    // Away then home, whichever way round that was — see scoreboardHeading().
+    assert.match(
       h1[0].textContent.trim(),
-      `New England Patriots vs Philadelphia Eagles, Week ${week} ${season}`,
+      new RegExp(
+        `^(New England Patriots vs Philadelphia Eagles|Philadelphia Eagles vs New England Patriots), Week ${week} ${season}$`,
+      ),
       "the H1 names the game, so it cannot compete with the pair's own page",
     );
+    assert.ok(h1[0].closest("header.sct-sbh"), "and it is inside the hero");
 
     const canonical = page.doc.querySelector('link[rel="canonical"]').getAttribute("href");
     assert.ok(canonical.endsWith(href), "a dated page is its own canonical");
@@ -254,17 +259,16 @@ describe("the page follows its state", () => {
       // the page printing the same fixture twice, which is what merging them
       // was for.
       assert.equal(featured, null, "no separate Final card postgame");
-      assert.ok(doc.querySelector(".sct-mu-strip-score"), "the hero carries the score");
+      assert.ok(doc.querySelector(".sct-sbh-score"), "the hero carries the score");
     } else if (state === "upcoming") {
       // Same reasoning one step earlier: with no score to print, an "Up Next"
       // card is the hero's season, round, stadium and kickoff a second time,
       // with Where to Watch printing the last two a third.
       assert.equal(featured, null, "no Up Next card on a fixture page");
-    } else if (featured) {
-      const title = featured.querySelector("h2")?.textContent.trim();
-      assert.equal(title, "Last Meeting", "historical leads with Last Meeting");
-      // The card exists to carry a scoreboard. Without one it is the hero again.
-      assert.ok(featured.querySelector(".sct-mu-scoreboard"), "and it carries a score");
+    } else {
+      // The last meeting's scoreboard is the hero now, so the card that used
+      // to carry it would be the same game twice.
+      assert.equal(featured, null, "no Last Meeting card under the hero");
     }
 
     // Where to Watch exists only for an upcoming game, and only from real
@@ -282,11 +286,13 @@ describe("the page follows its state", () => {
     const state = doc.querySelector("[data-sct-root]").getAttribute("data-matchup-state");
     const title = doc.querySelector("title").textContent;
     const phrase = {
-      upcoming: /Where to Watch, Stats, Injuries & History/,
-      recently_completed: /Score, Player Stats & Fantasy Recap/,
-      historical: /Head-to-Head Record, Stats & History/,
+      upcoming: /Where to Watch/,
+      recently_completed: /Score/,
+      historical: /Head-to-Head Record/,
     }[state];
     assert.match(title, phrase);
+    // Site audits flag anything longer, and Google truncates it anyway.
+    assert.ok(title.length <= 70, `${title.length} characters: ${title}`);
   });
 
   test("the snapshot is one table: a team down each side, the metric between", async () => {
@@ -351,7 +357,11 @@ describe("the page follows its state", () => {
 describe("links between the family", () => {
   test("the pair page links both hubs and both matchup hubs", async () => {
     const { doc } = await dom(CANON);
-    const hrefs = [...doc.querySelectorAll(".sct-pages a")].map((a) => a.getAttribute("href"));
+    // The older layout lists them in .sct-pages; the recap layout (a pair with
+    // no meeting coming) in its "More … and …" nav, away side first.
+    const hrefs = [...doc.querySelectorAll(".sct-pages a, .sct-rb-related a")]
+      .map((a) => a.getAttribute("href"))
+      .sort();
     assert.deepEqual(hrefs, [
       "/team/new-england-patriots/",
       "/team/new-england-patriots/matchups/",
@@ -432,7 +442,20 @@ describe("the WordPress fragment", () => {
     assert.ok(["upcoming", "recently_completed", "historical"].includes(res.headers.get("x-matchup-state")));
     assert.match(res.headers.get("x-matchup-season"), /^2\d{3}$/);
     assert.ok(!/<h1\b/i.test(res.body), "the host page owns the H1");
-    assert.ok(!/<link\b/i.test(res.body) && !/<script\b/i.test(res.body), "no assets of its own");
+    assert.match(res.body, /<h2 class="sct-sbh-title"[^>]*data-sct-hero-heading>/, "the hero's H2 is marked for promotion");
+    // The islands allowed are the SportsEvent and, on a recap layout, the FAQ —
+    // inert JSON the plugin lifts into the head and strips, not assets.
+    const scripts = [...res.body.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
+    assert.ok(
+      scripts.every((tag) =>
+        [
+          '<script type="application/json" class="sct-matchup-event-data">',
+          '<script type="application/json" class="sct-matchup-faq-data">',
+        ].includes(tag),
+      ),
+      scripts.join(" "),
+    );
+    assert.ok(!/<link\b/i.test(res.body), "no assets of its own");
     assert.match(res.body, /data-matchup=/);
   });
 });
@@ -450,35 +473,34 @@ describe("game leaders", () => {
 
   test("a completed game names who led it", async () => {
     const { doc } = await dom(PLAYED);
-    const block = doc.querySelector(".sct-mu-leaders");
-    assert.ok(block, "a played matchup carries a leaders block");
+    // The pair has no meeting coming, so its page is the recap layout and the
+    // leaders are the strip under the hero — see leaders-strip.ts.
+    // The fantasy table has players, so the Redraft Command note closes it.
+    const note = doc.querySelector(".sct-mu-playerstats > p.sct-mu-rc-note:last-child");
+    if (doc.querySelector(".sct-mu-playerstats table")) {
+      assert.ok(note, "the note is the section's last element");
+      assert.equal(note.querySelector("a").getAttribute("data-cta"), "fantasy-table-footer");
+      assert.equal(note.querySelector("a").textContent, "Redraft Command");
+    }
+    const block = doc.querySelector('section.sct-ls[aria-label="Game leaders"]');
+    assert.ok(block, "a played matchup carries the leaders strip");
 
-    const cards = [...block.querySelectorAll(".sct-mu-leader")];
+    const cards = [...block.querySelectorAll(".sct-ls-card")];
     assert.ok(cards.length > 0 && cards.length <= 4, `got ${cards.length} cards`);
 
-    const labels = cards.map((c) =>
-      c.querySelector(".sct-mu-leader-label").textContent.trim(),
-    );
-    // Only the four, only once each, and in the order the markup sets.
-    assert.deepEqual(
-      labels,
-      ["Passing", "Rushing", "Receiving", "Fantasy"].filter((l) =>
-        labels.includes(l),
-      ),
-    );
+    const labels = cards.map((c) => c.querySelector(".sct-ls-label").textContent.trim());
+    assert.equal(new Set(labels).size, labels.length, "each rule picks once");
+    assert.equal(labels[0], "Passing leader");
 
+    const names = cards.map((c) => c.querySelector(".sct-ls-name").textContent.trim());
+    assert.equal(new Set(names).size, names.length, "nobody is picked twice");
     for (const card of cards) {
-      const name = card.querySelector(".sct-mu-leader-name");
-      assert.ok(name?.textContent.trim(), "a leader is a name");
+      const link = card.querySelector(".sct-ls-name a");
       // The same profile link every other player name on the site gets.
-      if (name.tagName === "A") {
-        assert.match(name.getAttribute("href"), /\/nfl\/players\//);
-      }
-      const value = card.querySelector(".sct-mu-leader-value").textContent.trim();
-      // A leader who led with nothing is not a leader — see best() in
-      // leaders.ts, which gates every category above zero.
-      assert.ok(Number(value) > 0, `${value} is not a leading figure`);
-      assert.ok(card.querySelector(".sct-mu-leader-unit").textContent.trim());
+      if (link) assert.match(link.getAttribute("href"), /\/nfl\/players\//);
+      assert.ok(card.querySelector(".sct-ls-line").textContent.trim(), "a stat line");
+      const points = card.querySelector(".sct-ls-num");
+      if (points) assert.ok(Number(points.textContent) > 0, `${points.textContent} is not a leading figure`);
     }
   });
 
@@ -491,7 +513,7 @@ describe("game leaders", () => {
       ?.getAttribute("data-matchup-state");
     if (state !== "upcoming") return;
     assert.equal(
-      doc.querySelector(".sct-mu-leaders"),
+      doc.querySelector(".sct-mu-leaders, .sct-ls"),
       null,
       "an unplayed game has no leaders to name",
     );
@@ -620,132 +642,63 @@ async function fixturePage() {
 }
 
 describe("the fixture page", () => {
-  test("the hero is the same strip as the final, minus the number", async () => {
+  test("the hero is the scoreboard with the kickoff where the scores go", async () => {
     const page = await fixturePage();
     if (!page) return;
     const { doc } = page;
 
-    const hero = doc.querySelector(".sct-mu-hero");
-    assert.ok(hero, "there is a matchup hero");
-    assert.equal(hero.classList.contains("is-final"), false, "not laid out as a final");
+    const hero = doc.querySelector("header.sct-sbh");
+    assert.ok(hero, "there is a scoreboard hero");
+    assert.equal(hero.getAttribute("data-status"), "upcoming");
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
+    assert.ok(hero.querySelector("h1"), "and it is inside the hero");
 
-    // The same board, built by the same call. What a fixture has not got is a
-    // score, and it invents nothing to stand in its place.
-    const sides = [...hero.querySelectorAll(".sct-mu-strip-side")];
-    assert.equal(sides.length, 2, "two sides");
-    assert.equal(
-      sides.filter((s) => s.classList.contains("is-right")).length,
-      1,
-      "one reversed side",
-    );
-    assert.equal(
-      hero.querySelectorAll(".sct-mu-strip-score").length,
-      0,
-      "no score before kickoff",
-    );
-    assert.equal(
-      sides.filter((s) => s.classList.contains("is-winner")).length,
-      0,
-      "and nobody has won it",
-    );
-
-    // The join names the host, which is the one thing the board would
-    // otherwise not say — the opposite of the dash a final carries.
-    assert.match(
-      hero.querySelector(".sct-mu-strip-join").textContent.trim(),
-      /^(@|vs)$/,
-      "the fixture join is a word",
-    );
-
-    // Week in the eyebrow, kickoff in the metadata row: the two facts the old
-    // hero ran together into one unseparated subtitle ("Week 2Sun, Sep 20").
-    assert.match(
-      hero.querySelector(".sct-eyebrow").textContent,
-      /Upcoming$|Live$/,
-      "the eyebrow says where the game stands",
-    );
-    const when = hero.querySelector(".sct-mu-strip-when");
-    assert.ok(when, "the kickoff is in the metadata row");
-    assert.match(
-      when.textContent,
-      /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d+( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/,
-      `kickoff reads as a date and a time: ${when.textContent}`,
-    );
-
-    // The board is aria-hidden, so the fixture has to be a sentence somewhere.
-    const spoken = [...hero.querySelectorAll(".sct-visually-hidden")]
-      .map((n) => n.textContent)
-      .join(" ");
-    assert.match(spoken, /\b(at|versus)\b/, "the fixture is spoken as a sentence");
+    assert.equal(hero.querySelector(".sct-sbh-badge").textContent, "Upcoming");
+    assert.equal(hero.querySelectorAll(".sct-sbh-team").length, 2, "two sides");
+    assert.equal(hero.querySelectorAll(".sct-sbh-score, table").length, 0, "no score, no table");
+    assert.equal(hero.querySelectorAll(".is-winner").length, 0, "nobody has won it");
+    assert.ok(hero.querySelector(".sct-sbh-kickoff"), "the kickoff stands in for the score");
+    const time = hero.querySelector("time");
+    if (time) {
+      assert.match(
+        time.textContent,
+        /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}, \d{4}, (\d{1,2}:\d{2} [AP]M ET|Time TBD)$/,
+        `kickoff reads as a date and a time: ${time.textContent}`,
+      );
+    }
   });
 });
 
 describe("the postgame page", () => {
-  test("the hero is the scoreboard, and says so once", async () => {
+  test("the hero is the scoreboard", async () => {
     const page = await postgamePage();
     if (!page) return;
     const { doc } = page;
 
-    const hero = doc.querySelector(".sct-mu-hero.is-final");
+    const hero = doc.querySelector("header.sct-sbh[data-status=final]");
     assert.ok(hero, "the hero is laid out as a final");
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
 
-    const scores = [...hero.querySelectorAll(".sct-mu-strip-score")].map((n) =>
+    const scores = [...hero.querySelectorAll(".sct-sbh-score")].map((n) =>
       Number(n.textContent.trim()),
     );
     assert.equal(scores.length, 2, "two scores");
     for (const score of scores) assert.ok(Number.isFinite(score), "a real number");
 
-    // Exactly one winner, and it is the bigger number — not a class applied to
-    // whichever side the pair ordering put first.
-    const sides = [...hero.querySelectorAll(".sct-mu-strip-side")];
+    // Exactly one winner, and it is the bigger number.
+    const sides = [...hero.querySelectorAll(".sct-sbh-team")];
     const winners = sides.filter((s) => s.classList.contains("is-winner"));
     if (scores[0] !== scores[1]) {
       assert.equal(winners.length, 1, "one winner");
-      const won = Number(winners[0].querySelector(".sct-mu-strip-score").textContent);
+      const won = Number(winners[0].querySelector(".sct-sbh-score").textContent);
       assert.equal(won, Math.max(...scores), "the winner has the bigger score");
     } else {
       assert.equal(winners.length, 0, "a tie has no winner");
     }
 
-    // The board is aria-hidden, so the result has to be a sentence somewhere.
-    const spoken = [...hero.querySelectorAll(".sct-visually-hidden")]
-      .map((n) => n.textContent)
-      .join(" ");
-    assert.match(spoken, /\b(beat|tied)\b/, "the result is spoken as a sentence");
-
-    // Away first, home second, and the home side reversed in CSS rather than
-    // in a second copy of the markup — so exactly one side carries is-right.
-    assert.equal(sides.length, 2, "two sides");
-    assert.equal(
-      sides.filter((s) => s.classList.contains("is-right")).length,
-      1,
-      "one reversed side",
-    );
-    assert.equal(sides[1].classList.contains("is-right"), true, "and it is second");
-
-    // "Final" belongs to the eyebrow, and to nothing else. It used to be the
-    // last word of the eyebrow AND the centre of the board AND the first word
-    // of the metadata row — three printings of one word inside forty vertical
-    // pixels. Asserted per element rather than by counting matches across the
-    // hero's textContent, which runs the eyebrow's last word into the title's
-    // first with no space between them.
-    assert.match(
-      hero.querySelector(".sct-eyebrow").textContent,
-      /Final(\/\d?OT)?$/,
-      "the eyebrow carries the status, OT suffix and all",
-    );
-    assert.doesNotMatch(
-      hero.querySelector(".sct-mu-strip-meta").textContent,
-      /Final/i,
-      "the metadata row is where and when, not what",
-    );
-    assert.doesNotMatch(
-      hero.querySelector(".sct-mu-strip-join").textContent,
-      /[A-Za-z]/,
-      "the join between the scores is a separator, not a third status",
-    );
+    // Away first, home second.
+    assert.ok(sides[0].classList.contains("is-away") && sides[1].classList.contains("is-home"));
+    assert.match(hero.querySelector(".sct-sbh-badge").textContent, /^Final(\/OT)?(, tie)?$/);
   });
 
   test("the quarter line adds up to the score beside it", async () => {
@@ -759,7 +712,7 @@ describe("the postgame page", () => {
     const rows = [...table.querySelectorAll("tbody tr")];
     assert.equal(rows.length, 2, "one row per team");
     for (const row of rows) {
-      const quarters = [...row.querySelectorAll(".sct-mu-ls-q")].map((n) =>
+      const quarters = [...row.querySelectorAll("td:not(.sct-mu-ls-total)")].map((n) =>
         Number(n.textContent.trim()),
       );
       const total = Number(row.querySelector(".sct-mu-ls-total").textContent.trim());
@@ -772,7 +725,7 @@ describe("the postgame page", () => {
     }
 
     // And the totals are the same two numbers the hero printed.
-    const heroScores = [...page.doc.querySelectorAll(".sct-mu-strip-score")]
+    const heroScores = [...page.doc.querySelectorAll(".sct-sbh-score")]
       .map((n) => Number(n.textContent.trim()))
       .sort((x, y) => x - y);
     const lineTotals = rows
@@ -872,22 +825,18 @@ describe("the postgame page", () => {
       assert.ok(panel.querySelector(".sct-mu-usage-team-name"), "the panel names its team");
     }
 
-    // Pair order, the same order the hero and every comparison table use. The
-    // panels came back in the order the game log met the two teams, which put
-    // the home side first and read backwards from everything above it.
-    const slug = page.doc
-      .querySelector("[data-sct-root]")
-      .getAttribute("data-matchup");
+    // The hero's order: away on the left, home on the right. The panels came
+    // back in the order the game log met the two teams, and before that were
+    // sorted alphabetically by pair — either way, not the scoreboard's order.
     const names = panels.map((p) =>
       p.querySelector(".sct-mu-usage-team-name").textContent.trim(),
     );
-    const order = names.map((name) =>
-      slug.indexOf(name.toLowerCase().replace(/[^a-z0-9]+/g, "-")),
+    const hero = ["is-away", "is-home"].map((side) =>
+      page.doc.querySelector(`.sct-sbh-team.${side} .sct-sbh-name`)?.textContent.trim(),
     );
-    assert.ok(
-      order.every((at, i) => at >= 0 && (i === 0 || at > order[i - 1])),
-      `panels ${names.join(", ")} do not follow ${slug}`,
-    );
+    if (hero.every(Boolean)) {
+      assert.deepEqual(names, hero.filter((name) => names.includes(name)), `panels ${names.join(", ")} vs hero ${hero.join(", ")}`);
+    }
 
     // The table is still in the HTML — one copy of it, collapsed, not a second
     // rendering of the same rows beside the charts.
@@ -991,29 +940,11 @@ describe("the postgame page", () => {
     }
   });
 
-  test("every takeaway is a player, a claim and the figures under it", async () => {
+  test("there is no Fantasy Takeaways section", async () => {
     const page = await postgamePage();
     if (!page) return;
-    const cards = [...page.doc.querySelectorAll(".sct-mu-take")];
-    if (cards.length === 0) return;
-    assert.ok(cards.length <= 6, `${cards.length} cards is a list, not highlights`);
-
-    for (const card of cards) {
-      const direction = card.getAttribute("data-direction");
-      assert.ok(["up", "down", "watch"].includes(direction), direction);
-      for (const selector of [".sct-mu-take-name", ".sct-mu-take-line", ".sct-mu-take-body"]) {
-        assert.ok(card.querySelector(selector)?.textContent.trim(), selector);
-      }
-      const body = card.querySelector(".sct-mu-take-body").textContent;
-      // Every card restates a measured figure; none of them is a sentence of
-      // opinion with no number in it.
-      assert.match(body, /\d/, body);
-      // The glyph is decorative, so the direction has to be spoken too.
-      assert.match(
-        card.querySelector(".sct-visually-hidden")?.textContent ?? "",
-        /Role up|Role down|Watch/,
-      );
-    }
+    assert.equal(page.doc.querySelector(".sct-mu-takeaways, .sct-mu-take"), null);
+    assert.ok(![...page.doc.querySelectorAll("h2")].some((h) => /Fantasy Takeaways/.test(h.textContent)));
   });
 
   test("a position is named in its own colour, and only the position", async () => {
@@ -1163,6 +1094,64 @@ describe("sortable stat tables", () => {
     assert.equal(page.doc.querySelector(".sct-sort"), null);
     for (const table of page.doc.querySelectorAll("table[data-sct-sortable]")) {
       assert.equal(table.getAttribute("data-sct-sort"), null);
+    }
+  });
+
+  test("each stat table ends with fantasy points and finish, all three formats on the cell", async () => {
+    const { doc } = await dom("/nfl/buffalo-bills-vs-new-england-patriots/2021-week-16/");
+    const tables = [...doc.querySelectorAll(".sct-mu-playerstats table")];
+    if (tables.length === 0) return;
+    assert.ok(![...doc.querySelectorAll(".sct-mu-playerstats caption")].some((c) => /Fantasy/.test(c.textContent)), "no separate fantasy table");
+    for (const table of tables) {
+      const heads = [...table.querySelectorAll("thead th")].map((h) => h.textContent);
+      assert.deepEqual(heads.slice(-2), ["PPR", "FIN"]);
+      for (const row of table.querySelectorAll("tbody tr")) {
+        const [fp, fin] = [...row.cells].slice(-2);
+        for (const cell of [fp, fin]) {
+          for (const f of ["ppr", "half", "std"]) assert.ok(cell.hasAttribute(`data-fmt-${f}`), `${f} on the cell`);
+          assert.equal(cell.textContent, cell.getAttribute("data-fmt-ppr"), "the server prints PPR");
+        }
+      }
+    }
+    // Josh Allen scores the same in every table he is in: the whole game.
+    const allen = tables
+      .flatMap((t) => [...t.querySelectorAll("tbody tr")])
+      .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen")
+      .map((r) => [...r.cells].at(-2).textContent);
+    assert.ok(allen.length >= 2 && allen.every((v) => v === allen[0]), allen.join(" "));
+    // The note that closes the section follows the players' tables.
+    assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-rc-note");
+    assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
+  });
+
+  test("the scoring switch swaps points, finishes, headers and the strip", async () => {
+    const path = "/nfl/buffalo-bills-vs-new-england-patriots/2021-week-16/";
+    const { doc, errors } = await hydrated(path);
+    assert.deepEqual(errors, [], "the bundle threw while wiring the switch");
+    const group = doc.querySelector("fieldset.sct-mu-scoring");
+    if (!doc.querySelector(".sct-mu-playerstats table")) return;
+    assert.ok(group, "the bundle built the switch");
+    assert.deepEqual([...group.querySelectorAll("label")].map((l) => l.textContent), ["PPR", "Half PPR", "Standard"]);
+
+    const table = doc.querySelectorAll(".sct-mu-playerstats table")[2];
+    const headers = [...table.querySelectorAll("thead th")];
+    const at = headers.length - 2;
+    // Sort by the points column first, so the switch has to re-sort.
+    headers[at].querySelector(".sct-sort").click();
+    const std = group.querySelector('input[value="std"]');
+    std.checked = true;
+    std.dispatchEvent(new doc.defaultView.Event("change", { bubbles: true }));
+
+    assert.equal(headers[at].textContent, "STD");
+    const cells = [...table.querySelectorAll("tbody tr")].map((r) => r.cells[at]);
+    for (const cell of cells) assert.equal(cell.textContent, cell.getAttribute("data-fmt-std"));
+    const values = cells.map((c) => c.getAttribute("data-sort")).filter((v) => v !== "").map(Number);
+    for (let i = 1; i < values.length; i += 1) assert.ok(values[i - 1] >= values[i], `re-sorted descending: ${values}`);
+    assert.equal(headers[at].getAttribute("aria-sort"), "descending");
+
+    for (const n of doc.querySelectorAll(".sct-ls-num")) {
+      assert.equal(n.textContent, n.getAttribute("data-std"));
+      assert.equal(n.parentElement.querySelector(".sct-ls-unit").textContent, "Std pts");
     }
   });
 
@@ -1323,7 +1312,7 @@ describe("the matchup hero is one block", () => {
       if (!found) return;
       const { doc } = found;
 
-      const hero = doc.querySelector(".sct-mu-hero");
+      const hero = doc.querySelector(".sct-sbh");
       assert.ok(hero, "the hero renders");
 
       const offenders = [...hero.querySelectorAll("*")]
@@ -1337,6 +1326,171 @@ describe("the matchup hero is one block", () => {
         [],
         "these classes place themselves in a grid that has no such area",
       );
+    });
+  }
+});
+
+/*
+ * Real games, pinned by address.
+ *
+ * The Wild Card is the reference the scoreboard hero was specified against.
+ * The two regular-season games are the ones an old recap page listed as Rams
+ * wins at Arizona: both were played at SoFi and both were won by Arizona. Home
+ * and away come from ESPN's own `homeAway` field, and these hold it to that.
+ * Each skips if ESPN will not serve the game (it 403s this host at times).
+ */
+const ARI_LAR = "/nfl/arizona-cardinals-vs-los-angeles-rams/";
+
+async function pinnedGame(segment) {
+  const res = await get(`${ARI_LAR}${segment}/`);
+  if (res.status !== 200) return null;
+  const doc = new JSDOM(res.body).window.document;
+  return doc.querySelector("header.sct-sbh[data-status=final]") ? { ...res, doc } : null;
+}
+
+describe("the Cardinals–Rams games", () => {
+  test("the Wild Card: one H1 in the hero, scores, table and JSON-LD in the source", async () => {
+    const page = await pinnedGame("2021-wild-card");
+    if (!page) return;
+    const { doc, body } = page;
+
+    const h1 = doc.querySelectorAll("h1");
+    assert.equal(h1.length, 1);
+    assert.equal(h1[0].textContent, "Arizona Cardinals vs Los Angeles Rams, Wild Card 2021");
+    const hero = h1[0].closest("header.sct-sbh");
+    assert.equal(hero.getAttribute("aria-labelledby"), h1[0].id);
+
+    assert.equal(hero.querySelector(".sct-sbh-round").textContent, "2021 NFC Wild Card");
+    assert.deepEqual(
+      [...hero.querySelectorAll(".sct-sbh-score")].map((n) => n.getAttribute("aria-label")),
+      ["Cardinals 11", "Rams 34"],
+    );
+    assert.equal(hero.querySelector(".is-winner .sct-sbh-tag").textContent, "Won, advanced");
+    assert.equal(hero.querySelector("time").textContent, "Mon, Jan 17, 2022, 8:15 PM ET");
+
+    assert.equal(
+      doc.querySelector("title").textContent,
+      "Cardinals vs Rams Wild Card 2021: Final Score 34–11, Stats & Recap",
+    );
+
+    // In the served HTML, no script run: the head carries the SportsEvent.
+    const ld = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
+      .map((s) => JSON.parse(s.textContent))
+      .find((n) => n["@type"] === "SportsEvent");
+    assert.ok(ld, "a SportsEvent in the head");
+    assert.equal(ld.homeTeam.name, "Los Angeles Rams");
+    assert.equal(ld.awayTeam.name, "Arizona Cardinals");
+    assert.equal(ld.location.name, "SoFi Stadium");
+    assert.equal(ld.description, "Final: Los Angeles Rams 34, Arizona Cardinals 11.");
+    assert.match(body, /<h1 class="sct-sbh-title"/, "the H1 is in the source, not written by script");
+
+    // The recap sits directly under the hero: first block of the page body,
+    // headed by an H2 with the score in it.
+    const recap = doc.querySelector("[data-sct-panel] > .sct-rb > .sct-rb-main > .sct-mu-story:first-child");
+    assert.ok(recap, "the recap is the first block of the main column");
+    assert.match(recap.querySelector("h2").textContent, /^Rams 34, Cardinals 11: /);
+    assert.match(recap.textContent, /Super Bowl LVI/);
+
+    // The body: its sections in order, the series counted from its scores,
+    // and the FAQ's JSON-LD in the head saying what the page says.
+    assert.deepEqual(
+      [...doc.querySelectorAll(".sct-rb-main > .sct-rb-section > h2, .sct-rb-main > nav > h2")].map((h) => h.textContent),
+      [
+        "Why the Rams won",
+        "Scoring summary",
+        "Cardinals vs Rams head-to-head",
+        "Cardinals vs Rams fantasy outlook for 2026",
+        "Cardinals vs Rams FAQ",
+        "More Cardinals and Rams",
+      ]
+        .filter((h) => !/fantasy outlook/.test(h) || doc.querySelector("#sct-rb-outlook"))
+        .filter((h) => h !== "Scoring summary" || doc.querySelector("#sct-rb-scoring")),
+    );
+
+    // From ESPN's own feed, when it answered: the strip's four and the summary's end.
+    const leaders = [...doc.querySelectorAll(".sct-ls-card .sct-ls-name")].map((n) => n.textContent);
+    if (leaders.length) {
+      assert.deepEqual(leaders, ["Matthew Stafford", "Cooper Kupp", "Christian Kirk", "David Long Jr."]);
+      assert.deepEqual(
+        [...doc.querySelectorAll(".sct-ls-num")].map((n) => n.textContent),
+        ["24.3", "17.1", "11.1"],
+      );
+    }
+    const scored = [...doc.querySelectorAll("tr.sct-ss-play")];
+    if (scored.length) {
+      assert.equal(scored.length, 8);
+      assert.deepEqual([...scored[7].querySelectorAll(".sct-ss-score")].map((c) => c.textContent), ["11", "34"]);
+      assert.equal(doc.querySelectorAll(".sct-ss-pill").length, 1);
+      assert.doesNotMatch(doc.querySelector(".sct-ss").textContent, /Jr\.\./);
+    }
+    const tiles = [...doc.querySelectorAll("ol.sct-rb-tiles li")];
+    const rams = tiles.filter((t) => t.textContent === "R").length;
+    const cards = tiles.filter((t) => t.textContent === "C").length;
+    assert.equal(
+      doc.querySelector(".sct-rb-h2h-figure").textContent,
+      `${Math.max(rams, cards)}\u2013${Math.min(rams, cards)}`,
+      "the record is the tiles counted",
+    );
+    const faq = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
+      .map((s) => JSON.parse(s.textContent))
+      .find((n) => n["@type"] === "FAQPage");
+    assert.deepEqual(
+      faq.mainEntity.map((q) => [q.name, q.acceptedAnswer.text]),
+      [...doc.querySelectorAll("details.sct-rb-qa")].map((d) => [
+        d.querySelector("summary").textContent,
+        d.querySelector("p").textContent,
+      ]),
+      "the FAQ JSON-LD matches the visible questions exactly",
+    );
+
+    // The all-time series, from the shipped history plus this season.
+    const h2h = doc.getElementById("h2h");
+    assert.equal(h2h.tagName, "H2");
+    assert.equal(h2h.textContent, "Cardinals vs Rams head-to-head");
+    const top = h2h.closest("section");
+    assert.match(top.querySelector(".sct-rb-sub").textContent, /^One of the NFL's oldest matchups/);
+    assert.deepEqual(
+      [...top.querySelectorAll("dl.sct-rb-alltime .sct-rb-at")].map((t) => [
+        t.querySelector(".sct-rb-at-num").textContent,
+        t.querySelector(".sct-rb-at-cap").textContent,
+      ]),
+      [
+        ["53\u201341\u20132", "Rams lead, 96 meetings since 1937"],
+        ["2\u20130", "Rams won in 1975 and 2021"],
+        ["44\u20136", "2016"],
+        ["34\u20130", "2018"],
+      ],
+    );
+    assert.equal(top.querySelector("h3.sct-rb-since").textContent, "Since 2021");
+    const questions = faq.mainEntity.map((q) => q.name);
+    const at = questions.indexOf("What is the all-time Cardinals vs Rams record?");
+    assert.equal(questions[at - 1], "What is the Cardinals vs Rams record since 2021?", "right after the since question");
+    assert.equal(
+      faq.mainEntity[at].acceptedAnswer.text,
+      "The Rams lead the all-time series 53\u201341\u20132 across 96 meetings since 1937, including a 2\u20130 record in the postseason.",
+    );
+    // A playoff game has no fantasy table (the logs are regular season), so no note.
+    assert.equal(doc.querySelector(".sct-mu-rc-note"), null);
+    assert.equal(doc.querySelectorAll("h1").length, 1, "and the body adds no H1");
+  });
+
+  for (const [segment, arizona, rams] of [
+    ["2021-week-4", 37, 20],
+    ["2022-week-10", 27, 17],
+  ]) {
+    test(`${segment}: Cardinals away at SoFi, and the Cardinals won`, async () => {
+      const page = await pinnedGame(segment);
+      if (!page) return;
+      const hero = page.doc.querySelector("header.sct-sbh");
+      const away = hero.querySelector(".sct-sbh-team.is-away");
+      const home = hero.querySelector(".sct-sbh-team.is-home");
+      assert.equal(away.querySelector(".sct-sbh-name").textContent, "Arizona Cardinals");
+      assert.equal(home.querySelector(".sct-sbh-name").textContent, "Los Angeles Rams");
+      assert.equal(hero.querySelector(".sct-sbh-venue").textContent, "SoFi Stadium");
+      assert.ok(away.classList.contains("is-winner"), "Arizona won");
+      assert.equal(away.querySelector(".sct-sbh-score").textContent, String(arizona));
+      assert.equal(home.querySelector(".sct-sbh-score").textContent, String(rams));
+      assert.match(page.doc.querySelector("h1").textContent, /^Arizona Cardinals vs Los Angeles Rams, Week \d+ 202\d$/);
     });
   }
 });

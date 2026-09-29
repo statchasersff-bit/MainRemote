@@ -97,8 +97,17 @@ class SCDC_Store {
 			return false;
 		}
 
-		$bytes = file_put_contents( self::file_path(), $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-		return false !== $bytes;
+		// Write beside the target, then rename() over it: a rename within one
+		// directory is atomic, so a concurrent read sees the old file or the new
+		// one, never a half-written one.
+		$path  = self::file_path();
+		$tmp   = $path . '.' . uniqid( '', true ) . '.tmp';
+		$bytes = file_put_contents( $tmp, $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		if ( false === $bytes || ! @rename( $tmp, $path ) ) { // phpcs:ignore
+			@unlink( $tmp ); // phpcs:ignore
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -114,6 +123,7 @@ class SCDC_Store {
 			'last_refreshed_ts' => 0,       // unix timestamp (GMT)
 			'teams_ok'          => 0,
 			'teams_failed'      => array(),
+			'teams_kept'        => array(), // failed, but carried over from the previous file
 		);
 		$meta = get_option( SCDC_META_OPTION, array() );
 		if ( ! is_array( $meta ) ) {

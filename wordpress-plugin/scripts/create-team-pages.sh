@@ -223,7 +223,12 @@ for row in "${TEAMS[@]}"; do
 	# Rank Math. The plugin emits no title/description/robots of its own by
 	# design, so these three are the page's only ones — and the robots value is
 	# the difference between a hub that ranks and 32 pages that quietly don't.
-	set_meta "$id" rank_math_title "$SEASON $name Fantasy Football Hub | StatChasers"
+	#
+	# The title is the one the plugin's own builder writes (the no-section
+	# branch of statchasers_team_section_meta()). The old "Fantasy Football
+	# Hub" wording here meant a hub built by this script and a hub built from
+	# Tools carried two different titles for the same page.
+	set_meta "$id" rank_math_title "$name $SEASON: Record, Schedule, Stats & Fantasy Football | StatChasers"
 	set_meta "$id" rank_math_description \
 		"Live $nick player news and injury updates, the offensive depth chart, $SEASON schedule, team stats with NFL ranks and a weekly fantasy outlook."
 	set_meta "$id" rank_math_robots '["index","follow"]' --format=json

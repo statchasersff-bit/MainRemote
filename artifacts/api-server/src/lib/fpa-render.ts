@@ -711,7 +711,9 @@ export function renderFpaEmpty(options: FpaRenderOptions = {}): string {
   return (
     `<div class="scf${options.embed ? " is-embed" : ""}" data-scf-root="1" data-empty="1">` +
     `<p class="scf-empty">${escapeHtml(
-      "No Fantasy Points Allowed data has been ingested yet. Run `pnpm --filter @workspace/api-server run ingest-fpa`.",
+      // Reader-facing: the page this lands on is public. How to fill it is in
+      // the README and the ingest route, not in the empty state.
+      "Fantasy Points Allowed figures are not available right now. Please check back soon.",
     )}</p>` +
     `</div>`
   );

@@ -1,10 +1,11 @@
 <?php
 /**
- * Shared asset plumbing: the webfont every tool's stylesheet asks for.
+ * Shared plumbing: the webfont every tool's stylesheet asks for, the sitemap
+ * helpers, and the sweep every tool's cache flush is built on.
  *
- * Its own file because it is the one thing all six tools need and none of them
- * owns, and because the main plugin file cannot be loaded in isolation — it
- * defines the origin and flush helpers that a test harness has to stub.
+ * Its own file because these are the things all the tools need and none of
+ * them owns, and because the main plugin file cannot be loaded in isolation —
+ * it defines the origin and flush helpers that a test harness has to stub.
  *
  * @package StatChasers\News
  */
@@ -111,3 +112,53 @@ function statchasers_sitemap_drop_legacy( $url, $type = '' ) {
 }
 add_filter( 'rank_math/sitemap/entry', 'statchasers_sitemap_drop_legacy', 10, 2 );
 
+/* ------------------------------------------------------------------ caches */
+
+/**
+ * Delete one tool's cached renders: every `<prefix><hash>` transient and its
+ * timeout row — and, only when $all is true, the `<prefix>bak_<hash>` backups
+ * beside them.
+ *
+ * Every tool files a render twice: a fresh copy for a few minutes, and a
+ * backup for a day or more that is served when the API is slow or down. The
+ * flushes used to delete `_transient_<prefix>%`, and a LIKE on the prefix
+ * matches the backups too — they share it. So "Clear cached renders", and the
+ * team build that calls the same flush, quietly threw away the only thing that
+ * keeps a page filled during an outage; one API hiccup in the next few minutes
+ * and every tool printed an empty box. A routine flush exists to make the next
+ * view ask the API again, which deleting the fresh copy alone achieves. The
+ * backup is overwritten by that same successful fetch, so keeping it costs
+ * nothing, and it is never served while the fresh copy is.
+ *
+ * $all is for deactivation, where nothing of the plugin's should stay behind.
+ *
+ * @param string $prefix Transient name prefix, e.g. 'sc_team_ssr_'.
+ * @param bool   $all    Also delete the `bak_` backups.
+ */
+function statchasers_flush_transients( string $prefix, bool $all = false ): void {
+	global $wpdb;
+
+	$fresh   = $wpdb->esc_like( '_transient_' . $prefix ) . '%';
+	$timeout = $wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%';
+
+	if ( $all ) {
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				$fresh,
+				$timeout
+			)
+		);
+		return;
+	}
+
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE ( option_name LIKE %s OR option_name LIKE %s ) AND option_name NOT LIKE %s AND option_name NOT LIKE %s",
+			$fresh,
+			$timeout,
+			$wpdb->esc_like( '_transient_' . $prefix . 'bak_' ) . '%',
+			$wpdb->esc_like( '_transient_timeout_' . $prefix . 'bak_' ) . '%'
+		)
+	);
+}

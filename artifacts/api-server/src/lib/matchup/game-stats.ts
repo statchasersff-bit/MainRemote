@@ -73,8 +73,11 @@ export interface FantasyRow extends RowBase {
   ppr: number;
   half: number;
   standard: number;
-  /** 8 for the WR8 of that week, league-wide. Null when he did not score. */
+  /** 8 for the WR8 of that week, league-wide, in PPR. Null when he did not score. */
   positionFinish: number | null;
+  /** The same rank in half-PPR and in standard scoring. */
+  halfFinish: number | null;
+  standardFinish: number | null;
 }
 
 export interface UsageRow extends RowBase {
@@ -292,6 +295,8 @@ function receivingRows(list: Appearance[]): ReceivingRow[] {
  */
 function fantasyRows(list: Appearance[], season: number, week: number): FantasyRow[] {
   const finishes = positionFinishes(season, week);
+  const halfFinishes = positionFinishes(season, week, "half");
+  const standardFinishes = positionFinishes(season, week, "standard");
   return list
     .map((entry) => {
       const ppr = num(entry.stats, "pts_ppr");
@@ -307,9 +312,13 @@ function fantasyRows(list: Appearance[], season: number, week: number): FantasyR
         half: oneDecimal(half),
         standard: oneDecimal(ppr - receptions),
         positionFinish: finishes.get(entry.player.id) ?? null,
+        halfFinish: halfFinishes.get(entry.player.id) ?? null,
+        standardFinish: standardFinishes.get(entry.player.id) ?? null,
       };
     })
-    .filter((row) => row.ppr > 0)
+    // Every logged score, zero and below included: the figure sits beside the
+    // player's line in each stat table, and a lost fumble's -0.1 is his score,
+    // not a blank. (Finishes still skip non-scorers — see positionFinishes().)
     .sort((x, y) => y.ppr - x.ppr);
 }
 

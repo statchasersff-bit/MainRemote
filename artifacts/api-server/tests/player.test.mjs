@@ -220,198 +220,89 @@ describe("player page content", () => {
   });
 
   /*
-   * The header's responsive contract.
+   * The header's four zones, as served.
    *
-   * Ported from the start/sit tool's player header, whose rule is that
-   * breakpoints decide topology and measurement decides everything inside. The
-   * measuring itself runs in the browser and these tests execute no
-   * JavaScript, so what is asserted here is what the SERVER owes the fitter:
-   * complete, correctly sized markup that needs no script to be right, and the
-   * hooks the fitter reads.
+   * tests/player-header.test.mjs renders the header against hand-built edge
+   * states; these check it on a real page, where it has to arrive complete
+   * with no script and name the page for the tab it opens on.
    */
-  test("the header arrives complete and at full size, with no script", async () => {
+  test("the header arrives complete, with no script", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-
-    const hero = doc.querySelector("[data-scp-hero]");
-    assert.ok(hero, "the header carries the hook the fitter looks for");
-
-    // No scales written by the server. The fitter writes them from what it
-    // measures; until it does, player.css's `, 1` fallbacks are the answer,
-    // and a reader with JavaScript off keeps that answer for good.
-    const style = hero.getAttribute("style") ?? "";
-    assert.ok(
-      !style.includes("--scp-hero-"),
-      "the server writes no scale — the header is full size until measured",
-    );
-
-    // The probe is built by cloning in the browser, never served: an extra
-    // copy of the player's name and club in a document whose whole job is to
-    // be indexed for that name is a cost this page will not pay.
-    assert.equal(
-      doc.querySelectorAll("[data-scp-hero-probe], .scp-hero-probe").length,
-      0,
-      "no measuring copies in the served HTML",
-    );
+    const header = doc.querySelector("header.scp-phead");
+    assert.ok(header, "the header is on the page");
+    assert.equal(header.getAttribute("aria-label"), "Player summary");
+    for (const zone of [".scp-pwell", ".scp-pid", ".scp-pboard", ".scp-pstrip"]) {
+      assert.ok(header.querySelector(zone), `${zone} is served`);
+    }
+    // The old header's measured squeeze is gone, and so are its hooks.
+    assert.equal(doc.querySelectorAll("[data-scp-hero], .scp-hero-probe").length, 0);
+    assert.ok(!header.textContent.includes("·"), "no middle dots in the header");
   });
 
-  test("the header's short forms are attributes, never its text", async () => {
+  test("the H1 is the player's name and the tab's subtitle", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const hero = doc.querySelector("[data-scp-hero]");
-
-    // Below 480px the phone fitter may draw "J. Brissett" and "ARI Cardinals"
-    // (mak's call: shrink the name, then initial it, rather than wrap). Both
-    // are generated content from attributes, so the served text — what a
-    // crawler indexes and a screen reader reads — is always the full form.
-    // The older multi-length swaps are still gone.
-    assert.equal(
-      hero.querySelectorAll(".scp-swap, [data-initial]").length,
-      0,
-      "no swapped copies of the text are shipped",
+    const headings = doc.querySelectorAll("h1");
+    assert.equal(headings.length, 1, "one H1 on the page");
+    const [h1] = headings;
+    assert.ok(h1.matches("header.scp-phead h1.scp-phead-h1"), "and it is the header's");
+    assert.equal(h1.querySelector(".scp-phead-name").textContent.trim(), fixture.name);
+    assert.match(
+      h1.querySelector(".scp-phead-kind").textContent,
+      /^Fantasy outlook(, stats and Week \d+ start\/sit| and stats) for 20\d\d$/,
     );
 
-    const first = hero.querySelector(".scp-title-first");
-    if (first) {
-      assert.equal(
-        first.getAttribute("data-scp-initial"),
-        `${first.textContent.charAt(0)}.`,
-        "the initial is the given name's first letter, as an attribute",
-      );
-    }
+    // Every tab link carries its own subtitle, for the client to swap in.
+    const links = [...doc.querySelectorAll(".scp-nav-link")];
+    assert.ok(links.length >= 2);
+    const kinds = links.map((link) => link.getAttribute("data-scp-kind"));
+    assert.ok(kinds.every(Boolean), "every tab has a subtitle");
+    assert.equal(new Set(kinds).size, kinds.length, "and no two tabs share one");
+  });
 
-    // Every fact the header states, stated whole.
-    const facts = hero.querySelector(".scp-hero-facts")?.textContent ?? "";
-    if (fixture.years_exp) {
-      assert.match(facts, /Exp \d+ yrs|Rookie/, "the experience is on the line");
-    }
+  test("the scoreboard is three labelled figures, the first in gold", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const cells = [...doc.querySelectorAll(".scp-pboard-stats > div")];
+    assert.equal(cells.length, 3);
+    assert.ok(cells[0].classList.contains("is-lead"));
+    const [ppg, rank, owned] = cells.map((cell) => [
+      cell.querySelector("dt").textContent.trim(),
+      cell.querySelector("dd").textContent.trim(),
+    ]);
+    assert.match(ppg[0], /^(PPR|HALF|STD) PPG$/);
+    assert.match(ppg[1], /^(\d+\.\d|—)$/);
+    assert.equal(rank[0], "Pos rank");
+    assert.match(rank[1], /^([A-Z]+\d+|—)$/, "a rank is a position and a place");
+    assert.equal(owned[0], "Rostered");
+    assert.match(owned[1], /^(<1|\d+)%$|^—$/, "ownership is a whole percentage");
+  });
 
-    const teamLink = hero.querySelector("a.scp-hero-team");
-    if (teamLink) {
-      const title = teamLink.getAttribute("title") ?? "";
-      assert.ok(title.length > 0, "the club's link carries its full name");
-      assert.equal(
-        teamLink.textContent.trim(),
-        title,
-        "and prints that same name, not a code standing in for it",
-      );
+  test("the strip's buttons say where they go and tag the tab", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
+    const redraft = doc.querySelector(".scp-pbtn--line");
+    assert.equal(redraft.textContent.trim(), "Rest-of-season value in Redraft Command");
+    assert.ok(redraft.getAttribute("href").endsWith(`?player=${fixture.slug}`));
+    assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-gamelog");
+    const start = doc.querySelector(".scp-pbtn--dark");
+    if (start) assert.match(start.getAttribute("data-cta"), /^(startsit|outlook)-header-gamelog$/);
+
+    const chip = doc.querySelector(".scp-mchip");
+    if (chip) {
       assert.match(
-        teamLink.getAttribute("data-scp-short") ?? "",
-        /^[A-Z]{2,3} \S/,
-        "the phone tier's short club form is a code and nickname attribute",
+        chip.textContent,
+        /^\d+(st|nd|rd|th) vs\. [A-Z]+s, (favorable|neutral|tough)$/,
+        "the chip says its reading in words, not colour alone",
       );
     }
   });
 
-  test("the header's figures each say what they are, and nothing else", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}`);
-    const cells = [...doc.querySelectorAll(".scp-hero-stats .scp-hero-stat")];
-
-    // A player with no season has no panel at all, which is the designed
-    // answer rather than an empty one — so there is nothing to assert about.
-    if (cells.length === 0) return;
-
-    // Scoring first and gold, because the panel is ordered: what he scores,
-    // where that puts him, who has him. A panel whose lead is not the first
-    // cell is a panel with two answers competing to be read first.
-    assert.ok(
-      cells[0].className.includes("is-lead"),
-      "the scoring cell leads the panel",
-    );
-    assert.equal(
-      doc.querySelectorAll(".scp-hero-stat.is-lead").length,
-      1,
-      "exactly one cell is the lead",
-    );
-
-    for (const cell of cells) {
-      const label = cell.querySelector(".scp-hero-stat-label")?.textContent.trim();
-      const value = cell.querySelector(".scp-hero-stat-value")?.textContent.trim();
-      assert.ok(label, "every cell says what its figure is");
-      assert.ok(value, "every cell has a figure");
-      // The panel drops a cell it has no figure for rather than filling it.
-      // A dash here would be a cell taking the room of an answer to say it
-      // has none, which is the rule the rest of this page is built on.
-      assert.ok(
-        !value.includes("\u2014"),
-        `${label} is a figure, not a placeholder`,
-      );
-
-      // The panel is three figures and their labels, nothing else. The
-      // qualifiers that used to sit under them — the games count, which way a
-      // rank was measured, whose ownership pool — are drawn in full further
-      // down the page, and a second line of grey under every figure was
-      // reading as noise against the figures themselves.
-      assert.equal(
-        cell.querySelector(".scp-hero-stat-sub"),
-        null,
-        `${label} carries no sub-line`,
-      );
-      if (label === "Rostered") {
-        assert.match(value, /^\d+(\.\d)?%$/, "ownership is a percentage");
-      }
-      if (label === "Pos rank") {
-        assert.match(value, /^[A-Z]+\d+$/, "a rank is a position and a place");
-      }
-    }
-  });
-
-  test("the heading is the player's name, whatever the header does to it", async () => {
-    // The two-line setting and the fitter are both presentation. Nothing they
-    // do may change the string an H1 hands a crawler or a screen reader — and
-    // nothing shortens it either: the header briefly contracted the given name
-    // at its narrowest width, and an initial is not what a reader came for.
-    const { doc } = await dom(`/player/${fixture.slug}`);
-    const heading = doc.querySelector(".scp-hero h1.scp-title");
-    assert.ok(heading, "the header sets the name as the document's H1");
-    assert.equal(
-      heading.textContent.replace(/\s+/g, " ").trim(),
-      fixture.name,
-      "the H1 reads exactly the player's name",
-    );
-    assert.equal(
-      heading.querySelectorAll(".scp-swap").length,
-      0,
-      "and carries no swap, so it cannot be shortened out from under itself",
-    );
-
-    const given = heading.querySelector(".scp-title-first");
-    if (given) {
-      assert.equal(
-        given.textContent,
-        fixture.name.slice(0, given.textContent.length),
-        "the given name span holds the front of the player's name",
-      );
-      assert.equal(
-        given.getAttribute("data-initial"),
-        null,
-        "and no old-style swap attribute (the phone initial is data-scp-initial)",
-      );
-    }
-  });
-
-  test("nothing in the header is hidden at a breakpoint", async () => {
-    // The anti-pattern this port exists to remove. The headshot used to be
-    // `display: none` under 680px; it now shrinks to 65% and, below 460px,
-    // moves behind the name. A header whose player has no face is a smaller
-    // page, not a better one.
+  test("the headshot is never hidden at a breakpoint", async () => {
     const css = await get("/player.css");
     assert.equal(css.status, 200);
-
-    const photoRules = css.body.match(/\.scp-photo\s*\{[^}]*\}/g) ?? [];
-    assert.ok(photoRules.length > 0, "the headshot has rules to check");
-    for (const rule of photoRules) {
-      assert.ok(
-        !/display:\s*none/.test(rule),
-        `the headshot is never hidden, but a rule does it: ${rule}`,
-      );
-    }
-
-    // And every size in the header is written against a scale with a
-    // fallback of 1, so the unmeasured header is the full-size one.
-    for (const variable of ["pad", "gap", "bust", "id", "tbl", "tblp"]) {
-      assert.ok(
-        css.body.includes(`var(--scp-hero-${variable}, 1)`),
-        `--scp-hero-${variable} is used with a fallback of 1`,
-      );
+    const rules = css.body.match(/[^{}]*\.scp-pwell-img[^{}]*\{[^}]*\}/g) ?? [];
+    assert.ok(rules.length > 0, "the headshot has rules to check");
+    for (const rule of rules) {
+      if (!/display:\s*none/.test(rule)) continue;
+      assert.match(rule, /\.is-missing/, `only a missing photo is hidden: ${rule}`);
     }
   });
 
@@ -537,11 +428,11 @@ describe("player page content", () => {
       if (res.status !== 200) continue;
       const doc = new JSDOM(res.body).window.document;
 
-      const flag = doc.querySelector(".scp-hero-flag");
+      const flag = doc.querySelector(".scp-ptag-inj");
       if (flag) {
         assert.ok(
           !/healthy|no injur|cleared/i.test(flag.textContent),
-          `${player.slug}: the hero flag reports a designation, never its absence`,
+          `${player.slug}: the header pill reports a designation, never its absence`,
         );
       }
 
@@ -1165,55 +1056,13 @@ describe("the game log tab", () => {
     assert.ok(rows.length > 0, "an impossible season falls back to a real one");
   });
 
-  test("the scoped page carries the start/sit button, once", async () => {
-    // The section page carries the control bar now, so the button is in the
-    // header where the full profile's is. The bar used to hold a scoring
-    // toggle here and it used to be printed a second time inside the panel;
-    // one control for one job, in one place, is what replaced both.
+  test("the control bar carries no start/sit button of its own", async () => {
+    // The header's strip asks the question now; a second copy in the bar put
+    // two versions of it above the fold. The scoring toggle stays gone too.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const buttons = doc.querySelectorAll(".scp-startsit");
-    assert.equal(buttons.length, 1, "exactly one start/sit button on the page");
-    assert.equal(
-      doc.querySelector("#game-log .scp-startsit"),
-      null,
-      "and it is not a second copy inside the panel",
-    );
-    assert.equal(
-      doc.querySelectorAll(".scp-format, .scp-format-opt").length,
-      0,
-      "the scoring toggle is gone, not merely hidden",
-    );
-
-    const href = buttons[0].getAttribute("href");
-    assert.equal(
-      href,
-      `https://statchasers.com/redraft-command/launch/who-should-i-start/${fixture.slug}`,
-      "the button opens this player in Redraft Command",
-    );
-    assert.match(
-      buttons[0].textContent.trim(),
-      new RegExp(`^Should I Start or Sit ${fixture.name}\\b.*\\?$`),
-      "and it asks the reader's question in full, naming the player",
-    );
-  });
-
-  test("the button names the week the player plays next", async () => {
-    // The week is the next fixture on this player's schedule — the one the
-    // Upcoming Matchups cards lead with — and it is dropped rather than
-    // guessed at when the schedule has nothing left on it.
-    const { doc } = await dom(`/player/${fixture.slug}`);
-    const label = doc.querySelector(".scp-startsit").textContent.trim();
-    const next = doc.querySelector(".scp-next-week, .scp-nexts li");
-    const week = next ? /Week (\d+)/.exec(next.textContent)?.[1] : null;
-
-    if (week) {
-      assert.ok(
-        label.endsWith(`Week ${week}?`),
-        `the button says ${label}, the next fixture is week ${week}`,
-      );
-    } else {
-      assert.ok(!/Week/.test(label), "no fixture left to name, so no week named");
-    }
+    assert.equal(doc.querySelectorAll(".scp-controls a:not(.scp-nav-link)").length, 0);
+    assert.equal(doc.querySelectorAll(".scp-startsit").length, 0);
+    assert.equal(doc.querySelectorAll(".scp-format, .scp-format-opt").length, 0);
   });
 
   test("the intro restates the table and nothing else", async () => {
@@ -1460,7 +1309,7 @@ describe("the game log tab", () => {
     if (cards.length === 0) return;
 
     const teamSlug = doc
-      .querySelector(".scp-hero a[href*='/team/']")
+      .querySelector(".scp-phead a[href*='/team/']")
       ?.getAttribute("href")
       ?.match(/\/team\/([a-z0-9-]+)/)?.[1];
 
@@ -2076,7 +1925,11 @@ describe("the injury tab", () => {
     assert.deepEqual(panels, ["injury"], "a section URL renders one section");
 
     const h1 = doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim();
-    assert.equal(h1, found[0].player.name, "the H1 is the player, as on every tab");
+    assert.equal(
+      h1,
+      `${found[0].player.name} Injury status and history`,
+      "the H1 is the player and the tab's subtitle",
+    );
     assert.match(
       doc.querySelector("#injury .scp-h2")?.textContent ?? "",
       /Injury Update & History$/,
@@ -2102,9 +1955,13 @@ describe("the injury tab", () => {
       "the full profile still renders every section",
     );
     assert.equal(
-      fullDoc.querySelector("h1")?.textContent.trim(),
+      fullDoc.querySelector("h1 .scp-phead-name")?.textContent.trim(),
       found[0].player.name,
-      "and its H1 is still the player's name",
+      "and its H1 still names the player",
+    );
+    assert.ok(
+      !fullDoc.querySelector("h1").textContent.includes("Injury status"),
+      "under the profile's own subtitle, not the injury page's",
     );
   });
 });
@@ -2439,12 +2296,11 @@ describe("the bio tab", () => {
     const { doc } = pages[0];
     const name = pages[0].player.name;
 
-    // The H1 is the player, whatever the tab: the hero does not caption itself
-    // with the open panel. The phrase this page answers for is the section's
-    // own heading, and the title below.
+    // The H1 is the player and the tab's subtitle. The phrase this page
+    // answers for is also the section's own heading, and the title below.
     assert.equal(
       doc.querySelector("h1").textContent.replace(/\s+/g, " ").trim(),
-      name,
+      `${name} Bio, career timeline and draft history`,
     );
     assert.equal(doc.querySelector("#bio .scp-h2").textContent.trim(), `${name} Bio`);
     assert.match(
@@ -2489,7 +2345,7 @@ describe("the player search", () => {
     const root = doc.querySelector("[data-scp-root]");
     assert.equal(root.firstElementChild, widget, "it is the first thing in the tool");
     assert.equal(
-      widget.compareDocumentPosition(doc.querySelector("[data-scp-hero]")) &
+      widget.compareDocumentPosition(doc.querySelector("header.scp-phead")) &
         doc.defaultView.Node.DOCUMENT_POSITION_FOLLOWING,
       doc.defaultView.Node.DOCUMENT_POSITION_FOLLOWING,
       "and it comes before the header, not after it",
@@ -2797,9 +2653,11 @@ describe("the positional peers rail", () => {
   test("the card the reader is on agrees with the header", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
 
-    const cells = [...doc.querySelectorAll(".scp-hero-stat")];
-    const rankCell = cells.find((cell) =>
-      /pos rank/i.test(cell.querySelector(".scp-hero-stat-label").textContent),
+    const cells = [...doc.querySelectorAll(".scp-pboard-stats > div")];
+    const rankCell = cells.find(
+      (cell) =>
+        /pos rank/i.test(cell.querySelector("dt").textContent) &&
+        cell.querySelector("dd").textContent.trim() !== "\u2014",
     );
     const current = doc.querySelector(".scp-peer.is-current .scp-peer-rank");
     assert.ok(current, "the reader's card carries its rank");
@@ -2809,7 +2667,7 @@ describe("the positional peers rail", () => {
     if (rankCell) {
       assert.equal(
         current.textContent.trim(),
-        rankCell.querySelector(".scp-hero-stat-value").textContent.trim(),
+        rankCell.querySelector("dd").textContent.trim(),
         "one player, one positional rank, whatever measure produced it",
       );
     }
@@ -2831,14 +2689,27 @@ describe("the positional peers rail", () => {
     }
   });
 
-  test("stands under whichever tab is open", async () => {
+  test("stands above the Overview's FAQ, and under every other tab", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const rail = doc.querySelector(".scp-peers");
-    assert.ok(rail);
+    const inside = doc.querySelector("#overview > .scp-peers");
+    assert.ok(inside, "the Overview carries the rail");
     assert.equal(
-      rail.closest("[data-scp-panel]"),
+      inside.nextElementSibling?.firstElementChild?.getAttribute("aria-labelledby"),
+      "scp-ox-faq-h",
+      "directly above the FAQ",
+    );
+    const outside = doc.querySelector(".scp-peers-out > .scp-peers");
+    assert.ok(outside, "and the other tabs keep theirs");
+    assert.equal(
+      outside.closest("[data-scp-panel]"),
       null,
       "outside the panels, or it would vanish with its tab",
+    );
+    const css = await get("/player.css");
+    assert.match(
+      css.body,
+      /\.scp:has\(> #overview\.is-active\) > \.scp-peers-out \{\s*display: none;/,
+      "the outside copy stands down while the Overview is open",
     );
 
     // And on a section-scoped page too, which is that page's version of a tab.
@@ -2906,10 +2777,27 @@ describe("the embedded fragment", () => {
       .filter((json) => json["@type"] === "FAQPage");
     assert.equal(nodes.length, 1, "exactly one FAQPage on the profile");
 
-    const rendered = [...doc.querySelectorAll(".scp-faq-item")].map((item) => ({
-      question: item.querySelector(".scp-faq-q").textContent.trim(),
-      answer: item.querySelector(".scp-faq-a").textContent.trim(),
-    }));
+    // Every FAQ on the page, the Overview's <details> included, in document
+    // order — and each question once, as the node lists it.
+    const seen = new Set();
+    const rendered = [...doc.querySelectorAll(".scp-faq-item, .scp-ox-faq details")]
+      .map((item) =>
+        item.matches("details")
+          ? {
+              question: item.querySelector("summary").textContent.trim(),
+              answer: item.querySelector("p").textContent.trim(),
+            }
+          : {
+              question: item.querySelector(".scp-faq-q").textContent.trim(),
+              answer: item.querySelector(".scp-faq-a").textContent.trim(),
+            },
+      )
+      .filter((item) => {
+        const key = item.question.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     // Only meaningful while the profile really does carry more than one tab's
     // worth; a fixture that lost its FAQs would otherwise pass this silently.
     assert.ok(
@@ -3016,7 +2904,7 @@ describe("the embedded fragment", () => {
     const { doc, h1, text } = h1Of((await get(`/embed/player/${fixture.slug}?h1=1`)).body);
     assert.equal(text, `${fixture.name} Fantasy Football Stats & Analysis`);
     assert.ok(h1.matches("#overview h1.scp-h2"), "the opening panel's heading, promoted");
-    assert.ok(doc.querySelector(".scp-hero h2.scp-title"), "the hero's name stays an H2");
+    assert.ok(doc.querySelector("header.scp-phead h2.scp-phead-h1"), "the header stays an H2");
   });
 
   test("?h1=1: each section page's H1 is its own phrase", async () => {
@@ -3028,7 +2916,7 @@ describe("the embedded fragment", () => {
       const res = await get(`/embed/player/${fixture.slug}?section=${section}&h1=1`);
       const { doc, text } = h1Of(res.body);
       assert.match(text, want, section);
-      assert.ok(doc.querySelector(".scp-hero h2.scp-title"), `${section}: the name stays an H2`);
+      assert.ok(doc.querySelector("header.scp-phead h2.scp-phead-h1"), `${section}: the name stays an H2`);
     }
   });
 
@@ -3335,9 +3223,14 @@ describe("player section URLs", () => {
       const h1 = doc.querySelectorAll("h1");
       assert.equal(h1.length, 1, `${id}: exactly one H1`);
       assert.equal(
-        h1[0].textContent.replace(/\s+/g, " ").trim(),
+        h1[0].querySelector(".scp-phead-name")?.textContent.trim(),
         fixture.name,
-        `${id}: the H1 is the player, and only the player`,
+        `${id}: the H1 names the player`,
+      );
+      assert.equal(
+        h1[0].querySelector(".scp-phead-kind")?.textContent,
+        doc.querySelector(`.scp-nav-link[data-scp-panel-id="${id}"]`)?.getAttribute("data-scp-kind"),
+        `${id}: under the subtitle its own tab link carries`,
       );
 
       const own = panels[0].querySelector(".scp-h2");
@@ -3466,8 +3359,14 @@ describe("player section URLs", () => {
     );
     assert.equal(
       heading.textContent.replace(/\s+/g, " ").trim(),
-      landed,
-      "the H1 did not follow — the hero is the player on every tab",
+      `${fixture.name} ${tab.getAttribute("data-scp-kind")}`,
+      "the H1's subtitle follows the tab",
+    );
+    const tag = target.replace(/[^a-z0-9]/gi, "");
+    assert.equal(
+      doc.querySelector(".scp-pbtn--line").getAttribute("data-cta"),
+      `redraft-command-header-${tag}`,
+      "and so does the analytics tag on the header's buttons",
     );
 
     // Nothing loaded: the other panels are still in the document, which is what
@@ -3630,8 +3529,7 @@ describe("player section URLs", () => {
  * on the page they are already on must not leave them holding a different one.
  *
  * These used to be driven through the scoring toggle, which was the first and
- * loudest member of this family. The control bar trades it for the start/sit
- * button now (see renderStartSit), so the season chips — same wiring, same
+ * loudest member of this family. It is gone from the control bar, so the season chips — same wiring, same
  * pageUrl(), same swap — are what exercises it.
  */
 describe("a state swap", () => {
@@ -3760,7 +3658,7 @@ describe("the player index", () => {
     // other fragment here already did. Asserted rather than merely untested,
     // because the markup is easy to put back by habit.
     const { doc } = await dom("/player");
-    assert.equal(doc.querySelectorAll(".scp-hero").length, 0);
+    assert.equal(doc.querySelectorAll(".scp-phead").length, 0);
     assert.equal(doc.querySelectorAll("h1").length, 0);
     // The title tag still names the page — the heading went, not the page.
     assert.equal(doc.title, "NFL Player Pages | StatChasers");

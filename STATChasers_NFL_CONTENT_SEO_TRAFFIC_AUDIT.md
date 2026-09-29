@@ -77,7 +77,16 @@ Paths are relative to the repo root.
 >   - The game-log builder never writes an empty season.
 >   - Runbook for the rest: `docs/SEASON-ROLLOVER.md`.
 >
-> Still open: remaining P2/P3 cleanup.
+> **Update 2026-09-29: P2/P3 pass.** Most P2/P3 items were already fixed in the code: postseason matchup rewrites, `?adv=` forwarding, the section-sitemap shortcode check, flush-fresh vs flush-all, the matchup breadcrumb, the RB-handcuffs `mainEntity` guard, `getFpaDelta`, the `X-Forwarded-Host` check, `X-Powered-By`/source maps, the version fallback, the committed token, depth-charts partial refresh, atomic writes, the nested `<a>` and the bare-page canonical, the schedule rewrite self-heal, and the empty-state 404s. New in this pass:
+> - Club RSS feeds are fetched with `If-None-Match`/`If-Modified-Since`, and a 304 answers with the last items (`tests/club-feed-conditional.test.mjs`).
+> - The club sweep's timer is off in the dev workspace, the same as the wire (`SC_DEV_INGEST=1` turns both on).
+> - App-host `robots.txt` disallows `/*?season=` and `/*&season=`.
+> - Depth charts 1.6.2 drops the bare tool page from Rank Math's page sitemap (its canonical is `/fantasy/`, which the plugin's own sitemap already lists).
+>
+> Still open, by decision:
+> - **Roster island:** 30 KB raw / 12 KB gzipped per player page. Inert JSON, parsed only when someone types. Inlining it was a deliberate design choice (no cross-origin fetch), and the saving did not justify reversing that.
+> - **Owner decisions:** the six `[statchasers_nfl_hub]` links (verify live first); the depth-charts "popular view" links that canonicalise to `/fantasy/`; server-rendering the depth-chart table; data-dated section `lastmod`; app-host trailing-slash canonicals (noindex host, low value).
+> - **Needs a live check:** everything marked REQUIRES RUNTIME VERIFICATION.
 
 # Executive Summary
 

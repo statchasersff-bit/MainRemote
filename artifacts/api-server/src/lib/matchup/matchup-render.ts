@@ -18,10 +18,9 @@
  * the window means the history block is absent, not a sentence about rivalry.
  */
 
-import { escapeHtml } from "../render";
+import { escapeHtml, escapeJsonLd } from "../render";
 import {
   ARROW,
-  fixtureTags,
   gameDateLine,
   h2,
   injurySeverity,
@@ -38,18 +37,49 @@ import {
 } from "../team-render";
 import { gameSegment, type MatchupGameRef } from "./pair";
 import type { NflTeam } from "../team/teams";
+import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
+import { logger } from "../logger";
+import { loadPlayers } from "../player/data";
+import { appearances } from "./appearances";
+import { buildGamePlayers, nameKey, type GamePlayers } from "./game-players";
+import { renderLeadersStrip } from "./leaders-strip";
+import { renderScoringSummary, validateScoringPlays } from "./scoring-summary";
+import { historyForPair } from "./rivalry-data";
+import { rivalryIntroFor } from "./rivalry-notes";
+import {
+  allTimeSummary,
+  divisionRivalsSince,
+  validateAllTime,
+  type RivalryGame,
+  type RivalryInput,
+} from "./rivalry";
+import {
+  heroSideFill,
+  renderScoreboardHero,
+  scoreboardSportsEvent,
+  type ScoreboardGame,
+  type ScoreboardTeam,
+} from "./scoreboard-hero";
+import { buildRecap, renderRecap, START_SIT_URL } from "./recap";
+import { recapNotes } from "./recap-notes";
+import {
+  recapFaq,
+  recapFaqSchema,
+  renderRecapBody,
+  type BodyTeam,
+  type RecapBodyInput,
+} from "./recap-body";
 import { headshotUrl } from "../team/roster";
 import { ordinal, type StatRow, type TeamStats } from "../team/stats";
 import type { ScheduleGame } from "../team/schedule";
 import type { TeamPageData } from "../team/team-data";
 import type { FpaRow } from "../fpa/fpa-data";
 import { FANTASY_POSITIONS, type FantasyPosition } from "../fpa/nflverse";
-import type { MatchupData, Meeting } from "./matchup-data";
+import { HISTORY_SEASONS, type MatchupData, type Meeting } from "./matchup-data";
 import {
   boxLineFor,
   boxStatsFor,
   formatClock,
-  periodLabel,
   type BoxTeamStats,
 } from "./boxscore";
 import type {
@@ -58,7 +88,6 @@ import type {
   PassingRow,
   ReceivingRow,
   RushingRow,
-  Takeaway,
   TeamUsage,
   UsageRow,
   UsageSlice,
@@ -103,8 +132,6 @@ export function matchupTitle(data: MatchupData): string {
 
 /* ------------------------------------------------------------------ atoms */
 
-const DOT = `<span class="sct-dot" aria-hidden="true"></span>`;
-
 /**
  * The meeting list's week, short enough for a narrow column.
  *
@@ -126,14 +153,6 @@ function shortWeek(meeting: Meeting): string {
   return SHORT_ROUNDS[label.toLowerCase()] ?? label.toUpperCase();
 }
 
-/** "Week 8 · Sun, Oct 25 · 4:25 PM ET", from whatever parts a meeting has. */
-function whenLine(meeting: Meeting): string {
-  const when = gameDateLine(asGame(meeting));
-  const parts = [meeting.weekLabel, when.date];
-  if (when.time) parts.push(when.time);
-  return parts.map(escapeHtml).join(DOT);
-}
-
 /**
  * A meeting in the shape the shared game helpers take. They read a game from
  * one team's side; for date and tag purposes the side does not matter, so the
@@ -153,16 +172,13 @@ function asGame(meeting: Meeting): ScheduleGame {
     opponentName: meeting.away.fullName,
     venue: meeting.venue,
     venueCity: meeting.venueCity,
+    venueState: meeting.venueState,
     international: false,
     divisional: meeting.home.division === meeting.away.division,
     network: meeting.network,
     status: meeting.status,
     result: null,
   };
-}
-
-function record(side: TeamPageData): string {
-  return side.profile?.record ? escapeHtml(side.profile.record) : "";
 }
 
 /* ------------------------------------------------------------------- hero */
@@ -178,7 +194,7 @@ function record(side: TeamPageData): string {
 function isPostgame(data: MatchupData): boolean {
   // A game address is a recap by definition — that is the whole reason it is a
   // separate URL. It does not age out, because nothing on it is advice: on a
-  // dated page the takeaways and the usage are what happened in that week, read
+  // dated page the stats and the usage are what happened in that week, read
   // by someone who came looking for that week.
   if (data.pinned) return data.pinned.score !== null;
 
@@ -205,378 +221,461 @@ function describesNow(data: MatchupData): boolean {
 }
 
 /**
- * The hero's heading.
- *
- * A game address says which game in its H1, because that is what separates it
- * from the pair's page — two pages headed "New England Patriots vs Seattle
- * Seahawks" are two pages competing for one query.
- */
-function heroHeading(data: MatchupData): string {
-  const names = matchupTitle(data);
-  return data.pinned
-    ? `${names}, ${data.pinned.weekLabel} ${data.pinned.season}`
-    : names;
-}
-
-/**
  * Whether the featured meeting has a result to describe at all.
  *
  * Wider than isPostgame(): a pair whose last meeting was three seasons ago
  * still has a box score worth printing, and "patriots vs eagles 2023 player
- * stats" is a real search. What it does NOT get is the recap layout — the
- * takeaways are advice for the coming week, and three-year-old advice is not
- * evergreen content, it is wrong content.
+ * stats" is a real search.
  */
 function hasResult(data: MatchupData): boolean {
   return data.featured?.status === "final" && data.featured.score !== null;
 }
 
 /**
- * The quarter-by-quarter line, which is the thing a score page has and a
- * fixture page does not.
+ * The pair's own address when no meeting is coming: the recap layout, built on
+ * the latest game, so the pair page reads like the game pages under it.
  *
- * Two rows and five or six columns carrying the shape of the whole game — who
- * led at the half, who scored last, whether it needed overtime — in less space
- * than the sentence describing it. Absent entirely when the box score did not
- * load; there is no version of this table built from a final score alone.
  */
-function renderLinescore(data: MatchupData): string {
-  const box = data.boxscore;
-  const meeting = data.featured;
-  if (!box || !meeting) return "";
-
-  const lines = [boxLineFor(box, meeting.away), boxLineFor(box, meeting.home)];
-  if (lines.some((line) => line === null)) return "";
-
-  const columns = Array.from({ length: box.periodCount }, (_, i) => periodLabel(i));
-
-  const row = (line: NonNullable<(typeof lines)[number]>): string => {
-    const team = line.team;
-    const won = meeting.winner?.abbreviation === team?.abbreviation;
-    return (
-      `<tr${won ? ` class="is-winner"` : ""}>` +
-      `<th scope="row" class="sct-mu-ls-team">` +
-      (team
-        ? `<img class="sct-mu-ls-logo" src="${escapeHtml(team.logo)}" alt=""` +
-          ` width="20" height="20" loading="lazy" decoding="async" />`
-        : "") +
-      `<span>${escapeHtml(team?.code.toUpperCase() ?? line.abbr)}</span>` +
-      `</th>` +
-      columns
-        .map(
-          (_, i) =>
-            `<td class="sct-mu-ls-q">${escapeHtml(String(line.periods[i] ?? 0))}</td>`,
-        )
-        .join("") +
-      `<td class="sct-mu-ls-total">${escapeHtml(String(line.total))}</td>` +
-      `</tr>`
-    );
-  };
-
-  return (
-    `<table class="sct-mu-linescore">` +
-    `<caption class="sct-visually-hidden">Scoring by quarter</caption>` +
-    `<thead><tr>` +
-    `<th scope="col"><span class="sct-visually-hidden">Team</span></th>` +
-    columns.map((label) => `<th scope="col">${escapeHtml(label)}</th>`).join("") +
-    `<th scope="col" class="sct-mu-ls-total">T</th>` +
-    `</tr></thead>` +
-    `<tbody>${lines.map((line) => row(line!)).join("")}</tbody>` +
-    `</table>`
-  );
+function isHistoricalRecap(data: MatchupData): boolean {
+  return !data.pinned && data.matchupState === "historical" && hasResult(data);
 }
 
-/** The dot the eyebrow joins on, as text rather than as the decorative span. */
-const DOT_TEXT = " · ";
+/**
+ * The featured meeting as the scoreboard hero's game object.
+ *
+ * Home and away are the meeting's, which meetingFrom() read off ESPN's own
+ * `homeAway` field for the team whose schedule it came from — never the pair's
+ * order, which is alphabetical. The quarters are the box score's, looked up by
+ * team rather than by position, and the hero sums them: the total it prints is
+ * the line it prints, by construction.
+ *
+ * With no line score (ESPN's summary is a separate upstream and does fail) a
+ * final keeps its score through `score`, which the hero reads only then.
+ */
+export function matchupScoreboardGame(data: MatchupData): ScoreboardGame | null {
+  const meeting = data.featured;
+  if (!meeting) return null;
+
+  const status =
+    meeting.status === "final" && meeting.score
+      ? "final"
+      : meeting.status === "live"
+        ? "in_progress"
+        : meeting.status === "final"
+          ? null
+          : "upcoming";
+  if (!status) return null;
+
+  const playoff = meeting.seasonType === "post";
+  const superBowl = /super bowl/i.test(meeting.weekLabel);
+  // The conference is what makes "Wild Card" a particular Wild Card game. Two
+  // teams from one conference are the only pairs that can meet before the
+  // Super Bowl, so the pair says which conference it is.
+  const conference =
+    playoff && !superBowl && meeting.home.conference === meeting.away.conference
+      ? `${meeting.home.conference} `
+      : "";
+
+  const team = (club: NflTeam, side: "home" | "away"): ScoreboardTeam => {
+    const line = status === "upcoming" ? null : boxLineFor(data.boxscore, club);
+    return {
+      abbr: club.code.toUpperCase(),
+      name: club.fullName,
+      short: club.nickname,
+      quarters: status === "upcoming" ? [] : line ? line.periods.slice(0, 4) : null,
+      ot:
+        line && line.periods.length > 4
+          ? line.periods.slice(4).reduce((sum, n) => sum + n, 0)
+          : null,
+      score: line ? null : (meeting.score?.[side] ?? null),
+      logoUrl: club.logo,
+      url: getTeamHubUrl(club),
+    };
+  };
+
+  return {
+    status,
+    seasonLabel: String(meeting.season),
+    gameType: playoff ? "playoff" : "regular",
+    roundLabel: `${conference}${meeting.weekLabel}`,
+    kickoff: meeting.kickoffMs === null ? null : new Date(meeting.kickoffMs).toISOString(),
+    timeConfirmed: meeting.timeConfirmed,
+    venue: meeting.venue
+      ? {
+          name: meeting.venue,
+          city: meeting.venueCity,
+          state: meeting.venueState,
+          neutral: meeting.neutralSite,
+        }
+      : null,
+    away: team(meeting.away, "away"),
+    home: team(meeting.home, "home"),
+  };
+}
+
+/** The heading's id, which the hero's aria-labelledby points at. */
+const HERO_HEADING_ID = "sct-mu-title";
 
 /**
- * The hero, on whichever side of kickoff the page is standing.
+ * The hero: the scoreboard for the featured meeting.
  *
- * A finished game's hero IS the scoreboard: the reader arriving from "patriots
- * vs seahawks score" used to meet the fixture twice and the number once, half
- * a page down, so the two were merged into one object above the fold. The
- * fixture hero was never brought with it. It stayed a title block on the left
- * with a stack of crest-over-code-over-record parked on the right and the
- * kickoff squeezed into the subtitle — a second hero, in a second shape, for
- * the same two teams.
+ * A game address is headed by its game, in the scoreboard's own wording. The
+ * pair's address keeps the pair's name, because that URL outlives any one
+ * meeting and its H1 must not change when the next one is featured.
  *
- * There is one shape now, and it is the postgame one: eyebrow and title
- * centred over a horizontal board, each side a row of crest, name over record
- * and — on a final only — the number, the two sides meeting at a join in the
- * middle. Under it the venue and the kickoff; under that, on a final, the
- * quarter line. What changes between the two states is what the board has to
- * say, not how the page is built.
- *
- * Both sides are built by the same call in the same order and the right-hand
- * one is reversed in CSS, so the two are mirror images by construction rather
- * than by two orders kept in step by hand.
+ * Embedded, the heading is an H2 marked `data-sct-hero-heading`: the plugin
+ * promotes it to the page's H1 when it is the one supplying the heading, and
+ * leaves it an H2 under a theme that prints its own. An older plugin, which
+ * prints its own H1 above the fragment, therefore still gets exactly one.
  */
 function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
   const headingTag = options.embed ? "h2" : "h1";
-  const meeting = data.featured;
+  const game = matchupScoreboardGame(data);
+  if (game) {
+    return renderScoreboardHero(game, {
+      headingTag,
+      headingId: HERO_HEADING_ID,
+      heading: data.pinned ? undefined : matchupTitle(data),
+    });
+  }
 
-  // The number is printed on the page that is about the number, and nowhere
-  // else: isPostgame() is the whole condition, so a meeting three seasons old
-  // keeps the fixture board and its result stays in Head-to-Head, where the
-  // reader is asking about it in the past tense.
-  const result =
-    isPostgame(data) && meeting?.score
-      ? { meeting, score: meeting.score }
-      : null;
-
-  // Away first, home second, as every scoreboard reads. With no featured game
-  // — or one at a neutral site, where there is no host to put second — the
-  // pair's own order stands and the join is "vs".
-  const board = meeting && (result || !meeting.neutralSite) ? meeting : null;
-  const left = board ? board.away : data.pair.a;
-  const right = board ? board.home : data.pair.b;
-  const leftData = left.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
-  const rightData = right.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
-  const join = result ? "&ndash;" : board ? "@" : "vs";
-
-  // "Final", or "Final/OT" when the line score says it took longer. Read off
-  // the periods actually played rather than asserted: four quarters is four
-  // columns, and anything past that happened.
-  const periods = data.boxscore?.periodCount ?? 4;
-  const status = result
-    ? periods > 4
-      ? `Final${periods > 5 ? `/${periods - 4}OT` : "/OT"}`
-      : "Final"
-    : meeting?.status === "live"
-      ? "Live"
-      : data.matchupState === "upcoming"
-        ? "Upcoming"
-        : "";
-
-  // The meeting the hero is actually describing — which is not every meeting
-  // it can draw. An evergreen pair page boards the last one the two played,
-  // and printing that game's stadium and date under the crests would date a
-  // page whose subject is the rivalry: the meeting has its own section, with
-  // its own year on it. So the metadata row is filled from a game the reader
-  // is either waiting for or has just watched, and from nothing else.
-  const subject = result ? result.meeting : status ? meeting : null;
-
-  // The same two inks the rest of the page resolves teams to, so a side's tint
-  // here and its bars further down are never two different navies — and so the
-  // pairs that genuinely share a primary (Patriots and Seahawks are both
-  // #002244) still come out as two distinguishable sides. See pairColors().
-  const color = matchupColors(data.pair);
-
-  const side = (team: NflTeam, which: "left" | "right"): string => {
-    const teamData =
-      team.abbreviation === data.pair.a.abbreviation ? data.a : data.b;
-    const won = result?.meeting.winner?.abbreviation === team.abbreviation;
-    const mark = record(teamData);
-    const points = result ? result.score[which === "left" ? "away" : "home"] : null;
-    return (
-      // is-right is what reverses the row, so the home crest sits on the
-      // outside and the home number beside the join — the mirror of the away
-      // side. The ink is the side's own tint, which is what gives each half of
-      // the strip its structure without a divider ruled down the middle of it.
-      `<div class="sct-mu-strip-side${which === "right" ? " is-right" : ""}${won ? " is-winner" : ""}"` +
-      styleAttr([`--mu-side-ink:${color(team)}`]) +
-      `>` +
-      `<img class="sct-mu-strip-logo" src="${escapeHtml(team.logo)}" alt=""` +
-      ` width="56" height="56" loading="lazy" decoding="async" />` +
-      `<span class="sct-mu-strip-who">` +
-      // Nickname and code, one of which is showing at any width. Below 640px a
-      // nickname truncates to "PATRI…" between a 34px crest and a 40px number,
-      // and an ellipsis is a worse label than the three letters every scoreboard
-      // uses. Both are in the markup because the swap is a width question and
-      // the server does not know the width; the board is aria-hidden either way,
-      // so nothing is announced twice.
-      `<span class="sct-mu-strip-name">${escapeHtml(team.nickname)}</span>` +
-      `<span class="sct-mu-strip-code">${escapeHtml(team.code.toUpperCase())}</span>` +
-      (mark ? `<span class="sct-mu-strip-record">${mark}</span>` : "") +
-      `</span>` +
-      (points === null
-        ? ""
-        : `<span class="sct-mu-strip-score">${escapeHtml(String(points))}</span>`) +
-      `</div>`
-    );
-  };
-
-  // Season, round, and one word for where the game stands, in that order
-  // whether it is coming or gone. The status is NOT repeated below: it was
-  // also the first word of the metadata line and — before the board was
-  // rebuilt — the thing the middle of the board wanted to say, and three
-  // "Final"s in forty vertical pixels is not emphasis. With no meeting to
-  // stand on, the pair's own line stands instead.
-  const eyebrow =
-    meeting && status
-      ? `${meeting.season} NFL${DOT_TEXT}${meeting.weekLabel}${DOT_TEXT}${status}`
-      : `NFL Matchup${DOT_TEXT}${data.state.season} Season`;
-
-  const when = subject ? gameDateLine(asGame(subject)) : null;
-  // gameDateLine() already spells the zone into `time`, so nothing is appended
-  // here — doing it anyway printed "8:20 PM ET ET". On a game already played an
-  // unconfirmed kickoff is noise; on one still to come "Time TBD" is the answer
-  // to the question the reader arrived with, so it stays.
-  const whenParts = when
-    ? [when.date, result && when.time === "Time TBD" ? "" : when.time]
-        .filter(Boolean)
-        .map(String)
-    : [];
-  const where = subject ? [subject.venue].filter(Boolean).map(String) : [];
-
-  // Where it happened and when — or, on a page with no current game to put
-  // there, what the page is. Never both: an empty metadata row and a floating
-  // sentence are the same slot asked to do two jobs.
-  const meta =
-    where.length || whenParts.length
-      ? `<p class="sct-mu-strip-meta">` +
-        (where.length
-          ? `<span class="sct-mu-strip-where">${escapeHtml(where.join(" · "))}</span>`
-          : "") +
-        (where.length && whenParts.length ? DOT : "") +
-        (whenParts.length
-          ? `<span class="sct-mu-strip-when">${escapeHtml(whenParts.join(" · "))}</span>`
-          : "") +
-        `</p>`
-      : `<p class="sct-mu-strip-note">` +
-        escapeHtml("Head-to-head record, team stats, injuries and recent meetings") +
-        `</p>`;
-
-  // The board is crests and numbers; read out cell by cell it is an alphabet.
-  // This is the same fact as a sentence.
-  const spoken = result
-    ? result.meeting.winner
-      ? `${result.meeting.winner.fullName} beat ` +
-        `${(result.meeting.winner.abbreviation === result.meeting.home.abbreviation ? result.meeting.away : result.meeting.home).fullName} ` +
-        `${Math.max(result.score.home, result.score.away)}–${Math.min(result.score.home, result.score.away)}` +
-        ` in the ${result.meeting.weekLabel} of the ${result.meeting.season} season` +
-        (result.meeting.neutralSite || !result.meeting.venue
-          ? "."
-          : ` at ${result.meeting.venue}.`)
-      : `${result.meeting.away.fullName} and ${result.meeting.home.fullName} tied ` +
-        `${result.score.away}–${result.score.home} in the ${result.meeting.weekLabel} of the ${result.meeting.season} season.`
-    : `${left.fullName}${record(leftData) ? ` (${leftData.profile?.record})` : ""} ` +
-      `${join === "@" ? "at" : "versus"} ` +
-      `${right.fullName}${record(rightData) ? ` (${rightData.profile?.record})` : ""}`;
-
+  // No meeting in the window at all, which is two clubs from different
+  // conferences in a bad year for the schedule, or ESPN down for all of it:
+  // the panel, the names, and nothing invented to fill the board.
   return (
-    `<header class="sct-hero sct-mu-hero${result ? " is-final" : ""}">` +
-    // No aura. It is a 320px team-coloured blur anchored to the hero's
-    // top-left corner, and on a board with two sides there is no one crest for
-    // it to sit behind; the side tints below do the same job in the right
-    // places. The decor layer stays for the hairline of team colour it draws
-    // across the top.
-    `<span class="sct-hero-decor" aria-hidden="true"></span>` +
-    `<div class="sct-mu-strip-inner">` +
-    // NOT `.sct-hero-text`. That class is the HUB hero's named grid area —
-    // `grid-area: text`, which only means anything inside `.sct-hero-inner`'s
-    // `grid-template-areas`. This grid has no named areas, and a name that
-    // matches no line is resolved against the IMPLICIT grid rather than
-    // ignored: the block was pushed into a column of its own, the board and
-    // the meta line auto-placed into the first, and the hero came apart into
-    // two columns with the title stranded at the bottom of the right-hand one.
-    // Everything the borrowed class was actually contributing — `min-width: 0`
-    // — is on `.sct-mu-strip-text` in team.css instead.
-    `<div class="sct-mu-strip-text">` +
-    `<p class="sct-eyebrow">${escapeHtml(eyebrow)}</p>` +
-    `<${headingTag} class="sct-title sct-mu-strip-title">${escapeHtml(heroHeading(data))}</${headingTag}>` +
-    `</div>` +
-    `<div class="sct-mu-strip-board" aria-hidden="true">` +
-    side(left, "left") +
-    // A dash on a final, not "@". The "@" was the only thing on the board
-    // naming the home side, but it was also a character doing that job in the
-    // one position the eye lands on first — between the two numbers, where the
-    // reader is asking "what was the score", not "who was at home". Before
-    // kickoff there are no numbers to separate and the question is exactly the
-    // other one, so the fixture board keeps it.
-    `<span class="sct-mu-strip-join">${join}</span>` +
-    side(right, "right") +
-    `</div>` +
-    `<p class="sct-visually-hidden">${escapeHtml(spoken)}</p>` +
-    meta +
-    (result ? renderLinescore(data) : "") +
-    `</div>` +
+    `<header class="sct-sbh is-bare" data-status="none" aria-labelledby="${HERO_HEADING_ID}"` +
+    styleAttr([
+      `--sbh-away:${heroSideFill(data.pair.a.code)}`,
+      `--sbh-home:${heroSideFill(data.pair.b.code)}`,
+    ]) +
+    `>` +
+    `<${headingTag} class="sct-sbh-title" id="${HERO_HEADING_ID}" data-sct-hero-heading>` +
+    `${escapeHtml(matchupTitle(data))}</${headingTag}>` +
+    `<p class="sct-sbh-note">` +
+    escapeHtml("Head-to-head record, team stats, injuries and recent meetings") +
+    `</p>` +
     `</header>`
   );
 }
 
-/* --------------------------------------------------------- featured game */
-
-/** The lead card: the meeting just played, or the last one there was. */
-function renderFeatured(data: MatchupData): string {
+/**
+ * The game recap under the hero: headline, standfirst, and prose written from
+ * the box score — see recap.ts for what it will and will not claim. Absent
+ * without a line score, since every paragraph starts from the quarters.
+ */
+function renderGameRecap(data: MatchupData, options: MatchupRenderOptions): string {
   const meeting = data.featured;
-  if (!meeting) return "";
+  const game = matchupScoreboardGame(data);
+  if (!meeting || !game || game.status !== "final") return "";
 
-  const isResult = meeting.status === "final" && meeting.score !== null;
-  // A card with no score on it. Every line the fixture version drew — season,
-  // round, stadium, kickoff — the hero had already drawn above it, and "Where
-  // to Watch" drew the kickoff and the stadium again directly below: the same
-  // four facts three times, under a heading promising a fifth. The scoreboard
-  // is the only thing this card has that the hero does not, so it renders
-  // when there is a scoreboard and not otherwise. A fixture is announced once.
-  if (!isResult) return "";
-
-  const title = data.matchupState === "recently_completed" ? "Final" : "Last Meeting";
-
-  const tags = fixtureTags(asGame(meeting)).map(
-    (tag) =>
-      `<span class="sct-game-tag" data-kind="${tag.kind}">${escapeHtml(tag.label)}</span>`,
+  const now = options.now ?? Date.now();
+  const next = data.thisSeason.find(
+    (m) =>
+      m !== meeting &&
+      m.status !== "final" &&
+      (m.kickoffMs === null || m.kickoffMs > now),
   );
 
-  // The scoreboard. Away on the left, as every scoreboard writes it, and the
-  // winner carried as a class rather than as a word — the bigger number is
-  // already saying it, and "W" beside it says it twice.
-  const sbSide = (side: "home" | "away"): string => {
-    const team = side === "home" ? meeting.home : meeting.away;
-    const won = meeting.winner?.abbreviation === team.abbreviation;
-    return (
-      `<div class="sct-mu-sb-side${won ? " is-winner" : ""}">` +
-      `<img class="sct-mu-sb-logo" src="${escapeHtml(team.logo)}" alt=""` +
-      ` width="64" height="64" loading="lazy" decoding="async" />` +
-      `<span class="sct-mu-sb-name">${escapeHtml(team.nickname)}</span>` +
-      `<span class="sct-mu-sb-score">${meeting.score?.[side] ?? ""}</span>` +
-      `</div>`
-    );
+  const recap = buildRecap({
+    game,
+    awayCity: meeting.away.city,
+    homeCity: meeting.home.city,
+    awayStats: boxStatsFor(data.boxscore, meeting.away),
+    homeStats: boxStatsFor(data.boxscore, meeting.home),
+    winnerPostseason:
+      data.winnerPostseason?.map((g) => ({
+        round: g.weekLabel,
+        week: g.week,
+        outcome: g.result?.outcome ?? null,
+        teamScore: g.result?.teamScore ?? null,
+        opponentScore: g.result?.opponentScore ?? null,
+        opponent: g.opponent?.nickname ?? g.opponentName,
+      })) ?? null,
+    next: next ? { label: next.weekLabel, season: String(next.season) } : null,
+    notes: recapNotes(
+      data.pair.slug,
+      gameSegment({ season: meeting.season, week: meeting.week, seasonType: meeting.seasonType }),
+    ),
+  });
+  return recap
+    ? renderRecap(recap, {
+        playerNames: Object.values(gamePlayers(data)).map((p) => p.name),
+        playerUrl: getPlayerProfileUrl,
+      })
+    : "";
+}
+
+/* ------------------------------------------------- the game's own players */
+
+let positionsByName: Map<string, string | null> | null = null;
+
+/**
+ * A position from the player dictionary, for a name ESPN's box score gives
+ * without one. A name two players share is left unplaced rather than guessed.
+ */
+function dictionaryPosition(name: string): string | null {
+  if (!positionsByName) {
+    positionsByName = new Map();
+    for (const player of loadPlayers()) {
+      const key = nameKey(player.name);
+      if (!key || player.position === "DEF") continue;
+      positionsByName.set(key, positionsByName.has(key) ? null : player.position);
+    }
+  }
+  return positionsByName.get(nameKey(name)) ?? null;
+}
+
+const playersCache = new WeakMap<MatchupData, GamePlayers>();
+
+/**
+ * Everyone with a line in the featured game: ESPN's box score, or the
+ * Sleeper logs when it has no player block. Memoised per page data, because
+ * the recap's links, the leaders strip and the scoring summary all ask.
+ */
+function gamePlayers(data: MatchupData): GamePlayers {
+  const hit = playersCache.get(data);
+  if (hit) return hit;
+  const box = data.boxscore;
+  const players = data.featured
+    ? buildGamePlayers(
+        box?.players ?? null,
+        box?.players.length ? null : appearances(data.featured),
+        box?.scoringPlays ?? [],
+        dictionaryPosition,
+      )
+    : {};
+  playersCache.set(data, players);
+  return players;
+}
+
+/** The leaders strip, full width under the hero on a recap page. */
+function renderGameLeadersStrip(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  if (!game || game.status !== "final") return "";
+  return renderLeadersStrip({ game, players: gamePlayers(data), playerUrl: getPlayerProfileUrl });
+}
+
+/**
+ * The scoring summary, after "Why won". What does not add up against the
+ * hero's line is logged and the table still prints: the plays are the feed's
+ * own record, and a warning is how a dropped play gets noticed.
+ */
+function renderGameScoring(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  const plays = data.boxscore?.scoringPlays ?? [];
+  if (!game || game.status !== "final" || plays.length === 0) return "";
+  const problems = validateScoringPlays(game, plays);
+  if (problems.length) {
+    logger.warn({ matchup: data.pair.slug, problems }, "Scoring plays do not match the final score");
+  }
+  return renderScoringSummary({ game, plays, playerUrl: getPlayerProfileUrl });
+}
+
+/** Redraft Command's own page, for the sidebar's "Connect your league". */
+const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
+
+/**
+ * The recap body's input, from the page data: the same game object as the
+ * hero, both clubs, the box score, the series and the tool links. Away, home
+ * and each side's score are copied from each meeting's own fields.
+ */
+export function recapBodyInput(
+  data: MatchupData,
+  options: MatchupRenderOptions,
+): RecapBodyInput | null {
+  const game = matchupScoreboardGame(data);
+  const meeting = data.featured;
+  if (!game || !meeting || game.status !== "final") return null;
+
+  const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
+  const matchupPrefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const query = options.linkQuery ?? "";
+  const hasMatchups = (PUBLIC_SECTIONS as readonly string[]).includes("matchups");
+  const bodyTeam = (team: NflTeam): BodyTeam => ({
+    abbr: team.code.toUpperCase(),
+    name: team.fullName,
+    short: team.nickname,
+    singular: team.singular,
+    city: team.city,
+    hub: `${teamPrefix}${team.slug}/${query}`,
+    matchups: hasMatchups ? `${sectionPath(teamPrefix, team.slug, "matchups")}${query}` : null,
+  });
+  const code = (team: NflTeam): string => team.code.toUpperCase();
+
+  // The game this page is about has no link of its own, and nor does one the
+  // pair's own address is still leading with: that dated URL 301s back.
+  const current = (m: Meeting): boolean => m === meeting;
+  // On the historical pair page the featured game keeps its own address, so it
+  // links there like any other meeting.
+  const ownPage = isHistoricalRecap(data);
+  const linked = (m: Meeting): string | null =>
+    (current(m) && !ownPage) || (data.matchupState === "recently_completed" && data.featured === m)
+      ? null
+      : `${gamePath(matchupPrefix, data.pair.slug, {
+          season: m.season,
+          week: m.week,
+          seasonType: m.seasonType,
+        })}${query}`;
+
+  const now = options.now ?? Date.now();
+  const played = [...data.thisSeason, ...data.history].filter(
+    (m) => m.status === "final" && m.score !== null,
+  );
+  const upcoming = data.thisSeason.filter(
+    (m) => m.status === "scheduled" && (m.kickoffMs === null || m.kickoffMs > now),
+  );
+
+  const rivalry = pageRivalry(data, played, linked);
+
+  return {
+    game,
+    rivalry,
+    teams: {
+      [code(data.pair.a)]: bodyTeam(data.pair.a),
+      [code(data.pair.b)]: bodyTeam(data.pair.b),
+    },
+    stats: {
+      away: boxStatsFor(data.boxscore, meeting.away),
+      home: boxStatsFor(data.boxscore, meeting.home),
+    },
+    series: {
+      sinceSeason: data.state.season - HISTORY_SEASONS,
+      games: played.map((m) => ({
+        season: m.season,
+        weekLabel: m.weekLabel,
+        playoff: m.seasonType === "post",
+        kickoff: m.kickoffMs === null ? null : new Date(m.kickoffMs).toISOString(),
+        away: code(m.away),
+        home: code(m.home),
+        awayScore: m.score!.away,
+        homeScore: m.score!.home,
+        neutral: m.neutralSite,
+        url: linked(m),
+        current: current(m),
+      })),
+      upcoming: upcoming.map((m) => ({
+        season: m.season,
+        weekLabel: m.weekLabel,
+        kickoff: m.kickoffMs === null ? null : new Date(m.kickoffMs).toISOString(),
+        timeConfirmed: m.timeConfirmed,
+        away: code(m.away),
+        home: code(m.home),
+        neutral: m.neutralSite,
+        venueCity: m.venueCity,
+      })),
+    },
+    links: {
+      redraftCommand: REDRAFT_COMMAND_URL,
+      startSit: START_SIT_URL,
+      pointsAllowed: getFPAUrl(),
+      strengthOfSchedule: getSOSUrl(),
+    },
+  };
+}
+
+/**
+ * The all-time series input: every complete season from the shipped history,
+ * then this season's finals from the page's own schedule — one list, so the
+ * tiles are counted from a single source. A game with a recap page on this
+ * site carries its URL. Logs when the all-time count disagrees with the
+ * "since" series printed under it.
+ */
+function pageRivalry(
+  data: MatchupData,
+  played: Meeting[],
+  linked: (m: Meeting) => string | null,
+): RivalryInput | null {
+  const { a, b } = data.pair;
+  const history = historyForPair(a.code, b.code);
+  if (!history || history.games.length === 0) return null;
+
+  const same = (g: RivalryGame, m: Meeting): boolean =>
+    g.season === m.season &&
+    g.away === m.away.code.toUpperCase() &&
+    g.home === m.home.code.toUpperCase() &&
+    g.awayScore === m.score!.away &&
+    g.homeScore === m.score!.home;
+
+  const games = history.games;
+  for (const g of games) {
+    const m = played.find((x) => same(g, x));
+    if (m) g.url = linked(m);
+  }
+  for (const m of played) {
+    if (m.season <= history.throughSeason) continue;
+    games.push({
+      season: m.season,
+      date: m.kickoffMs === null ? `${m.season}-12-31` : new Date(m.kickoffMs).toISOString().slice(0, 10),
+      away: m.away.code.toUpperCase(),
+      home: m.home.code.toUpperCase(),
+      awayScore: m.score!.away,
+      homeScore: m.score!.home,
+      playoff: m.seasonType === "post",
+      url: linked(m),
+    });
+  }
+
+  const shared = a.division === b.division;
+  const rivalry: RivalryInput = {
+    intro: rivalryIntroFor(data.pair.slug),
+    divisionName: shared ? a.division : null,
+    divisionRivalsSince: shared
+      ? divisionRivalsSince(games, a.code, b.code, history.throughSeason)
+      : null,
+    allGames: games,
   };
 
-  const score = meeting.score
-    ? `<div class="sct-mu-scoreboard">` +
-      sbSide("away") +
-      `<span class="sct-mu-sb-sep" aria-hidden="true">–</span>` +
-      sbSide("home") +
-      `</div>` +
-      // The result as a sentence, for a screen reader reading the numbers
-      // out of a grid that only makes sense to the eye.
-      `<p class="sct-visually-hidden">${escapeHtml(
-        meeting.winner
-          ? `${meeting.winner.nickname} won ${Math.max(meeting.score.home, meeting.score.away)}–${Math.min(meeting.score.home, meeting.score.away)}`
-          : `Tied ${meeting.score.home}–${meeting.score.away}`,
-      )}</p>`
-    : "";
+  const summary = allTimeSummary(rivalry, a.code, b.code);
+  if (summary) {
+    const wins: Record<string, number> = { [a.code]: 0, [b.code]: 0 };
+    let ties = 0;
+    for (const m of played) {
+      const { away, home } = m.score!;
+      if (away === home) ties += 1;
+      else wins[(away > home ? m.away : m.home).code] = (wins[(away > home ? m.away : m.home).code] ?? 0) + 1;
+    }
+    const problems = validateAllTime(summary, { wins, ties, games: played.length });
+    if (problems.length) {
+      logger.warn({ matchup: data.pair.slug, problems }, "All-time series disagrees with the recent series");
+    }
+  }
+  return rivalry;
+}
 
-  // The stadium alone. The broadcaster belonged to the fixture version of this
-  // card — who is showing a game that has been played is not a fact anyone
-  // needs — and that version is gone.
-  const where = meeting.venue ? escapeHtml(meeting.venue) : "";
+/** The FAQ's JSON-LD (standalone) or island (embed), on a recap page only. */
+export function matchupFaqSchema(
+  data: MatchupData,
+  options: MatchupRenderOptions,
+  embed: boolean,
+): string {
+  if (!isPostgame(data) && !isHistoricalRecap(data)) return "";
+  const input = recapBodyInput(data, options);
+  return input ? recapFaqSchema(recapFaq(input), embed) : "";
+}
 
-  const home = meeting.neutralSite
-    ? "Neutral site"
-    : `${meeting.home.nickname} host`;
-
+/**
+ * The hero's game as structured data.
+ *
+ * On the standalone page, JSON-LD of its own. Embedded, an inert island the
+ * plugin lifts into Rank Math's graph in the <head> and strips from the markup,
+ * the way the team pages carry their FAQ — a second ld+json script injected
+ * from inside the fragment would compete with the host's graph, not join it.
+ */
+export function matchupEventSchema(data: MatchupData, embed: boolean): string {
+  const game = matchupScoreboardGame(data);
+  const node = game ? scoreboardSportsEvent(game) : null;
+  if (!node) return "";
+  if (embed) {
+    return (
+      `<script type="application/json" class="sct-matchup-event-data">` +
+      escapeJsonLd(JSON.stringify(node)) +
+      `</script>`
+    );
+  }
   return (
-    `<section class="sct-block sct-mu-featured" data-state="${data.matchupState}">` +
-    h2(title) +
-    `<div class="sct-game sct-mu-game is-final">` +
-    `<div class="sct-game-head">` +
-    `<span class="sct-game-week">${escapeHtml(`${meeting.season} · ${meeting.weekLabel}`)}</span>` +
-    `<span class="sct-game-pills">${tags.join("")}` +
-    `<span class="sct-game-pill" data-kind="home">${escapeHtml(home)}</span></span>` +
-    `</div>` +
-    score +
-    renderLinescore(data) +
-    // Beneath the score, and quieter than it. On a final, the date and the
-    // stadium are where it happened, not what happened.
-    `<div class="sct-game-meta">` +
-    `<p class="sct-game-when">${whenLine(meeting)}</p>` +
-    (where ? `<p class="sct-game-where">${where}</p>` : "") +
-    `</div>` +
-    `</div>` +
-    `</section>`
+    `<script type="application/ld+json">` +
+    escapeJsonLd(JSON.stringify({ "@context": "https://schema.org", ...node })) +
+    `</script>`
   );
 }
 
@@ -1042,6 +1141,8 @@ interface StatColumn {
   label: string;
   type: "number" | "text";
   sorted?: boolean;
+  /** Header labels per scoring format, for the column the switch relabels. */
+  formats?: Record<"ppr" | "half" | "std", string>;
 }
 
 /** A numeric column, which is all of them but the name. */
@@ -1067,6 +1168,11 @@ function statTable(
   const header = (column: StatColumn): string =>
     `<th scope="col" data-sort-type="${column.type}"` +
     (column.sorted ? ` data-sort-default="descending"` : "") +
+    (column.formats
+      ? (["ppr", "half", "std"] as const)
+          .map((f) => ` data-fmt-${f}="${escapeHtml(column.formats![f])}"`)
+          .join("")
+      : "") +
     `>${escapeHtml(column.label)}</th>`;
   return (
     `<div class="sct-mu-ps-block">` +
@@ -1082,6 +1188,54 @@ function statTable(
     `</table>` +
     `</div>` +
     `</div>`
+  );
+}
+
+/** The two fantasy columns every stat table ends with; the switch relabels the first. */
+const FANTASY_COLUMNS: StatColumn[] = [
+  { label: "PPR", type: "number", formats: { ppr: "PPR", half: "HALF", std: "STD" } },
+  { label: "FIN", type: "number" },
+];
+
+/**
+ * A cell the scoring switch rewrites: the PPR value as printed, and all three
+ * as attributes — display and sort for each — for the client to swap in.
+ */
+function formatCell(
+  values: Record<"ppr" | "half" | "std", { display: string; sort: number | null }>,
+  className: string,
+): string {
+  const attr = (n: number | null): string => (n === null ? "" : escapeHtml(String(n)));
+  return (
+    `<td class="${className}" data-sort="${attr(values.ppr.sort)}"` +
+    (["ppr", "half", "std"] as const)
+      .map(
+        (f) =>
+          ` data-fmt-${f}="${escapeHtml(values[f].display)}" data-fmt-sort-${f}="${attr(values[f].sort)}"`,
+      )
+      .join("") +
+    `>${escapeHtml(values.ppr.display)}</td>`
+  );
+}
+
+function fantasyCell(row: FantasyRow | null): string {
+  const v = (n: number | undefined) =>
+    n === undefined ? { display: "—", sort: null } : { display: n.toFixed(1), sort: n };
+  return formatCell({ ppr: v(row?.ppr), half: v(row?.half), std: v(row?.standard) }, "is-key sct-mu-fp");
+}
+
+/**
+ * "WR6". Sorts on the rank alone, so WR6 and RB17 order as 6 and 17 — best
+ * week at the position first. No finish is no value, not a zero.
+ */
+function finishCell(row: FantasyRow | null, position: string | null): string {
+  const v = (rank: number | null | undefined) =>
+    rank === null || rank === undefined || !position
+      ? { display: "—", sort: null }
+      : { display: `${position}${rank}`, sort: rank };
+  return formatCell(
+    { ppr: v(row?.positionFinish), half: v(row?.halfFinish), std: v(row?.standardFinish) },
+    "sct-mu-fin",
   );
 }
 
@@ -1115,14 +1269,25 @@ function statCell(
  * category with nobody in it — a game with no completed pass — is absent rather
  * than empty.
  *
- * The Fantasy table is the one nobody else prints. PPR, half and standard are
- * the three scorings this site's readers actually play, and the positional
- * finish is what turns 26.2 points into "the WR3 of the week", which is the
- * number a manager is really asking for.
+ * Every table ends with the fantasy points and positional finish — the figures
+ * nobody else prints beside the line. PPR, half and standard are the three
+ * scorings this site's readers actually play; the server prints PPR and the
+ * client's switch swaps the other two in. The finish is what turns 26.2 points
+ * into "the WR3 of the week", ranked separately in each format.
  */
 function renderPlayerStats(data: MatchupData): string {
   const stats: GameStats | null = data.gameStats;
   if (!stats) return "";
+
+  // Fantasy points and finish ride on each stat table rather than a table of
+  // their own, so a line and what it scored read on one row. The total is the
+  // player's whole game — a quarterback's rushing counts in the Passing table
+  // too — which is why it is the same figure in every table he appears in.
+  const byPlayer = new Map(stats.fantasy.map((row) => [row.player.id, row]));
+  const fantasyCells = (row: { player: { id: string }; position: string | null }): string => {
+    const f = byPlayer.get(row.player.id);
+    return fantasyCell(f ?? null) + finishCell(f ?? null, row.position);
+  };
 
   const passing = stats.passing.map(
     (row: PassingRow) =>
@@ -1136,6 +1301,7 @@ function renderPlayerStats(data: MatchupData): string {
       statCell(row.touchdowns, row.touchdowns) +
       statCell(row.interceptions, row.interceptions) +
       statCell(row.rating === null ? "—" : row.rating.toFixed(1), row.rating) +
+      fantasyCells(row) +
       `</tr>`,
   );
 
@@ -1147,6 +1313,7 @@ function renderPlayerStats(data: MatchupData): string {
       statCell(row.yards, row.yards, "is-key") +
       statCell(row.average.toFixed(1), row.average) +
       statCell(row.touchdowns, row.touchdowns) +
+      fantasyCells(row) +
       `</tr>`,
   );
 
@@ -1159,25 +1326,7 @@ function renderPlayerStats(data: MatchupData): string {
       statCell(row.yards, row.yards, "is-key") +
       statCell(row.average.toFixed(1), row.average) +
       statCell(row.touchdowns, row.touchdowns) +
-      `</tr>`,
-  );
-
-  const fantasy = stats.fantasy.map(
-    (row: FantasyRow) =>
-      `<tr>` +
-      statName(row) +
-      statCell(row.ppr.toFixed(1), row.ppr, "is-key") +
-      statCell(row.half.toFixed(1), row.half) +
-      statCell(row.standard.toFixed(1), row.standard) +
-      // A finish sorts on the rank alone, so WR6 and RB17 order against each
-      // other as 6 and 17 — best week at the position first. A player with no
-      // finish has no value rather than a zero, or he would lead the column.
-      statCell(
-        row.positionFinish !== null && row.position
-          ? `${row.position}${row.positionFinish}`
-          : "—",
-        row.positionFinish,
-      ) +
+      fantasyCells(row) +
       `</tr>`,
   );
 
@@ -1190,10 +1339,6 @@ function renderPlayerStats(data: MatchupData): string {
   // long one, so stacking the short pair against the long one is what makes the
   // two columns come out roughly level instead of leaving half a screen of
   // white space under a three-row table.
-  //
-  // Fantasy stays out of the row on purpose. It is the table nobody else
-  // prints — three scorings and a positional finish — and it is the one a
-  // reader comes to this page FOR, so it gets the width rather than half of it.
   const passingBlock =
     statTable("Passing", "Passing statistics", [
       col("C/ATT"),
@@ -1201,6 +1346,7 @@ function renderPlayerStats(data: MatchupData): string {
       col("TD"),
       col("INT"),
       col("RATE"),
+      ...FANTASY_COLUMNS,
     ], passing);
 
   const rushingBlock =
@@ -1209,6 +1355,7 @@ function renderPlayerStats(data: MatchupData): string {
       col("YDS", true),
       col("AVG"),
       col("TD"),
+      ...FANTASY_COLUMNS,
     ], rushing);
 
   const receivingBlock =
@@ -1218,14 +1365,8 @@ function renderPlayerStats(data: MatchupData): string {
       col("YDS", true),
       col("AVG"),
       col("TD"),
+      ...FANTASY_COLUMNS,
     ], receiving);
-
-  const fantasyBlock = statTable("Fantasy", "Fantasy statistics", [
-    col("PPR", true),
-    col("HALF"),
-    col("STD"),
-    col("FINISH"),
-  ], fantasy);
 
   // The left column is a column even when it holds one table, so the grid always
   // has the same two children and the row cannot silently become "receiving,
@@ -1233,74 +1374,33 @@ function renderPlayerStats(data: MatchupData): string {
   const stack = passingBlock + rushingBlock;
   const board =
     (stack ? `<div class="sct-mu-ps-stack">${stack}</div>` : "") + receivingBlock;
-  if (!board && !fantasyBlock) return "";
-  const blocks = (board ? `<div class="sct-mu-ps-row">${board}</div>` : "") + fantasyBlock;
+  if (!board) return "";
+  const blocks = `<div class="sct-mu-ps-row">${board}</div>`;
 
   return (
     `<section class="sct-block sct-mu-playerstats">` +
+    // The heading and the scoring switch share a row. The client builds the
+    // PPR / Half / Standard switch in the slot; without it the tables stay in
+    // PPR, which is what the server printed.
+    `<div class="sct-mu-ps-head">` +
     h2("Player Stats") +
+    `<div class="sct-mu-scoring-slot" data-sct-scoring-slot></div>` +
+    `</div>` +
     blocks +
-    `<p class="sct-note">${escapeHtml(
-      "Finish is where that PPR score ranked among the league's players at the " +
-        "position in this week. Half and standard follow from the reception count.",
-    )}</p>` +
-    `</section>`
-  );
-}
-
-/* -------------------------------------------------------------- takeaways */
-
-/** The glyph a takeaway leads with, and what it is called out loud. */
-const TAKEAWAY_MARK: Record<Takeaway["direction"], { glyph: string; word: string }> = {
-  up: { glyph: "&uarr;", word: "Role up" },
-  down: { glyph: "&darr;", word: "Role down" },
-  watch: { glyph: "&#9888;", word: "Watch" },
-};
-
-/**
- * What to take away from the game, for next week's lineup.
- *
- * Every card is measured. The comparison is always against the same player's
- * own earlier weeks — "up from 38%" is a fact about the logs — and never
- * against an expectation this server does not hold. A player in his first
- * logged game of the season has no baseline and is described rather than
- * compared; the copy says so rather than quietly comparing him with zero.
- *
- * This is the section that makes the page StatChasers' rather than a box score:
- * the tables above say what happened, and these six cards say which parts of it
- * are worth carrying into the next lineup decision.
- */
-function renderTakeaways(data: MatchupData): string {
-  const takeaways = data.gameStats?.takeaways ?? [];
-  if (takeaways.length === 0) return "";
-
-  const card = (item: Takeaway): string => {
-    const mark = TAKEAWAY_MARK[item.direction];
-    return (
-      `<li class="sct-mu-take" data-direction="${item.direction}">` +
-      `<p class="sct-mu-take-head">` +
-      `<span class="sct-mu-take-mark" aria-hidden="true">${mark.glyph}</span>` +
-      `<span class="sct-visually-hidden">${escapeHtml(`${mark.word}: `)}</span>` +
-      playerName(item.player.name, "sct-mu-take-name") +
-      positionTag(item.position, item.team?.code, "sct-mu-take-tag") +
-      `</p>` +
-      `<p class="sct-mu-take-line">${escapeHtml(item.headline)}</p>` +
-      (item.facts.length
-        ? `<p class="sct-mu-take-facts">${item.facts.map((fact) => escapeHtml(fact)).join(` <span class="sct-injury-dot">·</span> `)}</p>`
-        : "") +
-      `<p class="sct-mu-take-body">${escapeHtml(item.body)}</p>` +
-      `</li>`
-    );
-  };
-
-  return (
-    `<section class="sct-block sct-mu-takeaways">` +
-    h2("Fantasy Takeaways") +
-    `<ul class="sct-mu-take-grid">${takeaways.map(card).join("")}</ul>` +
-    `<p class="sct-note">${escapeHtml(
-      "Each note compares a player with his own season to date, from the weekly " +
-        "logs. Routes run are not published by any free source, so they are not here.",
-    )}</p>` +
+    (byPlayer.size
+      ? `<p class="sct-note">${escapeHtml(
+          "FPTS is fantasy points for the player's whole game, so a quarterback's rushing " +
+            "counts in the Passing table too. FIN is where that score ranked among the " +
+            "league's players at the position this week.",
+        )}</p>`
+      : "") +
+    // A note, not an ad: no heading, no button, and only under a table that
+    // has players in it.
+    (byPlayer.size
+      ? `<p class="sct-mu-rc-note">Have one of these players? ` +
+        `<a href="${escapeHtml(REDRAFT_COMMAND_URL)}" data-cta="fantasy-table-footer">Redraft Command</a> ` +
+        `tells you whether to start, sit, trade or hold him based on your roster and league settings.</p>`
+      : "") +
     `</section>`
   );
 }
@@ -1586,16 +1686,17 @@ function renderUsage(data: MatchupData): string {
   // once and carries them down.
   const color = matchupColors(data.pair);
 
-  // Pair order, not log order. usageByTeam() hands these back in the order the
-  // appearance list met the two teams, which is whoever the feed listed first
-  // and has nothing to do with the order this page reads in — on a page whose
-  // hero, linescore and every comparison table put pair.a on the left, that put
-  // the two panels the other way round from everything above them. The panels
-  // are the one place on the page where the sides were not the pair's own
-  // order, so the order is resolved here, where the pair is known.
+  // The hero's order: away on the left, home on the right, like the
+  // scoreboard above and every comparison under it. usageByTeam() hands these
+  // back in whatever order the feed listed the teams, so the order is resolved
+  // here, from the featured game. The pair's own order is the fallback for a
+  // page with no game to read sides from.
+  const [left, right] = data.featured
+    ? [data.featured.away, data.featured.home]
+    : [data.pair.a, data.pair.b];
   const order = new Map([
-    [data.pair.a.abbreviation, 0],
-    [data.pair.b.abbreviation, 1],
+    [left.abbreviation, 0],
+    [right.abbreviation, 1],
   ]);
   // A team the pair does not name cannot be placed against it, so it keeps the
   // position it arrived in rather than being sorted to the front.
@@ -1867,6 +1968,41 @@ function matchupColors(pair: MatchupData["pair"]): (team: NflTeam) => string {
 }
 
 /**
+ * The two sides in the hero's order: the featured game's away team on the
+ * left, its home team on the right, as the scoreboard reads. The pair's own
+ * (alphabetical) order only when there is no game to read sides from. Colours
+ * stay keyed to the team, not the column — see matchupColors().
+ */
+function sides(data: MatchupData): {
+  left: NflTeam;
+  right: NflTeam;
+  leftPage: TeamPageData;
+  rightPage: TeamPageData;
+  leftFpa: FpaRow | null;
+  rightFpa: FpaRow | null;
+} {
+  const swap =
+    !!data.featured && data.featured.away.abbreviation === data.pair.b.abbreviation;
+  return swap
+    ? {
+        left: data.pair.b,
+        right: data.pair.a,
+        leftPage: data.b,
+        rightPage: data.a,
+        leftFpa: data.fpa?.b ?? null,
+        rightFpa: data.fpa?.a ?? null,
+      }
+    : {
+        left: data.pair.a,
+        right: data.pair.b,
+        leftPage: data.a,
+        rightPage: data.b,
+        leftFpa: data.fpa?.a ?? null,
+        rightFpa: data.fpa?.b ?? null,
+      };
+}
+
+/**
  * One comparison: two sides, the same metrics, side by side.
  *
  * The pairing is named once, in the caption, and the column headers that would
@@ -1928,9 +2064,9 @@ function compareTable(
  */
 function renderSnapshot(data: MatchupData): string {
   if (!describesNow(data)) return "";
-  const { a, b } = data.pair;
-  const sa = data.a.stats;
-  const sb = data.b.stats;
+  const { left: a, right: b, leftPage, rightPage } = sides(data);
+  const sa = leftPage.stats;
+  const sb = rightPage.stats;
   if (!sa && !sb) return "";
 
   // One colour per team for the whole page, so a reader learns it once.
@@ -1942,7 +2078,7 @@ function renderSnapshot(data: MatchupData): string {
     { team: b, name: b.nickname },
     SNAPSHOT_ROWS.map(({ key, label, description }) =>
       key === "record"
-        ? { label, description, left: recordRow(data.a), right: recordRow(data.b) }
+        ? { label, description, left: recordRow(leftPage), right: recordRow(rightPage) }
         : { label, description, left: findRow(sa, key), right: findRow(sb, key) },
     ),
     color,
@@ -1998,8 +2134,9 @@ function formatWord(format: string): string {
 function renderFantasy(data: MatchupData): string {
   if (!describesNow(data)) return "";
 
-  const { a, b } = data.pair;  const fpa = data.fpa;
-  if (!fpa || (!fpa.a && !fpa.b)) return "";
+  const fpa = data.fpa;
+  const { left: a, right: b, leftFpa, rightFpa } = sides(data);
+  if (!fpa || (!leftFpa && !rightFpa)) return "";
 
   // Rank 1 allows the most, so rank 1 is the fullest bar — the softest
   // matchup. See rankDescending() in fpa/fpa-data.ts.
@@ -2046,9 +2183,9 @@ function renderFantasy(data: MatchupData): string {
   const rows = FANTASY_POSITIONS.map(
     (position) =>
       `<tr>` +
-      `<td class="sct-mu-td-side">${side(fpa.a, position, "a")}</td>` +
+      `<td class="sct-mu-td-side">${side(leftFpa, position, "a")}</td>` +
       `<th scope="row" class="sct-mu-td-label">${escapeHtml(position)}</th>` +
-      `<td class="sct-mu-td-side">${side(fpa.b, position, "b")}</td>` +
+      `<td class="sct-mu-td-side">${side(rightFpa, position, "b")}</td>` +
       `</tr>`,
   ).join("");
 
@@ -2143,8 +2280,9 @@ function injuryList(side: TeamPageData, postgame: boolean): string {
 function renderInjuries(data: MatchupData): string {
   if (!describesNow(data)) return "";
   const postgame = isPostgame(data);
-  const left = injuryList(data.a, postgame);
-  const right = injuryList(data.b, postgame);
+  const order = sides(data);
+  const left = injuryList(order.leftPage, postgame);
+  const right = injuryList(order.rightPage, postgame);
   if (!left && !right) return "";
   return (
     `<section class="sct-block sct-mu-injuries">` +
@@ -2373,14 +2511,30 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
   // it has already carried the fixture, which is why there is none in the
   // upcoming order either. Only an old meeting still needs a card, because
   // only its scoreboard is somewhere the hero is not.
-  const body = isPostgame(data)
-    ? // A game just played. The reader is reading a result, and the questions
-      // run: score (the hero has it), how it happened, who did it, what it
-      // means — and only then what it means for the rivalry.
+  const historical = isHistoricalRecap(data);
+  const recapInput = isPostgame(data) || historical ? recapBodyInput(data, options) : null;
+  const body = recapInput
+    ? // A game just played: the recap body's two columns. The prose recap
+      // leads, "Why won" follows, then the box score sections on the games
+      // that have them, then the head-to-head, the fantasy outlook, the FAQ and
+      // the related pages; the sidebar carries Redraft Command and the facts.
+      renderGameLeadersStrip(data) +
+      renderRecapBody(recapInput, {
+        lead: renderGameRecap(data, options),
+        afterWhy: renderGameScoring(data),
+        middle:
+          renderPlayerStats(data) +
+          renderUsage(data) +
+          renderInjuries(data) +
+          renderSnapshot(data) +
+          (historical ? renderFantasy(data) : ""),
+      })
+    : isPostgame(data)
+    ? // A game just played, with no final the body can be built from.
+      renderGameRecap(data, options) +
       renderGlance(data) +
       renderLeaders(data) +
       renderPlayerStats(data) +
-      renderTakeaways(data) +
       renderUsage(data) +
       renderInjuries(data) +
       renderSnapshot(data) +
@@ -2392,7 +2546,6 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
         // reader has no current game to ask about. The last meeting's detail
         // follows it, minus the two forward-looking fantasy blocks.
         renderMeetings(data, options) +
-        renderFeatured(data) +
         renderGlance(data) +
         renderLeaders(data) +
         renderPlayerStats(data) +
@@ -2415,7 +2568,12 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     `<div class="sct-section is-default is-active" data-sct-panel id="matchup">` +
     body +
     `</div>` +
-    renderLinks(data, options) +
+    // The recap body carries its own related pages in the main column.
+    (recapInput ? "" : renderLinks(data, options)) +
+    (options.embed && recapInput ? recapFaqSchema(recapFaq(recapInput), true) : "") +
+    // Embedded only: the standalone page carries the same node as JSON-LD in
+    // its <head>, which matchup-ssr.ts writes.
+    (options.embed ? matchupEventSchema(data, true) : "") +
     `</div>`
   );
 }

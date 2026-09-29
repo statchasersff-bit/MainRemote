@@ -43,6 +43,11 @@ describe("started from another directory", () => {
     assert.equal(res.headers.get("cache-control"), "public, max-age=31536000, immutable");
   });
 
+  test("source maps are not published", async () => {
+    const res = await fetch(`${server.origin}/dist/statchasers-player.js.map`);
+    assert.equal(res.status, 404);
+  });
+
   test("any other ver is revalidated, so stale bytes cannot stick", async () => {
     for (const url of ["/player.css?ver=1.7.0", "/player.css", "/dist/statchasers-vitals.js?ver=" + built]) {
       const res = await fetch(`${server.origin}${url}`);

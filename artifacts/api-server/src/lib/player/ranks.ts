@@ -523,16 +523,26 @@ function getTeamMaxWeek(season: number, team: string | null): number {
   return max;
 }
 
-function getSeasonMaxWeek(season: number, team: string | null): number {
+/**
+ * The last week anybody in the league has a logged game for, or 0.
+ *
+ * League-wide rather than per team, which is the difference that matters to
+ * the profile header: a club on its bye is a week behind the league, and the
+ * header has to know the league has moved on to say whether the bye is next.
+ */
+export function leagueWeeksLogged(season: number): number {
   const hit = seasonMaxWeekCache.get(season);
-  let max = hit;
-  if (max === undefined) {
-    max = 0;
-    for (const entries of Object.values(loadGameLogs(season))) {
-      for (const e of entries) if (e.week > max) max = e.week;
-    }
-    seasonMaxWeekCache.set(season, max);
+  if (hit !== undefined) return hit;
+  let max = 0;
+  for (const entries of Object.values(loadGameLogs(season))) {
+    for (const e of entries) if (e.week > max) max = e.week;
   }
+  seasonMaxWeekCache.set(season, max);
+  return max;
+}
+
+function getSeasonMaxWeek(season: number, team: string | null): number {
+  const max = leagueWeeksLogged(season);
   // 18 weeks from 2021, 17 before — a season with no logs yet still shows its
   // full shape rather than collapsing to nothing.
   const fullSeason = season >= 2021 ? 18 : 17;

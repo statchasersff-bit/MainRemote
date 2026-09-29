@@ -16,8 +16,8 @@
  *   5. the behaviours particular to this page: a hover layer on the weekly
  *      chart, sortable columns on the game log and the career table, the
  *      per-week detail the game log folds away behind each week number, the
- *      header's staged squeeze, and centring the peers rail on the card the
- *      reader is standing on;
+ *      header's fallback silhouette and its per-tab subtitle, and centring the
+ *      peers rail on the card the reader is standing on;
  *   6. the state swap: the two season selectors change the page WITHOUT
  *      changing its address. See wireStateSwap.
  *
@@ -26,12 +26,6 @@
  * one of them, and with scripting off they navigate exactly as they always
  * did. What the fetch buys is the reader keeping their place — and the address
  * bar keeping the one URL this page is supposed to have.
- *
- * (5)'s squeeze is the one thing here that changes how the page LOOKS rather
- * than what it does, and it is still an enhancement: the header is complete
- * and correctly sized without it — see the scale fallbacks in player.css —
- * and what the fitter adds is a size measured from the header's own parts
- * instead of guessed from the viewport.
  *
  * The chart already carries a `<title>` per point, so it is readable with no
  * script at all; what (5) adds is a real tooltip with a hit target bigger than
@@ -48,7 +42,7 @@ const ROOT_SELECTOR = "[data-scp-root]";
 /**
  * The index of every profile — /player, and the fragment the container page at
  * /nfl/players/ mounts. A different root from the one above and deliberately
- * so: none of the profile's wiring (tabs, chart, sortable log, header fitter)
+ * so: none of the profile's wiring (tabs, chart, sortable log, header)
  * has anything to do on a page with no player on it.
  */
 const INDEX_SELECTOR = "[data-scp-index]";
@@ -317,612 +311,42 @@ function wireExpandableLog(root: HTMLElement): void {
   }
 }
 
-/* ------------------------------------------------------------- hero fit */
+/* ---------------------------------------------------------------- header */
 
 /**
- * The hero's staged squeeze.
+ * The header's two jobs for script: a headshot that failed, and the tab.
  *
- * Ported from the start/sit tool's player header, whose rule is the one this
- * follows: breakpoints decide topology, measurement decides everything inside.
- * The three media queries in player.css answer "one row, two columns, or
- * stacked".
- * Everything else — how big the bust is, how wide the numbers are, how long
- * the club's name is — is decided here, from the widths the parts actually
- * take, because a viewport width cannot know how long "Amon-Ra St. Brown" is
- * or that a one-game season prints "16.5" where a full one prints "235.4".
- *
- * Nothing is truncated, hidden, shortened or scrolled — not the club's name,
- * not the draft line, not the given name. The header may make its parts
- * smaller and its whitespace tighter; it may not edit what they say. Beyond
- * that the layout takes over: below 760px the identity has a row of its own at
- * full size, which is where the width a word swap used to buy now comes from.
- *
- * Concessions are spent cheapest first — whitespace, then type and column
- * scale in proportion, then, only at the very end, the name is allowed to
- * wrap.
- *
- * Runs in the one-row tier only — above 670px. Below that the layout has
- * already made the room these scales exist to find, and a squeezed part inside
- * a stacked header is a small part for no reason; the scales are cleared and
- * the CSS fallbacks of 1 take over.
+ * A Sleeper thumbnail that 404s is a broken-image glyph in the middle of the
+ * photo well. The well already carries a silhouette under the photo, hidden
+ * while the photo stands; marking the well `is-missing` swaps them without the
+ * well changing size. `complete && naturalWidth === 0` catches the failure
+ * that happened before this ran.
  */
-
-/** The seven multipliers player.css writes every hero size against. */
-interface HeroScales {
-  pad: number;
-  inset: number;
-  gap: number;
-  bust: number;
-  id: number;
-  tbl: number;
-  tblp: number;
-}
-
-type HeroScaleKey = keyof HeroScales;
-
-interface HeroNatural {
-  /** The identity column, at scale 1. */
-  id: number;
-  /** The numbers strip, at scale 1. Zero when the header has no strip. */
-  strip: number;
-  /** The strip's figures alone, with its cell padding taken to zero. */
-  stripText: number;
-  /** The strip's cell padding alone: what is left of it when the text is out. */
-  stripPad: number;
-  /** The headshot's box, at scale 1. Zero when there is no headshot. */
-  photo: number;
-  /** Gutters, gaps and the name's clearance, at scale 1. */
-  chrome: number;
-  /** The card's two gutters: what --scp-hero-pad is a multiplier of. */
-  padBasis: number;
-  /** The figure's inset from the left gutter, for --scp-hero-inset. */
-  insetBasis: number;
-  /** The whole distance from figure to name, for --scp-hero-gap. */
-  gapBasis: number;
-}
-
-interface HeroFit {
-  scales: HeroScales;
-  /** Which stage the squeeze got to. 0 = nothing spent. Exposed for devtools. */
-  stage: number;
-  /** Every stage spent and still short: the surname may wrap. */
-  wrap: boolean;
+function wireHeader(root: HTMLElement): void {
+  const well = root.querySelector<HTMLElement>("[data-scp-pwell]");
+  const img = well?.querySelector<HTMLImageElement>("img");
+  if (!well || !img) return;
+  const missing = (): void => well.classList.add("is-missing");
+  if (img.complete && img.naturalWidth === 0) missing();
+  else img.addEventListener("error", missing, { once: true });
 }
 
 /**
- * The geometry that is NOT measured, because it is fixed by the stylesheet.
+ * The tab the reader switched to, reflected in the header.
  *
- * Archetype A from the start/sit notes: where a part's natural width is a
- * constant, a constant is cheaper and steadier than a probe. These mirror the
- * px in player.css — .scp-hero's gutter, .scp-photo's box and inset,
- * .scp-hero-inner's gap, .scp-hero-text's clearance — and the cells inside
- * .scp-hero-stat that --scp-hero-tblp governs.
+ * The H1's second line names the open tab, and both buttons' analytics tags
+ * name it too — `startsit-header-gamelog` — so a click from the Game Log is
+ * not reported as a click from whichever tab the page loaded on. The nav link
+ * carries the line; the tag is the button's stem plus the tab.
  */
-const HERO_GUTTER = 28;
-const HERO_INNER_GAP = 26;
-const HERO_PHOTO_INSET = 35;
-const HERO_PHOTO_W = 204;
-const HERO_TEXT_CLEAR = 40;
-
-/**
- * The row's fixed geometry, for the parts this header actually has.
- *
- * A player with no season has no numbers strip and a player with no thumbnail
- * has no figure, and in both cases the gap that separated them is not there to
- * be spent either. Counting a gap that does not exist would have the fitter
- * squeezing a row that already fits.
- */
-function heroChrome(
-  hasPhoto: boolean,
-  hasStrip: boolean,
-): { chrome: number; padBasis: number; insetBasis: number; gapBasis: number } {
-  const gaps = (hasPhoto ? 1 : 0) + (hasStrip ? 1 : 0);
-  const padBasis = HERO_GUTTER * 2;
-  const insetBasis = hasPhoto ? HERO_PHOTO_INSET : 0;
-  // Both halves of the figure-to-name distance, plus the gap on the strip's
-  // side, which moves with them: one lever, so the fitter can close the whole
-  // distance rather than leaving 12px of flex gap behind a spent clearance.
-  const gapBasis = HERO_INNER_GAP * gaps + (hasPhoto ? HERO_TEXT_CLEAR : 0);
-  return {
-    chrome: padBasis + insetBasis + gapBasis,
-    padBasis,
-    insetBasis,
-    gapBasis,
-  };
-}
-
-const HERO_SCALES_BASE: HeroScales = {
-  pad: 1,
-  inset: 1,
-  gap: 1,
-  bust: 1,
-  id: 1,
-  tbl: 1,
-  tblp: 1,
-};
-
-/** Below this, a change is rounding and re-rendering on it is a loop. */
-const HERO_EPSILON = 0.005;
-
-/**
- * Width the fitter solves for and does not use.
- *
- * Every natural is measured at scale 1 and spent as though a part's width were
- * exactly proportional to its scale. It nearly is — and then it is not: text
- * is laid out in whole device pixels, so a name measuring 247.2px at 33px sets
- * at 197.9 rather than 197.76 when the type goes to 0.8. The fitter spends the
- * deficit to the last pixel, so a fifth of a pixel of rounding is enough to
- * put the surname on a second line while every stage still reports a fit.
- *
- * Three pixels of nothing, held back from the width the stages are spent
- * against, is what absorbs that. It costs a sliver of one stage and it is the
- * difference between a header that fits and a header that fits on paper.
- */
-const HERO_SLACK = 3;
-
-/**
- * Half a pixel: the width at which a deficit is settled and a saving is not
- * worth having.
- *
- * Two jobs, and they are the same job. Spending a stage leaves a deficit of
- * `deficit - budget * (deficit / budget)`, which is not zero in floating point
- * — and a residue of 7e-15 used to be enough to fall through into the next
- * stage, whose levers would then write their `from` values over the partial
- * spend that had just been computed. A bust squeezed to 94.8% came out at 85%.
- * It doubles as the width at which a deficit is simply settled.
- */
-const HERO_SETTLED = 0.5;
-
-interface HeroLever {
-  key: HeroScaleKey;
-  from: number;
-  to: number;
-  /** The px this lever is a multiplier of — what a full spend saves. */
-  basis: number;
-}
-
-interface HeroStage {
-  levers: HeroLever[];
-}
-
-/**
- * The stages, in the order they are spent.
- *
- * Each stage is a scalar in [0,1] — the fraction of that stage's budget the
- * deficit needed — so the response is continuous rather than a jump at a
- * threshold, and every lever inside a stage moves together.
- *
- *   1  whitespace, and the first proportional shrink of all three parts
- *   2  deeper on bust and type, the figure's inset, and the strip's own cell
- *      padding, which goes faster than the type beside it: whitespace before
- *      legibility, inside the strip exactly as outside it
- *   3  most of what is left of the gutters, the inset and the gap
- *   4  the strip's last cut, and the last of its padding
- *   5  bust and type take their last cut, to 0.65 / 0.75, and the whitespace
- *      goes to its floor: 10px gutters, no inset, 3px between the figure and
- *      the name — the strip is already at its own floor
- *
- * There are no word swaps any more. Stage 3 used to shorten the club's name
- * and the draft line, and stage 5 contracted the given name and cut the club
- * to its code; what a reader saw was a header quietly rewriting the player's
- * facts as the window narrowed. Every stage here changes how big a thing is
- * drawn, never what it says, and when they run out the tier below takes over
- * with the identity on a row of its own at full size.
- *
- * The strip floors at 0.80 and takes no part in stage 5. It used to run to
- * 0.60, which is where this came from: the label row is letter-spaced small
- * caps at 10px, so 0.60 printed "POS RANK" at six pixels and the figure under
- * it at fourteen. A strip nobody can read is not a cheaper concession than a
- * surname on two lines: it is the panel's whole content spent to buy the least
- * load-bearing part of the header one more line. So the type stops — 8px on
- * the label, 18.4px on the figure — and the CELL PADDING carries the rest of
- * stage 4, down to 0.3: the same whitespace-before-legibility rule stage 2
- * already follows, taken to its end. The figure is inked at the 4.5:1 tone
- * (see `.scp-hero-stat.is-lead` in player.css) precisely so this floor could
- * move without taking the contrast with it.
- *
- * The other floors are the start/sit tool's, unchanged. They were picked from
- * the narrowest supported screen against the widest content case, and below
- * them the header stops being readable — which is why stage 5 is the last one
- * and the name wraps after it rather than anything shrinking further.
- */
-function heroStages(nat: HeroNatural): HeroStage[] {
-  return [
-    {
-      levers: [
-        { key: "pad", from: 1, to: 0.6, basis: nat.padBasis },
-        { key: "inset", from: 1, to: 0.6, basis: nat.insetBasis },
-        { key: "gap", from: 1, to: 0.6, basis: nat.gapBasis },
-        { key: "bust", from: 1, to: 0.85, basis: nat.photo },
-        { key: "id", from: 1, to: 0.9, basis: nat.id },
-        { key: "tbl", from: 1, to: 0.94, basis: nat.stripText },
-      ],
-    },
-    {
-      levers: [
-        { key: "inset", from: 0.6, to: 0.3, basis: nat.insetBasis },
-        { key: "bust", from: 0.85, to: 0.75, basis: nat.photo },
-        { key: "id", from: 0.9, to: 0.8, basis: nat.id },
-        { key: "tblp", from: 1, to: 0.55, basis: nat.stripPad },
-      ],
-    },
-    {
-      levers: [
-        { key: "gap", from: 0.6, to: 0.25, basis: nat.gapBasis },
-        { key: "pad", from: 0.6, to: 0.45, basis: nat.padBasis },
-        { key: "inset", from: 0.3, to: 0.1, basis: nat.insetBasis },
-      ],
-    },
-    {
-      levers: [
-        { key: "tbl", from: 0.94, to: 0.8, basis: nat.stripText },
-        { key: "tblp", from: 0.55, to: 0.3, basis: nat.stripPad },
-      ],
-    },
-    {
-      levers: [
-        { key: "bust", from: 0.75, to: 0.65, basis: nat.photo },
-        { key: "id", from: 0.8, to: 0.75, basis: nat.id },
-        // The last of the whitespace, and it goes to nothing much: the figure
-        // ends up standing ON the left gutter, the gutter itself is 10px, and
-        // the distance from the figure to the name is 3px. Those three
-        // figures are mak's, and they are the whole reason this row survives
-        // another 90px of viewport before it stacks — a stacked header with
-        // 28px gutters is not a better answer than a row with 10px ones.
-        { key: "gap", from: 0.25, to: 0.045, basis: nat.gapBasis },
-        { key: "pad", from: 0.45, to: 0.357, basis: nat.padBasis },
-        { key: "inset", from: 0.1, to: 0, basis: nat.insetBasis },
-      ],
-    },
-  ];
-}
-
-/**
- * Walk the stages until the deficit is covered.
- *
- * The deficit is always computed against UNSQUEEZED geometry — the naturals
- * the probe reported at scale 1 — never against the row as it currently
- * stands. Measuring the thing you are about to change is the one reliable way
- * to build a fitter that oscillates.
- */
-function heroFit(avail: number, nat: HeroNatural): HeroFit {
-  const scales: HeroScales = { ...HERO_SCALES_BASE };
-
-  let deficit = nat.chrome + nat.photo + nat.id + nat.strip - avail;
-  if (deficit <= HERO_SETTLED) return { scales, stage: 0, wrap: false };
-
-  const stages = heroStages(nat);
-  let reached = 0;
-
-  for (const stage of stages) {
-    const budget = stage.levers.reduce(
-      (sum, lever) => sum + lever.basis * (lever.from - lever.to),
-      0,
-    );
-    // Nothing to spend here — a strip-less header's table stages, say. Move on
-    // WITHOUT writing this stage's levers: their `from` values are the
-    // previous stage's `to`, and writing them over a partial spend is how a
-    // squeeze jumps.
-    if (budget <= 0) continue;
-
-    const spent = Math.min(1, deficit / budget);
-    for (const lever of stage.levers) {
-      scales[lever.key] = lever.from + (lever.to - lever.from) * spent;
-    }
-    reached += 1;
-    deficit -= budget * spent;
-    if (deficit <= HERO_SETTLED) return { scales, stage: reached, wrap: false };
+function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void {
+  const kind = link.dataset["scpKind"];
+  const line = root.querySelector<HTMLElement>(".scp-phead-kind");
+  if (line && kind) line.textContent = kind;
+  const tab = id.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  for (const cta of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-cta]"))) {
+    cta.setAttribute("data-cta", `${cta.dataset["scpCta"]}-${tab}`);
   }
-
-  // Every stage spent and still short. The last concession, and only now: the
-  // surname wraps. Not an ellipsis and not an initial — a name is the one
-  // string on this page a reader came for, and "Beckh…" is worse than two
-  // lines. In practice the tier boundary is set so this is reached only by a
-  // name longer than any on the site today.
-  return { scales, stage: reached, wrap: true };
-}
-
-const HERO_KEYS: HeroScaleKey[] = [
-  "pad",
-  "inset",
-  "gap",
-  "bust",
-  "id",
-  "tbl",
-  "tblp",
-];
-
-/** Hysteresis: a fit that differs only by rounding is the same fit. */
-function heroFitSame(a: HeroFit | null, b: HeroFit): boolean {
-  if (!a) return false;
-  if (a.wrap !== b.wrap) return false;
-  return HERO_KEYS.every(
-    (key) => Math.abs(a.scales[key] - b.scales[key]) < HERO_EPSILON,
-  );
-}
-
-/**
- * A measuring copy of a finished element.
- *
- * Cloned rather than re-rendered. The start/sit tool renders its probes from
- * the same function as the visible cells, because in a React tree the two can
- * otherwise drift; cloning the real node is the strictest version of that same
- * rule, and it keeps three duplicate copies of the player's name, club and
- * draft out of a document whose whole job is to be indexed for that name.
- *
- * Two things are neutralised on the way out, because the copy lives in the
- * document and the document has rules: a second <h1> is demoted to a <div>
- * carrying the same class, so the measured type is identical and the outline
- * is not; and every link loses its href and its place in the tab order. The
- * wrapper is aria-hidden, so none of it is announced either.
- */
-function heroProbeClone(source: HTMLElement): HTMLElement {
-  const clone = source.cloneNode(true) as HTMLElement;
-
-  for (const heading of Array.from(clone.querySelectorAll("h1, h2, h3"))) {
-    const plain = document.createElement("div");
-    plain.className = heading.className;
-    plain.innerHTML = heading.innerHTML;
-    heading.replaceWith(plain);
-  }
-
-  for (const link of Array.from(clone.querySelectorAll("a"))) {
-    link.removeAttribute("href");
-    link.setAttribute("tabindex", "-1");
-  }
-
-  for (const el of Array.from(clone.querySelectorAll("[id]"))) {
-    el.removeAttribute("id");
-  }
-  clone.removeAttribute("id");
-
-  return clone;
-}
-
-/**
- * Build the off-screen probe: the identity column and the numbers strip, at
- * scale 1.
- *
- * Appended to the hero rather than the body so it inherits the same fonts,
- * colours and team variables the real column does — then resets the six scales
- * to 1, which is what makes it a NATURAL width rather than a reading of
- * whatever the fitter last wrote.
- */
-function heroBuildProbe(
-  hero: HTMLElement,
-  text: HTMLElement,
-  strip: HTMLElement | null,
-): HTMLElement {
-  const probe = document.createElement("div");
-  probe.className = "scp-hero-probe";
-  probe.setAttribute("aria-hidden", "true");
-  probe.setAttribute("data-scp-hero-probe", "");
-
-  const item = document.createElement("div");
-  item.className = "scp-hero-probe-item";
-  item.setAttribute("data-scp-probe", "id");
-  item.appendChild(heroProbeClone(text));
-  probe.appendChild(item);
-
-  if (strip) {
-    // Twice: once whole, and once with the cell padding taken to zero so the
-    // figures can be measured on their own. The strip's width is text times
-    // one scale plus padding times another, and the two run at different
-    // rates — so the fitter needs the two terms, not their sum.
-    for (const variant of ["strip", "strip-bare"]) {
-      const item = document.createElement("div");
-      item.className = "scp-hero-probe-item";
-      item.setAttribute("data-scp-probe", variant);
-      if (variant === "strip-bare") item.style.setProperty("--scp-hero-tblp", "0");
-      item.appendChild(heroProbeClone(strip));
-      probe.appendChild(item);
-    }
-  }
-
-  hero.appendChild(probe);
-  return probe;
-}
-
-/**
- * The phone tier's fitter, below 480px: the name and the club, one line each.
- *
- * There is no layout left to change to down here, so what gives is the words'
- * size and then their length, in the order mak set: the name shrinks by up to
- * 15%, then the given name becomes an initial ("J. Brissett"), and only if
- * that still overflows does the name wrap. The club line has one step:
- * "Arizona Cardinals" becomes "ARI Cardinals", then wraps.
- *
- * The short forms are generated content from attributes the server printed,
- * so the heading's and the link's text are the full name whatever this does.
- *
- * Every pass starts from the unfitted state and measures that, rather than
- * adjusting what the last pass left: a fitter that measures its own output
- * drifts.
- */
-const PHONE_NAME_FLOOR = 0.85;
-
-function heroPhoneFit(hero: HTMLElement): void {
-  const title = hero.querySelector<HTMLElement>(".scp-title");
-  const billing = hero.querySelector<HTMLElement>(".scp-hero-billing");
-
-  hero.style.removeProperty("--scp-hero-name");
-  hero.removeAttribute("data-scp-hero-name");
-  hero.removeAttribute("data-scp-hero-club");
-
-  // Overflow, with a half pixel of grace for subpixel text widths.
-  const over = (el: HTMLElement): boolean => el.scrollWidth - el.clientWidth > 0.5;
-
-  if (title && title.clientWidth && over(title)) {
-    const ratio = title.clientWidth / title.scrollWidth;
-    if (ratio >= PHONE_NAME_FLOOR) {
-      // A hair under the exact ratio, so rounding cannot leave it 0.2px over.
-      hero.style.setProperty("--scp-hero-name", (ratio - 0.003).toFixed(3));
-    } else {
-      hero.style.setProperty("--scp-hero-name", String(PHONE_NAME_FLOOR));
-      hero.setAttribute("data-scp-hero-name", "short");
-      if (over(title)) hero.setAttribute("data-scp-hero-name", "wrap");
-    }
-  }
-
-  if (billing && billing.clientWidth && over(billing)) {
-    hero.setAttribute("data-scp-hero-club", "short");
-    if (over(billing)) hero.setAttribute("data-scp-hero-club", "wrap");
-  }
-}
-
-function heroPhoneReset(hero: HTMLElement): void {
-  hero.style.removeProperty("--scp-hero-name");
-  hero.removeAttribute("data-scp-hero-name");
-  hero.removeAttribute("data-scp-hero-club");
-}
-
-function wireHeroFit(root: HTMLElement): void {
-  const hero = root.querySelector<HTMLElement>("[data-scp-hero]");
-  if (!hero) return;
-  const inner = hero.querySelector<HTMLElement>(".scp-hero-inner");
-  const text = inner?.querySelector<HTMLElement>(".scp-hero-text");
-  if (!inner || !text) return;
-
-  // The parts this header actually has. Which of them exist decides what the
-  // row's fixed geometry is; the headshot's own box is then a constant rather
-  // than a measurement — archetype A from the start/sit notes, where a part's
-  // natural width is fixed by the stylesheet and a constant is cheaper and
-  // steadier than a probe.
-  const photo = inner.querySelector<HTMLElement>(".scp-photo");
-  const stripEl = inner.querySelector<HTMLElement>(".scp-hero-stats");
-
-  const probe = heroBuildProbe(hero, text, stripEl);
-
-  const probeWidth = (selector: string): number => {
-    const el = probe.querySelector<HTMLElement>(selector);
-    return el ? el.getBoundingClientRect().width : 0;
-  };
-
-  const natural = (): HeroNatural | null => {
-    const stripW = probeWidth('[data-scp-probe="strip"] .scp-hero-stats');
-    const stripText = probeWidth('[data-scp-probe="strip-bare"] .scp-hero-stats');
-    const nat: HeroNatural = {
-      id: probeWidth('[data-scp-probe="id"] .scp-hero-text'),
-      // Zero when the player has no season to report: the strip is absent
-      // from the header entirely, and its stages then have no budget to
-      // spend, which is exactly right.
-      strip: stripW,
-      stripText,
-      // What the padding is worth, by difference. Measuring the two terms
-      // apart is the whole reason the second strip copy exists: the strip's
-      // width is its figures TIMES --scp-hero-tbl plus its padding TIMES
-      // --scp-hero-tblp, and the two scales run at different rates. Modelling
-      // the whole strip at the type's rate over-credited every saving by
-      // about two to one, and the row the fitter promised would fit came out
-      // wider than the room — which a reader saw as the measurements line
-      // wrapping while the fitter still reported budget in hand.
-      stripPad: Math.max(0, stripW - stripText),
-      photo: photo ? HERO_PHOTO_W : 0,
-      ...heroChrome(Boolean(photo), Boolean(stripEl)),
-    };
-    // A probe that reports nothing has not been laid out yet. Writing scales
-    // from it would pin the header at a size measured from an empty box.
-    return nat.id > 0 ? nat : null;
-  };
-
-  const apply = (fit: HeroFit): void => {
-    for (const key of HERO_KEYS) {
-      hero.style.setProperty(`--scp-hero-${key}`, fit.scales[key].toFixed(3));
-    }
-    hero.setAttribute("data-scp-hero-stage", String(fit.stage));
-    hero.setAttribute("data-scp-hero-wrap", fit.wrap ? "1" : "0");
-  };
-
-  const reset = (): void => {
-    for (const key of HERO_KEYS) hero.style.removeProperty(`--scp-hero-${key}`);
-    hero.setAttribute("data-scp-hero-stage", "0");
-    hero.setAttribute("data-scp-hero-wrap", "0");
-  };
-
-  // The one-row tier, and the only tier this runs in. Matches the 670px
-  // boundary in player.css from the other side: at 670 and below the identity
-  // takes a row of its own with the bust beside it and the strip goes full
-  // width underneath, which has already made the room these scales exist to
-  // find.
-  const oneRow =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia("(min-width: 670.02px)")
-      : null;
-
-  // The phone tier, matching the 479.98px boundary in player.css.
-  const phone =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia("(max-width: 479.98px)")
-      : null;
-
-  let current: HeroFit | null = null;
-  /** Whether the narrow tiers' cleared state is already on the element. */
-  let cleared = false;
-  let raf = 0;
-
-  const measure = (): void => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-
-      // Below the one-row tier the topology has already made the room these
-      // scales exist to find, so they are cleared and player.css's fallbacks
-      // of 1 take over. Written once on the way in rather than every frame of
-      // a drag-resize, but written even if nothing was ever fitted, so the
-      // devtools attributes say "nothing spent" rather than saying nothing.
-      if (oneRow && !oneRow.matches) {
-        if (current || !cleared) {
-          current = null;
-          cleared = true;
-          reset();
-        }
-        // The phone tier has a fitter of its own, for words rather than
-        // scales; the two-column tier has none.
-        if (phone?.matches) heroPhoneFit(hero);
-        else heroPhoneReset(hero);
-        return;
-      }
-
-      cleared = false;
-      heroPhoneReset(hero);
-
-      // Zero is how an element in a hidden tab or an unlaid-out document
-      // reports itself, and a scale written from it poisons the next read.
-      const avail = hero.clientWidth;
-      if (!avail) return;
-
-      const nat = natural();
-      if (!nat) return;
-
-      const next = heroFit(avail - HERO_SLACK, nat);
-
-      if (heroFitSame(current, next)) return;
-      current = next;
-      apply(next);
-    });
-  };
-
-  // Before the first measurement, not after: the stylesheet keys the name's
-  // size off this attribute — a measured 52px where the fitter is live, the
-  // viewport's clamp where it is not — so setting it late would measure one
-  // size and paint another.
-  hero.dataset["scpHeroFit"] = "js";
-
-  measure();
-
-  if (typeof ResizeObserver === "undefined") {
-    // No observer: the header is fitted once, at the width it loaded at, and
-    // the CSS tiers still handle a rotation. Better than throwing.
-    window.addEventListener("resize", measure);
-    return;
-  }
-
-  const observer = new ResizeObserver(measure);
-  observer.observe(hero);
-  // The probe too: a web font landing after first paint widens the text
-  // without resizing the header, and silently moves every threshold here.
-  observer.observe(probe);
-  if (document.fonts) document.fonts.ready.then(measure).catch(() => {});
 }
 
 /* ------------------------------------------------------------ peers rail */
@@ -966,7 +390,7 @@ function wirePeerRail(root: HTMLElement): void {
  * them from pageUrl().
  *
  * The scoring toggle used to be the third and the first. It is gone from the
- * control bar (see renderStartSit in lib/player-render.ts), and with it the
+ * control bar, and with it the
  * only control that ever changed `?format=`; the parameter is still a real
  * address the server renders, and a reader who follows one gets a whole page
  * rather than a swap, which is what a link from outside the page should do.
@@ -1196,11 +620,12 @@ function wireProfile(root: HTMLElement): void {
     panelKey: "scpPanelId",
     headingKey: "scpHeading",
     leadKey: "scpLead",
+    onSelect: (link, id) => headerTab(root, link, id),
   });
   wireTimestamps(root);
   wirePlayerSearch(root);
   wireChartTooltip(root);
-  wireHeroFit(root);
+  wireHeader(root);
   wireSortableLog(root);
   wireExpandableLog(root);
   wirePeerRail(root);

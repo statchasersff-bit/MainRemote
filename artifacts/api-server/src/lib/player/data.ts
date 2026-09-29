@@ -48,6 +48,7 @@ const INDEXED_FILE = path.join(DATA_DIR, "indexed_players.json");
 const INDEXED_BY_TEAM_FILE = path.join(DATA_DIR, "indexed_players_by_team.json");
 const GAME_LOGS_DIR = path.join(DATA_DIR, "game_logs");
 const BYE_WEEKS_FILE = path.join(DATA_DIR, "bye_weeks.json");
+const DEPTH_CHARTS_FILE = path.join(DATA_DIR, "depth_charts.json");
 const GAME_SCORES_FILE = path.join(DATA_DIR, "game_scores.json");
 const DYNASTY_FILE = path.join(DATA_DIR, "dynasty_rankings.json");
 const BIOS_FILE = path.join(DATA_DIR, "bios.json");
@@ -338,6 +339,18 @@ export const loadByeWeeks = lazy<Record<string, Record<string, number>>>(
   {},
 );
 
+/** One club's depth chart, as the NFL-Depth-Charts build writes it. */
+export interface DepthChartGroup {
+  role: string;
+  fantasy_position: string;
+  players: Array<{ name: string; depth_order: number; sleeper_id?: string; sleeper_slug?: string }>;
+}
+
+export const loadDepthCharts = lazy<{ teams?: Record<string, DepthChartGroup[]> }>(
+  DEPTH_CHARTS_FILE,
+  {},
+);
+
 export const loadGameScores = lazy<
   Record<string, Record<string, { tm: number; opp: number; r: string }>>
 >(GAME_SCORES_FILE, {});
@@ -464,6 +477,7 @@ export function dataStamp(): string {
     PRODUCTION_FILE,
     INJURIES_FILE,
     ROSTER_PCT_FILE,
+    DEPTH_CHARTS_FILE,
   ]) {
     try {
       const st = fs.statSync(file);

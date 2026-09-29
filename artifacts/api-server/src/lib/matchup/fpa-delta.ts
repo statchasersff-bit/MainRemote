@@ -142,8 +142,10 @@ export async function getFpaDelta(
       );
   } catch {
     // The FPA ingest may never have run, and the database is not required for
-    // a matchup page to render. One block declines; the page does not.
-    cache.set(key, null);
+    // a matchup page to render. One block declines; the page does not. Not
+    // cached: this is an error, not an answer, and caching it held the block
+    // off for the life of the process after one dropped connection. (An empty
+    // result below is an answer, and every FPA ingest clears this cache.)
     return null;
   }
 

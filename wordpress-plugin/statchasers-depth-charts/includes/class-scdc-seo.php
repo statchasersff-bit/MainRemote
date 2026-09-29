@@ -196,17 +196,15 @@ class SCDC_SEO {
 
 	/**
 	 * The canonical URL for this request, or the passed-through value when the
-	 * request isn't one of the tool's virtual routes. The bare tool page keeps
-	 * whatever canonical it already has — only the nested routes are rewritten.
+	 * request isn't one of the tool's routes. The bare tool page renders the same
+	 * all-teams fantasy view as /fantasy/, so it canonicalises onto main_url() —
+	 * the URL the sitemap lists — rather than keeping its own page permalink.
 	 *
 	 * @param string $fallback Value to return when nothing should change.
 	 * @return string
 	 */
 	private static function canonical_for_request( $fallback ) {
 		if ( ! SCDC_Route::is_tool() ) {
-			return $fallback;
-		}
-		if ( SCDC_Route::is_main() && '' === (string) get_query_var( 'sc_view' ) ) {
 			return $fallback;
 		}
 		return SCDC_Route::canonical_url();

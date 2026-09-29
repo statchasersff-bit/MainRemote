@@ -64,7 +64,6 @@ import {
   type LogColumn,
   positionMomentumMetrics,
   recentGames,
-  rollingAverage,
   weeklyTier,
   weeklyTierLabel,
   type WeeklyTier,
@@ -98,15 +97,20 @@ import {
 } from "./player/stats-profile";
 import { canonicalizeMatchupPair } from "./matchup/pair";
 import {
-  fantasyProfile,
   percentileLevel,
   percentileRead,
   percentileWord,
-  seasonSentence,
-  weeklyFinishRange,
-  type ProfileRow,
 } from "./player/fantasy-read";
 import type { OutlookBand } from "./player/types";
+import {
+  designationSeverity,
+  headerKind,
+  matchupBand,
+  OUTLOOK_SEASON,
+  renderHero,
+  type MatchupBand,
+} from "./player/header";
+import { renderOverviewSections } from "./player/overview";
 
 export interface PlayerRenderOptions {
   /**
@@ -176,7 +180,8 @@ export interface PlayerRenderOptions {
    * above the tool and the page carries the heading twice — once in the theme's
    * serif, once here with the gold rule under it.
    *
-   * Exactly one panel is promoted either way. See promoteHeading().
+   * Exactly one panel is promoted either way. See promoteHeading(). The
+   * header stays an <h2> in this mode as in any embed.
    */
   ownHeading?: boolean;
 }
@@ -242,15 +247,6 @@ const DOT = "·";
  * name rather than as a button.
  */
 const TIMES = "×";
-
-/**
- * The season the Outlook tab is about.
- *
- * Named once rather than written into six strings: this tab is the one place
- * on the page allowed to talk about a season nobody has played, and the year it
- * means has to be impossible to leave half-updated.
- */
-const OUTLOOK_SEASON = 2026;
 
 /** Where the Fantasy Points Allowed table lives on this origin. */
 const DEFAULT_FPA_PATH = "/fpa";
@@ -603,92 +599,6 @@ function renderRail(cells: RailCell[], variant: "hero" | "open" = "open"): strin
    Both tabs now print the reading in words with the rate and the ordinal
    under it — see efficiencyRows(). */
 
-interface StackSegment {
-  tier: WeeklyTier;
-  label: string;
-  pct: number;
-  games: number;
-}
-
-/**
- * The finish distribution, as one stacked bar.
- *
- * A 2px surface gap separates the segments so adjacent steps of the same hue
- * stay countable, and every segment wide enough to hold it is labelled in
- * place — the legend below covers the ones that are not.
- */
-function renderStackedBar(
-  segments: StackSegment[],
-  /**
-   * `slim` draws the same bar as a rule rather than as a block.
-   *
-   * On Overview this chart sits under a one-game sample, where a 34px band of
-   * solid colour saying "100% QB2" is the loudest thing on the tab and the
-   * least earned. Slim keeps the reading and gives it the weight of a
-   * footnote — the inline percentages come off, because the legend under a
-   * 10px bar is already printing them a line away.
-   */
-  options: { slim?: boolean; showEmpty?: boolean } = {},
-): string {
-  const shown = segments.filter((s) => s.pct > 0);
-  if (shown.length === 0) return "";
-
-  /*
-   * `showEmpty` keeps the tiers he never reached in the legend.
-   *
-   * A one-game season draws one full-width segment reading "QB2 100%", which
-   * is true and says nothing: 100% of one week. "QB1 0% · QB2 100% · QB3+ 0%"
-   * is the same measurement with its scale attached, and the zero is the half
-   * of it worth knowing. The BAR still only draws what happened — a segment of
-   * no width is not a thing to name — so every drawn colour is still in the
-   * legend, which is the rule this legend exists for.
-   */
-  const named = options.showEmpty ? segments : shown;
-
-  const bar = shown
-    .map(
-      (segment) =>
-        `<span class="scp-stack-seg" data-tier="${segment.tier}"${styleAttr([
-          `flex-basis:${segment.pct}%`,
-          `background:${TIER_FILL[segment.tier]}`,
-        ])}>` +
-        // Only wide segments get an inline label; the rest rely on the legend.
-        (!options.slim && segment.pct >= 12
-          ? `<span class="scp-stack-inline">${escapeHtml(segment.pct.toFixed(0))}%</span>`
-          : "") +
-        `</span>`,
-    )
-    .join("");
-
-  const legend = named
-    .map(
-      (segment) =>
-        `<li class="scp-legend-item"${segment.pct === 0 ? ` data-empty="1"` : ""}>` +
-        `<span class="scp-legend-swatch" aria-hidden="true"${styleAttr([
-          `background:${TIER_FILL[segment.tier]}`,
-        ])}></span>` +
-        `<span class="scp-legend-label">${escapeHtml(segment.label)}</span>` +
-        `<span class="scp-legend-value">${escapeHtml(
-          // The game count is what the percentage is OF, and a tier he never
-          // reached has no "of" — "0% (0)" prints the same nothing twice.
-          segment.games > 0
-            ? `${segment.pct.toFixed(0)}% (${segment.games})`
-            : `${segment.pct.toFixed(0)}%`,
-        )}</span>` +
-        `</li>`,
-    )
-    .join("");
-
-  return (
-    `<div class="scp-stack${options.slim ? " is-slim" : ""}">` +
-    `<div class="scp-stack-bar" role="img" aria-label="${escapeHtml(
-      shown.map((s) => `${s.label} ${s.pct.toFixed(0)}%`).join(", "),
-    )}">${bar}</div>` +
-    `<ul class="scp-legend">${legend}</ul>` +
-    `</div>`
-  );
-}
-
 interface SparkPoint {
   week: number;
   opp: string;
@@ -805,218 +715,6 @@ function renderSparkline(
   );
 }
 
-/* ------------------------------------------------------------------- hero */
-
-/**
- * The player's headshot, standing on the floor of the hero.
- *
- * Sleeper's thumbnails are cut-out PNGs on transparency — head and shoulders,
- * cropped at the chest — so they are not photographs to be framed but figures
- * to be stood somewhere. The circle crop this replaced threw away the shoulders
- * and most of the height to fit a 96px disc; bottom-aligned and bled off the
- * card's edge, the same file reads as a person in the header.
- *
- * Portrait box over a landscape source on purpose: the source is 350x254 with
- * the subject in the middle half, so `cover` against a taller box crops the
- * empty sides rather than the player.
- *
- * A player with no photo gets nothing. There is no silhouette to fall back to
- * and an empty 140px column is worse than a hero that closes up around it.
- */
-function renderHeadshot(data: PlayerPageData): string {
-  const { player } = data;
-  // Sleeper's thumbnail, the same CDN the news cards already use.
-  const src = player.headshotUrl
-    ? safeUrl(player.headshotUrl)
-    : `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(player.id)}.jpg`;
-  if (!src) return "";
-  return (
-    `<div class="scp-photo">` +
-    `<img class="scp-photo-img" src="${escapeHtml(src)}" alt=""` +
-    ` width="350" height="254" decoding="async" />` +
-    `</div>`
-  );
-}
-
-/**
- * Suffixes that belong to the surname rather than standing as one.
- *
- * "Odell Beckham Jr." splits after Odell, not after Beckham: a hero reading
- * "JR." in 44px would be the one thing on the page nobody could misread as
- * anything but a bug.
- */
-const NAME_SUFFIXES = new Set(["jr", "sr", "ii", "iii", "iv", "v"]);
-
-/**
- * A name as the hero sets it: given name small above, surname large below.
- *
- * The split is presentational and the H1 is not: `first` and `last` are
- * rendered as two spans with a real space between them, so the heading's text
- * content is still exactly `player.name` for a crawler, a screen reader and
- * the tests that compare the two. Anything this cannot split cleanly — a
- * single-word name, or a name that would not reassemble to itself — falls back
- * to one span, which is the old treatment and never wrong.
- */
-function splitName(name: string): { first: string; last: string } {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length < 2) return { first: "", last: name };
-
-  const bare = (word: string): string => word.toLowerCase().replace(/\.+$/, "");
-  // A suffix takes the name before it along with it, so "Beckham Jr." stays one
-  // surname — but only when there is a given name left over to put above it.
-  const cut =
-    parts.length >= 3 && NAME_SUFFIXES.has(bare(parts[parts.length - 1] ?? ""))
-      ? parts.length - 2
-      : parts.length - 1;
-
-  const first = parts.slice(0, cut).join(" ");
-  const last = parts.slice(cut).join(" ");
-  // The heading has to reassemble to the name it was built from, or the split
-  // has quietly rewritten the H1. Double spaces and odd whitespace land here.
-  if (`${first} ${last}` !== name) return { first: "", last: name };
-  return { first, last };
-}
-
-/** Height stored as total inches ("73") rendered as feet and inches. */
-function formatHeight(height: string | null): string {
-  if (!height) return "";
-  const trimmed = height.trim();
-  if (trimmed.includes("'") || trimmed.includes("-")) return trimmed;
-  const inches = Number.parseInt(trimmed, 10);
-  if (!Number.isFinite(inches) || inches <= 0) return trimmed;
-  return `${Math.floor(inches / 12)}'${inches % 12}"`;
-}
-
-/**
- * The figures in the hero's right-hand strip.
- *
- * The season this player is having, in the format the page is set to. A header
- * is the one place on a profile where a reader will accept being told the
- * answer before the question, and "16.8 a game across 14 games" is the answer
- * they came for.
- *
- * Season only — nothing career-long and nothing from a ranking. The strip is
- * captioned with the year above it, and a figure that does not belong to that
- * year would make the caption a lie about the cell beside it.
- *
- * All three or none. The strip is a reading of one season, and there is no
- * state where a player has points but no games to have scored them in.
- */
-interface HeroStatCell {
-  label: string;
-  value: string;
-  /** The headline of the three, which takes the gold. */
-  lead?: boolean;
-}
-
-/**
- * The figures in the hero's right-hand panel.
- *
- * Three questions, in the order a fantasy reader asks them: how much is he
- * scoring, where does that put him, and does anyone else have him. A header is
- * the one place on a profile where a reader will accept being told the answer
- * before the question, and those three are the answers they came for.
- *
- * It used to be rate, total and games played, which answered the first
- * question three times — the total is the rate times the games, and a reader
- * who has the first two can do the third in their head. The rank and the
- * ownership are the two facts on this page that cannot be derived from
- * anything else in the header.
- *
- * Two rows to a cell, label over figure. The qualifiers that used to sit on a
- * third row — the games the average is over, which way the rank was measured,
- * whose ownership pool — are all stated in full further down the page, and a
- * line of grey under every figure was competing with the figures for the
- * reading the panel exists to give.
- *
- * The scoring cell is the only one that is always there. A rank needs a league
- * to rank within and ownership needs a source that has heard of him, and where
- * either is missing the panel is two cells wide rather than carrying a dash —
- * a placeholder is a figure that says nothing while taking the room of one
- * that would.
- */
-/**
- * An ownership share, as a reader would say it.
- *
- * Whole numbers from ten up, where a tenth of a point is noise on a figure
- * that moves by several a week. Below ten the tenth IS the reading: 0.4% and
- * 4% are both "barely rostered" once rounded, and they are not the same
- * player.
- *
- * And 100% is reserved for 100%. Thirty players sat at 99.0 or above in the
- * week this was written and exactly one of them was in every league; rounding
- * would have printed the same "100%" over all thirty, which is a claim about
- * the last league in the game rather than a reading of a number.
- */
-function rosteredPct(value: number): string {
-  if (value < 10) return pct(value, 1);
-  return pct(Math.min(Math.round(value), value >= 100 ? 100 : 99), 0);
-}
-
-function heroStats(data: PlayerPageData): HeroStatCell[] {
-  const { stats, format, player } = data;
-  if (!stats || stats.gamesPlayed === 0) return [];
-
-  const pos = player.position ?? "";
-  const season = data.production.find((row) => row.season === data.season);
-  const cells: HeroStatCell[] = [];
-
-  /* ---- what he is scoring ---- */
-
-  cells.push({
-    label: `${SCORING_SHORT[format]} PPG`,
-    value: num(stats.ppg),
-    lead: true,
-  });
-
-  /* ---- where that puts him ---- */
-
-  // By points per game where that rank exists, by points scored until it does.
-  // Which of the two is showing is left to the career table's Finish column and
-  // the two finish tiles, where the distinction is drawn in full; the hero cell
-  // carries the figure alone.
-  const ppgRank = season?.posFinishPpg ?? data.seasonRank;
-  const totalRank = season?.posFinishTotal ?? data.seasonRankTotal;
-  const rank = ppgRank ?? totalRank;
-  if (pos && rank !== null) {
-    cells.push({
-      label: "Pos rank",
-      value: `${pos}${rank}`,
-    });
-  }
-
-  /* ---- and whether anyone else has him ---- */
-
-  if (data.rosterPct) {
-    cells.push({
-      label: "Rostered",
-      // The pool it was measured in is Sleeper's redraft cut — see
-      // scripts/player/buildRosterPct.mjs.
-      value: rosteredPct(data.rosterPct.owned),
-    });
-  }
-
-  return cells;
-}
-
-
-/*
- * The hero's responsive contract, in one place.
- *
- * Ported from the start/sit tool's player header, which states the rule this
- * file now follows: BREAKPOINTS DECIDE TOPOLOGY, MEASUREMENT DECIDES EVERYTHING
- * INSIDE. A media query here only answers "one row, two rows, or stacked". How
- * big the bust is, how wide the numbers are, how long the team's name is — none
- * of that is a function of the viewport, because the hero is one row whose three
- * parts each have a different natural width. It is measured, in `wireHeroFit`.
- *
- * And nothing truncates, hides or scrolls until every cheaper concession is
- * spent, in this order: whitespace, then type and column scale in proportion,
- * then word swaps, then wrapping. The headshot in particular does not vanish on
- * a phone — it shrinks to 65% and, below 460px, moves behind the name. A
- * reference header missing its figure is a worse product, not a smaller one.
- */
-
 /* ----------------------------------------------------------------- search */
 
 /*
@@ -1110,242 +808,6 @@ function renderPlayerSearch(
   );
 }
 
-function renderHero(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const { player, team } = data;
-  const Heading = options.embed ? "h2" : "h1";
-
-  const teamPrefix = options.teamPathPrefix ?? "/team/";
-  const query = options.linkQuery ?? "";
-
-  // Position and club are the two facts that place a player, so they lead on
-  // their own line. The measurements below them are the ones a reader scans
-  // for rather than arrives for, and the jersey number goes with them.
-  //
-  // The club is the hero's one word swap: "New England Patriots" at full
-  // width, "Patriots" when the row is tight, "NE" when it is tighter still.
-  // Cheaper than shrinking the type beside it, which is why stage 3 spends it
-  // before stage 5 touches the name's size.
-  const billingParts: string[] = [];
-  if (player.position) {
-    // The position in the club's own colour, which is the one place on this
-    // page the team's primary is used as ink rather than as a rule or a
-    // wash. It is the first thing read in the line and the fact that places
-    // the player, so it is the fact that takes the colour.
-    billingParts.push(
-      `<span class="scp-hero-pos">${escapeHtml(player.position)}</span>`,
-    );
-  }
-  if (team) {
-    // The short form, "ARI Cardinals", rides as an attribute and is shown as
-    // generated content only when the phone tier's fitter finds the full
-    // name would wrap (see wireHeroFit). The link's own text is always the
-    // full name, which is what a crawler and a screen reader get.
-    billingParts.push(
-      `<a class="scp-hero-team" href="${escapeHtml(
-        `${teamPrefix}${team.slug}/${query}`,
-      )}" target="_top" title="${escapeHtml(team.fullName)}"` +
-        ` data-scp-short="${escapeHtml(`${team.code} ${team.nickname}`)}">` +
-        `<span class="scp-hero-team-full">${escapeHtml(team.fullName)}</span>` +
-        `</a>`,
-    );
-  }
-  // The jersey number, last in the line of identity: it is the one fact here a
-  // reader already knows the player by rather than one that places them, and
-  // it leaves the line below as what it is, the measurements.
-  //
-  // Printed after the join rather than in it, inside a span that carries its
-  // own separator, so the phone tier can drop the number and its dot together
-  // (see the 480px tier in player.css) without leaving a dangling "·".
-  const sep = `<span class="scp-hero-sep"> ${DOT} </span>`;
-  const number = player.number
-    ? `<span class="scp-hero-num">${billingParts.length ? sep : ""}` +
-      `#${escapeHtml(String(player.number))}</span>`
-    : "";
-
-  const billing =
-    billingParts.length || number
-      ? `<p class="scp-hero-billing">` + billingParts.join(sep) + number + `</p>`
-      : "";
-
-  /*
-   * The measurements, whole at every width.
-   *
-   * This line is usually the widest thing in the column — wider than the name,
-   * because it is four facts and a name is one word — which is what made it
-   * the tempting one to shorten: "Exp 10 yrs" was dropped on a narrow screen
-   * and put back when the room came back.
-   *
-   * It is not dropped above phone width (the draft line goes in the
-   * two-column tier; below 480px the experience, the draft and the jersey
-   * number go). A header that edits the player's facts to fit its own layout is
-   * answering a question the reader did not ask, and the width it buys is
-   * width the LAYOUT can find for itself — below 760px the identity takes a row of its own, at full size,
-   * with every fact on it. See the tier map at the foot of player.css.
-   */
-  //
-  // The experience is the one exception, at phone width: it sits last, in a
-  // span with its own separator, and the 480px tier drops it with the draft
-  // line and the jersey number so the identity fits beside the figure.
-  const factParts: string[] = [];
-  if (player.age) factParts.push(`Age ${player.age}`);
-  const height = formatHeight(player.height);
-  if (height) factParts.push(height);
-  if (player.weight) factParts.push(`${player.weight} lbs`);
-  const exp =
-    player.years_exp !== null && player.years_exp !== undefined
-      ? player.years_exp === 0
-        ? "Rookie"
-        : `Exp ${player.years_exp} yrs`
-      : "";
-  const factsHead = escapeHtml(factParts.join(` ${DOT} `));
-  const factsExp = exp
-    ? `<span class="scp-hero-exp">${factsHead ? ` ${DOT} ` : ""}${escapeHtml(exp)}</span>`
-    : "";
-  const facts =
-    factsHead || factsExp
-      ? `<p class="scp-hero-facts">${factsHead}${factsExp}</p>`
-      : "";
-
-  // The draft, on the same terms the Bio tab prints it on: only when the year,
-  // the round and the pick are all known. `draft.json` writes a null row both
-  // for an undrafted player and for one whose draft simply is not recorded, so
-  // a partial row says nothing rather than guessing which.
-  //
-  // One length, never abbreviated. It is hidden at every width below 670px
-  // (the two-column tier and the phone tier in player.css), where the
-  // identity sits beside the figure and this is the line that made the
-  // column tallest. It is the least
-  // load-bearing fact in the column, and the Bio tab prints it in full.
-  const draft = data.bioProfile.draft;
-  const draftFull =
-    draft && draft.year && draft.round && draft.pick
-      ? `Drafted ${draft.year}: Round ${draft.round}, Pick ${draft.pick}` +
-        (draft.teamCode ? ` (${draft.teamCode})` : "")
-      : "";
-
-  // The current injury designation, which is the one piece of the hero that can
-  // be urgent. Omitted entirely when there is none — never "Healthy", which is
-  // a claim this data cannot support.
-  const designation = player.injury_status
-    ? `<div class="scp-hero-meta">` +
-      `<span class="scp-hero-flag">${escapeHtml(player.injury_status)}</span>` +
-      `</div>`
-    : "";
-
-  // The season the strip is a reading of, said once above it rather than
-  // folded into all three labels — "2026 PPR PPG" three times is the year
-  // shouted and the metric lost, and at 9.5px it wraps.
-  /*
-   * The panel, in three rows to a cell.
-   *
-   * Label above the figure rather than below it, which is the order a reader
-   * needs them in: the label is the question and the figure is the answer, and
-   * an answer read before its question has to be read twice. The third row is
-   * what the figure was worth — the positional finish, or what the count is
-   * out of — because a fantasy number without its rank is a number, not a
-   * reading.
-   *
-   * The first cell takes the gold. It is the figure this header exists to
-   * report, the same accent the open tab and the section rules use for "this
-   * is the one", and it means the panel has a reading order rather than three
-   * equal numbers competing.
-   */
-  const cells = heroStats(data);
-  const strip = cells.length
-    ? `<div class="scp-hero-stats">` +
-      `<p class="scp-hero-stats-season">${escapeHtml(`${data.season} Season`)}</p>` +
-      `<div class="scp-hero-stats-row">` +
-      cells
-        .map(
-          (cell) =>
-            `<div class="scp-hero-stat${cell.lead ? " is-lead" : ""}">` +
-            `<span class="scp-hero-stat-label">${escapeHtml(cell.label)}</span>` +
-            `<span class="scp-hero-stat-value">${escapeHtml(cell.value)}</span>` +
-            `</div>`,
-        )
-        .join("") +
-      `</div></div>`
-    : "";
-
-  // The club's mark, enormous and almost invisible, off the right edge inside
-  // the card's gutter. Same device and the same 4% the production grid uses —
-  // a page should not have two different ideas of how a watermark behaves.
-  const watermark = team
-    ? `<img class="scp-hero-mark" src="${escapeHtml(team.logo)}" alt=""` +
-      ` aria-hidden="true" loading="lazy" decoding="async" width="200" height="200" />`
-    : "";
-
-  const rootStyle = styleAttr([
-    team && `--team-primary:${team.primaryColor}`,
-    team && `--team-secondary:${team.secondaryColor}`,
-  ]);
-
-  /*
-   * The heading: the player's name, and only ever the player's name.
-   *
-   * A scoped URL used to print the section's phrase under it — "Jacoby
-   * Brissett" with "Stats 2026" beneath — so the header changed its text on
-   * every tab a reader clicked. The hero is this page's identity, and identity
-   * that rewrites itself on a tab click reads as though the page navigated
-   * somewhere else; it is also the one block on screen that has no business
-   * tracking which panel is open. The phrase belongs to the section, which
-   * prints it as its own H2 whether or not it is scoped — see renderStats(),
-   * renderGameLog(), renderInjury() and renderBio() — so the words are still
-   * on the page, under the heading that owns them. What the URL names is still
-   * said by the document title, the description and the tab strip.
-   *
-   * No short form of the name in the one-row or two-column tiers: there the
-   * fitter works with the name's SIZE, and when that runs out the layout
-   * changes instead. On a phone (below 480px) there is no layout left to
-   * change to, so the name shrinks by up to 15% and then becomes
-   * "J. Brissett" — mak's call, and the one place the header shortens it.
-   */
-  const { first, last } = splitName(player.name);
-
-  // The initial likewise rides as an attribute, for the phone tier alone:
-  // there the fitter shrinks the name by up to 15% first and only then
-  // swaps "Jacoby" for "J.", as generated content, so the heading's own text
-  // is the whole name at every width.
-  const title =
-    (first
-      ? `<span class="scp-title-first" data-scp-initial="${escapeHtml(`${first.charAt(0)}.`)}">` +
-        `<span class="scp-title-given">${escapeHtml(first)}</span></span> `
-      : "") +
-    `<span class="scp-title-last">${escapeHtml(last)}</span>`;
-
-  const draftLine = draftFull
-    ? `<p class="scp-hero-draft">${escapeHtml(draftFull)}</p>`
-    : "";
-
-  /*
-   * No probe in the HTML.
-   *
-   * The start/sit tool renders its measuring copies alongside the real ones,
-   * which is the right call in a React tree where the two could otherwise
-   * drift. Here the client clones the finished column instead — see
-   * wireHeroFit — which is a stricter guarantee of the same thing and keeps
-   * three duplicate copies of the player's name, club and draft out of a
-   * document whose entire job is to be indexed for that name.
-   */
-  return (
-    `<header class="scp-hero" data-scp-hero${rootStyle}>` +
-    `<span class="scp-hero-decor" aria-hidden="true"></span>` +
-    watermark +
-    `<div class="scp-hero-inner">` +
-    renderHeadshot(data) +
-    `<div class="scp-hero-text">` +
-    `<${Heading} class="scp-title">${title}</${Heading}>` +
-    billing +
-    facts +
-    draftLine +
-    designation +
-    `</div>` +
-    strip +
-    `</div>` +
-    `</header>`
-  );
-}
-
 /* ------------------------------------------------------------- section nav */
 
 interface Section {
@@ -1420,6 +882,8 @@ function renderNav(
         ` data-scp-panel-id="${escapeHtml(section.id)}"` +
         ` data-scp-heading="${escapeHtml(heading)}"` +
         ` data-scp-lead="${escapeHtml(lead)}"` +
+        // The header H1's second line for this tab; see headerKind().
+        ` data-scp-kind="${escapeHtml(headerKind(data, section.id))}"` +
         ` data-sc-title="${escapeHtml(title)}"` +
         `>${escapeHtml(section.label)}</a></li>`
       );
@@ -1485,52 +949,6 @@ function pageUrl(
   // game log and landing on Overview. A section URL is already that page.
   const hash = !options.section && changes.hash ? `#${changes.hash}` : "";
   return `${prefix}${data.player.slug}/${section}${query ? `?${query}` : ""}${hash}`;
-}
-
-/**
- * The start/sit call to action, where the scoring toggle used to stand.
- *
- * The toggle offered three renderings of one page and asked the reader to pick
- * one. Almost nobody picked: PPR is what the site ranks in, it was already the
- * default, and a control whose job is to be left alone is a control earning a
- * place in the sticky bar for nothing. What a reader on a profile in September
- * actually wants next is a verdict on this week, and that lives in Redraft
- * Command — so the bar carries the way there instead.
- *
- * `?format=standard` and `?format=half` are still real addresses the server
- * renders, and everything downstream of `data.format` still reads them; what
- * went is the control that advertised them. A reader who has one bookmarked
- * keeps it, and the page they get back is the one they asked for.
- *
- * The label names the player and the week because the button is a question in
- * the reader's own words, not a destination: "Should I Start or Sit Jacoby
- * Brissett Week 4?" is the thing they came to ask. The week is the next
- * fixture on this player's schedule — the same one the Upcoming Matchups cards
- * lead with — and it is dropped, rather than guessed at, when there is no
- * fixture left to name.
- *
- * Written out in full at every width, with no short form. "Start or Sit ·
- * Week 4" fitted a narrow bar and stopped being the reader's question: the
- * player's name is the half of it that makes it theirs. Where the bar is too
- * narrow to hold it beside the tabs, the tabs scroll — they already do — and
- * below 680px the bar stacks and the button takes a row of its own.
- */
-const STARTSIT_BASE =
-  "https://statchasers.com/redraft-command/launch/who-should-i-start/";
-
-function renderStartSit(
-  data: PlayerPageData,
-  options: PlayerRenderOptions,
-): string {
-  const week = data.upcoming[0]?.week ?? null;
-  const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(
-    data.player.slug,
-  )}`;
-
-  const weekPart = week === null ? "" : ` Week ${week}`;
-  const label = `Should I Start or Sit ${data.player.name}${weekPart}?`;
-
-  return `<a class="scp-startsit" href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
 /* --------------------------------------------------------------- overview */
@@ -1599,20 +1017,6 @@ function renderFantasySnapshot(data: PlayerPageData): string {
     { label: "Trend", value: outlook.formLabel, mod: outlook.formDirection },
   );
 
-  const sentence = seasonSentence({
-    name: player.name,
-    position: player.position,
-    season: data.season,
-    stats,
-    seasonRank: data.seasonRank,
-    td: data.tdDependency,
-    efficiency: efficiencyReads(data).map((row) => ({
-      label: row.label,
-      phrase: row.phrase,
-      percentile: row.percentile,
-    })),
-  });
-
   return (
     `<section class="scp-read-hero">` +
     // The page's section heading, the same one the Outlook tab and the Stats
@@ -1638,7 +1042,6 @@ function renderFantasySnapshot(data: PlayerPageData): string {
       )
       .join("") +
     `</div>` +
-    (sentence ? `<p class="scp-read-line">${escapeHtml(sentence)}</p>` : "") +
     `</section>`
   );
 }
@@ -1705,10 +1108,10 @@ function efficiencyReads(data: PlayerPageData): EfficiencyRead[] {
 /**
  * The efficiency rows, and the line that says what they are ranked against.
  *
- * ONE component, rendered on two tabs. Overview heads it "What Is Driving The
- * Production" and Stats heads it "Efficiency Profile", and underneath they are
- * the same four readings off the same four percentiles — which is exactly why
- * they must be the same markup. They were not: Stats drew a marker on a
+ * The Stats tab's "Efficiency Profile". Overview used to carry the same rows as
+ * "What Is Driving The Production" (removed 2026-09-29 — the Overview's meters
+ * section, lib/player/overview.ts, answers that now), and the two had to be the
+ * same markup for the reason that follows. They were not: Stats drew a marker on a
  * percentile track with a two-word verdict in a fifth column, Overview drew a
  * phrase with the rate muted underneath, and the two disagreed about the order
  * of the metrics as well. Two renderings of one measurement is how a page ends
@@ -1754,237 +1157,6 @@ function efficiencyNote(data: PlayerPageData): string {
       `${marks.position === "QB" ? "attempts" : "targets"} in ${marks.season}.`
     : `Not enough volume to rank against the position yet.`;
 }
-
-function renderProductionDrivers(data: PlayerPageData): string {
-  const rows = efficiencyRows(data);
-  if (!rows) return "";
-  return (
-    sectionHead("What Is Driving The Production", efficiencyNote(data)) + rows
-  );
-}
-
-/**
- * The weekly identity: the range his weeks actually land in.
- *
- * Observed, and stamped with how many weeks it is drawn from. The Outlook tab
- * carries a PROJECTED floor/expected/ceiling that looks similar and means
- * something different; the labels and the stamp are what keep the two apart.
- */
-function renderWeeklyProfile(data: PlayerPageData): string {
-  const range = weeklyFinishRange(data.gameLog);
-  const style = data.tdDependency;
-  const position = data.player.position ?? "";
-  const games = data.stats?.gamesPlayed ?? 0;
-
-  if (!range && style.label === "N/A") return "";
-
-  const spread = range
-    ? `<div class="scp-spread">` +
-      [
-        { key: "floor", head: "Floor", rank: range.floor },
-        { key: "typical", head: "Typical", rank: range.typical },
-        { key: "ceiling", head: "Ceiling", rank: range.ceiling },
-      ]
-        .map(
-          (step) =>
-            `<div class="scp-spread-step" data-key="${step.key}">` +
-            `<p class="scp-spread-head">${escapeHtml(step.head)}</p>` +
-            `<p class="scp-spread-rank">${escapeHtml(`${position}${step.rank}`)}</p>` +
-            `</div>`,
-        )
-        .join(`<span class="scp-spread-arrow" aria-hidden="true">&rarr;</span>`) +
-      `</div>` +
-      `<p class="scp-note">${escapeHtml(
-        `Where his ${range.weeks} weeks actually finished. Measured, not projected.`,
-      )}</p>`
-    : // The count, not just the verdict: "too early" reads as a hedge, and
-      // "1 game played" is the reason, which is the part worth printing.
-      `<p class="scp-note">${escapeHtml(
-        games > 0
-          ? `${games} game${games === 1 ? "" : "s"} played ${DOT} not enough of a sample for a true range yet.`
-          : "Not enough weeks yet to describe a range.",
-      )}</p>`;
-
-  const styleRow =
-    style.label === "N/A"
-      ? ""
-      : `<p class="scp-styleline">` +
-        `<span class="scp-styleline-label">Fantasy style</span>` +
-        `<span class="scp-styleline-value">${escapeHtml(style.tag)}</span>` +
-        `</p>`;
-
-  return (
-    sectionHead("Weekly Profile") +
-    spread +
-    renderDistribution(data) +
-    styleRow
-  );
-}
-
-/** The fantasy profile: six readings, and not one counting stat. */
-function renderFantasyProfile(data: PlayerPageData): string {
-  const { stats, outlook } = data;
-  if (!stats || stats.gamesPlayed === 0 || !outlook.hasData) return "";
-
-  const rows = fantasyProfile({
-    stats,
-    position: data.player.position,
-    seasonRank: data.seasonRank,
-    roleLabel: outlook.roleLabel,
-    formLabel: outlook.formLabel,
-    formDetail: outlook.formDetail,
-    formDirection: outlook.formDirection,
-    volatilityLabel: outlook.volatilityLabel,
-    td: data.tdDependency,
-  });
-
-  return (
-    sectionHead("Fantasy Profile") +
-    /*
-     * A two-column matrix rather than the Injury tab's full-width list.
-     *
-     * Six readings stacked one per row ran the height of a screen for six short
-     * phrases — "Starter", "Low sample", "0% top-12" — none of which is wide
-     * enough to earn a row of its own. Paired, the block is half as tall and
-     * reads the way a scouting sheet does.
-     *
-     * The level ramp is the OVERVIEW ramp, which is the Injury tab's inverted:
-     * there "high" is high risk and paints red, here a high ceiling rate is the
-     * good end, and one shared ramp would tell a reader that a good ceiling is
-     * a warning.
-     */
-    `<div class="scp-prof">` +
-    rows
-      .map(
-        (row: ProfileRow) =>
-          `<div class="scp-prof-cell" data-level="${escapeHtml(row.level ?? "")}">` +
-          `<p class="scp-prof-label">${escapeHtml(row.label)}</p>` +
-          `<p class="scp-prof-value">${escapeHtml(row.value)}</p>` +
-          `<p class="scp-prof-detail">${escapeHtml(row.detail)}</p>` +
-          `</div>`,
-      )
-      .join("") +
-    `</div>`
-  );
-}
-
-/**
- * Career Context in one strip, and a way through to the rest.
- *
- * One line rather than the four-tile career block that used to sit here: the
- * career rates, the season finishes and the full year-by-year table are all on
- * Stats now, and duplicating their headline here would rebuild the overlap this
- * split exists to remove. The link is the point of the section.
- */
-function renderCareerContext(
-  data: PlayerPageData,
-  options: PlayerRenderOptions,
-): string {
-  /*
-   * Read off the SAME rows the Stats tab's career table is built from.
-   *
-   * Not careerProfile, which is derived from the game logs and therefore covers
-   * only the four seasons those files reach back to. Using it here printed
-   * "Career 12.3 PPG" on Overview beside "10.1" on Stats — the same player's
-   * career average, two numbers, one page, because the two blocks counted
-   * different seasons. One source or they will drift again.
-   */
-  const { career, totals } = data.statsProfile;
-  if (career.length === 0) return "";
-
-  const best = career.reduce<number | null>(
-    (pick, row) =>
-      row.finish !== null && (pick === null || row.finish < pick) ? row.finish : pick,
-    null,
-  );
-
-  const parts = [
-    `${career.length} season${career.length === 1 ? "" : "s"}`,
-    best !== null ? `Best finish ${data.player.position ?? ""}${best}` : "",
-    totals.gamesPlayed > 0 ? `Career ${num(totals.ppg)} PPG` : "",
-  ].filter(Boolean);
-
-  if (parts.length === 0) return "";
-
-  // The Stats section's own URL. An in-page #stats anchor is dead on every
-  // section page but Stats, where the panel it names is not rendered.
-  const prefix = options.playerPathPrefix ?? "/player/";
-  const href = `${prefix}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
-
-  return (
-    sectionHead("Career Context") +
-    `<p class="scp-strip">` +
-    `<span class="scp-strip-stats">${escapeHtml(parts.join(` ${DOT} `))}</span>` +
-    `<a class="scp-crosslink" href="${escapeHtml(href)}">` +
-    escapeHtml("View full career stats") +
-    ` &rarr;</a></p>`
-  );
-}
-
-/** Where this player's weeks landed, as one stacked bar. */
-function renderDistribution(data: PlayerPageData): string {
-  const { stats, player } = data;
-  if (!stats || stats.gamesPlayed === 0) return "";
-
-  const segments: StackSegment[] = (
-    ["pos1", "pos2", "pos3", "bust"] as WeeklyTier[]
-  ).map((tier) => ({
-    tier,
-    label: weeklyTierLabel(tier, player.position),
-    pct:
-      tier === "pos1"
-        ? stats.pos1Pct
-        : tier === "pos2"
-          ? stats.pos2Pct
-          : tier === "pos3"
-            ? stats.pos3Pct
-            : stats.bustPct,
-    games:
-      tier === "pos1"
-        ? stats.pos1Games
-        : tier === "pos2"
-          ? stats.pos2Games
-          : tier === "pos3"
-            ? stats.pos3Games
-            : stats.bustGames,
-  }));
-
-  if (segments.every((s) => s.pct === 0)) return "";
-
-  const gooseEgg =
-    stats.gooseEggPct > 0
-      ? `<p class="scp-note">${escapeHtml(
-          `${pct(stats.gooseEggPct)} of games finished with no fantasy points.`,
-        )}</p>`
-      : "";
-
-  // No heading of its own: this is the evidence under "Weekly Profile", and a
-  // second section head immediately below that one read as two blocks saying
-  // the same thing.
-  return (
-    `<p class="scp-subhead">${escapeHtml("Where his weeks landed")}</p>` +
-    renderStackedBar(segments, { slim: true, showEmpty: true }) +
-    gooseEgg
-  );
-}
-
-/** Weekly points and the trailing average, for the weeks actually played. */
-function renderTrend(data: PlayerPageData): string {
-  const played = data.gameLog.filter((e) => e.game_status === "active");
-  if (played.length < 2) return "";
-
-  const points: SparkPoint[] = played.map((entry) => ({
-    week: entry.week,
-    opp: entry.opp,
-    value: fpts(entry, data.format),
-  }));
-
-  return (
-    h3("Week By Week") +
-    renderSparkline(points, rollingAverage(points.map((p) => p.value), 3))
-  );
-}
-
 
 /**
  * Efficiency Profile — the Overview tab's block, under a Stats tab heading.
@@ -2342,9 +1514,9 @@ function renderBio(
 
   if (!narrative && !timeline && !faq) return "";
 
-  // The tab's heading, on the scoped URL as well as in the full profile: the
-  // hero says the player's name and nothing else now, so this is the only
-  // place the page names the section. See renderHero().
+  // The tab's heading, on the scoped URL as well as in the full profile. The
+  // header's H1 subtitle names the tab too, in a shorter phrase; this is the
+  // panel's own heading. See renderHero().
   //
   // No subtitle: it listed the facts of the table directly beneath it.
   const heading = h2(`${data.player.name} Bio`);
@@ -3672,22 +2844,6 @@ function renderUpcoming(
 }
 
 /**
- * Three bands, for a restrained tint rather than a red-to-green ramp.
- *
- * The rank is the reading and the colour is a hint underneath it, so only the
- * top and bottom thirds are tinted at all and the middle is left alone. A card
- * per fixture in full green or full red turns a schedule into a traffic light
- * and buries the thing the block is actually for, which is who and when.
- */
-type MatchupBand = "soft" | "mid" | "tough";
-
-function matchupBand(rank: number): MatchupBand {
-  if (rank <= 10) return "soft";
-  if (rank >= 23) return "tough";
-  return "mid";
-}
-
-/**
  * The band, in a word.
  *
  * "12th vs QB" is only a reading if you hold the direction of the scale in your
@@ -3743,8 +2899,7 @@ function renderGameLog(
   // them renders, so the page never shows two selectors.
   const seasons = renderLogSeasons(data, options);
 
-  // Printed on the scoped URL too, since the hero no longer carries the
-  // section's phrase; see renderHero().
+  // The panel's own heading, printed on the scoped URL too.
   const heading = h2(`${data.player.name} Game Log ${current.season}`);
 
   return (
@@ -3752,8 +2907,7 @@ function renderGameLog(
     // No scoring control here, and none anywhere else either. This tab used to
     // print its own toggle on a scoped URL, because a section page had no
     // control bar above it to carry one; the bar came back when the sections
-    // became addresses, and then the toggle went from the bar (see
-    // renderStartSit). `?format=half` is still a URL the server renders — what
+    // became addresses, and then the toggle went from the bar. `?format=half` is still a URL the server renders — what
     // is gone is the control that advertised it, on the page where the numbers
     // it changes live.
     //
@@ -4494,8 +3648,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
    * What they were for was authority — who, which season, how far in — and the
    * page earns that by being right rather than by captioning itself.
    */
-  // Printed on the scoped URL too, since the hero no longer carries the
-  // section's phrase; see renderHero().
+  // The panel's own heading, printed on the scoped URL too.
   const heading = h2(`${data.player.name} Stats ${data.season}`);
 
   return (
@@ -4909,7 +4062,7 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
     .join("");
 
   // The tab's heading, and the thing that names the panel — on the scoped URL
-  // as well, now that the hero is the player's name alone. See renderHero().
+  // as well. See renderHero().
   const heading = h2(
     `${data.player.name} Injury Update & History`,
     "Current status, games missed and every logged injury.",
@@ -4928,24 +4081,6 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
 }
 
 /* -------------------------------------------------------------------- news */
-
-/**
- * How severe a designation is, for the pill's accent.
- *
- * Four buckets, matching the team hub's `injurySeverity` exactly so the same
- * status is the same colour on both pages. Anything unrecognised is treated as
- * "questionable" rather than dropped — an unfamiliar designation is still a
- * designation, and guessing it is harmless while hiding it is not.
- */
-function designationSeverity(status: string | null | undefined): string {
-  const key = (status ?? "").trim().toLowerCase();
-  if (/^(out|ir|pup|nfi|susp|dnr|doubtful-out)/.test(key) || key.includes("injured reserve")) {
-    return "out";
-  }
-  if (key === "doubtful") return "doubtful";
-  if (key === "probable" || key === "active" || key === "full") return "probable";
-  return "questionable";
-}
 
 /**
  * The current injury report card.
@@ -5210,6 +4345,16 @@ function renderPlayerFaqSchema(
   items: Array<{ question: string; answer: string }>,
   options: PlayerRenderOptions,
 ): string {
+  // One question once. The Overview's FAQ and the Game Log's both ask what he
+  // is averaging; a FAQPage that repeats a question is a page asking a crawler
+  // to choose between two answers. The first, in document order, is kept.
+  const seen = new Set<string>();
+  items = items.filter((entry) => {
+    const key = entry.question.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (items.length === 0) return "";
 
   if (options.embed) {
@@ -5420,18 +4565,25 @@ export function renderPlayerPage(
 
   const overviewBody =
     renderFantasySnapshot(data) +
-    band([renderFantasyProfile(data), renderProductionDrivers(data)]) +
-    band([
-      renderWeeklyProfile(data),
-      renderTrend(data),
-      renderRoleDirection(data),
-    ]) +
-    band([renderCareerContext(data, options)]);
+    // The profile band ("Fantasy Profile", "What Is Driving The Production"),
+    // the weekly one's "Weekly Profile" and "Week By Week" chart, and "Career
+    // Context" are gone: the read's sidebar profile, the meters, the season
+    // strip and the career table further down the tab answer all five.
+    band([renderRoleDirection(data)]);
 
   // The wrapper is what every rule on this tab is scoped to — the sections
   // below reuse markup the Stats and Injury tabs own, and Overview's tighter
   // rhythm must not follow those classes onto the other tabs.
-  const overview = overviewBody ? `<div class="scp-ov">${overviewBody}</div>` : "";
+  //
+  // Under it, the sections of the Overview spec — see
+  // lib/player/overview.ts. Its FAQ feeds the page's one FAQPage node.
+  const overview =
+    (overviewBody ? `<div class="scp-ov">${overviewBody}</div>` : "") +
+    // The peers rail sits above the Overview's FAQ, and under every other tab
+    // where it always stood (see the copy after the panels below).
+    renderOverviewSections(data, withFaq("overview"), {
+      peers: renderPositionPeers(data, options),
+    });
 
   const bio = renderBio(data, withFaq("bio"));
 
@@ -5521,10 +4673,9 @@ export function renderPlayerPage(
       ` data-format="${escapeHtml(data.format)}"` +
       ` data-section="${escapeHtml(scoped.id)}">` +
       renderPlayerSearch(options) +
-      renderHero(data, options) +
+      renderHero(data, options, scoped.id) +
       `<div class="scp-controls">` +
       renderNav(sections, data, options, scoped.id) +
-      renderStartSit(data, options) +
       `</div>` +
       `<section class="scp-section is-default is-active" data-scp-panel` +
       ` id="${escapeHtml(scoped.id)}">` +
@@ -5575,15 +4726,19 @@ export function renderPlayerPage(
       : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
     ` data-format="${escapeHtml(data.format)}">` +
     renderPlayerSearch(options) +
-    renderHero(data, options) +
+    renderHero(data, options, sections[0]?.id) +
     `<div class="scp-controls">` +
     renderNav(sections, data, options) +
-    renderStartSit(data, options) +
     `</div>` +
     body +
     // Outside the panels: the rail stands under whichever tab is open, because
     // it is the way out of the page rather than part of any one tab's argument.
-    renderPositionPeers(data, options) +
+    // The Overview carries its own copy above its FAQ, so this one stands down
+    // while that tab is open — see .scp-peers-out in player.css.
+    (() => {
+      const rail = renderPositionPeers(data, options);
+      return rail ? `<div class="scp-peers-out">${rail}</div>` : "";
+    })() +
     // Document order, so the node reads down the page the way the questions do.
     renderPlayerFaqSchema(
       sections.flatMap((section) => faqBySection.get(section.id) ?? []),

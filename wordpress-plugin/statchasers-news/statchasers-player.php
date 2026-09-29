@@ -94,7 +94,7 @@ const STATCHASERS_PLAYER_FORMATS = array( 'standard', 'half', 'ppr' );
  * is the full profile exactly as before.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
- * @return array{slug:string,format:string,section:string,log:string}
+ * @return array{slug:string,format:string,section:string,log:string,adv:string}
  */
 function statchasers_player_args( array $atts ): array {
 	$atts = shortcode_atts(
@@ -145,6 +145,15 @@ function statchasers_player_args( array $atts ): array {
 	$year = (int) $log;
 	$log  = ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) + 1 ) ? (string) $year : '';
 
+	// Which season the Advanced section shows, the same way and for the same
+	// reason: the API prints `?adv=<season>` chips on that section as real
+	// links, and a page that dropped the parameter answered every chip with the
+	// latest season — a link that did nothing. Same range as `log`; the API
+	// narrows it again to the seasons that have a table.
+	$adv  = statchasers_player_query_value( 'adv' );
+	$year = (int) $adv;
+	$adv  = ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) + 1 ) ? (string) $year : '';
+
 	// A closed list, matching SECTIONS in the API's routes/player.ts. An
 	// unrecognised value is dropped rather than passed through: the API would
 	// ignore it and serve the full profile, which at a URL promising one section
@@ -170,6 +179,7 @@ function statchasers_player_args( array $atts ): array {
 		'format'  => $format,
 		'section' => $section,
 		'log'     => $log,
+		'adv'     => $adv,
 	);
 }
 
@@ -205,9 +215,10 @@ function statchasers_player_query_value( string $key ): string {
  * @param string $format  Scoring format.
  * @param string $section Section to scope to, or '' for the whole profile.
  * @param string $log     Season the Game Log is pinned to, or '' for the latest.
+ * @param string $adv     Season the Advanced section shows, or '' for the latest.
  * @return array{html:string,version:string}|null Null when nothing is available.
  */
-function statchasers_player_fetch( string $slug, string $format, string $section = '', string $log = '' ): ?array {
+function statchasers_player_fetch( string $slug, string $format, string $section = '', string $log = '', string $adv = '' ): ?array {
 	$origin = statchasers_news_origin();
 	if ( '' === $origin || '' === $slug ) {
 		return null;
@@ -218,6 +229,10 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	// whichever is requested first wins for both.
 	// The Game Log's season is in the key for the same reason the section is: it
 	// changes the table, and two readers on two seasons must not share a render.
+	// The Advanced season likewise, tagged so `log=2024` and `adv=2024` cannot
+	// hash to the same key — and appended only when set, so the key of every
+	// render without it is the key it had before, and the backups filed under
+	// those keys still answer during an outage the day this ships.
 	// The heading mode is in the key for the same reason the section is: it
 	// changes the markup the API returns — one panel's <h2> comes back as the
 	// page's <h1> — and a fragment cached under one mode must not be served
@@ -227,7 +242,7 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 
 	$key        = md5(
 		$origin . '|' . $slug . '|' . $format . '|' . $section . '|' . $log .
-		'|' . ( $own_heading ? 'h1' : '' )
+		'|' . ( $own_heading ? 'h1' : '' ) . ( '' === $adv ? '' : '|adv' . $adv )
 	);
 	$cache_key  = 'sc_player_ssr_' . $key;
 	$backup_key = 'sc_player_ssr_bak_' . $key;
@@ -246,6 +261,9 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	}
 	if ( '' !== $log ) {
 		$url = add_query_arg( 'log', $log, $url );
+	}
+	if ( '' !== $adv ) {
+		$url = add_query_arg( 'adv', $adv, $url );
 	}
 	if ( $own_heading ) {
 		$url = add_query_arg( 'h1', '1', $url );
@@ -400,6 +418,22 @@ function statchasers_player_index_shortcode(): string {
 add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_shortcode' );
 
 /**
+ * The profile's own webfonts: Archivo with the width axis for the header and
+ * the Overview's lower sections, and Source Serif 4 for the Overview's read.
+ *
+ * The header is set in its own face rather than the tool's Inter (see
+ * .scp-phead in player.css) — its name and big numbers use condensed widths,
+ * which is why the `wdth` axis is requested. Return '' from the filter to serve
+ * it yourself or not at all; the stack falls back to Helvetica Neue and Arial.
+ */
+function statchasers_player_header_font_url(): string {
+	return (string) apply_filters(
+		'statchasers_player_header_font_url',
+		'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap'
+	);
+}
+
+/**
  * Register and enqueue the player page's compiled bundles.
  *
  * Separate handles from the news tool and the team hub: three stylesheets,
@@ -415,10 +449,17 @@ function statchasers_player_enqueue_assets(): void {
 	$version = statchasers_news_asset_version();
 
 	if ( ! wp_style_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
+		$deps        = statchasers_font_dependency();
+		$header_font = statchasers_player_header_font_url();
+		if ( '' !== $header_font ) {
+			// No version: the URL is the version, as with the Inter handle.
+			wp_register_style( 'statchasers-player-header-font', $header_font, array(), null );
+			$deps[] = 'statchasers-player-header-font';
+		}
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
 			$origin . '/player.css',
-			statchasers_font_dependency(),
+			$deps,
 			$version
 		);
 	}
@@ -645,7 +686,9 @@ function statchasers_player_auto_index( string $content ): string {
 		return $content;
 	}
 
-	$html = statchasers_player_index_shortcode();
+	// Called directly, not through do_shortcode, so the unlinking that
+	// do_shortcode_tag does for every other mount is done here.
+	$html = statchasers_player_unlink_missing( statchasers_player_index_shortcode() );
 
 	if ( '' === trim( $html ) ) {
 		return $content;
@@ -803,7 +846,8 @@ function statchasers_player_shortcode( $atts = array() ): string {
 		$args['slug'],
 		$args['format'],
 		$args['section'],
-		$args['log']
+		$args['log'],
+		$args['adv']
 	);
 
 	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
@@ -933,7 +977,8 @@ function statchasers_player_page_html(): string {
 		$args['slug'],
 		$args['format'],
 		$args['section'],
-		$args['log']
+		$args['log'],
+		$args['adv']
 	);
 
 	if ( null === $data || ! isset( $data['html'] ) ) {
@@ -1244,14 +1289,15 @@ add_action( 'template_redirect', 'statchasers_player_overview_redirect', 9 );
  * Returns '' when the fragment says nothing, and the title then carries no year
  * — better than carrying a wrong one.
  *
- * @param array{slug:string,format:string,section:string,log:string} $args Mount arguments.
+ * @param array{slug:string,format:string,section:string,log:string,adv:string} $args Mount arguments.
  */
 function statchasers_player_log_season( array $args ): string {
 	$data = statchasers_player_fetch(
 		$args['slug'],
 		$args['format'],
 		$args['section'],
-		$args['log']
+		$args['log'],
+		$args['adv']
 	);
 	if ( ! is_array( $data ) || ! isset( $data['html'] ) ) {
 		return '';
@@ -1323,22 +1369,23 @@ add_filter(
 
 /**
  * Clear cached player renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_player_flush(): void {
-	global $wpdb;
-
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_player_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_player_ssr_' ) . '%'
-		)
-	);
+function statchasers_player_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_player_ssr_', $all );
 
 	// The page builder's copy of the API's player list, so a build run after
 	// a deploy sees the players the deploy added.
 	delete_transient( 'sc_player_roster' );
 	delete_transient( 'sc_player_roster_fail' );
+
+	// And the two backups beside those — the profile index and the roster —
+	// only on the way out, for the same reason the render backups stay.
+	if ( $all ) {
+		delete_transient( 'sc_player_roster_bak' );
+		statchasers_flush_transients( 'sc_player_idx_', true );
+	}
 }
 
 /* ------------------------------------------------------ section-URL metadata */
@@ -1530,6 +1577,13 @@ add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_breadcrum
  * left out: it redirects. Only while the rewrite is live, or this would list
  * addresses that 404.
  *
+ * Only under a page that mounts a profile. The container's children are not
+ * all profiles — an editor can park any page there — and a child without the
+ * shortcode serves none of the six sections: statchasers_player_indexed_
+ * section() answers '' on it, so the sitemap was listing six addresses per
+ * such page that are that page's own content again, canonical to the page —
+ * URLs a crawler is told to index and then told are not the page.
+ *
  * @param string $content Entries Rank Math has already built.
  * @return string
  */
@@ -1543,21 +1597,28 @@ function statchasers_player_sitemap_sections( $content ) {
 		return $content;
 	}
 
-	$ids = get_posts(
+	// Whole posts rather than ids: the content is needed for the shortcode
+	// check, and one query for ~640 rows beats ~640 get_post() lookups.
+	$posts = get_posts(
 		array(
-			'post_type'      => 'page',
-			'post_parent'    => $container,
-			'post_status'    => 'publish',
-			'numberposts'    => -1,
-			'fields'         => 'ids',
-			'orderby'        => 'ID',
-			'order'          => 'ASC',
-			'no_found_rows'  => true,
+			'post_type'              => 'page',
+			'post_parent'            => $container,
+			'post_status'            => 'publish',
+			'numberposts'            => -1,
+			'orderby'                => 'ID',
+			'order'                  => 'ASC',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
 		)
 	);
 
 	$extra = '';
-	foreach ( $ids as $id ) {
+	foreach ( $posts as $post ) {
+		if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
+			continue;
+		}
+		$id      = (int) $post->ID;
 		$profile = trailingslashit( (string) get_permalink( (int) $id ) );
 		$lastmod = (string) get_post_modified_time( 'c', true, (int) $id );
 

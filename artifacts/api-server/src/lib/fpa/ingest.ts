@@ -34,7 +34,7 @@ import {
   type InsertFpaGame,
   type InsertFpaSnapshot,
 } from "../db";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, max } from "drizzle-orm";
 import { logger } from "../logger";
 import { getTeamByAbbreviation } from "../team/teams";
 import { currentSeasonWeight } from "./blend";
@@ -357,7 +357,7 @@ export async function ingestFpa(
   }
 
   // A season that has not started 404s, which is the normal preseason state
-  // and not a failure.
+  // and not a failure. Any other fetch failure rethrows and writes nothing.
   let currentRows: ScoredPlayerWeek[] = [];
   try {
     currentRows = (await fetchScoredWeeklyStats(currentSeason)).filter(
@@ -379,6 +379,22 @@ export async function ingestFpa(
     ? null
     : Math.max(...currentRows.map((r) => r.week));
   const dataMode = isPreseason ? "preseason_baseline" : `week_${weekNumber}`;
+
+  // Weeks only move forward. A run that would serve fewer weeks than the table
+  // already holds — nflverse briefly publishing a partial file, or a season
+  // that 404s after it has been ingested — is a bad upstream day, not news.
+  // Refusing keeps the last good table up; the next scheduled run tries again.
+  const [stored] = await db
+    .select({ week: max(fpaSnapshots.weekNumber) })
+    .from(fpaSnapshots)
+    .where(eq(fpaSnapshots.season, currentSeason));
+  const storedWeek = stored?.week ?? null;
+  if (storedWeek !== null && (weekNumber ?? 0) < storedWeek) {
+    throw new Error(
+      `FPA ingest refused: ${currentSeason} would go back from week ${storedWeek} ` +
+        `to ${weekNumber === null ? "preseason" : `week ${weekNumber}`}`,
+    );
+  }
 
   const snapshotRows: InsertFpaSnapshot[] = [];
   for (const format of SCORING_FORMATS) {

@@ -125,6 +125,22 @@ router.get("/fpa", (req, res) => {
         },
       );
 
+      // Same rule as /embed/fpa, which already 404s: a season asked for by
+      // name with no snapshots is a page that does not exist, not an empty
+      // table. Only the default table's absence is the honest empty state.
+      if (!result.data && query(req).season !== undefined) {
+        noStoreHtml(
+          res,
+          404,
+          `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
+          `<meta name="robots" content="noindex" /><title>Not found</title>` +
+          `</head><body><h1>Not found</h1>` +
+          `<p>There is no Fantasy Points Allowed table for that season.</p>` +
+          `</body></html>`,
+        );
+        return;
+      }
+
       const dev = liveReload().enabled;
 
       if (!dev) {

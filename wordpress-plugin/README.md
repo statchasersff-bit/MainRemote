@@ -299,7 +299,7 @@ anchors to the section pages. Their discovery rests on the sitemap below and on
 the site's own navigation — so the flag and the sitemap must move together.
 
 **Sitemap.** With the flag on, the six section URLs of every published hub
-page are appended to Rank Math's page sitemap through
+page — a page at a team's slug that carries `[statchasers_team]` — are appended to Rank Math's page sitemap through
 `rank_math/sitemap/page_content`. Off, they are not, so the sitemap can never
 advertise the URLs before the rewrite serves them. That filter name is the one
 piece of the Rank Math integration not confirmed against an installed build —
@@ -323,7 +323,10 @@ created before the current hub wording (`<team> <season>: Record, Schedule,
 Stats & Fantasy Football`) keep the old one until you move them: **Tools →
 StatChasers Pages → Hub titles** shows a dry run first (`N eligible · N
 custom titles left alone`) and the button updates only pages whose stored title
-is empty or is exactly the old generated template, in any season. Anything else
+is empty or is exactly one of the two generated templates — the old `<season>
+<team> Fantasy Football Hub` or the current one — in any season. That second
+case is the season rollover: after `STATCHASERS_TEAM_SEASON` moves on, every hub
+still on last season's generated title is eligible. Anything else
 was typed by a person and is kept, and is listed by slug so you can see which.
 Descriptions are not migrated: the generated wording did not change.
 
@@ -338,10 +341,15 @@ One evergreen page for every pair of teams — 32 × 31 / 2 = 496 — at:
 Not two. The pair is put in one order — the two slugs alphabetically — by
 `canonicalizeMatchupPair()` on the API (`src/lib/matchup/pair.ts`), and every
 URL in the app is built from that. Which team's hub the reader came from cannot
-reach the address. `/nfl/philadelphia-eagles-vs-new-england-patriots/`,
-`/nfl/phi-vs-ne/` and `/nfl/eagles-vs-patriots/` are all 301s to the one above;
-a fake team, a team against itself, or anything else under `/nfl/` that is not
-two different real teams is a true 404, never a hub.
+reach the address. `/nfl/philadelphia-eagles-vs-new-england-patriots/` is a 301
+to the one above; a fake team, a team against itself, or anything else under
+`/nfl/` that is not two different real teams is a true 404, never a hub.
+
+**WordPress takes full team slugs only.** The API origin also answers the short
+spellings — `/nfl/phi-vs-ne/` and `/nfl/eagles-vs-patriots/` 301 to the full
+pair there — but the plugin does not: it validates both halves against its own
+table of the 32 full slugs, so on the site those addresses are 404s. Nothing on
+the site links to them; every pair link the API prints uses the full slugs.
 
 **No pages are created for pairs.** A rewrite rule sends every pair URL to one
 holder page, `/nfl/matchup/`, which carries `[statchasers_matchup]` and is
@@ -381,6 +389,15 @@ way to the evergreen head-to-head, and the game moves to an address of its own.
 /nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/  one meeting
 ```
 
+A postseason game is addressed by its round, exactly as `gameSegment()` in
+`src/lib/matchup/pair.ts` spells it: `/2025-wild-card/`, `/2025-divisional/`,
+`/2025-conference-championship/`, `/2025-super-bowl/`, and
+`/2025-postseason-week-N/` for a round the API has no name for. The plugin's
+rewrite and its validator (`statchasers_matchup_parse_game()`, mirroring
+`parseGameSegment()`) accept exactly those, and hand the segment to the API's
+`?game=` as spelled. The page is headed and titled by the round —
+`…, Super Bowl 2025`.
+
 The dated page is always a recap — hero score line, quarter-by-quarter scoring,
 leaders, every player-stat table, the takeaways and the snap counts — headed
 `New England Patriots vs Seattle Seahawks, Week 1 2026` so it cannot compete
@@ -393,7 +410,8 @@ duplicates of each other. The API answers which case a request is in through
 `X-Matchup-Game: current | archived`, and the plugin mirrors the redirect rather
 than trying to work out the window for itself. A week the two did not play, or
 one that never finished, is a 404 — and so is a near-miss spelling like
-`2026-week-01`, which no page links to and nothing generates.
+`2026-week-01` or `2025-superbowl`, which no page links to and nothing
+generates.
 
 **Discovery is the meetings list.** Every archived meeting on the pair's page
 carries a real `Recap →` link to its own address; the game the page is still
@@ -404,9 +422,18 @@ no schedule of its own and will not advertise an address it cannot confirm
 exists.
 
 `statchasers_matchup_game_meta()` mirrors the `data.pinned` branch of
-`matchupPageMeta()`; change one and change the other. The rewrite rule rides the
-same `statchasers_matchup_urls` filter as the pair URLs, so enabling one enables
-both — flush permalinks once after.
+`matchupPageMeta()`; change one and change the other. (One known difference: for
+a postseason game the plugin says `Super Bowl 2025` where the API's pinned meta
+still says `Week 5 2025`.) The rewrite rule rides the same
+`statchasers_matchup_urls` filter as the pair URLs, so enabling one enables
+both. No permalink save is needed: the rule's signature is remembered, and a
+change to it — a first install, or an upgrade that changed the rule — flushes
+the rule table on the next request.
+
+**The breadcrumb skips the holder.** Rank Math builds the trail from the page
+the rewrite resolved to, which would end every pair at `/nfl/matchup/`. The
+plugin takes that crumb out and appends the pair — Home › NFL › New England
+Patriots vs Philadelphia Eagles — and, on a dated address, the game after it.
 
 A finished game also returns `X-Matchup-Score` — the result in one clause,
 `Seahawks won 13-10.`, written by `matchupScoreLine()`. The postgame
@@ -520,13 +547,15 @@ real links, and the shortcode reads what they set back out of the URL:
 |-----------|---------|
 | `?format=` | `standard`, `half` or `ppr`. Overridden by a `format` attribute. |
 | `?log=`    | The season the **Game Log** tab shows, e.g. `?log=2024`. |
+| `?adv=`    | The season the **Advanced** section shows, e.g. `?adv=2024`. Same range check as `?log=`. |
 
-Both are cached separately, and both carry `rel="nofollow"` on every link that
+Each is cached separately, and both carry `rel="nofollow"` on every link that
 is not the current one — one game log per player is the page that ranks, and a
 pinned season is a rendering of it rather than a second address competing with
 it. Nothing else on the page moves when `?log=` is set: the injury history, the
 outlook and the advanced metrics all stay on the player's active season, because
-the reader re-scoped a tab and not the profile.
+the reader re-scoped a tab and not the profile. `?adv=` is the same bargain for
+the Advanced section's season chips. The canonical drops both.
 
 ### Why this shortcode is what makes player pages rank
 
@@ -740,8 +769,12 @@ relevant page — not JS-only navigation.
 
 The plugin does not compete with your SEO plugin. It emits **no** canonical, no
 `<title>`, no meta description, no `og:*`, no robots directive and no
-breadcrumbs — Rank Math already produces all of those, and a second set would be
-a conflicting signal rather than a stronger one.
+breadcrumbs of its own — Rank Math already produces all of those, and a second
+set would be a conflicting signal rather than a stronger one. On the virtual
+addresses Rank Math cannot see (team and player sections, matchup pairs and
+games, schedule weeks) the plugin corrects Rank Math's own trail through
+`rank_math/frontend/breadcrumb/items`, so its last step is the page actually
+being read.
 
 The plugin adds **no** application node. It used to hang a
 `SoftwareApplication` / `WebApplication` node on every news and team page, and
@@ -750,7 +783,8 @@ plus an `aggregateRating` or `review` — flagging every URL that carried it, th
 team Schedule pages included. A news feed and a team hub are pages people read,
 not applications they install, and the only rating we could supply is an
 invented one. So with Rank Math present, the page's `WebPage` and
-`BreadcrumbList` are Rank Math's and this plugin adds nothing to them.
+`BreadcrumbList` are Rank Math's; the plugin adds no nodes to them beyond the
+crumbs described above.
 
 What it does add goes **into Rank Math's own graph** via the `rank_math/json_ld`
 filter, so the page keeps one `<script type="application/ld+json">`:
@@ -1032,10 +1066,13 @@ sitemap.
   board's week links are built on the API side from `SC_SCHEDULE_PATH`. If they
   disagree, every week link on the page 404s. Moving the page means changing
   both — filter `statchasers_schedule_page_path` for the first.
-- **Flush permalinks after upgrading.** The rewrite rule is registered on
-  `init`, but WordPress only rewrites its rule table when something asks it to:
-  visit Settings → Permalinks once, or deactivate and reactivate the plugin.
-  Until then the week URLs 404.
+- **No permalink save after upgrading.** WordPress only rewrites its rule table
+  when something asks it to, so the rule remembers its own signature, and a
+  change to it — a first install, an upgrade, a filtered page path — flushes the
+  table on the next request. Same self-heal as the rankings positions.
+- **The breadcrumb ends at the week.** Rank Math's trail on `/week-7/` ends at
+  the schedule page; the plugin appends `Week 7` at the week's own URL, on the
+  schedule page only and only for a week the season has.
 - **A week URL beats the `week` attribute, and the `view` with it.** A page
   reached at `/week-7/` renders the weekly board on week 7 whatever the
   shortcode says, because the address is the promise; the bare page renders the
@@ -1220,6 +1257,11 @@ After a deploy you can force a refresh:
 ```bash
 wp eval 'statchasers_news_flush();'
 ```
+
+That, the **Clear cached renders** button and the team build all clear the
+fresh copies only; the 24-hour backups stay, so a flush followed by an API
+outage still serves the last good render. Deactivating the plugin removes
+everything, backups included.
 
 ## Performance-plugin notes
 

@@ -61,7 +61,7 @@ class SCDC_FantasyPros {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout'    => 15,
+				'timeout'    => 10,
 				'user-agent' => 'Mozilla/5.0 (compatible; StatChasers/1.0)',
 				'headers'    => array( 'Accept' => 'text/html' ),
 			)

@@ -28,6 +28,8 @@ import { contentVersion, ensureFreshness, freshness } from "./lib/freshness";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Express = express();
+// Says nothing a client needs and names the framework to anyone probing.
+app.disable("x-powered-by");
 
 app.use(
   pinoHttp({
@@ -232,6 +234,16 @@ const HASHED_ASSETS = new Set(
 );
 
 let builtAssetVersion: string | null = null;
+
+// The bundles' source maps are a build artefact for this workspace, not
+// something to publish: in production they 404 like any other unknown path.
+app.use((req, res, next) => {
+  if (process.env["NODE_ENV"] === "production" && req.path.endsWith(".map")) {
+    res.status(404).set("X-Robots-Tag", "noindex").type("text").send("Not found");
+    return;
+  }
+  next();
+});
 
 app.use(
   express.static(publicDir, {

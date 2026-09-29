@@ -143,3 +143,17 @@ is(
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'off';
 is( statchasers_schedule_shortcode_heading( 2026 ), '', 'and with headings off it prints none' );
+
+// The trail. Rank Math's ends at the schedule page the rewrite resolved to; the
+// week URL's own crumb goes on the end, at the week's own address.
+echo "\nthe week is the breadcrumb's last step\n";
+
+$sched_trail = array(
+	array( 'Home', 'https://example.com/', 'hide_in_schema' => false ),
+	array( 'NFL', 'https://example.com/nfl/', 'hide_in_schema' => false ),
+	array( '2026 NFL Schedule', 'https://example.com/nfl/nfl-schedule/', 'hide_in_schema' => false ),
+);
+$crumbs = statchasers_schedule_breadcrumbs( $sched_trail );
+is( count( $crumbs ), 4, 'one crumb is added' );
+is( $crumbs[3][0] ?? '', 'Week 7', 'named for the week' );
+is( $crumbs[3][1] ?? '', 'https://example.com/nfl/nfl-schedule/week-7/', 'at the week URL' );

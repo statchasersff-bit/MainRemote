@@ -362,10 +362,25 @@ function statchasers_rb_handcuffs_schema( string $url ): array {
 }
 
 /**
+ * The schema.org page types the board may be the mainEntity of: WebPage and
+ * the subtypes a Rank Math page node plausibly carries, whose mainEntity is
+ * free for the page's subject. Never FAQPage or QAPage.
+ */
+const STATCHASERS_RB_HANDCUFFS_PAGE_TYPES = array( 'WebPage', 'CollectionPage', 'ItemPage', 'AboutPage', 'ProfilePage', 'SearchResultsPage' );
+
+/**
  * Graft the tool node onto Rank Math's graph, as the page's mainEntity.
  *
  * The WebPage node is found by its @type rather than its array key, because
  * the key Rank Math uses varies by page type.
+ *
+ * By a closed list of page types, not "any @type containing Page". FAQPage
+ * contains it too, and this runs at priority 99 — after the FAQ island has put
+ * its node in the graph — so the substring test could hang the board on the
+ * FAQPage, whose mainEntity is its list of questions, and throw them away.
+ * QAPage is left off for the same reason. And a node that already names a
+ * mainEntity keeps it: this is an addition to the graph, never a replacement
+ * of something another filter decided.
  *
  * @param array<string,mixed> $data Rank Math's graph.
  * @return array<string,mixed>
@@ -387,11 +402,12 @@ function statchasers_rb_handcuffs_rank_math_schema( $data ) {
 		if ( 'statchasersRbHandcuffs' === $key || ! is_array( $node ) || empty( $node['@type'] ) ) {
 			continue;
 		}
-		foreach ( (array) $node['@type'] as $type ) {
-			if ( false !== strpos( (string) $type, 'Page' ) ) {
-				$data[ $key ]['mainEntity'] = array( '@id' => $url . '#rb-handcuff-rankings' );
-				break 2;
-			}
+		if ( ! empty( $node['mainEntity'] ) ) {
+			continue;
+		}
+		if ( array_intersect( (array) $node['@type'], STATCHASERS_RB_HANDCUFFS_PAGE_TYPES ) ) {
+			$data[ $key ]['mainEntity'] = array( '@id' => $url . '#rb-handcuff-rankings' );
+			break;
 		}
 	}
 
@@ -610,15 +626,9 @@ function statchasers_rb_handcuffs_strip_faq_data( string $html ): string {
 
 /**
  * Clear cached renders. Called by statchasers_news_flush().
+ *
+ * The outage backups are kept unless $all: see statchasers_flush_transients().
  */
-function statchasers_rb_handcuffs_flush(): void {
-	global $wpdb;
-
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_sc_rbh_ssr_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_sc_rbh_ssr_' ) . '%'
-		)
-	);
+function statchasers_rb_handcuffs_flush( bool $all = false ): void {
+	statchasers_flush_transients( 'sc_rbh_ssr_', $all );
 }

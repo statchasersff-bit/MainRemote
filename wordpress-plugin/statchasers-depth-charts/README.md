@@ -164,7 +164,9 @@ request is one of these routes, so no other page on the site is affected.
 `rank_math/sitemap/index`.
 
 - The **canonical is self-referencing** for each team URL; filtered variants
-  consolidate onto it. Only one canonical tag is ever emitted.
+  consolidate onto it. The bare `/nfl/nfl-depth-charts/` renders the same view as
+  `/nfl/nfl-depth-charts/fantasy/`, so it canonicalises there — the URL the
+  sitemap lists. Only one canonical tag is ever emitted.
 - **Robots** is only touched to *clear* an inherited `noindex` — nothing is added.
 - **Breadcrumbs** are filtered, not duplicated: Rank Math builds both its visible
   trail and its `BreadcrumbList` schema from the same list, so the two agree.
@@ -241,9 +243,14 @@ Visitor loads page with [statchasers_depth_charts]
 ```
 
 > Because the blended refresh makes ~65 HTTP requests, it can take up to a
-> minute. The handler raises the PHP time limit to 300s where the host permits;
-> any source that fails degrades gracefully (Footballguys/ESPN keep the non-
-> fantasy columns; the Fantasy tab falls back to the seeded canonical order).
+> minute. The handler raises the PHP time limit to 720s where the host permits
+> (the worst case, every request timing out, is 655s) and stops starting new
+> teams shortly before the limit. Any source that fails degrades gracefully
+> (Footballguys/ESPN keep the non-fantasy columns; the Fantasy tab falls back to
+> the seeded canonical order), and a team whose ESPN fetch fails, or that the run
+> didn't reach, keeps its chart from the previous refresh. If no team could be
+> fetched, nothing is written. The JSON is written to a temp file and renamed
+> into place, so visitors never load a half-written file.
 
 Refreshing only rewrites the cached JSON; the live page reflects it on the next
 load. No redeploy or commit is involved.
