@@ -532,7 +532,9 @@ function statchasers_team_auto_index( string $content ): string {
 		return $content;
 	}
 
-	$html = statchasers_team_index_shortcode();
+	// Called directly, not through do_shortcode, so the unlinking that
+	// do_shortcode_tag does for every other mount is done here.
+	$html = statchasers_player_unlink_missing( statchasers_team_index_shortcode() );
 
 	if ( '' === trim( $html ) ) {
 		return $content;

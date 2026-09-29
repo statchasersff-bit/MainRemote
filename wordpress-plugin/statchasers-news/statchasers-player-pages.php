@@ -247,7 +247,7 @@ function statchasers_player_container( bool $create = false ): int {
  * One query rather than six hundred get_page_by_path() calls: the builder asks
  * this on every batch and the admin screen asks it on every load.
  *
- * @return array{container:int,present:array<string,int>,total:int}
+ * @return array{container:int,present:array<string,int>,have:int,total:int}
  */
 function statchasers_player_page_status( bool $fresh = false ): array {
 	static $status = null;
@@ -275,14 +275,158 @@ function statchasers_player_page_status( bool $fresh = false ): array {
 		}
 	}
 
+	// `have` is the roster's pages only. The container also holds pages for
+	// players who have left the index (kept, never deleted), and counting those
+	// read "659 of 615 pages exist" — more than all, with some still missing.
+	$roster = statchasers_player_roster();
+	$have   = 0;
+	foreach ( $roster as $row ) {
+		if ( isset( $present[ $row['slug'] ] ) ) {
+			++$have;
+		}
+	}
+
 	$status = array(
 		'container' => $container,
 		'present'   => $present,
-		'total'     => count( statchasers_player_roster() ),
+		'have'      => $have,
+		'total'     => count( $roster ),
 	);
 
 	return $status;
 }
+
+/**
+ * The profile slugs a reader can open: published pages under the container.
+ *
+ * Not statchasers_player_page_status()'s list, which counts drafts too — right
+ * for "does the builder need to write this one", wrong for "will this link
+ * 404". Memoised for the request; a page renders a few hundred player links.
+ *
+ * @return array<string,true> post_name => true. Empty when there is no container.
+ */
+function statchasers_player_published_slugs(): array {
+	static $slugs = null;
+
+	if ( null !== $slugs ) {
+		return $slugs;
+	}
+
+	global $wpdb;
+
+	$slugs     = array();
+	$container = statchasers_player_container();
+
+	if ( $container ) {
+		$names = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT post_name FROM {$wpdb->posts}
+				 WHERE post_type = 'page' AND post_parent = %d AND post_status = 'publish'",
+				$container
+			)
+		);
+		foreach ( (array) $names as $name ) {
+			$slugs[ (string) $name ] = true;
+		}
+	}
+
+	return $slugs;
+}
+
+/**
+ * Turn links to player profiles that do not exist here yet into plain names.
+ *
+ * WHY HERE AND NOT ON THE API. The API links a name when the player is in its
+ * index, which it rebuilds at 14:00 UTC and on every boot. This site creates
+ * the pages at 15:00 UTC (statchasers_player_auto_build), or when somebody
+ * presses the builder. Between the two, every recap, hub and ranking linked a
+ * new signing to a 404, and a crawl on 2026-09-28 found them. Only this side
+ * knows which pages are published, so this side decides — the same rule the
+ * API follows when a name has no slug at all: print the name, not a guess.
+ *
+ * What it rewrites: an <a> whose href is this site's /nfl/players/<slug>/ (with
+ * or without a section, query or hash) where <slug> has no published page. The
+ * anchor becomes a <span> keeping its typographic classes, which is the markup
+ * the API prints for an unlinked name. Classes that only mean "this is a link"
+ * go, and so does an anchor with no text — the cornerstone card's stretched
+ * hit area, which has nothing left to cover.
+ *
+ * What it leaves alone: other hosts, the retired /nfl/players/<section>/<slug>/
+ * layout (301s, not 404s), and everything when no page is published at all —
+ * a missing container or a failed query would otherwise strip every player
+ * link on the site, and a 404 is the lesser harm than losing them all.
+ *
+ * @param string $html Rendered fragment.
+ * @return string
+ */
+function statchasers_player_unlink_missing( string $html ): string {
+	$marker = '/' . STATCHASERS_PLAYER_PATH . '/';
+
+	if ( false === strpos( $html, $marker ) ) {
+		return $html;
+	}
+
+	$published = statchasers_player_published_slugs();
+	if ( ! $published ) {
+		return $html;
+	}
+
+	$home = strtolower( preg_replace( '/^www\./i', '', (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) );
+	$path = '#^/' . preg_quote( STATCHASERS_PLAYER_PATH, '#' ) . '/([a-z0-9-]+)(?:/[a-z0-9-]+)?/?$#';
+
+	return (string) preg_replace_callback(
+		'#<a\b([^>]*)>(.*?)</a>#is',
+		static function ( array $m ) use ( $home, $path, $published ): string {
+			if ( ! preg_match( '/\bhref\s*=\s*(["\'])(.*?)\1/is', $m[1], $href ) ) {
+				return $m[0];
+			}
+
+			$url  = html_entity_decode( $href[2], ENT_QUOTES, 'UTF-8' );
+			$host = strtolower( preg_replace( '/^www\./i', '', (string) wp_parse_url( $url, PHP_URL_HOST ) ) );
+			if ( '' !== $host && $host !== $home ) {
+				return $m[0];
+			}
+
+			$url_path = (string) wp_parse_url( $url, PHP_URL_PATH );
+			if (
+				! preg_match( $path, $url_path, $slug )
+				|| preg_match( STATCHASERS_LEGACY_PLAYER_PATH, $url_path )
+				|| isset( $published[ $slug[1] ] )
+			) {
+				return $m[0];
+			}
+
+			if ( '' === trim( $m[2] ) ) {
+				return '';
+			}
+
+			$classes = array();
+			if ( preg_match( '/\bclass\s*=\s*(["\'])(.*?)\1/is', $m[1], $class ) ) {
+				$classes = array_diff(
+					preg_split( '/\s+/', trim( $class[2] ) ),
+					array( '', 'sct-player-link', 'sct-outlook-link' )
+				);
+			}
+
+			return $classes
+				? '<span class="' . implode( ' ', $classes ) . '">' . $m[2] . '</span>'
+				: $m[2];
+		},
+		$html
+	);
+}
+
+add_filter(
+	'do_shortcode_tag',
+	static function ( $output, $tag ) {
+		if ( ! is_string( $output ) || ( 0 !== strpos( (string) $tag, 'statchasers_' ) && 'sc_team_hub' !== $tag ) ) {
+			return $output;
+		}
+		return statchasers_player_unlink_missing( $output );
+	},
+	10,
+	2
+);
 
 /**
  * Move a profile page that is published at one of this player's old addresses.
@@ -1065,7 +1209,7 @@ add_action(
 			array(
 				'next'    => (int) $result['next'],
 				'total'   => (int) $result['total'],
-				'have'    => count( $status['present'] ),
+				'have'    => (int) $status['have'],
 				'done'    => (int) $result['next'] >= (int) $result['total'],
 				'created' => (int) $result['created'],
 				'moved'   => (int) $result['moved'],
@@ -1229,7 +1373,7 @@ function statchasers_player_panel(): void {
 	$status = statchasers_player_page_status( true );
 	$cursor = (array) get_option( STATCHASERS_PLAYER_CURSOR, array() );
 	$total  = (int) $status['total'];
-	$have   = count( $status['present'] );
+	$have   = (int) $status['have'];
 
 	echo '<h2>Player pages</h2>';
 
@@ -1251,6 +1395,15 @@ function statchasers_player_panel(): void {
 		(int) $have,
 		(int) $total
 	);
+
+	$others = count( $status['present'] ) - $have;
+	if ( $others > 0 ) {
+		printf(
+			'<p class="description">%d more pages under <code>/%s/</code> belong to players no longer on the list. They are kept, not deleted.</p>',
+			(int) $others,
+			esc_html( STATCHASERS_PLAYER_PATH )
+		);
+	}
 
 	foreach ( array_slice( (array) ( $cursor['errors'] ?? array() ), 0, 5 ) as $error ) {
 		printf( '<div class="notice notice-error inline"><p>%s</p></div>', esc_html( (string) $error ) );

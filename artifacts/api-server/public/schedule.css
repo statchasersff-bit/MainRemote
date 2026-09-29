@@ -1698,8 +1698,13 @@ a.scs-game-name:focus-visible {
 /* ====================================================================== */
 
 /* The matrix's frame. One class loses to `.entry-content table`, which brings
-   an outer border and 15px of margin; the grid is drawn per cell. */
-.scs .scs-matrix {
+   an outer border and 15px of margin; the grid is drawn per cell.
+
+   Divi's real selector is `.entry-content table:not(.variations)` — (0,2,1),
+   because `:not()` counts its argument — and it beat the `.scs .scs-matrix`
+   this used to be: measured 2026-09-29, the frame and the margin were both
+   still arriving. The repeated `:not()` keeps this one class ahead. */
+.scs table.scs-matrix:not(.variations) {
   margin: 0;
   border: 0;
 }
@@ -1718,6 +1723,22 @@ a.scs-game-name:focus-visible {
 .scs .scs-matrix thead th {
   padding-top: 6px;
   padding-bottom: 6px;
+}
+
+/* Colour and weight on the header cells: the week row and the team column.
+   `.entry-content tr th { color: #555; font-weight: 700 }` is (0,1,2) and
+   outweighs `.scs-matrix th`; `#left-area table th { color: #666 }` is an id,
+   which only `!important` beats. Measured: all 32 team names went grey and
+   bold, and the week numbers a neighbouring grey. The links inside inherit
+   both, so this is where they are kept. */
+.scs .scs-matrix th {
+  color: hsl(var(--scs-primary)) !important;
+  font-weight: 500;
+}
+
+.scs .scs-matrix thead th {
+  color: hsl(var(--scs-muted-foreground)) !important;
+  font-weight: 700;
 }
 
 /* Every link in the grid is a whole cell, coloured by the cell it fills — the

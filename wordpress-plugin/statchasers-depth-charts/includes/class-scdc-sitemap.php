@@ -44,6 +44,40 @@ class SCDC_Sitemap {
 		add_filter( 'rank_math/sitemap/index', array( __CLASS__, 'add_to_rank_math_index' ) );
 		// Standalone discovery when no Rank Math index exists.
 		add_filter( 'robots_txt', array( __CLASS__, 'add_to_robots_txt' ), 20, 2 );
+		// The bare tool page is a duplicate of /fantasy/, which this sitemap lists.
+		add_filter( 'rank_math/sitemap/entry', array( __CLASS__, 'drop_bare_page' ), 10, 3 );
+	}
+
+	/**
+	 * Keep the bare tool page out of Rank Math's page sitemap.
+	 *
+	 * It renders the all-teams fantasy view and canonicalises onto main_url()
+	 * (see SCDC_SEO), so listing its own permalink as well put the same page in
+	 * the sitemaps twice under two addresses, one of them non-canonical. Matched
+	 * by page id; the path is the fallback for an install that never stored it.
+	 *
+	 * @param array|false $url  Rank Math's entry, with its `loc`.
+	 * @param string      $type Sitemap type.
+	 * @param mixed       $post The object the entry is for.
+	 * @return array|false
+	 */
+	public static function drop_bare_page( $url, $type = '', $post = null ) {
+		if ( ! is_array( $url ) ) {
+			return $url;
+		}
+		$page_id = SCDC_Pages::depth_charts_page_id();
+		if ( $page_id && is_object( $post ) && isset( $post->ID ) && (int) $post->ID === $page_id ) {
+			return false;
+		}
+		if ( isset( $url['loc'] ) ) {
+			$path = trim( (string) wp_parse_url( (string) $url['loc'], PHP_URL_PATH ), '/' );
+			$home = trim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
+			$tool = trim( ( '' === $home ? '' : $home . '/' ) . SCDC_Rewrite::page_path(), '/' );
+			if ( '' !== $tool && $path === $tool ) {
+				return false;
+			}
+		}
+		return $url;
 	}
 
 	/**

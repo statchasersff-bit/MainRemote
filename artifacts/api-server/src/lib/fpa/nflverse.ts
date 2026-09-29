@@ -227,9 +227,13 @@ const NFLVERSE_TIMEOUT_MS = 120_000;
 /**
  * Fetch and score one season's weekly player stats.
  *
- * Throws `NflverseSeasonUnavailableError` when every candidate URL 404s, which
- * is the normal state of a season that has not started. The ingest treats that
- * as "preseason", not as a failure — see fpa/ingest.ts.
+ * Throws `NflverseSeasonUnavailableError` only when every candidate URL 404s,
+ * which is the normal state of a season that has not started. The ingest treats
+ * that as "preseason", not as a failure — see fpa/ingest.ts.
+ *
+ * Anything else — a timeout, a 5xx, GitHub's 403 rate limit — is a plain Error.
+ * Reading those as "not published" is what once let one flaky run replace a
+ * live in-season table with the baseline.
  */
 export async function fetchScoredWeeklyStats(
   season: number,
@@ -239,6 +243,8 @@ export async function fetchScoredWeeklyStats(
 
   let text: string | null = null;
   const candidates = nflverseWeeklyUrlCandidates(season);
+  // Why each tag failed. Only an all-404 list means "not published yet".
+  const failures: string[] = [];
 
   for (const { tag, url } of candidates) {
     let res: Response;
@@ -248,6 +254,7 @@ export async function fetchScoredWeeklyStats(
       res = await fetch(url, { signal: AbortSignal.timeout(NFLVERSE_TIMEOUT_MS) });
     } catch (err) {
       logger.warn({ season, tag, err }, "nflverse request failed — trying next tag");
+      failures.push(`${tag}: ${err instanceof Error ? err.message : String(err)}`);
       continue;
     }
     if (!res.ok) {
@@ -255,6 +262,7 @@ export async function fetchScoredWeeklyStats(
         { season, tag, status: res.status },
         "nflverse release did not return OK — trying next tag",
       );
+      failures.push(`${tag}: HTTP ${res.status}`);
       continue;
     }
     text = await res.text();
@@ -265,7 +273,14 @@ export async function fetchScoredWeeklyStats(
     break;
   }
 
-  if (text === null) throw new NflverseSeasonUnavailableError(season);
+  if (text === null) {
+    if (failures.every((f) => f.endsWith(": HTTP 404"))) {
+      throw new NflverseSeasonUnavailableError(season);
+    }
+    throw new Error(
+      `nflverse weekly stats for ${season} could not be fetched (${failures.join("; ")})`,
+    );
+  }
 
   const matrix = parseCsv(text);
   if (matrix.length < 2) {

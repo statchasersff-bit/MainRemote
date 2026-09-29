@@ -46,6 +46,16 @@ preg_match( '#<meta property="og:url" content="([^"]*)"#', (string) $out, $og );
 check( 'bare main page canonical is the sitemap URL', isset( $canon[1] ) && $sitemap_main === $canon[1], 'got ' . ( isset( $canon[1] ) ? $canon[1] : '(none)' ) );
 check( 'bare main page og:url is the sitemap URL', isset( $og[1] ) && $sitemap_main === $og[1], 'got ' . ( isset( $og[1] ) ? $og[1] : '(none)' ) );
 
+// ------------------------------------------------------------ 1b. sitemap
+
+$bare = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/nfl-depth-charts/' ), 'post', (object) array( 'ID' => 42 ) );
+check( 'sitemap: the bare tool page is dropped from Rank Math by id', false === $bare );
+$bare = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/nfl-depth-charts/' ), 'post', null );
+check( 'sitemap: the bare tool page is dropped from Rank Math by path', false === $bare );
+$kept = SCDC_Sitemap::drop_bare_page( array( 'loc' => 'https://statchasers.com/nfl/' ), 'post', (object) array( 'ID' => 7 ) );
+check( 'sitemap: other pages are kept', is_array( $kept ) );
+check( 'sitemap: the filter is hooked', ! empty( $GLOBALS['wp_filters']['rank_math/sitemap/entry'] ) );
+
 // -------------------------------------------------------------- 2. refresh
 
 $previous = array(

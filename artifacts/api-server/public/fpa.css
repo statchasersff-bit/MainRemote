@@ -1065,8 +1065,14 @@ body.scf-page {
 
 /* The table's own frame. `.scf-table` is one class and loses to
    `.entry-content table`, which takes the outer border, the radius and the
-   width with it, and adds 15px of margin underneath. */
-.scf .scf-table {
+   width with it, and adds 15px of margin underneath.
+
+   Divi's real selector is `.entry-content table:not(.variations)`, and
+   `:not()` counts its argument: (0,2,1), which beat the `.scf .scf-table`
+   this rule used to be — measured 2026-09-29, the 15px of margin and the
+   theme's #eee top edge were both still arriving. Repeating the `:not()`
+   keeps this one class ahead, as rankings.css does. */
+.scf table.scf-table:not(.variations) {
   width: 100%;
   border: 1px solid var(--sc-border);
   border-radius: 8px;
@@ -1106,7 +1112,17 @@ body.scf-page {
  */
 .scf .scf-table thead th {
   padding: 5px var(--scf-cell-pad-x);
-  color: #fff;
+  /* `!important` for `#left-area table th { color: #666 }`: an id outranks
+     every class here, and the labels went grey on the navy band. The sort
+     button inherits this, so it is the one colour the whole header hangs on. */
+  color: #fff !important;
+}
+
+/* The team column is a <th> too, and took the same grey. Its link and name
+   state their own colours; this is the ink everything else in the cell
+   inherits. */
+.scf .scf-table tbody th {
+  color: var(--sc-ink) !important;
 }
 
 .scf .scf-table thead th .scf-sort {

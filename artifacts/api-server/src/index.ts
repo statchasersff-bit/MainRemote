@@ -70,8 +70,14 @@ app.listen(port, (err) => {
   // feed, the roster index and the team pages' providers, and 32 more requests
   // in that same second is the worst moment to spend them. A minute later the
   // process is idle and nobody is waiting.
-  setTimeout(clubSweep, 60 * 1000);
-  setInterval(clubSweep, 30 * 60 * 1000);
+  //
+  // Same switch as the wire. The workspace sweeping too doubled what the 32
+  // clubs saw from us, for a dev database nobody reads the club lane of.
+  // POST /api/ingest/clubs still runs one by hand.
+  if (wireIngestEnabled()) {
+    setTimeout(clubSweep, 60 * 1000);
+    setInterval(clubSweep, 30 * 60 * 1000);
+  }
 
   // Player game logs, refreshed after each game window. Production only unless
   // SC_PLAYER_LIVE_REFRESH says otherwise; see lib/player/live-refresh.ts.

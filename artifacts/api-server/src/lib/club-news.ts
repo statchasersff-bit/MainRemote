@@ -95,16 +95,47 @@ export interface ClubIngestSummary {
   tooOld: number;
 }
 
+/**
+ * The last good read of each club's feed, with the validators it came with.
+ *
+ * A club publishes a handful of times a day and is swept 48 times, so most
+ * sweeps re-download a feed that has not changed — ~1,500 full documents a day
+ * per running instance. Sending the validators back turns those into a 304 with
+ * no body. The items are kept so a 304 answers exactly what the 200 did: the
+ * sweep's stale-feed check and the store's `lastSeenAt` touch see the same rows
+ * either way, and nothing downstream has to know which one happened.
+ *
+ * In memory only. A restart costs one full read per club, which is what every
+ * sweep cost before this.
+ */
+interface ClubFeedMemo {
+  etag: string | null;
+  lastModified: string | null;
+  items: ClubNewsItem[];
+}
+const feedMemo = new Map<string, ClubFeedMemo>();
+
 async function fetchClub(team: NflTeam): Promise<ClubNewsItem[]> {
+  const memo = feedMemo.get(team.abbreviation);
+  const headers: Record<string, string> = {
+    Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
+    // Node's fetch otherwise sends `user-agent: node`, which is what bot
+    // management scores as anonymous automation.
+    "User-Agent": USER_AGENT,
+  };
+  if (memo?.etag) headers["If-None-Match"] = memo.etag;
+  if (memo?.lastModified) headers["If-Modified-Since"] = memo.lastModified;
+
   const response = await fetch(clubFeedUrl(team), {
-    headers: {
-      Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
-      // Node's fetch otherwise sends `user-agent: node`, which is what bot
-      // management scores as anonymous automation.
-      "User-Agent": USER_AGENT,
-    },
+    headers,
     signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
   });
+
+  // Only possible when validators were sent, which is only when there is a
+  // memo to answer from.
+  if (response.status === 304 && memo) {
+    return memo.items;
+  }
 
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`);
@@ -118,6 +149,14 @@ async function fetchClub(team: NflTeam): Promise<ClubNewsItem[]> {
   // it is, and reporting that as "0 new stories" would hide a format change.
   if (items.length === 0) {
     throw new Error("responded 200 but carried no items");
+  }
+
+  const etag = response.headers.get("etag");
+  const lastModified = response.headers.get("last-modified");
+  if (etag || lastModified) {
+    feedMemo.set(team.abbreviation, { etag, lastModified, items });
+  } else {
+    feedMemo.delete(team.abbreviation);
   }
 
   return items;
@@ -225,6 +264,8 @@ export async function fetchClubNews(
 
 export const __internals = {
   pooled,
+  fetchClub,
+  feedMemo,
   MAX_ITEM_AGE_DAYS,
   STALE_FEED_DAYS,
 };

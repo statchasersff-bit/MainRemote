@@ -2755,6 +2755,46 @@ body.sct-page.is-embed {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ====================================================================== */
+/* The tables, armed against the host theme.                               */
+/*                                                                         */
+/* Every table rule in this file — the season history here and the three   */
+/* matchup tables further down — starts with                               */
+/*                                                                         */
+/*     :is(.sct, #sct-table-armour)                                        */
+/*                                                                         */
+/* No element has that id. It is there for its WEIGHT: `:is()` counts as   */
+/* its heaviest argument, so the prefix is an id and a table rule here      */
+/* outranks everything Divi prints for a table:                            */
+/*                                                                         */
+/*     .entry-content table:not(.variations)   frame, 15px margin (0,2,1)  */
+/*     .entry-content tr td / tr th            padding 6/9px 24px, #555,   */
+/*                                             weight 700          (0,1,2) */
+/*     #left-area table th                     color #666          (1,0,2) */
+/*                                                                         */
+/* Measured 2026-09-29 against a simulated Divi page with the theme loaded  */
+/* after this file: every cell took 24px a side, every header went #666 —   */
+/* the white labels on the player-stats band included — and each table     */
+/* gained a grey frame. The alternative was an `!important` per colour,     */
+/* and there are a dozen. One prefix on the whole family lifts it evenly,   */
+/* so the rules rank against EACH OTHER exactly as they did before.         */
+/* A new table rule here needs the prefix too, or it is back to losing.     */
+/*                                                                         */
+/* The two rules below are the properties no table rule declares — the     */
+/* frame, the cells' top edge, the header ink — which the theme's rules      */
+/* would otherwise simply take. Same weight as the rules after them and     */
+/* placed first, so wherever a table DOES declare one, it still wins.       */
+/* ====================================================================== */
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table) {
+  margin: 0;
+  border: 0;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table) :where(th, td) {
+  border-top: 0;
+  color: inherit;
+}
+
 /* Fixed layout, so the column widths are a decision rather than whatever the
    browser has left over. Auto layout spreads the slack evenly across seven
    columns, which on a wide screen put 40-odd pixels of nothing between every
@@ -2765,7 +2805,7 @@ body.sct-page.is-embed {
    `min-width` is what keeps the sideways scroll working underneath that: a
    fixed table set to width:100% would otherwise squeeze to any container and
    clip rather than scroll. */
-.sct-hist {
+:is(.sct, #sct-table-armour) .sct-hist {
   width: 100%;
   min-width: 700px;
   table-layout: fixed;
@@ -2781,8 +2821,8 @@ body.sct-page.is-embed {
   --sct-hist-stripe: #fcfdfe;
 }
 
-.sct-hist th,
-.sct-hist td {
+:is(.sct, #sct-table-armour) .sct-hist th,
+:is(.sct, #sct-table-armour) .sct-hist td {
   padding: 10px 12px;
   /* Centred under the head it belongs to. The tabular figures above keep every
      digit the same width, so a centred column of 379.4 and 91.2 still stacks
@@ -2795,7 +2835,7 @@ body.sct-page.is-embed {
 /* Smaller, wider-tracked, and lifted off the body by a soft navy fade rather
    than by the border alone — the border stays, hairline-thin, to keep the edge
    crisp where the fade is too faint to read as one. */
-.sct-hist thead th {
+:is(.sct, #sct-table-armour) .sct-hist thead th {
   position: relative;
   padding-top: 12px;
   padding-bottom: 12px;
@@ -2818,7 +2858,7 @@ body.sct-page.is-embed {
    table into six strips and make the row — one season — the harder thing to
    read, which is backwards. A short rule in the head plus the extra gap the
    body cells carry (below) is enough to say "these three belong together". */
-.sct-hist thead th.is-group-start::before {
+:is(.sct, #sct-table-armour) .sct-hist thead th.is-group-start::before {
   content: "";
   position: absolute;
   left: 0;
@@ -2828,8 +2868,8 @@ body.sct-page.is-embed {
   background: var(--sc-border);
 }
 
-.sct-hist th.is-group-start,
-.sct-hist td.is-group-start {
+:is(.sct, #sct-table-armour) .sct-hist th.is-group-start,
+:is(.sct, #sct-table-armour) .sct-hist td.is-group-start {
   padding-left: 22px;
 }
 
@@ -2838,7 +2878,7 @@ body.sct-page.is-embed {
    season they belong to — which is the one thing the table exists to say. The
    backgrounds are repeated per row state because a transparent sticky cell
    would have the scrolling columns pass through it. */
-.sct-hist-season {
+:is(.sct, #sct-table-armour) .sct-hist-season {
   position: sticky;
   left: 0;
   z-index: 1;
@@ -2847,22 +2887,22 @@ body.sct-page.is-embed {
   background: var(--sc-surface);
 }
 
-.sct-hist thead .sct-hist-season {
+:is(.sct, #sct-table-armour) .sct-hist thead .sct-hist-season {
   background: var(--sc-surface-soft);
 }
 
-.sct-hist tbody tr:nth-child(even) .sct-hist-season {
+:is(.sct, #sct-table-armour) .sct-hist tbody tr:nth-child(even) .sct-hist-season {
   background: var(--sct-hist-stripe);
 }
 
-.sct-hist tbody th {
+:is(.sct, #sct-table-armour) .sct-hist tbody th {
   color: var(--sc-navy);
   font-size: 0.95rem;
   font-weight: 900;
   letter-spacing: -0.01em;
 }
 
-.sct-hist-year {
+:is(.sct, #sct-table-armour) .sct-hist-year {
   display: flex;
   align-items: center;
   /* Wraps rather than overflowing: at the narrow end of the scroll the year and
@@ -2873,7 +2913,7 @@ body.sct-page.is-embed {
 }
 
 /* Says in words what the gold hairline down the row's left edge says in colour. */
-.sct-hist-now {
+:is(.sct, #sct-table-armour) .sct-hist-now {
   padding: 1px 6px;
   border-radius: 999px;
   background: rgba(212, 175, 55, 0.16);
@@ -2889,7 +2929,7 @@ body.sct-page.is-embed {
    is three games old" when the top row is the one in progress. Spelled out and
    set lighter than the year, so the pair reads as a heading and its footnote
    rather than as two facts of equal weight. */
-.sct-hist-games {
+:is(.sct, #sct-table-armour) .sct-hist-games {
   display: block;
   margin-top: 2px;
   color: var(--sc-muted);
@@ -2898,26 +2938,26 @@ body.sct-page.is-embed {
   letter-spacing: 0.01em;
 }
 
-.sct-hist tbody tr {
+:is(.sct, #sct-table-armour) .sct-hist tbody tr {
   border-bottom: 1px solid var(--sc-border);
 }
 
-.sct-hist tbody tr:last-child {
+:is(.sct, #sct-table-armour) .sct-hist tbody tr:last-child {
   border-bottom: 0;
 }
 
-.sct-hist tbody tr:nth-child(even) {
+:is(.sct, #sct-table-armour) .sct-hist tbody tr:nth-child(even) {
   background: var(--sct-hist-stripe);
 }
 
 /* The most recent season, marked the way the schedule marks the next game: a
    gold hairline down the left edge rather than a filled row, which would fight
    the zebra striping and the rank tints inside the cells. */
-.sct-hist tbody tr.is-current .sct-hist-season {
+:is(.sct, #sct-table-armour) .sct-hist tbody tr.is-current .sct-hist-season {
   box-shadow: inset 3px 0 0 var(--sc-gold);
 }
 
-.sct-hist-value {
+:is(.sct, #sct-table-armour) .sct-hist-value {
   display: block;
   color: var(--sc-navy);
   font-weight: 800;
@@ -2929,7 +2969,7 @@ body.sct-page.is-embed {
    rule sits under the digits only — text-decoration draws on the text, not on
    the block box — so it reads as a mark on the figure rather than a border on
    the cell. Doubled for screen readers by a note in the cell itself. */
-.sct-hist-value.is-best {
+:is(.sct, #sct-table-armour) .sct-hist-value.is-best {
   font-weight: 900;
   text-decoration: underline;
   text-decoration-color: rgba(212, 175, 55, 0.9);
@@ -2940,7 +2980,7 @@ body.sct-page.is-embed {
 /* Tucked under the number it belongs to — 4px, close enough that the pair reads
    as one thing. Medium weight rather than heavy: the figure above is the fact
    and the rank is its footnote, and at 800 the pill was winning that argument. */
-.sct-hist-rank {
+:is(.sct, #sct-table-armour) .sct-hist-rank {
   display: inline-flex;
   align-items: center;
   min-height: 21px;
@@ -2957,22 +2997,22 @@ body.sct-page.is-embed {
 /* Four bands, so five seasons sort themselves by eye. Every tint is carried by
    ink that clears 4.5:1 on both the white and the striped row underneath —
    the band is the background, never the legibility. */
-.sct-hist-rank[data-tier="elite"] {
+:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="elite"] {
   background: rgba(15, 107, 79, 0.17);
   color: #0a5540;
 }
 
-.sct-hist-rank[data-tier="good"] {
+:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="good"] {
   background: rgba(15, 107, 79, 0.07);
   color: #146b52;
 }
 
-.sct-hist-rank[data-tier="mid"] {
+:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="mid"] {
   background: rgba(11, 22, 52, 0.05);
   color: #4a5568;
 }
 
-.sct-hist-rank[data-tier="poor"] {
+:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="poor"] {
   background: rgba(153, 46, 46, 0.09);
   color: #94363a;
 }
@@ -5958,7 +5998,7 @@ body.sct-page.is-embed {
     mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
   }
 
-  .sct-hist {
+  :is(.sct, #sct-table-armour) .sct-hist {
     font-size: 0.8rem;
     /* The table already scrolls at this width, so the floor comes down: a
        660px minimum on a 360px screen is most of a second screenful of drag
@@ -5966,16 +6006,16 @@ body.sct-page.is-embed {
     min-width: 560px;
   }
 
-  .sct-hist th,
-  .sct-hist td {
+  :is(.sct, #sct-table-armour) .sct-hist th,
+  :is(.sct, #sct-table-armour) .sct-hist td {
     padding: 10px 9px;
   }
 
   /* Restated because the rule above resets padding wholesale at this width and
      the group gap is the only thing separating offence from defence once the
      header divider is scrolled off the left edge. */
-  .sct-hist th.is-group-start,
-  .sct-hist td.is-group-start {
+  :is(.sct, #sct-table-armour) .sct-hist th.is-group-start,
+  :is(.sct, #sct-table-armour) .sct-hist td.is-group-start {
     padding-left: 20px;
   }
 
@@ -6715,15 +6755,15 @@ body.sct-page.is-embed {
 }
 
 /* Side-by-side table: value + rank chip each side, metric name between. */
-.sct-mu-table {
+:is(.sct, #sct-table-armour) .sct-mu-table {
   width: 100%;
   border-collapse: collapse;
   margin: 0 0 22px;
   font-size: 14px;
 }
 
-.sct-mu-table th,
-.sct-mu-table td {
+:is(.sct, #sct-table-armour) .sct-mu-table th,
+:is(.sct, #sct-table-armour) .sct-mu-table td {
   padding: 10px 6px;
   border-bottom: 1px solid var(--sc-hairline);
   text-align: center;
@@ -6733,7 +6773,7 @@ body.sct-page.is-embed {
 /* The metric column takes only what its label needs; the rest is split evenly
    between the two sides, so the bars are the same length at the same rank
    whichever side they are on. */
-.sct-mu-td-side {
+:is(.sct, #sct-table-armour) .sct-mu-td-side {
   width: 40%;
 }
 
@@ -6745,7 +6785,7 @@ body.sct-page.is-embed {
    anonymous cell — which is why all three words used to sit at the width of
    the first column rather than spanning the table. The grid is the row inside
    it; see compareCaption() in matchup-render.ts. */
-.sct-mu-cmp-title {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-title {
   margin-bottom: 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--sc-hairline);
@@ -6760,7 +6800,7 @@ body.sct-page.is-embed {
 
 /* Three columns in the same 40/20/40 the table below uses, so each name sits
    over its own side's numbers with the join between them. */
-.sct-mu-cmp-row {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-row {
   display: grid;
   grid-template-columns: 2fr 1fr 2fr;
   align-items: center;
@@ -6771,29 +6811,29 @@ body.sct-page.is-embed {
    unit name is enough to tell the two sides apart on every row below; tinting
    the cells themselves put two brand colours behind a table of numbers and made
    the numbers the second thing you saw. */
-.sct-mu-cmp-side {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-side {
   justify-self: center;
   padding-bottom: 3px;
   border-bottom: 3px solid transparent;
 }
 
-.sct-mu-cmp-side[data-side="a"] {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-side[data-side="a"] {
   border-bottom-color: var(--mu-cmp-left, var(--sc-hairline));
 }
 
-.sct-mu-cmp-side[data-side="b"] {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-side[data-side="b"] {
   border-bottom-color: var(--mu-cmp-right, var(--sc-hairline));
 }
 
 /* Muted, but a word rather than a smudge — the hairline token is 8% ink and
    disappears entirely on this ground, the same problem the hero's join had. */
-.sct-mu-cmp-vs {
+:is(.sct, #sct-table-armour) .sct-mu-cmp-vs {
   color: var(--sc-muted);
   font-weight: 700;
   opacity: 0.6;
 }
 
-.sct-mu-td-label {
+:is(.sct, #sct-table-armour) .sct-mu-td-label {
   font-weight: 700;
   color: var(--sc-muted-strong);
   white-space: nowrap;
@@ -6804,31 +6844,31 @@ body.sct-page.is-embed {
 /* A side of one row: the figure, then the bar under it. The bar grows from the
    middle of the table outward, so the two sides meet at the metric name and the
    longer bar is the better unit — readable without reading the ranks. */
-.sct-mu-cell {
+:is(.sct, #sct-table-armour) .sct-mu-cell {
   display: grid;
   gap: 5px;
   min-width: 0;
 }
 
-.sct-mu-figure {
+:is(.sct, #sct-table-armour) .sct-mu-figure {
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
   gap: 8px;
 }
 
-.sct-mu-cell.is-empty {
+:is(.sct, #sct-table-armour) .sct-mu-cell.is-empty {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-val {
+:is(.sct, #sct-table-armour) .sct-mu-val {
   font-weight: 800;
   font-size: 17px;
   color: var(--sc-navy);
   font-variant-numeric: tabular-nums;
 }
 
-.sct-mu-bar {
+:is(.sct, #sct-table-armour) .sct-mu-bar {
   display: block;
   height: 4px;
   border-radius: 999px;
@@ -6836,7 +6876,7 @@ body.sct-page.is-embed {
   overflow: hidden;
 }
 
-.sct-mu-bar-fill {
+:is(.sct, #sct-table-armour) .sct-mu-bar-fill {
   display: block;
   height: 100%;
   border-radius: 999px;
@@ -6848,12 +6888,12 @@ body.sct-page.is-embed {
 }
 
 /* Each side's bar fills toward the metric name in the middle. */
-.sct-mu-bar[data-side="a"] .sct-mu-bar-fill {
+:is(.sct, #sct-table-armour) .sct-mu-bar[data-side="a"] .sct-mu-bar-fill {
   background: var(--mu-cmp-left, var(--sc-navy));
   margin-left: auto;
 }
 
-.sct-mu-bar[data-side="b"] .sct-mu-bar-fill {
+:is(.sct, #sct-table-armour) .sct-mu-bar[data-side="b"] .sct-mu-bar-fill {
   background: var(--mu-cmp-right, var(--sc-navy));
   margin-right: auto;
 }
@@ -7305,7 +7345,7 @@ body.sct-page.is-embed {
    less room than the sentence describing it. This is the single biggest thing
    the page was missing: it is what makes a result read as a game rather than
    as a final score somebody typed in. */
-.sct-mu-linescore {
+:is(.sct, #sct-table-armour) .sct-mu-linescore {
   width: auto;
   /* Narrower than it was, and narrower than the board above it. It is the
      footnote to the score, not a second scoreboard, and at 340px it was wide
@@ -7316,14 +7356,14 @@ body.sct-page.is-embed {
   font-variant-numeric: tabular-nums;
 }
 
-.sct-mu-linescore th,
-.sct-mu-linescore td {
+:is(.sct, #sct-table-armour) .sct-mu-linescore th,
+:is(.sct, #sct-table-armour) .sct-mu-linescore td {
   padding: 3px 9px;
   text-align: center;
   font-size: 12px;
 }
 
-.sct-mu-linescore thead th {
+:is(.sct, #sct-table-armour) .sct-mu-linescore thead th {
   padding-bottom: 2px;
   border-bottom: 1px solid var(--sc-hairline);
   font-size: 9px;
@@ -7332,7 +7372,7 @@ body.sct-page.is-embed {
   color: var(--sc-muted);
 }
 
-.sct-mu-ls-team {
+:is(.sct, #sct-table-armour) .sct-mu-ls-team {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -7343,13 +7383,13 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-ls-logo {
+:is(.sct, #sct-table-armour) .sct-mu-ls-logo {
   width: 16px;
   height: 16px;
   object-fit: contain;
 }
 
-.sct-mu-ls-q {
+:is(.sct, #sct-table-armour) .sct-mu-ls-q {
   color: var(--sc-muted-strong);
   font-weight: 700;
 }
@@ -7357,14 +7397,14 @@ body.sct-page.is-embed {
 /* The total is the one column that repeats a number already in the hero, so it
    is set apart rather than louder: a rule down its left edge, and the weight
    the quarters do not have. */
-.sct-mu-ls-total {
+:is(.sct, #sct-table-armour) .sct-mu-ls-total {
   border-left: 1px solid var(--sc-hairline);
   font-weight: 900;
   color: var(--sc-navy);
 }
 
-.sct-mu-linescore tbody tr.is-winner .sct-mu-ls-team,
-.sct-mu-linescore tbody tr.is-winner .sct-mu-ls-q {
+:is(.sct, #sct-table-armour) .sct-mu-linescore tbody tr.is-winner .sct-mu-ls-team,
+:is(.sct, #sct-table-armour) .sct-mu-linescore tbody tr.is-winner .sct-mu-ls-q {
   color: var(--sc-navy);
 }
 
@@ -7385,15 +7425,15 @@ body.sct-page.is-embed {
 /* The better side of a row, marked on the figure rather than on the cell. The
    bars already show the split; this is for the reader scanning the numbers
    alone, and it has to survive a row where "better" means the smaller number. */
-.sct-mu-val.is-better {
+:is(.sct, #sct-table-armour) .sct-mu-val.is-better {
   color: var(--sc-navy);
 }
 
-.sct-mu-glance .sct-mu-val {
+:is(.sct, #sct-table-armour) .sct-mu-glance .sct-mu-val {
   color: var(--sc-muted-strong);
 }
 
-.sct-mu-glance .sct-mu-val.is-better {
+:is(.sct, #sct-table-armour) .sct-mu-glance .sct-mu-val.is-better {
   color: var(--sc-navy);
   font-weight: 900;
 }
@@ -7414,7 +7454,7 @@ body.sct-page.is-embed {
    no thumbnail for leaves a tinted circle rather than a broken-image glyph —
    the same device the depth chart uses. */
 .sct-mu-leader-photo,
-.sct-mu-ps-photo {
+:is(.sct, #sct-table-armour) .sct-mu-ps-photo {
   display: grid;
   place-items: center;
   flex: none;
@@ -7494,14 +7534,14 @@ body.sct-page.is-embed {
    a scrollbar in every column the grid makes narrower than that, which is all
    three of them. Zero lets the table take the column instead, and the wrapper
    still scrolls if one genuinely needs more room than the column has. */
-.sct-mu-ps-row .sct-mu-ps-table {
+:is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table {
   min-width: 0;
 }
 
 /* Two columns of padding back, across five or six columns, is most of what
    decides whether a table fits its share of the row. */
-.sct-mu-ps-row .sct-mu-ps-table th,
-.sct-mu-ps-row .sct-mu-ps-table td {
+:is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table th,
+:is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table td {
   padding: 8px 6px;
 }
 
@@ -7520,12 +7560,12 @@ body.sct-page.is-embed {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .sct-mu-ps-row .sct-mu-ps-table {
+  :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table {
     min-width: 460px;
   }
 
-  .sct-mu-ps-row .sct-mu-ps-table th,
-  .sct-mu-ps-row .sct-mu-ps-table td {
+  :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table th,
+  :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table td {
     padding: 9px 8px;
   }
 
@@ -7547,7 +7587,7 @@ body.sct-page.is-embed {
    horizontal rules alone leave the eye to hold the column position itself.
    `border-collapse` so the grid is one hairline wide throughout, and the outer
    edge a shade stronger than the inner ones so the table reads as one object. */
-.sct-mu-ps-table {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table {
   width: 100%;
   min-width: 460px;
   border-collapse: collapse;
@@ -7559,7 +7599,7 @@ body.sct-page.is-embed {
 /* StatChasers navy, reversed. The header is the one row that is not data, and
    at 10px uppercase in muted grey it read as a caption floating above the
    table rather than as its top edge. */
-.sct-mu-ps-table thead th {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th {
   padding: 9px 8px;
   border-right: 1px solid rgba(255, 255, 255, 0.14);
   background: var(--sc-navy);
@@ -7572,15 +7612,15 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
-.sct-mu-ps-table thead th:last-child {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th:last-child {
   border-right: 0;
 }
 
-.sct-mu-ps-table thead th:first-child {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th:first-child {
   text-align: left;
 }
 
-.sct-mu-ps-table td {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table td {
   padding: 9px 8px;
   border-top: 1px solid var(--sc-hairline);
   border-right: 1px solid var(--sc-hairline);
@@ -7590,13 +7630,13 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
-.sct-mu-ps-table td:last-child {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table td:last-child {
   border-right: 0;
 }
 
 /* Zebra striping, very faint. With six columns ruled both ways the grid does
    most of the work; this is for the row a finger is following on a phone. */
-.sct-mu-ps-table tbody tr:nth-child(even) {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table tbody tr:nth-child(even) {
   background: var(--sc-surface-soft);
 }
 
@@ -7621,12 +7661,12 @@ body.sct-page.is-embed {
 /* No pointer until the bundle has actually wired it. The button is built in
    the browser, so this cannot be reached before it works — but a table left
    half-enhanced by a script error should not advertise a control either. */
-.sct-mu-ps-table:not([data-sct-sort="js"]) .sct-sort {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table:not([data-sct-sort="js"]) .sct-sort {
   cursor: default;
 }
 
-.sct-mu-ps-table thead .sct-sort:hover,
-.sct-mu-ps-table thead .sct-sort:focus-visible {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead .sct-sort:hover,
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead .sct-sort:focus-visible {
   color: var(--sc-gold-soft);
 }
 
@@ -7636,28 +7676,28 @@ body.sct-page.is-embed {
    quite enough, and the rule is the device the tab strip already uses for "you
    are here". Inset so it draws inside the filled cell and cannot move a
    column by a pixel. */
-.sct-mu-ps-table thead th[aria-sort="ascending"],
-.sct-mu-ps-table thead th[aria-sort="descending"] {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="ascending"],
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="descending"] {
   box-shadow: inset 0 -3px 0 var(--sc-gold);
 }
 
-.sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort,
-.sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort,
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort {
   color: var(--sc-gold);
 }
 
-.sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort::after {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="descending"] .sct-sort::after {
   content: " \2193";
 }
 
-.sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort::after {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table thead th[aria-sort="ascending"] .sct-sort::after {
   content: " \2191";
 }
 
 /* The column the table is sorted by — yards, or PPR points on the fantasy
    table. One column at full strength keeps a five-column row scannable; five
    at full strength is a wall. */
-.sct-mu-ps-table td.is-key {
+:is(.sct, #sct-table-armour) .sct-mu-ps-table td.is-key {
   color: var(--sc-navy);
   font-weight: 900;
 }
@@ -7666,7 +7706,7 @@ body.sct-page.is-embed {
    a <th> drops it out of table layout, which gave the name column a width of
    its own and left every row rule under it stopping short of the one beside
    it. */
-.sct-mu-ps-name {
+:is(.sct, #sct-table-armour) .sct-mu-ps-name {
   padding: 9px 8px;
   border-top: 1px solid var(--sc-hairline);
   border-right: 1px solid var(--sc-hairline);
@@ -7674,39 +7714,39 @@ body.sct-page.is-embed {
   font-weight: 400;
 }
 
-.sct-mu-ps-cell {
+:is(.sct, #sct-table-armour) .sct-mu-ps-cell {
   display: flex;
   align-items: center;
   gap: 9px;
   min-width: 0;
 }
 
-.sct-mu-ps-photo {
+:is(.sct, #sct-table-armour) .sct-mu-ps-photo {
   width: 32px;
   height: 32px;
 }
 
-.sct-mu-ps-photo img {
+:is(.sct, #sct-table-armour) .sct-mu-ps-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
 }
 
-.sct-mu-ps-who {
+:is(.sct, #sct-table-armour) .sct-mu-ps-who {
   display: grid;
   gap: 0;
   min-width: 0;
 }
 
-.sct-mu-ps-link {
+:is(.sct, #sct-table-armour) .sct-mu-ps-link {
   font-size: 14px;
   font-weight: 800;
   color: var(--sc-navy);
   line-height: 1.25;
 }
 
-.sct-mu-ps-meta {
+:is(.sct, #sct-table-armour) .sct-mu-ps-meta {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -7895,12 +7935,12 @@ body.sct-page.is-embed {
     right: auto;
   }
 
-  .sct-mu-linescore {
+  :is(.sct, #sct-table-armour) .sct-mu-linescore {
     min-width: 100%;
   }
 
-  .sct-mu-linescore th,
-  .sct-mu-linescore td {
+  :is(.sct, #sct-table-armour) .sct-mu-linescore th,
+  :is(.sct, #sct-table-armour) .sct-mu-linescore td {
     padding: 5px 6px;
   }
 }

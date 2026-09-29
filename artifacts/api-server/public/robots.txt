@@ -1,4 +1,4 @@
-# Nothing here is blocked, on purpose.
+# Almost nothing here is blocked, on purpose.
 #
 # Google has to fetch the stylesheet, the JS bundle and the news API to render
 # and understand this tool. Blocking any of them would leave the crawler with a
@@ -21,3 +21,12 @@ Allow: /api/news
 
 # The ingest endpoint mutates data and is not useful to crawl.
 Disallow: /api/ingest
+
+# Past and future seasons. Every tool here reads `?season=` and a season that
+# is not cached costs this server upstream fetches — ESPN and nflverse for the
+# schedule, a full board rebuild for rankings and player stats — for a URL that
+# is noindex anyway and whose current-season twin is the one WordPress embeds.
+# Blocking the crawl means its noindex is never read, which is fine here: none
+# of these is indexed, and a crawler that cannot fetch them cannot fan out.
+Disallow: /*?season=
+Disallow: /*&season=

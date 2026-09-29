@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.11
+Stable tag: 1.10.12
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.12 =
+* A player link is printed only when this site has published that player's page. The API links a name as soon as the player joins its index (14:00 UTC and at each boot), and the page builder runs at 15:00 UTC, so a new signing's name in recaps, hubs and rankings pointed at a 404 until then. A crawl on 2026-09-28 found five in game recaps. Every [statchasers_*] shortcode, the Divi hub module and the self-mounting /nfl/players/ and /nfl/teams/ pages now print such a name as plain text, and it becomes a link again when the page is published. Links to other hosts and to the retired /nfl/players/<section>/<slug>/ layout are left alone, and so is every link when no player page is published at all.
 
 = 1.10.11 =
 * Postseason matchup games have pages on WordPress. The API links each pair's playoff meetings as /nfl/<a>-vs-<b>/2025-wild-card/, -divisional/, -conference-championship/, -super-bowl/ (and 2025-postseason-week-N/ for a round with no name), but the plugin's rewrite only knew 2026-week-1, so every one of those links was a 404. They now resolve, are headed and titled by the round ("…, Super Bowl 2025"), and are passed to the API as spelled. Near misses such as 2026-week-01 or 2025-superbowl are still 404s. The rule flushes itself into the permalink table; no Settings > Permalinks save is needed.

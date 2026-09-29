@@ -302,6 +302,7 @@ $GLOBALS['wpdb'] = new class {
 	public $options = 'wp_options';
 	public function prepare( $q, ...$a ) { return $q; }
 	public function get_results( $q ) { return array(); }
+	public function get_col( $q ) { return array(); }
 	public function query( $q ) { return 0; }
 	public function esc_like( $s ) { return $s; }
 };
@@ -387,6 +388,12 @@ if ( 'week' === $group ) {
 
 if ( 'rules' === $group ) {
 	require __DIR__ . '/smoke-rules.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'playerlinks' === $group ) {
+	require __DIR__ . '/smoke-player-links.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -1691,7 +1698,7 @@ is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule,
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

@@ -322,7 +322,8 @@ export function evaluateIngestHealth(args: {
  * the same schedulers as the deployment, so it doubled the upstream traffic —
  * and both wire hosts refuse it (403), so every ten minutes it asked
  * dynasty-command and then api.statchasers.com for a refusal. POST /api/ingest
- * still works there, for pushing items by hand.
+ * still works there, for pushing items by hand. The club sweep's timer (index.ts)
+ * reads this switch too; POST /api/ingest/clubs runs one on demand.
  */
 export function wireIngestEnabled(): boolean {
   if (process.env["NODE_ENV"] !== "development") return true;

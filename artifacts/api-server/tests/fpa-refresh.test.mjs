@@ -107,20 +107,27 @@ function csv(season, weeks) {
  * ingest reads each season once, so two ingests would read four times.
  */
 function stubReleases() {
-  const state = { hits: 0, paths: [] };
+  // `currentStatus` / `currentWeeks` let a test play a bad upstream day for the
+  // current season without touching the baseline.
+  const state = { hits: 0, paths: [], currentStatus: 200, currentWeeks: [1] };
   const server = http.createServer((req, res) => {
     state.hits += 1;
     state.paths.push(req.url);
 
     const season = /stats_player_week_(\d+)\.csv/.exec(req.url ?? "")?.[1];
+    const isCurrent = season === String(TEST_CURRENT);
     const body =
       season === String(TEST_BASELINE)
         ? csv(TEST_BASELINE, [1, 2, 3])
-        : season === String(TEST_CURRENT)
-          ? csv(TEST_CURRENT, [1])
+        : isCurrent && state.currentStatus === 200
+          ? csv(TEST_CURRENT, state.currentWeeks)
           : null;
 
     setTimeout(() => {
+      if (isCurrent && state.currentStatus !== 200) {
+        res.writeHead(state.currentStatus).end("stubbed failure");
+        return;
+      }
       if (body === null) {
         res.writeHead(404).end("no such release");
         return;
@@ -320,5 +327,71 @@ describe("GET /api/status — the FPA block", () => {
     assert.equal(fpa.lastError, null);
     assert.ok(fpa.lastSuccess, "an ingest ran in this process and must be recorded");
     assert.equal(fpa.lastResult.dataMode, "week_1");
+  });
+});
+
+/**
+ * A bad upstream day must never replace the table.
+ *
+ * The failure this guards: a 5xx or rate limit on the current season was read
+ * as "not published yet", and the ingest swapped a live in-season table for a
+ * baseline-only one. Runs last, because it leaves failures in the process's
+ * refresh state that the status block above asserts are absent.
+ */
+describe("POST /api/fpa/ingest — a bad upstream day", () => {
+  async function storedWeek() {
+    return withDb(async (client) => {
+      const { rows } = await client.query(
+        "select max(week_number) as w from fantasy_points_allowed_snapshots where season = $1",
+        [TEST_CURRENT],
+      );
+      return rows[0].w;
+    });
+  }
+
+  before(async () => {
+    stub.currentWeeks = [1, 2];
+    const res = await ingest({ query: TEST_SEASONS });
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).dataMode, "week_2");
+  });
+
+  after(() => {
+    stub.currentStatus = 200;
+    stub.currentWeeks = [1];
+  });
+
+  test("a 5xx on the current season fails the run and keeps the table", async () => {
+    const rowsBefore = await snapshotRowCount();
+    stub.currentStatus = 503;
+    try {
+      const res = await ingest({ query: TEST_SEASONS });
+      assert.equal(res.status, 500);
+      assert.match((await res.json()).error, /HTTP 503/);
+    } finally {
+      stub.currentStatus = 200;
+    }
+    assert.equal(await storedWeek(), 2);
+    assert.equal(await snapshotRowCount(), rowsBefore);
+  });
+
+  test("a season that 404s after it was ingested is refused, not reset", async () => {
+    stub.currentStatus = 404;
+    try {
+      const res = await ingest({ query: TEST_SEASONS });
+      assert.equal(res.status, 500);
+      assert.match((await res.json()).error, /week 2 to preseason/);
+    } finally {
+      stub.currentStatus = 200;
+    }
+    assert.equal(await storedWeek(), 2);
+  });
+
+  test("fewer weeks than the table holds is refused", async () => {
+    stub.currentWeeks = [1];
+    const res = await ingest({ query: TEST_SEASONS });
+    assert.equal(res.status, 500);
+    assert.match((await res.json()).error, /week 2 to week 1/);
+    assert.equal(await storedWeek(), 2);
   });
 });

@@ -3,7 +3,7 @@
  * Plugin Name:       StatChasers Depth Charts
  * Plugin URI:        https://statchasers.com/
  * Description:        Private admin tool that pulls NFL depth charts, caches them locally as JSON, and renders them on the front end via the [statchasers_depth_charts] shortcode. Serves 32 server-recognized, SEO-optimized team routes from the same tool. No external host required.
- * Version:           1.6.1
+ * Version:           1.6.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'SCDC_VERSION', '1.6.1' );
+define( 'SCDC_VERSION', '1.6.2' );
 define( 'SCDC_PLUGIN_FILE', __FILE__ );
 define( 'SCDC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCDC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

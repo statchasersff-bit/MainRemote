@@ -1674,22 +1674,27 @@ button.scp-search-opt {
   -webkit-overflow-scrolling: touch;
 }
 
-.scp-table {
+.scp .scp-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
-.scp-table th,
-.scp-table td {
+.scp .scp-table th,
+.scp .scp-table td {
   padding: 9px 10px;
   text-align: right;
   white-space: nowrap;
+  /* Rows are ruled underneath only. Said outright because a host theme rules
+     them on top (`.entry-content tr td`), and a side this file never declares
+     is a side the theme's rule simply takes. The career grid, which does want
+     all four edges, restates its border later at the same weight. */
+  border-top: 0;
   border-bottom: 1px solid var(--sc-border);
 }
 
-.scp-table thead th {
+.scp .scp-table thead th {
   position: sticky;
   top: 0;
   background: var(--sc-surface);
@@ -1701,20 +1706,20 @@ button.scp-search-opt {
   border-bottom: 2px solid var(--sc-border);
 }
 
-.scp-table tbody th[scope="row"],
-.scp-table thead th:first-child,
-.scp-table tfoot th {
+.scp .scp-table tbody th[scope="row"],
+.scp .scp-table thead th:first-child,
+.scp .scp-table tfoot th {
   text-align: left;
   font-weight: 700;
   color: var(--sc-navy);
 }
 
-.scp-table td:nth-child(2),
-.scp-table thead th:nth-child(2) {
+.scp .scp-table td:nth-child(2),
+.scp .scp-table thead th:nth-child(2) {
   text-align: left;
 }
 
-.scp-table tbody tr:hover {
+.scp .scp-table tbody tr:hover {
   background: var(--sc-surface-soft);
 }
 
@@ -1731,7 +1736,7 @@ button.scp-search-opt {
  * NOT on .scp-table--role, which is four rows under a heading and has nothing
  * to scroll under.
  */
-.scp-table--filled thead th,
+.scp .scp-table--filled thead th,
 /*
  * The first column, spelled out.
  *
@@ -1743,7 +1748,7 @@ button.scp-search-opt {
  * sorted by some other column and column one fell back to `aria-sort="none"`.
  * Matching that selector's specificity here, and winning on order, is the fix.
  */
-.scp-table--filled thead th:first-child {
+.scp .scp-table--filled thead th:first-child {
   background: var(--sc-navy);
   /* Beats the colour rule above that paints the first head navy, and the game
      log's per-column ink, which are both set for a white row. */
@@ -1769,8 +1774,8 @@ button.scp-search-opt {
  * rule below, which follows it: hovering the active column still lifts it to
  * the softer gold, so the control keeps answering the pointer.
  */
-.scp-table--filled th[aria-sort="ascending"] .scp-sort,
-.scp-table--filled th[aria-sort="descending"] .scp-sort {
+.scp .scp-table--filled th[aria-sort="ascending"] .scp-sort,
+.scp .scp-table--filled th[aria-sort="descending"] .scp-sort {
   color: var(--sc-gold);
 }
 
@@ -1787,15 +1792,15 @@ button.scp-search-opt {
  * Inset rather than a border so it draws inside the filled cell, above the
  * header row's own navy edge, and cannot move the columns by a pixel.
  */
-.scp-table--filled th[aria-sort="ascending"],
-.scp-table--filled th[aria-sort="descending"] {
+.scp .scp-table--filled th[aria-sort="ascending"],
+.scp .scp-table--filled th[aria-sort="descending"] {
   box-shadow: inset 0 -3px 0 var(--sc-gold);
 }
 
 /* The sort control inherits the white and answers in gold rather than in the
    navy it is now sitting on. */
-.scp-table--filled thead .scp-sort:hover,
-.scp-table--filled thead .scp-sort:focus-visible {
+.scp .scp-table--filled thead .scp-sort:hover,
+.scp .scp-table--filled thead .scp-sort:focus-visible {
   color: var(--sc-gold-soft);
 }
 
@@ -1818,7 +1823,7 @@ button.scp-search-opt {
  * navy, because a grey hairline above the navy band reads as a seam over the
  * header rather than as the top of the table.
  */
-.scp-table--filled {
+.scp .scp-table--filled {
   border: 1px solid var(--sc-border);
   border-top-color: var(--sc-navy);
 }
@@ -1887,8 +1892,8 @@ button.scp-search-opt {
   color: var(--sc-ink);
 }
 
-.scp-total th,
-.scp-total td {
+.scp .scp-total th,
+.scp .scp-total td {
   border-top: 2px solid var(--sc-border);
   border-bottom: none;
   font-weight: 800;
@@ -1910,10 +1915,10 @@ button.scp-search-opt {
   color: var(--sc-navy);
 }
 
-.scp-table th[aria-sort="descending"] .scp-sort::after { content: " \2193"; }
-.scp-table th[aria-sort="ascending"] .scp-sort::after { content: " \2191"; }
+.scp .scp-table th[aria-sort="descending"] .scp-sort::after { content: " \2193"; }
+.scp .scp-table th[aria-sort="ascending"] .scp-sort::after { content: " \2191"; }
 
-.scp-table--role th[scope="row"] {
+.scp .scp-table--role th[scope="row"] {
   white-space: normal;
 }
 
@@ -4330,7 +4335,7 @@ button.scp-search-opt {
    quiet, aria-hidden, and skipped by the sorter. Quiet, but findable: these
    are what a reader scanning eleven seasons across twelve columns navigates
    by, and at 9.5px they were losing to the column heads beneath them. */
-.scp-group-row td {
+.scp .scp-group-row td {
   padding: 0 10px 7px;
   border-bottom: 0;
   text-align: left;
@@ -4341,20 +4346,20 @@ button.scp-search-opt {
   color: var(--sc-gold-deep);
 }
 
-.scp-group-row td:not(.scp-group-pad) {
+.scp .scp-group-row td:not(.scp-group-pad) {
   box-shadow: inset 0 -1px 0 var(--sc-border);
 }
 
 /* The group row is the same <thead> as the filled column row, so it takes the
    same fill — a white band of gold labels sitting on a navy bar reads as two
    headers. The labels keep the gold, one step up the ramp. */
-.scp-table--filled .scp-group-row td {
+.scp .scp-table--filled .scp-group-row td {
   padding-top: 8px;
   background: var(--sc-navy);
   color: var(--sc-gold-soft);
 }
 
-.scp-table--filled .scp-group-row td:not(.scp-group-pad) {
+.scp .scp-table--filled .scp-group-row td:not(.scp-group-pad) {
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22);
 }
 
@@ -4375,15 +4380,15 @@ button.scp-search-opt {
  * once, and a rule that only names the body leaves the Career line's games
  * count sitting under a centred column, hard against its left edge.
  */
-.scp-table--career th,
-.scp-table--career td,
-.scp-table--career .scp-group-row td,
-.scp-table--career thead th:first-child,
-.scp-table--career thead th:nth-child(2),
-.scp-table--career tbody th[scope="row"],
-.scp-table--career tbody td:nth-child(2),
-.scp-table--career tfoot td:nth-child(2),
-.scp-table--career tfoot th {
+.scp .scp-table--career th,
+.scp .scp-table--career td,
+.scp .scp-table--career .scp-group-row td,
+.scp .scp-table--career thead th:first-child,
+.scp .scp-table--career thead th:nth-child(2),
+.scp .scp-table--career tbody th[scope="row"],
+.scp .scp-table--career tbody td:nth-child(2),
+.scp .scp-table--career tfoot td:nth-child(2),
+.scp .scp-table--career tfoot th {
   text-align: center;
 }
 
@@ -4399,40 +4404,40 @@ button.scp-search-opt {
  * border-collapse is `collapse`, so neighbouring cells share one line — the
  * grid is 1px throughout, not 2px everywhere but the outside.
  */
-.scp-table--career {
+.scp .scp-table--career {
   border: 1px solid var(--sc-border);
   /* Same reading as .scp-table--filled: the navy band is the top of the
      table, so a grey hairline above it would read as a seam. */
   border-top-color: var(--sc-navy);
 }
 
-.scp-table--career th,
-.scp-table--career td {
+.scp .scp-table--career th,
+.scp .scp-table--career td {
   border: 1px solid var(--sc-border);
 }
 
 /* Both header rows are navy. A grey rule inside a navy band is a smudge, so
    the header's own grid is drawn in white at the weight the group row already
    used for its underline. */
-.scp-table--career thead th,
-.scp-table--career .scp-group-row td {
+.scp .scp-table--career thead th,
+.scp .scp-table--career .scp-group-row td {
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-.scp-table--career thead th {
+.scp .scp-table--career thead th {
   padding-top: 8px;
 }
 
 /* Two pixels of air per row. A premium stats table is still dense; this one
    had crossed from dense into spreadsheet. */
-.scp-table--career tbody td,
-.scp-table--career tbody th {
+.scp .scp-table--career tbody td,
+.scp .scp-table--career tbody th {
   padding-top: 13px;
   padding-bottom: 13px;
 }
 
 /* The season is the row's name and the column a reader scans down. */
-.scp-table--career tbody th[scope="row"] {
+.scp .scp-table--career tbody th[scope="row"] {
   font-size: 13.5px;
   font-weight: 800;
   color: var(--sc-navy);
@@ -4440,8 +4445,8 @@ button.scp-search-opt {
 
 /* The career line is a total, not another season: a navy rule above it rather
    than the hairline every other row sits on. */
-.scp-table--career tfoot .scp-total th,
-.scp-table--career tfoot .scp-total td {
+.scp .scp-table--career tfoot .scp-total th,
+.scp .scp-table--career tfoot .scp-total td {
   padding-top: 14px;
   border-top: 2px solid var(--sc-navy);
   font-size: 13.5px;
@@ -4449,15 +4454,15 @@ button.scp-search-opt {
 
 /* The season in progress: start here. A gold tint and a heavier season cell,
    not a border — a bordered row in the middle of a table reads as a total. */
-.scp-table--career tbody tr.is-current {
+.scp .scp-table--career tbody tr.is-current {
   background: color-mix(in srgb, var(--sc-gold) 15%, var(--sc-surface));
 }
 
-.scp-table--career tbody tr.is-current:hover {
+.scp .scp-table--career tbody tr.is-current:hover {
   background: color-mix(in srgb, var(--sc-gold) 21%, var(--sc-surface));
 }
 
-.scp-table--career tbody tr.is-current th[scope="row"] {
+.scp .scp-table--career tbody tr.is-current th[scope="row"] {
   font-weight: 800;
   color: var(--sc-navy);
   box-shadow: inset 3px 0 0 var(--sc-gold);
@@ -5442,7 +5447,7 @@ a.scp-peer:focus-visible {
  * went navy-on-navy and disappeared until a pointer landed on it and the hover
  * rule lifted it to gold.
  */
-.scp-table--log td.scp-pts {
+.scp .scp-table--log td.scp-pts {
   color: var(--sc-navy);
   font-size: 14px;
   font-weight: 800;
@@ -5456,27 +5461,27 @@ a.scp-peer:focus-visible {
  * the separation is ink: the box-score cells sit a step down from full contrast
  * and the two fantasy columns keep it.
  */
-.scp-table--log td.scp-col-box {
+.scp .scp-table--log td.scp-col-box {
   color: var(--sc-muted-strong);
 }
 
 /* Secondary columns stay in the table — it scrolls rather than dropping them —
    but they are quieter still, so the eye lands on the line that matters. */
-.scp-table--log td.scp-col-2 {
+.scp .scp-table--log td.scp-col-2 {
   color: var(--sc-muted);
 }
 
-.scp-table--log td.scp-col-fin {
+.scp .scp-table--log td.scp-col-fin {
   color: var(--sc-navy);
 }
 
-.scp-table--log th.scp-col-pts,
-.scp-table--log th.scp-col-fin {
+.scp .scp-table--log th.scp-col-pts,
+.scp .scp-table--log th.scp-col-fin {
   font-weight: 800;
 }
 
 /* The finish pill carries its own colour, so it only needs the room. */
-.scp-table--log td.scp-col-fin .scp-tier {
+.scp .scp-table--log td.scp-col-fin .scp-tier {
   padding: 3px 10px;
   font-size: 11.5px;
 }
@@ -5490,11 +5495,11 @@ a.scp-peer:focus-visible {
  * or a bundle that failed to load — they stay open and the page is complete,
  * which is the same bargain the sortable headers make. See wireExpandableLog().
  */
-.scp-table--log[data-scp-expand="js"] .scp-detail {
+.scp .scp-table--log[data-scp-expand="js"] .scp-detail {
   display: none;
 }
 
-.scp-table--log[data-scp-expand="js"] .scp-detail.is-open {
+.scp .scp-table--log[data-scp-expand="js"] .scp-detail.is-open {
   display: table-row;
 }
 
@@ -6380,7 +6385,7 @@ a.scp-peer:focus-visible {
   /* The first columns to go when the log meets a phone. Marked `secondary` in
      gameLogColumns() — worth a column on a laptop, not worth a sideways scroll
      on a handset. */
-  .scp-table--log .scp-col-secondary {
+  .scp .scp-table--log .scp-col-secondary {
     display: none;
   }
 
@@ -7071,4 +7076,43 @@ a.scp-peer:focus-visible {
 .scp .scp-table--filled thead .scp-sort:hover,
 .scp .scp-table--filled thead .scp-sort:focus-visible {
   color: var(--sc-gold-soft) !important;
+}
+
+/* The tables, found 2026-09-29 by diffing computed styles against a simulated
+ * Divi page with the theme's rules loaded AFTER this file — the order that
+ * decides a tie, and the one production has already been seen to use.
+ *
+ * Two host rules, two shapes:
+ *
+ *   `.entry-content tr td { padding: 6px 24px; border-top: 1px solid #eee }`
+ *   and `.entry-content tr th { padding: 9px 24px; color: #555; font-weight:
+ *   700 }` are (0,1,2). The shared table's cells were (0,1,1) and lost
+ *   outright: every row of the game log, the career table and the injury
+ *   regions went to 24px a side with a grey rule on top. The career table's
+ *   own padding was (0,1,2) — a tie, so it only looked safe while the theme
+ *   loaded first. Every table selector in this file now starts with `.scp`,
+ *   which lifts the whole family by one class at once and leaves how its rules
+ *   rank against EACH OTHER exactly as it was.
+ *
+ *   `.entry-content table:not(.variations)` is (0,2,1) — `:not()` counts its
+ *   argument — and still beats `.scp .scp-table`. So the frame is restated
+ *   here with the same `:not()`, as rankings.css and player-stats.css do. */
+.scp table.scp-table:not(.variations) {
+  margin: 0;
+  border: 0;
+}
+
+.scp table.scp-table--filled:not(.variations),
+.scp table.scp-table--career:not(.variations) {
+  border: 1px solid var(--sc-border);
+  border-top-color: var(--sc-navy);
+}
+
+/* The row labels — the week, the season, the Career line — are navy, and
+   `#left-area table th { color: #666 }` repaints them through an id, which
+   only `!important` beats. Every body and footer label in every table here is
+   the same navy, so one rule restates all of them. */
+.scp .scp-table tbody th[scope="row"],
+.scp .scp-table tfoot th {
+  color: var(--sc-navy) !important;
 }
