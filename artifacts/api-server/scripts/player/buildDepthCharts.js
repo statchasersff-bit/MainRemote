@@ -347,6 +347,12 @@ async function main() {
   const missingTeams = NFL_TEAMS.filter(t => !teamsFound.has(t));
   if (missingTeams.length > 0) {
     console.warn(`  WARNING: Missing depth chart data for teams: ${missingTeams.join(', ')}`);
+    // Unattended runs (src/lib/player/live-refresh.ts) pass --strict: a chart
+    // missing a team would drop that team's players from the next index.
+    if (process.argv.includes('--strict')) {
+      console.error('  --strict: not writing a depth chart with teams missing.');
+      process.exit(1);
+    }
   }
   if (allEntries.length < 100) {
     console.error(`  ERROR: Only ${allEntries.length} entries found (expected ~228). OurLads page structure may have changed.`);

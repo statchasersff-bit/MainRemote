@@ -1136,6 +1136,94 @@ add_action(
 	}
 );
 
+/* ------------------------------------------------ the daily automatic build */
+
+/**
+ * New signings get their pages without anybody pressing the button.
+ *
+ * The API rebuilds its player index once a day (src/lib/player/live-refresh.ts
+ * on the API side, 14:00 UTC). A player it adds had no page here until
+ * somebody ran the builder on the Tools screen, and until then his address
+ * 404ed. This runs the same batches from WP-cron an hour later: the same
+ * writes, the same idempotence, the same page moves for renamed players.
+ *
+ * Nothing happens on a day the roster did not change and every page exists —
+ * one request for the list, one query for the pages. A build too long for one
+ * cron run keeps its place in an option and continues a minute later, so a
+ * shared host's time limit cannot leave it half done for a day.
+ */
+const STATCHASERS_PLAYER_AUTO_HOOK   = 'statchasers_player_auto_build';
+const STATCHASERS_PLAYER_AUTO_CURSOR = 'statchasers_player_auto_cursor';
+const STATCHASERS_PLAYER_AUTO_HASH   = 'statchasers_player_auto_hash';
+
+/** Seconds of batches per cron run, inside a 30-second max_execution_time. */
+const STATCHASERS_PLAYER_AUTO_BUDGET = 20.0;
+
+add_action(
+	'init',
+	static function (): void {
+		if ( wp_next_scheduled( STATCHASERS_PLAYER_AUTO_HOOK ) ) {
+			return;
+		}
+		$next = strtotime( 'today 15:00 UTC' );
+		if ( $next <= time() ) {
+			$next += DAY_IN_SECONDS;
+		}
+		wp_schedule_event( $next, 'daily', STATCHASERS_PLAYER_AUTO_HOOK );
+	}
+);
+
+add_action( STATCHASERS_PLAYER_AUTO_HOOK, 'statchasers_player_auto_build' );
+
+/** What the roster says, reduced to what decides pages: slugs and old slugs. */
+function statchasers_player_roster_hash( array $roster ): string {
+	$shape = array();
+	foreach ( $roster as $row ) {
+		$shape[] = array( $row['slug'], (array) ( $row['previous'] ?? array() ) );
+	}
+	return md5( (string) wp_json_encode( $shape ) );
+}
+
+/** One cron run: resume or start a build, as far as the budget allows. */
+function statchasers_player_auto_build(): void {
+	$cursor = get_option( STATCHASERS_PLAYER_AUTO_CURSOR );
+	$offset = is_array( $cursor ) ? (int) ( $cursor['next'] ?? 0 ) : 0;
+
+	if ( 0 === $offset ) {
+		$roster = statchasers_player_roster( true );
+		if ( ! $roster ) {
+			// The API did not answer. Tomorrow's run tries again.
+			return;
+		}
+		$status  = statchasers_player_page_status( true );
+		$missing = 0;
+		foreach ( $roster as $row ) {
+			if ( ! isset( $status['present'][ $row['slug'] ] ) ) {
+				++$missing;
+			}
+		}
+		if ( 0 === $missing && get_option( STATCHASERS_PLAYER_AUTO_HASH ) === statchasers_player_roster_hash( $roster ) ) {
+			return;
+		}
+	}
+
+	$started = microtime( true );
+	do {
+		$result = statchasers_player_build_batch( $offset );
+		$offset = (int) $result['next'];
+		$total  = (int) $result['total'];
+	} while ( $offset < $total && microtime( true ) - $started < STATCHASERS_PLAYER_AUTO_BUDGET );
+
+	if ( $offset >= $total ) {
+		delete_option( STATCHASERS_PLAYER_AUTO_CURSOR );
+		update_option( STATCHASERS_PLAYER_AUTO_HASH, statchasers_player_roster_hash( statchasers_player_roster() ), false );
+		return;
+	}
+
+	update_option( STATCHASERS_PLAYER_AUTO_CURSOR, array( 'next' => $offset ), false );
+	wp_schedule_single_event( time() + MINUTE_IN_SECONDS, STATCHASERS_PLAYER_AUTO_HOOK );
+}
+
 /** The panel on the Tools screen. */
 function statchasers_player_panel(): void {
 	$status = statchasers_player_page_status( true );

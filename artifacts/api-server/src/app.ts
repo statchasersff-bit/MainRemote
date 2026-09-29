@@ -1,5 +1,6 @@
 import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
+import compression from "compression";
 import pinoHttp from "pino-http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -48,6 +49,19 @@ app.use(
   }),
 );
 app.use(cors());
+/**
+ * gzip/brotli for everything except the dev live-reload stream, which is a
+ * long-lived event stream that compression would buffer. Nothing here was
+ * compressed before: 100-300KB fragments to WordPress (whose HTTP client asks
+ * for gzip) and 200-250KB stylesheets to every browser went out raw.
+ */
+app.use(
+  compression({
+    filter: (req, res) =>
+      !String(res.getHeader("Content-Type") ?? "").includes("text/event-stream") &&
+      compression.filter(req, res),
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

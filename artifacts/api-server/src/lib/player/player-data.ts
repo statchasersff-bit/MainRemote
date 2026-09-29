@@ -20,7 +20,7 @@
  * the team hubs.
  */
 
-import { listNews, listNewsForTeam } from "../news-query";
+import { listNewsForPlayerName, listNewsForTeam } from "../news-query";
 import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
 import { outlookFaq, type OutlookFaq } from "./outlook-faq";
 import {
@@ -442,7 +442,7 @@ async function newsForPlayer(name: string): Promise<NewsItem[]> {
   const wanted = searchKey(name);
   if (!wanted) return [];
   try {
-    const rows = await listNews({ search: name, limit: 60 });
+    const rows = await listNewsForPlayerName(name, 60);
     return rows
       .filter((item) => searchKey(item.playerName) === wanted)
       .slice(0, PLAYER_NEWS_LIMIT);

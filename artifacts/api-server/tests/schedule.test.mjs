@@ -267,6 +267,24 @@ describe("the slate", () => {
     }
   }
 
+  test("between the league year and the schedule release, last season shows", async (t) => {
+    // March 1 to about mid-May, the calendar's season has no schedule yet. The
+    // board used to be empty (and /embed/schedule a 503) for those ten weeks.
+    // April 2025: the calendar says 2025, the fixture has only 2024.
+    const previous = process.env.SC_SCHEDULE_SEASON;
+    delete process.env.SC_SCHEDULE_SEASON;
+    t.mock.timers.enable({ apis: ["Date"], now: Date.UTC(SEASON + 1, 3, 1) });
+    try {
+      assert.equal(mod.scheduleSeason(), SEASON + 1);
+      const data = await mod.getSchedule(SEASON + 1);
+      assert.ok(data, "not an empty board");
+      assert.equal(data.season, SEASON, "the season just played, labelled as such");
+    } finally {
+      t.mock.timers.reset();
+      if (previous !== undefined) process.env.SC_SCHEDULE_SEASON = previous;
+    }
+  });
+
   test("concurrent requests share one ESPN sweep", async () => {
     await withEspn(
       async () => {

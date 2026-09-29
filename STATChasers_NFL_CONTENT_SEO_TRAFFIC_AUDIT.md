@@ -64,7 +64,20 @@ Paths are relative to the repo root.
 >
 > - **Found at deploy check, pre-existing:** `/embed/assets.json` answered `"version":"0"` in production. `assetVersion()` read version.json from `process.cwd()`, the same bug class `lib/data-dir.ts` fixed for `data/`. As a result WordPress enqueued every asset as `?ver=1.7.0`, and no deploy ever busted an asset cache. Fixed by resolving from the module (`tests/asset-version.test.mjs`); needs the next deploy.
 >
-> Still open: everything else, notably P1-2 (the 4,000-row news scan; production has 1,111 wire rows in 180 days, growing ~176/week, so it reaches the cap around mid-January).
+> - **P1-2, done without a schema change:**
+>   - Team news asks SQL for a superset: wire rows whose headshot is a player on the team now, whose folded name is one, or whose name is not plain ASCII. The JS derivation still decides.
+>   - Player news matches the tagged player in SQL instead of a title/name `ILIKE`, which also fixes the surname starvation.
+>   - Checked against the old algorithm on the dev DB: identical sets for all 33 team values and all 647 players; 142 rows read instead of 4,818.
+>   - Test: `tests/team-news-query.test.mjs`.
+> - **Weekly data:** automated in production (`lib/player/live-refresh.ts`; plugin 1.10.10 WP-cron page build).
+>
+> - **Compression:** gzip/brotli on every response except the dev live-reload stream. Team hub 217 KB → 30 KB, player.css 204 KB → 58 KB.
+> - **Season rollover:**
+>   - The schedule shows the season just played between March 1 and the new schedule's release, instead of an empty page or a 503. The missing season is retried every 30 min.
+>   - The game-log builder never writes an empty season.
+>   - Runbook for the rest: `docs/SEASON-ROLLOVER.md`.
+>
+> Still open: remaining P2/P3 cleanup.
 
 # Executive Summary
 

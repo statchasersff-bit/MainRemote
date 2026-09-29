@@ -3,11 +3,11 @@
  * renderer so both see exactly the same rows in the same order.
  */
 
-import { and, desc, eq, gte, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { db, newsItems } from "./db";
 import { logger } from "./logger";
-import { teamForImage } from "./teams";
-import { teamForPlayerName } from "./team/roster";
+import { playerIdsForTeam, teamForImage } from "./teams";
+import { nameKeysForTeam, teamForPlayerName } from "./team/roster";
 import { categorize } from "./news-category";
 import type { NewsItem } from "./render";
 import { mergeNewsLanes } from "./news-merge";
@@ -179,6 +179,85 @@ function toNewsItem(row: typeof newsItems.$inferSelect): NewsItem {
   };
 }
 
+/**
+ * The Sleeper id in a row's headshot URL, in SQL — playerIdFromImage().
+ * Null when there is no headshot or it is not a player thumb.
+ */
+const imageId = sql<string | null>`substring(${newsItems.image} from '/players/thumb/([0-9]+)[.]')`;
+
+/**
+ * A row's player name folded to Sleeper's search key, in SQL — the same
+ * folding as teamForPlayerName(), for ASCII names. SQL has no portable way to
+ * strip accents the way the JS does with NFD, so names that are not plain
+ * ASCII are matched by `nonAsciiName` instead and left to the JS to decide.
+ */
+const nameKey = sql<string>`lower(regexp_replace(coalesce(${newsItems.playerName}, ''), '[^A-Za-z0-9]', '', 'g'))`;
+const nonAsciiName = sql<boolean>`${newsItems.playerName} ~ '[^ -~]'`;
+
+/**
+ * Which wire rows could resolve to `team`, as a WHERE clause.
+ *
+ * THIS REPLACED A 4,000-ROW SCAN. Team is derived per row — from the headshot's
+ * player, then from the player's name, both against the CURRENT Sleeper map —
+ * which is why it is not a column: a traded player's older stories follow him
+ * to his new team. So the team pages read every wire row in the window and
+ * filtered in JS, up to TEAM_SCAN_MAX of them per render.
+ *
+ * This asks the database for a superset instead, built from the same two maps
+ * turned around: rows whose headshot is a player on the team now, rows whose
+ * name folds to a player on the team now, and rows whose name is not plain
+ * ASCII (the one case the SQL folding cannot match). The JS derivation still
+ * runs on what comes back and still has the final word, so the result is the
+ * one the scan gave — a superset filtered exactly is the set — at a few dozen
+ * rows instead of thousands.
+ *
+ * With both maps empty (a cold process before its first roster fetch) the
+ * scan resolved every row to no team and found nothing; this asks for nothing.
+ */
+function wireCandidatesFor(team: string) {
+  const ids = playerIdsForTeam(team);
+  const keys = nameKeysForTeam(team);
+  return or(
+    ids.length ? inArray(imageId, ids) : sql`false`,
+    keys.length ? inArray(nameKey, keys) : sql`false`,
+    nonAsciiName,
+  );
+}
+
+/**
+ * One player's wire and X stories, newest first.
+ *
+ * Matched by the player the row is tagged with, in SQL, rather than by a
+ * substring search over titles and names: the substring search pulled up to 60
+ * rows mentioning the name anywhere and kept only exact matches, so a common
+ * surname could fill the 60 with other players and starve this one's News tab.
+ * The SQL is a superset (same folding as nameKey, plus non-ASCII names) and
+ * the caller keeps its exact match on searchKey().
+ */
+export async function listNewsForPlayerName(
+  name: string,
+  limit: number,
+): Promise<NewsItem[]> {
+  const key = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!key) return [];
+  const rows = await db
+    .select()
+    .from(newsItems)
+    .where(
+      and(
+        or(isNull(newsItems.teamAbbr), eq(newsItems.sourceType, X_LANE)),
+        or(eq(nameKey, key), nonAsciiName),
+      ),
+    )
+    .orderBy(
+      sql`${newsItems.pubDateMs} desc nulls last`,
+      desc(newsItems.firstSeenAt),
+      desc(newsItems.id),
+    )
+    .limit(Math.max(limit, 1));
+  return rows.map(toNewsItem);
+}
+
 export interface ListTeamNewsOptions {
   /** Most items to return. */
   limit?: number;
@@ -229,6 +308,9 @@ export async function listNewsForTeam(
   const newestFirst = [
     sql`${newsItems.pubDateMs} desc nulls last`,
     desc(newsItems.firstSeenAt),
+    // A batch lands with one first_seen_at and often one pubDate, and rows
+    // tied on both came back in whatever order the plan produced.
+    desc(newsItems.id),
   ] as const;
 
   const [stored, derivable] = await Promise.all([
@@ -241,11 +323,11 @@ export async function listNewsForTeam(
       .where(and(eq(newsItems.teamAbbr, wanted), inWindow))
       .orderBy(...newestFirst)
       .limit(limit),
-    // (2) The wire rows, which still have to be resolved one at a time.
+    // (2) The wire rows that COULD be this team's. See wireCandidatesFor().
     db
       .select()
       .from(newsItems)
-      .where(and(isNull(newsItems.teamAbbr), inWindow))
+      .where(and(isNull(newsItems.teamAbbr), inWindow, wireCandidatesFor(wanted)))
       .orderBy(...newestFirst)
       .limit(scan),
   ]);
