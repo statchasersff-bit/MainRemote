@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.9
+Stable tag: 1.10.10
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.10 =
+* New players get their pages on their own. Once a day, an hour after the API rebuilds its player index, WP-cron runs the same batches as the "Build player pages" button: new signings get a page, renamed players' pages move (with their redirects), and nothing is touched on a day the roster did not change. A long build continues a minute later rather than hitting the host's time limit. The button still works for an immediate build. Needs the matching API deploy for the daily index rebuild.
 
 = 1.10.9 =
 * A slow or down API no longer stalls every page view. When a fetch failed and a saved copy existed, the saved copy was served but nothing remembered the failure, so every view, and every caller within a view (Rank Math's title, the schema, the shortcode), asked the API again and waited out the timeout: up to 3 × 6s on the rest-of-season board, 2 × 12s on the schedule, 4 or more on a matchup. The saved copy is now also held for a minute, on every tool. The news tool, which had no failure memory at all, gains the same minute.

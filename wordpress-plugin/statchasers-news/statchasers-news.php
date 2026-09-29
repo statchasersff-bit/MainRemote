@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats and RB handcuff rankings. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.9
+ * Version:           1.10.10
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -680,6 +680,15 @@ function statchasers_news_flush(): void {
 	statchasers_rb_handcuffs_flush();
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush' );
+
+// The daily player-page build (statchasers-player-pages.php) stops with the
+// plugin rather than firing into a missing callback.
+register_deactivation_hook(
+	__FILE__,
+	static function (): void {
+		wp_clear_scheduled_hook( 'statchasers_player_auto_build' );
+	}
+);
 
 /**
  * Activation: ask for a permalink flush on the next request.

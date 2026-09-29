@@ -41,14 +41,14 @@ describe("the game-log builder", () => {
     );
     // Weeks 1-3 have a game for player 1; the week named in failWeek answers 500.
     stub = http.createServer((req, res) => {
-      const week = Number(req.url.split("?")[0].split("/").pop());
+      const [season, week] = req.url.split("?")[0].split("/").slice(-2).map(Number);
       if (week === failWeek) {
         res.writeHead(500);
         res.end();
         return;
       }
       const rows =
-        week <= 3
+        season === SEASON && week <= 3
           ? [{ player_id: "1", team: "ARI", opponent: "LAC", stats: { gp: 1, rush_yd: 10 * week, pts_ppr: week } }]
           : [];
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -73,6 +73,19 @@ describe("the game-log builder", () => {
     failWeek = 0;
     await run(env());
     assert.deepEqual(weeksOnDisk(), [1, 2, 3]);
+  });
+
+  test("a season with no games writes nothing", async () => {
+    // The unattended refresh asks for the new league year from March 1; the
+    // stub has games for SEASON only.
+    const empty = path.join(dir, "game_logs", `${SEASON + 1}.json`);
+    await new Promise((resolve, reject) =>
+      execFile(process.execPath, [BUILDER, String(SEASON + 1)], { env: { ...process.env, ...env() } }, (err) =>
+        err ? reject(err) : resolve(),
+      ),
+    );
+    assert.equal(fs.existsSync(empty), false, "no empty season file");
+    assert.deepEqual(weeksOnDisk(), [1, 2, 3], "and the season that has games is untouched");
   });
 
   test("a week that fails keeps its rows from disk instead of vanishing", async () => {

@@ -410,6 +410,16 @@ async function main() {
     return;
   }
   const { games, ...stats } = built;
+  // Never an older week than the one on disk: nflverse only adds weeks, so a
+  // lower one is a failed or partial download. This runs unattended daily.
+  const existing = path.join(DATA, `rb_stats_${season}.json`);
+  if (!process.argv.includes("--games-only") && fs.existsSync(existing)) {
+    const onDisk = JSON.parse(fs.readFileSync(existing, "utf8"));
+    if ((built.week ?? 0) < (onDisk.week ?? 0)) {
+      console.log(`kept rb_stats_${season}.json (disk has week ${onDisk.week}, built ${built.week})`);
+      return;
+    }
+  }
   // One game per line: a season is a few thousand of them.
   const log = path.join(DATA, `rb_games_${season}.json`);
   fs.writeFileSync(

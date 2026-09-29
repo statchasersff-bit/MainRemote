@@ -195,7 +195,19 @@ async function main() {
       continue;
     }
     const file = path.join(DATA, `${position}_${season}.json`);
-    fs.writeFileSync(file, `${JSON.stringify(table, null, 2)}\n`);
+    // Never fewer weeks than the file already has. nflverse only ever adds a
+    // week, so a shorter table is a failed or partial download, and this now
+    // runs unattended every day (src/lib/player/live-refresh.ts).
+    const lastWeek = (weeks) => Number(String(weeks ?? "").split("-").pop()) || 0;
+    if (fs.existsSync(file)) {
+      const onDisk = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (lastWeek(table.weeks) < lastWeek(onDisk.weeks)) {
+        console.log(`${path.basename(file)}: kept (disk has weeks ${onDisk.weeks}, built ${table.weeks})`);
+        continue;
+      }
+    }
+    fs.writeFileSync(`${file}.tmp`, `${JSON.stringify(table, null, 2)}\n`);
+    fs.renameSync(`${file}.tmp`, file);
     console.log(`${path.basename(file)}: ${table.rows.length} rows, weeks ${table.weeks}`);
   }
 }

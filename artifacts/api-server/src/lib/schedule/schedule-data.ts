@@ -580,6 +580,10 @@ const slateCache = createKeyedCache<RawGame[]>({
   // memory, and a flex change still lands well before kickoff.
   ttlMs: 6 * 60 * 60 * 1000,
   timeoutMs: 20_000,
+  // Longer than the shared default of a minute. The failure that lasts is a
+  // season nflverse has not published yet — every March to mid-May — and at a
+  // minute each request re-downloaded the whole games.csv to learn that again.
+  errorBackoffMs: 30 * 60 * 1000,
   load: async (key, signal) => {
     const season = Number(key);
     const response = await fetch(GAMES_CSV_URL, {
@@ -721,7 +725,34 @@ export async function getSchedule(
   nowMs: number = Date.now(),
 ): Promise<ScheduleSeason | null> {
   const rows = await slateCache.ensure(String(season));
+  if (!rows || rows.length === 0) {
+    // The league year turns over on March 1 (seasonYear), and the new season's
+    // schedule is not released until about mid-May. Asked for the season the
+    // calendar is on and nflverse has nothing yet, show the one just played
+    // rather than an empty board — its data says which season it is, so every
+    // label follows. Not for a pinned season or an explicit older one.
+    if (season === scheduleSeason() && !scheduleSeasonPinned()) {
+      return getScheduleExact(season - 1, nowMs);
+    }
+    return null;
+  }
+  return build(season, rows, nowMs);
+}
+
+async function getScheduleExact(
+  season: number,
+  nowMs: number,
+): Promise<ScheduleSeason | null> {
+  const rows = await slateCache.ensure(String(season));
   if (!rows || rows.length === 0) return null;
+  return build(season, rows, nowMs);
+}
+
+async function build(
+  season: number,
+  rows: RawGame[],
+  nowMs: number,
+): Promise<ScheduleSeason> {
 
   const espn = await loadEspn(season, rows, nowMs);
   const games = rows
@@ -755,6 +786,12 @@ export async function getSchedule(
  * the same season, and two copies of this rule would drift the first time the
  * pin was needed.
  */
+/** Whether SC_SCHEDULE_SEASON pins the season (see scheduleSeason). */
+export function scheduleSeasonPinned(): boolean {
+  const pinned = Number.parseInt((process.env["SC_SCHEDULE_SEASON"] ?? "").trim(), 10);
+  return Number.isFinite(pinned) && pinned >= 1999 && pinned <= 2100;
+}
+
 export function scheduleSeason(): number {
   const pinned = Number.parseInt(
     (process.env["SC_SCHEDULE_SEASON"] ?? "").trim(),

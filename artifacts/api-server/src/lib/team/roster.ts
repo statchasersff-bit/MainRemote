@@ -352,6 +352,17 @@ export function teamForPlayerName(name: string | null | undefined): string | nul
 }
 
 /**
+ * Every folded name key the index puts on a team: the other direction of
+ * teamForPlayerName, for pushing a team filter into SQL.
+ */
+export function nameKeysForTeam(team: string): string[] {
+  const wanted = team.toLowerCase();
+  const keys: string[] = [];
+  for (const [key, owner] of index.teamByPlayerName) if (owner === wanted) keys.push(key);
+  return keys;
+}
+
+/**
  * The player behind a folded name key, or null.
  *
  * The key is the same folding Sleeper's own search index uses — see

@@ -228,6 +228,19 @@ export function playerIdFromImage(url: string | null | undefined): string | null
   return match ? match[1]! : null;
 }
 
+/**
+ * Every Sleeper player id the map currently puts on a team (lowercase abbr).
+ *
+ * The other direction of teamForImage, for pushing a team filter into SQL: a
+ * wire row belongs to a team when its headshot's id is one of these. A scan of
+ * the map (a few thousand keys) per call, which is nothing next to the rows it
+ * saves reading.
+ */
+export function playerIdsForTeam(team: string): string[] {
+  const wanted = team.toLowerCase();
+  return Object.keys(teams).filter((id) => teams[id] === wanted);
+}
+
 /** Lowercase team abbreviation for an item's headshot, or null if unknown. */
 export function teamForImage(image: string | null | undefined): string | null {
   const id = playerIdFromImage(image);

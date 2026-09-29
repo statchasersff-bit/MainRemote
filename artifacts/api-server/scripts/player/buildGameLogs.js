@@ -205,6 +205,14 @@ async function main() {
       console.warn(`  Every week failed for ${season}; leaving the file on disk alone.`);
       continue;
     }
+    // A season with no games yet — every March to September, when the
+    // unattended refresh asks for the new league year — or a response that
+    // came back empty. Writing it would publish an empty season file (and
+    // could replace a full one with nothing).
+    if (Object.keys(seasonData).length === 0) {
+      console.warn(`  No games in ${season} yet; nothing written.`);
+      continue;
+    }
     for (const rows of Object.values(seasonData)) rows.sort((a, b) => a.week - b.week);
     // Written beside the target and renamed over it, so the server never reads
     // a half-written file.
