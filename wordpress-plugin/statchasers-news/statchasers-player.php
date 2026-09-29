@@ -418,6 +418,22 @@ function statchasers_player_index_shortcode(): string {
 add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_shortcode' );
 
 /**
+ * The profile's own webfonts: Archivo with the width axis for the header and
+ * the Overview's lower sections, and Source Serif 4 for the Overview's read.
+ *
+ * The header is set in its own face rather than the tool's Inter (see
+ * .scp-phead in player.css) — its name and big numbers use condensed widths,
+ * which is why the `wdth` axis is requested. Return '' from the filter to serve
+ * it yourself or not at all; the stack falls back to Helvetica Neue and Arial.
+ */
+function statchasers_player_header_font_url(): string {
+	return (string) apply_filters(
+		'statchasers_player_header_font_url',
+		'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap'
+	);
+}
+
+/**
  * Register and enqueue the player page's compiled bundles.
  *
  * Separate handles from the news tool and the team hub: three stylesheets,
@@ -433,10 +449,17 @@ function statchasers_player_enqueue_assets(): void {
 	$version = statchasers_news_asset_version();
 
 	if ( ! wp_style_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
+		$deps        = statchasers_font_dependency();
+		$header_font = statchasers_player_header_font_url();
+		if ( '' !== $header_font ) {
+			// No version: the URL is the version, as with the Inter handle.
+			wp_register_style( 'statchasers-player-header-font', $header_font, array(), null );
+			$deps[] = 'statchasers-player-header-font';
+		}
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
 			$origin . '/player.css',
-			statchasers_font_dependency(),
+			$deps,
 			$version
 		);
 	}

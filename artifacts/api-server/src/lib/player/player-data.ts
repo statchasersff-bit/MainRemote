@@ -43,7 +43,16 @@ import {
   upcomingStamp,
   type UpcomingGame,
 } from "./upcoming";
-import { getTeamSchedule } from "../team/schedule";
+import { getTeamSchedule, type ScheduleGame } from "../team/schedule";
+import {
+  depthRole,
+  overviewMeters,
+  overviewTeammates,
+  seasonClubs,
+  type DepthRole,
+  type OverviewMeters,
+  type Teammate,
+} from "./overview-data";
 import { logger } from "../logger";
 import { ensureTeams } from "../teams";
 import {
@@ -75,6 +84,7 @@ import {
   enrichWithTeamMetrics,
   fillMissingWeeks,
   hasParticipation,
+  leagueWeeksLogged,
   PPG_MIN_GAMES,
   resolveSeasonTeam,
   teamCode,
@@ -331,6 +341,28 @@ export interface PlayerPageData {
    * dashes in its stat columns.
    */
   upcoming: UpcomingGame[];
+  /**
+   * The season the league is in, which is not always `season`: a player who
+   * has not played this year is profiled on the last one he did.
+   */
+  leagueSeason: number;
+  /** The last week of `leagueSeason` the league has logged. 0 before week 1. */
+  leagueWeek: number;
+  /** The club's bye in `leagueSeason`, when the schedule establishes one. */
+  byeWeek: number | null;
+  /**
+   * The Overview's lower sections: see lib/player/overview.ts.
+   *
+   * `schedule` is the club's regular season, played and not, which is where
+   * home and away and each result come from — the game logs carry neither.
+   * `upcomingStrip` is `upcoming` seven deep, for the season strip.
+   */
+  schedule: ScheduleGame[];
+  upcomingStrip: UpcomingGame[];
+  meters: OverviewMeters | null;
+  teammates: Teammate[];
+  depth: DepthRole | null;
+  seasonClubs: Record<number, string[]>;
   /** "Week 3", "Preseason baseline" — what the matchup ranks are measured over. */
   upcomingMatchupMode: string | null;
   /** Fingerprint of the fixtures and their ranks, for the render cache. */
@@ -588,19 +620,24 @@ function neighbourhood(
   playerById: Map<string, Player>,
   indexed: Set<string>,
 ): Array<{ id: string; rank: number; value: number }> {
-  const rows: Array<{ id: string; rank: number; value: number }> = [];
-
-  for (const step of [-1, 1]) {
-    let taken = 0;
-    for (let i = index + step; i >= 0 && i < table.length && taken < PEER_RADIUS; i += step) {
+  // Up to twice the radius each way, so a side that runs out — QB1 has nobody
+  // above him — can be made up from the other and the rail stays seven cards.
+  const side = (step: number): Array<{ id: string; rank: number; value: number }> => {
+    const out: Array<{ id: string; rank: number; value: number }> = [];
+    for (let i = index + step; i >= 0 && i < table.length && out.length < PEER_RADIUS * 2; i += step) {
       const row = table[i];
       if (!row) break;
       const player = playerById.get(row.id);
       if (!player || !indexed.has(player.slug)) continue;
-      rows.push({ id: row.id, rank: i + 1, value: row.value });
-      taken += 1;
+      out.push({ id: row.id, rank: i + 1, value: row.value });
     }
-  }
+    return out;
+  };
+  const above = side(-1);
+  const below = side(1);
+  const takeAbove = Math.min(above.length, Math.max(PEER_RADIUS, PEER_RADIUS * 2 - below.length));
+  const takeBelow = Math.min(below.length, PEER_RADIUS * 2 - takeAbove);
+  const rows = [...above.slice(0, takeAbove), ...below.slice(0, takeBelow)];
 
   return rows.sort((a, b) => a.rank - b.rank);
 }
@@ -1235,6 +1272,21 @@ export async function getPlayerPageData(
     teamNews,
     designation,
     rosterFetchedAt: rosterFetchedAt(),
+    leagueSeason,
+    leagueWeek: leagueWeeksLogged(leagueSeason),
+    byeWeek: schedule?.byeWeek ?? null,
+    schedule: (schedule?.games ?? []).filter((game) => game.seasonType === "regular"),
+    upcomingStrip: buildUpcoming({
+      position: player.position,
+      schedule,
+      fpa: fpaTable,
+      now: Date.now(),
+      count: 7,
+    }),
+    meters: overviewMeters(player, season, format, allPlayers),
+    teammates: overviewTeammates(player, season, allPlayers),
+    depth: depthRole(player, team),
+    seasonClubs: seasonClubs(player.id, logSeasons),
 
     version: "",
   };
@@ -1265,6 +1317,10 @@ export function playerDataVersion(
     // is covered by dataStamp() — a finished game and a fresh FPA ingest both
     // have to invalidate this page and nothing else would notice.
     data.upcomingStamp,
+    // The header's week line reads both: a bye is only "next" until the league
+    // has logged it.
+    data.leagueWeek,
+    data.byeWeek ?? "",
     data.news.length,
     data.newsUpdatedAtMs ?? 0,
     data.teamNews.length,

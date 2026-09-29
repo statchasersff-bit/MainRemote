@@ -39,6 +39,12 @@ export interface TabOptions {
   headingKey?: string;
   /** The dataset key holding the standfirst for a tab, e.g. "scpLead". */
   leadKey?: string;
+  /**
+   * Called whenever a tab is selected, by any route — click, arrow key, Back,
+   * a hash — including the one the page settles on at load. For state inside
+   * the root that follows the open tab, such as the player header's subtitle.
+   */
+  onSelect?: (link: HTMLAnchorElement, id: string) => void;
 }
 
 /**
@@ -111,6 +117,8 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
     if (focusPanel) {
       tabs.find((tab) => tab.id === id)?.panel.focus({ preventScroll: true });
     }
+    const picked = tabs.find((tab) => tab.id === id);
+    if (picked) options.onSelect?.(picked.link, id);
   }
 
   /**

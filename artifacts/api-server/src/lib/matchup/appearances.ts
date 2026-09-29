@@ -184,8 +184,12 @@ export function resetAppearanceCaches(): void {
   byId = null;
 }
 
-export function positionFinishes(season: number, week: number): Map<string, number> {
-  const key = `${season}:${week}`;
+export function positionFinishes(
+  season: number,
+  week: number,
+  format: "ppr" | "half" | "standard" = "ppr",
+): Map<string, number> {
+  const key = `${season}:${week}:${format}`;
   const cached = finishCache.get(key);
   if (cached) return cached;
 
@@ -205,7 +209,21 @@ export function positionFinishes(season: number, week: number): Map<string, numb
     const player = playerById(id);
     const position = player?.position;
     if (!position) continue;
-    const points = num(entry.stats ?? {}, "pts_ppr");
+    // Half and standard follow from the reception count, as in fantasyRows();
+    // each format is ranked on its own, since a catch-heavy week can be the
+    // WR4 in PPR and the WR9 in standard.
+    const stats = entry.stats ?? {};
+    const ppr = num(stats, "pts_ppr");
+    const receptions = num(stats, "rec");
+    const loggedHalf = stats.pts_half_ppr;
+    const points =
+      format === "ppr"
+        ? ppr
+        : format === "half"
+          ? typeof loggedHalf === "number" && Number.isFinite(loggedHalf)
+            ? loggedHalf
+            : ppr - receptions * 0.5
+          : ppr - receptions;
     // A player who did not score is not ranked. Hundreds of them tie on zero
     // and printing "WR143" for a receiver who was inactive is noise dressed as
     // a finish.

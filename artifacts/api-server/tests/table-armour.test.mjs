@@ -64,10 +64,10 @@ describe("the table frame outranks `.entry-content table:not(.variations)`", () 
     });
   }
 
-  test("team.css resets all four of its tables at id weight", () => {
+  test("team.css resets all six of its tables at id weight", () => {
     assert.ok(
       selectors(read("team.css")).includes(
-        ":is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table)",
+        ":is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table)",
       ),
     );
   });
@@ -94,7 +94,7 @@ describe("whole table families are lifted, so no rule is left behind", () => {
   });
 
   test("every team.css selector naming a table carries the id-weight prefix", () => {
-    const roots = /\.sct-(?:hist|mu-linescore|mu-table|mu-ps-table)\b(?!-)/;
+    const roots = /\.sct-(?:hist|mu-linescore|mu-table|mu-ps-table|rb-table)\b(?!-)/;
     const loose = selectors(read("team.css")).filter(
       (s) => roots.test(s) && !s.startsWith(":is(.sct, #sct-table-armour) "),
     );

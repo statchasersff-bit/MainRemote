@@ -47,6 +47,7 @@ export interface Meeting {
   neutralSite: boolean;
   venue: string | null;
   venueCity: string | null;
+  venueState: string | null;
   network: string | null;
   status: ScheduleGame["status"];
   /** Final score keyed by side; null until the game is final. */
@@ -108,6 +109,12 @@ export interface MatchupData {
    * block built on it renders only when it is here.
    */
   boxscore: GameBoxscore | null;
+  /**
+   * The winner's whole postseason, when the featured game is a playoff final:
+   * what the win led to, for the recap. Null for a regular-season game, a tie,
+   * or a document ESPN would not serve.
+   */
+  winnerPostseason: ScheduleGame[] | null;
   /** Who played in the featured game and what it meant. Null pregame. */
   gameStats: GameStats | null;
   /** What the featured game did to both defenses' FPA ranks. Null pregame. */
@@ -141,7 +148,7 @@ export interface MatchupData {
 }
 
 /** Prior seasons searched for meetings, in both halves of each — see schedule.ts. */
-const HISTORY_SEASONS = 5;
+export const HISTORY_SEASONS = 5;
 
 
 
@@ -178,6 +185,7 @@ function meetingFrom(game: ScheduleGame, season: number, a: NflTeam, b: NflTeam)
     neutralSite: game.neutralSite,
     venue: game.venue,
     venueCity: game.venueCity,
+    venueState: game.venueState ?? null,
     network: game.network,
     status: game.status,
     score,
@@ -383,6 +391,14 @@ export async function getMatchupData(
 
   const gameStats = isFinal ? buildGameStats(featured, injured) : null;
 
+  // What the win led to. One more ESPN document, and only for a playoff final
+  // — the same cached request the history above makes for pair.a.
+  const winnerPostseason =
+    isFinal && featured.seasonType === "post" && featured.winner
+      ? ((await getTeamPostseason(featured.winner, featured.season).catch(() => null))
+          ?.games ?? null)
+      : null;
+
   const fpaDelta =
     isFinal && featured.season === (fpaTable?.season ?? state.season)
       ? await getFpaDelta(
@@ -404,6 +420,7 @@ export async function getMatchupData(
     b,
     fpa,
     boxscore,
+    winnerPostseason,
     gameStats,
     fpaDelta,
     pinned,
@@ -435,6 +452,7 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     // page, and a cached fragment from the refusal would otherwise outlive it.
     data.featured?.espnEventId ?? "",
     data.boxscore ? "box" : "",
+    data.winnerPostseason ? `post${data.winnerPostseason.length}` : "",
     data.gameStats ? "stats" : "",
     data.fpaDelta ? "delta" : "",
   ].join("|");

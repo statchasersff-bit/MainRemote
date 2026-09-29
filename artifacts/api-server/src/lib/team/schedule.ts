@@ -78,6 +78,8 @@ export interface ScheduleGame {
   opponentName: string;
   venue: string | null;
   venueCity: string | null;
+  /** "CA": the venue's state, when ESPN gives one (it does not abroad). */
+  venueState?: string | null;
   /** True when the game is played outside the United States. */
   international: boolean;
   /** True when the opponent is in the same division. */
@@ -228,6 +230,7 @@ function parse(
         opponent?.fullName ?? other.team?.displayName?.trim() ?? "Opponent TBD",
       venue: competition.venue?.fullName?.trim() || null,
       venueCity: competition.venue?.address?.city?.trim() || null,
+      venueState: competition.venue?.address?.state?.trim() || null,
       // ESPN reports the venue's country; anything that is not the US is an
       // international game. Derived from the venue rather than from a hand-kept
       // list of London/Munich/São Paulo fixtures, which would go stale yearly.

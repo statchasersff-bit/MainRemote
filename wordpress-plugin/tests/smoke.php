@@ -278,7 +278,8 @@ function status_header() {}
 function nocache_headers() {}
 function is_page() { return false; }
 function get_children() { return array(); }
-function wp_remote_retrieve_header() { return ''; }
+// Headers by lower-case name, for the tests that read what the API sent.
+function wp_remote_retrieve_header( $r = null, $name = '' ) { return $GLOBALS['http_headers'][ $name ] ?? ''; }
 function wp_remote_post() { return array(); }
 function set_url_scheme( $u ) { return $u; }
 function wp_parse_url( $u, $c = -1 ) { return parse_url( $u, $c ); }
@@ -1418,8 +1419,38 @@ $GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Super Bowl 2025', 'a Super Bowl is headed by its round' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
-	'New England Patriots vs Philadelphia Eagles, Super Bowl 2025: Final Score, Player Stats & Fantasy Recap',
+	'New England Patriots vs Philadelphia Eagles, Super Bowl 2025 Box Score',
 	'and titled by it'
+);
+
+// Every matchup title fits in 70 characters: all 496 pairs, every state, and
+// the longest game labels. Site audits flag longer titles, and there were 1,280.
+$longest = '';
+foreach ( array_keys( statchasers_team_table() ) as $ta ) {
+	foreach ( array_keys( statchasers_team_table() ) as $tb ) {
+		if ( $ta >= $tb ) {
+			continue;
+		}
+		$titles = array(
+			statchasers_matchup_meta( $ta, $tb, 'upcoming', '2026' )['title'],
+			statchasers_matchup_meta( $ta, $tb, 'recently_completed', '2026' )['title'],
+			statchasers_matchup_meta( $ta, $tb, 'historical', '2026' )['title'],
+		);
+		foreach ( array( '2026-week-18', '2025-conference-championship', '2025-divisional', '2025-postseason-week-4' ) as $g ) {
+			$titles[] = statchasers_matchup_game_meta( $ta, $tb, $g )['title'];
+		}
+		foreach ( $titles as $t ) {
+			if ( strlen( $t ) > strlen( $longest ) ) {
+				$longest = $t;
+			}
+		}
+	}
+}
+is( strlen( $longest ) <= 70, true, "no matchup title is over 70 characters (longest: $longest)" );
+is(
+	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
+	'Miami Dolphins vs New York Jets, Week 1 2026 Box Score | StatChasers',
+	'the brand stays when it fits'
 );
 $GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'a regular-season game is still "Week N"' );
@@ -1428,6 +1459,70 @@ is(
 	'Full box score from Patriots vs Eagles in Week 1 of 2026: quarter-by-quarter scoring, every passing, rushing and receiving line, snap counts and fantasy points.',
 	'with the API\'s own regular-season description'
 );
+
+/*
+ * The scoreboard hero. The API renders its heading as an H2 in an embed and
+ * sends the page's H1 and <title> as headers; the plugin promotes the H2 so
+ * the page's one H1 is inside the hero, prints the API's words, and lifts the
+ * SportsEvent island into the head.
+ */
+echo "\nthe scoreboard hero carries the page's H1, title and SportsEvent\n";
+
+$hero_html = '<div class="sct sct-mu"><header class="sct-sbh" aria-labelledby="sct-mu-title">'
+	. '<h2 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>Philadelphia Eagles vs New England Patriots, Week 1 2026</h2>'
+	. '</header><section><h2 class="sct-h2">Player Stats</h2></section>'
+	. '<script type="application/json" class="sct-matchup-event-data">'
+	. '{"@type":"SportsEvent","name":"x","startDate":"2026-09-13T17:00:00.000Z","location":{"@type":"StadiumOrArena","name":"Gillette Stadium"},"homeTeam":{"@type":"SportsTeam","name":"New England Patriots"},"awayTeam":{"@type":"SportsTeam","name":"Philadelphia Eagles"}}'
+	. '</script></div>';
+
+$promoted = statchasers_matchup_promote_heading( $hero_html );
+is( substr_count( (string) $promoted, '<h1' ), 1, 'the hero heading is promoted to the one H1' );
+is( 1 === preg_match( '#<header class="sct-sbh"[^>]*><h1 class="sct-sbh-title" id="sct-mu-title" data-sct-hero-heading>#', (string) $promoted ), true, 'in place, inside the hero, id kept for aria-labelledby' );
+is( substr_count( (string) $promoted, '<h2' ), 1, 'and only that heading: the section H2 stays an H2' );
+is( statchasers_matchup_promote_heading( '<div class="sct"><h2 class="sct-mu-strip-title">x</h2></div>' ), null, 'an older render with no hero heading promotes nothing' );
+
+$stripped = statchasers_matchup_strip_event_data( $hero_html );
+is( false === strpos( $stripped, 'sct-matchup-event-data' ), true, 'the SportsEvent island is stripped from the printed markup' );
+is( false !== strpos( $stripped, 'data-sct-hero-heading' ), true, 'and nothing else is' );
+
+$GLOBALS['http_body']    = $hero_html;
+$GLOBALS['http_headers'] = array(
+	'x-matchup-heading' => rawurlencode( 'Philadelphia Eagles vs New England Patriots, Week 1 2026' ),
+	'x-matchup-title'   => rawurlencode( "Eagles vs Patriots Week 1 2026: Final Score 24\u{2013}20, Stats & Recap" ),
+	'x-matchup-score'   => 'Eagles won 24-20.',
+	'x-matchup-game'    => 'archived',
+);
+is( statchasers_matchup_heading(), 'Philadelphia Eagles vs New England Patriots, Week 1 2026', "the H1 is the API's, away then home" );
+is(
+	statchasers_matchup_request_meta()['title'],
+	"Eagles vs Patriots Week 1 2026: Final Score 24\u{2013}20, Stats & Recap",
+	"the title is the API's, en dash and all"
+);
+$event = statchasers_matchup_event_node();
+is( $event['@type'] ?? '', 'SportsEvent', 'the SportsEvent is lifted for the head' );
+is(
+	statchasers_matchup_rank_math_schema( array() )['statchasersMatchupEvent']['homeTeam']['name'] ?? '',
+	'New England Patriots',
+	"and joins Rank Math's graph"
+);
+// The FAQ island: lifted into the graph beside the event, stripped from the markup.
+$faq_island = '<script type="application/json" class="sct-matchup-faq-data">'
+	. '{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Who won?","acceptedAnswer":{"@type":"Answer","text":"The Eagles won 24\u201320."}}]}'
+	. '</script>';
+$GLOBALS['http_body'] = $hero_html . $faq_island;
+is( statchasers_matchup_rank_math_schema( array() )['statchasersMatchupFaq']['mainEntity'][0]['name'] ?? '', 'Who won?', 'the FAQ joins the graph too' );
+is( false === strpos( statchasers_matchup_strip_event_data( $hero_html . $faq_island ), 'sct-matchup-faq-data' ), true, 'and its island is stripped from the markup' );
+$GLOBALS['http_body'] = $hero_html . str_replace( '"text":"The Eagles won 24\u201320."', '"text":""', $faq_island );
+is( statchasers_matchup_faq_node(), null, 'a question with no answer drops the FAQ node' );
+$GLOBALS['http_body'] = str_replace( '"startDate":"2026-09-13T17:00:00.000Z",', '', $hero_html );
+is( statchasers_matchup_event_node(), null, 'an Event with no startDate is dropped, not printed broken' );
+
+// An API from before the headers: the plugin's own builders stand in.
+$GLOBALS['http_headers'] = array();
+$GLOBALS['http_body']    = $hero_html;
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'with no heading header, the pair order stands' );
+unset( $GLOBALS['http_body'] );
+$GLOBALS['http_headers'] = array();
 
 /*
  * The matchup trail. Rank Math builds it from the holder, so it ended at the

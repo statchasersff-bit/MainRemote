@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.12
+Stable tag: 1.10.13
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.13 =
+* Player pages load two more webfonts, for the redesigned profile header and the Overview tab's new lower sections: Archivo with its width axis (the header's name and figures are set condensed) and Source Serif 4 (the Overview's written read). Registered as dependencies of the player stylesheet, so they load only where a player page or the index mounts. Return '' from the `statchasers_player_header_font_url` filter to serve them yourself or not at all.
+* Matchup pages: the scoreboard hero loads its own webfonts (Barlow and Barlow Condensed, `statchasers_matchup_font_url` filter) with preconnect hints; the hero's heading can be promoted to the page's H1; the featured game is added to Rank Math's graph as a SportsEvent, with the recap's FAQ as a FAQPage node, and printed on their own when no schema plugin is present; and the page title picks the most descriptive candidate that fits in 70 characters, mirroring the API.
 
 = 1.10.12 =
 * A player link is printed only when this site has published that player's page. The API links a name as soon as the player joins its index (14:00 UTC and at each boot), and the page builder runs at 15:00 UTC, so a new signing's name in recaps, hubs and rankings pointed at a 404 until then. A crawl on 2026-09-28 found five in game recaps. Every [statchasers_*] shortcode, the Divi hub module and the self-mounting /nfl/players/ and /nfl/teams/ pages now print such a name as plain text, and it becomes a link again when the page is published. Links to other hosts and to the retired /nfl/players/<section>/<slug>/ layout are left alone, and so is every link when no player page is published at all.

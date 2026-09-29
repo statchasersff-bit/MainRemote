@@ -78,6 +78,16 @@ Until it moves, the daily **handcuff stats** step keeps rebuilding `rb_stats_202
 
 `SC_SCHEDULE_SEASON=2026` pins the schedule to 2026 even after nflverse publishes 2027. That is useful if you want the finished season up through the draft. Remove it to follow the calendar again. It is not needed for the March–May gap, which is automatic now.
 
+### 6. After the Super Bowl: rebuild the all-time series
+
+The matchup pages' all-time tiles read `artifacts/api-server/data/rivalry/all-time.json`, which holds complete seasons only (`throughSeason`); the season in progress comes from each page's own schedule. Once the Super Bowl is played, run from `artifacts/api-server`:
+
+```
+node scripts/build-rivalry-history.mjs
+```
+
+It writes seasons through the one just finished and needs committing. A missed year loses nothing at first: the page counts any season after `throughSeason` from its own five-season window. After five missed years the oldest of those seasons fall out of that window and out of the tiles, so rebuild every year.
+
 ## A quick check after each step
 
 - **API:** `https://newsfeed.replit.app/api/status`. Check `playerStats.season`, `playerStats.latestWeek`, `playerStats.daily.steps` and `fpa.weekNumber`.

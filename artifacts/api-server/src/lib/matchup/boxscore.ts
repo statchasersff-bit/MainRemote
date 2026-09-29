@@ -21,6 +21,8 @@
 
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "../team/cache";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import type { BoxPlayer, PlayerGameStats } from "./game-players";
+import { parseEspnScoringPlay, type EspnScoringPlay, type ScoringPlay } from "./scoring-plays";
 
 /** One side's scoring by period, and the final. */
 export interface BoxscoreLine {
@@ -70,6 +72,10 @@ export interface GameBoxscore {
   lines: BoxscoreLine[];
   /** Keyed by upstream abbreviation, upper case. */
   stats: Record<string, BoxTeamStats>;
+  /** Every player with a line, team as the site's display code. Empty when ESPN sent none. */
+  players: BoxPlayer[];
+  /** In the order they happened, team as the site's display code. */
+  scoringPlays: ScoringPlay[];
 }
 
 /* ------------------------------------------------------------- upstream */
@@ -96,7 +102,26 @@ interface EspnSummary {
       team?: { abbreviation?: string };
       statistics?: EspnStatistic[];
     }>;
+    players?: Array<{
+      team?: { abbreviation?: string };
+      statistics?: EspnPlayerCategory[];
+    }>;
   };
+  scoringPlays?: EspnScoringPlay[];
+}
+
+/** One category of the player box score: "passing", "defensive"… */
+interface EspnPlayerCategory {
+  name?: string;
+  keys?: string[];
+  athletes?: Array<{
+    athlete?: {
+      id?: string;
+      displayName?: string;
+      position?: { abbreviation?: string };
+    };
+    stats?: string[];
+  }>;
 }
 
 function toNumber(raw: string | number | undefined | null): number | null {
@@ -158,6 +183,121 @@ function statsOf(entries: EspnStatistic[] | undefined): BoxTeamStats {
   };
 }
 
+/** ESPN's code ("WSH") as the site's display code ("WAS"). */
+function displayCode(abbr: string): string {
+  return getTeamByAbbreviation(abbr)?.code.toUpperCase() ?? abbr.toUpperCase();
+}
+
+/**
+ * Which field each category's key fills. Keyed by category because two of
+ * them share a key: `interceptions` is thrown under "passing" and made under
+ * "interceptions".
+ */
+const PLAYER_KEYS: Record<string, Record<string, keyof PlayerGameStats>> = {
+  passing: {
+    passingYards: "passYds",
+    passingTouchdowns: "passTd",
+    interceptions: "passInt",
+  },
+  rushing: {
+    rushingAttempts: "rushAtt",
+    rushingYards: "rushYds",
+    rushingTouchdowns: "rushTd",
+  },
+  receiving: {
+    receptions: "rec",
+    receivingYards: "recYds",
+    receivingTouchdowns: "recTd",
+    receivingTargets: "recTgt",
+  },
+  fumbles: { fumblesLost: "fumblesLost" },
+  defensive: {
+    soloTackles: "soloTkl",
+    sacks: "sacks",
+    passesDefended: "passDef",
+    defensiveTouchdowns: "defTd",
+  },
+  interceptions: { interceptions: "defInt" },
+};
+
+function playersOf(payload: EspnSummary): BoxPlayer[] {
+  const byId = new Map<string, BoxPlayer>();
+  for (const side of payload.boxscore?.players ?? []) {
+    const abbr = side.team?.abbreviation?.trim();
+    if (!abbr) continue;
+    const team = displayCode(abbr);
+    for (const category of side.statistics ?? []) {
+      const name = category.name ?? "";
+      const keys = category.keys ?? [];
+      for (const row of category.athletes ?? []) {
+        const id = row.athlete?.id;
+        const display = row.athlete?.displayName?.trim();
+        if (!id || !display) continue;
+        let player = byId.get(id);
+        if (!player) {
+          player = {
+            espnId: id,
+            name: display,
+            team,
+            pos: row.athlete?.position?.abbreviation?.trim().toUpperCase() || null,
+            stats: {},
+          };
+          byId.set(id, player);
+        }
+        const stats = player.stats;
+        keys.forEach((key, i) => {
+          const raw = row.stats?.[i];
+          if (raw === undefined) return;
+          if (name === "passing" && key === "completions/passingAttempts") {
+            const made = attempt(raw.replace("/", "-"));
+            if (made) {
+              stats.passCmp = made.made;
+              stats.passAtt = made.attempts;
+            }
+            return;
+          }
+          if (name === "kicking" && key === "fieldGoalsMade/fieldGoalAttempts") {
+            const made = attempt(raw.replace("/", "-"));
+            if (made) {
+              stats.fgm = made.made;
+              stats.fga = made.attempts;
+            }
+            return;
+          }
+          if (name === "kicking" && key === "extraPointsMade/extraPointAttempts") {
+            const made = attempt(raw.replace("/", "-"));
+            if (made) stats.xpm = made.made;
+            return;
+          }
+          if (name === "defensive" && key === "totalTackles") {
+            const total = toNumber(raw);
+            // Assisted is what the total has beyond the solo count, which
+            // may not have been read yet; settled after the loop.
+            if (total !== null) stats.astTkl = total;
+            return;
+          }
+          const field = PLAYER_KEYS[name]?.[key];
+          const value = toNumber(raw);
+          if (field && value !== null) stats[field] = value;
+        });
+        if (name === "defensive" && stats.astTkl !== undefined) {
+          stats.astTkl = Math.max(0, stats.astTkl - (stats.soloTkl ?? 0));
+        }
+      }
+    }
+  }
+  return [...byId.values()];
+}
+
+function scoringPlaysOf(payload: EspnSummary): ScoringPlay[] {
+  const plays: ScoringPlay[] = [];
+  for (const raw of payload.scoringPlays ?? []) {
+    const play = parseEspnScoringPlay(raw);
+    if (play) plays.push({ ...play, team: displayCode(play.team) });
+  }
+  return plays;
+}
+
 function parse(eventId: string, payload: EspnSummary): GameBoxscore {
   const competition = payload.header?.competitions?.[0];
   const competitors = competition?.competitors ?? [];
@@ -196,6 +336,8 @@ function parse(eventId: string, payload: EspnSummary): GameBoxscore {
     periodCount: Math.max(...lines.map((line) => line.periods.length)),
     lines,
     stats,
+    players: playersOf(payload),
+    scoringPlays: scoringPlaysOf(payload),
   };
 }
 
@@ -222,6 +364,9 @@ const cache = createKeyedCache<GameBoxscore>({
 });
 
 /** The box score for a finished game, or null when it cannot be had. */
+/** Exposed for tests: the summary document as the page reads it. */
+export const parseEspnSummary = parse;
+
 export async function getGameBoxscore(
   eventId: string | null,
 ): Promise<GameBoxscore | null> {

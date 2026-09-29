@@ -256,7 +256,8 @@ body.sct-page.is-embed {
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
  * .sct-band-label, .sct-depth-pos, .sct-ladder-title, .sct-mu-h3,
- * .sct-news-title, .sct-outlook-name, .sct-faq-q — every <h1>-<h4> the hub
+ * .sct-news-title, .sct-outlook-name, .sct-faq-q, .sct-sbh-title, .sct-mu-story-title, .sct-rb-h2, .sct-rb-h3,
+ * .sct-rb-redraft-title — every <h1>-<h4> the hub
  * prints. The list is the checklist: a heading class added below and left off
  * here is a heading that renders at the theme's size, which is how .sct-faq-q
  * spent a release at 38px.
@@ -2785,12 +2786,12 @@ body.sct-page.is-embed {
 /* would otherwise simply take. Same weight as the rules after them and     */
 /* placed first, so wherever a table DOES declare one, it still wins.       */
 /* ====================================================================== */
-:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table) {
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table) {
   margin: 0;
   border: 0;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table) :where(th, td) {
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table) :where(th, td) {
   border-top: 0;
   color: inherit;
 }
@@ -6491,80 +6492,6 @@ body.sct-page.is-embed {
   display: none;
 }
 
-.sct-mu-featured .sct-game {
-  cursor: default;
-}
-
-/* The final score, as a scoreboard.
- *
- * The result is the whole reason a postgame reader opened this page, so it is
- * the largest thing on it after the hero: crest, nickname and a number set at
- * display size, with the date and the stadium demoted to the line underneath.
- * The old block set the score at 32px in a row of card metadata, which made the
- * most important fact on the page look like one of its footnotes. */
-.sct-mu-scoreboard {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(8px, 3vw, 28px);
-  margin: 18px 0 14px;
-}
-
-.sct-mu-sb-side {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.sct-mu-sb-logo {
-  width: clamp(40px, 9vw, 64px);
-  height: auto;
-}
-
-.sct-mu-sb-name {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sc-muted-strong);
-  text-align: center;
-}
-
-/* The number carries the result on its own: the winner's is navy and the
-   loser's stays muted, which is the same emphasis the old block used — only at
-   a size where it registers before the crest does. Tabular figures so a 7 and
-   a 1 occupy the same width and the two sides stay symmetrical. */
-.sct-mu-sb-score {
-  font-size: clamp(44px, 11vw, 76px);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-muted-strong);
-}
-
-.sct-mu-sb-side.is-winner .sct-mu-sb-score {
-  color: var(--sc-navy);
-}
-
-.sct-mu-sb-sep {
-  font-size: clamp(20px, 5vw, 32px);
-  font-weight: 700;
-  color: var(--sc-hairline);
-  align-self: center;
-  padding-top: 18px;
-}
-
-/* On a final the date and venue are where it happened, not what happened. */
-.sct-mu-game.is-final .sct-game-meta {
-  text-align: center;
-}
-
-.sct-mu-game.is-final .sct-game-when {
-  font-size: 0.86rem;
-}
-
 /* Game leaders: four cards, one per category.
  *
  * The name is the loudest thing in each card, not the number. The number is why
@@ -7016,396 +6943,1564 @@ body.sct-page.is-embed {
   font-size: 13px;
 }
 
-/* --------------------------------------------------- the matchup strip */
+/* ------------------------------------------------ the scoreboard hero */
 
-/* The matchup hero, in both of its states.
+/* The matchup hero: see scoreboard-hero.ts.
  *
- * A finished game's hero IS the scoreboard rather than a pair of crests with
- * the result in a card below it: the reader arriving from "patriots vs
- * seahawks score" used to meet the fixture twice and the number once, half a
- * page down. The fixture hero was never brought with it. It stayed a title
- * block on the left with a stack of crest-over-code-over-record parked on the
- * right — two headers, in two shapes, for one page.
+ * A navy panel with each club's colour on its own side, split on a diagonal,
+ * and four rows inside it: the meta bar, the H1, the score, the quarter table.
+ * It is dressed in its own type, Barlow and Barlow Condensed, rather than the
+ * hub's Inter, because the score is the page and a condensed face is what lets
+ * it run at 196px without two digits filling the column.
  *
- * So this is the shape of the matchup hero, full stop, and `.is-final` is the
- * variant with a number to put in it. What the two states share is written
- * once here; what a final does differently is written against `.is-final`, and
- * what a fixture does differently against `:not(.is-final)`.
- *
- * Neither carries an aura. It is a 320px team-coloured blur anchored to the
- * hero's top-left corner, which on a board with two sides sits behind nothing,
- * off-centre, while the two side tones below do the same job in the right
- * places — so the markup no longer emits one. */
-.sct-mu-hero {
-  /* Tighter than the standard hero on both axes. A final carries a 70px
-     number: the block padding that reads as composure around a title reads as
-     emptiness around a score. */
-  padding: 16px 24px 14px;
+ * The family goes through `--sc-font`, not `font-family`. The theme armour
+ * near the top of this file pins every element under `.sct` to
+ * `var(--sc-font) !important`, and a plain `font-family` here would lose to it
+ * — the same trap schedule.css fell into. Setting the token on the element is
+ * what the pin reads, so each rule below that wants the condensed face says so
+ * by setting `--sc-font` on itself. */
+.sct-sbh {
+  --sbh-navy: #0f1e33;
+  --sbh-gold: #ffa300;
+  --sbh-gold-ink: #13233a;
+  --sbh-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --sbh-body: "Barlow", system-ui, sans-serif;
+  --sc-font: var(--sbh-body);
+  position: relative;
+  margin: 0 0 28px;
+  padding: 14px 24px 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  color: #fff;
+  /* Top to bottom: the yard lines, then the two sides on a 100° diagonal with
+     the navy showing between them, then the navy itself. The sides arrive
+     already at 90% (see heroSideFill()), so the navy tints them a touch. */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      transparent 1px 64px
+    ),
+    linear-gradient(
+      100deg,
+      var(--sbh-away, #1e3a5f) 0 38%,
+      transparent 38% 62%,
+      var(--sbh-home, #1e3a5f) 62% 100%
+    ),
+    var(--sbh-navy);
 }
 
-/* A fixture board is two crests and two names, with no line score under it —
-   a shorter object, which gets back the air the number was taking. */
-.sct-mu-hero:not(.is-final) {
-  padding: 20px 24px 18px;
+.sct-sbh p {
+  margin: 0;
+  color: inherit;
 }
 
-.sct-mu-strip-inner {
-  display: grid;
-  justify-items: center;
-  /* 8px, not 14px. Four rows of content with 14px between them spent 56px on
-     nothing, and the quarter line in particular then read as a separate table
-     parked under the hero rather than as its last row. */
-  gap: 8px;
+/* Row 1: the meta bar. */
+.sct-sbh-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 20px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.82);
 }
 
-/* `min-width: 0` because this is a grid item holding a long heading, and the
-   automatic minimum size of a grid item is its content — without it a title
-   like "Tampa Bay Buccaneers vs Jacksonville Jaguars" sets the column's width
-   instead of wrapping inside it. It used to arrive by way of `.sct-hero-text`,
-   which this block carried until that class turned out to be dragging the hub
-   hero's `grid-area: text` along with it and tearing this hero into two
-   columns. The one useful declaration is restated here; the placement is not
-   wanted and is now not inherited. */
-.sct-mu-strip-text {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
+.sct-sbh .sct-sbh-meta-game,
+.sct-sbh .sct-sbh-meta-where {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sct-sbh-badge {
+  --sc-font: var(--sbh-display);
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--sbh-gold);
+  color: var(--sbh-gold-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.sct-sbh-venue {
+  font-weight: 700;
+  color: #fff;
+}
+
+.sct-sbh-divider {
+  margin: 0 2px;
+  opacity: 0.6;
+}
+
+/* Row 2: the page's one H1. Font-size and colour are `!important` for the
+   reason the heading armour at the top of this file gives: Divi styles bare
+   headings through an id, and only `!important` beats an id. */
+.sct-sbh .sct-sbh-title {
+  --sc-font: var(--sbh-display);
+  max-width: none;
+  margin: 6px auto 0;
+  font-size: clamp(20px, 2.6vw, 28px) !important;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0;
   text-align: center;
+  text-wrap: balance;
+  color: #fff !important;
 }
 
-/* The title recedes a step on a final. The team names are already spelled out
-   in the board under it, and the H1 set at hero scale on top of a 70px score
-   made two headlines competing for the same glance. It stays an H1 — the page
-   is still about these two teams — and stops being the loudest thing on it.
-
-   A fixture has no number to lose that contest to, so there the title keeps
-   hero scale from .sct-title and is the loudest thing on the page — which is
-   right: before kickoff the two names ARE the news. */
-.sct-mu-hero.is-final .sct-mu-strip-title {
-  font-size: clamp(1.02rem, 2.2vw, 1.35rem);
-  line-height: 1.2;
-}
-
-/* The board: one row, not two columns.
- *
- * Each side is a horizontal group and the two meet at the dash, which puts the
- * two numbers the page exists for next to each other instead of at opposite
- * edges of a 640px poster. The middle column is `auto` so the dash takes only
- * the width of the character; the sides share what is left evenly, which is
- * what keeps the dash on the centre line whatever the two nicknames are. */
-.sct-mu-strip-board {
+/* Row 3: away | vs | home. */
+.sct-sbh-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(8px, 2vw, 20px);
-  width: 100%;
-  max-width: 660px;
+  align-items: end;
+  gap: 12px;
+  margin-top: 4px;
 }
 
-.sct-mu-strip-side {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  /* Toward the middle: the away side's number ends at the dash and the home
-     side's begins there. */
-  justify-content: flex-end;
-  gap: clamp(8px, 1.6vw, 14px);
+.sct-sbh-team {
   min-width: 0;
-  padding: 4px 0;
 }
 
-/* The right side is the left side reversed, which is why one function in the
-   renderer builds both. */
-.sct-mu-strip-side.is-right {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-}
-
-/* A fixture's sides sit in the middle of their columns rather than hard
-   against the join. On a final the two numbers have to be adjacent — that
-   adjacency is what makes "10 – 13" one figure at one glance — and everything
-   else follows them inward. Take the numbers away and the same rule huddles
-   two crests at the centre of a 660px board with its outer half empty, so
-   before kickoff each side centres on its own half instead. */
-.sct-mu-hero:not(.is-final) .sct-mu-strip-side,
-.sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right {
-  justify-content: center;
-}
-
-/* A soft wash of the team's own ink behind each crest.
- *
- * This is the structure the strip needs so the two halves read as two teams
- * without a rule drawn down the middle of them, and it took three tries to get
- * to something that is felt rather than seen:
- *
- *   - each side's LOGO as a watermark read as a blur on the crest, because a
- *     ghost of a mark eighteen pixels behind the real one at twice the size is
- *     not texture, it is a smeared copy;
- *   - a linear tone across each half read as a coloured BAR, because a gradient
- *     box has two hard edges however soft the fade between them is.
- *
- * So: a circle, blurred, with no edge anywhere — the same device and the same
- * restraint as .sct-hero-aura, which this replaces on the final hero. It sits
- * behind the crest at the outer end, which is the quiet end; the centre of the
- * board, where the two numbers are, stays the plain hero ground.
- *
- * The 32 primaries are not ours to moderate — several clubs are pure black or a
- * saturated red — so this is weighted for the strongest of them. */
-.sct-mu-strip-side::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -34px;
-  z-index: -1;
-  width: 190px;
-  height: 190px;
-  border-radius: 50%;
-  transform: translateY(-50%);
-  background: radial-gradient(
-    circle,
-    var(--mu-side-ink, var(--sc-navy)) 0%,
-    rgba(255, 255, 255, 0) 68%
-  );
-  opacity: 0.13;
-  filter: blur(14px);
-  pointer-events: none;
-}
-
-.sct-mu-strip-side.is-right::before {
-  left: auto;
-  right: -34px;
-}
-
-/* With the row centred, the wash centres with it. Hung off the column's outer
-   edge it would sit a third of the board away from the crest it belongs to. */
-.sct-mu-hero:not(.is-final) .sct-mu-strip-side::before,
-.sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right::before {
-  left: 50%;
-  right: auto;
-  transform: translate(-50%, -50%);
-}
-
-.sct-mu-strip-logo {
-  flex: none;
-  width: clamp(34px, 6vw, 52px);
-  height: auto;
-  object-fit: contain;
-}
-
-/* A fixture crest is the biggest thing on its half of the board, because
-   nothing else on that half is asking to be. */
-.sct-mu-hero:not(.is-final) .sct-mu-strip-logo {
-  width: clamp(42px, 7vw, 62px);
-}
-
-/* The loser recedes a step, the way the hub's opponent crest does. Only a
-   step: this is a result, not a ranking, and a team greyed out reads as data
-   that failed to load rather than as a team that lost. Nobody has lost
-   anything before kickoff, so this is the final's alone. */
-.sct-mu-hero.is-final .sct-mu-strip-side:not(.is-winner) .sct-mu-strip-logo {
-  opacity: 0.72;
-}
-
-/* Name over record, as one block. They belong to the team rather than to the
-   number, so they sit between the crest and the score and align to the crest's
-   side of the row. */
-.sct-mu-strip-who {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
+.sct-sbh-team.is-home {
   text-align: right;
 }
 
-.sct-mu-strip-side.is-right .sct-mu-strip-who {
-  text-align: left;
-}
-
-.sct-mu-strip-name {
-  font-size: clamp(11px, 1.9vw, 13px);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sc-muted-strong);
-  /* A long nickname truncates rather than wrapping the row to two lines and
-     taking the strip's height with it. */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* On a fixture the nickname is the board's headline — there is no number over
-   it — so it is set as one, in the ink the title uses rather than the grey a
-   caption to a score is written in. */
-.sct-mu-hero:not(.is-final) .sct-mu-strip-name {
-  font-size: clamp(13px, 2.2vw, 15px);
-  color: var(--sc-navy);
-}
-
-.sct-mu-hero:not(.is-final) .sct-mu-strip-record {
-  font-size: 12px;
-}
-
-/* The code stands in for the nickname below 640px — see the media query at the
-   foot of this file. Exactly one of the two is ever displayed. */
-.sct-mu-strip-code {
-  display: none;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--sc-muted-strong);
-}
-
-.sct-mu-strip-record {
-  font-size: 11px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-muted);
-}
-
-/* The number is the page. Tabular figures so a 7 and a 1 take the same width
-   and the two halves stay symmetrical whatever the score was. */
-.sct-mu-strip-score {
-  font-size: clamp(40px, 8.5vw, 70px);
-  font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.035em;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-muted-strong);
-}
-
-.sct-mu-strip-side.is-winner .sct-mu-strip-score {
-  color: var(--sc-navy);
-}
-
-/* The join. On a final it separates the two numbers and says nothing else —
-   the status is in the eyebrow and the venue is in the row below, so a word
-   there would be a third printing of one of them. On a fixture it is the one
-   thing on the board naming the host, which is worth more ink than a dash
-   between two figures gets. */
-.sct-mu-strip-join {
-  font-size: clamp(16px, 3vw, 26px);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--sc-muted);
-  opacity: 0.45;
-}
-
-.sct-mu-hero:not(.is-final) .sct-mu-strip-join {
-  font-size: clamp(13px, 2vw, 16px);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-
-.sct-mu-strip-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  /* Centred, not baseline-aligned. The separator between the venue and the
-     kickoff is an empty 3px span, and an empty box's baseline is its bottom
-     edge — baseline alignment dropped the gold dot below the line of text it
-     divides. */
-  align-items: center;
-  gap: 2px 10px;
-  margin: 0;
-  text-align: center;
-}
-
-.sct-mu-strip-where {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--sc-muted-strong);
-}
-
-.sct-mu-strip-when {
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--sc-muted);
-}
-
-/* What the metadata row carries on a pair page with no current game: not a
-   stadium and a date, which would belong to a meeting the page is not about,
-   but one line saying what is below it. It takes the row's place rather than
-   sitting under it — see renderHero(). */
-.sct-mu-strip-note {
-  max-width: 46ch;
-  margin: 0;
-  text-align: center;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sc-muted);
-}
-
-/* The quarter line. Two rows and six columns carrying the shape of the whole
-   game — who led at the half, who scored last, whether it needed overtime — in
-   less room than the sentence describing it. This is the single biggest thing
-   the page was missing: it is what makes a result read as a game rather than
-   as a final score somebody typed in. */
-:is(.sct, #sct-table-armour) .sct-mu-linescore {
-  width: auto;
-  /* Narrower than it was, and narrower than the board above it. It is the
-     footnote to the score, not a second scoreboard, and at 340px it was wide
-     enough to compete with one. */
-  min-width: min(100%, 300px);
-  border-collapse: collapse;
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-linescore th,
-:is(.sct, #sct-table-armour) .sct-mu-linescore td {
-  padding: 3px 9px;
-  text-align: center;
-  font-size: 12px;
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-linescore thead th {
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--sc-hairline);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--sc-muted);
-}
-
-:is(.sct, #sct-table-armour) .sct-mu-ls-team {
+.sct-sbh .sct-sbh-name {
+  --sc-font: var(--sbh-display);
   display: flex;
   align-items: center;
-  gap: 6px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--sc-muted-strong);
+  gap: 8px;
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: #fff;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-ls-logo {
-  width: 16px;
-  height: 16px;
+.sct-sbh-team.is-home .sct-sbh-name {
+  justify-content: flex-end;
+}
+
+.sct-sbh-logo {
+  flex: none;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-ls-q {
-  color: var(--sc-muted-strong);
+.sct-sbh .sct-sbh-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sct-sbh-team.is-home .sct-sbh-label {
+  justify-content: flex-end;
+}
+
+.sct-sbh-tag {
+  --sc-font: var(--sbh-display);
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--sbh-gold);
+  color: var(--sbh-gold-ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.sct-sbh .sct-sbh-score {
+  --sc-font: var(--sbh-display);
+  margin-top: 2px;
+  font-size: clamp(52px, 7vw, 84px);
+  font-weight: 800;
+  line-height: 0.85;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  animation: sbh-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.sct-sbh .sct-sbh-team.is-loser .sct-sbh-score {
+  color: rgba(255, 255, 255, 0.55);
+  animation-delay: 80ms;
+}
+
+@keyframes sbh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+.sct-sbh-vs {
+  --sc-font: var(--sbh-display);
+  align-self: center;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Before kickoff: the kickoff where the scores would be. */
+.sct-sbh .sct-sbh-kickoff {
+  --sc-font: var(--sbh-display);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+  text-align: center;
+  line-height: 0.95;
+}
+
+.sct-sbh-kickoff-date {
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sct-sbh-kickoff-time {
+  margin-top: 4px;
+  font-size: clamp(44px, 6vw, 64px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-sbh .sct-sbh-note {
+  margin-top: 4px;
+  font-size: 15px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sct-sbh.is-bare .sct-sbh-title {
+  margin-top: 4px;
+}
+
+/* Row 4: scoring by quarter. A real table, scrolled rather than squeezed on
+   the narrowest phones. Every table selector carries the id-weight prefix —
+   see the table armour above — or Divi's cell padding and header ink win. */
+.sct-sbh-linescore {
+  margin-top: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(.sct, #sct-table-armour) table.sct-mu-linescore:not(.variations) {
+  width: 100%;
+  min-width: 420px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: transparent;
+}
+
+/* Visually hidden, still announced: the table's own header row says what it
+   is, and the hero is kept short. */
+:is(.sct, #sct-table-armour) .sct-mu-linescore caption {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore :is(th, td) {
+  padding: 3px 8px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore thead th {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore :is(thead th:first-child, .sct-mu-ls-team) {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore .sct-mu-ls-team {
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-mu-linescore td.sct-mu-ls-total {
+  --sc-font: var(--sbh-display);
+  font-size: 18px;
   font-weight: 700;
 }
 
-/* The total is the one column that repeats a number already in the hero, so it
-   is set apart rather than louder: a rule down its left edge, and the weight
-   the quarters do not have. */
-:is(.sct, #sct-table-armour) .sct-mu-ls-total {
-  border-left: 1px solid var(--sc-hairline);
-  font-weight: 900;
-  color: var(--sc-navy);
+:is(.sct, #sct-table-armour) .sct-mu-linescore tr.is-winner td.sct-mu-ls-total {
+  color: var(--sbh-gold);
 }
 
-:is(.sct, #sct-table-armour) .sct-mu-linescore tbody tr.is-winner .sct-mu-ls-team,
-:is(.sct, #sct-table-armour) .sct-mu-linescore tbody tr.is-winner .sct-mu-ls-q {
-  color: var(--sc-navy);
+@media (max-width: 640px) {
+  .sct-sbh {
+    padding: 10px 14px 8px;
+    border-radius: 16px;
+  }
+
+  .sct-sbh-board {
+    gap: 8px;
+  }
+
+  /* The crest goes over the name rather than beside it: beside it, a 48px
+     crest left "Los Angeles Rams" about 90px and three lines. */
+  .sct-sbh .sct-sbh-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .sct-sbh-team.is-home .sct-sbh-name {
+    align-items: flex-end;
+  }
+
+  /* Venue and kickoff wrap onto two lines here, and a divider left at the end
+     of the first line separates nothing. */
+  .sct-sbh-divider {
+    display: none;
+  }
+
+  .sct-sbh-meta,
+  .sct-sbh .sct-sbh-meta-game,
+  .sct-sbh .sct-sbh-meta-where {
+    gap: 2px 8px;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .sct-sbh-badge {
+    font-size: 13px;
+  }
+
+  /* The crest is decoration and the name already says who; stacked above a
+     name that wraps, it was the tallest thing in the board. */
+  .sct-sbh-logo {
+    display: none;
+  }
+
+  /* Seven narrow columns fit a phone once the cells are tighter, and a table
+     that fits needs no scrollbar under it. */
+  :is(.sct, #sct-table-armour) table.sct-mu-linescore:not(.variations) {
+    min-width: 0;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mu-linescore :is(th, td) {
+    padding: 2px 4px;
+    font-size: 14px;
+  }
+
+  .sct-sbh-linescore {
+    margin-top: 6px;
+  }
+
+  .sct-sbh .sct-sbh-score {
+    font-size: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sct-sbh .sct-sbh-score,
+  .sct-sbh .sct-sbh-team.is-loser .sct-sbh-score {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------- the game recap */
+
+/* Directly under the scoreboard hero: the game in words, before the tables
+   take it apart. A headline and a standfirst, then body copy at reading size
+   and measure. The headline is an H2 — the page's H1 is the hero's — so its
+   size and ink are `!important` for the reason the heading armour at the top
+   of this file gives. */
+.sct-mu-story {
+  max-width: 72ch;
+}
+
+.sct .sct-mu-story-title {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 3vw, 30px) !important;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  color: var(--sc-navy) !important;
+}
+
+.sct .sct-mu-story-dek {
+  margin: 0;
+  font-size: clamp(16px, 2.2vw, 18px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--sc-muted-strong);
+}
+
+.sct .sct-mu-story-kicker {
+  margin: 22px 0 8px;
+}
+
+.sct .sct-mu-story-body p {
+  margin: 0 0 14px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--sc-ink);
+}
+
+.sct .sct-mu-story-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Divi colours bare links through the content column's id, so the ink needs
+   `!important` to stay ours. */
+.sct .sct-mu-story-body a {
+  color: var(--sc-navy) !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.sct .sct-mu-story-body a:hover {
+  color: var(--sc-gold-deep) !important;
+}
+
+/* ------------------------------------------------------- the recap body */
+
+/* Everything under the scoreboard hero on a recap page: see recap-body.ts.
+ *
+ * Two columns, main and a 320px sidebar, stacking at 880px. Set in the hero's
+ * type (Barlow for text, Barlow Condensed for headings and numbers) through
+ * the `--sc-font` token the theme armour reads — so the box score sections the
+ * recap keeps from the matchup page (leaders, player stats, usage) come along
+ * in the same face without a rule of their own. Light only, by decision: the
+ * page is embedded in a light WordPress theme. */
+
+/* The recap page is narrower than a hub: 1040px of content, 20px gutters. */
+.sct.sct-mu:has(.sct-rb) {
+  max-width: 1080px;
+  --sct-gutter: 20px;
+}
+
+body.sct-page:not(.is-embed):has(.sct-rb) {
+  background: #f5f7fa;
+}
+
+/* The strip sits above the two columns, outside .sct-rb, so it takes the
+   same tokens by name rather than by inheritance. */
+.sct-rb,
+.sct-ls {
+  --rb-ink: #13233a;
+  --rb-slate: #5b6778;
+  --rb-line: #dce1e8;
+  --rb-paper: #f5f7fa;
+  --rb-card: #ffffff;
+  --rb-gold: #ffa300;
+  --rb-navy: #0f1e33;
+  --rb-link: #003594;
+  --rb-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --rb-body: "Barlow", system-ui, sans-serif;
+  --sc-font: var(--rb-body);
+}
+
+.sct-rb {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+  color: var(--rb-ink);
+}
+
+.sct-rb-main {
+  min-width: 0;
+}
+
+.sct-rb-main > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sct-rb-main > * + * {
+  margin-top: 52px;
+}
+
+.sct-rb-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Headings. Size and ink `!important` against Divi's id-scoped heading rules,
+   as everywhere else in this file. The kept sections' own H2s are brought into
+   the same scale. */
+.sct-rb :is(.sct-rb-h2, .sct-h2, .sct-mu-story-title) {
+  --sc-font: var(--rb-display);
+  margin: 0 0 8px;
+  font-size: 30px !important;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--rb-ink) !important;
+}
+
+.sct-rb .sct-rb-h3 {
+  --sc-font: var(--rb-display);
+  margin: 28px 0 10px;
+  font-size: 21px !important;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--rb-ink) !important;
+}
+
+.sct-rb .sct-rb-sub,
+.sct-rb .sct-mu-story-dek {
+  max-width: 66ch;
+  margin: 0 0 18px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-mu-story {
+  max-width: 66ch;
+}
+
+.sct-rb .sct-mu-story-body p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--rb-ink);
+}
+
+.sct-rb :is(a, summary):focus-visible {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: 3px;
+}
+
+/* ---- why won */
+
+:is(.sct, #sct-table-armour) table.sct-rb-table:not(.variations) {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table :is(th, td) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--rb-ink);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table thead th {
+  --sc-font: var(--rb-display);
+  padding: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-col-away {
+  width: 80px;
+  text-align: left;
+  color: var(--rb-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-col-stat {
+  text-align: center;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-col-home {
+  width: 80px;
+  text-align: right;
+  color: var(--rb-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-stat :is(th, td) {
+  padding: 14px 0 8px;
+  border-top: 1px solid var(--rb-line);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-stat-name {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-val {
+  --sc-font: var(--rb-display);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-val.is-home {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-val.is-away.is-better {
+  color: var(--rb-away);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-val.is-home.is-better {
+  color: var(--rb-home);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-table .sct-rb-barrow td {
+  padding: 0 0 14px;
+}
+
+.sct-rb-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--rb-line);
+}
+
+.sct-rb-bar > span {
+  display: block;
+  height: 100%;
+}
+
+.sct-rb-bar-away {
+  background: var(--rb-away);
+}
+
+.sct-rb-bar-home {
+  background: var(--rb-home);
+}
+
+.sct-rb .sct-rb-takeaways {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin: 8px 0 0;
+  padding: 16px 0 0;
+  border-top: 3px solid var(--rb-ink);
+  list-style: none;
+}
+
+.sct-rb-takeaways li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.sct-rb-take-value {
+  --sc-font: var(--rb-display);
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-team);
+}
+
+.sct-rb-take-label {
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--rb-slate);
+}
+
+/* ---- leaders strip */
+
+/* Full width, 16px under the hero (whose own bottom margin is 28px), 52px
+   above the two columns. Four equal cards; under 768px a row that scrolls
+   inside its own box, so the page itself never does. */
+.sct-sbh:has(+ .sct-section > .sct-ls:first-child) {
+  margin-bottom: 16px;
+}
+
+.sct-section:has(> .sct-ls:first-child) {
+  padding-top: 0;
+}
+
+.sct-ls {
+  margin: 0 0 52px;
+  color: var(--rb-ink);
+}
+
+.sct-ls .sct-ls-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-ls-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto 1fr;
+  column-gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--ls-team, var(--rb-ink));
+  border-radius: 12px;
+  background: var(--rb-card);
+}
+
+.sct-ls .sct-ls-label,
+.sct-ls .sct-ls-meta {
+  grid-column: 1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--rb-slate);
+}
+
+.sct-ls .sct-ls-name {
+  --sc-font: var(--rb-display);
+  grid-column: 1;
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--rb-ink);
+}
+
+.sct .sct-ls-name a {
+  color: inherit !important;
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.sct .sct-ls-name a:hover {
+  text-decoration: underline;
+}
+
+.sct-ls .sct-ls-pts {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  text-align: right;
+}
+
+.sct-ls-num {
+  --sc-font: var(--rb-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+.sct-ls-unit {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct-ls .sct-ls-line {
+  grid-column: 1 / -1;
+  align-self: end;
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+.sct-ls a:focus-visible {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: 3px;
+}
+
+@media (max-width: 767px) {
+  .sct-ls .sct-ls-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    padding-bottom: 6px;
+  }
+
+  .sct-ls-card {
+    flex: 0 0 240px;
+    scroll-snap-align: start;
+  }
+}
+
+/* ---- scoring summary */
+
+.sct-ss-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-ss-table:not(.variations) {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table :is(th, td) {
+  padding: 12px 8px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  color: var(--rb-ink);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table thead th {
+  padding-top: 0;
+  border-top: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table :is(th, td):first-child {
+  padding-left: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table :is(th, td):last-child {
+  padding-right: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-h-score {
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-period th {
+  --sc-font: var(--rb-display);
+  padding: 7px 10px;
+  border-top: 0;
+  background: rgb(220 225 232 / 55%);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-none td {
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-slate);
+}
+
+.sct-ss-chip {
+  --sc-font: var(--rb-display);
+  display: inline-block;
+  min-width: 36px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ss-fill, var(--rb-navy));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-score {
+  --sc-font: var(--rb-display);
+  width: 44px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-score.is-ahead {
+  color: var(--rb-ink);
+}
+
+.sct .sct-ss-desc a {
+  color: var(--rb-ink) !important;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.sct .sct-ss-desc a:hover {
+  text-decoration: underline;
+}
+
+.sct-ss-name {
+  font-weight: 600;
+}
+
+.sct-ss-pill {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--rb-gold);
+  color: #13233a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .sct-ss-table thead {
+    display: none;
+  }
+
+  .sct-ss-table,
+  .sct-ss-table tbody {
+    display: block;
+  }
+
+  .sct-ss-table .sct-ss-period,
+  .sct-ss-table .sct-ss-none {
+    display: flex;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-ss-table :is(.sct-ss-period th, .sct-ss-none td) {
+    flex: 1;
+  }
+
+  .sct-ss-table .sct-ss-play {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) 44px 44px;
+    grid-template-areas:
+      "time team . away home"
+      "desc desc desc desc desc";
+    align-items: center;
+    column-gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--rb-line);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-play td {
+    padding: 0;
+    border-top: 0;
+  }
+
+  .sct-ss-play .sct-ss-time {
+    grid-area: time;
+  }
+
+  .sct-ss-play .sct-ss-team {
+    grid-area: team;
+  }
+
+  .sct-ss-play .sct-ss-score:nth-last-child(2) {
+    grid-area: away;
+  }
+
+  .sct-ss-play .sct-ss-score:last-child {
+    grid-area: home;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-ss-table .sct-ss-play .sct-ss-desc {
+    grid-area: desc;
+    padding-top: 8px;
+  }
+}
+
+/* ---- head-to-head */
+
+/* All-time: four tiles in one row under a 3px rule, the first flush with the
+   section's left edge; two by two on a phone. */
+.sct-rb .sct-rb-alltime {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 28px;
+  padding: 0;
+  border-top: 3px solid var(--rb-ink);
+}
+
+.sct-rb-at {
+  min-width: 0;
+  padding: 14px 16px 0 0;
+}
+
+.sct-rb .sct-rb-at dt {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-at dd {
+  margin: 4px 0 0;
+}
+
+.sct-rb-at-num {
+  --sc-font: var(--rb-display);
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--rb-at-ink, var(--rb-ink));
+}
+
+.sct-rb-at-num[data-none] {
+  color: var(--rb-slate);
+}
+
+.sct .sct-rb-at-link {
+  color: inherit !important;
+  text-decoration: none;
+}
+
+.sct .sct-rb-at-link:hover {
+  text-decoration: underline;
+}
+
+.sct-rb-at-cap {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-since {
+  margin-top: 4px;
+}
+
+@media (max-width: 639px) {
+  .sct-rb .sct-rb-alltime {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+}
+
+/* ---- Redraft Command note under the fantasy table */
+
+.sct .sct-mu-rc-note {
+  margin: 26px 0 0;
+  padding: 14px 16px;
+  border-left: 4px solid var(--rb-gold, #ffa300);
+  border-radius: 8px;
+  background: var(--rb-card, #fff);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--rb-ink, #13233a);
+}
+
+.sct .sct-mu-rc-note a {
+  color: var(--rb-link, #003594) !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sct .sct-mu-rc-note a:focus-visible {
+  outline: 3px solid var(--rb-gold, #ffa300);
+  outline-offset: 3px;
+}
+
+
+.sct-rb-h2h-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 18px;
+  margin: 6px 0 16px;
+}
+
+.sct-rb .sct-rb-h2h-record {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+
+.sct-rb-h2h-figure {
+  --sc-font: var(--rb-display);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+.sct-rb-h2h-lead {
+  --sc-font: var(--rb-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-h2h-note {
+  margin: 0;
+  font-size: 15px;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb-tile {
+  --sc-font: var(--rb-display);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border-radius: 4px;
+  background: var(--rb-fill);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sct-rb-tiles.is-wide .sct-rb-tile {
+  width: auto;
+  min-width: 44px;
+  padding: 0 6px;
+  font-size: 14px;
+}
+
+.sct-rb-tile.is-tie {
+  background: var(--rb-slate);
+}
+
+.sct-rb-tile.is-current {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: 2px;
+}
+
+.sct-rb .sct-rb-legend {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-meetings {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rb-line);
+  list-style: none;
+}
+
+.sct-rb-mt {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 13px 6px;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct-rb-mt.is-current {
+  background: linear-gradient(90deg, rgba(255, 163, 0, 0.14), transparent);
+}
+
+.sct-rb-mt-label {
+  font-size: 15px;
+  color: var(--rb-slate);
+}
+
+.sct-rb-mt-label b {
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.sct-rb-mt-match {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sct-rb .sct-rb-mt-link {
+  color: var(--rb-ink) !important;
+  text-decoration: none;
+}
+
+.sct-rb .sct-rb-mt-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-decoration-thickness: 2px;
+}
+
+.sct-rb-mt-date {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--rb-slate);
+}
+
+.sct-rb-mt-score {
+  --sc-font: var(--rb-display);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sct-rb-mt-score .is-win {
+  color: var(--rb-ink);
+}
+
+.sct-rb-mt-score .is-other {
+  font-weight: 500;
+  color: var(--rb-slate);
+}
+
+.sct-rb-chip {
+  --sc-font: var(--rb-display);
+  justify-self: end;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sct-rb-chip.is-win {
+  background: var(--rb-fill);
+  color: #fff;
+}
+
+.sct-rb-chip.is-tie,
+.sct-rb-chip.is-upcoming {
+  border: 1px solid var(--rb-slate);
+  color: var(--rb-slate);
+}
+
+/* ---- fantasy outlook */
+
+.sct-rb .sct-rb-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb-tools li {
+  display: flex;
+  margin: 0;
+}
+
+.sct-rb .sct-rb-tool {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--rb-line);
+  border-left: 4px solid var(--rb-gold);
+  border-radius: 10px;
+  background: var(--rb-card);
+  color: var(--rb-ink) !important;
+  text-decoration: none;
+}
+
+.sct-rb .sct-rb-tool:hover {
+  border-color: var(--rb-ink);
+  border-left-color: var(--rb-gold);
+}
+
+.sct-rb-tool-title {
+  --sc-font: var(--rb-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.sct-rb-tool-text {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--rb-slate);
+}
+
+/* ---- FAQ */
+
+.sct-rb-qa {
+  border-top: 1px solid var(--rb-line);
+}
+
+.sct-rb-qa:last-child {
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct-rb-qa summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sct-rb-qa summary::-webkit-details-marker {
+  display: none;
+}
+
+.sct-rb-qa summary::after {
+  content: "+";
+  flex: none;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+.sct-rb-qa[open] summary::after {
+  content: "\2013";
+}
+
+.sct-rb .sct-rb-qa p {
+  max-width: 66ch;
+  margin: 0;
+  padding: 0 0 14px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-rb-qa a {
+  color: var(--rb-ink) !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-decoration-thickness: 2px;
+}
+
+/* ---- related */
+
+.sct-rb .sct-rb-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb-pills li {
+  margin: 0;
+}
+
+.sct-rb .sct-rb-pill {
+  display: inline-block;
+  padding: 10px 14px;
+  border: 1px solid var(--rb-line);
+  border-radius: 8px;
+  background: var(--rb-card);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--rb-ink) !important;
+  text-decoration: none;
+}
+
+.sct-rb .sct-rb-pill:hover {
+  border-color: var(--rb-ink);
+}
+
+/* ---- sidebar */
+
+.sct-rb-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@media (min-width: 881px) {
+  .sct-rb-aside {
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.sct-rb-card {
+  position: relative;
+  padding: 22px;
+  border-radius: 14px;
+}
+
+.sct-rb-redraft {
+  overflow: hidden;
+  background: var(--rb-navy);
+  color: #fff;
+}
+
+.sct-rb-ring {
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  box-sizing: border-box;
+  width: 140px;
+  height: 140px;
+  border: 18px solid var(--rb-gold);
+  border-radius: 50%;
+}
+
+.sct-rb .sct-rb-redraft-title {
+  --sc-font: var(--rb-display);
+  position: relative;
+  max-width: 85%;
+  margin: 0 0 10px;
+  font-size: 26px !important;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff !important;
+}
+
+.sct-rb .sct-rb-redraft-text {
+  position: relative;
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sct-rb .sct-rb-button {
+  --sc-font: var(--rb-display);
+  position: relative;
+  display: inline-block;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: var(--rb-gold);
+  color: var(--rb-navy) !important;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sct-rb .sct-rb-button:hover {
+  background: #ffb733;
+}
+
+.sct-rb .sct-rb-redraft-note {
+  position: relative;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sct-rb-info {
+  border: 1px solid var(--rb-line);
+  background: var(--rb-card);
+}
+
+.sct-rb-info .sct-rb-h3 {
+  margin-top: 0;
+}
+
+.sct-rb .sct-rb-dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.sct-rb-dl dt {
+  color: var(--rb-slate);
+}
+
+.sct-rb-dl dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--rb-ink);
+}
+
+@media (max-width: 880px) {
+  .sct-rb {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sct-rb .sct-rb-takeaways {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .sct-rb-mt {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .sct-rb-mt-label {
+    grid-column: 1 / -1;
+  }
+
+  .sct-rb .sct-rb-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ----------------------------------------------------- how it was won */
@@ -7503,6 +8598,89 @@ body.sct-page.is-embed {
  * `align-items: start` because the two columns are nothing like the same
  * length, and stretching the shorter one would put its bottom rule well below
  * its last row. */
+/* "Player Stats" and the scoring switch on one row: the switch to the right,
+   dropping under the heading when the two do not fit side by side. */
+.sct .sct-mu-ps-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 0 0 16px;
+}
+
+.sct .sct-mu-ps-head > .sct-h2,
+.sct-rb .sct-mu-ps-head > .sct-h2 {
+  margin: 0;
+}
+
+.sct .sct-mu-ps-head .sct-mu-scoring {
+  margin: 0;
+}
+
+/* The scoring switch over the stat tables: built by the client (wireScoring
+   in team.ts), so the slot is empty without the bundle. Real radio inputs,
+   hidden with the clip pattern so they stay focusable and announced; the
+   label is the pill. */
+.sct .sct-mu-scoring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 16px;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.sct .sct-mu-scoring-legend {
+  float: left;
+  margin: 0 6px 0 0;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-slate, #5b6778);
+}
+
+.sct-mu-scoring-option {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.sct-mu-scoring-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sct-mu-scoring-option span {
+  padding: 6px 12px;
+  border: 1px solid var(--rb-line, #dce1e8);
+  border-radius: 999px;
+  background: var(--rb-card, #fff);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--rb-ink, #13233a);
+}
+
+.sct-mu-scoring-option input:checked + span {
+  border-color: var(--rb-ink, #13233a);
+  background: var(--rb-ink, #13233a);
+  color: #fff;
+}
+
+.sct-mu-scoring-option input:focus-visible + span {
+  outline: 3px solid var(--rb-gold, #ffa300);
+  outline-offset: 3px;
+}
+
 .sct-mu-ps-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -7561,7 +8739,7 @@ body.sct-page.is-embed {
   }
 
   :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table {
-    min-width: 460px;
+    min-width: 560px;
   }
 
   :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table th,
@@ -7571,6 +8749,24 @@ body.sct-page.is-embed {
 
   .sct-mu-ps-row .sct-mu-ps-block {
     margin: 0 0 26px;
+  }
+
+  /* The fantasy columns sit at the right edge, past what a phone shows, so the
+     player column stays put while the table scrolls under it. Opaque
+     backgrounds, or the numbers would slide visibly behind the names. */
+  :is(.sct, #sct-table-armour) .sct-mu-ps-table tr > :first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mu-ps-table tbody tr > :first-child {
+    background: #fff;
+    box-shadow: 1px 0 0 var(--sc-hairline);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-mu-ps-table tbody tr:nth-child(even) > :first-child {
+    background: var(--sc-surface-soft);
   }
 }
 
@@ -7787,162 +8983,6 @@ body.sct-page.is-embed {
 
 .sct-pos-team {
   color: var(--sc-muted);
-}
-
-/* ------------------------------------------------------------ takeaways */
-
-/* What to carry into next week's lineup. Each card is a measured comparison
-   with the same player's own earlier weeks, so the card is built like evidence:
-   the mark and the name, the claim in four words, the figures it rests on, and
-   then the sentence. A reader can stop after the figures. */
-.sct-mu-take-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 14px;
-  margin: 0 0 14px;
-  padding: 0;
-  list-style: none;
-}
-
-.sct-mu-take {
-  display: grid;
-  align-content: start;
-  gap: 5px;
-  padding: 15px 17px;
-  border: 1px solid var(--sc-border);
-  border-left: 4px solid var(--sc-hairline);
-  border-radius: 12px;
-  background: var(--sc-surface);
-}
-
-/* The direction is carried on the card's edge as well as in the glyph: a grid
-   of these is meant to be sortable by eye before a word of it is read. */
-.sct-mu-take[data-direction="up"] {
-  border-left-color: #0f6b4f;
-}
-
-.sct-mu-take[data-direction="down"] {
-  border-left-color: #94363a;
-}
-
-.sct-mu-take[data-direction="watch"] {
-  border-left-color: var(--sc-gold-deep);
-}
-
-.sct-mu-take-head {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 3px 8px;
-  margin: 0;
-}
-
-.sct-mu-take-mark {
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.sct-mu-take[data-direction="up"] .sct-mu-take-mark {
-  color: #0f6b4f;
-}
-
-.sct-mu-take[data-direction="down"] .sct-mu-take-mark {
-  color: #94363a;
-}
-
-.sct-mu-take[data-direction="watch"] .sct-mu-take-mark {
-  color: var(--sc-gold-deep);
-}
-
-.sct-mu-take-name {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--sc-navy);
-}
-
-.sct-mu-take-tag {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--sc-muted);
-}
-
-.sct-mu-take-line {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--sc-muted-strong);
-}
-
-.sct-mu-take-facts {
-  margin: 1px 0 0;
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--sc-navy);
-}
-
-.sct-mu-take-body {
-  margin: 3px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--sc-muted-strong);
-}
-
-@media (max-width: 640px) {
-  .sct-mu-hero {
-    padding: 18px 16px 16px;
-  }
-
-  /* The board keeps its three columns at every width — two scores side by side
-     IS the scoreboard, and stacking them makes it a list. The clamps above
-     carry it down; only the gap needs taking in. */
-  .sct-mu-strip-board {
-    gap: 7px;
-  }
-
-  .sct-mu-strip-side {
-    gap: 7px;
-  }
-
-  /* Three letters instead of a truncated nickname. */
-  .sct-mu-strip-name {
-    display: none;
-  }
-
-  .sct-mu-strip-code {
-    display: block;
-  }
-
-  /* The wash follows the crest in, so it does not hang off the hero's edge on a
-     board that now runs nearly its full width. */
-  .sct-mu-strip-side::before {
-    left: -16px;
-    width: 140px;
-    height: 140px;
-  }
-
-  .sct-mu-strip-side.is-right::before {
-    left: auto;
-    right: -16px;
-  }
-
-  .sct-mu-hero:not(.is-final) .sct-mu-strip-side::before,
-  .sct-mu-hero:not(.is-final) .sct-mu-strip-side.is-right::before {
-    left: 50%;
-    right: auto;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-mu-linescore {
-    min-width: 100%;
-  }
-
-  :is(.sct, #sct-table-armour) .sct-mu-linescore th,
-  :is(.sct, #sct-table-armour) .sct-mu-linescore td {
-    padding: 5px 6px;
-  }
 }
 
 /* -------------------------------------------------------- fantasy usage */

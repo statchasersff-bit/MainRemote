@@ -14,7 +14,14 @@ import { contentVersion, ensureFreshness } from "../freshness";
 import { logger } from "../logger";
 import { renderTeamHeadTags } from "../team-seo";
 import { getMatchupData, matchupVersion, type MatchupData } from "./matchup-data";
-import { renderMatchupPage, type MatchupRenderOptions } from "./matchup-render";
+import {
+  matchupEventSchema,
+  matchupFaqSchema,
+  matchupScoreboardGame,
+  renderMatchupPage,
+  type MatchupRenderOptions,
+} from "./matchup-render";
+import { scoreboardHeading } from "./scoreboard-hero";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import type { MatchupPair } from "./pair";
 
@@ -46,6 +53,15 @@ export interface MatchupSsrResult {
    * window exactly one URL carries the recap.
    */
   pinnedIsCurrent: boolean;
+  /**
+   * The page's H1, as the hero prints it: the game's own heading on a game
+   * address ("{away} vs {home}, {round} {season}"), the pair's names on the
+   * pair's. The plugin rewrites the holder page's title with it, so a theme
+   * that prints its own H1 says what the hero would have said.
+   */
+  heading: string;
+  /** The <title>, brand included when it fits. Same string the app page uses. */
+  title: string;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
@@ -106,6 +122,8 @@ async function renderWithData(
     scoreLine: matchupScoreLine(data),
     pinnedMissing: data.pinnedRequested && data.pinned === null,
     pinnedIsCurrent: data.pinnedIsCurrent,
+    heading: pageHeadingFor(data),
+    title: matchupPageMeta(data, "").title,
   };
   if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
     const oldest = fragmentCache.keys().next();
@@ -113,6 +131,12 @@ async function renderWithData(
   }
   fragmentCache.set(key, result);
   return { result, data };
+}
+
+/** The H1 the hero prints — see renderHero() in matchup-render.ts. */
+function pageHeadingFor(data: MatchupData): string {
+  const game = data.pinned ? matchupScoreboardGame(data) : null;
+  return game ? scoreboardHeading(game) : `${data.pair.a.fullName} vs ${data.pair.b.fullName}`;
 }
 
 const HEAD_MARKER = "<!--SSR-HEAD-->";
@@ -147,7 +171,15 @@ export async function renderMatchupAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderTeamHeadTags(meta))
+    .replace(
+      HEAD_MARKER,
+      renderTeamHeadTags(meta) +
+        "\n  " +
+        matchupEventSchema(data, false) +
+        "\n  " +
+        // The FAQ, from the same array the page's <details> were drawn from.
+        matchupFaqSchema(data, options, false),
+    )
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
     .replace(BODY_MARKER, fragment.html);
   return { ...fragment, html };

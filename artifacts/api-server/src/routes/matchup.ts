@@ -217,6 +217,12 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // The score, for the postgame description the plugin mirrors. Empty
         // header rather than an absent one so the plugin reads one shape.
         .set("X-Matchup-Score", result.scoreLine)
+        // The H1 and the <title>, so WordPress prints this origin's words
+        // rather than rebuilding them: a game page's heading runs away-then-
+        // home, which only the API knows. Percent-encoded, because the title's
+        // score carries an en dash and a header value must be Latin-1.
+        .set("X-Matchup-Heading", encodeURIComponent(result.heading))
+        .set("X-Matchup-Title", encodeURIComponent(result.title))
         // "current" tells the plugin the pair page is still leading with this
         // game, so the dated WordPress URL must 301 up to the pair's — the
         // mirror of what this origin's own route does above. Empty when the

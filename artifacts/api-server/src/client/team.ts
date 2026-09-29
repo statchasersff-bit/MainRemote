@@ -483,6 +483,110 @@ function wireSortableTables(root: HTMLElement): void {
   }
 }
 
+/* ------------------------------------------------------ scoring switch ---- */
+
+type ScoringFormat = "ppr" | "half" | "std";
+const SCORING_KEY = "sct-scoring";
+const SCORING_OPTIONS: Array<[ScoringFormat, string]> = [
+  ["ppr", "PPR"],
+  ["half", "Half PPR"],
+  ["std", "Standard"],
+];
+/** The leaders strip's unit line, per format. */
+const POINTS_UNIT: Record<ScoringFormat, string> = { ppr: "PPR pts", half: "Half PPR pts", std: "Std pts" };
+let scoringGroups = 0;
+
+/**
+ * PPR / Half PPR / Standard for the matchup page's fantasy figures.
+ *
+ * The server prints PPR and carries all three on each figure as data-fmt-*
+ * (the stat tables) or data-ppr/-half/-std (the leaders strip), so switching
+ * is a swap of text already on the page — nothing is fetched or recomputed.
+ * The switch is built here, not sent in the HTML: without this bundle there is
+ * nothing for it to switch, and the page reads as PPR.
+ *
+ * A table sorted by one of the swapped columns is re-sorted on the new values,
+ * so the order still matches the numbers. The choice is remembered per viewer.
+ */
+function wireScoring(root: HTMLElement): void {
+  const slot = root.querySelector<HTMLElement>("[data-sct-scoring-slot]");
+  if (!slot) return;
+
+  const name = `sct-scoring-${(scoringGroups += 1)}`;
+  const group = document.createElement("fieldset");
+  group.className = "sct-mu-scoring";
+  const legend = document.createElement("legend");
+  legend.className = "sct-mu-scoring-legend";
+  legend.textContent = "Scoring";
+  group.appendChild(legend);
+  for (const [value, label] of SCORING_OPTIONS) {
+    const option = document.createElement("label");
+    option.className = "sct-mu-scoring-option";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = name;
+    input.value = value;
+    input.checked = value === "ppr";
+    const text = document.createElement("span");
+    text.textContent = label;
+    option.append(input, text);
+    group.appendChild(option);
+  }
+  slot.appendChild(group);
+
+  const apply = (format: ScoringFormat): void => {
+    for (const cell of Array.from(root.querySelectorAll<HTMLElement>(`td[data-fmt-${format}]`))) {
+      cell.textContent = cell.getAttribute(`data-fmt-${format}`) ?? "";
+      cell.setAttribute("data-sort", cell.getAttribute(`data-fmt-sort-${format}`) ?? "");
+    }
+    for (const header of Array.from(root.querySelectorAll<HTMLElement>(`th[data-fmt-${format}]`))) {
+      const target = header.querySelector<HTMLElement>("button.sct-sort") ?? header;
+      target.textContent = header.getAttribute(`data-fmt-${format}`) ?? "";
+    }
+    for (const number of Array.from(root.querySelectorAll<HTMLElement>(".sct-ls-num[data-ppr]"))) {
+      number.textContent = number.getAttribute(`data-${format}`) ?? number.textContent;
+      const unit = number.parentElement?.querySelector(".sct-ls-unit");
+      if (unit) unit.textContent = POINTS_UNIT[format];
+    }
+    // Re-sort a table whose active sort is a swapped column: two clicks run the
+    // same direction again on the new values.
+    for (const table of Array.from(root.querySelectorAll<HTMLTableElement>("table[data-sct-sortable]"))) {
+      const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th"));
+      const active = headers.find((h) => (h.getAttribute("aria-sort") ?? "none") !== "none");
+      if (!active) continue;
+      const index = headers.indexOf(active);
+      const swapped = table.querySelector(`tbody tr td:nth-child(${index + 1})[data-fmt-ppr]`);
+      const button = active.querySelector<HTMLButtonElement>("button.sct-sort");
+      if (swapped && button) {
+        button.click();
+        button.click();
+      }
+    }
+  };
+
+  group.addEventListener("change", (event) => {
+    const value = (event.target as HTMLInputElement).value as ScoringFormat;
+    apply(value);
+    try {
+      window.localStorage.setItem(SCORING_KEY, value);
+    } catch {
+      // Private mode or blocked storage: the switch still works, it is just not remembered.
+    }
+  });
+
+  let saved: string | null = null;
+  try {
+    saved = window.localStorage.getItem(SCORING_KEY);
+  } catch {
+    saved = null;
+  }
+  if (saved === "half" || saved === "std") {
+    const input = group.querySelector<HTMLInputElement>(`input[value="${saved}"]`);
+    if (input) input.checked = true;
+    apply(saved);
+  }
+}
+
 /* -------------------------------------------------------- iframe height ---- */
 
 /**
@@ -745,6 +849,8 @@ function boot(): void {
     wireHeroLead(root);
     wireTimestamps(root);
     wireSortableTables(root);
+    // After the sort buttons exist, so the relabelled header is the button.
+    wireScoring(root);
     wireFrameHeight(root);
   }
 }
