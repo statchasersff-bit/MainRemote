@@ -242,7 +242,7 @@ function resultPhrase(input: RecapBodyInput, g: SeriesGame): string {
 
 /* ------------------------------------------------------ section 1: why won */
 
-type Better = "higher" | "lower" | "neither";
+export type Better = "higher" | "lower" | "neither";
 
 interface StatRow {
   label: string;
@@ -293,7 +293,7 @@ export function awayShare(row: { away: number; home: number; better: Better }): 
 }
 
 /** Which side the row favours, or null for none (or a "neither" metric). */
-function favoured(row: StatRow): "away" | "home" | null {
+function favoured(row: Pick<StatRow, "away" | "home" | "better">): "away" | "home" | null {
   if (row.away === null || row.home === null || row.better === "neither") return null;
   if (row.away === row.home) return null;
   const awayHigher = row.away > row.home;
@@ -399,33 +399,39 @@ function takeaways(input: RecapBodyInput): Takeaway[] {
     .filter((t): t is Takeaway => t !== null);
 }
 
-export function renderWhyWon(input: RecapBodyInput): string {
-  const { game } = input;
-  const away = input.stats.away;
-  const home = input.stats.home;
-  if (!away || !home) return "";
-  const result = scoreboardResult(game);
-  if (!result) return "";
+/** One row of a two-team stat comparison: the figures, as shown, and which end is better. */
+export interface CompareRow {
+  label: string;
+  away: number | null;
+  home: number | null;
+  awayText: string;
+  homeText: string;
+  better: Better;
+}
 
-  const rows = statRows(away, home).filter((r) => r.away !== null || r.home !== null);
-  if (rows.length === 0) return "";
-
-  const heading =
-    result.winner === null
-      ? `${game.away.short} vs ${game.home.short} by the numbers`
-      : `Why the ${game[result.winner].short} won`;
-
-  const value = (row: StatRow, side: "away" | "home"): string => {
-    const n = row[side];
+/**
+ * The two-team comparison table "Why won" draws: the figure either side of the
+ * stat name, the better one emphasised, and a split bar under each row. Season
+ * Form uses it too, so the two sections read as one design.
+ */
+export function renderStatCompare(opts: {
+  caption: string;
+  awayName: string;
+  homeName: string;
+  awayInk: string;
+  homeInk: string;
+  rows: CompareRow[];
+}): string {
+  const value = (row: CompareRow, side: "away" | "home"): string => {
     const better = favoured(row) === side;
     return (
       `<td class="sct-rb-val is-${side}${better ? " is-better" : ""}">` +
-      (n === null ? "—" : escapeHtml(row.format(n))) +
+      escapeHtml(side === "away" ? row.awayText : row.homeText) +
       `</td>`
     );
   };
 
-  const body = rows
+  const body = opts.rows
     .map((row) => {
       const share =
         row.away === null || row.home === null
@@ -446,20 +452,50 @@ export function renderWhyWon(input: RecapBodyInput): string {
     })
     .join("");
 
-  const table =
-    `<table class="sct-rb-table" style="${escapeHtml(
-      `--rb-away:${colorsOf(input, game.away.abbr).ink};--rb-home:${colorsOf(input, game.home.abbr).ink}`,
-    )}">` +
-    `<caption class="sct-rb-sr">${escapeHtml(
-      `Team stats comparison, ${game.away.short} vs ${game.home.short}`,
-    )}</caption>` +
+  return (
+    `<table class="sct-rb-table" style="${escapeHtml(`--rb-away:${opts.awayInk};--rb-home:${opts.homeInk}`)}">` +
+    `<caption class="sct-rb-sr">${escapeHtml(opts.caption)}</caption>` +
     `<thead><tr>` +
-    `<th scope="col" class="sct-rb-col-away">${escapeHtml(game.away.short)}</th>` +
+    `<th scope="col" class="sct-rb-col-away">${escapeHtml(opts.awayName)}</th>` +
     `<th scope="col" class="sct-rb-col-stat">Stat</th>` +
-    `<th scope="col" class="sct-rb-col-home">${escapeHtml(game.home.short)}</th>` +
+    `<th scope="col" class="sct-rb-col-home">${escapeHtml(opts.homeName)}</th>` +
     `</tr></thead>` +
     `<tbody>${body}</tbody>` +
-    `</table>`;
+    `</table>`
+  );
+}
+
+export function renderWhyWon(input: RecapBodyInput): string {
+  const { game } = input;
+  const away = input.stats.away;
+  const home = input.stats.home;
+  if (!away || !home) return "";
+  const result = scoreboardResult(game);
+  if (!result) return "";
+
+  const rows = statRows(away, home).filter((r) => r.away !== null || r.home !== null);
+  if (rows.length === 0) return "";
+
+  const heading =
+    result.winner === null
+      ? `${game.away.short} vs ${game.home.short} by the numbers`
+      : `Why the ${game[result.winner].short} won`;
+
+  const table = renderStatCompare({
+    caption: `Team stats comparison, ${game.away.short} vs ${game.home.short}`,
+    awayName: game.away.short,
+    homeName: game.home.short,
+    awayInk: colorsOf(input, game.away.abbr).ink,
+    homeInk: colorsOf(input, game.home.abbr).ink,
+    rows: rows.map((row) => ({
+      label: row.label,
+      away: row.away,
+      home: row.home,
+      awayText: row.away === null ? "—" : row.format(row.away),
+      homeText: row.home === null ? "—" : row.format(row.home),
+      better: row.better,
+    })),
+  });
 
   const items = takeaways(input);
   const winnerAbbr = result.winner ? game[result.winner].abbr : null;
@@ -935,10 +971,17 @@ export function renderGameInfo(input: RecapBodyInput): string {
  * `middle` what goes between that and the head-to-head (the box score
  * sections, on the games that have them).
  */
-export function renderRecapBody(
-  input: RecapBodyInput,
-  parts: { lead?: string; afterWhy?: string; middle?: string } = {},
-): string {
+export interface RecapBodyParts {
+  lead?: string;
+  afterWhy?: string;
+  middle?: string;
+  /** Appended at the foot of the main column, after everything above. */
+  after?: string;
+  /** Appended at the foot of the sidebar. */
+  asideAfter?: string;
+}
+
+export function renderRecapBody(input: RecapBodyInput, parts: RecapBodyParts = {}): string {
   const faq = recapFaq(input);
   return (
     `<div class="sct-rb">` +
@@ -951,10 +994,12 @@ export function renderRecapBody(
     renderFantasyOutlook(input) +
     renderFaq(input, faq) +
     renderRelated(input) +
+    (parts.after ?? "") +
     `</div>` +
     `<aside class="sct-rb-aside" aria-label="Redraft Command and game info">` +
     renderRedraftCard(input) +
     renderGameInfo(input) +
+    (parts.asideAfter ?? "") +
     `</aside>` +
     `</div>`
   );

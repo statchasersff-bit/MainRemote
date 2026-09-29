@@ -201,6 +201,21 @@ _Replace the heading above with the project's name, and this line with one sente
   rivalry page — head-to-head first, then that meeting's detail — and is given
   the box score and the stat tables but NOT the takeaways or the usage table,
   which are advice about the coming week.
+- **The recap build-spec sections are appended, not merged.** mak asked to keep
+  the existing recap exactly as it was and add the spec's new sections UNDER it
+  to compare the two. So the existing page is untouched, and after its last
+  section `renderAddedSections()` in `matchup-render.ts` appends one
+  `.sct-added` block: its own "On this page" links, What it meant, highlights,
+  **How the game swung** (`matchup/win-probability.ts`, score-only model from
+  ESPN's consensus closing line), **Play calling and possessions**
+  (`matchup/possessions.ts`, ESPN's drive chart), **Fantasy points**
+  (`matchup/fantasy-section.ts`, with a server-rendered PPR/Half/Std switch
+  wired by `wireFantasyFormat`), **betting results** (off with
+  `SC_BETTING_RESULTS=off`) and **Keep exploring**. "Before and after" goes to
+  the foot of the sidebar. Do not fold these into the old sections without
+  mak's say-so. Kicker, D/ST and IDP scoring were added to
+  `matchup/fantasy-points.ts`. The video and in-game injuries are
+  hand-entered in `matchup/game-notes.ts`.
 - **Fantasy Usage is charts, not a sixth table.** One panel per team, the same
   metrics in the same place on both sides. Snap share is ranked bars — five
   players can each be on the field for 80% of the same snaps, so those shares

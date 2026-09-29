@@ -223,6 +223,9 @@ function dek(game: ScoreboardGame, w: Side, l: Side): string {
   }
 
   const to = destination(game);
+  // The halftime score alone is the recap's own first sentence; a dek that
+  // only repeats it is dropped.
+  if (clauses.length === 1 && halfW - halfL >= 7 && !to) return "";
   if (clauses.length === 0) {
     return to ? `The ${w.team.short} beat the ${l.team.short}${to}.` : "";
   }

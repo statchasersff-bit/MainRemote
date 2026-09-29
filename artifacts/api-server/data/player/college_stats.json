@@ -1,0 +1,5 @@
+{
+ "source": "CollegeFootballData.com",
+ "note": "Empty until scripts/player/buildCollegeStats.mjs runs with CFBD_API_KEY set.",
+ "players": {}
+}

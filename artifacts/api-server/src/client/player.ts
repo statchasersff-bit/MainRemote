@@ -603,6 +603,57 @@ function wireStateSwap(root: HTMLElement): void {
   });
 }
 
+/* ------------------------------------------------------- stats toggle */
+
+/**
+ * The Stats tab's Season totals / Per game switch.
+ *
+ * The server prints both figures on every counting stat (data-total, data-pg)
+ * and the totals as text, so without this the totals simply stand. Rates and
+ * ranks carry neither attribute and never change.
+ */
+function wireStatsToggle(root: HTMLElement): void {
+  for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-seg]"))) {
+    const section = group.closest("section") ?? root;
+    const buttons = Array.from(group.querySelectorAll<HTMLButtonElement>("button[data-mode]"));
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const perGame = button.dataset.mode === "pg";
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+        for (const cell of Array.from(section.querySelectorAll<HTMLElement>("[data-total]"))) {
+          cell.textContent = (perGame ? cell.dataset.pg : cell.dataset.total) ?? cell.textContent;
+        }
+      });
+    }
+  }
+}
+
+/**
+ * The career chart opens on its newest season.
+ *
+ * On a narrow screen a long career's chart scrolls, and left alone it opens on
+ * the rookie year with the current season out of view.
+ */
+function wireCareerChart(root: HTMLElement): void {
+  const scrollers = Array.from(root.querySelectorAll<HTMLElement>("[data-scp-arc]"));
+  const toEnd = (el: HTMLElement): boolean => {
+    if (el.clientWidth === 0) return false;
+    el.scrollLeft = el.scrollWidth;
+    return true;
+  };
+  // A chart in a hidden tab has no width yet: it scrolls the first time it
+  // is shown, and never again, so a reader's own scrolling is left alone.
+  const pending = scrollers.filter((el) => !toEnd(el));
+  if (pending.length === 0 || typeof ResizeObserver === "undefined") return;
+  const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const el = entry.target as HTMLElement;
+      if (toEnd(el)) observer.unobserve(el);
+    }
+  });
+  for (const el of pending) observer.observe(el);
+}
+
 /* ------------------------------------------------------------------ boot */
 
 /**
@@ -629,6 +680,8 @@ function wireProfile(root: HTMLElement): void {
   wireSortableLog(root);
   wireExpandableLog(root);
   wirePeerRail(root);
+  wireStatsToggle(root);
+  wireCareerChart(root);
   wireStateSwap(root);
   wireFrameHeight(root);
 }

@@ -39,6 +39,8 @@ export interface SsrOptions {
   relatedHeading?: string;
   vitalsEndpoint?: string;
   pageUrl?: string;
+  /** The WordPress proxy the browser refreshes the feed through (lib/embed-key.ts). */
+  apiBase?: string;
 }
 
 /**
@@ -77,6 +79,7 @@ function cacheKey(options: SsrOptions, limit: number): string {
     // served an earlier fragment that has it switched off.
     options.vitalsEndpoint ?? "",
     options.pageUrl ?? "",
+    options.apiBase ?? "",
   ]);
 }
 
@@ -120,6 +123,7 @@ export async function renderNewsFragment(
       ? { vitalsEndpoint: options.vitalsEndpoint }
       : {}),
     ...(options.pageUrl ? { pageUrl: options.pageUrl } : {}),
+    ...(options.apiBase ? { apiBase: options.apiBase } : {}),
   });
 
   // Simple FIFO eviction — entries are all equivalent in cost and the map only

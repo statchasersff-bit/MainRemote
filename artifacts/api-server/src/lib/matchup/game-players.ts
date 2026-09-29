@@ -33,6 +33,11 @@ export interface PlayerGameStats extends FantasyStatLine {
   fgm?: number;
   fga?: number;
   xpm?: number;
+  xpa?: number;
+  fgLong?: number;
+  tfl?: number;
+  qbHits?: number;
+  fumRec?: number;
 }
 
 export interface GamePlayer {

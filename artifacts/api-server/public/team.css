@@ -2786,12 +2786,12 @@ body.sct-page.is-embed {
 /* would otherwise simply take. Same weight as the rules after them and     */
 /* placed first, so wherever a table DOES declare one, it still wins.       */
 /* ====================================================================== */
-:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table) {
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table, .sct-fp-table, .sct-rb-mini) {
   margin: 0;
   border: 0;
 }
 
-:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table) :where(th, td) {
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table, .sct-fp-table, .sct-rb-mini) :where(th, td) {
   border-top: 0;
   color: inherit;
 }
@@ -7420,7 +7420,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 /* The strip sits above the two columns, outside .sct-rb, so it takes the
    same tokens by name rather than by inheritance. */
 .sct-rb,
-.sct-ls {
+.sct-ls,
+.sct-jump {
   --rb-ink: #13233a;
   --rb-slate: #5b6778;
   --rb-line: #dce1e8;
@@ -7469,9 +7470,11 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 /* Headings. Size and ink `!important` against Divi's id-scoped heading rules,
    as everywhere else in this file. The kept sections' own H2s are brought into
-   the same scale. */
+   the same scale. Section titles are set in Barlow, not Barlow Condensed: the
+   condensed face read as squeezed at this size (mak, 2026-09-29), and the
+   regular width runs about 30% wider. The condensed face stays on numbers. */
 .sct-rb :is(.sct-rb-h2, .sct-h2, .sct-mu-story-title) {
-  --sc-font: var(--rb-display);
+  --sc-font: var(--rb-body);
   margin: 0 0 8px;
   font-size: 30px !important;
   font-weight: 700;
@@ -7481,7 +7484,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-rb .sct-rb-h3 {
-  --sc-font: var(--rb-display);
+  --sc-font: var(--rb-body);
   margin: 28px 0 10px;
   font-size: 21px !important;
   font-weight: 700;
@@ -8500,6 +8503,880 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
   .sct-rb .sct-rb-tools {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------- recap: the added sections */
+
+/* Everything below is recap-page only and set in the recap's own tokens.
+   See recap-extras.ts, win-probability.ts, possessions.ts and
+   fantasy-section.ts. Light only, like the rest of the recap. */
+
+.sct-rb .sct-rb-note {
+  max-width: 66ch;
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--rb-slate);
+}
+
+.sct-rb [id],
+.sct-rb-main > [id] {
+  scroll-margin-top: 16px;
+}
+
+/* ---- the added block: the build-spec sections, appended under the existing
+   recap for comparison. A rule over it so the join is visible. */
+
+.sct-rb .sct-added {
+  padding-top: 28px;
+  border-top: 3px solid var(--rb-ink);
+}
+
+.sct-rb .sct-added > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sct-rb .sct-added > * + * {
+  margin-top: 52px;
+}
+
+/* The jump links and the TV/attendance line sit right under the prose
+   recap, close to it rather than a section's distance away. */
+.sct-rb .sct-rb-main > .sct-jump {
+  margin-top: 24px;
+}
+
+.sct-rb .sct-rb-main > .sct-jump + .sct-rb-note {
+  margin-top: 12px;
+}
+
+.sct-rb .sct-ex-hubs {
+  margin-top: 8px;
+}
+
+/* ---- on this page */
+
+.sct-jump {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 20px 0 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--rb-line);
+  border-bottom: 1px solid var(--rb-line);
+  font-family: var(--rb-body);
+}
+
+.sct-jump .sct-jump-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--rb-ink);
+}
+
+.sct-jump .sct-jump-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-jump .sct-jump-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.sct-jump .sct-jump-link {
+  display: inline-block;
+  padding: 5px 12px;
+  border: 1px solid var(--rb-line);
+  border-radius: 999px;
+  background: var(--rb-card);
+  color: var(--rb-ink);
+  font-size: 14px;
+  line-height: 1.3;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sct-jump .sct-jump-link:hover {
+  border-color: var(--rb-ink);
+}
+
+.sct-jump .sct-jump-link:focus-visible {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .sct-jump .sct-jump-list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+  }
+
+  .sct-jump .sct-jump-list li {
+    scroll-snap-align: start;
+  }
+}
+
+/* ---- what it meant */
+
+.sct-rb .sct-meant {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.sct-meant-card {
+  padding: 16px 18px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 12px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-meant-card .sct-rb-h3 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+
+.sct-rb .sct-meant-card p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--rb-ink);
+}
+
+/* ---- highlights */
+
+.sct-hl-box {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(120deg, var(--hl-a, var(--rb-navy)), var(--hl-b, var(--rb-navy)));
+}
+
+.sct-rb .sct-hl-play,
+.sct-hl-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sct-hl-play img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sct-hl-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-radius: 50%;
+  background: rgba(15, 30, 51, 0.82);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85);
+}
+
+.sct-hl-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -14px 0 0 -8px;
+  border-style: solid;
+  border-width: 14px 0 14px 24px;
+  border-color: transparent transparent transparent #fff;
+}
+
+.sct-hl-play:hover .sct-hl-icon {
+  background: var(--rb-navy);
+}
+
+.sct-hl-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 36px 16px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+  color: #fff;
+  font-family: var(--rb-body);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.sct-rb .sct-hl-play:focus-visible {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: -3px;
+}
+
+.sct-hl-fallback {
+  position: absolute;
+  inset: auto 16px 16px;
+  color: #fff;
+}
+
+/* ---- win probability */
+
+.sct-wp-frame {
+  margin: 8px 0 16px;
+}
+
+.sct-wp-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 640 / 220;
+}
+
+.sct-wp-grid {
+  stroke: var(--rb-line);
+  stroke-width: 1;
+}
+
+.sct-wp-half {
+  stroke: var(--rb-slate);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+
+.sct-wp-axis {
+  fill: var(--rb-slate);
+  font-family: var(--rb-body);
+  font-size: 11px;
+}
+
+.sct-rb .sct-wp-plays {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: wp;
+}
+
+.sct-rb .sct-wp-play {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--rb-line);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.sct-wp-when {
+  display: inline-block;
+  min-width: 72px;
+  color: var(--rb-slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-wp-swing {
+  --sc-font: var(--rb-display);
+  font-family: var(--rb-display);
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-wp-move {
+  color: var(--rb-slate);
+  white-space: nowrap;
+}
+
+/* ---- play calling and possessions */
+
+.sct-rb .sct-pc-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sct-pc-card {
+  padding: 14px 16px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 12px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-pc-card .sct-rb-h3 {
+  margin: 0 0 10px;
+  font-size: 19px;
+}
+
+.sct-rb .sct-pc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 10px;
+  margin: 0;
+}
+
+.sct-pc-grid dt {
+  font-size: 12px;
+  color: var(--rb-slate);
+}
+
+.sct-pc-grid dd {
+  --sc-font: var(--rb-display);
+  margin: 0;
+  font-family: var(--rb-display);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+.sct-pc-grid dd small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-pc-shares {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--rb-ink);
+}
+
+.sct-pc-results {
+  max-width: 420px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-rb-mini:not(.variations) {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-mini :is(th, td) {
+  padding: 8px 10px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  color: var(--rb-ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-mini thead th {
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-rb-mini tbody th {
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) table.sct-rb-mini.is-wide {
+  min-width: 480px;
+}
+
+.sct-rb .sct-pc-notes {
+  margin: 16px 0 0;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.sct-rb .sct-pc-notes li {
+  margin: 0 0 6px;
+}
+
+.sct-pc-drives {
+  margin-top: 16px;
+}
+
+.sct-rb :is(.sct-pc-drives, .sct-fp-more) > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--rb-ink);
+  padding: 8px 0;
+}
+
+/* ---- fantasy points */
+
+.sct-rb .sct-fp-playoff {
+  margin: -10px 0 16px;
+  font-size: 15px;
+  color: var(--rb-slate);
+}
+
+.sct-fp-toggle {
+  display: inline-flex;
+  margin: 0 0 8px;
+  border: 1px solid var(--rb-ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sct-fp-seg {
+  position: relative;
+  display: block;
+  margin: 0;
+}
+
+.sct-fp-seg input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.sct-fp-seg span {
+  display: block;
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rb-ink);
+  white-space: nowrap;
+}
+
+.sct-fp-seg input:checked + span {
+  background: var(--rb-ink);
+  color: var(--rb-paper);
+}
+
+.sct-fp-seg input:focus-visible + span {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: -3px;
+}
+
+.sct-rb .sct-fp .sct-rb-h3 {
+  margin-top: 28px;
+}
+
+.sct-rb .sct-fp-team {
+  --sc-font: var(--rb-display);
+  margin: 16px 0 6px;
+  font-family: var(--rb-display);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.sct-fp-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-fp-table:not(.variations) {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table :is(th, td) {
+  padding: 8px 8px;
+  border: 0;
+  border-top: 1px solid var(--rb-line);
+  background: transparent;
+  color: var(--rb-ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table thead th {
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table thead th:first-child,
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-player {
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table abbr {
+  text-decoration: none;
+  cursor: help;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-player {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 150px;
+  background: var(--rb-paper);
+  font-weight: 600;
+  white-space: normal;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-pts {
+  --sc-font: var(--rb-display);
+  font-family: var(--rb-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: left;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-pts.is-top {
+  box-shadow: inset 0 -3px 0 var(--rb-gold);
+}
+
+.sct-fp-ss {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sct-fp-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--rb-slate);
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-diff.is-pos {
+  color: #1e7a46;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-diff.is-neg {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.sct-rb .sct-fp-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sct-fp-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--rb-line);
+  border-left: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 10px;
+  background: var(--rb-card);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.sct-rb .sct-fp-card p {
+  margin: 0 0 8px;
+}
+
+.sct-rb .sct-fp-card-name {
+  --sc-font: var(--rb-display);
+  margin: 0;
+  font-family: var(--rb-display);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.sct-rb .sct-fp-meta {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: var(--rb-slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-fp-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-family: var(--rb-body);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: 2px;
+  color: var(--rb-ink);
+}
+
+.sct-fp-tag.is-hot {
+  background: #ffe2a8;
+}
+
+.sct-fp-tag.is-unlucky {
+  background: #d9e5ff;
+}
+
+.sct-fp-tag.is-strong {
+  background: #d3f0de;
+}
+
+.sct-fp-tag.is-warning {
+  background: #e6e9ee;
+}
+
+.sct-fp-trend {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--rb-line);
+}
+
+.sct-rb .sct-fp-trend-head {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--rb-slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-fp-trend-head b {
+  color: var(--rb-ink);
+}
+
+.sct-fp-spark {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+}
+
+.sct-rb .sct-fp-trend-weeks {
+  display: flex;
+  justify-content: space-between;
+  max-width: 260px;
+  margin: 2px 0 6px;
+  font-size: 11px;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-fp-trend-note {
+  margin: 0;
+  font-size: 14px;
+}
+
+.sct-rb .sct-fp-stock {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sct-fp-stock-card {
+  padding: 4px 16px 12px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 10px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-fp-stock-card ul,
+.sct-rb .sct-fp-injuries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb .sct-fp-stock-card li,
+.sct-rb .sct-fp-injuries li {
+  margin: 0;
+  padding: 6px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.sct-fp-stock-card li > span[aria-hidden] {
+  margin-right: 6px;
+}
+
+.sct-fp-stock-card .is-up > span[aria-hidden] {
+  color: #1e7a46;
+}
+
+.sct-fp-stock-card .is-down > span[aria-hidden] {
+  color: #b42318;
+}
+
+.sct-rb .sct-fp-callout {
+  margin: 28px 0 0;
+  padding: 14px 16px;
+  border-left: 4px solid var(--rb-gold);
+  border-radius: 8px;
+  background: var(--rb-card);
+  font-size: 16px;
+}
+
+/* ---- betting */
+
+.sct-rb .sct-bet-tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 520px;
+}
+
+/* ---- keep exploring */
+
+.sct-rb .sct-ex-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.sct-ex-col {
+  padding: 4px 16px 12px;
+  border: 1px solid var(--rb-line);
+  border-radius: 10px;
+  background: var(--rb-card);
+}
+
+.sct-rb .sct-ex-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb .sct-ex-list li {
+  margin: 0;
+  border-top: 1px solid var(--rb-line);
+}
+
+.sct-ex-game {
+  display: block;
+  padding: 8px 0;
+  color: var(--rb-ink);
+  text-decoration: none;
+}
+
+a.sct-ex-game:hover .sct-ex-line {
+  text-decoration: underline;
+}
+
+.sct-ex-line {
+  display: block;
+  font-size: 15px;
+}
+
+.sct-ex-side {
+  white-space: nowrap;
+}
+
+.sct-ex-side.is-win {
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.sct-ex-side.is-other,
+.sct-ex-at {
+  color: var(--rb-slate);
+}
+
+.sct-ex-meta {
+  display: block;
+  font-size: 13px;
+  color: var(--rb-slate);
+}
+
+.sct-rb .sct-ex-footer {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.sct-rb .sct-ex-logs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-rb .sct-ex-logs li {
+  margin: 0;
+}
+
+.sct-ex-log {
+  display: block;
+  height: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--rb-line);
+  border-left: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 8px;
+  background: var(--rb-card);
+  color: var(--rb-ink);
+  text-decoration: none;
+}
+
+.sct-ex-log-name {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.sct-ex-log-meta {
+  display: block;
+  font-size: 13px;
+  color: var(--rb-slate);
+}
+
+.sct-ex .sct-rb-related {
+  margin-top: 8px;
+}
+
+/* ---- before and after */
+
+.sct-ba-team {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 4px solid var(--rb-team, var(--rb-ink));
+}
+
+.sct-rb .sct-ba-name {
+  --sc-font: var(--rb-display);
+  margin: 0 0 6px;
+  font-family: var(--rb-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.sct-ba-none {
+  color: var(--rb-slate);
+  font-weight: 400;
+}
+
+.sct-rb .sct-ba .sct-rb-dl {
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .sct-rb :is(.sct-meant, .sct-pc-cards, .sct-fp-cards, .sct-fp-stock) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-rb .sct-ex-logs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 400px) {
+  .sct-rb .sct-pc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sct-fp-seg span {
+    padding: 7px 12px;
   }
 }
 

@@ -21,6 +21,7 @@ import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
 import { canonicalUrl } from "./lib/request";
+import { requireEmbedKey } from "./lib/embed-key";
 import { linkTemplatesFromEnv, relatedLinksFromEnv } from "./lib/links";
 import { devBarEnabled, injectDevBar } from "./lib/devbar";
 import { contentVersion, ensureFreshness, freshness } from "./lib/freshness";
@@ -76,6 +77,11 @@ app.use((_req, res, next) => {
   res.on("finish", refreshIfStale);
   next();
 });
+
+// With SC_EMBED_KEY set, the fragments, the news feed and the standalone pages
+// answer only WordPress (and anyone who has unlocked them with the key). Ahead
+// of every router that serves them; see lib/embed-key.ts for what stays open.
+app.use(requireEmbedKey);
 
 // API routes
 app.use("/api", router);

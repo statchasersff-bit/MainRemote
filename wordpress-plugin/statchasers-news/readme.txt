@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.13
+Stable tag: 1.10.14
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.14 =
+* The StatChasers app can be locked so that only this site can read it. Set the same secret as `STATCHASERS_EMBED_KEY` in wp-config.php and `SC_EMBED_KEY` on the app, and the app refuses fragment, data and standalone-page requests that do not carry it; the plugin adds it to every request it makes to the app. Without the constant nothing changes.
+* New proxy at /wp-json/statchasers/v1/p/ for the four widgets that fetch from the reader's browser (Player Stats table, FPA, RB Handcuffs cards, news refresh). It forwards only those four paths, adds the key, and caches each answer for five minutes. The app points the widgets at it once `SC_BROWSER_PROXY` is set on the app. Rollout order is in README.md, "Locking the app to WordPress".
 
 = 1.10.13 =
 * Player pages load two more webfonts, for the redesigned profile header and the Overview tab's new lower sections: Archivo with its width axis (the header's name and figures are set condensed) and Source Serif 4 (the Overview's written read). Registered as dependencies of the player stylesheet, so they load only where a player page or the index mounts. Return '' from the `statchasers_player_header_font_url` filter to serve them yourself or not at all.

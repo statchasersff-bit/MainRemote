@@ -33,6 +33,17 @@ this order:
 | 10 | `buildInjurySnapshots.mjs` | `player_injuries.json` | injury history |
 | 11 | `buildFantasyOutlook2026.js` | `fantasy_outlook_2026.json` | see below |
 | 12 | `buildRosterPct.mjs` | `roster_pct.json` | Sleeper league research (ownership) |
+| 13 | `buildCollegeStats.mjs` | `college_stats.json` | CollegeFootballData.com (needs `CFBD_API_KEY`, free) |
+
+`buildCollegeStats.mjs` covers this season's rookies at QB/RB/WR/TE with a
+page, matched by name to the college in `bio_facts.json` / `draft.json`. Run it
+once after the draft and again when rookies join the index; it lists every
+player it could not match (usually a school spelled differently, fixed by an
+entry in `SCHOOL_ALIASES` in `collegeMatch.mjs`). Pass `--cache <dir>` to keep
+the API responses so reruns are free.
+
+`stats_copy.json` is not built: analysts edit it by hand. See
+`docs/STATS-COPY.md`.
 
 Step 3 is additive. The depth chart decides who joins the index, not who
 stays: a player the previous build indexed is kept, under his current team, for

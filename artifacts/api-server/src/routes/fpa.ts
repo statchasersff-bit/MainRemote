@@ -26,6 +26,7 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl, publicOrigin } from "../lib/request";
+import { browserEndpoint } from "../lib/embed-key";
 import { renderFpaAppPage, renderFpaFragment } from "../lib/fpa-ssr";
 import { renderFpaCsv } from "../lib/fpa-render";
 import {
@@ -233,7 +234,7 @@ router.get("/embed/fpa", (req, res) => {
         // WordPress. Built from the request rather than configured, so it is
         // whatever origin the plugin actually reached us on. The CSV is the
         // same kind of thing — a route on this server, not a page on theirs.
-        endpoint: `${publicOrigin(req)}${FPA_FRAGMENT_PATH}`,
+        endpoint: browserEndpoint(req, FPA_FRAGMENT_PATH),
         csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
       });
 

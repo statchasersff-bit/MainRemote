@@ -62,6 +62,55 @@ export interface BoxTeamStats {
   penalties: BoxAttempt | null;
   /** Time of possession in seconds, from "29:55". */
   possessionSeconds: number | null;
+  /**
+   * The play-calling counts. Optional rather than null-only so a figure
+   * object built before they existed still type-checks; missing is unknown.
+   */
+  passAttempts?: number | null;
+  /** Times this side's passer was sacked. */
+  sacked?: number | null;
+  rushAttempts?: number | null;
+  interceptionsThrown?: number | null;
+  fumblesLost?: number | null;
+}
+
+/** How a possession ended, as the possessions table counts it. */
+export type DriveResult =
+  | "td"
+  | "fg"
+  | "punt"
+  | "int"
+  | "fumble"
+  | "downs"
+  | "missed_fg"
+  | "safety"
+  | "end_half"
+  | "end_game"
+  | "other";
+
+/** One possession, from ESPN's drive chart. */
+export interface Drive {
+  /** Display code of the side with the ball, upper case. */
+  team: string;
+  quarter: number;
+  /** "15:00". */
+  startClock: string;
+  plays: number;
+  yards: number;
+  durationSeconds: number | null;
+  result: DriveResult;
+  /** Whether the other side scored on the play that ended it: a pick-six, a scoop-and-score. */
+  defensiveScore: boolean;
+}
+
+/** The consensus closing line, when ESPN carries one. */
+export interface GameOdds {
+  /** The favourite's display code, or null for a pick'em. */
+  favorite: string | null;
+  /** Points the favourite laid, as a positive number: 3.5. */
+  line: number;
+  /** The closing total, or null. */
+  total: number | null;
 }
 
 export interface GameBoxscore {
@@ -76,6 +125,12 @@ export interface GameBoxscore {
   players: BoxPlayer[];
   /** In the order they happened, team as the site's display code. */
   scoringPlays: ScoringPlay[];
+  /** Every possession in order; empty when ESPN sent no drive chart. */
+  drives: Drive[];
+  odds: GameOdds | null;
+  attendance: number | null;
+  /** The broadcaster as ESPN lists it; the schedule's network is preferred. */
+  broadcast: string | null;
 }
 
 /* ------------------------------------------------------------- upstream */
@@ -108,6 +163,27 @@ interface EspnSummary {
     }>;
   };
   scoringPlays?: EspnScoringPlay[];
+  drives?: { previous?: EspnDrive[] };
+  pickcenter?: Array<{
+    provider?: { name?: string; priority?: number };
+    spread?: number;
+    overUnder?: number;
+    details?: string;
+    homeTeamOdds?: { favorite?: boolean };
+    awayTeamOdds?: { favorite?: boolean };
+  }>;
+  gameInfo?: { attendance?: number };
+  broadcasts?: Array<{ media?: { shortName?: string }; station?: string }>;
+}
+
+interface EspnDrive {
+  team?: { abbreviation?: string };
+  start?: { period?: { number?: number }; clock?: { displayValue?: string } };
+  timeElapsed?: { displayValue?: string };
+  yards?: number;
+  offensivePlays?: number;
+  result?: string;
+  displayResult?: string;
 }
 
 /** One category of the player box score: "passing", "defensive"… */
@@ -180,6 +256,11 @@ function statsOf(entries: EspnStatistic[] | undefined): BoxTeamStats {
     redZone: attempt(by.get("redZoneAttempts")),
     penalties: attempt(by.get("totalPenaltiesYards")),
     possessionSeconds: clockSeconds(by.get("possessionTime")),
+    passAttempts: attempt(by.get("completionAttempts")?.replace("/", "-"))?.attempts ?? null,
+    sacked: attempt(by.get("sacksYardsLost"))?.made ?? null,
+    rushAttempts: value("rushingAttempts"),
+    interceptionsThrown: value("interceptions"),
+    fumblesLost: value("fumblesLost"),
   };
 }
 
@@ -210,13 +291,16 @@ const PLAYER_KEYS: Record<string, Record<string, keyof PlayerGameStats>> = {
     receivingTouchdowns: "recTd",
     receivingTargets: "recTgt",
   },
-  fumbles: { fumblesLost: "fumblesLost" },
+  fumbles: { fumblesLost: "fumblesLost", fumblesRecovered: "fumRec" },
   defensive: {
     soloTackles: "soloTkl",
     sacks: "sacks",
+    tacklesForLoss: "tfl",
+    QBHits: "qbHits",
     passesDefended: "passDef",
     defensiveTouchdowns: "defTd",
   },
+  kicking: { longFieldGoalMade: "fgLong" },
   interceptions: { interceptions: "defInt" },
 };
 
@@ -266,7 +350,10 @@ function playersOf(payload: EspnSummary): BoxPlayer[] {
           }
           if (name === "kicking" && key === "extraPointsMade/extraPointAttempts") {
             const made = attempt(raw.replace("/", "-"));
-            if (made) stats.xpm = made.made;
+            if (made) {
+              stats.xpm = made.made;
+              stats.xpa = made.attempts;
+            }
             return;
           }
           if (name === "defensive" && key === "totalTackles") {
@@ -296,6 +383,65 @@ function scoringPlaysOf(payload: EspnSummary): ScoringPlay[] {
     if (play) plays.push({ ...play, team: displayCode(play.team) });
   }
   return plays;
+}
+
+/** ESPN's drive result, as one of the rows the possessions table counts. */
+export function driveResult(raw: string | undefined): { result: DriveResult; defensiveScore: boolean } {
+  const text = (raw ?? "").trim().toUpperCase();
+  const defensiveScore = /\b(INT|FUMBLE|FUM)\b.*\bTD\b|\bBLOCKED\b.*\bTD\b/.test(text);
+  if (/^(INT|INTERCEPTION)/.test(text)) return { result: "int", defensiveScore };
+  if (/^(FUMBLE|FUM)/.test(text)) return { result: "fumble", defensiveScore };
+  if (/^TD$|TOUCHDOWN/.test(text)) return { result: "td", defensiveScore: false };
+  if (/MISSED FG|FG MISSED|BLOCKED FG|MISSED FIELD GOAL/.test(text)) return { result: "missed_fg", defensiveScore };
+  if (/^FG$|FIELD GOAL/.test(text)) return { result: "fg", defensiveScore: false };
+  if (/PUNT/.test(text)) return { result: "punt", defensiveScore };
+  if (/DOWNS/.test(text)) return { result: "downs", defensiveScore: false };
+  if (/^SF$|SAFETY/.test(text)) return { result: "safety", defensiveScore: false };
+  if (/END OF HALF|^HALF/.test(text)) return { result: "end_half", defensiveScore: false };
+  if (/END OF GAME|^GAME/.test(text)) return { result: "end_game", defensiveScore: false };
+  return { result: "other", defensiveScore };
+}
+
+function drivesOf(payload: EspnSummary): Drive[] {
+  const drives: Drive[] = [];
+  for (const raw of payload.drives?.previous ?? []) {
+    const abbr = raw.team?.abbreviation?.trim();
+    const quarter = raw.start?.period?.number;
+    const clockText = raw.start?.clock?.displayValue;
+    if (!abbr || !quarter || !clockText) continue;
+    const { result, defensiveScore } = driveResult(raw.result ?? raw.displayResult);
+    drives.push({
+      team: displayCode(abbr),
+      quarter,
+      startClock: clockText,
+      plays: typeof raw.offensivePlays === "number" ? raw.offensivePlays : 0,
+      yards: typeof raw.yards === "number" ? raw.yards : 0,
+      durationSeconds: clockSeconds(raw.timeElapsed?.displayValue),
+      result,
+      defensiveScore,
+    });
+  }
+  return drives;
+}
+
+/**
+ * The consensus closing line: the provider ESPN ranks first. "LAR -3.5" names
+ * the favourite; a spread of 0 or "EVEN" is a pick'em.
+ */
+function oddsOf(payload: EspnSummary): GameOdds | null {
+  const lines = [...(payload.pickcenter ?? [])].sort(
+    (a, b) => (a.provider?.priority ?? 99) - (b.provider?.priority ?? 99),
+  );
+  const line = lines.find((l) => typeof l.spread === "number" || typeof l.overUnder === "number");
+  if (!line) return null;
+  const total = typeof line.overUnder === "number" && line.overUnder > 0 ? line.overUnder : null;
+  const spread = typeof line.spread === "number" ? Math.abs(line.spread) : null;
+  const named = /^([A-Z]{2,3})\s+-/.exec(line.details?.trim() ?? "")?.[1] ?? null;
+  const favorite = spread === 0 ? null : named ? displayCode(named) : null;
+  if (spread === null || (spread > 0 && !favorite)) {
+    return total === null ? null : { favorite: null, line: 0, total };
+  }
+  return { favorite, line: spread, total };
 }
 
 function parse(eventId: string, payload: EspnSummary): GameBoxscore {
@@ -338,6 +484,17 @@ function parse(eventId: string, payload: EspnSummary): GameBoxscore {
     stats,
     players: playersOf(payload),
     scoringPlays: scoringPlaysOf(payload),
+    drives: drivesOf(payload),
+    odds: oddsOf(payload),
+    attendance:
+      typeof payload.gameInfo?.attendance === "number" && payload.gameInfo.attendance > 0
+        ? payload.gameInfo.attendance
+        : null,
+    broadcast:
+      (payload.broadcasts ?? [])
+        .map((b) => b.media?.shortName ?? b.station ?? "")
+        .filter(Boolean)
+        .join(", ") || null,
   };
 }
 

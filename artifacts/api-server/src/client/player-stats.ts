@@ -408,7 +408,9 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
   try {
     const res = await fetch(url.toString(), {
       headers: { Accept: "text/html" },
-      credentials: "omit",
+      // Same-origin, not omit: on this origin's own pages the key cookie
+      // (lib/embed-key.ts) must ride along. Cross-origin it sends nothing.
+      credentials: "same-origin",
     });
     if (!res.ok) return false;
     markup = await res.text();

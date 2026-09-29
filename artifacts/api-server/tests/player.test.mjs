@@ -1544,7 +1544,9 @@ describe("the outlook tab", () => {
       /^\d{4} Outlook$/,
       "the heading names the season the outlook is for",
     );
-    assert.equal(outlook.querySelectorAll("h2").length, 1);
+    // One h2 for the tab's own content; the spec sections appended under it
+    // (.scp-ol, lib/player/outlook-tab.ts) carry their own.
+    assert.equal([...outlook.querySelectorAll("h2")].filter((h) => !h.closest(".scp-ol")).length, 1);
 
     // No card around it. The read is the tab's first section, not something
     // set apart from the column it sits in, and the chips below it carry the
@@ -2778,9 +2780,11 @@ describe("the embedded fragment", () => {
     assert.equal(nodes.length, 1, "exactly one FAQPage on the profile");
 
     // Every FAQ on the page, the Overview's <details> included, in document
-    // order — and each question once, as the node lists it.
+    // order — and each question once, as the node lists it. The Stats tab's
+    // spec FAQ (.scp-st-faq), like the Outlook tab's (.scp-ol-faq), is left out of the schema until mak approves that
+    // SEO change, so it is left out here too.
     const seen = new Set();
-    const rendered = [...doc.querySelectorAll(".scp-faq-item, .scp-ox-faq details")]
+    const rendered = [...doc.querySelectorAll(".scp-faq-item, .scp-ox-faq:not(.scp-st-faq, .scp-ol-faq) details")]
       .map((item) =>
         item.matches("details")
           ? {

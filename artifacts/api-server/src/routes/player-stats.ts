@@ -34,6 +34,7 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl, publicOrigin } from "../lib/request";
+import { browserEndpoint } from "../lib/embed-key";
 import {
   renderStatsAppPage,
   renderStatsFragment,
@@ -227,7 +228,7 @@ router.get(STATS_FRAGMENT_PATH, (req, res) => {
       // statchasers.com page, where a relative path resolves against
       // WordPress. Built from the request, so it is whatever origin the
       // plugin actually reached us on.
-      endpoint: `${publicOrigin(req)}${STATS_FRAGMENT_PATH}`,
+      endpoint: browserEndpoint(req, STATS_FRAGMENT_PATH),
     });
 
     if (!result.table) {

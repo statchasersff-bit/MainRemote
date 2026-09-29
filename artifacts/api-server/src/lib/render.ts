@@ -905,6 +905,11 @@ export interface RenderFragmentOptions extends RenderListOptions {
   relatedHeading?: string;
   /** Endpoint for real-user Core Web Vitals reports. Omit to disable entirely. */
   vitalsEndpoint?: string;
+  /**
+   * Where the browser fetches /api/news from, when that is not `origin`: the
+   * WordPress proxy that adds the key (lib/embed-key.ts).
+   */
+  apiBase?: string;
   /** URL of the host page, so framed metrics attach to the ranked URL. */
   pageUrl?: string;
 }
@@ -919,7 +924,9 @@ export function renderFragment(
   options: RenderFragmentOptions = {},
 ): string {
   const { origin, heading = true } = options;
-  const originAttr = origin ? ` data-sc-origin="${escapeHtml(origin)}"` : "";
+  const originAttr =
+    (origin ? ` data-sc-origin="${escapeHtml(origin)}"` : "") +
+    (options.apiBase ? ` data-sc-api="${escapeHtml(options.apiBase)}"` : "");
   const pageSize = Math.max(1, options.pageSize ?? DEFAULT_PAGE_SIZE);
   const limitAttr =
     typeof options.limit === "number" && options.limit > 0

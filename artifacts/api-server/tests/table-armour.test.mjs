@@ -64,10 +64,10 @@ describe("the table frame outranks `.entry-content table:not(.variations)`", () 
     });
   }
 
-  test("team.css resets all six of its tables at id weight", () => {
+  test("team.css resets all eight of its tables at id weight", () => {
     assert.ok(
       selectors(read("team.css")).includes(
-        ":is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table)",
+        ":is(.sct, #sct-table-armour) :is(.sct-hist, .sct-mu-linescore, .sct-mu-table, .sct-mu-ps-table, .sct-rb-table, .sct-ss-table, .sct-fp-table, .sct-rb-mini)",
       ),
     );
   });
