@@ -136,9 +136,11 @@ export function renderStatsAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderStatsHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderStatsHeadTags(meta))
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

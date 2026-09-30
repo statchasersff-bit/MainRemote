@@ -196,11 +196,13 @@ export async function renderPlayerAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderPlayerHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderPlayerHeadTags(meta))
     // The embedded page drops the standalone shell's background and padding so
     // the fragment sits flush inside whatever box WordPress gives it.
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

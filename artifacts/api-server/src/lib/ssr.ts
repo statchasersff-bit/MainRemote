@@ -192,6 +192,8 @@ export async function renderAppPage(
   }
 
   return template
-    .replace(HEAD_MARKER, renderHeadTags(meta))
-    .replace(BODY_MARKER, fragment);
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderHeadTags(meta))
+    .replace(BODY_MARKER, () => fragment);
 }

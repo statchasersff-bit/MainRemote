@@ -172,19 +172,22 @@ export async function renderMatchupAppPage(
   }
 
   const html = template
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
     .replace(
       HEAD_MARKER,
-      renderTeamHeadTags(meta) +
-        "\n  " +
-        matchupEventSchema(data, false) +
-        "\n  " +
-        // The FAQ, from the same array the page's <details> were drawn from.
-        matchupFaqSchema(data, options, false) +
-        "\n  " +
-        // Breadcrumbs and the highlights video, on a recap only.
-        matchupRecapSchema(data, options, options.canonical),
+      () =>
+        renderTeamHeadTags(meta) +
+          "\n  " +
+          matchupEventSchema(data, false) +
+          "\n  " +
+          // The FAQ, from the same array the page's <details> were drawn from.
+          matchupFaqSchema(data, options, false) +
+          "\n  " +
+          // Breadcrumbs and the highlights video, on a recap only.
+          matchupRecapSchema(data, options, options.canonical),
     )
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
   return { ...fragment, html };
 }
