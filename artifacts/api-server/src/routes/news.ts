@@ -740,13 +740,25 @@ export async function storeItems(
 
     for (const [dedupeKey, { id, item }] of incoming) {
       const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+      // A publish time in the future is a bad feed date, not tomorrow's news:
+      // it pinned the item to the top of the feed and pushed "last updated"
+      // ahead of the clock. Held at the moment it was first seen, so a re-sent
+      // copy of it is not an update on every run.
+      const prior = rowById.get(idByKey.get(dedupeKey) ?? id);
+      const pubDateMs = Number.isNaN(parsedMs)
+        ? null
+        : parsedMs <= now.getTime()
+          ? parsedMs
+          : prior?.pubDateMs != null && prior.pubDateMs <= now.getTime()
+            ? prior.pubDateMs
+            : now.getTime();
       const outlet = item.source?.toString().trim() || null;
       const teamAbbr = item.teamAbbr?.toString().trim().toLowerCase() || null;
       const fields = {
         title: item.title ?? "(no title)",
         link: item.link ?? null,
         pubDate: item.pubDate ?? null,
-        pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
+        pubDateMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
         // Rewritten on every pass, unlike summary below: this is a fact about
@@ -850,13 +862,31 @@ export async function storeItems(
     "Ingest complete",
   );
 
-  await backfillSummaries();
-
-  // Piggyback the player -> team refresh on the ingest cycle. It self-throttles
-  // to once a day and never throws, so this is just a convenient heartbeat.
-  await ensureTeams();
+  // After the response, not before it. The summaries are up to 25 LLM calls
+  // and the roster a Sleeper fetch, and every ingest caller waited on both,
+  // including the X webhook, which has to answer fast.
+  void afterIngest();
 
   return { inserted, updated, unchanged, total: rawItems.length };
+}
+
+let afterIngestRun: Promise<void> | null = null;
+
+/** Summaries, then the player -> team refresh. One at a time; never throws. */
+function afterIngest(): Promise<void> {
+  if (afterIngestRun) return afterIngestRun;
+  afterIngestRun = (async () => {
+    try {
+      await backfillSummaries();
+    } catch (err) {
+      logger.warn({ err }, "Summary backfill failed");
+    }
+    // Self-throttles to once a day and never throws: a convenient heartbeat.
+    await ensureTeams();
+  })().finally(() => {
+    afterIngestRun = null;
+  });
+  return afterIngestRun;
 }
 
 /**
