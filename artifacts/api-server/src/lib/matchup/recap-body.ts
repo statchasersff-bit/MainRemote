@@ -717,12 +717,14 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
   const upcoming = series.upcoming;
   const n = upcoming.length;
   const next = upcoming[0] ?? null;
-  // Only with a meeting still to come: the section is about that meeting.
-  if (!next) return "";
-  const lead =
-    `${COUNT_WORDS[n] ?? String(n)} meeting${n === 1 ? " is" : "s are"} left on the ` +
-    `${next.season} schedule: ${list(upcoming.map((g) => `${g.weekLabel}${whereUpcoming(input, g)}`))}. ` +
-    `Here's how to decide who to play in your league.`;
+  // With no meeting left the section stays: the tools answer the same
+  // week-to-week question for either side, just not about a game between them.
+  const lead = next
+    ? `${COUNT_WORDS[n] ?? String(n)} meeting${n === 1 ? " is" : "s are"} left on the ` +
+      `${next.season} schedule: ${list(upcoming.map((g) => `${g.weekLabel}${whereUpcoming(input, g)}`))}. ` +
+      `Here's how to decide who to play in your league.`
+    : `The two teams don't meet again this season. If you roster a ${input.teams[game.away.abbr]?.singular ?? game.away.short} ` +
+      `or a ${input.teams[game.home.abbr]?.singular ?? game.home.short}, these answer the week-to-week question.`;
 
   const card = (title: string, text: string, href: string | null | undefined, cta: string): string =>
     href
@@ -734,7 +736,7 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
   const cards =
     card(
       "Start/Sit Tool",
-      `Should your ${game.away.short} or ${game.home.short} player start in ${next.weekLabel}? ` +
+      `Should your ${game.away.short} or ${game.home.short} player start ${next ? `in ${next.weekLabel}` : "this week"}? ` +
         `Compare the decision against your other options.`,
       links.startSit,
       "fantasy-outlook-startsit",
@@ -753,16 +755,20 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
     ) +
     card(
       "Strength of Schedule",
-      n === 1
-        ? "Where this matchup falls in each team's fantasy playoff run."
-        : "Where these two matchups fall in each team's fantasy playoff run.",
+      n === 0
+        ? "Where each team's remaining games fall in your fantasy playoff run."
+        : n === 1
+          ? "Where this matchup falls in each team's fantasy playoff run."
+          : "Where these two matchups fall in each team's fantasy playoff run.",
       links.strengthOfSchedule,
       "fantasy-outlook-sos",
     );
 
   return section(
     "fantasy-outlook",
-    `${game.away.short} vs ${game.home.short} fantasy outlook for ${next.season}`,
+    next
+      ? `${game.away.short} vs ${game.home.short} fantasy outlook for ${next.season}`
+      : `${game.away.short} and ${game.home.short} in fantasy`,
     subtitle(lead) + `<ul class="sct-rb-tools">${cards}</ul>`,
   );
 }

@@ -18,6 +18,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { titleCase } from "./title-case";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
@@ -60,7 +61,7 @@ const word = (n: number): string => WORDS[n] ?? String(n);
 function sectionOpen(id: string, heading: string, lede: string): string {
   return (
     `<section class="scp-ox-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
     (lede ? `<p class="scp-ox-lede">${lede}</p>` : "")
   );
 }

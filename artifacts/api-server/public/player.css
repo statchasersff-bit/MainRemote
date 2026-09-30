@@ -2922,116 +2922,126 @@ button.scp-search-opt {
   white-space: nowrap;
 }
 
-/* ---- status panel */
+/* ---- status panel
+   One ~100px strip under the H1 (mak, 2026-09-30): the status and its answer,
+   then three short facts. One outer border and whitespace between the cells,
+   no card-in-card boxes; the timestamp is small print in the status cell's
+   corner rather than a line of its own. */
+
+.scp .scp-in .scp-ox-sec.scp-in-now {
+  padding-top: 4px;
+}
 
 .scp .scp-in .scp-in-statusbar {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
   overflow: hidden;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .scp .scp-in .scp-in-statusbar > div {
-  padding: 22px 24px;
-}
-
-.scp .scp-in .scp-in-statusbar > div + div {
-  border-left: 1px solid var(--scp-ph-line);
+  padding: 14px 18px;
 }
 
 .scp .scp-in .scp-in-main {
   --scp-in-c: var(--scp-ph-good);
-  border-left: 6px solid var(--scp-in-c);
-  background: linear-gradient(180deg, var(--scp-in-tint, #f1f8f4), #fff);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 12px;
+  align-self: stretch;
+  align-content: center;
+  background: color-mix(in srgb, var(--scp-in-c) 6%, #fff);
 }
 
 .scp .scp-in .scp-in-main.is-mid {
   --scp-in-c: var(--scp-ph-mid);
-  --scp-in-tint: #fdf7e8;
 }
 
 .scp .scp-in .scp-in-main.is-bad {
   --scp-in-c: var(--scp-ph-bad);
-  --scp-in-tint: #fbefec;
 }
 
 .scp .scp-in .scp-in-main.is-susp {
   --scp-in-c: var(--scp-ph-ink-2);
-  --scp-in-tint: #f4f6f9;
 }
 
 .scp .scp-in .scp-in-label {
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
 .scp .scp-in .scp-in-big {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 8px 0;
+  gap: 9px;
   color: var(--scp-in-c);
-  font-size: 40px;
+  font-size: 26px;
   font-weight: 800;
   font-stretch: 74%;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .scp .scp-in .scp-in-big::before {
   content: "";
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--scp-in-c);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--scp-in-c) 15%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--scp-in-c) 15%, transparent);
 }
 
 .scp .scp-in .scp-in-main p {
-  margin: 0;
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
   padding: 0;
   color: var(--scp-ph-ink-2);
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.scp .scp-in .scp-in-checked,
-.scp .scp-in .scp-in-stale {
-  display: block;
-  margin-top: 10px;
+.scp .scp-in .scp-in-checked {
+  justify-self: end;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 11px;
+  text-align: right;
 }
 
 .scp .scp-in .scp-in-stale {
-  margin-top: 4px;
   color: var(--scp-ph-mid);
   font-weight: 600;
 }
 
 .scp .scp-in .scp-in-v {
-  margin-top: 6px;
-  font-size: 30px;
+  margin-top: 2px;
+  font-size: 17px;
   font-weight: 700;
-  font-stretch: 80%;
-  line-height: 1.1;
+  line-height: 1.25;
 }
 
 .scp .scp-in .scp-in-s {
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
-/* ---- practice grid */
+/* ---- practice grid
+   Denser rows (~46px, header ~36px), row rules only, and the current week
+   tinted neutral: gold across a whole row read as a warning for a player who
+   has no injury. Only the pending cells carry the gold. */
 
 .scp .scp-in .scp-in-practice {
-  margin-top: 16px;
+  margin-top: 14px;
   overflow: hidden;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .scp .scp-in .scp-in-phead {
@@ -3039,27 +3049,27 @@ button.scp-search-opt {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 6px 16px;
-  padding: 16px 20px 12px;
+  gap: 4px 16px;
+  padding: 12px 16px 4px;
 }
 
 .scp .scp-in .scp-in-phead h3 {
   margin: 0;
   padding: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .scp .scp-in .scp-in-phead span {
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .scp .scp-in .scp-in-pread {
   margin: 0;
-  padding: 0 20px 16px;
+  padding: 0 16px 8px;
   color: var(--scp-ph-ink-2);
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 .scp .scp-in .scp-in-pread strong {
@@ -3071,39 +3081,56 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-ptable table.scp-ox-table {
-  min-width: 560px;
+  min-width: 540px;
+  font-size: 13.5px;
 }
 
 .scp .scp-in .scp-in-ptable :is(th, td) {
+  padding: 6px 12px;
   text-align: center;
 }
 
+.scp .scp-in .scp-in-ptable thead th {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef1f5;
+  font-size: 11.5px;
+  line-height: 16px;
+}
+
+.scp .scp-in .scp-in-ptable tbody tr + tr :is(th, td) {
+  border-top: 1px solid #f1f3f6;
+}
+
 .scp .scp-in .scp-in-ptable :is(th, td):first-child {
+  padding-left: 16px;
   text-align: left;
 }
 
 .scp .scp-in .scp-in-ptable tr.is-cur {
-  background: var(--scp-ph-gold-soft);
+  background: #f8fafc;
 }
 
 .scp .scp-in .scp-in-wk b {
   display: block;
   font-weight: 700;
+  line-height: 18px;
 }
 
 .scp .scp-in .scp-in-wk small {
+  display: block;
   color: var(--scp-ph-muted);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 400;
+  line-height: 16px;
 }
 
 .scp .scp-in .scp-pp {
   display: inline-block;
   box-sizing: border-box;
-  min-width: 74px;
-  padding: 4px 10px;
+  min-width: 60px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   line-height: 1.4;
   text-align: center;
@@ -3126,31 +3153,29 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-pp.is-none {
-  background: #edf0f4;
+  background: #f1f3f6;
   color: var(--scp-ph-muted);
 }
 
 .scp .scp-in .scp-pp.is-soon {
-  background: #fff;
-  border: 1px dashed #b8c2cf;
-  color: var(--scp-ph-muted);
+  background: var(--scp-ph-gold-soft);
+  color: #8a6414;
 }
 
 .scp .scp-in .scp-in-plegend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
-  padding: 12px 20px 16px;
-  border-top: 1px solid #eef1f5;
+  gap: 6px 14px;
+  padding: 8px 16px 12px;
   color: var(--scp-ph-muted);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .scp .scp-in .scp-in-plegend .scp-pp {
   min-width: 0;
-  padding: 2px 8px;
-  font-size: 11px;
+  padding: 1px 7px;
+  font-size: 10.5px;
 }
 
 /* ---- at a glance */
@@ -3470,19 +3495,11 @@ button.scp-search-opt {
 
 @media (max-width: 960px) {
   .scp .scp-in .scp-in-statusbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .scp .scp-in .scp-in-main {
     grid-column: 1 / -1;
-  }
-
-  .scp .scp-in .scp-in-statusbar > div:nth-child(2) {
-    border-left: 0;
-  }
-
-  .scp .scp-in .scp-in-statusbar > div:nth-child(n + 2) {
-    border-top: 1px solid var(--scp-ph-line);
   }
 
   .scp .scp-in .scp-in-glance {
@@ -3502,12 +3519,17 @@ button.scp-search-opt {
 }
 
 @media (max-width: 640px) {
-  .scp .scp-in .scp-in-statusbar {
-    grid-template-columns: minmax(0, 1fr);
+  .scp .scp-in .scp-in-statusbar > div {
+    padding: 12px 14px;
   }
 
-  .scp .scp-in .scp-in-statusbar > div + div {
-    border-left: 0;
+  .scp .scp-in .scp-in-statusbar > div:not(.scp-in-main) {
+    align-self: start;
+    padding-right: 6px;
+  }
+
+  .scp .scp-in .scp-in-v {
+    font-size: 15px;
   }
 
   .scp .scp-in .scp-in-tl::before {

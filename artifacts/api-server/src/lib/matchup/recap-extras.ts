@@ -582,6 +582,22 @@ function exploreGame(g: ExploreGame): string {
   return `<li>${g.url ? `<a class="sct-ex-game" href="${escapeHtml(g.url)}">${body}</a>` : `<span class="sct-ex-game">${body}</span>`}</li>`;
 }
 
+/**
+ * One explore column as a sidebar card, in the Before and after card's frame:
+ * the winner's next games, which sit under that card rather than in Keep
+ * exploring.
+ */
+export function renderExploreCard(c: ExploreColumn | null): string {
+  if (!c || c.games.length === 0) return "";
+  return (
+    `<section class="sct-rb-card sct-rb-info sct-ex-card" aria-labelledby="sct-rb-next">` +
+    `<h3 class="sct-rb-h3" id="sct-rb-next">${escapeHtml(c.title)}</h3>` +
+    `<ul class="sct-ex-list">${c.games.map(exploreGame).join("")}</ul>` +
+    (c.footer ? `<p class="sct-ex-footer"><a href="${escapeHtml(c.footer.url)}">${escapeHtml(c.footer.text)}</a></p>` : "") +
+    `</section>`
+  );
+}
+
 export function renderExplore(
   columns: ExploreColumn[],
   logs: { season: string; players: GameLogLink[] },

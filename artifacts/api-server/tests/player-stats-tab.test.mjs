@@ -104,10 +104,10 @@ describe("stats tab", () => {
       return text(h2);
     });
     assert.deepEqual(heads, [
-      "Jacoby Brissett 2026 stats",
-      "Advanced passing stats",
-      "Fantasy points per game, every season",
-      "What his career numbers say",
+      "Jacoby Brissett 2026 Stats",
+      "Advanced Passing Stats",
+      "Fantasy Points per Game, Every Season",
+      "What His Career Numbers Say",
     ]);
     // mak removed these 2026-09-30: the chart's lede, the table's caption, and
     // then the table itself (the original content's career table has it).
@@ -239,7 +239,7 @@ describe("stats tab", () => {
   test("preseason: last season's final line, no Card A, no striped bar", () => {
     const [, ...past] = state().logCareer;
     const doc = render(state({ season: 2025, logCareer: past, statsAdvanced: { current: null, last: LAST }, leagueWeek: 0 }));
-    assert.equal(text(doc.querySelector("#scp-st-prod-h")), "Jacoby Brissett 2025 stats");
+    assert.equal(text(doc.querySelector("#scp-st-prod-h")), "Jacoby Brissett 2025 Stats");
     assert.match(text(doc.querySelector(".scp-ox-lede")), /^His final 2025 numbers/);
     assert.ok(doc.querySelector("[data-scp-seg]"));
     assert.deepEqual([...doc.querySelectorAll(".scp-st-advt thead th")].map(text), ["Stat", "2025 13 games"]);
@@ -358,7 +358,7 @@ describe("stats tab", () => {
   test("a rookie before his first game: the college card and a college table, nothing else", () => {
     const doc = render(state({ logCareer: [], statsAdvanced: { current: null, last: null }, college: COLLEGE }));
     const heads = [...doc.querySelectorAll("section h2")].map(text);
-    assert.deepEqual(heads, ["Advanced passing stats", "Jacoby Brissett college stats by season"]);
+    assert.deepEqual(heads, ["Advanced Passing Stats", "Jacoby Brissett College Stats by Season"]);
     assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-ox-lede")), /^Brissett arrives from NC State\./);
     const table = doc.querySelector(".scp-st-table");
     assert.equal(text(table.querySelector("caption")), "College stats, from CollegeFootballData.com.");

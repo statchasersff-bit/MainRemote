@@ -573,18 +573,6 @@ function renderTable(board: HandcuffBoard, options: HandcuffRenderOptions): stri
 /* ------------------------------------------------- the best, and the faq */
 
 /**
- * The one-line standfirst under the page's heading. The heading itself is the
- * WordPress page title, so this is the first line the tool contributes, and it
- * says in plain words what the searches that find the page are asking for.
- */
-function renderDek(): string {
-  return (
-    `<p class="rbh-dek">Rank the best RB handcuffs in fantasy football and find the backup ` +
-    `running backs with the most upside if a starter misses time.</p>`
-  );
-}
-
-/**
  * The best handcuffs, by name, as a short ordered list after the table.
  *
  * The table already holds every backup, but it is a control: the bundle
@@ -706,7 +694,6 @@ export function renderHandcuffPage(
     (options.endpoint ? ` data-rbh-endpoint="${escapeHtml(options.endpoint)}"` : "") +
     `>` +
     `<h2 class="rbh-sr-only">${escapeHtml(handcuffHeading(board))}</h2>` +
-    renderDek() +
     renderPanel(board) +
     renderLegend(board) +
     renderTable(board, options) +

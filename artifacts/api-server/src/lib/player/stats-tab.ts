@@ -37,6 +37,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
@@ -78,7 +79,7 @@ function sectionOpen(id: string, heading: string, lede: string): string {
   const lead = id === STATS_LEAD_ID ? " is-lead" : "";
   return (
     `<section class="scp-ox-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2${lead}" id="${id}">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scp-ox-h2${lead}" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
     (lede ? `<p class="scp-ox-lede">${lede}</p>` : "")
   );
 }

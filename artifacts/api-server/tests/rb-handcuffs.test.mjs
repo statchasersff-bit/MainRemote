@@ -376,7 +376,6 @@ describe("the pages", () => {
 
   test("the best handcuffs are listed by name, in the board's order", async () => {
     const { doc } = await page("/rb-handcuff-rankings");
-    assert.match(doc.querySelector(".rbh-dek").textContent, /best RB handcuffs in fantasy football/);
     assert.equal(doc.querySelector(".rbh-best-title").textContent, `Best RB Handcuffs for ${BOARD.season}`);
     const names = [...doc.querySelectorAll(".rbh-best-name")].map((n) => n.textContent);
     assert.deepEqual(names, BOARD.players.slice(0, 10).map((p) => p.playerName));

@@ -328,15 +328,24 @@ function wireMatchupTabs(root: HTMLElement): void {
 
   const barHeight = (): number => bar.getBoundingClientRect().height;
 
-  /** After a switch: bring the panel's top just under the bar, only if it is off screen. */
+  const stickyTop = (): number => Number.parseFloat(getComputedStyle(bar).top) || 0;
+
+  // The scoreboard, above the bar and the panels, shown on every tab.
+  const hero = root.querySelector<HTMLElement>(".sct-sbh");
+
+  /**
+   * After a switch: bring the scoreboard (or, without one, the panel's top)
+   * just under the bar, only if the panel's top is off screen.
+   */
   function toPanelTop(id: string): void {
     const panel = panels.find((p) => p.dataset["muTab"] === id);
     if (!panel) return;
-    const top = panel.getBoundingClientRect().top;
-    const offset = (Number.parseFloat(getComputedStyle(bar).top) || 0) + barHeight();
-    if (top < offset || top > window.innerHeight) {
-      window.scrollTo({ top: window.scrollY + top - offset - 16 });
-    }
+    const panelTop = panel.getBoundingClientRect().top;
+    const offset = stickyTop() + barHeight();
+    if (panelTop >= offset && panelTop <= window.innerHeight) return;
+    // The scoreboard sits above the bar, so it goes to the bar's sticky top.
+    const top = hero ? hero.getBoundingClientRect().top - stickyTop() : panelTop - offset;
+    window.scrollTo({ top: Math.max(0, window.scrollY + top - 16) });
   }
 
   /** The tab a hash belongs to, and the element to scroll to inside it. */
@@ -380,13 +389,12 @@ function wireMatchupTabs(root: HTMLElement): void {
     if (focus) tabs.find((t) => t.dataset["muTabLink"] === id)?.focus();
   }
 
-  // The score line: shown while the scoreboard is off screen, and on every
-  // tab but Recap (the scoreboard lives in the Recap panel).
+  // The score line: shown while the scoreboard, which is on every tab, is
+  // off screen.
   const scoreLine = bar.querySelector<HTMLElement>("[data-mu-score]");
-  const hero = root.querySelector<HTMLElement>('[data-mu-tab="recap"] .sct-sbh');
   let heroVisible = true;
   function score(): void {
-    scoreLine?.classList.toggle("is-shown", active !== "recap" || !heroVisible);
+    scoreLine?.classList.toggle("is-shown", !heroVisible);
   }
   if (hero && scoreLine && typeof IntersectionObserver === "function") {
     new IntersectionObserver(
@@ -412,7 +420,18 @@ function wireMatchupTabs(root: HTMLElement): void {
   select(landed?.tab ?? "recap");
   root.dataset["muTabs"] = "js";
   if (landed?.target) landed.target.scrollIntoView();
-  else if (landed && landed.tab !== "recap") toPanelTop(landed.tab);
+  else if (landed && landed.tab !== "recap") {
+    // A tab's hash is also an anchor at its panel's top, and the browser's own
+    // jump to it would scroll the scoreboard away: start at the scoreboard
+    // instead, now and again once the page has loaded and jumped.
+    const tab = landed.tab;
+    const settle = (): void => {
+      if (hero) window.scrollTo({ top: Math.max(0, window.scrollY + hero.getBoundingClientRect().top - stickyTop() - 16) });
+      else toPanelTop(tab);
+    };
+    settle();
+    if (document.readyState !== "complete") window.addEventListener("load", settle, { once: true });
+  }
 
   for (const tab of tabs) {
     tab.addEventListener("click", () => activate(tab.dataset["muTabLink"]!));
@@ -457,22 +476,17 @@ function wireMatchupTabs(root: HTMLElement): void {
 }
 
 /**
- * The sidebar sticks under the tab bar, but only when it fits the window:
- * a sidebar taller than the screen would hide its own foot until the end of
- * the page.
+ * The tab bar's height, as --mu-bar-h, so anchors land below the sticky bar.
+ * The sidebar itself scrolls with the page.
  */
-function wireStickyAside(root: HTMLElement): void {
-  const aside = root.querySelector<HTMLElement>(".sct-mu .sct-rb-aside, .sct-rb-aside");
+function wireBarHeight(root: HTMLElement): void {
   const bar = root.querySelector<HTMLElement>("[data-mu-tabbar]");
-  if (!aside || !bar) return;
+  if (!bar) return;
   const fit = (): void => {
-    const top = bar.getBoundingClientRect().height + 16;
     root.style.setProperty("--mu-bar-h", `${Math.round(bar.getBoundingClientRect().height)}px`);
-    aside.classList.toggle("is-sticky", aside.offsetHeight + top <= window.innerHeight);
   };
   fit();
   window.addEventListener("resize", fit);
-  if (typeof ResizeObserver === "function") new ResizeObserver(fit).observe(aside);
   void document.fonts?.ready.then(fit);
 }
 
@@ -1165,7 +1179,7 @@ function boot(): void {
     wireScoring(root);
     wireFantasyFormat(root);
     wireHighlights(root);
-    wireStickyAside(root);
+    wireBarHeight(root);
     wireFrameHeight(root);
   }
 }

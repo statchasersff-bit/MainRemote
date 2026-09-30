@@ -1008,6 +1008,17 @@ foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats'
 	);
 }
 
+// And the width cap, which is what holds a tool at the site's content width.
+// rb-handcuffs shipped without it and grew with the window when zoomed out.
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs' ) as $tool ) {
+	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
+	is(
+		false !== strpos( $src, 'statchasers_team_full_width_css()' ),
+		true,
+		"$tool caps itself at the site's content width"
+	);
+}
+
 /*
  * The FPA FAQ island survives the round trip the plugin puts it through.
  *

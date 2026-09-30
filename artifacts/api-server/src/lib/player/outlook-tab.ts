@@ -31,6 +31,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
@@ -62,7 +63,7 @@ function a(href: string, text: string, attrs = ""): string {
 function open(id: string, heading: string, lede: string, extra = ""): string {
   return (
     `<section class="scp-ox-sec${extra}" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
     (lede ? `<p class="scp-ox-lede">${escapeHtml(lede)}</p>` : "")
   );
 }
@@ -349,7 +350,7 @@ function renderTake(m: Model): string {
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
     `<div>` +
-    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(`${m.name} rest-of-season outlook`)}</h2>` +
+    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
     `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
     `<p class="scp-ol-sum">${escapeHtml(summary)}</p>` +

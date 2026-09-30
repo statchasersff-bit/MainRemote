@@ -244,19 +244,24 @@ function render(overrides) {
 }
 
 describe("rendered", () => {
-  test("seven parts in order, the answer first", () => {
+  test("the answer first, in the status panel, then the headed parts in order", () => {
     const { doc } = render();
+    // No "Is he injured?" heading since 2026-09-30: the panel answers it
+    // straight under the tab's H1.
+    assert.ok(doc.querySelector(".scp-in > .scp-ox-sec.scp-in-now:first-child .scp-in-statusbar"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
     assert.deepEqual(h2, [
-      "Is Jacoby Brissett injured?",
-      "Injury history at a glance",
-      "Where he's been hurt",
-      "Jacoby Brissett injury history",
-      "If Brissett misses time",
-      "Jacoby Brissett injury FAQ",
+      "Injury History at a Glance",
+      "Where He's Been Hurt",
+      "Jacoby Brissett Injury History",
+      "If Brissett Misses Time",
+      "Jacoby Brissett Injury FAQ",
     ]);
     assert.ok(doc.querySelector("footer.scp-st-foot"));
-    assert.match(doc.querySelector(".scp-ox-lede").textContent, /^No\. Brissett has played in every Cardinals game this season\./);
+    assert.equal(
+      doc.querySelector(".scp-in-main p").textContent,
+      "No injury designation for Week 4 at the Giants. Brissett has not missed a game this season.",
+    );
     assert.equal(doc.querySelector(".scp-in-big").textContent, "Active");
     assert.ok(doc.querySelector(".scp-in-main.is-good"));
     // "Status checked" is the snapshot time, not the render time.
@@ -292,7 +297,7 @@ describe("rendered", () => {
     const { doc } = render({ designation: { injuryStatus: "Questionable", injuryBodyPart: "Hip" } });
     assert.ok(doc.querySelector(".scp-in-main.is-mid"));
     assert.equal(doc.querySelector(".scp-in-big").textContent, "Questionable");
-    assert.match(doc.querySelector(".scp-ox-lede").textContent, /^Brissett is questionable for Week 4 with a hip injury\./);
+    assert.match(doc.querySelector(".scp-in-main p").textContent, /^Brissett is questionable for Week 4 with a hip injury\./);
     assert.match(doc.querySelectorAll(".scp-in-faq details")[1].textContent, /game-time decision/);
   });
 
@@ -300,7 +305,7 @@ describe("rendered", () => {
     const { doc } = render({ designation: { injuryStatus: "Out", injuryBodyPart: "Ankle" } });
     assert.ok(doc.querySelector(".scp-in-main.is-bad"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
-    assert.equal(h2[1], "If Brissett misses time");
+    assert.equal(h2[0], "If Brissett Misses Time");
     assert.ok(doc.querySelector(".scp-in-urgent"));
   });
 
