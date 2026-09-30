@@ -76,9 +76,17 @@ export function splitCsv(line) {
   return out;
 }
 
+/** Write beside the target and rename over it, so the server never reads half a file. */
+function writeAtomic(file, text) {
+  fs.writeFileSync(`${file}.tmp`, text);
+  fs.renameSync(`${file}.tmp`, file);
+}
+
 /** Stream a (possibly gzipped) CSV at a URL, one object per row. */
 async function* rows(url) {
-  const res = await fetch(url, { redirect: "follow" });
+  // Covers the streamed body too: a stalled download fails the step rather
+  // than holding the daily chain.
+  const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(5 * 60_000) });
   if (!res.ok) throw new Error(`${url} answered ${res.status}`);
   let stream = Readable.fromWeb(res.body);
   if (url.endsWith(".gz")) stream = stream.pipe(zlib.createGunzip());
@@ -422,7 +430,7 @@ async function main() {
   }
   // One game per line: a season is a few thousand of them.
   const log = path.join(DATA, `rb_games_${season}.json`);
-  fs.writeFileSync(
+  writeAtomic(
     log,
     `{"season":${season},"week":${built.week},"players":[\n` +
       games
@@ -437,7 +445,7 @@ async function main() {
   // the committed rb_advanced_stats file.
   if (process.argv.includes("--games-only")) return;
   const out = path.join(DATA, `rb_stats_${season}.json`);
-  fs.writeFileSync(out, `${JSON.stringify(stats, null, 1)}\n`);
+  writeAtomic(out, `${JSON.stringify(stats, null, 1)}\n`);
   console.log(`wrote ${path.relative(process.cwd(), out)}: ${stats.rows.length} backs through week ${stats.week}`);
 }
 
