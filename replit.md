@@ -240,11 +240,6 @@ _Replace the heading above with the project's name, and this line with one sente
     read, joined once per page in `matchup/appearances.ts`. Everything about
     players comes from here: the stat tables, the fantasy scorings, snaps and
     share, and the takeaways.
-  - `matchup/fpa-delta.ts` — `fantasy_points_allowed_games`, re-ranked at two
-    cutoffs (weeks before the game, weeks through it) to give each defense a
-    before and an after. **Computed but not rendered**: `matchup-data.ts` still
-    queries it for every final game, and no block on the page shows it. Either
-    render it or drop the query. The FPA ingest clears its cache.
 
   **Sorting.** The five player tables (the four stat tables and the usage
   table) carry `data-sct-sortable`; `wireSortableTables()` in
