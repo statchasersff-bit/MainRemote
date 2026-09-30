@@ -23,8 +23,13 @@ const FPA_MAX_AGE_MS = 8 * DAY_MS;
 const DAILY_MAX_AGE_MS = 30 * 60 * 60 * 1000;
 const PROCESS_STARTED_MS = Date.now();
 
-/** September through January: the weeks FPA is expected to move. */
-function fpaInSeason(nowMs: number): boolean {
+/**
+ * September through January: the weeks FPA and the nflverse steps are
+ * expected to move. From March to August the advanced stats, handcuff stats
+ * and ownership steps fail every day by design (docs/SEASON-ROLLOVER.md), and
+ * a monitor paging on that all offseason would be ignored by September.
+ */
+function inSeason(nowMs: number): boolean {
   const month = new Date(nowMs).getUTCMonth();
   return month >= 8 || month === 0;
 }
@@ -52,7 +57,7 @@ router.get("/data/health", (_req, res) => {
     try {
       const fpa = await fpaSnapshotState();
       fpaSnapshotAt = fpa.writtenAtMs === null ? null : new Date(fpa.writtenAtMs).toISOString();
-      if (fpaInSeason(nowMs)) {
+      if (inSeason(nowMs)) {
         if (fpa.writtenAtMs === null) {
           reasons.push(`no FPA snapshot for ${fpa.season}`);
         } else if (nowMs - fpa.writtenAtMs > FPA_MAX_AGE_MS) {
@@ -72,7 +77,9 @@ router.get("/data/health", (_req, res) => {
         reasons.push("daily data rebuild has not finished in 30 hours");
       }
       const failed = player.daily.steps.filter((step) => !step.ok).map((step) => step.name);
-      if (failed.length) reasons.push(`daily rebuild steps failed: ${failed.join(", ")}`);
+      if (failed.length && inSeason(nowMs)) {
+        reasons.push(`daily rebuild steps failed: ${failed.join(", ")}`);
+      }
       if (player.lastError) reasons.push(`game-log refresh failing: ${player.lastError.slice(0, 200)}`);
     }
 

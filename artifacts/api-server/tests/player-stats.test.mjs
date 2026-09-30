@@ -78,14 +78,21 @@ describe("the data module", () => {
   test("discovers the seasons and the multi-season table", () => {
     assert.deepEqual(mod.getStatsSeasons(), [2023, 2024, 2025, 2026, "all"]);
     assert.equal(mod.defaultSeason(), 2026);
-    // The season in progress is not in the multi-season table.
+    // The span the multi-season table holds, read off its rows: 2026 is not
+    // in it, whether or not 2026 has finished.
     assert.equal(mod.seasonLabel("all"), "2023-2025");
   });
 
-  test("a season in progress shrinks its floors to the weeks played", () => {
+  test("a season in progress shrinks its floors to the weeks played", (t) => {
     const qb = mod.getStatsTable("QB", 2026);
+    // Past week 17 2026 is a finished season, and there is no season in
+    // progress left to test this on until the next one starts.
+    if (qb.week >= 17) {
+      t.skip("2026 is finished");
+      return;
+    }
     const scale = Math.min(1, qb.week / 17);
-    assert.ok(qb.week >= 1 && qb.week < 17, `2026 runs through week ${qb.week}`);
+    assert.ok(qb.week >= 1, `2026 runs through week ${qb.week}`);
     assert.deepEqual(qb.defaults, mod.defaultThresholds("QB", false, scale));
     assert.equal(qb.defaults.minPassAtt, Math.ceil(50 * scale));
     assert.match(qb.lsFooter, new RegExp(`under ${Math.ceil(5 * scale)} G / ${Math.ceil(100 * scale)} Att`));
