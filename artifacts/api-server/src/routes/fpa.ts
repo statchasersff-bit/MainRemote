@@ -37,6 +37,7 @@ import {
   type FpaQuery,
 } from "../lib/fpa/fpa-data";
 import { refreshFpa } from "../lib/fpa/refresh";
+import { requireIngestSecret } from "../lib/ingest-auth";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -285,16 +286,11 @@ router.get("/embed/fpa", (req, res) => {
  *
  * Guarded by INGEST_SECRET exactly as POST /api/ingest is, and for a sharper
  * reason than that one has — each call costs two large fetches from nflverse,
- * so an open endpoint is a way to spend someone else's bandwidth. Unset means
- * the operator has decided this deployment is not exposed.
+ * so an open endpoint is a way to spend someone else's bandwidth. Unset refuses.
  */
 router.post("/api/fpa/ingest", (req, res) => {
   void (async () => {
-    const secret = process.env["INGEST_SECRET"];
-    if (secret && req.get("x-ingest-secret") !== secret) {
-      res.status(401).json({ ok: false, error: "unauthorized" });
-      return;
-    }
+    if (!requireIngestSecret(req, res)) return;
 
     // Both optional, and both plausibility-checked like the page's. They exist
     // for the week either season rolls over, when the answer is one run with

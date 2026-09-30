@@ -197,6 +197,42 @@ describe("push mode", () => {
     const res = await ingest({ items: [{ id: "test:nope", title: "nope" }] }, null);
     assert.equal(res.status, 401);
   });
+
+  test("a pull without the secret is refused too", async () => {
+    const res = await ingest(undefined, null);
+    assert.equal(res.status, 401);
+  });
+});
+
+describe("a server with no INGEST_SECRET", () => {
+  test("refuses every write instead of leaving it open", async () => {
+    // These used to treat "no secret" as "not exposed" and let anyone in.
+    const open = await startServer({
+      DYNASTY_NEWS_API_URL: `http://127.0.0.1:${working.server.address().port}/news`,
+      INGEST_SECRET: "",
+    });
+    try {
+      for (const [method, route] of [
+        ["POST", "/api/ingest"],
+        ["POST", "/api/ingest/clubs"],
+        ["POST", "/api/fpa/ingest"],
+        ["POST", "/api/x/ingest"],
+        ["POST", "/api/x/posts"],
+        ["POST", "/api/x/accounts"],
+        ["DELETE", "/api/x/accounts/sc_test_nobody"],
+      ]) {
+        const res = await fetch(`${open.origin}${route}`, {
+          method,
+          headers: { "Content-Type": "application/json", "x-ingest-secret": "anything" },
+          body: method === "POST" ? "{}" : undefined,
+        });
+        assert.equal(res.status, 503, `${method} ${route}`);
+        assert.match((await res.json()).error, /INGEST_SECRET is not configured/);
+      }
+    } finally {
+      await open.stop();
+    }
+  });
 });
 
 describe("a feed that answers 200 with nothing", () => {

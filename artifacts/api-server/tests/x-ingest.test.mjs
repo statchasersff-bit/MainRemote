@@ -28,6 +28,10 @@ const LIMITED = "sc_test_429";
 
 const ALL = [REPORTER, QUIET, BROKEN, MALFORMED, DISABLED, LIMITED];
 
+const SECRET = "x-test-secret";
+/** Every write needs it: the guard refuses when the server has none, too. */
+const AUTH = { "x-ingest-secret": SECRET };
+
 /** Ids in a range no real post will ever have. */
 const ID = {
   original: "9900000000000000001",
@@ -121,7 +125,7 @@ const POSTS = [
 ];
 
 async function sweep() {
-  const res = await fetch(`${server.origin}/api/x/ingest`, { method: "POST" });
+  const res = await fetch(`${server.origin}/api/x/ingest`, { method: "POST", headers: AUTH });
   // Read once: a failing sweep's body is the diagnostic, and a Response body
   // cannot be consumed twice.
   const body = await res.text();
@@ -215,7 +219,7 @@ before(async () => {
     X_POLL_REQUEST_GAP_MS: "0",
     X_RATE_LIMIT_COOLDOWN_MS: "60000",
     X_WEBHOOK_SECRET: "webhook-test-key",
-    INGEST_SECRET: "",
+    INGEST_SECRET: SECRET,
   });
 });
 
@@ -351,8 +355,8 @@ describe("the same post, seen again", () => {
     // UPDATE and x_posts.post_id is a primary key — but this is the layer that
     // stops the work from being started twice in the first place.
     const [a, b] = await Promise.all([
-      fetch(`${server.origin}/api/x/ingest`, { method: "POST" }),
-      fetch(`${server.origin}/api/x/ingest`, { method: "POST" }),
+      fetch(`${server.origin}/api/x/ingest`, { method: "POST", headers: AUTH }),
+      fetch(`${server.origin}/api/x/ingest`, { method: "POST", headers: AUTH }),
     ]);
 
     const codes = [a.status, b.status].sort();
@@ -382,7 +386,7 @@ describe("the same post, seen again", () => {
       X_POLL_REQUEST_GAP_MS: "0",
       X_RATE_LIMIT_COOLDOWN_MS: "60000",
       X_WEBHOOK_SECRET: "webhook-test-key",
-      INGEST_SECRET: "",
+      INGEST_SECRET: SECRET,
     });
 
     const result = await sweep();
@@ -472,7 +476,7 @@ describe("the admin surface", () => {
   test("an account can be added, changed and removed without a deploy", async () => {
     const added = await fetch(`${server.origin}/api/x/accounts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH },
       body: JSON.stringify({ username: "@SC_Test_Added", priority: "high" }),
     }).then((r) => r.json());
 
@@ -485,7 +489,7 @@ describe("the admin surface", () => {
 
     const patched = await fetch(`${server.origin}/api/x/accounts/sc_test_added`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH },
       body: JSON.stringify({ includeReplies: true, enabled: false }),
     }).then((r) => r.json());
 
@@ -494,6 +498,7 @@ describe("the admin surface", () => {
 
     const removed = await fetch(`${server.origin}/api/x/accounts/sc_test_added`, {
       method: "DELETE",
+      headers: AUTH,
     }).then((r) => r.json());
     assert.equal(removed.ok, true);
 
@@ -506,7 +511,7 @@ describe("the admin surface", () => {
   test("a bad handle is refused rather than stored", async () => {
     const res = await fetch(`${server.origin}/api/x/accounts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH },
       body: JSON.stringify({ username: "not a handle!" }),
     });
     assert.equal(res.status, 400);
@@ -530,7 +535,7 @@ describe("posts pushed in from elsewhere", () => {
     ...overrides,
   });
 
-  async function push(body, headers = {}) {
+  async function push(body, headers = AUTH) {
     const res = await fetch(`${server.origin}/api/x/posts`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
@@ -658,15 +663,11 @@ describe("posts pushed in from elsewhere", () => {
   });
 
   test("the push route is guarded like every other write", async () => {
-    // INGEST_SECRET is unset for this run, which is the open configuration the
-    // existing ingest endpoints also allow. What matters is that the guard is
-    // the SAME one — a secret set here would apply to this route too.
-    const status = await fetch(`${server.origin}/api/x/status`).then((r) =>
-      r.json(),
-    );
-    assert.equal(status.enabled, true);
+    const posts = [pushed({ id: "9910000000000000005" })];
+    assert.equal((await push({ posts }, {})).status, 401);
+    assert.equal((await push({ posts }, { "x-ingest-secret": "wrong" })).status, 401);
 
-    const { body } = await push({ posts: [pushed({ id: "9910000000000000005" })] });
+    const { body } = await push({ posts });
     assert.equal(body.stored, 1);
   });
 });
@@ -833,7 +834,7 @@ describe("being rate limited", () => {
   test("pauses the whole poller, not just the account that got the 429", async () => {
     await fetch(`${server.origin}/api/x/accounts/${LIMITED}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH },
       body: JSON.stringify({ enabled: true }),
     });
 

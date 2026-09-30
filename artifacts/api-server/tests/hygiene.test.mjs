@@ -32,10 +32,20 @@ describe("canonical URLs", () => {
   test("a trusted forwarded host is still used", async () => {
     const html = await (
       await fetch(`${server.origin}/schedule`, {
-        headers: { "X-Forwarded-Host": "newsfeed.replit.app", "X-Forwarded-Proto": "https" },
+        headers: { "X-Forwarded-Host": "news.statchasers.com", "X-Forwarded-Proto": "https" },
       })
     ).text();
-    assert.equal(canonical(html), "https://newsfeed.replit.app/schedule");
+    assert.equal(canonical(html), "https://news.statchasers.com/schedule");
+  });
+
+  test("a *.replit.app host is not trusted just for being on Replit", async () => {
+    // Anyone can register one. Only this Repl's own REPLIT_DOMAINS are believed.
+    const html = await (
+      await fetch(`${server.origin}/schedule`, {
+        headers: { "X-Forwarded-Host": "someone-else.replit.app", "X-Forwarded-Proto": "https" },
+      })
+    ).text();
+    assert.ok(!canonical(html).includes("someone-else"), canonical(html));
   });
 
   test("the path is lower-cased, so /Schedule is not its own canonical", async () => {

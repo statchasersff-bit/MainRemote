@@ -31,12 +31,19 @@ export function publicOrigin(req: Request): string {
 /**
  * Hosts this app is published at. `PUBLIC_HOSTS` (comma-separated, `*.` for
  * subdomains) replaces the default list for a deployment behind another name.
+ *
+ * The default names this Repl's own domains exactly, from `REPLIT_DOMAINS`, and
+ * never `*.replit.app` or `*.replit.dev`: anyone can register a name under
+ * those, and a forwarded host we believe ends up in cached markup.
  */
 function trustedHost(host: string): boolean {
   const bare = host.toLowerCase().replace(/:\d+$/, "");
   const patterns = (
     process.env["PUBLIC_HOSTS"]?.trim() ||
-    "*.replit.app,*.replit.dev,*.repl.co,statchasers.com,*.statchasers.com,localhost,127.0.0.1"
+    [
+      process.env["REPLIT_DOMAINS"] ?? "",
+      "statchasers.com,*.statchasers.com,localhost,127.0.0.1",
+    ].join(",")
   )
     .split(",")
     .map((p) => p.trim().toLowerCase())

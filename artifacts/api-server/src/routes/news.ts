@@ -16,6 +16,7 @@ import { fpaRefreshStatus } from "../lib/fpa/refresh";
 import { playerRefreshStatus } from "../lib/player/live-refresh";
 import { loadGameLogs } from "../lib/player/data";
 import { seasonYear } from "../lib/seo";
+import { requireIngestSecret } from "../lib/ingest-auth";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -877,31 +878,13 @@ export async function storeItems(
  * headlines on the page.
  */
 router.post("/ingest", async (req, res) => {
-  // Opt-in guard: when INGEST_SECRET is set, callers must present it. Keeps the
-  // externally-triggerable ingest endpoint from being abused. No secret = open.
-  const secret = process.env["INGEST_SECRET"];
-  if (secret && req.get("x-ingest-secret") !== secret) {
-    res.status(401).json({ ok: false, error: "unauthorized" });
-    return;
-  }
+  if (!requireIngestSecret(req, res)) return;
 
   // An empty body is the pull mode this endpoint has always had; only a body
   // that actually carries items switches modes, so existing callers (and the
   // scheduled trigger) are unaffected.
   const pushed = coerceItems(req.body);
   const mode = pushed.length > 0 ? "push" : "pull";
-
-  if (secret === undefined && mode === "push") {
-    // Refusing rather than accepting: pull mode only ever stores what the
-    // configured feed served, so leaving it open is a throttling question. Push
-    // mode stores whatever the caller sent, which is a different kind of risk
-    // and must not be available anonymously by default.
-    res.status(401).json({
-      ok: false,
-      error: "push mode requires INGEST_SECRET to be configured on the server",
-    });
-    return;
-  }
 
   try {
     const result = await runIngest(mode === "push" ? pushed : undefined);
@@ -926,11 +909,7 @@ router.post("/ingest", async (req, res) => {
  * that endpoint's guard exists to prevent.
  */
 router.post("/ingest/clubs", async (req, res) => {
-  const secret = process.env["INGEST_SECRET"];
-  if (secret && req.get("x-ingest-secret") !== secret) {
-    res.status(401).json({ ok: false, error: "unauthorized" });
-    return;
-  }
+  if (!requireIngestSecret(req, res)) return;
 
   try {
     const result = await runClubIngest();

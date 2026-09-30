@@ -18,6 +18,7 @@
 import { Router, type Request, type Response } from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { requireIngestSecret } from "../lib/ingest-auth";
 import { eq } from "drizzle-orm";
 import { db, xMonitoredAccounts } from "@workspace/db";
 import { logger } from "../lib/logger";
@@ -56,25 +57,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router: Router = Router();
 
-/**
- * The write guard.
- *
- * When INGEST_SECRET is unset the endpoints are open, which matches how
- * POST /api/ingest already behaves in that configuration — the operator has
- * decided this deployment is not exposed. When it IS set, every write needs it,
- * including from the admin page, which asks for it once and keeps it in
- * sessionStorage.
- */
-function authorized(req: Request): boolean {
-  const secret = process.env["INGEST_SECRET"];
-  if (!secret) return true;
-  return req.get("x-ingest-secret") === secret;
-}
-
-function deny(res: Response): void {
-  res.status(401).json({ ok: false, error: "unauthorized" });
-}
-
 /** Booleans arrive from JSON and from a form; accept both, reject neither. */
 function boolField(value: unknown): boolean | undefined {
   if (typeof value === "boolean") return value;
@@ -112,7 +94,7 @@ router.get("/api/x/accounts", (_req, res) => {
 /** POST /api/x/accounts — add a reporter. No deploy required, which is the point. */
 router.post("/api/x/accounts", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
 
     const body = (req.body ?? {}) as Record<string, unknown>;
     const username = normalizeHandle(String(body["username"] ?? ""));
@@ -167,7 +149,7 @@ router.post("/api/x/accounts", (req, res) => {
 /** PATCH /api/x/accounts/:username — enable, re-prioritise, toggle post kinds. */
 router.patch("/api/x/accounts/:username", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
 
     const username = normalizeHandle(String(req.params["username"] ?? ""));
     const body = (req.body ?? {}) as Record<string, unknown>;
@@ -247,7 +229,7 @@ router.patch("/api/x/accounts/:username", (req, res) => {
  */
 router.delete("/api/x/accounts/:username", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
 
     const username = normalizeHandle(String(req.params["username"] ?? ""));
 
@@ -273,7 +255,7 @@ router.delete("/api/x/accounts/:username", (req, res) => {
 /** POST /api/x/accounts/seed — re-apply the seed list. Additive; never updates. */
 router.post("/api/x/accounts/seed", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
     try {
       res.json({ ok: true, added: await seedAccounts() });
     } catch (err) {
@@ -291,7 +273,7 @@ router.post("/api/x/accounts/seed", (req, res) => {
  */
 router.post("/api/x/ingest", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
 
     if (!xIngestionEnabled()) {
       res.status(409).json({
@@ -350,7 +332,7 @@ router.post("/api/x/ingest", (req, res) => {
  */
 router.post("/api/x/posts", (req, res) => {
   void (async () => {
-    if (!authorized(req)) return deny(res);
+    if (!requireIngestSecret(req, res)) return;
 
     const body = req.body as unknown;
     const raw = Array.isArray(body)

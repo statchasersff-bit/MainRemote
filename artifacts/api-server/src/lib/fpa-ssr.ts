@@ -109,6 +109,10 @@ function optionKey(query: FpaQuery, options: FpaRenderOptions): string {
     options.basePath ?? "",
     options.teamPathPrefix ?? "",
     options.linkQuery ?? "",
+    // Both are the request's origin, printed into the markup. Leaving them out
+    // served the first caller's origin to everyone.
+    options.endpoint ?? "",
+    options.csvBase ?? "",
   ]);
 }
 
