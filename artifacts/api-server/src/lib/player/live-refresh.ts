@@ -45,7 +45,13 @@
  *   2. ownership — buildRosterPct.mjs (Sleeper);
  *   3. RB handcuffs — refresh.mjs (Ourlads depth, Sleeper age and injury), then
  *      buildStats.mjs (nflverse);
- *   4. advanced stats — player-stats/buildSeason.mjs (nflverse).
+ *   4. advanced stats — player-stats/buildSeason.mjs (nflverse), twice: once
+ *      for [statchasers_player_stats] (data/player-stats) and once, with
+ *      --dir, for the player pages' Advanced tab (data/player/advanced_stats).
+ *      The two directories hold differently shaped tables, so neither is a
+ *      copy of the other. The Stats tab reads LAST season's advanced card
+ *      from the second (stats-tab-data.ts), so a season never built there
+ *      leaves next year's card empty.
  *
  * Each step is independent of the ones after it, except the signings chain,
  * which stops at its first failure. The nflverse builders never write fewer
@@ -260,6 +266,11 @@ export function refreshDailyData(): Promise<void> {
       await step("handcuff depth", "rb-handcuffs/refresh.mjs");
       await step("handcuff stats", "rb-handcuffs/buildStats.mjs", [season]);
       await step("advanced stats", "player-stats/buildSeason.mjs", [season]);
+      await step("player advanced stats", "player-stats/buildSeason.mjs", [
+        season,
+        "--dir",
+        dataPath("player", "advanced_stats"),
+      ]);
 
       reloadPlayerStats();
       invalidateStatsCache();

@@ -325,6 +325,7 @@ export function gameLogUpdatedMs(season: number): number | null {
 }
 
 let seasonsCache: number[] | null = null;
+let advancedSeasonsCache: number[] | null = null;
 
 /** Seasons with a game-log file, newest first. */
 export function getAvailableSeasons(): number[] {
@@ -496,6 +497,29 @@ export function loadAdvancedStats(
   return value;
 }
 
+/**
+ * Seasons with an advanced-stats table on disk, newest first.
+ *
+ * Not the game-log seasons: those go back to 2009 and the advanced tables to
+ * 2023, so checking `?adv=` against the logs let `?adv=2012` blank the tab.
+ */
+export function getAdvancedTableSeasons(): number[] {
+  if (advancedSeasonsCache) return advancedSeasonsCache;
+  let names: string[] = [];
+  try {
+    names = fs.readdirSync(ADVANCED_DIR);
+  } catch {
+    // No directory: no advanced seasons, and the tab is left out.
+  }
+  const years = new Set<number>();
+  for (const name of names) {
+    const year = /^[a-z]+_(\d{4})\.json$/.exec(name)?.[1];
+    if (year) years.add(Number(year));
+  }
+  advancedSeasonsCache = [...years].sort((a, b) => b - a);
+  return advancedSeasonsCache;
+}
+
 /* ----------------------------------------------------------------- versioning */
 
 let stamp: string | null = null;
@@ -554,6 +578,7 @@ export function resetPlayerData(): void {
   advancedCache.clear();
   indexedCache = null;
   seasonsCache = null;
+  advancedSeasonsCache = null;
   stamp = null;
   warned.clear();
   for (const reset of lazyResets) reset();

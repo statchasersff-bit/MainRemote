@@ -37,6 +37,7 @@ import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import {
+  getAdvancedTableSeasons,
   getAvailableSeasons,
   previousSlugsFor,
   resolveSlugAlias,
@@ -205,7 +206,7 @@ function section(req: Request): string | undefined {
 function advancedSeason(req: Request): number | undefined {
   const raw = Number.parseInt(String(req.query["adv"] ?? ""), 10);
   if (!Number.isFinite(raw)) return undefined;
-  return getAvailableSeasons().includes(raw) ? raw : undefined;
+  return getAdvancedTableSeasons().includes(raw) ? raw : undefined;
 }
 
 /**
