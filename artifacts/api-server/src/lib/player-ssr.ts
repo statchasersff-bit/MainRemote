@@ -30,6 +30,7 @@ import {
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
+import { LruCache } from "./lru";
 
 export interface PlayerSsrResult {
   html: string;
@@ -40,8 +41,8 @@ export interface PlayerSsrResult {
   name: string;
 }
 
-const fragmentCache = new Map<string, PlayerSsrResult>();
 const FRAGMENT_CACHE_MAX = 256;
+const fragmentCache = new LruCache<PlayerSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidatePlayerRenderCache(): void {
   fragmentCache.clear();
@@ -119,11 +120,6 @@ async function renderWithData(
     season: data.season,
     name: data.player.name,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return { result, data };
 }

@@ -41,6 +41,7 @@ import {
   type FpaTableData,
 } from "./fpa/fpa-data";
 import { fpaPageMeta, renderFpaHeadTags } from "./fpa-seo";
+import { LruCache } from "./lru";
 
 export interface FpaSsrResult {
   html: string;
@@ -50,8 +51,8 @@ export interface FpaSsrResult {
   data: FpaTableData | null;
 }
 
-const fragmentCache = new Map<string, FpaSsrResult>();
 const FRAGMENT_CACHE_MAX = 24;
+const fragmentCache = new LruCache<FpaSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateFpaRenderCache(): void {
   fragmentCache.clear();
@@ -140,11 +141,6 @@ export async function renderFpaFragment(
     version,
     data,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }

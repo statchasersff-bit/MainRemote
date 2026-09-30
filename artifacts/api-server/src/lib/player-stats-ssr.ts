@@ -29,6 +29,7 @@ import {
   type StatsTable,
 } from "./player-stats/stats-data";
 import { renderStatsHeadTags, statsPageMeta } from "./player-stats-seo";
+import { LruCache } from "./lru";
 
 export interface StatsSsrResult {
   html: string;
@@ -38,8 +39,8 @@ export interface StatsSsrResult {
   table: StatsTable | null;
 }
 
-const fragmentCache = new Map<string, StatsSsrResult>();
 const FRAGMENT_CACHE_MAX = 32;
+const fragmentCache = new LruCache<StatsSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateStatsRenderCache(): void {
   fragmentCache.clear();
@@ -93,11 +94,6 @@ export function renderStatsFragment(
     version,
     table,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }

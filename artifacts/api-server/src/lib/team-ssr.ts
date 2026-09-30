@@ -21,6 +21,7 @@ import { renderTeamPage, type TeamRenderOptions } from "./team-render";
 import { dataVersion, getTeamPageData } from "./team/team-data";
 import { renderTeamHeadTags, teamPageMeta } from "./team-seo";
 import type { NflTeam } from "./team/teams";
+import { LruCache } from "./lru";
 
 export interface TeamSsrResult {
   html: string;
@@ -30,12 +31,12 @@ export interface TeamSsrResult {
 }
 
 /**
- * Bounded fragment cache. 32 teams x two option sets (embedded and not) is the
- * realistic ceiling, so the bound is really a guard against an unexpected
- * option combination rather than a working constraint.
+ * Bounded fragment cache. The key space is about 830 (32 teams x sections x
+ * embed x h1) at ~200 KB each, too much to hold whole; 256 covers every
+ * team's WordPress variants, and LRU keeps those while a crawl walks the rest.
  */
-const fragmentCache = new Map<string, TeamSsrResult>();
-const FRAGMENT_CACHE_MAX = 96;
+const FRAGMENT_CACHE_MAX = 256;
+const fragmentCache = new LruCache<TeamSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateTeamRenderCache(): void {
   fragmentCache.clear();
@@ -85,11 +86,6 @@ export async function renderTeamFragment(
     version,
     season: data.state.season,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }

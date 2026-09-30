@@ -25,6 +25,7 @@ import {
 import { scoreboardHeading } from "./scoreboard-hero";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import type { MatchupPair } from "./pair";
+import { LruCache } from "../lru";
 
 export interface MatchupSsrResult {
   html: string;
@@ -66,8 +67,8 @@ export interface MatchupSsrResult {
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
-const fragmentCache = new Map<string, MatchupSsrResult>();
 const FRAGMENT_CACHE_MAX = 512;
+const fragmentCache = new LruCache<MatchupSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateMatchupRenderCache(): void {
   fragmentCache.clear();
@@ -126,10 +127,6 @@ async function renderWithData(
     heading: pageHeadingFor(data),
     title: matchupPageMeta(data, "").title,
   };
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return { result, data };
 }

@@ -29,6 +29,7 @@ import {
 } from "./rankings-render";
 import { getRankings, type RankingsData } from "./rankings/rankings-data";
 import { rankingsPageMeta, renderRankingsHeadTags } from "./rankings-seo";
+import { LruCache } from "./lru";
 
 export interface RankingsSsrResult {
   html: string;
@@ -38,8 +39,8 @@ export interface RankingsSsrResult {
   data: RankingsData | null;
 }
 
-const fragmentCache = new Map<string, RankingsSsrResult>();
 const FRAGMENT_CACHE_MAX = 16;
+const fragmentCache = new LruCache<RankingsSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateRankingsRenderCache(): void {
   fragmentCache.clear();
@@ -88,11 +89,6 @@ export function renderRankingsFragment(
     version,
     data,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }
