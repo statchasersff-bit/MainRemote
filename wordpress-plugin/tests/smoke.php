@@ -448,6 +448,28 @@ echo "\nmatchup headings\n";
 $GLOBALS['query']['sc_matchup'] = 'new-england-patriots-vs-philadelphia-eagles';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles', 'pair' );
 
+echo "\nmatchup recap: description, share image and video from the API\n";
+$GLOBALS['query']['sc_matchup']      = 'arizona-cardinals-vs-los-angeles-rams';
+$GLOBALS['query']['sc_matchup_game'] = '2021-wild-card';
+$GLOBALS['http_body']    = '<div>page</div><script type="application/json" class="sct-matchup-video-data">{"@type":"VideoObject","name":"Highlights","thumbnailUrl":"https://i.ytimg.com/vi/x/hqdefault.jpg","uploadDate":"2022-01-18"}</script>';
+$GLOBALS['http_headers'] = array(
+	'x-matchup-description' => rawurlencode( 'Rams beat the Cardinals 34–11 at SoFi Stadium.' ),
+	'x-matchup-image'       => '/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png',
+	'x-matchup-image-alt'   => rawurlencode( 'Final score: Los Angeles Rams 34, Arizona Cardinals 11, 2021 Wild Card.' ),
+);
+$share = statchasers_matchup_share_image();
+is( $share['url'] ?? '', 'https://api.example.com/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png', 'the image is absolute, on the API origin' );
+is( array( $share['width'] ?? 0, $share['height'] ?? 0 ), array( 1200, 630 ), 'at 1200 x 630' );
+is( $share['alt'] ?? '', 'Final score: Los Angeles Rams 34, Arizona Cardinals 11, 2021 Wild Card.', 'with its alt text' );
+is( statchasers_matchup_request_meta()['description'] ?? '', 'Rams beat the Cardinals 34–11 at SoFi Stadium.', "the API's description wins" );
+is( statchasers_matchup_video_node()['@type'] ?? '', 'VideoObject', 'the video island becomes a node' );
+is( false !== strpos( statchasers_matchup_strip_event_data( $GLOBALS['http_body'] ), 'sct-matchup-video-data' ), false, 'and leaves the printed page' );
+$GLOBALS['http_headers']['x-matchup-image'] = 'https://evil.example/x.png';
+is( statchasers_matchup_share_image(), null, 'only an /og/ path is taken' );
+unset( $GLOBALS['query']['sc_matchup_game'] );
+$GLOBALS['http_headers'] = array();
+$GLOBALS['http_body']    = '';
+
 echo "\nplayer meta mirrors the shell script\n";
 $meta = statchasers_player_page_meta( array(
 	'slug' => 'kyler-murray', 'name' => 'Kyler Murray', 'position' => 'QB',

@@ -83,10 +83,12 @@ Until it moves, the daily **handcuff stats** step keeps rebuilding `rb_stats_202
 The matchup pages' all-time tiles read `artifacts/api-server/data/rivalry/all-time.json`, which holds complete seasons only (`throughSeason`); the season in progress comes from each page's own schedule. Once the Super Bowl is played, run from `artifacts/api-server`:
 
 ```
-node scripts/build-rivalry-history.mjs
+node scripts/build-rivalry-history.mjs --download
 ```
 
-It writes seasons through the one just finished and needs committing. A missed year loses nothing at first: the page counts any season after `throughSeason` from its own five-season window. After five missed years the oldest of those seasons fall out of that window and out of the tiles, so rebuild every year.
+`--download` refreshes the stored source files in `data/rivalry/source/` first, which is where the newly finished season comes from; without it the script rebuilds from the stored copies and reproduces the current file. Both the sources and the output need committing. A missed year loses nothing at first: the page counts any season after `throughSeason` from its own five-season window. After five missed years the oldest of those seasons fall out of that window and out of the tiles, so rebuild every year.
+
+The recaps' box scores are stored too, in `data/matchup/boxscores/<season>.json`, and production adds each week's games itself after every game window. A new season needs nothing: the builder starts its file after week 1. To fill a season by hand, `node scripts/matchup/buildBoxscores.mjs <season>`.
 
 ### 7. Advanced stats: two directories, and the multi-season tables
 

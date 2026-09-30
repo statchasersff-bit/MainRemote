@@ -11,6 +11,7 @@
 import { escapeHtml, escapeJsonLd } from "../render";
 import type { ScheduleGame } from "../team/schedule";
 import type { GameOdds } from "./boxscore";
+import { againstSpread, againstTotal, type BettingSeason, type SeasonGame, type Tally3 } from "./season-data";
 import type { GameVideo } from "./game-notes";
 import { superBowlNumeral } from "./recap";
 import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
@@ -90,13 +91,17 @@ function opponentName(g: ScheduleGame): string {
   return g.opponent?.nickname ?? g.opponentName;
 }
 
-/** "Week 18: L 24–27 vs 49ers": the club's own score first. */
+/**
+ * "Week 18: L 24–27 vs 49ers": the club's own score first, the opponent by
+ * nickname, as the build spec writes it (7.3).
+ */
 export function gameLabel(g: ScheduleGame): string {
   const where = g.neutralSite ? "vs" : g.homeAway === "home" ? "vs" : "at";
+  const opp = g.opponent?.nickname ?? g.opponentName;
   if (g.result) {
-    return `${g.weekLabel}: ${g.result.outcome} ${g.result.teamScore}${DASH}${g.result.opponentScore} ${where} ${opponentName(g)}`;
+    return `${g.weekLabel}: ${g.result.outcome} ${g.result.teamScore}${DASH}${g.result.opponentScore} ${where} ${opp}`;
   }
-  return `${g.weekLabel}: ${where} ${opponentName(g)}`;
+  return `${g.weekLabel}: ${where} ${opp}`;
 }
 
 export interface SeasonSide {
@@ -207,6 +212,12 @@ export interface BeforeAfterSide {
   next: GameRef | null;
 }
 
+/** The club's game after this one, or null once its season is over. */
+export function gameAfter(side: SeasonSide, game: ScoreboardGame): ScheduleGame | null {
+  const { list, index } = position(side, game);
+  return index < 0 ? null : (list[index + 1] ?? null);
+}
+
 /** Each club's game before this one and after it, from its schedule. */
 export function beforeAfter(
   side: SeasonSide,
@@ -246,27 +257,38 @@ export function renderBeforeAfter(game: ScoreboardGame, sides: BeforeAfterSide[]
 
 /* --------------------------------------------------------------- highlights */
 
+/**
+ * The highlights: a click-to-load box. The server sends the thumbnail and a
+ * button, never an iframe; client/team.ts swaps the button for the
+ * youtube-nocookie player when it is pressed, so nothing from YouTube loads
+ * until then. Without scripting the <noscript> link goes to YouTube, and the
+ * note under the box links there too, for a player an embed is refused in.
+ */
 export function renderHighlights(game: ScoreboardGame, video: GameVideo | null): string {
   if (!video || !/^[\w-]{6,20}$/.test(video.youtubeId)) return "";
   const colors = pairColors(game.away.abbr, game.home.abbr);
   const round = game.roundLabel.replace(/^(AFC|NFC)\s+/, "");
   const id = encodeURIComponent(video.youtubeId);
   const watch = `https://www.youtube.com/watch?v=${id}`;
+  const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+  const frameTitle = `${video.title} (YouTube video player)`;
   return (
     `<section class="sct-rb-section sct-hl" aria-labelledby="highlights">` +
     `<h2 class="sct-rb-h2" id="highlights">${escapeHtml(`${game.away.short} vs ${game.home.short} highlights`)}</h2>` +
     `<p class="sct-rb-sub">${escapeHtml(`Official ${video.publisher} highlights from the ${game.seasonLabel} ${round} game.`)}</p>` +
     `<div class="sct-hl-box" style="--hl-a:${colors.away.fill};--hl-b:${colors.home.fill}">` +
-    `<button type="button" class="sct-hl-play" data-yt="${escapeHtml(video.youtubeId)}" ` +
-    `data-yt-title="${escapeHtml(video.title)}" aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +
+    `<button type="button" class="sct-hl-play" data-hl-embed="${escapeHtml(embed)}" data-hl-title="${escapeHtml(frameTitle)}" ` +
+    `aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +
     `<img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy" decoding="async" width="480" height="360" ` +
-    `data-hl-thumb>` +
+    `data-hl-thumb onerror="this.remove()">` +
     `<span class="sct-hl-icon" aria-hidden="true"></span>` +
     `<span class="sct-hl-caption">${escapeHtml(video.title)}</span>` +
     `</button>` +
-    `<noscript><a class="sct-hl-fallback" href="${escapeHtml(watch)}">${escapeHtml(`Watch "${video.title}" on YouTube`)}</a></noscript>` +
+    `<noscript><a class="sct-hl-noscript" href="${escapeHtml(watch)}">${escapeHtml(`Watch on YouTube: ${video.title}`)}</a></noscript>` +
     `</div>` +
-    `<p class="sct-rb-note">${escapeHtml(`Video from the ${video.publisher}'s official YouTube channel. It loads only when you press play.`)}</p>` +
+    `<p class="sct-rb-note">${escapeHtml(
+      `Video from the ${video.publisher}'s official YouTube channel. It loads only when you press play. Not playing? `,
+    )}<a href="${escapeHtml(watch)}" target="_blank" rel="noopener">Watch on YouTube</a>.</p>` +
     `</section>`
   );
 }
@@ -299,46 +321,85 @@ function trim(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-export function renderBetting(game: ScoreboardGame, odds: GameOdds | null): string {
+/** One club's next game for "Next up": the label, its page, and its line when the feed has one. */
+export interface BettingNext {
+  /** "Rams at Buccaneers, Divisional". */
+  label: string;
+  url: string | null;
+  /** "TB −3", or "Pick'em"; null when there is no line. */
+  line: string | null;
+}
+
+/** What the Betting tab reads beyond the game's own closing line. */
+export interface BettingExtras {
+  /** The pair's stored meetings with lines, newest first, this one included. */
+  meetings: SeasonGame[];
+  /** Each club's season against the lines through this game, by abbr. */
+  seasons: Record<string, BettingSeason | null>;
+  /** Each club's next game by abbr; null once its season is over. */
+  next: Record<string, BettingNext | null>;
+}
+
+function record3(t: Tally3): string {
+  return `${t.a}${DASH}${t.b}${t.push ? `${DASH}${t.push}` : ""}`;
+}
+
+/** "SEA −3", or "Pick'em". */
+export function spreadLabel(odds: GameOdds): string {
+  return odds.favorite && odds.line > 0 ? `${odds.favorite} ${MINUS}${trim(odds.line)}` : "Pick'em";
+}
+
+/**
+ * The Betting tab: how the game finished against the closing lines, the
+ * implied team totals, the pair's and each club's record against the lines,
+ * each club's next game, and the fine print. Results only — no picks, no
+ * sportsbook links. Empty (and the tab left out) without a closing spread and
+ * total, or with the site-wide switch off.
+ */
+export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extras?: BettingExtras | null): string {
   const result = scoreboardResult(game);
-  if (!odds || !result || !bettingEnabled()) return "";
+  if (!odds || !result || !bettingEnabled() || odds.total === null) return "";
+  if (odds.favorite === null && odds.line !== 0) return "";
+  const colors = pairColors(game.away.abbr, game.home.abbr);
+  const pickem = odds.favorite === null || odds.line === 0;
+  const fav = pickem ? null : odds.favorite === game.home.abbr ? "home" : odds.favorite === game.away.abbr ? "away" : null;
+  if (!pickem && !fav) return "";
+
+  // A. Results against the lines.
   const tiles: Array<{ label: string; value: string; caption: string }> = [];
-  if (odds.favorite && odds.line > 0) {
-    const fav = odds.favorite === game.home.abbr ? "home" : odds.favorite === game.away.abbr ? "away" : null;
-    if (fav) {
-      const dog = fav === "home" ? "away" : "home";
-      const margin = result[fav] - result[dog];
-      const cover = margin - odds.line;
-      tiles.push({
-        label: "Closing spread",
-        value: `${game[fav].abbr} ${MINUS}${trim(odds.line)}`,
-        caption:
-          cover === 0
-            ? "Push"
-            : cover > 0
-              ? `${game[fav].short} covered by ${trim(cover)}`
-              : `${game[dog].short} covered by ${trim(-cover)}`,
-      });
-    }
-  } else if (odds.favorite === null && odds.line === 0 && odds.total === null) {
-    return "";
-  }
-  if (odds.total !== null) {
-    const points = result.away + result.home;
+  if (fav) {
+    const dog = fav === "home" ? "away" : "home";
+    const cover = result[fav] - result[dog] - odds.line;
     tiles.push({
-      label: "Closing total",
-      value: trim(odds.total),
+      label: "Spread",
+      value: spreadLabel(odds),
       caption:
-        points === odds.total
-          ? `Push: ${points} points scored`
-          : `${points > odds.total ? "Over" : "Under"}: ${points} points scored`,
+        cover === 0
+          ? "Push"
+          : cover > 0
+            ? `${game[fav].short} covered by ${trim(cover)}`
+            : `${game[fav].short} failed to cover by ${trim(-cover)}`,
+    });
+  } else {
+    const margin = result.home - result.away;
+    tiles.push({
+      label: "Spread",
+      value: "Pick'em",
+      caption: margin === 0 ? "Push" : `${game[margin > 0 ? "home" : "away"].short} won outright`,
     });
   }
-  if (tiles.length === 0) return "";
-  return (
-    `<section class="sct-rb-section sct-bet" aria-labelledby="betting">` +
-    `<h2 class="sct-rb-h2" id="betting">${escapeHtml(`${game.away.short} vs ${game.home.short} betting results`)}</h2>` +
-    `<p class="sct-rb-sub">How this game finished against the closing line.</p>` +
+  const points = result.away + result.home;
+  const off = Math.abs(points - odds.total);
+  tiles.push({
+    label: "Total",
+    value: trim(odds.total),
+    caption:
+      points === odds.total
+        ? `Push: ${points} points scored`
+        : `${points > odds.total ? "Over" : "Under"}: ${points} points scored (by ${trim(off)})`,
+  });
+
+  const tileHtml =
     `<dl class="sct-rb-alltime sct-bet-tiles">` +
     tiles
       .map(
@@ -348,8 +409,134 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null): stri
           `<span class="sct-rb-at-cap">${escapeHtml(t.caption)}</span></dd></div>`,
       )
       .join("") +
-    `</dl>` +
-    `<p class="sct-rb-note">Consensus closing lines; individual sportsbooks varied. 21+. Gambling problem? Call 1-800-GAMBLER.</p>` +
+    `</dl>`;
+
+  // Implied team totals: the favourite (total + spread) / 2, the underdog the rest.
+  const implied: Record<"away" | "home", number> = fav
+    ? {
+        [fav]: (odds.total + odds.line) / 2,
+        [fav === "home" ? "away" : "home"]: (odds.total - odds.line) / 2,
+      } as Record<"away" | "home", number>
+    : { away: odds.total / 2, home: odds.total / 2 };
+  const order: Array<"away" | "home"> = fav ? [fav, fav === "home" ? "away" : "home"] : ["away", "home"];
+  const diffs = order.map((k) => result[k] - implied[k]);
+  const signed = (n: number): string => (n > 0 ? `+${n.toFixed(1)}` : n < 0 ? `${MINUS}${Math.abs(n).toFixed(1)}` : "0.0");
+  const impliedTable =
+    `<h3 class="sct-rb-h3">Expected vs actual scoring</h3>` +
+    `<div class="sct-fp-wrap"><table class="sct-fp-table sct-bet-implied">` +
+    `<caption class="sct-rb-sr">Implied team totals against the actual score</caption>` +
+    `<thead><tr><th scope="col">Team</th><th scope="col">Implied</th><th scope="col">Actual</th><th scope="col">Difference</th></tr></thead><tbody>` +
+    order
+      .map((k, i) => {
+        const d = diffs[i]!;
+        return (
+          `<tr><th scope="row" class="sct-fp-player" style="color:${colors[k].ink}">${escapeHtml(game[k].short)}</th>` +
+          `<td>${implied[k].toFixed(1)}</td><td>${result[k]}</td>` +
+          `<td class="sct-fp-diff${d > 0 ? " is-pos" : d < 0 ? " is-neg" : ""}">${signed(d)}</td></tr>`
+        );
+      })
+      .join("") +
+    `</tbody></table></div>`;
+  const under = diffs.filter((d) => d < 0).length;
+  const over = diffs.filter((d) => d > 0).length;
+  const fantasyLink = `<a href="#fantasy">Fantasy tab</a>`;
+  const takeaway =
+    under === 2
+      ? `Both offenses finished under the market's expectation, which matches the low fantasy output in the ${fantasyLink}.`
+      : over === 2
+        ? `Both offenses beat the market's expectation, and the ${fantasyLink} shows who cashed in.`
+        : (() => {
+            const hi = order[diffs[0]! >= diffs[1]! ? 0 : 1]!;
+            const lo = hi === order[0] ? order[1]! : order[0]!;
+            return (
+              `${escapeHtml(`The ${game[hi].short} beat their implied total and the ${game[lo].short} fell short of theirs;`)} ` +
+              `the ${fantasyLink} has the player lines behind it.`
+            );
+          })();
+
+  // C. Trends.
+  let trends = "";
+  if (extras) {
+    const priced = extras.meetings.filter((g) => g.odds && g.odds.total !== null).slice(0, 6);
+    let seriesLine = "";
+    if (priced.length >= 2) {
+      const ats: Record<string, Tally3> = { [game.away.abbr]: { a: 0, b: 0, push: 0 }, [game.home.abbr]: { a: 0, b: 0, push: 0 } };
+      const ou: Tally3 = { a: 0, b: 0, push: 0 };
+      for (const g of priced) {
+        for (const club of [game.away.abbr, game.home.abbr]) {
+          const c = againstSpread(g, club);
+          if (c === "cover") ats[club]!.a += 1;
+          else if (c === "fail") ats[club]!.b += 1;
+          else if (c === "push") ats[club]!.push += 1;
+        }
+        const t = againstTotal(g);
+        if (t === "over") ou.a += 1;
+        else if (t === "under") ou.b += 1;
+        else if (t === "push") ou.push += 1;
+      }
+      const lead = ats[game.home.abbr]!.a > ats[game.away.abbr]!.a ? "home" : "away";
+      const ouWord = ou.a > ou.b ? `overs ${ou.a}${DASH}${ou.b}` : ou.b > ou.a ? `unders ${ou.b}${DASH}${ou.a}` : `overs and unders ${ou.a}${DASH}${ou.b}`;
+      seriesLine =
+        `<p>${escapeHtml(
+          `Last ${priced.length} meetings: ${game[lead].short} ${record3(ats[game[lead].abbr]!)} ATS, ${ouWord}${ou.push ? ` (${ou.push} push${ou.push === 1 ? "" : "es"})` : ""}.`,
+        )}</p>`;
+    }
+    const card = (k: "away" | "home"): string => {
+      const b = extras.seasons[game[k].abbr];
+      if (!b) return "";
+      const rows: Array<[string, string]> = [
+        ["Against the spread", record3(b.ats)],
+        ["Over/under", `${record3(b.ou)}`],
+      ];
+      if (b.atsFavorite.a + b.atsFavorite.b + b.atsFavorite.push) rows.push(["ATS as favorite", record3(b.atsFavorite)]);
+      if (b.atsUnderdog.a + b.atsUnderdog.b + b.atsUnderdog.push) rows.push(["ATS as underdog", record3(b.atsUnderdog)]);
+      rows.push([`ATS ${b.venue === "home" ? "at home" : "on the road"}`, record3(b.atsVenue)]);
+      return (
+        `<div class="sct-bet-card" style="--rb-team:${colors[k].ink}">` +
+        `<h4 class="sct-bet-card-name">${escapeHtml(game[k].name)}</h4>` +
+        `<dl class="sct-rb-dl">${rows.map(([dt, dd]) => `<dt>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd>`).join("")}</dl>` +
+        `</div>`
+      );
+    };
+    const cards = card("away") + card("home");
+    if (seriesLine || cards) {
+      trends =
+        `<h3 class="sct-rb-h3">Betting trends</h3>` +
+        seriesLine +
+        (cards
+          ? `<p class="sct-rb-sub">${escapeHtml(`Each team's ${game.seasonLabel} season through this game. Over/under is overs first.`)}</p>` +
+            `<div class="sct-bet-cards">${cards}</div>`
+          : "");
+    }
+  }
+
+  // D. Next up.
+  let nextUp = "";
+  if (extras) {
+    const rows = (["away", "home"] as const).map((k) => {
+      const n = extras.next[game[k].abbr];
+      const body = n
+        ? (n.url ? `<a href="${escapeHtml(n.url)}">${escapeHtml(n.label)}</a>` : escapeHtml(n.label)) +
+          (n.line ? escapeHtml(` · ${n.line}`) : "")
+        : `<span class="sct-ba-none">Season over</span>`;
+      return `<dt style="color:${colors[k].ink}">${escapeHtml(game[k].short)}</dt><dd>${body}</dd>`;
+    });
+    nextUp = `<h3 class="sct-rb-h3">Next up</h3><dl class="sct-rb-dl sct-bet-next">${rows.join("")}</dl>`;
+  }
+
+  return (
+    `<section class="sct-rb-section sct-bet" aria-labelledby="betting">` +
+    `<h2 class="sct-rb-h2" id="betting">${escapeHtml(`${game.away.short} vs ${game.home.short} odds and results`)}</h2>` +
+    `<p class="sct-rb-sub">How this game finished against the betting lines.</p>` +
+    tileHtml +
+    impliedTable +
+    `<p class="sct-rb-note sct-bet-take">${takeaway}</p>` +
+    trends +
+    nextUp +
+    `<div class="sct-bet-fine">` +
+    `<p>Lines: ESPN's consensus, captured at kickoff. Individual sportsbooks varied.</p>` +
+    `<p>21+. Gambling problem? Call 1-800-GAMBLER. Betting availability depends on your state.</p>` +
+    `</div>` +
     `</section>`
   );
 }
@@ -367,6 +554,8 @@ export interface ExploreGame {
 
 export interface ExploreColumn {
   title: string;
+  /** A slate line under the title: how "Similar games" were chosen. */
+  note?: string;
   games: ExploreGame[];
   footer?: { text: string; url: string } | null;
 }
@@ -404,6 +593,7 @@ export function renderExplore(
       (c) =>
         `<div class="sct-ex-col">` +
         `<h3 class="sct-rb-h3">${escapeHtml(c.title)}</h3>` +
+        (c.note ? `<p class="sct-rb-note sct-ex-note">${escapeHtml(c.note)}</p>` : "") +
         `<ul class="sct-ex-list">${c.games.map(exploreGame).join("")}</ul>` +
         (c.footer ? `<p class="sct-ex-footer"><a href="${escapeHtml(c.footer.url)}">${escapeHtml(c.footer.text)}</a></p>` : "") +
         `</div>`,

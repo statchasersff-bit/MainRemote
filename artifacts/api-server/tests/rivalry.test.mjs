@@ -50,7 +50,7 @@ describe("Cardinals–Rams, from the shipped history", () => {
     assert.deepEqual(
       tiles(s).map(({ label, number, caption }) => [label, number, caption]),
       [
-        ["All-time series", "53–41–2", "Rams lead"],
+        ["All-time series", "53–41–2", "Rams lead, 96 meetings since 1937"],
         ["Postseason", "2–0", "Rams won in 1975 and 2021"],
         ["Largest Cardinals win", "44–6", "2016"],
         ["Largest Rams win", "34–0", "2018"],
@@ -102,7 +102,7 @@ describe("edge cases", () => {
       "ARI",
       "LAR",
     );
-    assert.deepEqual([tiles(s)[0].number, tiles(s)[0].caption], ["1–1–1", "Series tied"]);
+    assert.deepEqual([tiles(s)[0].number, tiles(s)[0].caption], ["1–1–1", "Series tied, 3 meetings since 2001"]);
   });
 
   test("a side that has never won", () => {
@@ -127,7 +127,7 @@ describe("edge cases", () => {
     const three = r.allTimeSummary(input([po(1980, true), po(1990, true), po(2000, true)]), "ARI", "LAR");
     assert.equal(tiles(three)[1].caption, "Cardinals won in 1980, 1990, and 2000");
     const four = r.allTimeSummary(input([po(1980, true), po(1990, true), po(2000, true), po(2010, true)]), "ARI", "LAR");
-    assert.deepEqual([tiles(four)[1].number, tiles(four)[1].caption], ["4–0", "Cardinals won all 4"]);
+    assert.deepEqual([tiles(four)[1].number, tiles(four)[1].caption], ["4–0", "Cardinals won all 4, most recently in 2010"]);
     const split = r.allTimeSummary(input([po(1980, true), po(1990, false), po(2000, true), po(2010, false), po(2015, false)]), "ARI", "LAR");
     assert.deepEqual([tiles(split)[1].number, tiles(split)[1].caption], ["3–2", "Split 3–2"]);
     const both = r.allTimeSummary(input([po(1980, true), po(1990, false)]), "ARI", "LAR");

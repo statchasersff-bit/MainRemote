@@ -357,9 +357,9 @@ describe("the page follows its state", () => {
 describe("links between the family", () => {
   test("the pair page links both hubs and both matchup hubs", async () => {
     const { doc } = await dom(CANON);
-    // The older layout lists them in .sct-pages; the recap layout (a pair with
-    // no meeting coming) in its "More … and …" nav, away side first.
-    const hrefs = [...doc.querySelectorAll(".sct-pages a, .sct-rb-related a")]
+    // The older layout lists them in .sct-pages; the recap layout in Keep
+    // exploring's team pills, away side first.
+    const hrefs = [...doc.querySelectorAll(".sct-pages a, .sct-ex-hubs a")]
       .map((a) => a.getAttribute("href"))
       .sort();
     assert.deepEqual(hrefs, [
@@ -451,6 +451,7 @@ describe("the WordPress fragment", () => {
         [
           '<script type="application/json" class="sct-matchup-event-data">',
           '<script type="application/json" class="sct-matchup-faq-data">',
+          '<script type="application/json" class="sct-matchup-video-data">',
         ].includes(tag),
       ),
       scripts.join(" "),
@@ -1003,10 +1004,10 @@ describe("the postgame page", () => {
     }
   });
 
-  // Passing, rushing and receiving share one row; Fantasy keeps the full width
+  // Passing and the combined rushing & receiving table share one row; Fantasy keeps the full width
   // under them. Asserted on the grouping rather than on the rendered geometry,
   // which is a CSS question this suite cannot see.
-  test("the three box-score tables are one row, and Fantasy is not in it", async () => {
+  test("the box-score tables are one row, and Fantasy is not in it", async () => {
     const page = await postgamePage();
     if (!page) return;
     const section = page.doc.querySelector(".sct-mu-playerstats");
@@ -1018,7 +1019,7 @@ describe("the postgame page", () => {
     const inRow = [...row.querySelectorAll(".sct-mu-ps-block")].map(heading);
     assert.deepEqual(
       inRow,
-      ["Passing", "Rushing", "Receiving"].filter((h) => inRow.includes(h)),
+      ["Passing", "Rushing & Receiving"].filter((h) => inRow.includes(h)),
       `the row holds ${inRow.join(", ")}`,
     );
 
@@ -1034,7 +1035,7 @@ describe("the postgame page", () => {
     const { doc } = page;
 
     for (const table of doc.querySelectorAll(".sct-mu-ps-table")) {
-      const head = table.querySelector("thead tr");
+      const head = table.querySelector("thead tr:last-child");
       assert.ok(head, "every stat table has a header row");
       assert.ok(head.querySelectorAll("th").length >= 4, "and real columns in it");
     }
@@ -1127,6 +1128,34 @@ describe("sortable stat tables", () => {
     }
   });
 
+  test("Passing carries the quarterbacks' runs; Rushing & Receiving has no quarterbacks", async () => {
+    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
+    const block = (title) =>
+      [...doc.querySelectorAll(".sct-mu-playerstats .sct-mu-ps-block")].find(
+        (b) => b.querySelector(".sct-mu-h3")?.textContent.trim() === title,
+      );
+    const passing = block("Passing");
+    if (!passing) return;
+    const heads = [...passing.querySelectorAll("thead th")].map((h) => h.textContent);
+    assert.deepEqual(heads, [
+      "Player", "CMP/ATT", "Pass YDS", "TD", "INT", "Rush ATT", "Rush YDS", "Rush TD", "Rate", "FPTS", "FIN",
+    ]);
+    for (const row of passing.querySelectorAll("tbody tr")) assert.equal(row.cells.length, heads.length);
+    const skill = block("Rushing & Receiving");
+    const positions = [...(skill?.querySelectorAll("tbody .sct-mu-ps-pos") ?? [])].map((c) => c.textContent);
+    assert.ok(!positions.includes("QB"), `positions ${positions.join(", ")}`);
+  });
+
+  test("the highlights video closes the Recap tab", async () => {
+    const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
+    const video = doc.querySelector("[data-mu-tab='recap'] .sct-hl");
+    if (!video) return;
+    assert.equal(video.parentElement.lastElementChild, video);
+    // Click to load: a button, no iframe in the served HTML.
+    assert.ok(video.querySelector("button.sct-hl-play[data-hl-embed^='https://www.youtube-nocookie.com/embed/']"));
+    assert.equal(video.querySelector("iframe"), null);
+  });
+
   test("each stat table ends with fantasy points and finish, all three formats on the cell", async () => {
     const { doc } = await dom("/nfl/buffalo-bills-vs-new-england-patriots/2021-week-16/");
     const tables = [...doc.querySelectorAll(".sct-mu-playerstats table")];
@@ -1134,7 +1163,8 @@ describe("sortable stat tables", () => {
     assert.ok(![...doc.querySelectorAll(".sct-mu-playerstats caption")].some((c) => /Fantasy/.test(c.textContent)), "no separate fantasy table");
     for (const table of tables) {
       const heads = [...table.querySelectorAll("thead th")].map((h) => h.textContent);
-      assert.deepEqual(heads.slice(-2), ["PPR", "FIN"]);
+      assert.ok(["PPR", "FPTS"].includes(heads.at(-2)), `points header ${heads.at(-2)}`);
+      assert.equal(heads.at(-1), "FIN");
       for (const row of table.querySelectorAll("tbody tr")) {
         const [fp, fin] = [...row.cells].slice(-2);
         for (const cell of [fp, fin]) {
@@ -1143,12 +1173,13 @@ describe("sortable stat tables", () => {
         }
       }
     }
-    // Josh Allen scores the same in every table he is in: the whole game.
+    // Josh Allen is on one row, runs and all: quarterbacks stay off the
+    // Rushing & Receiving table.
     const allen = tables
       .flatMap((t) => [...t.querySelectorAll("tbody tr")])
-      .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen")
-      .map((r) => [...r.cells].at(-2).textContent);
-    assert.ok(allen.length >= 2 && allen.every((v) => v === allen[0]), allen.join(" "));
+      .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen");
+    assert.equal(allen.length, 1, "one row for Josh Allen");
+    assert.notEqual(allen[0].cells[5].textContent, "—", "his carries are on the Passing row");
     // The note that closes the section follows the players' tables.
     assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-rc-note");
     assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
@@ -1163,7 +1194,9 @@ describe("sortable stat tables", () => {
     assert.ok(group, "the bundle built the switch");
     assert.deepEqual([...group.querySelectorAll("label")].map((l) => l.textContent), ["PPR", "Half PPR", "Standard"]);
 
-    const table = doc.querySelectorAll(".sct-mu-playerstats table")[2];
+    // Passing: both tables read FPTS in every format; the switch swaps the
+    // values under the header, not the header.
+    const table = doc.querySelectorAll(".sct-mu-playerstats table")[0];
     const headers = [...table.querySelectorAll("thead th")];
     const at = headers.length - 2;
     // Sort by the points column first, so the switch has to re-sort.
@@ -1172,7 +1205,7 @@ describe("sortable stat tables", () => {
     std.checked = true;
     std.dispatchEvent(new doc.defaultView.Event("change", { bubbles: true }));
 
-    assert.equal(headers[at].textContent, "STD");
+    assert.equal(headers[at].textContent, "FPTS");
     const cells = [...table.querySelectorAll("tbody tr")].map((r) => r.cells[at]);
     for (const cell of cells) assert.equal(cell.textContent, cell.getAttribute("data-fmt-std"));
     const values = cells.map((c) => c.getAttribute("data-sort")).filter((v) => v !== "").map(Number);
@@ -1378,6 +1411,147 @@ async function pinnedGame(segment) {
   return doc.querySelector("header.sct-sbh[data-status=final]") ? { ...res, doc } : null;
 }
 
+describe("completed game tabs", () => {
+  const WILD_CARD = "/nfl/arizona-cardinals-vs-los-angeles-rams/2021-wild-card/";
+
+  test("five tabs in the HTML, Recap open, nothing hidden until the bundle runs", async () => {
+    const page = await pinnedGame("2021-wild-card");
+    if (!page) return;
+    const { doc } = page;
+    const root = doc.querySelector("[data-sct-root]");
+
+    // The standard tablist: buttons that name their panels.
+    const list = doc.querySelector("[data-mu-tabbar] [role=tablist]");
+    assert.equal(list.getAttribute("aria-label"), "Cardinals vs Rams sections");
+    const tabs = [...list.querySelectorAll("button[role=tab]")];
+    assert.deepEqual(
+      tabs.map((t) => [t.textContent, t.getAttribute("aria-controls")]),
+      [
+        ["Recap", "recap-tab"],
+        ["Fantasy", "fantasy-tab"],
+        ["Game flow", "game-flow-tab"],
+        ["Head-to-head", "h2h-tab"],
+        ["Betting", "betting-tab"],
+      ].filter(([, id]) => doc.getElementById(id)),
+    );
+    assert.deepEqual(tabs.map((t) => t.getAttribute("tabindex")), tabs.map((_, i) => (i === 0 ? "0" : "-1")));
+    for (const tab of tabs) {
+      const panel = doc.getElementById(tab.getAttribute("aria-controls"));
+      assert.equal(panel.getAttribute("role"), "tabpanel");
+      assert.equal(panel.getAttribute("aria-labelledby"), tab.id);
+    }
+
+    // The score line, for readers on another tab.
+    assert.equal(doc.querySelector("[data-mu-score]").textContent.replace(/\s+/g, " ").trim(), "ARI 11 · LAR 34 Final");
+
+    // The H1 is the scoreboard's, and the scoreboard opens the Recap panel.
+    const h1 = doc.querySelectorAll("h1");
+    assert.equal(h1.length, 1);
+    assert.equal(h1[0].closest("[data-mu-tab]").id, "recap-tab");
+    assert.ok(doc.getElementById("recap-tab").firstElementChild.matches("header.sct-sbh"));
+
+    // Not yet tabbed: every panel is in the markup and none hidden.
+    assert.equal(root.hasAttribute("data-mu-tabs"), false);
+    for (const panel of doc.querySelectorAll("[data-mu-tab]")) {
+      assert.equal(panel.hasAttribute("hidden"), false);
+      assert.ok(panel.textContent.trim(), `${panel.getAttribute("data-mu-tab")} has content`);
+    }
+
+    // Sections keep their ids inside the panels; outlook, FAQ and exploring sit below them.
+    const inPanel = { recap: "recap-tab", why: "recap-tab", verdicts: "fantasy-tab", wp: "game-flow-tab", h2h: "h2h-tab", betting: "betting-tab" };
+    for (const [id, panel] of Object.entries(inPanel)) {
+      const el = doc.getElementById(id);
+      if (el) assert.equal(el.closest("[data-mu-tab]").id, panel, `#${id} is in ${panel}`);
+    }
+    for (const id of ["fantasy-outlook", "faq", "explore"]) {
+      const el = doc.getElementById(id);
+      if (el) assert.equal(el.closest("[data-mu-tab]"), null, `${id} is below the tabs`);
+    }
+  });
+
+  test("the bundle opens the tab a hash names, including an anchor inside it", async () => {
+    const res = await fetch(`${server.origin}${WILD_CARD}`);
+    if (!res.ok || !/data-mu-tabbar/.test(await res.text())) return;
+
+    const plain = await hydrated(WILD_CARD);
+    assert.deepEqual(plain.errors, []);
+    const active = (doc) =>
+      [...new Set([...doc.querySelectorAll("[data-mu-tab].is-active")].map((p) => p.getAttribute("data-mu-tab")))];
+    assert.equal(plain.doc.querySelector("[data-sct-root]").getAttribute("data-mu-tabs"), "js");
+    assert.deepEqual(active(plain.doc), ["recap"]);
+    assert.equal(plain.doc.querySelector('[data-mu-tab-link="recap"]').getAttribute("aria-selected"), "true");
+    assert.equal(plain.doc.getElementById("fantasy-tab").hidden, true);
+
+    for (const [hash, tab] of [["#fantasy", "fantasy"], ["#game-flow", "game-flow"], ["#head-to-head", "head-to-head"], ["#betting", "betting"]]) {
+      const page = await hydrated(`${WILD_CARD}${hash}`);
+      if (page.doc.querySelector(`[data-mu-tab="${tab}"]`)) assert.deepEqual(active(page.doc), [tab], hash);
+    }
+    const inside = await hydrated(`${WILD_CARD}#verdicts`);
+    if (inside.doc.getElementById("verdicts")) assert.deepEqual(active(inside.doc), ["fantasy"]);
+
+    // A click switches in place and writes the tab's address.
+    const tab = plain.doc.querySelector('[data-mu-tab-link="head-to-head"]');
+    tab.dispatchEvent(new plain.window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    assert.deepEqual(active(plain.doc), ["head-to-head"]);
+    assert.equal(plain.window.location.hash, "#head-to-head");
+    assert.equal(plain.doc.querySelector('[data-mu-tab-link="head-to-head"]').getAttribute("tabindex"), "0");
+
+    // Arrow keys move between tabs; End jumps to the last.
+    const list = plain.doc.querySelector("[role=tablist]");
+    tab.focus();
+    list.dispatchEvent(new plain.window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    assert.equal(plain.doc.activeElement.getAttribute("data-mu-tab-link"), active(plain.doc)[0]);
+    list.dispatchEvent(new plain.window.KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    assert.deepEqual(active(plain.doc), ["recap"]);
+    assert.equal(plain.window.location.hash, "#recap");
+  });
+});
+
+describe("the recap's share card", () => {
+  const IMAGE = "/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png";
+
+  test("the head carries the description, og:type article and the 1200x630 image", async () => {
+    const page = await pinnedGame("2021-wild-card");
+    if (!page) return;
+    const meta = (sel) => page.doc.head.querySelector(sel)?.getAttribute("content");
+    assert.equal(
+      meta('meta[name="description"]'),
+      "Rams beat the Cardinals 34\u201311 at SoFi Stadium: scoring summary, fantasy points for every player, team stats and the head-to-head.",
+    );
+    assert.ok(meta('meta[name="description"]').length <= 160);
+    assert.equal(meta('meta[property="og:type"]'), "article");
+    assert.match(meta('meta[property="og:image"]'), new RegExp(`${IMAGE.replace(/\./g, "\\.")}$`));
+    assert.equal(meta('meta[property="og:image:width"]'), "1200");
+    assert.equal(meta('meta[property="og:image:height"]'), "630");
+    assert.equal(meta('meta[name="twitter:card"]'), "summary_large_image");
+    assert.match(meta('meta[property="og:image:alt"]'), /^Final score: Los Angeles Rams 34, Arizona Cardinals 11, 2021 Wild Card\. Top fantasy scorer /);
+    // A recap's VideoObject, now for every video the page shows.
+    const graph = [...page.doc.head.querySelectorAll('script[type="application/ld+json"]')].map((s) => JSON.parse(s.textContent));
+    assert.ok(graph.some((n) => (n["@graph"] ?? []).some((g) => g["@type"] === "VideoObject")));
+  });
+
+  test("the image is a PNG, away team first in its name, and 404s the other way round", async () => {
+    const page = await pinnedGame("2021-wild-card");
+    if (!page) return;
+    const res = await fetch(`${server.origin}${IMAGE}`);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("content-type"), "image/png");
+    const png = Buffer.from(await res.arrayBuffer());
+    assert.equal(png.readUInt32BE(16), 1200);
+    assert.equal(png.readUInt32BE(20), 630);
+    const reversed = await fetch(`${server.origin}/og/los-angeles-rams-vs-arizona-cardinals-2021-wild-card.png`);
+    assert.equal(reversed.status, 404);
+  });
+
+  test("the embed fragment sends the plugin its description and image", async () => {
+    const res = await fetch(`${server.origin}/embed/matchup/arizona-cardinals-vs-los-angeles-rams?game=2021-wild-card`);
+    if (!res.ok) return;
+    assert.equal(res.headers.get("x-matchup-image"), IMAGE);
+    assert.match(decodeURIComponent(res.headers.get("x-matchup-description")), /^Rams beat the Cardinals 34–11/);
+    assert.match(await res.text(), /class="sct-matchup-video-data"/);
+  });
+});
+
 describe("the Cardinals–Rams games", () => {
   test("the Wild Card: one H1 in the hero, scores, table and JSON-LD in the source", async () => {
     const page = await pinnedGame("2021-wild-card");
@@ -1414,27 +1588,35 @@ describe("the Cardinals–Rams games", () => {
     assert.equal(ld.description, "Final: Los Angeles Rams 34, Arizona Cardinals 11.");
     assert.match(body, /<h1 class="sct-sbh-title"/, "the H1 is in the source, not written by script");
 
-    // The recap sits directly under the hero: first block of the page body,
-    // headed by an H2 with the score in it.
-    const recap = doc.querySelector("[data-sct-panel] > .sct-rb > .sct-rb-main > .sct-mu-story:first-child");
-    assert.ok(recap, "the recap is the first block of the main column");
+    // The recap leads the Recap tab's main-column half, headed by an H2 with
+    // the score in it.
+    const recap = doc.querySelector('[data-sct-panel] .sct-rb > .sct-rb-main > [data-mu-tab="recap"] > .sct-mu-story#recap');
+    assert.ok(recap, "the recap is in the Recap panel");
+    assert.match(recap.querySelector(".sct-mu-story-dek").textContent, /^The Rams led 21–0 at halftime and finished with 375 yards to 183\.$/);
     assert.match(recap.querySelector("h2").textContent, /^Rams 34, Cardinals 11: /);
     assert.match(recap.textContent, /Super Bowl LVI/);
 
     // The body: its sections in order, the series counted from its scores,
     // and the FAQ's JSON-LD in the head saying what the page says.
+    const headings = (selector) =>
+      [...doc.querySelectorAll(selector)].map((h) => h.textContent);
     assert.deepEqual(
-      [...doc.querySelectorAll(".sct-rb-main > .sct-rb-section > h2, .sct-rb-main > nav > h2")].map((h) => h.textContent),
+      headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /won$|^Scoring/.test(h)),
+      ["Why the Rams won", "Scoring summary"].filter(
+        (h) => h !== "Scoring summary" || doc.querySelector("#sct-rb-scoring"),
+      ),
+    );
+    assert.deepEqual(headings('[data-mu-tab="head-to-head"] > .sct-rb-section > h2').slice(0, 1), [
+      "Cardinals vs Rams head-to-head",
+    ]);
+    // Below the tabs, on every one of them.
+    assert.deepEqual(
+      headings(".sct-rb-main > .sct-rb-section > h2, .sct-rb-main > nav > h2"),
       [
-        "Why the Rams won",
-        "Scoring summary",
-        "Cardinals vs Rams head-to-head",
         "Cardinals vs Rams fantasy outlook for 2026",
         "Cardinals vs Rams FAQ",
-        "More Cardinals and Rams",
-      ]
-        .filter((h) => !/fantasy outlook/.test(h) || doc.querySelector("#sct-rb-outlook"))
-        .filter((h) => h !== "Scoring summary" || doc.querySelector("#sct-rb-scoring")),
+        "Keep exploring",
+      ].filter((h) => !/fantasy outlook/.test(h) || doc.querySelector("#fantasy-outlook")),
     );
 
     // From ESPN's own feed, when it answered: the strip's four and the summary's end.
@@ -1485,7 +1667,7 @@ describe("the Cardinals–Rams games", () => {
         t.querySelector(".sct-rb-at-cap").textContent,
       ]),
       [
-        ["53\u201341\u20132", "Rams lead"],
+        ["53\u201341\u20132", "Rams lead, 96 meetings since 1937"],
         ["2\u20130", "Rams won in 1975 and 2021"],
         ["44\u20136", "2016"],
         ["34\u20130", "2018"],

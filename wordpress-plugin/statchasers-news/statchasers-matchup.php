@@ -416,6 +416,12 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		// them, in which case the builders below stand in.
 		'heading' => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-heading' ) ) ),
 		'title'   => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-title' ) ) ),
+		// A completed game's description, and its share image: a path on the
+		// API origin (made absolute in statchasers_matchup_share_image()) with
+		// its alt text. Empty from an older API, or on any other page.
+		'description' => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-description' ) ) ),
+		'image'       => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-image' ) ),
+		'image_alt'   => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-image-alt' ) ) ),
 		'missing' => false,
 	);
 
@@ -505,7 +511,7 @@ function statchasers_matchup_promote_heading( string $html ): ?string {
 }
 
 /**
- * Drop the SportsEvent and FAQ islands from the printed markup.
+ * Drop the SportsEvent, FAQ and VideoObject islands from the printed markup.
  *
  * It is a transport for statchasers_matchup_event_node(), which reads the
  * cached fetch rather than this string, so removing it here costs the node
@@ -515,12 +521,12 @@ function statchasers_matchup_promote_heading( string $html ): ?string {
  * @return string
  */
 function statchasers_matchup_strip_event_data( string $html ): string {
-	if ( false === strpos( $html, 'sct-matchup-event-data' ) && false === strpos( $html, 'sct-matchup-faq-data' ) ) {
+	if ( false === strpos( $html, 'sct-matchup-event-data' ) && false === strpos( $html, 'sct-matchup-faq-data' ) && false === strpos( $html, 'sct-matchup-video-data' ) ) {
 		return $html;
 	}
 
 	return (string) preg_replace(
-		'#<script type="application/json" class="sct-matchup-(?:event|faq)-data">.*?</script>#s',
+		'#<script type="application/json" class="sct-matchup-(?:event|faq|video)-data">.*?</script>#s',
 		'',
 		$html
 	);
@@ -860,8 +866,44 @@ function statchasers_matchup_request_meta(): ?array {
 	if ( '' !== ( $data['title'] ?? '' ) ) {
 		$meta['title'] = (string) $data['title'];
 	}
+	// Likewise the description, which on a completed game is the recap's:
+	// the result, the venue and what the page holds.
+	if ( '' !== ( $data['description'] ?? '' ) ) {
+		$meta['description'] = (string) $data['description'];
+	}
 
 	return $meta;
+}
+
+/**
+ * This request's share image — absolute URL, size and alt — or null.
+ *
+ * The API draws one per completed game at /og/<away>-vs-<home>-<season>-<round>.png
+ * and names it in X-Matchup-Image. The path is served publicly from the API
+ * origin (it is outside the embed key), so crawlers can fetch it directly.
+ *
+ * @return array{url:string,width:int,height:int,alt:string}|null
+ */
+function statchasers_matchup_share_image(): ?array {
+	$pair = statchasers_matchup_current();
+	if ( null === $pair || ! $pair['canonical'] ) {
+		return null;
+	}
+	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
+	$path = is_array( $data ) ? (string) ( $data['image'] ?? '' ) : '';
+	if ( '' === $path || 0 !== strpos( $path, '/og/' ) ) {
+		return null;
+	}
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return null;
+	}
+	return array(
+		'url'    => rtrim( $origin, '/' ) . $path,
+		'width'  => 1200,
+		'height' => 630,
+		'alt'    => (string) ( $data['image_alt'] ?? '' ),
+	);
 }
 
 /**
@@ -944,6 +986,41 @@ function statchasers_matchup_faq_node() {
 }
 
 /**
+ * The recap's highlights as a VideoObject, or null. Same island pattern as
+ * the SportsEvent: built by the API (videoSchema() in recap-extras.ts) from
+ * the video the page shows, checked for shape here.
+ *
+ * @return array<string,mixed>|null
+ */
+function statchasers_matchup_video_node() {
+	$pair = statchasers_matchup_current();
+	if ( null === $pair || ! $pair['canonical'] ) {
+		return null;
+	}
+
+	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
+	$html = is_array( $data ) ? (string) ( $data['html'] ?? '' ) : '';
+
+	if ( ! preg_match( '#<script type="application/json" class="sct-matchup-video-data">(.*?)</script>#s', $html, $match ) ) {
+		return null;
+	}
+
+	$node = json_decode( $match[1], true );
+
+	if (
+		! is_array( $node )
+		|| ( $node['@type'] ?? '' ) !== 'VideoObject'
+		|| empty( $node['name'] )
+		|| empty( $node['thumbnailUrl'] )
+		|| empty( $node['uploadDate'] )
+	) {
+		return null;
+	}
+
+	return $node;
+}
+
+/**
  * Append the SportsEvent to Rank Math's graph.
  *
  * @param array<string,mixed> $data Rank Math's schema nodes.
@@ -964,6 +1041,11 @@ function statchasers_matchup_rank_math_schema( $data ) {
 		$data['statchasersMatchupFaq'] = $faq;
 	}
 
+	$video = statchasers_matchup_video_node();
+	if ( null !== $video ) {
+		$data['statchasersMatchupVideo'] = $video;
+	}
+
 	return $data;
 }
 add_filter( 'rank_math/json_ld', 'statchasers_matchup_rank_math_schema', 20 );
@@ -974,7 +1056,7 @@ function statchasers_matchup_print_fallback_schema(): void {
 		return;
 	}
 
-	foreach ( array( statchasers_matchup_event_node(), statchasers_matchup_faq_node() ) as $node ) {
+	foreach ( array( statchasers_matchup_event_node(), statchasers_matchup_faq_node(), statchasers_matchup_video_node() ) as $node ) {
 		if ( null === $node ) {
 			continue;
 		}
@@ -1012,6 +1094,59 @@ add_filter( 'rank_math/opengraph/url', function ( $url ) {
 	$own = statchasers_matchup_canonical();
 	return '' === $own ? $url : $own;
 } );
+/*
+ * A completed game's share card: og:type article, the 1200×630 image and a
+ * large Twitter card. Rank Math's hook names have varied between versions, so
+ * both spellings are registered, as the depth-charts SEO class does; a filter
+ * on a tag that is never emitted is a no-op.
+ */
+foreach ( array( 'rank_math/opengraph/type', 'rank_math/opengraph/facebook/og_type', 'rank_math/opengraph/facebook/og:type' ) as $statchasers_hook ) {
+	add_filter( $statchasers_hook, function ( $type ) {
+		return null !== statchasers_matchup_share_image() ? 'article' : $type;
+	}, 20 );
+}
+foreach ( array( 'rank_math/opengraph/twitter/card_type', 'rank_math/opengraph/twitter/twitter_card', 'rank_math/opengraph/twitter/twitter:card' ) as $statchasers_hook ) {
+	add_filter( $statchasers_hook, function ( $card ) {
+		return null !== statchasers_matchup_share_image() ? 'summary_large_image' : $card;
+	}, 20 );
+}
+foreach ( array( 'facebook', 'twitter' ) as $statchasers_network ) {
+	add_action( "rank_math/opengraph/{$statchasers_network}/add_images", function ( $images ) {
+		$image = statchasers_matchup_share_image();
+		if ( null === $image || ! is_object( $images ) || ! method_exists( $images, 'add_image' ) ) {
+			return;
+		}
+		$images->add_image(
+			array(
+				'url'    => $image['url'],
+				'width'  => $image['width'],
+				'height' => $image['height'],
+				'alt'    => $image['alt'],
+			)
+		);
+	}, 5 );
+}
+
+/** The share card on a site with no Rank Math: printed here instead. */
+function statchasers_matchup_print_fallback_social(): void {
+	if ( function_exists( 'rank_math' ) || class_exists( 'RankMath' ) ) {
+		return;
+	}
+	$image = statchasers_matchup_share_image();
+	if ( null === $image ) {
+		return;
+	}
+	echo '<meta property="og:type" content="article" />' . "\n";
+	printf( '<meta property="og:image" content="%s" />' . "\n", esc_url( $image['url'] ) );
+	printf( '<meta property="og:image:width" content="%d" />' . "\n", (int) $image['width'] );
+	printf( '<meta property="og:image:height" content="%d" />' . "\n", (int) $image['height'] );
+	printf( '<meta property="og:image:alt" content="%s" />' . "\n", esc_attr( $image['alt'] ) );
+	echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+	printf( '<meta name="twitter:image" content="%s" />' . "\n", esc_url( $image['url'] ) );
+	printf( '<meta name="twitter:image:alt" content="%s" />' . "\n", esc_attr( $image['alt'] ) );
+}
+add_action( 'wp_head', 'statchasers_matchup_print_fallback_social', 5 );
+
 add_filter( 'rank_math/frontend/robots', function ( $robots ) {
 	if ( null === statchasers_matchup_request_meta() ) {
 		return $robots;

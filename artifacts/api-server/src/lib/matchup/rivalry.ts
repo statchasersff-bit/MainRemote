@@ -175,7 +175,7 @@ function postseasonCaption(s: AllTimeSummary, away: RivalryTeam, home: RivalryTe
   if (sw.length === 0) {
     return total <= 3
       ? `${first.short} won in ${years(fw)}`
-      : `${first.short} won all ${total}`;
+      : `${first.short} won all ${total}, most recently in ${Math.max(...fw)}`;
   }
   if (total >= 4) return `Split ${fw.length}${DASH}${sw.length}`;
   return `${first.short} won in ${years(fw)}; ${second.short} won in ${years(sw)}`;
@@ -272,7 +272,7 @@ export function renderAllTimeTiles(s: AllTimeSummary, away: RivalryTeam, home: R
     tile(
       "All-time series",
       escapeHtml(r.text),
-      r.leader ? `${r.leader.short} lead` : "Series tied",
+      `${r.leader ? `${r.leader.short} lead` : "Series tied"}, ${s.meetings} meeting${s.meetings === 1 ? "" : "s"} since ${s.firstMeetingSeason}`,
     ) +
     tile(
       "Postseason",

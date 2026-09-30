@@ -19,7 +19,9 @@ import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
-import { gamePath, matchupPath } from "../lib/matchup/matchup-render";
+import { gamePath, matchupPath, matchupShare } from "../lib/matchup/matchup-render";
+import { getMatchupData } from "../lib/matchup/matchup-data";
+import { renderShareImage } from "../lib/matchup/og-image";
 import { renderMatchupAppPage, renderMatchupFragment } from "../lib/matchup/matchup-ssr";
 import {
   parseGameSegment,
@@ -170,6 +172,39 @@ async function sendMatchupPage(
   }
 }
 
+/**
+ * A completed game's share image: /og/<away>-vs-<home>-<season>-<round>.png.
+ * Public (not behind the embed key), because the crawlers that read og:image
+ * are not WordPress. Drawn once and kept on disk; see og-image.ts.
+ */
+const OG_FILE = /^([a-z0-9-]+?)-vs-([a-z0-9-]+?)-(\d{4}-(?:week-\d{1,2}|postseason-week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl))\.png$/;
+
+router.get("/og/:file", (req, res) => {
+  void (async () => {
+    const match = OG_FILE.exec(String(req.params.file ?? ""));
+    const parsed = match ? parseMatchupSlug(`${match[1]}-vs-${match[2]}`) : null;
+    const game = match ? parseGameSegment(match[3]!) : null;
+    if (!match || !parsed || !game) {
+      res.status(404).type("text/plain").send("Unknown image");
+      return;
+    }
+    try {
+      const data = await getMatchupData(parsed.pair, Date.now(), game);
+      const share = matchupShare(data);
+      // The file name must be the one the page advertises: away first.
+      if (!share || share.file !== match[0]) {
+        res.status(404).type("text/plain").send("Unknown image");
+        return;
+      }
+      const png = await renderShareImage(share.file, share.input);
+      res.set("Cache-Control", "public, max-age=86400").type("png").send(png);
+    } catch (err) {
+      logger.error({ err, file: match[0] }, "Failed to draw share image");
+      res.status(503).type("text/plain").send("Image unavailable");
+    }
+  })();
+});
+
 /** The bare fragment for the WordPress plugin. Always embedded. */
 router.get("/embed/matchup/:pair", (req, res) => {
   void (async () => {
@@ -223,6 +258,11 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // score carries an en dash and a header value must be Latin-1.
         .set("X-Matchup-Heading", encodeURIComponent(result.heading))
         .set("X-Matchup-Title", encodeURIComponent(result.title))
+        // The description and, on a completed game, the share image's path on
+        // this origin and its alt text. Empty when there is none.
+        .set("X-Matchup-Description", encodeURIComponent(result.description))
+        .set("X-Matchup-Image", result.shareImage?.path ?? "")
+        .set("X-Matchup-Image-Alt", encodeURIComponent(result.shareImage?.alt ?? ""))
         // "current" tells the plugin the pair page is still leading with this
         // game, so the dated WordPress URL must 301 up to the pair's — the
         // mirror of what this origin's own route does above. Empty when the

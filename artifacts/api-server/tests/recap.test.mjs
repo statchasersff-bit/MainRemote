@@ -83,8 +83,7 @@ describe("the Cardinals–Rams Wild Card", () => {
     );
     assert.equal(
       recap.dek,
-      "The Rams led 21–0 at halftime, never turned the ball over, and held Arizona " +
-        "without a third-down conversion to reach the Divisional Round.",
+      "The Rams led 21–0 at halftime and finished with 375 yards to 183.",
     );
     assert.deepEqual(recap.paragraphs, [
       "Los Angeles led 21–0 at halftime after scoring 14 points in the second quarter. " +
@@ -105,7 +104,8 @@ describe("the Cardinals–Rams Wild Card", () => {
     const doc = new JSDOM(renderRecap(recap)).window.document;
     assert.equal(doc.querySelectorAll("h1").length, 0);
     assert.equal(doc.querySelector("h2").textContent, recap.headline);
-    assert.equal(doc.querySelector("h3").textContent, "Game recap");
+    assert.equal(doc.querySelector("section").id, "recap");
+    assert.match(doc.querySelector(".sct-mu-story-dek").textContent, /^The Rams led 21–0/);
     const link = doc.querySelector("a");
     assert.equal(link.textContent, "run the start/sit call in Redraft Command");
     assert.equal(link.getAttribute("href"), START_SIT_URL);
@@ -134,25 +134,18 @@ describe("the Cardinals–Rams Wild Card", () => {
     );
   });
 
-  test("without a next meeting, the prompt stays and the meeting sentence goes", () => {
+  test("without a next meeting, the closing start/sit paragraph goes", () => {
     const quiet = buildRecap({ ...WILD_CARD, next: null });
-    assert.equal(quiet.startSit, true);
-    assert.doesNotMatch(quiet.paragraphs.join(" "), /meet again/);
-    assert.equal(
-      quiet.paragraphs.at(-1),
-      "If you roster anyone from either side, run the start/sit call in Redraft Command and it " +
-        "will weigh your lineup, your opponent and your league scoring, not only the player rankings.",
-    );
-    const link = new JSDOM(renderRecap(quiet)).window.document.querySelector("a");
-    assert.equal(link.getAttribute("data-cta"), "recap-startsit");
+    assert.equal(quiet.startSit, false);
+    assert.doesNotMatch(quiet.paragraphs.join(" "), /meet again|start\/sit/);
+    assert.equal(new JSDOM(renderRecap(quiet)).window.document.querySelector("[data-cta]"), null);
   });
 
   test("with no box score, the prose is the quarters alone and claims nothing else", () => {
     const bare = buildRecap({ ...WILD_CARD, awayStats: null, homeStats: null, notes: [], winnerPostseason: null, next: null });
-    assert.equal(bare.dek, "The Rams led 21–0 at halftime to reach the Divisional Round.");
-    assert.equal(bare.paragraphs.length, 2, "the quarters, then the start/sit prompt");
+    assert.equal(bare.dek, "The Rams led 21–0 at halftime.");
+    assert.equal(bare.paragraphs.length, 1, "the quarters alone");
     assert.doesNotMatch(bare.paragraphs[0], /yards|third down|turnover/);
-    assert.match(bare.paragraphs[1], /^If you roster anyone/);
   });
 });
 
@@ -202,7 +195,7 @@ describe("the other shapes", () => {
       notes: [],
     });
     assert.equal(recap.headline, "Chiefs 42, Bills 36: Kansas City wins the 2021 Divisional Round in overtime");
-    assert.match(recap.dek, /to reach the Conference Championship\.$/);
+    assert.match(recap.dek, /^The Chiefs led 17–7 at halftime and finished with \d+ yards to \d+\.$/);
     assert.match(recap.paragraphs[0], /Kansas City won it with six points in overtime\.$/);
   });
 
@@ -220,11 +213,11 @@ describe("the other shapes", () => {
       homeCity: "Philadelphia",
       notes: [],
     });
-    assert.match(recap.dek, /to win Super Bowl LIX\.$/);
+    assert.match(recap.dek, /^The Eagles led 24–0 at halftime/);
     assert.doesNotMatch(recap.paragraphs.join(" "), /went on to|the run that|run ended/);
   });
 
-  test("a tie has no recap: there is no winner to write it about", () => {
+  test("a tie gets the score and the halftime, and claims no winner", () => {
     const recap = buildRecap({
       ...WILD_CARD,
       game: {
@@ -233,7 +226,9 @@ describe("the other shapes", () => {
         home: team("HOU", "Houston Texans", "Texans", [7, 6, 7, 0], 0),
       },
     });
-    assert.equal(recap, null);
+    assert.match(recap.headline, /^Colts 20, Texans 20: .* tie in 2021 Wild Card$/);
+    assert.match(recap.dek, /^The Texans led 13–3 at halftime/);
+    assert.doesNotMatch(`${recap.headline} ${recap.dek} ${recap.paragraphs.join(" ")}`, /\bwon\b|\bwins\b|\bbeat\b/);
   });
 
   test("two clubs from one city are told apart by nickname", () => {

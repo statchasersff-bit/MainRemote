@@ -400,6 +400,53 @@ describe("the broadcaster marks", () => {
   });
 });
 
+describe("a divisional rematch still to come", () => {
+  let render;
+  let teams;
+
+  before(async () => {
+    render = await importModule("lib/schedule-render");
+    teams = await importModule("lib/team/teams");
+  });
+
+  const DAY = 24 * 60 * 60 * 1000;
+  const WEEK_2 = Date.UTC(2026, 8, 20, 17);
+
+  function game(id, week, away, home, kickoffMs, final) {
+    return {
+      id, week, date: new Date(kickoffMs).toISOString().slice(0, 10), weekday: null, time: "13:00",
+      kickoffMs, awayCode: away, homeCode: home,
+      away: teams.getTeamByAbbreviation(away), home: teams.getTeamByAbbreviation(home),
+      awayScore: final ? 20 : null, homeScore: final ? 37 : null,
+      status: final ? "final" : "scheduled", statusDetail: null, network: null, stadium: null,
+      location: null, international: false, neutralSite: false, divisional: away === "WAS",
+      holiday: null, spreadLine: null, totalLine: null,
+    };
+  }
+
+  /**
+   * The regression this exists for: inside the fourteen days a finished game
+   * linked to the pair's page, but for a pair that meets again the page leads
+   * with the rematch — so a Week 2 result opened a January preview.
+   */
+  test("the recent result links to its dated recap, the one-off to the pair", () => {
+    const html = render.renderSchedulePage(
+      {
+        season: 2026, liveNow: false, fetchedAt: 0, version: "t",
+        games: [
+          game("2026_02_WAS_DAL", 2, "WAS", "DAL", WEEK_2, true),
+          game("2026_02_NE_PIT", 2, "PIT", "NE", WEEK_2, true),
+          game("2026_18_DAL_WAS", 18, "DAL", "WAS", Date.UTC(2027, 0, 10, 18), false),
+        ],
+      },
+      { view: "week", week: 2, now: WEEK_2 + 5 * DAY },
+    );
+    const hrefs = [...html.matchAll(/class="scs-go" href="([^"]+)"/g)].map((m) => m[1]);
+    assert.ok(hrefs.includes("/nfl/dallas-cowboys-vs-washington-commanders/2026-week-2/"), hrefs.join(" "));
+    assert.ok(hrefs.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), hrefs.join(" "));
+  });
+});
+
 /* ------------------------------------------------------------- the page */
 
 describe("the schedule page", () => {

@@ -195,41 +195,24 @@ function destination(game: ScoreboardGame): string {
   return next ? ` to reach the ${next}` : "";
 }
 
+/**
+ * The build spec's dek: the halftime score from the winner's side, then the
+ * yardage. "The Rams led 21–0 at halftime and finished with 375 yards to 183."
+ */
 function dek(game: ScoreboardGame, w: Side, l: Side): string {
-  const clauses: string[] = [];
   const halfW = w.running[1]!;
   const halfL = l.running[1]!;
-  if (halfW - halfL >= 7) clauses.push(`led ${halfW}–${halfL} at halftime`);
-  else if (halfW < halfL) clauses.push(`trailed ${halfL}–${halfW} at halftime`);
-
-  const wt = w.stats?.turnovers ?? null;
-  const lt = l.stats?.turnovers ?? null;
-  if (wt === 0 && lt !== null && lt > 0) clauses.push("never turned the ball over");
-  else if (wt !== null && lt !== null && lt - wt >= 2) {
-    clauses.push(`won the turnover battle ${lt}–${wt}`);
+  const wy = w.stats?.totalYards ?? null;
+  const ly = l.stats?.totalYards ?? null;
+  if (halfW === halfL) {
+    return (
+      `The teams were tied ${halfW}–${halfL} at halftime` +
+      (wy !== null && ly !== null ? `, and the ${w.team.short} finished with ${wy} yards to ${ly}.` : ".")
+    );
   }
-
-  const third = l.stats?.thirdDown ?? null;
-  if (third && third.made === 0 && third.attempts >= 3) {
-    clauses.push(`held ${l.place} without a third-down conversion`);
-  }
-
-  if (clauses.length < 2) {
-    const wy = w.stats?.totalYards ?? null;
-    const ly = l.stats?.totalYards ?? null;
-    if (wy !== null && ly !== null && wy - ly >= 100) {
-      clauses.push(`outgained ${l.place} ${wy}–${ly}`);
-    }
-  }
-
-  const to = destination(game);
-  // The halftime score alone is the recap's own first sentence; a dek that
-  // only repeats it is dropped.
-  if (clauses.length === 1 && halfW - halfL >= 7 && !to) return "";
-  if (clauses.length === 0) {
-    return to ? `The ${w.team.short} beat the ${l.team.short}${to}.` : "";
-  }
-  return `The ${w.team.short} ${list(clauses)}${to}.`;
+  const half = halfW > halfL ? `led ${halfW}–${halfL} at halftime` : `trailed ${halfL}–${halfW} at halftime`;
+  const yards = wy !== null && ly !== null ? ` and finished with ${wy} yards to ${ly}` : "";
+  return `The ${w.team.short} ${half}${yards}.`;
 }
 
 /* ------------------------------------------------------------- paragraphs */
@@ -266,7 +249,9 @@ function flow(game: ScoreboardGame, w: Side, l: Side): string {
   const secondHalfL = l.running[3]! - halfL;
   // The winner is the subject of the first sentence already, so the one
   // after it names them by nickname rather than by the same city twice.
-  if (halfW <= halfL) {
+  if (secondHalfW === secondHalfL && halfW === halfL) {
+    sentences.push(`Both sides scored ${secondHalfW} after the break.`);
+  } else if (halfW <= halfL) {
     sentences.push(
       `The ${w.team.short} outscored ${l.place} ${secondHalfW}–${secondHalfL} after the break.`,
     );
@@ -388,15 +373,49 @@ function aftermath(input: RecapInput, w: Side): string {
 
 /* ------------------------------------------------------------------ build */
 
+/** A tie: the score, the halftime score and the yardage, and nothing claimed about a winner. */
+function tieRecap(input: RecapInput, away: Side, home: Side): Recap {
+  const { game } = input;
+  const round = game.gameType === "playoff" ? roundOnly(game.roundLabel) : game.roundLabel;
+  const places = away.place === home.place ? `the ${away.team.short} and ${home.team.short}` : `${away.place} and ${home.place}`;
+  const headline =
+    `${away.team.short} ${away.total}, ${home.team.short} ${home.total}: ` +
+    `${cap(places)} tie in ${game.seasonLabel} ${round}`;
+  const ay = away.stats?.totalYards ?? null;
+  const hy = home.stats?.totalYards ?? null;
+  const ha = away.running[1]!;
+  const hh = home.running[1]!;
+  const half =
+    ha === hh
+      ? `The teams were tied ${ha}–${hh} at halftime`
+      : `The ${(ha > hh ? away : home).team.short} led ${Math.max(ha, hh)}–${Math.min(ha, hh)} at halftime`;
+  const dekText =
+    half +
+    (ay !== null && hy !== null
+      ? `; the ${away.team.short} finished with ${ay} yards and the ${home.team.short} with ${hy}.`
+      : ".");
+  const paragraphs: string[] = [];
+  if (input.next) {
+    paragraphs.push(
+      `The two teams meet again in ${input.next.label} of ${input.next.season}. ` +
+        `If you roster anyone from either side, run the start/sit call in Redraft Command ` +
+        `and it will weigh your lineup, your opponent and your league scoring, not only ` +
+        `the player rankings.`,
+    );
+  }
+  return { headline, dek: dekText, paragraphs, startSit: input.next !== null };
+}
+
 /** The recap, or null for a game that is not a final with a line score. */
 export function buildRecap(input: RecapInput): Recap | null {
   const { game } = input;
   const result = scoreboardResult(game);
-  if (!result || result.winner === null) return null;
+  if (!result) return null;
 
   const away = side(game.away, input.awayCity, input.homeCity, input.awayStats);
   const home = side(game.home, input.homeCity, input.awayCity, input.homeStats);
   if (!away || !home) return null;
+  if (result.winner === null) return tieRecap(input, away, home);
   const [w, l] = result.winner === "home" ? [home, away] : [away, home];
 
   const headline =
@@ -404,15 +423,16 @@ export function buildRecap(input: RecapInput): Recap | null {
 
   const paragraphs = [flow(game, w, l), numbers(w, l), aftermath(input, w)].filter(Boolean);
 
-  // The prompt closes every recap; only the sentence about the next meeting
-  // depends on there being one.
-  const startSit = true;
-  paragraphs.push(
-    (input.next ? `The two teams meet again in ${input.next.label} of ${input.next.season}. ` : "") +
-      `If you roster anyone from either side, run the start/sit call in Redraft Command ` +
-      `and it will weigh your lineup, your opponent and your league scoring, not only ` +
-      `the player rankings.`,
-  );
+  // The closing prompt is about the next meeting, so it needs one.
+  const startSit = input.next !== null;
+  if (input.next) {
+    paragraphs.push(
+      `The two teams meet again in ${input.next.label} of ${input.next.season}. ` +
+        `If you roster anyone from either side, run the start/sit call in Redraft Command ` +
+        `and it will weigh your lineup, your opponent and your league scoring, not only ` +
+        `the player rankings.`,
+    );
+  }
 
   return { headline, dek: dek(game, w, l), paragraphs, startSit };
 }
@@ -471,7 +491,7 @@ function linkSpans(text: string, names: string[], links: RecapLinks, seen: Set<s
   return spans;
 }
 
-export function renderRecap(recap: Recap, links?: RecapLinks): string {
+export function renderRecap(recap: Recap, links?: RecapLinks, after = ""): string {
   const seen = new Set<string>();
   const names = [...new Set(links?.playerNames ?? [])].filter(Boolean);
   const paragraph = (text: string, last: boolean): string => {
@@ -499,13 +519,13 @@ export function renderRecap(recap: Recap, links?: RecapLinks): string {
     return `<p>${html}</p>`;
   };
   return (
-    `<section class="sct-block sct-mu-story" aria-labelledby="sct-mu-story-title">` +
+    `<section class="sct-block sct-mu-story" id="recap" aria-labelledby="sct-mu-story-title">` +
     `<h2 class="sct-mu-story-title" id="sct-mu-story-title">${escapeHtml(recap.headline)}</h2>` +
     (recap.dek ? `<p class="sct-mu-story-dek">${escapeHtml(recap.dek)}</p>` : "") +
-    `<h3 class="sct-mu-h3 sct-mu-story-kicker">Game recap</h3>` +
     `<div class="sct-mu-story-body">` +
     recap.paragraphs.map((p, i) => paragraph(p, i === recap.paragraphs.length - 1)).join("") +
     `</div>` +
+    after +
     `</section>`
   );
 }

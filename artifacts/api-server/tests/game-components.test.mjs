@@ -100,7 +100,7 @@ describe("fantasy points", () => {
 
   test("half PPR sits between, and the scoring rules each count", () => {
     assert.equal(fantasyPoints(byName("Cooper Kupp").stats, "half"), 14.6);
-    assert.equal(fantasyPoints({ passInt: 1 }, "ppr"), -2);
+    assert.equal(fantasyPoints({ passInt: 1 }, "ppr"), -1);
     assert.equal(fantasyPoints({ fumblesLost: 1 }, "ppr"), -2);
     assert.equal(fantasyPoints({ twoPtScored: 1, twoPtPassed: 1 }, "ppr"), 4);
   });
@@ -108,8 +108,8 @@ describe("fantasy points", () => {
   test("two-point conversions are credited from the scoring plays", () => {
     assert.equal(byName("Kyler Murray").stats.twoPtPassed, 1);
     assert.equal(byName("Antoine Wesley").stats.twoPtScored, 1);
-    // 137 × 0.04 − 4 + 0.6 + 2 = 4.08
-    assert.equal(fantasyPoints(byName("Kyler Murray").stats, "ppr"), 4.1);
+    // 137 × 0.04 − 2 × 1 + 0.6 + 2 = 6.08 (−1 per interception, not the spec's −2)
+    assert.equal(fantasyPoints(byName("Kyler Murray").stats, "ppr"), 6.1);
   });
 
   test("a return touchdown the defensive line missed is counted from the plays", () => {
@@ -210,6 +210,10 @@ describe("scoring plays from the feed", () => {
     assert.equal(p("Jalen Ramsey 45 Yd Fumble Return (Matt Gay Kick)").type, "fumble_return_td");
     assert.equal(p("Brandon Powell 76 Yd Punt Return (Matt Gay Kick)").type, "punt_return_td");
     assert.equal(p("something unreadable", "Touchdown").type, "other_td");
+    const stop = p("Denzel Boston 46 Yd pass from Deshaun Watson (Andre Szmyt Kick).");
+    assert.equal(stop.type, "pass_td");
+    assert.equal(stop.passer, "Deshaun Watson");
+    assert.deepEqual(stop.pat, { type: "kick", result: "good", player: "Andre Szmyt" });
   });
 });
 

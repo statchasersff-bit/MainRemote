@@ -203,6 +203,11 @@ export function refreshPlayerStats(): Promise<void> {
       await runBuilder("player/buildGameScores.js", [String(season)]).catch((err) => {
         logger.warn({ err }, "Player refresh: game scores not updated");
       });
+      // The recap pages' stored box scores. Also best effort, for the same
+      // reason: a game not stored yet is fetched live by the page instead.
+      await runBuilder("matchup/buildBoxscores.mjs", [String(season)]).catch((err) => {
+        logger.warn({ err }, "Player refresh: box scores not stored");
+      });
       reloadPlayerStats();
       lastSuccessMs = Date.now();
       lastError = null;

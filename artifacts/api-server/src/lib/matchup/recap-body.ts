@@ -87,6 +87,15 @@ export interface RecapBodyLinks {
   startSit: string;
   pointsAllowed: string | null;
   strengthOfSchedule: string | null;
+  /** Redraft Command's matchup analyzer, when the site has one configured. */
+  matchupAnalyzer?: string | null;
+}
+
+/** The game's top fantasy scorers in PPR, best first, for the FAQ. */
+export interface FaqScorer {
+  name: string;
+  ppr: number;
+  line: string;
 }
 
 export interface RecapBodyInput {
@@ -98,6 +107,10 @@ export interface RecapBodyInput {
   links: RecapBodyLinks;
   /** The all-time series, when the page has it. */
   rivalry?: RivalryInput | null;
+  /** The two best PPR lines in the game, for the FAQ; omitted without player lines. */
+  topScorers?: FaqScorer[];
+  /** Game info's extra rows, only what a feed carries. */
+  info?: { tv: string | null; attendance: number | null };
 }
 
 /* ------------------------------------------------------------------ atoms */
@@ -512,7 +525,7 @@ export function renderWhyWon(input: RecapBodyInput): string {
         `</ul>`
       : "";
 
-  return section("sct-rb-why", heading, subtitle(battlesLine(input, rows)) + table + strip);
+  return section("why", heading, subtitle(battlesLine(input, rows)) + table + strip);
 }
 
 /* ------------------------------------------------ section 2: head-to-head */
@@ -704,53 +717,52 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
   const upcoming = series.upcoming;
   const n = upcoming.length;
   const next = upcoming[0] ?? null;
-  // With no meeting left the section stays: the tools answer the same
-  // week-to-week question for either side, just not about a game between them.
-  const lead = next
-    ? `${COUNT_WORDS[n] ?? String(n)} meeting${n === 1 ? " is" : "s are"} left on the ` +
-      `${next.season} schedule: ${list(upcoming.map((g) => `${g.weekLabel}${whereUpcoming(input, g)}`))}. ` +
-      `Here's how to decide who to play in your league.`
-    : `The two teams don't meet again this season. If you roster a ${input.teams[game.away.abbr]?.singular ?? game.away.short} ` +
-      `or a ${input.teams[game.home.abbr]?.singular ?? game.home.short}, these answer the week-to-week question.`;
+  // Only with a meeting still to come: the section is about that meeting.
+  if (!next) return "";
+  const lead =
+    `${COUNT_WORDS[n] ?? String(n)} meeting${n === 1 ? " is" : "s are"} left on the ` +
+    `${next.season} schedule: ${list(upcoming.map((g) => `${g.weekLabel}${whereUpcoming(input, g)}`))}. ` +
+    `Here's how to decide who to play in your league.`;
 
-  const card = (title: string, text: string, href: string | null, cta: string): string =>
+  const card = (title: string, text: string, href: string | null | undefined, cta: string): string =>
     href
       ? `<li><a class="sct-rb-tool" href="${escapeHtml(href)}" data-cta="${cta}">` +
         `<span class="sct-rb-tool-title">${escapeHtml(title)}</span>` +
         `<span class="sct-rb-tool-text">${escapeHtml(text)}</span></a></li>`
       : "";
 
-  const pair = `${game.away.short} and ${game.home.short}`;
   const cards =
     card(
       "Start/Sit Tool",
-      `Should your ${game.away.short} or ${game.home.short} player start ${next ? `in ${next.weekLabel}` : "this week"}? ` +
+      `Should your ${game.away.short} or ${game.home.short} player start in ${next.weekLabel}? ` +
         `Compare the decision against your other options.`,
       links.startSit,
       "fantasy-outlook-startsit",
     ) +
     card(
+      "Matchup Analyzer",
+      "Your starters against your opponent's, with the swing plays for this week.",
+      links.matchupAnalyzer,
+      "fantasy-outlook-matchup-analyzer",
+    ) +
+    card(
       "Fantasy Points Allowed by Position",
-      `How the ${pair} defenses have treated QBs, RBs, WRs and TEs.`,
+      `How the ${game.away.short} and ${game.home.short} defenses have treated QBs, RBs, WRs and TEs.`,
       links.pointsAllowed,
       "fantasy-outlook-fpa",
     ) +
     card(
       "Strength of Schedule",
-      n === 0
-        ? "Where each team's remaining games fall in your fantasy playoff run."
-        : n === 1
-          ? "Where this matchup falls in each team's fantasy playoff run."
-          : `Where these ${n === 2 ? "two" : String(n)} matchups fall in each team's fantasy playoff run.`,
+      n === 1
+        ? "Where this matchup falls in each team's fantasy playoff run."
+        : "Where these two matchups fall in each team's fantasy playoff run.",
       links.strengthOfSchedule,
       "fantasy-outlook-sos",
     );
 
   return section(
-    "sct-rb-outlook",
-    next
-      ? `${game.away.short} vs ${game.home.short} fantasy outlook for ${next.season}`
-      : `${game.away.short} and ${game.home.short} in fantasy`,
+    "fantasy-outlook",
+    `${game.away.short} vs ${game.home.short} fantasy outlook for ${next.season}`,
     subtitle(lead) + `<ul class="sct-rb-tools">${cards}</ul>`,
   );
 }
@@ -787,6 +799,18 @@ export function recapFaq(input: RecapBodyInput): FaqItem[] {
     });
   }
 
+  const top = input.topScorers ?? [];
+  if (top.length) {
+    const first = top[0]!;
+    const second = top[1];
+    items.push({
+      question: `Who scored the most fantasy points in the ${game.seasonLabel} ${pair} ${round} game?`,
+      answer:
+        `${first.name} led all players with ${first.ppr.toFixed(1)} PPR points (${first.line}).` +
+        (second ? ` ${second.name} was next with ${second.ppr.toFixed(1)}.` : ""),
+    });
+  }
+
   if (series.games.length) {
     const record = seriesRecord(input);
     const n = series.games.length;
@@ -812,7 +836,7 @@ export function recapFaq(input: RecapBodyInput): FaqItem[] {
     const visits = series.upcoming.map((g) => {
       const away = input.teams[g.away]?.short ?? g.away;
       const home = input.teams[g.home]?.short ?? g.home;
-      const when = g.kickoff ? `${fullDate(g.kickoff)}: ` : `${g.weekLabel}, date to be set: `;
+      const when = g.kickoff ? `${g.weekLabel}, ${fullDate(g.kickoff)}: ` : `${g.weekLabel}, date to be set: `;
       return g.neutral
         ? `${when}the ${away} and ${home} meet${g.venueCity ? ` in ${g.venueCity}` : ""}.`
         : `${when}the ${away} visit the ${home}.`;
@@ -823,8 +847,7 @@ export function recapFaq(input: RecapBodyInput): FaqItem[] {
     });
   }
 
-  // Not about the next meeting, so asked whether or not there is one.
-  items.push({
+  if (series.upcoming.length) items.push({
     question: `Should I start ${game.away.short} or ${game.home.short} players in fantasy when they play each other?`,
     answer:
       "It depends on your roster, not only the player's ranking: who else you could start, " +
@@ -849,7 +872,7 @@ export function renderFaq(input: RecapBodyInput, items: FaqItem[] = recapFaq(inp
     return html;
   };
   return section(
-    "sct-rb-faq",
+    "faq",
     `${input.game.away.short} vs ${input.game.home.short} FAQ`,
     `<div class="sct-rb-faq-list">` +
       items
@@ -939,7 +962,7 @@ export function renderGameInfo(input: RecapBodyInput): string {
       )}</time>`,
     ]);
   }
-  if (when) rows.push(["Kickoff", escapeHtml(when.time)]);
+  if (when) rows.push(["Kickoff (ET)", escapeHtml(when.time.replace(/\s*ET$/, ""))]);
   if (game.venue) {
     rows.push([
       "Venue",
@@ -953,6 +976,9 @@ export function renderGameInfo(input: RecapBodyInput): string {
       rows.push(["Margin", `${margin} point${margin === 1 ? "" : "s"}`]);
     }
   }
+  // Time of game and the coaches have no feed here, so those rows are left out.
+  if (input.info?.tv) rows.push(["TV", escapeHtml(input.info.tv)]);
+  if (input.info?.attendance) rows.push(["Attendance", input.info.attendance.toLocaleString("en-US")]);
   return (
     `<section class="sct-rb-card sct-rb-info" aria-labelledby="sct-rb-info">` +
     `<h3 class="sct-rb-h3" id="sct-rb-info">Game info</h3>` +
@@ -979,22 +1005,47 @@ export interface RecapBodyParts {
   after?: string;
   /** Appended at the foot of the sidebar. */
   asideAfter?: string;
+  /**
+   * Lays out the main column itself, from this module's own sections, in place
+   * of the order above. The matchup page's tabs use it to put each section in
+   * its panel; `lead`, `afterWhy`, `middle` and `after` are then ignored.
+   */
+  arrange?: (own: RecapOwnSections) => string;
+}
+
+/** The main-column sections this module renders, for `arrange`. */
+export interface RecapOwnSections {
+  why: string;
+  headToHead: string;
+  outlook: string;
+  faq: string;
+  related: string;
 }
 
 export function renderRecapBody(input: RecapBodyInput, parts: RecapBodyParts = {}): string {
   const faq = recapFaq(input);
+  const own: RecapOwnSections = {
+    why: renderWhyWon(input),
+    headToHead: renderHeadToHead(input),
+    outlook: renderFantasyOutlook(input),
+    faq: renderFaq(input, faq),
+    related: renderRelated(input),
+  };
+  const main = parts.arrange
+    ? parts.arrange(own)
+    : (parts.lead ?? "") +
+      own.why +
+      (parts.afterWhy ?? "") +
+      (parts.middle ?? "") +
+      own.headToHead +
+      own.outlook +
+      own.faq +
+      own.related +
+      (parts.after ?? "");
   return (
     `<div class="sct-rb">` +
     `<div class="sct-rb-main">` +
-    (parts.lead ?? "") +
-    renderWhyWon(input) +
-    (parts.afterWhy ?? "") +
-    (parts.middle ?? "") +
-    renderHeadToHead(input) +
-    renderFantasyOutlook(input) +
-    renderFaq(input, faq) +
-    renderRelated(input) +
-    (parts.after ?? "") +
+    main +
     `</div>` +
     `<aside class="sct-rb-aside" aria-label="Redraft Command and game info">` +
     renderRedraftCard(input) +

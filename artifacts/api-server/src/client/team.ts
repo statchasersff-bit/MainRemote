@@ -275,6 +275,207 @@ function wireTabs(root: HTMLElement): void {
   });
 }
 
+/* ------------------------------------------------------ matchup tabs ---- */
+
+/**
+ * A completed game's tabs: Recap, Fantasy, Game flow, Head-to-head, Betting.
+ *
+ * The standard tablist: buttons with aria-selected, arrow keys, Home and End,
+ * Enter and Space. Each tab has a hash (#recap, #fantasy, #game-flow,
+ * #head-to-head, #betting), written with replaceState so switching adds no
+ * history. A hash that names something INSIDE a panel (#verdicts, #wp) opens
+ * that panel and scrolls to it. With scripting off nothing here runs: the bar
+ * stays hidden and every panel shows, stacked in order.
+ */
+function wireMatchupTabs(root: HTMLElement): void {
+  const found = root.querySelector<HTMLElement>("[data-mu-tabbar]");
+  if (!found) return;
+  const bar: HTMLElement = found;
+  const tabs = Array.from(bar.querySelectorAll<HTMLButtonElement>("[data-mu-tab-link]"));
+  const ids = tabs.map((tab) => tab.dataset["muTabLink"]!);
+  const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-mu-tab]"));
+  const list = bar.querySelector<HTMLElement>(".sct-mu-tabs-list");
+  if (tabs.length === 0) return;
+
+  let active = "recap";
+  function select(id: string): void {
+    active = id;
+    for (const panel of panels) {
+      const on = panel.dataset["muTab"] === id;
+      panel.classList.toggle("is-active", on);
+      panel.hidden = !on;
+    }
+    for (const tab of tabs) {
+      const on = tab.dataset["muTabLink"] === id;
+      tab.classList.toggle("is-active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.tabIndex = on ? 0 : -1;
+    }
+    reveal();
+    score();
+  }
+
+  /** Keep the chosen tab in view where the list scrolls (phones). */
+  function reveal(): void {
+    const tab = tabs.find((t) => t.dataset["muTabLink"] === active);
+    if (!tab || !list || list.scrollWidth <= list.clientWidth) return;
+    const box = list.getBoundingClientRect();
+    const r = tab.getBoundingClientRect();
+    if (r.left < box.left) list.scrollLeft -= box.left - r.left;
+    else if (r.right > box.right) list.scrollLeft += r.right - box.right;
+  }
+  void document.fonts?.ready.then(reveal);
+
+  const barHeight = (): number => bar.getBoundingClientRect().height;
+
+  /** After a switch: bring the panel's top just under the bar, only if it is off screen. */
+  function toPanelTop(id: string): void {
+    const panel = panels.find((p) => p.dataset["muTab"] === id);
+    if (!panel) return;
+    const top = panel.getBoundingClientRect().top;
+    const offset = (Number.parseFloat(getComputedStyle(bar).top) || 0) + barHeight();
+    if (top < offset || top > window.innerHeight) {
+      window.scrollTo({ top: window.scrollY + top - offset - 16 });
+    }
+  }
+
+  /** The tab a hash belongs to, and the element to scroll to inside it. */
+  function resolve(hash: string): { tab: string; target: HTMLElement | null } | null {
+    const id = decodeURIComponent(hash.replace(/^#/, ""));
+    if (!id) return null;
+    if (ids.includes(id)) return { tab: id, target: null };
+    const el = document.getElementById(id);
+    const panel = el?.closest<HTMLElement>("[data-mu-tab]");
+    if (!el || !root.contains(el)) return null;
+    // A section below the panels (FAQ, Keep exploring) is on every tab.
+    return { tab: panel ? panel.dataset["muTab"]! : active, target: el };
+  }
+
+  function writeHash(id: string): void {
+    try {
+      history.replaceState(null, "", `${location.pathname}${location.search}#${id}`);
+    } catch {
+      // A sandboxed frame may refuse history writes; the tab still switches.
+    }
+  }
+
+  function track(id: string): void {
+    const label = tabs.find((t) => t.dataset["muTabLink"] === id)?.textContent ?? id;
+    const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+    try {
+      if (typeof w.gtag === "function") w.gtag("event", "recap_tab_view", { tab_name: label });
+      else if (Array.isArray(w.dataLayer)) w.dataLayer.push({ event: "recap_tab_view", tab_name: label });
+      root.dispatchEvent(new CustomEvent("recap_tab_view", { bubbles: true, detail: { tab: label } }));
+    } catch {
+      // Analytics must never break the tabs.
+    }
+  }
+
+  function activate(id: string, focus = false): void {
+    if (id === active) return;
+    select(id);
+    writeHash(id);
+    toPanelTop(id);
+    track(id);
+    if (focus) tabs.find((t) => t.dataset["muTabLink"] === id)?.focus();
+  }
+
+  // The score line: shown while the scoreboard is off screen, and on every
+  // tab but Recap (the scoreboard lives in the Recap panel).
+  const scoreLine = bar.querySelector<HTMLElement>("[data-mu-score]");
+  const hero = root.querySelector<HTMLElement>('[data-mu-tab="recap"] .sct-sbh');
+  let heroVisible = true;
+  function score(): void {
+    scoreLine?.classList.toggle("is-shown", active !== "recap" || !heroVisible);
+  }
+  if (hero && scoreLine && typeof IntersectionObserver === "function") {
+    new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) heroVisible = e.isIntersecting;
+        score();
+      },
+      { rootMargin: `-${Math.round(barHeight())}px 0px 0px 0px` },
+    ).observe(hero);
+  } else {
+    heroVisible = false;
+  }
+
+  // A shadow under the bar once the page has scrolled.
+  const shade = (): void => {
+    bar.classList.toggle("is-scrolled", window.scrollY > 0);
+  };
+  window.addEventListener("scroll", shade, { passive: true });
+  shade();
+
+  // Settle before the CSS hides anything, so a deep link never flashes Recap.
+  const landed = resolve(location.hash);
+  select(landed?.tab ?? "recap");
+  root.dataset["muTabs"] = "js";
+  if (landed?.target) landed.target.scrollIntoView();
+  else if (landed && landed.tab !== "recap") toPanelTop(landed.tab);
+
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => activate(tab.dataset["muTabLink"]!));
+  }
+
+  list?.addEventListener("keydown", (event: KeyboardEvent) => {
+    const index = tabs.findIndex((t) => t === document.activeElement);
+    if (index < 0) return;
+    let next = index;
+    switch (event.key) {
+      case "ArrowRight": next = (index + 1) % tabs.length; break;
+      case "ArrowLeft": next = (index - 1 + tabs.length) % tabs.length; break;
+      case "Home": next = 0; break;
+      case "End": next = tabs.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    activate(ids[next]!, true);
+  });
+
+  // In-page links to a tab or to a section inside one (#verdicts, #fantasy).
+  root.addEventListener("click", (event) => {
+    const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('a[href^="#"]');
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+    const hit = resolve(link.getAttribute("href") ?? "");
+    if (!hit) return;
+    event.preventDefault();
+    if (hit.tab !== active) {
+      select(hit.tab);
+      track(hit.tab);
+    }
+    writeHash(hit.target ? decodeURIComponent(link.hash.slice(1)) : hit.tab);
+    if (hit.target) hit.target.scrollIntoView();
+    else toPanelTop(hit.tab);
+  });
+  window.addEventListener("hashchange", () => {
+    const hit = resolve(location.hash);
+    if (!hit) return;
+    if (hit.tab !== active) select(hit.tab);
+    if (hit.target) hit.target.scrollIntoView();
+  });
+}
+
+/**
+ * The sidebar sticks under the tab bar, but only when it fits the window:
+ * a sidebar taller than the screen would hide its own foot until the end of
+ * the page.
+ */
+function wireStickyAside(root: HTMLElement): void {
+  const aside = root.querySelector<HTMLElement>(".sct-mu .sct-rb-aside, .sct-rb-aside");
+  const bar = root.querySelector<HTMLElement>("[data-mu-tabbar]");
+  if (!aside || !bar) return;
+  const fit = (): void => {
+    const top = bar.getBoundingClientRect().height + 16;
+    root.style.setProperty("--mu-bar-h", `${Math.round(bar.getBoundingClientRect().height)}px`);
+    aside.classList.toggle("is-sticky", aside.offsetHeight + top <= window.innerHeight);
+  };
+  fit();
+  window.addEventListener("resize", fit);
+  if (typeof ResizeObserver === "function") new ResizeObserver(fit).observe(aside);
+  void document.fonts?.ready.then(fit);
+}
+
 /* ----------------------------------------------------------- switcher ---- */
 
 function wireSwitcher(root: HTMLElement): void {
@@ -548,6 +749,15 @@ function wireScoring(root: HTMLElement): void {
       const unit = number.parentElement?.querySelector(".sct-ls-unit");
       if (unit) unit.textContent = POINTS_UNIT[format];
     }
+    // The Fantasy tab's verdict cards carry their points the same way.
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>("[data-fp-notes] [data-ppr][data-half][data-std]"))) {
+      el.textContent = el.getAttribute(`data-${format}`) ?? el.textContent;
+      if (el.classList.contains("sct-fp-diff")) {
+        const text = el.textContent ?? "";
+        el.classList.toggle("is-pos", text.startsWith("+"));
+        el.classList.toggle("is-neg", text.startsWith("\u2212"));
+      }
+    }
     // Re-sort a table whose active sort is a swapped column: two clicks run the
     // same direction again on the new values.
     for (const table of Array.from(root.querySelectorAll<HTMLTableElement>("table[data-sct-sortable]"))) {
@@ -660,28 +870,26 @@ function wireFantasyFormat(root: HTMLElement): void {
 }
 
 /**
- * The highlights box: a thumbnail button until pressed, then the player. The
- * iframe is never in the HTML, so nothing from YouTube loads for a reader who
- * does not ask for it. A thumbnail that fails leaves the team-colour ground.
+ * The highlights box: a thumbnail and a play button until pressed, then the
+ * youtube-nocookie player in its place. A thumbnail that fails leaves the
+ * team-colour ground.
  */
 function wireHighlights(root: HTMLElement): void {
   for (const img of Array.from(root.querySelectorAll<HTMLImageElement>("img[data-hl-thumb]"))) {
     if (img.complete && img.naturalWidth === 0) img.remove();
     else img.addEventListener("error", () => img.remove(), { once: true });
   }
-  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("button.sct-hl-play[data-yt]"))) {
+  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-hl-embed]"))) {
     button.addEventListener(
       "click",
       () => {
-        const id = button.getAttribute("data-yt") ?? "";
-        if (!/^[\w-]{6,20}$/.test(id)) return;
         const frame = document.createElement("iframe");
+        frame.src = button.dataset["hlEmbed"]!;
+        frame.title = button.dataset["hlTitle"] ?? "YouTube video player";
         frame.className = "sct-hl-frame";
-        frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
-        frame.title = button.getAttribute("data-yt-title") ?? "Game highlights";
-        frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
         frame.allowFullscreen = true;
-        frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
         button.replaceWith(frame);
         frame.focus();
       },
@@ -947,6 +1155,7 @@ function boot(): void {
   );
   for (const root of roots) {
     wireTabs(root);
+    wireMatchupTabs(root);
     wireSwitcher(root);
     wireFacts(root);
     wireHeroLead(root);
@@ -956,6 +1165,7 @@ function boot(): void {
     wireScoring(root);
     wireFantasyFormat(root);
     wireHighlights(root);
+    wireStickyAside(root);
     wireFrameHeight(root);
   }
 }

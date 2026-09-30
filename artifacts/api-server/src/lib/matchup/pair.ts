@@ -48,20 +48,38 @@ const SEPARATOR = "-vs-";
  */
 export const RECENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
+/** A game still counts as upcoming this long after its listed kickoff. */
+export const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000;
+
+/**
+ * Is this fixture still one the pair's page would lead with as upcoming?
+ *
+ * The same test matchup-data.ts decides the page's state with: not final, and
+ * either undated or kicked off less than IN_PROGRESS_GRACE_MS ago.
+ */
+export function isUpcomingFixture(isFinal: boolean, kickoffMs: number | null, now: number): boolean {
+  return !isFinal && (kickoffMs === null || kickoffMs + IN_PROGRESS_GRACE_MS > now);
+}
+
 /**
  * Does this finished meeting have a dated address of its own yet?
  *
  * False while it is still what the pair's page leads with, and false for
  * anything that is not a finished game with a kickoff behind it — there is no
  * recap of a fixture, so there is no dated page for one either.
+ *
+ * `rematchAhead` is whether the two clubs still have an upcoming meeting this
+ * season. Upcoming beats recent on the pair's page, so a divisional game
+ * inside the window is already let go of and its recap lives at the dated URL.
  */
 export function meetingHasOwnAddress(
   kickoffMs: number | null,
   isFinal: boolean,
   now: number,
+  rematchAhead = false,
 ): boolean {
   if (!isFinal || kickoffMs === null) return false;
-  return now - kickoffMs > RECENT_WINDOW_MS;
+  return rematchAhead || now - kickoffMs > RECENT_WINDOW_MS;
 }
 
 /**

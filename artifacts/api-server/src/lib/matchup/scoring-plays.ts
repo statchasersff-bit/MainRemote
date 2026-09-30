@@ -129,8 +129,9 @@ export function parseEspnScoringPlay(raw: EspnScoringPlay): ScoringPlay | null {
     return { ...base, type: "safety", yards: null, tackled: tackled?.[1]?.trim() };
   }
 
-  // Split the try off the end: "... (Matt Gay Kick)".
-  const tailMatch = text.match(/\(([^()]*)\)\s*$/);
+  // Split the try off the end: "... (Matt Gay Kick)". The feed sometimes adds
+  // a full stop after the bracket, and without this the kick and the passer are lost.
+  const tailMatch = text.match(/\(([^()]*)\)\s*\.?\s*$/);
   const pat = tailMatch ? pointAfter(tailMatch[1]!) : undefined;
   const body = tailMatch ? text.slice(0, tailMatch.index).trim() : text;
 

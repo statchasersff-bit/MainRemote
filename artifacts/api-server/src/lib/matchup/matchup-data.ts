@@ -19,7 +19,7 @@ import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/s
 import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-data";
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
-import { RECENT_WINDOW_MS, type MatchupGameRef, type MatchupPair } from "./pair";
+import { RECENT_WINDOW_MS, isUpcomingFixture, type MatchupGameRef, type MatchupPair } from "./pair";
 import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
@@ -156,8 +156,6 @@ export const HISTORY_SEASONS = 5;
 
 
 
-/** A game still counts as upcoming this long after its listed kickoff. */
-const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000;
 
 /** A's schedule row against B, turned into a meeting between the two. */
 function meetingFrom(game: ScheduleGame, season: number, a: NflTeam, b: NflTeam): Meeting {
@@ -227,10 +225,7 @@ function meetingsIn(
 }
 
 function isUpcoming(meeting: Meeting, now: number): boolean {
-  return (
-    meeting.status !== "final" &&
-    (meeting.kickoffMs === null || meeting.kickoffMs + IN_PROGRESS_GRACE_MS > now)
-  );
+  return isUpcomingFixture(meeting.status === "final", meeting.kickoffMs, now);
 }
 
 /**

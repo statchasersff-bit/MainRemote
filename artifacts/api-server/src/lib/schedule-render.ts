@@ -51,6 +51,7 @@ import { escapeHtml, escapeJsonLd } from "./render";
 import {
   canonicalizeMatchupPair,
   gameSegment,
+  isUpcomingFixture,
   meetingHasOwnAddress,
 } from "./matchup/pair";
 import { markFrame, networkMarkFor } from "./team/network-marks";
@@ -432,7 +433,9 @@ function teamScheduleHref(
  * Week 3 row in December is asking for; a game inside the window, or still to
  * be played, does not have one yet and the dated URL would 301 up to the pair.
  * So the board asks meetingHasOwnAddress() rather than keeping a second copy of
- * the fourteen days.
+ * the fourteen days. `upcomingPairs` carries the one fact a row cannot see on
+ * its own: whether the two clubs meet again this season, in which case the
+ * pair's page leads with that game and this one already has its dated address.
  *
  * Null when either club is unresolved, which is the same rule the rest of this
  * file follows: a link whose destination we cannot name is not rendered. A
@@ -448,6 +451,7 @@ function matchupHref(
   season: number,
   options: ScheduleRenderOptions,
   now: number,
+  upcomingPairs: ReadonlySet<string>,
 ): string | null {
   const pair = canonicalizeMatchupPair(game.away, game.home);
   if (!pair) return null;
@@ -461,6 +465,7 @@ function matchupHref(
       game.kickoffMs,
       game.status === "final" && game.awayScore !== null && game.homeScore !== null,
       now,
+      upcomingPairs.has(pair.slug),
     ) &&
     // Every game this tool carries is a regular-season game — schedule-data.ts
     // drops every other game_type — so the segment is never a postseason round.
@@ -490,6 +495,7 @@ function renderGameRow(
   season: number,
   options: ScheduleRenderOptions,
   now: number,
+  upcomingPairs: ReadonlySet<string>,
 ): string {
   const live = game.status === "live";
   const hasScore = game.awayScore !== null && game.homeScore !== null;
@@ -556,7 +562,7 @@ function renderGameRow(
     `<div class="scs-game-meta">` +
     networkHtml(game.network) +
     `</div>` +
-    renderMatchupCell(game, season, options, now) +
+    renderMatchupCell(game, season, options, now, upcomingPairs) +
     `</article>`
   );
 }
@@ -579,8 +585,9 @@ function renderMatchupCell(
   season: number,
   options: ScheduleRenderOptions,
   now: number,
+  upcomingPairs: ReadonlySet<string>,
 ): string {
-  const href = matchupHref(game, season, options, now);
+  const href = matchupHref(game, season, options, now, upcomingPairs);
   if (!href) return `<div class="scs-game-go"></div>`;
 
   const away = game.away?.fullName ?? game.awayCode;
@@ -826,6 +833,17 @@ function renderDivisionCard(games: ScheduleGame[]): string {
 
 /* -------------------------------------------------------------- the week */
 
+/** The pairs with a meeting still to come this season, by pair slug. */
+function upcomingPairSlugs(games: ScheduleGame[], now: number): Set<string> {
+  const slugs = new Set<string>();
+  for (const game of games) {
+    if (!isUpcomingFixture(game.status === "final", game.kickoffMs, now)) continue;
+    const pair = canonicalizeMatchupPair(game.away, game.home);
+    if (pair) slugs.add(pair.slug);
+  }
+  return slugs;
+}
+
 function renderWeekView(
   schedule: ScheduleSeason,
   options: ScheduleRenderOptions,
@@ -835,13 +853,13 @@ function renderWeekView(
   const linkQuery = options.linkQuery ?? "";
   const games = weekGames(schedule, state.week, state.filter);
   const all = weekGames(schedule, state.week, "all");
+  const now = options.now ?? Date.now();
+  const upcomingPairs = upcomingPairSlugs(schedule.games, now);
 
   const board =
     games.length > 0
       ? games
-          .map((game) =>
-            renderGameRow(game, schedule.season, options, options.now ?? Date.now()),
-          )
+          .map((game) => renderGameRow(game, schedule.season, options, now, upcomingPairs))
           .join("")
       : renderEmpty(
           `No games match`,

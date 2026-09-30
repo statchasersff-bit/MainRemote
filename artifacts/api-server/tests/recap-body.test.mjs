@@ -118,7 +118,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
 
   test("why won: the battles, in order, with the city", () => {
     assert.equal(
-      text(doc.querySelector("#sct-rb-why ~ .sct-rb-sub")),
+      text(doc.querySelector("#why ~ .sct-rb-sub")),
       "Los Angeles won the efficiency, turnover, third-down, and time of possession battles.",
     );
   });
@@ -204,9 +204,9 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.doesNotMatch(doc.body.textContent, /Recap →/);
   });
 
-  test("fantasy outlook: two games left, three tool cards with placements", () => {
+  test("fantasy outlook: two games left, the tool cards with placements", () => {
     assert.equal(
-      text(doc.querySelector("#sct-rb-outlook ~ .sct-rb-sub")),
+      text(doc.querySelector("#fantasy-outlook ~ .sct-rb-sub")),
       "Two meetings are left on the 2026 schedule: Week 6 in Los Angeles and Week 10 in Arizona. " +
         "Here's how to decide who to play in your league.",
     );
@@ -231,7 +231,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.equal(text(items[1].querySelector("p")), `The Rams lead 8${DASH}3 across 11 meetings, including this Wild Card game.`);
     assert.equal(
       text(items[2].querySelector("p")),
-      "Sunday, October 18, 2026: the Cardinals visit the Rams. Sunday, November 15, 2026: the Rams visit the Cardinals.",
+      "Week 6, Sunday, October 18, 2026: the Cardinals visit the Rams. Week 10, Sunday, November 15, 2026: the Rams visit the Cardinals.",
     );
     const link = items[3].querySelector("a");
     assert.equal(text(link), "Redraft Command's Start/Sit Tool");
@@ -259,7 +259,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.deepEqual(dl, [
       ["Round", "NFC Wild Card"],
       ["Date", "Jan 17, 2022"],
-      ["Kickoff", "8:15 PM ET"],
+      ["Kickoff (ET)", "8:15 PM"],
       ["Venue", "SoFi Stadium, Inglewood, CA"],
       ["Winner", "Los Angeles Rams"],
       ["Margin", "23 points"],
@@ -324,9 +324,9 @@ describe("a game the away team won", () => {
   const doc = render(input);
 
   test("is headed for the away side and credits Arizona", () => {
-    assert.equal(text(doc.querySelector("#sct-rb-why")), "Why the Cardinals won");
+    assert.equal(text(doc.querySelector("#why")), "Why the Cardinals won");
     assert.equal(
-      text(doc.querySelector("#sct-rb-why ~ .sct-rb-sub")),
+      text(doc.querySelector("#why ~ .sct-rb-sub")),
       "Arizona won the turnover and time of possession battles.",
     );
     assert.equal(text(doc.querySelectorAll(".sct-rb-take-value")[0]), "+64");
@@ -362,7 +362,7 @@ describe("a tie", () => {
   const doc = render(input);
 
   test("by the numbers, no takeaways, tie in the series and the facts", () => {
-    assert.equal(text(doc.querySelector("#sct-rb-why")), "Cardinals vs Rams by the numbers");
+    assert.equal(text(doc.querySelector("#why")), "Cardinals vs Rams by the numbers");
     assert.equal(doc.querySelector(".sct-rb-takeaways"), null);
     const tie = [...doc.querySelectorAll("ol.sct-rb-tiles li")].find((t) => t.classList.contains("is-tie"));
     assert.equal(text(tie), "T");
@@ -387,25 +387,15 @@ describe("no meetings left on the schedule", () => {
   const input = { ...WILD_CARD, series: { ...WILD_CARD.series, upcoming: [] } };
   const doc = render(input);
 
-  test("the fantasy tools stay, without the meetings sentence", () => {
-    const outlook = doc.querySelector("#sct-rb-outlook").closest("section");
-    assert.equal(text(outlook.querySelector("h2")), "Cardinals and Rams in fantasy");
-    assert.equal(
-      text(outlook.querySelector(".sct-rb-sub")),
-      "The two teams don't meet again this season. If you roster a Cardinal or a Ram, " +
-        "these answer the week-to-week question.",
-    );
-    assert.equal(outlook.querySelectorAll("a.sct-rb-tool").length, 3);
-    assert.match(text(outlook), /start this week\?/);
-    assert.doesNotMatch(text(outlook), /Week \d/);
+  test("no fantasy outlook without a meeting to come", () => {
+    assert.equal(doc.querySelector("#fantasy-outlook"), null);
   });
 
-  test("no when-next question and no upcoming list; the start/sit question stays", () => {
+  test("no when-next or start/sit question and no upcoming list", () => {
     const questions = body.recapFaq(input).map((q) => q.question);
-    assert.equal(questions.length, 3);
-    assert.ok(!questions.some((q) => /play next/.test(q)));
-    assert.match(questions[2], /^Should I start/);
-    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 3);
+    assert.equal(questions.length, 2);
+    assert.ok(!questions.some((q) => /play next|^Should I start/.test(q)));
+    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 2);
     assert.equal(doc.querySelectorAll("ul.sct-rb-meetings").length, 1);
   });
 

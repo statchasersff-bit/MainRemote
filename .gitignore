@@ -82,3 +82,7 @@ artifacts/api-server/dev-server.log
 
 # Lock file guarding scripts/dev-restart.sh against overlapping runs.
 artifacts/api-server/.dev-restart.lock
+
+# Share images, drawn on first request from the stored box scores (og-image.ts).
+# Derived, and redrawn when deleted, so never committed.
+artifacts/api-server/data/og/

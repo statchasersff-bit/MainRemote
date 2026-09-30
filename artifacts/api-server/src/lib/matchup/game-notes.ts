@@ -65,10 +65,9 @@ export function gameNotes(pairSlug: string, gameSegment: string): GameNotes {
 }
 
 /**
- * The video the page may describe in its JSON-LD: a hand-written one only.
- * The scanned videos in game-videos.ts show on the page but add no
- * VideoObject until mak approves that schema change across every recap.
+ * The video the page describes in its JSON-LD: whichever one it shows, the
+ * scanned uploads in game-videos.ts included (mak approved, 2026-09-30).
  */
 export function schemaVideo(pairSlug: string, gameSegment: string): GameVideo | null {
-  return GAME_NOTES[`${pairSlug}/${gameSegment}`]?.video ?? null;
+  return gameNotes(pairSlug, gameSegment).video ?? null;
 }

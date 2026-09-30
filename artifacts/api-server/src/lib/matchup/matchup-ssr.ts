@@ -24,6 +24,7 @@ import {
 } from "./matchup-render";
 import { scoreboardHeading } from "./scoreboard-hero";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
+import { matchupShare } from "./matchup-render";
 import type { MatchupPair } from "./pair";
 import { LruCache } from "../lru";
 
@@ -64,6 +65,10 @@ export interface MatchupSsrResult {
   heading: string;
   /** The <title>, brand included when it fits. Same string the app page uses. */
   title: string;
+  /** The meta description, for the plugin to print as the API wrote it. */
+  description: string;
+  /** A completed game's share image, path on this origin, and its alt text; null elsewhere. */
+  shareImage: { path: string; alt: string } | null;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
@@ -116,6 +121,8 @@ async function renderWithData(
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return { result: hit, data };
 
+  const meta = matchupPageMeta(data, "");
+  const share = matchupShare(data);
   const result: MatchupSsrResult = {
     html: renderMatchupPage(data, options),
     version,
@@ -125,7 +132,9 @@ async function renderWithData(
     pinnedMissing: data.pinnedRequested && data.pinned === null,
     pinnedIsCurrent: data.pinnedIsCurrent,
     heading: pageHeadingFor(data),
-    title: matchupPageMeta(data, "").title,
+    title: meta.title,
+    description: meta.description,
+    shareImage: share ? { path: share.path, alt: share.alt } : null,
   };
   fragmentCache.set(key, result);
   return { result, data };
