@@ -482,6 +482,7 @@ async function refreshEspn(
 export function invalidateScheduleCaches(): void {
   espnCache.clear();
   espnInFlight.clear();
+  sharedCsv = null;
 }
 
 /* ------------------------------------------------------------- the slate */
@@ -574,6 +575,39 @@ function parseSlate(csv: string, season: number): RawGame[] {
   return games;
 }
 
+/**
+ * games.csv, shared between seasons for a few minutes.
+ *
+ * The file holds every season since 1999, and each season is its own cache
+ * key, so a crawler walking ?season= used to download the whole file once per
+ * season. One download now serves every season asked for inside the window.
+ * Kept short on purpose: the slate cache above it is what holds a season for
+ * hours, and a long window here would stack on top of that TTL.
+ */
+const CSV_SHARE_MS = 10 * 60 * 1000;
+let sharedCsv: { at: number; text: Promise<string> } | null = null;
+
+function gamesCsv(): Promise<string> {
+  const now = Date.now();
+  if (sharedCsv && now - sharedCsv.at < CSV_SHARE_MS) return sharedCsv.text;
+  // Its own timeout, not a caller's signal: one caller giving up must not
+  // abort the download every other season is waiting on.
+  const text = fetch(GAMES_CSV_URL, {
+    headers: { Accept: "text/csv", "User-Agent": SCHEDULE_USER_AGENT },
+    signal: AbortSignal.timeout(20_000),
+  }).then((response) => {
+    if (!response.ok) throw new Error(`nflverse responded ${response.status}`);
+    return response.text();
+  });
+  const entry = { at: now, text };
+  sharedCsv = entry;
+  // A failure is not shared: the next season to ask tries again.
+  text.catch(() => {
+    if (sharedCsv === entry) sharedCsv = null;
+  });
+  return text;
+}
+
 const slateCache = createKeyedCache<RawGame[]>({
   name: "nflverse-schedule",
   // The slate is stable for hours; every visitor after the first is served from
@@ -584,16 +618,9 @@ const slateCache = createKeyedCache<RawGame[]>({
   // season nflverse has not published yet — every March to mid-May — and at a
   // minute each request re-downloaded the whole games.csv to learn that again.
   errorBackoffMs: 30 * 60 * 1000,
-  load: async (key, signal) => {
+  load: async (key) => {
     const season = Number(key);
-    const response = await fetch(GAMES_CSV_URL, {
-      headers: { Accept: "text/csv", "User-Agent": SCHEDULE_USER_AGENT },
-      signal,
-    });
-    if (!response.ok) {
-      throw new Error(`nflverse responded ${response.status}`);
-    }
-    const games = parseSlate(await response.text(), season);
+    const games = parseSlate(await gamesCsv(), season);
     if (games.length === 0) {
       // A 200 with no rows for this season is a failure, not an empty season —
       // the same rule the team pages apply to an empty ESPN response. Throwing

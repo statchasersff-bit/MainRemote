@@ -438,6 +438,9 @@ router.get("/schedule/download.csv", (req, res) => {
         return;
       }
       const query = exportQuery(req);
+      // Named after the season served, not the one asked for: March to May
+      // the current season falls back to the last one, and a "2026" file
+      // holding 2025's games is worse than no file.
       const scope = query.team
         ? query.team.abbreviation
         : query.week
@@ -447,7 +450,7 @@ router.get("/schedule/download.csv", (req, res) => {
       res
         .set(
           "Content-Disposition",
-          `attachment; filename="nfl-schedule-${season}-${scope}.csv"`,
+          `attachment; filename="nfl-schedule-${data.season}-${scope}.csv"`,
         )
         .set("Cache-Control", "public, max-age=300")
         .set("X-Robots-Tag", "noindex")
@@ -478,7 +481,7 @@ router.get("/schedule/schedule.ics", (req, res) => {
       res
         .set(
           "Content-Disposition",
-          `attachment; filename="nfl-schedule-${season}-${scope}.ics"`,
+          `attachment; filename="nfl-schedule-${data.season}-${scope}.ics"`,
         )
         .set("Cache-Control", "public, max-age=300")
         .set("X-Robots-Tag", "noindex")

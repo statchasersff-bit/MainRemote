@@ -1184,6 +1184,15 @@ $bare = statchasers_schedule_args( array() );
 is( $bare['view'], 'matrix', 'a bare mount is the grid' );
 is( $bare['week'], 0, 'and lets the API pick the week' );
 
+// The team lens is gone from the API; a mount that still names it is the grid,
+// and neither the team nor a filter the grid ignores reaches the cache key.
+$lens = statchasers_schedule_args( array( 'view' => 'team', 'team' => 'NE', 'filter' => 'division' ) );
+is( $lens['view'], 'matrix', 'view="team" falls back to the grid' );
+is( isset( $lens['team'] ), false, 'the team is not carried' );
+is( $lens['filter'], 'all', 'the grid drops the filter' );
+$weekly = statchasers_schedule_args( array( 'view' => 'week', 'filter' => 'division' ) );
+is( $weekly['filter'], 'division', 'the weekly board keeps it' );
+
 /*
  * The heading off a week URL, which is the page's own name and nothing added.
  * The week case is in the `week` group, for the reason given there.
