@@ -292,6 +292,48 @@ export function refreshDailyData(): Promise<void> {
   return running;
 }
 
+/**
+ * The Injury tab's practice grid (scripts/player/buildPracticeReports.mjs).
+ *
+ * NFL.com shows only the latest report of the week, so each day's
+ * participation exists only if the page is read on that day, after the
+ * mid-afternoon Eastern release. Three reads a day, UTC: 21:00, 23:30 and
+ * 02:30 (5:00, 7:30 and 10:30 PM EDT) — the later two catch a late report,
+ * and each overwrites that day's entry with what the page says. Its own lock
+ * and clock: four small requests, and a failure costs only the grid.
+ */
+const PRACTICE_UTC_MINUTES = [21 * 60, 23 * 60 + 30, 2 * 60 + 30];
+let practiceRunning: Promise<void> | null = null;
+let practiceStartedMs = 0;
+
+function lastPracticeMs(nowMs: number): number {
+  let best = 0;
+  for (const minutes of PRACTICE_UTC_MINUTES) {
+    const at = new Date(nowMs);
+    at.setUTCHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+    if (at.getTime() > nowMs) at.setUTCDate(at.getUTCDate() - 1);
+    best = Math.max(best, at.getTime());
+  }
+  return best;
+}
+
+export function refreshPracticeReports(): Promise<void> {
+  if (practiceRunning) return practiceRunning;
+  practiceStartedMs = Date.now();
+  practiceRunning = runBuilder("player/buildPracticeReports.mjs", [String(seasonYear())])
+    .then(() => {
+      // The page version reads the file's mtime; this drops what is cached.
+      invalidatePlayerRenderCache();
+    })
+    .catch((err) => {
+      logger.warn({ err }, "Practice reports not updated");
+    })
+    .finally(() => {
+      practiceRunning = null;
+    });
+  return practiceRunning;
+}
+
 /** The most recent daily moment at or before `nowMs`. */
 function lastDailyMs(nowMs: number): number {
   const at = new Date(nowMs);
@@ -302,6 +344,10 @@ function lastDailyMs(nowMs: number): number {
 
 async function tick(): Promise<void> {
   const now = Date.now();
+  // Beside the other two jobs rather than behind them: it reads no file they write.
+  if (practiceStartedMs === 0 || practiceStartedMs < lastPracticeMs(now)) {
+    void refreshPracticeReports();
+  }
   if (running) return;
   // Game logs first: they are what readers notice.
   if (now - lastFailureMs >= FAILURE_BACKOFF_MS && (await gameLogsDue(now))) {

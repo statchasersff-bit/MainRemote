@@ -897,7 +897,7 @@ describe("the game log tab", () => {
     assert.ok(table, "All shows the Stats tab's career table");
     assert.match(
       blocks[0].querySelector(".scp-sect-title").textContent,
-      /Career By Season/,
+      /career stats by season/,
     );
     // Every season the selector offers has a line in it, which is what makes
     // the table an index to the logs rather than a second copy of Stats.
@@ -1072,11 +1072,22 @@ describe("the game log tab", () => {
     // get written.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const intro = doc.querySelector("#game-log .scp-logintro");
+    const games = doc.querySelectorAll(
+      '#game-log table.scp-table--log tbody tr.scp-row[data-status="active"]',
+    ).length;
+    // The totals sentence is gone, so with one game there is nothing left to
+    // say that the table does not: one game is not an average.
+    if (games <= 1) {
+      assert.equal(intro, null, "one game gets no intro");
+      return;
+    }
     assert.ok(intro, "the generated intro is in the HTML");
-    assert.ok(
+    assert.equal(
       intro.querySelector(".scp-lede"),
-      "the totals sentence is always there when a game has been played",
+      null,
+      "the totals sentence was removed on request",
     );
+    assert.doesNotMatch(intro.textContent, /That is worth/);
 
     const table = doc.querySelector("#game-log table.scp-table--log");
     if (table) {
@@ -1099,28 +1110,9 @@ describe("the game log tab", () => {
     const text = intro.textContent;
     assert.ok(text.includes(fixture.name), "it names the player");
 
-    // The second paragraph divides the season, so it only exists where there
-    // is a season to divide. With one game played the quotient IS the
-    // dividend, and the paragraph is dropped rather than saying the sentence
-    // above it a second time.
     const summary = intro.querySelector(".scp-note");
-    const games = doc.querySelectorAll(
-      '#game-log table.scp-table--log tbody tr.scp-row[data-status="active"]',
-    ).length;
-    if (games > 1) {
-      assert.ok(summary, "a season of games is summarised per game");
-      assert.ok(/per game/.test(summary.textContent), "it talks in per-game terms");
-    } else {
-      assert.equal(summary, null, "one game gets no divided-season paragraph");
-      assert.ok(
-        !/averaged/.test(text),
-        "one game is not an average, and is not reported as one",
-      );
-      assert.ok(
-        !/\bthat week\b/.test(text),
-        "the single week's finish is the table's Finish column, not prose",
-      );
-    }
+    assert.ok(summary, "a season of games is summarised per game");
+    assert.ok(/per game/.test(summary.textContent), "it talks in per-game terms");
 
     // Rule 3: this page describes what happened and never what happens next.
     for (const word of ["will ", "expect", "projected", "should "]) {
@@ -1523,88 +1515,23 @@ describe("the outlook tab", () => {
     return found;
   }
 
-  test("the tab owns an h2, and it is the head of the written read", async () => {
-    const found = await withOutlook(1);
+  test("the old written head and driver strip are gone", async () => {
+    // Taken off on 2026-09-30 at mak's request: the "<season> Outlook" head
+    // and "What Drives The Outlook". The spec sections below the tab stay.
+    const found = await withOutlook();
     assert.ok(found.size > 0, "at least one player has an outlook tab");
-    const { doc } = [...found.values()][0];
-    const outlook = doc.querySelector("#outlook");
-
-    const heading = outlook.querySelector("h2");
-    assert.ok(heading, "the tab owns an h2");
-    // The head IS the heading, and it is the page's ordinary section heading —
-    // the same .scp-h2 that heads "<name> stats <year>" on the Stats tab, not
-    // the 11px gold eyebrow this section used to wear instead of one.
-    assert.equal(
-      heading.className,
-      "scp-h2",
-      "the written read opens on the page's section heading",
-    );
-    assert.match(
-      heading.textContent.trim(),
-      /^\d{4} Outlook$/,
-      "the heading names the season the outlook is for",
-    );
-    // One h2 for the tab's own content; the spec sections appended under it
-    // (.scp-ol, lib/player/outlook-tab.ts) carry their own.
-    assert.equal([...outlook.querySelectorAll("h2")].filter((h) => !h.closest(".scp-ol")).length, 1);
-
-    // No card around it. The read is the tab's first section, not something
-    // set apart from the column it sits in, and the chips below it carry the
-    // only frame this head needs.
-    assert.equal(outlook.querySelector(".scp-verdict"), null);
-
-    // The name, the identity line and the quick take are gone from the head.
-    assert.equal(outlook.querySelector(".scp-verdict-name"), null);
-    assert.equal(outlook.querySelector(".scp-verdict-id"), null);
-    assert.equal(outlook.querySelector(".scp-take-label"), null);
-    assert.ok(
-      outlook.querySelector(".scp-take .scp-take-body"),
-      "the written read opens the tab",
-    );
-  });
-
-  test("the driver categories adapt to the position", async () => {
-    const found = await withOutlook();
-    assert.ok(found.size >= 2, "expected at least two positions in the snapshot");
-
-    for (const [position, { player, doc }] of found) {
-      const labels = [
-        ...doc.querySelectorAll("#outlook .scp-driver-label"),
-      ].map((el) => el.textContent.trim());
-      if (labels.length === 0) continue;
-
-      const allowed = DRIVER_SETS[position];
-      for (const label of labels) {
-        assert.ok(
-          allowed.includes(label),
-          `${player.slug} (${position}) rendered "${label}", not one of ${allowed.join(" / ")}`,
-        );
-      }
-      assert.ok(labels.length <= 4, "at most four cards");
-      assert.equal(new Set(labels).size, labels.length, "no category twice");
-    }
-  });
-
-  test("every driver card carries a real measurement", async () => {
-    const found = await withOutlook();
-    let checked = 0;
-
     for (const [, { player, doc }] of found) {
-      for (const card of doc.querySelectorAll("#outlook .scp-driver")) {
-        const value = card.querySelector(".scp-driver-value")?.textContent.trim();
-        const detail = card.querySelector(".scp-driver-detail")?.textContent.trim();
-        assert.ok(value, `${player.slug}: a card with no value`);
-        assert.ok(detail, `${player.slug}: a card with no measurement under it`);
-        // The rule the whole page runs on: a number nobody measured is not
-        // rendered as a dash, it is not rendered.
-        assert.ok(
-          !value.includes("\u2014") && !detail.includes("\u2014"),
-          `${player.slug}: "${value}" / "${detail}" stands in for a missing number`,
-        );
-        checked += 1;
+      const outlook = doc.querySelector("#outlook");
+      for (const selector of [".scp-outlook-head", ".scp-take", ".scp-drivers", ".scp-driver"]) {
+        assert.equal(outlook.querySelector(selector), null, `${player.slug}: ${selector} still renders`);
       }
+      assert.ok(!/What Drives The Outlook/.test(outlook.textContent), player.slug);
+      assert.ok(
+        ![...outlook.querySelectorAll("h2")].some((h) => /^\d{4} Outlook$/.test(h.textContent.trim())),
+        `${player.slug}: the season Outlook heading still renders`,
+      );
+      assert.ok(outlook.querySelector(".scp-ol"), `${player.slug}: the spec sections are missing`);
     }
-    assert.ok(checked > 0, "expected some driver cards in the snapshot");
   });
 
   test("an unwritten decision layer is absent, not an empty label", async () => {
@@ -1644,25 +1571,6 @@ describe("the outlook tab", () => {
     }
   });
 
-  test("the measured strip is stamped with the season it measured", async () => {
-    // The one tab allowed to talk about a season nobody has played is also the
-    // one where a measured block could be mistaken for a projection. The stamp
-    // is what keeps the two kinds of claim apart.
-    const found = await withOutlook();
-    let checked = 0;
-    for (const [, { player, doc }] of found) {
-      const outlook = doc.querySelector("#outlook");
-      if (!outlook.querySelector(".scp-driver")) continue;
-      const sub = outlook.querySelector(".scp-sub")?.textContent ?? "";
-      assert.match(
-        sub,
-        /Measured from/,
-        `${player.slug}: the driver strip does not say what it measured`,
-      );
-      checked += 1;
-    }
-    assert.ok(checked > 0, "expected a driver strip in the snapshot");
-  });
 });
 
 describe("the injury tab", () => {
@@ -1685,11 +1593,11 @@ describe("the injury tab", () => {
 
     for (const { player, doc } of found) {
       const tab = doc.querySelector("#injury");
-      const status = tab.querySelector(".scp-status");
+      const status = tab.querySelector(".scp-in-statusbar");
       assert.ok(status, `${player.slug}: no status block`);
 
-      // First, ahead of the grade and the tiles.
-      const glance = tab.querySelector(".scp-injury-top");
+      // First, ahead of the durability score and the counts.
+      const glance = tab.querySelector(".scp-in-glance");
       if (glance) {
         assert.ok(
           status.compareDocumentPosition(glance) &
@@ -1718,22 +1626,20 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const episodes = [...doc.querySelectorAll("#injury .scp-episode")];
+      // The timeline's first list: the ten most recent. Anything past ten is in
+      // a "Show all" fold by the spec (lib/player/injury-tab.ts).
+      const episodes = [...doc.querySelectorAll("#injury .scp-in-tl > li")].filter(
+        (li) => !li.closest("details"),
+      );
       if (episodes.length === 0) continue;
       for (const episode of episodes) {
         assert.ok(
-          episode.querySelector(".scp-episode-head")?.textContent.trim(),
+          episode.querySelector("h3")?.textContent.trim(),
           `${player.slug}: an entry with no heading`,
         );
         assert.ok(
-          episode.querySelector(".scp-episode-meta")?.textContent.trim(),
+          episode.querySelector(".scp-in-meta")?.textContent.trim(),
           `${player.slug}: an entry with no when/cost line`,
-        );
-        // Not inside a <details>, and not hidden.
-        assert.equal(
-          episode.closest("details"),
-          null,
-          `${player.slug}: the history is behind a disclosure`,
         );
       }
       checked += 1;
@@ -2722,22 +2628,12 @@ describe("the positional peers rail", () => {
     );
   });
 
-  test("the subheading says which measure ranked them", async () => {
+  test("the heading carries no subheading", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
-    const sub = doc.querySelector(".scp-peers .scp-head-sub").textContent;
-    assert.match(sub, /points per game|points scored/);
-    assert.match(sub, /PPR|HALF|STD/);
-    // The season the rest of the page is a reading of, not some other one.
-    const season = doc.querySelector("[data-scp-root]").getAttribute("data-season");
-    assert.ok(sub.includes(season), `the subheading names ${season}`);
-
-    // Half-PPR is a different table, so it is a different neighbourhood — the
-    // format toggle must reach this block like it reaches the rest.
-    const half = await dom(`/player/${fixture.slug}?format=half`);
-    assert.match(
-      half.doc.querySelector(".scp-peers .scp-head-sub").textContent,
-      /HALF/,
-    );
+    assert.equal(doc.querySelector(".scp-peers .scp-head-sub"), null);
+    const h = doc.querySelector(".scp-peers h2");
+    assert.equal(h.className, "scp-ox-h2", "the Overview's section title, like the FAQ");
+    assert.equal(h.textContent, "Nearby Positional Peers");
   });
 });
 
@@ -2765,6 +2661,37 @@ describe("the embedded fragment", () => {
     }
   });
 
+  test("the Stats tab opens on the spec's heading, not the old panel heading", async () => {
+    // mak, 2026-09-30: "{Name} Stats {season}" removed; "{Name} {season} stats"
+    // under it heads the tab, and ?h1=1 makes it the page's only H1.
+    const { doc } = await dom(`/player/${fixture.slug}/stats/`);
+    assert.equal(doc.querySelector("#stats .scp-h2"), null, "no panel heading");
+    assert.ok(!doc.querySelector("#stats").textContent.includes(`${fixture.name} Stats 2`));
+    const first = doc.querySelector("#stats h1, #stats h2");
+    assert.equal(first?.id, "scp-st-prod-h", "the production section comes first");
+    // mak removed the old "2026 Production", "Career Rates", "Fantasy Finish
+    // History" and "Career Bests" blocks the same day.
+    for (const gone of ["Career Rates", "Fantasy Finish History", "Career Bests"]) {
+      assert.ok(![...doc.querySelectorAll("#stats h3")].some((h) => h.textContent.trim() === gone), gone);
+    }
+    assert.equal(doc.querySelector("#stats .scp-prod-grid"), null);
+    assert.ok(![...doc.querySelectorAll("#stats h3")].some((h) => /^\d{4} Production$/.test(h.textContent.trim())));
+  });
+
+  test("the Stats tab has one FAQ, Common Questions, with the spec's questions merged in", async () => {
+    // mak, 2026-09-30: the spec's "{Name} stats FAQ" folded into the old
+    // block. A spec question shows only when the old list has nothing on its
+    // topic, so no question is asked twice.
+    const { doc } = await dom(`/player/${fixture.slug}/stats/`);
+    assert.equal(doc.querySelector("#stats .scp-st-faq"), null, "no second FAQ section");
+    assert.equal(doc.querySelectorAll("#stats .scp-faq").length, 1);
+    const qs = [...doc.querySelectorAll("#stats .scp-faq-q")].map((q) => q.textContent.trim());
+    assert.ok(qs.length >= 4);
+    const topic = (q) =>
+      /fantasy points/i.test(q) ? "fantasy" : /career stats/i.test(q) ? "career" : /touchdowns/i.test(q) ? "td" : /yards/i.test(q) ? "yards" : q;
+    assert.equal(new Set(qs.map(topic)).size, qs.length, `each topic once: ${qs.join(" | ")}`);
+  });
+
   test("one FAQPage for the document, however many tabs carry questions", async () => {
     // The profile mounts every tab at once, and each of four of them carries an
     // FAQ. Emitted per block that was four FAQPage nodes in one document, which
@@ -2781,10 +2708,12 @@ describe("the embedded fragment", () => {
 
     // Every FAQ on the page, the Overview's <details> included, in document
     // order — and each question once, as the node lists it. The Stats tab's
-    // spec FAQ (.scp-st-faq), like the Outlook tab's (.scp-ol-faq), is left out of the schema until mak approves that
-    // SEO change, so it is left out here too.
+    // spec questions (.is-visible-only inside Common Questions), like the
+    // Outlook tab's (.scp-ol-faq) and the Injury tab's (.scp-in-faq) FAQs, are
+    // left out of the schema until mak approves that SEO change, so they are
+    // left out here too.
     const seen = new Set();
-    const rendered = [...doc.querySelectorAll(".scp-faq-item, .scp-ox-faq:not(.scp-st-faq, .scp-ol-faq) details")]
+    const rendered = [...doc.querySelectorAll(".scp-faq-item:not(.is-visible-only), .scp-ox-faq:not(.scp-st-faq, .scp-ol-faq, .scp-in-faq) details")]
       .map((item) =>
         item.matches("details")
           ? {
@@ -2913,9 +2842,11 @@ describe("the embedded fragment", () => {
 
   test("?h1=1: each section page's H1 is its own phrase", async () => {
     for (const [section, want] of [
-      ["stats", new RegExp(`^${fixture.name} Stats 2\\d{3}$`)],
+      // The spec's "{Name} {season} stats" since mak dropped the panel heading (2026-09-30).
+      ["stats", new RegExp(`^${fixture.name} 2\\d{3} stats$`)],
       ["game-log", new RegExp(`^${fixture.name} Game Log 2\\d{3}$`)],
-      ["outlook", new RegExp(`^${fixture.name} Fantasy Outlook 2\\d{3}$`)],
+      // The spec's take heading since mak dropped "<season> Outlook" (2026-09-30).
+      ["outlook", new RegExp(`^${fixture.name} rest-of-season outlook$`)],
     ]) {
       const res = await get(`/embed/player/${fixture.slug}?section=${section}&h1=1`);
       const { doc, text } = h1Of(res.body);
@@ -3185,10 +3116,10 @@ describe("player section URLs", () => {
    * address.
    */
   const PHRASES = {
-    stats: /Stats 2\d{3}$/,
+    stats: / 2\d{3} stats$/,
     injury: /Injury Update & History$/,
     "game-log": /Game Log 2\d{3}$/,
-    outlook: /Outlook$/,
+    outlook: /rest-of-season outlook$/,
     news: /News & Analysis$/,
     bio: /Bio$/,
   };
@@ -3237,7 +3168,9 @@ describe("player section URLs", () => {
         `${id}: under the subtitle its own tab link carries`,
       );
 
-      const own = panels[0].querySelector(".scp-h2");
+      // The Stats and Outlook tabs are headed by a spec section now (mak, 2026-09-30).
+      const lead = { stats: "#scp-st-prod-h", outlook: "#scp-ol-take-h" }[id];
+      const own = panels[0].querySelector(lead ?? ".scp-h2");
       assert.ok(own, `${id}: the section heads itself`);
       assert.match(
         own.textContent.replace(/\s+/g, " ").trim(),

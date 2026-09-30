@@ -46,7 +46,6 @@ import {
   type NewsItem,
 } from "./render";
 import { easternParts, newsStamp, splitHeadline } from "./news-card";
-import { driverSeason } from "./player/outlook-drivers";
 // The tab strip's headings and standfirsts come from the same function the
 // document head uses, so a heading swapped in by a click and one loaded with
 // the page are generated from one place. player-seo.ts imports nothing from
@@ -76,7 +75,6 @@ import type {
   IndexedPlayer,
   PlayerDirectory,
   PlayerPageData,
-  ProductionSeason,
 } from "./player/player-data";
 import {
   pointsBreakdown,
@@ -89,12 +87,8 @@ import type {
   GameLogEntry,
 } from "./player/types";
 import { gameLogFaq } from "./player/game-log-faq";
-import { injuryWhen, type RiskLevel } from "./player/injury";
-import {
-  careerAvailability,
-  passerRating,
-  type CareerStatRow,
-} from "./player/stats-profile";
+import { type RiskLevel } from "./player/injury";
+import { type CareerStatRow } from "./player/stats-profile";
 import { canonicalizeMatchupPair } from "./matchup/pair";
 import {
   percentileLevel,
@@ -111,8 +105,9 @@ import {
   type MatchupBand,
 } from "./player/header";
 import { renderOverviewSections } from "./player/overview";
-import { renderStatsTab } from "./player/stats-tab";
+import { renderStatsTabParts, STATS_LEAD_ID, statsTabFaqs } from "./player/stats-tab";
 import { renderOutlookTab } from "./player/outlook-tab";
+import { renderInjuryTab } from "./player/injury-tab";
 
 export interface PlayerRenderOptions {
   /**
@@ -311,6 +306,32 @@ function promoteHeading(html: string, text?: string): string {
 }
 
 /**
+ * Tabs whose panel heading is gone, and the section heading that is theirs now.
+ *
+ * mak dropped the Stats panel heading and the Outlook's "<season> Outlook" head
+ * (2026-09-30), so each tab's first spec heading is the one the page's H1 has
+ * to be: "{Name} {season} stats", "{Name} rest-of-season outlook". Its own
+ * words, not sectionHeading()'s, so the H1 is the heading a reader sees.
+ */
+const LEAD_HEADINGS: Record<string, string> = {
+  stats: STATS_LEAD_ID,
+  outlook: "scp-ol-take-h",
+};
+
+/**
+ * promoteHeading() for a tab in LEAD_HEADINGS. One that still has its old
+ * panel heading (a Stats tab with no production section) promotes that, as
+ * before.
+ */
+function promoteLeadHeading(html: string, id: string, fallbackText?: string): string {
+  if (/<h2 class="scp-h2">/.test(html)) return promoteHeading(html, fallbackText);
+  return html.replace(
+    new RegExp(`<h2 class="scp-ox-h2 is-lead" id="${id}">([\\s\\S]*?)</h2>`),
+    (_, inner: string) => `<h1 class="scp-ox-h2 is-lead" id="${id}">${inner}</h1>`,
+  );
+}
+
+/**
  * A section heading with the gold rule under it.
  *
  * The Stats tab is a sequence of six blocks and an h3 alone was not enough to
@@ -360,8 +381,12 @@ function renderFaq(
   items: Array<{ question: string; answer: string }>,
   options: PlayerRenderOptions,
   heading: string,
+  // Printed after `items` in the same block but left out of the FAQPage
+  // node and faqSink: adding questions to the schema is an SEO change, which
+  // mak approves separately.
+  visibleOnly: Array<{ question: string; answer: string }> = [],
 ): string {
-  if (items.length === 0) return "";
+  if (items.length === 0 && visibleOnly.length === 0) return "";
 
   /*
    * One question, one fold — the shape the team hubs use.
@@ -381,10 +406,10 @@ function renderFaq(
    * <h4> inside the <summary> so the questions keep their place in the page
    * outline; the summary is the control, the heading is still the heading.
    */
-  const body = items
+  const body = [...items.map((entry) => ({ entry, cls: "" })), ...visibleOnly.map((entry) => ({ entry, cls: " is-visible-only" }))]
     .map(
-      (entry) =>
-        `<details class="scp-faq-item">` +
+      ({ entry, cls }) =>
+        `<details class="scp-faq-item${cls}">` +
         `<summary class="scp-faq-q-row">` +
         `<h4 class="scp-faq-q">${escapeHtml(entry.question)}</h4>` +
         `</summary>` +
@@ -402,8 +427,8 @@ function renderFaq(
   // Same level in the outline, same device on the screen.
   const head = sectionHead(heading);
 
-  if (options.faqSink) {
-    options.faqSink.push(...items);
+  if (options.faqSink || items.length === 0) {
+    options.faqSink?.push(...items);
     return head + `<div class="scp-faq">${body}</div>`;
   }
 
@@ -1253,102 +1278,6 @@ function renderRoleDirection(data: PlayerPageData): string {
   );
 }
 
-/**
- * The career aggregate.
- *
- * Two sources, and the section used to read entirely off the wrong one.
- * `careerProfile` is derived from the game logs — so when those started at
- * 2023, "Career PPG 12.3 · 4 seasons" printed directly beneath a career table
- * whose own total row said 10.1 across eleven. Two numbers for one player's
- * career average, on one screen, because the block under the table counted a
- * different career than the table did.
- *
- * So the split is by what each figure NEEDS:
- *
- *   points per game, availability   sums over seasons -> statsProfile, the
- *                                   same rows the table above is built from,
- *                                   which is what makes the two agree.
- *   top-12 weeks, weekly swing      need to know what a week is -> the game
- *                                   logs, and therefore only the seasons they
- *                                   reach back to.
- *
- * The logs now reach as far back as the career table does, so for most players
- * the two windows are one window and neither cell says anything about it. When
- * they are NOT — a season production filed that the weekly stats have no
- * entries for — the shorter pair says so AT the number rather than in a
- * footnote, because a reader weighing "35%" against the eleven seasons in the
- * table above has to be told, at the figure, that this one covers fewer.
- *
- * Derived by comparing the two counts rather than written down, so it corrects
- * itself when the data changes instead of naming a year that was true on the
- * day someone typed it.
- */
-function renderCareerSnapshot(data: PlayerPageData): string {
-  const profile = data.careerProfile;
-  const { totals, career } = data.statsProfile;
-  const availability = careerAvailability(career, data.season);
-
-  const cells: RailCell[] = [];
-
-  if (totals.gamesPlayed > 0) {
-    cells.push({
-      value: num(totals.ppg),
-      label: "Career PPG",
-      sub:
-        `${totals.seasons} season${totals.seasons === 1 ? "" : "s"} · ` +
-        `${count(totals.gamesPlayed)} games`,
-    });
-  }
-
-  if (availability) {
-    cells.push({
-      value: pct(availability.pct),
-      label: "Availability",
-      sub: `${count(availability.played)} of ${count(availability.possible)} games`,
-    });
-  }
-
-  if (profile) {
-    /*
-     * The sample is printed only when it is a SHORTER one.
-     *
-     * Covering the same seasons, the two sources still disagree about the
-     * count by a game or two — production files a game the weekly stats have
-     * no qualifying line for — and "108 games" under a cell whose neighbour
-     * says "110 games" is the same puzzle this section was just fixed for, in
-     * miniature. When the window matches, the count is not the point and does
-     * not appear; when it is short, it is the whole point and leads.
-     */
-    const from = Math.min(...profile.seasonPpgs.map((entry) => entry.season));
-    const short = profile.seasons < totals.seasons;
-    const window = short ? `${count(profile.gamesPlayed)} games since ${from}` : "";
-
-    cells.push({
-      value: pct(profile.pos1Pct),
-      label: `Top-12 ${data.player.position ?? ""} weeks`.trim(),
-      sub: short ? window : "Share of games played",
-    });
-    cells.push({
-      value: num(profile.volatility),
-      label: "Weekly swing",
-      sub: short
-        ? `${profile.volatilityLabel} · ${window}`
-        : `${profile.volatilityLabel} · weekly SD`,
-    });
-  }
-
-  if (cells.length === 0) return "";
-
-  const caveat = profile?.smallSample
-    ? `<p class="scp-note">${escapeHtml(
-        `The weekly rates are drawn from ${profile.gamesPlayed} games and are too small a sample to read as a tendency.`,
-      )}</p>`
-    : "";
-
-  return sectionHead("Career Rates") + renderRail(cells) + caveat;
-}
-
-
 /* --------------------------------------------------------------------- bio */
 
 function renderList(items: unknown, className: string): string {
@@ -1557,135 +1486,6 @@ function renderBio(
  */
 
 /** The confidence chip's three steps, lowercased for the attribute. */
-function confidenceLevel(value: string | undefined): string {
-  const level = (value ?? "").toLowerCase();
-  return level === "high" || level === "moderate" || level === "low" ? level : "";
-}
-
-/**
- * The head: the written read, opening the tab.
- *
- * The chips are the whole tab in one line, and under them is the outlook
- * itself, whole. There is no quick take and no repeated name: the hero above
- * has already said who this is, and a two-sentence summary sitting six inches
- * above the two paragraphs it summarises is the same argument twice.
- *
- * No slab around it any more. A raised card is how this page marks a thing
- * that stands apart from the column it sits in, and the written read is the
- * opposite of that — it is the first section of the tab, and it now opens the
- * way every other section on the page opens: the shared h2 and its gold rule,
- * with the prose running flush underneath. The card was also nesting a box in
- * a box, since the chips carry their own frame.
- */
-function renderOutlookHead(data: PlayerPageData): string {
-  const outlook = data.fantasyOutlook2026;
-
-  const chips: Array<{ label: string; value: string; mod: string }> = [];
-  if (outlook?.weeklyRole) {
-    chips.push({ label: "Weekly role", value: outlook.weeklyRole, mod: "" });
-  }
-  if (outlook?.restOfSeason) {
-    chips.push({
-      label: "Rest-of-season outlook",
-      value: outlook.restOfSeason,
-      mod: "lead",
-    });
-  }
-  if (outlook?.confidence) {
-    chips.push({
-      label: "Confidence",
-      value: outlook.confidence,
-      mod: confidenceLevel(outlook.confidence),
-    });
-  }
-
-  // Split on the blank line the generator writes between its two paragraphs,
-  // so they are two paragraphs here rather than one with a newline in it.
-  const paragraphs = (outlook?.body ?? "")
-    .split(/\n\s*\n/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (chips.length === 0 && paragraphs.length === 0) return "";
-
-  // The outlook stamps its own season, so the heading cannot drift from the
-  // record it is heading; data.season is the stats year and only the fallback.
-  const season = outlook?.season ?? data.season;
-
-  return (
-    `<section class="scp-outlook-head">` +
-    h2(`${season} Outlook`) +
-    (chips.length
-      ? `<div class="scp-verdict-chips">` +
-        chips
-          .map(
-            (chip) =>
-              `<div class="scp-chip" data-mod="${escapeHtml(chip.mod)}">` +
-              `<p class="scp-chip-label">${escapeHtml(chip.label)}</p>` +
-              `<p class="scp-chip-value">${escapeHtml(chip.value)}</p>` +
-              `</div>`,
-          )
-          .join("") +
-        `</div>`
-      : "") +
-    (paragraphs.length
-      ? `<div class="scp-take">` +
-        // The headline only runs when there is an authored quick take behind
-        // it; without one it is a twelve-word restatement of the paragraph
-        // directly beneath it.
-        (outlook?.headline && outlook?.quickTake
-          ? `<p class="scp-outlook-headline">${escapeHtml(outlook.headline)}</p>`
-          : "") +
-        paragraphs
-          .map((part) => `<p class="scp-take-body">${escapeHtml(part)}</p>`)
-          .join("") +
-        `</div>`
-      : "") +
-    `</section>`
-  );
-}
-
-/**
- * The four measured cards — an editorial strip, not four rounded boxes.
- *
- * Divided by hairlines rather than bordered individually: four bordered cards
- * in a row read as four unrelated facts, and these are four readings of one
- * player. The categories are chosen by position in lib/player/outlook-drivers.ts
- * and every value on them is a real number, so the section is stamped with the
- * season it was measured from and never borrows the tab's forward-looking voice.
- */
-function renderOutlookDrivers(data: PlayerPageData): string {
-  const drivers = data.outlookDrivers;
-  if (drivers.length === 0) return "";
-
-  const season = driverSeason(data.fantasyOutlook2026);
-  const subtitle = season
-    ? `Measured from the ${season} season, against every other ${
-        data.player.position ?? "player"
-      } who played it.`
-    : "Measured from the player's most recent advanced line.";
-
-  const cells = drivers
-    .map(
-      (driver) =>
-        `<div class="scp-driver" data-level="${escapeHtml(driver.level)}">` +
-        `<p class="scp-driver-label">${escapeHtml(driver.label)}</p>` +
-        `<p class="scp-driver-value">${escapeHtml(driver.value)}</p>` +
-        `<p class="scp-driver-detail">${escapeHtml(driver.detail)}</p>` +
-        (driver.context
-          ? `<p class="scp-driver-context">${escapeHtml(driver.context)}</p>`
-          : "") +
-        `</div>`,
-    )
-    .join("");
-
-  return (
-    h3("What Drives The Outlook") +
-    `<p class="scp-sub">${escapeHtml(subtitle)}</p>` +
-    `<div class="scp-drivers" data-count="${drivers.length}">${cells}</div>`
-  );
-}
-
 /**
  * The range of outcomes, as one spectrum.
  *
@@ -1882,27 +1682,25 @@ function renderOutlookVerdict(data: PlayerPageData): string {
   );
 }
 
-/** The whole tab, in the order a decision gets made. */
-function renderOutlook2026(data: PlayerPageData): string {
-  const head = renderOutlookHead(data);
-  const drivers = renderOutlookDrivers(data);
+/**
+ * The whole tab, in the order a decision gets made.
+ *
+ * The written "<season> Outlook" head and the "What Drives The Outlook" strip
+ * were taken off on 2026-09-30 at mak's request; the spec sections appended
+ * below (lib/player/outlook-tab.ts) say both. The written body still decides
+ * whether the tab exists, so no player gained or lost an Outlook URL.
+ */
+function renderOutlook2026(data: PlayerPageData): { exists: boolean; html: string } {
+  const outlook = data.fantasyOutlook2026;
   const range = renderOutlookRange(data);
   const moves = renderOutlookMoves(data);
   const usage = renderOutlookUsage(data);
   const verdict = renderOutlookVerdict(data);
+  const html = range + moves + usage + verdict;
 
-  // The head carries the tab's <h2> and the written read, so a record with
-  // nothing but a body still has a tab worth rendering.
-  if (!head && !drivers && !range && !moves && !usage && !verdict) return "";
-
-  return (
-    head +
-    drivers +
-    range +
-    moves +
-    usage +
-    verdict
-  );
+  const written = /\S/.test(outlook?.body ?? "") ||
+    !!(outlook?.weeklyRole || outlook?.restOfSeason || outlook?.confidence);
+  return { exists: written || data.outlookDrivers.length > 0 || html !== "", html };
 }
 
 /* --------------------------------------------------------------- game log */
@@ -1978,7 +1776,7 @@ function playedWeeks(data: PlayerPageData): GameLogEntry[] {
  * heading that had just named 2026 and the 2026 numbers that answer it.
  *
  * It is not a block of its own down there either: the caller puts it on the
- * heading row of the block it opens — "Career By Season" under All, the year's
+ * heading row of the block it opens — "<name> career stats by season" under All, the year's
  * own heading when one is pinned — so the row of years and the name of what
  * they produced are one line rather than two stacked sections.
  *
@@ -2078,118 +1876,22 @@ function renderLogTiles(data: PlayerPageData): string {
 }
 
 /**
- * The season in one sentence, assembled from the totals of the weeks played.
- *
- * Generated rather than written, so it stays true as the season runs, and
- * deliberately not an essay: it exists to give the table a sentence of context
- * and to say in words what the columns say in numbers. No superlatives and no
- * claim about what happens next — rule 3.
- */
-function seasonStatLine(entries: GameLogEntry[], position: string | null): string {
-  const sum = (key: string): number =>
-    entries.reduce((total, entry) => total + (statOf(entry, key) ?? 0), 0);
-  const plural = (n: number, one: string, many: string): string =>
-    `${whole(n)} ${n === 1 ? one : many}`;
-
-  if (position === "QB") {
-    const rushYd = sum("rush_yd");
-    const rushTd = sum("rush_td");
-    const passing =
-      `completing ${whole(sum("pass_cmp"))} of ${whole(sum("pass_att"))} passes ` +
-      `for ${whole(sum("pass_yd"))} yards with ` +
-      `${plural(sum("pass_td"), "touchdown", "touchdowns")} and ` +
-      `${plural(sum("pass_int"), "interception", "interceptions")}`;
-    if (rushYd <= 0 && rushTd <= 0) return passing;
-    // A zero is only worth printing where its absence is the fact — an
-    // interception count is, a rushing touchdown count on a pocket passer is
-    // not, and "and 0 rushing touchdowns" is a clause that says nothing.
-    return (
-      `${passing}, and adding ${whole(rushYd)} rushing yards` +
-      (rushTd > 0
-        ? ` and ${plural(rushTd, "rushing touchdown", "rushing touchdowns")}`
-        : "")
-    );
-  }
-
-  if (position === "RB") {
-    const rec = sum("rec");
-    const rushing =
-      `carrying ${whole(sum("rush_att"))} times for ${whole(sum("rush_yd"))} yards ` +
-      `and ${plural(sum("rush_td"), "touchdown", "touchdowns")}`;
-    return rec > 0
-      ? `${rushing}, with ${plural(rec, "catch", "catches")} for ` +
-          `${whole(sum("rec_yd"))} yards and ` +
-          `${plural(sum("rec_td"), "touchdown", "touchdowns")}`
-      : rushing;
-  }
-
-  if (position === "WR" || position === "TE") {
-    return (
-      `catching ${whole(sum("rec"))} of ${whole(sum("rec_tgt"))} targets ` +
-      `for ${whole(sum("rec_yd"))} yards and ` +
-      `${plural(sum("rec_td"), "touchdown", "touchdowns")}`
-    );
-  }
-
-  if (position === "K") {
-    return (
-      `making ${whole(sum("fgm"))} of ${whole(sum("fga"))} field goals ` +
-      `and ${whole(sum("xpm"))} of ${whole(sum("xpa"))} extra points`
-    );
-  }
-
-  return "";
-}
-
-/**
  * The season in prose, under the tiles that just gave it in figures.
  *
- * Two paragraphs that were once at opposite ends of the tab: the totals
- * sentence sat under the tiles and the per-game summary sat below the table,
- * three screens apart, each describing the same season to a reader who had
- * long since started reading rows. Together and above the table they are what
- * the tab is about, in words — read after the tiles rather than before them,
- * because the grid is the faster answer and the prose is the one that can say
- * what the numbers were made of.
- *
- * They stay two paragraphs and stay in this order because they say different
- * things: the first ADDS the season up — 27 of 37, 277 yards, worth 16.5
- * points — and the second DIVIDES it, into per-game rates and how many of those
- * weeks were startable. One paragraph doing both would switch between totals
- * and averages mid-sentence, which is the one way a stat line can lie without
- * printing a wrong number.
+ * Per-game rates and how many of those weeks were startable, above the table.
+ * It used to follow a totals sentence ("has played 3 games ... worth 49.6 PPR
+ * fantasy points"); that was removed on request, since the tiles and the
+ * table already give the totals.
  */
 function renderLogIntro(data: PlayerPageData): string {
-  const lede = logLedeSentence(data);
   const summary = logSummarySentences(data);
-  if (!lede && !summary) return "";
+  if (!summary) return "";
 
   return (
     `<div class="scp-logintro">` +
-    (lede ? `<p class="scp-lede">${escapeHtml(lede)}</p>` : "") +
-    (summary ? `<p class="scp-note">${escapeHtml(summary)}</p>` : "") +
+    `<p class="scp-note">${escapeHtml(summary)}</p>` +
     `</div>`
   );
-}
-
-function logLedeSentence(data: PlayerPageData): string {
-  const stats = data.seasonLogStats;
-  if (!stats || stats.gamesPlayed === 0) return "";
-
-  const played = playedWeeks(data);
-  const line = seasonStatLine(played, data.player.position);
-  const games = `${stats.gamesPlayed} ${stats.gamesPlayed === 1 ? "game" : "games"}`;
-
-  // The total, not the average: the summary under the table is the one that
-  // talks in per-game terms, and two paragraphs on one page saying "16.5 points
-  // per game" is one paragraph too many.
-  const sentence =
-    `${data.player.name} has played ${games} in ${data.logSeason}` +
-    (line ? `, ${line}` : "") +
-    `. That is worth ${num(stats.totalPts)} ${SCORING_LABELS[data.format]} ` +
-    `fantasy points.`;
-
-  return sentence;
 }
 
 /**
@@ -2590,8 +2292,7 @@ function logSummarySentences(data: PlayerPageData): string {
   const sentences: string[] = [];
 
   if (!single) {
-    // Per-game throughout, which is the whole difference between this and the
-    // sentence above it: that one adds the season up, this one divides it.
+    // Per-game throughout: the tiles add the season up, this divides it.
     // Only the rates that have a prose name — a completion percentage is not
     // something a player "averaged", and a tile label in a sentence reads like
     // a column header that wandered out of the table.
@@ -2889,9 +2590,8 @@ function renderGameLog(
    *
    * It read "2026 Season (Through Week 1)" — a caption restating the year the
    * heading had just given, in the one position on the tab where a reader is
-   * most willing to be told something. The season in prose goes there instead;
-   * "has played 1 game in 2026" carries how far in we are and says it in
-   * words, which is what a line under a heading is for.
+   * most willing to be told something. The tiles give "Games played"
+   * instead, which is how far in we are.
    */
   // The tab is the active season, whatever ?log= asks for; the archive season
   // is rendered separately, below the selector.
@@ -3041,94 +2741,6 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
  * Absent entirely for a player who is not in the table — which is most of the
  * league, and why the tab is dropped rather than shown empty.
  */
-/**
- * The career in four finishes.
- *
- * The two finish tiles are measured differently and the labels say so, because
- * the two questions are different ones. The BEST finish is by total points —
- * the season that actually won weeks for whoever rostered it, which is a full
- * season of production and not a rate. The WORST is by points per game, so a
- * year ended by a week-3 injury is not recorded as the floor of this player's
- * range; it was a short season, not a bad one.
- *
- * A season with no positional rank behind it is counted nowhere here — hence
- * "ranked seasons" rather than "seasons played", which is the honest label for
- * what is being counted.
- *
- * Lives on the Stats tab, with the other career aggregates. It was briefly at
- * the top of the Game Log, which is where it went when the request was to lead
- * that tab with it; the Stats/Game Log split moved every aggregate here.
- */
-function renderCareerFinishes(data: PlayerPageData): string {
-  const played = data.production.filter((row) => row.gamesPlayed > 0);
-  if (played.length === 0) return "";
-
-  const byTotal = played.filter(
-    (row): row is ProductionSeason & { posFinishTotal: number } =>
-      row.posFinishTotal !== null,
-  );
-  const byPpg = played.filter(
-    (row): row is ProductionSeason & { posFinishPpg: number } =>
-      row.posFinishPpg !== null,
-  );
-  if (byTotal.length === 0 && byPpg.length === 0) return "";
-
-  // Ties go to the most recent season: "best finish, in 2025" is a more useful
-  // reading than the same rank attributed to 2018.
-  const best = byTotal.reduce<(ProductionSeason & { posFinishTotal: number }) | null>(
-    (pick, row) =>
-      !pick ||
-      row.posFinishTotal < pick.posFinishTotal ||
-      (row.posFinishTotal === pick.posFinishTotal && row.season > pick.season)
-        ? row
-        : pick,
-    null,
-  );
-  const worst = byPpg.reduce<(ProductionSeason & { posFinishPpg: number }) | null>(
-    (pick, row) =>
-      !pick ||
-      row.posFinishPpg > pick.posFinishPpg ||
-      (row.posFinishPpg === pick.posFinishPpg && row.season > pick.season)
-        ? row
-        : pick,
-    null,
-  );
-
-  const top12 = byTotal.filter((row) => row.posFinishTotal <= 12).length;
-  const position = data.player.position ?? best?.position ?? "";
-  const inside = position ? `${position}12` : "the top 12";
-
-  // The same rail as career rates above it and career bests below it. Three
-  // adjacent sections of four figures should be one visual system, not three
-  // that happen to be similar — that difference is most of what made the
-  // bottom of this page read as a wall of generic boxes.
-  return (
-    sectionHead("Fantasy Finish History") +
-    renderRail([
-      {
-        value: best ? `${best.position}${best.posFinishTotal}` : DASH,
-        label: "Best finish",
-        sub: best ? `${best.season} · by FPTS` : "no ranked season",
-      },
-      {
-        value: byTotal.length ? String(top12) : DASH,
-        label: "Top-12 seasons",
-        sub: `inside ${inside}`,
-      },
-      {
-        value: worst ? `${worst.position}${worst.posFinishPpg}` : DASH,
-        label: "Worst finish",
-        sub: worst ? `${worst.season} · by PPG` : "no ranked season",
-      },
-      {
-        value: byTotal.length ? String(byTotal.length) : DASH,
-        label: "Active seasons",
-        sub: `ranked ${position} seasons`.replace("  ", " "),
-      },
-    ])
-  );
-}
-
 /* -------------------------------------------------------------------- stats */
 
 /**
@@ -3244,210 +2856,6 @@ function renderStatsSnapshot(data: PlayerPageData): string {
 /* statTable() — the two-column label/value table — went with the cards it was
    the inside of. Production is figure-over-label columns now, which reads as a
    stat sheet rather than as a settings page. */
-
-/**
- * 2026 Production: the box score and the fantasy layer as ONE section.
- *
- * They were two cards — a nine-row passing table in a white box beside a
- * smaller white box of fantasy figures — and that composition was the page's
- * main problem. Two containers say "two components"; the heavier one wins on
- * size alone, so the box score looked like the subject and the fantasy layer
- * like an afterthought, which is backwards for this site. A skinny third box
- * underneath for rushing made it three.
- *
- * Now: no cards at all. Two columns of the same open composition, each a stack
- * of figure-over-label, their rows aligned across the gutter so the eye reads
- * either down one column or across both. The fantasy column carries the gold
- * kicker and the box score carries navy, which is the whole of the hierarchy —
- * no border, no fill, no shadow doing work that a rule and a colour can do.
- *
- * Position-adaptive throughout: the primary column is whatever the player's
- * line is about, and the other one drops to the rail underneath.
- */
-interface ProdCell {
-  value: string;
-  label: string;
-}
-
-function renderProdColumn(
-  title: string,
-  cells: ProdCell[],
-  accent: "navy" | "gold",
-): string {
-  if (cells.length === 0) return "";
-  return (
-    `<div class="scp-prod-col" data-accent="${accent}">` +
-    `<p class="scp-prod-head">${escapeHtml(title)}</p>` +
-    cells
-      .map(
-        (cell) =>
-          `<div class="scp-prod-cell">` +
-          `<p class="scp-prod-value">${escapeHtml(cell.value)}</p>` +
-          `<p class="scp-prod-label">${escapeHtml(cell.label)}</p>` +
-          `</div>`,
-      )
-      .join("") +
-    `</div>`
-  );
-}
-
-function renderSeasonProduction(data: PlayerPageData): string {
-  const row = data.statsProfile.current;
-  if (!row || row.gamesPlayed === 0) return "";
-
-  const t = row.totals;
-  const stats = data.stats;
-  const position = data.player.position;
-
-  /* ---- the primary line: whatever this player's football is about ---- */
-
-  let title = "";
-  let primary: ProdCell[] = [];
-
-  if (position === "QB" && t.passAtt > 0) {
-    const rating = passerRating(t);
-    title = "Passing";
-    primary = [
-      { value: `${count(t.passCmp)} / ${count(t.passAtt)}`, label: "Cmp / Att" },
-      { value: count(t.passYd), label: "Pass yds" },
-      { value: (t.passYd / t.passAtt).toFixed(1), label: "Yards / att" },
-      { value: `${count(t.passTd)} / ${count(t.passInt)}`, label: "TD / INT" },
-      ...(rating === null
-        ? []
-        : [{ value: rating.toFixed(1), label: "Passer rating" }]),
-    ];
-  } else if (position === "RB" && t.rushAtt > 0) {
-    title = "Rushing";
-    primary = [
-      { value: count(t.rushAtt), label: "Carries" },
-      { value: count(t.rushYd), label: "Rush yds" },
-      { value: (t.rushYd / t.rushAtt).toFixed(1), label: "Yards / carry" },
-      { value: count(t.rushTd), label: "Rush TD" },
-      { value: count(t.rushYd + t.recYd), label: "Yds from scrimmage" },
-    ];
-  } else if (t.rec > 0 || t.tgt > 0) {
-    title = "Receiving";
-    primary = [
-      { value: `${count(t.rec)} / ${count(t.tgt)}`, label: "Rec / Tgt" },
-      { value: count(t.recYd), label: "Rec yds" },
-      ...(t.rec > 0
-        ? [{ value: (t.recYd / t.rec).toFixed(1), label: "Yards / rec" }]
-        : []),
-      ...(t.tgt > 0
-        ? [
-            {
-              value: `${((t.rec / t.tgt) * 100).toFixed(1)}%`,
-              label: "Catch %",
-            },
-          ]
-        : []),
-      { value: count(t.recTd), label: "Rec TD" },
-    ];
-  }
-
-  /* ---- the fantasy column, which is the point of the page ---- */
-
-  const fantasy: ProdCell[] = [
-    { value: row.points.toFixed(1), label: "Fantasy points" },
-    { value: row.ppg.toFixed(1), label: "Points / game" },
-  ];
-
-  // Per-opportunity, which survives a small sample better than per-game does.
-  if (position === "QB" && t.passAtt + t.rushAtt > 0) {
-    fantasy.push({
-      value: (row.points / (t.passAtt + t.rushAtt)).toFixed(2),
-      label: "Points / dropback",
-    });
-  } else {
-    const touches = t.rushAtt + t.rec;
-    if (touches > 0) {
-      fantasy.push({
-        value: (row.points / touches).toFixed(2),
-        label: "Points / touch",
-      });
-    } else if (t.tgt > 0) {
-      fantasy.push({
-        value: (row.points / t.tgt).toFixed(2),
-        label: "Points / target",
-      });
-    }
-  }
-
-  if (stats?.bestWeek) {
-    fantasy.push({
-      value: fpts(stats.bestWeek, data.format).toFixed(1),
-      label: `Best week · Wk ${stats.bestWeek.week}`,
-    });
-  }
-
-  if (data.seasonRank !== null) {
-    fantasy.push({
-      value: `${position ?? ""}${data.seasonRank}`,
-      label: "Fantasy finish",
-    });
-  }
-
-  /* ---- the other line, as a rail rather than a third column ---- */
-
-  const strip = (label: string, cells: Array<{ value: string; unit: string }>) =>
-    `<div class="scp-bar">` +
-    `<span class="scp-bar-label">${escapeHtml(label)}</span>` +
-    `<div class="scp-bar-cells" data-count="${cells.length}">` +
-    cells
-      .map(
-        (cell) =>
-          `<p class="scp-bar-cell">` +
-          `<span class="scp-bar-value">${escapeHtml(cell.value)}</span>` +
-          `<span class="scp-bar-unit">${escapeHtml(cell.unit)}</span>` +
-          `</p>`,
-      )
-      .join("") +
-    `</div></div>`;
-
-  let secondary = "";
-  if (title === "Rushing" && (t.rec > 0 || t.tgt > 0)) {
-    secondary = strip("Receiving", [
-      { value: count(t.tgt), unit: "Tgt" },
-      { value: count(t.rec), unit: "Rec" },
-      { value: count(t.recYd), unit: "Yds" },
-      { value: t.rec > 0 ? (t.recYd / t.rec).toFixed(1) : DASH, unit: "Avg" },
-      { value: count(t.recTd), unit: "TD" },
-    ]);
-  } else if (title !== "Rushing" && t.rushAtt > 0) {
-    secondary = strip("Rushing", [
-      { value: count(t.rushAtt), unit: "Att" },
-      { value: count(t.rushYd), unit: "Yds" },
-      { value: (t.rushYd / t.rushAtt).toFixed(1), unit: "Avg" },
-      { value: count(t.rushTd), unit: "TD" },
-    ]);
-  }
-
-  if (primary.length === 0 && fantasy.length === 0) return "";
-
-  /*
-   * The club's mark, at four percent.
-   *
-   * Identity without decoration: at this opacity it is a texture behind the
-   * fantasy column rather than a logo on the page, and it is aria-hidden and
-   * lazy because it says nothing a reader needs and must never cost the first
-   * paint. A page of pure grey type is honest and anonymous; every sports
-   * annual ever printed put the crest somewhere.
-   */
-  const watermark = data.team
-    ? `<img class="scp-prod-mark" src="${escapeHtml(data.team.logo)}" alt=""` +
-      ` aria-hidden="true" loading="lazy" decoding="async" width="200" height="200">`
-    : "";
-
-  return (
-    sectionHead(`${data.season} Production`) +
-    `<div class="scp-prod-grid">` +
-    watermark +
-    renderProdColumn(title, primary, "navy") +
-    renderProdColumn("Fantasy", fantasy, "gold") +
-    `</div>` +
-    secondary
-  );
-}
 
 /**
  * Career, season by season.
@@ -3587,7 +2995,7 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
     // Career row's own GP cell, and the format is named by the column head
     // ("FPTS/G (PPR)") and by the hero's lead cell above it. Three facts the
     // table states, restated above the table.
-    sectionHead("Career By Season", "", aside) +
+    sectionHead(`${data.player.name} career stats by season`, "", aside) +
     `<div class="scp-scroll">` +
     `<table class="scp-table scp-table--filled scp-table--career" data-scp-sortable>` +
     `<thead>${groupRow}${head}</thead>` +
@@ -3596,47 +3004,43 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
   );
 }
 
-/** The records, so a reader gets an answer without reading the table. */
-function renderCareerHighs(data: PlayerPageData): string {
-  const highs = data.statsProfile.highs;
-  if (highs.length === 0) return "";
-
-  // A record board: the figure, what the record is, and the season it was set
-  // in. Same rail as the two sections above it.
-  return (
-    sectionHead("Career Bests") +
-    renderRail(
-      highs.map((high) => ({
-        value: high.value,
-        label: high.label,
-        sub: high.detail,
-      })),
-    )
-  );
-}
-
 /** The questions people type, answered from the totals above them. */
 function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
   const faq = data.statsProfile.faq;
-  if (faq.length === 0) return "";
-  return renderFaq(faq, options, "Common Questions");
+  // One block for both FAQs (mak, 2026-09-30): the spec's "{Name} stats FAQ"
+  // (lib/player/stats-tab.ts) asks the same four things, so a question of
+  // it shows only when this list has nothing on its topic. The questions
+  // here, and their answers, are the schema's; the spec's are visible only.
+  const topics = new Set(faq.map((f) => faqTopic(f.question)));
+  const extra = statsTabFaqs(data, options)
+    .filter((f) => !topics.has(faqTopic(f.question)))
+    .map((f) => ({ question: f.question, answer: f.text }));
+  return renderFaq(faq, options, "Common Questions", extra);
+}
+
+/** What a stats question is about, so the two FAQs' versions of it match. */
+function faqTopic(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes("fantasy points")) return "fantasy";
+  if (q.includes("career stats")) return "career";
+  if (q.includes("touchdowns")) return "td";
+  if (q.includes("yards")) return "yards";
+  return q;
 }
 
 function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string {
   const snapshot = renderStatsSnapshot(data);
-  const season = renderSeasonProduction(data);
   const efficiency = renderProduction(data);
   const career = renderCareerStats(data);
-  const careerRates = renderCareerSnapshot(data);
-  const finishes = renderCareerFinishes(data);
-  const highs = renderCareerHighs(data);
   const faq = renderStatsFaq(data, options);
-  // Under everything the tab already had: the sections of mak's Stats tab
-  // spec of 2026-09-29 (lib/player/stats-tab.ts). For a rookie before his
-  // first NFL game it is his college card and table, and it is the whole tab.
-  const spec = renderStatsTab(data, options);
+  // The sections of mak's Stats tab spec of 2026-09-29 (lib/player/stats-tab.ts).
+  // Since 2026-09-30 its first three (production, advanced, career chart) open
+  // the tab, above everything it already had; the rest stay under it. For a
+  // rookie before his first NFL game it is his college card and table, and it
+  // is the whole tab.
+  const spec = renderStatsTabParts(data, options);
 
-  if (!snapshot && !season && !career && !efficiency && !spec) return "";
+  if (!snapshot && !career && !efficiency && !spec.top && !spec.rest) return "";
 
   /*
    * The heading, and nothing under it.
@@ -3653,20 +3057,20 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
    * What they were for was authority — who, which season, how far in — and the
    * page earns that by being right rather than by captioning itself.
    */
-  // The panel's own heading, printed on the scoped URL too.
-  const heading = h2(`${data.player.name} Stats ${data.season}`);
+  // The panel's own heading, printed on the scoped URL too. Since 2026-09-30
+  // only when the spec's production section is missing (a rookie's college
+  // tab, a kicker): mak dropped it, and "{Name} {season} stats" right under
+  // it now heads the tab and becomes the WordPress H1 (promoteLeadHeading).
+  const heading = spec.top.includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
 
   return (
     heading +
+    spec.top +
     snapshot +
-    season +
     efficiency +
     career +
-    careerRates +
-    finishes +
-    highs +
     faq +
-    spec
+    spec.rest
   );
 }
 
@@ -3705,193 +3109,6 @@ const RISK_WORD: Record<RiskLevel, string> = {
   high: "High",
 };
 
-/**
- * The status block: the answer, above everything else.
- *
- * Always rendered, unlike the old designation card, because "no designation" is
- * the answer most readers are looking for and the absence of a card does not
- * communicate it. What the block must NOT do is turn that into a clean bill of
- * health: the roster snapshot reports what clubs have filed, so the line reads
- * "no current injury designation" rather than "healthy", and it is stamped with
- * when the snapshot was taken.
- */
-function renderInjuryStatus(
-  data: PlayerPageData,
-  options: PlayerRenderOptions,
-): string {
-  const injury = data.injury;
-  const designation = data.designation;
-  const status = designation?.injuryStatus ?? null;
-  const now = options.now ?? Date.now();
-
-  const severity = status ? designationSeverity(status) : "active";
-  const headline = status ?? "Active";
-
-  const detail = status
-    ? [designation?.injuryBodyPart, designation?.practice]
-        .filter((part): part is string => Boolean(part))
-        .join(" · ")
-    : "No current injury designation";
-
-  const stamp =
-    data.rosterFetchedAt > 0
-      ? `<p class="scp-status-stamp">Last checked ` +
-        `<time datetime="${escapeHtml(new Date(data.rosterFetchedAt).toISOString())}"` +
-        ` data-ts="${data.rosterFetchedAt}" data-ts-compact>` +
-        `${escapeHtml(relativeAge(data.rosterFetchedAt, now))}</time></p>`
-      : "";
-
-  // This season's availability and the last thing that happened to him — the
-  // two facts that turn "is he hurt" into "should I expect him on Sunday",
-  // without the page predicting Sunday.
-  const facts: Array<{ label: string; value: string; sub: string }> = [];
-
-  if (injury?.seasonMissed !== null && injury?.seasonMissed !== undefined) {
-    facts.push({
-      label: `${data.season} games missed`,
-      value: String(injury.seasonMissed),
-      sub:
-        injury.lastPlayedWeek !== null
-          ? `Last played Week ${injury.lastPlayedWeek}`
-          : "Has not played this season",
-    });
-  }
-
-  const latest = injury?.latest;
-  if (latest) {
-    const when = injuryWhen(latest);
-    facts.push({
-      label: "Latest injury",
-      value: `${latest.type} · ${latest.season}`,
-      sub:
-        (latest.gamesMissed ?? 0) > 0
-          ? `${latest.gamesMissed} game${latest.gamesMissed === 1 ? "" : "s"} missed`
-          : when
-            ? `${when} · played through`
-            : "Played through",
-    });
-  }
-
-  return (
-    `<section class="scp-status" data-severity="${escapeHtml(severity)}">` +
-    `<div class="scp-status-main">` +
-    `<p class="scp-status-label">Current status</p>` +
-    `<p class="scp-status-value">` +
-    `<span class="scp-status-dot" aria-hidden="true"></span>` +
-    `${escapeHtml(headline)}</p>` +
-    (detail ? `<p class="scp-status-detail">${escapeHtml(detail)}</p>` : "") +
-    stamp +
-    `</div>` +
-    (facts.length
-      ? `<div class="scp-status-facts">` +
-        facts
-          .map(
-            (fact) =>
-              `<div class="scp-status-fact">` +
-              `<p class="scp-status-fact-label">${escapeHtml(fact.label)}</p>` +
-              `<p class="scp-status-fact-value">${escapeHtml(fact.value)}</p>` +
-              `<p class="scp-status-fact-sub">${escapeHtml(fact.sub)}</p>` +
-              `</div>`,
-          )
-          .join("") +
-        `</div>`
-      : "") +
-    `</section>`
-  );
-}
-
-/** Injuries By Body Part. A table, because it is tabular. */
-function renderInjuryRegions(data: PlayerPageData): string {
-  const regions = data.injury?.regions ?? [];
-  if (regions.length === 0) return "";
-
-  const rows = regions
-    .map(
-      (region) =>
-        `<tr>` +
-        `<th scope="row">${escapeHtml(region.region)}</th>` +
-        `<td>${escapeHtml(String(region.count))}</td>` +
-        `<td>${escapeHtml(String(region.gamesMissed))}</td>` +
-        `</tr>`,
-    )
-    .join("");
-
-  return (
-    h3("Injuries By Body Part") +
-    `<div class="scp-scroll">` +
-    `<table class="scp-table scp-table--filled scp-table--regions">` +
-    `<thead><tr>` +
-    `<th scope="col">Area</th>` +
-    `<th scope="col">Injuries</th>` +
-    `<th scope="col">Games missed</th>` +
-    `</tr></thead>` +
-    `<tbody>${rows}</tbody>` +
-    `</table></div>`
-  );
-}
-
-/**
- * The history, one injury at a time.
- *
- * Every entry is a heading, a line of circumstance and a paragraph of prose,
- * all of it in the HTML rather than behind a disclosure — a reader searching
- * for one specific injury is searching for the words in that paragraph, and
- * words a crawler cannot see answer nobody.
- */
-function renderInjuryHistory(data: PlayerPageData): string {
-  const seasons = data.injury?.seasons ?? [];
-  if (seasons.length === 0) return "";
-
-  const entries = seasons
-    .flatMap((season) =>
-      season.entries.map((entry) => {
-        const when = injuryWhen(entry);
-        const missed = entry.gamesMissed ?? 0;
-        const cost =
-          missed > 0
-            ? `${missed} game${missed === 1 ? "" : "s"} missed`
-            : "Played through";
-        const meta = [when, cost].filter(Boolean).join(" · ");
-        const side = entry.side && entry.side !== "unknown" ? entry.side : "";
-
-        return (
-          `<li class="scp-episode" data-severity="${escapeHtml(entry.severity ?? "")}">` +
-          `<h4 class="scp-episode-head">` +
-          `<span class="scp-episode-year">${escapeHtml(String(entry.season))}</span>` +
-          `<span class="scp-episode-type">${escapeHtml(entry.type)}</span>` +
-          (side ? `<span class="scp-episode-side">${escapeHtml(side)}</span>` : "") +
-          `</h4>` +
-          `<p class="scp-episode-meta">${escapeHtml(meta)}</p>` +
-          (entry.description
-            ? `<p class="scp-episode-body">${escapeHtml(entry.description)}</p>`
-            : "") +
-          `</li>`
-        );
-      }),
-    )
-    .join("");
-
-  /*
-   * The one honest thing that can be said about where this came from.
-   *
-   * Deliberately undated. These records carry no captured-at, and the only
-   * timestamp available is the data file's mtime — which on a fresh deploy is
-   * the moment the repository was checked out, not the moment anything was
-   * gathered. A line reading "last updated today" on a record that has not
-   * changed in months is a fabricated provenance, which is worse than none.
-   * Put a real date here when the record starts carrying one.
-   */
-  const provenance =
-    "Compiled injury record; entries are not individually sourced. " +
-    "Games missed are regular-season games.";
-
-  return (
-    h3(`${data.player.name} Injury History`) +
-    `<ol class="scp-episodes">${entries}</ol>` +
-    `<p class="scp-note">${escapeHtml(provenance)}</p>`
-  );
-}
-
 /** The questions people type, answered from the record above them. */
 function renderInjuryFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
   // Named for the player and the subject rather than "Common Questions": these
@@ -3904,89 +3121,8 @@ function renderInjuryFaq(data: PlayerPageData, options: PlayerRenderOptions): st
   );
 }
 
-/**
- * The availability profile and the body-part table, side by side.
- *
- * They are two readings of one record — how the absences are distributed in
- * TIME, and how they are distributed across the BODY — and a reader compares
- * them rather than reading one after the other. Stacked, the comparison needed
- * a scroll; beside each other it is one glance. Each is four rows, so neither
- * column pulls far ahead of the other.
- *
- * Either side may be absent: a player with a logged injury but no body region
- * recorded gets the profile alone, and the grid collapses to one column rather
- * than leaving a hole where the table would be.
- */
-function renderAvailabilityPair(data: PlayerPageData, riskRows: string): string {
-  const profile = riskRows
-    ? `<div class="scp-pair-col">` +
-      h3("Availability Profile") +
-      `<ul class="scp-avails">${riskRows}</ul>` +
-      `<details class="scp-how">` +
-      `<summary class="scp-how-summary">How this is calculated</summary>` +
-      `<p class="scp-how-body">${escapeHtml(
-        "Each row is one explicit rule over the record below — how recent the injuries are, whether any body region repeats, total games missed, and how concentrated those injuries are across regions. They are shown separately because they can disagree, and a single blended score would hide exactly the part worth acting on. Nothing here is a medical assessment.",
-      )}</p>` +
-      `</details>` +
-      `</div>`
-    : "";
-
-  const regions = renderInjuryRegions(data);
-  const table = regions ? `<div class="scp-pair-col">${regions}</div>` : "";
-
-  if (!profile && !table) return "";
-  if (!profile || !table) return `${profile}${table}`;
-
-  return `<div class="scp-pair">${profile}${table}</div>`;
-}
-
 function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const injury = data.injury;
-  if (!injury) return "";
-
-  const { summary, history, risks, insight } = injury;
-
-  const grade =
-    history.grade && history.score !== null
-      ? `<div class="scp-grade">` +
-        `<span class="scp-grade-letter">${escapeHtml(history.grade)}</span>` +
-        `<span class="scp-grade-score">${escapeHtml(`${history.score}/100 durability`)}</span>` +
-        `</div>`
-      : "";
-
-  const tiles = renderTiles([
-    {
-      label: "Games missed",
-      value: whole(summary.totalMissed),
-      sub: "Career, every logged injury",
-    },
-    {
-      label: "Injuries",
-      value: whole(summary.injuriesLogged),
-      sub: `${summary.affectedRegions} body region${summary.affectedRegions === 1 ? "" : "s"}`,
-    },
-    {
-      label: "Latest injury",
-      value: summary.lastSeason ? String(summary.lastSeason) : DASH,
-      sub: injury.latest?.type ?? "Last season with a logged injury",
-    },
-    {
-      label: "Biggest absence",
-      value: summary.primaryDriver ? whole(summary.primaryDriver.missed) : DASH,
-      sub: summary.primaryDriver?.label,
-    },
-  ]);
-
-  const riskRows = risks
-    .map(
-      (risk) =>
-        `<li class="scp-avail" data-level="${risk.level}">` +
-        `<span class="scp-avail-label">${escapeHtml(risk.label)}</span>` +
-        `<span class="scp-avail-value">${escapeHtml(risk.value)}</span>` +
-        `<span class="scp-avail-detail">${escapeHtml(risk.detail)}</span>` +
-        `</li>`,
-    )
-    .join("");
+  if (!data.injury) return "";
 
   // The tab's heading, and the thing that names the panel — on the scoped URL
   // as well. See renderHero().
@@ -3995,16 +3131,11 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
     "Current status, games missed and every logged injury.",
   );
 
-  return (
-    heading +
-    renderInjuryStatus(data, options) +
-    h3("Injury History At A Glance") +
-    `<div class="scp-injury-top">${grade}${tiles}</div>` +
-    (insight ? `<p class="scp-note scp-note--lead">${escapeHtml(insight)}</p>` : "") +
-    renderAvailabilityPair(data, riskRows) +
-    renderInjuryHistory(data) +
-    renderInjuryFaq(data, options)
-  );
+  // The original tab's sections (status card, at-a-glance grade and tiles,
+  // availability profile, body-part table and history) were removed on
+  // 2026-09-30 at mak's request. mak's Injury tab spec (lib/player/injury-tab.ts)
+  // carries the tab now; the FAQ stays last.
+  return heading + renderInjuryTab(data, options) + renderInjuryFaq(data, options);
 }
 
 /* -------------------------------------------------------------------- news */
@@ -4354,7 +3485,6 @@ function renderPositionPeers(
   const prefix = options.playerPathPrefix ?? "/player/";
   const query = options.linkQuery ?? "";
   const pos = peers.position;
-  const ranks = peers.rows.map((row) => row.rank);
   const unit = peers.measure === "ppg" ? "PPG" : "PTS";
 
   const cards = peers.rows
@@ -4429,16 +3559,11 @@ function renderPositionPeers(
     })
     .join("");
 
-  const measured =
-    peers.measure === "ppg" ? "points per game" : "points scored";
-  const sub =
-    `Ranked closest to ${data.player.name} by ${peers.season} ${measured} ` +
-    `(${SCORING_SHORT[peers.format]}) ${DOT} ` +
-    `${pos}${Math.min(...ranks)}–${pos}${Math.max(...ranks)}`;
-
   return (
-    `<section class="scp-peers" aria-label="Nearby positional peers">` +
-    h2("Nearby Positional Peers", sub) +
+    `<section class="scp-peers" aria-labelledby="scp-peers-h">` +
+    // The Overview's section-title device (.scp-ox-h2), so it reads as one
+    // more section of the page, like the FAQ above it.
+    `<h2 class="scp-ox-h2" id="scp-peers-h">Nearby Positional Peers</h2>` +
     // Scrolled to centre the marked card by client/player.ts. Without it the
     // rail simply starts at its best-ranked end, which is a fine place to
     // start reading and needs nothing.
@@ -4467,14 +3592,16 @@ export function renderPlayerPage(
   // spec of 2026-09-29 (lib/player/outlook-tab.ts). Only on a tab that exists
   // already, so no player gains an Outlook URL from this.
   const existingOutlook = renderOutlook2026(data);
-  const outlook = existingOutlook ? existingOutlook + renderOutlookTab(data, options) : "";
+  const outlook = existingOutlook.exists
+    ? existingOutlook.html + renderOutlookTab(data, options)
+    : "";
 
   /*
    * Overview is the interpretation layer now — see the note above
    * renderFantasySnapshot(). What left: the 2026 counting totals and the best
    * week (Stats owns them), the efficiency meters and the career rate tiles
-   * (moved to Stats), and the season-finish timeline (the career table's own
-   * Finish column and the Fantasy Finish History module already say it twice).
+   * (moved to Stats, then removed there on 2026-09-30), and the season-finish
+   * timeline (the career table's own Finish column already says it).
    */
   /*
    * Three bands, not seven stacked modules.
@@ -4614,10 +3741,16 @@ export function renderPlayerPage(
       // "2026 Outlook", which names nobody. The words are the ones the strip
       // hands the host's H1 for this tab, so the two cannot disagree.
       (options.ownHeading
-        ? promoteHeading(
-            scoped.html,
-            sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
-          )
+        ? LEAD_HEADINGS[scoped.id]
+          ? promoteLeadHeading(
+              scoped.html,
+              LEAD_HEADINGS[scoped.id]!,
+              scoped.id === "stats" ? undefined : sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
+            )
+          : promoteHeading(
+              scoped.html,
+              sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
+            )
         : scoped.html) +
       `</section>` +
       back +

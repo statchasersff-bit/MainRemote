@@ -637,14 +637,10 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
   const rank = seasonRank(data);
   const record = `${w}–${l}${t ? `–${t}` : ""}`;
   const splits = pos === "QB" ? "passing and rushing" : pos === "RB" ? "rushing and receiving" : "receiving";
-  const best = [...s.played].sort((x, y) => s.pts(y) - s.pts(x))[0]!;
-  const lede =
-    `${s.played.length} game${s.played.length > 1 ? "s" : ""}, ${one(total)} ${SCORING_SHORT[data.format]} points. ` +
-    `His best week was ${one(s.pts(best))} in Week ${best.week}.`;
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${query}`;
 
   return (
-    sectionOpen("scp-ox-log-h", `${data.player.name} ${data.season} game log`, escapeHtml(lede)) +
+    sectionOpen("scp-ox-log-h", `${data.player.name} ${data.season} game log`, "") +
     `<div class="scp-ox-tbl"><table class="scp-ox-table">` +
     `<caption>${escapeHtml(`${SCORING_LABELS[data.format]} scoring. Finish is weekly rank among ${pos}s.`)}</caption>` +
     `<thead><tr><th scope="col">Week</th><th scope="col">Opponent</th><th scope="col">Result</th>` +
@@ -731,20 +727,10 @@ function renderCareer(data: PlayerPageData, s: Season, options: PlayerRenderOpti
     cols.map((c) => `<td>${whole(rows.reduce((sum, r) => sum + c.of(r), 0))}</td>`).join("") +
     `<td>${one(pts)}</td><td>${gp ? one(pts / gp) : DASH}</td><td></td></tr>`;
 
-  const teams = new Set(rows.flatMap((r) => clubs[r.season] ?? []));
-  const done = rows.filter((r) => !inProgress(r));
-  const best = [...done].sort((x, y) => y.points - x.points)[0];
-  let lede = `${rows.length} season${rows.length > 1 ? "s" : ""}` + (teams.size ? `, ${teams.size} team${teams.size > 1 ? "s" : ""}` : "") + ".";
-  if (best && done.length > 1) {
-    lede += ` His best fantasy year came in ${best.season}, ${one(best.points)} points` +
-      (best.finish ? ` and a ${pos}${best.finish} finish.` : ".");
-  }
-
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
   return (
-    sectionOpen("scp-ox-career-h", "Career fantasy stats by season", escapeHtml(lede)) +
+    sectionOpen("scp-ox-career-h", "Career fantasy stats by season", "") +
     `<div class="scp-ox-tbl"><table class="scp-ox-table">` +
-    `<caption>${escapeHtml(`${SCORING_LABELS[data.format]} scoring. Finish is season rank among ${pos}s by total points.`)}</caption>` +
     `<thead><tr><th scope="col">Season</th><th scope="col">Team</th><th scope="col">GP</th>` +
     cols.map((c) => `<th scope="col">${escapeHtml(c.label)}</th>`).join("") +
     `<th scope="col">Fantasy pts</th><th scope="col">PPG</th><th scope="col">Finish</th></tr></thead>` +

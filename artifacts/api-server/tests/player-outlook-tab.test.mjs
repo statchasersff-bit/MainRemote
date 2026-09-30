@@ -81,7 +81,7 @@ describe("league fit", () => {
 describe("in season", () => {
   const doc = render(state());
 
-  test("seven sections, in order, each with an H2", () => {
+  test("six sections, in order, each with an H2 (contract hidden for now)", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent),
       [
@@ -89,7 +89,6 @@ describe("in season", () => {
         "Preseason projection vs. reality",
         "Our take after Week 3",
         "What drives his outlook",
-        "Contract and job security",
         "What could change his value",
         "Jacoby Brissett outlook FAQ",
       ],
@@ -132,8 +131,11 @@ describe("in season", () => {
     }
   });
 
-  test("the byline says automatic, and the preseason piece is archived collapsed", () => {
-    assert.match(doc.querySelector(".scp-st-byline").textContent, /^Updated automatically after Week 3/);
+  test("the byline dates only the preseason piece, which is archived collapsed", () => {
+    const byline = doc.querySelector(".scp-st-byline").textContent;
+    assert.match(byline, /^Preseason outlook originally published /);
+    assert.doesNotMatch(byline, /Updated automatically/);
+    assert.doesNotMatch(doc.querySelector(".scp-ol").textContent, /Contract terms aren't available/);
     const prev = doc.querySelector("details.scp-ol-prev");
     assert.ok(prev && !prev.open);
     assert.match(prev.querySelector("summary").textContent, /^Read our preseason outlook \(June 2026\)$/);

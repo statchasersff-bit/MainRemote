@@ -54,6 +54,7 @@ import {
   type Teammate,
 } from "./overview-data";
 import { statsTabAdvanced, type LogSeason, type StatsTabAdvanced } from "./stats-tab-data";
+import { practiceStamp } from "./injury-tab-data";
 import { logger } from "../logger";
 import { ensureTeams } from "../teams";
 import {
@@ -1330,6 +1331,9 @@ export function playerDataVersion(
     data.designation?.injuryStatus ?? "",
     data.designation?.practice ?? "",
     data.rosterFetchedAt,
+    // The Injury tab's practice grid, which a report read in the evening
+    // changes without touching any other file.
+    practiceStamp(data.leagueSeason),
   ].join("-");
 }
 
