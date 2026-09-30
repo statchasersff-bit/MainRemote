@@ -109,12 +109,6 @@ import {
 } from "./metrics";
 import { playerBenchmarks } from "./benchmarks";
 import {
-  ADVANCED_POSITIONS,
-  advancedProfile,
-  advancedSeasons,
-  type AdvancedProfile,
-} from "./advanced";
-import {
   buildTimelineInsight,
   computeRiskBreakdown,
   getInjuryHistory,
@@ -444,9 +438,6 @@ export interface PlayerPageData {
   /** His college seasons (data/player/college_stats.json); built for rookies. */
   college: CollegeProfile | null;
 
-  /** Null when the player is not in the advanced table — the tab is hidden. */
-  advanced: AdvancedProfile | null;
-  advancedSeasons: number[];
   injury: InjuryProfile | null;
 
   news: NewsItem[];
@@ -948,8 +939,6 @@ function buildInjuryProfile(
 
 export interface PlayerDataOptions {
   format?: ScoringFormat;
-  /** Which season's advanced table to show. Defaults to the active season. */
-  advancedSeason?: number;
   /**
    * Which season the Game Log tab shows. Defaults to the active season.
    *
@@ -1131,27 +1120,6 @@ export async function getPlayerPageData(
     allPlayers,
   );
 
-  const advPositions =
-    player.position && ADVANCED_POSITIONS.has(player.position)
-      ? advancedSeasons(player.position, seasons)
-      : [];
-
-  /*
-   * Which advanced table to show.
-   *
-   * NOT simply the season the rest of the page is on. The advanced tables
-   * arrive from a separate pipeline and land after a season is filed, so in
-   * September the page is on a season that has no table at all — and defaulting
-   * to it made the whole Advanced section vanish from every player the moment
-   * the game log rolled over to the new year.
-   *
-   * So: the reader's choice if they made one and it exists, otherwise the
-   * current season if it has a table, otherwise the newest one that does.
-   */
-  const advSeason =
-    options.advancedSeason ??
-    (advPositions.includes(season) ? season : (advPositions[0] ?? season));
-
   /* ---- what is next: the schedule, and the matchup it walks into ---- */
 
   // Both upstreams are allowed to fail. The schedule is a network fetch and the
@@ -1278,11 +1246,6 @@ export async function getPlayerPageData(
       }),
     },
 
-    advanced:
-      player.position && ADVANCED_POSITIONS.has(player.position)
-        ? advancedProfile(player.id, player.position, advSeason)
-        : null,
-    advancedSeasons: advPositions,
     injury: buildInjuryProfile(
       player.id,
       player.name,
@@ -1367,7 +1330,6 @@ export function playerDataVersion(
     data.designation?.injuryStatus ?? "",
     data.designation?.practice ?? "",
     data.rosterFetchedAt,
-    data.advanced?.season ?? "",
   ].join("-");
 }
 

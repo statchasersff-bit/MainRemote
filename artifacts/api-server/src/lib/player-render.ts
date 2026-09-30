@@ -3151,9 +3151,8 @@ function renderCareerFinishes(data: PlayerPageData): string {
  * past. They are not a tab of their own either: that page competed with this
  * one for the same queries on thinner content.
  *
- * The machinery is still here and still builds — renderAdvanced() below, the
- * `?adv=` season switch, and lib/player/advanced.ts — so bringing it back is a
- * one-line change in this function. Nothing calls it today.
+ * The code behind it (renderAdvanced(), the `?adv=` season switch and
+ * lib/player/advanced.ts) was deleted on 2026-09-30; git history has it.
  *
  * Order: the snapshot answers the query, the season tables back it, fantasy is
  * the layer this site adds, the career table catches every "<year> stats" and
@@ -3668,85 +3667,6 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
     highs +
     faq +
     spec
-  );
-}
-
-function renderAdvanced(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const advanced = data.advanced;
-  if (!advanced) return "";
-
-  const groups = advanced.groups
-    .map((group) => {
-      const cells = group.cells
-        .map(
-          (cell) =>
-            `<div class="scp-adv-cell">` +
-            `<p class="scp-adv-label">${escapeHtml(cell.label)}` +
-            (cell.fullSeason ? `<span class="scp-adv-fs" title="Weeks 1–18">†</span>` : "") +
-            `</p>` +
-            `<p class="scp-adv-value">${escapeHtml(cell.value)}</p>` +
-            (cell.percentile === null
-              ? ""
-              : `<span class="scp-adv-bar" title="${escapeHtml(
-                  `${ordinal(cell.percentile)} percentile`,
-                )}"><span class="scp-adv-fill"${styleAttr([
-                  `width:${Math.max(2, Math.min(100, cell.percentile))}%`,
-                ])}></span></span>` +
-                `<p class="scp-adv-pct">${escapeHtml(ordinal(cell.percentile))}</p>`) +
-            `</div>`,
-        )
-        .join("");
-      return (
-        `<section class="scp-adv-group"${styleAttr([`--group-accent:${group.accent}`])}>` +
-        `<h4 class="scp-adv-group-title">${escapeHtml(group.label)}</h4>` +
-        `<div class="scp-adv-grid">${cells}</div>` +
-        `</section>`
-      );
-    })
-    .join("");
-
-  const seasons = data.advancedSeasons;
-  const prefix = options.playerPathPrefix ?? "/player/";
-  const switcher =
-    seasons.length > 1
-      ? `<div class="scp-seasons" data-scp-adv-seasons>` +
-        seasons
-          .map((season) => {
-            const active = season === advanced.season;
-            const href =
-              `${prefix}${data.player.slug}/${options.section ? `${options.section}/` : ""}` +
-              `?adv=${season}${data.format === "ppr" ? "" : `&format=${data.format}`}` +
-              `${options.section ? "" : "#stats"}`;
-            return (
-              `<a class="scp-season-opt${active ? " is-active" : ""}"` +
-              ` href="${escapeHtml(href)}"${active ? ` aria-current="true"` : ` rel="nofollow"`}>` +
-              `${escapeHtml(String(season))}</a>`
-            );
-          })
-          .join("") +
-        `</div>`
-      : "";
-
-  const context =
-    advanced.rank !== null
-      ? `${ordinal(advanced.rank)} of ${advanced.qualifyingPlayers} qualifying ${advanced.position.toUpperCase()}s`
-      : `${advanced.qualifyingPlayers} qualifying ${advanced.position.toUpperCase()}s`;
-
-  return (
-    sectionHead("Advanced") +
-    `<p class="scp-sub">${escapeHtml(
-      advanced.throughWeek
-        ? `${advanced.season} season through Week ${advanced.throughWeek} \u00b7 ${context}`
-        : `${advanced.season} season \u00b7 ${context}`,
-    )}</p>` +
-    switcher +
-    `<p class="scp-note">${escapeHtml(
-      "Each bar is this player's percentile among qualifying players at the position. Metrics where a lower number is better are inverted, so a longer bar is always better." +
-        (advanced.groups.some((g) => g.cells.some((c) => c.fullSeason))
-          ? " † Weeks 1–18: no week-by-week source for this metric."
-          : ""),
-    )}</p>` +
-    `<div class="scp-adv">${groups}</div>`
   );
 }
 

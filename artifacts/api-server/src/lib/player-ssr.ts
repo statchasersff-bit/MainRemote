@@ -72,7 +72,6 @@ function optionKey(
     // serves pages with no <h1> at all, or a plain mount serves two.
     options.ownHeading ?? false,
     data.format ?? "ppr",
-    data.advancedSeason ?? 0,
     // The Game Log's season, for the same reason the section is here: two
     // requests differing only in ?log= render different tables.
     data.logSeason ?? 0,

@@ -37,7 +37,6 @@ import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import {
-  getAdvancedTableSeasons,
   getAvailableSeasons,
   previousSlugsFor,
   resolveSlugAlias,
@@ -195,18 +194,6 @@ function ownHeading(req: Request): boolean {
 function section(req: Request): string | undefined {
   const raw = String(req.query["section"] ?? "").trim().toLowerCase();
   return SECTIONS.has(raw) ? raw : undefined;
-}
-
-/**
- * Which advanced-stats season the reader asked for.
- *
- * Constrained to the seasons that actually have a table, so `?adv=1998` is
- * ignored rather than rendering an empty tab.
- */
-function advancedSeason(req: Request): number | undefined {
-  const raw = Number.parseInt(String(req.query["adv"] ?? ""), 10);
-  if (!Number.isFinite(raw)) return undefined;
-  return getAdvancedTableSeasons().includes(raw) ? raw : undefined;
 }
 
 /**
@@ -433,7 +420,6 @@ router.get("/player/:slug", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );
@@ -535,7 +521,6 @@ router.get("/player/:slug/:section", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );
@@ -636,7 +621,6 @@ router.get("/embed/player/:slug", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );
