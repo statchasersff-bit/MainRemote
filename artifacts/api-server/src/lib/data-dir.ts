@@ -86,6 +86,8 @@ export function dataDirStatus(): {
   exists: boolean;
   players: boolean;
   rankings: boolean;
+  /** Seasons with stored recap box scores (data/matchup/boxscores). */
+  boxscoreSeasons: number[];
 } {
   const has = (...parts: string[]): boolean => {
     try {
@@ -100,5 +102,17 @@ export function dataDirStatus(): {
     exists: has(),
     players: has("player", "indexed_players.json"),
     rankings: has("rankings"),
+    boxscoreSeasons: (() => {
+      try {
+        return fs
+          .readdirSync(dataPath("matchup", "boxscores"))
+          .map((name) => /^(\d{4})\.json$/.exec(name)?.[1])
+          .filter((year): year is string => Boolean(year))
+          .map(Number)
+          .sort();
+      } catch {
+        return [];
+      }
+    })(),
   };
 }

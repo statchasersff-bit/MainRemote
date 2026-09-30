@@ -38,6 +38,7 @@ import {
 import {
   canonicalizeMatchupPair,
   gameSegment,
+  isUpcomingFixture,
   meetingHasOwnAddress,
   type MatchupGameRef,
 } from "./pair";
@@ -45,10 +46,27 @@ import { getPlayerSlugByName } from "../player/data";
 import type { DefenseLine } from "./fantasy-points";
 import { playerContexts, ratesFor } from "./fantasy-data";
 import {
+  renderFantasyMatchups,
   renderFantasySection,
+  topScorers,
   verdictPlayers,
   type FantasySectionInput,
 } from "./fantasy-section";
+import {
+  bettingSeason,
+  pointsAllowed,
+  sameWeek,
+  seasonGames,
+  seasonToDate,
+  similarGames,
+  storedGame,
+  storedMeetings,
+  storedSeasons,
+  type SeasonGame,
+  type TeamSeason,
+} from "./season-data";
+import { statLine } from "./leaders-strip";
+import { shareImageAlt, shareImageFile, type ShareImageInput } from "./og-image";
 import { gameNotes, schemaVideo, type GameVideo } from "./game-notes";
 import { renderPossessions } from "./possessions";
 import { renderWinProbability } from "./win-probability";
@@ -61,15 +79,17 @@ import {
   renderBetting,
   renderExplore,
   renderHighlights,
-  renderJumpNav,
+  gameAfter,
   renderMeantCards,
+  spreadLabel,
+  type BettingExtras,
   videoSchema,
   type ExploreColumn,
   type ExploreGame,
   type GameLogLink,
   type SeasonSide,
 } from "./recap-extras";
-import type { NflTeam } from "../team/teams";
+import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
 import { logger } from "../logger";
 import { loadPlayers } from "../player/data";
@@ -104,6 +124,7 @@ import {
   renderStatCompare,
   type BodyTeam,
   type CompareRow,
+  type FaqScorer,
   type RecapBodyInput,
 } from "./recap-body";
 import { headshotUrl } from "../team/roster";
@@ -400,7 +421,7 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
  * the box score — see recap.ts for what it will and will not claim. Absent
  * without a line score, since every paragraph starts from the quarters.
  */
-function renderGameRecap(data: MatchupData, options: MatchupRenderOptions): string {
+function renderGameRecap(data: MatchupData, options: MatchupRenderOptions, after = ""): string {
   const meeting = data.featured;
   const game = matchupScoreboardGame(data);
   if (!meeting || !game || game.status !== "final") return "";
@@ -438,7 +459,7 @@ function renderGameRecap(data: MatchupData, options: MatchupRenderOptions): stri
     ? renderRecap(recap, {
         playerNames: Object.values(gamePlayers(data)).map((p) => p.name),
         playerUrl: getPlayerProfileUrl,
-      })
+      }, after)
     : "";
 }
 
@@ -508,21 +529,186 @@ function renderGameScoring(data: MatchupData): string {
   return renderScoringSummary({ game, plays, playerUrl: getPlayerProfileUrl });
 }
 
+/* ------------------------------------------- stored seasons: extras */
+
+/** "Wild Card", "Week 7": a stored game's round, as the schedule names it. */
+function roundName(seasonType: "regular" | "post", week: number): string {
+  if (seasonType === "regular") return `Week ${week}`;
+  return { 1: "Wild Card", 2: "Divisional Round", 3: "Conference Championship", 5: "Super Bowl" }[week] ?? `Postseason week ${week}`;
+}
+
+/** A stored game's recap address, from its two clubs. */
+function storedGameUrl(g: SeasonGame, options: MatchupRenderOptions): string | null {
+  const pair = canonicalizeMatchupPair(g.away, g.home);
+  if (!pair) return null;
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  return `${gamePath(prefix, pair.slug, { season: g.season, week: g.week, seasonType: g.seasonType })}${options.linkQuery ?? ""}`;
+}
+
+function nickname(code: string): string {
+  return getTeamByAbbreviation(code)?.nickname ?? code;
+}
+
+function exploreStored(g: SeasonGame, options: MatchupRenderOptions, meta: string): ExploreGame {
+  return {
+    away: { short: nickname(g.away), score: g.awayScore },
+    home: { short: nickname(g.home), score: g.homeScore },
+    neutral: false,
+    meta,
+    url: storedGameUrl(g, options),
+  };
+}
+
+function shortDateOf(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric" }).format(
+    new Date(iso),
+  );
+}
+
+/** The Betting tab's extras: the pair's priced meetings, each club's season against the lines, and what is next. */
+function bettingExtras(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): BettingExtras | null {
+  const meeting = data.featured;
+  if (!meeting) return null;
+  const away = game.away.abbr;
+  const home = game.home.abbr;
+  const through = { seasonType: meeting.seasonType, week: meeting.week } as const;
+  const seasons = storedSeasons(meeting.season - HISTORY_SEASONS, meeting.season);
+  const next: BettingExtras["next"] = {};
+  for (const side of seasonSides(data)) {
+    const after = gameAfter(side, game);
+    if (!after) {
+      next[side.abbr] = null;
+      continue;
+    }
+    const opp = after.opponent?.nickname ?? after.opponentName;
+    const home = after.homeAway === "home";
+    const label = `${home ? `${opp} at ${side.short}` : `${side.short} at ${opp}`}, ${after.weekLabel}`;
+    const team = side.abbr === meeting.away.code.toUpperCase() ? meeting.away : meeting.home;
+    const oppCode = after.opponent?.code.toUpperCase() ?? null;
+    const stored = oppCode
+      ? seasonGames(meeting.season).find(
+          (g) =>
+            g.seasonType === after.seasonType &&
+            g.week === after.week &&
+            [g.away, g.home].includes(side.abbr) &&
+            [g.away, g.home].includes(oppCode),
+        )
+      : undefined;
+    next[side.abbr] = {
+      label,
+      url: scheduleGameUrl(team, after, meeting.season, options, side.games),
+      line: stored?.odds ? spreadLabel(stored.odds) : null,
+    };
+  }
+  return {
+    meetings: storedMeetings(seasons, away, home, { season: meeting.season, ...through }),
+    seasons: {
+      [away]: bettingSeason(meeting.season, away, through, "away"),
+      [home]: bettingSeason(meeting.season, home, through, "home"),
+    },
+    next,
+  };
+}
+
+/**
+ * "Season to date": both clubs' regular season from the stored box scores,
+ * in the "Why won" table's design. The heading names the week the numbers run
+ * through, so a Week 1 recap read in Week 3 does not look like a preview.
+ */
+function renderSeasonToDate(data: MatchupData, game: ScoreboardGame): string {
+  const meeting = data.featured;
+  if (!meeting) return "";
+  const std = seasonToDate(meeting.season, [game.away.abbr, game.home.abbr]);
+  if (!std) return "";
+  const a = std.teams[game.away.abbr] ?? null;
+  const h = std.teams[game.home.abbr] ?? null;
+  const per = (t: TeamSeason | null, n: (t: TeamSeason) => number): number | null =>
+    t && t.games ? n(t) / t.games : null;
+  const one = (v: number | null): string => (v === null ? "—" : v.toFixed(1));
+  const rec = (t: TeamSeason | null): string => (t ? `${t.wins}-${t.losses}${t.ties ? `-${t.ties}` : ""}` : "—");
+  const rows: CompareRow[] = [
+    { label: "Record", away: a ? a.wins : null, home: h ? h.wins : null, awayText: rec(a), homeText: rec(h), better: "higher" },
+    ...(
+      [
+        ["Points per game", (t: TeamSeason) => t.pointsFor, "higher"],
+        ["Yards per game", (t: TeamSeason) => t.yardsFor, "higher"],
+        ["Points allowed per game", (t: TeamSeason) => t.pointsAgainst, "lower"],
+        ["Yards allowed per game", (t: TeamSeason) => t.yardsAgainst, "lower"],
+      ] as const
+    ).map(([label, f, better]) => {
+      const x = per(a, f);
+      const y = per(h, f);
+      return { label, away: x, home: y, awayText: one(x), homeText: one(y), better } as CompareRow;
+    }),
+  ];
+  const ypp = (t: TeamSeason | null): number | null => (t && t.playsFor ? t.yardsFor / t.playsFor : null);
+  rows.splice(3, 0, {
+    label: "Yards per play",
+    away: ypp(a),
+    home: ypp(h),
+    awayText: one(ypp(a)),
+    homeText: one(ypp(h)),
+    better: "higher",
+  });
+  const colors = heroPairColors(game.away.abbr, game.home.abbr);
+  return (
+    `<section class="sct-rb-section sct-mu-form" aria-labelledby="season-to-date">` +
+    `<h3 class="sct-rb-h3" id="season-to-date">${escapeHtml(`Season to date (through Week ${std.throughWeek})`)}</h3>` +
+    `<p class="sct-rb-sub">${escapeHtml(`The ${meeting.season} regular season, from each game's box score.`)}</p>` +
+    renderStatCompare({
+      caption: `Season to date, ${game.away.short} vs ${game.home.short}`,
+      awayName: game.away.short,
+      homeName: game.home.short,
+      awayInk: colors.away.ink,
+      homeInk: colors.home.ink,
+      rows,
+    }) +
+    `</section>`
+  );
+}
+
+/** Points allowed by position for the Fantasy tab, with player positions from the dictionary. */
+function renderGameMatchups(data: MatchupData, game: ScoreboardGame): string {
+  const meeting = data.featured;
+  if (!meeting) return "";
+  return renderFantasyMatchups(game, pointsAllowed(meeting.season, [game.away.abbr, game.home.abbr], dictionaryPosition));
+}
+
+/** The two best PPR lines in the game, for the FAQ. */
+function faqScorers(data: MatchupData): FaqScorer[] {
+  const input = fantasyInput(data);
+  if (!input) return [];
+  return topScorers(input)
+    .slice(0, 2)
+    .map((t) => ({ name: t.name, ppr: t.ppr, line: statLine(t.player) }));
+}
+
 /* ------------------------------------------- the recap's added sections */
 
-/** A club's schedule row as a link: its game page once it has one, the pair page before. */
+/**
+ * A club's schedule row as a link: its game page once it has one, the pair page before.
+ * `games` is that club's season, which says whether the two meet again — see
+ * meetingHasOwnAddress().
+ */
 function scheduleGameUrl(
   team: NflTeam,
   g: ScheduleGame,
   season: number,
   options: MatchupRenderOptions,
+  games: ScheduleGame[],
 ): string | null {
   const pair = g.opponent ? canonicalizeMatchupPair(team, g.opponent) : null;
   if (!pair) return null;
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const query = options.linkQuery ?? "";
   const final = g.status === "final" && g.result !== null;
-  return meetingHasOwnAddress(g.kickoffMs, final, options.now ?? Date.now())
+  const now = options.now ?? Date.now();
+  const rematchAhead = games.some(
+    (other) =>
+      other.opponent?.abbreviation === g.opponent?.abbreviation &&
+      isUpcomingFixture(other.status === "final", other.kickoffMs, now),
+  );
+  return meetingHasOwnAddress(g.kickoffMs, final, now, rematchAhead)
     ? `${gamePath(prefix, pair.slug, { season, week: g.week, seasonType: g.seasonType })}${query}`
     : `${matchupPath(prefix, pair.slug)}${query}`;
 }
@@ -631,11 +817,6 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
   return input;
 }
 
-function renderGameFantasy(data: MatchupData): string {
-  const input = fantasyInput(data);
-  return input ? renderFantasySection(input) : "";
-}
-
 function renderGameWinProbability(data: MatchupData): string {
   const game = matchupScoreboardGame(data);
   const plays = data.boxscore?.scoringPlays ?? [];
@@ -710,7 +891,7 @@ function winnerPath(data: MatchupData, game: ScoreboardGame, options: MatchupRen
       home: home ? { short: team.nickname, score: mine } : { short: opp, score: theirs },
       neutral: g.neutralSite,
       meta: `${g.weekLabel}${date}`,
-      url: scheduleGameUrl(team, g, meeting.season, options),
+      url: scheduleGameUrl(team, g, meeting.season, options, side.games),
     };
   });
   const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
@@ -761,52 +942,50 @@ function renderGameExplore(data: MatchupData, input: RecapBodyInput, options: Ma
     ? `<nav class="sct-ex-hubs" aria-label="Team and rivalry pages">` +
       `<h3 class="sct-rb-h3">Team pages</h3><ul class="sct-rb-pills">${pills}</ul></nav>`
     : "";
-  return renderExplore(path ? [path] : [], { season: String(meeting.season), players: logs }, nav);
+  // "More from" the week or round, and the rule-based "Similar games", from the stored seasons.
+  const columns: ExploreColumn[] = [];
+  const round = roundName(meeting.seasonType, meeting.week);
+  const week = sameWeek(meeting.season, meeting.seasonType, meeting.week, [game.away.abbr, game.home.abbr]);
+  if (week.length) {
+    columns.push({
+      title: `More from ${meeting.season} ${meeting.seasonType === "post" ? round : round}`,
+      games: week.map((g) => exploreStored(g, options, shortDateOf(g.date))),
+    });
+  }
+  if (path) columns.push(path);
+  const self = storedGame(meeting.season, meeting.espnEventId ?? null);
+  const similar = self ? similarGames(self, storedSeasons(meeting.season - HISTORY_SEASONS, meeting.season + 1)) : null;
+  if (similar) {
+    columns.push({
+      title: "Similar games",
+      note: similar.rule,
+      games: similar.games.map((g) => exploreStored(g, options, `${g.season} ${roundName(g.seasonType, g.week)}`)),
+    });
+  }
+  return renderExplore(columns, { season: String(meeting.season), players: logs }, nav);
 }
 
-/**
- * Everything the recap build spec added, in its own order, appended under the
- * existing recap so the two can be compared: "On this page" links to the new
- * sections, what the result meant, the highlights, how the game swung, play
- * calling and possessions, the fantasy section, the betting result and "Keep
- * exploring". Before-and-after goes to the foot of the sidebar.
- */
-function renderAddedSections(
-  data: MatchupData,
-  input: RecapBodyInput,
-  options: MatchupRenderOptions,
-): { nav: string; sections: string } {
+/** The recap build spec's sections that live outside recap-body.ts, for the tabs to place. */
+function renderAddedSections(data: MatchupData, input: RecapBodyInput, options: MatchupRenderOptions): AddedSections {
   const game = input.game;
-  const meant = renderMeantCards(game, seasonSides(data));
-  const sections =
-    (meant ? `<section class="sct-rb-section" aria-labelledby="meant"><h2 class="sct-rb-h2" id="meant">What it meant</h2>${meant}</section>` : "") +
-    renderHighlights(game, gameVideo(data)) +
-    renderGameWinProbability(data) +
-    renderGamePossessions(data) +
-    renderGameFantasy(data) +
-    renderBetting(game, data.boxscore?.odds ?? null) +
-    renderGameExplore(data, input, options);
-  if (!sections) return { nav: "", sections: "" };
-  const info = gameInfoRows(data);
-  const facts = info.length
-    ? `<p class="sct-rb-note">${info.map(([k, v]) => `${escapeHtml(k)}: ${v}`).join(" · ")}</p>`
-    : "";
-  // The jump links and the TV/attendance line sit directly under the prose
-  // recap; the sections they point to stay at the foot of the main column.
   return {
-    nav: renderJumpNav(sections) + facts,
-    sections: `<div class="sct-added" data-sct-added>` + sections + `</div>`,
+    meant: renderMeantCards(game, seasonSides(data)),
+    highlights: renderHighlights(game, gameVideo(data)),
+    winProbability: renderGameWinProbability(data),
+    possessions: renderGamePossessions(data),
+    betting: renderBetting(game, data.boxscore?.odds ?? null, bettingExtras(data, game, options)),
+    explore: renderGameExplore(data, input, options),
   };
 }
 
-/** Game info's extra rows: TV, attendance. Only what the feeds actually carry. */
-function gameInfoRows(data: MatchupData): Array<[string, string]> {
-  const rows: Array<[string, string]> = [];
-  const tv = data.featured?.network ?? data.boxscore?.broadcast ?? null;
-  if (tv) rows.push(["TV", escapeHtml(tv)]);
-  const attendance = data.boxscore?.attendance ?? null;
-  if (attendance) rows.push(["Attendance", attendance.toLocaleString("en-US")]);
-  return rows;
+/** The recap build spec's sections, one by one, for the tabs to place. */
+interface AddedSections {
+  meant: string;
+  highlights: string;
+  winProbability: string;
+  possessions: string;
+  betting: string;
+  explore: string;
 }
 
 function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions): string {
@@ -815,9 +994,23 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
   if (!game || !meeting) return "";
   const teams = [meeting.away, meeting.home];
   const sides = seasonSides(data)
-    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options)))
+    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
   return renderBeforeAfter(game, sides);
+}
+
+/** The recap's VideoObject as an inert island for the plugin, or "". */
+function matchupVideoIsland(data: MatchupData): string {
+  const meeting = data.featured;
+  const game = matchupScoreboardGame(data);
+  if (!meeting || !game) return "";
+  const node = videoSchema(
+    game,
+    schemaVideo(data.pair.slug, gameSegment({ season: meeting.season, week: meeting.week, seasonType: meeting.seasonType })),
+  );
+  return node
+    ? `<script type="application/json" class="sct-matchup-video-data">${escapeJsonLd(JSON.stringify(node))}</script>`
+    : "";
 }
 
 /** "Breadcrumbs, the highlights video": the recap's extra JSON-LD nodes. */
@@ -950,6 +1143,13 @@ export function recapBodyInput(
       startSit: START_SIT_URL,
       pointsAllowed: getFPAUrl(),
       strengthOfSchedule: getSOSUrl(),
+      // No address yet: the card shows once SC_MATCHUP_ANALYZER_URL names one.
+      matchupAnalyzer: process.env["SC_MATCHUP_ANALYZER_URL"]?.trim() || null,
+    },
+    topScorers: faqScorers(data),
+    info: {
+      tv: meeting.network ?? data.boxscore?.broadcast ?? null,
+      attendance: data.boxscore?.attendance ?? null,
     },
   };
 }
@@ -1485,7 +1685,10 @@ function statTeam(team: NflTeam | null): string {
 }
 
 /** The name cell every stat table shares: face, link, position. */
-function statName(row: { player: { id: string; name: string }; team: NflTeam | null; position: string | null }): string {
+function statName(
+  row: { player: { id: string; name: string }; team: NflTeam | null; position: string | null },
+  startSit: string | null = null,
+): string {
   // The flex box is an inner span, not the cell. `display:flex` on a <th>
   // takes it out of table layout altogether, which left the name column a
   // different width from its own header and broke every row rule under it.
@@ -1501,6 +1704,10 @@ function statName(row: { player: { id: string; name: string }; team: NflTeam | n
     `<span class="sct-mu-ps-who">` +
     playerName(row.player.name, "sct-mu-ps-link") +
     positionTag(row.position, row.team?.code, "sct-mu-ps-meta") +
+    (startSit
+      ? `<a class="sct-mu-ps-ss" href="${escapeHtml(startSit)}" data-cta="player-stats-startsit" ` +
+        `aria-label="${escapeHtml(`Start or sit ${row.player.name}`)}">Start/Sit →</a>`
+      : "") +
     `</span>` +
     `</span>` +
     `</th>`
@@ -1632,7 +1839,7 @@ function finishCell(row: FantasyRow | null, position: string | null): string {
  */
 function statCell(
   display: string | number,
-  sort: number | null,
+  sort: number | string | null,
   className = "",
 ): string {
   return (
@@ -1671,91 +1878,137 @@ function renderPlayerStats(data: MatchupData): string {
     return fantasyCell(f ?? null) + finishCell(f ?? null, row.position);
   };
 
-  const passing = stats.passing.map(
-    (row: PassingRow) =>
-      `<tr>` +
-      statName(row) +
-      // Sorted on completions: the column reads "C/ATT" and C is the number it
-      // leads with, so ordering by anything else would order it by a figure
-      // the eye is not on.
-      statCell(`${row.completions}/${row.attempts}`, row.completions) +
-      statCell(row.yards, row.yards, "is-key") +
-      statCell(row.touchdowns, row.touchdowns) +
-      statCell(row.interceptions, row.interceptions) +
-      statCell(row.rating === null ? "—" : row.rating.toFixed(1), row.rating) +
-      fantasyCells(row) +
-      `</tr>`,
+  // Start/Sit, as the fantasy section links it: only for a player on an active
+  // roster today, since there is no start-or-sit call to make on anyone else.
+  // Matched by name because the two sections key players by different ids.
+  const fantasy = fantasyInput(data);
+  const active = new Map<string, boolean>();
+  for (const [id, p] of Object.entries(fantasy?.players ?? {})) {
+    active.set(p.name, fantasy?.contexts[id]?.active ?? false);
+  }
+  const startSit = (name: string): string | null => (active.get(name) ? startSitFor(name) : null);
+
+  // A quarterback's runs sit on his passing row, so his whole game reads on
+  // one line and he is not listed twice. A quarterback who ran but threw no
+  // pass still gets a row here, with the passing side blank.
+  const rushBy = new Map(stats.rushing.map((row) => [row.player.id, row]));
+  const blank = (count: number): string => statCell("—", null).repeat(count);
+  const rushCells = (rush: RushingRow | undefined): string =>
+    rush
+      ? statCell(rush.carries, rush.carries) +
+        statCell(rush.yards, rush.yards, "is-key") +
+        statCell(rush.touchdowns, rush.touchdowns, "sct-mu-ps-edge")
+      : blank(2) + statCell("—", null, "sct-mu-ps-edge");
+  const passerIds = new Set(stats.passing.map((row) => row.player.id));
+  const passing = [
+    ...stats.passing.map(
+      (row: PassingRow) =>
+        `<tr>` +
+        statName(row, startSit(row.player.name)) +
+        // Sorted on completions: the column reads "CMP/ATT" and CMP is the
+        // number it leads with, so ordering by anything else would order it
+        // by a figure the eye is not on.
+        statCell(`${row.completions}/${row.attempts}`, row.completions) +
+        statCell(row.yards, row.yards, "is-key") +
+        statCell(row.touchdowns, row.touchdowns) +
+        statCell(row.interceptions, row.interceptions, "sct-mu-ps-edge") +
+        rushCells(rushBy.get(row.player.id)) +
+        statCell(row.rating === null ? "—" : row.rating.toFixed(1), row.rating) +
+        fantasyCells(row) +
+        `</tr>`,
+    ),
+    ...stats.rushing
+      .filter((rush) => rush.position === "QB" && !passerIds.has(rush.player.id))
+      .map(
+        (rush) =>
+          `<tr>` +
+          statName(rush, startSit(rush.player.name)) +
+          blank(3) +
+          statCell("—", null, "sct-mu-ps-edge") +
+          rushCells(rush) +
+          blank(1) +
+          fantasyCells(rush) +
+          `</tr>`,
+      ),
+  ];
+
+  // Rushing and receiving are one table: a back's 18 carries and 5 catches are
+  // one game, and the reader wants them on one row beside the points they made
+  // rather than hunting for his name twice. One row per player, in the order
+  // the rushing list met them and then whoever only caught the ball; a side a
+  // player has nothing in reads "—" and sinks when that column is sorted.
+  // Quarterbacks are left out: their runs are on the Passing table.
+  const recBy = new Map(stats.receiving.map((row) => [row.player.id, row]));
+  const skillIds = [...new Set([...rushBy.keys(), ...recBy.keys()])].filter(
+    (id) => (rushBy.get(id) ?? recBy.get(id))?.position !== "QB",
   );
 
-  const rushing = stats.rushing.map(
-    (row: RushingRow) =>
-      `<tr>` +
-      statName(row) +
-      statCell(row.carries, row.carries) +
-      statCell(row.yards, row.yards, "is-key") +
-      statCell(row.average.toFixed(1), row.average) +
-      statCell(row.touchdowns, row.touchdowns) +
-      fantasyCells(row) +
-      `</tr>`,
-  );
+  // Ordered by the game's fantasy points, highest first — the one figure both
+  // halves of the row add up to. A player with no fantasy line goes last.
+  const points = (id: string): number => byPlayer.get(id)?.ppr ?? -Infinity;
+  skillIds.sort((a, b) => points(b) - points(a));
 
-  const receiving = stats.receiving.map(
-    (row: ReceivingRow) =>
+  const skill = skillIds.map((id) => {
+    const rush: RushingRow | undefined = rushBy.get(id);
+    const rec: ReceivingRow | undefined = recBy.get(id);
+    const row = (rush ?? rec)!;
+    return (
       `<tr>` +
-      statName(row) +
-      statCell(row.receptions, row.receptions) +
-      statCell(row.targets, row.targets) +
-      statCell(row.yards, row.yards, "is-key") +
-      statCell(row.average.toFixed(1), row.average) +
-      statCell(row.touchdowns, row.touchdowns) +
+      statName(row, startSit(row.player.name)) +
+      statCell(row.position ?? "—", row.position, "sct-mu-ps-pos") +
+      (rush
+        ? statCell(rush.carries, rush.carries) +
+          statCell(rush.yards, rush.yards, "is-key") +
+          statCell(rush.touchdowns, rush.touchdowns, "sct-mu-ps-edge")
+        : blank(2) + statCell("—", null, "sct-mu-ps-edge")) +
+      (rec
+        ? statCell(rec.targets, rec.targets) +
+          statCell(rec.receptions, rec.receptions) +
+          statCell(rec.yards, rec.yards, "is-key") +
+          statCell(rec.touchdowns, rec.touchdowns)
+        : blank(4)) +
       fantasyCells(row) +
-      `</tr>`,
-  );
+      `</tr>`
+    );
+  });
 
-  // Two columns: passing over rushing on the left, receiving beside them.
-  //
-  // Stacked, these four tables ran to most of a screen each and the reader
-  // scrolled past three of them to reach the one they wanted. Side by side they
-  // are one object — and the pairing is not arbitrary: passing and rushing are
-  // the two SHORT tables (three quarterbacks, seven backs) and receiving is the
-  // long one, so stacking the short pair against the long one is what makes the
-  // two columns come out roughly level instead of leaving half a screen of
-  // white space under a three-row table.
+  // Passing over the combined table, each the full width of the section. The
+  // combined table runs to eleven columns, which no half-width column holds.
   const passingBlock =
     statTable("Passing", "Passing statistics", [
-      col("C/ATT"),
-      col("YDS", true),
+      col("CMP/ATT"),
+      col("Pass YDS", true),
       col("TD"),
       col("INT"),
-      col("RATE"),
-      ...FANTASY_COLUMNS,
+      col("Rush ATT"),
+      col("Rush YDS"),
+      col("Rush TD"),
+      col("Rate"),
+      // FPTS in every format, as on the table below: the switch still swaps the values.
+      { label: "FPTS", type: "number", formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
+      FANTASY_COLUMNS[1]!,
     ], passing);
 
-  const rushingBlock =
-    statTable("Rushing", "Rushing statistics", [
-      col("CAR"),
-      col("YDS", true),
-      col("AVG"),
-      col("TD"),
-      ...FANTASY_COLUMNS,
-    ], rushing);
-
-  const receivingBlock =
-    statTable("Receiving", "Receiving statistics", [
-      col("REC"),
+  const skillBlock = statTable(
+    "Rushing & Receiving",
+    "Rushing and receiving statistics",
+    [
+      { label: "POS", type: "text" },
+      col("Rush ATT"),
+      col("Rush YDS"),
+      col("Rush TD"),
       col("TGT"),
-      col("YDS", true),
-      col("AVG"),
-      col("TD"),
-      ...FANTASY_COLUMNS,
-    ], receiving);
+      col("REC"),
+      col("Rec YDS"),
+      col("Rec TD"),
+      // FPTS in every format: the switch still swaps the values under it.
+      { label: "FPTS", type: "number", sorted: true, formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
+      FANTASY_COLUMNS[1]!,
+    ],
+    skill,
+  );
 
-  // The left column is a column even when it holds one table, so the grid always
-  // has the same two children and the row cannot silently become "receiving,
-  // then passing" in a game with no rushing attempts.
-  const stack = passingBlock + rushingBlock;
-  const board =
-    (stack ? `<div class="sct-mu-ps-stack">${stack}</div>` : "") + receivingBlock;
+  const board = passingBlock + skillBlock;
   if (!board) return "";
   const blocks = `<div class="sct-mu-ps-row">${board}</div>`;
 
@@ -2947,9 +3200,189 @@ function renderLinks(data: MatchupData, options: MatchupRenderOptions): string {
 
 /* ------------------------------------------------------------------- page */
 
+/* ------------------------------------------------------------------ tabs */
+
+/* ------------------------------------------------------------ dark mode */
+
+/** WCAG relative luminance, for the contrast check below. */
+function relLuminance(hex: string): number {
+  const lin = (c: number): number => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = hexToRgb(hex);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+function contrast(a: string, b: string): number {
+  const [hi, lo] = [relLuminance(a), relLuminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
+
+/** The dark-mode card, which a team's text colour has to read against. */
+const DARK_CARD = "#12213a";
+
+/**
+ * A team colour lightened until it passes AA as text on the dark card: the
+ * build spec's "dark variant" (Rams #003594 → a light blue).
+ */
+export function darkInk(hex: string): string {
+  for (let step = 0; step <= 20; step += 1) {
+    const candidate = mixHex(hex, "#ffffff", step * 0.05);
+    if (contrast(candidate, DARK_CARD) >= 4.5) return candidate;
+  }
+  return "#ffffff";
+}
+
+/**
+ * A recap fragment with each team's TEXT colour routed through a custom
+ * property, so the dark theme can swap in the lighter variant. Fills under
+ * white text (chips, tiles) keep their colour in both themes.
+ */
+function themeInks(html: string, game: ScoreboardGame): { html: string; style: string[] } {
+  const colors = heroPairColors(game.away.abbr, game.home.abbr);
+  const style: string[] = [];
+  let out = html;
+  for (const side of ["away", "home"] as const) {
+    const ink = colors[side].ink;
+    style.push(`--mu-ink-${side}-light:${ink}`, `--mu-ink-${side}-dark:${darkInk(ink)}`);
+    const esc = ink.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(
+      new RegExp(`(?<=[";\\s])(color|--rb-team|--ls-team|--rb-away|--rb-home|--rb-at-ink|stroke|fill):${esc}(?=[;"])`, "gi"),
+      `$1:var(--mu-ink-${side})`,
+    );
+  }
+  return { html: out, style };
+}
+
+/** The completed game's tabs, in bar order: the hash, the label, the panel's id. */
+const RECAP_TABS = [
+  ["recap", "Recap", "recap-tab"],
+  ["fantasy", "Fantasy", "fantasy-tab"],
+  ["game-flow", "Game flow", "game-flow-tab"],
+  ["head-to-head", "Head-to-head", "h2h-tab"],
+  ["betting", "Betting", "betting-tab"],
+] as const;
+type RecapTabId = (typeof RECAP_TABS)[number][0];
+
+/**
+ * A completed game's page, in the build spec's layout: the sticky tab bar at
+ * the top, then two columns — the five tab panels and the always-visible
+ * sections (fantasy outlook, FAQ, Keep exploring) in the main one, the sidebar
+ * beside it.
+ *
+ * The scoreboard, with the page's one H1, is the Recap panel's first element.
+ * Every panel is in the HTML. client/team.ts hides the inactive ones; without
+ * it nothing is hidden, the bar is not shown, and the panels read top to bottom
+ * in tab order. A tab with nothing in it is left out, bar button and all.
+ */
+function recapTabs(
+  data: MatchupData,
+  input: RecapBodyInput,
+  added: AddedSections,
+  options: MatchupRenderOptions,
+): { top: string; body: string; style: string[] } {
+  const game = input.game;
+  const present = new Set<RecapTabId>();
+  const panel = (id: RecapTabId, html: string): string => {
+    if (!html) return "";
+    present.add(id);
+    const [, , panelId] = RECAP_TABS.find(([t]) => t === id)!;
+    // The tab's own hash is an anchor at the panel's top, so a plain link to
+    // #fantasy still lands somewhere with scripting off. Recap's and
+    // Betting's hashes are already section ids inside their panels.
+    const anchor = id === "recap" || id === "betting" ? "" : `<span class="sct-mu-anchor" id="${id}"></span>`;
+    return (
+      `<section class="sct-mu-tabpanel${id === "recap" ? " is-active" : ""}" id="${panelId}" role="tabpanel" ` +
+      `aria-labelledby="tab-${id}" data-mu-tab="${id}">${anchor}${html}</section>`
+    );
+  };
+
+  const body = renderRecapBody(input, {
+    arrange: (own) => {
+      const fantasy = fantasyInput(data);
+      const fantasyTab = fantasy
+        ? renderFantasySection(fantasy, renderGameMatchups(data, game))
+        : renderGameMatchups(data, game);
+      return (
+        panel(
+          "recap",
+          renderHero(data, options) +
+            renderGameLeadersStrip(data) +
+            renderGameRecap(data, options, added.meant) +
+            own.why +
+            renderGameScoring(data) +
+            added.highlights,
+        ) +
+        panel("fantasy", fantasyTab) +
+        panel("game-flow", added.winProbability + added.possessions) +
+        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
+        panel("betting", added.betting) +
+        // Below the panels, on every tab.
+        own.outlook +
+        own.faq +
+        added.explore
+      );
+    },
+    asideAfter: renderGameBeforeAfter(data, options),
+  });
+
+  const top = renderTabBar(game, RECAP_TABS.filter(([id]) => present.has(id)));
+  const themed = themeInks(top + body, game);
+  return { top: "", body: themed.html, style: themed.style };
+}
+
+/**
+ * The tab bar: the score line, for a reader on any tab, then the tabs as
+ * buttons in the standard tablist pattern. client/team.ts shows the score line
+ * only while the scoreboard itself is off screen, and wires the buttons.
+ */
+function renderTabBar(
+  game: ScoreboardGame,
+  tabs: ReadonlyArray<readonly [RecapTabId, string, string]>,
+): string {
+  const result = scoreboardResult(game);
+  const status =
+    game.status === "in_progress" ? "Live" : game.status === "final" ? (game.away.ot !== null || game.home.ot !== null ? "Final/OT" : "Final") : "";
+  const score = result
+    ? `<p class="sct-mu-score" data-mu-score>` +
+      (["away", "home"] as const)
+        .map(
+          (k) =>
+            `<span class="${result.winner === k ? "is-win" : result.winner === null ? "is-tie" : "is-loss"}">` +
+            `${escapeHtml(game[k].abbr)} ${result[k]}</span>`,
+        )
+        .join(`<span class="sct-mu-score-sep" aria-hidden="true"> · </span>`) +
+      (status ? ` <span class="sct-mu-score-status">${status}</span>` : "") +
+      `</p>`
+    : "";
+  return (
+    `<div class="sct-mu-tabs" data-mu-tabbar>` +
+    `<div class="sct-mu-tabs-inner">` +
+    score +
+    `<div class="sct-mu-tabs-list" role="tablist" aria-label="${escapeHtml(`${game.away.short} vs ${game.home.short} sections`)}">` +
+    tabs
+      .map(
+        ([id, label, panelId]) =>
+          `<button type="button" class="sct-mu-tab${id === "recap" ? " is-active" : ""}" role="tab" id="tab-${id}" ` +
+          `aria-selected="${id === "recap"}" aria-controls="${panelId}" tabindex="${id === "recap" ? 0 : -1}" ` +
+          `data-mu-tab-link="${id}">${escapeHtml(label)}</button>`,
+      )
+      .join("") +
+    `</div>` +
+    `</div>` +
+    `</div>`
+  );
+}
+
 export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptions = {}): string {
   const { a, b } = data.pair;
+  const historical = isHistoricalRecap(data);
+  const recapInput = isPostgame(data) || historical ? recapBodyInput(data, options) : null;
+  // A completed game is tabbed (recapTabs); the other states are one page.
+  const tabs = recapInput ? recapTabs(data, recapInput, renderAddedSections(data, recapInput, options), options) : null;
   const rootStyle = styleAttr([
+    ...(tabs?.style ?? []),
     `--team-primary:${a.primaryColor}`,
     `--team-secondary:${a.secondaryColor}`,
     `--mu-a-primary:${a.primaryColor}`,
@@ -2968,29 +3401,8 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
   // it has already carried the fixture, which is why there is none in the
   // upcoming order either. Only an old meeting still needs a card, because
   // only its scoreboard is somewhere the hero is not.
-  const historical = isHistoricalRecap(data);
-  const recapInput = isPostgame(data) || historical ? recapBodyInput(data, options) : null;
-  // The build-spec sections are appended UNDER the existing recap, not woven
-  // into it, so the two can be compared on one page: the page above is
-  // exactly what it was, and everything new starts after its last section.
-  const added = recapInput ? renderAddedSections(data, recapInput, options) : { nav: "", sections: "" };
-  const body = recapInput
-    ? // A game just played: the recap body's two columns. The prose recap
-      // leads, "Why won" follows, then the box score sections on the games
-      // that have them, then the head-to-head, the fantasy outlook, the FAQ and
-      // the related pages; the sidebar carries Redraft Command and the facts.
-      renderGameLeadersStrip(data) +
-      renderRecapBody(recapInput, {
-        lead: renderGameRecap(data, options) + added.nav,
-        afterWhy: renderGameScoring(data),
-        middle:
-          renderPlayerStats(data) +
-          renderUsage(data) +
-          renderSeasonForm(data) +
-          (historical ? renderRecapFantasy(data) : ""),
-        after: added.sections,
-        asideAfter: renderGameBeforeAfter(data, options),
-      })
+  const body = tabs
+    ? tabs.body
     : isPostgame(data)
     ? // A game just played, with no final the body can be built from.
       renderGameRecap(data, options) +
@@ -3026,7 +3438,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     ` data-matchup-state="${data.matchupState}"` +
     ` data-postgame="${isPostgame(data) ? "1" : "0"}"` +
     ` data-season="${escapeHtml(String(data.state.season))}"${rootStyle}>` +
-    renderHero(data, options) +
+    (tabs ? tabs.top : renderHero(data, options)) +
     `<div class="sct-section is-default is-active" data-sct-panel id="matchup">` +
     body +
     `</div>` +
@@ -3036,9 +3448,61 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     // Embedded only: the standalone page carries the same node as JSON-LD in
     // its <head>, which matchup-ssr.ts writes.
     (options.embed ? matchupEventSchema(data, true) : "") +
+    // The highlights' VideoObject, as an island the plugin lifts into its graph.
+    (options.embed && recapInput ? matchupVideoIsland(data) : "") +
     `</div>`
   );
 }
 
 /** The `data-state` attribute values, for CSS and tests. */
 export const MATCHUP_STATES = ["upcoming", "recently_completed", "historical"] as const;
+
+/* ------------------------------------------------------------ sharing */
+
+export interface MatchupShare {
+  /** "/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png", on this origin. */
+  path: string;
+  file: string;
+  alt: string;
+  input: ShareImageInput;
+}
+
+/**
+ * The share image for a completed game's recap, or null on any other page.
+ * Away before home in the file name, as the scoreboard reads.
+ */
+export function matchupShare(data: MatchupData): MatchupShare | null {
+  if (!isPostgame(data) && !isHistoricalRecap(data)) return null;
+  const meeting = data.featured;
+  const game = matchupScoreboardGame(data);
+  if (!meeting || !game || game.status !== "final") return null;
+  const fantasy = fantasyInput(data);
+  const top = fantasy ? topScorers(fantasy)[0] ?? null : null;
+  const input: ShareImageInput = { game, topScorer: top ? { name: top.name, ppr: top.ppr } : null };
+  const file = shareImageFile(
+    meeting.away.slug,
+    meeting.home.slug,
+    gameSegment({ season: meeting.season, week: meeting.week, seasonType: meeting.seasonType }),
+  );
+  return { path: `/og/${file}`, file, alt: shareImageAlt(input), input };
+}
+
+/**
+ * A completed game's meta description: the result, where, and what the page
+ * holds. Under 160 characters for every pair, the longest names included.
+ */
+export function recapDescription(data: MatchupData): string | null {
+  const meeting = data.featured;
+  const game = matchupScoreboardGame(data);
+  const result = game ? scoreboardResult(game) : null;
+  if (!meeting || !game || !result) return null;
+  const at = game.venue?.name ? ` at ${game.venue.name}` : "";
+  const high = Math.max(result.away, result.home);
+  const low = Math.min(result.away, result.home);
+  const lead =
+    result.winner === null
+      ? `${game.away.short} and ${game.home.short} tie ${high}–${low}${at}`
+      : `${game[result.winner].short} beat the ${game[result.winner === "home" ? "away" : "home"].short} ${high}–${low}${at}`;
+  const full = `${lead}: scoring summary, fantasy points for every player, team stats and the head-to-head.`;
+  return full.length <= 160 ? full : `${lead}: scoring, fantasy points for every player, team stats, head-to-head.`;
+}

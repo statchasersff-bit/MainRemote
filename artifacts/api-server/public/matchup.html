@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Marks scripting as on before first paint, so a recap's tab panels hide
+       at once rather than after the bundle runs (see .sct-mu-tabs in team.css). -->
+  <script>document.documentElement.classList.add("js");</script>
   <!--
     Title, description, canonical and the OG/Twitter tags are rendered here by
     the server (src/lib/matchup/matchup-seo.ts). Nothing below is set or amended by

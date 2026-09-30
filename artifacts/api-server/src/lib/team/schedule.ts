@@ -17,6 +17,7 @@
 import { createKeyedCache, fetchJson, PAST_SEASON_TTL_MS, TEAM_USER_AGENT } from "./cache";
 import { seasonYear } from "../seo";
 import { getTeamByAbbreviation, TEAMS, type NflTeam } from "./teams";
+import { ESPN_SITE } from "./upstream";
 
 
 /** ESPN's season types. 1 is preseason, which this app never asks for. */
@@ -296,7 +297,7 @@ const cache = createKeyedCache<TeamSchedule>({
     const season = Number(seasonRaw);
     const seasonType: SeasonType = typeRaw === "post" ? "post" : "regular";
     const url =
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/` +
+      `${ESPN_SITE}/apis/site/v2/sports/football/nfl/teams/` +
       `${encodeURIComponent(espnId ?? "")}/schedule` +
       `?season=${season}&seasontype=${SEASON_TYPE[seasonType]}`;
     const payload = await fetchJson<EspnScheduleResponse>(url, signal, TEAM_USER_AGENT);

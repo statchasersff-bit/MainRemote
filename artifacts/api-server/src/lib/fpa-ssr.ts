@@ -41,6 +41,7 @@ import {
   type FpaTableData,
 } from "./fpa/fpa-data";
 import { fpaPageMeta, renderFpaHeadTags } from "./fpa-seo";
+import { LruCache } from "./lru";
 
 export interface FpaSsrResult {
   html: string;
@@ -50,8 +51,8 @@ export interface FpaSsrResult {
   data: FpaTableData | null;
 }
 
-const fragmentCache = new Map<string, FpaSsrResult>();
 const FRAGMENT_CACHE_MAX = 24;
+const fragmentCache = new LruCache<FpaSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateFpaRenderCache(): void {
   fragmentCache.clear();
@@ -109,6 +110,10 @@ function optionKey(query: FpaQuery, options: FpaRenderOptions): string {
     options.basePath ?? "",
     options.teamPathPrefix ?? "",
     options.linkQuery ?? "",
+    // Both are the request's origin, printed into the markup. Leaving them out
+    // served the first caller's origin to everyone.
+    options.endpoint ?? "",
+    options.csvBase ?? "",
   ]);
 }
 
@@ -136,11 +141,6 @@ export async function renderFpaFragment(
     version,
     data,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }
@@ -187,9 +187,11 @@ export async function renderFpaAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderFpaHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderFpaHeadTags(meta))
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

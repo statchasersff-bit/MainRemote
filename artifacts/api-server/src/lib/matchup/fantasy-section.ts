@@ -29,6 +29,7 @@ import {
 import type { LoggedGame, PlayerContext } from "./fantasy-data";
 import { isKicker, nameKey, type GamePlayer, type GamePlayers } from "./game-players";
 import { pairColors, type ScoreboardGame } from "./scoreboard-hero";
+import { ALLOWED_POSITIONS, type AllowedPosition, type PointsAllowed } from "./season-data";
 
 /* ------------------------------------------------------------------ input */
 
@@ -501,7 +502,9 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
         `<td class="sct-fp-pts"${dataAttrs(u.row.pts)}>${u.row.pts.ppr.toFixed(1)}</td>` +
         `<td${dataAttrs(u.x)}>${u.x.ppr.toFixed(1)}</td>` +
         diffCell(u.over) +
-        (hasSnaps ? `<td>${pct(u.snapShare)}</td>` : "") +
+        `<td>${pct(u.snapShare)}</td>` +
+        // Routes: no feed this site reads carries them.
+        `<td>—</td>` +
         `<td>${s(p.stats, "passAtt")}</td>` +
         `<td>${s(p.stats, "rushAtt")}</td><td>${pct(u.carShare)}</td>` +
         `<td>${s(p.stats, "recTgt")}</td><td>${pct(u.tgtShare)}</td>` +
@@ -514,7 +517,7 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
   const th = teamTotals(rows, game.home.abbr);
   const rates = input.rates;
   return (
-    `<h3 class="sct-rb-h3" id="usage">Usage and expected points</h3>` +
+    `<h3 class="sct-rb-h3" id="usage">Fantasy usage and expected points</h3>` +
     `<p class="sct-rb-sub">Expected points (xFP) are what a player's pass attempts, carries and targets are worth ` +
     `at the league's average rates; the difference is what the player made of them.</p>` +
     `<div class="sct-fp-wrap"><table class="sct-fp-table is-usage">` +
@@ -522,7 +525,8 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
     `<thead><tr><th scope="col">Player</th>${head("PTS")}` +
     `<th scope="col"><abbr title="Expected fantasy points">xFP</abbr></th>` +
     `<th scope="col"><abbr title="Points over expected">+/−</abbr></th>` +
-    (hasSnaps ? `<th scope="col"><abbr title="Share of the team's offensive snaps">Snap%</abbr></th>` : "") +
+    `<th scope="col"><abbr title="Share of the team's offensive snaps">Snap%</abbr></th>` +
+    `<th scope="col"><abbr title="Routes run per team dropback">Rte%</abbr></th>` +
     `<th scope="col"><abbr title="Pass attempts">Pass att</abbr></th>` +
     `<th scope="col"><abbr title="Carries">Car</abbr></th>` +
     `<th scope="col"><abbr title="Share of the team's carries">Car%</abbr></th>` +
@@ -533,8 +537,10 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
       `Team totals: ${game.away.short} ${ta.targets} targets and ${ta.carries} carries; ` +
         `${game.home.short} ${th.targets} targets and ${th.carries} carries. ` +
         `Shares are from the box score. ` +
-        (hasSnaps ? "Snap counts are from the weekly player logs. " : "Snap counts aren't available for this game. ") +
-        `Route counts aren't available. ` +
+        (hasSnaps
+          ? "Snap counts are from the weekly player logs (Sleeper), and include plays wiped out by penalties. "
+          : "Snap counts aren't available for this game. ") +
+        `Route counts, air yards and red-zone touches appear when the tracking feed is connected. ` +
         `League-average rates from the ${rates.season} season: ${perTarget(rates, "ppr").toFixed(2)} PPR points per target ` +
         `(${Math.round(rates.catchRate * 100)}% catch rate), ${rates.perCarry.toFixed(2)} per carry and ` +
         `${rates.perPassAttempt.toFixed(2)} per pass attempt. They don't adjust for field position or target depth.`,
@@ -789,40 +795,22 @@ export function verdictPlayers(input: FantasySectionInput): GamePlayer[] {
   return verdictPicks(input, usageRows(input, rows)).picked.map((u) => u.row.p);
 }
 
-export function renderFantasySection(input: FantasySectionInput): string {
+/**
+ * Fantasy verdicts, stock up / stock down and in-game injuries: the parts of
+ * the fantasy section that are about players rather than a table of points.
+ * `heading` is the tag each block's title takes — h3 under the section's own
+ * h2, or h2 where the blocks stand on their own in the matchup page's Fantasy
+ * tab.
+ */
+function fantasyNotes(
+  input: FantasySectionInput,
+  rows: Row[],
+  heading: "h2" | "h3",
+): { usage: Usage[]; verdicts: string; stockBlock: string; injuries: string } {
   const { game } = input;
   const colors = pairColors(game.away.abbr, game.home.abbr);
-  const rows = rowsOf(input).filter((r) => !isZero(r));
-  if (rows.length === 0) return "";
   const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
-
-  const group = (key: Group, title: string, columns: Column[]): string => {
-    const mine = rows.filter((r) => r.group === key);
-    if (mine.length === 0) return "";
-    const tables = (["away", "home"] as const)
-      .map((side) =>
-        teamTable(
-          input,
-          game[side],
-          colors[side].ink,
-          mine.filter((r) => r.p.team === game[side].abbr),
-          columns,
-          title,
-        ),
-      )
-      .join("");
-    return tables ? `<h3 class="sct-rb-h3">${escapeHtml(title)}</h3>${tables}` : "";
-  };
-
-  const idp = rows.filter((r) => r.group === "idp");
-  const dst = dstTable(input, colors);
-  const tables =
-    group("qb", "Quarterbacks", QB_COLUMNS) +
-    group("flex", "Flex (RB, WR, TE)", FLEX_COLUMNS) +
-    group("k", "Kickers", kColumns(input)) +
-    (dst ? `<h3 class="sct-rb-h3">Defense/special teams</h3>${dst}` : "") +
-    (idp.length ? `<h3 class="sct-rb-h3">Individual defensive players</h3>${idpTables(input, idp, colors)}` : "");
-
+  const cls = heading === "h2" ? "sct-rb-h2" : "sct-rb-h3";
   const usage = usageRows(input, rows);
   const gameLabel = game.gameType === "playoff" ? shortRound(round) : game.roundLabel.replace(/^Week\s+/, "W");
 
@@ -836,7 +824,7 @@ export function renderFantasySection(input: FantasySectionInput): string {
   };
 
   const verdicts = picked.length
-    ? `<h3 class="sct-rb-h3" id="verdicts">Fantasy verdicts</h3>` +
+    ? `<${heading} class="${cls}" id="verdicts">Fantasy verdicts</${heading}>` +
       `<div class="sct-fp-cards">` +
       picked
         .map((u) => {
@@ -868,7 +856,7 @@ export function renderFantasySection(input: FantasySectionInput): string {
     : "";
 
   const stockBlock = Object.values(stock).some((i) => i.length)
-    ? `<h3 class="sct-rb-h3" id="stock">Stock up, stock down</h3>` +
+    ? `<${heading} class="${cls}" id="stock">Stock up, stock down</${heading}>` +
       `<div class="sct-fp-stock">` +
       (["away", "home"] as const)
         .map((side) => {
@@ -892,9 +880,11 @@ export function renderFantasySection(input: FantasySectionInput): string {
       `</div>`
     : "";
 
-  const inj = input.injuries;
+  // A game nobody has written notes for reads as one with none reported, per
+  // the build spec (6.9): the page says "reported", never "none happened".
+  const inj = input.injuries ?? { injuries: [], playedThrough: [], returned: [] };
   const injuries = inj
-    ? `<h3 class="sct-rb-h3" id="injuries">In-game injuries</h3>` +
+    ? `<${heading} class="${cls}" id="injuries">In-game injuries</${heading}>` +
       (inj.injuries.length
         ? `<ul class="sct-fp-injuries">` +
           inj.injuries
@@ -921,6 +911,81 @@ export function renderFantasySection(input: FantasySectionInput): string {
         : "")
     : "";
 
+  return { usage, verdicts, stockBlock, injuries };
+}
+
+/**
+ * The matchup page's Fantasy tab takes the verdicts, stock and injuries
+ * without the points tables above them: the Player Stats section already
+ * carries every line and what it scored. Each block is its own section so the
+ * tab reads as a run of h2s like the rest of the page, and the ids the old
+ * section's links used (#verdicts, #stock, #injuries) still land on them.
+ */
+export function renderFantasyNotes(input: FantasySectionInput): string {
+  const rows = rowsOf(input).filter((r) => !isZero(r));
+  if (rows.length === 0) return "";
+  const { verdicts, stockBlock, injuries } = fantasyNotes(input, rows, "h2");
+  const wrap = (html: string, id: string, extra = ""): string =>
+    html
+      ? `<section class="sct-rb-section sct-fp${extra}" aria-labelledby="${id}" data-fp-notes>${html}</section>`
+      : "";
+  return wrap(verdicts, "verdicts") + wrap(stockBlock, "stock") + wrap(injuries, "injuries");
+}
+
+/** The Fantasy tab's jump links: one pill per section that rendered. */
+function jumpLinks(present: Array<[string, string]>): string {
+  if (present.length < 2) return "";
+  return (
+    `<nav class="sct-fp-jump" aria-label="Fantasy sections">` +
+    `<ul>${present.map(([id, label]) => `<li><a class="sct-rb-pill" href="#${id}">${escapeHtml(label)}</a></li>`).join("")}</ul>` +
+    `</nav>`
+  );
+}
+
+/**
+ * The Fantasy tab, in the build spec's order: jump links; fantasy points by
+ * player (the format switch and the group tables) with the Redraft Command
+ * callout under them; usage and expected points; verdicts; stock up, stock
+ * down; in-game injuries; and `matchups`, the points each defense allows by
+ * position. One H2, the rest H3s under it.
+ */
+export function renderFantasySection(input: FantasySectionInput, matchups = ""): string {
+  const { game } = input;
+  const colors = pairColors(game.away.abbr, game.home.abbr);
+  const rows = rowsOf(input).filter((r) => !isZero(r));
+  if (rows.length === 0) return matchups ? `<section class="sct-rb-section sct-fp" data-fp-root>${matchups}</section>` : "";
+  const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
+
+  const group = (key: Group, title: string, columns: Column[]): string => {
+    const mine = rows.filter((r) => r.group === key);
+    if (mine.length === 0) return "";
+    const tables = (["away", "home"] as const)
+      .map((side) =>
+        teamTable(
+          input,
+          game[side],
+          colors[side].ink,
+          mine.filter((r) => r.p.team === game[side].abbr),
+          columns,
+          title,
+        ),
+      )
+      .join("");
+    return tables ? `<h3 class="sct-rb-h3">${escapeHtml(title)}</h3>${tables}` : "";
+  };
+
+  const idp = rows.filter((r) => r.group === "idp");
+  const dst = dstTable(input, colors);
+  const tables =
+    group("qb", "Quarterbacks", QB_COLUMNS) +
+    group("flex", "Flex (RB, WR, TE)", FLEX_COLUMNS) +
+    group("k", "Kickers", kColumns(input)) +
+    (dst ? `<h3 class="sct-rb-h3">Defense/special teams</h3>${dst}` : "") +
+    (idp.length ? `<h3 class="sct-rb-h3">Individual defensive players</h3>${idpTables(input, idp, colors)}` : "");
+
+  const { usage, verdicts, stockBlock, injuries } = fantasyNotes(input, rows, "h3");
+  const usageBlock = renderUsage(input, usage, rows);
+
   const toggle =
     `<div class="sct-fp-toggle" role="radiogroup" aria-label="Scoring format">` +
     ([["ppr", "PPR"], ["half", "Half PPR"], ["std", "Standard"]] as const)
@@ -932,7 +997,24 @@ export function renderFantasySection(input: FantasySectionInput): string {
       .join("") +
     `</div>`;
 
+  const wrap = (id: string, html: string): string => (html ? `<div class="sct-fp-block" data-fp-block="${id}">${html}</div>` : "");
+  const jumps = jumpLinks(
+    (
+      [
+        ["fpts", "Stats", tables],
+        ["usage", "Usage", usageBlock],
+        ["verdicts", "Verdicts", verdicts],
+        ["stock", "Stock", stockBlock],
+        ["injuries", "Injuries", injuries],
+        ["matchups", "Matchups", matchups],
+      ] as const
+    )
+      .filter(([, , html]) => html)
+      .map(([id, label]) => [id, label] as [string, string]),
+  );
+
   return (
+    jumps +
     `<section class="sct-rb-section sct-fp" aria-labelledby="fpts" data-fp-root>` +
     `<h2 class="sct-rb-h2" id="fpts">${escapeHtml(`Fantasy points: ${game.away.short} vs ${game.home.short}, ${round} ${game.seasonLabel}`)}</h2>` +
     `<p class="sct-rb-sub">Every fantasy-relevant stat line from this game, scored for your league format.</p>` +
@@ -941,13 +1023,14 @@ export function renderFantasySection(input: FantasySectionInput): string {
       : `<p class="sct-fp-playoff">Playoff game: these points don't count in most season-long fantasy leagues.</p>`) +
     toggle +
     tables +
-    renderUsage(input, usage, rows) +
-    verdicts +
-    stockBlock +
-    injuries +
     `<p class="sct-fp-callout">Have one of these players? ` +
     `<a href="${escapeHtml(input.links.redraftCommand)}" data-cta="fantasy-table-footer">Redraft Command</a> ` +
-    `tells you whether to start, sit, trade or hold them based on your roster and league settings.</p>` +
+    `tells you whether to start, sit, trade or hold him based on your roster and league settings.</p>` +
+    wrap("usage", usageBlock) +
+    wrap("verdicts", verdicts) +
+    wrap("stock", stockBlock) +
+    wrap("injuries", injuries) +
+    wrap("matchups", matchups) +
     `</section>`
   );
 }
@@ -971,4 +1054,42 @@ export function topScorers(input: Pick<FantasySectionInput, "players">): Array<{
     })
     .map((p) => ({ name: p.name, ppr: fantasyPoints(p.stats, "ppr"), player: p }))
     .sort((a, b) => b.ppr - a.ppr || a.name.localeCompare(b.name));
+}
+
+/* -------------------------------------------------------- fantasy matchups */
+
+/**
+ * "Fantasy matchups": what each of the two defenses has allowed per game to
+ * QBs, RBs, WRs and TEs this season, one column per defense. Every figure
+ * carries all three formats, so it follows the page's switch.
+ */
+export function renderFantasyMatchups(game: ScoreboardGame, allowed: PointsAllowed | null): string {
+  if (!allowed) return "";
+  const away = allowed.teams[game.away.abbr];
+  const home = allowed.teams[game.home.abbr];
+  if (!away && !home) return "";
+  const colors = pairColors(game.away.abbr, game.home.abbr);
+  const cell = (side: typeof away, pos: AllowedPosition): string => {
+    const t = side?.perGame[pos];
+    return t ? `<td class="sct-fp-pts"${dataAttrs(t)}>${t.ppr.toFixed(1)}</td>` : `<td>—</td>`;
+  };
+  return (
+    `<h3 class="sct-rb-h3" id="matchups">Fantasy matchups</h3>` +
+    `<p class="sct-rb-sub">${escapeHtml(
+      `Fantasy points allowed per game by position, ${game.seasonLabel} through Week ${allowed.throughWeek}.`,
+    )}</p>` +
+    `<div class="sct-fp-wrap"><table class="sct-fp-table is-allowed">` +
+    `<caption class="sct-rb-sr">${escapeHtml(
+      `Fantasy points allowed per game by position, ${game.away.short} defense and ${game.home.short} defense`,
+    )}</caption>` +
+    `<thead><tr><th scope="col">Points allowed to</th>` +
+    `<th scope="col" style="color:${colors.away.ink}">${escapeHtml(`${game.away.short} D`)}</th>` +
+    `<th scope="col" style="color:${colors.home.ink}">${escapeHtml(`${game.home.short} D`)}</th>` +
+    `</tr></thead><tbody>` +
+    ALLOWED_POSITIONS.map(
+      (pos) => `<tr><th scope="row" class="sct-fp-player">${pos}s</th>${cell(away, pos)}${cell(home, pos)}</tr>`,
+    ).join("") +
+    `</tbody></table></div>` +
+    `<p class="sct-rb-note">Regular season, summed from each game's box score and scored with this page's rules.</p>`
+  );
 }

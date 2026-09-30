@@ -7,12 +7,14 @@
  * canonical, or lets a team page render a second <h1> inside a WordPress page,
  * these fail.
  *
- * Deliberately tolerant of the upstream providers. Schedule, record and season
- * statistics come from ESPN and the roster from Sleeper; any of them can be
- * down when this runs, and the page is designed to omit those sections rather
- * than break. So the assertions cover what the page owes regardless — identity,
- * navigation, links, embed behaviour — plus the rule that a section which
- * cannot load must be ABSENT rather than rendered full of placeholders.
+ * Offline. Schedule, record and season statistics come from ESPN and the NFL
+ * state from Sleeper, and every server here is pointed at a local replay of
+ * those responses as recorded on 2026-09-30 (helpers/upstream-replay.mjs). It
+ * used to call them live and pass when they were down, which left three
+ * sections untested whenever they were. The assertions stay tolerant of an
+ * absent section anyway, because the page must omit what it cannot load
+ * rather than render placeholders, and a team not in the recording is
+ * exactly that case.
  */
 
 import test, { before, after, describe } from "node:test";
@@ -22,6 +24,7 @@ import { JSDOM, VirtualConsole } from "jsdom";
 import fs from "node:fs";
 import path from "node:path";
 import { startServer, APP_DIR } from "./helpers/server.mjs";
+import { startUpstreamReplay } from "./helpers/upstream-replay.mjs";
 
 /**
  * A GET with exactly the headers given.
@@ -64,9 +67,11 @@ let server;
  * like a bug in the routes rather than in the fixture.
  */
 let playerSlug;
+let replay;
 
 before(async () => {
-  server = await startServer();
+  replay = await startUpstreamReplay();
+  server = await startServer(replay.env);
   const roster = await (await fetch(`${server.origin}/embed/players.json`)).json();
   playerSlug = roster.players[0]?.slug ?? "";
 });
@@ -80,6 +85,7 @@ after(async () => {
     }
   }
   await server?.stop();
+  await replay?.stop();
 });
 
 async function get(pathname, options = {}) {
@@ -1738,7 +1744,7 @@ describe("the preview switcher never leaves the pane", () => {
  */
 describe("the WordPress fragment's team switcher", () => {
   async function fragment(env) {
-    const srv = await startServer(env);
+    const srv = await startServer({ ...replay.env, ...env });
     try {
       const res = await fetch(`${srv.origin}/embed/team/phi`);
       assert.equal(res.status, 200);
@@ -1800,7 +1806,7 @@ describe("the WordPress fragment's team switcher", () => {
  */
 describe("the team index", () => {
   async function indexFragment(env = {}) {
-    const srv = await startServer(env);
+    const srv = await startServer({ ...replay.env, ...env });
     try {
       const res = await fetch(`${srv.origin}/embed/teams`);
       assert.equal(res.status, 200);
@@ -1869,7 +1875,7 @@ describe("the team index", () => {
   test("the standalone page and the fragment list the same 32", async () => {
     // They share one renderer precisely so they cannot drift; this is the
     // assertion that keeps it that way if someone splits them again.
-    const srv = await startServer();
+    const srv = await startServer(replay.env);
     try {
       const teamsOf = async (path) => {
         const res = await fetch(`${srv.origin}${path}`);

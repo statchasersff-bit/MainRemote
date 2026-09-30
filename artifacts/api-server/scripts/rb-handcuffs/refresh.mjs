@@ -84,8 +84,16 @@ export function normalizeName(name) {
   return NAME_ALIASES[key] ?? key;
 }
 
+/** Write beside the target and rename over it, so the server never reads half a file. */
+function writeAtomic(file, text) {
+  fs.writeFileSync(`${file}.tmp`, text);
+  fs.renameSync(`${file}.tmp`, file);
+}
+
 async function fetchText(url) {
-  const res = await fetch(url, { headers: { "User-Agent": UA } });
+  // Bounded, so a hung Ourlads or Sleeper request fails this step instead of
+  // holding the daily chain until the server's step timeout kills it.
+  const res = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(60_000) });
   if (!res.ok) throw new Error(`${url} answered ${res.status}`);
   return res.text();
 }
@@ -161,7 +169,7 @@ async function main() {
     teams: Object.fromEntries(Object.entries(teams).sort(([a], [b]) => a.localeCompare(b))),
     players: Object.fromEntries(Object.entries(players).sort(([a], [b]) => a.localeCompare(b))),
   };
-  fs.writeFileSync(OUT, `${JSON.stringify(out, null, 2)}\n`);
+  writeAtomic(OUT, `${JSON.stringify(out, null, 2)}\n`);
 
   const injured = Object.values(players).filter((p) => p.injuryStatus);
   console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${count} teams, ${Object.keys(players).length} backs`);

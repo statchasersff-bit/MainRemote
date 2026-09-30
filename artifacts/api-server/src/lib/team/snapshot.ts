@@ -17,6 +17,7 @@
 
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
 import type { NflTeam } from "./teams";
+import { ESPN_CORE } from "./upstream";
 
 
 export interface SnapshotMetric {
@@ -134,7 +135,7 @@ const cache = createKeyedCache<TeamSnapshot>({
     const [espnId, seasonRaw] = key.split(":");
     const season = Number(seasonRaw);
     const url =
-      `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/` +
+      `${ESPN_CORE}/v2/sports/football/leagues/nfl/seasons/` +
       `${season}/types/2/teams/${encodeURIComponent(espnId ?? "")}/statistics` +
       `?lang=en&region=us`;
     const payload = await fetchJson<EspnStatsResponse>(url, signal, TEAM_USER_AGENT);

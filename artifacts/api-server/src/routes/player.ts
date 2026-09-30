@@ -197,18 +197,6 @@ function section(req: Request): string | undefined {
 }
 
 /**
- * Which advanced-stats season the reader asked for.
- *
- * Constrained to the seasons that actually have a table, so `?adv=1998` is
- * ignored rather than rendering an empty tab.
- */
-function advancedSeason(req: Request): number | undefined {
-  const raw = Number.parseInt(String(req.query["adv"] ?? ""), 10);
-  if (!Number.isFinite(raw)) return undefined;
-  return getAvailableSeasons().includes(raw) ? raw : undefined;
-}
-
-/**
  * Which season the Game Log tab is pinned to.
  *
  * Same constraint as `?adv=`, and the same reason: a season with no log file
@@ -432,7 +420,6 @@ router.get("/player/:slug", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );
@@ -534,7 +521,6 @@ router.get("/player/:slug/:section", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );
@@ -635,7 +621,6 @@ router.get("/embed/player/:slug", (req, res) => {
         },
         {
           format: format(req),
-          advancedSeason: advancedSeason(req),
           logSeason: logSeason(req),
         },
       );

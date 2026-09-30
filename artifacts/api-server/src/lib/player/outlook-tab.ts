@@ -13,7 +13,7 @@
  * instead, all within the spec's own fallbacks:
  *   - No weekly analyst take exists, so the staleness rule always resolves to
  *     the template version: tier line, summary and four paragraphs are built
- *     from the numbers on the page, and the byline says "Updated automatically".
+ *     from the numbers on the page. The byline only dates the preseason piece.
  *     The authored record (fantasy_outlook_2026.json) is the preseason piece and
  *     is the archived "preseason outlook", printed as published.
  *   - No Redraft Command rank reaches this server, so the league-fit chips are
@@ -74,14 +74,6 @@ function dateParts(raw: string | null | undefined): { iso: string; text: string;
   const month = MONTHS[Number(m[2]) - 1];
   if (!month) return null;
   return { iso: `${m[1]}-${m[2]}-${m[3]}`, text: `${month} ${Number(m[3])}, ${m[1]}`, month: `${month} ${m[1]}` };
-}
-
-function msDate(ms: number | null | undefined): { iso: string; text: string } | null {
-  if (!ms) return null;
-  const d = new Date(ms);
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-  const p = dateParts(parts);
-  return p ? { iso: p.iso, text: p.text } : null;
 }
 
 /* ------------------------------------------------------------------ model */
@@ -357,7 +349,7 @@ function renderTake(m: Model): string {
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
     `<div>` +
-    `<h2 class="scp-ox-h2" id="scp-ol-take-h">${escapeHtml(`${m.name} rest-of-season outlook`)}</h2>` +
+    `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(`${m.name} rest-of-season outlook`)}</h2>` +
     `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
     `<p class="scp-ol-sum">${escapeHtml(summary)}</p>` +
@@ -523,7 +515,6 @@ function renderRead(m: Model, data: PlayerPageData): string {
   const record = data.fantasyOutlook2026;
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  const updated = msDate(data.statsUpdatedMs);
   const cta = a(m.rc, `check ${m.last}'s rest-of-season rank in Redraft Command`, ` data-cta="redraft-command-outlook-prose"`);
 
   let prose: string[];
@@ -538,11 +529,8 @@ function renderRead(m: Model, data: PlayerPageData): string {
     prose = paragraphs(m, data).map((p) => escapeHtml(p));
     if (prose.length === 0) return "";
     prose[prose.length - 1] += ` To see where he ranks against every other ${m.pos} the rest of the way, ${cta}.`;
-    byline =
-      `Updated automatically after Week ${m.week}` +
-      (updated ? `, <time datetime="${updated.iso}">${updated.text}</time>` : "") +
-      `.` +
-      (published ? ` Preseason outlook originally published <time datetime="${published.iso}">${published.text}</time>.` : "");
+    // mak, 2026-09-30: no "Updated automatically after Week n" line.
+    byline = published ? `Preseason outlook originally published <time datetime="${published.iso}">${published.text}</time>.` : "";
     if (preseasonParas.length && published) {
       archive =
         `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
@@ -584,7 +572,7 @@ function renderRead(m: Model, data: PlayerPageData): string {
   return (
     open("scp-ol-read-h", m.preseason ? `Our ${m.season} preseason outlook` : `Our take after Week ${m.week}`, "") +
     `<div class="scp-ox-read">` +
-    `<div><p class="scp-st-byline">${byline}</p>` +
+    `<div>${byline ? `<p class="scp-st-byline">${byline}</p>` : ""}` +
     `<div class="scp-ox-prose">${prose.map((p) => `<p>${p}</p>`).join("")}</div>` +
     archive +
     `</div>` +
@@ -682,11 +670,7 @@ function renderContract(m: Model, data: PlayerPageData): string {
         : `His club's depth chart doesn't list him, so treat his role as unsettled. That caps his value until it's clear.`;
 
   return (
-    open(
-      "scp-ol-con-h",
-      "Contract and job security",
-      `Contract terms aren't available for this page yet. ${depth?.order === 1 ? `He's the listed starter${depth.next ? `, with ${depth.next.name} behind him` : ""}.` : depth ? `He's ${depth.position}${depth.order} on the depth chart.` : ""}`.trim(),
-    ) +
+    open("scp-ol-con-h", "Contract and job security", "") +
     `<div class="scp-ol-contract">` +
     `<div class="scp-ol-card"><h3>How he got here</h3><p class="scp-ol-cardsub">And what it means for his fantasy value.</p>` +
     `<ol class="scp-ol-timeline">` +
@@ -838,6 +822,9 @@ function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions)
 
 /* ------------------------------------------------------------------ the tab */
 
+/** "Contract and job security" is hidden for now, at mak's request (2026-09-30). Flip back to show it. */
+const SHOW_CONTRACT = false;
+
 export function renderOutlookTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const m = model(data);
   if (!m) return "";
@@ -846,7 +833,7 @@ export function renderOutlookTab(data: PlayerPageData, options: PlayerRenderOpti
     renderExpect(m) +
     renderRead(m, data) +
     renderDrivers(m) +
-    renderContract(m, data) +
+    (SHOW_CONTRACT ? renderContract(m, data) : "") +
     renderTriggers(m, data) +
     renderFaq(m, data, options);
   if (!body) return "";

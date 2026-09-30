@@ -20,10 +20,14 @@
  * points are the site's own scoring of each week.
  *
  * Where it departs from the spec, deliberately:
- *   - it sits UNDER the tab's existing content (mak's instruction), which
- *     keeps the panel heading the WordPress page promotes to its H1;
+ *   - it is split around the tab's existing content: production, advanced
+ *     and the career chart open the tab (mak, 2026-09-30), the rest sits
+ *     under the old content; the panel heading the WordPress page promotes
+ *     to its H1 stays first either way;
  *   - the advanced metrics no file here has are replaced (see stats-tab-data);
- *   - its FAQ is not in the page's FAQPage JSON-LD until mak approves that.
+ *   - its FAQ is not a section of its own: statsTabFaqs() fills gaps in the
+ *     old tab's "Common Questions" block (mak, 2026-09-30), visible only and
+ *     out of the FAQPage JSON-LD until mak approves that.
  *
  * Analyst copy comes from data/player/stats_copy.json (docs/STATS-COPY.md):
  * each field replaces only its own template text. College seasons come from
@@ -70,9 +74,11 @@ const word = (n: number): string => WORDS[n] ?? String(n);
 const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? "" : "s"}`;
 
 function sectionOpen(id: string, heading: string, lede: string): string {
+  // The tab's lead heading (its H1 on WordPress) wears the panel-heading style.
+  const lead = id === STATS_LEAD_ID ? " is-lead" : "";
   return (
     `<section class="scp-ox-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scp-ox-h2${lead}" id="${id}">${escapeHtml(heading)}</h2>` +
     (lede ? `<p class="scp-ox-lede">${lede}</p>` : "")
   );
 }
@@ -107,11 +113,6 @@ function copyHtml(text: string): string {
 /** Season finish bands: [good up to, mid up to]. RB/WR run twice as deep. */
 function finishBands(pos: string): [number, number] {
   return pos === "RB" || pos === "WR" ? [24, 36] : [12, 24];
-}
-
-function finishClass(pos: string, rank: number): "good" | "mid" | "bad" {
-  const [good, mid] = finishBands(pos);
-  return rank <= good ? "good" : rank <= mid ? "mid" : "bad";
 }
 
 /** "Starter" weeks: top 12 at QB and TE, top 24 at RB and WR. */
@@ -255,6 +256,9 @@ function byPct(metrics: AdvMetric[]): AdvMetric[] {
 
 /* --------------------------------------------------- section 1: production */
 
+/** Section 1's heading: the tab's heading, and on WordPress its H1 (player-render's promoteLeadHeading). */
+export const STATS_LEAD_ID = "scp-st-prod-h";
+
 interface Stat {
   label: string;
   total: string;
@@ -270,23 +274,29 @@ function counting(label: string, total: number, gp: number): Stat {
 function pair(label: string, a: number, b: number, gp: number): Stat {
   return {
     label,
-    total: `${whole(a)} / ${whole(b)}`,
-    pg: gp ? `${one(a / gp)} / ${one(b / gp)}` : DASH,
+    total: `${whole(a)}/${whole(b)}`,
+    pg: gp ? `${one(a / gp)}/${one(b / gp)}` : DASH,
   };
 }
 
+/**
+ * One group of the stat strip: a small eyebrow, then each figure over its
+ * label. mak asked (2026-09-30) for the three production cards to become one
+ * horizontal band, figures first and labels small underneath, to take the
+ * section to half its height. The label stays a <dt> ahead of its <dd> in the
+ * markup; the CSS puts it under the figure.
+ */
 function renderGroup(title: string, stats: Stat[], fan = false): string {
   if (stats.length === 0) return "";
   return (
-    `<div class="scp-st-pgroup${fan ? " is-fan" : ""}"><h3>${escapeHtml(title)}</h3><dl>` +
+    `<div class="scp-st-sgroup${fan ? " is-fan" : ""}"><h3 class="scp-st-eyebrow">${escapeHtml(title)}</h3><dl>` +
     stats
       .map((s) => {
         const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
         return (
-          `<div><dt>${escapeHtml(s.label)}</dt>` +
-          `<dd><span${toggle}>${escapeHtml(s.total)}</span>` +
-          (s.small ? `<small>${escapeHtml(s.small)}</small>` : "") +
-          `</dd></div>`
+          `<div><dt>${escapeHtml(s.label)}` +
+          (s.small ? ` <small>${escapeHtml(s.small)}</small>` : "") +
+          `</dt><dd><span${toggle}>${escapeHtml(s.total)}</span></dd></div>`
         );
       })
       .join("") +
@@ -297,29 +307,29 @@ function renderGroup(title: string, stats: Stat[], fan = false): string {
 function passingStats(t: Line): Stat[] {
   const r = rating(t);
   return [
-    pair("Comp / Att", t.cmp, t.att, t.gp),
+    pair("Comp/Att", t.cmp, t.att, t.gp),
     counting("Yards", t.passYd, t.gp),
-    pair("TD / INT", t.passTd, t.int, t.gp),
-    { label: "Completion", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH },
-    { label: "Yards / att", total: fmtRatio(t.passYd, t.att) },
-    { label: "Passer rating", total: r === null ? DASH : r.toFixed(1) },
+    pair("TD/INT", t.passTd, t.int, t.gp),
+    { label: "Comp %", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH },
+    { label: "Y/A", total: fmtRatio(t.passYd, t.att) },
+    { label: "Rating", total: r === null ? DASH : r.toFixed(1) },
   ];
 }
 
 function rushingStats(t: Line, full: boolean): Stat[] {
   const out = [
-    counting(full ? "Carries" : "Attempts", t.rushAtt, t.gp),
+    counting(full ? "Carries" : "Att", t.rushAtt, t.gp),
     counting("Yards", t.rushYd, t.gp),
-    { label: "Yards / carry", total: fmtRatio(t.rushYd, t.rushAtt) },
-    counting("Touchdowns", t.rushTd, t.gp),
+    { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) },
+    counting("TD", t.rushTd, t.gp),
   ];
   if (full && t.rushLong !== null) out.push({ label: "Long", total: whole(t.rushLong) });
   return out;
 }
 
 function receivingStats(t: Line, full: boolean): Stat[] {
-  const out = [counting("Targets", t.tgt, t.gp), counting("Receptions", t.rec, t.gp), counting("Yards", t.recYd, t.gp)];
-  if (full) out.push({ label: "Yards / rec", total: fmtRatio(t.recYd, t.rec) });
+  const out = [counting("Targets", t.tgt, t.gp), counting("Rec", t.rec, t.gp), counting("Yards", t.recYd, t.gp)];
+  if (full) out.push({ label: "Y/R", total: fmtRatio(t.recYd, t.rec) });
   out.push(counting("TD", t.recTd, t.gp));
   if (full) out.push({ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH });
   return out;
@@ -349,7 +359,6 @@ function bestWorst(data: PlayerPageData, c: Career, row: SeasonRow): { best: Wee
 }
 
 function prodLede(data: PlayerPageData, c: Career, row: SeasonRow): string {
-  const last = lastName(data.player.name);
   const t = row.line;
   const now = row.inProgress;
   const club = data.team && row.clubs[row.clubs.length - 1] === data.team.code ? `the ${data.team.nickname}` : null;
@@ -358,38 +367,17 @@ function prodLede(data: PlayerPageData, c: Career, row: SeasonRow): string {
     ? `Through Week ${Math.max(lastWeek, c.leagueWeek)}${club ? ` with ${club}` : ""}. `
     : `His final ${row.season} numbers${club ? ` with ${club}` : ""}. `;
 
-  // Strongest and weakest of this season's ranked marks, when he qualifies.
-  const card = now ? data.statsAdvanced?.current : null;
-  const ranked = byPct(card?.qualified ? card.metrics : []);
-  let read = "";
-  if (ranked.length >= 2) {
-    const best = ranked[0]!;
-    const worst = ranked[ranked.length - 1]!;
-    if (best.standing !== worst.standing) {
-      read = `${last} is ${best.standing === "good" ? "strong" : "steady"} in ${best.label.replace(LC, (w) => w.toLowerCase())} (${best.read}) ` +
-        `but ${worst.standing === "bad" ? "weak" : "only middling"} in ${worst.label.replace(LC, (w) => w.toLowerCase())} (${worst.read})`;
-    }
-  }
-  if (!read) {
-    if (c.pos === "QB" && t.att) {
-      read = `${last} ${now ? "is completing" : "completed"} ${pct1((t.cmp / t.att) * 100)} of his passes at ${fmtRatio(t.passYd, t.att)} yards per attempt`;
-    } else if (c.pos === "RB" && t.rushAtt) {
-      read = `${last} ${now ? "is averaging" : "averaged"} ${fmtRatio(t.rushYd, t.rushAtt)} yards per carry on ${one(t.rushAtt / t.gp)} carries a game`;
-    } else if (t.tgt) {
-      read = `${last} ${now ? "has caught" : "caught"} ${pct1((t.rec / t.tgt) * 100)} of his targets at ${fmtRatio(t.recYd, t.tgt)} yards per target`;
-    }
-  }
-
-  // What the fantasy line leans on: the share of his points from touchdowns.
+  // One line (mak, 2026-09-30): the strip and the table carry the figures and
+  // the fantasy note carries the read, so this keeps only what neither says,
+  // how much of the fantasy line leans on touchdowns.
   const share = t.pts > 0 ? Math.round((tdPoints(t) / t.pts) * 100) : 0;
   const lean =
     share >= 40
-      ? `${share}% of his fantasy points ${now ? "have come" : "came"} from touchdowns, so his weeks ${now ? "swing" : "swung"} with them`
+      ? `Touchdowns ${now ? "have made" : "made"} up ${share}% of his fantasy points, so his weeks ${now ? "swing" : "swung"} with them.`
       : share > 0
-        ? `touchdowns ${now ? "are" : "were"} ${share}% of his fantasy points, so his output ${now ? "rests" : "rested"} on volume more than scoring`
+        ? `Touchdowns ${now ? "are" : "were"} ${share}% of his fantasy points, so his output ${now ? "rests" : "rested"} on volume more than scoring.`
         : "";
-  const sentence = [read, lean].filter(Boolean).join(", and ");
-  return escapeHtml(open + (sentence ? `${sentence}.` : ""));
+  return escapeHtml(open + lean).trim();
 }
 
 /** Fantasy points from touchdowns, on scoring.ts's values: 4 a pass TD, 6 any other. */
@@ -420,18 +408,18 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
   const rank = row.finish;
   const fan: Stat[] = [
     { label: "Points", total: one(t.pts), pg: t.gp ? one(t.pts / t.gp) : DASH },
-    { label: "Position rank", total: rank ? `${pos}${rank}` : DASH },
+    { label: "Pos rank", total: rank ? `${pos}${rank}` : DASH },
   ];
   if (bw) {
-    fan.push({ label: "Best week", total: one(bw.best.pts), small: bw.best.caption });
-    if (row.weeks.length > 1) fan.push({ label: "Worst week", total: one(bw.worst.pts), small: bw.worst.caption });
+    fan.push({ label: "Best", total: one(bw.best.pts), small: bw.best.caption });
+    if (row.weeks.length > 1) fan.push({ label: "Worst", total: one(bw.worst.pts), small: bw.worst.caption });
   }
   groups.push(renderGroup(`Fantasy (${SCORING_SHORT[data.format]})`, fan, true));
 
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${options.linkQuery ?? ""}`;
   return (
     sectionOpen(
-      "scp-st-prod-h",
+      STATS_LEAD_ID,
       `${data.player.name} ${row.season} stats`,
       own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(data, c, row),
     ) +
@@ -439,7 +427,7 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
     `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
     `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
     `</div>` +
-    `<div class="scp-st-prod">${groups.join("")}</div>` +
+    `<div class="scp-st-strip">${groups.join("")}</div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">See these stats game by game</a>` +
     `</section>`
   );
@@ -447,17 +435,59 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
 
 /* ---------------------------------------------------- section 2: advanced */
 
-function renderMetric(m: AdvMetric): string {
+interface AdvColumn {
+  title: string;
+  /** Under the title: how far in, or where from. */
+  sub: string;
+  card: AdvCard;
+}
+
+/** A percentile badge, tinted by standing; the old sentence rides along as its title. */
+function badge(m: AdvMetric | undefined): string {
+  if (!m || m.pctl == null) return `<td class="scp-st-pc"><span class="scp-st-pb is-muted">${DASH}</span></td>`;
   return (
-    `<div><dt>${escapeHtml(m.label)}</dt><dd>${escapeHtml(signed(m.value))}` +
-    `<small class="scp-st-rk is-${m.standing}">${escapeHtml(m.read)}</small></dd></div>`
+    `<td class="scp-st-pc"><span class="scp-st-pb is-${m.standing}" title="${escapeHtml(m.read)}">` +
+    `${escapeHtml(ordinal(m.pctl))}</span></td>`
   );
 }
 
-function renderAdvCard(title: string, sub: string, card: AdvCard): string {
+/**
+ * The advanced cards as one table, the seasons side by side (mak, 2026-09-30):
+ * Stat | value | percentile, once per season, one row per metric either card
+ * carries. A metric neither season has a figure for is dropped. The
+ * "Rank or percentile among 36" lines under each card are the footnote now.
+ */
+function renderAdvTable(cols: AdvColumn[]): string {
+  const keys: Array<{ key: string; label: string }> = [];
+  for (const col of cols) {
+    for (const m of col.card.all ?? col.card.metrics) {
+      const key = m.key ?? m.label;
+      if (!keys.some((k) => k.key === key)) keys.push({ key, label: m.label });
+    }
+  }
+  const find = (col: AdvColumn, key: string): AdvMetric | undefined =>
+    (col.card.all ?? col.card.metrics).find((m) => (m.key ?? m.label) === key);
+  const rows = keys
+    .filter(({ key }) => cols.some((col) => { const v = find(col, key)?.value; return v !== undefined && v !== DASH; }))
+    .map(({ key, label }) =>
+      `<tr><th scope="row">${escapeHtml(label)}</th>` +
+      cols.map((col) => {
+        const m = find(col, key);
+        return `<td class="scp-st-v">${escapeHtml(signed(m?.value ?? DASH))}</td>` + badge(m);
+      }).join("") +
+      `</tr>`,
+    )
+    .join("");
+  if (!rows) return "";
   return (
-    `<div class="scp-st-advcard"><h3>${escapeHtml(title)}</h3><p class="scp-st-sub">${escapeHtml(sub)}</p>` +
-    `<dl class="scp-st-mgrid">${card.metrics.map(renderMetric).join("")}</dl></div>`
+    `<div class="scp-st-advwrap"><table class="scp-st-advt">` +
+    `<thead><tr><th scope="col">Stat</th>` +
+    cols.map((col) =>
+      `<th scope="colgroup" colspan="2">${escapeHtml(col.title)}` +
+      (col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : "") +
+      `</th>`,
+    ).join("") +
+    `</tr></thead><tbody>${rows}</tbody></table></div>`
   );
 }
 
@@ -494,10 +524,9 @@ function advLede(data: PlayerPageData, pos: string, cards: AdvCard[]): string {
     if (share && share.value !== DASH) style += `${style ? ", with" : `${last} has`} a ${share.value} target share this season`;
   }
 
-  // The tradeoff: his weakest ranked mark, in the words printed under it.
-  const weak = byPct(cards.flatMap((c) => (c.qualified ? c.metrics : []))).filter((m) => m.standing === "bad").pop();
-  const trade = weak ? `The tradeoff shows in his ${weak.label.replace(LC, (w) => w.toLowerCase())}: ${weak.value}, ${weak.read}.` : "";
-  return escapeHtml([style ? `${style}.` : "", trade].filter(Boolean).join(" "));
+  // Style only: the percentiles are in the table and the strengths and limits
+  // in the fantasy note under it (mak, 2026-09-30, one line).
+  return style ? escapeHtml(`${style}.`) : "";
 }
 
 function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string {
@@ -534,18 +563,10 @@ function isRookie(data: PlayerPageData, c: Career): boolean {
   return c.rows.every((r) => r.season >= c.leagueSeason);
 }
 
-/** The college card's lede: where he came from, his best mark and his weakest. */
+/** The college card's lede: where he came from. The table has his marks. */
 function collegeLede(data: PlayerPageData, card: CollegeCard): string {
   const last = lastName(data.player.name);
-  const ranked = byPct(card.metrics);
-  let text = `${last} arrives from ${card.school}.`;
-  if (ranked.length >= 2) {
-    const best = ranked[0]!;
-    const worst = ranked[ranked.length - 1]!;
-    text += ` His best mark in ${card.season} was ${best.label.replace(LC, (w) => w.toLowerCase())} (${best.value}, ${best.read}); ` +
-      `his weakest, ${worst.label.replace(LC, (w) => w.toLowerCase())} (${worst.value}, ${worst.read}).`;
-  }
-  return escapeHtml(text);
+  return escapeHtml(`${last} arrives from ${card.school}.`);
 }
 
 function renderAdvanced(data: PlayerPageData, c: Career): string {
@@ -554,32 +575,41 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   if ((!adv || (!adv.current && !adv.last)) && !college) return "";
   const pos = c.pos;
   const cats = pos === "QB" ? "passing" : pos === "RB" ? "rushing" : "receiving";
-  const cards: string[] = [];
+  const cols: AdvColumn[] = [];
   const used: AdvCard[] = [];
-  const sources: string[] = [];
+  // The methodology lines, gathered into one footnote under the table.
+  const notes: string[] = [];
 
   if (adv?.current) {
     const cur = adv.current;
-    const title = cur.throughWeek ? `${cur.season} through Week ${cur.throughWeek}` : `${cur.season} season`;
-    const sub = cur.qualified
-      ? `Rank or percentile among ${cur.qualifiedCount} qualified ${pos}s.`
-      : `Below the qualifying line so far, so the figures are shown without ranks.`;
-    cards.push(renderAdvCard(title, sub, cur));
+    cols.push({ title: String(cur.season), sub: cur.throughWeek ? `Thru Wk ${cur.throughWeek}` : "Season", card: cur });
     used.push(cur);
-    sources.push(`${cur.season}: nflverse play-by-play and weekly stats`);
+    notes.push(
+      cur.qualified
+        ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""}: among ${cur.qualifiedCount} qualified ${pos}s.`
+        : `${cur.season}: below the qualifying line so far, so no percentiles.`,
+    );
   }
   if (college) {
-    const sub = `${college.school}, ${college.season}. ` +
-      (college.qualified ? `Ranked among ${college.qualifiedCount} ${college.pool}.` : `Below the ${college.pool.replace(/^college \w+ with /, "")} line, so shown without ranks.`);
-    cards.push(renderAdvCard("College final season", sub, college));
+    cols.push({ title: "College", sub: `${college.school} ${college.season}`, card: college });
     used.push(college);
-    sources.push(`college: CollegeFootballData.com season stats and PPA (its EPA)`);
+    notes.push(
+      college.qualified
+        ? `College: ranked among ${college.qualifiedCount} ${college.pool}.`
+        : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no percentiles.`,
+    );
   } else if (adv?.last) {
     const prev = adv.last;
-    const sub = `${plural(prev.games, "game")} in weeks 1–17. ${prev.qualified ? `Compared with ${prev.qualifiedCount} qualified ${pos}s.` : "Below the qualifying line, so shown without ranks."}`;
-    cards.push(renderAdvCard(`${prev.season} full season`, sub, prev));
+    cols.push({ title: String(prev.season), sub: plural(prev.games, "game"), card: prev });
     used.push(prev);
-    sources.push(`${prev.season}: the StatChasers advanced stats table (nflverse play-by-play plus charting for ${pos === "QB" ? "time to throw and pressure" : pos === "RB" ? "contact yards and broken tackles" : "routes and depth of target"}), weeks 1–17`);
+    notes.push(
+      prev.qualified
+        ? `${prev.season}: ${plural(prev.games, "game")} in weeks 1–17, among ${prev.qualifiedCount} qualified ${pos}s.`
+        : `${prev.season}: ${plural(prev.games, "game")} in weeks 1–17, below the qualifying line, so no percentiles.`,
+    );
+  }
+  if (cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))) {
+    notes.push("Grey marks describe style, not quality.");
   }
 
   const copy = data.statsCopy;
@@ -591,9 +621,9 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     : college && !adv?.current ? collegeLede(data, college) : advLede(data, pos, used);
   return (
     sectionOpen("scp-st-adv-h", `Advanced ${cats} stats`, lede) +
-    `<div class="scp-st-adv2">${cards.join("")}</div>` +
+    renderAdvTable(cols) +
+    `<p class="scp-st-foot-note">Percentiles. ${escapeHtml(notes.join(" "))}</p>` +
     note +
-    `<p class="scp-st-src">${escapeHtml(`Sources: ${sources.join("; ")}. Qualifying lines match the advanced stats tool's defaults, scaled to the weeks played. No proprietary grades are used.`)}</p>` +
     `</section>`
   );
 }
@@ -635,25 +665,7 @@ function renderChart(data: PlayerPageData, c: Career): string {
     rows.map((r) => `${r.season} ${one(ppg(r))}${r.inProgress ? " (in progress)" : ""}`).join(", ") +
     (showAvg ? `. Career average ${one(careerPpg)}.` : ".");
 
-  // The lede: how many clubs, where the best years came, and the pace now.
-  const clubs = new Set(rows.flatMap((r) => r.clubs));
-  const top = [...done].sort((x, y) => ppg(y) - ppg(x)).slice(0, 2).sort((x, y) => x.season - y.season);
-  const sentences: string[] = [];
-  sentences.push(
-    `${plural(n, "season")}${clubs.size ? ` with ${word(clubs.size)} ${clubs.size === 1 ? "team" : "teams"}` : ""}` +
-      (top.length && n > 1
-        ? `; his best came in ${top.map((r) => `${r.season} (${one(ppg(r))})`).join(" and ")}.`
-        : "."),
-  );
   const now = rows.find((r) => r.inProgress);
-  if (now && showAvg && now.line.gp) {
-    const diff = ppg(now) - careerPpg;
-    sentences.push(
-      Math.abs(diff) < 0.5
-        ? `This season's ${one(ppg(now))} is right on his career average of ${one(careerPpg)}.`
-        : `This season's ${one(ppg(now))} is ${diff > 0 ? "above" : "below"} his career average of ${one(careerPpg)}.`,
-    );
-  }
 
   const legend =
     (best && n > 1 ? `<span class="is-best">Career best</span>` : "") +
@@ -662,7 +674,7 @@ function renderChart(data: PlayerPageData, c: Career): string {
 
   const avgPos = Math.min(1, careerPpg / scale);
   return (
-    sectionOpen("scp-st-arc-h", "Fantasy points per game, every season", escapeHtml(sentences.join(" "))) +
+    sectionOpen("scp-st-arc-h", "Fantasy points per game, every season", "") +
     `<figure class="scp-st-arc${showAvg ? " has-avg" : ""}" style="--scp-n:${n};--scp-avg:${avgPos.toFixed(4)}">` +
     // The scroller is the chart alone, so the legend stays put while a long
     // career scrolls; client/player.ts opens it on the newest season.
@@ -676,108 +688,6 @@ function renderChart(data: PlayerPageData, c: Career): string {
     `</div>` +
     (legend ? `<figcaption class="scp-st-legend">${legend}</figcaption>` : "") +
     `</figure></section>`
-  );
-}
-
-/* ------------------------------------------------------- section 4: table */
-
-interface Col {
-  label: string;
-  group: number;
-  of: (t: Line) => string;
-}
-
-function tableCols(pos: string): { groups: Array<{ label: string; span: number; fan?: boolean }>; cols: Col[] } {
-  const c = (label: string, group: number, of: (t: Line) => string): Col => ({ label, group, of });
-  if (pos === "QB") {
-    return {
-      groups: [{ label: "Passing", span: 6 }, { label: "Rushing", span: 2 }],
-      cols: [
-        c("Cmp", 0, (t) => whole(t.cmp)), c("Att", 0, (t) => whole(t.att)), c("Yds", 0, (t) => whole(t.passYd)),
-        c("TD", 0, (t) => whole(t.passTd)), c("INT", 0, (t) => whole(t.int)), c("Y/A", 0, (t) => fmtRatio(t.passYd, t.att)),
-        c("Rush Yds", 1, (t) => whole(t.rushYd)), c("Rush TD", 1, (t) => whole(t.rushTd)),
-      ],
-    };
-  }
-  if (pos === "RB") {
-    return {
-      groups: [{ label: "Rushing", span: 4 }, { label: "Receiving", span: 4 }],
-      cols: [
-        c("Car", 0, (t) => whole(t.rushAtt)), c("Yds", 0, (t) => whole(t.rushYd)),
-        c("Y/C", 0, (t) => fmtRatio(t.rushYd, t.rushAtt)), c("TD", 0, (t) => whole(t.rushTd)),
-        c("Tgt", 1, (t) => whole(t.tgt)), c("Rec", 1, (t) => whole(t.rec)),
-        c("Yds", 1, (t) => whole(t.recYd)), c("TD", 1, (t) => whole(t.recTd)),
-      ],
-    };
-  }
-  return {
-    groups: [{ label: "Receiving", span: 5 }, { label: "Rushing", span: 2 }],
-    cols: [
-      c("Tgt", 0, (t) => whole(t.tgt)), c("Rec", 0, (t) => whole(t.rec)), c("Yds", 0, (t) => whole(t.recYd)),
-      c("Y/R", 0, (t) => fmtRatio(t.recYd, t.rec)), c("TD", 0, (t) => whole(t.recTd)),
-      c("Rush Yds", 1, (t) => whole(t.rushYd)), c("Rush TD", 1, (t) => whole(t.rushTd)),
-    ],
-  };
-}
-
-function renderTable(data: PlayerPageData, c: Career): string {
-  const { pos, rows } = c;
-  if (rows.length === 0) return "";
-  const { groups, cols } = tableCols(pos);
-  const cells = (t: Line): string =>
-    cols.map((col) => `<td>${escapeHtml(col.of(t))}</td>`).join("") +
-    `<td>${one(t.pts)}</td><td>${t.gp ? one(t.pts / t.gp) : DASH}</td>`;
-  const finishCell = (r: SeasonRow): string => {
-    if (!r.finish) return `<td>${DASH}</td>`;
-    return `<td class="scp-st-f is-${finishClass(pos, r.finish)}">${escapeHtml(`${pos}${r.finish}${r.inProgress ? "*" : ""}`)}</td>`;
-  };
-
-  const body = rows
-    .map((r) => {
-      // A traded season: a line per club, then the combined one, which is the
-      // only one the career row counts.
-      const splits = r.splits
-        .map(
-          (s) =>
-            `<tr class="is-split"><th scope="row"><span class="scp-sr">${r.season} </span></th><td>${escapeHtml(s.club)}</td>` +
-            `<td>${s.line.gp}</td>${cells(s.line)}<td></td></tr>`,
-        )
-        .join("");
-      return (
-        splits +
-        `<tr${r.inProgress ? ` class="is-cur"` : ""}><th scope="row">${r.season}</th>` +
-        `<td>${escapeHtml(r.splits.length ? `${r.clubs.length} teams` : r.clubs[0] ?? DASH)}</td>` +
-        `<td>${r.line.gp}</td>${cells(r.line)}${finishCell(r)}</tr>`
-      );
-    })
-    .join("");
-
-  const t = c.total;
-  const total = `<tr class="is-tot"><th scope="row">Career</th><td></td><td>${t.gp}</td>${cells(t)}<td>${DASH}</td></tr>`;
-
-  const grp =
-    `<tr class="scp-st-grp"><td colspan="3"></td>` +
-    groups.map((g) => `<th colspan="${g.span}" scope="colgroup"><span>${escapeHtml(g.label)}</span></th>`).join("") +
-    `<th colspan="3" scope="colgroup" class="is-fan"><span>Fantasy</span></th></tr>`;
-  const head =
-    `<tr><th scope="col">Season</th><th scope="col">Team</th><th scope="col">GP</th>` +
-    cols.map((col) => `<th scope="col">${escapeHtml(col.label)}</th>`).join("") +
-    `<th scope="col">Pts</th><th scope="col">PPG</th><th scope="col">Finish</th></tr>`;
-
-  const cur = rows.find((r) => r.inProgress && r.finish);
-  const n = rows.length;
-  const best = [...rows].filter((r) => !r.inProgress && r.finish).sort((x, y) => x.finish! - y.finish!)[0];
-  const lede =
-    `${plural(n, "season")}, ${t.gp} games, ${one(t.pts)} fantasy points` +
-    (best && n > 1 ? `. His best finish was ${pos}${best.finish} in ${best.season}.` : ".");
-
-  return (
-    sectionOpen("scp-st-table-h", `${data.player.name} career stats by season`, escapeHtml(lede)) +
-    `<div class="scp-ox-tbl"><table class="scp-ox-table scp-st-table">` +
-    `<caption>${escapeHtml(`Regular season only. Fantasy points use ${SCORING_WORDS[data.format]} (see scoring below). Finish is season-end rank among ${pos}s.`)}</caption>` +
-    `<thead>${grp}${head}</thead><tbody>${body}${total}</tbody></table></div>` +
-    (cur ? `<p class="scp-st-note">${escapeHtml(`*Current rank through Week ${c.leagueWeek}.`)}</p>` : "") +
-    `</section>`
   );
 }
 
@@ -1087,21 +997,6 @@ export function statsTabFaqs(data: PlayerPageData, options: PlayerRenderOptions 
   return out;
 }
 
-function renderFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const items = statsTabFaqs(data, options);
-  if (items.length === 0) return "";
-  // Not pushed to options.faqSink: adding these to the page's FAQPage JSON-LD
-  // is an SEO change, which mak approves separately.
-  return (
-    sectionOpen("scp-st-faq-h", `${data.player.name} stats FAQ`, "") +
-    `<div class="scp-ox-faq scp-st-faq">` +
-    items
-      .map((f, i) => `<details${i === 0 ? " open" : ""}><summary>${escapeHtml(f.question)}</summary><p>${f.html}</p></details>`)
-      .join("") +
-    `</div></section>`
-  );
-}
-
 /* ------------------------------------------------------------ the tab */
 
 /**
@@ -1157,25 +1052,37 @@ function renderCollegeTable(data: PlayerPageData, pos: string): string {
  * with neither NFL games nor college data gets nothing.
  */
 export function renderStatsTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+  const { top, rest } = renderStatsTabParts(data, options);
+  return top + rest;
+}
+
+/**
+ * The tab in two pieces, each in its own .scp-st wrapper. mak (2026-09-30)
+ * wanted the first three sections, production, advanced and the career chart,
+ * at the very top of the tab, ABOVE the original Stats content; the career
+ * table, the read and the footer stay under it. A rookie's college
+ * card and table are all `top`.
+ */
+export function renderStatsTabParts(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+): { top: string; rest: string } {
+  const none = { top: "", rest: "" };
   const c = career(data);
-  if (!["QB", "RB", "WR", "TE"].includes(c.pos)) return "";
+  if (!["QB", "RB", "WR", "TE"].includes(c.pos)) return none;
   const ink = teamInk(data.team);
   const open = `<div class="scp-ox scp-st"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>`;
+  const wrap = (html: string): string => (html ? `${open}${html}</div>` : "");
   if (!c.focus) {
     // No NFL games: only his college seasons can say anything here.
-    if (!collegeCard(data.college, c.pos)) return "";
-    const college = renderAdvanced(data, c) + renderCollegeTable(data, c.pos);
-    return college ? `${open}${college}</div>` : "";
+    if (!collegeCard(data.college, c.pos)) return none;
+    return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "" };
   }
-  return (
-    open +
-    renderProduction(data, c, options) +
-    renderAdvanced(data, c) +
-    renderChart(data, c) +
-    renderTable(data, c) +
-    renderRead(data, c, options) +
-    renderFaq(data, options) +
-    renderFooter(data) +
-    `</div>`
-  );
+  return {
+    top: wrap(renderProduction(data, c, options) + renderAdvanced(data, c) + renderChart(data, c)),
+    // No season-by-season table here: the original Stats content above already
+    // has one (renamed "<name> career stats by season"), and mak had this
+    // second copy removed on 2026-09-30.
+    rest: wrap(renderRead(data, c, options) + renderFooter(data)),
+  };
 }

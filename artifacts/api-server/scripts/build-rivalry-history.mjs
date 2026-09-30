@@ -1,7 +1,13 @@
 // Build data/rivalry/all-time.json: every NFL game ever played, by franchise,
 // for the matchup pages' all-time series tiles.
 //
-//   node scripts/build-rivalry-history.mjs [--through 2025]
+//   node scripts/build-rivalry-history.mjs [--through 2025] [--download]
+//
+// Built from the copies of both sources stored in data/rivalry/source/, so the
+// checked file can be rebuilt exactly as it was checked even if an upstream
+// moves or goes away (FiveThirtyEight's archive is no longer maintained).
+// `--download` refreshes those copies first; the yearly rollover needs it for
+// nflverse's newly finished season.
 //
 // Two public sources, split at 1999 and never overlapping:
 //
@@ -17,6 +23,12 @@
 //
 // Dropped on purpose: the AAFC seasons (1946–49) of the Browns and 49ers,
 // which the NFL does not count in head-to-head records.
+//
+// Counted twice on purpose: the 1943 Phil-Pitt "Steagles", whose games the
+// records credit to both parent franchises, so a Steagles game against
+// Washington is in PHI–WAS and in PIT–WAS (Eagles–Commanders 90–88–6 and
+// Eagles–Giants 94–88–2 only add up with them). The 1944 Card-Pitt stays out:
+// Cardinals–Rams is 53–41–2 without its two games, which is the published figure.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -30,6 +42,7 @@ const SPLIT = 1999;
 
 /** Franchise codes as the site prints them (team.code, upper case). */
 const FROM_ELO = { OAK: "LV", WSH: "WAS" };
+const MERGED = { STG: ["PHI", "PIT"] };
 const FROM_NFLVERSE = { LA: "LAR", STL: "LAR", SD: "LAC", OAK: "LV" };
 const SITE_CODES = new Set([
   "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET",
@@ -52,10 +65,22 @@ function parseCsv(text) {
   });
 }
 
+const SOURCE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "rivalry", "source");
+const SOURCES = {
+  [ELO_URL]: path.join(SOURCE_DIR, "fivethirtyeight-nfl_games.csv"),
+  [NFLVERSE_URL]: path.join(SOURCE_DIR, "nflverse-games.csv"),
+};
+
+/** The stored copy of a source, downloaded over it first with `--download`. */
 async function fetchText(url) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
-  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return res.text();
+  const file = SOURCES[url];
+  if (process.argv.includes("--download")) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
+    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+    fs.mkdirSync(SOURCE_DIR, { recursive: true });
+    fs.writeFileSync(file, await res.text());
+  }
+  return fs.readFileSync(file, "utf8");
 }
 
 const now = new Date();
@@ -72,11 +97,15 @@ for (const r of parseCsv(await fetchText(ELO_URL))) {
   const season = Number(r.season);
   if (season >= SPLIT) continue;
   // team1 is the home side in this file; neutral sites keep that order.
-  const home = FROM_ELO[r.team1] ?? r.team1;
-  const away = FROM_ELO[r.team2] ?? r.team2;
-  if (!SITE_CODES.has(home) || !SITE_CODES.has(away)) continue;
-  if (season < 1950 && (home === "CLE" || home === "SF" || away === "CLE" || away === "SF")) continue;
-  games.push([season, r.date, away, home, Number(r.score2), Number(r.score1), r.playoff === "0" ? 0 : 1]);
+  const homes = MERGED[r.team1] ?? [FROM_ELO[r.team1] ?? r.team1];
+  const aways = MERGED[r.team2] ?? [FROM_ELO[r.team2] ?? r.team2];
+  for (const home of homes) {
+    for (const away of aways) {
+      if (!SITE_CODES.has(home) || !SITE_CODES.has(away)) continue;
+      if (season < 1950 && (home === "CLE" || home === "SF" || away === "CLE" || away === "SF")) continue;
+      games.push([season, r.date, away, home, Number(r.score2), Number(r.score1), r.playoff === "0" ? 0 : 1]);
+    }
+  }
 }
 
 for (const r of parseCsv(await fetchText(NFLVERSE_URL))) {

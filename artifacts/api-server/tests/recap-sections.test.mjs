@@ -71,7 +71,7 @@ describe("scoring rules", () => {
 
   test("Murray's two-point pass", () => {
     const line = { passYds: 137, passInt: 2, rushYds: 6, twoPtPassed: 1 };
-    assert.equal(points.fantasyPoints(line, "ppr"), 4.1);
+    assert.equal(points.fantasyPoints(line, "ppr"), 6.1);
   });
 });
 
@@ -80,6 +80,14 @@ describe("win probability, score-only", () => {
 
   test("kickoff is about 60% Rams", () => {
     assert.equal(Math.round(model.kickoff * 100), 60);
+  });
+
+  test("the kickoff sentence gives each side its own chance", () => {
+    const at = (line, favorite) => wp.wpSubtitle(GAME, wp.winProbabilityModel({ game: GAME, plays: PLAYS, odds: { favorite, line, total: 49.5 } }));
+    assert.match(at(3.5, "LAR"), /was a 60% favorite at kickoff/);
+    // The regression: the home underdog was printed with the favourite's 60%.
+    assert.match(at(3.5, "ARI"), /had a 40% chance at kickoff/);
+    assert.match(at(13, "LAR"), /was an 83% favorite at kickoff/);
   });
 
   test("exactly three plays swing it by a point or more, all Rams scores", () => {
@@ -189,6 +197,22 @@ describe("betting, video and the jump links", () => {
     assert.match(html, /1-800-GAMBLER/);
   });
 
+  test("the spec's reference lines: tiles, implied team totals, no moneyline or props", () => {
+    const html = extras.renderBetting(GAME, ODDS);
+    assert.match(html, /<h2 class="sct-rb-h2" id="betting">Cardinals vs Rams odds and results<\/h2>/);
+    assert.match(html, /Under: 45 points scored \(by 4\.5\)/);
+    const rows = [...html.matchAll(/<tr><th scope="row"[^>]*>(\w+)<\/th><td>([\d.]+)<\/td><td>(\d+)<\/td><td[^>]*>([^<]+)<\/td><\/tr>/g)].map((m) => m.slice(1));
+    assert.deepEqual(rows, [
+      ["Rams", "26.5", "34", "+7.5"],
+      ["Cardinals", "23.0", "11", "−12.0"],
+    ]);
+    assert.doesNotMatch(html, /Moneyline|First half|Player props/);
+  });
+
+  test("no closing total, no tab", () => {
+    assert.equal(extras.renderBetting(GAME, { favorite: "LAR", line: 3.5, total: null }), "");
+  });
+
   test("no odds, no section; switched off, no section", () => {
     assert.equal(extras.renderBetting(GAME, null), "");
     process.env.SC_BETTING_RESULTS = "off";
@@ -199,11 +223,12 @@ describe("betting, video and the jump links", () => {
     }
   });
 
-  test("the video is a button until pressed, and absent without an upload", () => {
+  test("the video is a click-to-load button, and is absent without an upload", () => {
     const html = extras.renderHighlights(GAME, { youtubeId: "VfMqgtKsoag", title: "Highlights", uploadDate: "2022-01-18", publisher: "NFL" });
-    assert.match(html, /<button[^>]+class="sct-hl-play"/);
+    assert.match(html, /<button type="button" class="sct-hl-play" data-hl-embed="https:\/\/www\.youtube-nocookie\.com\/embed\/VfMqgtKsoag\?autoplay=1&amp;rel=0"/);
+    assert.match(html, /<noscript><a class="sct-hl-noscript" href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag"/);
+    assert.match(html, /Not playing\? <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">Watch on YouTube<\/a>/);
     assert.doesNotMatch(html, /<iframe/);
-    assert.match(html, /<noscript>/);
     assert.equal(extras.renderHighlights(GAME, null), "");
   });
 

@@ -6,6 +6,17 @@ Google actually treats the live page. These steps close that gap and need
 someone with access to the live site and Search Console — they can't be done
 from the build.
 
+## 0. API server secrets
+
+- [ ] `INGEST_SECRET` is set on the deployment. Without it every write endpoint
+      (news ingest, club sweep, FPA ingest, X) answers **503**, so the scheduled
+      refreshes stop. `curl -s -X POST <api>/api/fpa/ingest` should be a **401**,
+      not a 503.
+- [ ] every scheduler that POSTs those endpoints sends it as `x-ingest-secret`.
+- [ ] `PUBLIC_HOSTS` is set if the API is reached under any name other than the
+      Repl's own `REPLIT_DOMAINS` or `*.statchasers.com`; otherwise a forwarded
+      host under that name is ignored.
+
 ## 1. Confirm Google sees the content
 
 Search Console → **URL Inspection** → paste the live tool page URL →

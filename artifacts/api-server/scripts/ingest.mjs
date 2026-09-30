@@ -15,9 +15,8 @@
 // archive moving regardless.
 //
 // Required env:  INGEST_URL          e.g. https://<deployment>/api/ingest
+//                INGEST_SECRET       the server refuses both modes without it
 // Push mode:     FEED_URL            the feed to read (enables push mode)
-//                INGEST_SECRET       required by the server for push mode
-// Optional:      INGEST_SECRET       for pull mode too, if the server sets it
 
 const url = process.env.INGEST_URL;
 if (!url) {
@@ -29,11 +28,9 @@ const secret = process.env.INGEST_SECRET;
 const feedUrl = process.env.FEED_URL;
 const push = Boolean(feedUrl);
 
-if (push && !secret) {
-  // The server refuses anonymous push for the same reason: push writes
-  // caller-supplied content straight into the archive.
-  console.error("FEED_URL is set (push mode) but INGEST_SECRET is not.");
-  console.error("Set INGEST_SECRET here and on the server, or unset FEED_URL.");
+if (!secret) {
+  // The server answers 503 without one; say so here instead of posting.
+  console.error("INGEST_SECRET is required. Set it here and on the server.");
   process.exit(1);
 }
 

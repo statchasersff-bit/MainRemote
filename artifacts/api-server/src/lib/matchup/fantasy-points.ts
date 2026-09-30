@@ -40,7 +40,9 @@ export function fantasyPoints(stats: FantasyStatLine, format: ScoringFormat): nu
   const points =
     n(stats.passYds) * 0.04 +
     n(stats.passTd) * 4 -
-    n(stats.passInt) * 2 +
+    // −1 per interception, as the player pages and the Sleeper logs charge (mak,
+    // 2026-09-30, overriding the recap build spec's −2).
+    n(stats.passInt) * 1 +
     (n(stats.rushYds) + n(stats.recYds)) * 0.1 +
     (n(stats.rushTd) + n(stats.recTd)) * 6 +
     n(stats.rec) * PER_RECEPTION[format] -

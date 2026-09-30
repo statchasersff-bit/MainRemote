@@ -33,6 +33,7 @@ import { startServer } from "./helpers/server.mjs";
 const SECRET = "test-ingest-secret";
 const TEST_ID = "test:pushed-item";
 const FEED_ID = "test:fallback-item";
+const FUTURE_ID = "test:future-dated-item";
 
 /** What the working stub serves. Non-empty: an empty 200 is now a failure. */
 const FEED_ITEM = {
@@ -98,7 +99,7 @@ async function removeProbe() {
   const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
   await client.query("DELETE FROM news_items WHERE id = ANY($1)", [
-    [TEST_ID, FEED_ID],
+    [TEST_ID, FEED_ID, FUTURE_ID],
   ]);
   await client.end();
 }
@@ -193,9 +194,67 @@ describe("push mode", () => {
     assert.equal(res.body.mode, "pull");
   });
 
+  test("a publish time in the future is held at the time it was seen", async () => {
+    const before = Date.now();
+    const item = {
+      id: FUTURE_ID,
+      title: "Test Player: Dated a year ahead by a broken feed",
+      link: "https://example.com/future",
+      pubDate: new Date(before + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    assert.equal((await ingest({ items: [item] })).status, 200);
+
+    const found = await (
+      await fetch(`${server.origin}/api/news?search=${encodeURIComponent("a year ahead")}&limit=10`)
+    ).json();
+    const row = found.items.find((i) => i.id === FUTURE_ID);
+    assert.ok(row, "the item was stored");
+    assert.ok(row.pubDateMs >= before && row.pubDateMs <= Date.now(), String(row.pubDateMs));
+
+    // Re-sent as is, it is unchanged rather than re-clamped to a new "now".
+    const again = await ingest({ items: [item] });
+    assert.equal(again.body.unchanged, 1, JSON.stringify(again.body));
+  });
+
   test("rejects a push without the secret", async () => {
     const res = await ingest({ items: [{ id: "test:nope", title: "nope" }] }, null);
     assert.equal(res.status, 401);
+  });
+
+  test("a pull without the secret is refused too", async () => {
+    const res = await ingest(undefined, null);
+    assert.equal(res.status, 401);
+  });
+});
+
+describe("a server with no INGEST_SECRET", () => {
+  test("refuses every write instead of leaving it open", async () => {
+    // These used to treat "no secret" as "not exposed" and let anyone in.
+    const open = await startServer({
+      DYNASTY_NEWS_API_URL: `http://127.0.0.1:${working.server.address().port}/news`,
+      INGEST_SECRET: "",
+    });
+    try {
+      for (const [method, route] of [
+        ["POST", "/api/ingest"],
+        ["POST", "/api/ingest/clubs"],
+        ["POST", "/api/fpa/ingest"],
+        ["POST", "/api/x/ingest"],
+        ["POST", "/api/x/posts"],
+        ["POST", "/api/x/accounts"],
+        ["DELETE", "/api/x/accounts/sc_test_nobody"],
+      ]) {
+        const res = await fetch(`${open.origin}${route}`, {
+          method,
+          headers: { "Content-Type": "application/json", "x-ingest-secret": "anything" },
+          body: method === "POST" ? "{}" : undefined,
+        });
+        assert.equal(res.status, 503, `${method} ${route}`);
+        assert.match((await res.json()).error, /INGEST_SECRET is not configured/);
+      }
+    } finally {
+      await open.stop();
+    }
   });
 });
 

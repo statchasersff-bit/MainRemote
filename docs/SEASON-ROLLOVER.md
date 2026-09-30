@@ -24,7 +24,7 @@ Most of what follows comes down to not letting a year label move before the data
 - **advanced stats** and **handcuff stats:** nflverse has no 2027 file yet.
 - **ownership:** Sleeper has no 2027 research document yet.
 
-That is harmless: each step keeps its 2026 file. The signings chain (index, depth charts, indexed players) keeps working all offseason, which is when most signings happen.
+That is harmless: each step keeps its 2026 file. `/api/data/health` ignores failed steps outside September–January for this reason; in season they are a 503. The signings chain (index, depth charts, indexed players) keeps working all offseason, which is when most signings happen.
 
 ## Changed by hand: when, where, what
 
@@ -69,7 +69,7 @@ Bump the plugin version, rebuild the zip (`bash wordpress-plugin/scripts/build-z
 
 Per the project notes, **do not flip it without asking**. When it moves to 2027:
 - the model's role basis becomes 2027;
-- the previous season becomes `rb_stats_2026.json`;
+- the previous season becomes `rb_stats_2026.json`. That one is a code change too: `FILES.previous` in the same file (line 74) names `rb_advanced_stats_2025.json` outright and does not follow `BASIS_SEASON`;
 - the Player Quality window keeps reaching one season back.
 
 Until it moves, the daily **handcuff stats** step keeps rebuilding `rb_stats_2026.json` (a no-op once 2026 is final). From week 1 the step asks nflverse for `seasonYear()`, so it starts producing `rb_stats_2027.json` alongside.
@@ -83,10 +83,18 @@ Until it moves, the daily **handcuff stats** step keeps rebuilding `rb_stats_202
 The matchup pages' all-time tiles read `artifacts/api-server/data/rivalry/all-time.json`, which holds complete seasons only (`throughSeason`); the season in progress comes from each page's own schedule. Once the Super Bowl is played, run from `artifacts/api-server`:
 
 ```
-node scripts/build-rivalry-history.mjs
+node scripts/build-rivalry-history.mjs --download
 ```
 
-It writes seasons through the one just finished and needs committing. A missed year loses nothing at first: the page counts any season after `throughSeason` from its own five-season window. After five missed years the oldest of those seasons fall out of that window and out of the tiles, so rebuild every year.
+`--download` refreshes the stored source files in `data/rivalry/source/` first, which is where the newly finished season comes from; without it the script rebuilds from the stored copies and reproduces the current file. Both the sources and the output need committing. A missed year loses nothing at first: the page counts any season after `throughSeason` from its own five-season window. After five missed years the oldest of those seasons fall out of that window and out of the tiles, so rebuild every year.
+
+The recaps' box scores are stored too, in `data/matchup/boxscores/<season>.json`, and production adds each week's games itself after every game window. A new season needs nothing: the builder starts its file after week 1. To fill a season by hand, `node scripts/matchup/buildBoxscores.mjs <season>`.
+
+### 7. Advanced stats: two directories, and the multi-season tables
+
+The daily chain builds the season's advanced tables twice (`lib/player/live-refresh.ts`): into `data/player-stats/` for `[statchasers_player_stats]`, and with `--dir` into `data/player/advanced_stats/` for the player pages. The two use different table shapes, so neither is a copy of the other. The Stats tab reads **last** season's card from the second one, so a 2027 page needs `advanced_stats/*_2026.json` there; the daily step has been writing it since 2026-09-30. Both stop at week 17 on their own.
+
+The `*_all.json` multi-season tables in both directories hold 2023–2025 and **nothing rebuilds them**. The "all" label is read off the table's rows, so it keeps saying 2023-2025 rather than claiming 2026; adding 2026 to them needs a builder that does not exist yet.
 
 ## A quick check after each step
 

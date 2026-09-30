@@ -7400,15 +7400,18 @@ body.sct-page.is-embed {
 
 /* Everything under the scoreboard hero on a recap page: see recap-body.ts.
  *
- * Two columns, main and a 320px sidebar, stacking at 880px. Set in the hero's
+ * Two columns, main and a 290px sidebar, stacking at 880px. Set in the hero's
  * type (Barlow for text, Barlow Condensed for headings and numbers) through
  * the `--sc-font` token the theme armour reads — so the box score sections the
  * recap keeps from the matchup page (leaders, player stats, usage) come along
  * in the same face without a rule of their own. Light only, by decision: the
  * page is embedded in a light WordPress theme. */
 
-/* The recap page is narrower than a hub: 1040px of content, 20px gutters. */
-.sct.sct-mu:has(.sct-rb) {
+/* The standalone recap page is narrower than a hub: 1040px of content, 20px
+ * gutters. Standalone only: embedded, the host owns the width (.sct.is-embed),
+ * and at (0,3,0) this rule would otherwise out-weigh that one and leave past
+ * games inset 20px and capped while every other tool fills the column. */
+.sct.sct-mu:not(.is-embed):has(.sct-rb) {
   max-width: 1080px;
   --sct-gutter: 20px;
 }
@@ -7422,22 +7425,12 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb,
 .sct-ls,
 .sct-jump {
-  --rb-ink: #13233a;
-  --rb-slate: #5b6778;
-  --rb-line: #dce1e8;
-  --rb-paper: #f5f7fa;
-  --rb-card: #ffffff;
-  --rb-gold: #ffa300;
-  --rb-navy: #0f1e33;
-  --rb-link: #003594;
-  --rb-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --rb-body: "Barlow", system-ui, sans-serif;
   --sc-font: var(--rb-body);
 }
 
 .sct-rb {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 290px;
   gap: 32px;
   align-items: start;
   color: var(--rb-ink);
@@ -7470,11 +7463,10 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 /* Headings. Size and ink `!important` against Divi's id-scoped heading rules,
    as everywhere else in this file. The kept sections' own H2s are brought into
-   the same scale. Section titles are set in Barlow, not Barlow Condensed: the
-   condensed face read as squeezed at this size (mak, 2026-09-29), and the
-   regular width runs about 30% wider. The condensed face stays on numbers. */
+   the same scale, in Barlow Condensed as the recap build spec sets them
+   (H2 30px, H3 21px). */
 .sct-rb :is(.sct-rb-h2, .sct-h2, .sct-mu-story-title) {
-  --sc-font: var(--rb-body);
+  --sc-font: var(--rb-display);
   margin: 0 0 8px;
   font-size: 30px !important;
   font-weight: 700;
@@ -7483,8 +7475,14 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   color: var(--rb-ink) !important;
 }
 
+/* `pretty`, not the hub's `balance`: balance splits a two-line headline into
+   two half-width lines, which leaves the same empty band the text caps did. */
+.sct-rb .sct-mu-story-title {
+  text-wrap: pretty;
+}
+
 .sct-rb .sct-rb-h3 {
-  --sc-font: var(--rb-body);
+  --sc-font: var(--rb-display);
   margin: 28px 0 10px;
   font-size: 21px !important;
   font-weight: 700;
@@ -7496,15 +7494,18 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct-rb .sct-rb-sub,
 .sct-rb .sct-mu-story-dek {
-  max-width: 66ch;
+  max-width: none;
   margin: 0 0 18px;
   font-size: 17px;
   line-height: 1.6;
   color: var(--rb-slate);
 }
 
+/* The recap's text runs the main column's full width (mak, 2026-09-29): the
+   column is already held narrow by the sidebar, so a 66ch cap on top of it
+   left a band of empty space to the sidebar's left. */
 .sct-rb .sct-mu-story {
-  max-width: 66ch;
+  max-width: none;
 }
 
 .sct-rb .sct-mu-story-body p {
@@ -8324,7 +8325,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 }
 
 .sct-rb .sct-rb-qa p {
-  max-width: 66ch;
+  max-width: none;
   margin: 0;
   padding: 0 0 14px;
   font-size: 17px;
@@ -8378,13 +8379,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   flex-direction: column;
   gap: 20px;
   min-width: 0;
-}
-
-@media (min-width: 881px) {
-  .sct-rb-aside {
-    position: sticky;
-    top: 24px;
-  }
 }
 
 .sct-rb-card {
@@ -8513,7 +8507,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
    fantasy-section.ts. Light only, like the rest of the recap. */
 
 .sct-rb .sct-rb-note {
-  max-width: 66ch;
+  max-width: none;
   margin: 12px 0 0;
   font-size: 14px;
   line-height: 1.5;
@@ -8664,8 +8658,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   background: linear-gradient(120deg, var(--hl-a, var(--rb-navy)), var(--hl-b, var(--rb-navy)));
 }
 
-.sct-rb .sct-hl-play,
-.sct-hl-frame {
+.sct-rb .sct-hl-play {
+  display: block;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -8674,6 +8668,8 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   padding: 0;
   border: 0;
   background: transparent;
+  color: #fff;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -8729,12 +8725,6 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 .sct-rb .sct-hl-play:focus-visible {
   outline: 3px solid var(--rb-gold);
   outline-offset: -3px;
-}
-
-.sct-hl-fallback {
-  position: absolute;
-  inset: auto 16px 16px;
-  color: #fff;
 }
 
 /* ---- win probability */
@@ -9040,6 +9030,16 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 :is(.sct, #sct-table-armour) .sct-fp-table .sct-fp-pts.is-top {
   box-shadow: inset 0 -3px 0 var(--rb-gold);
+}
+
+/* The Player Stats name cell's Start/Sit link: under the position line, the
+   size of that line rather than the recap table's larger one. */
+.sct-mu-ps-ss {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .sct-fp-ss {
@@ -9558,18 +9558,19 @@ a.sct-ex-game:hover .sct-ex-line {
   outline-offset: 3px;
 }
 
+/* One column: Passing over Rushing & Receiving. The combined table is twelve
+   columns wide, which no half of the row can hold without scrolling. */
 .sct-mu-ps-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 8px 20px;
 }
 
-/* The left column. Passing and rushing are the two short tables, so they share
-   a column against the long one rather than each taking a third of the row and
-   leaving white space under it. */
-.sct-mu-ps-stack {
-  min-width: 0;
+/* The seams between the halves of a row: rushing | receiving, and on the
+   Passing table passing | rushing | rate and points. */
+:is(.sct, #sct-table-armour) .sct-mu-ps-table td.sct-mu-ps-edge {
+  border-right: 1px solid var(--sc-hairline, #dce1e8);
 }
 
 /* The gap owns the spacing BETWEEN columns; inside the left column the two
@@ -9617,6 +9618,12 @@ a.sct-ex-game:hover .sct-ex-line {
 
   :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table {
     min-width: 560px;
+  }
+
+  /* Eleven columns, on both tables: the floor that keeps them from wrapping,
+     and the scroll wrapper takes the rest. */
+  :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table:has(.sct-mu-ps-edge) {
+    min-width: 760px;
   }
 
   :is(.sct, #sct-table-armour) .sct-mu-ps-row .sct-mu-ps-table th,
@@ -10247,4 +10254,594 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct .sct-player-link,
 .sct .sct-news-link {
   color: inherit !important;
+}
+
+/* ------------------------------------------------ matchup: recap layout ---- */
+
+/* A completed game's page, in the recap build spec's layout: the sticky tab
+   bar at the top, then the tab panels and the always-visible sections beside
+   a 320px sidebar. See recapTabs() in matchup-render.ts and wireMatchupTabs()
+   in client/team.ts. */
+
+/* Design tokens, on the root so the tab bar (outside .sct-rb) reads them too.
+   The team inks arrive on the root's style attribute in both variants
+   (themeInks() in matchup-render.ts); these pick one. */
+.sct-mu {
+  --mu-ink-away: var(--mu-ink-away-light, var(--rb-ink, #13233a));
+  --mu-ink-home: var(--mu-ink-home-light, var(--rb-ink, #13233a));
+  --rb-green: #1e7a46;
+  --rb-red: #b42318;
+}
+
+.sct-mu {
+  --rb-link: #003594;
+  --rb-ink: #13233a;
+  --rb-slate: #5b6778;
+  --rb-line: #dce1e8;
+  --rb-paper: #f5f7fa;
+  --rb-card: #ffffff;
+  --rb-gold: #ffa300;
+  --rb-navy: #0f1e33;
+  --rb-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --rb-body: "Barlow", system-ui, sans-serif;
+  color: var(--rb-ink);
+}
+
+.sct.sct-mu:not(.is-embed):has(.sct-rb) {
+  max-width: 1080px;
+  --sct-gutter: 20px;
+}
+
+/* ---- dark mode: the OS setting, overridable with data-theme on <html> or
+   the root. Gold stays gold; it is never text on a light ground. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sct-mu:has(.sct-rb):not([data-theme="light"]) {
+    --rb-ink: #e8edf4;
+    --rb-slate: #9aa6b6;
+    --rb-line: #26364d;
+    --rb-paper: #0b1627;
+    --rb-card: #12213a;
+    --rb-green: #5fd08e;
+    --rb-red: #ff8a80;
+    --rb-link: #9fc0ff;
+    --mu-ink-away: var(--mu-ink-away-dark, #e8edf4);
+    --mu-ink-home: var(--mu-ink-home-dark, #e8edf4);
+    --sc-navy: #e8edf4;
+    --sc-ink: #e8edf4;
+    --sc-muted: #9aa6b6;
+    --sc-muted-strong: #9aa6b6;
+    --sc-hairline: #26364d;
+    --sc-border: #26364d;
+    --sc-surface: #12213a;
+    --sc-surface-soft: #0b1627;
+    background: var(--rb-paper);
+    color-scheme: dark;
+  }
+
+  :root:not([data-theme="light"]) body.sct-page:not(.is-embed):has(.sct-rb) {
+    background: #0b1627;
+  }
+}
+
+:root[data-theme="dark"] .sct-mu:has(.sct-rb),
+.sct-mu[data-theme="dark"]:has(.sct-rb) {
+  --rb-ink: #e8edf4;
+  --rb-slate: #9aa6b6;
+  --rb-line: #26364d;
+  --rb-paper: #0b1627;
+  --rb-card: #12213a;
+  --rb-green: #5fd08e;
+  --rb-red: #ff8a80;
+  --rb-link: #9fc0ff;
+  --mu-ink-away: var(--mu-ink-away-dark, #e8edf4);
+  --mu-ink-home: var(--mu-ink-home-dark, #e8edf4);
+  --sc-navy: #e8edf4;
+  --sc-ink: #e8edf4;
+  --sc-muted: #9aa6b6;
+  --sc-muted-strong: #9aa6b6;
+  --sc-hairline: #26364d;
+  --sc-border: #26364d;
+  --sc-surface: #12213a;
+  --sc-surface-soft: #0b1627;
+  background: var(--rb-paper);
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] body.sct-page:not(.is-embed):has(.sct-rb) {
+  background: #0b1627;
+}
+
+/* ---- the tab bar */
+
+/* Hidden until scripting is known to be on: without it every panel shows,
+   stacked, and a row of buttons that do nothing would only mislead. */
+.sct-mu-tabs {
+  display: none;
+}
+
+:root.js .sct-mu-tabs,
+.sct-mu[data-mu-tabs="js"] .sct-mu-tabs {
+  display: block;
+}
+
+.sct-mu-tabs {
+  position: sticky;
+  top: calc(var(--sct-nav-offset, 0px) + env(safe-area-inset-top, 0px));
+  z-index: 30;
+  margin: 0 0 24px;
+  /* Full page width without widening the page: the paint reaches past the
+     column through border-image-outset, which never adds scroll overflow. */
+  border-image: linear-gradient(to bottom, var(--rb-card) calc(100% - 1px), var(--rb-line) 0) fill 0 / 0 / 0 100vmax;
+  background: var(--rb-card);
+  transition: box-shadow 160ms ease;
+}
+
+.sct-mu-tabs.is-scrolled {
+  box-shadow: 0 6px 10px -8px rgba(15, 30, 51, 0.35);
+}
+
+.sct-mu-tabs-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.sct .sct-mu-score {
+  --sc-font: var(--rb-display);
+  display: none;
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--rb-slate);
+}
+
+.sct .sct-mu-score.is-shown {
+  display: block;
+}
+
+.sct-mu-score .is-win,
+.sct-mu-score .is-tie {
+  color: var(--rb-ink);
+}
+
+.sct-mu-score .is-loss {
+  color: var(--rb-slate);
+}
+
+.sct .sct-mu-score-status {
+  margin-left: 6px;
+  font-family: var(--rb-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-slate);
+}
+
+.sct .sct-mu-tabs-list {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sct-mu-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.sct .sct-mu-tab {
+  --sc-font: var(--rb-display);
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 12px 12px 9px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--rb-slate);
+  font-family: var(--rb-display);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sct .sct-mu-tab:hover {
+  color: var(--rb-ink);
+  background: none;
+}
+
+.sct .sct-mu-tab.is-active,
+.sct .sct-mu-tab[aria-selected="true"] {
+  color: var(--rb-ink);
+  border-bottom-color: var(--rb-gold);
+}
+
+/* ---- panels */
+
+/* Hidden only once scripting is on: the early `js` class on the standalone
+   page, or the bundle's data-mu-tabs on an embed. */
+:root.js .sct-mu [data-mu-tab]:not(.is-active),
+.sct-mu[data-mu-tabs="js"] [data-mu-tab]:not(.is-active),
+.sct-mu [data-mu-tab][hidden] {
+  display: none;
+}
+
+.sct-mu-anchor {
+  display: block;
+  height: 0;
+}
+
+.sct-rb-main > .sct-mu-tabpanel {
+  container-type: inline-size;
+}
+
+.sct-rb-main > .sct-mu-tabpanel > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sct-rb-main > .sct-mu-tabpanel > * + * {
+  margin-top: 52px;
+}
+
+.sct-rb-main > .sct-mu-tabpanel > .sct-mu-anchor + * {
+  margin-top: 0;
+}
+
+/* Stacked without scripting, each panel a section's distance from the last. */
+.sct-rb-main > .sct-mu-tabpanel + .sct-mu-tabpanel {
+  margin-top: 52px;
+}
+
+:root.js .sct-rb-main > .sct-mu-tabpanel + .sct-mu-tabpanel,
+.sct-mu[data-mu-tabs="js"] .sct-rb-main > .sct-mu-tabpanel + .sct-mu-tabpanel {
+  margin-top: 0;
+}
+
+/* The scoreboard now opens the Recap panel, in a column about 690px wide:
+   its title and names scale with the column, not the window. */
+.sct-mu-tabpanel .sct-sbh {
+  margin-bottom: 20px;
+}
+
+.sct-mu-tabpanel .sct-sbh .sct-sbh-title {
+  font-size: clamp(20px, 4cqi, 28px) !important;
+}
+
+.sct-mu-tabpanel .sct-sbh .sct-sbh-name {
+  font-size: clamp(18px, 3.4cqi, 24px);
+}
+
+@container (max-width: 560px) {
+  .sct-mu-tabpanel .sct-sbh .sct-sbh-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .sct-mu-tabpanel .sct-sbh-team.is-home .sct-sbh-name {
+    align-items: flex-end;
+  }
+
+  .sct-mu-tabpanel .sct-sbh-logo {
+    display: none;
+  }
+}
+
+/* The leaders strip, in the main column: 2 × 2. */
+.sct-mu-tabpanel .sct-ls {
+  margin: 0;
+}
+
+.sct-mu-tabpanel .sct-sbh + .sct-ls {
+  margin-top: 0;
+}
+
+.sct-mu-tabpanel .sct-ls .sct-ls-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 599px) {
+  .sct-mu-tabpanel .sct-ls .sct-ls-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    padding-bottom: 6px;
+  }
+
+  .sct-mu-tabpanel .sct-ls-card {
+    flex: 0 0 240px;
+    scroll-snap-align: start;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 767px) {
+  .sct-mu-tabpanel .sct-ls .sct-ls-row {
+    display: grid;
+    overflow: visible;
+  }
+}
+
+/* The recap headline. */
+.sct-rb .sct-mu-tabpanel .sct-mu-story-title {
+  max-width: 26ch;
+  font-size: clamp(26px, 3.4vw, 34px) !important;
+}
+
+.sct-rb .sct-mu-tabpanel .sct-mu-story-dek {
+  font-size: 19px;
+  line-height: 1.45;
+}
+
+.sct-rb .sct-mu-story-body p {
+  max-width: 66ch;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--rb-ink);
+}
+
+.sct-mu-story .sct-meant {
+  margin-top: 24px;
+}
+
+/* ---- the two columns */
+
+.sct-mu .sct-rb {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+}
+
+.sct-mu .sct-rb-aside.is-sticky {
+  position: sticky;
+  top: calc(var(--sct-nav-offset, 0px) + var(--mu-bar-h, 50px) + 16px);
+}
+
+@media (max-width: 880px) {
+  .sct-mu .sct-rb {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sct-mu .sct-rb-aside.is-sticky {
+    position: static;
+  }
+}
+
+/* The sidebar's cards on the page's card surface. */
+.sct-mu .sct-rb-info {
+  background: var(--rb-card);
+  border-color: var(--rb-line);
+}
+
+.sct-mu .sct-rb-dl dd a {
+  color: var(--rb-ink);
+}
+
+/* Anything a hash can land on clears the sticky bar. */
+.sct-mu:has([data-mu-tabbar]) [id] {
+  scroll-margin-top: calc(var(--sct-nav-offset, 0px) + var(--mu-bar-h, 50px) + 16px);
+}
+
+/* ---- Fantasy tab */
+
+.sct-fp-jump ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct-fp-jump li {
+  margin: 0;
+}
+
+.sct-mu .sct-fp-jump + .sct-fp {
+  margin-top: 20px;
+}
+
+.sct-fp-block {
+  margin-top: 40px;
+}
+
+.sct-fp-block > .sct-rb-h3:first-child {
+  margin-top: 0;
+}
+
+.sct .sct-fp-callout {
+  margin: 24px 0 0;
+  padding: 14px 18px;
+  border-left: 4px solid var(--rb-gold);
+  border-radius: 8px;
+  background: var(--rb-card);
+  font-size: 16px;
+  color: var(--rb-ink);
+}
+
+.sct-fp-table.is-allowed {
+  min-width: 0;
+}
+
+/* ---- Betting tab */
+
+.sct-bet .sct-rb-alltime {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sct-bet-implied {
+  min-width: 0;
+}
+
+.sct-bet .sct-bet-take a {
+  color: var(--rb-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-decoration-thickness: 2px;
+}
+
+.sct-bet-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sct-bet-card {
+  padding: 16px 18px;
+  border: 1px solid var(--rb-line);
+  border-top: 4px solid var(--rb-team, var(--rb-ink));
+  border-radius: 12px;
+  background: var(--rb-card);
+}
+
+.sct .sct-bet-card-name {
+  --sc-font: var(--rb-display);
+  margin: 0 0 10px;
+  font-size: 17px !important;
+  font-weight: 700;
+  color: var(--rb-ink) !important;
+}
+
+.sct-bet .sct-rb-dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.sct-bet .sct-rb-dl dt {
+  color: var(--rb-slate);
+}
+
+.sct-bet .sct-rb-dl dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-bet .sct-bet-next dt {
+  font-weight: 700;
+}
+
+.sct-bet .sct-bet-next a {
+  color: var(--rb-ink);
+}
+
+.sct-bet-fine {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rb-slate);
+}
+
+.sct-bet-fine p {
+  margin: 0 0 4px;
+}
+
+/* Gains and losses, by sign as well as colour. */
+.sct-mu .sct-fp-diff.is-pos {
+  color: var(--rb-green);
+}
+
+.sct-mu .sct-fp-diff.is-neg {
+  color: var(--rb-red);
+}
+
+@media (max-width: 640px) {
+  .sct-bet-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- highlights: the player once pressed */
+
+.sct-hl-box .sct-hl-play {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: #fff;
+  text-align: left;
+}
+
+.sct-hl-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.sct-hl-noscript {
+  position: absolute;
+  inset: auto 12px 12px;
+  color: #fff;
+}
+
+.sct-mu .sct-rb-note a {
+  color: var(--rb-ink);
+}
+
+/* ---- Keep exploring */
+
+.sct-ex .sct-ex-note {
+  margin: -4px 0 10px;
+}
+
+.sct-ex-side {
+  white-space: nowrap;
+}
+
+/* ---- focus: one ring for every control on the page */
+
+.sct-mu:has(.sct-rb) :is(a, button, summary, [role="tab"], .sct-fp-seg):focus-visible,
+.sct-mu:has(.sct-rb) .sct-fp-seg:has(input:focus-visible) span {
+  outline: 3px solid var(--rb-gold);
+  outline-offset: 3px;
+}
+
+/* ---- surfaces in dark mode: blocks that set white or paper directly */
+
+.sct-mu:has(.sct-rb) :is(.sct-ls-card, .sct-meant-card, .sct-fp-card, .sct-fp-stock-card, .sct-rb-tool, .sct-ex-col, .sct-ex-log) {
+  background: var(--rb-card);
+  border-color: var(--rb-line);
+}
+
+@media print {
+  .sct-mu [data-mu-tab],
+  .sct-mu [data-mu-tab][hidden] {
+    display: block !important;
+  }
+
+  .sct-mu-tabs {
+    display: none !important;
+  }
+
+  .sct-mu .sct-rb-aside.is-sticky {
+    position: static;
+  }
+}
+
+.sct-bet .sct-rb-alltime {
+  max-width: none;
 }

@@ -16,6 +16,7 @@ import { fpaRefreshStatus } from "../lib/fpa/refresh";
 import { playerRefreshStatus } from "../lib/player/live-refresh";
 import { loadGameLogs } from "../lib/player/data";
 import { seasonYear } from "../lib/seo";
+import { requireIngestSecret } from "../lib/ingest-auth";
 
 // Per-ingest cap so a large backlog fills gradually instead of one huge burst.
 const SUMMARY_BATCH = 25;
@@ -739,13 +740,25 @@ export async function storeItems(
 
     for (const [dedupeKey, { id, item }] of incoming) {
       const parsedMs = item.pubDate ? Date.parse(item.pubDate) : NaN;
+      // A publish time in the future is a bad feed date, not tomorrow's news:
+      // it pinned the item to the top of the feed and pushed "last updated"
+      // ahead of the clock. Held at the moment it was first seen, so a re-sent
+      // copy of it is not an update on every run.
+      const prior = rowById.get(idByKey.get(dedupeKey) ?? id);
+      const pubDateMs = Number.isNaN(parsedMs)
+        ? null
+        : parsedMs <= now.getTime()
+          ? parsedMs
+          : prior?.pubDateMs != null && prior.pubDateMs <= now.getTime()
+            ? prior.pubDateMs
+            : now.getTime();
       const outlet = item.source?.toString().trim() || null;
       const teamAbbr = item.teamAbbr?.toString().trim().toLowerCase() || null;
       const fields = {
         title: item.title ?? "(no title)",
         link: item.link ?? null,
         pubDate: item.pubDate ?? null,
-        pubDateMs: Number.isNaN(parsedMs) ? null : parsedMs,
+        pubDateMs,
         playerName: item.playerName ?? null,
         image: item.image ?? null,
         // Rewritten on every pass, unlike summary below: this is a fact about
@@ -849,13 +862,31 @@ export async function storeItems(
     "Ingest complete",
   );
 
-  await backfillSummaries();
-
-  // Piggyback the player -> team refresh on the ingest cycle. It self-throttles
-  // to once a day and never throws, so this is just a convenient heartbeat.
-  await ensureTeams();
+  // After the response, not before it. The summaries are up to 25 LLM calls
+  // and the roster a Sleeper fetch, and every ingest caller waited on both,
+  // including the X webhook, which has to answer fast.
+  void afterIngest();
 
   return { inserted, updated, unchanged, total: rawItems.length };
+}
+
+let afterIngestRun: Promise<void> | null = null;
+
+/** Summaries, then the player -> team refresh. One at a time; never throws. */
+function afterIngest(): Promise<void> {
+  if (afterIngestRun) return afterIngestRun;
+  afterIngestRun = (async () => {
+    try {
+      await backfillSummaries();
+    } catch (err) {
+      logger.warn({ err }, "Summary backfill failed");
+    }
+    // Self-throttles to once a day and never throws: a convenient heartbeat.
+    await ensureTeams();
+  })().finally(() => {
+    afterIngestRun = null;
+  });
+  return afterIngestRun;
 }
 
 /**
@@ -877,31 +908,13 @@ export async function storeItems(
  * headlines on the page.
  */
 router.post("/ingest", async (req, res) => {
-  // Opt-in guard: when INGEST_SECRET is set, callers must present it. Keeps the
-  // externally-triggerable ingest endpoint from being abused. No secret = open.
-  const secret = process.env["INGEST_SECRET"];
-  if (secret && req.get("x-ingest-secret") !== secret) {
-    res.status(401).json({ ok: false, error: "unauthorized" });
-    return;
-  }
+  if (!requireIngestSecret(req, res)) return;
 
   // An empty body is the pull mode this endpoint has always had; only a body
   // that actually carries items switches modes, so existing callers (and the
   // scheduled trigger) are unaffected.
   const pushed = coerceItems(req.body);
   const mode = pushed.length > 0 ? "push" : "pull";
-
-  if (secret === undefined && mode === "push") {
-    // Refusing rather than accepting: pull mode only ever stores what the
-    // configured feed served, so leaving it open is a throttling question. Push
-    // mode stores whatever the caller sent, which is a different kind of risk
-    // and must not be available anonymously by default.
-    res.status(401).json({
-      ok: false,
-      error: "push mode requires INGEST_SECRET to be configured on the server",
-    });
-    return;
-  }
 
   try {
     const result = await runIngest(mode === "push" ? pushed : undefined);
@@ -926,11 +939,7 @@ router.post("/ingest", async (req, res) => {
  * that endpoint's guard exists to prevent.
  */
 router.post("/ingest/clubs", async (req, res) => {
-  const secret = process.env["INGEST_SECRET"];
-  if (secret && req.get("x-ingest-secret") !== secret) {
-    res.status(401).json({ ok: false, error: "unauthorized" });
-    return;
-  }
+  if (!requireIngestSecret(req, res)) return;
 
   try {
     const result = await runClubIngest();
@@ -1054,8 +1063,8 @@ router.get("/status", (_req, res) => {
                 weekNumber: fpaSnapshot.weekNumber,
                 dataMode: fpaSnapshot.dataMode,
               }),
-          // Whether POST /api/fpa/ingest requires the secret here. Unset, the
-          // endpoint is open — the same posture POST /api/ingest takes.
+          // Whether INGEST_SECRET is set here. Unset, POST /api/fpa/ingest
+          // refuses every call (503), like every other write.
           ingestGuarded: Boolean(process.env["INGEST_SECRET"]),
           running: fpa.running,
           lastAttempt: iso(fpa.lastAttemptMs),

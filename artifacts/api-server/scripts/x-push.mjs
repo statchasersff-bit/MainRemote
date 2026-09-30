@@ -24,7 +24,7 @@
 // holds the JSON, it is very likely postable unchanged.
 //
 // Required env:  X_PUSH_URL      e.g. https://<deployment>/api/x/posts
-//                INGEST_SECRET   when the server has one set
+//                INGEST_SECRET   the server refuses every push without it
 // Optional:      X_PUSH_MAX_AGE_DAYS  accept posts older than the poller would
 //                X_PUSH_BATCH         posts per request (default 100, max 200)
 

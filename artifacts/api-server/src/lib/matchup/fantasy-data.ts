@@ -164,7 +164,7 @@ export function leagueRates(season: number): XfpRates | null {
     catchRate,
     perTargetPpr: catchRate + (t.recYd / t.tgt) * 0.1 + (t.recTd / t.tgt) * 6,
     perCarry: (t.rushYd / t.car) * 0.1 + (t.rushTd / t.car) * 6,
-    perPassAttempt: (t.passYd / t.att) * 0.04 + (t.passTd / t.att) * 4 - (t.int / t.att) * 2,
+    perPassAttempt: (t.passYd / t.att) * 0.04 + (t.passTd / t.att) * 4 - (t.int / t.att) * 1,
   };
   ratesCache.set(season, rates);
   return rates;

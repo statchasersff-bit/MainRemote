@@ -709,6 +709,8 @@ export function parseSeason(raw: unknown): StatsSeason | null {
 let seasonsCache: StatsSeason[] | null = null;
 /** Seasons whose tables are still being built week by week. */
 let inProgressCache = new Set<number>();
+/** The first and last season the multi-season table's rows hold. */
+let allSpanCache: [number, number] | null = null;
 
 /**
  * The seasons on disk, single seasons oldest first and then "all" — the order
@@ -743,6 +745,16 @@ export function getStatsSeasons(): StatsSeason[] {
       }
     }),
   );
+  allSpanCache = null;
+  if (names.includes("qb_all.json")) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "qb_all.json"), "utf8")) as RawTable;
+      const held = (raw.rows ?? []).map((row) => Number(row["season"])).filter(Number.isInteger);
+      if (held.length) allSpanCache = [Math.min(...held), Math.max(...held)];
+    } catch {
+      // Unreadable: the label falls back to the finished seasons below.
+    }
+  }
   seasonsCache = names.includes("qb_all.json") ? [...years, "all"] : years;
   return seasonsCache;
 }
@@ -754,11 +766,19 @@ export function defaultSeason(): StatsSeason | null {
 }
 
 /**
- * "2025 Season", or the span the multi-season table covers — the finished
- * seasons, since a season in progress is not in it.
+ * "2025 Season", or the span the multi-season table covers.
+ *
+ * Read off the table's own rows. It used to be the finished seasons on disk,
+ * which read "2023-2026" the day 2026 passed week 17 while nothing had rebuilt
+ * the table, still 2023-2025.
  */
 export function seasonLabel(season: StatsSeason): string {
   if (season !== "all") return `${season} Season`;
+  getStatsSeasons();
+  if (allSpanCache) {
+    const [first, last] = allSpanCache;
+    return first === last ? String(first) : `${first}-${last}`;
+  }
   const years = getStatsSeasons().filter(
     (s): s is number => s !== "all" && !inProgressCache.has(s),
   );

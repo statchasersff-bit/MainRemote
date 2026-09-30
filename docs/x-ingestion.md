@@ -69,8 +69,8 @@ not a deploy.
 
 Writes are guarded by `INGEST_SECRET` (the same secret `POST /api/ingest`
 already uses, sent as `x-ingest-secret`); the page asks for it once per tab. If
-`INGEST_SECRET` is unset the endpoints are open, matching how the existing
-ingest endpoint behaves in that configuration.
+`INGEST_SECRET` is unset every write answers 503 — the same shared guard
+(`src/lib/ingest-auth.ts`) as `POST /api/ingest` and `POST /api/fpa/ingest`.
 
 The 37 seed handles are in `src/lib/x/accounts.ts` and are applied
 **additively** at startup: a row you disabled stays disabled, a priority you

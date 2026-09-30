@@ -45,6 +45,14 @@ export interface AdvMetric {
   standing: Standing;
   /** Where he stands among the qualified, 0-100, on the metric's own direction. Null when unranked. */
   pct: number | null;
+  /** The metric's key, which lines rows up across seasons in the advanced table. */
+  key?: string;
+  /**
+   * The percentile the advanced table prints: `pct`, or for a style reading
+   * (time to throw, depth) the share of the qualified he is above, which is
+   * neither good nor bad and so is not a `pct`.
+   */
+  pctl?: number | null;
 }
 
 export interface AdvCard {
@@ -56,6 +64,12 @@ export interface AdvCard {
   qualified: boolean;
   qualifiedCount: number;
   metrics: AdvMetric[];
+  /**
+   * Every metric either season's card carries, in one order, so the advanced
+   * table can print the seasons side by side. `metrics` stays the card's own
+   * six, which the prose reads.
+   */
+  all: AdvMetric[];
   /** The raw row, for the lede and the fantasy note. */
   row: Record<string, unknown>;
   /** Percentile per metric key, for the lede and the fantasy note. */
@@ -239,11 +253,11 @@ function measure(
   pos: string,
 ): { metric: AdvMetric; pct: number | null } {
   const v = def.of(row);
-  if (v === null) return { metric: { label: def.label, value: "—", read: "No data", standing: "muted", pct: null }, pct: null };
+  if (v === null) return { metric: { key: def.key, label: def.label, value: "—", read: "No data", standing: "muted", pct: null }, pct: null };
   const value = def.fmt(v);
   const extra = def.extra?.(row) ?? null;
   if (!qualified) {
-    return { metric: { label: def.label, value, read: extra ?? "Not enough attempts to rank", standing: "muted", pct: null }, pct: null };
+    return { metric: { key: def.key, label: def.label, value, read: extra ?? "Not enough attempts to rank", standing: "muted", pct: null }, pct: null };
   }
   // Everyone qualified but himself: the best of 36 is the 100th percentile, and
   // alone in the pool he is not the 0th.
@@ -259,7 +273,7 @@ function measure(
     const above = others.filter((x) => x < v).length;
     const share = others.length ? Math.round((above / others.length) * 100) : 50;
     return {
-      metric: { label: def.label, value, read: `${def.more![0]!.toUpperCase()}${def.more!.slice(1)} than ${share}% of ${pos}s`, standing: "muted", pct: null },
+      metric: { key: def.key, label: def.label, value, read: `${def.more![0]!.toUpperCase()}${def.more!.slice(1)} than ${share}% of ${pos}s`, standing: "muted", pct: null, pctl: share },
       pct: share,
     };
   }
@@ -268,7 +282,7 @@ function measure(
       ? `${ordinal(rank)} of ${of} ${pos}s`
       : `${ordinal(pct)} percentile`;
   return {
-    metric: { label: def.label, value, read: extra ? `${extra}, ${read}` : read, standing: standingOf(pct), pct },
+    metric: { key: def.key, label: def.label, value, read: extra ? `${extra}, ${read}` : read, standing: standingOf(pct), pct, pctl: pct },
     pct,
   };
 }
@@ -279,7 +293,13 @@ function throughWeek(table: Table): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function buildCard(table: Table | null, playerId: string, pos: string, defs: (rows: Row[]) => MetricDef[]): AdvCard | null {
+function buildCard(
+  table: Table | null,
+  playerId: string,
+  pos: string,
+  defs: (rows: Row[]) => MetricDef[],
+  allDefs: MetricDef[],
+): AdvCard | null {
   const rows = table?.rows ?? [];
   const row = rows.find((r) => String(r["playerId"] ?? r["player_id"] ?? "") === playerId);
   if (!table || !row) return null;
@@ -295,6 +315,7 @@ function buildCard(table: Table | null, playerId: string, pos: string, defs: (ro
     pct[def.key] = m.pct;
     return m.metric;
   });
+  const all = allDefs.map((def) => measure(def, row, pool, qualified, pos).metric);
   return {
     season: Number(table.season ?? row["season"] ?? 0),
     throughWeek: inProgress ? week : null,
@@ -303,6 +324,7 @@ function buildCard(table: Table | null, playerId: string, pos: string, defs: (ro
     qualified,
     qualifiedCount: pool.length,
     metrics,
+    all,
     row,
     pct,
   };
@@ -364,13 +386,13 @@ export function collegeCard(profile: CollegeProfile | null | undefined, position
   const metrics: AdvMetric[] = def.list.map((m) => {
     const entry = profile.final?.[m.key];
     if (!entry || typeof entry.value !== "number") {
-      return { label: m.label, value: "—", read: "No data", standing: "muted", pct: null };
+      return { key: m.key, label: m.label, value: "—", read: "No data", standing: "muted", pct: null };
     }
     const value = m.fmt(entry.value);
     if (typeof entry.rank === "number" && typeof entry.of === "number" && typeof entry.pct === "number") {
-      return { label: m.label, value, read: `${ordinal(entry.rank)} of ${entry.of}`, standing: standingOf(entry.pct), pct: entry.pct };
+      return { key: m.key, label: m.label, value, read: `${ordinal(entry.rank)} of ${entry.of}`, standing: standingOf(entry.pct), pct: entry.pct, pctl: entry.pct };
     }
-    return { label: m.label, value, read: m.key === "long" ? "Not ranked" : "Not enough attempts to rank", standing: "muted", pct: null };
+    return { key: m.key, label: m.label, value, read: m.key === "long" ? "Not ranked" : "Not enough attempts to rank", standing: "muted", pct: null };
   });
   const qualified = metrics.some((m) => m.pct !== null);
   const pct: Record<string, number | null> = {};
@@ -383,6 +405,7 @@ export function collegeCard(profile: CollegeProfile | null | undefined, position
     qualified,
     qualifiedCount: profile.poolSize,
     metrics,
+    all: metrics,
     row: {},
     pct,
     school: profile.school,
@@ -408,14 +431,15 @@ export function statsTabAdvanced(
   const pos = position ?? "";
   if (!["QB", "RB", "WR", "TE"].includes(pos)) return { current: null, last: null };
   const lower = pos.toLowerCase();
-  const current = playedThisSeason
-    ? buildCard(loadToolTable(lower, leagueSeason), playerId, pos, (rows) => currentDefs(pos, rows))
-    : null;
-  const last = buildCard(
-    loadAdvancedStats(lower, leagueSeason - 1) as Table | null,
-    playerId,
-    pos,
-    () => lastDefs(pos),
-  );
+  const curTable = playedThisSeason ? loadToolTable(lower, leagueSeason) : null;
+  const lastTable = loadAdvancedStats(lower, leagueSeason - 1) as Table | null;
+  // One list for both seasons: this season's six, then last season's that are
+  // not among them, so the advanced table's rows line up year over year.
+  const all: MetricDef[] = [];
+  for (const def of [...currentDefs(pos, curTable?.rows ?? lastTable?.rows ?? []), ...lastDefs(pos)]) {
+    if (!all.some((d) => d.key === def.key)) all.push(def);
+  }
+  const current = curTable ? buildCard(curTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null;
+  const last = buildCard(lastTable, playerId, pos, () => lastDefs(pos), all);
   return { current, last };
 }

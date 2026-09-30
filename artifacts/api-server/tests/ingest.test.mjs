@@ -50,6 +50,7 @@ before(async () => {
   server = await startServer({
     DYNASTY_NEWS_API_URL: `http://127.0.0.1:${feed.address().port}/news`,
     INGEST_MIN_GAP_MS: String(GAP_MS),
+    INGEST_SECRET: "ingest-test-secret",
   });
 });
 
@@ -124,7 +125,10 @@ describe("traffic-triggered refresh", () => {
 describe("upstream editing a story it already sent", () => {
   /** Force an ingest regardless of the throttle by calling the endpoint. */
   async function ingest() {
-    const res = await fetch(`${server.origin}/api/ingest`, { method: "POST" });
+    const res = await fetch(`${server.origin}/api/ingest`, {
+      method: "POST",
+      headers: { "x-ingest-secret": "ingest-test-secret" },
+    });
     return { status: res.status, body: await res.json() };
   }
 

@@ -24,7 +24,9 @@ import {
 } from "./matchup-render";
 import { scoreboardHeading } from "./scoreboard-hero";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
+import { matchupShare } from "./matchup-render";
 import type { MatchupPair } from "./pair";
+import { LruCache } from "../lru";
 
 export interface MatchupSsrResult {
   html: string;
@@ -63,11 +65,15 @@ export interface MatchupSsrResult {
   heading: string;
   /** The <title>, brand included when it fits. Same string the app page uses. */
   title: string;
+  /** The meta description, for the plugin to print as the API wrote it. */
+  description: string;
+  /** A completed game's share image, path on this origin, and its alt text; null elsewhere. */
+  shareImage: { path: string; alt: string } | null;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
-const fragmentCache = new Map<string, MatchupSsrResult>();
 const FRAGMENT_CACHE_MAX = 512;
+const fragmentCache = new LruCache<MatchupSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateMatchupRenderCache(): void {
   fragmentCache.clear();
@@ -115,6 +121,8 @@ async function renderWithData(
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return { result: hit, data };
 
+  const meta = matchupPageMeta(data, "");
+  const share = matchupShare(data);
   const result: MatchupSsrResult = {
     html: renderMatchupPage(data, options),
     version,
@@ -124,12 +132,10 @@ async function renderWithData(
     pinnedMissing: data.pinnedRequested && data.pinned === null,
     pinnedIsCurrent: data.pinnedIsCurrent,
     heading: pageHeadingFor(data),
-    title: matchupPageMeta(data, "").title,
+    title: meta.title,
+    description: meta.description,
+    shareImage: share ? { path: share.path, alt: share.alt } : null,
   };
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return { result, data };
 }
@@ -172,19 +178,22 @@ export async function renderMatchupAppPage(
   }
 
   const html = template
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
     .replace(
       HEAD_MARKER,
-      renderTeamHeadTags(meta) +
-        "\n  " +
-        matchupEventSchema(data, false) +
-        "\n  " +
-        // The FAQ, from the same array the page's <details> were drawn from.
-        matchupFaqSchema(data, options, false) +
-        "\n  " +
-        // Breadcrumbs and the highlights video, on a recap only.
-        matchupRecapSchema(data, options, options.canonical),
+      () =>
+        renderTeamHeadTags(meta) +
+          "\n  " +
+          matchupEventSchema(data, false) +
+          "\n  " +
+          // The FAQ, from the same array the page's <details> were drawn from.
+          matchupFaqSchema(data, options, false) +
+          "\n  " +
+          // Breadcrumbs and the highlights video, on a recap only.
+          matchupRecapSchema(data, options, options.canonical),
     )
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
   return { ...fragment, html };
 }

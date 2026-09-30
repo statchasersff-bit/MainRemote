@@ -19,6 +19,9 @@
  * objects out of it and dropping the rest is deliberate.
  */
 
+import fs from "node:fs";
+import path from "node:path";
+import { dataPath } from "../data-dir";
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "../team/cache";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { BoxPlayer, PlayerGameStats } from "./game-players";
@@ -520,15 +523,139 @@ const cache = createKeyedCache<GameBoxscore>({
   },
 });
 
-/** The box score for a finished game, or null when it cannot be had. */
+/**
+ * The stored copies: data/matchup/boxscores/<season>.json, written by
+ * scripts/matchup/buildBoxscores.mjs. ESPN's summary, trimmed to what parse()
+ * reads, so it goes through the same parser as a live fetch.
+ *
+ * Read ahead of ESPN because a recap that has been checked should keep saying
+ * what was checked: ESPN refuses this host at times, and without these a
+ * refused request is a recap missing its box score, scoring plays, drives and
+ * win probability until the backoff lets the next one through. ESPN is asked
+ * only for a game not stored yet — one that finished since the last build.
+ *
+ * Reloaded when a file's mtime changes, so the builder's run after each game
+ * window is picked up without a restart.
+ */
+const STORE_DIR = dataPath("matchup", "boxscores");
+let storeStamp = "";
+let storedSummaries = new Map<string, EspnSummary>();
+const storedParsed = new Map<string, GameBoxscore | null>();
+
+function storeFiles(): Array<{ file: string; stamp: string }> {
+  try {
+    return fs
+      .readdirSync(STORE_DIR)
+      .filter((name) => /^\d{4}\.json$/.test(name))
+      .map((name) => {
+        const file = path.join(STORE_DIR, name);
+        return { file, stamp: `${name}:${fs.statSync(file).mtimeMs}` };
+      });
+  } catch {
+    return [];
+  }
+}
+
+function storedSummary(eventId: string): EspnSummary | undefined {
+  const files = storeFiles();
+  const stamp = files.map((f) => f.stamp).join("|");
+  if (stamp !== storeStamp) {
+    const next = new Map<string, EspnSummary>();
+    for (const { file } of files) {
+      try {
+        const games = (JSON.parse(fs.readFileSync(file, "utf8")) as {
+          games?: Record<string, { summary?: EspnSummary }>;
+        }).games;
+        for (const [id, game] of Object.entries(games ?? {})) {
+          if (game.summary) next.set(id, game.summary);
+        }
+      } catch {
+        // An unreadable season falls through to ESPN, the same as a missing one.
+      }
+    }
+    storedSummaries = next;
+    storedParsed.clear();
+    storeStamp = stamp;
+  }
+  return storedSummaries.get(eventId);
+}
+
 /** Exposed for tests: the summary document as the page reads it. */
 export const parseEspnSummary = parse;
 
+/** The box score for a finished game, or null when it cannot be had. */
 export async function getGameBoxscore(
   eventId: string | null,
 ): Promise<GameBoxscore | null> {
   if (!eventId) return null;
+  const summary = storedSummary(eventId);
+  if (summary) {
+    if (!storedParsed.has(eventId)) {
+      let parsed: GameBoxscore | null = null;
+      try {
+        parsed = parse(eventId, summary);
+      } catch {
+        // A stored copy the parser rejects is treated as absent.
+      }
+      storedParsed.set(eventId, parsed);
+    }
+    const parsed = storedParsed.get(eventId);
+    if (parsed) return parsed;
+  }
   return cache.ensure(eventId).catch(() => null);
+}
+
+/** One stored game with where it sits in the season, for season-wide sums. */
+export interface StoredGame {
+  eventId: string;
+  seasonType: "regular" | "post";
+  week: number;
+  /** ESPN's kickoff, "2021-09-17T00:20Z". */
+  date: string;
+  box: GameBoxscore;
+}
+
+let seasonStamp = "";
+const seasonGames = new Map<number, StoredGame[]>();
+
+/**
+ * Every stored game of one season, parsed, in kickoff order. Empty when the
+ * season is not stored. Cached until a store file changes.
+ */
+export function storedSeason(season: number): StoredGame[] {
+  const files = storeFiles();
+  const stamp = files.map((f) => f.stamp).join("|");
+  if (stamp !== seasonStamp) {
+    seasonGames.clear();
+    seasonStamp = stamp;
+  }
+  const hit = seasonGames.get(season);
+  if (hit) return hit;
+  const games: StoredGame[] = [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(STORE_DIR, `${season}.json`), "utf8")) as {
+      games?: Record<string, { seasonType?: string; week?: number; date?: string; summary?: EspnSummary }>;
+    };
+    for (const [id, g] of Object.entries(raw.games ?? {})) {
+      if (!g.summary || typeof g.week !== "number" || !g.date) continue;
+      try {
+        games.push({
+          eventId: id,
+          seasonType: g.seasonType === "post" ? "post" : "regular",
+          week: g.week,
+          date: g.date,
+          box: parse(id, g.summary),
+        });
+      } catch {
+        // Not final, or not parseable: left out of every sum.
+      }
+    }
+  } catch {
+    // No store for this season.
+  }
+  games.sort((a, b) => a.date.localeCompare(b.date));
+  seasonGames.set(season, games);
+  return games;
 }
 
 /** One side of a box score by team, or null. */

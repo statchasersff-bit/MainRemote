@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.14
+Stable tag: 1.10.16
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,14 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.16 =
+* Matchup recap pages get a share card. The app draws a 1200×630 image for each completed game (/og/<away>-vs-<home>-<season>-<round>.png on the app's origin, served without the embed key so social crawlers can fetch it), and the plugin adds it as og:image and twitter:image with its alt text, a large Twitter card and og:type article, through Rank Math's Open Graph hooks, or printed directly when Rank Math is not active.
+* The recap's meta description is the app's own (the result, the venue, and what the page holds) when the app sends one.
+* The highlights video is added to the schema graph as a VideoObject, lifted from the fragment like the SportsEvent and the FAQ.
+
+= 1.10.15 =
+* The schedule shortcode no longer accepts view="team" or sends team (the API dropped that view), and sends filter only to the weekly board.
 
 = 1.10.14 =
 * The StatChasers app can be locked so that only this site can read it. Set the same secret as `STATCHASERS_EMBED_KEY` in wp-config.php and `SC_EMBED_KEY` on the app, and the app refuses fragment, data and standalone-page requests that do not carry it; the plugin adds it to every request it makes to the app. Without the constant nothing changes.

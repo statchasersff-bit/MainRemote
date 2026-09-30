@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin menu page + manual refresh handler.
+ * Admin menu page + the refresh button (the daily cron runs the same code).
  *
  * Only users with `manage_options` can see the page or trigger a refresh, and the
  * refresh form is protected by a nonce.
@@ -102,6 +102,17 @@ class SCDC_Admin {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Last refreshed', 'statchasers-depth-charts' ); ?></th>
 						<td><?php echo $last_human ? esc_html( $last_human ) : esc_html__( '—', 'statchasers-depth-charts' ); ?></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Next automatic refresh', 'statchasers-depth-charts' ); ?></th>
+						<td>
+						<?php
+						$next = wp_next_scheduled( SCDC_Refresh::CRON_HOOK );
+						echo $next
+							? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $next ) )
+							: esc_html__( 'not scheduled', 'statchasers-depth-charts' );
+						?>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Teams cached', 'statchasers-depth-charts' ); ?></th>
@@ -221,53 +232,7 @@ class SCDC_Admin {
 		}
 		check_admin_referer( SCDC_REFRESH_ACTION, self::NONCE );
 
-		// Blended refresh hits ESPN (32) + Footballguys (1) + FantasyPros (32).
-		// A healthy run takes about a minute; the worst case, every request timing
-		// out, is 15s + 32 × (10s + 10s) = 655s. Ask for 720s where the host allows
-		// it, otherwise work within its own max_execution_time. Either way the run
-		// gets a deadline 15s short of the limit: it stops starting new teams there
-		// and keeps the rest from the last refresh, so a slow run still writes what
-		// it fetched instead of dying with nothing written.
-		$budget = 720;
-		$start  = microtime( true );
-		if ( ! function_exists( 'set_time_limit' ) || false === @set_time_limit( $budget ) ) { // phpcs:ignore
-			$budget = (int) ini_get( 'max_execution_time' );
-			$start  = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] : $start;
-		}
-		$deadline = $budget > 0 ? $start + $budget - 15 : 0;
-
-		$previous = SCDC_Store::read();
-		$result   = SCDC_Refresh::run( $previous, $deadline );
-
-		$saved = false;
-		if ( 'error' !== $result['status'] ) {
-			$saved = SCDC_Store::write( $result['payload'] );
-		}
-
-		$now = time();
-		if ( 'error' === $result['status'] || ! $saved ) {
-			$status = 'error';
-			$error  = ! empty( $result['error'] ) ? $result['error'] : __( 'Failed to write the cache file. Check uploads directory permissions.', 'statchasers-depth-charts' );
-			// Preserve the prior last_refreshed time on hard failure.
-			$prev_meta              = SCDC_Store::get_meta();
-			$meta                   = $prev_meta;
-			$meta['status']         = $status;
-			$meta['error']          = $error;
-			$meta['teams_ok']       = (int) $result['teams_ok'];
-			$meta['teams_failed']   = $result['teams_failed'];
-		} else {
-			$status = $result['status']; // success | partial
-			$meta   = array(
-				'status'            => $status,
-				'error'             => $result['error'],
-				'last_refreshed'    => gmdate( 'c', $now ),
-				'last_refreshed_ts' => $now,
-				'teams_ok'          => (int) $result['teams_ok'],
-				'teams_failed'      => $result['teams_failed'],
-				'teams_kept'        => $result['teams_kept'],
-			);
-		}
-		SCDC_Store::set_meta( $meta );
+		$status = SCDC_Refresh::run_and_store( 720 );
 
 		$redirect = add_query_arg(
 			array(
@@ -314,6 +279,11 @@ class SCDC_Admin {
 			printf(
 				'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
 				esc_html( $meta['error'] ? $meta['error'] : __( 'Refreshed with some failures.', 'statchasers-depth-charts' ) )
+			);
+		} elseif ( 'locked' === $result ) {
+			printf(
+				'<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+				esc_html__( 'A refresh is already running (from the button or the daily schedule). Reload in a minute or two.', 'statchasers-depth-charts' )
 			);
 		} else {
 			printf(

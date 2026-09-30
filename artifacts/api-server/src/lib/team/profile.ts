@@ -15,6 +15,7 @@
 
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
 import type { NflTeam } from "./teams";
+import { ESPN_CORE, ESPN_SITE } from "./upstream";
 
 
 export interface TeamProfile {
@@ -86,14 +87,15 @@ async function loadCoach(
   // Two hops: the team's coach list is a collection of $refs. Both are inside
   // the cache's single AbortSignal, so a hang on either one is bounded.
   const listUrl =
-    `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/` +
+    `${ESPN_CORE}/v2/sports/football/leagues/nfl/seasons/` +
     `${season}/teams/${encodeURIComponent(espnId)}/coaches?lang=en&region=us`;
   const list = await fetchJson<EspnCoachesResponse>(listUrl, signal, TEAM_USER_AGENT);
   const ref = list.items?.[0]?.$ref;
   if (!ref) return null;
 
-  // ESPN hands back http:// refs; upgrade so the request isn't a plaintext hop.
-  const coachUrl = ref.replace(/^http:/, "https:");
+  // ESPN hands back http:// refs. Re-rooted on ESPN_CORE, which upgrades the
+  // hop to https and follows a test replay too.
+  const coachUrl = ref.replace(/^https?:\/\/sports\.core\.api\.espn\.com/, ESPN_CORE);
   const coach = await fetchJson<EspnCoachResponse>(coachUrl, signal, TEAM_USER_AGENT);
   const name =
     coach.displayName?.trim() ||
@@ -113,7 +115,7 @@ const cache = createKeyedCache<TeamProfile>({
     const season = Number(seasonRaw);
 
     const teamUrl =
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/` +
+      `${ESPN_SITE}/apis/site/v2/sports/football/nfl/teams/` +
       `${encodeURIComponent(espnId ?? "")}`;
 
     // The coach lookup is allowed to fail on its own. It is the least important

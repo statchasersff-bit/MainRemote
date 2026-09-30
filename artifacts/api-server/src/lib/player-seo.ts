@@ -18,6 +18,7 @@
  */
 
 import { escapeHtml } from "./render";
+import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
 
 export interface PlayerPageMeta {
@@ -92,10 +93,13 @@ function sectionMeta(
   }
 
   if (section === "outlook") {
+    // OUTLOOK_SEASON, not the season the player last played: the tab is the
+    // 2026 outlook for everybody, and a player with no 2026 snaps yet got a
+    // "2025" title over a 2026 H1.
     return {
-      title: `${player.name} Fantasy Outlook ${season}: Role, Usage & Draft Value | ${SITE_NAME}`,
+      title: `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role, Usage & Draft Value | ${SITE_NAME}`,
       description:
-        `${player.name} ${season} fantasy outlook: his ${position}role, the ` +
+        `${player.name} ${OUTLOOK_SEASON} fantasy outlook: his ${position}role, the ` +
         `usage behind it and what it is worth on draft day.`,
     };
   }

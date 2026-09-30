@@ -30,6 +30,7 @@ import {
 } from "./schedule-render";
 import { getSchedule, type ScheduleSeason } from "./schedule/schedule-data";
 import { schedulePageMeta, renderScheduleHeadTags } from "./schedule-seo";
+import { LruCache } from "./lru";
 
 export interface ScheduleSsrResult {
   html: string;
@@ -39,8 +40,8 @@ export interface ScheduleSsrResult {
   data: ScheduleSeason | null;
 }
 
-const fragmentCache = new Map<string, ScheduleSsrResult>();
-const FRAGMENT_CACHE_MAX = 64;
+const FRAGMENT_CACHE_MAX = 128;
+const fragmentCache = new LruCache<ScheduleSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateScheduleRenderCache(): void {
   fragmentCache.clear();
@@ -94,11 +95,6 @@ export async function renderScheduleFragment(
     version,
     data,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }
@@ -151,9 +147,11 @@ export async function renderScheduleAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderScheduleHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderScheduleHeadTags(meta))
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

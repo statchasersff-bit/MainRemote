@@ -18,10 +18,10 @@
  *    wrong all season or wrong every Sunday, so the plugin reads `max-age` off
  *    the response and uses that — the API already computes it (30s while a game
  *    is being played, 300s otherwise) and it is the side that knows.
- * 2. **There are four attributes, not two.** View, week, team and filter are
- *    the four pieces of state the board has, and a page that mounts
- *    `[statchasers_schedule view="team" team="NE"]` is a genuinely different
- *    page from the weekly board.
+ * 2. **There are three attributes that matter.** View, week and filter. The
+ *    team lens (`view="team" team="NE"`) is gone — a team's schedule is the
+ *    team hub's Schedule tab now — so a mount that still names it gets the
+ *    season grid, the same answer the API gives, and `team` is not sent.
  *
  * ## What the page's own address says
  *
@@ -68,7 +68,7 @@ const STATCHASERS_SCHEDULE_BACKUP_TTL = 7 * DAY_IN_SECONDS;
 const STATCHASERS_SCHEDULE_TIMEOUT = 12;
 
 /** The views the API understands. Anything else falls back. */
-const STATCHASERS_SCHEDULE_VIEWS = array( 'week', 'team', 'matrix' );
+const STATCHASERS_SCHEDULE_VIEWS = array( 'week', 'matrix' );
 
 /** The game filters. */
 const STATCHASERS_SCHEDULE_FILTERS = array( 'all', 'division', 'international' );
@@ -216,21 +216,17 @@ add_action(
 /**
  * Normalise the shortcode attributes.
  *
- * Note what is NOT validated here: the team. Resolving "ne", "NE", "patriots"
- * and "new-england-patriots" to one canonical team is the API's job and it has
- * the table for it (lib/team/teams.ts); a second copy of that table in PHP is a
- * second copy to keep current every time a franchise moves. An unresolvable
- * team falls through to the API, which renders the weekly board.
+ * `team` is no longer read: the API dropped the team view, so sending it only
+ * split this file's cache for renders that came back identical.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
- * @return array{view:string,week:int,team:string,filter:string,season:int}
+ * @return array{view:string,week:int,filter:string,season:int}
  */
 function statchasers_schedule_args( array $atts ): array {
 	$atts = shortcode_atts(
 		array(
 			'view'   => 'matrix',
 			'week'   => '',
-			'team'   => '',
 			'filter' => 'all',
 			'season' => '',
 		),
@@ -272,11 +268,9 @@ function statchasers_schedule_args( array $atts ): array {
 		$view = 'week';
 	}
 
-	$team = strtolower( trim( (string) $atts['team'] ) );
-	// Bounded so a pathological attribute cannot be used to mint unbounded
-	// cache keys; the API does the real resolution.
-	if ( strlen( $team ) > 40 || ! preg_match( '/^[a-z0-9 -]*$/', $team ) ) {
-		$team = '';
+	// The grid ignores the filter, so a grid keeps only one cache entry.
+	if ( 'week' !== $view ) {
+		$filter = 'all';
 	}
 
 	// Same reasoning as the FPA table's season attribute.
@@ -288,7 +282,6 @@ function statchasers_schedule_args( array $atts ): array {
 	return array(
 		'view'   => $view,
 		'week'   => $week,
-		'team'   => $team,
 		'filter' => $filter,
 		'season' => $season,
 	);
@@ -319,7 +312,7 @@ function statchasers_schedule_ttl( $response ): int {
 /**
  * Fetch the server-rendered schedule fragment, cached.
  *
- * @param array{view:string,week:int,team:string,filter:string,season:int} $args Render arguments.
+ * @param array{view:string,week:int,filter:string,season:int} $args Render arguments.
  * @return array{html:string,version:string}|null Null when nothing is available.
  */
 function statchasers_schedule_fetch( array $args ): ?array {
@@ -343,15 +336,12 @@ function statchasers_schedule_fetch( array $args ): ?array {
 		return $cached;
 	}
 
-	$query = array(
-		'view'   => $args['view'],
-		'filter' => $args['filter'],
-	);
+	$query = array( 'view' => $args['view'] );
+	if ( 'all' !== $args['filter'] ) {
+		$query['filter'] = $args['filter'];
+	}
 	if ( $args['week'] > 0 ) {
 		$query['week'] = (string) $args['week'];
-	}
-	if ( '' !== $args['team'] ) {
-		$query['team'] = $args['team'];
 	}
 	if ( $args['season'] > 0 ) {
 		$query['season'] = (string) $args['season'];
@@ -608,7 +598,7 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	 * first-party markup from the origin the page already loads its bundle from.
 	 *
 	 * @param string $html Rendered fragment.
-	 * @param array{view:string,week:int,team:string,filter:string,season:int} $args Render arguments.
+	 * @param array{view:string,week:int,filter:string,season:int} $args Render arguments.
 	 */
 	$html = (string) apply_filters(
 		'statchasers_schedule_fragment_html',

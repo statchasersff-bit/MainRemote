@@ -9,10 +9,220 @@ import type { GameVideo } from "./game-notes";
 
 // BEGIN GENERATED
 export const GAME_VIDEOS: Record<string, GameVideo> = {
+  "arizona-cardinals-vs-atlanta-falcons/2022-week-17": {
+    "youtubeId": "lwxmwf_iBx0",
+    "title": "Arizona Cardinals vs. Atlanta Falcons | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-atlanta-falcons/2023-week-10": {
+    "youtubeId": "6zFNnRr7rB4",
+    "title": "Atlanta Falcons vs. Arizona Cardinals | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-atlanta-falcons/2025-week-16": {
+    "youtubeId": "hdPQv8WDFjA",
+    "title": "Atlanta Falcons vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-baltimore-ravens/2023-week-8": {
+    "youtubeId": "y5XNQzKowBg",
+    "title": "Baltimore Ravens vs. Arizona Cardinals Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-buffalo-bills/2024-week-1": {
+    "youtubeId": "XlSupuCMM4Q",
+    "title": "Arizona Cardinals vs Buffalo Bills | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-carolina-panthers/2021-week-10": {
+    "youtubeId": "0ATlGTB6-sM",
+    "title": "Panthers vs. Cardinals Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-carolina-panthers/2022-week-4": {
+    "youtubeId": "iJx-zc20qx8",
+    "title": "Arizona Cardinals vs. Carolina Panthers | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-carolina-panthers/2024-week-16": {
+    "youtubeId": "VF_RNagN4yk",
+    "title": "Arizona Cardinals vs. Carolina Panthers Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-carolina-panthers/2025-week-2": {
+    "youtubeId": "qWo7PLy9Oec",
+    "title": "Carolina Panthers vs. Arizona Cardinals Game Highlights | NFL 2025 Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-chicago-bears/2021-week-13": {
+    "youtubeId": "lR2QMF_Bruo",
+    "title": "Cardinals vs. Bears Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-chicago-bears/2023-week-16": {
+    "youtubeId": "R_mIc_mcdj8",
+    "title": "Arizona Cardinals vs. Chicago Bears | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-chicago-bears/2024-week-9": {
+    "youtubeId": "E4nhekIDkfo",
+    "title": "Chicago Bears vs. Arizona Cardinals | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-cincinnati-bengals/2023-week-5": {
+    "youtubeId": "0pQc6PMoCds",
+    "title": "Cincinnati Bengals vs. Arizona Cardinals | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-cincinnati-bengals/2025-week-17": {
+    "youtubeId": "Kar4RnDpoXM",
+    "title": "Arizona Cardinals vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-cleveland-browns/2021-week-6": {
+    "youtubeId": "EMD8z0K5ioE",
+    "title": "Cardinals vs. Browns Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-cleveland-browns/2023-week-9": {
+    "youtubeId": "5427nqYJlT0",
+    "title": "Arizona Cardinals vs. Cleveland Browns | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-dallas-cowboys/2021-week-17": {
+    "youtubeId": "GHd3MogRLPE",
+    "title": "Cardinals vs. Cowboys Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-dallas-cowboys/2023-week-3": {
+    "youtubeId": "tVnj5eGilR4",
+    "title": "Dallas Cowboys vs. Arizona Cardinals Game Highlights | NFL 2023 Week 3",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-dallas-cowboys/2025-week-9": {
+    "youtubeId": "qPIxiCn-gbU",
+    "title": "Arizona Cardinals vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-03",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-denver-broncos/2022-week-15": {
+    "youtubeId": "yRnXuD7J3oM",
+    "title": "Arizona Cardinals vs. Denver Broncos | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-detroit-lions/2021-week-15": {
+    "youtubeId": "wag22BhMKjQ",
+    "title": "Cardinals vs. Lions Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-detroit-lions/2024-week-3": {
+    "youtubeId": "Ui0LyUAR1BA",
+    "title": "Detroit Lions vs. Arizona Cardinals Game Highlights | NFL Season 2024 Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-green-bay-packers/2021-week-8": {
+    "youtubeId": "dWeNmTB99FE",
+    "title": "Packers vs. Cardinals Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-28",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-green-bay-packers/2024-week-6": {
+    "youtubeId": "JU4-qlcFb-g",
+    "title": "Arizona Cardinals vs. Green Bay Packers Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-green-bay-packers/2025-week-7": {
+    "youtubeId": "jH9iu9YgV1w",
+    "title": "Green Bay Packers vs. Arizona Cardinals Game Highlights | NFL 2025 Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-houston-texans/2021-week-7": {
+    "youtubeId": "32gHSdWY-7U",
+    "title": "Texans vs. Cardinals Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-houston-texans/2023-week-11": {
+    "youtubeId": "d-9SgldS3J8",
+    "title": "Arizona Cardinals vs. Houston Texans | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-houston-texans/2025-week-15": {
+    "youtubeId": "QP-Bv4DpVFQ",
+    "title": "Arizona Cardinals vs. Houston Texans Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-indianapolis-colts/2021-week-16": {
+    "youtubeId": "3fNVK9mo-mY",
+    "title": "Colts vs. Cardinals Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-25",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-indianapolis-colts/2025-week-6": {
+    "youtubeId": "fUY2Bc7wNLs",
+    "title": "Arizona Cardinals vs. Indianapolis Colts Game Highlights | NFL 2025 Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-jacksonville-jaguars/2021-week-3": {
     "youtubeId": "FMM3sxmnjh8",
     "title": "Cardinals vs. Jaguars Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-jacksonville-jaguars/2025-week-12": {
+    "youtubeId": "4RGlPCmIQGk",
+    "title": "Jacksonville Jaguars vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-kansas-city-chiefs/2022-week-1": {
+    "youtubeId": "8p0ROqpp0T0",
+    "title": "Kansas City Chiefs vs. Arizona Cardinals | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-las-vegas-raiders/2022-week-2": {
+    "youtubeId": "N5ko_NNMuPE",
+    "title": "Arizona Cardinals vs. Las Vegas Raiders | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-chargers/2022-week-12": {
+    "youtubeId": "oAPsc_RDef8",
+    "title": "Los Angeles Chargers vs. Arizona Cardinals | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-chargers/2024-week-7": {
+    "youtubeId": "cOea_8d1llo",
+    "title": "Los Angeles Chargers vs. Arizona Cardinals Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-21",
     "publisher": "NFL"
   },
   "arizona-cardinals-vs-los-angeles-chargers/2026-week-1": {
@@ -21,10 +231,76 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "arizona-cardinals-vs-los-angeles-rams/2021-week-14": {
+    "youtubeId": "HfOSoVhe43k",
+    "title": "Rams vs. Cardinals Week 14 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-12-13",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-los-angeles-rams/2021-week-4": {
     "youtubeId": "QzjnugM8RXM",
     "title": "Cardinals vs. Rams Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2021-wild-card": {
+    "youtubeId": "VfMqgtKsoag",
+    "title": "Cardinals vs. Rams Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-17",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2022-week-10": {
+    "youtubeId": "7Z57Lw1fbVg",
+    "title": "Arizona Cardinals vs. Los Angeles Rams | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2022-week-3": {
+    "youtubeId": "HhniFa0ycvE",
+    "title": "Los Angeles Rams vs. Arizona Cardinals | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2023-week-12": {
+    "youtubeId": "7VWzSRQAI6Q",
+    "title": "Los Angeles Rams vs. Arizona Cardinals Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2023-week-6": {
+    "youtubeId": "WHYhrC359y4",
+    "title": "Arizona Cardinals vs Los Angeles Rams | 2023 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2024-week-17": {
+    "youtubeId": "t9t_O1_kFEE",
+    "title": "Arizona Cardinals vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 17",
+    "uploadDate": "2024-12-28",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2024-week-2": {
+    "youtubeId": "PPlq83wp2-Q",
+    "title": "Los Angeles Rams vs. Arizona Cardinals | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2025-week-14": {
+    "youtubeId": "su9x24PMG_Q",
+    "title": "Los Angeles Rams vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-los-angeles-rams/2025-week-18": {
+    "youtubeId": "_XRAeo9eZpQ",
+    "title": "Arizona Cardinals vs. Los Angeles Rams Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-miami-dolphins/2024-week-8": {
+    "youtubeId": "RPh954ZH_8I",
+    "title": "Arizona Cardinals vs. Miami Dolphins | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
     "publisher": "NFL"
   },
   "arizona-cardinals-vs-minnesota-vikings/2021-week-2": {
@@ -33,10 +309,196 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "arizona-cardinals-vs-minnesota-vikings/2022-week-8": {
+    "youtubeId": "HycOpZixc9Y",
+    "title": "Arizona Cardinals vs. Minnesota Vikings | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-minnesota-vikings/2024-week-13": {
+    "youtubeId": "BBAH-j8tiyw",
+    "title": "Arizona Cardinals vs. Minnesota Vikings Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-england-patriots/2022-week-14": {
+    "youtubeId": "LKLr4_tfKVo",
+    "title": "New England Patriots vs. Arizona Cardinals | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-12",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-england-patriots/2024-week-15": {
+    "youtubeId": "0S_kLCDuLxU",
+    "title": "New England Patriots vs. Arizona Cardinals | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-orleans-saints/2022-week-7": {
+    "youtubeId": "7OPcffLuIAo",
+    "title": "New Orleans Saints vs. Arizona Cardinals | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-20",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-orleans-saints/2025-week-1": {
+    "youtubeId": "qa0wI0ptHv4",
+    "title": "Arizona Cardinals vs. New Orleans Saints Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-york-giants/2023-week-2": {
+    "youtubeId": "b-hOJlARpJ4",
+    "title": "New York Giants vs. Arizona Cardinals Game Highlights | NFL 2023 Week 2",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-new-york-jets/2024-week-10": {
+    "youtubeId": "ZB58oq4J2C4",
+    "title": "New York Jets vs. Arizona Cardinals Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-philadelphia-eagles/2022-week-5": {
+    "youtubeId": "BXrj8VGPM-E",
+    "title": "Philadelphia Eagles vs. Arizona Cardinals | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-philadelphia-eagles/2023-week-17": {
+    "youtubeId": "s_oSmeMBDGU",
+    "title": "Arizona Cardinals vs. Philadelphia Eagles | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-pittsburgh-steelers/2023-week-13": {
+    "youtubeId": "0YnTtULmlFE",
+    "title": "Arizona Cardinals vs. Pittsburgh Steelers | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2021-week-5": {
+    "youtubeId": "pHxCOqmXzd8",
+    "title": "49ers vs. Cardinals Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2021-week-9": {
+    "youtubeId": "FxOCsO2_N1k",
+    "title": "Cardinals vs. 49ers Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2022-week-11": {
+    "youtubeId": "p_7mMH64Pdk",
+    "title": "San Francisco 49ers vs. Arizona Cardinals | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-21",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2022-week-18": {
+    "youtubeId": "nI8REL5PYm4",
+    "title": "Arizona Cardinals vs. San Francisco 49ers | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2023-week-15": {
+    "youtubeId": "--47FjCWgrU",
+    "title": "San Francisco 49ers vs. Arizona Cardinals Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2023-week-4": {
+    "youtubeId": "-sbBlEofzFs",
+    "title": "Arizona Cardinals vs. San Francisco 49ers | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2024-week-18": {
+    "youtubeId": "VntZ2RAEbII",
+    "title": "San Francisco 49ers vs. Arizona Cardinals | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2024-week-5": {
+    "youtubeId": "VZTB-KIGNaU",
+    "title": "Arizona Cardinals vs. San Francisco 49ers Game Highlights | NFL 2024 Season Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2025-week-11": {
+    "youtubeId": "ws1_Hp5461c",
+    "title": "San Francisco 49ers vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-san-francisco-49ers/2025-week-3": {
+    "youtubeId": "vpdgrfZgzic",
+    "title": "Arizona Cardinals vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-san-francisco-49ers/2026-week-3": {
     "youtubeId": "7ngu-tT0PQs",
     "title": "Arizona Cardinals vs. San Francisco 49ers Game Highlights | NFL 2026 Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2021-week-11": {
+    "youtubeId": "e2W3ZEGdOus",
+    "title": "Cardinals vs. Seahawks Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2021-week-18": {
+    "youtubeId": "jAEXRFKUsCQ",
+    "title": "Seahawks vs. Cardinals Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2022-week-6": {
+    "youtubeId": "MLp6CimKB90",
+    "title": "Arizona Cardinals vs. Seattle Seahawks | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2022-week-9": {
+    "youtubeId": "AhEuKVOhm9o",
+    "title": "Seattle Seahawks vs. Arizona Cardinals | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2023-week-18": {
+    "youtubeId": "BdZYegUo2lo",
+    "title": "Seattle Seahawks vs. Arizona Cardinals Game Highlights | NFL 2023 Week 18",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2023-week-7": {
+    "youtubeId": "O9c9dTPzXgc",
+    "title": "Arizona Cardinals vs. Seattle Seahawks | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2024-week-12": {
+    "youtubeId": "bGutJk5d0HM",
+    "title": "Arizona Cardinals vs. Seattle Seahawks Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2024-week-14": {
+    "youtubeId": "Xhm1kZW82O8",
+    "title": "Seaatle Seahawks vs. Arizona Cardinals | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2025-week-10": {
+    "youtubeId": "05SoxjT452Y",
+    "title": "Arizona Cardinals vs. Seattle Seahawks Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-seattle-seahawks/2025-week-4": {
+    "youtubeId": "caqxkOKPE2U",
+    "title": "Seattle Seahawks vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-25",
     "publisher": "NFL"
   },
   "arizona-cardinals-vs-seattle-seahawks/2026-week-2": {
@@ -45,10 +507,118 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "arizona-cardinals-vs-tampa-bay-buccaneers/2022-week-16": {
+    "youtubeId": "-7Gl5GI9JSE",
+    "title": "Tampa Bay Buccaneers vs. Arizona Cardinals | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-25",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-tampa-bay-buccaneers/2025-week-13": {
+    "youtubeId": "FckI37Gxv2o",
+    "title": "Arizona Cardinals vs Tampa Bay Buccaneers Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
   "arizona-cardinals-vs-tennessee-titans/2021-week-1": {
     "youtubeId": "Aog9RuHLS7E",
     "title": "Cardinals vs. Titans Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-tennessee-titans/2025-week-5": {
+    "youtubeId": "oZtE7EBhaH0",
+    "title": "Tennessee Titans vs Arizona Cardinals Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-washington-commanders/2023-week-1": {
+    "youtubeId": "88R2r9805So",
+    "title": "Arizona Cardinals vs. Washington Commanders Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "arizona-cardinals-vs-washington-commanders/2024-week-4": {
+    "youtubeId": "NZoUu7Mr-gA",
+    "title": "Washington Commanders vs. Arizona Cardinals Game Highlights | NFL 2024 Season Week 4",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-baltimore-ravens/2022-week-16": {
+    "youtubeId": "zZmA9t--PK4",
+    "title": "Atlanta Falcons vs. Baltimore Ravens | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-buffalo-bills/2021-week-17": {
+    "youtubeId": "bnMWh2CIz0Y",
+    "title": "Falcons vs. Bills Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-buffalo-bills/2025-week-6": {
+    "youtubeId": "7igpt0dW1Uw",
+    "title": "Buffalo Bills vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-13",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2021-week-14": {
+    "youtubeId": "uMhPG75cL-k",
+    "title": "Falcons vs. Panthers Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2021-week-8": {
+    "youtubeId": "8X2ArXXwIMc",
+    "title": "Panthers vs. Falcons Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2022-week-10": {
+    "youtubeId": "mYWl8uorFrU",
+    "title": "Atlanta Falcons vs. Carolina Panthers | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-10",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2022-week-8": {
+    "youtubeId": "fWf8BOTX7Cc",
+    "title": "Carolina Panthers vs. Atlanta Falcons | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2023-week-1": {
+    "youtubeId": "i2e3Sffr4G8",
+    "title": "Carolina Panthers vs. Atlanta Falcons Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2023-week-15": {
+    "youtubeId": "COPxrKKuFQ8",
+    "title": "Atlanta Falcons vs. Carolina Panthers Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2024-week-18": {
+    "youtubeId": "Fb-gaqkl0BY",
+    "title": "Carolina Panthers vs. Atlanta Falcons | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2024-week-6": {
+    "youtubeId": "WfKenpl3VN0",
+    "title": "Atlanta Falcons vs. Carolina Panthers Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2025-week-11": {
+    "youtubeId": "FC0wZz4Kqnc",
+    "title": "Carolina Panthers vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-carolina-panthers/2025-week-3": {
+    "youtubeId": "h6bi8oqivbM",
+    "title": "Atlanta Falcons vs. Carolina Panthers Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-carolina-panthers/2026-week-2": {
@@ -57,10 +627,238 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "atlanta-falcons-vs-chicago-bears/2022-week-11": {
+    "youtubeId": "4mPcvGG_8-c",
+    "title": "Chicago Bears vs. Atlanta Falcons | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-chicago-bears/2023-week-17": {
+    "youtubeId": "lKIwhs35wXA",
+    "title": "Atlanta Falcons vs. Chicago Bears Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-cincinnati-bengals/2022-week-7": {
+    "youtubeId": "_ma7eTUBhQE",
+    "title": "Atlanta Falcons vs. Cincinnati Bengals | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-cleveland-browns/2022-week-4": {
+    "youtubeId": "3DIEqkH2YRI",
+    "title": "Cleveland Browns vs. Atlanta Falcons | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-dallas-cowboys/2021-week-10": {
+    "youtubeId": "6Z3eI13IN1U",
+    "title": "Falcons vs. Cowboys Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-dallas-cowboys/2024-week-9": {
+    "youtubeId": "OiMiG-VVmPM",
+    "title": "Dallas Cowboys vs. Atlanta Falcons Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-denver-broncos/2024-week-11": {
+    "youtubeId": "NIsKXjTUgVE",
+    "title": "Atlanta Falcons vs. Denver Broncos Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-detroit-lions/2021-week-16": {
+    "youtubeId": "50075fY93aI",
+    "title": "Lions vs. Falcons Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-detroit-lions/2023-week-3": {
+    "youtubeId": "rBdMF5YhUSs",
+    "title": "Atlanta Falcons vs. Detroit Lions Game Highlights | NFL 2023 Week 3",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-green-bay-packers/2023-week-2": {
+    "youtubeId": "RXXoU8auU4A",
+    "title": "Green Bay Packers vs. Atlanta Falcons | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
   "atlanta-falcons-vs-green-bay-packers/2026-week-3": {
     "youtubeId": "sbXZBAUOkDw",
     "title": "Atlanta Falcons vs Green Bay Packers Game Highlights | 2026 NFL Season Week 3",
     "uploadDate": "2026-09-24",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-houston-texans/2023-week-5": {
+    "youtubeId": "m7BMnzm-Bb8",
+    "title": "Houston Texans vs. Atlanta Falcons Game Highlights | NFL 2023 Week 5",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-indianapolis-colts/2023-week-16": {
+    "youtubeId": "Bu_WZiaJJTU",
+    "title": "Indianapolis Colts vs. Atlanta Falcons Game Highlights | NFL 2023 Week 16",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-indianapolis-colts/2025-week-10": {
+    "youtubeId": "uadWVqnESao",
+    "title": "Atlanta Falcons vs. Indianapolis Colts Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-jacksonville-jaguars/2021-week-12": {
+    "youtubeId": "aYjqpSr_-vw",
+    "title": "Falcons vs. Jaguars Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-jacksonville-jaguars/2023-week-4": {
+    "youtubeId": "-WCRI8p4Uqo",
+    "title": "Atlanta Falcons vs. Jacksonville Jaguars Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-kansas-city-chiefs/2024-week-3": {
+    "youtubeId": "bY87rX6SKdk",
+    "title": "Kansas City Chiefs vs. Atlanta Falcons Game Highlights | NFL 2024 Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-las-vegas-raiders/2024-week-15": {
+    "youtubeId": "UfV-WD4iXi8",
+    "title": "Atlanta Falcons vs. Las Vegas Raiders Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-16",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-los-angeles-chargers/2022-week-9": {
+    "youtubeId": "7XVEXv1jFzw",
+    "title": "Los Angeles Chargers vs. Atlanta Falcons | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-los-angeles-chargers/2024-week-13": {
+    "youtubeId": "wF_4ou2Lx-8",
+    "title": "Los Angeles Chargers vs. Atlanta Falcons Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-los-angeles-rams/2022-week-2": {
+    "youtubeId": "zzT0P1L3uAA",
+    "title": "Atlanta Falcons vs. Los Angeles Rams | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-los-angeles-rams/2025-week-17": {
+    "youtubeId": "06l_30fKC38",
+    "title": "Los Angeles Rams vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-29",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-miami-dolphins/2021-week-7": {
+    "youtubeId": "jX1FboJrCPA",
+    "title": "Falcons vs. Dolphins Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-miami-dolphins/2025-week-8": {
+    "youtubeId": "pBXaTJz3SSs",
+    "title": "Miami Dolphins vs. Atlanta Falcons Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-minnesota-vikings/2023-week-9": {
+    "youtubeId": "rqR6jEHdGDA",
+    "title": "Minnesota Vikings vs. Atlanta Falcons Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-minnesota-vikings/2024-week-14": {
+    "youtubeId": "8I9FQJyX8lc",
+    "title": "Atlanta Falcons vs. Minnesota Vikings | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-minnesota-vikings/2025-week-2": {
+    "youtubeId": "ZpyQ5pbD3l4",
+    "title": "Atlanta Falcons vs Minnesota Vikings Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-england-patriots/2021-week-11": {
+    "youtubeId": "uJFrYyv8ZA8",
+    "title": "Patriots vs. Falcons Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-18",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-england-patriots/2025-week-9": {
+    "youtubeId": "gLt6OqX5ssc",
+    "title": "Atlanta Falcons vs. New England Patriots Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2021-week-18": {
+    "youtubeId": "EGGOFiKgarA",
+    "title": "Saints vs. Falcons Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2021-week-9": {
+    "youtubeId": "wgUKd6DPyck",
+    "title": "Falcons vs. Saints Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2022-week-1": {
+    "youtubeId": "BYJHgyXiwvs",
+    "title": "New Orleans Saints vs. Atlanta Falcons | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2022-week-15": {
+    "youtubeId": "rb55HDBd2wk",
+    "title": "Atlanta Falcons vs. New Orleans Saints | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2023-week-12": {
+    "youtubeId": "Wa7hnICGpDo",
+    "title": "New Orleans Saints vs. Atlanta Falcons Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2023-week-18": {
+    "youtubeId": "RDDBhEAQC8s",
+    "title": "Atlanta Falcons vs. New Orleans Saints | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2024-week-10": {
+    "youtubeId": "5OHp_PkQKPU",
+    "title": "Atlanta Falcons vs. New Orleans Saints | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2024-week-4": {
+    "youtubeId": "0HwjvA7dbC4",
+    "title": "New Orleans Saints vs. Atlanta Falcons | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2025-week-12": {
+    "youtubeId": "yNcUT7pT9h4",
+    "title": "Atlanta Falcons vs. New Orleans Saints Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-orleans-saints/2025-week-18": {
+    "youtubeId": "5PeYdCZKVvs",
+    "title": "New Orleans Saints vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-new-york-giants/2021-week-3": {
@@ -69,10 +867,28 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-26",
     "publisher": "NFL"
   },
+  "atlanta-falcons-vs-new-york-giants/2024-week-16": {
+    "youtubeId": "s_tTzh261U4",
+    "title": "New York Giants vs. Atlanta Falcons Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
   "atlanta-falcons-vs-new-york-jets/2021-week-5": {
     "youtubeId": "trKoD1jjVA8",
     "title": "Jets vs. Falcons Week 5 Highlights | NFL 2021",
     "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-york-jets/2023-week-13": {
+    "youtubeId": "0NhUH7KMCM4",
+    "title": "Atlanta Falcons vs. New York Jets Game Highlights | NFL 2023 Week 13",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-new-york-jets/2025-week-13": {
+    "youtubeId": "ZyKCwYPSg_k",
+    "title": "Atlanta Falcons vs. New York Jets Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-philadelphia-eagles/2021-week-1": {
@@ -81,10 +897,70 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "atlanta-falcons-vs-philadelphia-eagles/2024-week-2": {
+    "youtubeId": "IOWYuncFMYQ",
+    "title": "Atlanta Falcons vs. Philadelphia Eagles Game Highlights | NFL 2024 Season Week 2",
+    "uploadDate": "2024-09-16",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-pittsburgh-steelers/2022-week-13": {
+    "youtubeId": "uWN9p22EoLY",
+    "title": "Pittsburgh Steelers vs. Atlanta Falcons | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-pittsburgh-steelers/2024-week-1": {
+    "youtubeId": "KB8JO-kg7_s",
+    "title": "Pittsburgh Steelers vs. Atlanta Falcons Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
   "atlanta-falcons-vs-pittsburgh-steelers/2026-week-1": {
     "youtubeId": "TQcletbGnAk",
     "title": "Atlanta Falcons vs. Pittsburgh Steelers Game Highlights | NFL 2026 Season Week 1",
     "uploadDate": "2026-09-13",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-san-francisco-49ers/2021-week-15": {
+    "youtubeId": "V8co1mPg6Hw",
+    "title": "Falcons vs. 49ers Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-san-francisco-49ers/2022-week-6": {
+    "youtubeId": "OAGadOYDDGg",
+    "title": "San Fransisco 49ers vs. Atlanta Falcons | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-san-francisco-49ers/2025-week-7": {
+    "youtubeId": "_Y4Ud54FZ4s",
+    "title": "Atlanta Falcons vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-seattle-seahawks/2022-week-3": {
+    "youtubeId": "a7_5-J9n_V8",
+    "title": "Atlanta Falcons vs. Seattle Seahawks | Week 3 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-seattle-seahawks/2024-week-7": {
+    "youtubeId": "EDJzeivTXp4",
+    "title": "Seattle Seahawks vs. Atlanta Falcons Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-seattle-seahawks/2025-week-14": {
+    "youtubeId": "R7yx3CXm7lc",
+    "title": "Seattle Seahawks vs. Atlanta Falcons Game Highlights | NFL 2025 Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2021-week-13": {
+    "youtubeId": "apr2XzK8leE",
+    "title": "Buccaneers vs. Falcons Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
     "publisher": "NFL"
   },
   "atlanta-falcons-vs-tampa-bay-buccaneers/2021-week-2": {
@@ -93,10 +969,262 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2022-week-18": {
+    "youtubeId": "GuC-LfL5-Gc",
+    "title": "Tampa Bay Buccaneers vs. Atlanta Falcons | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2022-week-5": {
+    "youtubeId": "oHkX6uB5pRQ",
+    "title": "Atlanta Falcons vs. Tampa Bay Buccaneers | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2023-week-14": {
+    "youtubeId": "8BTRGDFTXRU",
+    "title": "Tampa Bay Buccaneers vs. Atlanta Falcons Game Highlights | NFL 2023 Week 14",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2023-week-7": {
+    "youtubeId": "_GVylKko8KA",
+    "title": "Atlanta Falcons vs. Tampa Bay Buccaneers | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2024-week-5": {
+    "youtubeId": "Jofeenv4yms",
+    "title": "Tampa Bay Buccaneers vs. Atlanta Falcons Game Highlights | NFL 2024 Week 5",
+    "uploadDate": "2024-10-03",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2024-week-8": {
+    "youtubeId": "Q9Mg4afregA",
+    "title": "Atlanta Falcons vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2025-week-1": {
+    "youtubeId": "A_EbbsPORqg",
+    "title": "Tampa Bay Buccaneers vs. Atlanta Falcons Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tampa-bay-buccaneers/2025-week-15": {
+    "youtubeId": "kurfb90PjzQ",
+    "title": "Atlanta Falcons vs Tampa Bay Buccaneers Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-11",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-tennessee-titans/2023-week-8": {
+    "youtubeId": "fR5p-fxkVe0",
+    "title": "Atlanta Falcons vs. Tennessee Titans Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
   "atlanta-falcons-vs-washington-commanders/2021-week-4": {
     "youtubeId": "6JQCcm8pItM",
     "title": "Washington Football Team vs. Falcons Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-washington-commanders/2022-week-12": {
+    "youtubeId": "3wRDTpO692g",
+    "title": "Atlanta Falcons vs. Washington Commanders | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-washington-commanders/2023-week-6": {
+    "youtubeId": "6Oktv2jgsZc",
+    "title": "Washington Commanders vs. Atlanta Falcons | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-washington-commanders/2024-week-17": {
+    "youtubeId": "9e9QfGyl3Ws",
+    "title": "Atlanta Falcons vs. Washington Commanders Game Highlights | 2024 Week 17",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "atlanta-falcons-vs-washington-commanders/2025-week-4": {
+    "youtubeId": "ov_-rhHIA9Y",
+    "title": "Washington Commanders vs Atlanta Falcons Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-buffalo-bills/2022-week-4": {
+    "youtubeId": "a_xvUuFHotQ",
+    "title": "Buffalo Bills vs. Baltimore Ravens | Week 4 2022 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-buffalo-bills/2024-divisional": {
+    "youtubeId": "C9Ate21AHKs",
+    "title": "Baltimore Ravens vs. Buffalo Bills Game Highlights | Divisional Round NFL 2024 Season",
+    "uploadDate": "2025-01-19",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-buffalo-bills/2024-week-4": {
+    "youtubeId": "drNw6IAsK5E",
+    "title": "Buffalo Bills vs. Baltimore Ravens | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-buffalo-bills/2025-week-1": {
+    "youtubeId": "37U_cW0OByc",
+    "title": "Baltimore Ravens vs Buffalo Bills Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-carolina-panthers/2022-week-11": {
+    "youtubeId": "GuHVbpHuKIo",
+    "title": "Carolina Panthers vs. Baltimore Ravens | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-chicago-bears/2021-week-11": {
+    "youtubeId": "OCoutBb47IU",
+    "title": "Ravens vs. Bears Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-chicago-bears/2025-week-8": {
+    "youtubeId": "B59hsVJlsng",
+    "title": "Chicago Bears vs Baltimore Ravens Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2021-week-16": {
+    "youtubeId": "AZhGkt7OPjM",
+    "title": "Ravens vs. Bengals Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2021-week-7": {
+    "youtubeId": "6DluYiYGj-0",
+    "title": "Bengals vs. Ravens Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2022-week-18": {
+    "youtubeId": "wbkm1mWmA0Y",
+    "title": "Baltimore Ravens vs. Cincinnati Bengals | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2022-week-5": {
+    "youtubeId": "CPM3yJWWYt0",
+    "title": "Cincinatti Bengals vs. Baltimore Ravens | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2022-wild-card": {
+    "youtubeId": "N2KhR0fxxP4",
+    "title": "Baltimore Ravens vs. Cincinnati Bengals | 2022 Super Wildcard Weekend Game Highlights",
+    "uploadDate": "2023-01-15",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2023-week-11": {
+    "youtubeId": "usK_TYjxMgM",
+    "title": "Cincinnati Bengals vs. Baltimore Ravens | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-16",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2023-week-2": {
+    "youtubeId": "P_4CkIx6uwE",
+    "title": "Baltimore Ravens vs. Cincinnati Bengals Game Highlights | NFL 2023 Week 2",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2024-week-10": {
+    "youtubeId": "D3xdlU0_Om8",
+    "title": "Cincinnati Bengals vs. Baltimore Ravens Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-07",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2024-week-5": {
+    "youtubeId": "4yhzponRIwU",
+    "title": "Baltimore Ravens vs. Cincinnati Bengals Game Highlights | NFL 2024 Season Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2025-week-13": {
+    "youtubeId": "j2Flfz0DGS8",
+    "title": "Cincinnati Bengals vs Baltimore Ravens Thanksgiving Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-27",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cincinnati-bengals/2025-week-15": {
+    "youtubeId": "xFPgMdt1x8M",
+    "title": "Baltimore Ravens vs Cincinnati Bengals Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2021-week-12": {
+    "youtubeId": "fR90NwL87oY",
+    "title": "Browns vs. Ravens Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2021-week-14": {
+    "youtubeId": "ue1CWmxqcjU",
+    "title": "Ravens vs. Browns Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2022-week-15": {
+    "youtubeId": "wbGUgKXdxT8",
+    "title": "Baltimore Ravens vs. Cleveland Browns | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-17",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2022-week-7": {
+    "youtubeId": "kTlO3Ps7a64",
+    "title": "Cleveland Browns vs. Baltimore Ravens | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2023-week-10": {
+    "youtubeId": "KqzdFbNOJq8",
+    "title": "Cleveland Browns vs. Baltimore Ravens | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2023-week-4": {
+    "youtubeId": "PPgcTQBpT6w",
+    "title": "Baltimore Ravens vs. Cleveland Browns | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2024-week-18": {
+    "youtubeId": "LkomMIMmuss",
+    "title": "Cleveland Browns vs. Baltimore Ravens | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-04",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2024-week-8": {
+    "youtubeId": "mLKcKkcdVkw",
+    "title": "Baltimore Ravens vs. Cleveland Browns | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2025-week-11": {
+    "youtubeId": "9BJzqetFxRA",
+    "title": "Baltimore Ravens vs. Cleveland Browns Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-cleveland-browns/2025-week-2": {
+    "youtubeId": "GtJWEMZbxjc",
+    "title": "Cleveland Browns vs. Baltimore Ravens Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-dallas-cowboys/2024-week-3": {
+    "youtubeId": "9IY9awOZbEU",
+    "title": "Baltimore Ravens vs. Dallas Cowboys | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
     "publisher": "NFL"
   },
   "baltimore-ravens-vs-dallas-cowboys/2026-week-3": {
@@ -111,10 +1239,82 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "baltimore-ravens-vs-denver-broncos/2022-week-13": {
+    "youtubeId": "TP0nnL6J1oM",
+    "title": "Denver Broncos vs. Baltimore Ravens | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-denver-broncos/2024-week-9": {
+    "youtubeId": "_L6uFRsqqSQ",
+    "title": "Denver Broncos vs. Baltimore Ravens | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
   "baltimore-ravens-vs-detroit-lions/2021-week-3": {
     "youtubeId": "PzGCEopXKf4",
     "title": "Ravens vs. Lions Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-detroit-lions/2023-week-7": {
+    "youtubeId": "m4S6-G5Zyzs",
+    "title": "Detroit Lions vs. Baltimore Ravens Game Highlights | NFL 2023 Week 7",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-detroit-lions/2025-week-3": {
+    "youtubeId": "GvxiIvq9kWQ",
+    "title": "Detroit Lions vs Baltimore Ravens Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-22",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-green-bay-packers/2021-week-15": {
+    "youtubeId": "CaYOoVglz3o",
+    "title": "Packers vs. Ravens Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-green-bay-packers/2025-week-17": {
+    "youtubeId": "ZChxJhi98L8",
+    "title": "Baltimore Ravens vs Green Bay Packers Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-27",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-houston-texans/2023-divisional": {
+    "youtubeId": "MLk6OFtWJaU",
+    "title": "Houston Texans vs. Baltimore Ravens Game Highlights | NFL 2023 Divisional Round",
+    "uploadDate": "2024-01-20",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-houston-texans/2023-week-1": {
+    "youtubeId": "FCFudOZxElA",
+    "title": "Houston Texans vs. Baltimore Ravens | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-houston-texans/2024-week-17": {
+    "youtubeId": "-bbkbAbWeZw",
+    "title": "Baltimore Ravens vs. Houston Texans Game Highlights | NFL 2024 Season Week 17",
+    "uploadDate": "2024-12-25",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-houston-texans/2025-week-5": {
+    "youtubeId": "Zb2580LNEAI",
+    "title": "Houston Texans vs. Baltimore Ravens Game Highlights | NFL 2025 Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-indianapolis-colts/2021-week-5": {
+    "youtubeId": "FxQ39O0XtLo",
+    "title": "Colts vs. Ravens Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-11",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-indianapolis-colts/2023-week-3": {
+    "youtubeId": "vLUtSmfmdU4",
+    "title": "Indianapolis Colts vs. Baltimore Ravens | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
     "publisher": "NFL"
   },
   "baltimore-ravens-vs-indianapolis-colts/2026-week-1": {
@@ -123,10 +1323,40 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "baltimore-ravens-vs-jacksonville-jaguars/2022-week-12": {
+    "youtubeId": "5IGt9ZihUO8",
+    "title": "Baltimore Ravens vs. Jacksonville Jaguars | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-jacksonville-jaguars/2023-week-15": {
+    "youtubeId": "6vkAoB5KXuY",
+    "title": "Baltimore Ravens vs. Jacksonville Jaguars | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
   "baltimore-ravens-vs-kansas-city-chiefs/2021-week-2": {
     "youtubeId": "T_AwUOyxMlY",
     "title": "Chiefs vs. Ravens Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-kansas-city-chiefs/2023-conference-championship": {
+    "youtubeId": "jb_lnAvZSa4",
+    "title": "Kansas City Chiefs vs. Baltimore Ravens Game Highlights | 2023 AFC Championship",
+    "uploadDate": "2024-01-28",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-kansas-city-chiefs/2024-week-1": {
+    "youtubeId": "IENArFXpQD8",
+    "title": "Baltimore Ravens vs. Kansas City Chiefs Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-05",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-kansas-city-chiefs/2025-week-4": {
+    "youtubeId": "wf5W_2rnUbE",
+    "title": "Baltimore Ravens vs Kansas City Chiefs Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
     "publisher": "NFL"
   },
   "baltimore-ravens-vs-las-vegas-raiders/2021-week-1": {
@@ -135,10 +1365,316 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-13",
     "publisher": "NFL"
   },
+  "baltimore-ravens-vs-las-vegas-raiders/2024-week-2": {
+    "youtubeId": "TB61mAregtI",
+    "title": "Las Vegas Raiders vs. Baltimore Ravens | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-chargers/2021-week-6": {
+    "youtubeId": "fOPKQFGwiOE",
+    "title": "Chargers vs. Ravens Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-chargers/2023-week-12": {
+    "youtubeId": "VWf3r7-r9N0",
+    "title": "Baltimore Ravens vs. Los Angeles Chargers | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-chargers/2024-week-12": {
+    "youtubeId": "G05856RuL0I",
+    "title": "Baltimore Ravens vs. Los Angeles Chargers Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-25",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-rams/2021-week-17": {
+    "youtubeId": "UJJMRwp0LzM",
+    "title": "Rams vs. Ravens Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-rams/2023-week-14": {
+    "youtubeId": "SXtcCn8tmSQ",
+    "title": "Los Angeles Rams vs. Baltimore Ravens | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-los-angeles-rams/2025-week-6": {
+    "youtubeId": "2MAidsTY9Y4",
+    "title": "Los Angeles Rams vs. Baltimore Ravens Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-miami-dolphins/2021-week-10": {
+    "youtubeId": "RsJixGsuee0",
+    "title": "Ravens vs. Dolphins Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-11",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-miami-dolphins/2022-week-2": {
+    "youtubeId": "c4Dt6F0ykvA",
+    "title": "Miami Dolphins vs. Baltimore Ravens | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-miami-dolphins/2023-week-17": {
+    "youtubeId": "jL04MQV6RhU",
+    "title": "Miami Dolphins vs. Baltimore Ravens | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-miami-dolphins/2025-week-9": {
+    "youtubeId": "G5US45dr0Ys",
+    "title": "Baltimore Ravens vs Miami Dolphins Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-10-30",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-minnesota-vikings/2021-week-9": {
+    "youtubeId": "6VizhMMcg68",
+    "title": "Vikings vs. Ravens Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-minnesota-vikings/2025-week-10": {
+    "youtubeId": "TUe0TkQ2s9w",
+    "title": "Baltimore Ravens vs Minnesota Vikings Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-england-patriots/2022-week-3": {
+    "youtubeId": "opOYWJRYiXo",
+    "title": "Baltimore Ravens vs. New England Patriots | Week 3 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-england-patriots/2025-week-16": {
+    "youtubeId": "DMyRG2DocCY",
+    "title": "New England Patriots vs Baltimore Ravens Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-orleans-saints/2022-week-9": {
+    "youtubeId": "8m1lnGZmoHg",
+    "title": "Baltimore Ravens vs. New Orleans Saints | 2022 Week 9 Highlights",
+    "uploadDate": "2022-11-07",
+    "publisher": "NFL"
+  },
   "baltimore-ravens-vs-new-orleans-saints/2026-week-2": {
     "youtubeId": "ZhFUgsuEgV4",
     "title": "New Orleans Saints vs. Baltimore Ravens Game Highlights | NFL 2026 Season Week 2",
     "uploadDate": "2026-09-20",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-york-giants/2022-week-6": {
+    "youtubeId": "YCJgXYxZij0",
+    "title": "Baltimore Ravens vs. New York Giants | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-york-giants/2024-week-15": {
+    "youtubeId": "SlqDk1rFnm0",
+    "title": "Baltimore Ravens vs. New York Giants | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-york-jets/2022-week-1": {
+    "youtubeId": "O-y5tXFosns",
+    "title": "Baltimore Ravens vs. New York Jets Highlights | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-new-york-jets/2025-week-12": {
+    "youtubeId": "xDl9XJunYmI",
+    "title": "New York Jets vs. Baltimore Ravens Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-philadelphia-eagles/2024-week-13": {
+    "youtubeId": "Aa1reeMAONY",
+    "title": "Philadelphia Eagles vs. Baltimore Ravens | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2021-week-13": {
+    "youtubeId": "NfdrSkgQAx8",
+    "title": "Ravens vs. Steelers Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2021-week-18": {
+    "youtubeId": "6PcPB1ll2Xo",
+    "title": "Steelers vs. Ravens Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2022-week-14": {
+    "youtubeId": "co_R_igNx8Q",
+    "title": "Baltimore Ravens vs. Pittsburgh Steelers | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2022-week-17": {
+    "youtubeId": "S-SPpntGMF4",
+    "title": "Pittsburgh Steelers vs. Baltimore Ravens | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2023-week-18": {
+    "youtubeId": "gjbYxeHxewA",
+    "title": "Pittsburgh Steelers vs. Baltimore Ravens | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-06",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2023-week-5": {
+    "youtubeId": "rekGwJ7_sP4",
+    "title": "Baltimore Ravens vs. Pittsburgh Steelers Game Highlights | NFL 2023 Week 5",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2024-week-11": {
+    "youtubeId": "Y6rpNLInCEg",
+    "title": "Baltimore Ravens vs. Pittsburgh Steelers | 2024 Week 11 Game Highlights",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2024-week-16": {
+    "youtubeId": "zmnW-aE9yUU",
+    "title": "Pittsburgh Steelers vs. Baltimore Ravens Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-21",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2024-wild-card": {
+    "youtubeId": "lBeM0xWNIbo",
+    "title": "Pittsburgh Steelers vs. Baltimore Ravens Game Highlights | 2024 Wild Card Game Highlights",
+    "uploadDate": "2025-01-11",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2025-week-14": {
+    "youtubeId": "JP_PjBGIS_4",
+    "title": "Pittsburgh Steelers vs. Baltimore Ravens Game Highlights | NFL 2025 Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-pittsburgh-steelers/2025-week-18": {
+    "youtubeId": "LbgNNw0SJ3o",
+    "title": "Baltimore Ravens vs Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-san-francisco-49ers/2023-week-16": {
+    "youtubeId": "AHL9ki1uW0s",
+    "title": "Baltimore Ravens vs. San Francisco 49ers | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-25",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-seattle-seahawks/2023-week-9": {
+    "youtubeId": "KcnOuQMxN4E",
+    "title": "Seattle Seahawks vs. Baltimore Ravens Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-tampa-bay-buccaneers/2022-week-8": {
+    "youtubeId": "u0c68WcmUqE",
+    "title": "Baltimore Ravens vs. Tampa Bay Buccaneers | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-27",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-tampa-bay-buccaneers/2024-week-7": {
+    "youtubeId": "H3IsJ2qHfGQ",
+    "title": "Baltimore Ravens vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-21",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-tennessee-titans/2023-week-6": {
+    "youtubeId": "RUCNnG21c9Y",
+    "title": "Baltimore Ravens vs. Tennessee Titans Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "baltimore-ravens-vs-washington-commanders/2024-week-6": {
+    "youtubeId": "w26hHiVU5do",
+    "title": "Washington Commanders vs. Baltimore Ravens Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-carolina-panthers/2021-week-15": {
+    "youtubeId": "gtn_gGGn204",
+    "title": "Panthers vs. Bills Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-carolina-panthers/2025-week-8": {
+    "youtubeId": "wuJGt_Z81sI",
+    "title": "Buffalo Bills vs. Carolina Panthers Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-chicago-bears/2022-week-16": {
+    "youtubeId": "Ww_T5edZeKQ",
+    "title": "Buffalo Bills vs. Chicago Bears | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-cincinnati-bengals/2023-week-9": {
+    "youtubeId": "vgbwUSb3q8k",
+    "title": "Buffalo Bills vs. Cincinnati Bengals | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-cincinnati-bengals/2025-week-14": {
+    "youtubeId": "7n3i-a6pJtM",
+    "title": "Cincinnati Bengals vs Buffalo Bills Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-cleveland-browns/2022-week-11": {
+    "youtubeId": "WcVZO752ujI",
+    "title": "Cleveland Browns vs. Buffalo Bills | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-cleveland-browns/2025-week-16": {
+    "youtubeId": "aJNfBaKhus4",
+    "title": "Buffalo Bills vs. Cleveland Browns Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-dallas-cowboys/2023-week-15": {
+    "youtubeId": "qc7PxMEPP5M",
+    "title": "Buffalo Bills vs. Dallas Cowboys Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-denver-broncos/2023-week-10": {
+    "youtubeId": "88CVD5a9OpQ",
+    "title": "Denver Broncos vs. Buffalo Bills | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-13",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-denver-broncos/2024-wild-card": {
+    "youtubeId": "wlRhI-wY0C0",
+    "title": "Denver Broncos vs. Buffalo Bills | 2024 Wild Card Game Highlights",
+    "uploadDate": "2025-01-12",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-denver-broncos/2025-divisional": {
+    "youtubeId": "VqXRI7Mag3E",
+    "title": "Buffalo Bills vs. Denver Broncos Game Highlights | NFL 2025 Season Divisional",
+    "uploadDate": "2026-01-17",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-detroit-lions/2022-week-12": {
+    "youtubeId": "hROU2VNy6Vk",
+    "title": "Buffalo Bills vs. Detroit Lions | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-24",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-detroit-lions/2024-week-15": {
+    "youtubeId": "Qa0mNmToOSA",
+    "title": "Buffalo Bills vs. Detroit Lions Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
     "publisher": "NFL"
   },
   "buffalo-bills-vs-detroit-lions/2026-week-2": {
@@ -147,10 +1683,118 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-17",
     "publisher": "NFL"
   },
+  "buffalo-bills-vs-green-bay-packers/2022-week-8": {
+    "youtubeId": "1WwBq42po14",
+    "title": "Green Bay Packers vs. Buffalo Bills | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
   "buffalo-bills-vs-houston-texans/2021-week-4": {
     "youtubeId": "88h-jaMN_tE",
     "title": "Texans vs. Bills Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-houston-texans/2024-week-5": {
+    "youtubeId": "yeVMkqh_rwE",
+    "title": "Buffalo Bills vs. Houston Texans | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-indianapolis-colts/2021-week-11": {
+    "youtubeId": "eHYp8Rok82M",
+    "title": "Colts vs. Bills Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-indianapolis-colts/2024-week-10": {
+    "youtubeId": "M0hCwOqL5_A",
+    "title": "Buffalo Bills vs. Indianapolis Colts Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-jacksonville-jaguars/2021-week-9": {
+    "youtubeId": "AaaDe6Z5vOM",
+    "title": "Bills vs. Jaguars Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-jacksonville-jaguars/2023-week-5": {
+    "youtubeId": "_Yp6Sq30eJA",
+    "title": "Jacksonville Jaguars vs. Buffalo Bills Game Highlights | NFL 2023 Week 5",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-jacksonville-jaguars/2024-week-3": {
+    "youtubeId": "06I2wsBWe5U",
+    "title": "Jacksonville Jaguars vs. Buffalo Bills Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-23",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-jacksonville-jaguars/2025-wild-card": {
+    "youtubeId": "OZrEboMLou4",
+    "title": "Buffalo Bills vs Jacksonville Jaguars Game Highlights | 2025 NFL Season Wild Card Round",
+    "uploadDate": "2026-01-11",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2021-divisional": {
+    "youtubeId": "n1dp2ZKi0cc",
+    "title": "Bills vs. Chiefs Divisional Round Highlights | NFL 2021",
+    "uploadDate": "2022-01-23",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2021-week-5": {
+    "youtubeId": "yxiOnaTUows",
+    "title": "Bills vs. Chiefs Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2022-week-6": {
+    "youtubeId": "iWJO6oiV7NI",
+    "title": "Buffalo Bills vs. Kansas City Chiefs | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2023-divisional": {
+    "youtubeId": "Clj_Bdf6toA",
+    "title": "Kansas City Chiefs vs. Buffalo Bills Game Highlights | NFL 2023 Divisional Round",
+    "uploadDate": "2024-01-21",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2023-week-14": {
+    "youtubeId": "aYvAakypELE",
+    "title": "Buffalo Bills vs. Kansas City Chiefs | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2024-conference-championship": {
+    "youtubeId": "4DAFwo8dvEc",
+    "title": "Buffalo Bills vs Kansas City Chiefs Game Highlights | AFC Championship NFL 2024 Season",
+    "uploadDate": "2025-01-26",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2024-week-11": {
+    "youtubeId": "Miiu7KT2328",
+    "title": "Kansas City Chiefs vs. Buffalo Bills | 2024 Week 11 Game Highlights",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-kansas-city-chiefs/2025-week-9": {
+    "youtubeId": "G9SIgQo88zg",
+    "title": "Kansas City Chiefs vs Buffalo Bills Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-las-vegas-raiders/2023-week-2": {
+    "youtubeId": "UdDHY5AUAKg",
+    "title": "Las Vegas Raiders vs. Buffalo Bills Game Highlights | NFL 2023 Week 2",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-los-angeles-chargers/2023-week-16": {
+    "youtubeId": "vqiGrrmpL34",
+    "title": "Buffalo Bills vs. Los Angeles Chargers | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-23",
     "publisher": "NFL"
   },
   "buffalo-bills-vs-los-angeles-chargers/2026-week-3": {
@@ -159,10 +1803,238 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-27",
     "publisher": "NFL"
   },
+  "buffalo-bills-vs-los-angeles-rams/2024-week-14": {
+    "youtubeId": "S1ELXcwu-wc",
+    "title": "Buffalo Bills vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
   "buffalo-bills-vs-miami-dolphins/2021-week-2": {
     "youtubeId": "kyiRCLREpmU",
     "title": "Bills vs. Dolphins Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2021-week-8": {
+    "youtubeId": "9xmB74NFIik",
+    "title": "Dolphins vs. Bills Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2022-week-15": {
+    "youtubeId": "KiIiJMS4Yo0",
+    "title": "Miami Dolphins vs. Buffalo Bills | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-17",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2022-week-3": {
+    "youtubeId": "gUvHlA1-JWQ",
+    "title": "Buffalo Bills vs. Miami Dolphins | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2022-wild-card": {
+    "youtubeId": "wBxAMoJw_Rw",
+    "title": "Miami Dolphins vs. Buffalo Bills | 2022 Super Wild Card Weekend Game Highlights",
+    "uploadDate": "2023-01-15",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2023-week-18": {
+    "youtubeId": "5kHYGN4IOzg",
+    "title": "Buffalo Bills vs. Miami Dolphins | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2023-week-4": {
+    "youtubeId": "oX-Szmb3Ils",
+    "title": "Miami Dolphins vs. Buffalo Bills Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2024-week-2": {
+    "youtubeId": "CCI3XPFjqn8",
+    "title": "Buffalo Bills vs. Miami Dolphins Game Highlights | NFL 2024 Week 2",
+    "uploadDate": "2024-09-12",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2024-week-9": {
+    "youtubeId": "w9E1Cy0RokQ",
+    "title": "Miami Dolphins vs. Buffalo Bills Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2025-week-10": {
+    "youtubeId": "F7LaFBcpJvM",
+    "title": "Buffalo Bills vs. Miami Dolphins Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-miami-dolphins/2025-week-3": {
+    "youtubeId": "ctvBmmLkC1k",
+    "title": "Miami Dolphins vs Buffalo Bills Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-18",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-minnesota-vikings/2022-week-10": {
+    "youtubeId": "Fg8T_xuOvPA",
+    "title": "GAME OF THE YEAR??? Buffalo Bills vs. Minnesota Vikings | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2021-week-13": {
+    "youtubeId": "XGYL-2zZdyY",
+    "title": "Patriots vs. Bills Week 13 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-12-06",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2021-week-16": {
+    "youtubeId": "JnK20rOEaic",
+    "title": "Bills vs. Patriots Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2021-wild-card": {
+    "youtubeId": "VyDQdswNNK8",
+    "title": "Patriots vs. Bills Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-15",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2022-week-13": {
+    "youtubeId": "QVNULUu4xrs",
+    "title": "Buffalo Bills vs New England Patriots | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-01",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2022-week-18": {
+    "youtubeId": "8AefVowMiaQ",
+    "title": "New England Patriots vs. Buffalo Bills | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2023-week-17": {
+    "youtubeId": "6SGIF0At2yg",
+    "title": "New England Patriots vs. Buffalo Bills Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2023-week-7": {
+    "youtubeId": "JjxdKGOwYr0",
+    "title": "Buffalo Bills vs. New England Patriots | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2024-week-16": {
+    "youtubeId": "XSjfrXwcrdw",
+    "title": "New England Patriots vs. Buffalo Bills Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2024-week-18": {
+    "youtubeId": "sDE_C1_TY0I",
+    "title": "Buffalo Bills vs. New England Patriots | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2025-week-15": {
+    "youtubeId": "ayjLNfBRZ1I",
+    "title": "Buffalo Bills vs. New England Patriots Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-england-patriots/2025-week-5": {
+    "youtubeId": "hFfx8yGw34Q",
+    "title": "New England Patriots vs Buffalo Bills Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-orleans-saints/2021-week-12": {
+    "youtubeId": "O6-na2b4RYU",
+    "title": "Bills vs. Saints Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-25",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-orleans-saints/2025-week-4": {
+    "youtubeId": "jxZLukUcBDM",
+    "title": "New Orleans Saints vs. Buffalo Bills Game Highlights | NFL 2025 Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-giants/2023-week-6": {
+    "youtubeId": "XSXvxJOpapc",
+    "title": "New York Giants vs. Buffalo Bills | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2021-week-10": {
+    "youtubeId": "QBBlkCmfY2Y",
+    "title": "Bills vs. Jets Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2021-week-18": {
+    "youtubeId": "pxjMOaV7I9k",
+    "title": "Jets vs. Bills Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2022-week-14": {
+    "youtubeId": "3Qs7lyDvtqI",
+    "title": "New York Jets vs. Buffalo Bills | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2022-week-9": {
+    "youtubeId": "-mMjBSavIzk",
+    "title": "Buffalo Bills vs. New York Jets | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2023-week-1": {
+    "youtubeId": "Zk8DnHKqBRg",
+    "title": "Buffalo Bills vs. New York Jets | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-11",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2023-week-11": {
+    "youtubeId": "1IdXSsK6IPo",
+    "title": "New York Jets vs. Buffalo Bills | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2024-week-17": {
+    "youtubeId": "2BgmVqaBj0M",
+    "title": "New York Jets vs. Buffalo Bills Game Highlights | 2024 Week 17",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2024-week-6": {
+    "youtubeId": "wAa9tGUdTM4",
+    "title": "Buffalo Bills vs. New York Jets Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-14",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2025-week-18": {
+    "youtubeId": "ZzMyyUsDgx0",
+    "title": "New York Jets vs. Buffalo Bills Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-new-york-jets/2025-week-2": {
+    "youtubeId": "VUUAjfWorNc",
+    "title": "Buffalo Bills vs. New York Jets Game Highlights | NFL 2025 Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-philadelphia-eagles/2023-week-12": {
+    "youtubeId": "RbplX6ELLaQ",
+    "title": "Buffalo Bills vs. Philadelphia Eagles | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-philadelphia-eagles/2025-week-17": {
+    "youtubeId": "HetvEG7ndGQ",
+    "title": "Philadelphia Eagles vs. Buffalo Bills Game Highlights | NFL 2025 Season Week 17",
+    "uploadDate": "2025-12-28",
     "publisher": "NFL"
   },
   "buffalo-bills-vs-pittsburgh-steelers/2021-week-1": {
@@ -171,10 +2043,112 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "buffalo-bills-vs-pittsburgh-steelers/2022-week-5": {
+    "youtubeId": "OhgPS3s1TO8",
+    "title": "Pittsburgh Steelers vs. Buffalo Bills | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-pittsburgh-steelers/2023-wild-card": {
+    "youtubeId": "9_4Ybszo0lk",
+    "title": "Pittsburgh Steelers vs. Buffalo Bills Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-15",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-pittsburgh-steelers/2025-week-13": {
+    "youtubeId": "nOkuO7Yat90",
+    "title": "Buffalo Bills vs Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-san-francisco-49ers/2024-week-13": {
+    "youtubeId": "XrOIYYT8e94",
+    "title": "San Francisco 49ers vs. Buffalo Bills Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-seattle-seahawks/2024-week-8": {
+    "youtubeId": "P1VGmink1X0",
+    "title": "Buffalo Bills vs. Seattle Seahawks Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-tampa-bay-buccaneers/2021-week-14": {
+    "youtubeId": "2JRXRHDBkJE",
+    "title": "Bills vs. Buccaneers Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-tampa-bay-buccaneers/2025-week-11": {
+    "youtubeId": "CpxkriQh6DM",
+    "title": "Tampa Bay Buccaneers vs. Buffalo Bills Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-tennessee-titans/2021-week-6": {
+    "youtubeId": "-HJeSs2XquQ",
+    "title": "Bills vs. Titans Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-18",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-tennessee-titans/2022-week-2": {
+    "youtubeId": "XDvsaZHpt50",
+    "title": "Tennessee Titans vs. Buffalo Bills | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-19",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-tennessee-titans/2024-week-7": {
+    "youtubeId": "kc7tZxwKadU",
+    "title": "Tennessee Titans vs. Buffalo Bills | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-washington-commanders/2021-week-3": {
+    "youtubeId": "quV0TIKAf14",
+    "title": "Washington Football Team vs. Bills Week 3 Highlights | NFL 2021",
+    "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "buffalo-bills-vs-washington-commanders/2023-week-3": {
+    "youtubeId": "nXkyPkOEA0E",
+    "title": "Buffalo Bills vs. Washington Commanders | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-chicago-bears/2023-week-10": {
+    "youtubeId": "lfxxIv9sIj0",
+    "title": "Carolina Panthers vs. Chicago Bears | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-09",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-chicago-bears/2024-week-5": {
+    "youtubeId": "i_KX8nS_pHc",
+    "title": "Carolina Panthers vs. Chicago Bears Game Highlights | NFL 2024 Season Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
   "carolina-panthers-vs-chicago-bears/2026-week-1": {
     "youtubeId": "gXmzn5ZBsHU",
     "title": "Chicago Bears vs Carolina Panthers Game Highlights | NFL 2026 Week 1",
     "uploadDate": "2026-09-13",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-cincinnati-bengals/2022-week-9": {
+    "youtubeId": "AqcDaWDx_qc",
+    "title": "Carolina Panthers vs. Cincinnati Bengals | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-cincinnati-bengals/2024-week-4": {
+    "youtubeId": "SUp3OdjrKSM",
+    "title": "Cincinnati Bengals vs. Carolina Panthers Game Highlights | NFL 2024 Season Week 4",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-cleveland-browns/2022-week-1": {
+    "youtubeId": "xpuOoPPI-AA",
+    "title": "Cleveland Browns vs. Carolina Panthers Game Highlights | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
     "publisher": "NFL"
   },
   "carolina-panthers-vs-cleveland-browns/2026-week-3": {
@@ -189,10 +2163,160 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "carolina-panthers-vs-dallas-cowboys/2023-week-11": {
+    "youtubeId": "F5BHqhx3fHc",
+    "title": "Dallas Cowboys vs. Carolina Panthers Game Highlights | NFL 2023 Week 11",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-dallas-cowboys/2024-week-15": {
+    "youtubeId": "hcjDLJIOAb8",
+    "title": "Dallas Cowboys vs. Carolina Panthers | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-dallas-cowboys/2025-week-6": {
+    "youtubeId": "2fsbhcaroA4",
+    "title": "Dallas Cowboys vs. Carolina Panthers Game Highlights | NFL 2025 Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-denver-broncos/2022-week-12": {
+    "youtubeId": "lvbxQNbUCsM",
+    "title": "Denver Broncos vs. Carolina Panthers | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-denver-broncos/2024-week-8": {
+    "youtubeId": "4DinQJVJHFk",
+    "title": "Carolina Panthers vs. Denver Broncos | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-detroit-lions/2022-week-16": {
+    "youtubeId": "aILh26hthhk",
+    "title": "Detroit Lions vs. Carolina Panthers | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-detroit-lions/2023-week-5": {
+    "youtubeId": "8N0jK9wvR2A",
+    "title": "Carolina Panthers vs. Detroit Lions Game Highlights | NFL 2023 Week 5",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-green-bay-packers/2025-week-9": {
+    "youtubeId": "dVxy7tMDVJE",
+    "title": "Carolina Panthers vs Green Bay Packers Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
   "carolina-panthers-vs-houston-texans/2021-week-3": {
     "youtubeId": "HIEyDE4poAs",
     "title": "Carolina Panthers vs. Houston Texans Week 3 | 2021 NFL Game Highlights",
     "uploadDate": "2021-09-23",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-houston-texans/2023-week-8": {
+    "youtubeId": "RD2nP_Ts-Zs",
+    "title": "Houston Texans vs. Carolina Panthers | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-indianapolis-colts/2023-week-9": {
+    "youtubeId": "smNaFKR6VC8",
+    "title": "Indianapolis Colts vs. Carolina Panthers | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-jacksonville-jaguars/2023-week-17": {
+    "youtubeId": "f7PSjegOyRU",
+    "title": "Carolina Panthers vs. Jacksonville Jaguars | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-jacksonville-jaguars/2025-week-1": {
+    "youtubeId": "3t-ZTu1Mm4I",
+    "title": "Carolina Panthers vs. Jacksonville Jaguars Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-kansas-city-chiefs/2024-week-12": {
+    "youtubeId": "gqikwGM-BEM",
+    "title": "Kansas City Chiefs vs. Carolina Panthers Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-las-vegas-raiders/2024-week-3": {
+    "youtubeId": "jia1C65fmas",
+    "title": "Carolina Panthers vs. Las Vegas Raiders Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-los-angeles-chargers/2024-week-2": {
+    "youtubeId": "CFdDSWRumVs",
+    "title": "Los Angeles Chargers vs. Carolina Panthers | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-los-angeles-rams/2022-week-6": {
+    "youtubeId": "FUSRVqzBv3Y",
+    "title": "Carolina Panthers vs. Los Angeles Rams | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-los-angeles-rams/2025-week-13": {
+    "youtubeId": "cCLBJcv6o4Q",
+    "title": "Los Angeles Rams vs Carolina Panthers Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-los-angeles-rams/2025-wild-card": {
+    "youtubeId": "Rh9xD2eoJcY",
+    "title": "Los Angeles Rams vs. Carolina Panthers Game Highlights | NFL 2025 Season Wild Card",
+    "uploadDate": "2026-01-10",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-miami-dolphins/2021-week-12": {
+    "youtubeId": "2EBtERjUIJc",
+    "title": "Panthers vs. Dolphins Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-miami-dolphins/2023-week-6": {
+    "youtubeId": "tGhRlwswcq0",
+    "title": "Carolina Panthers vs. Miami Dolphins Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-miami-dolphins/2025-week-5": {
+    "youtubeId": "J-4OdZqfyu0",
+    "title": "Miami Dolphins vs. Carolina Panthers Game Highlights | NFL 2025 Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-minnesota-vikings/2021-week-6": {
+    "youtubeId": "eeEyl69Tccs",
+    "title": "Vikings vs. Panthers Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-minnesota-vikings/2023-week-4": {
+    "youtubeId": "HBCsX7leZb4",
+    "title": "Minnesota Vikings vs. Carolina Panthers Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-england-patriots/2021-week-9": {
+    "youtubeId": "SphFPWJHKrk",
+    "title": "Patriots vs. Panthers Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2021-week-17": {
+    "youtubeId": "GUNJybPniB4",
+    "title": "Panthers vs. Saints Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
     "publisher": "NFL"
   },
   "carolina-panthers-vs-new-orleans-saints/2021-week-2": {
@@ -201,10 +2325,196 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "carolina-panthers-vs-new-orleans-saints/2022-week-18": {
+    "youtubeId": "Y9bjtxql-uY",
+    "title": "Carolina Panthers vs. New Orleans Saints | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2022-week-3": {
+    "youtubeId": "FTncJC1sVqc",
+    "title": "New Orleans Saints vs. Carolina Panthers | Week 3 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2023-week-14": {
+    "youtubeId": "u15wcPeBG4M",
+    "title": "Carolina Panthers vs. New Orleans Saints Game Highlights | NFL 2023 Week 14",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2023-week-2": {
+    "youtubeId": "haL3wiTxTOQ",
+    "title": "New Orleans Saints vs. Carolina Panthers | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-18",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2024-week-1": {
+    "youtubeId": "8imQDGM2edk",
+    "title": "Carolina Panthers vs. New Orleans Saints Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2024-week-9": {
+    "youtubeId": "z1Cux2n41Hg",
+    "title": "New Orleans Saints vs. Carolina Panthers | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2025-week-10": {
+    "youtubeId": "RKBdvWIwXzk",
+    "title": "New Orleans Saints vs. Carolina Panthers Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-orleans-saints/2025-week-15": {
+    "youtubeId": "4usWCOSrcv8",
+    "title": "Carolina Panthers vs New Orleans Saints Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-york-giants/2021-week-7": {
+    "youtubeId": "SRr_iVeX4YA",
+    "title": "Panthers vs. Giants Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-york-giants/2022-week-2": {
+    "youtubeId": "stsa_Llesak",
+    "title": "Carolina Panthers vs. New York Giants | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-york-giants/2024-week-10": {
+    "youtubeId": "Uls7qxMU4Dk",
+    "title": "New York Giants vs. Carolina Panthers | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
   "carolina-panthers-vs-new-york-jets/2021-week-1": {
     "youtubeId": "2b_fnJnBZHQ",
     "title": "Jets vs. Panthers Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-new-york-jets/2025-week-7": {
+    "youtubeId": "MCKYBulNq2Q",
+    "title": "Carolina Panthers vs. New York Jets Game Highlights | NFL 2025 Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-philadelphia-eagles/2021-week-5": {
+    "youtubeId": "1HL0vK344NU",
+    "title": "Eagles vs. Panthers Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-philadelphia-eagles/2024-week-14": {
+    "youtubeId": "TOL5hHn_aOs",
+    "title": "Carolina Panthers vs. Philadelphia Eagles | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-pittsburgh-steelers/2022-week-15": {
+    "youtubeId": "xytWPPD1Cls",
+    "title": "Pittsburgh Steelers vs. Carolina Panthers | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-san-francisco-49ers/2022-week-5": {
+    "youtubeId": "-BLZb9Xt2Xw",
+    "title": "San Francisco 49ers vs. Carolina Panthers | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-san-francisco-49ers/2025-week-12": {
+    "youtubeId": "M9LvzqtNvhw",
+    "title": "Carolina Panthers vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-seattle-seahawks/2023-week-3": {
+    "youtubeId": "ivQFTANHJs8",
+    "title": "Carolina Panthers vs. Seattle Seahawks | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-seattle-seahawks/2025-week-17": {
+    "youtubeId": "gxbCNz3SLLE",
+    "title": "Seattle Seahawks vs. Carolina Panthers Game Highlights | NFL 2025 Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2021-week-16": {
+    "youtubeId": "P22T4RGFiSA",
+    "title": "Buccaneers vs. Panthers Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2021-week-18": {
+    "youtubeId": "5XzeRp6wVtk",
+    "title": "Panthers vs. Buccaneers Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2022-week-17": {
+    "youtubeId": "5SNhZAiEb1s",
+    "title": "Carolina Panthers vs. Tampa Bay Buccaneers | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2022-week-7": {
+    "youtubeId": "C9WDx9k2hDw",
+    "title": "Tampa Bay Buccaneers vs. Carolina Panthers | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2023-week-13": {
+    "youtubeId": "pB77BdNRm4s",
+    "title": "Carolina Panthers vs. Tampa Bay Buccaneers | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2023-week-18": {
+    "youtubeId": "2RR-xjpWvkc",
+    "title": "Tampa Bay Buccaneers vs. Carolina Panthers | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2024-week-13": {
+    "youtubeId": "Az0E3MGjzHs",
+    "title": "Tampa Bay Buccaneers vs. Carolina Panthers Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2024-week-17": {
+    "youtubeId": "Tx3NIIEZ_E8",
+    "title": "Carolina Panthers vs. Tampa Bay Buccaneers Game Highlights | 2024 Week 17",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2025-week-16": {
+    "youtubeId": "Jzpsm9zkCFg",
+    "title": "Tampa Bay Buccaneers vs Carolina Panthers Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tampa-bay-buccaneers/2025-week-18": {
+    "youtubeId": "Np56aguXdrA",
+    "title": "Carolina Panthers vs Tampa Bay Buccaneers Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-03",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-tennessee-titans/2023-week-12": {
+    "youtubeId": "PPKFGVgS3h4",
+    "title": "Carolina Panthers vs. Tennessee Titans Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "carolina-panthers-vs-washington-commanders/2021-week-11": {
+    "youtubeId": "LwWoX5DO_VI",
+    "title": "Washington Football Team vs. Panthers Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
     "publisher": "NFL"
   },
   "chicago-bears-vs-cincinnati-bengals/2021-week-2": {
@@ -213,10 +2523,52 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "chicago-bears-vs-cincinnati-bengals/2025-week-9": {
+    "youtubeId": "vH6ldlUzXGQ",
+    "title": "Chicago Bears vs Cincinnati Bengals Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
   "chicago-bears-vs-cleveland-browns/2021-week-3": {
     "youtubeId": "KBSPaBEWgrk",
     "title": "Bears vs. Browns Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-cleveland-browns/2023-week-15": {
+    "youtubeId": "A9VtCfXzV7c",
+    "title": "Chicago Bears vs. Cleveland Browns | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-cleveland-browns/2025-week-15": {
+    "youtubeId": "KJrhXGs4Ujk",
+    "title": "Cleveland Browns vs. Chicago Bears Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-dallas-cowboys/2022-week-8": {
+    "youtubeId": "vAy-mW6Kg9E",
+    "title": "Chicago Bears vs. Dallas Cowboys | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-dallas-cowboys/2025-week-3": {
+    "youtubeId": "if1afRCR1jI",
+    "title": "Dallas Cowboys vs. Chicago Bears Game Highlights | NFL 2025 Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-denver-broncos/2023-week-4": {
+    "youtubeId": "LL88pbrcaHI",
+    "title": "Denver Broncos vs. Chicago Bears | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2021-week-12": {
+    "youtubeId": "bDHBCv6XdAU",
+    "title": "Bears vs. Lions Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-25",
     "publisher": "NFL"
   },
   "chicago-bears-vs-detroit-lions/2021-week-4": {
@@ -225,10 +2577,256 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "chicago-bears-vs-detroit-lions/2022-week-10": {
+    "youtubeId": "3XX6l1P1h0I",
+    "title": "Detroit Lions vs. Chicago Bears | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2022-week-17": {
+    "youtubeId": "FFMjujQwOKU",
+    "title": "Chicago Bears vs. Detroit Lions | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2023-week-11": {
+    "youtubeId": "pOoKkiHGVoY",
+    "title": "Chicago Bears vs. Detroit Lions | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2023-week-14": {
+    "youtubeId": "Jds9aeNJwdE",
+    "title": "Detroit Lions vs. Chicago Bears Game Highlights | NFL 2023 Week 14",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2024-week-13": {
+    "youtubeId": "N70UMliO_c4",
+    "title": "Chicago Bears vs. Detroit Lions | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-11-28",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2024-week-16": {
+    "youtubeId": "WU1e0J4za34",
+    "title": "Detroit Lions vs. Chicago Bears Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2025-week-18": {
+    "youtubeId": "o1qvOaD1fdY",
+    "title": "Detroit Lions vs Chicago Bears Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-detroit-lions/2025-week-2": {
+    "youtubeId": "aW1zg-Tcyl4",
+    "title": "Chicago Bears vs. Detroit Lions Game Highlights | NFL 2025 Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2021-week-14": {
+    "youtubeId": "UR07WjlnmZg",
+    "title": "Bears vs. Packers Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2021-week-6": {
+    "youtubeId": "3_nb_DyyeeU",
+    "title": "Packers vs. Bears Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2022-week-13": {
+    "youtubeId": "xRb_0Bf14e4",
+    "title": "Green Bay Packers vs. Chicago Bears | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2022-week-2": {
+    "youtubeId": "jke1evV-b2w",
+    "title": "Chicago Bears vs. Green Bay Packers | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2023-week-1": {
+    "youtubeId": "BwVylUiQI74",
+    "title": "Green Bay Packers vs. Chicago Bears Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2023-week-18": {
+    "youtubeId": "XaeGmA0TkK8",
+    "title": "Chicago Bears vs. Green Bay Packers | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2024-week-11": {
+    "youtubeId": "VS26PjZJDG8",
+    "title": "Green Bay Packers vs. Chicago Bears Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2024-week-18": {
+    "youtubeId": "-4iEgoyAMv8",
+    "title": "Chicago Bears vs. Green Bay Packers Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2025-week-14": {
+    "youtubeId": "iJhTIvl-jBg",
+    "title": "Chicago Bears vs. Green Bay Packers Game Highlights | NFL 2025 Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2025-week-16": {
+    "youtubeId": "ngJ_4F4DaZ0",
+    "title": "Green Bay Packers vs Chicago Bears Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-20",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-green-bay-packers/2025-wild-card": {
+    "youtubeId": "tnX85oZOV40",
+    "title": "Green Bay Packers vs. Chicago Bears Game Highlights | NFL 2025 Season Wild Card",
+    "uploadDate": "2026-01-10",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-houston-texans/2022-week-3": {
+    "youtubeId": "-nHhxmtFNnw",
+    "title": "Houston Texans vs. Chicago Bears | Week 3 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-houston-texans/2024-week-2": {
+    "youtubeId": "N3ngoM3ufng",
+    "title": "Chicago Bears vs. Houston Texans Game Highlights | NFL 2024 Season Week 2",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-indianapolis-colts/2024-week-3": {
+    "youtubeId": "mge5U1H5kY8",
+    "title": "Chicago Bears vs. Indianapolis Colts Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-jacksonville-jaguars/2024-week-6": {
+    "youtubeId": "5mNcc41F834",
+    "title": "Jacksonville Jaguars vs. Chicago Bears | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-kansas-city-chiefs/2023-week-3": {
+    "youtubeId": "V696kcbe-VA",
+    "title": "Chicago Bears vs. Kansas City Chiefs | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-las-vegas-raiders/2021-week-5": {
+    "youtubeId": "6V0YDcQW7Ng",
+    "title": "Bears vs. Raiders Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-las-vegas-raiders/2023-week-7": {
+    "youtubeId": "yeLl3rNThZE",
+    "title": "Las Vegas Raiders vs. Chicago Bears | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-las-vegas-raiders/2025-week-4": {
+    "youtubeId": "icsmIIiWSvI",
+    "title": "Chicago Bears vs Las Vegas Raiders Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-los-angeles-chargers/2023-week-8": {
+    "youtubeId": "9aFQlK1uzxg",
+    "title": "Chicago Bears vs. Los Angeles Chargers | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
   "chicago-bears-vs-los-angeles-rams/2021-week-1": {
     "youtubeId": "Z7gSNTRSFRI",
     "title": "Bears vs. Rams Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-los-angeles-rams/2024-week-4": {
+    "youtubeId": "wx07hDJQSnw",
+    "title": "Los Angeles Rams vs. Chicago Bears | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-los-angeles-rams/2025-divisional": {
+    "youtubeId": "jFX07LCTrSM",
+    "title": "Los Angeles Rams vs Chicago Bears Game Highlights | 2025 NFL Season Divisional Round",
+    "uploadDate": "2026-01-18",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-miami-dolphins/2022-week-9": {
+    "youtubeId": "sn_TaoN2PIY",
+    "title": "Miami Dolphins vs. Chicago Bears | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2021-week-15": {
+    "youtubeId": "42LNu25YZUI",
+    "title": "Vikings vs. Bears Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-20",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2021-week-18": {
+    "youtubeId": "3sgcPMYH9Nc",
+    "title": "Bears vs. Vikings Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2022-week-18": {
+    "youtubeId": "etNZ1fqfuSE",
+    "title": "Minnesota Vikings vs. Chicago Bears | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2022-week-5": {
+    "youtubeId": "q3vK4OqR-Bo",
+    "title": "Chicago Bears vs. Minnesota Vikings | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2023-week-12": {
+    "youtubeId": "UyLRE4JC07k",
+    "title": "Chicago Bears vs. Minnesota Vikings | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-27",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2023-week-6": {
+    "youtubeId": "I63MBuRG83c",
+    "title": "Minnesota Vikings vs. Chicago Bears Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2024-week-12": {
+    "youtubeId": "BSM2audQcJ4",
+    "title": "Minnesota Vikings vs. Chicago Bears | 2024 Week 12 Game Highlights",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2024-week-15": {
+    "youtubeId": "5Dsbg3Hl7Oo",
+    "title": "Chicago Bears vs. Minnesota Vikings Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-16",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2025-week-1": {
+    "youtubeId": "LQUNYGKKxsM",
+    "title": "Minnesota Vikings vs Chicago Bears Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-08",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-minnesota-vikings/2025-week-11": {
+    "youtubeId": "8GiYddBueGM",
+    "title": "Chicago Bears vs Minnesota Vikings Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
     "publisher": "NFL"
   },
   "chicago-bears-vs-minnesota-vikings/2026-week-2": {
@@ -237,10 +2835,268 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "chicago-bears-vs-new-england-patriots/2022-week-7": {
+    "youtubeId": "_jeFstz0Ba8",
+    "title": "Chicago Bears vs. New England Patriots | 2022 Week 7 Highlights",
+    "uploadDate": "2022-10-24",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-england-patriots/2024-week-10": {
+    "youtubeId": "rX39QFZJdhk",
+    "title": "New England Patriots vs. Chicago Bears | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-orleans-saints/2023-week-9": {
+    "youtubeId": "jBGPhocvRSY",
+    "title": "Chicago Bears vs. New Orleans Saints Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-orleans-saints/2025-week-7": {
+    "youtubeId": "ZW_jFEd4njk",
+    "title": "New Orleans Saints vs Chicago Bears Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-york-giants/2021-week-17": {
+    "youtubeId": "AjT4qWs2A8M",
+    "title": "Giants vs. Bears Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-york-giants/2022-week-4": {
+    "youtubeId": "r0p2HiA-S8c",
+    "title": "Chicago Bears vs. New York Giants | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-york-giants/2025-week-10": {
+    "youtubeId": "CwKp7T2RrK8",
+    "title": "New York Giants vs Chicago Bears Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-new-york-jets/2022-week-12": {
+    "youtubeId": "SFhDLf3NkCM",
+    "title": "Chicago Bears vs. New York Jets | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-philadelphia-eagles/2022-week-15": {
+    "youtubeId": "gJYW1Iu1EXU",
+    "title": "Philadelphia Eagles vs. Chicago Bears | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-philadelphia-eagles/2025-week-13": {
+    "youtubeId": "2OLNwdpjtHo",
+    "title": "Chicago Bears vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-28",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-pittsburgh-steelers/2021-week-9": {
+    "youtubeId": "gGYizeHvhNg",
+    "title": "Bears vs. Steelers Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-08",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-pittsburgh-steelers/2025-week-12": {
+    "youtubeId": "AdkD15w412c",
+    "title": "Pittsburgh Steelers vs Chicago Bears Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-san-francisco-49ers/2021-week-8": {
+    "youtubeId": "M3Fm_TgBeqQ",
+    "title": "49ers vs. Bears Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-san-francisco-49ers/2022-week-1": {
+    "youtubeId": "SzDl-VsIEfw",
+    "title": "San Francisco 49ers vs. Chicago Bears | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-san-francisco-49ers/2024-week-14": {
+    "youtubeId": "qcgmuu7VkfA",
+    "title": "Chicago Bears vs. San Francisco 49ers | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-san-francisco-49ers/2025-week-17": {
+    "youtubeId": "iReb07eggsY",
+    "title": "Chicago Bears vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-seattle-seahawks/2021-week-16": {
+    "youtubeId": "58nqhE251S0",
+    "title": "Bears vs. Seahawks Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-seattle-seahawks/2024-week-17": {
+    "youtubeId": "dcBSQorBQd0",
+    "title": "Seattle Seahawks vs. Chicago Bears Game Highlights | NFL 2024 Season Week 17",
+    "uploadDate": "2024-12-26",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-tampa-bay-buccaneers/2021-week-7": {
+    "youtubeId": "kPI2kUcKxQs",
+    "title": "Bears vs. Buccaneers Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-tampa-bay-buccaneers/2023-week-2": {
+    "youtubeId": "4LUIkguImng",
+    "title": "Chicago Bears vs. Tampa Bay Buccaneers | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-tennessee-titans/2024-week-1": {
+    "youtubeId": "1eiToVklKeo",
+    "title": "Tennessee Titans vs. Chicago Bears | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-washington-commanders/2022-week-6": {
+    "youtubeId": "6GkdVw9fMP4",
+    "title": "Washington Commanders vs. Chicago Bears | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-13",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-washington-commanders/2023-week-5": {
+    "youtubeId": "JA_NVR-xwNI",
+    "title": "Chicago Bears vs. Washington Commanders | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-05",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-washington-commanders/2024-week-8": {
+    "youtubeId": "tZm9eo8Nkp0",
+    "title": "Chicago Bears vs. Washington Commanders Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "chicago-bears-vs-washington-commanders/2025-week-6": {
+    "youtubeId": "IzjvQG8HtWc",
+    "title": "Chicago Bears vs Washington Commanders Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-13",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2021-week-18": {
+    "youtubeId": "7IYA6Wsxmts",
+    "title": "Bengals vs. Browns Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2021-week-9": {
+    "youtubeId": "xdu_1dCTzxU",
+    "title": "Browns vs. Bengals Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2022-week-8": {
+    "youtubeId": "l1MC27f3Lew",
+    "title": "Cincinnati Bengals vs. Cleveland Browns | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-31",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2023-week-1": {
+    "youtubeId": "JnBO7FD2zCY",
+    "title": "Cincinatti Bengals vs. Cleveland Browns | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2023-week-18": {
+    "youtubeId": "Z1hACGuXXpk",
+    "title": "Cleveland Browns vs. Cincinnati Bengals | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2024-week-16": {
+    "youtubeId": "Ogsv6bGzNH8",
+    "title": "Cleveland Browns vs. Cincinnati Bengals | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2024-week-7": {
+    "youtubeId": "cYnI-rpAKPQ",
+    "title": "Cincinnati Bengals vs. Cleveland Browns | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2025-week-1": {
+    "youtubeId": "UE2l2S3MBK8",
+    "title": "Cincinnati Bengals vs. Cleveland Browns Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-cleveland-browns/2025-week-18": {
+    "youtubeId": "Lt0_Oko0_OM",
+    "title": "Cleveland Browns vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-dallas-cowboys/2022-week-2": {
+    "youtubeId": "Jx1u4m3kSD0",
+    "title": "Cincinnati Bengals vs. Dallas Cowboys | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-dallas-cowboys/2024-week-14": {
+    "youtubeId": "ta1lofCrKoI",
+    "title": "Cincinnati Bengals vs. Dallas Cowboys Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-09",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-denver-broncos/2021-week-15": {
+    "youtubeId": "a-g_yqoP2ag",
+    "title": "Bengals vs. Broncos Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-denver-broncos/2024-week-17": {
+    "youtubeId": "PHnXfICT7Yw",
+    "title": "Denver Broncos vs. Cincinnati Bengals Game Highlights | 2024 Season Week 17",
+    "uploadDate": "2024-12-28",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-denver-broncos/2025-week-4": {
+    "youtubeId": "IU7Pn5UwAFo",
+    "title": "Cincinnati Bengals vs Denver Broncos Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-29",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-detroit-lions/2021-week-6": {
+    "youtubeId": "dFkbPWLZbjg",
+    "title": "Bengals vs. Lions Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-detroit-lions/2025-week-5": {
+    "youtubeId": "ZFRXqbdrtuU",
+    "title": "Detroit Lions vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
   "cincinnati-bengals-vs-green-bay-packers/2021-week-5": {
     "youtubeId": "kJcml4883ec",
     "title": "Packers vs. Bengals Week 5 Highlights | NFL 2021",
     "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-green-bay-packers/2025-week-6": {
+    "youtubeId": "1Y50O2YexQw",
+    "title": "Cincinnati Bengals vs Green Bay Packers Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-houston-texans/2023-week-10": {
+    "youtubeId": "Ft_LN51zACQ",
+    "title": "Houston Texans vs. Cincinnati Bengals Game Highlights | NFL 2023 Week 10",
+    "uploadDate": "2023-11-12",
     "publisher": "NFL"
   },
   "cincinnati-bengals-vs-houston-texans/2026-week-2": {
@@ -249,10 +3105,112 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "cincinnati-bengals-vs-indianapolis-colts/2023-week-14": {
+    "youtubeId": "5lRuREcc89M",
+    "title": "Indianapolis Colts vs. Cincinnati Bengals | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
   "cincinnati-bengals-vs-jacksonville-jaguars/2021-week-4": {
     "youtubeId": "vKTl6DczK9k",
     "title": "Jaguars vs. Bengals Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-09-30",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-jacksonville-jaguars/2023-week-13": {
+    "youtubeId": "4UFWib2q14g",
+    "title": "Cincinnati Bengals vs. Jacksonville Jaguars | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-04",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-jacksonville-jaguars/2025-week-2": {
+    "youtubeId": "Twip3h-TUYA",
+    "title": "Jacksonville Jaguars vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-kansas-city-chiefs/2021-conference-championship": {
+    "youtubeId": "nhtkNBDk31A",
+    "title": "Bengals vs. Chiefs AFC Championship Highlights | NFL 2021",
+    "uploadDate": "2022-01-30",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-kansas-city-chiefs/2021-week-17": {
+    "youtubeId": "kU6yIpghmLU",
+    "title": "Chiefs vs. Bengals Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-kansas-city-chiefs/2022-week-13": {
+    "youtubeId": "Yp8zR0CqgKM",
+    "title": "Kansas City Chiefs vs. Cincinnati Bengals | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-kansas-city-chiefs/2023-week-17": {
+    "youtubeId": "F3YogLecG_Y",
+    "title": "Cincinnati Bengals vs. Kansas City Chiefs Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-kansas-city-chiefs/2024-week-2": {
+    "youtubeId": "ACQlM7QV7tk",
+    "title": "Cincinnati Bengals vs. Kansas City Chiefs Game Highlights | NFL 2024 Season Week 2",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-las-vegas-raiders/2021-week-11": {
+    "youtubeId": "H8bzYo483to",
+    "title": "Bengals vs. Raiders Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-las-vegas-raiders/2021-wild-card": {
+    "youtubeId": "1oGxi3leA3w",
+    "title": "Raiders vs. Bengals Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-15",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-las-vegas-raiders/2024-week-9": {
+    "youtubeId": "wKPz8h9THv8",
+    "title": "Las Vegas Raiders vs. Cincinnati Bengals | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-los-angeles-chargers/2021-week-13": {
+    "youtubeId": "ilkYSfNAsJQ",
+    "title": "Chargers vs. Bengals Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-los-angeles-chargers/2024-week-11": {
+    "youtubeId": "4vZsGgL0YpY",
+    "title": "Cincinnati Bengals vs. Los Angeles Chargers Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-los-angeles-rams/2021-super-bowl": {
+    "youtubeId": "4x4MND-Rhrc",
+    "title": "Rams vs. Bengals | Super Bowl LVI Game Highlights",
+    "uploadDate": "2022-02-13",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-los-angeles-rams/2023-week-3": {
+    "youtubeId": "QPJ3dBmhLGI",
+    "title": "Los Angeles Rams vs. Cincinnati Bengals | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-25",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-miami-dolphins/2022-week-4": {
+    "youtubeId": "OQSBtvsm8Ro",
+    "title": "Miami Dolphins vs. Cincinnati Bengals | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-09-29",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-miami-dolphins/2025-week-16": {
+    "youtubeId": "_U6tN-OlM0Y",
+    "title": "Cincinatti Bengals vs Miami Dolphins Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
     "publisher": "NFL"
   },
   "cincinnati-bengals-vs-minnesota-vikings/2021-week-1": {
@@ -261,10 +3219,124 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "cincinnati-bengals-vs-minnesota-vikings/2023-week-15": {
+    "youtubeId": "lu0hnU6pWlQ",
+    "title": "Minnesota Vikings vs. Cincinnati Bengals Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-16",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-minnesota-vikings/2025-week-3": {
+    "youtubeId": "lj6E2hGLqFY",
+    "title": "Cincinnati Bengals vs. Minnesota Vikings Game Highlights | NFL 2025 Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-england-patriots/2024-week-1": {
+    "youtubeId": "30fqJ6fs1yw",
+    "title": "New England Patriots vs. Cincinnati Bengals Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-england-patriots/2025-week-12": {
+    "youtubeId": "M0uCXBNCqMY",
+    "title": "New England Patriots vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-orleans-saints/2022-week-6": {
+    "youtubeId": "leD4D30oxCY",
+    "title": "Cincinnati Bengals vs. New Orleans Saints | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-york-giants/2024-week-6": {
+    "youtubeId": "EknqQ3Ocy_4",
+    "title": "Cincinnati Bengals vs. New York Giants Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-york-jets/2021-week-8": {
+    "youtubeId": "xehJhctWu-o",
+    "title": "Bengals vs. Jets Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-york-jets/2022-week-3": {
+    "youtubeId": "UQPTo2i2PU0",
+    "title": "Cincinnati Bengals vs. New York Jets | Week 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-new-york-jets/2025-week-8": {
+    "youtubeId": "HT4U6-XmEOw",
+    "title": "New York Jets vs. Cincinnati Bengals Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-philadelphia-eagles/2024-week-8": {
+    "youtubeId": "b5IbSjbJ-Ic",
+    "title": "Philadelphia Eagles vs. Cincinnati Bengals | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2021-week-12": {
+    "youtubeId": "lI3I6wduMLQ",
+    "title": "Steelers vs. Bengals Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
   "cincinnati-bengals-vs-pittsburgh-steelers/2021-week-3": {
     "youtubeId": "O0Tdw0mCg28",
     "title": "Bengals vs. Steelers Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2022-week-1": {
+    "youtubeId": "XkgLk02XC4M",
+    "title": "Pittsburgh Steelers  vs. Cincinnati Bengals | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2022-week-11": {
+    "youtubeId": "yISH8FkLbFs",
+    "title": "Cincinnati Bengals vs. Pittsburgh Steelers | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2023-week-12": {
+    "youtubeId": "-QRO-zpZP9o",
+    "title": "Pittsburgh Steelers vs. Cincinnati Bengals | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2023-week-16": {
+    "youtubeId": "0TN01oJUJQc",
+    "title": "Cincinnati Bengals vs. Pittsburgh Steelers | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-23",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2024-week-13": {
+    "youtubeId": "f9TvZABtIhQ",
+    "title": "Pittsburgh Steelers vs. Cincinnati Bengals | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2024-week-18": {
+    "youtubeId": "n2nbP71W1UA",
+    "title": "Cincinnati Bengals vs. Pittsburgh Steelers | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-04",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2025-week-11": {
+    "youtubeId": "lP9B3wtc1LA",
+    "title": "Cincinnati Bengals vs. Pittsburgh Steelers Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-pittsburgh-steelers/2025-week-7": {
+    "youtubeId": "iI_9-1w3Ykk",
+    "title": "Pittsburgh Steelers vs Cincinnati Bengals Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-16",
     "publisher": "NFL"
   },
   "cincinnati-bengals-vs-pittsburgh-steelers/2026-week-3": {
@@ -273,16 +3345,154 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-27",
     "publisher": "NFL"
   },
+  "cincinnati-bengals-vs-san-francisco-49ers/2021-week-14": {
+    "youtubeId": "LZzH9VqfFEU",
+    "title": "49ers vs. Bengals Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-san-francisco-49ers/2023-week-8": {
+    "youtubeId": "lpCusbU66cM",
+    "title": "Cincinnati Bengals vs. San Francisco 49ers | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-seattle-seahawks/2023-week-6": {
+    "youtubeId": "nOWBiMkQ6g4",
+    "title": "Seattle Seahawks vs. Cincinnati Bengals Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-tampa-bay-buccaneers/2022-week-15": {
+    "youtubeId": "S7AHktqUY5g",
+    "title": "Cincinnati Bengals vs. Tampa Bay Buccaneers | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
   "cincinnati-bengals-vs-tampa-bay-buccaneers/2026-week-1": {
     "youtubeId": "6Jc-OI39Qng",
     "title": "Tampa Bay Buccaneers vs. Cincinnati Bengals Game Highlights | NFL 2026 Season Week 1",
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "cincinnati-bengals-vs-tennessee-titans/2021-divisional": {
+    "youtubeId": "EuNoMnvI_x0",
+    "title": "Bengals vs. Titans Divisional Round Highlights | NFL 2021",
+    "uploadDate": "2022-01-22",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-tennessee-titans/2022-week-12": {
+    "youtubeId": "VtE1tju622I",
+    "title": "Cincinnati Bengals vs. Tennessee Titans | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-tennessee-titans/2023-week-4": {
+    "youtubeId": "llbhvwP2Qs8",
+    "title": "Cincinnati Bengals vs. Tennessee Titans Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-tennessee-titans/2024-week-15": {
+    "youtubeId": "9J6udxFELGA",
+    "title": "Cincinnati Bengals vs. Tennessee Titans Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "cincinnati-bengals-vs-washington-commanders/2024-week-3": {
+    "youtubeId": "RLQuxi6oTOE",
+    "title": "Washington Commanders vs. Cincinnati Bengals Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-23",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-dallas-cowboys/2024-week-1": {
+    "youtubeId": "lznxezoChaE",
+    "title": "Dallas Cowboys vs. Cleveland Browns | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-denver-broncos/2021-week-7": {
+    "youtubeId": "QZVPj7jaQnE",
+    "title": "Broncos vs. Browns Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-21",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-denver-broncos/2023-week-12": {
+    "youtubeId": "kf6xEh5qUqU",
+    "title": "Cleveland Browns vs. Denver Broncos | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-denver-broncos/2024-week-13": {
+    "youtubeId": "4Ow834tBI0A",
+    "title": "Cleveland Browns vs. Denver Broncos Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-02",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-detroit-lions/2021-week-11": {
+    "youtubeId": "r8BFLUeX8ac",
+    "title": "Lions vs. Browns Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-detroit-lions/2025-week-4": {
+    "youtubeId": "BX0It_jGRRE",
+    "title": "Cleveland Browns vs Detroit Lions Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-green-bay-packers/2021-week-16": {
+    "youtubeId": "H_R3nVQ1WfI",
+    "title": "Browns vs. Packers Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-25",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-green-bay-packers/2025-week-3": {
+    "youtubeId": "1wAczDitXXQ",
+    "title": "Green Bay Packers vs. Cleveland Browns Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
   "cleveland-browns-vs-houston-texans/2021-week-2": {
     "youtubeId": "WeHukztDfgY",
     "title": "Texans vs. Browns Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-houston-texans/2022-week-13": {
+    "youtubeId": "qlxVwi9w_Pw",
+    "title": "Cleveland Browns vs. Houston Texans | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-houston-texans/2023-week-16": {
+    "youtubeId": "WbBHO6bWL6Q",
+    "title": "Cleveland Browns vs. Houston Texans | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-houston-texans/2023-wild-card": {
+    "youtubeId": "0pB9o1aLm6M",
+    "title": "Cleveland Browns vs. Houston Texans Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-13",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-indianapolis-colts/2023-week-7": {
+    "youtubeId": "-wsIcWAAn8U",
+    "title": "Cleveland Browns vs. Indianapolis Colts | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-jacksonville-jaguars/2023-week-14": {
+    "youtubeId": "4SaQgigF2B8",
+    "title": "Jacksonville Jaguars vs. Cleveland Browns | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-jacksonville-jaguars/2024-week-2": {
+    "youtubeId": "X2qNkNUIMZU",
+    "title": "Cleveland Browns vs. Jacksonville Jaguars | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
     "publisher": "NFL"
   },
   "cleveland-browns-vs-jacksonville-jaguars/2026-week-1": {
@@ -297,10 +3507,346 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "cleveland-browns-vs-kansas-city-chiefs/2024-week-15": {
+    "youtubeId": "YXxnX20lKsQ",
+    "title": "Kansas City Chiefs vs. Cleveland Browns | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-las-vegas-raiders/2021-week-15": {
+    "youtubeId": "5ESUKBzpkV0",
+    "title": "Raiders vs. Browns Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-20",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-las-vegas-raiders/2024-week-4": {
+    "youtubeId": "dHE9NFHVLjY",
+    "title": "Cleveland Browns vs. Las Vegas Raiders | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-las-vegas-raiders/2025-week-12": {
+    "youtubeId": "ODSVj9l7MU4",
+    "title": "Cleveland Browns vs. Las Vegas Raiders Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-los-angeles-chargers/2021-week-5": {
+    "youtubeId": "9J_FQUUiS0M",
+    "title": "Browns vs. Chargers Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-los-angeles-chargers/2022-week-5": {
+    "youtubeId": "GazRvigMsH0",
+    "title": "Los Angeles Chargers vs. Cleveland Browns | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-los-angeles-chargers/2024-week-9": {
+    "youtubeId": "RyoaDHL2aMQ",
+    "title": "Los Angeles Chargers vs. Cleveland Browns | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-los-angeles-rams/2023-week-13": {
+    "youtubeId": "EhaVgPSa6oQ",
+    "title": "Cleveland Browns vs. Los Angeles Rams | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-miami-dolphins/2022-week-10": {
+    "youtubeId": "8ZsrTs6VNOY",
+    "title": "Cleveland Browns vs. Miami Dolphins | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-miami-dolphins/2024-week-17": {
+    "youtubeId": "YSpLTHkXZ6Y",
+    "title": "Miami Dolphins vs. Cleveland Browns Game Highlights | 2024 Week 17",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-miami-dolphins/2025-week-7": {
+    "youtubeId": "EhTcntRN7Iw",
+    "title": "Miami Dolphins vs Cleveland Browns Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
   "cleveland-browns-vs-minnesota-vikings/2021-week-4": {
     "youtubeId": "oAMPN0727Fo",
     "title": "Browns vs. Vikings Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-minnesota-vikings/2025-week-5": {
+    "youtubeId": "3oGeyfiLGig",
+    "title": "Minnesota Vikings vs. Cleveland Browns Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-england-patriots/2021-week-10": {
+    "youtubeId": "mJUL87a_DBY",
+    "title": "Browns vs. Patriots Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-england-patriots/2022-week-6": {
+    "youtubeId": "kMibEHZUG9k",
+    "title": "New England Patriots vs. Cleveland Browns | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-england-patriots/2025-week-8": {
+    "youtubeId": "kOpqrkR6tnw",
+    "title": "Cleveland Browns vs. New England Patriots Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-orleans-saints/2022-week-16": {
+    "youtubeId": "c3gvQ1BqSlE",
+    "title": "New Orleans Saints vs. Cleveland Browns | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-orleans-saints/2024-week-11": {
+    "youtubeId": "JT71humm928",
+    "title": "Cleveland Browns vs. New Orleans Saints | 2024 Week 11 Game Highlights",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-york-giants/2024-week-3": {
+    "youtubeId": "zrrn0Glrn4Q",
+    "title": "New York Giants vs. Cleveland Browns | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-york-jets/2022-week-2": {
+    "youtubeId": "oT0-zDpuIIk",
+    "title": "New York Jets v Cleveland Browns | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-york-jets/2023-week-17": {
+    "youtubeId": "FHqUVY4sw2s",
+    "title": "New York Jets vs. Cleveland Browns | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-28",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-new-york-jets/2025-week-10": {
+    "youtubeId": "qYU7B35HzlY",
+    "title": "Cleveland Browns vs New York Jets Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2021-week-17": {
+    "youtubeId": "MCUgH_jsSqo",
+    "title": "Browns vs. Steelers Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-03",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2021-week-8": {
+    "youtubeId": "8GvoSZ2GpGE",
+    "title": "Steelers vs. Browns Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2022-week-18": {
+    "youtubeId": "oWQG41grn0k",
+    "title": "Cleveland Browns vs. Pittsburgh Steelers | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2022-week-3": {
+    "youtubeId": "ntW7FJuXtJA",
+    "title": "Pittsburgh Steelers vs. Cleveland Browns | 2022 Week 3 Game Highlights",
+    "uploadDate": "2022-09-22",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2023-week-11": {
+    "youtubeId": "WzErT7PJWdQ",
+    "title": "Pittsburgh Steelers vs. Cleveland Browns | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2023-week-2": {
+    "youtubeId": "MFvuORB3Llc",
+    "title": "Cleveland Browns vs. Pittsburgh Steelers | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-18",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2024-week-12": {
+    "youtubeId": "jpSOPbVmdgc",
+    "title": "Pittsburgh Steelers vs. Cleveland Browns Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-21",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2024-week-14": {
+    "youtubeId": "PagWZVZco4A",
+    "title": "Cleveland Browns vs. Pittsburgh Steelers | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2025-week-17": {
+    "youtubeId": "12hjOu7RBeE",
+    "title": "Pittsburgh Steelers vs Cleveland Browns Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-pittsburgh-steelers/2025-week-6": {
+    "youtubeId": "Hvp9yr4DWAo",
+    "title": "Cleveland Browns vs. Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-san-francisco-49ers/2023-week-6": {
+    "youtubeId": "fOsi1eFC4yc",
+    "title": "San Francisco 49ers vs. Cleveland Browns | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-san-francisco-49ers/2025-week-13": {
+    "youtubeId": "XXlcbpOLMNs",
+    "title": "San Francisco 49ers vs. Cleveland Browns Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-seattle-seahawks/2023-week-8": {
+    "youtubeId": "z_N12qw3Br4",
+    "title": "Cleveland Browns vs. Seattle Seahawks | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-tampa-bay-buccaneers/2022-week-12": {
+    "youtubeId": "aJMojYCwSgU",
+    "title": "Tampa Bay Buccaneers vs. Cleveland Browns | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-tennessee-titans/2023-week-3": {
+    "youtubeId": "QA4V5D0KIX4",
+    "title": "Tennessee Titans vs. Cleveland Browns | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-tennessee-titans/2025-week-14": {
+    "youtubeId": "C2bl9_EHKmM",
+    "title": "Tennessee Titans vs. Cleveland Browns Game Highlights | NFL 2025 Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-washington-commanders/2022-week-17": {
+    "youtubeId": "AEHDNuy0IeU",
+    "title": "Cleveland Browns vs. Washington Commanders | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "cleveland-browns-vs-washington-commanders/2024-week-5": {
+    "youtubeId": "UzndhycIrUE",
+    "title": "Cleveland Browns vs. Washington Commanders | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-denver-broncos/2021-week-9": {
+    "youtubeId": "fBJx86Q9JkQ",
+    "title": "Broncos vs. Cowboys Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-denver-broncos/2025-week-8": {
+    "youtubeId": "sK4IflyyvYw",
+    "title": "Dallas Cowboys vs Denver Broncos Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-detroit-lions/2022-week-7": {
+    "youtubeId": "qttnwr6YQt0",
+    "title": "Detroit Lions vs. Dallas Cowboys | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-detroit-lions/2023-week-17": {
+    "youtubeId": "2IE9igiIXtY",
+    "title": "Detroit Lions vs. Dallas Cowboys | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-30",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-detroit-lions/2024-week-6": {
+    "youtubeId": "pF2H49iSZGM",
+    "title": "Detroit Lions vs. Dallas Cowboys | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-detroit-lions/2025-week-14": {
+    "youtubeId": "UPPDFlXn2nY",
+    "title": "Dallas Cowboys vs Detroit Lions Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-04",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-green-bay-packers/2022-week-10": {
+    "youtubeId": "0j83HfIOWSY",
+    "title": "Dallas Cowboys vs. Green Bay Packers | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-green-bay-packers/2023-wild-card": {
+    "youtubeId": "JRhRhGIWqQA",
+    "title": "Green Bay Packers vs. Dallas Cowboys Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-14",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-green-bay-packers/2025-week-4": {
+    "youtubeId": "mqkUVYxEfGU",
+    "title": "Green Bay Packers vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-houston-texans/2022-week-14": {
+    "youtubeId": "Tglk5-F8Xzs",
+    "title": "Houston Texans vs. Dallas Cowboys | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-houston-texans/2024-week-11": {
+    "youtubeId": "I-AcplhsdNs",
+    "title": "Houston Texans vs. Dallas Cowboys Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-18",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-indianapolis-colts/2022-week-13": {
+    "youtubeId": "J1tFQl8wv9g",
+    "title": "Indianapolis Colts vs. Dallas Cowboys | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-jacksonville-jaguars/2022-week-15": {
+    "youtubeId": "R3UeGmocADg",
+    "title": "Dallas Cowboys vs. Jacksonville Jaguars | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-kansas-city-chiefs/2021-week-11": {
+    "youtubeId": "vUMcLt1ic-4",
+    "title": "Cowboys vs. Chiefs Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-kansas-city-chiefs/2025-week-13": {
+    "youtubeId": "qLBGJPw-dSM",
+    "title": "Kansas City Chiefs vs Dallas Cowboys Thanksgiving Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-27",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-las-vegas-raiders/2021-week-12": {
+    "youtubeId": "55RkDsW1dJk",
+    "title": "Raiders vs. Cowboys Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-25",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-las-vegas-raiders/2025-week-11": {
+    "youtubeId": "DoL_JZkf78g",
+    "title": "Dallas Cowboys vs Las Vegas Raiders Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-17",
     "publisher": "NFL"
   },
   "dallas-cowboys-vs-los-angeles-chargers/2021-week-2": {
@@ -309,10 +3855,154 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "dallas-cowboys-vs-los-angeles-chargers/2023-week-6": {
+    "youtubeId": "B_4X2oSs6LI",
+    "title": "Dallas Cowboys vs. Los Angeles Chargers | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-16",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-los-angeles-chargers/2025-week-16": {
+    "youtubeId": "NYsSo-ZUdhY",
+    "title": "Los Angeles Chargers vs. Dallas Cowboys Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-los-angeles-rams/2022-week-5": {
+    "youtubeId": "mKXWBW5G5_Y",
+    "title": "Dallas Cowboys vs. Los Angeles Rams | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-los-angeles-rams/2023-week-8": {
+    "youtubeId": "R8pZqvdhj_A",
+    "title": "Los Angeles Rams vs. Dallas Cowboys Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-miami-dolphins/2023-week-16": {
+    "youtubeId": "8xDSty_QtLA",
+    "title": "Dallas Cowboys vs. Miami Dolphins | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-minnesota-vikings/2021-week-8": {
+    "youtubeId": "YAQgxG4zgo0",
+    "title": "Cowboys vs. Vikings Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-minnesota-vikings/2022-week-11": {
+    "youtubeId": "DVZt9DKuzZg",
+    "title": "Dallas Cowboys vs. Minnesota Vikings | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-minnesota-vikings/2025-week-15": {
+    "youtubeId": "XUfvXIgfgYI",
+    "title": "Minnesota Vikings vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-england-patriots/2021-week-6": {
+    "youtubeId": "yu4hl0PJpFc",
+    "title": "Cowboys vs. Patriots Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-england-patriots/2023-week-4": {
+    "youtubeId": "3yFJb769c60",
+    "title": "New England Patriots vs. Dallas Cowboys Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-orleans-saints/2021-week-13": {
+    "youtubeId": "jmTbW3lIZVM",
+    "title": "Cowboys vs. Saints Week 13 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-12-02",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-orleans-saints/2024-week-2": {
+    "youtubeId": "5LJGA3W_Yr0",
+    "title": "New Orleans Saints vs. Dallas Cowboys | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2021-week-15": {
+    "youtubeId": "UHuvQKzRIhA",
+    "title": "Cowboys vs. Giants Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2021-week-5": {
+    "youtubeId": "I4yJ8KKGfpY",
+    "title": "Giants vs. Cowboys Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2022-week-12": {
+    "youtubeId": "sZ6tUon37eI",
+    "title": "New York Giants vs. Dallas Cowboys | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-24",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2022-week-3": {
+    "youtubeId": "KIJJ6YncBrA",
+    "title": "Dallas Cowboys vs. New York Giants | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-26",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2023-week-1": {
+    "youtubeId": "Eg8V0CcqdfE",
+    "title": "Dallas Cowboys vs. New York Giants | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2023-week-10": {
+    "youtubeId": "ShIkktu3ueE",
+    "title": "New York Giants vs. Dallas Cowboys | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2024-week-13": {
+    "youtubeId": "5h_kUWySPL0",
+    "title": "New York Giants vs. Dallas Cowboys Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-11-28",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2024-week-4": {
+    "youtubeId": "6-mLGfAET-U",
+    "title": "Dallas Cowboys vs. New York Giants Game Highlights | NFL 2024 Season Week 4",
+    "uploadDate": "2024-09-26",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2025-week-18": {
+    "youtubeId": "MWxNQm6JLDo",
+    "title": "Dallas Cowboys vs New York Giants Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-giants/2025-week-2": {
+    "youtubeId": "MmETsfwiIYg",
+    "title": "New York Giants vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
   "dallas-cowboys-vs-new-york-giants/2026-week-1": {
     "youtubeId": "9R8P93W2iKE",
     "title": "Dallas Cowboys vs New York Giants Game Highlights | NFL 2026 Season Week 1",
     "uploadDate": "2026-09-13",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-new-york-jets/2025-week-5": {
+    "youtubeId": "N3p7_XIHM8g",
+    "title": "Dallas Cowboys vs. New York Jets Game Highlights | NFL 2025 Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2021-week-18": {
+    "youtubeId": "HruMGYgiooY",
+    "title": "Cowboys vs. Eagles Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-08",
     "publisher": "NFL"
   },
   "dallas-cowboys-vs-philadelphia-eagles/2021-week-3": {
@@ -321,10 +4011,178 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-27",
     "publisher": "NFL"
   },
+  "dallas-cowboys-vs-philadelphia-eagles/2022-week-16": {
+    "youtubeId": "SdMJ5bS0PIg",
+    "title": "Philadelphia Eagles vs. Dallas Cowboys | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2022-week-6": {
+    "youtubeId": "r0SBrSG08lw",
+    "title": "Dallas Cowboys vs. Philadelphia Eagles | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2023-week-14": {
+    "youtubeId": "dThB2onAoko",
+    "title": "Philadelphia Eagles vs. Dallas Cowboys | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2023-week-9": {
+    "youtubeId": "bnt-5JKAO14",
+    "title": "Dallas Cowboys vs. Philadelphia Eagles | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2024-week-10": {
+    "youtubeId": "JhyqRxCtnws",
+    "title": "Philadelphia Eagles vs. Dallas Cowboys | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2024-week-17": {
+    "youtubeId": "aqgaiERFG2o",
+    "title": "Dallas Cowboys vs. Philadelphia Eagles Game Highlights | 2024 Week 17",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2025-week-1": {
+    "youtubeId": "Zn3LxRMAHFQ",
+    "title": "Dallas Cowboys vs Philadelphia Eagles | 2025 Week 1 Kickoff Game Highlights",
+    "uploadDate": "2025-09-04",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-philadelphia-eagles/2025-week-12": {
+    "youtubeId": "_y4jOhn2FXA",
+    "title": "Philadelphia Eagles vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-pittsburgh-steelers/2024-week-5": {
+    "youtubeId": "l2irzWjTkJE",
+    "title": "Dallas Cowboys vs. Pittsburgh Steelers Game Highlights | NFL 2024 Season Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-san-francisco-49ers/2021-wild-card": {
+    "youtubeId": "eVrTX5Jbjyc",
+    "title": "49ers vs. Cowboys Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-16",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-san-francisco-49ers/2022-divisional": {
+    "youtubeId": "CwaKooHmJOM",
+    "title": "Dallas Cowboys vs. San Francisco 49ers | 2022 Divisional Round Game Highlights",
+    "uploadDate": "2023-01-22",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-san-francisco-49ers/2023-week-5": {
+    "youtubeId": "x-fWSwgSluE",
+    "title": "Dallas Cowboys vs. San Francisco 49ers | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-san-francisco-49ers/2024-week-8": {
+    "youtubeId": "rv1MzhOMrb8",
+    "title": "Dallas Cowboys vs. San Francisco 49ers Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-seattle-seahawks/2023-week-13": {
+    "youtubeId": "mI7OzPrr6YQ",
+    "title": "Seattle Seahawks vs. Dallas Cowboys | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-11-30",
+    "publisher": "NFL"
+  },
   "dallas-cowboys-vs-tampa-bay-buccaneers/2021-week-1": {
     "youtubeId": "HzkUcSd3Utc",
     "title": "Dallas Cowboys vs. Tampa Bay Buccaneers | Week 1 2021 Game Highlights",
     "uploadDate": "2021-09-09",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-tampa-bay-buccaneers/2022-week-1": {
+    "youtubeId": "G-qcvqSeXLM",
+    "title": "Tampa Bay Buccaneers vs. Dallas Cowboys | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-tampa-bay-buccaneers/2022-wild-card": {
+    "youtubeId": "fOfvRG0zlFs",
+    "title": "Dallas Cowboys vs. Tampa Bay Buccaneers | 2022 Super Wild Card Weekend Game Highlights",
+    "uploadDate": "2023-01-16",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-tampa-bay-buccaneers/2024-week-16": {
+    "youtubeId": "MP0MK9WNKw0",
+    "title": "Tampa Bay Buccaneers vs. Dallas Cowboys Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-tennessee-titans/2022-week-17": {
+    "youtubeId": "xOAvj3-ZUnw",
+    "title": "Dallas Cowboys vs. Tennessee Titans | 2022 Week 17 Game Highlights",
+    "uploadDate": "2022-12-29",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2021-week-14": {
+    "youtubeId": "9fu4VFAz68Y",
+    "title": "Cowboys vs. Washington Football Team Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2021-week-16": {
+    "youtubeId": "6GR1Ml3XRHE",
+    "title": "Washington Football Team vs. Cowboys Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2022-week-18": {
+    "youtubeId": "nmsjP9tGxT0",
+    "title": "Dallas Cowboys vs. Washington Commanders | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2022-week-4": {
+    "youtubeId": "4h6vTqMPPSk",
+    "title": "Washington Commanders vs. Dallas Cowboys | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2023-week-12": {
+    "youtubeId": "cs32EDEzmpI",
+    "title": "Washington Commanders vs. Dallas Cowboys Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-23",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2023-week-18": {
+    "youtubeId": "7VjgC6kDgZQ",
+    "title": "Dallas Cowboys vs. Washington Commanders Game Highlights | NFL 2023 Week 18",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2024-week-12": {
+    "youtubeId": "_XNun1WecrA",
+    "title": "Dallas Cowboys vs. Washington Commanders | 2024 Week 12 Game Highlights",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2024-week-18": {
+    "youtubeId": "8cr3n41I54k",
+    "title": "Washington Commanders vs. Dallas Cowboys Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2025-week-17": {
+    "youtubeId": "spsOKxiK97Y",
+    "title": "Dallas Cowboys vs Washington Commanders Christmas Day Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-25",
+    "publisher": "NFL"
+  },
+  "dallas-cowboys-vs-washington-commanders/2025-week-7": {
+    "youtubeId": "S7Tme5vv0z0",
+    "title": "Washington Commanders vs Dallas Cowboys Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
     "publisher": "NFL"
   },
   "dallas-cowboys-vs-washington-commanders/2026-week-2": {
@@ -333,10 +4191,82 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "denver-broncos-vs-detroit-lions/2021-week-14": {
+    "youtubeId": "kiyDicJL1Ek",
+    "title": "Lions vs. Broncos Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-detroit-lions/2023-week-15": {
+    "youtubeId": "vMEGR3sf3qo",
+    "title": "Denver Broncos vs. Detroit Lions | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-16",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-green-bay-packers/2023-week-7": {
+    "youtubeId": "TMreaXTj6dY",
+    "title": "Green Bay Packers vs. Denver Broncos | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-green-bay-packers/2025-week-15": {
+    "youtubeId": "94IRFmHRqyY",
+    "title": "Green Bay Packers vs. Denver Broncos Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-houston-texans/2022-week-2": {
+    "youtubeId": "nLTloLRSEfk",
+    "title": "Houston Texans vs. Denver Broncos | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-houston-texans/2023-week-13": {
+    "youtubeId": "fXqHp20fX0o",
+    "title": "Denver Broncos vs. Houston Texans | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-houston-texans/2025-week-9": {
+    "youtubeId": "SsRnfOWIJOI",
+    "title": "Denver Broncos vs Houston Texans Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-indianapolis-colts/2022-week-5": {
+    "youtubeId": "l4mouVbscZ0",
+    "title": "Indianapolis Colts vs. Denver Broncos | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-06",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-indianapolis-colts/2024-week-15": {
+    "youtubeId": "XT8PLC1K82Y",
+    "title": "Indianapolis Colts vs. Denver Broncos | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-indianapolis-colts/2025-week-2": {
+    "youtubeId": "jg7x-tlBJrs",
+    "title": "Denver Broncos vs. Indianapolis Colts Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
   "denver-broncos-vs-jacksonville-jaguars/2021-week-2": {
     "youtubeId": "OY_WzXWYvqg",
     "title": "Broncos vs. Jaguars Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-jacksonville-jaguars/2022-week-8": {
+    "youtubeId": "XlyKZ2DXx-U",
+    "title": "Denver Broncos vs. Jacksonville Jaguars | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-jacksonville-jaguars/2025-week-16": {
+    "youtubeId": "yxKLhg9gIM8",
+    "title": "Jacksonville Jaguars vs. Denver Broncos Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
     "publisher": "NFL"
   },
   "denver-broncos-vs-jacksonville-jaguars/2026-week-2": {
@@ -345,10 +4275,226 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "denver-broncos-vs-kansas-city-chiefs/2021-week-13": {
+    "youtubeId": "kgad9TXZEYw",
+    "title": "Broncos vs. Chiefs Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2021-week-18": {
+    "youtubeId": "ju_ZbCk8y-Y",
+    "title": "Chiefs vs. Broncos Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-08",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2022-week-14": {
+    "youtubeId": "NkxQkYjnrLk",
+    "title": "Kansas City Chiefs vs. Denver Broncos | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2022-week-17": {
+    "youtubeId": "9Gwf1AQby3o",
+    "title": "Denver Broncos vs. Kansas City Chiefs | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2023-week-6": {
+    "youtubeId": "KP2ZX8mld1Q",
+    "title": "Denver Broncos vs. Kansas City Chiefs | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-12",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2023-week-8": {
+    "youtubeId": "sVNXZWbEEMk",
+    "title": "Kansas City Chiefs vs. Denver Broncos Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2024-week-10": {
+    "youtubeId": "zeodFcke79w",
+    "title": "Denver Broncos vs. Kansas City Chiefs | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2024-week-18": {
+    "youtubeId": "_qgw13GcCqc",
+    "title": "Denver Broncos vs. Kansas City Chiefs | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2025-week-11": {
+    "youtubeId": "arvbLvX9doA",
+    "title": "Kansas City Chiefs vs Denver Broncos Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-kansas-city-chiefs/2025-week-17": {
+    "youtubeId": "BNfTwEuxqms",
+    "title": "Denver Broncos vs Kansas City Chiefs Christmas Day Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-25",
+    "publisher": "NFL"
+  },
   "denver-broncos-vs-kansas-city-chiefs/2026-week-1": {
     "youtubeId": "RYh8_uw45Fw",
     "title": "Denver Broncos vs Kansas City Chiefs Game Highlights | 2026 NFL Season Week 1",
     "uploadDate": "2026-09-14",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2021-week-16": {
+    "youtubeId": "MA9hNGV890U",
+    "title": "Broncos vs. Raiders Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2021-week-6": {
+    "youtubeId": "Ue32G83Vk1k",
+    "title": "Raiders vs. Broncos Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2022-week-11": {
+    "youtubeId": "isAkN4YcAzM",
+    "title": "Las Vegas Raiders vs. Denver Broncos | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2022-week-4": {
+    "youtubeId": "aSKW1F2W7YM",
+    "title": "Denver Broncos vs. Las Vegas Raiders | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2023-week-1": {
+    "youtubeId": "JEVmIDXz8GM",
+    "title": "Las Vegas Raiders vs. Denver Broncos Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2023-week-18": {
+    "youtubeId": "fM4Br7tTE50",
+    "title": "Denver Broncos vs. Las Vegas Raiders Game Highlights | NFL 2023 Week 18",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2024-week-12": {
+    "youtubeId": "phmVn2jUOHU",
+    "title": "Denver Broncos vs. Las Vegas Raiders | 2024 Week 12 Game Highlights",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2024-week-5": {
+    "youtubeId": "_k67U2FQ0A0",
+    "title": "Las Vegas Raiders vs. Denver Broncos | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2025-week-10": {
+    "youtubeId": "scsrnqz3up8",
+    "title": "Las Vegas Raiders vs Denver Broncos Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-06",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-las-vegas-raiders/2025-week-14": {
+    "youtubeId": "6xyeApLlPLI",
+    "title": "Denver Broncos vs Las Vegas Raiders Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2021-week-12": {
+    "youtubeId": "25uSmeQ8rWw",
+    "title": "Chargers vs. Broncos Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2021-week-17": {
+    "youtubeId": "S2MEYMlWlFI",
+    "title": "Broncos vs. Chargers Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2022-week-18": {
+    "youtubeId": "Kwao5-zmj0c",
+    "title": "Los Angeles Chargers vs. Denver Broncos | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2022-week-6": {
+    "youtubeId": "NkTGbVop8Tk",
+    "title": "Denver Broncos vs. Los Angeles Chargers | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-17",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2023-week-14": {
+    "youtubeId": "W84zXc2F7bk",
+    "title": "Denver Broncos vs. Los Angeles Chargers Game Highlights | NFL 2023 Week 14",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2023-week-17": {
+    "youtubeId": "e5nhKzKfYzM",
+    "title": "Los Angeles Chargers vs. Denver Broncos | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2024-week-16": {
+    "youtubeId": "U59yAEo0QLk",
+    "title": "Denver Broncos vs. Los Angeles Chargers Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-19",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2024-week-6": {
+    "youtubeId": "MPwghwZ4RZc",
+    "title": "Los Angeles Chargers vs. Denver Broncos Game Highlights | NFL 2024 Season Week 6",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2025-week-18": {
+    "youtubeId": "pm8atRQXdHY",
+    "title": "Los Angeles Chargers vs. Denver Broncos Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-chargers/2025-week-3": {
+    "youtubeId": "hvYB3_22q6E",
+    "title": "Denver Broncos vs. Los Angeles Chargers Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-los-angeles-rams/2022-week-16": {
+    "youtubeId": "nL4b607uriE",
+    "title": "Denver Broncos vs. Los Angeles Rams | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-25",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-miami-dolphins/2023-week-3": {
+    "youtubeId": "wmW4z9yhmN8",
+    "title": "Denver Broncos vs. Miami Dolphins Game Highlights | NFL 2023 Week 3",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-minnesota-vikings/2023-week-11": {
+    "youtubeId": "Qx8LGbMyokg",
+    "title": "Minnesota Vikings vs. Denver Broncos | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-england-patriots/2023-week-16": {
+    "youtubeId": "Mcki_LetpUo",
+    "title": "New England Patriots vs. Denver Broncos | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-england-patriots/2025-conference-championship": {
+    "youtubeId": "4zShusD66jI",
+    "title": "New England Patriots vs Denver Broncos Game Highlights | 2025 NFL Season AFC Championship",
+    "uploadDate": "2026-01-25",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-orleans-saints/2024-week-7": {
+    "youtubeId": "TV1a-dKFELM",
+    "title": "Denver Broncos vs. New Orleans Saints Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-17",
     "publisher": "NFL"
   },
   "denver-broncos-vs-new-york-giants/2021-week-1": {
@@ -357,10 +4503,52 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "denver-broncos-vs-new-york-giants/2025-week-7": {
+    "youtubeId": "z0mBfBAfyJk",
+    "title": "New York Giants vs Denver Broncos Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
   "denver-broncos-vs-new-york-jets/2021-week-3": {
     "youtubeId": "Pxft5VutF8U",
     "title": "Jets vs. Broncos Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-york-jets/2022-week-7": {
+    "youtubeId": "wHY85XlQCKM",
+    "title": "New York Jets vs. Denver Broncos | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-york-jets/2023-week-5": {
+    "youtubeId": "jdY86oghPQc",
+    "title": "New York Jets vs. Denver Broncos | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-york-jets/2024-week-4": {
+    "youtubeId": "e7UnawNne_I",
+    "title": "Denver Broncos vs. New York Jets | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-new-york-jets/2025-week-6": {
+    "youtubeId": "QFkJ-SVHmis",
+    "title": "Denver Broncos vs. New York Jets Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-philadelphia-eagles/2021-week-10": {
+    "youtubeId": "8j5mMyJ4-R4",
+    "title": "Eagles vs. Broncos Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-philadelphia-eagles/2025-week-5": {
+    "youtubeId": "_5VBE0pbjNw",
+    "title": "Denver Broncos vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
     "publisher": "NFL"
   },
   "denver-broncos-vs-pittsburgh-steelers/2021-week-5": {
@@ -369,10 +4557,202 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-10",
     "publisher": "NFL"
   },
+  "denver-broncos-vs-pittsburgh-steelers/2024-week-2": {
+    "youtubeId": "3A7pEnspvgc",
+    "title": "Pittsburgh Steelers vs. Denver Broncos | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-san-francisco-49ers/2022-week-3": {
+    "youtubeId": "mhVD-DQ3Sxc",
+    "title": "San Francisco 49ers vs. Denver Broncos | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-seattle-seahawks/2022-week-1": {
+    "youtubeId": "xndn2RtEj14",
+    "title": "Denver Broncos vs. Seattle Seahawks Game Highlights  | NFL 2022 Week 1",
+    "uploadDate": "2022-09-12",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-seattle-seahawks/2024-week-1": {
+    "youtubeId": "ykPmJtRkVIM",
+    "title": "Denver Broncos vs. Seattle Seahawks | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-tampa-bay-buccaneers/2024-week-3": {
+    "youtubeId": "OSGg7b3ES14",
+    "title": "Denver Broncos vs. Tampa Bay Buccaneers | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-tennessee-titans/2022-week-10": {
+    "youtubeId": "N_Zogfa2goo",
+    "title": "Denver Broncos vs. Tennessee Titans | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-tennessee-titans/2025-week-1": {
+    "youtubeId": "fw1S3xgiZSw",
+    "title": "Tennessee Titans vs. Denver Broncos Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-washington-commanders/2021-week-8": {
+    "youtubeId": "XhYofq3uvo8",
+    "title": "Washington Football Team vs. Broncos Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-washington-commanders/2023-week-2": {
+    "youtubeId": "hOLvWKmnlsw",
+    "title": "Washington Commanders vs. Denver Broncos | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "denver-broncos-vs-washington-commanders/2025-week-13": {
+    "youtubeId": "QXL9KwJO2QI",
+    "title": "Denver Broncos vs Washington Commanders Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2021-week-18": {
+    "youtubeId": "GfNAZ_-PSvE",
+    "title": "Packers vs. Lions Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
   "detroit-lions-vs-green-bay-packers/2021-week-2": {
     "youtubeId": "IVAC_bIbv2E",
     "title": "Detroit Lions vs. Green Bay Packers Week 2 | 2021 NFL GameHighlights",
     "uploadDate": "2021-09-20",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2022-week-18": {
+    "youtubeId": "gglsiPZeCnQ",
+    "title": "Detroit Lions vs. Green Bay Packers | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2022-week-9": {
+    "youtubeId": "9Yk8Xdso0XE",
+    "title": "Green Bay Packers vs. Detroit Lions | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2023-week-12": {
+    "youtubeId": "LJMqeKmIVGM",
+    "title": "Green Bay Packers vs. Detroit Lions | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-23",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2023-week-4": {
+    "youtubeId": "TA0o5SEueQY",
+    "title": "Detroit Lions vs. Green Bay Packers | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-09-28",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2024-week-14": {
+    "youtubeId": "n5_OOjyJOT4",
+    "title": "Green Bay Packers vs. Detroit Lions Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-05",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2024-week-9": {
+    "youtubeId": "-M4yEaLz0D4",
+    "title": "Detroit Lions vs. Green Bay Packers | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2025-week-1": {
+    "youtubeId": "eZ_iRs6ZlcI",
+    "title": "Detroit Lions vs. Green Bay Packers Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-green-bay-packers/2025-week-13": {
+    "youtubeId": "8fRps_hg45U",
+    "title": "Green Bay Packers vs. Detroit Lions Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-27",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-houston-texans/2024-week-10": {
+    "youtubeId": "s1W0oAPD6Ls",
+    "title": "Detroit Lions vs. Houston Texans Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-indianapolis-colts/2024-week-12": {
+    "youtubeId": "c2ZfOcWv-lY",
+    "title": "Detroit Lions vs. Indianapolis Colts | 2024 Week 12 Game Highlights",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-jacksonville-jaguars/2022-week-13": {
+    "youtubeId": "G2SJqlZR-SE",
+    "title": "Jacksonville Jaguars vs. Detroit Lions | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-jacksonville-jaguars/2024-week-11": {
+    "youtubeId": "R7t_wf2X-fU",
+    "title": "Jacksonville Jaguars vs. Detroit Lions Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-kansas-city-chiefs/2023-week-1": {
+    "youtubeId": "J4DoMjut2aQ",
+    "title": "Detroit Lions vs. Kansas City Chiefs Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-07",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-kansas-city-chiefs/2025-week-6": {
+    "youtubeId": "lFc9UFUBBZY",
+    "title": "Detroit Lions vs Kansas City Chiefs Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-los-angeles-chargers/2023-week-10": {
+    "youtubeId": "JzxJMRnhHss",
+    "title": "Detroit Lions vs. Los Angeles Chargers | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-los-angeles-rams/2021-week-7": {
+    "youtubeId": "-vKXxlrmw1U",
+    "title": "Lions vs. Rams Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-los-angeles-rams/2023-wild-card": {
+    "youtubeId": "rvoQpoy9Zv4",
+    "title": "Los Angeles Rams vs. Detroit Lions Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-14",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-los-angeles-rams/2024-week-1": {
+    "youtubeId": "Npg_hFEWAW8",
+    "title": "Los Angeles Rams vs. Detroit Lions Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-los-angeles-rams/2025-week-15": {
+    "youtubeId": "dQ3CdT2j8Fs",
+    "title": "Detroit Lions vs Los Angeles Rams Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-miami-dolphins/2022-week-8": {
+    "youtubeId": "xMdGq5ovdNw",
+    "title": "Miami Dolphins vs Detroit Lions | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2021-week-13": {
+    "youtubeId": "INmy6xX6Qkc",
+    "title": "Vikings vs. Lions Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
     "publisher": "NFL"
   },
   "detroit-lions-vs-minnesota-vikings/2021-week-5": {
@@ -381,10 +4761,88 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-10",
     "publisher": "NFL"
   },
+  "detroit-lions-vs-minnesota-vikings/2022-week-14": {
+    "youtubeId": "kLS2MuJ4rRs",
+    "title": "Minnesota Vikings vs. Detroit Lions | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2022-week-3": {
+    "youtubeId": "3PAFAYNi3mA",
+    "title": "Detroit Lions vs. Minnesota Vikings | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2023-week-16": {
+    "youtubeId": "fdlIkY7D_G8",
+    "title": "Detroit Lions vs. Minnesota Vikings | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2023-week-18": {
+    "youtubeId": "NUXnt0_SlFs",
+    "title": "Minnesota Vikings vs. Detroit Lions | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2024-week-18": {
+    "youtubeId": "F4kJDW4aLLQ",
+    "title": "Minnesota Vikings vs. Detroit Lions Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2024-week-7": {
+    "youtubeId": "F751GLMbjPA",
+    "title": "Detroit Lions vs. Minnesota Vikings Game Highlights | NFL 2024 Week 7",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2025-week-17": {
+    "youtubeId": "-cES7tGVo3o",
+    "title": "Detroit Lions vs Minnesota Vikings Christmas Day Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-25",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-minnesota-vikings/2025-week-9": {
+    "youtubeId": "_8lMIYOnZsE",
+    "title": "Minnesota Vikings vs. Detroit Lions Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-new-england-patriots/2022-week-5": {
+    "youtubeId": "STecW2M_Yk0",
+    "title": "Detroit Lions vs. New England Patriots | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-new-orleans-saints/2023-week-13": {
+    "youtubeId": "HKeLM92ZWwY",
+    "title": "Detroit Lions vs. New Orleans Saints | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
   "detroit-lions-vs-new-orleans-saints/2026-week-1": {
     "youtubeId": "KC4OW2m3hjs",
     "title": "New Orleans Saints vs. Detroit Lions Game Highlights | NFL 2026 Season Week 1",
     "uploadDate": "2026-09-13",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-new-york-giants/2022-week-11": {
+    "youtubeId": "AZquLHM2ujI",
+    "title": "Detroit Lions vs. New York Giants | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-new-york-giants/2025-week-12": {
+    "youtubeId": "kpDHkAoui6Q",
+    "title": "New York Giants vs Detroit Lions Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-new-york-jets/2022-week-15": {
+    "youtubeId": "uHKQc3vTe5M",
+    "title": "Detroit Lions vs. New York Jets | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
     "publisher": "NFL"
   },
   "detroit-lions-vs-new-york-jets/2026-week-3": {
@@ -393,10 +4851,250 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-27",
     "publisher": "NFL"
   },
+  "detroit-lions-vs-philadelphia-eagles/2021-week-8": {
+    "youtubeId": "iXl_zjfamQA",
+    "title": "Eagles vs. Lions Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-philadelphia-eagles/2022-week-1": {
+    "youtubeId": "alUxGeJTAl4",
+    "title": "Philadelphia Eagles vs. Detroit Lions | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-philadelphia-eagles/2025-week-11": {
+    "youtubeId": "etQWJzHuhes",
+    "title": "Detroit Lions vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-pittsburgh-steelers/2021-week-10": {
+    "youtubeId": "EjE7K2i0Ndk",
+    "title": "Lions vs. Steelers Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-pittsburgh-steelers/2025-week-16": {
+    "youtubeId": "ZMW4MMr5tvs",
+    "title": "Pittsburgh Steelers vs Detroit Lions Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
   "detroit-lions-vs-san-francisco-49ers/2021-week-1": {
     "youtubeId": "jXriPs8KNZs",
     "title": "49ers vs. Lions Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-san-francisco-49ers/2023-conference-championship": {
+    "youtubeId": "hFQy0I3g8co",
+    "title": "Detroit Lions vs. San Francisco 49ers Game Highlights | 2023 NFC Championship",
+    "uploadDate": "2024-01-28",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-san-francisco-49ers/2024-week-17": {
+    "youtubeId": "wMDtA6GZ378",
+    "title": "Detroit Lions vs. San Francisco 49ers Game Highlights | NFL 2024 Season Week 17",
+    "uploadDate": "2024-12-30",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-seattle-seahawks/2021-week-17": {
+    "youtubeId": "uq06DxtjqCg",
+    "title": "Lions vs. Seahawks Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-seattle-seahawks/2022-week-4": {
+    "youtubeId": "4TEk17Jbaiw",
+    "title": "Seattle Seahawks vs. Detroit Lions | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-seattle-seahawks/2023-week-2": {
+    "youtubeId": "6Ti_a8ZrWeo",
+    "title": "Seattle Seahawks vs. Detroit Lions | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-seattle-seahawks/2024-week-4": {
+    "youtubeId": "5AHz5iQJ4oo",
+    "title": "Seattle Seahawks vs. Detroit Lions | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-30",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-tampa-bay-buccaneers/2023-divisional": {
+    "youtubeId": "iatLmdIyvcg",
+    "title": "Tampa Bay Buccaneers vs. Detroit Lions Game Highlights | NFL 2023 Divisional Round",
+    "uploadDate": "2024-01-21",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-tampa-bay-buccaneers/2023-week-6": {
+    "youtubeId": "Zpbvp1eWmAg",
+    "title": "Detroit Lions vs. Tampa Bay Buccaneers | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-tampa-bay-buccaneers/2024-week-2": {
+    "youtubeId": "CQkUdaIJfpA",
+    "title": "Tampa Bay Buccaneers vs. Detroit Lions | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-tampa-bay-buccaneers/2025-week-7": {
+    "youtubeId": "185gWzzqUJg",
+    "title": "Tampa Bay Buccaneers vs Detroit Lions Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-20",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-tennessee-titans/2024-week-8": {
+    "youtubeId": "OfTHyyWdrac",
+    "title": "Tennessee Titans vs. Detroit Lions | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-washington-commanders/2022-week-2": {
+    "youtubeId": "sJZWECsE2d0",
+    "title": "Washington Commanders vs. Detroit Lions | Week 2 Game Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-washington-commanders/2024-divisional": {
+    "youtubeId": "FjKM8ER8bOA",
+    "title": "Washington Commanders vs. Detroit Lions | 2024 Divisional Round Game Highlights",
+    "uploadDate": "2025-01-18",
+    "publisher": "NFL"
+  },
+  "detroit-lions-vs-washington-commanders/2025-week-10": {
+    "youtubeId": "98dPbzrPSZg",
+    "title": "Detroit Lions vs Washington Commanders Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-houston-texans/2024-week-7": {
+    "youtubeId": "WxpZ8wMmYQU",
+    "title": "Houston Texans vs. Green Bay Packers | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-indianapolis-colts/2024-week-2": {
+    "youtubeId": "iUloWAmJF6c",
+    "title": "Indianapolis Colts vs. Green Bay Packers | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-kansas-city-chiefs/2021-week-9": {
+    "youtubeId": "A_DKtEgEs7Y",
+    "title": "Packers vs. Chiefs Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-kansas-city-chiefs/2023-week-13": {
+    "youtubeId": "hOtv5V9II8o",
+    "title": "Kansas City Chiefs vs. Green Bay Packers | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-las-vegas-raiders/2023-week-5": {
+    "youtubeId": "-xTQmdnQbbg",
+    "title": "Green Bay Packers vs. Las Vegas Raiders | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-09",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-los-angeles-chargers/2023-week-11": {
+    "youtubeId": "wFWhChkhmKc",
+    "title": "Los Angeles Chargers vs. Green Bay Packers Game Highlights | NFL 2023 Week 11",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-los-angeles-rams/2021-week-12": {
+    "youtubeId": "mdfmRpAfK4s",
+    "title": "Rams vs. Packers Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-los-angeles-rams/2022-week-15": {
+    "youtubeId": "HL_p8QLlwkE",
+    "title": "Los Angeles Rams vs. Green Bay Packers | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-19",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-los-angeles-rams/2023-week-9": {
+    "youtubeId": "-FWZabn1D7Q",
+    "title": "Los Angeles Rams vs. Green Bay Packers Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-los-angeles-rams/2024-week-5": {
+    "youtubeId": "J8MDntIgXw8",
+    "title": "Green Bay Packers vs. Los Angeles Rams Game Highlights | NFL 2024 Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-miami-dolphins/2022-week-16": {
+    "youtubeId": "w_8CV3JCEfw",
+    "title": "Green Bay Packers vs. Miami Dolphins | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-25",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-miami-dolphins/2024-week-13": {
+    "youtubeId": "Nrjxz9-bDls",
+    "title": "Miami Dolphins vs. Green Bay Packers Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-11-28",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2021-week-11": {
+    "youtubeId": "UJ9kirVJRYw",
+    "title": "Packers vs. Vikings Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2021-week-17": {
+    "youtubeId": "qt4gfdihZWQ",
+    "title": "Vikings vs. Packers Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2022-week-1": {
+    "youtubeId": "hOGBXXowxZ8",
+    "title": "Green Bay Packers vs. Minnesota Vikings Game Highlights  | NFL Week 1 2022 Season",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2022-week-17": {
+    "youtubeId": "96NjmasYHuQ",
+    "title": "Minnesota Vikings vs. Green Bay Packers | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2023-week-17": {
+    "youtubeId": "VXOXrPhepTw",
+    "title": "Green Bay Packers vs. Minnesota Vikings | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2023-week-8": {
+    "youtubeId": "pJQwEeQWO8w",
+    "title": "Minnesota Vikings vs. Green Bay Packers | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2024-week-17": {
+    "youtubeId": "OUndsREfTno",
+    "title": "Green Bay Packers vs. Minnesota Vikings | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2025-week-12": {
+    "youtubeId": "QVd8fqohfb8",
+    "title": "Minnesota Vikings vs. Green Bay Packers Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-minnesota-vikings/2025-week-18": {
+    "youtubeId": "8pgoEj-pJq0",
+    "title": "Green Bay Packers vs Minnesota Vikings Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
     "publisher": "NFL"
   },
   "green-bay-packers-vs-minnesota-vikings/2026-week-1": {
@@ -405,10 +5103,52 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "green-bay-packers-vs-new-england-patriots/2022-week-4": {
+    "youtubeId": "5oGPBRLzd8M",
+    "title": "New England Patriots vs. Green Bay Packers | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
   "green-bay-packers-vs-new-orleans-saints/2021-week-1": {
     "youtubeId": "417WfNmPhos",
     "title": "Packers vs. Saints Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-orleans-saints/2023-week-3": {
+    "youtubeId": "do6I3xL5jWQ",
+    "title": "New Orleans Saints vs. Green Bay Packers Game Highlights | NFL 2023 Week 3",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-orleans-saints/2024-week-16": {
+    "youtubeId": "LgJNzboU94M",
+    "title": "New Orleans Saints vs. Green Bay Packers Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-23",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-york-giants/2022-week-5": {
+    "youtubeId": "C_xUtSKMKK0",
+    "title": "New York Giants vs. Green Bay Packers | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-york-giants/2023-week-14": {
+    "youtubeId": "J1D-BaeRbUc",
+    "title": "Green Bay Packers vs. New York Giants | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-11",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-york-giants/2025-week-11": {
+    "youtubeId": "Mmk6_RPCojM",
+    "title": "Green Bay Packers vs. New York Giants Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-new-york-jets/2022-week-6": {
+    "youtubeId": "FcjsQZGXr9k",
+    "title": "Green Bay Packers vs.  New York Jets | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
     "publisher": "NFL"
   },
   "green-bay-packers-vs-new-york-jets/2026-week-2": {
@@ -417,10 +5157,52 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "green-bay-packers-vs-philadelphia-eagles/2022-week-12": {
+    "youtubeId": "JbKhPDQH5hA",
+    "title": "Green Bay Packers vs. Philadelphia Eagles | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-philadelphia-eagles/2024-week-1": {
+    "youtubeId": "Lr6RAhhyBGk",
+    "title": "Green Bay Packers vs. Philadelphia Eagles Game Highlights | 2024 NFL Season",
+    "uploadDate": "2024-09-06",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-philadelphia-eagles/2024-wild-card": {
+    "youtubeId": "Ubc6N-kXiMg",
+    "title": "Green Bay Packers vs. Philadelphia Eagles Game Highlights | Wild Card NFL 2024 Season",
+    "uploadDate": "2025-01-12",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-philadelphia-eagles/2025-week-10": {
+    "youtubeId": "HoRjRiUG70g",
+    "title": "Philadelphia Eagles vs Green Bay Packers Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-10",
+    "publisher": "NFL"
+  },
   "green-bay-packers-vs-pittsburgh-steelers/2021-week-4": {
     "youtubeId": "eduktK6HXm8",
     "title": "Steelers vs. Packers Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-pittsburgh-steelers/2023-week-10": {
+    "youtubeId": "kZah4221wfE",
+    "title": "Green Bay Packers vs. Pittsburgh Steelers | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-pittsburgh-steelers/2025-week-8": {
+    "youtubeId": "M8DrSiTBbd0",
+    "title": "Green Bay Packers vs Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-san-francisco-49ers/2021-divisional": {
+    "youtubeId": "UtTsF5GcL48",
+    "title": "49ers vs. Packers Divisional Round Highlights | NFL 2021",
+    "uploadDate": "2022-01-22",
     "publisher": "NFL"
   },
   "green-bay-packers-vs-san-francisco-49ers/2021-week-3": {
@@ -429,10 +5211,532 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-26",
     "publisher": "NFL"
   },
+  "green-bay-packers-vs-san-francisco-49ers/2023-divisional": {
+    "youtubeId": "XdfRD0ZsMbQ",
+    "title": "Green Bay Packers vs. San Francisco 49ers Game Highlights | NFL 2023 Divisional Round",
+    "uploadDate": "2024-01-20",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-san-francisco-49ers/2024-week-12": {
+    "youtubeId": "g6nYXZUYKqw",
+    "title": "San Francisco 49ers vs. Green Bay Packers | 2024 Week 12 Game Highlights",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-seattle-seahawks/2021-week-10": {
+    "youtubeId": "XHnkj9mWcUU",
+    "title": "Seahawks vs. Packers Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-seattle-seahawks/2024-week-15": {
+    "youtubeId": "o1rvw5P4vbM",
+    "title": "Green Bay Packers vs. Seattle Seahawks Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-tampa-bay-buccaneers/2022-week-3": {
+    "youtubeId": "V6ioz5DRzNg",
+    "title": "Green Bay Packers vs. Tampa Bay Buccaneers | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-tampa-bay-buccaneers/2023-week-15": {
+    "youtubeId": "zu2JC9OQibQ",
+    "title": "Tampa Bay Buccaneers vs. Green Bay Packers Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-tennessee-titans/2022-week-11": {
+    "youtubeId": "MUd1fUyTA5Q",
+    "title": "Tennessee Titans vs. Green Bay Packers | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-17",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-tennessee-titans/2024-week-3": {
+    "youtubeId": "uDmV6p2-gUk",
+    "title": "Green Bay Packers Vs. Tennessee Titans Game Highlights | NFL 2024 Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-washington-commanders/2021-week-7": {
+    "youtubeId": "AhBjw2JI0Cw",
+    "title": "Washington Football Team vs. Packers Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-washington-commanders/2022-week-7": {
+    "youtubeId": "EIXggA3UTtk",
+    "title": "Green Bay Packers vs. Washington Commanders | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "green-bay-packers-vs-washington-commanders/2025-week-2": {
+    "youtubeId": "OugoOrWQ4Lg",
+    "title": "Washington Commanders vs Green Bay Packers Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-11",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2021-week-13": {
+    "youtubeId": "MulP0i1WEJ4",
+    "title": "Colts vs. Texans Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2021-week-6": {
+    "youtubeId": "3WvU4eu2sWo",
+    "title": "Texans vs. Colts Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2022-week-1": {
+    "youtubeId": "lKfFRLAA_H4",
+    "title": "Indianapolis Colts vs. Houston Texans | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2022-week-18": {
+    "youtubeId": "VEe7YLhTz2Y",
+    "title": "Houston Texans vs. Indianapolis Colts | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2023-week-18": {
+    "youtubeId": "J9XlAomP3_A",
+    "title": "Houston Texans vs. Indianapolis Colts | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-06",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2023-week-2": {
+    "youtubeId": "ACcUO8GGXL4",
+    "title": "Indianapolis Colts vs. Houston Texans Game Highlights | NFL 2023 Week 2",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2024-week-1": {
+    "youtubeId": "uq39v7Soplc",
+    "title": "Houston Texans vs. Indianapolis Colts | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2024-week-8": {
+    "youtubeId": "4JYmzOQNZ2s",
+    "title": "Indianapolis Colts vs. Houston Texans | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2025-week-13": {
+    "youtubeId": "hmBXJ0rf2zA",
+    "title": "Houston Texans vs Indianapolis Colts Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2025-week-18": {
+    "youtubeId": "uWYghIkm7GY",
+    "title": "Indianapolis Colts vs. Houston Texans Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-indianapolis-colts/2026-week-3": {
+    "youtubeId": "LwBJf78vzjY",
+    "title": "Houston Texans vs Indianapolis Colts Game Highlights | 2026 NFL Season Week 3",
+    "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
   "houston-texans-vs-jacksonville-jaguars/2021-week-1": {
     "youtubeId": "kUG24IIrhDc",
     "title": "Jaguars vs. Texans Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2021-week-15": {
+    "youtubeId": "WZv4SB8ZwRo",
+    "title": "Texans vs. Jaguars Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2022-week-17": {
+    "youtubeId": "351ywWa-HTQ",
+    "title": "Jacksonville Jaguars vs. Houston Texans | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2022-week-5": {
+    "youtubeId": "uHfXrJuQNz4",
+    "title": "Houston Texans vs. Jacksonville Jaguars | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2023-week-12": {
+    "youtubeId": "5SzOlPw_XLY",
+    "title": "Jacksonville Jaguars vs. Houston Texans | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2023-week-3": {
+    "youtubeId": "gTE1VHo727s",
+    "title": "Houston Texans vs. Jacksonville Jaguars | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2024-week-13": {
+    "youtubeId": "ft89PCZ-3xc",
+    "title": "Houston Texans vs. Jacksonville Jaguars | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2024-week-4": {
+    "youtubeId": "fVkhBUFQZ4I",
+    "title": "Jacksonville Jaguars vs. Houston Texans | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2025-week-10": {
+    "youtubeId": "L3D2GLBCmlg",
+    "title": "Jacksonville Jaguars vs. Houston Texans Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-jacksonville-jaguars/2025-week-3": {
+    "youtubeId": "aGD_0STyYsU",
+    "title": "Houston Texans vs. Jacksonville Jaguars Game Highlights | NFL 2025 Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-kansas-city-chiefs/2022-week-15": {
+    "youtubeId": "XiyMy8xMu5A",
+    "title": "Kansas City Chiefs vs. Houston Texans | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-kansas-city-chiefs/2024-divisional": {
+    "youtubeId": "v0xd0-ccChw",
+    "title": "Houston Texans vs. Kansas City Chiefs | 2024 Divisional Round Game Highlights",
+    "uploadDate": "2025-01-18",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-kansas-city-chiefs/2024-week-16": {
+    "youtubeId": "cCi6swZVVS4",
+    "title": "Houston Texans vs. Kansas City Chiefs | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-21",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-kansas-city-chiefs/2025-week-14": {
+    "youtubeId": "A3Ig_Hi0xxo",
+    "title": "Houston Texans vs Kansas City Chiefs Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-las-vegas-raiders/2022-week-7": {
+    "youtubeId": "xsdpwn5E0Qk",
+    "title": "Houston Texans vs. Las Vegas Raiders | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-las-vegas-raiders/2025-week-16": {
+    "youtubeId": "WEgiBc_ehsw",
+    "title": "Las Vegas Raiders vs. Houston Texans Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-chargers/2021-week-16": {
+    "youtubeId": "bxMw9_o6tSg",
+    "title": "Chargers vs. Texans Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-chargers/2022-week-4": {
+    "youtubeId": "716IN6uP1dU",
+    "title": "Los Angeles Chargers vs. Houston Texans | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-chargers/2024-wild-card": {
+    "youtubeId": "LwYpu5ExvdI",
+    "title": "Los Angeles Chargers vs. Houston Texans | 2024 Wild Card Game Highlights",
+    "uploadDate": "2025-01-11",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-chargers/2025-week-17": {
+    "youtubeId": "4WBufcaMCHc",
+    "title": "Houston Texans vs Los Angeles Chargers Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-27",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-rams/2021-week-8": {
+    "youtubeId": "yRUau7Bjj94",
+    "title": "Rams vs. Texans Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-los-angeles-rams/2025-week-1": {
+    "youtubeId": "lvOdHfaB6RQ",
+    "title": "Houston Texans vs. Los Angeles Rams Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-miami-dolphins/2021-week-9": {
+    "youtubeId": "WFLijmISjc4",
+    "title": "Texans vs. Dolphins Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-miami-dolphins/2022-week-12": {
+    "youtubeId": "dfMk5fC-w00",
+    "title": "Houston Texans vs. Miami Dolphins | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-miami-dolphins/2024-week-15": {
+    "youtubeId": "qQoHmYeLy7I",
+    "title": "Miami Dolphins vs. Houston Texans Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-minnesota-vikings/2024-week-3": {
+    "youtubeId": "cc5hpl4vX0U",
+    "title": "Houston Texans vs. Minnesota Vikings Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-england-patriots/2021-week-5": {
+    "youtubeId": "MgHmJVGtbqA",
+    "title": "Patriots vs. Texans Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-england-patriots/2024-week-6": {
+    "youtubeId": "BEdY6EdchyM",
+    "title": "Houston Texans vs. New England Patriots | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-england-patriots/2025-divisional": {
+    "youtubeId": "FI8w2O3k59I",
+    "title": "Houston Texans vs New England Patriots Game Highlights | 2025 NFL Season Divisional Round",
+    "uploadDate": "2026-01-18",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-orleans-saints/2023-week-6": {
+    "youtubeId": "Bi6MBsXFcmc",
+    "title": "New Orleans Saints vs. Houston Texans Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-york-giants/2022-week-10": {
+    "youtubeId": "sVh68ALy4B8",
+    "title": "Houston Texans vs. New York Giants | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-york-jets/2021-week-12": {
+    "youtubeId": "dQ1_iUazigs",
+    "title": "Jets vs. Texans Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-york-jets/2023-week-14": {
+    "youtubeId": "zgz3sShjwO8",
+    "title": "Houston Texans vs. New York Jets | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-new-york-jets/2024-week-9": {
+    "youtubeId": "QlPsuIkg6k0",
+    "title": "Houston Texans vs. New York Jets Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-10-31",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-philadelphia-eagles/2022-week-9": {
+    "youtubeId": "OxC2gP9_oX4",
+    "title": "Philadelphia Eagles vs. Houston Texans | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-03",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-pittsburgh-steelers/2023-week-4": {
+    "youtubeId": "dX3U9ue-JEY",
+    "title": "Pittsburgh Steelers vs. Houston Texans Game Highlights | NFL 2023 Week 4",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-pittsburgh-steelers/2025-wild-card": {
+    "youtubeId": "o_VVz5GR1ko",
+    "title": "Houston Texans vs Pittsburgh Steelers Game Highlights | 2025 NFL Season Wild Card Round",
+    "uploadDate": "2026-01-12",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-san-francisco-49ers/2021-week-17": {
+    "youtubeId": "0GimKwrJ7Zc",
+    "title": "Texans vs. 49ers Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-san-francisco-49ers/2025-week-8": {
+    "youtubeId": "l4b_r1WqIi0",
+    "title": "San Francisco 49ers vs Houston Texans Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-seattle-seahawks/2021-week-14": {
+    "youtubeId": "Q6e-pUVhI64",
+    "title": "Seahawks vs. Texans Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-seattle-seahawks/2025-week-7": {
+    "youtubeId": "G1BFXoa6IhI",
+    "title": "Houston Texans vs Seattle Seahawks Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-20",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tampa-bay-buccaneers/2023-week-9": {
+    "youtubeId": "bMykBLbbD9s",
+    "title": "Tampa Bay Buccaneers vs. Houston Texans Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tampa-bay-buccaneers/2025-week-2": {
+    "youtubeId": "1ofAzraImBY",
+    "title": "Tampa Bay Buccaneers vs Houston Texans Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-15",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2021-week-11": {
+    "youtubeId": "y8XaLrKEZBM",
+    "title": "Texans vs. Titans Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2021-week-18": {
+    "youtubeId": "3eFX4YjniSc",
+    "title": "Titans vs. Texans Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2022-week-16": {
+    "youtubeId": "yVfSDmENRzA",
+    "title": "Houston Texans vs. Tennessee Titans | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2022-week-8": {
+    "youtubeId": "qCxkiyPMkss",
+    "title": "Tennessee Titans vs. Houston Texans | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2023-week-15": {
+    "youtubeId": "mQ0LRWjffzI",
+    "title": "Houston Texans vs. Tennessee Titans | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2023-week-17": {
+    "youtubeId": "xw12DHuHEFY",
+    "title": "Tennessee Titans vs. Houston Texans | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2024-week-12": {
+    "youtubeId": "_hO9VLbzjBA",
+    "title": "Tennessee Titans vs. Houston Texans Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2024-week-18": {
+    "youtubeId": "Owy5eXtZ8G4",
+    "title": "Houston Texans vs. Tennessee Titans Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2025-week-11": {
+    "youtubeId": "iXa3aVDOMc4",
+    "title": "Houston Texans vs. Tennessee Titans Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-tennessee-titans/2025-week-4": {
+    "youtubeId": "1VFwG4rpW1w",
+    "title": "Tennessee Titans vs Houston Texans Game Highlights | NFL 2025 Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "houston-texans-vs-washington-commanders/2022-week-11": {
+    "youtubeId": "n7HRvK-ajMM",
+    "title": "Washington Commanders vs. Houston Texans | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2021-week-10": {
+    "youtubeId": "jsIhlNFpIyE",
+    "title": "Jaguars vs. Colts Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2021-week-18": {
+    "youtubeId": "tBrl3j2PzCc",
+    "title": "Colts vs. Jaguars Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2022-week-2": {
+    "youtubeId": "jiRx2Z5RqWI",
+    "title": "Indianapolis Colts vs. Jacksonville Jaguars | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2022-week-6": {
+    "youtubeId": "UCVHt5IV03I",
+    "title": "Jacksonville Jaguars vs. Indianapolis Colts | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2023-week-1": {
+    "youtubeId": "VoR_5bfMvcI",
+    "title": "Jacksonville Jaguars vs. Indianapolis Colts | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2023-week-6": {
+    "youtubeId": "6kuTYzNStJM",
+    "title": "Indianapolis Colts vs. Jacksonville Jaguars Game Highlights | NFL 2023 Week 6",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2024-week-18": {
+    "youtubeId": "G864E52PcZo",
+    "title": "Jacksonville Jaguars vs. Indianapolis Colts Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2024-week-5": {
+    "youtubeId": "Qe1I3yq_mos",
+    "title": "Indianapolis Colts vs. Jacksonville Jaguars | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2025-week-14": {
+    "youtubeId": "y6WTrDqAbNg",
+    "title": "Indianapolis Colts vs Jacksonville Jaguars Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-jacksonville-jaguars/2025-week-17": {
+    "youtubeId": "9OLSbeAunDo",
+    "title": "Jacksonville Jaguars vs. Indianapolis Colts Game Highlights | NFL 2025 Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-kansas-city-chiefs/2022-week-3": {
+    "youtubeId": "9ITQ5lDgJHc",
+    "title": "Kansas City Chiefs vs. Indianapolis Colts | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-kansas-city-chiefs/2025-week-12": {
+    "youtubeId": "kc0tZrfKb1g",
+    "title": "Indianapolis Colts vs. Kansas City Chiefs Game Highlights | NFL 2025 Season Week 12",
+    "uploadDate": "2025-11-23",
     "publisher": "NFL"
   },
   "indianapolis-colts-vs-kansas-city-chiefs/2026-week-2": {
@@ -441,10 +5745,58 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "indianapolis-colts-vs-las-vegas-raiders/2021-week-17": {
+    "youtubeId": "6uur6NarJ9o",
+    "title": "Raiders vs. Colts Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-las-vegas-raiders/2022-week-10": {
+    "youtubeId": "GRYsGlEGPds",
+    "title": "Indianapolis Colts vs. Las Vegas Raiders | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-las-vegas-raiders/2023-week-17": {
+    "youtubeId": "bZIBit6x0H0",
+    "title": "Las Vegas Raiders vs. Indianapolis Colts | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-las-vegas-raiders/2025-week-5": {
+    "youtubeId": "NsCq6D8VyOE",
+    "title": "Las Vegas Raiders vs Indianapolis Colts Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-los-angeles-chargers/2022-week-16": {
+    "youtubeId": "z3BNStfB9KI",
+    "title": "Los Angeles Chargers vs. Indianapolis Colts | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-26",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-los-angeles-chargers/2025-week-7": {
+    "youtubeId": "R3LlV9uf3jI",
+    "title": "Indianapolis Colts vs. Los Angeles Chargers Game Highlights | NFL 2025 Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
   "indianapolis-colts-vs-los-angeles-rams/2021-week-2": {
     "youtubeId": "4Pe8VQmvg-0",
     "title": "Rams vs. Colts Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-los-angeles-rams/2023-week-4": {
+    "youtubeId": "6r-7RhJOCX8",
+    "title": "Los Angeles Rams vs. Indianapolis Colts | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-los-angeles-rams/2025-week-4": {
+    "youtubeId": "vzayR9hfyJg",
+    "title": "Indianapolis Colts vs. Los Angeles Rams Game Highlights | NFL 2025 Season Week 4",
+    "uploadDate": "2025-09-28",
     "publisher": "NFL"
   },
   "indianapolis-colts-vs-miami-dolphins/2021-week-4": {
@@ -453,10 +5805,148 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "indianapolis-colts-vs-miami-dolphins/2024-week-7": {
+    "youtubeId": "qHxJP4xbWRg",
+    "title": "Miami Dolphins vs. Indianapolis Colts | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-miami-dolphins/2025-week-1": {
+    "youtubeId": "JcRpVsFuGKw",
+    "title": "Miami Dolphins vs Indianapolis Colts Game Highlights | 2025 NFL Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-minnesota-vikings/2022-week-15": {
+    "youtubeId": "L_hlvNda2E8",
+    "title": "LARGEST COMEBACK IN HISTORY! Indianapolis Colts vs. Minnesota Vikings | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-17",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-minnesota-vikings/2024-week-9": {
+    "youtubeId": "qVGCD7dqaMg",
+    "title": "Indianapolis Colts vs. Minnesota Vikings Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-england-patriots/2021-week-15": {
+    "youtubeId": "KECMm5HWUYI",
+    "title": "Patriots vs. Colts Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-18",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-england-patriots/2022-week-9": {
+    "youtubeId": "-GAN0ukEh-4",
+    "title": "Indianapolis Colts vs. New England Patriots | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-england-patriots/2023-week-10": {
+    "youtubeId": "w0LCp_4ylPQ",
+    "title": "Indianapolis Colts vs. New England Patriots Game Highlights | NFL 2023 Week 10",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-england-patriots/2024-week-13": {
+    "youtubeId": "Fsb_LpONRy0",
+    "title": "Indianapolis Colts vs. New England Patriots | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-orleans-saints/2023-week-8": {
+    "youtubeId": "sdiRNkheSQw",
+    "title": "New Orleans Saints vs. Indianapolis Colts Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-york-giants/2022-week-17": {
+    "youtubeId": "TkFmARXPfoo",
+    "title": "Indianapolis Colts vs. New York Giants | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-york-giants/2024-week-17": {
+    "youtubeId": "l-PdW1WIhW0",
+    "title": "Indianapolis Colts vs. New York Giants | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-york-jets/2021-week-9": {
+    "youtubeId": "6kG_xdYCg_Q",
+    "title": "Jets vs. Colts Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-04",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-new-york-jets/2024-week-11": {
+    "youtubeId": "O0cyzMTH9Is",
+    "title": "Indianapolis Colts vs. New York Jets | 2024 Week 11 Game Highlights",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-philadelphia-eagles/2022-week-11": {
+    "youtubeId": "RburINFOWoU",
+    "title": "Philadelphia Eagles vs. Indianapolis Colts | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-pittsburgh-steelers/2022-week-12": {
+    "youtubeId": "xnXfaFrqGfw",
+    "title": "Pittsburgh Steelers vs. Indianapolis Colts | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-28",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-pittsburgh-steelers/2023-week-15": {
+    "youtubeId": "3jnBWydsgBk",
+    "title": "Pittsburgh Steelers vs. Indianapolis Colts | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-16",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-pittsburgh-steelers/2024-week-4": {
+    "youtubeId": "Cx__7U2zXxo",
+    "title": "Pittsburgh Steelers vs. Indianapolis Colts | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-pittsburgh-steelers/2025-week-9": {
+    "youtubeId": "l6ly2Wh6cOk",
+    "title": "Indianapolis Colts vs. Pittsburgh Steelers Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-san-francisco-49ers/2021-week-7": {
+    "youtubeId": "ce13PozKFfg",
+    "title": "Colts vs. 49ers Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-san-francisco-49ers/2025-week-16": {
+    "youtubeId": "xHOym0Hr3K0",
+    "title": "San Francisco 49ers vs Indianapolis Colts Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-23",
+    "publisher": "NFL"
+  },
   "indianapolis-colts-vs-seattle-seahawks/2021-week-1": {
     "youtubeId": "v7Xuh2vnOOQ",
     "title": "Seahawks vs. Colts Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-seattle-seahawks/2025-week-15": {
+    "youtubeId": "Z7o2S7zgHF0",
+    "title": "Indianapolis Colts vs. Seattle Seahawks Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tampa-bay-buccaneers/2021-week-12": {
+    "youtubeId": "-guGJ_v7rgg",
+    "title": "Buccaneers vs. Colts Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tampa-bay-buccaneers/2023-week-12": {
+    "youtubeId": "8VgrWZiGLo8",
+    "title": "Tampa Bay Buccaneers vs. Indianapolis Colts Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-26",
     "publisher": "NFL"
   },
   "indianapolis-colts-vs-tennessee-titans/2021-week-3": {
@@ -465,10 +5955,388 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-26",
     "publisher": "NFL"
   },
+  "indianapolis-colts-vs-tennessee-titans/2021-week-8": {
+    "youtubeId": "332YW5cjtjM",
+    "title": "Titans vs. Colts Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2022-week-4": {
+    "youtubeId": "yA2EKXHFemQ",
+    "title": "Tennessee Titans vs. Indianapolis Colts | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2022-week-7": {
+    "youtubeId": "2ELD5yfzHtM",
+    "title": "Indianapolis Colts vs. Tennessee Titans | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2023-week-13": {
+    "youtubeId": "9sDRMQH7EnA",
+    "title": "Indianapolis Colts vs. Tennessee Titans Game Highlights | NFL 2023 Week 13",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2023-week-5": {
+    "youtubeId": "1NPepNLHBtc",
+    "title": "Tennessee Titans vs. Indianapolis Colts Game Highlights | NFL 2023 Week 5",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2024-week-16": {
+    "youtubeId": "HsbkRZDLy8s",
+    "title": "Tennessee Titans vs. Indianapolis Colts | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2024-week-6": {
+    "youtubeId": "aNXNGuheXhg",
+    "title": "Indianapolis Colts vs. Tennessee Titans | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2025-week-3": {
+    "youtubeId": "lm3VaoeYVb4",
+    "title": "Indianapolis Colts vs. Tennessee Titans Game Highlights | NFL 2025 Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-tennessee-titans/2025-week-8": {
+    "youtubeId": "hhGFtm3jp4M",
+    "title": "Tennessee Titans vs. Indianapolis Colts Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "indianapolis-colts-vs-washington-commanders/2022-week-8": {
+    "youtubeId": "FQO7QYJ9Jt0",
+    "title": "Washington Commanders vs. Indianapolis Colts | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-kansas-city-chiefs/2022-week-10": {
+    "youtubeId": "zukxHQaLvoQ",
+    "title": "Jacksonville Jaguars vs. Kansas City Chiefs | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-kansas-city-chiefs/2023-week-2": {
+    "youtubeId": "_3mDT2ZKbbo",
+    "title": "Kansas City Chiefs vs. Jacksonville Jaguars | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-kansas-city-chiefs/2025-week-5": {
+    "youtubeId": "D5_xwX_jxB0",
+    "title": "Kansas City Chiefs vs Jacksonville Jaguars Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-06",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-las-vegas-raiders/2022-week-9": {
+    "youtubeId": "vwhw345r2ds",
+    "title": "Las Vegas Raiders vs. Jacksonville Jaguars | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-las-vegas-raiders/2024-week-16": {
+    "youtubeId": "ywDgES2Jkso",
+    "title": "Jacksonville Jaguars vs. Las Vegas Raiders | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-las-vegas-raiders/2025-week-9": {
+    "youtubeId": "FJuTqHeUm7k",
+    "title": "Jacksonville Jaguars vs. Las Vegas Raiders Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-los-angeles-chargers/2022-week-3": {
+    "youtubeId": "pI8k6iIY8No",
+    "title": "Jacksonville Jaguars vs. Los Angeles Chargers | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-los-angeles-chargers/2022-wild-card": {
+    "youtubeId": "RQ0m99laOMQ",
+    "title": "Los Angeles Chargers vs. Jacksonville Jaguars | 2022 Super Wild Card Weekend Game Highlights",
+    "uploadDate": "2023-01-14",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-los-angeles-chargers/2025-week-11": {
+    "youtubeId": "9xCK05Ybkr8",
+    "title": "Los Angeles Chargers vs Jacksonville Jaguars Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-los-angeles-rams/2021-week-13": {
+    "youtubeId": "FWDS-tNJdnI",
+    "title": "Jaguars vs. Rams Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-los-angeles-rams/2025-week-7": {
+    "youtubeId": "DVQ4mYEG2GA",
+    "title": "Los Angeles Rams vs. Jacksonville Jaguars Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-miami-dolphins/2021-week-6": {
+    "youtubeId": "W2RSjr-0lTE",
+    "title": "Dolphins vs. Jaguars Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-miami-dolphins/2024-week-1": {
+    "youtubeId": "EuJ3DNIhw7g",
+    "title": "Jacksonville Jaguars vs. Miami Dolphins | NFL 2024 Week 1 Game Highlights",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-minnesota-vikings/2024-week-10": {
+    "youtubeId": "aUkMujLRA-g",
+    "title": "Minnesota Vikings vs. Jacksonville Jaguars Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-england-patriots/2021-week-17": {
+    "youtubeId": "KJp2ULMPBo0",
+    "title": "Jaguars vs. Patriots Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-england-patriots/2024-week-7": {
+    "youtubeId": "DezJqWdHp5Y",
+    "title": "New England Patriots vs. Jacksonville Jaguars | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
   "jacksonville-jaguars-vs-new-england-patriots/2026-week-3": {
     "youtubeId": "Oi9HQlp-ysA",
     "title": "New England Patriots vs Jacksonville Jaguars Game Highlights | 2026 NFL Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-orleans-saints/2023-week-7": {
+    "youtubeId": "tJq8LO78XuM",
+    "title": "Jacksonville Jaguars vs.  New Orleans Saints  | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-19",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-york-giants/2022-week-7": {
+    "youtubeId": "g3r6JRnZwEU",
+    "title": "New York Giants vs. Jacksonville Jaguars | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-york-jets/2021-week-16": {
+    "youtubeId": "XE_2xDwXIc8",
+    "title": "Jaguars vs. Jets Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-york-jets/2022-week-16": {
+    "youtubeId": "C-q2qw_LqoI",
+    "title": "Jacksonville Jaguars vs. New York Jets | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-22",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-york-jets/2024-week-15": {
+    "youtubeId": "4iFdMVI-_sg",
+    "title": "New York Jets vs. Jacksonville Jaguars Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-new-york-jets/2025-week-15": {
+    "youtubeId": "eFnDJFwKVEc",
+    "title": "New York Jets vs. Jacksonville Jaguars Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-philadelphia-eagles/2022-week-4": {
+    "youtubeId": "rfHFiOYFExc",
+    "title": "Jacksonville Jaguars vs. Philadelphia Eagles | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-philadelphia-eagles/2024-week-9": {
+    "youtubeId": "wyti1nLurpc",
+    "title": "Jacksonville Jaguars vs. Philadelphia Eagles Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-pittsburgh-steelers/2023-week-8": {
+    "youtubeId": "8aJ1p_KGTLo",
+    "title": "Jacksonville Jaguars vs. Pittsburgh Steelers Game Highlights | NFL 2023 Week 8",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-san-francisco-49ers/2021-week-11": {
+    "youtubeId": "WJzYXFriBu8",
+    "title": "49ers vs. Jaguars Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-san-francisco-49ers/2023-week-10": {
+    "youtubeId": "5WCV3HHIeZI",
+    "title": "San Francisco 49ers vs. Jacksonville Jaguars Game Highlights | NFL 2023 Week 10",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-san-francisco-49ers/2025-week-4": {
+    "youtubeId": "mlRYWh8ZP8M",
+    "title": "Jacksonville Jaguars vs. San Francisco 49ers Game Highlights | NFL 2025 Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-seattle-seahawks/2021-week-8": {
+    "youtubeId": "EAfrvqTC1HQ",
+    "title": "Jaguars vs. Seahawks Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-seattle-seahawks/2025-week-6": {
+    "youtubeId": "JAHn4zamXsg",
+    "title": "Seattle Seahawks vs Jacksonville Jaguars Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tampa-bay-buccaneers/2023-week-16": {
+    "youtubeId": "69d6IRuKFlM",
+    "title": "Jacksonville Jaguars vs. Tampa Bay Buccaneers Game Highlights | NFL 2023 Week 16",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2021-week-14": {
+    "youtubeId": "NgaNUJ4UKhM",
+    "title": "Jaguars vs. Titans Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2021-week-5": {
+    "youtubeId": "FYaZWzIB5ZA",
+    "title": "Titans vs. Jaguars Week 5 Highlights | NFL 2021",
+    "uploadDate": "2021-10-10",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2022-week-14": {
+    "youtubeId": "NXmKj1m2_Qg",
+    "title": "Jacksonville Jaguars vs. Tennessee Titans | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2022-week-18": {
+    "youtubeId": "EgNunih29ag",
+    "title": "Tennessee Titans vs. Jacksonville Jaguars | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-07",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2023-week-11": {
+    "youtubeId": "fBnTvOdsHEw",
+    "title": "Tennessee Titans vs. Jacksonville Jaguars | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2023-week-18": {
+    "youtubeId": "1kCPt3bcgF0",
+    "title": "Jacksonville Jaguars vs. Tennessee Titans | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2024-week-14": {
+    "youtubeId": "qdZD_RGRpek",
+    "title": "Jacksonville Jaguars vs. Tennessee Titans Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2024-week-17": {
+    "youtubeId": "6AdF0m4d-xo",
+    "title": "Tennessee Titans vs. Jacksonville Jaguars | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2025-week-13": {
+    "youtubeId": "gUX5TBqpFGQ",
+    "title": "Jacksonville Jaguars vs. Tennessee Titans Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-tennessee-titans/2025-week-18": {
+    "youtubeId": "Ec9zTFY2J2Q",
+    "title": "Tennessee Titans vs. Jacksonville Jaguars Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "jacksonville-jaguars-vs-washington-commanders/2022-week-1": {
+    "youtubeId": "aosepuuGeIg",
+    "title": "Jacksonville Jaguars vs. Washington Commanders | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2021-week-10": {
+    "youtubeId": "Pl6LehQBgZI",
+    "title": "Chiefs vs. Raiders Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2021-week-14": {
+    "youtubeId": "9W2b2SI__ck",
+    "title": "Raiders vs. Chiefs Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2022-week-18": {
+    "youtubeId": "RUBrP6SO8Kw",
+    "title": "Kansas City Chiefs vs. Las Vegas Raiders | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-07",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2022-week-5": {
+    "youtubeId": "TRsIVeqOppY",
+    "title": "Las Vegas Raiders vs. Kansas City Chiefs | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-10",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2023-week-12": {
+    "youtubeId": "lGOCc-r4tb8",
+    "title": "Kansas City Chiefs vs. Las Vegas Raiders Game Highlights | NFL 2023 Week 12",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2023-week-16": {
+    "youtubeId": "6dhCZ1xJT6U",
+    "title": "Las Vegas Raiders vs. Kansas City Chiefs Game Highlights | NFL 2023 Week 16",
+    "uploadDate": "2023-12-25",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2024-week-13": {
+    "youtubeId": "_GgWZaE8gzw",
+    "title": "Las Vegas Raiders vs. Kansas City Chiefs Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-11-29",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2024-week-8": {
+    "youtubeId": "LDIuqidcT0c",
+    "title": "Kansas City Chiefs vs. Las Vegas Raiders | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2025-week-18": {
+    "youtubeId": "x4RPMVe9z24",
+    "title": "Kansas City Chiefs vs. Las Vegas Raiders Game Highlights | NFL 2025 Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-las-vegas-raiders/2025-week-7": {
+    "youtubeId": "QLb-PBptY3Q",
+    "title": "Las Vegas Raiders vs. Kansas City Chiefs Game Highlights | NFL 2025 Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2021-week-15": {
+    "youtubeId": "jxePHOeD6mU",
+    "title": "Chiefs vs. Chargers Week 15 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-12-16",
     "publisher": "NFL"
   },
   "kansas-city-chiefs-vs-los-angeles-chargers/2021-week-3": {
@@ -477,10 +6345,112 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-26",
     "publisher": "NFL"
   },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2022-week-11": {
+    "youtubeId": "4H33_Cj2Gc8",
+    "title": "Kansas City Chiefs vs. Los Angeles Chargers | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2022-week-2": {
+    "youtubeId": "mRWrvWCkRVY",
+    "title": "Los Angeles Chargers vs. Kansas City Chiefs | Week 2 Game Highlights",
+    "uploadDate": "2022-09-15",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2023-week-18": {
+    "youtubeId": "6dP9XQ0blNA",
+    "title": "Kansas City Chiefs vs. Los Angeles Chargers | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2023-week-7": {
+    "youtubeId": "pICXVLR6SrI",
+    "title": "Los Angeles Chargers vs. Kansas City Chiefs | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2024-week-14": {
+    "youtubeId": "v3HvwxG_ltw",
+    "title": "Los Angeles Chargers vs. Kansas City Chiefs Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2024-week-4": {
+    "youtubeId": "1cc8wjZtFmA",
+    "title": "Kansas City Chiefs vs. Los Angeles Chargers Game Highlights | NFL 2024 Season Week 4",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2025-week-1": {
+    "youtubeId": "620wa-wojh8",
+    "title": "Kansas City Chiefs vs Los Angeles Chargers | 2025 Week 1 São Paulo Game Highlights",
+    "uploadDate": "2025-09-05",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-chargers/2025-week-15": {
+    "youtubeId": "qInlDm6e1z8",
+    "title": "Los Angeles Chargers vs Kansa City Chiefs Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-los-angeles-rams/2022-week-12": {
+    "youtubeId": "ZDa5NB6rCqs",
+    "title": "Los Angeles Rams vs. Kansas City Chiefs | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-miami-dolphins/2023-week-9": {
+    "youtubeId": "E9t05pXwIZQ",
+    "title": "Miami Dolphins vs. Kansas City Chiefs Game Highlights | NFL 2023 Week 9",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-miami-dolphins/2023-wild-card": {
+    "youtubeId": "Ul_UFVnFj1k",
+    "title": "Miami Dolphins vs. Kansas City Chiefs Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-13",
+    "publisher": "NFL"
+  },
   "kansas-city-chiefs-vs-miami-dolphins/2026-week-3": {
     "youtubeId": "eyM7QUODW6c",
     "title": "Kansas City Chiefs vs. Miami Dolphins Game Highlights | NFL 2026 Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-minnesota-vikings/2023-week-5": {
+    "youtubeId": "LluAI0f0N9s",
+    "title": "Kansas City Chiefs vs. Minnesota Vikings | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-new-england-patriots/2023-week-15": {
+    "youtubeId": "YGK_k0Spe6U",
+    "title": "Kansas City Chiefs vs. New England Patriots | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-new-orleans-saints/2024-week-5": {
+    "youtubeId": "CvA1UOETQhE",
+    "title": "New Orleans Saints vs. Kansas City Chiefs Game Highlights | NFL 2024 Week 5",
+    "uploadDate": "2024-10-07",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-new-york-giants/2021-week-8": {
+    "youtubeId": "gnD_FgSkjt8",
+    "title": "Giants vs. Chiefs Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-11-01",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-new-york-giants/2025-week-3": {
+    "youtubeId": "ycbdrx_jcI4",
+    "title": "Kansas City Chiefs vs New York Giants Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-new-york-jets/2023-week-4": {
+    "youtubeId": "ctBSAKDKr94",
+    "title": "Kansas City Chiefs vs. New York Jets | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
     "publisher": "NFL"
   },
   "kansas-city-chiefs-vs-philadelphia-eagles/2021-week-4": {
@@ -489,10 +6459,172 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "kansas-city-chiefs-vs-philadelphia-eagles/2022-super-bowl": {
+    "youtubeId": "BWkt79xkd00",
+    "title": "Kansas City Chiefs vs. Philadelphia Eagles | Super Bowl LVII Game Highlights",
+    "uploadDate": "2023-02-12",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-philadelphia-eagles/2023-week-11": {
+    "youtubeId": "PGm0bif8_jc",
+    "title": "Philadelphia Eagles vs. Kansas City Chiefs | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-20",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-philadelphia-eagles/2024-super-bowl": {
+    "youtubeId": "-rOmWIERvzo",
+    "title": "Kansas City Chiefs vs. Philadelphia Eagles | Super Bowl LIX Game Highlights",
+    "uploadDate": "2025-02-09",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-philadelphia-eagles/2025-week-2": {
+    "youtubeId": "8uD8dx3QNKs",
+    "title": "Philadelphia Eagles vs Kansas City Chiefs Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-pittsburgh-steelers/2021-week-16": {
+    "youtubeId": "j4P2t_VcP0E",
+    "title": "Steelers vs. Chiefs Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-pittsburgh-steelers/2021-wild-card": {
+    "youtubeId": "H0rCKyc7__U",
+    "title": "Steelers vs. Chiefs Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-16",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-pittsburgh-steelers/2024-week-17": {
+    "youtubeId": "-fN2SvEG594",
+    "title": "Kansas City Chiefs vs. Pittsburgh Steelers | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-25",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-san-francisco-49ers/2022-week-7": {
+    "youtubeId": "ljXOXyAquc0",
+    "title": "Kansas City Chiefs vs. San Francisco 49ers | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-san-francisco-49ers/2023-super-bowl": {
+    "youtubeId": "O17DfQco2JQ",
+    "title": "San Francisco 49ers vs. Kansas City Chiefs | Super Bowl LVIII Game Highlights",
+    "uploadDate": "2024-02-11",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-san-francisco-49ers/2024-week-7": {
+    "youtubeId": "zw20QvpQrNY",
+    "title": "Kansas City Chiefs vs. San Francisco 49ers | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-seattle-seahawks/2022-week-16": {
+    "youtubeId": "5IhuSFpX4Cw",
+    "title": "Seattle Seahawks vs. Kansas City Chiefs | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-tampa-bay-buccaneers/2022-week-4": {
+    "youtubeId": "YXZfwwq3F5s",
+    "title": "Kansas City Chiefs vs. Tampa Bay Buccaneers | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-tampa-bay-buccaneers/2024-week-9": {
+    "youtubeId": "KUg8SGqwOuo",
+    "title": "Tampa Bay Buccaneers vs. Kansas City Chiefs Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-04",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-tennessee-titans/2021-week-7": {
+    "youtubeId": "ofOjgXYELhQ",
+    "title": "Chiefs vs. Titans Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-tennessee-titans/2022-week-9": {
+    "youtubeId": "1g5P6kKXiMs",
+    "title": "Tennessee Titans vs. Kansas City Chiefs | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-tennessee-titans/2025-week-16": {
+    "youtubeId": "3aO3EgE3QGk",
+    "title": "Kansas City Chiefs vs Tennessee Titans Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-washington-commanders/2021-week-6": {
+    "youtubeId": "RaY6FRXMljU",
+    "title": "Chiefs vs. Washington Football Team Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "kansas-city-chiefs-vs-washington-commanders/2025-week-8": {
+    "youtubeId": "UR64HGFbV4Q",
+    "title": "Washington Commanders vs Kansas City Chiefs Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-27",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2021-week-18": {
+    "youtubeId": "w3HKcG5WSi8",
+    "title": "Chargers vs. Raiders Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
   "las-vegas-raiders-vs-los-angeles-chargers/2021-week-4": {
     "youtubeId": "1QzsgYY9leI",
     "title": "Raiders vs. Chargers Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-04",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2022-week-1": {
+    "youtubeId": "gEK0WAajKvM",
+    "title": "Las Vegas Raiders vs. Los Angeles Chargers | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2022-week-13": {
+    "youtubeId": "PHKCFQtS75I",
+    "title": "Los Angeles Chargers vs. Las Vegas Raiders | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2023-week-15": {
+    "youtubeId": "wwS12cMIhwg",
+    "title": "Los Angeles Chargers vs. Las Vegas Raiders | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-14",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2023-week-4": {
+    "youtubeId": "_K0ZDOoKtT0",
+    "title": "Las Vegas Raiders vs. Los Angeles Chargers | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2024-week-1": {
+    "youtubeId": "Xk-rZ1wipr4",
+    "title": "Las Vegas Raiders vs. Los Angeles Chargers Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2024-week-18": {
+    "youtubeId": "o5c7Wye6JYI",
+    "title": "Los Angeles Chargers vs. Las Vegas Raiders Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2025-week-13": {
+    "youtubeId": "G0hb9RO3y8k",
+    "title": "Las Vegas Raiders vs. Los Angeles Chargers Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-chargers/2025-week-2": {
+    "youtubeId": "k6AvlPV-iTE",
+    "title": "Los Angeles Chargers vs Las Vegas Raiders Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-15",
     "publisher": "NFL"
   },
   "las-vegas-raiders-vs-los-angeles-chargers/2026-week-2": {
@@ -501,10 +6633,34 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "las-vegas-raiders-vs-los-angeles-rams/2022-week-14": {
+    "youtubeId": "j3G_H-GH6sg",
+    "title": "Las Vegas Raiders vs. Los Angeles Rams | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-08",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-los-angeles-rams/2024-week-7": {
+    "youtubeId": "RmNwpxi5X78",
+    "title": "Las Vegas Raiders vs. Los Angeles Rams | 2024 Week 7 Game Highlights",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
   "las-vegas-raiders-vs-miami-dolphins/2021-week-3": {
     "youtubeId": "QyGDrrkL8Nc",
     "title": "Dolphins vs. Raiders Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-miami-dolphins/2023-week-11": {
+    "youtubeId": "D85oX6-p0r8",
+    "title": "Las Vegas Raiders vs. Miami Dolphins Game Highlights | NFL 2023 Week 11",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-miami-dolphins/2024-week-11": {
+    "youtubeId": "N91Li0Z9EoI",
+    "title": "Las Vegas Raiders vs. Miami Dolphins Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
     "publisher": "NFL"
   },
   "las-vegas-raiders-vs-miami-dolphins/2026-week-1": {
@@ -513,10 +6669,82 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "las-vegas-raiders-vs-minnesota-vikings/2023-week-14": {
+    "youtubeId": "U52oIDuo3AI",
+    "title": "Minnesota Vikings vs. Las Vegas Raiders  | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-england-patriots/2022-week-15": {
+    "youtubeId": "V5jZC6orXQg",
+    "title": "New England Patriots vs. Las Vegas Raiders | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-england-patriots/2023-week-6": {
+    "youtubeId": "-BuRmIYHtJ8",
+    "title": "New England Patriots vs. Las Vegas Raiders | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-england-patriots/2025-week-1": {
+    "youtubeId": "8ynnyBJX_J0",
+    "title": "Las Vegas Raiders vs. New England Patriots Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-orleans-saints/2022-week-8": {
+    "youtubeId": "ycf0ZR7A0w4",
+    "title": "Las Vegas Raiders vs. New Orleans Saints | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-orleans-saints/2024-week-17": {
+    "youtubeId": "md0L-NOl6Hw",
+    "title": "Las Vegas Raiders vs. New Orleans Saints | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-29",
+    "publisher": "NFL"
+  },
   "las-vegas-raiders-vs-new-orleans-saints/2026-week-3": {
     "youtubeId": "xcj0NwyEJUk",
     "title": "Las Vegas Raiders vs. New Orleans Saints Game Highlights | NFL 2026 Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-york-giants/2021-week-9": {
+    "youtubeId": "uTlURcFZOJI",
+    "title": "Raiders vs. Giants Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-york-giants/2023-week-9": {
+    "youtubeId": "MYnCCYCI_1Q",
+    "title": "New York Giants vs. Las Vegas Raiders | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-york-giants/2025-week-17": {
+    "youtubeId": "w6zHl1nZiQE",
+    "title": "New York Giants vs Las Vegas Raiders Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-new-york-jets/2023-week-10": {
+    "youtubeId": "WiMcrrxlSIg",
+    "title": "New York Jets vs. Las Vegas Raiders | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-philadelphia-eagles/2021-week-7": {
+    "youtubeId": "dwjnjDWZYtM",
+    "title": "Eagles vs. Raiders Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-philadelphia-eagles/2025-week-15": {
+    "youtubeId": "GY6manhc2SU",
+    "title": "Las Vegas Raiders vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-14",
     "publisher": "NFL"
   },
   "las-vegas-raiders-vs-pittsburgh-steelers/2021-week-2": {
@@ -525,10 +6753,298 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "las-vegas-raiders-vs-pittsburgh-steelers/2022-week-16": {
+    "youtubeId": "Oid1bvItUGA",
+    "title": "Las Vegas Raiders vs. Pittsburgh Steelers | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-pittsburgh-steelers/2023-week-3": {
+    "youtubeId": "ce-Jbe-p0ow",
+    "title": "Pittsburgh Steelers vs. Las Vegas Raiders | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-pittsburgh-steelers/2024-week-6": {
+    "youtubeId": "ogny2dEej9g",
+    "title": "Pittsburgh Steelers vs. Las Vegas Raiders | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-san-francisco-49ers/2022-week-17": {
+    "youtubeId": "0ZNzDDf0AOw",
+    "title": "San Francisco 49ers vs. Las Vegas Raiders | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-seattle-seahawks/2022-week-12": {
+    "youtubeId": "bt4NqAzHTSc",
+    "title": "Las Vegas Raiders vs. Seattle Seahawks | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-tampa-bay-buccaneers/2024-week-14": {
+    "youtubeId": "bThbkmJNJb0",
+    "title": "Las Vegas Raiders vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-tennessee-titans/2022-week-3": {
+    "youtubeId": "I4P1xUm3YmI",
+    "title": "Las Vegas Raiders vs. Tennessee Titans | 2022 Week 3 Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-tennessee-titans/2025-week-6": {
+    "youtubeId": "oR8z_F0mugM",
+    "title": "Tennessee Titans vs. Las Vegas Raiders Game Highlights | NFL 2025 Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-washington-commanders/2021-week-13": {
+    "youtubeId": "ghoaePB-Ly0",
+    "title": "Washington Football Team vs. Raiders Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "las-vegas-raiders-vs-washington-commanders/2025-week-3": {
+    "youtubeId": "PoLuodFmYCs",
+    "title": "Las Vegas Raiders vs Washington Commanders Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-los-angeles-rams/2022-week-17": {
+    "youtubeId": "58H3Z-7Pyss",
+    "title": "Los Angeles Rams vs. Los Angeles Chargers | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-miami-dolphins/2022-week-14": {
+    "youtubeId": "v4x7UU-I0y4",
+    "title": "Miami Dolphins vs. Los Angeles Chargers | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-miami-dolphins/2023-week-1": {
+    "youtubeId": "YJvCBKhHTEo",
+    "title": "Miami Dolphins vs. Los Angeles Chargers | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-miami-dolphins/2025-week-6": {
+    "youtubeId": "hJtkfGVMomY",
+    "title": "Los Angeles Chargers vs Miami Dolphins Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-minnesota-vikings/2021-week-10": {
+    "youtubeId": "ayUWJjIjSOA",
+    "title": "Vikings vs. Chargers Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-minnesota-vikings/2023-week-3": {
+    "youtubeId": "ZwOJUJuwPRQ",
+    "title": "Los Angeles Chargers vs. Minnesota Vikings Game Highlights | NFL 2023 Week 3",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-minnesota-vikings/2025-week-8": {
+    "youtubeId": "8POp-CJdSuE",
+    "title": "Minnesota Vikings vs Los Angeles Chargers Game Highlights | 2025 NFL Season Week 8",
+    "uploadDate": "2025-10-23",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-england-patriots/2021-week-8": {
+    "youtubeId": "SS_2NGHJ4e0",
+    "title": "Patriots vs. Chargers Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-england-patriots/2023-week-13": {
+    "youtubeId": "I9rJkAy_4QA",
+    "title": "Los Angeles Chargers vs. New England Patriots Game Highlights | NFL 2023 Week 13",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-england-patriots/2024-week-17": {
+    "youtubeId": "N57zXW7mDcc",
+    "title": "Los Angeles Chargers vs. New England Patriots | 2024 Week 17 Game Highlights",
+    "uploadDate": "2024-12-28",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-england-patriots/2025-wild-card": {
+    "youtubeId": "r4w8LaKWuGM",
+    "title": "Los Angeles Chargers vs New England Patriots Game Highlights | 2025 NFL Season Wild Card Round",
+    "uploadDate": "2026-01-11",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-orleans-saints/2024-week-8": {
+    "youtubeId": "EAOSfAWhfEM",
+    "title": "New Orleans Saints vs. Los Angeles Chargers | 2024 Week 8 Game Highlights",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-york-giants/2021-week-14": {
+    "youtubeId": "ziXPgr8hiLM",
+    "title": "Giants vs. Chargers Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-york-giants/2025-week-4": {
+    "youtubeId": "Q49Cc6-oq7A",
+    "title": "Los Angeles Chargers vs. New York Giants Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-new-york-jets/2023-week-9": {
+    "youtubeId": "huLxtlt6I8E",
+    "title": "Los Angeles Chargers vs. New York Jets | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-06",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-philadelphia-eagles/2021-week-9": {
+    "youtubeId": "VWGQ5LNgiBU",
+    "title": "Chargers vs. Eagles Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-philadelphia-eagles/2025-week-14": {
+    "youtubeId": "Mpj2TpaVo8o",
+    "title": "Philadelphia Eagles vs Los Angeles Chargers Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-08",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-pittsburgh-steelers/2021-week-11": {
+    "youtubeId": "6kn3Dkaq4yI",
+    "title": "Steelers vs. Chargers Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-pittsburgh-steelers/2024-week-3": {
+    "youtubeId": "bhbM-VPZ_Vo",
+    "title": "Los Angeles Chargers vs. Pittsburgh Steelers | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-pittsburgh-steelers/2025-week-10": {
+    "youtubeId": "zqa7dJ2y6uw",
+    "title": "Pittsburgh Steelers vs Los Angeles Chargers Game Highlights | 2025 NFL Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-san-francisco-49ers/2022-week-10": {
+    "youtubeId": "0ktuADz3KBM",
+    "title": "Los Angeles Chargers vs. San Francisco 49ers | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-seattle-seahawks/2022-week-7": {
+    "youtubeId": "Mo2OSSZlivY",
+    "title": "Seattle Seahawks vs. Los Angeles Chargers | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-tampa-bay-buccaneers/2024-week-15": {
+    "youtubeId": "88EHWTTOnN4",
+    "title": "Tampa Bay Buccaneers vs. Los Angeles Chargers Game Highlights | NFL 2024 Season Week 15",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-tennessee-titans/2022-week-15": {
+    "youtubeId": "saIodWmvDwg",
+    "title": "Tennessee Titans vs. Los Angeles Chargers | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-tennessee-titans/2023-week-2": {
+    "youtubeId": "2Han62P2Cis",
+    "title": "Los Angeles Chargers vs. Tennessee Titans | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-tennessee-titans/2024-week-10": {
+    "youtubeId": "YeuQgz4t52E",
+    "title": "Tennessee Titans vs. Los Angeles Chargers | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-tennessee-titans/2025-week-9": {
+    "youtubeId": "Pqv00t2zyQ8",
+    "title": "Los Angeles Chargers vs. Tennessee Titans Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
   "los-angeles-chargers-vs-washington-commanders/2021-week-1": {
     "youtubeId": "IYO2Qlpw3tI",
     "title": "Chargers vs. Washington Football Team Week 1 Highlights | NFL 2021",
     "uploadDate": "2021-09-12",
+    "publisher": "NFL"
+  },
+  "los-angeles-chargers-vs-washington-commanders/2025-week-5": {
+    "youtubeId": "xorIPpiVxZo",
+    "title": "Washington Commanders vs Los Angeles Chargers Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-miami-dolphins/2024-week-10": {
+    "youtubeId": "ujGt3_kpSaU",
+    "title": "Miami Dolphins vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-11",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-minnesota-vikings/2021-week-16": {
+    "youtubeId": "glOpivixRO4",
+    "title": "Rams vs. Vikings Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-minnesota-vikings/2024-wild-card": {
+    "youtubeId": "MSgFD4pwmMg",
+    "title": "Minnesota Vikings vs. Los Angeles Rams Game Highlights | Wild Card NFL 2024 Season",
+    "uploadDate": "2025-01-13",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-england-patriots/2024-week-11": {
+    "youtubeId": "jQ69obv-PGI",
+    "title": "Los Angeles Rams vs. New England Patriots Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-orleans-saints/2022-week-11": {
+    "youtubeId": "coAe-YthUJo",
+    "title": "Los Angeles Rams vs. New Orleans Saints | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-orleans-saints/2023-week-16": {
+    "youtubeId": "0iVUDHXSGBY",
+    "title": "New Orleans Saints vs. Los Angeles Rams | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-21",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-orleans-saints/2024-week-13": {
+    "youtubeId": "HJ4dFA2UJms",
+    "title": "Los Angeles Rams vs. New Orleans Saints Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-orleans-saints/2025-week-9": {
+    "youtubeId": "YZEmuzr-u7o",
+    "title": "New Orleans Saints vs. Los Angeles Rams Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-york-giants/2021-week-6": {
+    "youtubeId": "amscGqcE0V8",
+    "title": "Rams vs. Giants Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-new-york-giants/2023-week-17": {
+    "youtubeId": "OqpE3vjvwr4",
+    "title": "Los Angeles Rams vs. New York Giants | 2023 Week 17 Game Highlights",
+    "uploadDate": "2023-12-31",
     "publisher": "NFL"
   },
   "los-angeles-rams-vs-new-york-giants/2026-week-2": {
@@ -537,10 +7053,118 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-21",
     "publisher": "NFL"
   },
+  "los-angeles-rams-vs-new-york-jets/2024-week-16": {
+    "youtubeId": "uY66j0QDJA4",
+    "title": "Los Angeles Rams vs. New York Jets | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-philadelphia-eagles/2023-week-5": {
+    "youtubeId": "uwJ5tgXVIp4",
+    "title": "Philadelphia Eagles vs. Los Angeles Rams | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-philadelphia-eagles/2024-divisional": {
+    "youtubeId": "4oav669nx3o",
+    "title": "Los Angeles Rams vs. Philadelphia Eagles Game Highlights | Divisional Round NFL 2024 Season",
+    "uploadDate": "2025-01-19",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-philadelphia-eagles/2024-week-12": {
+    "youtubeId": "43u7sm0bzsQ",
+    "title": "Philadelphia Eagles vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-philadelphia-eagles/2025-week-3": {
+    "youtubeId": "RcCnFxPhfd0",
+    "title": "Los Angeles Rams vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-pittsburgh-steelers/2023-week-7": {
+    "youtubeId": "B5ad_Hi_i4g",
+    "title": "Pittsburgh Steelers vs. Los Angeles Rams | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2021-conference-championship": {
+    "youtubeId": "SXrR7xwvokU",
+    "title": "49ers vs. Rams NFC Championship Highlights | NFL 2021",
+    "uploadDate": "2022-01-30",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2021-week-10": {
+    "youtubeId": "XS7gAIAJZV0",
+    "title": "Rams vs. 49ers Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-15",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2021-week-18": {
+    "youtubeId": "vK6V_cJMgwM",
+    "title": "49ers vs. Rams Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2022-week-4": {
+    "youtubeId": "DEBtuggSvbI",
+    "title": "Los Angeles Rams vs. San Francisco 49ers | 2022 Week 4 Highlights",
+    "uploadDate": "2022-10-03",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2022-week-8": {
+    "youtubeId": "nJW8DTjvN5o",
+    "title": "San Francisco 49ers vs. Los Angeles Rams | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2023-week-18": {
+    "youtubeId": "OJxrc7lvlxw",
+    "title": "Los Angeles Rams vs. San Francisco 49ers | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2023-week-2": {
+    "youtubeId": "0h_uxJhuM_0",
+    "title": "San Francisco 49ers vs. Los Angeles Rams | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2024-week-15": {
+    "youtubeId": "ov2gLCU47lk",
+    "title": "Los Angeles Rams vs. San Francisco 49ers Game Highlights | 2024 Season Week 15",
+    "uploadDate": "2024-12-12",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2024-week-3": {
+    "youtubeId": "o0mCUeMMUpk",
+    "title": "San Francisco 49ers vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2025-week-10": {
+    "youtubeId": "1Jf5TUu8jxk",
+    "title": "Los Angeles Rams vs. San Francisco 49ers Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-san-francisco-49ers/2025-week-5": {
+    "youtubeId": "qAGOfj2mlrc",
+    "title": "San Francisco 49ers vs Los Angeles Rams Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-02",
+    "publisher": "NFL"
+  },
   "los-angeles-rams-vs-san-francisco-49ers/2026-week-1": {
     "youtubeId": "C9sL5j_iUiE",
     "title": "San Francisco 49ers vs Los Angeles Rams Game Highlights | 2026 Week 1 Melbourne Game",
     "uploadDate": "2026-09-10",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2021-week-15": {
+    "youtubeId": "uET9yGFm6OI",
+    "title": "Seahawks vs. Rams Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-21",
     "publisher": "NFL"
   },
   "los-angeles-rams-vs-seattle-seahawks/2021-week-5": {
@@ -549,10 +7173,106 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-07",
     "publisher": "NFL"
   },
+  "los-angeles-rams-vs-seattle-seahawks/2022-week-13": {
+    "youtubeId": "8OO3-jSeIJg",
+    "title": "Seattle Seahawks vs. Los Angeles Rams | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2022-week-18": {
+    "youtubeId": "5tXQ1vgz52g",
+    "title": "Los Angeles Rams vs. Seattle Seahawks | Week 18 2022 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2023-week-1": {
+    "youtubeId": "ozLQwG2-iaY",
+    "title": "Los Angeles Rams vs. Seattle Seahawks Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2023-week-11": {
+    "youtubeId": "g6jtLm7NcGU",
+    "title": "Seattle Seahawks vs. Los Angeles Rams | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2024-week-18": {
+    "youtubeId": "sXAOEOkrOpI",
+    "title": "Seattle Seahawks vs. Los Angeles Rams Game Highlights | NFL 2024 Season Week 18",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2024-week-9": {
+    "youtubeId": "wvcJj-L-qDA",
+    "title": "Los Angeles Rams vs. Seattle Seahawks Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2025-conference-championship": {
+    "youtubeId": "CgCJ2nBAEaU",
+    "title": "Los Angeles Rams vs Seattle Seahawks Game Highlights | 2025 NFL Season NFC Championship",
+    "uploadDate": "2026-01-25",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2025-week-11": {
+    "youtubeId": "S0yqdJlujsw",
+    "title": "Seattle Seahawks vs. Los Angeles Rams Game Highlights | NFL 2025 Season Week 11",
+    "uploadDate": "2025-11-16",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-seattle-seahawks/2025-week-16": {
+    "youtubeId": "m6y77P6KLzQ",
+    "title": "Los Angeles Rams vs Seattle Seahawks Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-18",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-tampa-bay-buccaneers/2021-divisional": {
+    "youtubeId": "oq3K2weNdhA",
+    "title": "Rams vs. Buccaneers Divisional Round Highlights | NFL 2021",
+    "uploadDate": "2022-01-23",
+    "publisher": "NFL"
+  },
   "los-angeles-rams-vs-tampa-bay-buccaneers/2021-week-3": {
     "youtubeId": "2SNQ8xxAmfo",
     "title": "Buccaneers vs. Rams Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-tampa-bay-buccaneers/2022-week-9": {
+    "youtubeId": "m5QRyFxw4ss",
+    "title": "Los Angeles Rams vs. Tampa Bay Buccaneers | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-tampa-bay-buccaneers/2025-week-12": {
+    "youtubeId": "m3RK7Qy2TCI",
+    "title": "Tampa Bay Buccaneers vs Los Angeles Rams Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-tennessee-titans/2021-week-9": {
+    "youtubeId": "ARaE4c1ib94",
+    "title": "Titans vs. Rams Week 9 Highlights | NFL 2021",
+    "uploadDate": "2021-11-07",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-tennessee-titans/2025-week-2": {
+    "youtubeId": "H9Y_UXyCfPU",
+    "title": "Los Angeles Rams vs. Tennessee Titans Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "los-angeles-rams-vs-washington-commanders/2023-week-15": {
+    "youtubeId": "-FeGbNKn_qQ",
+    "title": "Washington Commanders vs. Los Angeles Rams | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-minnesota-vikings/2022-week-6": {
+    "youtubeId": "dAM_HIOdX80",
+    "title": "Minnesota Vikings vs. Miami Dolphins | 2022 Week 6 Game Highlights",
+    "uploadDate": "2022-10-16",
     "publisher": "NFL"
   },
   "miami-dolphins-vs-new-england-patriots/2021-week-1": {
@@ -561,10 +7281,184 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-12",
     "publisher": "NFL"
   },
+  "miami-dolphins-vs-new-england-patriots/2021-week-18": {
+    "youtubeId": "zhyQ9ZgTLqE",
+    "title": "Patriots vs. Dolphins Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2022-week-1": {
+    "youtubeId": "J09SZ02lu3c",
+    "title": "New England Patriots vs. Miami Dolphins | Week 1 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2022-week-17": {
+    "youtubeId": "CTOgSEYqiwA",
+    "title": "Miami Dolphins vs. New England Patriots | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2023-week-2": {
+    "youtubeId": "Wvadap4QRSQ",
+    "title": "Miami Dolphins vs. New England Patriots | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-17",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2023-week-8": {
+    "youtubeId": "T_WP2DXae6w",
+    "title": "New England Patriots vs. Miami Dolphins | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2024-week-12": {
+    "youtubeId": "e15J7ca-u58",
+    "title": "New England Patriots vs. Miami Dolphins Game Highlights | NFL 2024 Season Week 12",
+    "uploadDate": "2024-11-24",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2024-week-5": {
+    "youtubeId": "CqVxAlP7rrc",
+    "title": "Miami Dolphins vs. New England Patriots | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2025-week-18": {
+    "youtubeId": "WOUY5H6b6N0",
+    "title": "Miami Dolphins vs New England Patriots Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-england-patriots/2025-week-2": {
+    "youtubeId": "QyifYrph9C8",
+    "title": "New England Patriots vs Miami Dolphins Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-orleans-saints/2021-week-16": {
+    "youtubeId": "0GF2bKODgKU",
+    "title": "Dolphins vs. Saints Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-27",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-orleans-saints/2025-week-13": {
+    "youtubeId": "HMM_LUGf6hQ",
+    "title": "New Orleans Saints vs. Miami Dolphins Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-giants/2021-week-13": {
+    "youtubeId": "Jl5mps94nNI",
+    "title": "Giants vs. Dolphins Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-giants/2023-week-5": {
+    "youtubeId": "9cOWVwCrOMk",
+    "title": "New York Giants vs. Miami Dolphins | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2021-week-11": {
+    "youtubeId": "NujaaU4i5yw",
+    "title": "Dolphins vs. Jets Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2021-week-15": {
+    "youtubeId": "KF-RL7UcdQM",
+    "title": "Jets vs. Dolphins Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2022-week-18": {
+    "youtubeId": "6rpz_InKGAs",
+    "title": "New York Jets vs. Miami Dolphins | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2022-week-5": {
+    "youtubeId": "vGZdkKDS_Hs",
+    "title": "Miami Dolphins vs. New York Jets | 2022 Week 5 Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2023-week-12": {
+    "youtubeId": "5YeakoallWA",
+    "title": "Miami Dolphins vs. New York Jets | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-24",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2023-week-15": {
+    "youtubeId": "Rr17PZPZbXY",
+    "title": "New York Jets vs. Miami Dolphins Game Highlights | NFL 2023 Week 15",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2024-week-14": {
+    "youtubeId": "xOX71mMezc8",
+    "title": "New York Jets vs. Miami Dolphins Game Highlights | NFL 2024 Season Week 14",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2024-week-18": {
+    "youtubeId": "IFoY_DNkASE",
+    "title": "Miami Dolphins vs. New York Jets | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2025-week-14": {
+    "youtubeId": "-1lsr_QL4ys",
+    "title": "Miami Dolphins vs New York Jets Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-new-york-jets/2025-week-4": {
+    "youtubeId": "D7cq6Z0Qags",
+    "title": "New York Jets vs Miami Dolphins Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-29",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-philadelphia-eagles/2023-week-7": {
+    "youtubeId": "Grh0GJjcbg0",
+    "title": "Miami Dolphins vs. Philadelphia Eagles | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-pittsburgh-steelers/2022-week-7": {
+    "youtubeId": "EHA9T7MMSTU",
+    "title": "Pittsburgh Steelers vs. Miami Dolphins | 2022 Week 7 Game Highlights",
+    "uploadDate": "2022-10-23",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-pittsburgh-steelers/2025-week-15": {
+    "youtubeId": "W5AG56GJKB0",
+    "title": "Miami Dolphins vs Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 15",
+    "uploadDate": "2025-12-15",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-san-francisco-49ers/2022-week-13": {
+    "youtubeId": "fdo8hWD1taw",
+    "title": "Miami Dolphins vs. San Fransisco 49ers | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-san-francisco-49ers/2024-week-16": {
+    "youtubeId": "THtZZx25KeI",
+    "title": "San Francisco 49ers vs. Miami Dolphins Game Highlights | NFL 2024 Season Week 16",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
   "miami-dolphins-vs-san-francisco-49ers/2026-week-2": {
     "youtubeId": "pV8FmQa0a5w",
     "title": "Miami Dolphins vs. San Francisco 49ers Game Highlights | NFL 2026 Week 2",
     "uploadDate": "2026-09-20",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-seattle-seahawks/2024-week-3": {
+    "youtubeId": "F_wDCte_5lU",
+    "title": "Miami Dolphins vs. Seattle Seahawks | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
     "publisher": "NFL"
   },
   "miami-dolphins-vs-tampa-bay-buccaneers/2021-week-5": {
@@ -573,10 +7467,154 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-10",
     "publisher": "NFL"
   },
+  "miami-dolphins-vs-tampa-bay-buccaneers/2025-week-17": {
+    "youtubeId": "o84w4-bHMv4",
+    "title": "Tampa Bay Buccaneers vs Miami Dolphins Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-tennessee-titans/2021-week-17": {
+    "youtubeId": "qDk97JOnkoI",
+    "title": "Dolphins vs. Titans Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-tennessee-titans/2023-week-14": {
+    "youtubeId": "ArQ8wriT0Zk",
+    "title": "Tennessee Titans vs. Miami Dolphins | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-11",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-tennessee-titans/2024-week-4": {
+    "youtubeId": "026CheWFyDg",
+    "title": "Tennessee Titans vs. Miami Dolphins | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-30",
+    "publisher": "NFL"
+  },
+  "miami-dolphins-vs-washington-commanders/2023-week-13": {
+    "youtubeId": "4ApSVg20Iuw",
+    "title": "Miami Dolphins vs. Washington Commanders | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-england-patriots/2022-week-12": {
+    "youtubeId": "oigGsg8FwCM",
+    "title": "New England Patriots vs. Minnesota Vikings | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-24",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-orleans-saints/2022-week-4": {
+    "youtubeId": "xEK863QB7xI",
+    "title": "Minnesota Vikings vs. New Orleans Saints | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-giants/2022-week-16": {
+    "youtubeId": "g1V9jDs9500",
+    "title": "New York Giants vs. Minnesota Vikings | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-giants/2022-wild-card": {
+    "youtubeId": "xU_G-l9IKg8",
+    "title": "New York Giants vs. Minnesota Vikings | 2022 Super Wild Card Weekend Game Highlights",
+    "uploadDate": "2023-01-15",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-giants/2024-week-1": {
+    "youtubeId": "LeR6JnwBoTA",
+    "title": "Minnesota Vikings vs. New York Giants Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-giants/2025-week-16": {
+    "youtubeId": "TLg030DBz5s",
+    "title": "Minnesota Vikings vs. New York Giants Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-jets/2022-week-13": {
+    "youtubeId": "CUijPSVoX_c",
+    "title": "New York Jets vs. Minnesota Vikings | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-new-york-jets/2024-week-5": {
+    "youtubeId": "rH-ekMbODzw",
+    "title": "New York Jets vs. Minnesota Vikings | 2024 Week 5 Game Highlights",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-philadelphia-eagles/2022-week-2": {
+    "youtubeId": "z2AZ-fXC2qg",
+    "title": "Minnesota Vikings vs. Philadelphia Eagles | 2022 Week 2 Highlights",
+    "uploadDate": "2022-09-19",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-philadelphia-eagles/2023-week-2": {
+    "youtubeId": "YnxLERDZRxQ",
+    "title": "Minnesota Vikings vs. Philadelphia Eagles | 2023 Week 2 Game Highlights",
+    "uploadDate": "2023-09-14",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-philadelphia-eagles/2025-week-7": {
+    "youtubeId": "t7fA78qswDY",
+    "title": "Philadelphia Eagles vs. Minnesota Vikings Game Highlights | NFL 2025 Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-pittsburgh-steelers/2021-week-14": {
+    "youtubeId": "FIRnuLojSRs",
+    "title": "Steelers vs. Vikings Week 14 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-12-09",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-pittsburgh-steelers/2025-week-4": {
+    "youtubeId": "3rmFasEWP7w",
+    "title": "Minnesota Vikings vs. Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-san-francisco-49ers/2021-week-12": {
+    "youtubeId": "rjB2gp0r2p8",
+    "title": "Vikings vs. 49ers Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-san-francisco-49ers/2023-week-7": {
+    "youtubeId": "goAvP2I-twQ",
+    "title": "San Francisco 49ers vs. Minnesota Vikings | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-23",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-san-francisco-49ers/2024-week-2": {
+    "youtubeId": "mEOlU5cGjcI",
+    "title": "San Francisco 49ers vs. Minnesota Vikings | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
   "minnesota-vikings-vs-seattle-seahawks/2021-week-3": {
     "youtubeId": "WMj6Zawd-aQ",
     "title": "Seahawks vs. Vikings Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-seattle-seahawks/2024-week-16": {
+    "youtubeId": "BBv1GoM3ZIQ",
+    "title": "Minnesota Vikings vs. Seattle Seahawks | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-seattle-seahawks/2025-week-13": {
+    "youtubeId": "v9LzFS6G3Mk",
+    "title": "Minnesota Vikings vs. Seattle Seahawks Game Highlights | NFL 2025 Season Week 13",
+    "uploadDate": "2025-11-30",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-tampa-bay-buccaneers/2023-week-1": {
+    "youtubeId": "QeHgQ_OwEmk",
+    "title": "Tampa Bay Buccaneers vs. Minnesota Vikings Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
     "publisher": "NFL"
   },
   "minnesota-vikings-vs-tampa-bay-buccaneers/2026-week-3": {
@@ -585,10 +7623,52 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-27",
     "publisher": "NFL"
   },
+  "minnesota-vikings-vs-tennessee-titans/2024-week-11": {
+    "youtubeId": "1AnhTAVtRME",
+    "title": "Minnesota Vikings vs. Tennessee Titans | 2024 Week 11 Game Highlights",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-washington-commanders/2022-week-9": {
+    "youtubeId": "fuIp98BPoG4",
+    "title": "Minnesota Vikings vs. Washington Commanders | 2022 Week 9 Game Highlights",
+    "uploadDate": "2022-11-06",
+    "publisher": "NFL"
+  },
+  "minnesota-vikings-vs-washington-commanders/2025-week-14": {
+    "youtubeId": "ZcHTS6J-yAc",
+    "title": "Washington Commanders vs Minnesota Vikings Game Highlights | 2025 NFL Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
   "new-england-patriots-vs-new-orleans-saints/2021-week-3": {
     "youtubeId": "arcYlq_3Du4",
     "title": "Saints vs. Patriots Week 3 Highlights | NFL 2021",
     "uploadDate": "2021-09-26",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-orleans-saints/2023-week-5": {
+    "youtubeId": "_9tgJYGvg7E",
+    "title": "New Orleans Saints vs. New England Patriots | 2023 Week 5 Game Highlights",
+    "uploadDate": "2023-10-08",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-orleans-saints/2025-week-6": {
+    "youtubeId": "qpkFmUYCc9U",
+    "title": "New England Patriots vs New Orleans Saints Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-giants/2023-week-12": {
+    "youtubeId": "Peo0nK1Eh9I",
+    "title": "New England Patriots vs. New York Giants | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-26",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-giants/2025-week-13": {
+    "youtubeId": "LRB3tIVTJnQ",
+    "title": "New York Giants vs New England Patriots Game Highlights | 2025 NFL Season Week 13",
+    "uploadDate": "2025-12-01",
     "publisher": "NFL"
   },
   "new-england-patriots-vs-new-york-jets/2021-week-2": {
@@ -597,10 +7677,106 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "new-england-patriots-vs-new-york-jets/2021-week-7": {
+    "youtubeId": "4cC8M6CTn90",
+    "title": "Jets vs. Patriots Week 7 Highlights | NFL 2021",
+    "uploadDate": "2021-10-24",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2022-week-11": {
+    "youtubeId": "Kc20JrxGlm8",
+    "title": "New York Jets vs. New England Patriots | 2022 Week 11 Game Highlights",
+    "uploadDate": "2022-11-20",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2022-week-8": {
+    "youtubeId": "F6VGhlgmBhw",
+    "title": "New England Patriots vs. New York Jets | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2023-week-18": {
+    "youtubeId": "60FtjhcO-Ss",
+    "title": "New York Jets vs. New England Patriots | 2023 Week 18 Game Highlights",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2023-week-3": {
+    "youtubeId": "5SzGYQQ7oJg",
+    "title": "New England Patriots vs. New York Jets | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-24",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2024-week-3": {
+    "youtubeId": "8bDlfUpAiCI",
+    "title": "New England Patriots vs. New York Jets Game Highlights | NFL 2024 Season Week 3",
+    "uploadDate": "2024-09-19",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2024-week-8": {
+    "youtubeId": "SdUkySR1B_k",
+    "title": "New York Jets vs. New England Patriots Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-27",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2025-week-11": {
+    "youtubeId": "kC2lQT5NVqE",
+    "title": "New York Jets vs New England Patriots Game Highlights | 2025 NFL Season Week 11",
+    "uploadDate": "2025-11-13",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-new-york-jets/2025-week-17": {
+    "youtubeId": "RrEI2-lwBlQ",
+    "title": "New England Patriots vs New York Jets Game Highlights | 2025 NFL Season Week 17",
+    "uploadDate": "2025-12-28",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-philadelphia-eagles/2023-week-1": {
+    "youtubeId": "9ScvSGsDtfo",
+    "title": "Philadelphia Eagles vs. New England Patriots | 2023 Week 1 Game Highlights",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-pittsburgh-steelers/2022-week-2": {
+    "youtubeId": "J9a6Sark83s",
+    "title": "New England Patriots vs. Pittsburgh Steelers | Week 2 Game Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-pittsburgh-steelers/2023-week-14": {
+    "youtubeId": "3r_lXz3nQfY",
+    "title": "New England Patriots vs. Pittsburgh Steelers | 2023 Week 14 Game Highlights",
+    "uploadDate": "2023-12-07",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-pittsburgh-steelers/2025-week-3": {
+    "youtubeId": "e30qv6NFUfQ",
+    "title": "Pittsburgh Steelers vs. New England Patriots Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
   "new-england-patriots-vs-pittsburgh-steelers/2026-week-2": {
     "youtubeId": "HMeTHt77nYE",
     "title": "Pittsburgh Steelers vs. New England Patriots Game Highlights | NFL Week 2",
     "uploadDate": "2026-09-20",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-san-francisco-49ers/2024-week-4": {
+    "youtubeId": "21nUexUo3N8",
+    "title": "New England Patriots vs. San Francsico 49ers | 2024 Week 4 Game Highlights",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-seattle-seahawks/2024-week-2": {
+    "youtubeId": "zMHjWT_Pn_c",
+    "title": "Seattle Seahawks vs. New England Patriots Game Highlights | NFL 2024 Week 2",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-seattle-seahawks/2025-super-bowl": {
+    "youtubeId": "ksG9O8PHXbI",
+    "title": "Seattle Seahawks vs New England Patriots | Super Bowl LX Game Highlights",
+    "uploadDate": "2026-02-08",
     "publisher": "NFL"
   },
   "new-england-patriots-vs-seattle-seahawks/2026-week-1": {
@@ -615,10 +7791,196 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "new-england-patriots-vs-tampa-bay-buccaneers/2025-week-10": {
+    "youtubeId": "ci7Cm7yMIXk",
+    "title": "New England Patriots vs. Tampa Bay Buccaneers Game Highlights | NFL 2025 Season Week 10",
+    "uploadDate": "2025-11-09",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-tennessee-titans/2021-week-12": {
+    "youtubeId": "agmDF7U1TVg",
+    "title": "Titans vs. Patriots Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-tennessee-titans/2024-week-9": {
+    "youtubeId": "hnp8OXWM_Sw",
+    "title": "New England Patriots vs. Tennessee Titans | 2024 Week 9 Game Highlights",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-tennessee-titans/2025-week-7": {
+    "youtubeId": "VcZ1vvhsmKs",
+    "title": "New England Patriots vs Tennessee Titans Game Highlights | 2025 NFL Season Week 7",
+    "uploadDate": "2025-10-19",
+    "publisher": "NFL"
+  },
+  "new-england-patriots-vs-washington-commanders/2023-week-9": {
+    "youtubeId": "UvW8kw6gInY",
+    "title": "Washington Commanders vs. New England Patriots | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-05",
+    "publisher": "NFL"
+  },
   "new-orleans-saints-vs-new-york-giants/2021-week-4": {
     "youtubeId": "57O4ByVZ_fg",
     "title": "Giants vs. Saints Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-new-york-giants/2023-week-15": {
+    "youtubeId": "VvHSZCdIqqI",
+    "title": "New York Giants vs. New Orleans Saints | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-17",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-new-york-giants/2024-week-14": {
+    "youtubeId": "mLj-2Uekkik",
+    "title": "New Orleans Saints vs. New York Giants | 2024 Week 14 Game Highlights",
+    "uploadDate": "2024-12-08",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-new-york-giants/2025-week-5": {
+    "youtubeId": "lFNwnfAa4BE",
+    "title": "New York Giants vs New Orleans Saints Game Highlights | 2025 NFL Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-new-york-jets/2021-week-14": {
+    "youtubeId": "d5a7wSKhJl4",
+    "title": "Saints vs. Jets Week 14 Highlights | NFL 2021",
+    "uploadDate": "2021-12-12",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-new-york-jets/2025-week-16": {
+    "youtubeId": "5DAJ2R3Gd80",
+    "title": "New York Jets vs. New Orleans Saints Game Highlights | NFL 2025 Season Week 16",
+    "uploadDate": "2025-12-21",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-philadelphia-eagles/2021-week-11": {
+    "youtubeId": "R3dvFhjVdlc",
+    "title": "Saints vs. Eagles Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-21",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-philadelphia-eagles/2022-week-17": {
+    "youtubeId": "nMVQwS9b38I",
+    "title": "New Orleans Saints vs. Philadelphia Eagles | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-philadelphia-eagles/2024-week-3": {
+    "youtubeId": "J9wpEut_-xo",
+    "title": "Philadelphia Eagles vs. New Orleans Saints | 2024 Week 3 Game Highlights",
+    "uploadDate": "2024-09-22",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-san-francisco-49ers/2022-week-12": {
+    "youtubeId": "dSzTrFLm43U",
+    "title": "New Orleans Saints vs. San Francisco 49ers | 2022 Week 12 Game Highlights",
+    "uploadDate": "2022-11-27",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-san-francisco-49ers/2025-week-2": {
+    "youtubeId": "dyx_u1kpxZ8",
+    "title": "San Francisco 49ers vs New Orleans Saints Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-seattle-seahawks/2021-week-7": {
+    "youtubeId": "G9iwCZSKVVY",
+    "title": "Saints vs. Seahawks Week 7 Highlights | NFL 2021 Highlights",
+    "uploadDate": "2021-10-25",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-seattle-seahawks/2022-week-5": {
+    "youtubeId": "ivNJHNjafRw",
+    "title": "Seattle Seahawks vs. New Orleans Saints | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-seattle-seahawks/2025-week-3": {
+    "youtubeId": "FktDydo70eY",
+    "title": "New Orleans Saints vs Seattle Seahawks Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2021-week-15": {
+    "youtubeId": "pgMpkL4l9oU",
+    "title": "Saints vs. Buccaneers Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2021-week-8": {
+    "youtubeId": "2vPBZKZXGjo",
+    "title": "Buccaneers vs. Saints Week 8 Highlights | NFL 2021",
+    "uploadDate": "2021-10-31",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2022-week-13": {
+    "youtubeId": "eTDC7DSiaQY",
+    "title": "New Orleans Saints vs. Tampa Bay Buccaneers | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-05",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2022-week-2": {
+    "youtubeId": "E9jCNiad4kE",
+    "title": "Tampa Bay Buccaneers vs. New Orleans Saints | Week 2 Game Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2023-week-17": {
+    "youtubeId": "8OvTS1pXiAU",
+    "title": "New Orleans Saints vs. Tampa Bay Buccaneers Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2023-week-4": {
+    "youtubeId": "TEDA_KJ90Rw",
+    "title": "Tampa Bay Buccaneers vs. New Orleans Saints | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2024-week-18": {
+    "youtubeId": "a8HGyYooRys",
+    "title": "New Orleans Saints vs. Tampa Bay Buccaneers | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2024-week-6": {
+    "youtubeId": "dwgBfZJIZpI",
+    "title": "Tampa Bay Buccaneers vs. New Orleans Saints | 2024 Week 6 Game Highlights",
+    "uploadDate": "2024-10-13",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2025-week-14": {
+    "youtubeId": "5pYafomv7e8",
+    "title": "New Orleans Saints vs. Tampa Bay Buccaneers Game Highlights | NFL 2025 Season Week 14",
+    "uploadDate": "2025-12-07",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tampa-bay-buccaneers/2025-week-8": {
+    "youtubeId": "0gkuvC3Icoc",
+    "title": "Tampa Bay Buccaneers vs. New Orleans Saints Game Highlights | NFL 2025 Season Week 8",
+    "uploadDate": "2025-10-26",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tennessee-titans/2021-week-10": {
+    "youtubeId": "chzY7eS0eW4",
+    "title": "Saints vs. Titans Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tennessee-titans/2023-week-1": {
+    "youtubeId": "eQov90lWgV4",
+    "title": "Tennessee Titans vs. New Orleans Saints Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "new-orleans-saints-vs-tennessee-titans/2025-week-17": {
+    "youtubeId": "xgOzbvikCMg",
+    "title": "New Orleans Saints vs. Tennessee Titans Game Highlights | NFL 2025 Season Week 17",
+    "uploadDate": "2025-12-28",
     "publisher": "NFL"
   },
   "new-orleans-saints-vs-washington-commanders/2021-week-5": {
@@ -627,10 +7989,130 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-10",
     "publisher": "NFL"
   },
+  "new-orleans-saints-vs-washington-commanders/2024-week-15": {
+    "youtubeId": "r0unGLf6Hcg",
+    "title": "Washington Commanders vs. New Orleans Saints | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-new-york-jets/2023-week-8": {
+    "youtubeId": "azNyUkMQc7w",
+    "title": "New York Jets vs. New York Giants | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2021-week-12": {
+    "youtubeId": "gnBEToF4_Y4",
+    "title": "Eagles vs. Giants Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-28",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2021-week-16": {
+    "youtubeId": "HUb48ybSW34",
+    "title": "Giants vs. Eagles Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-26",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2022-week-14": {
+    "youtubeId": "S8cJ3j6QUEQ",
+    "title": "Philadelphia Eagles vs. New York Giants | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2022-week-18": {
+    "youtubeId": "Li2mX1D-UF8",
+    "title": "New York Giants vs. Philadelphia Eagles | 2022 Week 18 Game Highlights",
+    "uploadDate": "2023-01-08",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2023-week-16": {
+    "youtubeId": "HoBpIXzEivw",
+    "title": "New York Giants vs. Philadelphia Eagles Game Highlights | NFL 2023 Week 16",
+    "uploadDate": "2023-12-27",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2023-week-18": {
+    "youtubeId": "Ni3tXzBeasY",
+    "title": "Philadelphia Eagles vs. New York Giants - Highlights | 2023 Regular Season Week 18",
+    "uploadDate": "2024-01-07",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2024-week-18": {
+    "youtubeId": "MP9eB9ms8SQ",
+    "title": "New York Giants vs. Philadelphia Eagles | 2024 Week 18 Game Highlights",
+    "uploadDate": "2025-01-05",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2024-week-7": {
+    "youtubeId": "Uxirr5CFQkE",
+    "title": "Philadelphia Eagles vs. New York Giants Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-philadelphia-eagles/2025-week-6": {
+    "youtubeId": "JFa_uhVkpio",
+    "title": "Philadelphia Eagles vs New York Giants Game Highlights | 2025 NFL Season Week 6",
+    "uploadDate": "2025-10-09",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-pittsburgh-steelers/2024-week-8": {
+    "youtubeId": "g2ObHd6dk7Q",
+    "title": "New York Giants vs. Pittsburgh Steelers Game Highlights | NFL 2024 Season Week 8",
+    "uploadDate": "2024-10-28",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-san-francisco-49ers/2023-week-3": {
+    "youtubeId": "Ihjw0UClLnM",
+    "title": "New York Giants vs. San Francisco 49ers | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-21",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-san-francisco-49ers/2025-week-9": {
+    "youtubeId": "fNOBHepcJ4k",
+    "title": "San Francisco 49ers vs. New York Giants Game Highlights | NFL 2025 Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-seattle-seahawks/2022-week-8": {
+    "youtubeId": "RmqmSkU_2Lo",
+    "title": "New York Giants vs. Seattle Seahawks | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-seattle-seahawks/2023-week-4": {
+    "youtubeId": "GQ7EnbMz_Ac",
+    "title": "Seattle Seahawks vs. New York Giants | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-02",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-seattle-seahawks/2024-week-5": {
+    "youtubeId": "MTOX3dJPIPI",
+    "title": "New York Giants vs. Seattle Seahawks Game Highlights | NFL 2024 Season Week 5",
+    "uploadDate": "2024-10-06",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-tampa-bay-buccaneers/2021-week-11": {
+    "youtubeId": "VlC1Xb_elt4",
+    "title": "Giants vs. Buccaneers Week 11 Highlights | NFL 2021",
+    "uploadDate": "2021-11-22",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-tennessee-titans/2022-week-1": {
+    "youtubeId": "TrqkDFVyW-0",
+    "title": "Tennessee Titans vs. New York Giants | Week 1 2022 Game Highlights",
+    "uploadDate": "2022-09-11",
+    "publisher": "NFL"
+  },
   "new-york-giants-vs-tennessee-titans/2026-week-3": {
     "youtubeId": "GmCLbwLRGqA",
     "title": "Tennessee Titans vs. New York Giants Game Highlights | NFL 2026 Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2021-week-18": {
+    "youtubeId": "VgOLyu7PzcU",
+    "title": "Washington Football Team vs. Giants Week 18 Highlights | NFL 2021",
+    "uploadDate": "2022-01-09",
     "publisher": "NFL"
   },
   "new-york-giants-vs-washington-commanders/2021-week-2": {
@@ -639,10 +8121,118 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-09-16",
     "publisher": "NFL"
   },
+  "new-york-giants-vs-washington-commanders/2022-week-13": {
+    "youtubeId": "_C3pLqzn4do",
+    "title": "Washington Commanders vs. New York Giants | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2022-week-15": {
+    "youtubeId": "aYQtFvrZJRY",
+    "title": "New York Giants vs. Washington Commanders | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-18",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2023-week-11": {
+    "youtubeId": "tr5Nr6tsBaY",
+    "title": "New York Giants vs. Washington Commanders | 2023 Week 11 Game Highlights",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2023-week-7": {
+    "youtubeId": "Cn_1B9tuLhk",
+    "title": "Washington Commanders vs. New York Giants | 2023 Week 7 Game Highlights",
+    "uploadDate": "2023-10-22",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2024-week-2": {
+    "youtubeId": "QEMGMIWMgp0",
+    "title": "New York Giants vs. Washington Commanders | 2024 Week 2 Game Highlights",
+    "uploadDate": "2024-09-15",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2024-week-9": {
+    "youtubeId": "WWAdG2ykKO0",
+    "title": "Washington Commanders vs. New York Giants Game Highlights | NFL 2024 Season Week 9",
+    "uploadDate": "2024-11-03",
+    "publisher": "NFL"
+  },
+  "new-york-giants-vs-washington-commanders/2025-week-1": {
+    "youtubeId": "HMw8O4yzEiQ",
+    "title": "New York Giants vs Washington Commanders Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-philadelphia-eagles/2021-week-13": {
+    "youtubeId": "ThCPrSxnMTU",
+    "title": "Eagles vs. Jets Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-philadelphia-eagles/2023-week-6": {
+    "youtubeId": "3cxcnrGaN0Q",
+    "title": "Philadelphia Eagles vs. New York Jets | 2023 Week 6 Game Highlights",
+    "uploadDate": "2023-10-15",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-pittsburgh-steelers/2022-week-4": {
+    "youtubeId": "qyPoVrz2n-A",
+    "title": "New York Jets vs. Pittsburgh Steelers | Week 4 2022 Game Highlights",
+    "uploadDate": "2022-10-02",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-pittsburgh-steelers/2024-week-7": {
+    "youtubeId": "qYYiY-oU6Jc",
+    "title": "New York Jets vs. Pittsburgh Steelers Game Highlights | NFL 2024 Season Week 7",
+    "uploadDate": "2024-10-20",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-pittsburgh-steelers/2025-week-1": {
+    "youtubeId": "kapv4nxG0eI",
+    "title": "Pittsburgh Steelers vs. New York Jets Game Highlights | NFL 2025 Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-san-francisco-49ers/2024-week-1": {
+    "youtubeId": "bEweK7ffTcQ",
+    "title": "New York Jets vs. San Francisco 49ers Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-09",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-seattle-seahawks/2022-week-17": {
+    "youtubeId": "ZEiKlUBn9jE",
+    "title": "New York Jets vs. Seattle Seahawks | 2022 Week 17 Game Highlights",
+    "uploadDate": "2023-01-01",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-seattle-seahawks/2024-week-13": {
+    "youtubeId": "sxNyRfsiYhQ",
+    "title": "Seattle Seahawks vs. New York Jets Game Highlights | NFL 2024 Season Week 13",
+    "uploadDate": "2024-12-01",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-tampa-bay-buccaneers/2021-week-17": {
+    "youtubeId": "2Z3nuXY3XGs",
+    "title": "Buccaneers vs. Jets Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-tampa-bay-buccaneers/2025-week-3": {
+    "youtubeId": "wKmY55D24hA",
+    "title": "New York Jets vs Tampa Bay Buccaneers Game Highlights | 2025 NFL Season Week 3",
+    "uploadDate": "2025-09-21",
+    "publisher": "NFL"
+  },
   "new-york-jets-vs-tennessee-titans/2021-week-4": {
     "youtubeId": "Y1mOkYny1io",
     "title": "Titans vs. Jets Week 4 Highlights | NFL 2021",
     "uploadDate": "2021-10-03",
+    "publisher": "NFL"
+  },
+  "new-york-jets-vs-tennessee-titans/2024-week-2": {
+    "youtubeId": "X9hmCP8o-xs",
+    "title": "New York Jets vs. Tennessee Titans Game Highlights | NFL 2024 Week 2",
+    "uploadDate": "2024-09-15",
     "publisher": "NFL"
   },
   "new-york-jets-vs-tennessee-titans/2026-week-1": {
@@ -651,10 +8241,88 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-13",
     "publisher": "NFL"
   },
+  "new-york-jets-vs-washington-commanders/2023-week-16": {
+    "youtubeId": "den0UKN_TuU",
+    "title": "Washington Commanders vs. New York Jets | 2023 Week 16 Game Highlights",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-pittsburgh-steelers/2022-week-8": {
+    "youtubeId": "Emsr7g3J6wA",
+    "title": "Pittsburgh Steelers vs. Philadelphia Eagles | 2022 Week 8 Game Highlights",
+    "uploadDate": "2022-10-30",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-pittsburgh-steelers/2024-week-15": {
+    "youtubeId": "MOssxbdQvks",
+    "title": "Pittsburgh Steelers vs. Philadelphia Eagles | 2024 Week 15 Game Highlights",
+    "uploadDate": "2024-12-15",
+    "publisher": "NFL"
+  },
   "philadelphia-eagles-vs-san-francisco-49ers/2021-week-2": {
     "youtubeId": "9-2SVoKI7n0",
     "title": "49ers vs. Eagles Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-san-francisco-49ers/2023-week-13": {
+    "youtubeId": "NG7LbR6jwe4",
+    "title": "San Francisco 49ers vs. Philadelphia Eagles | 2023 Week 13 Game Highlights",
+    "uploadDate": "2023-12-03",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-san-francisco-49ers/2025-wild-card": {
+    "youtubeId": "YPS3tHwvwR8",
+    "title": "San Francisco 49ers vs Philadelphia Eagles Game Highlights | 2025 NFL Season Wild Card Round",
+    "uploadDate": "2026-01-11",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-seattle-seahawks/2023-week-15": {
+    "youtubeId": "qhlsFDIHe0w",
+    "title": "Philadelphia Eagles vs. Seattle Seahawks | 2023 Week 15 Game Highlights",
+    "uploadDate": "2023-12-18",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2021-week-6": {
+    "youtubeId": "Z_xUiW-ozHw",
+    "title": "Buccaneers vs. Eagles Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-14",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2021-wild-card": {
+    "youtubeId": "dqqprHCWuT8",
+    "title": "Eagles vs. Buccaneers Super Wild Card Weekend Highlights | NFL 2021",
+    "uploadDate": "2022-01-16",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2023-week-3": {
+    "youtubeId": "GelBbS0-lTA",
+    "title": "Philadelphia Eagles vs. Tampa Bay Buccaneers | 2023 Week 3 Game Highlights",
+    "uploadDate": "2023-09-25",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2023-wild-card": {
+    "youtubeId": "UKBAcibnGpw",
+    "title": "Philadelphia Eagles vs. Tampa Bay Buccaneers Game Highlights | NFL 2023 Super Wild Card Weekend",
+    "uploadDate": "2024-01-15",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2024-week-4": {
+    "youtubeId": "1oS7Ql5UoCc",
+    "title": "Philadelphia Eagles vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season Week 4",
+    "uploadDate": "2024-09-29",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tampa-bay-buccaneers/2025-week-4": {
+    "youtubeId": "h1cMOfWEORQ",
+    "title": "Philadelphia Eagles vs. Tampa Bay Buccaneers Game Highlights | NFL 2025 Season Week 4",
+    "uploadDate": "2025-09-28",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-tennessee-titans/2022-week-13": {
+    "youtubeId": "5CVAy6MUU8g",
+    "title": "Tennessee Titans vs. Philadelphia Eagles | 2022 Week 13 Game Highlights",
+    "uploadDate": "2022-12-04",
     "publisher": "NFL"
   },
   "philadelphia-eagles-vs-tennessee-titans/2026-week-2": {
@@ -663,10 +8331,130 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2026-09-20",
     "publisher": "NFL"
   },
+  "philadelphia-eagles-vs-washington-commanders/2021-week-15": {
+    "youtubeId": "YaKPoKZerqg",
+    "title": "Washington vs. Eagles Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-21",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2021-week-17": {
+    "youtubeId": "2fIhtGV2DiA",
+    "title": "Eagles vs. Washington Football Team Week 17 Highlights | NFL 2021",
+    "uploadDate": "2022-01-02",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2022-week-10": {
+    "youtubeId": "dZJIUQvUaSQ",
+    "title": "Washington Commanders vs. Philadelphia Eagles | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-14",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2022-week-3": {
+    "youtubeId": "db_AUNocPkI",
+    "title": "Philadelphia Eagles vs. Washington Commanders | Week 3 2022 Game Highlights",
+    "uploadDate": "2022-09-25",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2023-week-4": {
+    "youtubeId": "L3O5JyHIoyo",
+    "title": "Washington Commanders vs Philadelphia Eagles | 2023 Week 4 Game Highlights",
+    "uploadDate": "2023-10-01",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2023-week-8": {
+    "youtubeId": "cPRmx0jKWRc",
+    "title": "Philadelphia Eagles vs. Washington Commanders | 2023 Week 8 Game Highlights",
+    "uploadDate": "2023-10-29",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2024-conference-championship": {
+    "youtubeId": "6jERnLUQ4JY",
+    "title": "Washington Commanders vs. Philadelphia Eagles | 2024 NFC Championship Game Highlights",
+    "uploadDate": "2025-01-26",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2024-week-11": {
+    "youtubeId": "9wxfDoA_P68",
+    "title": "Washington Commanders vs. Philadelphia Eagles Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-14",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2024-week-16": {
+    "youtubeId": "_T7IrZlnwMA",
+    "title": "Philadelphia Eagles vs. Washington Commanders | 2024 Week 16 Game Highlights",
+    "uploadDate": "2024-12-22",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2025-week-16": {
+    "youtubeId": "iE7A8jG-tN8",
+    "title": "Philadelphia Eagles vs Washington Commanders Game Highlights | 2025 NFL Season Week 16",
+    "uploadDate": "2025-12-20",
+    "publisher": "NFL"
+  },
+  "philadelphia-eagles-vs-washington-commanders/2025-week-18": {
+    "youtubeId": "HmZNZD-TU5E",
+    "title": "Washington Commanders vs Philadelphia Eagles Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-04",
+    "publisher": "NFL"
+  },
   "philadelphia-eagles-vs-washington-commanders/2026-week-1": {
     "youtubeId": "UYunnfDMXGc",
     "title": "Washington Commanders vs Philadelphia Eagles Game Highlights | 2026 NFL Week 1",
     "uploadDate": "2026-09-13",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-san-francisco-49ers/2023-week-1": {
+    "youtubeId": "MIMW94KGXFs",
+    "title": "San Francisco 49ers vs. Pittsburgh Steelers Game Highlights | NFL 2023 Week 1",
+    "uploadDate": "2023-09-10",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-seattle-seahawks/2021-week-6": {
+    "youtubeId": "2J6BT7TagmU",
+    "title": "Seahawks vs. Steelers Week 6 Highlights | NFL 2021",
+    "uploadDate": "2021-10-17",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-seattle-seahawks/2023-week-17": {
+    "youtubeId": "9KivG2YwtXI",
+    "title": "Pittsburgh Steelers vs. Seattle Seahawks Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-seattle-seahawks/2025-week-2": {
+    "youtubeId": "G7czUbqPRTY",
+    "title": "Seattle Seahawks vs. Pittsburgh Steelers Game Highlights | 2025 NFL Season Week 2",
+    "uploadDate": "2025-09-14",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-tampa-bay-buccaneers/2022-week-6": {
+    "youtubeId": "Z3QcTAG7X6Y",
+    "title": "Tampa Bay Buccaneers vs. Pittsburgh Steelers | 2022 Week 6 Highlights",
+    "uploadDate": "2022-10-16",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-tennessee-titans/2021-week-15": {
+    "youtubeId": "nzZrF3qTGqI",
+    "title": "Titans vs. Steelers Week 15 Highlights | NFL 2021",
+    "uploadDate": "2021-12-19",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-tennessee-titans/2023-week-9": {
+    "youtubeId": "0tfb8gJaTuw",
+    "title": "Tennessee Titans vs. Pittsburgh Steelers | 2023 Week 9 Game Highlights",
+    "uploadDate": "2023-11-02",
+    "publisher": "NFL"
+  },
+  "pittsburgh-steelers-vs-washington-commanders/2024-week-10": {
+    "youtubeId": "FTHzTqUvAg4",
+    "title": "Pittsburgh Steelers vs. Washington Commanders | 2024 Week 10 Game Highlights",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2021-week-13": {
+    "youtubeId": "7lEzXK-4ZEw",
+    "title": "49ers vs. Seahawks Week 13 Highlights | NFL 2021",
+    "uploadDate": "2021-12-05",
     "publisher": "NFL"
   },
   "san-francisco-49ers-vs-seattle-seahawks/2021-week-4": {
@@ -675,16 +8463,202 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2021-10-03",
     "publisher": "NFL"
   },
+  "san-francisco-49ers-vs-seattle-seahawks/2022-week-15": {
+    "youtubeId": "6cskezBiQME",
+    "title": "San Francisco 49ers vs. Seattle Seahawks | 2022 Week 15 Game Highlights",
+    "uploadDate": "2022-12-15",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2022-week-2": {
+    "youtubeId": "sSYd-05Vx0E",
+    "title": "Seattle Seahawks vs. San Francisco 49ers | Week 2 Game Highlights",
+    "uploadDate": "2022-09-18",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2022-wild-card": {
+    "youtubeId": "2fuIZDlbV_g",
+    "title": "Seattle Seahawks vs. San Francisco 49ers | 2022 Super Wild Card Weekend Game Highlights",
+    "uploadDate": "2023-01-14",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2023-week-12": {
+    "youtubeId": "VL3AyJvvvcE",
+    "title": "San Francisco 49ers vs. Seattle Seahawks | 2023 Week 12 Game Highlights",
+    "uploadDate": "2023-11-23",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2023-week-14": {
+    "youtubeId": "LtY3IGszeDE",
+    "title": "Seattle Seahawks vs. San Francisco 49ers Game Highlights | NFL 2023 Week 14",
+    "uploadDate": "2023-12-10",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2024-week-11": {
+    "youtubeId": "Fyqn0bkaiYo",
+    "title": "Seattle Seahawks vs. San Francisco 49ers Game Highlights | NFL 2024 Season Week 11",
+    "uploadDate": "2024-11-17",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2024-week-6": {
+    "youtubeId": "XQGxIXUkZiM",
+    "title": "San Francisco 49ers vs. Seattle Seahawks Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-10-10",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2025-divisional": {
+    "youtubeId": "QXxCbN48UE8",
+    "title": "San Francisco 49ers vs. Seattle Seahawks Game Highlights | NFL 2025 Season Divisional",
+    "uploadDate": "2026-01-17",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2025-week-1": {
+    "youtubeId": "zr1dq7edoMs",
+    "title": "San Francisco 49ers vs Seattle Seahawks Game Highlights | 2025 NFL Season Week 1",
+    "uploadDate": "2025-09-07",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-seattle-seahawks/2025-week-18": {
+    "youtubeId": "m9_i5axNo9w",
+    "title": "Seattle Seahawks vs San Francisco 49ers Game Highlights | 2025 NFL Season Week 18",
+    "uploadDate": "2026-01-03",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tampa-bay-buccaneers/2022-week-14": {
+    "youtubeId": "8mkPk22rGgE",
+    "title": "Tampa Bay Buccaneers vs. San Francisco 49ers | 2022 Week 14 Game Highlights",
+    "uploadDate": "2022-12-11",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tampa-bay-buccaneers/2023-week-11": {
+    "youtubeId": "LEvX-CDxROY",
+    "title": "Tampa Bay Buccaneers vs. San Francisco 49ers Game Highlights | NFL 2023 Week 11",
+    "uploadDate": "2023-11-19",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tampa-bay-buccaneers/2024-week-10": {
+    "youtubeId": "WOZJOzEh0YE",
+    "title": "San Francisco 49ers vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season Week 10",
+    "uploadDate": "2024-11-10",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tampa-bay-buccaneers/2025-week-6": {
+    "youtubeId": "Q4aACzre6rw",
+    "title": "San Francisco 49ers vs. Tampa Bay Buccaneers Game Highlights | NFL 2025 Season Week 6",
+    "uploadDate": "2025-10-12",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tennessee-titans/2021-week-16": {
+    "youtubeId": "C39MQhNp1SY",
+    "title": "49ers vs. Titans Week 16 Highlights | NFL 2021",
+    "uploadDate": "2021-12-23",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-tennessee-titans/2025-week-15": {
+    "youtubeId": "Q2ek5rSech0",
+    "title": "Tennessee Titans vs. San Francisco 49ers Game Highlights | NFL 2025 Season Week 15",
+    "uploadDate": "2025-12-14",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-washington-commanders/2022-week-16": {
+    "youtubeId": "--5-brQiQFg",
+    "title": "Washington Commanders vs. San Francisco 49ers | 2022 Week 16 Game Highlights",
+    "uploadDate": "2022-12-24",
+    "publisher": "NFL"
+  },
+  "san-francisco-49ers-vs-washington-commanders/2023-week-17": {
+    "youtubeId": "TdezhhDpW4w",
+    "title": "San Francisco 49ers vs. Washington Commanders Game Highlights | NFL 2023 Week 17",
+    "uploadDate": "2023-12-31",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-tampa-bay-buccaneers/2022-week-10": {
+    "youtubeId": "xInE_3Bc2H4",
+    "title": "Seattle Seahawks vs. Tampa Bay Buccaneers | 2022 Week 10 Game Highlights",
+    "uploadDate": "2022-11-13",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-tampa-bay-buccaneers/2025-week-5": {
+    "youtubeId": "kZhh1z967Sc",
+    "title": "Tampa Bay Buccaneers vs. Seattle Seahawks Game Highlights | NFL 2025 Season Week 5",
+    "uploadDate": "2025-10-05",
+    "publisher": "NFL"
+  },
   "seattle-seahawks-vs-tennessee-titans/2021-week-2": {
     "youtubeId": "Kg-_0PTXGoc",
     "title": "Titans vs. Seahawks Week 2 Highlights | NFL 2021",
     "uploadDate": "2021-09-19",
     "publisher": "NFL"
   },
+  "seattle-seahawks-vs-tennessee-titans/2023-week-16": {
+    "youtubeId": "T6xLdrz2UcU",
+    "title": "Seattle Seahawks vs. Tennessee Titans Game Highlights | NFL 2023 Week 16",
+    "uploadDate": "2023-12-24",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-tennessee-titans/2025-week-12": {
+    "youtubeId": "1yv4nwVkkEM",
+    "title": "Seattle Seahawks vs Tennessee Titans Game Highlights | 2025 NFL Season Week 12",
+    "uploadDate": "2025-11-23",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-washington-commanders/2021-week-12": {
+    "youtubeId": "PX7044puhzY",
+    "title": "Seahawks vs. Washington Week 12 Highlights | NFL 2021",
+    "uploadDate": "2021-11-29",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-washington-commanders/2023-week-10": {
+    "youtubeId": "0wsYdtldMiU",
+    "title": "Washington Commanders vs. Seattle Seahawks | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "seattle-seahawks-vs-washington-commanders/2025-week-9": {
+    "youtubeId": "Qh9YqtFy23U",
+    "title": "Seattle Seahawks vs Washington Commanders Game Highlights | 2025 NFL Season Week 9",
+    "uploadDate": "2025-11-02",
+    "publisher": "NFL"
+  },
   "seattle-seahawks-vs-washington-commanders/2026-week-3": {
     "youtubeId": "j8mZDG_M7cs",
     "title": "Seattle Seahawks vs Washington Commanders Game Highlights | 2026 NFL Season Week 3",
     "uploadDate": "2026-09-27",
+    "publisher": "NFL"
+  },
+  "tampa-bay-buccaneers-vs-tennessee-titans/2023-week-10": {
+    "youtubeId": "gZ5rgXgTLhg",
+    "title": "Tennessee Titans vs. Tampa Bay Buccaneers | 2023 Week 10 Game Highlights",
+    "uploadDate": "2023-11-12",
+    "publisher": "NFL"
+  },
+  "tampa-bay-buccaneers-vs-washington-commanders/2021-week-10": {
+    "youtubeId": "YYKocw9s070",
+    "title": "Buccaneers vs. Washington Football Team Week 10 Highlights | NFL 2021",
+    "uploadDate": "2021-11-14",
+    "publisher": "NFL"
+  },
+  "tampa-bay-buccaneers-vs-washington-commanders/2024-week-1": {
+    "youtubeId": "71ESh4avwZU",
+    "title": "Washington Commanders vs. Tampa Bay Buccaneers Game Highlights | NFL 2024 Season",
+    "uploadDate": "2024-09-08",
+    "publisher": "NFL"
+  },
+  "tampa-bay-buccaneers-vs-washington-commanders/2024-wild-card": {
+    "youtubeId": "3r_RvoePsx0",
+    "title": "Washington Commanders vs. Tampa Bay Buccaneers Game Highlights | Wild Card NFL 2024 Season",
+    "uploadDate": "2025-01-12",
+    "publisher": "NFL"
+  },
+  "tennessee-titans-vs-washington-commanders/2022-week-5": {
+    "youtubeId": "o3T4K96JPZg",
+    "title": "Tennesee Titans vs. Washington Commanders | 2022 Week 5 Game Highlights",
+    "uploadDate": "2022-10-09",
+    "publisher": "NFL"
+  },
+  "tennessee-titans-vs-washington-commanders/2024-week-13": {
+    "youtubeId": "xy3USEN6p_U",
+    "title": "Tennessee Titans vs. Washington Commanders | 2024 Week 13 Game Highlights",
+    "uploadDate": "2024-12-01",
     "publisher": "NFL"
   }
 };

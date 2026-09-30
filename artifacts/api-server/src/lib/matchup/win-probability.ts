@@ -176,12 +176,16 @@ function periodPhrase(elapsed: number): string {
 export function wpSubtitle(game: ScoreboardGame, model: WpModel): string {
   const result = scoreboardResult(game);
   const kick = model.kickoff;
+  const pct = Math.round(kick * 100);
+  // "an 82%", "an 8%", "an 11%", "an 18%": the article follows the spoken number.
+  const article = /^(8|11|18)/.test(String(pct)) ? "an" : "a";
+  // The underdog's own chance, not the favourite's: "a 43% underdog" would read as 57%.
   const role =
-    Math.round(kick * 100) === 50
+    pct === 50
       ? `${homeCity(game)} started as a coin flip`
       : kick > 0.5
-        ? `${homeCity(game)} was a ${Math.round(kick * 100)}% favorite at kickoff`
-        : `${homeCity(game)} was a ${Math.round((1 - kick) * 100)}% underdog at kickoff`;
+        ? `${homeCity(game)} was ${article} ${pct}% favorite at kickoff`
+        : `${homeCity(game)} had ${article} ${pct}% chance at kickoff`;
 
   let fact = "";
   const homeWon = result?.winner === "home";
@@ -260,8 +264,9 @@ function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof p
     grid +
     `<line class="sct-wp-half" x1="${PAD.left}" x2="${W - PAD.right}" y1="${r(y(0.5))}" y2="${r(y(0.5))}"/>` +
     yLabels +
-    `<path d="${area}" fill="${colors.home.ink}" fill-opacity="0.08" stroke="none"/>` +
-    `<path d="${line}" fill="none" stroke="${colors.home.ink}" stroke-width="2.5" stroke-linejoin="round"/>` +
+    // Painted through style, not attributes, so the page's dark theme can swap the ink.
+    `<path d="${area}" style="fill:${colors.home.ink}" fill-opacity="0.08" stroke="none"/>` +
+    `<path d="${line}" fill="none" style="stroke:${colors.home.ink}" stroke-width="2.5" stroke-linejoin="round"/>` +
     dots +
     `</svg>`
   );
@@ -292,7 +297,9 @@ export function renderWinProbability(input: WinProbabilityInput): string {
   const deciding = model.swings
     .filter((s) => Math.abs(s.after - s.before) >= 0.01)
     .sort((a, b) => Math.abs(b.points) - Math.abs(a.points) || a.elapsed - b.elapsed)
-    .slice(0, 5);
+    .slice(0, 5)
+    // Picked by size, shown in the order they happened (spec 11b).
+    .sort((a, b) => a.elapsed - b.elapsed);
   const list = deciding.length
     ? `<h3 class="sct-rb-h3">Plays that decided it</h3>` +
       `<ol class="sct-wp-plays">` +

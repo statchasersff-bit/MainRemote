@@ -29,6 +29,7 @@ import {
   type HandcuffBoard,
 } from "./rb-handcuffs/handcuffs-data";
 import { handcuffPageMeta, renderHandcuffHeadTags } from "./rb-handcuffs-seo";
+import { LruCache } from "./lru";
 
 export interface HandcuffSsrResult {
   html: string;
@@ -38,8 +39,8 @@ export interface HandcuffSsrResult {
   board: HandcuffBoard | null;
 }
 
-const fragmentCache = new Map<string, HandcuffSsrResult>();
 const FRAGMENT_CACHE_MAX = 16;
+const fragmentCache = new LruCache<HandcuffSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateHandcuffRenderCache(): void {
   fragmentCache.clear();
@@ -81,11 +82,6 @@ export function renderHandcuffFragment(
     version,
     board,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return result;
 }
@@ -136,9 +132,11 @@ export function renderHandcuffAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderHandcuffHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderHandcuffHeadTags(meta))
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

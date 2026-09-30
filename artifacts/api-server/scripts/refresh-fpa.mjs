@@ -10,8 +10,8 @@
 // runs inside the deployment, against the database the deployment reads.
 //
 // Required env:  FPA_INGEST_URL  e.g. https://<deployment>/api/fpa/ingest
-// Optional:      INGEST_SECRET   if the server sets it (it should)
-//                FPA_SEASON      current season override, for a rollover week
+//                INGEST_SECRET   the server refuses every ingest without it
+// Optional:      FPA_SEASON      current season override, for a rollover week
 //                FPA_BASELINE    baseline season override, likewise
 //                FPA_INGEST_TIMEOUT_MS  default 300000
 //

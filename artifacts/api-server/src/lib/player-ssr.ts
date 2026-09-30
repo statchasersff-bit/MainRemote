@@ -30,6 +30,7 @@ import {
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
+import { LruCache } from "./lru";
 
 export interface PlayerSsrResult {
   html: string;
@@ -40,8 +41,8 @@ export interface PlayerSsrResult {
   name: string;
 }
 
-const fragmentCache = new Map<string, PlayerSsrResult>();
 const FRAGMENT_CACHE_MAX = 256;
+const fragmentCache = new LruCache<PlayerSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidatePlayerRenderCache(): void {
   fragmentCache.clear();
@@ -71,7 +72,6 @@ function optionKey(
     // serves pages with no <h1> at all, or a plain mount serves two.
     options.ownHeading ?? false,
     data.format ?? "ppr",
-    data.advancedSeason ?? 0,
     // The Game Log's season, for the same reason the section is here: two
     // requests differing only in ?log= render different tables.
     data.logSeason ?? 0,
@@ -119,11 +119,6 @@ async function renderWithData(
     season: data.season,
     name: data.player.name,
   };
-
-  if (fragmentCache.size >= FRAGMENT_CACHE_MAX) {
-    const oldest = fragmentCache.keys().next();
-    if (!oldest.done) fragmentCache.delete(oldest.value);
-  }
   fragmentCache.set(key, result);
   return { result, data };
 }
@@ -196,11 +191,13 @@ export async function renderPlayerAppPage(
   }
 
   const html = template
-    .replace(HEAD_MARKER, renderPlayerHeadTags(meta))
+    // Functions, not strings: a string replacement expands $& and $` inside
+    // the content, so a headline carrying one rewrote the page.
+    .replace(HEAD_MARKER, () => renderPlayerHeadTags(meta))
     // The embedded page drops the standalone shell's background and padding so
     // the fragment sits flush inside whatever box WordPress gives it.
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
-    .replace(BODY_MARKER, fragment.html);
+    .replace(BODY_MARKER, () => fragment.html);
 
   return { ...fragment, html };
 }

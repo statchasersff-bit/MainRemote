@@ -22,6 +22,10 @@ export interface TeamPageMeta {
   description: string;
   canonical: string;
   siteName: string;
+  /** "article" for a game recap; "website" when absent. */
+  ogType?: string;
+  /** A large share image: absolute URL, 1200×630, with its alt text. */
+  image?: { url: string; width: number; height: number; alt: string } | null;
 }
 
 const SITE_NAME = "StatChasers";
@@ -136,13 +140,23 @@ export function renderTeamHeadTags(meta: TeamPageMeta): string {
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
     `<link rel="canonical" href="${url}" />`,
-    `<meta property="og:type" content="website" />`,
+    `<meta property="og:type" content="${escapeHtml(meta.ogType ?? "website")}" />`,
     `<meta property="og:site_name" content="${escapeHtml(meta.siteName)}" />`,
     `<meta property="og:title" content="${t}" />`,
     `<meta property="og:description" content="${d}" />`,
     `<meta property="og:url" content="${url}" />`,
-    `<meta name="twitter:card" content="summary" />`,
+    `<meta name="twitter:card" content="${meta.image ? "summary_large_image" : "summary"}" />`,
     `<meta name="twitter:title" content="${t}" />`,
     `<meta name="twitter:description" content="${d}" />`,
+    ...(meta.image
+      ? [
+          `<meta property="og:image" content="${escapeHtml(meta.image.url)}" />`,
+          `<meta property="og:image:width" content="${meta.image.width}" />`,
+          `<meta property="og:image:height" content="${meta.image.height}" />`,
+          `<meta property="og:image:alt" content="${escapeHtml(meta.image.alt)}" />`,
+          `<meta name="twitter:image" content="${escapeHtml(meta.image.url)}" />`,
+          `<meta name="twitter:image:alt" content="${escapeHtml(meta.image.alt)}" />`,
+        ]
+      : []),
   ].join("\n  ");
 }

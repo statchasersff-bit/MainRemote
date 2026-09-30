@@ -21,8 +21,9 @@
 
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "./cache";
 import { seasonYear } from "../seo";
+import { SLEEPER } from "./upstream";
 
-const STATE_URL = "https://api.sleeper.app/v1/state/nfl";
+const STATE_URL = `${SLEEPER}/v1/state/nfl`;
 
 export type SeasonType = "pre" | "regular" | "post" | "off";
 

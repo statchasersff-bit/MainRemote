@@ -501,6 +501,11 @@ export function renderList(
     return `<p class="sc-empty">No player news has been archived yet.</p>`;
   }
 
+  // The LCP candidate is the first card with a headshot, not simply the first
+  // card: a lead story with no photo draws a CSS badge, and pinning the
+  // priority to it would leave the page with no priority image at all.
+  const lcpIndex = items.findIndex((item) => safeUrl(item.image));
+
   const cards = items
     .map((item, index) => {
       const pageIndex = Math.floor(index / pageSize);
@@ -522,7 +527,7 @@ export function renderList(
         `>` +
         renderCard(item, {
           pageIndex,
-          ...(index === 0 ? { lcpCandidate: true } : {}),
+          ...(index === lcpIndex ? { lcpCandidate: true } : {}),
           ...(options.links ? { links: options.links } : {}),
         }) +
         `</li>`

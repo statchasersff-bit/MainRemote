@@ -10,7 +10,8 @@
 
 import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
-import { matchupScoreboardGame, matchupTitle } from "./matchup-render";
+import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription } from "./matchup-render";
+import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
 import { scoreboardTitleCandidates } from "./scoreboard-hero";
 
 const SITE_NAME = "StatChasers";
@@ -62,7 +63,34 @@ export function matchupScoreLine(data: MatchupData): string {
   return `${featured.winner.nickname} won ${high}-${low}.`;
 }
 
+/**
+ * A completed game's recap: the spec's description (result, venue, what the
+ * page holds), og:type article and the share image. `canonical` makes the
+ * image URL absolute; `origin` overrides it (the plugin's API origin).
+ */
+function withRecap(meta: TeamPageMeta, data: MatchupData, canonical: string): TeamPageMeta {
+  const share = matchupShare(data);
+  const description = recapDescription(data);
+  if (!share || !description) return meta;
+  let url: string | null = null;
+  try {
+    url = new URL(share.path, canonical).toString();
+  } catch {
+    url = null;
+  }
+  return {
+    ...meta,
+    description,
+    ogType: "article",
+    image: url ? { url, width: SHARE_WIDTH, height: SHARE_HEIGHT, alt: share.alt } : null,
+  };
+}
+
 export function matchupPageMeta(data: MatchupData, canonical: string): TeamPageMeta {
+  return withRecap(baseMeta(data, canonical), data, canonical);
+}
+
+function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
   const names = matchupTitle(data);
   const short = nicknames(data);
   const { a, b } = data.pair;
