@@ -96,9 +96,6 @@ async function dropCaches(): Promise<void> {
     const { invalidateFpaRenderCache } = await import("../fpa-ssr");
     invalidateFpaRenderCache();
 
-    const { invalidateFpaDeltaCache } = await import("../matchup/fpa-delta");
-    invalidateFpaDeltaCache();
-
     const { invalidateMatchupRenderCache } = await import("../matchup/matchup-ssr");
     invalidateMatchupRenderCache();
 

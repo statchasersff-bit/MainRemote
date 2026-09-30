@@ -23,7 +23,6 @@ import { RECENT_WINDOW_MS, type MatchupGameRef, type MatchupPair } from "./pair"
 import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
-import { getFpaDelta, type FpaDelta } from "./fpa-delta";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
 
@@ -124,8 +123,6 @@ export interface MatchupData {
   seasonGames: { a: ScheduleGame[]; b: ScheduleGame[] } | null;
   /** Who played in the featured game and what it meant. Null pregame. */
   gameStats: GameStats | null;
-  /** What the featured game did to both defenses' FPA ranks. Null pregame. */
-  fpaDelta: FpaDelta | null;
   /**
    * The meeting a game address pinned, when the URL asked for one.
    *
@@ -418,15 +415,6 @@ export async function getMatchupData(
       ).then(([ga, gb]) => ({ a: ga ?? [], b: gb ?? [] }))
     : null;
 
-  const fpaDelta =
-    isFinal && featured.season === (fpaTable?.season ?? state.season)
-      ? await getFpaDelta(
-          featured.season,
-          featured.week,
-          parseFpaFormat(fpaTable?.format),
-        ).catch(() => null)
-      : null;
-
   return {
     pair,
     state,
@@ -442,7 +430,6 @@ export async function getMatchupData(
     winnerPostseason,
     seasonGames,
     gameStats,
-    fpaDelta,
     pinned,
     pinnedRequested: game !== null,
     pinnedIsCurrent,
@@ -474,6 +461,5 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     data.boxscore ? "box" : "",
     data.winnerPostseason ? `post${data.winnerPostseason.length}` : "",
     data.gameStats ? "stats" : "",
-    data.fpaDelta ? "delta" : "",
   ].join("|");
 }
