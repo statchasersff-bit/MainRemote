@@ -12,6 +12,10 @@
  * - A refresh takes a lock the button and the daily cron share, and a stale
  *   lock is taken over.
  * - The hub never nests an <a> inside an <a>.
+ * - The three scrapers still read the pages they scrape: ESPN's JSON,
+ *   Footballguys' and FantasyPros' HTML, captured 2026-09-30 and trimmed
+ *   (fixtures/sources/). A markup change upstream breaks these first, instead
+ *   of silently emptying a column on the live site.
  */
 
 require __DIR__ . '/wp-stubs.php';
@@ -24,9 +28,14 @@ function check( $label, $ok, $detail = '' ) {
 	}
 }
 
-// --- HTTP stubs: every request fails, except ESPN for the slugs listed here.
-$GLOBALS['http_espn_ok'] = array();
+// --- HTTP stubs: every request fails, except ESPN for the slugs listed here,
+// and any URL given a stored page in $GLOBALS['http_fixtures'].
+$GLOBALS['http_espn_ok']  = array();
+$GLOBALS['http_fixtures'] = array();
 function wp_remote_get( $url, $args = array() ) {
+	if ( isset( $GLOBALS['http_fixtures'][ $url ] ) ) {
+		return array( 'code' => 200, 'body' => $GLOBALS['http_fixtures'][ $url ] );
+	}
 	if ( preg_match( '#/teams/([a-z]+)/depthcharts$#', $url, $m ) && in_array( $m[1], $GLOBALS['http_espn_ok'], true ) ) {
 		return array( 'code' => 200, 'body' => '{"season":{"year":2026},"depthchart":[]}' );
 	}
@@ -153,6 +162,41 @@ array_map( 'unlink', glob( SCDC_Store::dir_path() . '/*' ) );
 @rmdir( SCDC_Store::dir_path() );
 @rmdir( $tmp_dir );
 unset( $GLOBALS['scdc_test_basedir'] );
+
+// ----------------------------------------------------------- 3c. sources
+
+$src = __DIR__ . '/fixtures/sources';
+
+$GLOBALS['http_fixtures'] = array(
+	'https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/teams/buf/depthcharts' => file_get_contents( "$src/espn-buf.json" ),
+);
+$espn = SCDC_Espn::fetch_team( 'BUF', 'Buffalo Bills', 'buf' );
+$GLOBALS['http_fixtures'] = array();
+$first = function ( $list ) { return isset( $list[0]['name'] ) ? $list[0]['name'] : null; };
+check( 'espn: the stored page parses to a team', is_array( $espn ) && ! empty( $espn['positions'] ) );
+check( 'espn: season from the payload', is_array( $espn ) && 2026 === (int) $espn['season'] );
+check( 'espn: QB1 is Josh Allen', is_array( $espn ) && 'Josh Allen' === $first( $espn['positions']['QB'] ?? array() ), wp_json_encode( array_slice( $espn['positions']['QB'] ?? array(), 0, 2 ) ) );
+check( 'espn: offense and defense both present', is_array( $espn ) && isset( $espn['positions']['RB'], $espn['positions']['CB'] ), implode( ',', array_keys( $espn['positions'] ?? array() ) ) );
+$statuses = array();
+foreach ( ( is_array( $espn ) ? $espn['positions'] : array() ) as $players ) {
+	foreach ( $players as $p ) {
+		if ( ! empty( $p['status'] ) ) { $statuses[] = $p['status']; }
+	}
+}
+check( 'espn: injury designations come through', ! empty( $statuses ), 'none found' );
+
+$fbg = SCDC_Footballguys::parse_html( file_get_contents( "$src/footballguys-all.html" ) );
+check( 'footballguys: both stored teams parse', array( 'BUF', 'PIT' ) === array_keys( $fbg ), implode( ',', array_keys( $fbg ) ) );
+check( 'footballguys: BUF QB1 is Josh Allen, with his id', isset( $fbg['BUF']['QB'][0] ) && 'Josh Allen' === $fbg['BUF']['QB'][0]['name'] && 'AlleJo01' === $fbg['BUF']['QB'][0]['id'] );
+check( 'footballguys: PIT RB1 is Jaylen Warren', 'Jaylen Warren' === $first( $fbg['PIT']['RB'] ?? array() ) );
+foreach ( array( 'LT', 'K', 'DL', 'EDGE', 'LB', 'CB', 'S' ) as $slot ) {
+	check( "footballguys: BUF has a $slot column", ! empty( $fbg['BUF'][ $slot ] ) );
+}
+
+$fp = SCDC_FantasyPros::parse_html( file_get_contents( "$src/fantasypros-buffalo-bills.html" ) );
+check( 'fantasypros: the five position tables parse', array( 'QB', 'RB', 'WR', 'TE', 'K' ) === array_keys( $fp ), implode( ',', array_keys( $fp ) ) );
+check( 'fantasypros: RB order and ids', isset( $fp['RB'][1] ) && 'James Cook III' === $fp['RB'][0]['name'] && '22958' === $fp['RB'][0]['id'] && 2 === $fp['RB'][1]['rank'] );
+check( 'fantasypros: WR1 is DJ Moore', 'DJ Moore' === $first( $fp['WR'] ?? array() ) );
 
 // ------------------------------------------------------------------ 4. hub
 
