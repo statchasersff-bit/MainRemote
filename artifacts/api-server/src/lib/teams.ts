@@ -28,8 +28,9 @@ import {
   type SleeperPlayer,
   type TeamRoster,
 } from "./team/roster";
+import { SLEEPER } from "./team/upstream";
 
-const SLEEPER_PLAYERS_URL = "https://api.sleeper.app/v1/players/nfl";
+const SLEEPER_PLAYERS_URL = `${SLEEPER}/v1/players/nfl`;
 
 /**
  * Twelve hours rather than twenty-four.

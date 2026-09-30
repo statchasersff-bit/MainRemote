@@ -37,6 +37,7 @@
 import { createKeyedCache, fetchJson, PAST_SEASON_TTL_MS, TEAM_USER_AGENT } from "./cache";
 import { seasonYear } from "../seo";
 import type { NflTeam } from "./teams";
+import { ESPN_WEB } from "./upstream";
 
 /**
  * Which end of the scale is good.
@@ -825,7 +826,7 @@ const cache = createKeyedCache<LeagueStats>({
   load: async (key, signal) => {
     const season = Number(key);
     const url =
-      `https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/` +
+      `${ESPN_WEB}/apis/common/v3/sports/football/nfl/` +
       `statistics/byteam?region=us&lang=en&contentorigin=espn` +
       `&season=${season}&seasontype=2`;
     const payload = await fetchJson<ByTeamResponse>(url, signal, TEAM_USER_AGENT);
