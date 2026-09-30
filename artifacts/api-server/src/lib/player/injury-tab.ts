@@ -25,6 +25,8 @@
 
 import { escapeHtml } from "../render";
 import { titleCase } from "./title-case";
+import { renderFaqSection, selectFaq, type FaqCandidate, type FaqItem } from "./faq-engine";
+import { etDay } from "./news-tab-data";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { SCORING_SHORT } from "./scoring";
@@ -643,29 +645,27 @@ function glanceLede(m: Model): string {
   return s;
 }
 
+/**
+ * Four compact tiles in one strip: the value, a label, and a note only where
+ * the value needs one. mak (2026-09-30) asked for them ~30% shorter; the lede
+ * above tells the story, so it carries more weight than the tiles.
+ */
 function renderGlance(m: Model, data: PlayerPageData): string {
   const { t } = m;
   const h = data.injury!.history;
   const tiles: string[] = [];
   if (h.grade && h.score !== null) {
     const kind = /^[AB]/.test(h.grade) ? "good" : /^C/.test(h.grade) ? "mid" : "bad";
-    tiles.push(
-      tile(
-        `${escapeHtml(h.grade)}<small>${escapeHtml(`${h.score}/100`)}</small>`,
-        "Durability score",
-        "Based on games missed to injury, not games played",
-        ` is-${kind}`,
-      ),
-    );
+    tiles.push(tile(escapeHtml(h.grade), "Durability", `${h.score}/100`, ` is-${kind}`));
   }
-  tiles.push(tile(String(t.games), "Games missed", "Career, regular season, all injuries"));
-  tiles.push(tile(String(t.injuries), "Logged injuries", `Across ${t.parts} body part${t.parts === 1 ? "" : "s"}`));
+  tiles.push(tile(String(t.games), "Games missed", ""));
+  tiles.push(tile(String(t.injuries), t.injuries === 1 ? "Injury" : "Injuries", ""));
   const top = t.longest;
   tiles.push(
     tile(
       top ? `${top.games}<small>game${top.games === 1 ? "" : "s"}</small>` : "—",
       "Longest absence",
-      top ? `${cap([sideWord(top), injuryName(top.type)].filter(Boolean).join(" "))}, ${top.season}` : "No games missed to injury",
+      top ? `${cap(injuryName(top.type))} · ${top.season}` : "No games missed to injury",
     ),
   );
   return (
@@ -677,7 +677,9 @@ function renderGlance(m: Model, data: PlayerPageData): string {
 function tile(valueHtml: string, title: string, sub: string, extra = ""): string {
   return (
     `<div class="scp-in-gl${extra}"><div class="scp-in-glv">${valueHtml}</div>` +
-    `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(sub)}</p></div>`
+    `<h3>${escapeHtml(title)}</h3>` +
+    (sub ? `<p>${escapeHtml(sub)}</p>` : "") +
+    `</div>`
   );
 }
 
@@ -765,23 +767,30 @@ function renderMap(m: Model): string {
       `<thead><tr><th scope="col">Body part</th><th scope="col">Injuries</th><th scope="col">Games missed</th></tr></thead>` +
       `<tbody>${rows}<tr class="is-tot"><th scope="row">Total</th><td>${m.t.injuries}</td><td>${m.t.games}</td></tr></tbody>` +
       `</table></div>`;
-    const chip: Record<string, string> = { good: "Low risk", mid: "Moderate", bad: "High" };
-    const factors =
-      `<div class="scp-in-factors" aria-label="Injury risk factors">` +
+    right = table;
+  }
+
+  // One overall read instead of four "Low risk" rows (mak, 2026-09-30): the
+  // worst factor sets it, and each factor's evidence follows on one line; a
+  // factor that isn't low keeps its own colour there.
+  let factors = "";
+  if (m.t.injuries > 0 && m.factors.length) {
+    const rank = { good: 0, mid: 1, bad: 2 } as const;
+    const worst = m.factors.reduce((w, f) => (rank[f.level] > rank[w] ? f.level : w), "good" as "good" | "mid" | "bad");
+    const word = { good: "Low", mid: "Moderate", bad: "High" }[worst];
+    factors =
+      `<div class="scp-in-factors">` +
+      `<p class="scp-in-risk">Injury risk profile: <span class="scp-in-chip is-${worst}">${word}</span></p>` +
+      `<ul aria-label="Injury risk factors">` +
       m.factors
-        .map(
-          (f) =>
-            `<div class="scp-in-factor"><h3>${escapeHtml(f.title)}</h3><p>${escapeHtml(f.evidence)}</p>` +
-            `<span class="scp-in-chip is-${f.level}">${chip[f.level]}</span></div>`,
-        )
+        .map((f) => `<li class="is-${f.level}" title="${escapeHtml(f.title)}">${escapeHtml(f.evidence)}</li>`)
         .join("") +
-      `</div>`;
-    right = `<div>${table}${factors}</div>`;
+      `</ul></div>`;
   }
 
   return (
     open("scp-in-map-h", "Where he's been hurt", "Marker size shows games missed. A dashed ring means he played through it.") +
-    `<div class="scp-in-mapwrap">${figure}${right}</div></section>`
+    `<div class="scp-in-mapwrap"><div class="scp-in-mapgrid">${figure}${right}</div>${factors}</div></section>`
   );
 }
 
@@ -797,7 +806,7 @@ function metaFor(ev: InjuryEvent): string {
   const when =
     ev.phase === "PRE" ? "Preseason" : ev.phase === "POST" ? `Postseason${ev.week ? `, Week ${ev.week}` : ""}` : ev.week ? `Week ${ev.week}` : `${ev.season} season`;
   const club = ev.team ? getTeamByAbbreviation(ev.team)?.nickname : null;
-  return club ? `${when}, with the ${club}` : when;
+  return club ? `${when} · with the ${club}` : when;
 }
 
 function renderEvent(ev: InjuryEvent): string {
@@ -807,7 +816,7 @@ function renderEvent(ev: InjuryEvent): string {
   return (
     `<li><span class="scp-in-yr">${ev.season}</span><span class="scp-in-node${node}"></span>` +
     `<div class="scp-in-ev"><h3>${escapeHtml(title)}` +
-    (side ? ` <span class="scp-in-side">${side}</span>` : "") +
+    (side ? ` <span class="scp-in-side">· ${side}</span>` : "") +
     ` ${chipFor(ev)}</h3>` +
     `<p class="scp-in-meta">${escapeHtml(metaFor(ev))}</p>` +
     (ev.note ? `<p>${escapeHtml(ev.note)}</p>` : "") +
@@ -821,8 +830,7 @@ function renderHistory(m: Model): string {
   if (!thisSeason && m.seasonMissed === 0 && m.lastPlayedWeek !== null && m.playedThisSeason > 0) {
     items.push(
       `<li><span class="scp-in-yr">${m.season}</span><span class="scp-in-node is-now"></span>` +
-        `<div class="scp-in-ev"><h3>Healthy <span class="scp-in-chip is-good scp-in-miss">0 games missed</span></h3>` +
-        `<p class="scp-in-meta">${escapeHtml(m.lastPlayedWeek > 1 ? `Weeks 1–${m.lastPlayedWeek}` : "Week 1")}</p>` +
+        `<div class="scp-in-ev is-now"><h3>Healthy <span class="scp-in-chip is-good scp-in-miss">0 games missed</span></h3>` +
         `<p>${escapeHtml(`No injury has cost ${m.last} a game this season.`)}</p></div></li>`,
     );
   }
@@ -836,10 +844,6 @@ function renderHistory(m: Model): string {
   } else {
     list = `<ol class="scp-in-tl">${items.join("")}${evs.join("")}</ol>`;
   }
-  const note =
-    `<p class="scp-in-src">${escapeHtml(
-      "Compiled injury record; entries are not individually sourced. Games missed are regular-season games.",
-    )}</p>`;
 
   // Sidebar.
   const since = m.season - 3;
@@ -901,7 +905,6 @@ function renderHistory(m: Model): string {
     `<h2 class="scp-ox-h2" id="scp-in-tl-h">${escapeHtml(titleCase(`${m.name} injury history`))}</h2>` +
     `<p class="scp-ox-lede">Every logged injury, most recent first. Games missed are regular-season games.</p>` +
     list +
-    note +
     `</div>${sidebar}</div></section>`
   );
 }
@@ -955,103 +958,223 @@ function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): s
 
 /* ------------------------------------------------------- section 6: FAQ */
 
-function renderFaq(m: Model, options: PlayerRenderOptions): string {
-  const items: Array<{ q: string; html: string }> = [];
+
+
+/**
+ * The Injury FAQ pool (faq-engine.ts), state-aware (mak, 2026-09-30). A healthy
+ * player is asked the healthy questions; a designation adds what the injury
+ * is and why he isn't playing. "Is he playing today" shows only on a game
+ * day, "did he practice today" only on a day with a report reading. Return
+ * timelines are never asked: nothing in the data says when anyone comes back.
+ */
+function injuryPool(m: Model, options: PlayerRenderOptions): FaqCandidate[] {
+  const pool: FaqCandidate[] = [];
   const asOf = m.checkedMs > 0 ? longDate(m.checkedMs) : null;
   const part = m.bodyPart ? `${m.bodyPart.toLowerCase()} injury` : "injury";
+  const hurt = !["ACTIVE", "OFFSEASON", "SUSP"].includes(m.code);
+  const statusWord = m.code === "IR" ? "on injured reserve" : STATUS_WORD[m.code].toLowerCase();
+  const outlook = { href: `${options.playerPathPrefix ?? "/player/"}${m.slug}/outlook/${options.linkQuery ?? ""}`, text: `See how the injury changes his rest-of-season value.` };
+  const missedLine =
+    m.seasonMissed === 0 && m.playedThisSeason > 0
+      ? ` He has played every game in ${m.season}.`
+      : m.seasonMissed ? ` He has missed ${games(m.seasonMissed)} this season.` : "";
 
   // 1. Is he injured?
-  let a1: string;
-  if (m.code === "ACTIVE" || m.code === "OFFSEASON") {
-    a1 =
-      `No. ${asOf ? `As of ${asOf}, ` : ""}${m.last} is ${m.code === "ACTIVE" ? "active" : "healthy"} with no injury designation.` +
-      (m.seasonMissed === 0 && m.playedThisSeason > 0 ? ` He has played every game in ${m.season}.` : "");
-  } else if (m.code === "SUSP") {
-    a1 = `No. ${asOf ? `As of ${asOf}, ` : ""}${m.last} is suspended, not injured.`;
-  } else {
-    a1 = `Yes. ${asOf ? `As of ${asOf}, ` : ""}${m.last} is ${m.code === "IR" ? "on injured reserve" : STATUS_WORD[m.code].toLowerCase()}${m.bodyPart ? ` with ${article(part)}` : ""}.`;
-  }
-  items.push({ q: `Is ${m.name} injured?`, html: escapeHtml(a1) });
+  pool.push({
+    key: "injured",
+    q: `Is ${m.name} injured?`,
+    a: m.code === "SUSP"
+      ? `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is suspended, not injured.${missedLine}`
+      : hurt
+        ? `Yes. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is ${statusWord}${m.bodyPart ? ` with ${article(part)}` : ""}.${missedLine}`
+        : `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is ${m.code === "ACTIVE" ? "active" : "healthy"} with no injury designation.${missedLine}`,
+    link: hurt ? outlook : null,
+  });
 
-  // 2. Is he playing this week?
+  // 2. Playing this week (the week named in the answer, never hard-coded).
   if (m.next) {
     const opp = m.next.opponent?.nickname ?? m.next.opponentName;
     const date = m.next.kickoffMs ? (() => { const p = et(m.next.kickoffMs!); return `${new Date(m.next.kickoffMs!).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" })}, ${MONTHS[p.m - 1]} ${p.d}`; })() : "";
     const vs = `Week ${m.next.week} ${m.next.homeAway === "home" ? "against" : "at"} the ${opp}${date ? ` on ${date}` : ""}`;
     let s =
       m.code === "ACTIVE"
-        ? `He carries no injury designation heading into ${vs}.`
-        : `He's ${m.code === "IR" ? "on injured reserve" : STATUS_WORD[m.code].toLowerCase()} heading into ${vs}.`;
+        ? `${m.name} has no injury designation for ${vs}, so he is on track to play.`
+        : m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI" || m.code === "SUSP"
+          ? `No. ${m.name} is ${statusWord} for ${vs}.`
+          : `${m.name} is ${statusWord} for ${vs}.`;
     if (m.practiceNote) s += ` ${m.practiceNote}`;
     if (m.code === "Q" && !/game-time/.test(s)) s += " Treat him as a game-time decision.";
-    if (m.practiceHead && /starts/.test(m.practiceHead)) s += ` The ${m.practiceHead.replace(/^Week (\d+) report starts/, "first Week $1 practice report comes out")}.`;
-    const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(m.slug)}`;
-    items.push({
+    pool.push({
+      key: "playing",
       q: `Is ${m.name} playing this week?`,
-      html: `${escapeHtml(s)} ${a(startSit, "Should you start him?", ` data-cta="startsit-injury-faq"`)}`,
+      a: s,
+      link: { href: `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(m.slug)}`, text: `Should you start him?`, cta: "startsit-injury-faq" },
+    });
+
+    // 3. Today, on a game day only.
+    if (m.next.kickoffMs && etDay(m.next.kickoffMs) === etDay(m.now)) {
+      const p = et(m.next.kickoffMs);
+      pool.push({
+        key: "today",
+        q: `Is ${m.name} playing today?`,
+        a: (hurt ? `${m.name} is ${statusWord} for today's game` : `${m.name} has no injury designation for today's game`) +
+          ` ${m.next.homeAway === "home" ? "against" : "at"} the ${opp}${m.next.timeConfirmed ? `, kickoff ${p.time} ET` : ""}.` +
+          (hurt ? ` Check the inactive list, released about 90 minutes before kickoff.` : ` He is expected to be active barring a late change.`),
+      });
+    }
+  }
+
+  // 4. Practice: today when there is a reading for today, else this week.
+  const row = m.practice.find((r) => r.current);
+  if (row) {
+    const read = row.days.filter((d) => d.value === "FULL" || d.value === "LIMITED" || d.value === "DNP" || d.value === "NONE");
+    const today = read.find((d) => d.date === etDay(m.now));
+    const word = (v: string): string => (v === "FULL" ? "full" : v === "LIMITED" ? "limited" : v === "DNP" ? "did not practice" : "not listed");
+    if (read.length) {
+      const days = read.map((d) => `${d.day} ${word(d.value)}`).join(", ");
+      const onReport = read.some((d) => d.value !== "NONE");
+      pool.push(
+        today
+          ? {
+              key: "practice",
+              q: `Did ${m.name} practice today?`,
+              a: today.value === "NONE"
+                ? `${m.name} was not on today's injury report, which lists only players with an injury, so he practiced without limits. His Week ${row.week} report so far: ${days}.`
+                : `${m.name} was ${today.value === "DNP" ? "a non-participant" : `a ${word(today.value)} participant`} in today's practice. His Week ${row.week} report so far: ${days}.`,
+            }
+          : {
+              key: "practice",
+              q: `Did ${m.name} practice this week?`,
+              a: onReport
+                ? `${m.name}'s Week ${row.week} practice report: ${days}.${m.practiceNote ? ` ${m.practiceNote}` : ""}`
+                : `${m.name} has not been on the Week ${row.week} injury report, which lists only players with an injury, so he has practiced without limits.`,
+            },
+      );
+    }
+  }
+
+  // 5. What the injury is, and 6. why he isn't playing (designated only).
+  if (hurt && m.bodyPart) {
+    pool.push({
+      key: "what",
+      q: `What injury does ${m.name} have?`,
+      a: `${m.name} has ${article(part)} and is ${statusWord}${m.next ? ` for Week ${m.next.week}` : ""}.` +
+        (m.practiceNote ? ` ${m.practiceNote}` : "") + missedLine,
+    });
+  }
+  if (["O", "IR", "PUP", "NFI"].includes(m.code)) {
+    pool.push({
+      key: "why",
+      q: `Why isn't ${m.name} playing?`,
+      a: `${m.name} is ${statusWord}${m.bodyPart ? ` with ${article(part)}` : ""}, the designation his club filed${asOf ? ` as of ${asOf}` : ""}.` +
+        (m.next ? ` That rules him out of Week ${m.next.week}.` : ""),
     });
   }
 
-  // 3. Most recent injury.
+  // 7. Games missed this season.
+  if (m.seasonMissed !== null && m.playedThisSeason + (m.seasonMissed ?? 0) > 0) {
+    pool.push({
+      key: "missed",
+      q: `Has ${m.name} missed any games this season?`,
+      a: m.seasonMissed === 0
+        ? `No. ${m.name} has played in every ${m.nickname ?? "team"} game in ${m.season}, ${games(m.playedThisSeason)} so far.`
+        : `Yes. ${m.name} has missed ${games(m.seasonMissed)} in ${m.season} and played in ${m.playedThisSeason}.`,
+    });
+  }
+
+  // 8. Injury history, 9. most recent, 10. recurring, 11. worst.
+  const missed = m.events.filter((e) => e.games > 0).sort((x, y) => y.games - x.games || y.season - x.season);
+  const named = (e: InjuryEvent): string => [sideWord(e), injuryName(e.type)].filter(Boolean).join(" ");
+  if (m.t.injuries > 0) {
+    pool.push({
+      key: "history",
+      q: `What is ${m.name}'s injury history?`,
+      a: `${m.name} has ${m.t.injuries} logged NFL injur${m.t.injuries === 1 ? "y" : "ies"}` +
+        (m.t.games > 0
+          ? `, which ${m.t.injuries === 1 ? "has" : "have"} cost him ${games(m.t.games)} in all: ${listWords(missed.map((e) => `${e.games} for ${article(named(e))} in ${e.season}`))}.`
+          : m.t.injuries === 1 ? `, which did not cost him a regular-season game.` : `, none of which has cost him a regular-season game.`) +
+        ` ${m.t.injuries > 1 && m.t.parts === m.t.injuries ? "No body part has been injured twice." : ""}`.trimEnd(),
+    });
+  }
   const latest = m.t.latest;
   if (latest) {
     const when =
       latest.phase === "PRE" ? `the ${latest.season} preseason` : latest.week ? `Week ${latest.week} of ${latest.season}` : String(latest.season);
-    const name = [sideWord(latest), injuryName(latest.type)].filter(Boolean).join(" ");
-    const outcome = latest.games > 0 ? `It cost him ${games(latest.games)}.` : "He missed no regular-season games.";
-    items.push({
+    pool.push({
+      key: "latest",
       q: `What was ${m.name}'s most recent injury?`,
-      html: escapeHtml(`${cap(article(name))} in ${when}. ${outcome}`),
+      a: `${m.name}'s most recent logged injury was ${article(named(latest))} in ${when}. ` +
+        (latest.games > 0 ? `It cost him ${games(latest.games)}.` : "He played through it and missed no regular-season games."),
     });
   }
-
-  // 4. Games missed.
-  const missed = m.events.filter((e) => e.games > 0).sort((x, y) => y.games - x.games || y.season - x.season);
-  const parts = missed.map((e) => `${e.games} for ${article([sideWord(e), injuryName(e.type)].filter(Boolean).join(" "))} in ${e.season}`);
-  items.push({
-    q: `How many games has ${m.name} missed due to injury?`,
-    html: escapeHtml(
-      m.t.games === 0
-        ? `None. ${m.last} hasn't missed a regular-season game to a logged injury.`
-        : `${m.t.games} regular-season game${m.t.games === 1 ? "" : "s"} across his career: ${listWords(parts)}.`,
-    ),
-  });
-
-  // 5. Recurring.
   const byCat = new Map<string, InjuryEvent[]>();
   for (const e of m.events) if (e.category !== OTHER_CATEGORY) byCat.set(e.category, [...(byCat.get(e.category) ?? []), e]);
   const repeats = [...byCat.entries()].filter(([, v]) => v.length >= 2).sort((x, y) => y[1].length - x[1].length);
-  let a5: string;
-  if (repeats.length === 0) {
-    a5 =
-      m.t.injuries === 0
-        ? `None. ${m.last} has no logged injuries.`
-        : `No. His ${word(m.t.injuries)} logged ${m.t.injuries === 1 ? "injury was" : `injuries were to ${word(m.t.parts)} different body parts`}.`;
-  } else {
-    const desc = repeats.map(([cat, evs]) => {
-      const yrs = [...new Set(evs.map((e) => e.season))].sort((x, y) => x - y);
-      const g = evs.reduce((n, e) => n + e.games, 0);
-      return `${cat.toLowerCase().split(" / ")[0]} injuries in ${listWords(yrs.map(String))} (${g ? `${games(g)} missed` : "no games missed"})`;
+  if (m.t.injuries > 0) {
+    pool.push({
+      key: "recurring",
+      q: `Does ${m.name} have any recurring injuries?`,
+      a: repeats.length === 0
+        ? `No. ${m.name}'s ${word(m.t.injuries)} logged ${m.t.injuries === 1 ? "injury was" : `injuries were to ${word(m.t.parts)} different body parts`}, so the record shows no recurring pattern.`
+        : `Yes: ${listWords(repeats.map(([cat, evs]) => {
+            const yrs = [...new Set(evs.map((e) => e.season))].sort((x, y) => x - y);
+            const g = evs.reduce((n, e) => n + e.games, 0);
+            return `${cat.toLowerCase().split(" / ")[0]} injuries in ${listWords(yrs.map(String))} (${g ? `${games(g)} missed` : "no games missed"})`;
+          }))}.`,
     });
-    a5 = `Yes: ${listWords(desc)}.`;
   }
-  items.push({ q: `Does ${m.name} have any recurring injuries?`, html: escapeHtml(a5) });
+  const worst = m.t.longest;
+  if (worst && worst.games > 0) {
+    pool.push({
+      key: "worst",
+      q: `What was ${m.name}'s worst injury?`,
+      a: `${m.name}'s longest absence came from ${article(named(worst))} in ${worst.season}, which cost him ${games(worst.games)}` +
+        (m.t.games > worst.games ? ` of the ${m.t.games} he has missed in his career.` : `, all of the games he has missed to injury.`),
+    });
+  }
+  return pool;
+}
 
-  // Not pushed to options.faqSink: the FAQPage JSON-LD is an SEO change, which
-  // mak approves separately.
-  return (
-    open("scp-in-faq-h", `${m.name} injury FAQ`, "") +
-    `<div class="scp-ox-faq scp-in-faq">` +
-    items.map((f, i) => `<details${i === 0 ? " open" : ""}><summary>${escapeHtml(f.q)}</summary><p>${f.html}</p></details>`).join("") +
-    `</div></section>`
-  );
+function renderFaq(data: PlayerPageData, items: FaqItem[]): string {
+  // The page's FAQPage node is built from these same items (faqText in
+  // injuryTabParts), so the section itself pushes nothing to the sink.
+  return renderFaqSection("injury", data, items, {}, "scp-in-faq");
 }
 
 /* ------------------------------------------------------------------ the tab */
 
-export function renderInjuryTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+export interface InjuryTabParts {
+  /** Everything above the footer. */
+  body: string;
+  /** The footer, which stands directly above the FAQ (mak, 2026-09-30). */
+  foot: string;
+  /** The FAQ, in its own .scp-in wrapper so it can stand after the peers rail. */
+  faq: string;
+  /** The FAQ as plain text, for the FAQPage node. */
+  faqText: Array<{ question: string; answer: string }>;
+}
+
+/** The tab with its FAQ last, as one block. */
+export function renderInjuryTab(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+  moreFaq: Array<{ question: string; answer: string }> = [],
+): string {
+  const parts = injuryTabParts(data, options, moreFaq);
+  return parts ? parts.body + parts.foot + parts.faq : "";
+}
+
+/**
+ * The tab split at its FAQ: mak moved the FAQ under the Nearby Positional
+ * Peers rail (2026-09-30), and the rail belongs to the page, not the tab.
+ */
+export function injuryTabParts(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+  moreFaq: Array<{ question: string; answer: string }> = [],
+): InjuryTabParts | null {
   const m = model(data, options);
-  if (!m) return "";
+  if (!m) return null;
   const out = m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI";
   const plan = renderContingency(m, data, out);
   const body =
@@ -1060,8 +1183,8 @@ export function renderInjuryTab(data: PlayerPageData, options: PlayerRenderOptio
     renderGlance(m, data) +
     renderMap(m) +
     renderHistory(m) +
-    (out ? "" : plan) +
-    renderFaq(m, options);
+    (out ? "" : plan);
+  const faqItems = selectFaq(injuryPool(m, options));
 
   const doc = loadPracticeReports(data.leagueSeason);
   const checked = m.checkedMs > 0 ? ` Status last checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}.` : "";
@@ -1079,5 +1202,12 @@ export function renderInjuryTab(data: PlayerPageData, options: PlayerRenderOptio
     `</p><p>${escapeHtml(`Fantasy points use ${SCORING_SHORT[data.format]} scoring.`)}</p></footer>`;
 
   const ink = teamInk(data.team);
-  return `<div class="scp-ox scp-st scp-in"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${body}${foot}</div>`;
+  const wrap = (html: string) =>
+    `<div class="scp-ox scp-st scp-in"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>`;
+  return {
+    body: wrap(body),
+    foot: wrap(foot),
+    faq: wrap(renderFaq(data, faqItems)),
+    faqText: faqItems.map((f) => ({ question: f.q, answer: f.text })),
+  };
 }

@@ -14,6 +14,7 @@ import rankingsRouter from "./routes/rankings";
 import scheduleRouter from "./routes/schedule";
 import playerStatsRouter from "./routes/player-stats";
 import rbHandcuffsRouter from "./routes/rb-handcuffs";
+import sosRouter from "./routes/sos";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -129,6 +130,10 @@ app.use(playerStatsRouter);
 // same reason.
 app.use(rbHandcuffsRouter);
 
+// Fantasy strength of schedule: /strength-of-schedule, its CSV and the
+// /embed/sos fragment. Mounted alongside the other tools, for the same reason.
+app.use(sosRouter);
+
 // Shortcode preview harness (/preview/*). Development only — the router's own
 // first middleware 404s the whole thing outside development.
 app.use(previewRouter);
@@ -232,7 +237,7 @@ app.get(["/", "/index.html"], (req, res) => {
  */
 const HASHED_ASSETS = new Set(
   [
-    "news", "team", "player", "fpa", "rankings", "schedule", "player-stats", "rb-handcuffs",
+    "news", "team", "player", "fpa", "rankings", "schedule", "player-stats", "rb-handcuffs", "sos",
   ].flatMap((name) => [
     `/dist/statchasers-${name}.js`,
     `/${name === "news" ? "styles" : name}.css`,
@@ -288,7 +293,8 @@ app.use((req, res) => {
     ` &middot; <a href="/rest-of-season-rankings">Go to the rest-of-season rankings</a>` +
     ` &middot; <a href="/schedule">Go to the NFL schedule</a>` +
     ` &middot; <a href="/player-stats">Go to the advanced player stats</a>` +
-    ` &middot; <a href="/rb-handcuff-rankings">Go to the RB handcuff rankings</a></p>` +
+    ` &middot; <a href="/rb-handcuff-rankings">Go to the RB handcuff rankings</a>` +
+    ` &middot; <a href="/strength-of-schedule">Go to strength of schedule</a></p>` +
     `</body></html>`;
   res
     .status(404)

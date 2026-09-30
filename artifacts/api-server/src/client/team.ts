@@ -300,6 +300,8 @@ function wireMatchupTabs(root: HTMLElement): void {
   let active = "recap";
   function select(id: string): void {
     active = id;
+    // For the CSS: the sidebar shows on Recap and Fantasy only.
+    root.dataset["muActive"] = id;
     for (const panel of panels) {
       const on = panel.dataset["muTab"] === id;
       panel.classList.toggle("is-active", on);
@@ -635,6 +637,8 @@ function wireSortableTables(root: HTMLElement): void {
     if (!body || headers.length === 0) continue;
 
     headers.forEach((header, index) => {
+      // An action column (Start/Sit) has nothing to sort on.
+      if (header.hasAttribute("data-no-sort")) return;
       const type = header.getAttribute("data-sort-type") ?? "number";
 
       const button = document.createElement("button");
@@ -695,6 +699,50 @@ function wireSortableTables(root: HTMLElement): void {
     });
 
     table.dataset["sctSort"] = "js";
+  }
+}
+
+/**
+ * Player Stats' long table: the rows past the top scorers wait behind "Show
+ * all players". The button is in the HTML but hidden, and the rows only hide
+ * once this has run, so without the bundle every row shows and no dead
+ * button does. Sorting the table opens it, since a sort can lift a hidden row.
+ */
+function wirePlayerStatsMore(root: HTMLElement): void {
+  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-ps-more]"))) {
+    const block = button.closest<HTMLElement>(".sct-mu-ps-block");
+    if (!block) continue;
+    const set = (open: boolean): void => {
+      block.classList.toggle("is-open", open);
+      button.setAttribute("aria-expanded", String(open));
+      button.textContent = (open ? button.dataset["less"] : button.dataset["more"]) ?? "";
+    };
+    block.dataset["ps"] = "js";
+    button.hidden = false;
+    button.addEventListener("click", () => set(!block.classList.contains("is-open")));
+    block.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest?.("thead .sct-sort")) set(true);
+    });
+  }
+}
+
+/**
+ * Fantasy Points vs Expected: the detail columns (routes, attempts, carries,
+ * targets and their shares) wait behind "Show detailed usage". They are in the
+ * HTML either way; they only hide once this has run.
+ */
+function wireUsageDetail(root: HTMLElement): void {
+  for (const button of Array.from(root.querySelectorAll<HTMLButtonElement>("[data-fp-detail]"))) {
+    const block = button.closest<HTMLElement>(".sct-fp-usage");
+    if (!block) continue;
+    block.dataset["fu"] = "js";
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const open = !block.classList.contains("is-open");
+      block.classList.toggle("is-open", open);
+      button.setAttribute("aria-expanded", String(open));
+      button.textContent = (open ? button.dataset["less"] : button.dataset["more"]) ?? "";
+    });
   }
 }
 
@@ -762,6 +810,10 @@ function wireScoring(root: HTMLElement): void {
       number.textContent = number.getAttribute(`data-${format}`) ?? number.textContent;
       const unit = number.parentElement?.querySelector(".sct-ls-unit");
       if (unit) unit.textContent = POINTS_UNIT[format];
+    }
+    // Player Stats' fantasy leaders: points and finish.
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>(`[data-ps-swap][data-${format}]`))) {
+      el.textContent = el.getAttribute(`data-${format}`) ?? el.textContent;
     }
     // The Fantasy tab's verdict cards carry their points the same way.
     for (const el of Array.from(root.querySelectorAll<HTMLElement>("[data-fp-notes] [data-ppr][data-half][data-std]"))) {
@@ -1179,6 +1231,8 @@ function boot(): void {
     wireScoring(root);
     wireFantasyFormat(root);
     wireHighlights(root);
+    wirePlayerStatsMore(root);
+    wireUsageDetail(root);
     wireBarHeight(root);
     wireFrameHeight(root);
   }

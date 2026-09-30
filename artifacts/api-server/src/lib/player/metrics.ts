@@ -55,6 +55,22 @@ export function weeklyTier(rank: number | null | undefined): WeeklyTier | null {
   return "bust";
 }
 
+/**
+ * The four finish tiers, as one hue in four monotone lightness steps.
+ *
+ * Validated rather than chosen: OKLCH lightness ascends 0.359 / 0.500 / 0.628 /
+ * 0.754 in even steps, and the palest step still clears 2:1 against the white
+ * surface these pages render on, which is the floor an ordinal ramp's light end
+ * has to hold. Anchored on SC Blue so the page's data and the page's brand are
+ * the same colour.
+ */
+export const TIER_FILL: Record<WeeklyTier, string> = {
+  pos1: "#0b3a7a",
+  pos2: "#2f63a8",
+  pos3: "#5a8cc4",
+  bust: "#8fb3da",
+};
+
 export function weeklyTierLabel(
   tier: WeeklyTier,
   position: string | null,

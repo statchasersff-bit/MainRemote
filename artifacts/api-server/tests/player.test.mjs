@@ -1123,9 +1123,9 @@ describe("the game log tab", () => {
   /** The Game Log FAQ on a page, as {question, answer} pairs. */
   async function logFaq(slug, section = "/game-log/") {
     const { doc } = await dom(`/player/${slug}${section}`);
-    return [...doc.querySelectorAll("#game-log .scp-faq-item")].map((item) => ({
-      question: item.querySelector(".scp-faq-q")?.textContent.trim() ?? "",
-      answer: item.querySelector(".scp-faq-a")?.textContent.trim() ?? "",
+    return [...doc.querySelectorAll("#game-log .scp-tab-faq details")].map((item) => ({
+      question: item.querySelector("summary")?.textContent.trim() ?? "",
+      answer: item.querySelector("p")?.textContent.trim() ?? "",
     }));
   }
 
@@ -1137,22 +1137,23 @@ describe("the game log tab", () => {
 
     for (const player of roster.slice(0, 40)) {
       const { doc } = await dom(`/player/${player.slug}/game-log/`);
-      const items = [...doc.querySelectorAll("#game-log .scp-faq-item")];
+      const items = [...doc.querySelectorAll("#game-log .scp-tab-faq details")];
       if (items.length === 0) continue;
 
-      const played = doc.querySelectorAll(
-        "#game-log tr.scp-row[data-status='active']",
-      ).length;
-      const games = items[0].querySelector(".scp-faq-a")?.textContent ?? "";
+      // The Game Log FAQ leads with his last game (faq-pools.ts, 2026-09-30):
+      // the week it names is the table's last active row.
+      const rows = [...doc.querySelectorAll("#game-log tr.scp-row[data-status='active']")];
+      const lastWeek = Math.max(...rows.map((r) => Number(r.getAttribute("data-week"))).filter(Number.isFinite));
+      assert.match(items[0].querySelector("summary").textContent, /his last game\?$/);
       assert.match(
-        games,
-        new RegExp(`played ${played} games?\\b`),
-        `${player.slug}: the FAQ counts a different number of games than the table`,
+        items[0].querySelector("p")?.textContent ?? "",
+        new RegExp(`\\bWeek ${lastWeek}\\b`),
+        `${player.slug}: the FAQ's last game is not the table's`,
       );
 
       for (const item of items) {
-        const q = item.querySelector(".scp-faq-q")?.textContent.trim() ?? "";
-        const a = item.querySelector(".scp-faq-a")?.textContent.trim() ?? "";
+        const q = item.querySelector("summary")?.textContent.trim() ?? "";
+        const a = item.querySelector("p")?.textContent.trim() ?? "";
         assert.ok(q.endsWith("?"), `${player.slug}: "${q}" is not a question`);
         assert.ok(a.length > 20, `${player.slug}: "${q}" has no real answer`);
         assert.ok(!/ {2}/.test(a), `${player.slug}: "${a}" has a doubled space`);
@@ -1213,8 +1214,8 @@ describe("the game log tab", () => {
     const offered = [
       ...doc.querySelectorAll('#game-log .scp-season-opt:not([data-season="all"])'),
     ].map((el) => el.textContent.trim());
-    const items = [...doc.querySelectorAll("#game-log .scp-faq-item")].map((item) =>
-      item.querySelector(".scp-faq-q")?.textContent.trim() ?? "",
+    const items = [...doc.querySelectorAll("#game-log .scp-tab-faq details")].map((item) =>
+      item.querySelector("summary")?.textContent.trim() ?? "",
     );
     const archive = items.some((q) => /previous seasons/.test(q));
 
@@ -1225,9 +1226,9 @@ describe("the game log tab", () => {
 
     assert.ok(archive, "a player with several seasons is told where they are");
     const answer =
-      [...doc.querySelectorAll("#game-log .scp-faq-item")]
+      [...doc.querySelectorAll("#game-log .scp-tab-faq details")]
         .find((item) => /previous seasons/.test(item.textContent))
-        ?.querySelector(".scp-faq-a")?.textContent ?? "";
+        ?.querySelector("p")?.textContent ?? "";
     for (const year of answer.match(/\b20\d{2}\b/g) ?? []) {
       assert.ok(
         offered.includes(year),
@@ -1247,7 +1248,7 @@ describe("the game log tab", () => {
 
     const table = doc.querySelector("#game-log table.scp-table--log");
     const summary = doc.querySelector("#game-log .scp-logintro .scp-note");
-    const faq = doc.querySelector("#game-log .scp-faq");
+    const faq = doc.querySelector("#game-log .scp-tab-faq");
 
     assert.ok(
       table.compareDocumentPosition(list) & 4,
@@ -1637,6 +1638,8 @@ describe("the injury tab", () => {
           episode.querySelector("h3")?.textContent.trim(),
           `${player.slug}: an entry with no heading`,
         );
+        // The current season's "Healthy" line is one sentence, no when/cost.
+        if (episode.querySelector(".scp-in-ev.is-now")) continue;
         assert.ok(
           episode.querySelector(".scp-in-meta")?.textContent.trim(),
           `${player.slug}: an entry with no when/cost line`,
@@ -1671,12 +1674,14 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const items = [...doc.querySelectorAll("#injury .scp-faq-item")];
+      // One FAQ since 2026-09-30: the spec's block, with the record's other
+      // questions folded in.
+      const items = [...doc.querySelectorAll("#injury .scp-in-faq details")];
       if (items.length === 0) continue;
 
       for (const item of items) {
-        const q = item.querySelector(".scp-faq-q")?.textContent.trim() ?? "";
-        const a = item.querySelector(".scp-faq-a")?.textContent.trim() ?? "";
+        const q = item.querySelector("summary")?.textContent.trim() ?? "";
+        const a = item.querySelector("p")?.textContent.trim() ?? "";
         assert.ok(q.endsWith("?"), `${player.slug}: "${q}" is not a question`);
         assert.ok(a.length > 20, `${player.slug}: "${q}" has no real answer`);
 
@@ -1705,7 +1710,7 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const questions = [...doc.querySelectorAll("#injury .scp-faq-q")].map((el) =>
+      const questions = [...doc.querySelectorAll("#injury .scp-in-faq summary")].map((el) =>
         el.textContent.trim(),
       );
       if (questions.length === 0) continue;
@@ -1713,9 +1718,14 @@ describe("the injury tab", () => {
       assert.equal(questions[0], `Is ${player.name} injured?`);
       assert.equal(questions[1], `Is ${player.name} playing this week?`);
       assert.ok(
-        questions.length >= 2 && questions.length <= 7,
-        `${player.slug}: ${questions.length} questions — the FAQ is meant to be 5-7`,
+        questions.length >= 2 && questions.length <= 15,
+        `${player.slug}: ${questions.length} questions — the ceiling is 15`,
       );
+      // State-aware (2026-09-30): the injured-only questions only when he is.
+      const designated = Boolean(doc.querySelector("#injury .scp-in-main:not(.is-good)"));
+      if (!designated) {
+        assert.ok(!questions.some((q) => /^What injury does|^Why isn't/.test(q)), `${player.slug}: a healthy player asked about an injury`);
+      }
       // Every question is asked once. A duplicate is a template bug that reads
       // as a page repeating itself.
       assert.equal(
@@ -1733,23 +1743,23 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const answers = [...doc.querySelectorAll("#injury .scp-faq-item")].map((item) => [
-        item.querySelector(".scp-faq-q").textContent.trim(),
-        item.querySelector(".scp-faq-a").textContent.trim(),
+      const answers = [...doc.querySelectorAll("#injury .scp-in-faq details")].map((item) => [
+        item.querySelector("summary").textContent.trim(),
+        item.querySelector("p").textContent.trim(),
       ]);
       if (answers.length === 0) continue;
 
-      const missed = answers.find(([q]) => q.includes("missed due to injury"));
+      const missed = answers.find(([q]) => q.includes("injury history"));
       const worst = answers.find(([q]) => q.includes("worst injury"));
       if (!missed || !worst) continue;
 
       // The total in the answer is the total on the page's own summary tile.
-      const tiles = [...doc.querySelectorAll("#injury .scp-tile")].map((tile) => [
-        tile.querySelector(".scp-tile-label")?.textContent.trim() ?? "",
-        tile.querySelector(".scp-tile-value")?.textContent.trim() ?? "",
+      const tiles = [...doc.querySelectorAll("#injury .scp-in-gl")].map((tile) => [
+        tile.querySelector("h3")?.textContent.trim() ?? "",
+        tile.querySelector(".scp-in-glv")?.textContent.trim() ?? "",
       ]);
-      const tile = tiles.find(([label]) => /games? missed/i.test(label));
-      const stated = Number(/missed (\d+) game/.exec(missed[1])?.[1]);
+      const tile = tiles.find(([label]) => /^games missed$/i.test(label));
+      const stated = /none of which has cost him/.test(missed[1]) ? 0 : Number(/cost him (\d+) games? in all/.exec(missed[1])?.[1]);
 
       if (tile && Number.isFinite(Number(tile[1])) && Number.isFinite(stated)) {
         assert.equal(
@@ -1760,7 +1770,7 @@ describe("the injury tab", () => {
       }
 
       // The worst injury never claims more games than the career total.
-      const worstGames = Number(/costing (\d+) game/.exec(worst[1])?.[1]);
+      const worstGames = Number(/which cost him (\d+) game/.exec(worst[1])?.[1]);
       if (Number.isFinite(worstGames) && Number.isFinite(stated)) {
         assert.ok(
           worstGames <= stated,
@@ -1779,8 +1789,8 @@ describe("the injury tab", () => {
     const found = await withInjury(6);
 
     for (const { player, doc } of found) {
-      for (const item of doc.querySelectorAll("#injury .scp-faq-item")) {
-        const a = item.querySelector(".scp-faq-a").textContent;
+      for (const item of doc.querySelectorAll("#injury .scp-tab-faq details")) {
+        const a = item.querySelector("p").textContent;
 
         // A known initialism must keep its capitals.
         for (const term of ["acl", "mcl", "pcl", "ucl", "mri"]) {
@@ -1807,8 +1817,8 @@ describe("the injury tab", () => {
     const found = await withInjury(8);
 
     for (const { player, doc } of found) {
-      for (const item of doc.querySelectorAll("#injury .scp-faq-item")) {
-        const a = item.querySelector(".scp-faq-a").textContent;
+      for (const item of doc.querySelectorAll("#injury .scp-tab-faq details")) {
+        const a = item.querySelector("p").textContent;
         assert.ok(
           !/\b0 games\b/.test(a),
           `${player.slug}: an answer states a zero as though it were news`,
@@ -1875,125 +1885,92 @@ describe("the injury tab", () => {
 });
 
 describe("the news tab", () => {
+  // mak's News spec (2026-09-30, lib/player/news-tab.ts) replaced the old
+  // headline lists and the designation card; the injury status is the
+  // sidebar's first quick answer now.
+
   /** The first player whose page renders a News tab. */
   async function withNews() {
     for (const player of roster.slice(0, 40)) {
-      const res = await get(`/player/${player.slug}`);
-      if (res.status !== 200 || !res.body.includes('id="news"')) continue;
+      const res = await get(`/player/${player.slug}/news/`);
+      if (res.status !== 200 || !res.body.includes("scp-nw")) continue;
       return { player, doc: new JSDOM(res.body).window.document };
     }
     return null;
   }
 
-  test("carries the team's reporting, not just the player's", async () => {
+  test("every item has a headline, a take and an impact; dates are absolute", async () => {
     const found = await withNews();
     assert.ok(found, "at least one player has a news tab");
-
-    const news = found.doc.querySelector("#news");
-    const lists = news.querySelectorAll("ul.scp-news");
-    assert.ok(lists.length >= 1, "at least one list of stories");
-
-    // Every card is a real link with real text — this section is the one most
-    // likely to quietly render empty shells if a feed changes shape.
-    for (const item of news.querySelectorAll(".scp-news-item")) {
-      const title = item.querySelector(".scp-news-title");
-      assert.ok(title, "every card has a headline");
-      assert.ok(title.textContent.trim().length > 0, "the headline has text");
-      const link = title.querySelector("a");
-      if (link) {
-        assert.match(link.getAttribute("href"), /^https?:\/\//);
-        assert.equal(link.getAttribute("rel"), "noopener noreferrer");
+    const tab = found.doc.querySelector(".scp-nw");
+    const items = [...tab.querySelectorAll(".scp-nw-lead, .scp-nw-item")];
+    assert.ok(items.length > 0);
+    for (const item of items) {
+      assert.ok(item.querySelector("h3")?.textContent.trim(), "a headline");
+      if (item.matches(".scp-nw-item")) {
+        // A recap's take is its result line; anything else says "Fantasy take".
+        const take = item.querySelector(".scp-nw-take").textContent;
+        if (item.dataset.type === "game") assert.match(take, /^\S+ fantasy points/);
+        else {
+          assert.match(take, /^Fantasy take: \S/);
+          assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
+        }
+        assert.match(item.dataset.impact, /^(up|flat|down)$/);
+        assert.match(item.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: (Positive|Neutral|Negative)/);
+      } else {
+        assert.ok(item.querySelector("time")?.getAttribute("datetime"), "the lead carries its date");
       }
     }
   });
 
-  test("a story is never listed twice under two headings", async () => {
+  test("no relative times anywhere on the tab", async () => {
     const found = await withNews();
-    const news = found.doc.querySelector("#news");
-    const hrefs = [...news.querySelectorAll(".scp-news-title a")].map((a) =>
-      a.getAttribute("href"),
-    );
-    assert.equal(
-      new Set(hrefs).size,
-      hrefs.length,
-      "the player's news and their team's must be deduped against each other",
-    );
+    const tab = found.doc.querySelector(".scp-nw");
+    assert.equal(tab.querySelector("[data-ts]"), null, "nothing the client would turn into \"3h ago\"");
+    assert.doesNotMatch(tab.textContent, /\b(\d+[hdm]|\d+mo|just now|\w+ ago)\b/);
   });
 
-  test("headlines sit below the section heading in the outline", async () => {
+  test("the lead is not repeated in the feed, and outbound links open safely", async () => {
     const found = await withNews();
-    const news = found.doc.querySelector("#news");
-    assert.ok(news.querySelector("h2"), "the tab owns an h2");
-    // h4 rather than h3: the subsection headings ("Latest on X", "Around the
-    // Y") are the h3s, so a headline at h3 would flatten the outline.
-    assert.equal(news.querySelectorAll("h3.scp-news-title").length, 0);
-    assert.ok(news.querySelectorAll("h4.scp-news-title").length > 0);
+    const tab = found.doc.querySelector(".scp-nw");
+    const lead = tab.querySelector(".scp-nw-lead h3")?.textContent.trim();
+    const feed = [...tab.querySelectorAll(".scp-nw-item h3")].map((h) => h.textContent.trim());
+    if (lead) assert.ok(!feed.includes(lead));
+    for (const a of tab.querySelectorAll('a[target="_blank"]')) {
+      assert.equal(a.getAttribute("rel"), "noopener");
+      assert.match(a.textContent, /\(opens in new tab\)$/);
+    }
   });
 
-  test("a designation is stamped with the snapshot it came from", async () => {
-    // Every report card must say when it was read. A designation shown without
-    // a time can look current indefinitely, which is the exact failure this
-    // page is least allowed to have.
-    let checked = 0;
-    for (const player of roster.slice(0, 40)) {
-      const res = await get(`/player/${player.slug}`);
-      if (res.status !== 200) continue;
-      const doc = new JSDOM(res.body).window.document;
-      const report = doc.querySelector(".scp-report");
-      if (!report) continue;
-      checked += 1;
-
-      assert.ok(
-        report.querySelector(".scp-report-pill").textContent.trim(),
-        "the card names the designation",
-      );
-      const stamp = report.querySelector(".scp-report-stamp time");
-      assert.ok(stamp, "the card carries a snapshot time");
-      assert.ok(stamp.getAttribute("datetime"), "machine-readable");
-      assert.ok(Number(stamp.getAttribute("data-ts")) > 0, "and refinable by the client");
-      assert.match(
-        report.getAttribute("data-severity"),
-        /^(out|doubtful|questionable|probable)$/,
-      );
-      if (checked >= 3) break;
-    }
-    assert.ok(checked > 0, "expected at least one designated player in the snapshot");
+  test("filters, week groups and the empty note are in place for the client", async () => {
+    const found = await withNews();
+    const tab = found.doc.querySelector(".scp-nw");
+    const group = tab.querySelector("[data-scp-news-filter]");
+    if (!group) return;
+    assert.equal(group.getAttribute("role"), "group");
+    assert.equal(group.getAttribute("aria-label"), "Filter updates");
+    assert.equal(group.querySelector('[aria-pressed="true"]').dataset.f, "all");
+    assert.ok(tab.querySelector("ol.scp-nw-feed > li.scp-nw-wk .scp-nw-wklabel b"));
+    const empty = tab.querySelector("#scp-nw-empty");
+    assert.equal(empty.getAttribute("role"), "status");
+    assert.ok(empty.hasAttribute("hidden"));
   });
 
-  test("the news tab hands a reader on to the injury history", async () => {
-    // The cross-link used to run the other way: the designation lived in News
-    // and the Injury tab pointed at it. The status now leads the Injury tab,
-    // so News is the one that should hand a reader on — otherwise the card
-    // beside the reporting is the end of the road.
-    let checked = 0;
-    for (const player of roster.slice(0, 40)) {
-      const res = await get(`/player/${player.slug}`);
-      if (res.status !== 200) continue;
-      const doc = new JSDOM(res.body).window.document;
-      const report = doc.querySelector(".scp-report");
-      const news = doc.querySelector("#news");
-      if (!report || !news || !doc.getElementById("injury")) continue;
-      checked += 1;
-
-      const link = news.querySelector(".scp-crosslink");
-      assert.ok(link, "a designated player's news tab links to the history");
-      // The Injury section's own URL: an in-page anchor is dead on /news/.
-      assert.equal(link.getAttribute("href"), `/player/${player.slug}/injury/`);
-      if (checked >= 2) break;
-    }
-    assert.ok(checked > 0, "expected at least one designated player");
+  test("quick answers hand a reader on to the Injury tab and the game log", async () => {
+    const found = await withNews();
+    const qa = found.doc.querySelector(".scp-nw-qa");
+    assert.ok(qa);
+    const hrefs = [...qa.querySelectorAll("a")].map((a) => a.getAttribute("href"));
+    assert.ok(hrefs.includes(`/player/${found.player.slug}/injury/`), "the Injury section's own URL");
+    assert.ok(found.doc.querySelector('[data-cta="redraft-command-news-sidebar"]'));
   });
 
   test("the team's news offers a way through to the hub", async () => {
     const found = await withNews();
-    const more = found.doc.querySelector("#news .scp-news-more-link");
+    const more = found.doc.querySelector(".scp-nw #scp-nw-team-h ~ a.scp-ox-more");
     if (more) {
-      assert.match(more.getAttribute("href"), /^\/team\//);
-      assert.equal(
-        more.getAttribute("target"),
-        "_top",
-        "a link into the site must break out of the legacy frame",
-      );
+      assert.match(more.getAttribute("href"), /^\/team\/.+\/news\/$/);
+      assert.equal(more.getAttribute("target"), "_top", "a link into the site must break out of the legacy frame");
     }
   });
 });
@@ -2134,7 +2111,7 @@ describe("the bio tab", () => {
     const prose = doc.querySelector("#bio .scp-bio").textContent;
     assert.match(prose, /has since played for the Washington Commanders and returned to the San Francisco 49ers\./);
 
-    const answer = [...doc.querySelectorAll("script, .scp-faq-a, [class*='faq'] p")]
+    const answer = [...doc.querySelectorAll("script, .scp-tab-faq p, [class*='faq'] p")]
       .map((n) => n.textContent)
       .join(" ")
       .match(/Deebo Samuel has played for the [^."]*\./)?.[0];
@@ -2173,12 +2150,12 @@ describe("the bio tab", () => {
   test("the questions are answered directly, and marked up as answers", async () => {
     const pages = await bioPages(3);
     for (const page of pages) {
-      const items = [...page.doc.querySelectorAll("#bio .scp-faq-item")];
+      const items = [...page.doc.querySelectorAll("#bio .scp-tab-faq details")];
       if (items.length === 0) continue;
 
       for (const item of items) {
-        const q = item.querySelector(".scp-faq-q").textContent.trim();
-        const a = item.querySelector(".scp-faq-a").textContent.trim();
+        const q = item.querySelector("summary").textContent.trim();
+        const a = item.querySelector("p").textContent.trim();
         assert.ok(q.endsWith("?"), `"${q}" is a question`);
         assert.ok(a.length > 0 && a.endsWith("."), `"${q}" has a real answer`);
         assert.ok(
@@ -2603,7 +2580,7 @@ describe("the positional peers rail", () => {
     assert.ok(inside, "the Overview carries the rail");
     assert.equal(
       inside.nextElementSibling?.firstElementChild?.getAttribute("aria-labelledby"),
-      "scp-ox-faq-h",
+      "scp-faq-overview-h",
       "directly above the FAQ",
     );
     const outside = doc.querySelector(".scp-peers-out > .scp-peers");
@@ -2616,9 +2593,35 @@ describe("the positional peers rail", () => {
     const css = await get("/player.css");
     assert.match(
       css.body,
-      /\.scp:has\(> #overview\.is-active\) > \.scp-peers-out \{\s*display: none;/,
-      "the outside copy stands down while the Overview is open",
+      /\.scp:has\(> #overview\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #stats\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #outlook\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #injury\.is-active\) > \.scp-peers-out \{\s*display: none;/,
+      "the outside copy stands down while a tab carrying its own is open",
     );
+
+    // Stats, Outlook and Injury: the tab's footer (and on a section page the
+    // way back), then the rail, then its FAQ (mak, 2026-09-30) — the panel's
+    // own rail on the profile, the page's on the section page.
+    const FAQ = { stats: '.scp-tab-faq[data-faq-tab="stats"]', outlook: ".scp-ol-faq", injury: ".scp-in-faq" };
+    let split = 0;
+    for (const [id, faq] of Object.entries(FAQ)) {
+      const rail = doc.querySelector(`#${id} > .scp-peers`);
+      if (!rail) continue;
+      split += 1;
+      // The footer ABOVE the rail (mak, 2026-09-30).
+      assert.ok(rail.previousElementSibling?.querySelector(".scp-st-foot"), `${id}: the footer precedes the rail`);
+      const last = doc.querySelector(`#${id}`).lastElementChild;
+      assert.ok(last.matches(faq) || last.querySelector(faq), `${id}: the FAQ closes the panel`);
+      const page = await dom(`/player/${fixture.slug}/${id}/`);
+      assert.equal(page.doc.querySelectorAll(".scp-peers").length, 1, `${id}: one rail on the section page`);
+      const order = [...page.doc.querySelectorAll(`.scp-peers, .scp-st-foot, .scp-back, ${faq}`)].map((el) =>
+        el.matches(faq) ? "faq" : el.className.split(" ")[0],
+      );
+      assert.deepEqual(
+        order,
+        ["scp-st-foot", "scp-back", "scp-peers", "faq"],
+        `${id}: footer and the way back, rail, FAQ in their order`,
+      );
+    }
+    assert.ok(split >= 2, "the fixture carries at least two split tabs");
 
     // And on a section-scoped page too, which is that page's version of a tab.
     const scoped = await dom(`/player/${fixture.slug}/bio/`);
@@ -2633,7 +2636,8 @@ describe("the positional peers rail", () => {
     assert.equal(doc.querySelector(".scp-peers .scp-head-sub"), null);
     const h = doc.querySelector(".scp-peers h2");
     assert.equal(h.className, "scp-ox-h2", "the Overview's section title, like the FAQ");
-    assert.equal(h.textContent, "Nearby Positional Peers");
+    // mak, 2026-09-30: "QBs like Jacoby Brissett", not "Nearby Positional Peers".
+    assert.equal(h.textContent, `${doc.querySelector(".scp-root, [data-position]").getAttribute("data-position")}s like ${fixture.name}`);
   });
 });
 
@@ -2678,18 +2682,42 @@ describe("the embedded fragment", () => {
     assert.ok(![...doc.querySelectorAll("#stats h3")].some((h) => /^\d{4} Production$/.test(h.textContent.trim())));
   });
 
-  test("the Stats tab has one FAQ, Common Questions, with the spec's questions merged in", async () => {
-    // mak, 2026-09-30: the spec's "{Name} stats FAQ" folded into the old
-    // block. A spec question shows only when the old list has nothing on its
-    // topic, so no question is asked twice.
+  test("the Stats tab has one FAQ, and it asks only stat-total questions", async () => {
+    // mak, 2026-09-30: each tab owns its search intent (faq-engine.ts). Stats
+    // asks season and career totals; injury, bio and single-game questions
+    // belong to their own tabs.
     const { doc } = await dom(`/player/${fixture.slug}/stats/`);
-    assert.equal(doc.querySelector("#stats .scp-st-faq"), null, "no second FAQ section");
-    assert.equal(doc.querySelectorAll("#stats .scp-faq").length, 1);
-    const qs = [...doc.querySelectorAll("#stats .scp-faq-q")].map((q) => q.textContent.trim());
-    assert.ok(qs.length >= 4);
-    const topic = (q) =>
-      /fantasy points/i.test(q) ? "fantasy" : /career stats/i.test(q) ? "career" : /touchdowns/i.test(q) ? "td" : /yards/i.test(q) ? "yards" : q;
-    assert.equal(new Set(qs.map(topic)).size, qs.length, `each topic once: ${qs.join(" | ")}`);
+    const sections = doc.querySelectorAll('.scp-tab-faq[data-faq-tab="stats"]');
+    assert.equal(sections.length, 1);
+    assert.equal(sections[0].querySelector("h2").textContent, `${fixture.name} Stats FAQ`);
+    const qs = [...sections[0].querySelectorAll("summary")].map((q) => q.textContent.trim());
+    assert.ok(qs.length >= 8 && qs.length <= 15, `${qs.length} questions`);
+    assert.equal(new Set(qs).size, qs.length);
+    for (const q of qs) {
+      assert.doesNotMatch(q, /injured|How old|How tall|drafted|last game|Week \d+|this week/i, q);
+    }
+  });
+
+  test("no question is asked on two tabs, and each tab keeps to its own intent", async () => {
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const byTab = new Map();
+    for (const sec of doc.querySelectorAll(".scp-tab-faq")) {
+      byTab.set(sec.dataset.faqTab, [...sec.querySelectorAll("summary")].map((q) => q.textContent.trim()));
+    }
+    const all = [...byTab.values()].flat();
+    assert.equal(new Set(all).size, all.length, "a question repeats across tabs");
+    for (const [tab, qs] of byTab) assert.ok(qs.length <= 15, `${tab}: ${qs.length} questions`);
+    const own = {
+      overview: /injured|How old|How tall|drafted|college|last game/i,
+      stats: /injured|How old|last game|Should I start/i,
+      "game-log": /injured|How old|drafted|Should I start|How many .+ does .+ have this season/i,
+      outlook: /injured|How old|drafted|last game/i,
+      bio: /fantasy|injured|last game|touchdowns/i,
+      news: /How old|last game|practice/i,
+    };
+    for (const [tab, bad] of Object.entries(own)) {
+      for (const q of byTab.get(tab) ?? []) assert.doesNotMatch(q, bad, `${tab}: "${q}"`);
+    }
   });
 
   test("one FAQPage for the document, however many tabs carry questions", async () => {
@@ -2707,13 +2735,11 @@ describe("the embedded fragment", () => {
     assert.equal(nodes.length, 1, "exactly one FAQPage on the profile");
 
     // Every FAQ on the page, the Overview's <details> included, in document
-    // order — and each question once, as the node lists it. The Stats tab's
-    // spec questions (.is-visible-only inside Common Questions), like the
-    // Outlook tab's (.scp-ol-faq) and the Injury tab's (.scp-in-faq) FAQs, are
-    // left out of the schema until mak approves that SEO change, so they are
-    // left out here too.
+    // order — and each question once, as the node lists it. The Stats,
+    // Outlook and Injury tabs' spec questions are all in it since mak
+    // approved that on 2026-09-30.
     const seen = new Set();
-    const rendered = [...doc.querySelectorAll(".scp-faq-item:not(.is-visible-only), .scp-ox-faq:not(.scp-st-faq, .scp-ol-faq, .scp-in-faq) details")]
+    const rendered = [...doc.querySelectorAll(".scp-faq-item, .scp-ox-faq details")]
       .map((item) =>
         item.matches("details")
           ? {
@@ -2721,8 +2747,8 @@ describe("the embedded fragment", () => {
               answer: item.querySelector("p").textContent.trim(),
             }
           : {
-              question: item.querySelector(".scp-faq-q").textContent.trim(),
-              answer: item.querySelector(".scp-faq-a").textContent.trim(),
+              question: item.querySelector("summary").textContent.trim(),
+              answer: item.querySelector("p").textContent.trim(),
             },
       )
       .filter((item) => {
@@ -2761,8 +2787,8 @@ describe("the embedded fragment", () => {
       .filter((json) => json["@type"] === "FAQPage");
     assert.equal(nodes.length, 1, "exactly one FAQPage on the section page");
 
-    const rendered = [...doc.querySelectorAll(".scp-faq-item")].map((item) =>
-      item.querySelector(".scp-faq-q").textContent.trim(),
+    const rendered = [...doc.querySelectorAll(".scp-tab-faq details")].map((item) =>
+      item.querySelector("summary").textContent.trim(),
     );
     assert.ok(rendered.length > 0, "the bio page carries questions");
     assert.deepEqual(
@@ -2786,7 +2812,7 @@ describe("the embedded fragment", () => {
 
     const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
     const island = doc.querySelector("script.scp-faq-data");
-    const rendered = [...doc.querySelectorAll("#game-log .scp-faq-item")];
+    const rendered = [...doc.querySelectorAll("#game-log .scp-tab-faq details")];
     if (rendered.length === 0) return;
 
     assert.ok(island, "the rendered FAQ ships its data island");
@@ -2800,12 +2826,12 @@ describe("the embedded fragment", () => {
     for (const [i, item] of items.entries()) {
       assert.equal(
         item.q,
-        rendered[i].querySelector(".scp-faq-q").textContent.trim(),
+        rendered[i].querySelector("summary").textContent.trim(),
         "a question in the data differs from the one rendered",
       );
       assert.equal(
         item.a,
-        rendered[i].querySelector(".scp-faq-a").textContent.trim(),
+        rendered[i].querySelector("p").textContent.trim(),
         "an answer in the data differs from the one rendered",
       );
     }
@@ -3120,7 +3146,7 @@ describe("player section URLs", () => {
     injury: /Injury Update & History$/,
     "game-log": /Game Log 2\d{3}$/,
     outlook: /Rest-of-Season Outlook$/,
-    news: /News & Analysis$/,
+    news: /^Latest .+ News & Updates$/,
     bio: /Bio$/,
   };
 

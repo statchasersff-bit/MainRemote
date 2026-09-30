@@ -107,7 +107,10 @@ describe("player header", () => {
       ["Drafted", "2016 R3, #91"],
     ]);
 
-    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2026 season Through Week 3");
+    // "2026 Season" above the board, outside it (mak, 2026-09-30).
+    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2026 Season");
+    assert.equal(h.querySelector(".scp-pboard .scp-pboard-cap"), null);
+    assert.ok(h.querySelector(".scp-pboard-wrap > .scp-pboard-cap + .scp-pboard"));
     const board = [...h.querySelectorAll(".scp-pboard-stats > div")].map((d) => text(d.querySelector("dd")));
     assert.deepEqual(board, ["16.5", "QB17", "13%"]);
     assert.ok(h.querySelector(".scp-pboard-stats > div:first-child").classList.contains("is-lead"));
@@ -197,7 +200,7 @@ describe("player header", () => {
         stats: { gamesPlayed: 17, ppg: 14.2 },
       }),
     );
-    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 final");
+    assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 Season");
     assert.equal(text(h.querySelector(".scp-pbtn--dark")), "See Brissett's 2026 outlook");
     assert.match(h.querySelector(".scp-pbtn--dark").getAttribute("href"), /\/jacoby-brissett\/outlook\/$/);
     assert.equal(text(h.querySelector(".scp-phead-kind")), "Fantasy outlook and stats for 2026");

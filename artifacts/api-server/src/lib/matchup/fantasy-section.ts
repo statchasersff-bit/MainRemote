@@ -19,7 +19,6 @@
 
 import { escapeHtml } from "../render";
 import {
-  defensePoints,
   fantasyPoints,
   idpPoints,
   kickerPoints,
@@ -225,12 +224,6 @@ function diff(a: Triple, b: Triple): Triple {
 
 /* ----------------------------------------------------------------- tables */
 
-interface Column {
-  label: string;
-  title?: string;
-  value: (row: Row) => string;
-}
-
 const HEADS: Record<string, string> = {
   PTS: "Fantasy points",
   "CMP/ATT": "Completions / attempts",
@@ -255,184 +248,6 @@ function head(label: string): string {
   const title = HEADS[label] ?? HEADS[last];
   const text = escapeHtml(label);
   return `<th scope="col">${title ? `<abbr title="${escapeHtml(title)}">${text}</abbr>` : text}</th>`;
-}
-
-function playerCell(input: FantasySectionInput, row: Row): string {
-  const href = input.playerUrl(row.p.name);
-  const name = href
-    ? `<a class="sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(row.p.name)}</a>`
-    : escapeHtml(row.p.name);
-  const ss = row.ctx?.active ? input.startSitUrl(row.p.name) : null;
-  return (
-    `<th scope="row" class="sct-fp-player">${name}` +
-    (ss
-      ? `<a class="sct-fp-ss" href="${escapeHtml(ss)}" data-cta="fantasy-table-startsit" ` +
-        `aria-label="${escapeHtml(`Start or sit ${row.p.name}`)}">Start/Sit →</a>`
-      : "") +
-    `</th>`
-  );
-}
-
-function sortAttrs(t: Triple): string {
-  return FORMATS.map((f) => ` data-sort-${f}="${t[f]}"`).join("");
-}
-
-function ptsCell(t: Triple, top: boolean): string {
-  return `<td class="sct-fp-pts${top ? " is-top" : ""}"${dataAttrs(t)}>${t.ppr.toFixed(1)}</td>`;
-}
-
-function teamTable(
-  input: FantasySectionInput,
-  team: ScoreboardGame["away"],
-  ink: string,
-  rows: Row[],
-  columns: Column[],
-  caption: string,
-): string {
-  if (rows.length === 0) return "";
-  // A position column nobody has a position for is a column of dashes: ESPN
-  // leaves defenders unplaced more often than not.
-  columns = columns.filter((c) => c.label !== "POS" || rows.some((r) => r.p.pos));
-  const sorted = [...rows].sort((a, b) => b.pts.ppr - a.pts.ppr || a.p.name.localeCompare(b.p.name));
-  const top = sorted[0]!.pts.ppr;
-  return (
-    `<h4 class="sct-fp-team" style="color:${ink}">${escapeHtml(team.name)}</h4>` +
-    `<div class="sct-fp-wrap"><table class="sct-fp-table" data-fp-table>` +
-    `<caption class="sct-rb-sr">${escapeHtml(`${caption}, ${team.name}`)}</caption>` +
-    `<thead><tr><th scope="col">Player</th>${head("PTS")}${columns.map((c) => head(c.label)).join("")}</tr></thead>` +
-    `<tbody>` +
-    sorted
-      .map(
-        (row) =>
-          `<tr${sortAttrs(row.pts)}>` +
-          playerCell(input, row) +
-          ptsCell(row.pts, row.pts.ppr === top && top > 0) +
-          columns.map((c) => `<td>${escapeHtml(c.value(row))}</td>`).join("") +
-          `</tr>`,
-      )
-      .join("") +
-    `</tbody></table></div>`
-  );
-}
-
-const QB_COLUMNS: Column[] = [
-  { label: "CMP/ATT", value: (r) => `${s(r.p.stats, "passCmp")}/${s(r.p.stats, "passAtt")}` },
-  { label: "Pass YDS", value: (r) => String(s(r.p.stats, "passYds")) },
-  { label: "TD", value: (r) => String(s(r.p.stats, "passTd")) },
-  { label: "INT", value: (r) => String(s(r.p.stats, "passInt")) },
-  { label: "Rush ATT", value: (r) => String(s(r.p.stats, "rushAtt")) },
-  { label: "Rush YDS", value: (r) => String(s(r.p.stats, "rushYds")) },
-  { label: "Rush TD", value: (r) => String(s(r.p.stats, "rushTd")) },
-];
-
-const FLEX_COLUMNS: Column[] = [
-  { label: "POS", value: (r) => r.p.pos ?? "—" },
-  { label: "Rush ATT", value: (r) => String(s(r.p.stats, "rushAtt")) },
-  { label: "Rush YDS", value: (r) => String(s(r.p.stats, "rushYds")) },
-  { label: "Rush TD", value: (r) => String(s(r.p.stats, "rushTd")) },
-  { label: "TGT", value: (r) => String(s(r.p.stats, "recTgt")) },
-  { label: "REC", value: (r) => String(s(r.p.stats, "rec")) },
-  { label: "Rec YDS", value: (r) => String(s(r.p.stats, "recYds")) },
-  { label: "Rec TD", value: (r) => String(s(r.p.stats, "recTd")) },
-];
-
-function kColumns(input: FantasySectionInput): Column[] {
-  return [
-    {
-      label: "FG",
-      value: (r) => {
-        const k = kickerLine(input, r.p);
-        return `${k.fgMade.length}/${k.fgAtt}`;
-      },
-    },
-    {
-      label: "Long",
-      value: (r) => {
-        const long = Math.max(s(r.p.stats, "fgLong"), ...kickerLine(input, r.p).fgMade);
-        return long > 0 ? String(long) : "—";
-      },
-    },
-    {
-      label: "XP",
-      value: (r) => {
-        const k = kickerLine(input, r.p);
-        return `${k.xpMade}/${k.xpAtt}`;
-      },
-    },
-  ];
-}
-
-const IDP_COLUMNS: Column[] = [
-  { label: "POS", value: (r) => r.p.pos ?? "—" },
-  { label: "Solo", value: (r) => String(s(r.p.stats, "soloTkl")) },
-  { label: "Ast", value: (r) => String(s(r.p.stats, "astTkl")) },
-  { label: "TFL", value: (r) => String(s(r.p.stats, "tfl")) },
-  { label: "Sacks", value: (r) => String(s(r.p.stats, "sacks")) },
-  { label: "QB hits", value: (r) => String(s(r.p.stats, "qbHits")) },
-  { label: "PD", value: (r) => String(s(r.p.stats, "passDef")) },
-  { label: "INT", value: (r) => String(s(r.p.stats, "defInt")) },
-  { label: "FR", value: (r) => String(s(r.p.stats, "fumRec")) },
-  { label: "TD", value: (r) => String(s(r.p.stats, "defTd")) },
-];
-
-function idpTables(input: FantasySectionInput, rows: Row[], colors: ReturnType<typeof pairColors>): string {
-  const { game } = input;
-  return (["away", "home"] as const)
-    .map((side) => {
-      const team = game[side];
-      const mine = rows
-        .filter((r) => r.p.team === team.abbr)
-        .sort((a, b) => b.pts.ppr - a.pts.ppr || a.p.name.localeCompare(b.p.name));
-      if (mine.length === 0) return "";
-      const topFive = teamTable(input, team, colors[side].ink, mine.slice(0, 5), IDP_COLUMNS, "Individual defensive players");
-      if (mine.length <= 5) return topFive;
-      // The rest in a disclosure; its table carries no top marker, since the
-      // top scorer is always in the five above it.
-      const rest = mine.slice(5);
-      const restTable = teamTable(input, team, colors[side].ink, rest, IDP_COLUMNS, "More defensive players")
-        .replace(/<h4[^>]*>.*?<\/h4>/, "")
-        .replace(/ is-top/g, "")
-        .replace("data-fp-table", "data-fp-table data-fp-notop");
-      return (
-        topFive +
-        `<details class="sct-fp-more"><summary>${escapeHtml(`Show all ${mine.length} ${team.short} defenders`)}</summary>` +
-        restTable +
-        `</details>`
-      );
-    })
-    .join("");
-}
-
-function dstTable(input: FantasySectionInput, colors: ReturnType<typeof pairColors>): string {
-  const { game } = input;
-  const rows = (["away", "home"] as const)
-    .map((side) => ({ side, team: game[side], line: input.defense[game[side].abbr] }))
-    .filter((r): r is { side: "away" | "home"; team: ScoreboardGame["away"]; line: DefenseLine } => Boolean(r.line));
-  if (rows.length === 0) return "";
-  const pts = rows.map((r) => defensePoints(r.line));
-  const top = Math.max(...pts);
-  return (
-    `<div class="sct-fp-wrap"><table class="sct-fp-table" data-fp-table>` +
-    `<caption class="sct-rb-sr">Defense and special teams</caption>` +
-    `<thead><tr><th scope="col">Team</th>${["PTS", "Sacks", "INT", "FR", "Safety", "Def TD", "Ret TD", "Pts allowed"]
-      .map(head)
-      .join("")}</tr></thead><tbody>` +
-    rows
-      .map((r, i) => {
-        const t = same(pts[i]!);
-        return (
-          `<tr${sortAttrs(t)}>` +
-          `<th scope="row" class="sct-fp-player" style="color:${colors[r.side].ink}">${escapeHtml(`${r.team.short} D/ST`)}</th>` +
-          ptsCell(t, t.ppr === top) +
-          [r.line.sacks, r.line.ints, r.line.fumRec, r.line.safeties, r.line.defTd, r.line.retTd, r.line.pointsAllowed]
-            .map((v) => `<td>${v}</td>`)
-            .join("") +
-          `</tr>`
-        );
-      })
-      .join("") +
-    `</tbody></table></div>`
-  );
 }
 
 /* ------------------------------------------------------------------ usage */
@@ -486,28 +301,82 @@ function diffCell(t: Triple): string {
   return `<td class="sct-fp-diff${cls}"${dataAttrs(t, signed)}>${signed(t.ppr)}</td>`;
 }
 
-function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): string {
+/** The usage a row is read by: pass attempts for a quarterback, otherwise the bigger share. */
+function usageLabel(u: Usage): string {
+  const p = u.row.p;
+  if (u.row.group === "qb" || (p.pos ?? "").toUpperCase() === "QB") return `${s(p.stats, "passAtt")} att`;
+  const car = u.carShare ?? -1;
+  const tgt = u.tgtShare ?? -1;
+  if (car < 0 && tgt < 0) return "—";
+  return car > tgt ? `${pct(u.carShare)} car` : `${pct(u.tgtShare)} tgt`;
+}
+
+/**
+ * Fantasy points against expected (mak, 2026-09-30): what mattered first —
+ * the biggest over- and underperformer and the heaviest expected workload —
+ * then a table led by PTS, xFP and the gap between them, with the full usage
+ * columns one click down. Every figure carries all three scorings for the
+ * section's switch.
+ */
+function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], toggle = ""): string {
   if (usage.length === 0 || !input.rates) return "";
   const hasSnaps = usage.some((u) => u.snapShare !== null);
+  const nameOf = (u: Usage): string => {
+    const href = input.playerUrl(u.row.p.name);
+    return href
+      ? `<a class="sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(u.row.p.name)}</a>`
+      : escapeHtml(u.row.p.name);
+  };
+
+  // What mattered: named by PPR, figures in every scoring.
+  // Ties at one decimal go to the bigger workload: the more expected, the more
+  // it matters that it was beaten or missed.
+  const r1 = (n: number): number => Math.round(n * 10) / 10;
+  const top = [...usage].sort((a, b) => r1(b.over.ppr) - r1(a.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
+  const bottom = [...usage].sort((a, b) => r1(a.over.ppr) - r1(b.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
+  const volume = [...usage].sort((a, b) => b.x.ppr - a.x.ppr)[0]!;
+  const num = (t: Triple): string => `<span${dataAttrs(t)}>${t.ppr.toFixed(1)}</span>`;
+  const gap = (t: Triple): string => {
+    const cls = t.ppr > 0.05 ? " is-pos" : t.ppr < -0.05 ? " is-neg" : "";
+    return `<span class="sct-fp-diff${cls}"${dataAttrs(t, signed)}>${signed(t.ppr)}</span>`;
+  };
+  const card = (label: string, value: string, u: Usage, detail: string): string =>
+    `<li class="sct-fp-take">` +
+    `<span class="sct-fp-take-label">${escapeHtml(label)}</span>` +
+    `<span class="sct-fp-take-value">${value}</span>` +
+    `<span class="sct-fp-take-name">${nameOf(u)}</span>` +
+    `<span class="sct-fp-take-detail">${detail}</span>` +
+    `</li>`;
+  const cards = [
+    top.over.ppr > 0.05
+      ? card("Biggest overperformer", gap(top.over), top, `${num(top.row.pts)} PTS vs ${num(top.x)} xFP`)
+      : "",
+    bottom.over.ppr < -0.05 && bottom !== top
+      ? card("Biggest underperformer", gap(bottom.over), bottom, `${num(bottom.row.pts)} PTS vs ${num(bottom.x)} xFP`)
+      : "",
+    card("Highest expected volume", `${num(volume.x)} <small>xFP</small>`, volume, `${num(volume.row.pts)} PTS scored`),
+  ].join("");
+
+  // The detail columns: in the HTML, hidden once the bundle has wired the button.
+  const d = (html: string): string => html.replace(/^<(td|th)/, '<$1 data-fp-detail-col');
   const body = usage
     .map((u) => {
       const p = u.row.p;
-      const href = input.playerUrl(p.name);
-      const name = href
-        ? `<a class="sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(p.name)}</a>`
-        : escapeHtml(p.name);
       return (
         `<tr>` +
-        `<th scope="row" class="sct-fp-player">${name}<span class="sct-fp-sub">${escapeHtml(`${p.team} · ${p.pos ?? "—"}`)}</span></th>` +
+        `<th scope="row" class="sct-fp-player">${nameOf(u)}<span class="sct-fp-sub">${escapeHtml(`${p.team} · ${p.pos ?? "—"}`)}</span></th>` +
         `<td class="sct-fp-pts"${dataAttrs(u.row.pts)}>${u.row.pts.ppr.toFixed(1)}</td>` +
-        `<td${dataAttrs(u.x)}>${u.x.ppr.toFixed(1)}</td>` +
+        `<td class="sct-fp-x"${dataAttrs(u.x)}>${u.x.ppr.toFixed(1)}</td>` +
         diffCell(u.over) +
         `<td>${pct(u.snapShare)}</td>` +
+        `<td class="sct-fp-use">${escapeHtml(usageLabel(u))}</td>` +
         // Routes: no feed this site reads carries them.
-        `<td>—</td>` +
-        `<td>${s(p.stats, "passAtt")}</td>` +
-        `<td>${s(p.stats, "rushAtt")}</td><td>${pct(u.carShare)}</td>` +
-        `<td>${s(p.stats, "recTgt")}</td><td>${pct(u.tgtShare)}</td>` +
+        d(`<td>—</td>`) +
+        d(`<td>${s(p.stats, "passAtt")}</td>`) +
+        d(`<td>${s(p.stats, "rushAtt")}</td>`) +
+        d(`<td>${pct(u.carShare)}</td>`) +
+        d(`<td>${s(p.stats, "recTgt")}</td>`) +
+        d(`<td>${pct(u.tgtShare)}</td>`) +
         `</tr>`
       );
     })
@@ -516,23 +385,31 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
   const ta = teamTotals(rows, game.away.abbr);
   const th = teamTotals(rows, game.home.abbr);
   const rates = input.rates;
+  const col = (label: string, title: string, detail = false): string =>
+    `<th scope="col"${detail ? " data-fp-detail-col" : ""}><abbr title="${escapeHtml(title)}">${escapeHtml(label)}</abbr></th>`;
   return (
-    `<h3 class="sct-rb-h3" id="usage">Fantasy usage and expected points</h3>` +
+    `<div class="sct-fp-usage">` +
+    // The section's title, with the scoring switch on its row (mak, 2026-09-30).
+    `<div class="sct-fp-head"><h2 class="sct-rb-h2" id="usage">Fantasy Points vs Expected</h2>${toggle}</div>` +
     `<p class="sct-rb-sub">Expected points (xFP) are what a player's pass attempts, carries and targets are worth ` +
     `at the league's average rates; the difference is what the player made of them.</p>` +
+    `<ul class="sct-fp-takes">${cards}</ul>` +
     `<div class="sct-fp-wrap"><table class="sct-fp-table is-usage">` +
     `<caption class="sct-rb-sr">Usage and expected fantasy points</caption>` +
     `<thead><tr><th scope="col">Player</th>${head("PTS")}` +
-    `<th scope="col"><abbr title="Expected fantasy points">xFP</abbr></th>` +
-    `<th scope="col"><abbr title="Points over expected">+/−</abbr></th>` +
-    `<th scope="col"><abbr title="Share of the team's offensive snaps">Snap%</abbr></th>` +
-    `<th scope="col"><abbr title="Routes run per team dropback">Rte%</abbr></th>` +
-    `<th scope="col"><abbr title="Pass attempts">Pass att</abbr></th>` +
-    `<th scope="col"><abbr title="Carries">Car</abbr></th>` +
-    `<th scope="col"><abbr title="Share of the team's carries">Car%</abbr></th>` +
-    `<th scope="col"><abbr title="Targets">Tgt</abbr></th>` +
-    `<th scope="col"><abbr title="Share of the team's targets">Tgt%</abbr></th>` +
+    col("xFP", "Expected fantasy points") +
+    col("vs xFP", "Points over or under expected") +
+    col("Snap%", "Share of the team's offensive snaps") +
+    col("Usage", "The player's main workload: pass attempts, carry share or target share") +
+    col("Rte%", "Routes run per team dropback", true) +
+    col("Pass att", "Pass attempts", true) +
+    col("Car", "Carries", true) +
+    col("Car%", "Share of the team's carries", true) +
+    col("Tgt", "Targets", true) +
+    col("Tgt%", "Share of the team's targets", true) +
     `</tr></thead><tbody>${body}</tbody></table></div>` +
+    `<button type="button" class="sct-fp-more" data-fp-detail hidden aria-expanded="false" ` +
+    `data-more="Show detailed usage ▾" data-less="Hide detailed usage ▴">Show detailed usage ▾</button>` +
     `<p class="sct-rb-note">${escapeHtml(
       `Team totals: ${game.away.short} ${ta.targets} targets and ${ta.carries} carries; ` +
         `${game.home.short} ${th.targets} targets and ${th.carries} carries. ` +
@@ -544,7 +421,8 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[]): s
         `League-average rates from the ${rates.season} season: ${perTarget(rates, "ppr").toFixed(2)} PPR points per target ` +
         `(${Math.round(rates.catchRate * 100)}% catch rate), ${rates.perCarry.toFixed(2)} per carry and ` +
         `${rates.perPassAttempt.toFixed(2)} per pass attempt. They don't adjust for field position or target depth.`,
-    )}</p>`
+    )}</p>` +
+    `</div>`
   );
 }
 
@@ -880,9 +758,9 @@ function fantasyNotes(
       `</div>`
     : "";
 
-  // A game nobody has written notes for reads as one with none reported, per
-  // the build spec (6.9): the page says "reported", never "none happened".
-  const inj = input.injuries ?? { injuries: [], playedThrough: [], returned: [] };
+  // Only for a game somebody has written notes for (game-notes.ts): mak had
+  // the "No in-game injuries reported." block taken off every other game.
+  const inj = input.injuries;
   const injuries = inj
     ? `<${heading} class="${cls}" id="injuries">In-game injuries</${heading}>` +
       (inj.injuries.length
@@ -932,16 +810,6 @@ export function renderFantasyNotes(input: FantasySectionInput): string {
   return wrap(verdicts, "verdicts") + wrap(stockBlock, "stock") + wrap(injuries, "injuries");
 }
 
-/** The Fantasy tab's jump links: one pill per section that rendered. */
-function jumpLinks(present: Array<[string, string]>): string {
-  if (present.length < 2) return "";
-  return (
-    `<nav class="sct-fp-jump" aria-label="Fantasy sections">` +
-    `<ul>${present.map(([id, label]) => `<li><a class="sct-rb-pill" href="#${id}">${escapeHtml(label)}</a></li>`).join("")}</ul>` +
-    `</nav>`
-  );
-}
-
 /**
  * The Fantasy tab, in the build spec's order: jump links; fantasy points by
  * player (the format switch and the group tables) with the Redraft Command
@@ -950,41 +818,9 @@ function jumpLinks(present: Array<[string, string]>): string {
  * position. One H2, the rest H3s under it.
  */
 export function renderFantasySection(input: FantasySectionInput, matchups = ""): string {
-  const { game } = input;
-  const colors = pairColors(game.away.abbr, game.home.abbr);
   const rows = rowsOf(input).filter((r) => !isZero(r));
   if (rows.length === 0) return matchups ? `<section class="sct-rb-section sct-fp" data-fp-root>${matchups}</section>` : "";
-  const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
-
-  const group = (key: Group, title: string, columns: Column[]): string => {
-    const mine = rows.filter((r) => r.group === key);
-    if (mine.length === 0) return "";
-    const tables = (["away", "home"] as const)
-      .map((side) =>
-        teamTable(
-          input,
-          game[side],
-          colors[side].ink,
-          mine.filter((r) => r.p.team === game[side].abbr),
-          columns,
-          title,
-        ),
-      )
-      .join("");
-    return tables ? `<h3 class="sct-rb-h3">${escapeHtml(title)}</h3>${tables}` : "";
-  };
-
-  const idp = rows.filter((r) => r.group === "idp");
-  const dst = dstTable(input, colors);
-  const tables =
-    group("qb", "Quarterbacks", QB_COLUMNS) +
-    group("flex", "Flex (RB, WR, TE)", FLEX_COLUMNS) +
-    group("k", "Kickers", kColumns(input)) +
-    (dst ? `<h3 class="sct-rb-h3">Defense/special teams</h3>${dst}` : "") +
-    (idp.length ? `<h3 class="sct-rb-h3">Individual defensive players</h3>${idpTables(input, idp, colors)}` : "");
-
   const { usage, verdicts, stockBlock, injuries } = fantasyNotes(input, rows, "h3");
-  const usageBlock = renderUsage(input, usage, rows);
 
   const toggle =
     `<div class="sct-fp-toggle" role="radiogroup" aria-label="Scoring format">` +
@@ -996,37 +832,29 @@ export function renderFantasySection(input: FantasySectionInput, matchups = ""):
       )
       .join("") +
     `</div>`;
+  // The switch rides on the "Fantasy Points vs Expected" title; without that
+  // block it heads the section on its own.
+  const usageBlock = renderUsage(input, usage, rows, toggle);
 
   const wrap = (id: string, html: string): string => (html ? `<div class="sct-fp-block" data-fp-block="${id}">${html}</div>` : "");
-  const jumps = jumpLinks(
-    (
-      [
-        ["fpts", "Stats", tables],
-        ["usage", "Usage", usageBlock],
-        ["verdicts", "Verdicts", verdicts],
-        ["stock", "Stock", stockBlock],
-        ["injuries", "Injuries", injuries],
-        ["matchups", "Matchups", matchups],
-      ] as const
-    )
-      .filter(([, , html]) => html)
-      .map(([id, label]) => [id, label] as [string, string]),
-  );
-
   return (
-    jumps +
-    `<section class="sct-rb-section sct-fp" aria-labelledby="fpts" data-fp-root>` +
-    `<h2 class="sct-rb-h2" id="fpts">${escapeHtml(`Fantasy points: ${game.away.short} vs ${game.home.short}, ${round} ${game.seasonLabel}`)}</h2>` +
-    `<p class="sct-rb-sub">Every fantasy-relevant stat line from this game, scored for your league format.</p>` +
+    `<section class="sct-rb-section sct-fp"${usageBlock ? ` aria-labelledby="usage"` : ""} data-fp-root>` +
+    (usageBlock ? "" : toggle) +
     (input.countsInSeasonLong
       ? ""
       : `<p class="sct-fp-playoff">Playoff game: these points don't count in most season-long fantasy leagues.</p>`) +
-    toggle +
-    tables +
-    `<p class="sct-fp-callout">Have one of these players? ` +
-    `<a href="${escapeHtml(input.links.redraftCommand)}" data-cta="fantasy-table-footer">Redraft Command</a> ` +
-    `tells you whether to start, sit, trade or hold him based on your roster and league settings.</p>` +
     wrap("usage", usageBlock) +
+    // The call to action after the analysis, not before it (mak, 2026-09-30).
+    (usageBlock
+      ? `<aside class="sct-mu-ps-cta sct-fp-cta" aria-label="Redraft Command">` +
+        `<div class="sct-mu-ps-cta-text">` +
+        `<p class="sct-mu-ps-cta-title">Turn this usage into a lineup decision.</p>` +
+        `<p class="sct-mu-ps-cta-sub">See whether these workloads should change your start/sit, trade or waiver decisions.</p>` +
+        `</div>` +
+        `<a class="sct-mu-ps-cta-button" href="${escapeHtml(input.links.redraftCommand)}" data-cta="fantasy-usage-banner">` +
+        `Open Redraft Command →</a>` +
+        `</aside>`
+      : "") +
     wrap("verdicts", verdicts) +
     wrap("stock", stockBlock) +
     wrap("injuries", injuries) +
@@ -1046,6 +874,35 @@ function shortRound(round: string): string {
 }
 
 /** The scored lines the rest of the page reads: who scored most in PPR, for the FAQ and the share text. */
+/**
+ * The expected-points facts the page's FAQ quotes: the biggest over- and
+ * underperformer and the heaviest expected workload (PPR, the same picks the
+ * Fantasy Points vs Expected cards make), and each player's target and carry
+ * share.
+ */
+export function usageFacts(input: FantasySectionInput): {
+  over: { name: string; team: string; ppr: number; xfp: number } | null;
+  under: { name: string; team: string; ppr: number; xfp: number } | null;
+  volume: { name: string; team: string; ppr: number; xfp: number } | null;
+  shares: Map<string, { target: number | null; carry: number | null }>;
+} {
+  const rows = rowsOf(input).filter((r) => !isZero(r));
+  const usage = usageRows(input, rows);
+  const shares = new Map(usage.map((u) => [u.row.p.name, { target: u.tgtShare, carry: u.carShare }]));
+  if (usage.length === 0) return { over: null, under: null, volume: null, shares };
+  const r1 = (n: number): number => Math.round(n * 10) / 10;
+  const pick = (u: Usage) => ({ name: u.row.p.name, team: u.row.p.team, ppr: u.row.pts.ppr, xfp: u.x.ppr });
+  const top = [...usage].sort((a, b) => r1(b.over.ppr) - r1(a.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
+  const bottom = [...usage].sort((a, b) => r1(a.over.ppr) - r1(b.over.ppr) || b.x.ppr - a.x.ppr)[0]!;
+  const volume = [...usage].sort((a, b) => b.x.ppr - a.x.ppr)[0]!;
+  return {
+    over: top.over.ppr > 0.05 ? pick(top) : null,
+    under: bottom.over.ppr < -0.05 && bottom !== top ? pick(bottom) : null,
+    volume: pick(volume),
+    shares,
+  };
+}
+
 export function topScorers(input: Pick<FantasySectionInput, "players">): Array<{ name: string; ppr: number; player: GamePlayer }> {
   return Object.values(input.players)
     .filter((p) => {

@@ -19,13 +19,16 @@
 
 import { escapeHtml } from "../render";
 import { titleCase } from "./title-case";
+import { renderFaqSection, selectFaq } from "./faq-engine";
+import { overviewPool } from "./faq-pools";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { CareerStatRow } from "./stats-profile";
 import type { PlayerPageData } from "./player-data";
-import { getEntryPoints, SCORING_LABELS, SCORING_SHORT } from "./scoring";
+import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import type { GameLogEntry } from "./types";
+import { TIER_FILL, weeklyTier } from "./metrics";
 import type { UpcomingGame } from "./upcoming";
 import {
   designationSeverity,
@@ -604,6 +607,13 @@ function renderMeters(data: PlayerPageData, s: Season): string {
 
 /* ------------------------------------------- section 4: the game log */
 
+/** A weekly finish as the Game Log tab prints it: a pill in its tier's blue. */
+function finishPill(pos: string, rank: number | null | undefined): string {
+  const tier = weeklyTier(rank);
+  if (!tier || !rank) return DASH;
+  return `<span class="scp-tier" data-tier="${tier}" style="--tier-fill:${TIER_FILL[tier]}">${escapeHtml(`${pos}${rank}`)}</span>`;
+}
+
 function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
   if (!s.current || s.played.length === 0) return "";
   const { pos } = s;
@@ -628,9 +638,9 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
       const p = s.pts(e);
       total += p;
       return (
-        `<tr><th scope="row">${e.week}</th><td>${oppCell}</td>` +
-        `<td>${r ? escapeHtml(r + sc) : DASH}</td><td>${one(p)}</td>` +
-        `<td>${e.pos_rank ? escapeHtml(`${pos}${e.pos_rank}`) : DASH}</td></tr>`
+        `<tr class="scp-row"><th scope="row">${e.week}</th><td class="scp-opp">${oppCell}</td>` +
+        `<td class="scp-score">${r ? escapeHtml(r + sc) : DASH}</td><td class="scp-pts">${one(p)}</td>` +
+        `<td class="scp-col-fin">${finishPill(pos, e.pos_rank)}</td></tr>`
       );
     })
     .join("");
@@ -642,12 +652,13 @@ function renderLog(data: PlayerPageData, s: Season, options: PlayerRenderOptions
 
   return (
     sectionOpen("scp-ox-log-h", `${data.player.name} ${data.season} game log`, "") +
-    `<div class="scp-ox-tbl"><table class="scp-ox-table">` +
-    `<caption>${escapeHtml(`${SCORING_LABELS[data.format]} scoring. Finish is weekly rank among ${pos}s.`)}</caption>` +
-    `<thead><tr><th scope="col">Week</th><th scope="col">Opponent</th><th scope="col">Result</th>` +
-    `<th scope="col">Fantasy pts</th><th scope="col">Finish</th></tr></thead>` +
-    `<tbody>${rows}<tr class="is-tot"><th scope="row">Total</th><td></td><td>${escapeHtml(record)}</td>` +
-    `<td>${one(total)}</td><td>${rank ? escapeHtml(`${pos}${rank}`) : DASH}</td></tr></tbody>` +
+    // The Game Log tab's table, in its classes (mak, 2026-09-30); no caption.
+    `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-table--log scp-ox-log">` +
+    `<thead><tr><th scope="col">Wk</th><th scope="col">Opp</th><th scope="col">Result</th>` +
+    `<th scope="col" class="scp-col-pts">FPTS</th><th scope="col" class="scp-col-fin">Finish</th></tr></thead>` +
+    `<tbody>${rows}</tbody>` +
+    `<tfoot><tr class="scp-total"><th scope="row">Total</th><td></td><td>${escapeHtml(record)}</td>` +
+    `<td class="scp-pts">${one(total)}</td><td>${rank ? escapeHtml(`${pos}${rank}`) : DASH}</td></tr></tfoot>` +
     `</table></div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`Full game log with ${splits} splits`)}</a>` +
     `</section>`
@@ -711,11 +722,11 @@ function renderCareer(data: PlayerPageData, s: Season, options: PlayerRenderOpti
     .map((r) => {
       const cur = inProgress(r);
       return (
-        `<tr${cur ? ` class="is-cur"` : ""}><th scope="row">${r.season}</th><td>${escapeHtml(team(r.season))}</td>` +
-        `<td>${r.gamesPlayed}</td>` +
-        cols.map((c) => `<td>${whole(c.of(r))}</td>`).join("") +
-        `<td>${one(r.points)}</td><td>${one(r.ppg)}</td>` +
-        `<td>${!cur && r.finish ? escapeHtml(`${pos}${r.finish}`) : DASH}</td></tr>`
+        `<tr class="scp-row${cur ? " is-cur" : ""}"><th scope="row">${r.season}</th><td>${escapeHtml(team(r.season))}</td>` +
+        `<td class="scp-col-box">${r.gamesPlayed}</td>` +
+        cols.map((c) => `<td class="scp-col-box">${whole(c.of(r))}</td>`).join("") +
+        `<td class="scp-pts">${one(r.points)}</td><td class="scp-col-box">${one(r.ppg)}</td>` +
+        `<td class="scp-col-fin">${!cur && r.finish ? escapeHtml(`${pos}${r.finish}`) : DASH}</td></tr>`
       );
     })
     .join("");
@@ -724,18 +735,19 @@ function renderCareer(data: PlayerPageData, s: Season, options: PlayerRenderOpti
   const gp = rows.reduce((sum, r) => sum + r.gamesPlayed, 0);
   const pts = rows.reduce((sum, r) => sum + r.points, 0);
   const career =
-    `<tr class="is-tot"><th scope="row">Career</th><td></td><td>${gp}</td>` +
+    `<tr class="scp-total"><th scope="row">Career</th><td></td><td>${gp}</td>` +
     cols.map((c) => `<td>${whole(rows.reduce((sum, r) => sum + c.of(r), 0))}</td>`).join("") +
-    `<td>${one(pts)}</td><td>${gp ? one(pts / gp) : DASH}</td><td></td></tr>`;
+    `<td class="scp-pts">${one(pts)}</td><td>${gp ? one(pts / gp) : DASH}</td><td></td></tr>`;
 
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
   return (
     sectionOpen("scp-ox-career-h", "Career fantasy stats by season", "") +
-    `<div class="scp-ox-tbl"><table class="scp-ox-table">` +
+    // The Game Log tab's table, in its classes (mak, 2026-09-30).
+    `<div class="scp-scroll"><table class="scp-table scp-table--filled scp-table--log scp-ox-career">` +
     `<thead><tr><th scope="col">Season</th><th scope="col">Team</th><th scope="col">GP</th>` +
     cols.map((c) => `<th scope="col">${escapeHtml(c.label)}</th>`).join("") +
-    `<th scope="col">Fantasy pts</th><th scope="col">PPG</th><th scope="col">Finish</th></tr></thead>` +
-    `<tbody>${body}${career}</tbody></table></div>` +
+    `<th scope="col" class="scp-col-pts">FPTS</th><th scope="col">PPG</th><th scope="col" class="scp-col-fin">Finish</th></tr></thead>` +
+    `<tbody>${body}</tbody><tfoot>${career}</tfoot></table></div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`All ${rows.length} seasons and advanced stats`)}</a>` +
     `</section>`
   );
@@ -821,122 +833,10 @@ function renderCards(data: PlayerPageData, options: PlayerRenderOptions): string
 
 /* --------------------------------------------------- section 8: FAQ */
 
-interface Faq {
-  question: string;
-  /** The answer as HTML, and the same words as plain text for the schema. */
-  html: string;
-  text: string;
-}
-
-function faq(question: string, parts: Array<string | { href: string; text: string }>): Faq {
-  return {
-    question,
-    html: parts.map((p) => (typeof p === "string" ? escapeHtml(p) : a(p.href, p.text))).join(""),
-    text: parts.map((p) => (typeof p === "string" ? p : p.text)).join(""),
-  };
-}
-
-export function overviewFaqs(data: PlayerPageData, options: PlayerRenderOptions = {}): Faq[] {
-  const name = data.player.name;
-  const pos = data.player.position ?? "";
-  const s = season(data);
-  const out: Faq[] = [];
-  const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
-  const status = (data.designation?.injuryStatus ?? data.player.injury_status ?? "").trim();
-
-  // 1. This week.
-  const next = (data.upcomingStrip ?? data.upcoming)[0];
-  if (next) {
-    const opp = next.opponent?.nickname ?? next.opponentName;
-    const where = next.homeAway === "away" ? `at the ${opp}` : `against the ${opp}`;
-    const bye = data.byeWeek ?? null;
-    const onBye = bye !== null && bye > s.leagueWeek && bye < next.week;
-    const week = onBye ? bye : next.week;
-    const parts: Array<string | { href: string; text: string }> = [];
-    if (onBye) parts.push(`${name} is on bye in Week ${bye}. His next game is Week ${next.week} ${where}. `);
-    else if (isOut(data)) parts.push(`${name} is listed as ${status} and will not play in Week ${week}, ${where}. `);
-    else parts.push(`${name} plays Week ${next.week} ${where}. `);
-    if (next.matchup && !isOut(data)) {
-      const band = matchupBand(next.matchup.rank);
-      const verdict = band === "soft" ? "a favorable matchup" : band === "mid" ? "a neutral matchup" : "a tough matchup";
-      parts.push(`The ${opp} rank ${ordinal(next.matchup.rank)} in ${SCORING_SHORT[data.format]} points allowed to ${pos}s, ${verdict}. `);
-    }
-    const rank = seasonRank(data);
-    if (rank && !isOut(data) && s.current) parts.push(`As the ${pos}${rank} this season, he is ${leagueRead(pos, rank)}. `);
-    parts.push({ href: startSit, text: `Get the start/sit call for ${lastName(name)}` }, ".");
-    out.push(faq(`Should I start ${name} in Week ${week}?`, parts));
-  } else if (s.leagueWeek >= 18) {
-    const o = data.fantasyOutlook2026?.quickTake;
-    if (o) out.push(faq(`Will ${name} be a good fantasy pick in ${s.leagueSeason + 1}?`, [o]));
-  }
-
-  // 2. Average.
-  if (s.current && s.played.length) {
-    const total = s.played.reduce((sum, e) => sum + s.pts(e), 0);
-    const rank = seasonRank(data);
-    out.push(
-      faq(`How many fantasy points is ${name} averaging in ${s.leagueSeason}?`, [
-        `${name} is averaging ${one(total / s.played.length)} ${SCORING_SHORT[data.format]} points per game in ${s.leagueSeason}, ` +
-          `${one(total)} points across ${s.played.length} game${s.played.length > 1 ? "s" : ""}` +
-          (rank ? `. That ranks ${pos}${rank} at the position.` : "."),
-      ]),
-    );
-
-    // 3. Best game.
-    const best = [...playedCells(data, s)].sort((x, y) => (y.pts ?? 0) - (x.pts ?? 0))[0];
-    if (best) {
-      const where = best.homeAway === "away" ? "at" : "vs.";
-      out.push(
-        faq(`What was ${name}'s best fantasy game in ${s.leagueSeason}?`, [
-          `${name}'s best ${s.leagueSeason} game was Week ${best.week} ${where} the ${opponentName(best.opp, best.oppCode)}: ` +
-            `${one(best.pts!)} ${SCORING_SHORT[data.format]} points, a ${pos}${best.entry!.pos_rank} finish.`,
-        ]),
-      );
-    }
-  }
-
-  // 4. Injury.
-  const missed = data.injury?.seasonMissed;
-  const missedLine = missed ? ` He has missed ${missed} game${missed > 1 ? "s" : ""} this season.` : missed === 0 ? " He has not missed a game this season." : "";
-  const part = data.designation?.injuryBodyPart;
-  out.push(
-    faq(`Is ${name} injured?`, [
-      status
-        ? `${name} is listed as ${status}${part ? ` (${part})` : ""} on the latest injury report.${missedLine}`
-        : `${name} has no injury designation on the latest report.${missedLine}`,
-    ]),
-  );
-
-  // 5. Last season.
-  const prev = data.production.find((r) => r.season === s.leagueSeason - 1);
-  if (prev && prev.gamesPlayed > 0) {
-    out.push(
-      faq(`Where did ${name} finish in fantasy last season?`, [
-        `${name} scored ${one(prev.total)} ${SCORING_SHORT[data.format]} points in ${prev.gamesPlayed} games in ${prev.season} ` +
-          `(${one(prev.ppg)} per game)` +
-          (prev.posFinishTotal ? `, finishing ${pos}${prev.posFinishTotal}.` : "."),
-      ]),
-    );
-  }
-  return out;
-}
-
 function renderFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const items = overviewFaqs(data, options);
-  if (items.length === 0) return "";
-  // Into the page's one FAQPage node, word for word.
-  options.faqSink?.push(...items.map((f) => ({ question: f.question, answer: f.text })));
-  return (
-    sectionOpen("scp-ox-faq-h", `${data.player.name} fantasy FAQ`, "") +
-    `<div class="scp-ox-faq">` +
-    items
-      .map(
-        (f, i) =>
-          `<details${i === 0 ? " open" : ""}><summary>${escapeHtml(f.question)}</summary><p>${f.html}</p></details>`,
-      )
-      .join("") +
-    `</div></section>`
-  );
+  // Fantasy value only (faq-pools.ts): injury, bio facts, totals and single
+  // games are the other tabs' questions.
+  return renderFaqSection("overview", data, selectFaq(overviewPool(data, options)), options);
 }
 
 /* ------------------------------------------------------------ the tab */

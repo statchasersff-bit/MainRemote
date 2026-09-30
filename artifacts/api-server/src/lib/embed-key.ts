@@ -18,8 +18,9 @@
  * routes (which have their own secret), the CSV and calendar downloads, and the
  * web-vitals beacon stay public: a reader's browser loads those directly.
  *
- * The four widgets that used to fetch fragments from this origin in the
- * reader's browser (Player Stats, FPA, RB Handcuffs cards, news refresh) are
+ * The five widgets that fetch fragments from this origin in the reader's
+ * browser (Player Stats, FPA, RB Handcuffs cards, Strength of Schedule, news
+ * refresh) are
  * pointed at the WordPress proxy instead once SC_BROWSER_PROXY is set; see
  * browserEndpoint().
  */
@@ -73,6 +74,7 @@ export function isProtectedPath(path: string): boolean {
   if (path === "/fpa") return true;
   if (path === "/player-stats" || path.startsWith("/player-stats/")) return true;
   if (path === "/rb-handcuff-rankings" || path.startsWith("/rb-handcuff-rankings/")) return true;
+  if (path === "/strength-of-schedule") return true;
   return false;
 }
 

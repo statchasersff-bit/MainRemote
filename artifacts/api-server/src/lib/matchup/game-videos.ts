@@ -3723,6 +3723,12 @@ export const GAME_VIDEOS: Record<string, GameVideo> = {
     "uploadDate": "2022-11-27",
     "publisher": "NFL"
   },
+  "cleveland-browns-vs-tampa-bay-buccaneers/2026-week-2": {
+    "youtubeId": "Q5PgGZKMUqk",
+    "title": "Cleveland Browns vs Tampa Bay Buccaneers Game Highlights",
+    "uploadDate": "2026-09-20",
+    "publisher": "NFL"
+  },
   "cleveland-browns-vs-tennessee-titans/2023-week-3": {
     "youtubeId": "QA4V5D0KIX4",
     "title": "Tennessee Titans vs. Cleveland Browns | 2023 Week 3 Game Highlights",

@@ -25,9 +25,8 @@
  *     under the old content; the panel heading the WordPress page promotes
  *     to its H1 stays first either way;
  *   - the advanced metrics no file here has are replaced (see stats-tab-data);
- *   - its FAQ is not a section of its own: statsTabFaqs() fills gaps in the
- *     old tab's "Common Questions" block (mak, 2026-09-30), visible only and
- *     out of the FAQPage JSON-LD until mak approves that.
+ *   - its FAQ is the page's "{Name} Stats FAQ" (faq-engine.ts, faq-pools.ts,
+ *     mak 2026-09-30), not a section of this file.
  *
  * Analyst copy comes from data/player/stats_copy.json (docs/STATS-COPY.md):
  * each field replaces only its own template text. College seasons come from
@@ -73,13 +72,17 @@ const LC = /^[A-Z][a-z]/;
 const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 const word = (n: number): string => WORDS[n] ?? String(n);
 const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? "" : "s"}`;
+const listWords = (items: string[]): string =>
+  items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
-function sectionOpen(id: string, heading: string, lede: string): string {
+function sectionOpen(id: string, heading: string, lede: string, aside = ""): string {
   // The tab's lead heading (its H1 on WordPress) wears the panel-heading style.
   const lead = id === STATS_LEAD_ID ? " is-lead" : "";
+  const h = `<h2 class="scp-ox-h2${lead}" id="${id}">${escapeHtml(titleCase(heading))}</h2>`;
   return (
     `<section class="scp-ox-sec" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2${lead}" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
+    // `aside` is a control that belongs on the heading's row.
+    (aside ? `<div class="scp-st-headrow">${h}${aside}</div>` : h) +
     (lede ? `<p class="scp-ox-lede">${lede}</p>` : "")
   );
 }
@@ -266,6 +269,8 @@ interface Stat {
   /** The per-game figure, for a counting stat; rates and ranks have none. */
   pg?: string;
   small?: string;
+  /** On the group's small second line rather than among its headline figures. */
+  minor?: boolean;
 }
 
 function counting(label: string, total: number, gp: number): Stat {
@@ -289,50 +294,66 @@ function pair(label: string, a: number, b: number, gp: number): Stat {
  */
 function renderGroup(title: string, stats: Stat[], fan = false): string {
   if (stats.length === 0) return "";
+  const value = (s: Stat): string => {
+    const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
+    return `<span${toggle}>${escapeHtml(s.total)}</span>`;
+  };
+  const major = stats.filter((s) => !s.minor);
+  const minor = stats.filter((s) => s.minor);
+  // The headline figures large, the rest on one small line under them (mak,
+  // 2026-09-30: "821 YDS · 66.2 CMP% · 4 TD · 1 INT", then sacks, YPA etc.).
   return (
     `<div class="scp-st-sgroup${fan ? " is-fan" : ""}"><h3 class="scp-st-eyebrow">${escapeHtml(title)}</h3><dl>` +
-    stats
-      .map((s) => {
-        const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
-        return (
+    major
+      .map(
+        (s) =>
           `<div><dt>${escapeHtml(s.label)}` +
           (s.small ? ` <small>${escapeHtml(s.small)}</small>` : "") +
-          `</dt><dd><span${toggle}>${escapeHtml(s.total)}</span></dd></div>`
-        );
-      })
+          `</dt><dd>${value(s)}</dd></div>`,
+      )
       .join("") +
-    `</dl></div>`
+    `</dl>` +
+    (minor.length
+      ? `<p class="scp-st-minor">` +
+        minor
+          .map((s) => `<span><b>${value(s)}</b> ${escapeHtml(s.label)}${s.small ? ` <small>${escapeHtml(s.small)}</small>` : ""}</span>`)
+          .join("") +
+        `</p>`
+      : "") +
+    `</div>`
   );
 }
 
 function passingStats(t: Line): Stat[] {
   const r = rating(t);
   return [
-    pair("Comp/Att", t.cmp, t.att, t.gp),
     counting("Yards", t.passYd, t.gp),
-    pair("TD/INT", t.passTd, t.int, t.gp),
     { label: "Comp %", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH },
-    { label: "Y/A", total: fmtRatio(t.passYd, t.att) },
-    { label: "Rating", total: r === null ? DASH : r.toFixed(1) },
+    counting("TD", t.passTd, t.gp),
+    counting("INT", t.int, t.gp),
+    { ...pair("Comp/Att", t.cmp, t.att, t.gp), minor: true },
+    { label: "Y/A", total: fmtRatio(t.passYd, t.att), minor: true },
+    { label: "Rating", total: r === null ? DASH : r.toFixed(1), minor: true },
   ];
 }
 
 function rushingStats(t: Line, full: boolean): Stat[] {
-  const out = [
-    counting(full ? "Carries" : "Att", t.rushAtt, t.gp),
+  // A runner's carries are a headline; a quarterback's or receiver's are not.
+  const out: Stat[] = [
     counting("Yards", t.rushYd, t.gp),
-    { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) },
     counting("TD", t.rushTd, t.gp),
+    { ...counting(full ? "Carries" : "Att", t.rushAtt, t.gp), minor: !full },
+    { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt), minor: true },
   ];
-  if (full && t.rushLong !== null) out.push({ label: "Long", total: whole(t.rushLong) });
+  if (full && t.rushLong !== null) out.push({ label: "Long", total: whole(t.rushLong), minor: true });
   return out;
 }
 
 function receivingStats(t: Line, full: boolean): Stat[] {
-  const out = [counting("Targets", t.tgt, t.gp), counting("Rec", t.rec, t.gp), counting("Yards", t.recYd, t.gp)];
-  if (full) out.push({ label: "Y/R", total: fmtRatio(t.recYd, t.rec) });
-  out.push(counting("TD", t.recTd, t.gp));
-  if (full) out.push({ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH });
+  const out: Stat[] = [counting("Rec", t.rec, t.gp), counting("Yards", t.recYd, t.gp), counting("TD", t.recTd, t.gp)];
+  out.push({ ...counting("Targets", t.tgt, t.gp), minor: !full });
+  if (full) out.push({ label: "Y/R", total: fmtRatio(t.recYd, t.rec), minor: true });
+  if (full) out.push({ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH, minor: true });
   return out;
 }
 
@@ -359,26 +380,36 @@ function bestWorst(data: PlayerPageData, c: Career, row: SeasonRow): { best: Wee
   return { best: sorted[0]!, worst: sorted[sorted.length - 1]! };
 }
 
-function prodLede(data: PlayerPageData, c: Career, row: SeasonRow): string {
+/** "2026 through Week 3 · Arizona Cardinals": the lede's small first line. */
+function prodKicker(data: PlayerPageData, c: Career, row: SeasonRow): string {
+  const lastWeek = Math.max(...row.weeks.map((e) => e.week));
+  const club = data.team && row.clubs[row.clubs.length - 1] === data.team.code ? [data.team.city, data.team.nickname].filter(Boolean).join(" ") : null;
+  const when = row.inProgress ? `${row.season} through Week ${Math.max(lastWeek, c.leagueWeek)}` : `${row.season} final`;
+  return `<span class="scp-st-kicker">${escapeHtml(club ? `${when} · ${club}` : when)}</span>`;
+}
+
+/**
+ * The one thing neither the strip nor the table says: how much of his fantasy
+ * line leans on touchdowns. mak (2026-09-30) asked for it more prominent and
+ * worded as a read, with the season and club moved to a line above it.
+ */
+function prodLede(row: SeasonRow): string {
   const t = row.line;
   const now = row.inProgress;
-  const club = data.team && row.clubs[row.clubs.length - 1] === data.team.code ? `the ${data.team.nickname}` : null;
-  const lastWeek = Math.max(...row.weeks.map((e) => e.week));
-  const open = now
-    ? `Through Week ${Math.max(lastWeek, c.leagueWeek)}${club ? ` with ${club}` : ""}. `
-    : `His final ${row.season} numbers${club ? ` with ${club}` : ""}. `;
-
-  // One line (mak, 2026-09-30): the strip and the table carry the figures and
-  // the fantasy note carries the read, so this keeps only what neither says,
-  // how much of the fantasy line leans on touchdowns.
   const share = t.pts > 0 ? Math.round((tdPoints(t) / t.pts) * 100) : 0;
-  const lean =
+  if (t.pts <= 0) return "";
+  if (share <= 0) {
+    return escapeHtml(
+      now
+        ? "He hasn't scored a touchdown yet, so all of his fantasy production has come from volume."
+        : "He didn't score a touchdown, so all of his fantasy production came from volume.",
+    );
+  }
+  return escapeHtml(
     share >= 40
-      ? `Touchdowns ${now ? "have made" : "made"} up ${share}% of his fantasy points, so his weeks ${now ? "swing" : "swung"} with them.`
-      : share > 0
-        ? `Touchdowns ${now ? "are" : "were"} ${share}% of his fantasy points, so his output ${now ? "rests" : "rested"} on volume more than scoring.`
-        : "";
-  return escapeHtml(open + lean).trim();
+      ? `Touchdowns ${now ? "account" : "accounted"} for ${share}% of his fantasy production, making his weekly output highly TD-dependent.`
+      : `Touchdowns ${now ? "account" : "accounted"} for ${share}% of his fantasy production, so his weekly output ${now ? "leans" : "leaned"} on volume more than scoring.`,
+  );
 }
 
 /** Fantasy points from touchdowns, on scoring.ts's values: 4 a pass TD, 6 any other. */
@@ -412,22 +443,24 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
     { label: "Pos rank", total: rank ? `${pos}${rank}` : DASH },
   ];
   if (bw) {
-    fan.push({ label: "Best", total: one(bw.best.pts), small: bw.best.caption });
-    if (row.weeks.length > 1) fan.push({ label: "Worst", total: one(bw.worst.pts), small: bw.worst.caption });
+    fan.push({ label: "Best", total: one(bw.best.pts), small: bw.best.caption, minor: true });
+    if (row.weeks.length > 1) fan.push({ label: "Worst", total: one(bw.worst.pts), small: bw.worst.caption, minor: true });
   }
   groups.push(renderGroup(`Fantasy (${SCORING_SHORT[data.format]})`, fan, true));
 
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${options.linkQuery ?? ""}`;
   return (
+    // The toggle on the heading's row, right of it (mak, 2026-09-30).
     sectionOpen(
       STATS_LEAD_ID,
       `${data.player.name} ${row.season} stats`,
-      own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(data, c, row),
+      prodKicker(data, c, row) +
+        (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
+      `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
+        `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
+        `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
+        `</div>`,
     ) +
-    `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
-    `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
-    `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
-    `</div>` +
     `<div class="scp-st-strip">${groups.join("")}</div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">See these stats game by game</a>` +
     `</section>`
@@ -443,20 +476,58 @@ interface AdvColumn {
   card: AdvCard;
 }
 
-/** A percentile badge, tinted by standing; the old sentence rides along as its title. */
+/**
+ * The percentile: the ordinal over a small bar filled to it, tinted by
+ * standing (grey for a style reading); the old sentence rides along as its
+ * title. mak (2026-09-30) asked for the bar, Next Gen Stats style.
+ */
 function badge(m: AdvMetric | undefined): string {
   if (!m || m.pctl == null) return `<td class="scp-st-pc"><span class="scp-st-pb is-muted">${DASH}</span></td>`;
+  const w = Math.max(3, Math.min(100, m.pctl));
   return (
     `<td class="scp-st-pc"><span class="scp-st-pb is-${m.standing}" title="${escapeHtml(m.read)}">` +
-    `${escapeHtml(ordinal(m.pctl))}</span></td>`
+    `${escapeHtml(ordinal(m.pctl))}</span>` +
+    `<span class="scp-st-bar is-${m.standing}" aria-hidden="true"><i style="width:${w}%"></i></span></td>`
   );
 }
 
 /**
+ * Which tier a metric reads under (mak, 2026-09-30): what he does with the
+ * ball first and set heavier, then how much of it he gets, how he plays, and
+ * what surrounds him. A key not listed here reads under Efficiency.
+ */
+const TIERS: Array<{ name: string; keys: string[] }> = [
+  { name: "Efficiency", keys: ["epa", "success", "cmp", "ypa", "tdr", "yaco", "ybc", "expl", "bt", "ppo", "yprr", "ypt", "ppt", "catch", "yac"] },
+  { name: "Usage", keys: ["apg", "snap", "tgts", "tpg", "route", "ays", "rzo", "rzt"] },
+  { name: "Style", keys: ["ttt", "aya", "deep", "adot"] },
+  { name: "Context", keys: ["cpoe", "press"] },
+];
+/** A metric's key from its label, for a card built without keys. */
+const LABEL_KEY: Record<string, string> = {
+  "EPA per play": "epa", "Success rate": "success", "Completion rate": "cmp", "Yards per attempt": "ypa",
+  "TD rate": "tdr", "Pass attempts per game": "apg", "Time to throw": "ttt", "Air yards per attempt": "aya",
+  "Deep-attempt rate": "deep", "Completion % over expected": "cpoe", "Pressure rate": "press",
+  "Yards after contact per carry": "yaco", "Yards before contact per carry": "ybc", "Broken tackles": "bt",
+  "Explosive run rate": "expl", "Snap share": "snap", "Target share": "tgts", "Targets per game": "tpg",
+  "Red-zone opportunities": "rzo", "Fantasy points per opportunity": "ppo", "Average depth of target": "adot",
+  "Yards per route run": "yprr", "Route participation": "route", "YAC per reception": "yac", "Catch rate": "catch",
+  "Yards per target": "ypt", "Air-yards share": "ays", "Red-zone targets": "rzt", "Fantasy points per target": "ppt",
+};
+const keyOf = (m: { key?: string; label: string }): string => {
+  const k = m.key ?? m.label;
+  return LABEL_KEY[k] ?? k;
+};
+const tierOf = (key: string): number => {
+  const i = TIERS.findIndex((t) => t.keys.includes(key));
+  return i < 0 ? 0 : i;
+};
+
+/**
  * The advanced cards as one table, the seasons side by side (mak, 2026-09-30):
  * Stat | value | percentile, once per season, one row per metric either card
- * carries. A metric neither season has a figure for is dropped. The
- * "Rank or percentile among 36" lines under each card are the footnote now.
+ * carries, grouped into tiers with the first (Efficiency) set heavier. A
+ * metric neither season has a figure for is dropped. The college column's
+ * metrics have no tier and print as one untitled group.
  */
 function renderAdvTable(cols: AdvColumn[]): string {
   const keys: Array<{ key: string; label: string }> = [];
@@ -468,18 +539,30 @@ function renderAdvTable(cols: AdvColumn[]): string {
   }
   const find = (col: AdvColumn, key: string): AdvMetric | undefined =>
     (col.card.all ?? col.card.metrics).find((m) => (m.key ?? m.label) === key);
-  const rows = keys
-    .filter(({ key }) => cols.some((col) => { const v = find(col, key)?.value; return v !== undefined && v !== DASH; }))
-    .map(({ key, label }) =>
-      `<tr><th scope="row">${escapeHtml(label)}</th>` +
-      cols.map((col) => {
-        const m = find(col, key);
-        return `<td class="scp-st-v">${escapeHtml(signed(m?.value ?? DASH))}</td>` + badge(m);
-      }).join("") +
-      `</tr>`,
-    )
-    .join("");
-  if (!rows) return "";
+  const kept = keys.filter(({ key }) => cols.some((col) => { const v = find(col, key)?.value; return v !== undefined && v !== DASH; }));
+  if (kept.length === 0) return "";
+  const known = kept.some(({ key, label }) => TIERS.some((t) => t.keys.includes(keyOf({ key, label }))));
+  const span = 1 + cols.length * 2;
+  const row = ({ key, label }: { key: string; label: string }, lead: boolean): string =>
+    `<tr${lead ? ` class="is-key"` : ""}><th scope="row">${escapeHtml(label)}</th>` +
+    cols.map((col) => {
+      const m = find(col, key);
+      return `<td class="scp-st-v">${escapeHtml(signed(m?.value ?? DASH))}</td>` + badge(m);
+    }).join("") +
+    `</tr>`;
+  let rows: string;
+  if (!known) {
+    rows = kept.map((k) => row(k, false)).join("");
+  } else {
+    rows = TIERS.map((tier, i) => {
+      const inTier = kept.filter(({ key, label }) => tierOf(keyOf({ key, label })) === i);
+      if (inTier.length === 0) return "";
+      return (
+        `<tr class="scp-st-tier"><th scope="rowgroup" colspan="${span}">${tier.name}</th></tr>` +
+        inTier.map((k) => row(k, i === 0)).join("")
+      );
+    }).join("");
+  }
   return (
     `<div class="scp-st-advwrap"><table class="scp-st-advt">` +
     `<thead><tr><th scope="col">Stat</th>` +
@@ -530,19 +613,68 @@ function advLede(data: PlayerPageData, pos: string, cards: AdvCard[]): string {
   return style ? escapeHtml(`${style}.`) : "";
 }
 
+/**
+ * What a metric says about him, as a verb phrase for the profile sentence:
+ * [when it ranks well, when it ranks poorly]. The percentile is already on
+ * the metric's own direction, so pressure rate's "well" is low pressure.
+ */
+const PROFILE: Record<string, [string, string]> = {
+  epa: ["adds value per play", "adds little per play"],
+  success: ["stays on schedule", "falls off schedule"],
+  cmp: ["completes a high share of his throws", "completes a low share of his throws"],
+  ypa: ["gains a lot per attempt", "gains little per attempt"],
+  tdr: ["finishes drives with touchdowns", "rarely throws touchdowns"],
+  apg: ["throws a lot", "throws little"],
+  cpoe: ["beats his expected completion rate", "trails his expected completion rate"],
+  press: ["is rarely pressured", "is often under pressure"],
+  yaco: ["gains yards after contact", "gains little after contact"],
+  ybc: ["gets room before contact", "meets defenders early"],
+  expl: ["breaks explosive runs", "rarely breaks a big run"],
+  bt: ["breaks tackles", "rarely breaks tackles"],
+  ppo: ["scores efficiently per touch", "scores little per touch"],
+  snap: ["plays most snaps", "plays a part-time share of snaps"],
+  tgts: ["draws a big target share", "draws few targets"],
+  tpg: ["draws targets", "draws few targets"],
+  rzo: ["gets red-zone work", "gets little red-zone work"],
+  yprr: ["produces per route", "produces little per route"],
+  ypt: ["gains a lot per target", "gains little per target"],
+  ppt: ["scores efficiently per target", "scores little per target"],
+  catch: ["catches what comes his way", "catches a low share of his targets"],
+  yac: ["adds yards after the catch", "adds little after the catch"],
+  route: ["runs a route on most dropbacks", "runs a part-time share of routes"],
+  ays: ["commands air yards", "sees few air yards"],
+  rzt: ["gets red-zone targets", "gets few red-zone targets"],
+};
+
+/**
+ * The read under the table: one profile sentence (his two best marks, then his
+ * two worst), and the fantasy line. mak (2026-09-30) asked for less copy with
+ * more air than the "What works / What limits him" pair it replaces.
+ */
 function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string {
   const last = lastName(data.player.name);
   const pos = c.pos;
   const ranked = byPct(cards.flatMap((x) => (x.qualified ? x.metrics : [])));
-  const good = ranked.filter((m) => m.standing === "good");
-  const bad = ranked.filter((m) => m.standing === "bad").reverse();
+  const phrase = (m: AdvMetric, i: 0 | 1): string =>
+    PROFILE[keyOf(m)]?.[i] ?? `ranks ${i === 0 ? "high" : "low"} in ${m.label.replace(LC, (w) => w.toLowerCase())}`;
+  const pick = (list: AdvMetric[], i: 0 | 1): string[] => {
+    const out: string[] = [];
+    for (const m of list) {
+      const p = phrase(m, i);
+      if (!out.includes(p)) out.push(p);
+      if (out.length === 2) break;
+    }
+    return out;
+  };
+  const good = pick(ranked.filter((m) => m.standing === "good"), 0);
+  const bad = pick(ranked.filter((m) => m.standing === "bad").reverse(), 1);
   const row = c.focus;
   const parts: string[] = [];
-  if (good.length) {
-    parts.push(`<strong>What works:</strong> ${escapeHtml(`${good.slice(0, 2).map((m) => `${m.label.replace(LC, (w) => w.toLowerCase())} (${m.read})`).join(" and ")}.`)}`);
-  }
-  if (bad.length) {
-    parts.push(`<strong>What limits him:</strong> ${escapeHtml(`${bad.slice(0, 2).map((m) => `${m.label.replace(LC, (w) => w.toLowerCase())} (${m.read})`).join(" and ")}.`)}`);
+  if (good.length || bad.length) {
+    const sentence = good.length
+      ? `${last} ${listWords(good)}${bad.length ? `, but ${listWords(bad)}` : ""}.`
+      : `${last} ${listWords(bad)}.`;
+    parts.push(`<p><strong>Profile:</strong> ${escapeHtml(sentence)}</p>`);
   }
   if (row && row.line.gp) {
     const t = row.line;
@@ -550,10 +682,12 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
       pos === "QB" ? `${one(t.att / t.gp)} pass attempts and ${one(t.rushAtt / t.gp)} carries a game`
         : pos === "RB" ? `${one(t.rushAtt / t.gp)} carries and ${one(t.tgt / t.gp)} targets a game`
           : `${one(t.tgt / t.gp)} targets a game`;
-    parts.push(escapeHtml(`For fantasy, ${last}'s floor is his volume, ${volume}${row.inProgress ? " this season" : ` in ${row.season}`}; the marks above decide how much of it turns into points.`));
+    parts.push(
+      `<p><strong>For fantasy:</strong> ${escapeHtml(`his floor is his volume, ${volume}${row.inProgress ? " this season" : ` in ${row.season}`}; efficiency decides how much of it becomes points.`)}</p>`,
+    );
   }
   if (parts.length === 0) return "";
-  return `<div class="scp-st-read">${parts.join(" ")}</div>`;
+  return `<div class="scp-st-read">${parts.join("")}</div>`;
 }
 
 /**
@@ -587,8 +721,8 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     used.push(cur);
     notes.push(
       cur.qualified
-        ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""}: among ${cur.qualifiedCount} qualified ${pos}s.`
-        : `${cur.season}: below the qualifying line so far, so no percentiles.`,
+        ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""} among ${cur.qualifiedCount} qualified ${pos}s`
+        : `${cur.season}: below the qualifying line so far, so no percentiles`,
     );
   }
   if (college) {
@@ -596,8 +730,8 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     used.push(college);
     notes.push(
       college.qualified
-        ? `College: ranked among ${college.qualifiedCount} ${college.pool}.`
-        : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no percentiles.`,
+        ? `College: ranked among ${college.qualifiedCount} ${college.pool}`
+        : `College: below the ${college.pool.replace(/^college \w+ with /, "")} line, so no percentiles`,
     );
   } else if (adv?.last) {
     const prev = adv.last;
@@ -605,13 +739,14 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     used.push(prev);
     notes.push(
       prev.qualified
-        ? `${prev.season}: ${plural(prev.games, "game")} in weeks 1–17, among ${prev.qualifiedCount} qualified ${pos}s.`
-        : `${prev.season}: ${plural(prev.games, "game")} in weeks 1–17, below the qualifying line, so no percentiles.`,
+        ? `${prev.season} (${plural(prev.games, "game")}, weeks 1–17) among ${prev.qualifiedCount}`
+        : `${prev.season} (${plural(prev.games, "game")}, weeks 1–17): below the qualifying line, so no percentiles`,
     );
   }
-  if (cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))) {
-    notes.push("Grey marks describe style, not quality.");
-  }
+  // One short line (mak, 2026-09-30): the seasons joined, then the grey rule.
+  const grey = cols.some((col) => (col.card.all ?? col.card.metrics).some((m) => m.pctl != null && m.standing === "muted"))
+    ? " Grey bars describe style, not quality."
+    : "";
 
   const copy = data.statsCopy;
   const note = own(copy?.adv_fantasy_note)
@@ -623,7 +758,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   return (
     sectionOpen("scp-st-adv-h", `Advanced ${cats} stats`, lede) +
     renderAdvTable(cols) +
-    `<p class="scp-st-foot-note">Percentiles. ${escapeHtml(notes.join(" "))}</p>` +
+    `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${grey}`)}</p>` +
     note +
     `</section>`
   );
@@ -639,8 +774,10 @@ function renderChart(data: PlayerPageData, c: Career): string {
   const max = Math.max(...rows.map(ppg));
   const scale = Math.max(3, Math.ceil(max / 3) * 3);
   const careerPpg = c.total.gp ? c.total.pts / c.total.gp : 0;
+  // Past seasons neutral, the latest finished season in the accent, the one in
+  // progress in the accent with a hatch (mak, 2026-09-30); no career-best mark.
   const done = rows.filter((r) => !r.inProgress);
-  const best = done.length ? done.reduce((x, y) => (ppg(y) > ppg(x) ? y : x)) : null;
+  const latest = done.length ? done[done.length - 1]! : null;
   const current = data.team?.code ?? "";
   const n = rows.length;
 
@@ -648,15 +785,19 @@ function renderChart(data: PlayerPageData, c: Career): string {
     .map((r) => {
       const v = ppg(r);
       const h = v <= 0 ? 1 : Math.max(1, (v / scale) * 100);
-      const cls = r.inProgress ? " is-now" : best && r.season === best.season && n > 1 ? " is-best" : "";
+      const cls = r.inProgress ? " is-now" : latest && r.season === latest.season && n > 1 ? " is-last" : "";
       return `<div class="scp-st-col${cls}"><b>${one(v)}</b><i style="height:${h.toFixed(1)}%"></i></div>`;
     })
     .join("");
-  const years = rows.map((r) => `<div><strong>${r.season}</strong>${r.line.gp} GP</div>`).join("");
+  const years = rows.map((r) => `<div><strong>${r.season}</strong><small>${r.line.gp} GP</small></div>`).join("");
+  // The club only where it changes, so the row reads as a career's moves
+  // rather than eleven equal labels.
   const teams = rows
-    .map((r) => {
+    .map((r, i) => {
       const label = r.clubs.join("/") || DASH;
-      return `<span${current && r.clubs.includes(current) ? ` class="is-cur"` : ""}>${escapeHtml(label)}</span>`;
+      const prev = i > 0 ? rows[i - 1]!.clubs.join("/") || DASH : null;
+      const cur = current && r.clubs.includes(current) ? ` class="is-cur"` : "";
+      return label === prev ? `<span class="is-same"></span>` : `<span${cur}>${escapeHtml(label)}</span>`;
     })
     .join("");
 
@@ -669,7 +810,7 @@ function renderChart(data: PlayerPageData, c: Career): string {
   const now = rows.find((r) => r.inProgress);
 
   const legend =
-    (best && n > 1 ? `<span class="is-best">Career best</span>` : "") +
+    (latest && n > 1 ? `<span class="is-last">${latest.season}</span>` : "") +
     (now ? `<span class="is-now">${now.season}, in progress</span>` : "") +
     (showAvg ? `<span class="is-avg">Dashed line: career average</span>` : "");
 
@@ -822,12 +963,13 @@ function renderRead(data: PlayerPageData, c: Career, options: PlayerRenderOption
 
   return (
     sectionOpen("scp-st-read-h", "What his career numbers say", "") +
+    // The takeaway first, then the explanation (mak, 2026-09-30).
+    `<div class="scp-st-rates">${tiles.join("")}</div>` +
     byline(data) +
     `<div class="scp-ox-read">` +
     `<div><div class="scp-ox-prose">${paragraphs.map((p) => `<p>${p}</p>`).join("")}</div></div>` +
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`${last} in Redraft Command`)}">${rc}</aside>` +
     `</div>` +
-    `<div class="scp-st-rates">${tiles.join("")}</div>` +
     bests +
     `</section>`
   );
@@ -837,40 +979,53 @@ function rate(value: string, title: string, caption: string): string {
   return `<div class="scp-st-rate"><p class="scp-st-v">${escapeHtml(value)}</p><h3>${escapeHtml(title)}</h3><p>${escapeHtml(caption)}</p></div>`;
 }
 
+/**
+ * Career highs as one strip (mak, 2026-09-30): the figure, a short label, and
+ * the season it came in under it.
+ */
 function careerHighs(c: Career): string {
   const { pos, rows, total } = c;
   const done = rows.filter((r) => r.line.gp > 0);
   if (done.length === 0) return "";
   const top = (of: (t: Line) => number): SeasonRow =>
     done.reduce((x, y) => (of(y.line) > of(x.line) ? y : x));
-  // "Passing yards, 2025": the value, what it is and the season it came in.
-  const items: Array<{ v: string; label: string }> = [];
+  const items: Array<{ v: string; label: string; sub: string }> = [];
   const push = (of: (t: Line) => number, label: string): void => {
     const r = top(of);
-    if (of(r.line) > 0) items.push({ v: whole(of(r.line)), label: `${label}, ${r.season}` });
+    if (of(r.line) > 0) items.push({ v: whole(of(r.line)), label, sub: String(r.season) });
   };
   if (pos === "QB") {
-    push((t) => t.passYd, "Passing yards");
-    push((t) => t.passTd, "Passing TDs");
+    push((t) => t.passYd, "Pass yards");
+    push((t) => t.passTd, "Pass TD");
   } else if (pos === "RB") {
-    push((t) => t.rushYd, "Rushing yards");
-    push((t) => t.rushTd + t.recTd, "Total TDs");
+    push((t) => t.rushYd, "Rush yards");
+    push((t) => t.rushTd + t.recTd, "Total TD");
   } else {
-    push((t) => t.recYd, "Receiving yards");
-    push((t) => t.recTd, "Receiving TDs");
+    push((t) => t.recYd, "Rec yards");
+    push((t) => t.recTd, "Rec TD");
   }
   const bestFan = top((t) => t.pts);
   items.push({
     v: one(bestFan.line.pts),
-    label: `Fantasy points, ${bestFan.season}${bestFan.finish && !bestFan.inProgress ? ` (${pos}${bestFan.finish})` : ""}`,
+    label: "Fantasy pts",
+    sub: `${bestFan.season}${bestFan.finish && !bestFan.inProgress ? ` · ${pos}${bestFan.finish}` : ""}`,
   });
-  if (pos === "QB") items.push({ v: whole(total.passYd), label: "Career passing yards" });
-  else if (pos === "RB") items.push({ v: whole(total.rushYd + total.recYd), label: "Career scrimmage yards" });
-  else items.push({ v: whole(total.recYd), label: "Career receiving yards" });
+  const seasons = rows.map((r) => r.season);
+  const span = `${Math.min(...seasons)}–${Math.max(...seasons)}`;
+  if (pos === "QB") items.push({ v: whole(total.passYd), label: "Career pass yds", sub: span });
+  else if (pos === "RB") items.push({ v: whole(total.rushYd + total.recYd), label: "Career scrimmage yds", sub: span });
+  else items.push({ v: whole(total.recYd), label: "Career rec yds", sub: span });
   return (
     `<h3 class="scp-st-bests-h">Career highs</h3>` +
     `<ul class="scp-st-bests">` +
-    items.map((i) => `<li><span class="scp-st-v">${escapeHtml(i.v)}</span><span>${escapeHtml(i.label)}</span></li>`).join("") +
+    items
+      .map(
+        (i) =>
+          `<li><span class="scp-st-v">${escapeHtml(i.v)}</span>` +
+          `<span class="scp-st-bl">${escapeHtml(i.label)}</span>` +
+          `<span class="scp-st-bs">${escapeHtml(i.sub)}</span></li>`,
+      )
+      .join("") +
     `</ul>`
   );
 }
@@ -907,95 +1062,6 @@ function renderFooter(data: PlayerPageData): string {
         (data.format === "standard" ? "" : " Two-point conversions and lost fumbles count as Sleeper scores them."),
     )}</p></footer>`
   );
-}
-
-/* ---------------------------------------------------------- section 6: FAQ */
-
-interface Faq {
-  question: string;
-  html: string;
-  text: string;
-}
-
-function faq(question: string, parts: Array<string | { href: string; text: string }>): Faq {
-  return {
-    question,
-    html: parts.map((p) => (typeof p === "string" ? escapeHtml(p) : a(p.href, p.text))).join(""),
-    text: parts.map((p) => (typeof p === "string" ? p : p.text)).join(""),
-  };
-}
-
-export function statsTabFaqs(data: PlayerPageData, options: PlayerRenderOptions = {}): Faq[] {
-  const c = career(data);
-  const row = c.focus;
-  if (!row) return [];
-  const name = data.player.name;
-  const pos = c.pos;
-  const t = row.line;
-  const tot = c.total;
-  const label = SCORING_SHORT[data.format];
-  const yr = row.season;
-  const so = row.inProgress ? "has" : "had";
-  const out: Faq[] = [];
-
-  // 1. Yards.
-  if (pos === "QB") {
-    out.push(faq(`How many passing yards does ${name} have in ${yr}?`, [
-      `${name} ${so} ${whole(t.passYd)} passing yards in ${yr}, ${one(t.passYd / t.gp)} per game over ${plural(t.gp, "game")}, ` +
-        `at ${fmtRatio(t.passYd, t.att)} yards per attempt${t.att ? ` with a ${pct1((t.cmp / t.att) * 100)} completion rate` : ""}.`,
-    ]));
-  } else if (pos === "RB") {
-    out.push(faq(`How many rushing yards does ${name} have in ${yr}?`, [
-      `${name} ${so} ${whole(t.rushYd)} rushing yards on ${plural(t.rushAtt, "carry").replace("carrys", "carries")} in ${yr}, ` +
-        `${one(t.rushYd / t.gp)} per game at ${fmtRatio(t.rushYd, t.rushAtt)} yards per carry.`,
-    ]));
-  } else {
-    out.push(faq(`How many receiving yards does ${name} have in ${yr}?`, [
-      `${name} ${so} ${whole(t.recYd)} receiving yards on ${t.rec} catches and ${t.tgt} targets in ${yr}, ` +
-        `${one(t.recYd / t.gp)} per game at ${fmtRatio(t.recYd, t.rec)} yards per catch.`,
-    ]));
-  }
-
-  // 2. Touchdowns.
-  const split =
-    pos === "QB" ? `${plural(t.passTd, "passing touchdown")} and ${plural(t.rushTd, "rushing touchdown")}`
-      : pos === "RB" ? `${plural(t.rushTd, "rushing touchdown")} and ${plural(t.recTd, "receiving touchdown")}`
-        : `${plural(t.recTd, "receiving touchdown")}${t.rushTd ? ` and ${plural(t.rushTd, "rushing touchdown")}` : ""}`;
-  const careerTd =
-    pos === "QB" ? `${tot.passTd} passing and ${tot.rushTd} rushing`
-      : tot.rushTd && tot.recTd ? `${tot.rushTd + tot.recTd} total (${tot.rushTd} rushing, ${tot.recTd} receiving)`
-        : tot.recTd ? `${tot.recTd} receiving` : `${tot.rushTd} rushing`;
-  out.push(faq(`How many touchdowns does ${name} have?`, [
-    `${name} ${so} ${split} in ${yr}. Across his career he has ${careerTd} touchdowns.`,
-  ]));
-
-  // 3. Fantasy points.
-  const rank = row.finish;
-  const bestSeason = c.rows.filter((r) => !r.inProgress && r.line.gp).sort((x, y) => y.line.pts - x.line.pts)[0];
-  const overview = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/${options.linkQuery ?? ""}`;
-  out.push(faq(`How many fantasy points does ${name} have?`, [
-    `${name} ${so} ${one(t.pts)} ${label} fantasy points in ${yr}, ${one(t.pts / t.gp)} per game` +
-      (rank ? `, ranking ${pos}${rank}${row.inProgress ? " so far" : ""}. ` : ". ") +
-      (bestSeason && bestSeason.season !== yr
-        ? `His best season was ${bestSeason.season}: ${one(bestSeason.line.pts)} points${bestSeason.finish ? ` and a ${pos}${bestSeason.finish} finish` : ""}. `
-        : ""),
-    { href: overview, text: `See his fantasy outlook on the ${lastName(name)} overview` },
-    ".",
-  ]));
-
-  // 4. Career.
-  const seasons = c.rows.length;
-  const line =
-    pos === "QB"
-      ? `${whole(tot.passYd)} passing yards, ${tot.passTd} touchdowns and ${tot.int} interceptions, plus ${whole(tot.rushYd)} rushing yards and ${plural(tot.rushTd, "rushing touchdown")}`
-      : pos === "RB"
-        ? `${whole(tot.rushYd)} rushing yards and ${tot.rushTd} rushing touchdowns, plus ${tot.rec} catches for ${whole(tot.recYd)} yards and ${tot.recTd} touchdowns`
-        : `${tot.rec} catches for ${whole(tot.recYd)} yards and ${tot.recTd} touchdowns, plus ${whole(tot.rushYd)} rushing yards and ${plural(tot.rushTd, "rushing touchdown")}`;
-  out.push(faq(`What are ${name}'s career stats?`, [
-    `In ${plural(seasons, "season")} and ${plural(tot.gp, "game")}, ${name} has ${line}. ` +
-      `That is ${one(tot.gp ? tot.pts / tot.gp : 0)} ${label} fantasy points per game.`,
-  ]));
-  return out;
 }
 
 /* ------------------------------------------------------------ the tab */
@@ -1053,8 +1119,8 @@ function renderCollegeTable(data: PlayerPageData, pos: string): string {
  * with neither NFL games nor college data gets nothing.
  */
 export function renderStatsTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
-  const { top, rest } = renderStatsTabParts(data, options);
-  return top + rest;
+  const { top, rest, foot } = renderStatsTabParts(data, options);
+  return top + rest + foot;
 }
 
 /**
@@ -1067,8 +1133,8 @@ export function renderStatsTab(data: PlayerPageData, options: PlayerRenderOption
 export function renderStatsTabParts(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
-): { top: string; rest: string } {
-  const none = { top: "", rest: "" };
+): { top: string; rest: string; foot: string } {
+  const none = { top: "", rest: "", foot: "" };
   const c = career(data);
   if (!["QB", "RB", "WR", "TE"].includes(c.pos)) return none;
   const ink = teamInk(data.team);
@@ -1077,13 +1143,16 @@ export function renderStatsTabParts(
   if (!c.focus) {
     // No NFL games: only his college seasons can say anything here.
     if (!collegeCard(data.college, c.pos)) return none;
-    return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "" };
+    return { top: wrap(renderAdvanced(data, c) + renderCollegeTable(data, c.pos)), rest: "", foot: "" };
   }
   return {
     top: wrap(renderProduction(data, c, options) + renderAdvanced(data, c) + renderChart(data, c)),
     // No season-by-season table here: the original Stats content above already
     // has one (renamed "<name> career stats by season"), and mak had this
     // second copy removed on 2026-09-30.
-    rest: wrap(renderRead(data, c, options) + renderFooter(data)),
+    rest: wrap(renderRead(data, c, options)),
+    // Apart so the page can stand it under the peers rail, directly above the
+    // tab's FAQ (mak, 2026-09-30).
+    foot: wrap(renderFooter(data)),
   };
 }

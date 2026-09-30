@@ -873,7 +873,7 @@ function statchasers_team_full_width_css(): string {
  * @return string
  */
 function statchasers_tool_root_selector(): string {
-	return ':is(.sct,.scp,.scf,.scr,.scs,.sca,.rbh).is-embed';
+	return ':is(.sct,.scp,.scf,.scr,.scs,.sca,.rbh,.scsos).is-embed';
 }
 
 /**

@@ -27,7 +27,11 @@
  *
  * scripts/player/buildGameLogs.js (Sleeper, 18 requests) and then
  * buildGameScores.js (ESPN, the W/L column; ESPN refuses this host at times and
- * the builder keeps what it has when it does). Run as child processes rather
+ * the builder keeps what it has when it does), the recaps' box scores, and
+ * find-game-videos.mjs --live (the recaps' YouTube highlights, into
+ * data/matchup/game-videos-live.json), and the FPA ingest (in-process, the
+ * same run POST /api/fpa/ingest makes; Strength of Schedule reads its table).
+ * The builders run as child processes rather
  * than re-implemented here, so the weekly manual rebuild and this job cannot
  * build different files. Both builders keep a week's rows on disk when its
  * request fails and write atomically, which is what makes unattended runs safe.
@@ -45,7 +49,10 @@
  *   2. ownership — buildRosterPct.mjs (Sleeper);
  *   3. RB handcuffs — refresh.mjs (Ourlads depth, Sleeper age and injury), then
  *      buildStats.mjs (nflverse);
- *   4. advanced stats — player-stats/buildSeason.mjs (nflverse), twice: once
+ *   4. the strength-of-schedule Player SOS list — sos/buildPlayerPool.mjs
+ *      (Sleeper projections for the weeks left; data/sos/player-pool.json),
+ *      and the FPA ingest again, for a week nflverse posted late;
+ *   5. advanced stats — player-stats/buildSeason.mjs (nflverse), twice: once
  *      for [statchasers_player_stats] (data/player-stats) and once, with
  *      --dir, for the player pages' Advanced tab (data/player/advanced_stats).
  *      The two directories hold differently shaped tables, so neither is a
@@ -80,6 +87,7 @@ import { resetDriverCache } from "./outlook-drivers";
 import { resetAppearanceCaches } from "../matchup/appearances";
 import { invalidatePlayerRenderCache } from "../player-ssr";
 import { invalidateMatchupRenderCache } from "../matchup/matchup-ssr";
+import { resetLiveVideos } from "../matchup/game-notes";
 import { invalidateTeamRenderCache } from "../team-ssr";
 import { invalidateStatsCache } from "../player-stats/stats-data";
 import { invalidateHandcuffCache } from "../rb-handcuffs/handcuffs-data";
@@ -95,6 +103,8 @@ const DAILY_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 const FAILURE_BACKOFF_MS = 30 * 60 * 1000;
 /** Per builder. The game-log build is 18 requests 250ms apart. */
 const BUILDER_TIMEOUT_MS = 5 * 60 * 1000;
+/** The video scan: a Sunday's games are a few YouTube pages each, 1.2s apart. */
+const VIDEO_SCAN_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
  * The package directory, resolved from this module — the lesson of
@@ -190,6 +200,22 @@ export function reloadPlayerStats(): void {
   invalidateMatchupRenderCache();
 }
 
+/**
+ * Run the FPA ingest here, joining one in flight. Imported lazily so the
+ * nflverse code stays off the startup path, as fpa-ssr.ts does. True on success.
+ */
+async function refreshFpaInProcess(caller: string): Promise<boolean> {
+  try {
+    const { refreshFpa } = await import("../fpa/refresh");
+    const { result, joined } = await refreshFpa();
+    logger.info({ weekNumber: result.weekNumber, joined }, `${caller}: FPA refreshed`);
+    return true;
+  } catch (err) {
+    logger.warn({ err }, `${caller}: FPA not refreshed`);
+    return false;
+  }
+}
+
 /** Run both builders and reload. Joins a run already in flight. */
 export function refreshPlayerStats(): Promise<void> {
   if (running) return running;
@@ -208,6 +234,26 @@ export function refreshPlayerStats(): Promise<void> {
       await runBuilder("matchup/buildBoxscores.mjs", [String(season)]).catch((err) => {
         logger.warn({ err }, "Player refresh: box scores not stored");
       });
+      // Fantasy Points Allowed (and with it Strength of Schedule, which reads
+      // the same table). In-process, the same run POST /api/fpa/ingest makes,
+      // and joined if one is already going. Best effort, like the two above:
+      // nflverse posts a week a day or more after it is played, and until it
+      // does the ingest rewrites what it already had. It used to run only when
+      // somebody called the endpoint, which is how the Sep 28 table sat
+      // without Week 3's Monday game.
+      await refreshFpaInProcess("Player refresh");
+      // The recaps' highlights videos: the NFL's YouTube upload for each game
+      // finished since the last publish, a miss retried until the game is four
+      // days old. Best effort: YouTube or ESPN refusing costs only the videos.
+      await runBuilder(
+        "find-game-videos.mjs",
+        ["--from", String(season), "--through", String(season), "--live"],
+        VIDEO_SCAN_TIMEOUT_MS,
+      )
+        .then(resetLiveVideos)
+        .catch((err) => {
+          logger.warn({ err }, "Player refresh: highlights videos not searched");
+        });
       reloadPlayerStats();
       lastSuccessMs = Date.now();
       lastError = null;
@@ -270,6 +316,14 @@ export function refreshDailyData(): Promise<void> {
       await step("ownership", "player/buildRosterPct.mjs");
       await step("handcuff depth", "rb-handcuffs/refresh.mjs");
       await step("handcuff stats", "rb-handcuffs/buildStats.mjs", [season]);
+      await step("sos player list", "sos/buildPlayerPool.mjs");
+      // FPA again, daily: the backstop for a week nflverse posted after the
+      // last game window's runs had stopped looking for it.
+      steps.push(
+        (await refreshFpaInProcess("Daily data"))
+          ? { name: "fpa", ok: true }
+          : { name: "fpa", ok: false, error: "FPA ingest failed; see the log and /api/status fpa" },
+      );
       await step("advanced stats", "player-stats/buildSeason.mjs", [season]);
       await step("player advanced stats", "player-stats/buildSeason.mjs", [
         season,

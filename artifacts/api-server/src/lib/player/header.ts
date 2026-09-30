@@ -351,11 +351,8 @@ interface BoardCell {
  * reader learns to read across profiles, and a two-cell panel on one player
  * reads as a layout bug. Never 0.0 for a player who has not played.
  */
-function headerBoard(data: PlayerPageData): { caption: string; through: string; cells: BoardCell[] } {
+function headerBoard(data: PlayerPageData): { caption: string; cells: BoardCell[] } {
   const { stats, format, player } = data;
-  const leagueSeason = data.leagueSeason ?? data.season;
-  const leagueWeek = data.leagueWeek ?? 0;
-  const final = data.season < leagueSeason || leagueWeek >= 18;
   const played = Boolean(stats && stats.gamesPlayed > 0);
 
   const season = data.production.find((row) => row.season === data.season);
@@ -365,8 +362,9 @@ function headerBoard(data: PlayerPageData): { caption: string; through: string; 
   const pos = player.position ?? "";
 
   return {
-    caption: final ? `${data.season} final` : `${data.season} season`,
-    through: final || leagueWeek === 0 ? "" : `Through Week ${leagueWeek}`,
+    // "2026 Season", centred above the board (mak, 2026-09-30); the "final"
+    // and "Through Week N" wording inside the board is gone.
+    caption: `${data.season} Season`,
     cells: [
       {
         label: `${SCORING_SHORT[format]} PPG`,
@@ -518,10 +516,9 @@ export function renderHero(
 
   const board = headerBoard(data);
   const scoreboard =
+    `<div class="scp-pboard-wrap">` +
+    `<p class="scp-pboard-cap">${escapeHtml(board.caption)}</p>` +
     `<div class="scp-pboard">` +
-    `<p class="scp-pboard-cap"><span>${escapeHtml(board.caption)}</span>` +
-    (board.through ? ` <span>${escapeHtml(board.through)}</span>` : "") +
-    `</p>` +
     `<dl class="scp-pboard-stats">` +
     board.cells
       .map(
@@ -530,7 +527,7 @@ export function renderHero(
           `<dt>${escapeHtml(cell.label)}</dt> <dd>${escapeHtml(cell.value)}</dd></div>`,
       )
       .join(" ") +
-    `</dl></div>`;
+    `</dl></div></div>`;
 
   /* ---- the strip ---- */
 

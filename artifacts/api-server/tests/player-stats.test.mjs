@@ -471,7 +471,9 @@ describe("the pages", () => {
     const html = await (await fetch(`${server.origin}/embed/player-stats?pos=wr`)).text();
     assert.doesNotMatch(html, /<h1|application\/ld\+json/);
     const meta = JSON.parse(html.match(/<script type="application\/json" class="sca-page-data">(.*?)<\/script>/)[1]);
-    assert.deepEqual(Object.keys(meta), ["title", "h1", "description"]);
+    assert.deepEqual(Object.keys(meta), ["title", "h1", "description", "lead"]);
+    // The intro, as the plugin's hero description.
+    assert.match(meta.lead, /^Compare 2026 NFL player stats for quarterbacks.* player grades\.$/);
     assert.equal(meta.h1, "2026 NFL Wide Receiver Stats & Fantasy Football Stats");
     const faq = JSON.parse(html.match(/<script type="application\/json" class="sca-faq-data">(.*?)<\/script>/)[1]);
     assert.equal(faq.length, 12);

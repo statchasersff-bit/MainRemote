@@ -86,3 +86,6 @@ artifacts/api-server/.dev-restart.lock
 # Share images, drawn on first request from the stored box scores (og-image.ts).
 # Derived, and redrawn when deleted, so never committed.
 artifacts/api-server/data/og/
+# Written by the production refresh (find-game-videos.mjs --live).
+artifacts/api-server/data/matchup/game-videos-live.json
+artifacts/api-server/data/matchup/game-videos-live-misses.json

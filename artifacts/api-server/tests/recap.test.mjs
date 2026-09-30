@@ -81,16 +81,17 @@ describe("the Cardinals–Rams Wild Card", () => {
       recap.headline,
       "Rams 34, Cardinals 11: Los Angeles controls the 2021 Wild Card from start to finish",
     );
+    // The halftime score, the second half and the yardage are said once, in
+    // the dek (mak, 2026-09-30); the paragraphs carry what it leaves out.
     assert.equal(
       recap.dek,
-      "The Rams led 21–0 at halftime and finished with 375 yards to 183.",
+      "Los Angeles led 21–0 at halftime after a 14-point second quarter and outscored Arizona 13–11 " +
+        "after the break to win 34–11. The Rams finished with a 375–183 edge in total offense and " +
+        "averaged 6.6 yards per play.",
     );
     assert.deepEqual(recap.paragraphs, [
-      "Los Angeles led 21–0 at halftime after scoring 14 points in the second quarter. " +
-        "Arizona didn't get on the board until the third quarter. " +
-        "The Rams added 13 more after the break.",
-      "The gap showed up everywhere. The Rams gained 375 yards to Arizona's 183 and averaged " +
-        "6.6 yards per play against 3.4. The Cardinals went 0-for-9 on third down and committed " +
+      "Arizona didn't get on the board until the third quarter.",
+      "The gap showed up everywhere. The Cardinals went 0-for-9 on third down and committed " +
         "two turnovers, while the Rams kept the ball for 35:46 and finished without a giveaway.",
       "The win was Matthew Stafford's first career playoff victory. " +
         "It started the run that ended with the Rams winning Super Bowl LVI.",
@@ -105,7 +106,7 @@ describe("the Cardinals–Rams Wild Card", () => {
     assert.equal(doc.querySelectorAll("h1").length, 0);
     assert.equal(doc.querySelector("h2").textContent, recap.headline);
     assert.equal(doc.querySelector("section").id, "recap");
-    assert.match(doc.querySelector(".sct-mu-story-dek").textContent, /^The Rams led 21–0/);
+    assert.match(doc.querySelector(".sct-mu-story-dek").textContent, /^Los Angeles led 21–0/);
     const link = doc.querySelector("a");
     assert.equal(link.textContent, "run the start/sit call in Redraft Command");
     assert.equal(link.getAttribute("href"), START_SIT_URL);
@@ -143,7 +144,11 @@ describe("the Cardinals–Rams Wild Card", () => {
 
   test("with no box score, the prose is the quarters alone and claims nothing else", () => {
     const bare = buildRecap({ ...WILD_CARD, awayStats: null, homeStats: null, notes: [], winnerPostseason: null, next: null });
-    assert.equal(bare.dek, "The Rams led 21–0 at halftime.");
+    assert.equal(
+      bare.dek,
+      "Los Angeles led 21–0 at halftime after a 14-point second quarter and outscored Arizona 13–11 " +
+        "after the break to win 34–11.",
+    );
     assert.equal(bare.paragraphs.length, 1, "the quarters alone");
     assert.doesNotMatch(bare.paragraphs[0], /yards|third down|turnover/);
   });
@@ -176,11 +181,13 @@ describe("the other shapes", () => {
       notes: [],
     });
     assert.equal(recap.headline, "Rams 27, Cardinals 20: Los Angeles rallies from 14 down at halftime");
-    assert.match(recap.dek, /^The Rams trailed 17–3 at halftime/);
-    assert.match(recap.paragraphs[0], /The Rams outscored Arizona 24–3 after the break\.$/);
+    assert.match(
+      recap.dek,
+      /^Los Angeles erased a 17–3 halftime deficit, outscoring Arizona 24–3 after the break to win 27–20\. /,
+    );
   });
 
-  test("overtime is in the headline and the flow", () => {
+  test("overtime is in the headline and the dek", () => {
     const recap = buildRecap({
       ...WILD_CARD,
       game: {
@@ -195,8 +202,11 @@ describe("the other shapes", () => {
       notes: [],
     });
     assert.equal(recap.headline, "Chiefs 42, Bills 36: Kansas City wins the 2021 Divisional Round in overtime");
-    assert.match(recap.dek, /^The Chiefs led 17–7 at halftime and finished with \d+ yards to \d+\.$/);
-    assert.match(recap.paragraphs[0], /Kansas City won it with six points in overtime\.$/);
+    assert.match(
+      recap.dek,
+      /^Kansas City led 17–7 at halftime, regulation ended 36–36, and the Chiefs won it 42–36 in overtime\. /,
+    );
+    assert.doesNotMatch(recap.dek, /held on/);
   });
 
   test("a Super Bowl ends at the title", () => {
@@ -213,7 +223,10 @@ describe("the other shapes", () => {
       homeCity: "Philadelphia",
       notes: [],
     });
-    assert.match(recap.dek, /^The Eagles led 24–0 at halftime/);
+    assert.match(
+      recap.dek,
+      /^Philadelphia led 24–0 at halftime after a 17-point second quarter and won 40–22, though Kansas City took the second half 22–16\. /,
+    );
     assert.doesNotMatch(recap.paragraphs.join(" "), /went on to|the run that|run ended/);
   });
 
@@ -247,8 +260,8 @@ describe("the other shapes", () => {
       notes: [],
     });
     assert.equal(recap.headline, "Rams 34, Chargers 17: The Rams lead from start to finish");
-    assert.match(recap.paragraphs[0], /^The Rams led 21\u20133 at halftime/);
-    assert.doesNotMatch(recap.paragraphs.join(" "), /Los Angeles/);
+    assert.match(recap.dek, /^The Rams led 21\u20133 at halftime/);
+    assert.doesNotMatch(`${recap.dek} ${recap.paragraphs.join(" ")}`, /Los Angeles/);
   });
 
   test("Super Bowl numerals", () => {

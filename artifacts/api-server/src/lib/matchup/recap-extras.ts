@@ -177,27 +177,6 @@ export function meantSentence(side: SeasonSide, game: ScoreboardGame): string | 
   );
 }
 
-export function renderMeantCards(game: ScoreboardGame, sides: SeasonSide[]): string {
-  const result = scoreboardResult(game);
-  if (!result) return "";
-  const colors = pairColors(game.away.abbr, game.home.abbr);
-  const order = result.winner === "home" ? ["home", "away"] : ["away", "home"];
-  const cards = (order as Array<"away" | "home">)
-    .map((key) => {
-      const side = sides.find((s) => s.abbr === game[key].abbr);
-      const text = side ? meantSentence(side, game) : null;
-      if (!text) return "";
-      return (
-        `<div class="sct-meant-card" style="--rb-team:${colors[key].ink}">` +
-        `<h3 class="sct-rb-h3">${escapeHtml(`What it meant for the ${game[key].short}`)}</h3>` +
-        `<p>${escapeHtml(text)}</p>` +
-        `</div>`
-      );
-    })
-    .filter(Boolean);
-  return cards.length ? `<div class="sct-meant">${cards.join("")}</div>` : "";
-}
-
 /* -------------------------------------------------------- before and after */
 
 export interface GameRef {
@@ -210,12 +189,6 @@ export interface BeforeAfterSide {
   name: string;
   prev: GameRef | null;
   next: GameRef | null;
-}
-
-/** The club's game after this one, or null once its season is over. */
-export function gameAfter(side: SeasonSide, game: ScoreboardGame): ScheduleGame | null {
-  const { list, index } = position(side, game);
-  return index < 0 ? null : (list[index + 1] ?? null);
 }
 
 /** Each club's game before this one and after it, from its schedule. */
@@ -267,15 +240,14 @@ export function renderBeforeAfter(game: ScoreboardGame, sides: BeforeAfterSide[]
 export function renderHighlights(game: ScoreboardGame, video: GameVideo | null): string {
   if (!video || !/^[\w-]{6,20}$/.test(video.youtubeId)) return "";
   const colors = pairColors(game.away.abbr, game.home.abbr);
-  const round = game.roundLabel.replace(/^(AFC|NFC)\s+/, "");
   const id = encodeURIComponent(video.youtubeId);
   const watch = `https://www.youtube.com/watch?v=${id}`;
   const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
   const frameTitle = `${video.title} (YouTube video player)`;
   return (
     `<section class="sct-rb-section sct-hl" aria-labelledby="highlights">` +
-    `<h2 class="sct-rb-h2" id="highlights">${escapeHtml(`${game.away.short} vs ${game.home.short} highlights`)}</h2>` +
-    `<p class="sct-rb-sub">${escapeHtml(`Official ${video.publisher} highlights from the ${game.seasonLabel} ${round} game.`)}</p>` +
+    // Short, beside the recap that already names the teams (mak, 2026-09-30).
+    `<h2 class="sct-rb-h2" id="highlights">Game Highlights</h2>` +
     `<div class="sct-hl-box" style="--hl-a:${colors.away.fill};--hl-b:${colors.home.fill}">` +
     `<button type="button" class="sct-hl-play" data-hl-embed="${escapeHtml(embed)}" data-hl-title="${escapeHtml(frameTitle)}" ` +
     `aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +
@@ -286,9 +258,8 @@ export function renderHighlights(game: ScoreboardGame, video: GameVideo | null):
     `</button>` +
     `<noscript><a class="sct-hl-noscript" href="${escapeHtml(watch)}">${escapeHtml(`Watch on YouTube: ${video.title}`)}</a></noscript>` +
     `</div>` +
-    `<p class="sct-rb-note">${escapeHtml(
-      `Video from the ${video.publisher}'s official YouTube channel. It loads only when you press play. Not playing? `,
-    )}<a href="${escapeHtml(watch)}" target="_blank" rel="noopener">Watch on YouTube</a>.</p>` +
+    `<p class="sct-rb-note sct-hl-note">${escapeHtml(`Official ${video.publisher} highlights · Opens from `)}` +
+    `<a href="${escapeHtml(watch)}" target="_blank" rel="noopener">YouTube</a></p>` +
     `</section>`
   );
 }
@@ -321,23 +292,12 @@ function trim(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-/** One club's next game for "Next up": the label, its page, and its line when the feed has one. */
-export interface BettingNext {
-  /** "Rams at Buccaneers, Divisional". */
-  label: string;
-  url: string | null;
-  /** "TB −3", or "Pick'em"; null when there is no line. */
-  line: string | null;
-}
-
 /** What the Betting tab reads beyond the game's own closing line. */
 export interface BettingExtras {
   /** The pair's stored meetings with lines, newest first, this one included. */
   meetings: SeasonGame[];
   /** Each club's season against the lines through this game, by abbr. */
   seasons: Record<string, BettingSeason | null>;
-  /** Each club's next game by abbr; null once its season is over. */
-  next: Record<string, BettingNext | null>;
 }
 
 function record3(t: Tally3): string {
@@ -510,20 +470,6 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
     }
   }
 
-  // D. Next up.
-  let nextUp = "";
-  if (extras) {
-    const rows = (["away", "home"] as const).map((k) => {
-      const n = extras.next[game[k].abbr];
-      const body = n
-        ? (n.url ? `<a href="${escapeHtml(n.url)}">${escapeHtml(n.label)}</a>` : escapeHtml(n.label)) +
-          (n.line ? escapeHtml(` · ${n.line}`) : "")
-        : `<span class="sct-ba-none">Season over</span>`;
-      return `<dt style="color:${colors[k].ink}">${escapeHtml(game[k].short)}</dt><dd>${body}</dd>`;
-    });
-    nextUp = `<h3 class="sct-rb-h3">Next up</h3><dl class="sct-rb-dl sct-bet-next">${rows.join("")}</dl>`;
-  }
-
   return (
     `<section class="sct-rb-section sct-bet" aria-labelledby="betting">` +
     `<h2 class="sct-rb-h2" id="betting">${escapeHtml(`${game.away.short} vs ${game.home.short} odds and results`)}</h2>` +
@@ -532,7 +478,6 @@ export function renderBetting(game: ScoreboardGame, odds: GameOdds | null, extra
     impliedTable +
     `<p class="sct-rb-note sct-bet-take">${takeaway}</p>` +
     trends +
-    nextUp +
     `<div class="sct-bet-fine">` +
     `<p>Lines: ESPN's consensus, captured at kickoff. Individual sportsbooks varied.</p>` +
     `<p>21+. Gambling problem? Call 1-800-GAMBLER. Betting availability depends on your state.</p>` +

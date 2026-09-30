@@ -21,6 +21,13 @@
 // --retry also searches again for the games that missed last time.
 //
 // Hand-written entries in game-notes.ts win over this file.
+//
+// --live is the production mode (src/lib/player/live-refresh.ts runs it after
+// each game window). The server cannot rewrite its own source, so new finds go
+// to data/matchup/game-videos-live.json, which the server reads beside
+// game-videos.ts, and misses to game-videos-live-misses.json; both files are
+// gitignored. A miss is retried while its game is under four days old — the
+// upload window below closes at three — and is final after that.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -28,7 +35,11 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(here, "../src/lib/matchup/game-videos.ts");
+const LIVE = process.argv.includes("--live");
 const MISSES = path.join(here, "../data/game-videos-misses.json");
+const LIVE_OUT = path.join(here, "../data/matchup/game-videos-live.json");
+const LIVE_MISSES = path.join(here, "../data/matchup/game-videos-live-misses.json");
+const LIVE_RETRY_MS = 4 * 24 * 60 * 60 * 1000;
 const TEAMS_TS = path.join(here, "../src/lib/team/teams.ts");
 const NFL_CHANNEL = "UCDVYQ4Zhbm3S2dlz7P1GBDg";
 const DAY = 24 * 60 * 60 * 1000;
@@ -251,17 +262,42 @@ function write(videos) {
   );
 }
 
-const videos = readExisting();
-const misses = fs.existsSync(MISSES) ? JSON.parse(fs.readFileSync(MISSES, "utf8")) : {};
+const readJson = (file) => (fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {});
+const writeJson = (file, value) => {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + "\n");
+  fs.renameSync(tmp, file);
+};
+
+// Live: the committed finds and misses are read, never written; what this run
+// learns goes to the two live files.
+const committed = readExisting();
+const liveVideos = LIVE ? readJson(LIVE_OUT) : {};
+const videos = LIVE ? { ...committed, ...liveVideos } : committed;
+const committedMisses = readJson(MISSES);
+const misses = LIVE ? { ...committedMisses, ...readJson(LIVE_MISSES) } : committedMisses;
+const liveMisses = LIVE ? readJson(LIVE_MISSES) : null;
 let found = 0;
 let missed = 0;
+
+function save() {
+  if (LIVE) {
+    writeJson(LIVE_OUT, liveVideos);
+    writeJson(LIVE_MISSES, liveMisses);
+  } else {
+    write(videos);
+    fs.writeFileSync(MISSES, JSON.stringify(misses, null, 2) + "\n");
+  }
+}
 
 for (let season = FROM; season <= THROUGH; season++) {
   const games = await seasonGames(season);
   console.log(`${season}: ${games.length} finished games`);
   for (const game of games) {
     if (videos[game.key]) continue;
-    if (misses[game.key] && !RETRY) continue;
+    const retry = RETRY || (LIVE && Date.now() - game.kickoff < LIVE_RETRY_MS);
+    if (misses[game.key] && !retry) continue;
     let video = null;
     try {
       video = await findVideo(game);
@@ -272,20 +308,21 @@ for (let season = FROM; season <= THROUGH; season++) {
     if (video) {
       videos[game.key] = video;
       delete misses[game.key];
+      if (LIVE) {
+        liveVideos[game.key] = video;
+        delete liveMisses[game.key];
+      }
       found++;
       console.log(`  ok   ${game.key}  ${video.youtubeId}  ${video.title}`);
     } else {
       misses[game.key] = new Date().toISOString().slice(0, 10);
+      if (LIVE) liveMisses[game.key] = misses[game.key];
       missed++;
       console.log(`  miss ${game.key}`);
     }
-    if ((found + missed) % 10 === 0) {
-      write(videos);
-      fs.writeFileSync(MISSES, JSON.stringify(misses, null, 2) + "\n");
-    }
+    if ((found + missed) % 10 === 0) save();
   }
-  write(videos);
-  fs.writeFileSync(MISSES, JSON.stringify(misses, null, 2) + "\n");
+  save();
 }
 
 console.log(`done: ${found} found, ${missed} missed, ${Object.keys(videos).length} in the file`);

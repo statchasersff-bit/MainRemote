@@ -20,7 +20,7 @@
 import { escapeHtml } from "../render";
 import type { GameOdds } from "./boxscore";
 import { playPoints, type ScoringPlay } from "./scoring-plays";
-import { playHtml } from "./scoring-summary";
+import { playLabel, playShort } from "./scoring-summary";
 import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 
 export interface WinProbabilityInput {
@@ -172,47 +172,30 @@ function periodPhrase(elapsed: number): string {
   return "in overtime";
 }
 
-/** The subtitle's second sentence: where the home side started, then the one fact worth saying. */
+/**
+ * The section's story in one sentence (mak, 2026-09-30): where the home side
+ * opened, the one turn worth saying, and how it ended.
+ * "Seattle opened at 59% win probability, fell as low as 11%, then rallied to win."
+ */
 export function wpSubtitle(game: ScoreboardGame, model: WpModel): string {
   const result = scoreboardResult(game);
-  const kick = model.kickoff;
-  const pct = Math.round(kick * 100);
-  // "an 82%", "an 8%", "an 11%", "an 18%": the article follows the spoken number.
-  const article = /^(8|11|18)/.test(String(pct)) ? "an" : "a";
-  // The underdog's own chance, not the favourite's: "a 43% underdog" would read as 57%.
-  const role =
-    pct === 50
-      ? `${homeCity(game)} started as a coin flip`
-      : kick > 0.5
-        ? `${homeCity(game)} was ${article} ${pct}% favorite at kickoff`
-        : `${homeCity(game)} had ${article} ${pct}% chance at kickoff`;
-
-  let fact = "";
-  const homeWon = result?.winner === "home";
-  const awayWon = result?.winner === "away";
+  const opened = `${homeCity(game)} opened at ${Math.round(model.kickoff * 100)}% win probability`;
   const points = model.curve;
-  if (homeWon) {
+  if (result?.winner === "home") {
     const low = Math.min(...points.map(([, p]) => p));
     const safe = points.find(([, p]) => p >= 0.98);
-    fact =
-      low < 0.2
-        ? `came back after its chances fell to ${formatWp(low)}`
-        : safe
-          ? `passed 98% ${periodPhrase(safe[0])}`
-          : "held on to the end";
-  } else if (awayWon) {
+    if (low < 0.2) return `${opened}, fell as low as ${formatWp(low)}, then rallied to win.`;
+    if (safe) return `${opened} and passed 98% ${periodPhrase(safe[0])} on the way to the win.`;
+    return `${opened} and held on to win.`;
+  }
+  if (result?.winner === "away") {
     const high = Math.max(...points.map(([, p]) => p));
     const gone = points.find(([, p]) => p <= 0.02);
-    fact =
-      high > 0.8
-        ? `lost after reaching ${formatWp(high)}`
-        : gone
-          ? `fell below 2% ${periodPhrase(gone[0])}`
-          : "lost a game that stayed in reach";
-  } else {
-    fact = "the game finished level";
+    if (high > 0.8) return `${opened}, climbed as high as ${formatWp(high)}, then lost.`;
+    if (gone) return `${opened} and fell below 2% ${periodPhrase(gone[0])}.`;
+    return `${opened} and lost a game that stayed in reach.`;
   }
-  return `${game.home.short} win probability through the game. ${role} and ${fact}.`;
+  return `${opened}; the game finished level.`;
 }
 
 function homeCity(game: ScoreboardGame): string {
@@ -224,7 +207,7 @@ function homeCity(game: ScoreboardGame): string {
 /* ----------------------------------------------------------------- chart */
 
 const W = 640;
-const H = 220;
+const H = 190;
 const PAD = { left: 40, right: 10, top: 12, bottom: 26 };
 
 function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof pairColors>): string {
@@ -265,8 +248,8 @@ function chart(game: ScoreboardGame, model: WpModel, colors: ReturnType<typeof p
     `<line class="sct-wp-half" x1="${PAD.left}" x2="${W - PAD.right}" y1="${r(y(0.5))}" y2="${r(y(0.5))}"/>` +
     yLabels +
     // Painted through style, not attributes, so the page's dark theme can swap the ink.
-    `<path d="${area}" style="fill:${colors.home.ink}" fill-opacity="0.08" stroke="none"/>` +
-    `<path d="${line}" fill="none" style="stroke:${colors.home.ink}" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<path d="${area}" style="fill:${colors.home.ink}" fill-opacity="0.14" stroke="none"/>` +
+    `<path d="${line}" fill="none" style="stroke:${colors.home.ink}" stroke-width="3.25" stroke-linejoin="round"/>` +
     dots +
     `</svg>`
   );
@@ -300,8 +283,11 @@ export function renderWinProbability(input: WinProbabilityInput): string {
     .slice(0, 5)
     // Picked by size, shown in the order they happened (spec 11b).
     .sort((a, b) => a.elapsed - b.elapsed);
+  // Key swings, compact, beside the chart (mak, 2026-09-30): the swing, the
+  // play in a few words, the win probability it moved, the clock tiny.
   const list = deciding.length
-    ? `<h3 class="sct-rb-h3">Plays that decided it</h3>` +
+    ? `<div class="sct-wp-side">` +
+      `<h3 class="sct-rb-h3">Key swings</h3>` +
       `<ol class="sct-wp-plays">` +
       deciding
         .map((s) => {
@@ -310,38 +296,77 @@ export function renderWinProbability(input: WinProbabilityInput): string {
           const period = s.play.quarter <= 4 ? `Q${s.play.quarter}` : "OT";
           return (
             `<li class="sct-wp-play">` +
-            `<span class="sct-wp-when">${escapeHtml(`${period} ${s.play.clock}`)}</span> ` +
-            `<b class="sct-wp-swing" style="color:${ink}">${up ? "+" : "−"}${Math.abs(s.points)} ${Math.abs(s.points) === 1 ? "pt" : "pts"}</b> ` +
-            // playHtml() ends the sentence itself, without doubling the stop after "Jr.".
-            `<span class="sct-wp-text">${playHtml(s.play, shortOf(s.play.team), input.playerUrl)} ` +
-            `<span class="sct-wp-move">${escapeHtml(`${game.home.short} ${formatWp(s.before)} → ${formatWp(s.after)}.`)}</span></span>` +
+            `<b class="sct-wp-swing" style="color:${ink}">${up ? "+" : "−"}${Math.abs(s.points)}</b>` +
+            `<span class="sct-wp-text">${escapeHtml(playShort(s.play, shortOf(s.play.team)))}</span>` +
+            `<span class="sct-wp-move">${escapeHtml(`${formatWp(s.before)} → ${formatWp(s.after)}`)}` +
+            `<span class="sct-wp-when">${escapeHtml(`${period} ${s.play.clock}`)}</span></span>` +
             `</li>`
           );
         })
         .join("") +
-      `</ol>`
+      `</ol>` +
+      `<p class="sct-wp-unit">${escapeHtml(`Swing in ${game.home.short} win probability, in points`)}</p>` +
+      `</div>`
     : "";
 
-  const favored =
-    model.spread === 0
-      ? "With no closing line on file, both sides start at 50%."
-      : `It starts from the closing line (${model.spread > 0 ? game.home.abbr : game.away.abbr} −${Math.abs(model.spread)}).`;
-  const quietLate = !model.swings.some((s) => s.elapsed >= 1800 && Math.abs(s.after - s.before) >= 0.01);
-  const late =
-    quietLate && model.swings.some((s) => s.elapsed >= 1800)
-      ? ` After halftime no score moved the ${game.home.short}' chances by even one point.`
-      : "";
+  // Labels on the chart at the two or three biggest swings, each ten points
+  // or more, as HTML over the drawing so the type is never stretched.
+  const labels = [...model.swings]
+    .filter((s) => Math.abs(s.after - s.before) >= 0.1)
+    .sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before))
+    .slice(0, 3)
+    .map((s) => {
+      const left = ((PAD.left + (s.elapsed / model.end) * (W - PAD.left - PAD.right)) / W) * 100;
+      const top = ((PAD.top + (1 - s.after) * (H - PAD.top - PAD.bottom)) / H) * 100;
+      const cls = [
+        "sct-wp-label",
+        top < 22 ? "is-below" : "",
+        left > 82 ? "is-end" : left < 18 ? "is-start" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return (
+        `<span class="${cls}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%" aria-hidden="true">` +
+        `${escapeHtml(playLabel(s.play, shortOf(s.play.team)))}</span>`
+      );
+    })
+    .join("");
+
+  // The low point (or, for a home side that lost, the high point) the story
+  // sentence names, marked where it happened.
+  const result = scoreboardResult(game);
+  const lowAt = model.curve.reduce((m, pt) => (pt[1] < m[1] ? pt : m), model.curve[0]!);
+  const highAt = model.curve.reduce((m, pt) => (pt[1] > m[1] ? pt : m), model.curve[0]!);
+  const mark =
+    result?.winner === "home" && lowAt[1] < 0.2
+      ? { at: lowAt, text: `Low: ${formatWp(lowAt[1])}` }
+      : result?.winner === "away" && highAt[1] > 0.8
+        ? { at: highAt, text: `High: ${formatWp(highAt[1])}` }
+        : null;
+  const extreme = mark
+    ? (() => {
+        const left = ((PAD.left + (mark.at[0] / model.end) * (W - PAD.left - PAD.right)) / W) * 100;
+        const top = ((PAD.top + (1 - mark.at[1]) * (H - PAD.top - PAD.bottom)) / H) * 100;
+        const below = mark.text.startsWith("Low");
+        return (
+          `<span class="sct-wp-label is-extreme${below ? " is-below" : ""}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%" aria-hidden="true">` +
+          `${escapeHtml(mark.text)}</span>`
+        );
+      })()
+    : "";
 
   return (
     `<section class="sct-rb-section sct-wp" aria-labelledby="wp">` +
     `<h2 class="sct-rb-h2" id="wp">How the game swung</h2>` +
-    `<p class="sct-rb-sub">${escapeHtml(wpSubtitle(game, model))}</p>` +
-    `<div class="sct-wp-frame">${chart(game, model, colors)}</div>` +
+    `<p class="sct-wp-story">${escapeHtml(wpSubtitle(game, model))}</p>` +
+    // Chart and key swings side by side, about 65/35 (mak, 2026-09-30).
+    `<div class="sct-wp-row">` +
+    `<div class="sct-wp-main">` +
+    `<p class="sct-wp-legend">${escapeHtml(`${game.home.short} win probability`)}</p>` +
+    `<div class="sct-wp-frame">${chart(game, model, colors)}${labels}${extreme}</div>` +
+    `</div>` +
     list +
-    `<p class="sct-rb-note">${escapeHtml(
-      `Score-only model: win probability is estimated from the score, the time left and the closing spread, ` +
-        `so it moves only on scoring plays. ${favored}${late}`,
-    )}</p>` +
+    `</div>` +
     `</section>`
   );
 }

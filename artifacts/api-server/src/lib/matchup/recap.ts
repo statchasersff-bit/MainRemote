@@ -21,11 +21,12 @@ import type { BoxTeamStats } from "./boxscore";
 import { scoreboardResult, type ScoreboardGame, type ScoreboardTeam } from "./scoreboard-hero";
 
 /**
- * Redraft Command's start/sit launcher. The same destination as the player
- * pages' "Should I Start or Sit" button (STARTSIT_BASE in player-render.ts).
+ * Redraft Command's start/sit page, at its final address: no trailing slash,
+ * and not the /launch/ path that redirects to it. A player's own page is this
+ * plus `/<slug>`.
  */
 export const START_SIT_URL =
-  "https://statchasers.com/redraft-command/launch/who-should-i-start/";
+  "https://statchasers.com/redraft-command/who-should-i-start";
 
 /** One of the winner's games in the postseason the recapped game belongs to. */
 export interface RecapPostseasonGame {
@@ -196,83 +197,99 @@ function destination(game: ScoreboardGame): string {
 }
 
 /**
- * The build spec's dek: the halftime score from the winner's side, then the
- * yardage. "The Rams led 21–0 at halftime and finished with 375 yards to 183."
+ * The dek: how the game turned, in one sentence, then the yardage. The two
+ * facts the story used to state twice — the halftime score and the second
+ * half — are said once, here (mak, 2026-09-30):
+ *
+ *   "Seattle erased a 7–0 halftime deficit, outscoring New England 13–3 after
+ *    the break to win 13–10. The Seahawks finished with a narrow 285–277 edge
+ *    in total offense and averaged 5.9 yards per play."
  */
 function dek(game: ScoreboardGame, w: Side, l: Side): string {
   const halfW = w.running[1]!;
   const halfL = l.running[1]!;
-  const wy = w.stats?.totalYards ?? null;
-  const ly = l.stats?.totalYards ?? null;
-  if (halfW === halfL) {
-    return (
-      `The teams were tied ${halfW}–${halfL} at halftime` +
-      (wy !== null && ly !== null ? `, and the ${w.team.short} finished with ${wy} yards to ${ly}.` : ".")
-    );
+  const secondW = w.running[3]! - halfW;
+  const secondL = l.running[3]! - halfL;
+  const ot = game.away.ot !== null || game.home.ot !== null;
+  const final = `${w.total}–${l.total}`;
+  const finish = ` to win ${final}`;
+  const who = cap(w.place);
+  const secondQuarterW = w.team.quarters![1]!;
+
+  let first: string;
+  if (ot) {
+    // Level after regulation, so no half was "held on" to: the halftime
+    // score, the tie that forced overtime, and who won it.
+    const reg = w.running[3]!;
+    first =
+      (halfW > halfL
+        ? `${who} led ${halfW}–${halfL} at halftime`
+        : halfW < halfL
+          ? `${who} trailed ${halfL}–${halfW} at halftime`
+          : `The teams were tied ${halfW}–${halfL} at halftime`) +
+      `, regulation ended ${reg}–${reg}, and the ${w.team.short} won it ${final} in overtime.`;
+  } else if (halfW < halfL) {
+    first =
+      `${who} erased a ${halfL}–${halfW} halftime deficit` +
+      (secondW > secondL ? `, outscoring ${l.place} ${secondW}–${secondL} after the break` : "") +
+      finish +
+      ".";
+  } else if (halfW === halfL) {
+    first =
+      `${who} broke a ${halfW}–${halfL} halftime tie` +
+      (secondW > secondL ? `, outscoring ${l.place} ${secondW}–${secondL} after the break` : "") +
+      finish +
+      ".";
+  } else {
+    const run =
+      secondQuarterW >= 14 && secondQuarterW > halfW / 2 ? ` after a ${secondQuarterW}-point second quarter` : "";
+    first =
+      secondL > secondW
+        ? `${who} led ${halfW}–${halfL} at halftime${run} and won ${final}, ` +
+          `though ${l.place} took the second half ${secondL}–${secondW}.`
+        : `${who} led ${halfW}–${halfL} at halftime${run}` +
+          (secondW > secondL ? ` and outscored ${l.place} ${secondW}–${secondL} after the break` : "") +
+          finish +
+          ".";
   }
-  const half = halfW > halfL ? `led ${halfW}–${halfL} at halftime` : `trailed ${halfL}–${halfW} at halftime`;
-  const yards = wy !== null && ly !== null ? ` and finished with ${wy} yards to ${ly}` : "";
-  return `The ${w.team.short} ${half}${yards}.`;
+
+  const ws = w.stats;
+  const ls = l.stats;
+  const wy = ws?.totalYards ?? null;
+  const ly = ls?.totalYards ?? null;
+  if (wy === null || ly === null) return first;
+  // Yards per play only when it points the same way as the result.
+  const ypp =
+    ws?.yardsPerPlay != null && ls?.yardsPerPlay != null && ws.yardsPerPlay > ls.yardsPerPlay
+      ? ws.yardsPerPlay.toFixed(1)
+      : null;
+  let second: string;
+  if (wy > ly) {
+    const narrow = wy - ly <= 25 ? "a narrow " : "a ";
+    second =
+      `The ${w.team.short} finished with ${narrow}${wy}–${ly} edge in total offense` +
+      (ypp ? ` and averaged ${ypp} yards per play.` : ".");
+  } else if (wy < ly) {
+    second =
+      `${cap(l.place)} outgained the ${w.team.short} ${ly}–${wy}` +
+      (ypp ? `, but the ${w.team.short} averaged ${ypp} yards per play.` : ".");
+  } else {
+    second = `Both teams finished with ${wy} yards` + (ypp ? `, and the ${w.team.short} averaged ${ypp} per play.` : ".");
+  }
+  return `${first} ${second}`;
 }
 
 /* ------------------------------------------------------------- paragraphs */
 
-/** How the scoring went, from the quarters alone. */
-function flow(game: ScoreboardGame, w: Side, l: Side): string {
-  const sentences: string[] = [];
-  const halfW = w.running[1]!;
-  const halfL = l.running[1]!;
-  const secondQuarterW = w.team.quarters![1]!;
-
-  if (halfW > halfL) {
-    sentences.push(
-      `${cap(w.place)} led ${halfW}–${halfL} at halftime` +
-        (secondQuarterW >= 14 && secondQuarterW > halfW / 2
-          ? ` after scoring ${secondQuarterW} points in the second quarter.`
-          : "."),
-    );
-  } else if (halfW < halfL) {
-    sentences.push(`${cap(l.place)} led ${halfL}–${halfW} at halftime.`);
-  } else {
-    sentences.push(`The teams were level at ${halfW}–${halfL} at halftime.`);
-  }
-
-  // When the loser first scored, if it took them into the second half.
+/** What the dek leaves out of the scoring: when the loser got on the board. */
+function flow(l: Side): string {
   const firstL = l.team.quarters!.findIndex((points) => points > 0);
-  if (l.total === 0) {
-    sentences.push(`${cap(l.place)} never got on the board.`);
-  } else if (firstL >= 2) {
-    sentences.push(`${cap(l.place)} didn't get on the board until the ${ORDINALS[firstL]} quarter.`);
-  }
-
-  const secondHalfW = w.running[3]! - halfW;
-  const secondHalfL = l.running[3]! - halfL;
-  // The winner is the subject of the first sentence already, so the one
-  // after it names them by nickname rather than by the same city twice.
-  if (secondHalfW === secondHalfL && halfW === halfL) {
-    sentences.push(`Both sides scored ${secondHalfW} after the break.`);
-  } else if (halfW <= halfL) {
-    sentences.push(
-      `The ${w.team.short} outscored ${l.place} ${secondHalfW}–${secondHalfL} after the break.`,
-    );
-  } else if (secondHalfL > secondHalfW) {
-    sentences.push(
-      `${cap(l.place)} won the second half ${secondHalfL}–${secondHalfW}, ` +
-        `but the lead held.`,
-    );
-  } else if (secondHalfW > 0) {
-    sentences.push(`The ${w.team.short} added ${secondHalfW} more after the break.`);
-  }
-
-  const ot = w.team.ot;
-  if (ot !== null && ot > 0) {
-    sentences.push(`${cap(w.place)} won it with ${count(ot, "point")} in overtime.`);
-  }
-
-  return sentences.join(" ");
+  if (l.total === 0) return `${cap(l.place)} never got on the board.`;
+  if (firstL >= 2) return `${cap(l.place)} didn't get on the board until the ${ORDINALS[firstL]} quarter.`;
+  return "";
 }
 
-/** The box score as sentences: yards, efficiency, third down, turnovers, clock. */
+/** The box score as sentences: third down, turnovers, clock. Yards are in the dek. */
 function numbers(w: Side, l: Side): string {
   const ws = w.stats;
   const ls = l.stats;
@@ -288,27 +305,6 @@ function numbers(w: Side, l: Side): string {
       ws.thirdDown!.percent! > ls.thirdDown!.percent!,
   ];
   if (better.every(Boolean)) sentences.push("The gap showed up everywhere.");
-
-  // Yards from the side of whoever gained more, and yards per play only when
-  // it points the same way as the result: "averaged 6.2 against 6.3" is not
-  // a thing a winner did.
-  const ypp =
-    ws.yardsPerPlay !== null && ls.yardsPerPlay !== null && ws.yardsPerPlay > ls.yardsPerPlay
-      ? `${ws.yardsPerPlay.toFixed(1)} yards per play against ${ls.yardsPerPlay.toFixed(1)}`
-      : "";
-  if (ws.totalYards !== null && ls.totalYards !== null) {
-    if (ws.totalYards >= ls.totalYards) {
-      sentences.push(
-        `The ${w.team.short} gained ${ws.totalYards} yards to ${possessive(l.place)} ${ls.totalYards}` +
-          (ypp ? ` and averaged ${ypp}.` : "."),
-      );
-    } else {
-      sentences.push(
-        `${cap(l.place)} outgained the ${w.team.short} ${ls.totalYards}–${ws.totalYards}` +
-          (ypp ? `, but the ${w.team.short} averaged ${ypp}.` : "."),
-      );
-    }
-  }
 
   const loserParts: string[] = [];
   const third = ls.thirdDown;
@@ -421,7 +417,7 @@ export function buildRecap(input: RecapInput): Recap | null {
   const headline =
     `${w.team.short} ${w.total}, ${l.team.short} ${l.total}: ${angle(game, w, l)}`;
 
-  const paragraphs = [flow(game, w, l), numbers(w, l), aftermath(input, w)].filter(Boolean);
+  const paragraphs = [flow(l), numbers(w, l), aftermath(input, w)].filter(Boolean);
 
   // The closing prompt is about the next meeting, so it needs one.
   const startSit = input.next !== null;
@@ -491,6 +487,11 @@ function linkSpans(text: string, names: string[], links: RecapLinks, seen: Set<s
   return spans;
 }
 
+/** Keep a score or a yardage pair ("13–3", "285–277") on one line. On escaped text only. */
+function keepScores(html: string): string {
+  return html.replace(/\d+–\d+/g, (pair) => `<span class="sct-mu-score-pair">${pair}</span>`);
+}
+
 export function renderRecap(recap: Recap, links?: RecapLinks, after = ""): string {
   const seen = new Set<string>();
   const names = [...new Set(links?.playerNames ?? [])].filter(Boolean);
@@ -512,16 +513,16 @@ export function renderRecap(recap: Recap, links?: RecapLinks, after = ""): strin
     let html = "";
     let cursor = 0;
     for (const span of spans) {
-      html += escapeHtml(text.slice(cursor, span.start)) + span.html;
+      html += keepScores(escapeHtml(text.slice(cursor, span.start))) + span.html;
       cursor = span.end;
     }
-    html += escapeHtml(text.slice(cursor));
+    html += keepScores(escapeHtml(text.slice(cursor)));
     return `<p>${html}</p>`;
   };
   return (
     `<section class="sct-block sct-mu-story" id="recap" aria-labelledby="sct-mu-story-title">` +
     `<h2 class="sct-mu-story-title" id="sct-mu-story-title">${escapeHtml(recap.headline)}</h2>` +
-    (recap.dek ? `<p class="sct-mu-story-dek">${escapeHtml(recap.dek)}</p>` : "") +
+    (recap.dek ? `<p class="sct-mu-story-dek">${keepScores(escapeHtml(recap.dek))}</p>` : "") +
     `<div class="sct-mu-story-body">` +
     recap.paragraphs.map((p, i) => paragraph(p, i === recap.paragraphs.length - 1)).join("") +
     `</div>` +

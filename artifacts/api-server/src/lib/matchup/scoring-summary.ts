@@ -197,6 +197,144 @@ export function playSentence(play: ScoringPlay, teamShort: string): string {
   return plain(playParts(play, teamShort)) + (pat ? ` ${plain(pat)}` : "");
 }
 
+/* ------------------------------------------------------ scorebook lines */
+
+/**
+ * The scorebook line for the table: the scoring action on one line, the try
+ * under it in small type (mak, 2026-09-30).
+ *
+ *   Drew Lock → Jaxon Smith-Njigba, 45-yard TD
+ *   Jason Myers XP
+ */
+function compactParts(play: ScoringPlay, teamShort: string): Part[] {
+  const { scorer, passer, yards } = play;
+  const y = yards ?? null;
+  switch (play.type) {
+    case "pass_td":
+      if (scorer && passer && y !== null) return [{ name: passer }, " → ", { name: scorer }, `, ${y}-yard TD`];
+      break;
+    case "rush_td":
+      if (scorer && y !== null) return [{ name: scorer }, ` ${y}-yard TD run`];
+      break;
+    case "field_goal":
+      if (scorer && y !== null) return [{ name: scorer }, ` ${y}-yard FG`];
+      if (scorer) return [{ name: scorer }, " FG"];
+      return [`${teamShort} FG`];
+    case "int_return_td":
+    case "fumble_return_td":
+    case "punt_return_td":
+    case "kickoff_return_td": {
+      const what = {
+        int_return_td: "interception return",
+        fumble_return_td: "fumble return",
+        punt_return_td: "punt return",
+        kickoff_return_td: "kickoff return",
+      }[play.type];
+      if (scorer && play.type === "fumble_return_td" && y === 0) return [{ name: scorer }, " fumble recovery TD"];
+      if (scorer && y !== null) return [{ name: scorer }, ` ${y}-yard ${what} TD`];
+      break;
+    }
+    case "safety":
+      return ["Safety"];
+    case "other_td":
+      if (scorer && y !== null) return [{ name: scorer }, ` ${y}-yard TD`];
+      break;
+  }
+  if (scorer) return [{ name: scorer }, " TD"];
+  return [`${teamShort} TD`];
+}
+
+/** The small line under it: the try, or who was tackled for a safety; null when there is nothing. */
+function compactDetail(play: ScoringPlay): Part[] | null {
+  if (play.type === "safety") return play.tackled ? [{ name: play.tackled }, " tackled in the end zone"] : null;
+  const pat = play.pat;
+  if (!pat || !isTouchdown(play)) return null;
+  if (pat.type === "kick") {
+    if (pat.result === "failed") return ["XP missed"];
+    return pat.player ? [{ name: pat.player }, " XP"] : ["XP good"];
+  }
+  if (pat.result === "failed") return ["2-pt try failed"];
+  if (pat.type === "two_point_pass" && pat.passer && pat.player) {
+    return [{ name: pat.passer }, " → ", { name: pat.player }, ", 2-pt conversion"];
+  }
+  if (pat.player) return [{ name: pat.player }, " 2-pt run"];
+  return ["2-pt conversion good"];
+}
+
+/** Parts as HTML with no closing full stop: scorebook lines are not sentences. */
+function fragment(parts: Part[], url: (name: string) => string | null): string {
+  return parts
+    .map((part) => {
+      if (typeof part === "string") return escapeHtml(part);
+      const href = url(part.name);
+      return href
+        ? `<a class="sct-ss-link sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(part.name)}</a>`
+        : `<span class="sct-ss-name">${escapeHtml(part.name)}</span>`;
+    })
+    .join("");
+}
+
+/** The scorebook line as linked HTML ("Drew Lock → Jaxon Smith-Njigba, 45-yard TD"), for other sections. */
+export function playLineHtml(play: ScoringPlay, teamShort: string, url: (name: string) => string | null): string {
+  return fragment(compactParts(play, teamShort), url);
+}
+
+/** A few words for a chart label: "Lock → Smith-Njigba TD", "Myers 26-yd FG". */
+export function playLabel(play: ScoringPlay, teamShort: string): string {
+  const last = (name: string): string => {
+    const parts = name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV|V)$/i, "").split(/\s+/);
+    return parts[parts.length - 1] ?? name;
+  };
+  const { scorer, passer, yards } = play;
+  switch (play.type) {
+    case "pass_td":
+      if (scorer && passer) return `${last(passer)} → ${last(scorer)} TD`;
+      break;
+    case "rush_td":
+      if (scorer) return `${last(scorer)} TD run`;
+      break;
+    case "field_goal":
+      if (scorer) return yards != null ? `${last(scorer)} ${yards}-yd FG` : `${last(scorer)} FG`;
+      return `${teamShort} FG`;
+    case "safety":
+      return `${teamShort} safety`;
+  }
+  return scorer ? `${last(scorer)} TD` : `${teamShort} TD`;
+}
+
+/** A key-swing line, short: "Lock → Smith-Njigba, 45-yd TD", "Myers 26-yd FG". */
+export function playShort(play: ScoringPlay, teamShort: string): string {
+  const last = (name: string): string => {
+    const parts = name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV|V)$/i, "").split(/\s+/);
+    return parts[parts.length - 1] ?? name;
+  };
+  const { scorer, passer, yards } = play;
+  const yd = yards != null ? `${yards}-yd ` : "";
+  switch (play.type) {
+    case "pass_td":
+      if (scorer && passer) return `${last(passer)} → ${last(scorer)}, ${yd}TD`;
+      break;
+    case "rush_td":
+      if (scorer) return `${last(scorer)} ${yd}TD run`;
+      break;
+    case "field_goal":
+      return scorer ? `${last(scorer)} ${yd}FG` : `${teamShort} FG`;
+    case "int_return_td":
+      if (scorer) return `${last(scorer)} ${yd}pick-six`;
+      break;
+    case "safety":
+      return `${teamShort} safety`;
+  }
+  return scorer ? `${last(scorer)} ${yd}TD` : `${teamShort} TD`;
+}
+
+/** The scorebook line and its detail as plain text, for tests. */
+export function playLine(play: ScoringPlay, teamShort: string): { line: string; detail: string | null } {
+  const plain = (parts: Part[]): string => parts.map((p) => (typeof p === "string" ? p : p.name)).join("");
+  const detail = compactDetail(play);
+  return { line: plain(compactParts(play, teamShort)), detail: detail ? plain(detail) : null };
+}
+
 /* ----------------------------------------------------------------- table */
 
 export function periodName(q: number): string {
@@ -209,21 +347,46 @@ export interface ScoredPlay {
   away: number;
   home: number;
   change: "takes" | "ties" | null;
+  /**
+   * What the table's pill says: the lead taken, tied or extended, and the
+   * winner's go-ahead score it never gave back, when that came in the fourth
+   * quarter or overtime. Null for a score that only cut into a lead.
+   */
+  tag: "takes" | "ties" | "extends" | "winner" | null;
 }
 
 /** Each play with the score after it and whether it moved the lead. */
 export function runningScore(game: ScoreboardGame, plays: ScoringPlay[]): ScoredPlay[] {
   let away = 0;
   let home = 0;
-  return plays.map((play) => {
+  const scored: ScoredPlay[] = plays.map((play) => {
     const before = Math.sign(away - home);
     if (play.team === game.away.abbr) away += playPoints(play);
     else if (play.team === game.home.abbr) home += playPoints(play);
     const after = Math.sign(away - home);
-    const change = after === before ? null : after === 0 ? "ties" : "takes";
-    return { play, away, home, change };
+    const change: ScoredPlay["change"] = after === before ? null : after === 0 ? "ties" : "takes";
+    const scorerSign = play.team === game.away.abbr ? 1 : play.team === game.home.abbr ? -1 : 0;
+    const tag: ScoredPlay["tag"] = change ?? (before !== 0 && before === scorerSign ? "extends" : null);
+    return { play, away, home, change, tag };
   });
+  // The game winner: the winner's last lead-taking score, if the lead held
+  // from there to the end and it came late (fourth quarter or overtime).
+  const result = scoreboardResult(game);
+  if (result?.winner) {
+    const winnerAbbr = game[result.winner].abbr;
+    const at = scored.map((s) => s.change).lastIndexOf("takes");
+    const last = scored[at];
+    if (last && last.play.team === winnerAbbr && last.play.quarter >= 4) last.tag = "winner";
+  }
+  return scored;
 }
+
+const TAG_LABEL: Record<NonNullable<ScoredPlay["tag"]>, string> = {
+  takes: "Takes lead",
+  ties: "Ties game",
+  extends: "Extends lead",
+  winner: "Game winner",
+};
 
 export function renderScoringSummary(input: ScoringSummaryInput): string {
   const { game, plays } = input;
@@ -231,6 +394,8 @@ export function renderScoringSummary(input: ScoringSummaryInput): string {
   const colors = pairColors(game.away.abbr, game.home.abbr);
   const fillOf = (abbr: string): string =>
     abbr === game.home.abbr ? colors.home.fill : colors.away.fill;
+  const inkOf = (abbr: string): string =>
+    abbr === game.home.abbr ? colors.home.ink : colors.away.ink;
   const shortOf = (abbr: string): string =>
     abbr === game.home.abbr ? game.home.short : abbr === game.away.abbr ? game.away.short : abbr;
 
@@ -241,8 +406,9 @@ export function renderScoringSummary(input: ScoringSummaryInput): string {
     game.away.ot !== null || game.home.ot !== null ? 5 : 4,
   );
 
-  const score = (mine: number, theirs: number): string =>
-    `<td class="sct-ss-score${mine >= theirs ? " is-ahead" : ""}">${mine}</td>`;
+  // The side ahead (or level) in its team's colour, as everywhere on the page.
+  const score = (mine: number, theirs: number, abbr: string): string =>
+    `<td class="sct-ss-score${mine >= theirs ? " is-ahead" : ""}" style="${escapeHtml(`--ss-ink:${inkOf(abbr)}`)}">${mine}</td>`;
 
   let rows = "";
   for (let q = 1; q <= lastPeriod; q += 1) {
@@ -255,25 +421,19 @@ export function renderScoringSummary(input: ScoringSummaryInput): string {
     }
     for (const s of inQuarter) {
       const { play } = s;
-      const pat = patParts(play);
-      const pill =
-        s.change === "takes"
-          ? ` <span class="sct-ss-pill">Takes lead</span>`
-          : s.change === "ties"
-            ? ` <span class="sct-ss-pill">Ties game</span>`
-            : "";
+      const detail = compactDetail(play);
+      const pill = s.tag ? ` <span class="sct-ss-pill is-${s.tag}">${TAG_LABEL[s.tag]}</span>` : "";
       rows +=
         `<tr class="sct-ss-play">` +
         `<td class="sct-ss-time">${escapeHtml(play.clock)}</td>` +
         `<td class="sct-ss-team"><span class="sct-ss-chip" style="${escapeHtml(`--ss-fill:${fillOf(play.team)}`)}">` +
         `${escapeHtml(play.team)}</span></td>` +
         `<td class="sct-ss-desc">` +
-        sentence(playParts(play, shortOf(play.team)), input.playerUrl) +
-        (pat ? ` ${sentence(pat, input.playerUrl)}` : "") +
-        pill +
+        `<span class="sct-ss-line">${fragment(compactParts(play, shortOf(play.team)), input.playerUrl)}${pill}</span>` +
+        (detail ? `<span class="sct-ss-detail">${fragment(detail, input.playerUrl)}</span>` : "") +
         `</td>` +
-        score(s.away, s.home) +
-        score(s.home, s.away) +
+        score(s.away, s.home, game.away.abbr) +
+        score(s.home, s.away, game.home.abbr) +
         `</tr>`;
     }
   }

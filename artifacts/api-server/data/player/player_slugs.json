@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-09-28T23:25:45.960Z",
+  "generated_at": "2026-09-30T12:14:05.875Z",
   "moves": [],
   "players": {
     "1": {
@@ -13052,6 +13052,9 @@
     },
     "14021": {
       "slug": "kadarius-calloway"
+    },
+    "14026": {
+      "slug": "dj-herman"
     },
     "14029": {
       "slug": "johnny-pascuzzi"

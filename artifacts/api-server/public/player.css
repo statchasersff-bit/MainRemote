@@ -780,10 +780,14 @@ button.scp-search-opt {
 
 /* ---- scoreboard ---- */
 
-.scp .scp-pboard {
+/* The label and the board: "2026 Season" centred above it (mak, 2026-09-30). */
+.scp .scp-pboard-wrap {
   align-self: center;
   min-width: 280px;
   margin: 24px 24px 24px 0;
+}
+
+.scp .scp-pboard {
   padding: 16px 6px 14px;
   border-radius: 16px;
   background: var(--scp-ph-ink);
@@ -792,13 +796,14 @@ button.scp-search-opt {
 }
 
 .scp .scp-pboard-cap {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0;
-  padding: 0 14px 10px;
-  color: var(--scp-ph-board-label);
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--scp-ph-muted);
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .scp .scp-pboard-stats {
@@ -981,7 +986,7 @@ button.scp-search-opt {
     font-size: 150px;
   }
 
-  .scp .scp-pboard {
+  .scp .scp-pboard-wrap {
     grid-column: 1 / -1;
     min-width: 0;
     margin: 0 20px 20px;
@@ -1021,7 +1026,7 @@ button.scp-search-opt {
     border-left: 2px solid var(--scp-ph-line);
   }
 
-  .scp .scp-pboard {
+  .scp .scp-pboard-wrap {
     margin: 0 16px 16px;
   }
 
@@ -1602,9 +1607,12 @@ button.scp-search-opt {
 
 /* ---- the peers rail, moved ---- */
 
-/* The Overview carries the rail above its FAQ; the copy after the panels
+/* The Overview, Stats, Outlook and Injury tabs carry the rail above their FAQs; the copy after the panels
    stands down while that tab is the open one, and every other tab keeps it. */
-.scp:has(> #overview.is-active) > .scp-peers-out {
+.scp:has(> #overview.is-active) > .scp-peers-out,
+.scp:has(> #stats.is-active) > .scp-peers-out,
+.scp:has(> #outlook.is-active) > .scp-peers-out,
+.scp:has(> #injury.is-active) > .scp-peers-out {
   display: none;
 }
 
@@ -1774,6 +1782,47 @@ button.scp-search-opt {
 
 /* ---- toggle + production cards ---- */
 
+/* The heading and the toggle share a row (mak, 2026-09-30); the toggle
+   wraps under the heading when there is no room beside it. */
+.scp .scp-st-headrow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.scp .scp-st-headrow .scp-st-seg {
+  margin: 0;
+}
+
+/* In the row the heading's 18px bottom margin no longer collapses into the
+   lede's 7px, so the row takes none and the lede keeps the 18px every other
+   section has under its rule. */
+.scp .scp-st-headrow .scp-ox-h2 {
+  margin: 0;
+}
+
+.scp .scp-st .scp-st-headrow + .scp-ox-lede {
+  margin-top: 18px;
+  color: var(--scp-ph-ink);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* "2026 through Week 3 · Arizona Cardinals": the small line over the read. */
+.scp .scp-st .scp-st-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
 .scp .scp-st-seg {
   display: inline-flex;
   margin: 0 0 16px;
@@ -1811,22 +1860,21 @@ button.scp-search-opt {
  * label instead of a card row of three. Groups are split by hairlines and
  * wrap under each other on a narrow column.
  */
+/* Open, not a box (mak, 2026-09-30): a rule above and below, whitespace
+   between the groups, the headline figures large and the rest on a small
+   second line. */
 .scp .scp-st-strip {
   display: flex;
   flex-wrap: wrap;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 8px;
+  gap: 0 36px;
+  padding: 14px 0 16px;
+  border-top: 1px solid var(--scp-ph-line);
+  border-bottom: 1px solid var(--scp-ph-line);
 }
 
 .scp .scp-st-sgroup {
-  flex: 1 1 auto;
-  padding: 10px 14px 12px;
-  border-left: 1px solid var(--scp-ph-line);
-}
-
-.scp .scp-st-sgroup:first-child {
-  border-left: 0;
+  flex: 0 1 auto;
+  padding: 0;
 }
 
 .scp .scp-st-sgroup h3.scp-st-eyebrow {
@@ -1848,7 +1896,7 @@ button.scp-search-opt {
 .scp .scp-st-sgroup dl {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 18px;
+  gap: 8px 22px;
   margin: 0;
 }
 
@@ -1873,11 +1921,40 @@ button.scp-search-opt {
   margin: 0;
   padding: 0;
   color: var(--scp-ph-ink);
-  font-size: 20px;
-  font-weight: 700;
-  font-stretch: 80%;
-  line-height: 1.15;
+  font-size: 28px;
+  font-weight: 800;
+  font-stretch: 78%;
+  line-height: 1.1;
   white-space: nowrap;
+}
+
+.scp .scp-st-sgroup dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scp .scp-st-sgroup dt small {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.scp .scp-st-minor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 8px 0 0;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.scp .scp-st-minor b {
+  color: var(--scp-ph-ink-2);
+  font-weight: 700;
 }
 
 /*
@@ -1888,9 +1965,6 @@ button.scp-search-opt {
  */
 .scp .scp-st-advwrap {
   overflow-x: auto;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 8px;
 }
 
 .scp table.scp-st-advt {
@@ -1904,15 +1978,51 @@ button.scp-search-opt {
 
 .scp table.scp-st-advt th,
 .scp table.scp-st-advt td {
-  padding: 7px 12px;
+  padding: 6px 12px;
   border: 0;
-  border-bottom: 1px solid #eef1f5;
   background: none;
   vertical-align: middle;
 }
 
-.scp table.scp-st-advt tbody tr:last-child > * {
-  border-bottom: 0;
+.scp table.scp-st-advt :is(th, td):first-child {
+  padding-left: 0;
+}
+
+.scp table.scp-st-advt :is(th, td):last-child {
+  padding-right: 0;
+}
+
+/* Tier headings (mak, 2026-09-30): Efficiency, Usage, Style, Context. */
+.scp table.scp-st-advt tr.scp-st-tier th {
+  padding-top: 16px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eef1f5;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.scp table.scp-st-advt tbody tr:first-child.scp-st-tier th {
+  padding-top: 10px;
+}
+
+/* The key metrics carry the weight; the rest recede. */
+.scp table.scp-st-advt tbody tr.is-key th {
+  color: var(--scp-ph-ink);
+  font-weight: 600;
+}
+
+.scp table.scp-st-advt tbody tr:not(.is-key):not(.scp-st-tier) :is(th, td.scp-st-v) {
+  color: var(--scp-ph-muted);
+  font-size: 13.5px;
+}
+
+.scp table.scp-st-advt tbody tr:not(.is-key):not(.scp-st-tier) td.scp-st-v {
+  color: var(--scp-ph-ink-2);
+  font-weight: 600;
 }
 
 .scp table.scp-st-advt thead th {
@@ -1954,42 +2064,65 @@ button.scp-search-opt {
 
 .scp table.scp-st-advt td.scp-st-pc {
   padding-left: 0;
-  width: 1%;
-  text-align: right;
+  width: 64px;
+  text-align: left;
 }
 
+/* The percentile: the ordinal over a small bar filled to it. */
 .scp .scp-st-pb {
-  display: inline-block;
-  min-width: 3.4em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
+  display: block;
+  font-size: 11.5px;
   font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
-.scp .scp-st-pb.is-good { background: #e3f4ea; color: var(--scp-ph-good); }
-.scp .scp-st-pb.is-mid { background: #f3f0e2; color: var(--scp-ph-mid); }
-.scp .scp-st-pb.is-bad { background: #fbe7e7; color: var(--scp-ph-bad); }
-.scp .scp-st-pb.is-muted { background: #eef1f5; color: var(--scp-ph-muted); }
-
-.scp .scp-st-foot-note {
-  margin: 8px 0 0;
-  color: var(--scp-ph-muted);
-  font-size: 12.5px;
-  line-height: 1.5;
+.scp .scp-st-bar {
+  display: block;
+  width: 56px;
+  height: 4px;
+  margin-top: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #eef1f5;
 }
 
+.scp .scp-st-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.scp .scp-st-pb.is-good, .scp .scp-st-bar.is-good { color: var(--scp-ph-good); }
+.scp .scp-st-pb.is-mid, .scp .scp-st-bar.is-mid { color: var(--scp-ph-mid); }
+.scp .scp-st-pb.is-bad, .scp .scp-st-bar.is-bad { color: var(--scp-ph-bad); }
+.scp .scp-st-pb.is-muted, .scp .scp-st-bar.is-muted { color: #9aa5b4; }
+
+.scp .scp-st-foot-note {
+  margin: 12px 0 0;
+  color: var(--scp-ph-muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+/* The read: a gold rule, not a box (mak, 2026-09-30), with room to breathe. */
 .scp .scp-st-read {
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: #f4f6f9;
+  margin-top: 16px;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--scp-st-gold);
   color: var(--scp-ph-ink-2);
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.7;
+}
+
+.scp .scp-st-read p {
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-st-read p + p {
+  margin-top: 6px;
 }
 
 .scp .scp-st-read strong {
@@ -2007,12 +2140,10 @@ button.scp-search-opt {
 
 /* --scp-n (seasons) and --scp-avg (career PPG over the scale max) are set on
    the figure by the server. */
+/* The tab's visual anchor (mak, 2026-09-30): open rather than boxed, taller. */
 .scp .scp-st-arc {
   margin: 0;
-  padding: 22px 22px 16px;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
+  padding: 0;
 }
 
 .scp .scp-st-arc-scroll {
@@ -2041,7 +2172,7 @@ button.scp-search-opt {
 .scp .scp-st-plot {
   position: relative;
   box-sizing: border-box;
-  height: 260px;
+  height: 320px;
   padding-top: 24px;
   align-items: end;
   border-bottom: 1px solid var(--scp-ph-line);
@@ -2094,13 +2225,22 @@ button.scp-search-opt {
 .scp .scp-st-col i {
   display: block;
   width: 100%;
-  max-width: 44px;
+  max-width: 52px;
   border-radius: 6px 6px 0 0;
-  background: var(--scp-ph-ink-2);
+  background: #c3cbd7;
 }
 
-.scp .scp-st-col.is-best i {
-  background: var(--scp-st-gold);
+.scp .scp-st-col b {
+  color: var(--scp-ph-muted);
+}
+
+.scp .scp-st-col:is(.is-last, .is-now) b {
+  color: var(--scp-ph-ink);
+  font-size: 16px;
+}
+
+.scp .scp-st-col.is-last i {
+  background: var(--scp-team);
 }
 
 .scp .scp-st-col.is-now i {
@@ -2124,17 +2264,22 @@ button.scp-search-opt {
   font-size: 13px;
 }
 
+.scp .scp-st-x small {
+  display: block;
+  color: #9aa5b4;
+  font-size: 10.5px;
+}
+
+/* The club only where it changes, as quiet text (mak, 2026-09-30). */
 .scp .scp-st-teams {
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .scp .scp-st-teams span {
-  padding: 5px 0;
-  border-radius: 6px;
-  background: #edf0f4;
-  color: var(--scp-ph-ink-2);
-  font-size: 12px;
+  color: var(--scp-ph-muted);
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -2142,8 +2287,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-teams span.is-cur {
-  background: var(--scp-team);
-  color: #ffffff;
+  color: var(--scp-team);
 }
 
 .scp .scp-st-legend {
@@ -2166,8 +2310,15 @@ button.scp-search-opt {
   background: var(--scp-ph-ink-2);
 }
 
-.scp .scp-st-legend .is-best::before { background: var(--scp-st-gold); }
-.scp .scp-st-legend .is-now::before { background: var(--scp-team); }
+.scp .scp-st-legend span::before { background: #c3cbd7; }
+.scp .scp-st-legend .is-last::before { background: var(--scp-team); }
+.scp .scp-st-legend .is-now::before {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--scp-team) 0 3px,
+    color-mix(in srgb, var(--scp-team) 72%, #ffffff) 3px 6px
+  );
+}
 
 .scp .scp-st-legend .is-avg::before {
   height: 0;
@@ -2210,20 +2361,22 @@ button.scp-search-opt {
   font-size: 13px;
 }
 
-/* ---- career rates + highs ---- */
+/* ---- career rates + highs ----
+   Open strips, not cards (mak, 2026-09-30): the rates open the section above
+   the prose, the highs close it; spacing and type do the work. */
 
 .scp .scp-st-rates {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 28px;
+  gap: 0 24px;
+  margin: 4px 0 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--scp-ph-line);
+  border-bottom: 1px solid var(--scp-ph-line);
 }
 
 .scp .scp-st-rate {
-  padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 12px;
+  padding: 0;
 }
 
 .scp .scp-st-rate .scp-st-v {
@@ -2236,76 +2389,518 @@ button.scp-search-opt {
 }
 
 .scp .scp-st-rate h3 {
-  margin: 8px 0 4px;
+  margin: 8px 0 2px;
   padding: 0;
   color: var(--scp-ph-ink);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.05em;
   line-height: 1.3;
+  text-transform: uppercase;
 }
 
 .scp .scp-st-rate p:last-child {
   margin: 0;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 
 .scp .scp-st-bests-h {
   margin: 32px 0 0;
   padding: 0;
-  color: var(--scp-ph-ink);
-  font-size: 18px;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.06em;
   line-height: 1.3;
+  text-transform: uppercase;
 }
 
 .scp ul.scp-st-bests {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin: 16px 0 0;
+  gap: 14px 24px;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
   /* Divi's `.entry-content ul` sets 26px, which the spans below inherit. */
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .scp .scp-st-bests li {
   margin: 0;
-  padding: 10px 0 0;
-  border-top: 3px solid var(--scp-st-gold);
+  padding: 0;
   list-style: none;
 }
 
-.scp .scp-st-bests .scp-st-v {
+.scp .scp-st-bests span {
   display: block;
-  font-size: 24px;
-  line-height: 1.5;
-  font-weight: 700;
-  font-stretch: 80%;
 }
 
-.scp .scp-st-bests span:not(.scp-st-v) {
-  display: block;
+.scp .scp-st-bests .scp-st-v {
+  font-size: 26px;
+  font-weight: 800;
+  font-stretch: 78%;
+  line-height: 1.15;
+}
+
+.scp .scp-st-bests .scp-st-bl {
+  margin-top: 4px;
+  color: var(--scp-ph-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scp .scp-st-bests .scp-st-bs {
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 @media (max-width: 960px) {
   .scp .scp-st-sgroup {
     flex-basis: 100%;
-    border-left: 0;
-    border-top: 1px solid var(--scp-ph-line);
+    padding-top: 12px;
   }
 
   .scp .scp-st-sgroup:first-child {
-    border-top: 0;
+    padding-top: 0;
   }
 
   .scp .scp-st-rates,
   .scp ul.scp-st-bests {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 18px;
+  }
+}
+
+/* --------------------------------------------------------------- news tab */
+
+/*
+ * mak's News spec (2026-09-30, lib/player/news-tab.ts): the lead item with its
+ * navy result panel, the week-grouped feed with filters, and the teammate and
+ * team lists. Scoped .scp-nw inside .scp-ox.scp-st, like the other spec tabs.
+ */
+
+.scp .scp-nw .scp-nw-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.scp .scp-nw a:focus-visible,
+.scp .scp-nw button:focus-visible {
+  outline: 3px solid #b8871f;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- impact pills (the teammates list and the lead's badge) */
+
+.scp .scp-nw .scp-nw-impact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.scp .scp-nw .scp-nw-impact::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.scp .scp-nw .scp-nw-impact.is-up { background: var(--scp-ph-good-soft); color: var(--scp-ph-good); }
+.scp .scp-nw .scp-nw-impact.is-down { background: var(--scp-ph-bad-soft); color: var(--scp-ph-bad); }
+
+/* ---- 1. the lead: one feature card (mak, 2026-09-30, second pass)
+   Headline, then date · type · source, the stat line and result, the summary,
+   and a small impact badge beside the link. The impact colours the left edge. */
+
+.scp .scp-nw .scp-nw-lead {
+  --scp-nw-edge: #c3cbd7;
+  padding: 24px 28px 22px;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-left: 4px solid var(--scp-nw-edge);
+  border-radius: 14px;
+}
+
+.scp .scp-nw :is(.scp-nw-lead, .scp-nw-item).is-up { --scp-nw-edge: var(--scp-ph-good); }
+.scp .scp-nw :is(.scp-nw-lead, .scp-nw-item).is-down { --scp-nw-edge: var(--scp-ph-bad); }
+
+.scp .scp-nw .scp-nw-lead h3 {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 800;
+  font-stretch: 78%;
+  line-height: 1.1;
+}
+
+.scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a {
+  color: var(--scp-ph-ink);
+  text-decoration: none;
+}
+
+.scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a:hover {
+  text-decoration: underline;
+}
+
+/* date · type · source */
+.scp .scp-nw p.scp-nw-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0;
+  margin: 0;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+.scp .scp-nw p.scp-nw-meta > * + *::before {
+  content: "·";
+  margin: 0 7px;
+  color: #b8c2cf;
+}
+
+.scp .scp-nw .scp-nw-meta a {
+  color: var(--scp-ph-ink-2);
+  font-weight: 600;
+}
+
+.scp .scp-nw .scp-nw-new {
+  color: var(--scp-team);
+  font-weight: 700;
+}
+
+.scp .scp-nw .scp-nw-lead-stats {
+  margin: 16px 0 0;
+}
+
+.scp .scp-nw .scp-nw-lead-stats p {
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-nw .scp-nw-statline {
+  color: var(--scp-ph-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.scp .scp-nw .scp-nw-lead-stats .scp-nw-pts {
+  margin-top: 4px;
+  color: var(--scp-ph-ink-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.scp .scp-nw .scp-nw-lead-sum {
+  max-width: 64ch;
+  margin: 14px 0 0;
+  padding: 0;
+  color: var(--scp-ph-ink-2);
+  font-family: var(--scp-ph-serif);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.scp .scp-nw .scp-nw-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+
+/* Small, a label rather than a button. */
+.scp .scp-nw .scp-nw-lead .scp-nw-impact {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.scp .scp-nw a.scp-nw-readlink {
+  color: var(--scp-team);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ---- 2. filters and the season timeline */
+
+.scp .scp-nw .scp-nw-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.scp .scp-nw .scp-nw-filters button {
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--scp-ph-ink-2);
+  font: 600 13px/1.2 var(--scp-ph-sans);
+  cursor: pointer;
+}
+
+.scp .scp-nw .scp-nw-filters button[aria-pressed="true"] {
+  border-color: var(--scp-ph-ink);
+  background: var(--scp-ph-ink);
+  color: #fff;
+}
+
+.scp .scp-nw ol.scp-nw-feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-nw .scp-nw-wk {
+  margin: 0;
+  padding: 18px 0 4px;
+  border-top: 1px solid #eef1f5;
+  list-style: none;
+}
+
+.scp .scp-nw ol.scp-nw-feed:first-of-type > .scp-nw-wk:first-child {
+  border-top: 0;
+}
+
+.scp .scp-nw .scp-nw-wk[hidden],
+.scp .scp-nw .scp-nw-item[hidden] {
+  display: none;
+}
+
+/* "WEEK 2 · SEP 20 · L 7–31 VS SEA" */
+.scp .scp-nw p.scp-nw-wklabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0 0 10px;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-nw .scp-nw-wklabel b {
+  color: var(--scp-ph-ink);
+  font-weight: 800;
+}
+
+.scp .scp-nw .scp-nw-wklabel > * + *::before {
+  content: "·";
+  margin: 0 7px;
+  color: #b8c2cf;
+}
+
+.scp .scp-nw .scp-nw-wklabel .scp-nw-res {
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-nw .scp-nw-items {
+  display: grid;
+  gap: 16px;
+}
+
+.scp .scp-nw .scp-nw-item {
+  --scp-nw-edge: #c3cbd7;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--scp-nw-edge);
+}
+
+.scp .scp-nw .scp-nw-item h3 {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp .scp-nw .scp-nw-item p {
+  max-width: 70ch;
+  margin: 0;
+  padding: 0;
+}
+
+.scp .scp-nw .scp-nw-take.is-result {
+  color: var(--scp-ph-ink-2);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-nw .scp-nw-item .scp-nw-sum {
+  margin-top: 6px;
+  color: var(--scp-ph-ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.scp .scp-nw p.scp-nw-take:not(.is-result) {
+  margin-top: 6px;
+  color: var(--scp-ph-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.scp .scp-nw .scp-nw-lead p.scp-nw-take {
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+.scp .scp-nw .scp-nw-take strong {
+  color: var(--scp-ph-ink-2);
+}
+
+.scp .scp-nw .scp-nw-item .scp-nw-readlink {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.scp .scp-nw .scp-nw-pending,
+.scp .scp-nw .scp-nw-none,
+.scp .scp-nw .scp-nw-empty {
+  margin: 0;
+  padding: 0;
+  color: var(--scp-ph-muted);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.scp .scp-nw .scp-nw-older summary {
+  margin: 12px 0 4px;
+  color: var(--scp-team);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- the sidebar: one utility card */
+
+.scp .scp-nw .scp-nw-card h3 {
+  margin: 0 0 12px;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-nw dl.scp-nw-qa {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.scp .scp-nw .scp-nw-qa dt {
+  color: var(--scp-ph-muted);
+}
+
+.scp .scp-nw .scp-nw-qa dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.scp .scp-nw .scp-nw-card .scp-ox-btn {
+  width: 100%;
+  margin-top: 18px;
+  box-sizing: border-box;
+}
+
+/* ---- 3 and 4. teammates and around the team */
+
+.scp .scp-nw ul.scp-nw-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 14px;
+}
+
+.scp .scp-nw .scp-nw-list li {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 0;
+  padding: 14px 18px;
+  list-style: none;
+}
+
+.scp .scp-nw .scp-nw-list li + li {
+  border-top: 1px solid #eef1f5;
+}
+
+.scp .scp-nw .scp-nw-d {
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+.scp .scp-nw a.scp-nw-h {
+  color: var(--scp-ph-ink);
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.scp .scp-nw a.scp-nw-h:hover {
+  text-decoration: underline;
+}
+
+.scp .scp-nw .scp-nw-who {
+  display: block;
+  margin-top: 2px;
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+.scp .scp-nw .scp-nw-who a {
+  color: var(--scp-team);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .scp .scp-nw .scp-nw-lead {
+    padding: 20px 20px 18px;
+  }
+
+  .scp .scp-nw .scp-nw-list li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .scp .scp-nw .scp-nw-list li > span:last-child:empty {
+    display: none;
   }
 }
 
@@ -3178,23 +3773,31 @@ button.scp-search-opt {
   font-size: 10.5px;
 }
 
-/* ---- at a glance */
+/* ---- at a glance
+   One strip of four compact tiles (mak, 2026-09-30), ~30% shorter than the
+   cards they replaced; the lede above tells the story, so it reads larger. */
+
+.scp .scp-in #scp-in-glance-h + .scp-ox-lede {
+  color: var(--scp-ph-ink);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+}
 
 .scp .scp-in .scp-in-glance {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.scp .scp-in .scp-in-gl {
-  padding: 16px 18px;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
   border-radius: 12px;
 }
 
+.scp .scp-in .scp-in-gl {
+  padding: 12px 18px;
+}
+
 .scp .scp-in .scp-in-glv {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
   font-stretch: 76%;
   line-height: 1;
@@ -3203,7 +3806,7 @@ button.scp-search-opt {
 .scp .scp-in .scp-in-glv small {
   margin-left: 4px;
   color: var(--scp-ph-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   font-stretch: 100%;
 }
@@ -3213,34 +3816,40 @@ button.scp-search-opt {
 .scp .scp-in .scp-in-gl.is-bad .scp-in-glv { color: var(--scp-ph-bad); }
 
 .scp .scp-in .scp-in-gl h3 {
-  margin: 8px 0 2px;
+  margin: 6px 0 0;
   padding: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .scp .scp-in .scp-in-gl p {
-  margin: 0;
+  margin: 1px 0 0;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
-/* ---- body map */
+/* ---- body map
+   Figure, table and the risk line in one panel, ~20-25% smaller than the
+   two boxes and four risk rows it replaced (mak, 2026-09-30). */
 
 .scp .scp-in .scp-in-mapwrap {
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+}
+
+.scp .scp-in .scp-in-mapgrid {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: center;
+  padding: 12px 18px 12px 12px;
 }
 
 .scp .scp-in .scp-in-bodymap {
   margin: 0;
-  padding: 18px 14px 12px;
-  background: #fff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 16px;
+  padding: 0;
 }
 
 .scp .scp-in .scp-in-bodymap svg {
@@ -3250,9 +3859,9 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-bodymap figcaption {
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--scp-ph-muted);
-  font-size: 12px;
+  font-size: 11.5px;
   text-align: center;
 }
 
@@ -3264,8 +3873,33 @@ button.scp-search-opt {
 .scp .scp-in .scp-bm-t { font: 700 12px var(--scp-ph-sans); fill: var(--scp-ph-ink); }
 .scp .scp-in .scp-bm-s { font: 500 11px var(--scp-ph-sans); fill: var(--scp-ph-muted); }
 
+.scp .scp-in .scp-ox-tbl.scp-in-parts {
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
 .scp .scp-in .scp-in-parts table.scp-ox-table {
   min-width: 0;
+  font-size: 13.5px;
+}
+
+.scp .scp-in .scp-in-parts caption {
+  padding: 0 0 6px;
+  caption-side: top;
+  font-size: 12px;
+}
+
+.scp .scp-in .scp-in-parts :is(th, td) {
+  padding: 8px 10px;
+}
+
+.scp .scp-in .scp-in-parts :is(th, td):first-child {
+  padding-left: 0;
+}
+
+.scp .scp-in .scp-in-parts :is(th, td):last-child {
+  padding-right: 0;
 }
 
 .scp .scp-in .scp-in-parts :is(th, td):nth-child(2) {
@@ -3289,49 +3923,46 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-factors {
-  margin-top: 16px;
-  background: #fff;
-  border: 1px solid var(--scp-ph-line);
-  border-radius: 14px;
-}
-
-.scp .scp-in .scp-in-factor {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 16px;
-  padding: 14px 18px;
-}
-
-.scp .scp-in .scp-in-factor + .scp-in-factor {
+  padding: 10px 18px 12px;
   border-top: 1px solid #eef1f5;
 }
 
-.scp .scp-in .scp-in-factor h3 {
-  margin: 0;
+.scp .scp-in .scp-in-risk {
+  margin: 0 0 4px;
   padding: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
-.scp .scp-in .scp-in-factor p {
-  grid-column: 1;
+.scp .scp-in .scp-in-factors ul {
+  display: flex;
+  flex-wrap: wrap;
   margin: 0;
   padding: 0;
+  list-style: none;
   color: var(--scp-ph-muted);
   font-size: 13px;
 }
 
-.scp .scp-in .scp-in-factor .scp-in-chip {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  align-self: center;
+.scp .scp-in .scp-in-factors li {
+  margin: 0;
+  padding: 0;
 }
+
+.scp .scp-in .scp-in-factors li + li::before {
+  content: "·";
+  margin: 0 8px;
+  color: #b8c2cf;
+}
+
+.scp .scp-in .scp-in-factors li.is-mid { color: var(--scp-ph-mid); font-weight: 600; }
+.scp .scp-in .scp-in-factors li.is-bad { color: var(--scp-ph-bad); font-weight: 600; }
 
 .scp .scp-in .scp-in-chip {
   display: inline-block;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   line-height: 1.4;
   white-space: nowrap;
@@ -3364,12 +3995,13 @@ button.scp-search-opt {
   display: grid;
   grid-template-columns: 64px 32px minmax(0, 1fr);
   margin: 0;
-  padding: 0 0 18px;
+  padding: 0 0 10px;
 }
 
 .scp .scp-in .scp-in-yr {
+  padding-top: 6px;
   padding-right: 8px;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   font-stretch: 78%;
   line-height: 1.2;
@@ -3384,7 +4016,7 @@ button.scp-search-opt {
   content: "";
   position: absolute;
   left: 9px;
-  top: 6px;
+  top: 12px;
   box-sizing: content-box;
   width: 8px;
   height: 8px;
@@ -3403,7 +4035,7 @@ button.scp-search-opt {
 }
 
 .scp .scp-in .scp-in-ev {
-  padding: 14px 18px;
+  padding: 6px 16px;
   background: #fff;
   border: 1px solid var(--scp-ph-line);
   border-radius: 12px;
@@ -3413,33 +4045,44 @@ button.scp-search-opt {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 6px;
   margin: 0;
   padding: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .scp .scp-in .scp-in-meta {
-  margin: 2px 0 6px;
+  margin: 0 0 2px;
   padding: 0;
   color: var(--scp-ph-muted);
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 .scp .scp-in .scp-in-ev p:not(.scp-in-meta) {
   margin: 0;
   padding: 0;
   color: var(--scp-ph-ink-2);
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.scp .scp-in .scp-in-ev.is-now h3 {
+  color: var(--scp-ph-good);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp .scp-in .scp-in-ev.is-now .scp-in-chip {
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .scp .scp-in .scp-in-side {
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: #edf0f4;
   color: var(--scp-ph-muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -3452,13 +4095,6 @@ button.scp-search-opt {
   color: var(--scp-team);
   cursor: pointer;
   font-weight: 600;
-}
-
-.scp .scp-in .scp-in-src {
-  margin: 4px 0 0;
-  padding: 0;
-  color: var(--scp-ph-muted);
-  font-size: 12px;
 }
 
 .scp .scp-in .scp-in-impact {
@@ -3506,13 +4142,15 @@ button.scp-search-opt {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .scp .scp-in .scp-in-mapwrap {
+  .scp .scp-in .scp-in-mapgrid {
     grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px 16px;
   }
 
   .scp .scp-in .scp-in-bodymap {
     width: 100%;
-    max-width: 420px;
+    max-width: 300px;
     margin: 0 auto;
     box-sizing: border-box;
   }
@@ -6457,6 +7095,22 @@ button.scp-search-opt {
   margin: 0;
 }
 
+/* Under the Stats tab's chart it is a plain row, not a card (mak, 2026-09-30). */
+.scp-snapshot .scp-rail[data-variant="hero"] {
+  margin-top: 20px;
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--sc-border);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.scp-snapshot .scp-rail[data-variant="hero"] .scp-rail-cell:last-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
 /* ---- the secondary line */
 
 /*
@@ -6634,29 +7288,86 @@ button.scp-search-opt {
   color: var(--sc-navy);
 }
 
-/* The career line is a total, not another season: a navy rule above it rather
-   than the hairline every other row sits on. */
+/* The career line is a total, not another season: a navy rule above it, a
+   darker tint and heavier figures (mak, 2026-09-30). */
 .scp .scp-table--career tfoot .scp-total th,
 .scp .scp-table--career tfoot .scp-total td {
   padding-top: 14px;
   border-top: 2px solid var(--sc-navy);
-  font-size: 13.5px;
+  background: color-mix(in srgb, var(--sc-navy) 9%, var(--sc-surface));
+  font-size: 14px;
+  font-weight: 900;
 }
 
-/* The season in progress: start here. A gold tint and a heavier season cell,
-   not a border — a bordered row in the middle of a table reads as a total. */
+/* The season in progress: a subtle cool tint and a heavier season cell
+   (mak, 2026-09-30: less yellow); the "to date" label keeps the gold. */
 .scp .scp-table--career tbody tr.is-current {
-  background: color-mix(in srgb, var(--sc-gold) 15%, var(--sc-surface));
-}
-
-.scp .scp-table--career tbody tr.is-current:hover {
-  background: color-mix(in srgb, var(--sc-gold) 21%, var(--sc-surface));
+  background: color-mix(in srgb, var(--sc-navy) 4%, var(--sc-surface));
 }
 
 .scp .scp-table--career tbody tr.is-current th[scope="row"] {
   font-weight: 800;
   color: var(--sc-navy);
-  box-shadow: inset 3px 0 0 var(--sc-gold);
+  box-shadow: inset 3px 0 0 var(--sc-navy);
+}
+
+/* A row under the pointer, on a device that has one. */
+@media (hover: hover) {
+  .scp .scp-table--career tbody tr:hover,
+  .scp .scp-table--career tbody tr:hover > * {
+    background: color-mix(in srgb, var(--sc-navy) 7%, var(--sc-surface));
+  }
+}
+
+/* A phone scrolls the table sideways: the season column stays put. */
+@media (max-width: 760px) {
+  /* Collapsed borders paint over every cell background, a sticky one
+     included, so the scrolled columns' rules would show through the season
+     column. Separate borders, drawn right and bottom only, keep the grid 1px. */
+  .scp table.scp-table--career:not(.variations) {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .scp .scp-table--career th,
+  .scp .scp-table--career td {
+    border-width: 0 1px 1px 0;
+  }
+
+  .scp .scp-table--career :is(th, td):last-child {
+    border-right-width: 0;
+  }
+
+  .scp .scp-table--career tfoot .scp-total > * {
+    border-bottom-width: 0;
+  }
+
+  .scp .scp-table--career thead tr:last-child th:first-child,
+  .scp .scp-table--career tbody th[scope="row"],
+  .scp .scp-table--career tfoot th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    /* The collapsed borders leave a sliver at the left edge that the
+       scrolled cells show through; the -4px shadow in the cell's own colour
+       covers it, the 1px one is the column's right rule. */
+    --scp-cell: var(--sc-surface);
+    background: var(--scp-cell);
+    box-shadow: -4px 0 0 var(--scp-cell), 1px 0 0 var(--sc-border);
+  }
+
+  .scp .scp-table--career thead tr:last-child th:first-child {
+    --scp-cell: var(--sc-navy);
+  }
+
+  .scp .scp-table--career tbody tr.is-current th[scope="row"] {
+    --scp-cell: color-mix(in srgb, var(--sc-navy) 4%, var(--sc-surface));
+    box-shadow: inset 3px 0 0 var(--sc-navy), -4px 0 0 var(--scp-cell), 1px 0 0 var(--sc-border);
+  }
+
+  .scp .scp-table--career tfoot th {
+    --scp-cell: color-mix(in srgb, var(--sc-navy) 9%, var(--sc-surface));
+  }
 }
 
 .scp-partial {
@@ -6697,6 +7408,18 @@ button.scp-search-opt {
      tab above it, it is what comes after the page. */
   padding-top: 28px;
   border-top: 1px solid var(--sc-border);
+}
+
+/* Stats, Outlook and Injury: footer and way back sit above the rail (mak,
+   2026-09-30), and neither the footer nor the rail draws its top rule there. */
+:is(#stats, #outlook, #injury) .scp-st-foot,
+.scp:is([data-section="stats"], [data-section="outlook"], [data-section="injury"]) .scp-st-foot {
+  border-top: 0;
+}
+
+:is(#stats, #outlook, #injury) > .scp-peers,
+.scp:is([data-section="stats"], [data-section="outlook"], [data-section="injury"]) > .scp-peers {
+  border-top: 0;
 }
 
 .scp-peer-rail {
@@ -7657,6 +8380,21 @@ a.scp-peer:focus-visible {
 .scp .scp-table--log td.scp-col-fin .scp-tier {
   padding: 3px 10px;
   font-size: 11.5px;
+}
+
+/* The Overview's game log and career tables wear the Game Log tab's table
+   (mak, 2026-09-30); the season in progress gets the Stats career table's
+   tint. */
+.scp .scp-ox-career tbody tr.is-cur {
+  background: color-mix(in srgb, var(--sc-navy) 4%, var(--sc-surface));
+}
+
+.scp .scp-ox-career tbody tr.is-cur th[scope="row"] {
+  box-shadow: inset 3px 0 0 var(--sc-navy);
+}
+
+.scp .scp-ox-log td.scp-opp a {
+  font-weight: 600;
 }
 
 /* ---- the per-week detail ---- */
@@ -8755,6 +9493,19 @@ a.scp-peer:focus-visible {
 .scp .scp-ox .scp-ox-wk-link {
   color: var(--scp-ph-ink) !important;
 }
+
+/* The News tab's headlines and quick answers read in ink, its panel link in
+   white; the armour above would paint every one of them in the club colour. */
+.scp .scp-nw :is(.scp-nw-lead, .scp-nw-item) h3 a,
+.scp .scp-nw a.scp-nw-h,
+.scp .scp-nw .scp-nw-meta a,
+.scp .scp-nw .scp-nw-qa a {
+  color: var(--scp-ph-ink) !important;
+}
+
+.scp .scp-nw .scp-nw-qa a.is-good { color: var(--scp-ph-good) !important; }
+.scp .scp-nw .scp-nw-qa a.is-mid { color: var(--scp-ph-mid) !important; }
+.scp .scp-nw .scp-nw-qa a.is-bad { color: var(--scp-ph-bad) !important; }
 
 .scp .scp-ox .scp-ox-btn {
   color: #ffffff !important;

@@ -75,9 +75,23 @@ export interface BioDraft {
 }
 
 export interface BioQuestion {
+  /** The search intent, for the FAQ selector (faq-engine.ts). */
+  key: string;
   question: string;
   answer: string;
 }
+
+/** Two-letter state codes, for "went to high school in Florida". */
+const STATE_NAMES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado", CT: "Connecticut",
+  DE: "Delaware", DC: "Washington, D.C.", FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho", IL: "Illinois",
+  IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana",
+  NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York",
+  NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
+  RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah",
+  VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
+};
 
 export interface BioProfile {
   facts: BioFact[];
@@ -454,50 +468,147 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
     );
   }
 
-  /* ---- the questions ---- */
+  /* ---- the questions ----
+   * The Bio tab owns the evergreen entity searches (mak, 2026-09-30): age,
+   * height, weight, number, position, team, college, draft, hometown,
+   * birthday and experience. Each answer leads with the fact and carries its
+   * natural variations; a fact the data does not hold is not asked about.
+   * Birthplace is not in the data, so "where was he born" is never asked.
+   */
 
   const faq: BioQuestion[] = [];
+  const posWord = position;
+  const teamName = team?.fullName ?? null;
+  const exp = player.years_exp ?? null;
+  const firstSeason =
+    draftYear ?? ((facts?.teams ?? []).length ? Math.min(...facts!.teams.map((t) => t.season)) : null);
+  const seasonNo = exp !== null ? exp + 1 : firstSeason !== null ? currentSeason - firstSeason + 1 : null;
+  const pickRow = draftYear && draft?.round && draft?.pick
+    ? { year: draftYear, round: draft.round, pick: draft.pick, by: draftTeam?.fullName ?? draft.draft_team ?? "his first team" }
+    : null;
+  const hsState = /\(([A-Z]{2})\)\s*$/.exec(highSchool ?? "")?.[1] ?? null;
+  const hsName = (highSchool ?? "").replace(/\s*\([A-Z]{2}\)\s*$/, "").trim();
 
   if (age !== null) {
     faq.push({
+      key: "age",
       question: `How old is ${name}?`,
-      answer: born
-        ? `${name} is ${age} years old. ${name} was born on ${born}.`
-        : `${name} is ${age} years old.`,
+      answer:
+        `${name} is ${age} years old.` +
+        (born ? ` He was born on ${born}.` : "") +
+        (seasonNo ? ` ${currentSeason} is his ${ordinal(seasonNo)} NFL season.` : ""),
     });
   }
 
   const words = heightWords(player.height);
   if (words) {
     faq.push({
+      key: "height",
       question: `How tall is ${name}?`,
-      answer: `${name} is ${words}${height ? ` (${height})` : ""}.`,
+      answer: `${name} is ${words}${height ? ` (${height})` : ""}` +
+        (player.weight ? `, listed at ${player.weight} pounds` : "") +
+        (posWord ? `, and plays ${posWord}${teamName ? ` for the ${teamName}` : ""}.` : "."),
     });
   }
 
   if (player.weight) {
     faq.push({
+      key: "weight",
       question: `How much does ${name} weigh?`,
-      answer: `${name} is listed at ${player.weight} pounds.`,
+      answer: `${name} weighs ${player.weight} pounds, his listed weight${teamName ? ` on the ${teamName} roster` : ""}.` +
+        (height ? ` He is listed at ${height}.` : ""),
+    });
+  }
+
+  if (player.number && team) {
+    faq.push({
+      key: "number",
+      question: `What number does ${name} wear?`,
+      answer: `${name} wears number ${player.number} for the ${team.fullName}.` +
+        (posWord ? ` He plays ${posWord}.` : ""),
+    });
+  }
+
+  if (posWord) {
+    faq.push({
+      key: "position",
+      question: `What position does ${name} play?`,
+      answer: `${name} plays ${posWord}${teamName ? ` for the ${teamName}` : ""}` +
+        (player.number ? `, wearing number ${player.number}` : "") + `.` +
+        (seasonNo ? ` ${currentSeason} is his ${ordinal(seasonNo)} season in the NFL.` : ""),
+    });
+  }
+
+  if (team) {
+    const current = stints.filter((st) => st.kind === "nfl" && st.team?.code === team.code).pop();
+    faq.push({
+      key: "team",
+      question: `What team does ${name} play for?`,
+      answer: `${name} plays for the ${team.fullName}` +
+        (posWord ? ` as a ${posWord}` : "") + `.` +
+        (/^\d{4}/.test(current?.years ?? "") ? ` He has been with the ${team.nickname} since ${current!.years.slice(0, 4)}.` : ""),
     });
   }
 
   if (college) {
     faq.push({
+      key: "college",
       question: `Where did ${name} go to college?`,
       answer:
         `${name} played college football at ${college}` +
-        `${highSchool ? `, after attending ${highSchool}` : ""}.`,
+        `${highSchool ? `, after attending ${highSchool}` : ""}.` +
+        (pickRow ? ` The ${pickRow.by} drafted him out of ${college} in ${pickRow.year}.` : ""),
     });
   }
 
-  if (draftYear && draft?.round && draft?.pick) {
+  if (pickRow) {
     faq.push({
+      key: "drafted",
       question: `When was ${name} drafted?`,
       answer:
-        `The ${draftTeam?.fullName ?? "drafting team"} selected ${name} in the ` +
-        `${roundWord(draft.round)} round of the ${draftYear} NFL Draft with the ` +
-        `${ordinal(draft.pick)} overall pick.`,
+        `The ${pickRow.by} selected ${name} in the ${roundWord(pickRow.round)} round of the ` +
+        `${pickRow.year} NFL Draft with the ${ordinal(pickRow.pick)} overall pick` +
+        (college ? `, out of ${college}.` : "."),
+    });
+    faq.push({
+      key: "round",
+      question: `What round was ${name} drafted in?`,
+      answer: `${name} was a ${roundWord(pickRow.round)}-round pick in the ${pickRow.year} NFL Draft, taken ${ordinal(pickRow.pick)} overall by the ${pickRow.by}.`,
+    });
+    faq.push({
+      key: "pick",
+      question: `What pick was ${name} in the NFL Draft?`,
+      answer: `${name} was the ${ordinal(pickRow.pick)} overall pick of the ${pickRow.year} NFL Draft, selected by the ${pickRow.by} in the ${roundWord(pickRow.round)} round.`,
+    });
+  }
+
+  if (hsName && hsState) {
+    faq.push({
+      key: "from",
+      question: `Where is ${name} from?`,
+      answer: `${name} went to high school in ${STATE_NAMES[hsState] ?? hsState}, at ${hsName}` +
+        (college ? `, before playing college football at ${college}.` : "."),
+    });
+  }
+
+  if (born) {
+    faq.push({
+      key: "birthday",
+      question: `When is ${name}'s birthday?`,
+      answer: `${name}'s birthday is ${born.replace(/, \d{4}$/, "")}. He was born on ${born}` +
+        (age !== null ? ` and is ${age} years old.` : "."),
+    });
+  }
+
+  if (seasonNo) {
+    faq.push({
+      key: "experience",
+      question: `How long has ${name} been in the NFL?`,
+      answer: seasonNo === 1
+        ? `${name} is an NFL rookie in ${currentSeason}.`
+        : `${currentSeason} is ${name}'s ${ordinal(seasonNo)} NFL season` +
+          (firstSeason ? `; he entered the league in ${firstSeason}` : "") +
+          (pickRow ? ` as a ${roundWord(pickRow.round)}-round pick of the ${pickRow.by}.` : "."),
     });
   }
 
@@ -509,15 +620,19 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
       return spells > 1 ? `${clubName} (${SPELL_WORDS[spells] ?? spells} stints)` : clubName;
     });
     faq.push({
+      key: "teams",
       question: `What teams has ${name} played for?`,
       answer: `${name} has played for the ${listWords(clubs)}.`,
     });
   }
 
-  if (player.number && team) {
+  if (firstSeason) {
     faq.push({
-      question: `What number does ${name} wear?`,
-      answer: `${name} wears number ${player.number} for the ${team.fullName}.`,
+      key: "entered",
+      question: `What year did ${name} enter the NFL?`,
+      answer: `${name} entered the NFL in ${firstSeason}` +
+        (pickRow ? `, when the ${pickRow.by} drafted him in the ${roundWord(pickRow.round)} round.` : ".") +
+        (seasonNo ? ` ${currentSeason} is his ${ordinal(seasonNo)} season.` : ""),
     });
   }
 

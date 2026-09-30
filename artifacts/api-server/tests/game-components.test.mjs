@@ -235,27 +235,31 @@ describe("scoring summary", () => {
     assert.deepEqual(last, ["11", "34"]);
   });
 
-  test("one 'Takes lead' pill, on the first touchdown", () => {
+  test("'Takes lead' on the first touchdown, then only 'Extends lead'", () => {
     const pills = [...doc.querySelectorAll(".sct-ss-pill")];
-    assert.equal(pills.length, 1);
     assert.equal(pills[0].textContent, "Takes lead");
     assert.equal(pills[0].closest("tr"), rows[0]);
+    // A lead taken in the first quarter and never lost is no "Game winner".
+    assert.ok(pills.slice(1).every((p) => p.textContent === "Extends lead"));
+    // Every Rams score after the first extends the lead; the Cardinals' only cut into it.
+    for (const row of rows.slice(1)) {
+      const lar = row.querySelector(".sct-ss-chip").textContent === "LAR";
+      assert.equal(Boolean(row.querySelector(".sct-ss-pill.is-extends")), lar, row.textContent);
+    }
   });
 
-  test("writes its own sentences, and 'Jr..' never appears", () => {
+  test("writes its own scorebook lines, the try under the play, and 'Jr..' never appears", () => {
     assert.doesNotMatch(doc.body.textContent, /Jr\.\./);
-    const text = rows.map((r) => r.querySelector(".sct-ss-desc").textContent);
-    assert.equal(
-      text[0],
-      "Matthew Stafford throws a 4-yard touchdown pass to Odell Beckham Jr. Matt Gay adds the extra point. Takes lead",
-    );
-    assert.equal(text[1], "Matthew Stafford runs it in from 1 yard out. Matt Gay adds the extra point.");
-    assert.equal(text[2], "David Long Jr. returns an interception 3 yards for a touchdown. Matt Gay adds the extra point.");
-    assert.equal(
-      text[4],
-      "James Conner runs it in from 2 yards out. Kyler Murray finds Antoine Wesley for the two-point conversion.",
-    );
-    assert.equal(text[6], "Matt Prater makes a 55-yard field goal.");
+    const lines = rows.map((r) => {
+      const line = r.querySelector(".sct-ss-line").textContent;
+      const pill = r.querySelector(".sct-ss-pill")?.textContent ?? "";
+      return [line.replace(pill, "").trim(), r.querySelector(".sct-ss-detail")?.textContent ?? null];
+    });
+    assert.deepEqual(lines[0], ["Matthew Stafford → Odell Beckham Jr., 4-yard TD", "Matt Gay XP"]);
+    assert.deepEqual(lines[1], ["Matthew Stafford 1-yard TD run", "Matt Gay XP"]);
+    assert.deepEqual(lines[2], ["David Long Jr. 3-yard interception return TD", "Matt Gay XP"]);
+    assert.deepEqual(lines[4], ["James Conner 2-yard TD run", "Kyler Murray → Antoine Wesley, 2-pt conversion"]);
+    assert.deepEqual(lines[6], ["Matt Prater 55-yard FG", null]);
   });
 
   test("the subtitle counts each side's scores, winner first", () => {
@@ -304,7 +308,8 @@ describe("scoring summary", () => {
     assert.deepEqual(periods, ["1st quarter", "2nd quarter", "3rd quarter", "4th quarter", "Overtime"]);
     assert.equal(d.querySelectorAll("tr.sct-ss-none").length, 2, "Q2 and Q3 had no scoring");
     const pills = [...d.querySelectorAll(".sct-ss-pill")].map((p) => p.textContent);
-    assert.deepEqual(pills, ["Takes lead", "Ties game", "Takes lead"]);
+    // The overtime score took the lead for good: the game winner.
+    assert.deepEqual(pills, ["Takes lead", "Ties game", "Game winner"]);
     assert.equal(
       d.querySelector(".sct-rb-sub").textContent,
       "The Rams scored two touchdowns; the Cardinals scored one touchdown.",
@@ -345,11 +350,14 @@ describe("scoring summary", () => {
     ].map(parseEspnScoringPlay);
     assert.deepEqual(summary.validateScoringPlays(game, plays), []);
     const d = dom(summary.renderScoringSummary({ game, plays, playerUrl }));
-    const text = [...d.querySelectorAll(".sct-ss-desc")].map((c) => c.textContent);
+    const text = [...d.querySelectorAll(".sct-ss-desc")].map((c) => [
+      c.querySelector(".sct-ss-line").textContent,
+      c.querySelector(".sct-ss-detail")?.textContent ?? null,
+    ]);
     assert.deepEqual(text, [
-      "Safety. Kyler Murray is tackled in the end zone. Takes lead",
-      "James Conner runs it in from 1 yard out. Two-point attempt fails. Takes lead",
-      "The Rams are awarded a safety.",
+      ["Safety Takes lead", "Kyler Murray tackled in the end zone"],
+      ["James Conner 1-yard TD run Takes lead", "2-pt try failed"],
+      ["Safety", null],
     ]);
     assert.equal(
       d.querySelector(".sct-rb-sub").textContent,

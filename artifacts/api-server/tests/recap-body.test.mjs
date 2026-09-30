@@ -90,13 +90,15 @@ const WILD_CARD = {
   series: { sinceSeason: 2021, games: SERIES, upcoming: UPCOMING },
   links: {
     redraftCommand: "https://statchasers.com/redraft-command/",
-    startSit: "https://statchasers.com/redraft-command/launch/who-should-i-start/",
+    startSit: "https://statchasers.com/redraft-command/who-should-i-start",
     pointsAllowed: "https://statchasers.com/nfl/fantasy-points-allowed-by-position/",
     strengthOfSchedule: "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/",
   },
 };
 
 const render = (input) => new JSDOM(`<!doctype html><body>${body.renderRecapBody(input)}</body>`).window.document;
+/** The key advantages, which the matchup page puts in the recap story. */
+const advantages = (input) => new JSDOM(`<!doctype html><body>${body.renderTakeaways(input)}</body>`).window.document;
 const text = (n) => n?.textContent.replace(/\s+/g, " ").trim() ?? null;
 
 describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
@@ -110,7 +112,7 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
         "Why the Rams won",
         "Cardinals vs Rams head-to-head",
         "Cardinals vs Rams fantasy outlook for 2026",
-        "Cardinals vs Rams FAQ",
+        "Cardinals vs Rams Game FAQ",
         "More Cardinals and Rams",
       ],
     );
@@ -127,16 +129,23 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     const table = doc.querySelector("table.sct-rb-table");
     assert.equal(text(table.querySelector("caption")), "Team stats comparison, Cardinals vs Rams");
     assert.deepEqual([...table.querySelectorAll("thead th")].map(text), ["Cardinals", "Stat", "Rams"]);
+    // The key advantages' rows lead, in their order; the rest follow as
+    // secondary stats under a divider (mak, 2026-09-30).
     const rows = [...table.querySelectorAll("tr.sct-rb-stat")].map((r) => [...r.children].map(text));
     assert.deepEqual(rows, [
-      ["183", "Total yards", "375"],
       ["3.4", "Yards per play", "6.6"],
-      ["54", "Plays", "57"],
       ["2", "Turnovers", "0"],
+      ["183", "Total yards", "375"],
+      ["54", "Plays", "57"],
       ["0%", "Third-down conversion", "46%"],
       ["24:14", "Time of possession", "35:46"],
     ]);
-    const plays = [...table.querySelectorAll("tr.sct-rb-stat")][2];
+    assert.deepEqual(
+      [...table.querySelectorAll("tr.sct-rb-stat")].map((r) => r.classList.contains("is-secondary")),
+      [false, false, false, true, true, true],
+    );
+    assert.equal(text(table.querySelector("tr.sct-rb-divider")), "Other team stats");
+    const plays = [...table.querySelectorAll("tr.sct-rb-stat")][3];
     assert.equal(plays.querySelectorAll(".is-better").length, 0, "plays has no better side");
     for (const bar of table.querySelectorAll("tr.sct-rb-barrow")) {
       assert.equal(bar.getAttribute("aria-hidden"), "true");
@@ -145,23 +154,27 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
 
   test("the turnovers bar favours the side with fewer turnovers", () => {
     const bars = [...doc.querySelectorAll("tr.sct-rb-barrow")];
-    const turnovers = bars[3].querySelector(".sct-rb-bar-away").getAttribute("style");
+    const turnovers = bars[1].querySelector(".sct-rb-bar-away").getAttribute("style");
     assert.equal(turnovers, "width:0%", "Arizona's two turnovers get none of the bar");
     assert.equal(body.awayShare({ away: 1, home: 3, better: "lower" }), 75);
     assert.equal(body.awayShare({ away: 0, home: 0, better: "lower" }), 50);
     assert.equal(body.awayShare({ away: 54, home: 57, better: "neither" }), 48.6);
   });
 
-  test("takeaways from the winner's side", () => {
+  test("key advantages from the winner's side, for the recap story, not under Why won", () => {
+    assert.equal(doc.querySelector(".sct-rb-takeaways"), null, "not repeated in Why won");
+    const adv = advantages(WILD_CARD);
+    assert.equal(text(adv.querySelector(".sct-rb-kicker")), "Key advantages");
     assert.deepEqual(
-      [...doc.querySelectorAll(".sct-rb-takeaways li")].map((li) => [
+      [...adv.querySelectorAll(".sct-rb-takeaways li")].map((li) => [
         text(li.querySelector(".sct-rb-take-value")),
         text(li.querySelector(".sct-rb-take-label")),
+        text(li.querySelector(".sct-rb-take-sub")),
       ]),
       [
-        ["+192", "Yard advantage for the Rams"],
-        ["+2", "Turnover margin, no Rams giveaways"],
-        ["+11:32", "More time with the ball"],
+        ["+3.2", "yards/play", "LAR 6.6 · ARI 3.4"],
+        ["+2", "turnover margin", "LAR 0 turnovers"],
+        ["+192", "total yards", "LAR 375 · ARI 183"],
       ],
     );
   });
@@ -219,23 +232,68 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.match(text(cards[0]), /start in Week 6\?/);
   });
 
-  test("FAQ: native details, generated answers, link inside the last", () => {
+  test("FAQ: postgame questions only, the result first, answered in the first sentence", () => {
     const items = [...doc.querySelectorAll("details.sct-rb-qa")];
     assert.deepEqual(items.map((d) => text(d.querySelector("summary"))), [
       "Who won the 2021 Cardinals vs Rams Wild Card game?",
+      "What was the final score of Cardinals vs Rams?",
+      "How did the Rams beat the Cardinals?",
       "What is the Cardinals vs Rams record since 2021?",
-      "When do the Cardinals and Rams play next?",
-      "Should I start Cardinals or Rams players in fantasy when they play each other?",
     ]);
-    assert.equal(text(items[0].querySelector("p")), `The Los Angeles Rams won 34${DASH}11 at SoFi Stadium on January 17, 2022.`);
-    assert.equal(text(items[1].querySelector("p")), `The Rams lead 8${DASH}3 across 11 meetings, including this Wild Card game.`);
     assert.equal(
-      text(items[2].querySelector("p")),
-      "Week 6, Sunday, October 18, 2026: the Cardinals visit the Rams. Week 10, Sunday, November 15, 2026: the Rams visit the Cardinals.",
+      text(items[0].querySelector("p")),
+      `The Los Angeles Rams beat the Arizona Cardinals 34${DASH}11 in the Wild Card round of the 2021 playoffs. ` +
+        "The game was played at SoFi Stadium in Inglewood, CA, on January 17, 2022.",
     );
-    const link = items[3].querySelector("a");
-    assert.equal(text(link), "Redraft Command's Start/Sit Tool");
-    assert.equal(link.getAttribute("data-cta"), "faq-startsit");
+    assert.equal(
+      text(items[1].querySelector("p")),
+      `The final score was Rams 34, Cardinals 11. The Rams led 21${DASH}0 at halftime, and the second half went Cardinals 11, Rams 13.`,
+    );
+  });
+
+  test("FAQ facts turn questions on: a push, a big fantasy day, Super Bowl history, and never more than 15", () => {
+    const player = (name, team, ppr, extra = {}) => ({
+      name, team, pos: "WR", line: "8 catches for 122 yards and a touchdown", logUrl: `/nfl/players/x/game-log/?log=2021`,
+      ppr, half: ppr - 4, std: ppr - 8, finish: "WR6", targetShare: 0.46, carryShare: null, ...extra,
+    });
+    const rich = {
+      ...WILD_CARD,
+      rivalry: {
+        intro: null, divisionName: null, divisionRivalsSince: null,
+        allGames: [
+          { season: 2014, date: "2015-02-01", away: "ARI", home: "LAR", awayScore: 28, homeScore: 24, playoff: true, superBowl: true, url: null },
+          { season: 2021, date: "2022-01-17", away: "ARI", home: "LAR", awayScore: 11, homeScore: 34, playoff: true, url: null },
+        ],
+      },
+      faqFacts: {
+        story: "Los Angeles led 21–0 at halftime and won 34–11.",
+        fantasy: [player("Cooper Kupp", "LAR", 26.2), player("Matthew Stafford", "LAR", 24.3)],
+        leaders: { passing: { name: "Matthew Stafford", team: "LAR", pos: "QB", line: "13 of 17 for 202 yards", logUrl: null } },
+        xfp: { over: { name: "Cooper Kupp", team: "LAR", ppr: 26.2, xfp: 19.2 }, under: { name: "James Conner", team: "ARI", ppr: 8, xfp: 14 } },
+        turnovers: { away: 2, home: 0 },
+        // Rams by 23 exactly, and 45 points on a 45 total: two pushes.
+        odds: { favorite: "LAR", line: 23, total: 45 },
+        schedules: { LAR: "/team/los-angeles-rams/schedule/" },
+      },
+    };
+    const items = body.recapFaq(rich);
+    const qs = items.map((q) => q.question);
+    assert.ok(items.length <= 15);
+    assert.equal(new Set(qs).size, qs.length, "no question twice");
+    assert.ok(!qs.some((q) => /\bwill\b|predict|pick|should I bet|who is better/i.test(q)), "no pregame intent");
+    assert.ok(qs.includes("How many fantasy points did Cooper Kupp score against the Cardinals?"));
+    assert.ok(qs.includes("Have the Cardinals and Rams played in the Super Bowl?"));
+    assert.ok(qs.includes("Was Cardinals vs Rams a push against the spread?"));
+    assert.match(items.find((q) => /over or under/.test(q.question)).answer, /^Neither: 45 points landed exactly on the closing total of 45, a push\.$/);
+    assert.match(items.find((q) => /closing spread/.test(q.question)).answer, /^The consensus closing spread at kickoff was Rams −23/);
+    // Links go to other pages (a game log, a schedule), never to this page's own tabs.
+    const hrefs = items.flatMap((q) => [q.link, ...(q.links ?? [])].filter(Boolean).map((l) => l.href));
+    assert.ok(hrefs.includes("/nfl/players/x/game-log/?log=2021"));
+    assert.ok(hrefs.includes("/team/los-angeles-rams/schedule/"));
+    assert.ok(!hrefs.some((h) => h.startsWith("#")));
+    // Grouped: the result questions open the list, the betting results close it.
+    assert.equal(qs[0], "Who won the 2021 Cardinals vs Rams Wild Card game?");
+    assert.match(qs.at(-1), /spread|over or under/);
   });
 
   test("the FAQ JSON-LD says exactly what the page says", () => {
@@ -300,8 +358,8 @@ describe("changing one score moves everything with it", () => {
     const row = [...doc.querySelectorAll("ul.sct-rb-meetings")[1].querySelectorAll("li")][9];
     assert.equal(text(row.querySelector(".sct-rb-mt-score")), "ARI 31 LAR 30");
     assert.equal(text(row.querySelector(".sct-rb-chip")), "ARI W");
-    const faq = body.recapFaq(flipped)[1].answer;
-    assert.equal(faq, `The Rams lead 7${DASH}4 across 11 meetings, including this Wild Card game.`);
+    const faq = body.recapFaq(flipped).find((q) => /record since/.test(q.question)).answer;
+    assert.equal(faq, `The Rams lead 7${DASH}4 across 11 meetings since the 2021 season, including this game.`);
     assert.match(body.recapFaqSchema(body.recapFaq(flipped), false), new RegExp(`7${DASH}4`));
   });
 });
@@ -329,7 +387,7 @@ describe("a game the away team won", () => {
       text(doc.querySelector("#why ~ .sct-rb-sub")),
       "Arizona won the turnover and time of possession battles.",
     );
-    assert.equal(text(doc.querySelectorAll(".sct-rb-take-value")[0]), "+64");
+    assert.deepEqual([...advantages(input).querySelectorAll(".sct-rb-take-value")].map(text), ["+2", "+64", "+10:20"]);
     assert.equal(text(doc.querySelector(".sct-rb-dl dd:nth-of-type(5)")), "Arizona Cardinals");
   });
 
@@ -338,7 +396,7 @@ describe("a game the away team won", () => {
       ...input,
       stats: { ...input.stats, away: { ...input.stats.away, totalYards: 380, yardsPerPlay: 6.8 } },
     };
-    const values = [...render(weaker).querySelectorAll(".sct-rb-take-value")].map(text);
+    const values = [...advantages(weaker).querySelectorAll(".sct-rb-take-value")].map(text);
     assert.deepEqual(values, ["+0.5", "+2", "+10:20"]);
     assert.ok(values.every((v) => !v.startsWith("-")));
   });
@@ -379,7 +437,10 @@ describe("a tie", () => {
   test("an even series says so", () => {
     const even = { ...input, series: { ...input.series, games: [SERIES[0], SERIES[6]] } };
     assert.equal(text(render(even).querySelector(".sct-rb-h2h-lead")), "Series tied");
-    assert.match(body.recapFaq(even)[1].answer, /^The series is tied 1–1 across 2 meetings\.$/);
+    assert.equal(
+      body.recapFaq(even).find((q) => /record since/.test(q.question)).answer,
+      `The series is tied 1${DASH}1 across 2 meetings since the 2021 season, including this game.`,
+    );
   });
 });
 
@@ -394,9 +455,9 @@ describe("no meetings left on the schedule", () => {
 
   test("no when-next or start/sit question and no upcoming list", () => {
     const questions = body.recapFaq(input).map((q) => q.question);
-    assert.equal(questions.length, 2);
+    assert.equal(questions.length, 4);
     assert.ok(!questions.some((q) => /play next|^Should I start/.test(q)));
-    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 2);
+    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 4);
     assert.equal(doc.querySelectorAll("ul.sct-rb-meetings").length, 1);
   });
 

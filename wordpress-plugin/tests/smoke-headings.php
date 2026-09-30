@@ -55,7 +55,8 @@ $GLOBALS['http_body'] =
 	'<div class="scr is-embed"><a class="scr-nav-link" data-scr-heading="2026 Rest of Season Fantasy Football RB Rankings">RB</a>' .
 	'<script type="application/json" class="scr-faq-data">[]</script>' .
 	'<script type="application/json" class="scr-page-data">{"title":"2026 Rest of Season Fantasy Football RB Rankings: Running Backs","h1":"2026 Rest of Season Fantasy Football RB Rankings","description":"RB board."}</script></div>' .
-	'<script type="application/json" class="sca-page-data">{"title":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","h1":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","description":"WR table."}</script>';
+	'<div class="sca-intro"><p>Compare WRs.</p><p>View stats.</p></div>' .
+	'<script type="application/json" class="sca-page-data">{"title":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","h1":"2026 NFL Wide Receiver Stats & Fantasy Football Stats","description":"WR table.","lead":"Compare WRs. View stats."}</script>';
 
 is( statchasers_player_stats_args( array( 'pos' => 'te' ) )['pos'], 'wr', 'the stats address outranks the attribute' );
 is( statchasers_player_stats_canonical(), 'https://example.com/nfl/nfl-player-stats/wr/', 'and is its own canonical' );
@@ -77,6 +78,8 @@ is( str_contains( $rank_html, 'scr-page-data' ) || str_contains( $rank_html, 'sc
 $stats_html = statchasers_player_stats_shortcode();
 is( substr_count( $stats_html, '<h1' ), 1, 'the stats shortcode prints exactly one H1' );
 is( str_contains( $stats_html, '>2026 NFL Wide Receiver Stats &amp; Fantasy Football Stats</h1>' ), true, 'naming the position' );
+is( str_contains( $stats_html, '<p class="sc-lo-hero__lead" data-sct-page-lead>Compare WRs. View stats.</p>' ), true, 'with the intro as the hero\'s description' );
+is( str_contains( $stats_html, 'sca-intro' ), false, 'and the fragment\'s own intro dropped' );
 
 // The theme's own title is emptied on these pages in this mode (the
 // PHP_INT_MAX `the_title` filter in statchasers-h1.php, which the stub harness
@@ -85,4 +88,6 @@ is( statchasers_h1_should_replace(), true, 'and the theme\'s title is emptied' )
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 is( str_contains( statchasers_ros_rankings_shortcode(), '<h1' ), false, 'in auto, with no measurement of its own, rankings prints none' );
-is( str_contains( statchasers_player_stats_shortcode(), '<h1' ), false, 'nor does the stats table' );
+$stats_html = statchasers_player_stats_shortcode();
+is( str_contains( $stats_html, '<h1' ), false, 'nor does the stats table' );
+is( str_contains( $stats_html, '<div class="sca-intro">' ), true, 'which keeps its own intro under the theme\'s title' );

@@ -18,6 +18,8 @@
  * is reviewable in a diff.
  */
 
+import fs from "node:fs";
+import { dataPath } from "../data-dir";
 import type { GameInjuryNotes } from "./fantasy-section";
 import { GAME_VIDEOS } from "./game-videos";
 
@@ -57,10 +59,35 @@ export const GAME_NOTES: Record<string, GameNotes> = {
   },
 };
 
+/**
+ * Finds since the last publish: what `find-game-videos.mjs --live` wrote from
+ * the production refresh (live-refresh.ts). Read once, and again after
+ * resetLiveVideos(); a missing or unreadable file is no videos.
+ */
+let liveVideos: Record<string, GameVideo> | null = null;
+
+function live(): Record<string, GameVideo> {
+  if (liveVideos) return liveVideos;
+  try {
+    liveVideos = JSON.parse(fs.readFileSync(dataPath("matchup", "game-videos-live.json"), "utf8")) as Record<
+      string,
+      GameVideo
+    >;
+  } catch {
+    liveVideos = {};
+  }
+  return liveVideos;
+}
+
+/** Drop the live finds, so the next page reads the file again. */
+export function resetLiveVideos(): void {
+  liveVideos = null;
+}
+
 export function gameNotes(pairSlug: string, gameSegment: string): GameNotes {
   const key = `${pairSlug}/${gameSegment}`;
   const notes = GAME_NOTES[key] ?? {};
-  const video = notes.video ?? GAME_VIDEOS[key];
+  const video = notes.video ?? GAME_VIDEOS[key] ?? live()[key];
   return video ? { ...notes, video } : notes;
 }
 

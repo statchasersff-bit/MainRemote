@@ -29,17 +29,6 @@ type Side = "away" | "home";
 
 const DASH = "–";
 
-const RESULT_ROWS: Array<{ result: DriveResult; label: string }> = [
-  { result: "td", label: "Touchdown" },
-  { result: "fg", label: "Field goal" },
-  { result: "punt", label: "Punt" },
-  { result: "int", label: "Interception" },
-  { result: "fumble", label: "Fumble lost" },
-  { result: "downs", label: "Turnover on downs" },
-  { result: "missed_fg", label: "Missed field goal" },
-  { result: "safety", label: "Safety" },
-];
-
 const RESULT_TEXT: Record<DriveResult, string> = {
   td: "Touchdown",
   fg: "Field goal",
@@ -154,34 +143,105 @@ export function targetLeaders(players: GamePlayers, team: string): string {
     .sort((a, b) => (b.stats.recTgt ?? 0) - (a.stats.recTgt ?? 0) || a.name.localeCompare(b.name))
     .slice(0, 3)
     .map((p) => `${lastName(p.name)} ${Math.round(((p.stats.recTgt ?? 0) / total) * 100)}%`)
-    .join(", ");
+    .join(" · ");
 }
 
-function card(input: PossessionsInput, side: Side, colors: ReturnType<typeof pairColors>): string {
-  const team = input.game[side];
-  const c = playCalling(input.stats[side]);
-  if (!c) return "";
-  const cell = (label: string, value: string | null, extra = ""): string =>
-    `<div><dt>${escapeHtml(label)}</dt><dd>${value === null ? "—" : escapeHtml(value)}${extra}</dd></div>`;
-  const shares = targetLeaders(input.players, team.abbr);
+/**
+ * The two teams side by side, one row a measure (mak, 2026-09-30): the better
+ * efficiency figure in its team's colour, volume and pass rate neutral.
+ */
+function comparison(input: PossessionsInput, colors: ReturnType<typeof pairColors>): string {
+  const { game } = input;
+  const a = playCalling(input.stats.away);
+  const h = playCalling(input.stats.home);
+  if (!a || !h) return "";
+  const third = (st: BoxTeamStats | null): number | null => st?.thirdDown?.percent ?? null;
+  type Row = { label: string; away: string | null; home: string | null; better?: "away" | "home" | null };
+  const higher = (x: number | null, y: number | null): "away" | "home" | null =>
+    x === null || y === null || Math.abs(x - y) < 1e-9 ? null : x > y ? "away" : "home";
+  const rows: Row[] = [
+    { label: "Plays", away: a.plays === null ? null : String(a.plays), home: h.plays === null ? null : String(h.plays) },
+    {
+      label: "Pass rate",
+      away: a.passRate === null ? null : `${Math.round(a.passRate * 100)}%`,
+      home: h.passRate === null ? null : `${Math.round(h.passRate * 100)}%`,
+    },
+    {
+      label: "Yds / dropback",
+      away: a.perDropback === null ? null : a.perDropback.toFixed(1),
+      home: h.perDropback === null ? null : h.perDropback.toFixed(1),
+      better: higher(a.perDropback, h.perDropback),
+    },
+    {
+      label: "Yds / carry",
+      away: a.perCarry === null ? null : a.perCarry.toFixed(1),
+      home: h.perCarry === null ? null : h.perCarry.toFixed(1),
+      better: higher(a.perCarry, h.perCarry),
+    },
+    {
+      label: "Third downs",
+      away: a.third === null ? null : a.third.replace(" of ", "/"),
+      home: h.third === null ? null : h.third.replace(" of ", "/"),
+      better: higher(third(input.stats.away), third(input.stats.home)),
+    },
+  ];
+  const cell = (row: Row, side: Side): string =>
+    `<td class="sct-pc-v is-${side}${row.better === side ? " is-better" : ""}">${row[side] === null ? "—" : escapeHtml(row[side]!)}</td>`;
   return (
-    `<div class="sct-pc-card" style="--rb-team:${colors[side].ink}">` +
-    `<h3 class="sct-rb-h3">${escapeHtml(team.name)}</h3>` +
-    `<dl class="sct-pc-grid">` +
-    cell("Plays", c.plays === null ? null : String(c.plays)) +
-    cell(
-      "Dropbacks",
-      c.dropbacks === null ? null : String(c.dropbacks),
-      c.passRate === null ? "" : ` <small>${Math.round(c.passRate * 100)}%</small>`,
-    ) +
-    cell("Carries", c.carries === null ? null : String(c.carries)) +
-    cell("Yds / dropback", c.perDropback === null ? null : c.perDropback.toFixed(1)) +
-    cell("Yds / carry", c.perCarry === null ? null : c.perCarry.toFixed(1)) +
-    cell("Third downs", c.third) +
-    `</dl>` +
-    (shares ? `<p class="sct-pc-shares"><b>Target share:</b> ${escapeHtml(shares)}</p>` : "") +
-    `</div>`
+    `<table class="sct-pc-compare" style="--pc-away:${colors.away.ink};--pc-home:${colors.home.ink}">` +
+    `<caption class="sct-rb-sr">${escapeHtml(`Play calling, ${game.away.short} vs ${game.home.short}`)}</caption>` +
+    `<thead><tr><th scope="col" class="is-away">${escapeHtml(game.away.name)}</th><th scope="col"><span class="sct-rb-sr">Measure</span></th>` +
+    `<th scope="col" class="is-home">${escapeHtml(game.home.name)}</th></tr></thead><tbody>` +
+    rows
+      .map((row) => `<tr>${cell(row, "away")}<th scope="row">${escapeHtml(row.label)}</th>${cell(row, "home")}</tr>`)
+      .join("") +
+    `</tbody></table>`
   );
+}
+
+/**
+ * The takeaway under the comparison: the winner's plays against its
+ * efficiency. "Seattle ran 19 fewer plays but gained 2.5 more yards per dropback."
+ */
+export function callingTakeaway(input: PossessionsInput): string {
+  const { game } = input;
+  const result = scoreboardResult(game);
+  if (!result?.winner) return "";
+  const w = result.winner;
+  const l: Side = w === "home" ? "away" : "home";
+  const ws = playCalling(input.stats[w]);
+  const ls = playCalling(input.stats[l]);
+  if (!ws || !ls || ws.plays === null || ls.plays === null) return "";
+  const who = input.places[game[w].abbr] ?? `The ${game[w].short}`;
+  // From the figures as the table prints them, so the sentence and the table agree.
+  const r1 = (n: number): number => Math.round(n * 10) / 10;
+  const edge = (x: number | null, y: number | null): number | null =>
+    x === null || y === null ? null : Math.round((r1(x) - r1(y)) * 10) / 10;
+  const ypd = edge(ws.perDropback, ls.perDropback);
+  const ypc = edge(ws.perCarry, ls.perCarry);
+  const eff =
+    ypd !== null && ypd >= 0.5
+      ? `gained ${ypd.toFixed(1)} more yards per dropback`
+      : ypc !== null && ypc >= 0.5
+        ? `gained ${ypc.toFixed(1)} more yards per carry`
+        : null;
+  const diff = ws.plays - ls.plays;
+  if (!eff) {
+    return diff === 0 ? "" : `${who} ran ${Math.abs(diff)} ${diff > 0 ? "more" : "fewer"} plays than ${input.places[game[l].abbr] ?? `the ${game[l].short}`}.`;
+  }
+  if (diff < 0) return `${who} ran ${-diff} fewer plays but ${eff}.`;
+  if (diff > 0) return `${who} ran ${diff} more plays and ${eff}.`;
+  return `${who} ran as many plays and ${eff}.`;
+}
+
+/** Which side won the turnover battle, and by how many; null when level. */
+function turnoverEdge(input: PossessionsInput): { side: Side; by: number } | null {
+  const counts = possessionCounts(input);
+  const t = (side: Side): number => (counts[side].int ?? 0) + (counts[side].fumble ?? 0);
+  const a = t("away");
+  const h = t("home");
+  if (a === h) return null;
+  return a < h ? { side: "away", by: h - a } : { side: "home", by: a - h };
 }
 
 /* ------------------------------------------------------------ possessions */
@@ -278,40 +338,61 @@ export function possessionNotes(input: PossessionsInput): string[] {
 export function renderPossessions(input: PossessionsInput): string {
   const { game } = input;
   const colors = pairColors(game.away.abbr, game.home.abbr);
-  const cards = card(input, "away", colors) + card(input, "home", colors);
-  if (!cards && input.drives.length === 0) return "";
+  const compare = comparison(input, colors);
+  if (!compare && input.drives.length === 0) return "";
+  const take = callingTakeaway(input);
+  const shareLines = (["away", "home"] as const)
+    .map((side) => {
+      const shares = targetLeaders(input.players, game[side].abbr);
+      return shares ? `<li><span>${escapeHtml(game[side].abbr)}</span> ${escapeHtml(shares)}</li>` : "";
+    })
+    .join("");
+  const edge = turnoverEdge(input);
 
+  // Possession results as a compact comparison, turnovers marked (mak,
+  // 2026-09-30): "Turnovers  NE 3  SEA 0". Interceptions and lost fumbles
+  // count together; the rarer endings get a row only when one happened.
   const counts = possessionCounts(input);
-  const rows = RESULT_ROWS.filter((r) => (counts.away[r.result] ?? 0) + (counts.home[r.result] ?? 0) > 0);
+  const n = (side: Side, ...results: DriveResult[]): number =>
+    results.reduce((sum, r) => sum + (counts[side][r] ?? 0), 0);
+  const resultRows: Array<{ label: string; results: DriveResult[]; key?: boolean; always?: boolean }> = [
+    { label: "Touchdowns", results: ["td"], always: true },
+    { label: "Field goals", results: ["fg"], always: true },
+    { label: "Punts", results: ["punt"], always: true },
+    { label: "Turnovers", results: ["int", "fumble"], key: true, always: true },
+    { label: "Turnovers on downs", results: ["downs"] },
+    { label: "Missed field goals", results: ["missed_fg"] },
+    { label: "Safeties", results: ["safety"] },
+  ];
   const defensive = input.drives.filter((d) => d.defensiveScore);
   const table =
-    input.drives.length && rows.length
-      ? `<h3 class="sct-rb-h3">Possession results</h3>` +
-        `<div class="sct-pc-results"><table class="sct-rb-mini">` +
+    input.drives.length
+      ? `<div class="sct-pc-card is-results">` +
+        `<h3 class="sct-rb-h3">Possession results</h3>` +
+        `<table class="sct-pc-results" style="--pc-away:${colors.away.ink};--pc-home:${colors.home.ink}">` +
         `<caption class="sct-rb-sr">${escapeHtml(`How each possession ended, ${game.away.short} vs ${game.home.short}`)}</caption>` +
-        `<thead><tr><th scope="col">Result</th><th scope="col">${escapeHtml(game.away.short)}</th><th scope="col">${escapeHtml(
-          game.home.short,
-        )}</th></tr></thead><tbody>` +
-        rows
-          .map(
-            (r) =>
-              `<tr><th scope="row">${r.label}</th><td>${counts.away[r.result] ?? 0}</td><td>${counts.home[r.result] ?? 0}</td></tr>`,
-          )
+        `<thead><tr><th scope="col"><span class="sct-rb-sr">Result</span></th><th scope="col" class="is-away">${escapeHtml(game.away.abbr)}</th>` +
+        `<th scope="col" class="is-home">${escapeHtml(game.home.abbr)}</th></tr></thead><tbody>` +
+        resultRows
+          .filter((r) => r.always || n("away", ...r.results) + n("home", ...r.results) > 0)
+          .map((r) => {
+            const aw = n("away", ...r.results);
+            const hm = n("home", ...r.results);
+            const mark = r.key && aw !== hm ? " is-key" : "";
+            return (
+              `<tr class="${mark.trim()}"><th scope="row">${r.label}</th>` +
+              `<td class="is-away">${aw}</td>` +
+              `<td class="is-home">${hm}</td></tr>`
+            );
+          })
           .join("") +
-        `</tbody></table></div>` +
-        `<p class="sct-rb-note">${escapeHtml(
-          (defensive.length
-            ? defensive
-                .map((d) => {
-                  const other = d.team === game.away.abbr ? game.home.short : game.away.short;
-                  const own = d.team === game.away.abbr ? game.away.short : game.home.short;
-                  return `The ${other}' ${d.result === "int" ? "interception" : d.result === "fumble" ? "fumble" : "return"} touchdown is counted as a ${own} ${
-                    d.result === "int" ? "interception" : d.result === "fumble" ? "lost fumble" : "possession"
-                  }, not as a ${other} possession.`;
-                })
-                .join(" ") + " "
-            : "") + "Possessions that ended with the clock running out at the half or the end of the game aren't counted.",
-        )}</p>`
+        `</tbody></table>` +
+        (edge
+          ? `<p class="sct-pc-edge" style="color:${colors[edge.side].ink}">` +
+            `${escapeHtml(`${game[edge.side].abbr} turnover edge: +${edge.by}`)}</p>`
+          : "") +
+        `</div>` +
+        ""
       : input.drives.length === 0
         ? `<p class="sct-rb-note">Possession results appear when the drive chart is available for this game.</p>`
         : "";
@@ -345,16 +426,43 @@ export function renderPossessions(input: PossessionsInput): string {
       `<tbody>${chartRows}</tbody></table></div></details>`
     : "";
 
-  const sub = callingSubtitle(input);
+  const resultNote = input.drives.length
+    ? `<p class="sct-rb-note">${escapeHtml(
+          (defensive.length
+            ? defensive
+                .map((d) => {
+                  const other = d.team === game.away.abbr ? game.home.short : game.away.short;
+                  const own = d.team === game.away.abbr ? game.away.short : game.home.short;
+                  return `The ${other}' ${d.result === "int" ? "interception" : d.result === "fumble" ? "fumble" : "return"} touchdown is counted as a ${own} ${
+                    d.result === "int" ? "interception" : d.result === "fumble" ? "lost fumble" : "possession"
+                  }, not as a ${other} possession.`;
+                })
+                .join(" ") + " "
+            : "") + "Possessions that ended with the clock running out at the half or the end of the game aren't counted.",
+        )}</p>`
+    : "";
+  // Two modules side by side, about 70/30 (mak, 2026-09-30): the comparison
+  // card with its takeaway and top targets, then the possession results.
+  const callingCard = compare
+    ? `<div class="sct-pc-card is-calling">` +
+      compare +
+      (take
+        ? `<p class="sct-pc-take"><span class="sct-pc-take-h">Efficiency edge</span> ${escapeHtml(take)}</p>`
+        : "") +
+      (shareLines ? `<ul class="sct-pc-shares"><li class="sct-pc-shares-h">Top targets</li>${shareLines}</ul>` : "") +
+      `</div>`
+    : "";
   return (
     `<section class="sct-rb-section sct-pc" aria-labelledby="possessions">` +
     `<h2 class="sct-rb-h2" id="possessions">Play calling and possessions</h2>` +
-    (sub ? `<p class="sct-rb-sub">${escapeHtml(sub)}</p>` : "") +
-    (cards ? `<div class="sct-pc-cards">${cards}</div>` : "") +
-    `<p class="sct-rb-note">Personnel groupings, average depth of target and pass rate over expected appear when the tracking feed is connected.</p>` +
-    table +
+    `<div class="sct-pc-row">${callingCard}${table}</div>` +
     noteList +
     driveChart +
+    // The fine print, one click away.
+    `<details class="sct-info"><summary>About these numbers</summary>` +
+    resultNote +
+    `<p class="sct-rb-note">Personnel groupings, average depth of target and pass rate over expected appear when the tracking feed is connected.</p>` +
+    `</details>` +
     `</section>`
   );
 }

@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -176,6 +176,17 @@ const TOOLS: Tool[] = [
       path.startsWith("/rb-handcuff-rankings") ||
       path.startsWith("/preview/rb-handcuffs") ||
       path.startsWith("/preview/raw/rb-handcuffs"),
+  },
+  {
+    key: "sos",
+    label: "Strength of Schedule",
+    shortLabel: "SOS",
+    shortcode: "statchasers_strength_of_schedule",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/strength-of-schedule") ||
+      path.startsWith("/preview/sos") ||
+      path.startsWith("/preview/raw/sos"),
   },
 ];
 
@@ -320,6 +331,13 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/rb-handcuffs";
     if (mount === "shortcode") return "/preview/rb-handcuffs";
     return mount === "embed" ? "/rb-handcuff-rankings?embed=1" : "/rb-handcuff-rankings";
+  }
+
+  if (tool.key === "sos") {
+    // One board; the tab, position and scoring are its own controls.
+    if (mount === "fragment") return "/preview/raw/sos";
+    if (mount === "shortcode") return "/preview/sos";
+    return mount === "embed" ? "/strength-of-schedule?embed=1" : "/strength-of-schedule";
   }
 
   if (mount === "fragment") return "/preview/raw/news";
