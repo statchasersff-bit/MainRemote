@@ -3,7 +3,7 @@
  * Plugin Name:       StatChasers Depth Charts
  * Plugin URI:        https://statchasers.com/
  * Description:        Private admin tool that pulls NFL depth charts, caches them locally as JSON, and renders them on the front end via the [statchasers_depth_charts] shortcode. Serves 32 server-recognized, SEO-optimized team routes from the same tool. No external host required.
- * Version:           1.6.2
+ * Version:           1.6.3
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'SCDC_VERSION', '1.6.2' );
+define( 'SCDC_VERSION', '1.6.3' );
 define( 'SCDC_PLUGIN_FILE', __FILE__ );
 define( 'SCDC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCDC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -78,3 +78,35 @@ function scdc_activate() {
 }
 register_activation_hook( __FILE__, 'scdc_activate' );
 register_deactivation_hook( __FILE__, array( 'SCDC_Rewrite', 'deactivate' ) );
+
+/**
+ * The daily refresh. Without it the charts went stale whenever nobody pressed
+ * the button. Scheduled on init rather than on activation, because an update
+ * does not re-run the activation hook. Same code and deadline as the button,
+ * and the two share a lock (SCDC_Refresh::run_and_store).
+ *
+ * WP-Cron is traffic-driven; for a strict schedule, disable WP_CRON and hit
+ * wp-cron.php from a system cron.
+ *
+ * @return void
+ */
+function scdc_schedule_refresh() {
+	if ( ! wp_next_scheduled( SCDC_Refresh::CRON_HOOK ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', SCDC_Refresh::CRON_HOOK );
+	}
+}
+add_action( 'init', 'scdc_schedule_refresh' );
+add_action(
+	SCDC_Refresh::CRON_HOOK,
+	function () {
+		SCDC_Refresh::run_and_store( 720 );
+	}
+);
+
+/**
+ * @return void
+ */
+function scdc_unschedule_refresh() {
+	wp_clear_scheduled_hook( SCDC_Refresh::CRON_HOOK );
+}
+register_deactivation_hook( __FILE__, 'scdc_unschedule_refresh' );

@@ -261,38 +261,14 @@ load. No redeploy or commit is involved.
 - The refresh form uses a WordPress nonce (`check_admin_referer`).
 - Non-admins have no access to any refresh action.
 
-## Adding automatic refresh later (WP-Cron)
+## Automatic refresh (WP-Cron)
 
-The plugin ships with manual refresh only. To add a scheduled refresh later,
-hook WP-Cron to the same code path, e.g. in the main plugin file:
+Since 1.6.3 the plugin refreshes once a day on its own (`scdc_cron_refresh`,
+scheduled on `init`, cleared on deactivation). The cron and the button both call
+`SCDC_Refresh::run_and_store()`, so they share the same 720s deadline and one
+lock (`scdc_refresh_lock`): a click while the cron is running reports "already
+running" instead of starting a second full run. A lock older than 15 minutes is
+taken over, so a run that died cannot block refreshes for good.
 
-```php
-// Schedule on activation.
-register_activation_hook( SCDC_PLUGIN_FILE, function () {
-    if ( ! wp_next_scheduled( 'scdc_cron_refresh' ) ) {
-        wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'scdc_cron_refresh' );
-    }
-} );
-register_deactivation_hook( SCDC_PLUGIN_FILE, function () {
-    wp_clear_scheduled_hook( 'scdc_cron_refresh' );
-} );
-
-// Run the same refresh used by the button.
-add_action( 'scdc_cron_refresh', function () {
-    $previous = SCDC_Store::read();
-    $result   = SCDC_Refresh::run( $previous );
-    if ( 'error' !== $result['status'] && SCDC_Store::write( $result['payload'] ) ) {
-        SCDC_Store::set_meta( array(
-            'status'            => $result['status'],
-            'error'             => $result['error'],
-            'last_refreshed'    => gmdate( 'c' ),
-            'last_refreshed_ts' => time(),
-            'teams_ok'          => (int) $result['teams_ok'],
-            'teams_failed'      => $result['teams_failed'],
-        ) );
-    }
-} );
-```
-
-(WP-Cron is traffic-driven; for a strict schedule, disable `WP_CRON` and trigger
-`wp-cron.php` from a real system cron.)
+WP-Cron is traffic-driven; for a strict schedule, disable `WP_CRON` and trigger
+`wp-cron.php` from a real system cron.

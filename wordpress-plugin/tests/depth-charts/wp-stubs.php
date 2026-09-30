@@ -98,6 +98,15 @@ function wp_rand( $min = 0, $max = 0 ) { return 1234; }
 function wp_date( $format, $ts = null ) { return gmdate( $format, $ts ); }
 function get_option( $key, $default = false ) { return array_key_exists( $key, $GLOBALS['wp_options'] ) ? $GLOBALS['wp_options'][ $key ] : $default; }
 function update_option( $key, $value, $autoload = null ) { $GLOBALS['wp_options'][ $key ] = $value; return true; }
+function add_option( $key, $value = '', $deprecated = '', $autoload = 'yes' ) {
+	if ( array_key_exists( $key, $GLOBALS['wp_options'] ) ) { return false; }
+	$GLOBALS['wp_options'][ $key ] = $value;
+	return true;
+}
+function delete_option( $key ) { unset( $GLOBALS['wp_options'][ $key ] ); return true; }
+function wp_next_scheduled( $hook ) { return isset( $GLOBALS['wp_cron'][ $hook ] ) ? $GLOBALS['wp_cron'][ $hook ]['at'] : false; }
+function wp_schedule_event( $at, $recurrence, $hook ) { $GLOBALS['wp_cron'][ $hook ] = array( 'at' => $at, 'recurrence' => $recurrence ); return true; }
+function wp_clear_scheduled_hook( $hook ) { unset( $GLOBALS['wp_cron'][ $hook ] ); return 1; }
 function get_transient( $key ) { return isset( $GLOBALS['wp_transients'][ $key ] ) ? $GLOBALS['wp_transients'][ $key ] : false; }
 function set_transient( $key, $value, $ttl = 0 ) { $GLOBALS['wp_transients'][ $key ] = $value; return true; }
 function wp_parse_args( $args, $defaults ) { return array_merge( $defaults, (array) $args ); }

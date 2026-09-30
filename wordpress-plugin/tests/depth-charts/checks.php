@@ -9,6 +9,8 @@
  *   nothing was fetched.
  * - SCDC_Store::write() replaces the file by rename, so a reader holding the
  *   old file never sees it truncated or half-written.
+ * - A refresh takes a lock the button and the daily cron share, and a stale
+ *   lock is taken over.
  * - The hub never nests an <a> inside an <a>.
  */
 
@@ -110,6 +112,43 @@ check( 'store: a reader of the old file still sees it whole', is_array( json_dec
 check( 'store: the new file is in place', is_array( $now ) && 'b' === $now['mark'] );
 $leftovers = glob( SCDC_Store::dir_path() . '/*.tmp' );
 check( 'store: no temp files left behind', empty( $leftovers ), implode( ', ', (array) $leftovers ) );
+array_map( 'unlink', glob( SCDC_Store::dir_path() . '/*' ) );
+@rmdir( SCDC_Store::dir_path() );
+@rmdir( $tmp_dir );
+unset( $GLOBALS['scdc_test_basedir'] );
+
+// ------------------------------------------------ 3b. lock, cron, season
+
+$tmp_dir = sys_get_temp_dir() . '/scdc-lock-' . getmypid();
+$GLOBALS['scdc_test_basedir'] = $tmp_dir;
+$GLOBALS['http_espn_ok']      = array( 'ari', 'bal' );
+
+update_option( SCDC_Refresh::LOCK_OPTION, time() );
+check( 'lock: a live run blocks a second one', 'locked' === SCDC_Refresh::run_and_store( 0 ) );
+check( 'lock: and leaves the live run\'s lock alone', false !== get_option( SCDC_Refresh::LOCK_OPTION ) );
+
+update_option( SCDC_Refresh::LOCK_OPTION, time() - SCDC_Refresh::LOCK_TTL - 1 );
+$status = SCDC_Refresh::run_and_store( 0 );
+check( 'lock: a stale lock is taken over', 'partial' === $status, "status $status" );
+check( 'lock: released when the run ends', false === get_option( SCDC_Refresh::LOCK_OPTION ) );
+check( 'lock: the run stored its result', 'partial' === SCDC_Store::get_meta()['status'] );
+
+$on_init = false;
+foreach ( $GLOBALS['wp_filters']['init'] as $callbacks ) {
+	$on_init = $on_init || in_array( 'scdc_schedule_refresh', $callbacks, true );
+}
+check( 'cron: scheduling is hooked to init', $on_init );
+scdc_schedule_refresh();
+check( 'cron: it schedules the daily refresh', false !== wp_next_scheduled( SCDC_Refresh::CRON_HOOK ) && 'daily' === $GLOBALS['wp_cron'][ SCDC_Refresh::CRON_HOOK ]['recurrence'] );
+check( 'cron: the event runs the refresh', ! empty( $GLOBALS['wp_filters'][ SCDC_Refresh::CRON_HOOK ] ) );
+
+// Nothing fetched, so the payload's season is the fallback: the configured
+// season, not the calendar year.
+add_filter( 'scdc_season', function () { return 2019; } );
+$r = SCDC_Refresh::run( null, microtime( true ) );
+check( 'season: the fallback is the configured season', 2019 === $r['payload']['season'], (string) $r['payload']['season'] );
+unset( $GLOBALS['wp_filters']['scdc_season'] );
+
 array_map( 'unlink', glob( SCDC_Store::dir_path() . '/*' ) );
 @rmdir( SCDC_Store::dir_path() );
 @rmdir( $tmp_dir );

@@ -24,6 +24,117 @@ class SCDC_Refresh {
 	 */
 	const TEAM_BUDGET = 20;
 
+	/** The daily WP-Cron event. Scheduled from the main plugin file. */
+	const CRON_HOOK = 'scdc_cron_refresh';
+
+	/** Option holding the start time of the refresh in progress. */
+	const LOCK_OPTION = 'scdc_refresh_lock';
+
+	/**
+	 * How long a lock is honoured. Past the 720s budget with room to spare, so
+	 * only a run that died without releasing it (a fatal, a killed worker) is
+	 * ever taken over.
+	 */
+	const LOCK_TTL = 900;
+
+	/**
+	 * Refresh and store: the admin button and the daily cron both come here.
+	 *
+	 * One at a time. Two overlapping runs each did the whole ~65-request job,
+	 * and the second diffed its movement arrows against a snapshot the first
+	 * was about to replace.
+	 *
+	 * @param int $budget Seconds to ask the host for.
+	 * @return string success | partial | error | locked
+	 */
+	public static function run_and_store( $budget = 720 ) {
+		if ( ! self::acquire_lock() ) {
+			return 'locked';
+		}
+		try {
+			return self::store( $budget );
+		} finally {
+			delete_option( self::LOCK_OPTION );
+		}
+	}
+
+	/**
+	 * Take the lock, or report that a live run holds it.
+	 *
+	 * add_option() is not a strict mutex, but it closes the cases that happen:
+	 * a second click, or the cron firing, during a run of a minute or ten.
+	 *
+	 * @return bool
+	 */
+	private static function acquire_lock() {
+		$now = time();
+		if ( add_option( self::LOCK_OPTION, $now, '', 'no' ) ) {
+			return true;
+		}
+		$held = (int) get_option( self::LOCK_OPTION, 0 );
+		if ( $held > 0 && $now - $held < self::LOCK_TTL ) {
+			return false;
+		}
+		// A run that died without releasing it: take it over.
+		delete_option( self::LOCK_OPTION );
+		return (bool) add_option( self::LOCK_OPTION, $now, '', 'no' );
+	}
+
+	/**
+	 * The refresh itself, with a deadline, then the file and the meta.
+	 *
+	 * @param int $budget Seconds to ask the host for.
+	 * @return string success | partial | error
+	 */
+	private static function store( $budget ) {
+		// Blended refresh hits ESPN (32) + Footballguys (1) + FantasyPros (32).
+		// A healthy run takes about a minute; the worst case, every request timing
+		// out, is 15s + 32 × (10s + 10s) = 655s. Ask for $budget where the host
+		// allows it, otherwise work within its own max_execution_time. Either way
+		// the run gets a deadline 15s short of the limit: it stops starting new
+		// teams there and keeps the rest from the last refresh, so a slow run
+		// still writes what it fetched instead of dying with nothing written.
+		$start = microtime( true );
+		if ( ! function_exists( 'set_time_limit' ) || false === @set_time_limit( $budget ) ) { // phpcs:ignore
+			$budget = (int) ini_get( 'max_execution_time' );
+			$start  = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] : $start;
+		}
+		$deadline = $budget > 0 ? $start + $budget - 15 : 0;
+
+		$previous = SCDC_Store::read();
+		$result   = self::run( $previous, $deadline );
+
+		$saved = false;
+		if ( 'error' !== $result['status'] ) {
+			$saved = SCDC_Store::write( $result['payload'] );
+		}
+
+		$now = time();
+		if ( 'error' === $result['status'] || ! $saved ) {
+			$status = 'error';
+			$error  = ! empty( $result['error'] ) ? $result['error'] : __( 'Failed to write the cache file. Check uploads directory permissions.', 'statchasers-depth-charts' );
+			// Preserve the prior last_refreshed time on hard failure.
+			$meta                 = SCDC_Store::get_meta();
+			$meta['status']       = $status;
+			$meta['error']        = $error;
+			$meta['teams_ok']     = (int) $result['teams_ok'];
+			$meta['teams_failed'] = $result['teams_failed'];
+		} else {
+			$status = $result['status']; // success | partial
+			$meta   = array(
+				'status'            => $status,
+				'error'             => $result['error'],
+				'last_refreshed'    => gmdate( 'c', $now ),
+				'last_refreshed_ts' => $now,
+				'teams_ok'          => (int) $result['teams_ok'],
+				'teams_failed'      => $result['teams_failed'],
+				'teams_kept'        => $result['teams_kept'],
+			);
+		}
+		SCDC_Store::set_meta( $meta );
+		return $status;
+	}
+
 	/**
 	 * Run a full blended refresh.
 	 *
@@ -48,7 +159,9 @@ class SCDC_Refresh {
 		$teams_kept   = array();
 		$ok           = 0;
 		$out_of_time  = false;
-		$season       = (int) gmdate( 'Y' );
+		// The configured season, not the calendar year: January to August the
+		// calendar is a year ahead of the season being charted.
+		$season       = SCDC_Teams::season();
 
 		foreach ( SCDC_Espn::teams() as $team ) {
 			$abbr = $team['abbr'];
