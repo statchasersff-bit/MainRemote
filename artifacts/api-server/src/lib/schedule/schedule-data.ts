@@ -39,6 +39,7 @@ import { seasonYear } from "../seo";
 import { parseCsv } from "../fpa/nflverse";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { logger } from "../logger";
+import { ESPN_SITE } from "../team/upstream";
 
 /**
  * Where the slate comes from. One file, the whole of NFL history.
@@ -371,7 +372,7 @@ async function fetchEspnWeek(
 ): Promise<boolean> {
   try {
     const response = await fetch(
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard` +
+      `${ESPN_SITE}/apis/site/v2/sports/football/nfl/scoreboard` +
         `?dates=${season}&seasontype=2&week=${week}`,
       {
         headers: {

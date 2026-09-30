@@ -1,0 +1,693 @@
+{
+ "_note": "ESPN scoreboard, 2024 regular season week 1, recorded 2026-09-30, trimmed to the fields readEspnEvent reads.",
+ "events": [
+  {
+   "id": "401671789",
+   "name": "Baltimore Ravens at Kansas City Chiefs",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "NBC",
+        "Peacock"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "27",
+       "team": {
+        "abbreviation": "KC"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "20",
+       "team": {
+        "abbreviation": "BAL"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671805",
+   "name": "Green Bay Packers at Philadelphia Eagles",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "Peacock"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "34",
+       "team": {
+        "abbreviation": "PHI"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "29",
+       "team": {
+        "abbreviation": "GB"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671744",
+   "name": "Pittsburgh Steelers at Atlanta Falcons",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "10",
+       "team": {
+        "abbreviation": "ATL"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "18",
+       "team": {
+        "abbreviation": "PIT"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671617",
+   "name": "Arizona Cardinals at Buffalo Bills",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "34",
+       "team": {
+        "abbreviation": "BUF"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "28",
+       "team": {
+        "abbreviation": "ARI"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671719",
+   "name": "Tennessee Titans at Chicago Bears",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "24",
+       "team": {
+        "abbreviation": "CHI"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "17",
+       "team": {
+        "abbreviation": "TEN"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671628",
+   "name": "New England Patriots at Cincinnati Bengals",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "10",
+       "team": {
+        "abbreviation": "CIN"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "16",
+       "team": {
+        "abbreviation": "NE"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671861",
+   "name": "Houston Texans at Indianapolis Colts",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "27",
+       "team": {
+        "abbreviation": "IND"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "29",
+       "team": {
+        "abbreviation": "HOU"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671849",
+   "name": "Jacksonville Jaguars at Miami Dolphins",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "20",
+       "team": {
+        "abbreviation": "MIA"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "17",
+       "team": {
+        "abbreviation": "JAX"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671734",
+   "name": "Carolina Panthers at New Orleans Saints",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "47",
+       "team": {
+        "abbreviation": "NO"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "10",
+       "team": {
+        "abbreviation": "CAR"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671712",
+   "name": "Minnesota Vikings at New York Giants",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "6",
+       "team": {
+        "abbreviation": "NYG"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "28",
+       "team": {
+        "abbreviation": "MIN"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671659",
+   "name": "Las Vegas Raiders at Los Angeles Chargers",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "22",
+       "team": {
+        "abbreviation": "LAC"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "10",
+       "team": {
+        "abbreviation": "LV"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671664",
+   "name": "Denver Broncos at Seattle Seahawks",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "CBS"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "26",
+       "team": {
+        "abbreviation": "SEA"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "20",
+       "team": {
+        "abbreviation": "DEN"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671761",
+   "name": "Dallas Cowboys at Cleveland Browns",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "17",
+       "team": {
+        "abbreviation": "CLE"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "33",
+       "team": {
+        "abbreviation": "DAL"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671770",
+   "name": "Washington Commanders at Tampa Bay Buccaneers",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "FOX"
+       ]
+      },
+      {
+       "names": [
+        "NFL Sunday Ticket"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "37",
+       "team": {
+        "abbreviation": "TB"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "20",
+       "team": {
+        "abbreviation": "WSH"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671792",
+   "name": "Los Angeles Rams at Detroit Lions",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final/OT",
+     "shortDetail": "Final/OT",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "NBC",
+        "Peacock"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "26",
+       "team": {
+        "abbreviation": "DET"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "20",
+       "team": {
+        "abbreviation": "LAR"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401671696",
+   "name": "New York Jets at San Francisco 49ers",
+   "status": {
+    "type": {
+     "completed": true,
+     "detail": "Final",
+     "shortDetail": "Final",
+     "state": "post"
+    }
+   },
+   "competitions": [
+    {
+     "broadcasts": [
+      {
+       "names": [
+        "ESPN",
+        "ABC",
+        "ESPN+"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "32",
+       "team": {
+        "abbreviation": "SF"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "19",
+       "team": {
+        "abbreviation": "NYJ"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
