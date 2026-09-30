@@ -1033,8 +1033,8 @@ router.get("/status", (_req, res) => {
                 weekNumber: fpaSnapshot.weekNumber,
                 dataMode: fpaSnapshot.dataMode,
               }),
-          // Whether POST /api/fpa/ingest requires the secret here. Unset, the
-          // endpoint is open — the same posture POST /api/ingest takes.
+          // Whether INGEST_SECRET is set here. Unset, POST /api/fpa/ingest
+          // refuses every call (503), like every other write.
           ingestGuarded: Boolean(process.env["INGEST_SECRET"]),
           running: fpa.running,
           lastAttempt: iso(fpa.lastAttemptMs),
