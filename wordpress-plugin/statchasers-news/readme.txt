@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.16
+Stable tag: 1.10.17
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.17 =
+* The RB handcuffs board is held to the site's content width. It was the one tool that never loaded the width cap, so on a builder page it ran the width of the window and grew wider as the page was zoomed out. The page also drops the sidebar column, like every other tool page.
 
 = 1.10.16 =
 * Matchup recap pages get a share card. The app draws a 1200×630 image for each completed game (/og/<away>-vs-<home>-<season>-<round>.png on the app's origin, served without the embed key so social crawlers can fetch it), and the plugin adds it as og:image and twitter:image with its alt text, a large Twitter card and og:type article, through Rank Math's Open Graph hooks, or printed directly when Rank Math is not active.

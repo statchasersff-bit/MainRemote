@@ -24,6 +24,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { titleCase } from "./title-case";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { SCORING_SHORT } from "./scoring";
@@ -78,7 +79,7 @@ function a(href: string, text: string, attrs = ""): string {
 function open(id: string, heading: string, lede: string, extra = ""): string {
   return (
     `<section class="scp-ox-sec${extra}" aria-labelledby="${id}">` +
-    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(heading)}</h2>` +
+    `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase(heading))}</h2>` +
     (lede ? `<p class="scp-ox-lede">${escapeHtml(lede)}</p>` : "")
   );
 }
@@ -419,7 +420,11 @@ const DAY_NAME: Record<string, string> = {
 
 /* ------------------------------------------------------ section 1: status */
 
-function statusLede(m: Model): string {
+/**
+ * The answer to "is he injured?", which the status panel carries now that the
+ * section has no heading of its own to ask it (mak, 2026-09-30).
+ */
+function statusAnswer(m: Model): string {
   const wk = m.next ? `Week ${m.next.week}` : "this week";
   const part = m.bodyPart ? `${m.bodyPart.toLowerCase()} injury` : "an injury";
   switch (m.code) {
@@ -428,25 +433,28 @@ function statusLede(m: Model): string {
     case "D":
       return `${m.last} is doubtful for ${wk} with ${m.bodyPart ? article(part) : part}.`;
     case "O":
-      return `Yes. ${m.last} is out for ${wk} with ${m.bodyPart ? article(part) : part}.`;
+      return `${m.last} is out for ${wk} with ${m.bodyPart ? article(part) : part}.`;
     case "IR":
     case "PUP":
     case "NFI":
-      return `Yes. ${m.last} is on ${m.code === "IR" ? "injured reserve" : `the ${STATUS_WORD[m.code]}`}${m.bodyPart ? ` with ${article(part)}` : ""}.`;
+      return `${m.last} is on ${m.code === "IR" ? "injured reserve" : `the ${STATUS_WORD[m.code]}`}${m.bodyPart ? ` with ${article(part)}` : ""}.`;
     case "SUSP":
       return `${m.last} is suspended, not injured.`;
     case "OFFSEASON":
       return `No current injury designation; the season is over.`;
     default: {
-      const every =
-        m.seasonMissed === 0 && m.playedThisSeason > 0 && m.nickname
-          ? ` ${m.last} has played in every ${m.nickname} game this season.`
-          : ` ${m.last} has no injury designation heading into ${wk}.`;
-      const listed = m.report.find((r) => r.injury && r.week !== m.next?.week);
-      const extra = listed
-        ? ` He was listed with ${article(injuryName(listed.injury!))} in Week ${listed.week}${m.practice.find((p) => p.week === listed.week)?.game.text === "Played" ? " but played" : ""}.`
-        : "";
-      return `No.${every}${extra}`;
+      let first = "No injury designation.";
+      if (m.next) {
+        const at = m.next.homeAway === "home" ? "against the" : "at the";
+        first = `No injury designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
+      }
+      const missed =
+        m.seasonMissed === 0 && m.playedThisSeason > 0
+          ? ` ${m.last} has not missed a game this season.`
+          : m.seasonMissed
+            ? ` ${m.last} has missed ${games(m.seasonMissed)} this season.`
+            : "";
+      return first + missed;
     }
   }
 }
@@ -462,25 +470,21 @@ function nextGameText(g: UpcomingGame): { opp: string; line: string } {
   return { opp, line: `${where} ${g.opponentCode}${when}` };
 }
 
+/**
+ * One status strip: the status and its answer, then three short facts. It was
+ * four ~160px cards under their own "Is he injured?" heading; mak asked for one
+ * strip of about 100px with the status dominant and the timestamp out of the
+ * way in the corner (2026-09-30).
+ */
 function renderStatus(m: Model, data: PlayerPageData): string {
   const kind = STATUS_KIND[m.code];
   const word = STATUS_WORD[m.code];
-  let sentence: string;
-  if (m.next) {
-    const { opp } = nextGameText(m.next);
-    const at = m.next.homeAway === "home" ? "against the" : "at the";
-    sentence =
-      m.code === "ACTIVE"
-        ? `No injury designation heading into Week ${m.next.week} ${at} ${opp}.`
-        : `${word}${m.bodyPart ? ` (${m.bodyPart.toLowerCase()})` : ""} heading into Week ${m.next.week} ${at} ${opp}.`;
-  } else {
-    sentence = m.code === "OFFSEASON" ? "No injury being rehabbed on the record." : `${word}${m.bodyPart ? ` (${m.bodyPart.toLowerCase()})` : ""}.`;
-  }
   const stale = m.checkedMs > 0 && m.next !== null && m.now - m.checkedMs > STALE_MS;
   const checked =
     m.checkedMs > 0
-      ? `<span class="scp-in-checked">Status checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}</span>` +
-        (stale ? `<span class="scp-in-stale">Latest report pending.</span>` : "")
+      ? `<span class="scp-in-checked">Checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}` +
+        (stale ? ` <span class="scp-in-stale">· latest report pending</span>` : "") +
+        `</span>`
       : "";
 
   const cells: string[] = [];
@@ -507,16 +511,17 @@ function renderStatus(m: Model, data: PlayerPageData): string {
     );
   }
   if (m.next) {
-    cells.push(cell("Next game", `Week ${m.next.week}`, nextGameText(m.next).line));
+    const { line } = nextGameText(m.next);
+    const [where, ...when] = line.split(", ");
+    cells.push(cell("Next game", `Week ${m.next.week} ${where}`, when.join(", ")));
   }
 
   return (
     `<div class="scp-in-statusbar">` +
     `<div class="scp-in-main is-${kind}">` +
-    `<div class="scp-in-label">Current status</div>` +
     `<div class="scp-in-big">${escapeHtml(word)}</div>` +
-    `<p>${escapeHtml(sentence)}</p>` +
     checked +
+    `<p>${escapeHtml(statusAnswer(m))}</p>` +
     `</div>` +
     cells.join("") +
     `</div>`
@@ -527,7 +532,8 @@ function cell(label: string, value: string, sub: string): string {
   return (
     `<div><div class="scp-in-label">${escapeHtml(label)}</div>` +
     `<div class="scp-in-v">${escapeHtml(value)}</div>` +
-    `<div class="scp-in-s">${escapeHtml(sub)}</div></div>`
+    (sub ? `<div class="scp-in-s">${escapeHtml(sub)}</div>` : "") +
+    `</div>`
   );
 }
 
@@ -601,7 +607,9 @@ function renderPractice(m: Model): string {
 
 function renderSection1(m: Model, data: PlayerPageData): string {
   return (
-    open("scp-in-status-h", `Is ${m.name} injured?`, statusLede(m)) +
+    // No heading: the tab's H1 sits right above, and the panel answers the
+    // "is he injured?" question the old heading asked.
+    `<section class="scp-ox-sec scp-in-now" aria-label="Current injury status">` +
     renderStatus(m, data) +
     renderPractice(m) +
     `</section>`
@@ -890,7 +898,7 @@ function renderHistory(m: Model): string {
 
   return (
     `<section class="scp-ox-sec" aria-labelledby="scp-in-tl-h"><div class="scp-ox-read"><div>` +
-    `<h2 class="scp-ox-h2" id="scp-in-tl-h">${escapeHtml(`${m.name} injury history`)}</h2>` +
+    `<h2 class="scp-ox-h2" id="scp-in-tl-h">${escapeHtml(titleCase(`${m.name} injury history`))}</h2>` +
     `<p class="scp-ox-lede">Every logged injury, most recent first. Games missed are regular-season games.</p>` +
     list +
     note +

@@ -55,14 +55,10 @@ import {
 import {
   bettingSeason,
   pointsAllowed,
-  sameWeek,
   seasonGames,
   seasonToDate,
-  similarGames,
-  storedGame,
   storedMeetings,
   storedSeasons,
-  type SeasonGame,
   type TeamSeason,
 } from "./season-data";
 import { statLine } from "./leaders-strip";
@@ -76,6 +72,7 @@ import {
   breadcrumbSchema,
   jsonLdScript,
   renderBeforeAfter,
+  renderExploreCard,
   renderBetting,
   renderExplore,
   renderHighlights,
@@ -89,7 +86,7 @@ import {
   type GameLogLink,
   type SeasonSide,
 } from "./recap-extras";
-import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import { type NflTeam } from "../team/teams";
 import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
 import { logger } from "../logger";
 import { loadPlayers } from "../player/data";
@@ -531,40 +528,6 @@ function renderGameScoring(data: MatchupData): string {
 
 /* ------------------------------------------- stored seasons: extras */
 
-/** "Wild Card", "Week 7": a stored game's round, as the schedule names it. */
-function roundName(seasonType: "regular" | "post", week: number): string {
-  if (seasonType === "regular") return `Week ${week}`;
-  return { 1: "Wild Card", 2: "Divisional Round", 3: "Conference Championship", 5: "Super Bowl" }[week] ?? `Postseason week ${week}`;
-}
-
-/** A stored game's recap address, from its two clubs. */
-function storedGameUrl(g: SeasonGame, options: MatchupRenderOptions): string | null {
-  const pair = canonicalizeMatchupPair(g.away, g.home);
-  if (!pair) return null;
-  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
-  return `${gamePath(prefix, pair.slug, { season: g.season, week: g.week, seasonType: g.seasonType })}${options.linkQuery ?? ""}`;
-}
-
-function nickname(code: string): string {
-  return getTeamByAbbreviation(code)?.nickname ?? code;
-}
-
-function exploreStored(g: SeasonGame, options: MatchupRenderOptions, meta: string): ExploreGame {
-  return {
-    away: { short: nickname(g.away), score: g.awayScore },
-    home: { short: nickname(g.home), score: g.homeScore },
-    neutral: false,
-    meta,
-    url: storedGameUrl(g, options),
-  };
-}
-
-function shortDateOf(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric" }).format(
-    new Date(iso),
-  );
-}
-
 /** The Betting tab's extras: the pair's priced meetings, each club's season against the lines, and what is next. */
 function bettingExtras(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): BettingExtras | null {
   const meeting = data.featured;
@@ -910,7 +873,6 @@ function renderGameExplore(data: MatchupData, input: RecapBodyInput, options: Ma
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting) return "";
-  const path = winnerPath(data, game, options);
   const fantasy = fantasyInput(data);
   const colors = heroPairColors(game.away.abbr, game.home.abbr);
   const logs: GameLogLink[] = (fantasy ? verdictPlayers(fantasy) : []).flatMap((p) => {
@@ -942,27 +904,7 @@ function renderGameExplore(data: MatchupData, input: RecapBodyInput, options: Ma
     ? `<nav class="sct-ex-hubs" aria-label="Team and rivalry pages">` +
       `<h3 class="sct-rb-h3">Team pages</h3><ul class="sct-rb-pills">${pills}</ul></nav>`
     : "";
-  // "More from" the week or round, and the rule-based "Similar games", from the stored seasons.
-  const columns: ExploreColumn[] = [];
-  const round = roundName(meeting.seasonType, meeting.week);
-  const week = sameWeek(meeting.season, meeting.seasonType, meeting.week, [game.away.abbr, game.home.abbr]);
-  if (week.length) {
-    columns.push({
-      title: `More from ${meeting.season} ${meeting.seasonType === "post" ? round : round}`,
-      games: week.map((g) => exploreStored(g, options, shortDateOf(g.date))),
-    });
-  }
-  if (path) columns.push(path);
-  const self = storedGame(meeting.season, meeting.espnEventId ?? null);
-  const similar = self ? similarGames(self, storedSeasons(meeting.season - HISTORY_SEASONS, meeting.season + 1)) : null;
-  if (similar) {
-    columns.push({
-      title: "Similar games",
-      note: similar.rule,
-      games: similar.games.map((g) => exploreStored(g, options, `${g.season} ${roundName(g.seasonType, g.week)}`)),
-    });
-  }
-  return renderExplore(columns, { season: String(meeting.season), players: logs }, nav);
+  return renderExplore([], { season: String(meeting.season), players: logs }, nav);
 }
 
 /** The recap build spec's sections that live outside recap-body.ts, for the tabs to place. */
@@ -996,7 +938,8 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
   const sides = seasonSides(data)
     .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
-  return renderBeforeAfter(game, sides);
+  // The winner's next games follow, as their own card.
+  return renderBeforeAfter(game, sides) + renderExploreCard(winnerPath(data, game, options));
 }
 
 /** The recap's VideoObject as an inert island for the plugin, or "". */
@@ -3266,13 +3209,13 @@ const RECAP_TABS = [
 type RecapTabId = (typeof RECAP_TABS)[number][0];
 
 /**
- * A completed game's page, in the build spec's layout: the sticky tab bar at
- * the top, then two columns — the five tab panels and the always-visible
+ * A completed game's page: the scoreboard across the full width, the sticky
+ * tab bar under it, then two columns — the five tab panels and the always-visible
  * sections (fantasy outlook, FAQ, Keep exploring) in the main one, the sidebar
  * beside it.
  *
- * The scoreboard, with the page's one H1, is the Recap panel's first element.
- * Every panel is in the HTML. client/team.ts hides the inactive ones; without
+ * The scoreboard, with the page's one H1, is outside the panels, so it shows
+ * on every tab. Every panel is in the HTML. client/team.ts hides the inactive ones; without
  * it nothing is hidden, the bar is not shown, and the panels read top to bottom
  * in tab order. A tab with nothing in it is left out, bar button and all.
  */
@@ -3307,16 +3250,16 @@ function recapTabs(
       return (
         panel(
           "recap",
-          renderHero(data, options) +
-            renderGameLeadersStrip(data) +
+          renderGameLeadersStrip(data) +
             renderGameRecap(data, options, added.meant) +
             own.why +
             renderGameScoring(data) +
             added.highlights,
         ) +
-        panel("fantasy", fantasyTab) +
+        // Player stats and usage, restored under the fantasy section.
+        panel("fantasy", fantasyTab + renderPlayerStats(data) + renderUsage(data)) +
         panel("game-flow", added.winProbability + added.possessions) +
-        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
+        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game) + renderSeasonForm(data)) +
         panel("betting", added.betting) +
         // Below the panels, on every tab.
         own.outlook +
@@ -3328,7 +3271,9 @@ function recapTabs(
   });
 
   const top = renderTabBar(game, RECAP_TABS.filter(([id]) => present.has(id)));
-  const themed = themeInks(top + body, game);
+  // The scoreboard sits above the tab bar and both columns, on every tab, as
+  // the player pages put their header above their tabs.
+  const themed = themeInks(renderHero(data, options) + top + body, game);
   return { top: "", body: themed.html, style: themed.style };
 }
 

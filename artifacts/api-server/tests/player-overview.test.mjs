@@ -125,13 +125,13 @@ describe("overview sections", () => {
       return text(h2);
     });
     assert.deepEqual(heads, [
-      "Jacoby Brissett's 2026 season, week by week",
-      "Should you start or roster Jacoby Brissett?",
-      "What's driving his production",
-      "Jacoby Brissett 2026 game log",
-      "Career fantasy stats by season",
-      "Rest-of-season outlook and availability",
-      "Jacoby Brissett fantasy FAQ",
+      "Jacoby Brissett's 2026 Season, Week by Week",
+      "Should You Start or Roster Jacoby Brissett?",
+      "What's Driving His Production",
+      "Jacoby Brissett 2026 Game Log",
+      "Career Fantasy Stats by Season",
+      "Rest-of-Season Outlook and Availability",
+      "Jacoby Brissett Fantasy FAQ",
     ]);
   });
 

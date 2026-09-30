@@ -187,6 +187,13 @@ function statchasers_rb_handcuffs_enqueue_assets(): void {
 	wp_enqueue_style( STATCHASERS_RB_HANDCUFFS_HANDLE );
 	wp_enqueue_script( STATCHASERS_RB_HANDCUFFS_HANDLE );
 
+	// Caps the board at the site's content width. Without it, on a page that
+	// has been through the Divi Builder the board ran the width of the window,
+	// so zooming out (a wider window in CSS pixels) made it wider.
+	if ( statchasers_rb_handcuffs_wants_full_width() ) {
+		wp_add_inline_style( STATCHASERS_RB_HANDCUFFS_HANDLE, statchasers_team_full_width_css() );
+	}
+
 	// The compare tray and the player card sit over the page, and must sit
 	// over Divi's header too; and a phone should not read the board through
 	// Divi's 10% margins. See statchasers-team.php.
@@ -233,6 +240,77 @@ add_action(
 		statchasers_rb_handcuffs_enqueue_assets();
 	}
 );
+
+/* ------------------------------------------------------------ divi layout */
+
+/**
+ * Does this page want Divi's full-width column?
+ *
+ * The CSS and the meta/body-class filters are the team file's; only the "does
+ * this page mount the tool" question differs, so only that is restated. The
+ * CSS is also what caps the board at the site's content width, so without it
+ * the board is as wide as whatever column the page shape hands it.
+ */
+function statchasers_rb_handcuffs_wants_full_width(): bool {
+	if ( ! statchasers_team_is_divi() || ! statchasers_rb_handcuffs_post_has_shortcode() ) {
+		return false;
+	}
+
+	/**
+	 * Filters whether a page mounting the RB handcuffs board takes the whole column.
+	 *
+	 * @param bool $full_width Whether to take the whole column.
+	 */
+	return (bool) apply_filters( 'statchasers_rb_handcuffs_full_width', true );
+}
+
+/**
+ * Remove the sidebar markup on a handcuffs page.
+ *
+ * @param mixed  $value     Short-circuit value; null means "not handled".
+ * @param int    $object_id Post ID being queried.
+ * @param string $meta_key  Meta key being queried.
+ * @return mixed Null to fall through to the stored value.
+ */
+function statchasers_rb_handcuffs_force_full_width_meta( $value, $object_id, $meta_key ) {
+	if ( '_et_pb_page_layout' !== $meta_key ) {
+		return $value;
+	}
+
+	if ( (int) $object_id !== (int) get_queried_object_id() ) {
+		return $value;
+	}
+
+	if ( ! statchasers_rb_handcuffs_wants_full_width() ) {
+		return $value;
+	}
+
+	return array( 'et_full_width_page' );
+}
+add_filter( 'get_post_metadata', 'statchasers_rb_handcuffs_force_full_width_meta', 10, 3 );
+
+/**
+ * The body class that goes with it.
+ *
+ * @param string[] $classes Existing classes.
+ * @return string[]
+ */
+function statchasers_rb_handcuffs_full_width_body_class( array $classes ): array {
+	if ( ! statchasers_rb_handcuffs_wants_full_width() ) {
+		return $classes;
+	}
+
+	$classes = array_values(
+		array_diff( $classes, array( 'et_right_sidebar', 'et_left_sidebar' ) )
+	);
+
+	if ( ! in_array( 'et_full_width_page', $classes, true ) ) {
+		$classes[] = 'et_full_width_page';
+	}
+
+	return $classes;
+}
+add_filter( 'body_class', 'statchasers_rb_handcuffs_full_width_body_class', PHP_INT_MAX );
 
 /* ------------------------------------------------------------ the shortcode */
 

@@ -3126,10 +3126,8 @@ function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): strin
 
   // The tab's heading, and the thing that names the panel — on the scoped URL
   // as well. See renderHero().
-  const heading = h2(
-    `${data.player.name} Injury Update & History`,
-    "Current status, games missed and every logged injury.",
-  );
+  // No subtitle since 2026-09-30: the status panel's answer follows the H1.
+  const heading = h2(`${data.player.name} Injury Update & History`);
 
   // The original tab's sections (status card, at-a-glance grade and tiles,
   // availability profile, body-part table and history) were removed on

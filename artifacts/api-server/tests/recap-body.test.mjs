@@ -387,8 +387,9 @@ describe("no meetings left on the schedule", () => {
   const input = { ...WILD_CARD, series: { ...WILD_CARD.series, upcoming: [] } };
   const doc = render(input);
 
-  test("no fantasy outlook without a meeting to come", () => {
-    assert.equal(doc.querySelector("#fantasy-outlook"), null);
+  test("the fantasy section stays, as the pair in fantasy, without a meeting to come", () => {
+    assert.equal(text(doc.querySelector("#fantasy-outlook")), "Cardinals and Rams in fantasy");
+    assert.match(text(doc.querySelector("#fantasy-outlook ~ .sct-rb-sub")), /^The two teams don't meet again this season\./);
   });
 
   test("no when-next or start/sit question and no upcoming list", () => {

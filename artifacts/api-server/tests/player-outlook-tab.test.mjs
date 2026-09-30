@@ -85,12 +85,12 @@ describe("in season", () => {
     assert.deepEqual(
       [...doc.querySelectorAll(".scp-ol > section > h2, .scp-ol > section .scp-ol-take h2")].map((h) => h.textContent),
       [
-        "Jacoby Brissett rest-of-season outlook",
-        "Preseason projection vs. reality",
-        "Our take after Week 3",
-        "What drives his outlook",
-        "What could change his value",
-        "Jacoby Brissett outlook FAQ",
+        "Jacoby Brissett Rest-of-Season Outlook",
+        "Preseason Projection vs. Reality",
+        "Our Take After Week 3",
+        "What Drives His Outlook",
+        "What Could Change His Value",
+        "Jacoby Brissett Outlook FAQ",
       ],
     );
   });
@@ -159,7 +159,7 @@ describe("in season", () => {
 describe("edge states", () => {
   test("preseason: the take after last season, a Week 1 panel, the preseason piece as the read", () => {
     const doc = render(state({ leagueWeek: 0, logCareer: [state().logCareer[1]] }));
-    assert.equal(doc.querySelector("#scp-ol-read-h").textContent, "Our 2026 preseason outlook");
+    assert.equal(doc.querySelector("#scp-ol-read-h").textContent, "Our 2026 Preseason Outlook");
     assert.equal(doc.querySelector("details.scp-ol-prev"), null);
     assert.match(doc.querySelector(".scp-ol-ex.is-now").textContent, /Season starts Week 4/);
   });

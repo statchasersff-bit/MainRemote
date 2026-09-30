@@ -1278,17 +1278,7 @@ a.rbh-name:hover {
   color: var(--sc-muted);
 }
 
-/* ------------------------------------------------ the dek, best and faq */
-
-/* The standfirst under the page's heading. The heading is the WordPress page
-   title; this is the tool's first line, and reads as copy, not a control. */
-.rbh-dek {
-  max-width: 72ch;
-  margin: 0 0 14px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--sc-muted-strong);
-}
+/* ----------------------------------------------------- the best and faq */
 
 /* The best handcuffs and the FAQ follow the table as prose. The 40px is a
    page break, as on the rankings page: a table ends and reading begins. */

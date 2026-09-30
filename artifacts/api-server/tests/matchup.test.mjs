@@ -1444,11 +1444,14 @@ describe("completed game tabs", () => {
     // The score line, for readers on another tab.
     assert.equal(doc.querySelector("[data-mu-score]").textContent.replace(/\s+/g, " ").trim(), "ARI 11 · LAR 34 Final");
 
-    // The H1 is the scoreboard's, and the scoreboard opens the Recap panel.
+    // The H1 is the scoreboard's, which sits outside the panels, full width
+    // above the tab bar and both columns, so every tab shows it.
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(h1[0].closest("[data-mu-tab]").id, "recap-tab");
-    assert.ok(doc.getElementById("recap-tab").firstElementChild.matches("header.sct-sbh"));
+    assert.equal(h1[0].closest("[data-mu-tab]"), null);
+    const hero = h1[0].closest("header.sct-sbh");
+    assert.ok(hero.nextElementSibling.matches("[data-mu-tabbar]"));
+    assert.ok(hero.nextElementSibling.nextElementSibling.matches(".sct-rb"));
 
     // Not yet tabbed: every panel is in the markup and none hidden.
     assert.equal(root.hasAttribute("data-mu-tabs"), false);

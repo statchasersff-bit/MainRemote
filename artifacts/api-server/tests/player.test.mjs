@@ -2843,10 +2843,10 @@ describe("the embedded fragment", () => {
   test("?h1=1: each section page's H1 is its own phrase", async () => {
     for (const [section, want] of [
       // The spec's "{Name} {season} stats" since mak dropped the panel heading (2026-09-30).
-      ["stats", new RegExp(`^${fixture.name} 2\\d{3} stats$`)],
+      ["stats", new RegExp(`^${fixture.name} 2\\d{3} Stats$`)],
       ["game-log", new RegExp(`^${fixture.name} Game Log 2\\d{3}$`)],
       // The spec's take heading since mak dropped "<season> Outlook" (2026-09-30).
-      ["outlook", new RegExp(`^${fixture.name} rest-of-season outlook$`)],
+      ["outlook", new RegExp(`^${fixture.name} Rest-of-Season Outlook$`)],
     ]) {
       const res = await get(`/embed/player/${fixture.slug}?section=${section}&h1=1`);
       const { doc, text } = h1Of(res.body);
@@ -3116,10 +3116,10 @@ describe("player section URLs", () => {
    * address.
    */
   const PHRASES = {
-    stats: / 2\d{3} stats$/,
+    stats: / 2\d{3} Stats$/,
     injury: /Injury Update & History$/,
     "game-log": /Game Log 2\d{3}$/,
-    outlook: /rest-of-season outlook$/,
+    outlook: /Rest-of-Season Outlook$/,
     news: /News & Analysis$/,
     bio: /Bio$/,
   };
