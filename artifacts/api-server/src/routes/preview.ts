@@ -19,6 +19,7 @@
  *   [statchasers_schedule] -> /preview/schedule
  *   [statchasers_player_stats] -> /preview/player-stats[/rb|wr|te]
  *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
+ *   [statchasers_strength_of_schedule] -> /preview/sos
  *
  * The fragment is the SAME markup the plugin fetches — it comes from the same
  * renderer the /embed endpoints use, not a second code path — wrapped in a mock
@@ -49,6 +50,8 @@ import { POSITIONS } from "../lib/rankings/rankings-data";
 import { renderScheduleFragment } from "../lib/schedule-ssr";
 import { renderStatsFragment } from "../lib/player-stats-ssr";
 import { renderHandcuffFragment } from "../lib/rb-handcuffs-ssr";
+import { renderSosFragment } from "../lib/sos-ssr";
+import { parseSosState } from "../lib/sos/sos-data";
 import { parseFpaFormat, parseFpaView } from "../lib/fpa/fpa-data";
 import {
   parseGameFilter,
@@ -637,6 +640,52 @@ router.get("/preview/raw/rb-handcuffs", (req, res) => {
     logger.error({ err }, "RB handcuffs fragment source view failed");
     res.status(500).type("html").send("<h1>Preview failed</h1>");
   }
+});
+
+/**
+ * [statchasers_strength_of_schedule] as it renders on a page. The view comes
+ * off the query string, as the plugin forwards it; swaps go to the real
+ * endpoint.
+ */
+router.get("/preview/sos", (req, res) => {
+  void (async () => {
+    try {
+      const view = parseSosState({ tab: req.query["tab"], pos: req.query["pos"], scoring: req.query["scoring"] });
+      const result = await renderSosFragment(view, { embed: true, endpoint: "/embed/sos", csvBase: "/sos" });
+      if (!result.board) {
+        res.status(404).type("text/plain").send("Not found");
+        return;
+      }
+      send(
+        req,
+        res,
+        hostPage({
+          title: "Fantasy Football Strength of Schedule",
+          shortcode: "[statchasers_strength_of_schedule]",
+          styles: ["/sos.css"],
+          scripts: ["/dist/statchasers-sos.js"],
+          fragment: result.html,
+        }),
+      );
+    } catch (err) {
+      logger.error({ err }, "SOS shortcode preview failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/** The SOS fragment as source. */
+router.get("/preview/raw/sos", (req, res) => {
+  void (async () => {
+    try {
+      const view = parseSosState({ tab: req.query["tab"], pos: req.query["pos"], scoring: req.query["scoring"] });
+      const result = await renderSosFragment(view, { embed: true });
+      send(req, res, sourcePage("[statchasers_strength_of_schedule]", "/embed/sos", result.html));
+    } catch (err) {
+      logger.error({ err }, "SOS fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
 });
 
 /** The rankings fragment as source. */

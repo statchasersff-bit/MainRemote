@@ -90,7 +90,7 @@ describe("in season", () => {
         "Our Take After Week 3",
         "What Drives His Outlook",
         "What Could Change His Value",
-        "Jacoby Brissett Outlook FAQ",
+        "Jacoby Brissett Fantasy Outlook FAQ",
       ],
     );
   });
@@ -151,7 +151,11 @@ describe("in season", () => {
     assert.match(doc.body.textContent, /Gardner Minshew II/);
     assert.match(doc.body.textContent, /Trey McBride and Michael Wilson/);
     assert.equal(doc.querySelector('script[type="application/ld+json"]'), null);
-    assert.equal(doc.querySelectorAll(".scp-ol-faq details").length, 4);
+    // Forward-looking questions only (faq-engine.ts, 2026-09-30).
+    const qs = [...doc.querySelectorAll(".scp-ol-faq summary")].map((q) => q.textContent);
+    assert.ok(qs.length >= 5 && qs.length <= 15, `${qs.length} questions`);
+    assert.equal(qs[0], "What is Jacoby Brissett's fantasy outlook for the rest of the 2026 season?");
+    assert.ok(!qs.some((q) => /worth rostering|last season|in 2025\?/.test(q)), "rosterability and history are other tabs'");
     assert.ok(doc.querySelector(".scp-ol-faq details").open);
   });
 });

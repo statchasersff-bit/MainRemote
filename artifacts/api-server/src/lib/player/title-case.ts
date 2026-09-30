@@ -7,7 +7,7 @@
  * Hyphenated parts follow the same rule: "Rest-of-Season".
  */
 const MINOR = new Set([
-  "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "into", "nor",
+  "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "into", "like", "nor",
   "of", "on", "or", "per", "the", "to", "vs", "vs.", "via", "with",
 ]);
 

@@ -163,7 +163,7 @@ body.sca-page {
  */
 
 .sca-h1 {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--sc-navy);
   font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.6rem);
   font-weight: 900;
@@ -171,11 +171,29 @@ body.sca-page {
   letter-spacing: -0.025em;
 }
 
-.sca-intro {
-  margin: 0 0 24px;
+/* The site hero's gold rule under the heading (sc-home-hero-minimal). */
+.sca-h1-underline {
+  width: 140px;
+  height: 4px;
+  margin: 18px 0 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sc-gold-deep), var(--sc-gold), var(--sc-gold-soft));
 }
 
-.sca-intro p,
+/* The hero's description. Embedded under the plugin's hero this block is
+   dropped and its words are the hero's lead; under a theme title it stays,
+   sized as that description rather than as fine print. */
+.sca-intro {
+  margin: 0 0 32px;
+}
+
+.sca-intro p {
+  margin: 0 0 8px;
+  color: var(--sc-muted-strong);
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
+  line-height: 1.7;
+}
+
 .sca-copy > p {
   margin: 0 0 6px;
   color: var(--sc-muted);

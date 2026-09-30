@@ -795,6 +795,7 @@ filter, so the page keeps one `<script type="application/ld+json">`:
 | Rankings (redraft and rest-of-season) | `ItemList` of the players, one per position the page shows — four on the All board, one on `/rb/` and the rest |
 | Team hub and its other sections, player pages, tools | `FAQPage`, where the page renders questions |
 | RB handcuffs | `CreativeWork` for the board |
+| Strength of schedule | Nothing (no schema approved for it) |
 
 The schedule list is built by the API (`src/lib/team/schedule-schema.ts`) and
 shipped as an inert JSON island that `statchasers-team.php` lifts into the graph
@@ -1222,6 +1223,40 @@ absent. The bundle fetches each player card from
 `statchasers-handcuffs` plugin. The shortcode tags don't collide, but both
 plugins add a schema node for the tool.
 
+## Fantasy football strength of schedule — `[statchasers_strength_of_schedule]`
+
+One page, at `/nfl/fantasy-football-strength-of-schedule/`: the page the old
+standalone "StatChasers Strength of Schedule" plugin (`[statchasers_sos]`)
+mounted on, and the address the team hubs already link to (`SC_SOS_URL`).
+
+```
+[statchasers_strength_of_schedule]
+[statchasers_strength_of_schedule tab="player" pos="wr" scoring="half-ppr"]
+```
+
+The attributes are the page's default view: `tab` (`team`, `player`), `pos`
+(`rb`, `qb`, `wr`, `te`) and `scoring` (`ppr`, `half-ppr`, `std`); anything
+else falls back to Team / RB / PPR. The bundle reflects the view the reader
+picks in the page's query string (`?tab=player&pos=wr&scoring=ppr`) so it can be
+shared, and the shortcode reads those three back, on this page only and only
+from those lists, to print the same view with scripting off. They are not
+registered query vars. The canonical is always the bare page.
+
+It prints the fragment from `/embed/sos`, cached for an hour per view with a
+30-day fallback. The board is computed by the API from the live FPA table and
+the season's schedule, so it moves when the FPA ingest does. The fragment's
+`scsos-page-data` island carries the page's title, H1 and meta description
+(approved by mak, 2026-09-30); the plugin applies them through Rank Math and
+core and strips the island. No schema node is added. In tool heading mode the
+shortcode prints the H1 itself. The CSV export is a public app route
+(`/sos/download.csv`).
+
+**Migrating from the old plugin:** replace `[statchasers_sos]` with
+`[statchasers_strength_of_schedule]` on the page, then deactivate and delete the
+"StatChasers Strength of Schedule" plugin. The tags don't collide, but the old
+plugin sets its own title, description, canonical and schema, which fight
+these.
+
 ## Locking the app to WordPress
 
 The app is a public address of its own. Without a key, anyone can skip this
@@ -1241,11 +1276,12 @@ page (the deployment health check requests it), the FPA and schedule CSV
 downloads, the `.ics` calendar, and the health and ingest routes (which have
 their own secret).
 
-Four widgets fetch from the reader's browser, where a key cannot be kept: the
-Player Stats table, FPA, RB Handcuffs player cards and the news refresh. They go
-through this site's proxy, `/wp-json/statchasers/v1/p/<path>`, which forwards
-only those four paths, adds the key and caches each answer for five minutes.
-Those four answers are therefore still public, but at statchasers.com, behind
+Five widgets fetch from the reader's browser, where a key cannot be kept: the
+Player Stats table, FPA, RB Handcuffs player cards, the Strength of Schedule
+view switch (`embed/sos`, since 1.10.18) and the news refresh. They go through
+this site's proxy, `/wp-json/statchasers/v1/p/<path>`, which forwards only those
+five paths, adds the key and caches each answer for five minutes. Those five
+answers are therefore still public, but at statchasers.com, behind
 Cloudflare's bot rules and rate limits, rather than at the app.
 
 **Rollout.** Three switches, each safe on its own, in this order:
@@ -1254,8 +1290,9 @@ Cloudflare's bot rules and rate limits, rather than at the app.
 2. On the app, set `SC_BROWSER_PROXY=https://statchasers.com/wp-json/statchasers/v1/p`
    and redeploy. Then clear the plugin's cached fragments so pages pick up the
    new widget addresses: `wp eval 'statchasers_news_flush();'`. Check that the
-   four widgets still switch (Player Stats position or season, FPA format, an
-   RB Handcuffs card, the news "load more") and that in the browser's network
+   five widgets still switch (Player Stats position or season, FPA format, an
+   RB Handcuffs card, a Strength of Schedule tab/position/scoring change, the
+   news "load more") and that in the browser's network
    panel they now call `/wp-json/statchasers/v1/p/…`.
 3. Pick a long random secret (for example `openssl rand -hex 32`). Put it in
    wp-config.php as `define( 'STATCHASERS_EMBED_KEY', '<secret>' );` first,

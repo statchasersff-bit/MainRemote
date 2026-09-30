@@ -28,6 +28,8 @@ export interface RivalryGame {
   awayScore: number;
   homeScore: number;
   playoff: boolean;
+  /** The season's last game, played for the championship (1966 season on). */
+  superBowl?: boolean;
   /** This game's recap page, when the site has one. */
   url: string | null;
 }

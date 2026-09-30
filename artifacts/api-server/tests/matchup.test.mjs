@@ -476,12 +476,12 @@ describe("game leaders", () => {
     const { doc } = await dom(PLAYED);
     // The pair has no meeting coming, so its page is the recap layout and the
     // leaders are the strip under the hero — see leaders-strip.ts.
-    // The fantasy table has players, so the Redraft Command note closes it.
-    const note = doc.querySelector(".sct-mu-playerstats > p.sct-mu-rc-note:last-child");
+    // The fantasy table has players, so the Redraft Command banner closes it.
+    const banner = doc.querySelector(".sct-mu-playerstats > aside.sct-mu-ps-cta:last-child");
     if (doc.querySelector(".sct-mu-playerstats table")) {
-      assert.ok(note, "the note is the section's last element");
-      assert.equal(note.querySelector("a").getAttribute("data-cta"), "fantasy-table-footer");
-      assert.equal(note.querySelector("a").textContent, "Redraft Command");
+      assert.ok(banner, "the banner is the section's last element");
+      assert.equal(banner.querySelector("a").getAttribute("data-cta"), "player-stats-banner");
+      assert.equal(banner.querySelector("a").textContent, "Open Redraft Command →");
     }
     const block = doc.querySelector('section.sct-ls[aria-label="Game leaders"]');
     assert.ok(block, "a played matchup carries the leaders strip");
@@ -810,10 +810,11 @@ describe("the postgame page", () => {
     // 158.3 is the maximum the formula can produce. A rating above it means the
     // components were not clamped.
     const passing = [...block.querySelectorAll("h3")].find(
-      (h) => h.textContent.trim() === "Passing",
+      (h) => h.textContent.trim() === "Quarterbacks",
     )?.parentElement;
     for (const row of passing?.querySelectorAll("tbody tr") ?? []) {
-      const rating = Number([...row.querySelectorAll("td")].at(-1).textContent.trim());
+      // Rate is the last stat, before the Start/Sit action.
+      const rating = Number([...row.querySelectorAll("td")].at(-2).textContent.trim());
       if (Number.isFinite(rating)) {
         assert.ok(rating >= 0 && rating <= 158.3, `passer rating ${rating}`);
       }
@@ -1019,7 +1020,7 @@ describe("the postgame page", () => {
     const inRow = [...row.querySelectorAll(".sct-mu-ps-block")].map(heading);
     assert.deepEqual(
       inRow,
-      ["Passing", "Rushing & Receiving"].filter((h) => inRow.includes(h)),
+      ["Quarterbacks", "WRs, RBs, & TEs"].filter((h) => inRow.includes(h)),
       `the row holds ${inRow.join(", ")}`,
     );
 
@@ -1128,45 +1129,48 @@ describe("sortable stat tables", () => {
     }
   });
 
-  test("Passing carries the quarterbacks' runs; Rushing & Receiving has no quarterbacks", async () => {
+  test("Quarterbacks carries the quarterbacks' runs; WRs, RBs, & TEs has no quarterbacks", async () => {
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
     const block = (title) =>
       [...doc.querySelectorAll(".sct-mu-playerstats .sct-mu-ps-block")].find(
         (b) => b.querySelector(".sct-mu-h3")?.textContent.trim() === title,
       );
-    const passing = block("Passing");
+    const passing = block("Quarterbacks");
     if (!passing) return;
     const heads = [...passing.querySelectorAll("thead th")].map((h) => h.textContent);
+    // Points and finish straight after the name; Start/Sit last, as an action.
     assert.deepEqual(heads, [
-      "Player", "CMP/ATT", "Pass YDS", "TD", "INT", "Rush ATT", "Rush YDS", "Rush TD", "Rate", "FPTS", "FIN",
+      "Player", "FPTS", "FIN", "CMP/ATT", "Pass YDS", "TD", "INT", "Rush ATT", "Rush YDS", "Rush TD", "Rate", "Start/Sit",
     ]);
     for (const row of passing.querySelectorAll("tbody tr")) assert.equal(row.cells.length, heads.length);
-    const skill = block("Rushing & Receiving");
+    const skill = block("WRs, RBs, & TEs");
     const positions = [...(skill?.querySelectorAll("tbody .sct-mu-ps-pos") ?? [])].map((c) => c.textContent);
     assert.ok(!positions.includes("QB"), `positions ${positions.join(", ")}`);
   });
 
-  test("the highlights video closes the Recap tab", async () => {
+  test("the highlights video is part of the game story on the Recap tab", async () => {
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
     const video = doc.querySelector("[data-mu-tab='recap'] .sct-hl");
     if (!video) return;
-    assert.equal(video.parentElement.lastElementChild, video);
+    // One game-summary module: the story's last child, after its text.
+    assert.ok(video.parentElement.matches(".sct-mu-story"));
+    assert.ok(video.previousElementSibling.matches(".sct-mu-story-body, .sct-mu-keys"));
     // Click to load: a button, no iframe in the served HTML.
     assert.ok(video.querySelector("button.sct-hl-play[data-hl-embed^='https://www.youtube-nocookie.com/embed/']"));
     assert.equal(video.querySelector("iframe"), null);
   });
 
-  test("each stat table ends with fantasy points and finish, all three formats on the cell", async () => {
+  test("each stat table leads with fantasy points and finish, all three formats on the cell", async () => {
     const { doc } = await dom("/nfl/buffalo-bills-vs-new-england-patriots/2021-week-16/");
     const tables = [...doc.querySelectorAll(".sct-mu-playerstats table")];
     if (tables.length === 0) return;
     assert.ok(![...doc.querySelectorAll(".sct-mu-playerstats caption")].some((c) => /Fantasy/.test(c.textContent)), "no separate fantasy table");
     for (const table of tables) {
       const heads = [...table.querySelectorAll("thead th")].map((h) => h.textContent);
-      assert.ok(["PPR", "FPTS"].includes(heads.at(-2)), `points header ${heads.at(-2)}`);
-      assert.equal(heads.at(-1), "FIN");
+      assert.ok(["PPR", "FPTS"].includes(heads[1]), `points header ${heads[1]}`);
+      assert.equal(heads[2], "FIN");
       for (const row of table.querySelectorAll("tbody tr")) {
-        const [fp, fin] = [...row.cells].slice(-2);
+        const [fp, fin] = [...row.cells].slice(1, 3);
         for (const cell of [fp, fin]) {
           for (const f of ["ppr", "half", "std"]) assert.ok(cell.hasAttribute(`data-fmt-${f}`), `${f} on the cell`);
           assert.equal(cell.textContent, cell.getAttribute("data-fmt-ppr"), "the server prints PPR");
@@ -1179,9 +1183,12 @@ describe("sortable stat tables", () => {
       .flatMap((t) => [...t.querySelectorAll("tbody tr")])
       .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen");
     assert.equal(allen.length, 1, "one row for Josh Allen");
-    assert.notEqual(allen[0].cells[5].textContent, "—", "his carries are on the Passing row");
-    // The note that closes the section follows the players' tables.
-    assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-rc-note");
+    assert.notEqual(allen[0].cells[7].textContent, "—", "his carries are on the Passing row");
+    // The fantasy leaders open the section, the "Player Stats" title sits
+    // straight over the tables, and the banner closes it.
+    assert.ok(doc.querySelector(".sct-mu-playerstats > h2:first-child + .sct-mu-fl + .sct-mu-ps-head + .sct-mu-ps-row"));
+    assert.match(doc.querySelector(".sct-mu-playerstats > h2:first-child").textContent, /^Fantasy Points: Bills vs Patriots, /);
+    assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-ps-cta");
     assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
   });
 
@@ -1198,7 +1205,7 @@ describe("sortable stat tables", () => {
     // values under the header, not the header.
     const table = doc.querySelectorAll(".sct-mu-playerstats table")[0];
     const headers = [...table.querySelectorAll("thead th")];
-    const at = headers.length - 2;
+    const at = 1;
     // Sort by the points column first, so the switch has to re-sort.
     headers[at].querySelector(".sct-sort").click();
     const std = group.querySelector('input[value="std"]');
@@ -1216,6 +1223,8 @@ describe("sortable stat tables", () => {
       assert.equal(n.textContent, n.getAttribute("data-std"));
       assert.equal(n.parentElement.querySelector(".sct-ls-unit").textContent, "Std pts");
     }
+    // The fantasy leaders' points and finishes follow the switch too.
+    for (const n of doc.querySelectorAll("[data-ps-swap]")) assert.equal(n.textContent, n.getAttribute("data-std"));
   });
 
   test("clicking a header actually reorders the rows", async () => {
@@ -1460,12 +1469,16 @@ describe("completed game tabs", () => {
       assert.ok(panel.textContent.trim(), `${panel.getAttribute("data-mu-tab")} has content`);
     }
 
-    // Sections keep their ids inside the panels; outlook, FAQ and exploring sit below them.
-    const inPanel = { recap: "recap-tab", why: "recap-tab", verdicts: "fantasy-tab", wp: "game-flow-tab", h2h: "h2h-tab", betting: "betting-tab" };
-    for (const [id, panel] of Object.entries(inPanel)) {
+    // Sections keep their ids inside their tab; outlook, FAQ and exploring sit
+    // below them. The recap story is in the Recap tab's full-width lead, the
+    // rest of that tab in its panel.
+    const inTab = { recap: "recap", why: "recap", verdicts: "fantasy", wp: "game-flow", h2h: "head-to-head", betting: "betting" };
+    for (const [id, tab] of Object.entries(inTab)) {
       const el = doc.getElementById(id);
-      if (el) assert.equal(el.closest("[data-mu-tab]").id, panel, `#${id} is in ${panel}`);
+      if (el) assert.equal(el.closest("[data-mu-tab]").getAttribute("data-mu-tab"), tab, `#${id} is in ${tab}`);
     }
+    assert.ok(doc.getElementById("recap").closest(".sct-mu-lead"), "the story is in the full-width lead");
+    assert.equal(doc.getElementById("why").closest("[data-mu-tab]").id, "recap-tab");
     for (const id of ["fantasy-outlook", "faq", "explore"]) {
       const el = doc.getElementById(id);
       if (el) assert.equal(el.closest("[data-mu-tab]"), null, `${id} is below the tabs`);
@@ -1591,11 +1604,11 @@ describe("the Cardinals–Rams games", () => {
     assert.equal(ld.description, "Final: Los Angeles Rams 34, Arizona Cardinals 11.");
     assert.match(body, /<h1 class="sct-sbh-title"/, "the H1 is in the source, not written by script");
 
-    // The recap leads the Recap tab's main-column half, headed by an H2 with
-    // the score in it.
-    const recap = doc.querySelector('[data-sct-panel] .sct-rb > .sct-rb-main > [data-mu-tab="recap"] > .sct-mu-story#recap');
+    // The recap leads the Recap tab, full width above its two columns, headed
+    // by an H2 with the score in it.
+    const recap = doc.querySelector('[data-sct-panel] > .sct-mu-lead[data-mu-tab="recap"] > .sct-mu-tabpanel > .sct-mu-story#recap');
     assert.ok(recap, "the recap is in the Recap panel");
-    assert.match(recap.querySelector(".sct-mu-story-dek").textContent, /^The Rams led 21–0 at halftime and finished with 375 yards to 183\.$/);
+    assert.match(recap.querySelector(".sct-mu-story-dek").textContent, /^Los Angeles led 21–0 at halftime .* to win 34–11\. The Rams finished with a 375–183 edge/);
     assert.match(recap.querySelector("h2").textContent, /^Rams 34, Cardinals 11: /);
     assert.match(recap.textContent, /Super Bowl LVI/);
 
@@ -1604,22 +1617,23 @@ describe("the Cardinals–Rams games", () => {
     const headings = (selector) =>
       [...doc.querySelectorAll(selector)].map((h) => h.textContent);
     assert.deepEqual(
-      headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /won$|^Scoring/.test(h)),
-      ["Why the Rams won", "Scoring summary"].filter(
-        (h) => h !== "Scoring summary" || doc.querySelector("#sct-rb-scoring"),
+      // Section titles in Title Case, as on the player pages (mak, 2026-09-30).
+      headings('[data-mu-tab="recap"] > .sct-rb-section > h2, [data-mu-tab="recap"] > section > h2').filter((h) => /Won$|^Scoring/.test(h)),
+      ["Why the Rams Won", "Scoring Summary"].filter(
+        (h) => h !== "Scoring Summary" || doc.querySelector("#sct-rb-scoring"),
       ),
     );
     assert.deepEqual(headings('[data-mu-tab="head-to-head"] > .sct-rb-section > h2').slice(0, 1), [
-      "Cardinals vs Rams head-to-head",
+      "Cardinals vs Rams Head-to-Head",
     ]);
-    // Below the tabs, on every one of them.
+    // Below the tabs, on every one of them, under both columns at the full width.
     assert.deepEqual(
-      headings(".sct-rb-main > .sct-rb-section > h2, .sct-rb-main > nav > h2"),
+      headings(".sct-mu-foot > .sct-rb-section > h2, .sct-mu-foot > nav > h2"),
       [
-        "Cardinals vs Rams fantasy outlook for 2026",
-        "Cardinals vs Rams FAQ",
-        "Keep exploring",
-      ].filter((h) => !/fantasy outlook/.test(h) || doc.querySelector("#fantasy-outlook")),
+        "Cardinals vs Rams Fantasy Outlook for 2026",
+        "Keep Exploring",
+        "Cardinals vs Rams Game FAQ",
+      ].filter((h) => !/Fantasy Outlook/.test(h) || doc.querySelector("#fantasy-outlook")),
     );
 
     // From ESPN's own feed, when it answered: the strip's four and the summary's end.
@@ -1635,7 +1649,13 @@ describe("the Cardinals–Rams games", () => {
     if (scored.length) {
       assert.equal(scored.length, 8);
       assert.deepEqual([...scored[7].querySelectorAll(".sct-ss-score")].map((c) => c.textContent), ["11", "34"]);
-      assert.equal(doc.querySelectorAll(".sct-ss-pill").length, 1);
+      // The Rams led from the first score: one "Takes lead", then only
+      // "Extends lead", and no "Game winner" for a lead taken in the first quarter.
+      assert.deepEqual(
+        [...new Set([...doc.querySelectorAll(".sct-ss-pill")].map((p) => p.textContent))],
+        ["Takes lead", "Extends lead"],
+      );
+      assert.equal(doc.querySelectorAll(".sct-ss-pill.is-takes").length, 1);
       assert.doesNotMatch(doc.querySelector(".sct-ss").textContent, /Jr\.\./);
     }
     const tiles = [...doc.querySelectorAll("ol.sct-rb-tiles li")];
@@ -1661,7 +1681,7 @@ describe("the Cardinals–Rams games", () => {
     // The all-time series, from the shipped history plus this season.
     const h2h = doc.getElementById("h2h");
     assert.equal(h2h.tagName, "H2");
-    assert.equal(h2h.textContent, "Cardinals vs Rams head-to-head");
+    assert.equal(h2h.textContent, "Cardinals vs Rams Head-to-Head");
     const top = h2h.closest("section");
     assert.match(top.querySelector(".sct-rb-sub").textContent, /^One of the NFL's oldest matchups/);
     assert.deepEqual(
@@ -1679,7 +1699,9 @@ describe("the Cardinals–Rams games", () => {
     assert.equal(top.querySelector("h3.sct-rb-since").textContent, "Since 2021");
     const questions = faq.mainEntity.map((q) => q.name);
     const at = questions.indexOf("What is the all-time Cardinals vs Rams record?");
-    assert.equal(questions[at - 1], "What is the Cardinals vs Rams record since 2021?", "right after the since question");
+    assert.ok(at > 0, "the all-time question is asked");
+    // History questions sit together, all-time first.
+    assert.ok(questions.indexOf("What is the Cardinals vs Rams record since 2021?") > at);
     assert.equal(
       faq.mainEntity[at].acceptedAnswer.text,
       "The Rams lead the all-time series 53\u201341\u20132 across 96 meetings since 1937, including a 2\u20130 record in the postseason.",

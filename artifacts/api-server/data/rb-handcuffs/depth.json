@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T23:25:54.520Z",
+  "generated_at": "2026-09-30T12:14:14.199Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -68,7 +68,7 @@
     "HOU": {
       "rb1": "David Montgomery",
       "rb2": "Woody Marks",
-      "rb3": null
+      "rb3": "Dare Ogunbowale"
     },
     "IND": {
       "rb1": "Jonathan Taylor",
@@ -163,7 +163,7 @@
     "WAS": {
       "rb1": "Jacory Croskey-Merritt",
       "rb2": "Rachaad White",
-      "rb3": "Kaytron Allen"
+      "rb3": "Austin Ekeler"
     }
   },
   "players": {
@@ -196,6 +196,14 @@
       "team": "LV",
       "sleeperId": "12527",
       "age": 22,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "austin ekeler": {
+      "name": "Austin Ekeler",
+      "team": "WAS",
+      "sleeperId": "4663",
+      "age": 31,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -244,7 +252,7 @@
       "team": "NYJ",
       "sleeperId": "8155",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "brian robinson": {
@@ -335,6 +343,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "dare ogunbowale": {
+      "name": "Dare Ogunbowale",
+      "team": "HOU",
+      "sleeperId": "4718",
+      "age": 32,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "david montgomery": {
       "name": "David Montgomery",
       "team": "HOU",
@@ -372,7 +388,7 @@
       "team": "IND",
       "sleeperId": "12471",
       "age": 23,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "dylan laube": {
@@ -396,7 +412,7 @@
       "team": "DAL",
       "sleeperId": "11199",
       "age": 27,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "emmett johnson": {
@@ -500,7 +516,7 @@
       "team": "MIA",
       "sleeperId": "11643",
       "age": 23,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "jeremiyah love": {
@@ -555,14 +571,6 @@
       "name": "Kaleb Johnson",
       "team": "GB",
       "sleeperId": "12504",
-      "age": 23,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "kaytron allen": {
-      "name": "Kaytron Allen",
-      "team": "WAS",
-      "sleeperId": "13405",
       "age": 23,
       "injuryStatus": null,
       "status": "Active"
@@ -652,7 +660,7 @@
       "team": "MIA",
       "sleeperId": "12495",
       "age": 22,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "omarion hampton": {
@@ -676,7 +684,7 @@
       "team": "WAS",
       "sleeperId": "8136",
       "age": 27,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "raheim sanders": {
@@ -716,15 +724,15 @@
       "team": "PIT",
       "sleeperId": "7021",
       "age": 28,
-      "injuryStatus": "Out",
-      "status": "Inactive"
+      "injuryStatus": "Questionable",
+      "status": "Active"
     },
     "rj harvey": {
       "name": "RJ Harvey",
       "team": "DEN",
       "sleeperId": "12489",
       "age": 25,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "roschon johnson": {
@@ -836,7 +844,7 @@
       "team": "TEN",
       "sleeperId": "9508",
       "age": 25,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "tyler allgeier": {

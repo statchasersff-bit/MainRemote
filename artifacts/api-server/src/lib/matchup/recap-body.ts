@@ -17,6 +17,7 @@
 
 import { escapeHtml, escapeJsonLd } from "../render";
 import type { BoxTeamStats } from "./boxscore";
+import { superBowlNumeral } from "./recap";
 import {
   allTimeAnswer,
   allTimeSummary,
@@ -111,11 +112,65 @@ export interface RecapBodyInput {
   topScorers?: FaqScorer[];
   /** Game info's extra rows, only what a feed carries. */
   info?: { tv: string | null; attendance: number | null };
+  /** What the FAQ may say beyond the box score; each part omitted without data. */
+  faqFacts?: FaqFacts;
+}
+
+/** A player line the FAQ can quote: "8 catches for 122 yards and a touchdown". */
+export interface FaqPlayer {
+  name: string;
+  /** Display code. */
+  team: string;
+  pos: string | null;
+  /** The stat line in words. */
+  line: string;
+  /** The player's game log for the season, or null. */
+  logUrl: string | null;
+}
+
+export interface FaqFantasyPlayer extends FaqPlayer {
+  ppr: number;
+  half: number;
+  std: number;
+  /** "WR6" for the week, PPR; null when unranked. */
+  finish: string | null;
+  /** Share of the team's targets or carries, 0–1, when it is the story. */
+  targetShare: number | null;
+  carryShare: number | null;
+}
+
+export interface FaqXfpPlayer {
+  name: string;
+  team: string;
+  ppr: number;
+  xfp: number;
+}
+
+export interface FaqFacts {
+  /** The recap's one-sentence summary and its yardage sentence. */
+  story?: string | null;
+  leaders?: { passing?: FaqPlayer; rushing?: FaqPlayer; receiving?: FaqPlayer };
+  /** The top fantasy scorers, PPR order. */
+  fantasy?: FaqFantasyPlayer[];
+  xfp?: { over?: FaqXfpPlayer; under?: FaqXfpPlayer; volume?: FaqXfpPlayer };
+  /** The score that put the winner ahead for good, fourth quarter or later. */
+  winningPlay?: { text: string; team: string; quarter: number; clock: string; away: number; home: number } | null;
+  /** The winner's lowest win probability, when it came back. */
+  comeback?: { low: number; lowPeriod: string } | null;
+  /** The biggest single swing in the home side's win probability. */
+  swing?: { text: string; team: string; before: number; after: number; quarter: number; clock: string } | null;
+  /** Interceptions and lost fumbles, from the drive chart; null without one. */
+  turnovers?: { away: number; home: number } | null;
+  /** The closing line, as the page's betting section reads it. */
+  odds?: { favorite: string | null; line: number; total: number } | null;
+  /** Each team's season schedule page. */
+  schedules?: Record<string, string | null>;
 }
 
 /* ------------------------------------------------------------------ atoms */
 
 const DASH = "–";
+const MINUS = "−";
 const EASTERN = "America/New_York";
 
 function eastern(iso: string, options: Intl.DateTimeFormatOptions): string {
@@ -130,11 +185,6 @@ function shortDate(iso: string): string {
 /** "January 17, 2022" */
 function longDate(iso: string): string {
   return eastern(iso, { month: "long", day: "numeric", year: "numeric" });
-}
-
-/** "Sunday, October 18, 2026" */
-function fullDate(iso: string): string {
-  return eastern(iso, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 }
 
 /** "2026-10-18": the Eastern calendar date, for <time datetime>. */
@@ -357,14 +407,19 @@ function battlesLine(input: RecapBodyInput, rows: StatRow[]): string {
 
 interface Takeaway {
   value: string;
+  /** "yards/play", "turnover margin". */
   label: string;
+  /** "SEA 5.9 · NE 4.1", "SEA 0 turnovers". */
+  sub: string;
+  /** The comparison row it stands for, which then leads the table. */
+  row: string;
 }
 
 /**
- * Three numbers from the winner's side. A figure the winner lost on is
- * replaced from a short reserve (yards per play, then third-down rate), so no
- * takeaway ever shows a negative number; when the reserve runs out the
- * takeaway is dropped rather than invented.
+ * The winner's three clearest edges, in the order that answers "why":
+ * efficiency, turnovers, yardage, then third downs and possession to fill a
+ * slot the winner lost. Only edges the winner actually had, so no takeaway is
+ * ever negative; fewer than three when fewer exist (mak, 2026-09-30).
  */
 function takeaways(input: RecapBodyInput): Takeaway[] {
   const { game } = input;
@@ -375,45 +430,64 @@ function takeaways(input: RecapBodyInput): Takeaway[] {
   const ws = input.stats[w];
   const ls = input.stats[l];
   if (!ws || !ls) return [];
-  const short = game[w].short;
+  const W = game[w].abbr;
+  const L = game[l].abbr;
+  const both = (x: string, y: string): string => `${W} ${x} · ${L} ${y}`;
 
-  const diff = (x: number | null, y: number | null): number | null =>
-    x === null || y === null ? null : x - y;
-
-  const primary: Array<Takeaway | null> = [];
-  const yards = diff(ws.totalYards, ls.totalYards);
-  primary.push(yards !== null && yards > 0 ? { value: `+${yards}`, label: `Yard advantage for the ${short}` } : null);
-  const turnovers = diff(ls.turnovers, ws.turnovers);
-  primary.push(
-    turnovers !== null && turnovers > 0
-      ? {
-          value: `+${turnovers}`,
-          label: `Turnover margin${ws.turnovers === 0 ? `, no ${short} giveaways` : ""}`,
-        }
-      : null,
-  );
-  const possession = diff(ws.possessionSeconds, ls.possessionSeconds);
-  primary.push(
-    possession !== null && possession > 0
-      ? { value: `+${clock(possession)}`, label: "More time with the ball" }
-      : null,
-  );
-
-  const reserve: Takeaway[] = [];
-  const ypp = diff(ws.yardsPerPlay, ls.yardsPerPlay);
-  if (ypp !== null && ypp > 0) reserve.push({ value: `+${ypp.toFixed(1)}`, label: "More yards per play" });
-  const third = diff(ws.thirdDown?.percent ?? null, ls.thirdDown?.percent ?? null);
-  if (third !== null && third > 0) {
-    reserve.push({ value: `+${Math.round(third)}%`, label: "Better third-down conversion rate" });
+  const out: Takeaway[] = [];
+  const ypp = ws.yardsPerPlay !== null && ls.yardsPerPlay !== null ? ws.yardsPerPlay - ls.yardsPerPlay : null;
+  if (ypp !== null && ypp > 0) {
+    out.push({
+      value: `+${ypp.toFixed(1)}`,
+      label: "yards/play",
+      sub: both(ws.yardsPerPlay!.toFixed(1), ls.yardsPerPlay!.toFixed(1)),
+      row: "Yards per play",
+    });
   }
-
-  return primary
-    .map((t) => t ?? reserve.shift() ?? null)
-    .filter((t): t is Takeaway => t !== null);
+  const to = ws.turnovers !== null && ls.turnovers !== null ? ls.turnovers - ws.turnovers : null;
+  if (to !== null && to > 0) {
+    out.push({
+      value: `+${to}`,
+      label: "turnover margin",
+      sub: ws.turnovers === 0 ? `${W} 0 turnovers` : `${both(String(ws.turnovers), String(ls.turnovers))} turnovers`,
+      row: "Turnovers",
+    });
+  }
+  const yards = ws.totalYards !== null && ls.totalYards !== null ? ws.totalYards - ls.totalYards : null;
+  if (yards !== null && yards > 0) {
+    out.push({
+      value: `+${yards}`,
+      label: "total yards",
+      sub: both(String(ws.totalYards), String(ls.totalYards)),
+      row: "Total yards",
+    });
+  }
+  const wt = ws.thirdDown?.percent ?? null;
+  const lt = ls.thirdDown?.percent ?? null;
+  if (wt !== null && lt !== null && wt > lt) {
+    out.push({
+      value: `+${Math.round(wt - lt)}%`,
+      label: "third-down rate",
+      sub: both(`${Math.round(wt)}%`, `${Math.round(lt)}%`),
+      row: "Third-down conversion",
+    });
+  }
+  const tp = ws.possessionSeconds !== null && ls.possessionSeconds !== null ? ws.possessionSeconds - ls.possessionSeconds : null;
+  if (tp !== null && tp > 0) {
+    out.push({
+      value: `+${clock(tp)}`,
+      label: "time of possession",
+      sub: both(clock(ws.possessionSeconds!), clock(ls.possessionSeconds!)),
+      row: "Time of possession",
+    });
+  }
+  return out.slice(0, 3);
 }
 
 /** One row of a two-team stat comparison: the figures, as shown, and which end is better. */
 export interface CompareRow {
+  /** Below the key rows, smaller, under an "Other team stats" divider. */
+  secondary?: boolean;
   label: string;
   away: number | null;
   home: number | null;
@@ -444,19 +518,27 @@ export function renderStatCompare(opts: {
     );
   };
 
+  let divided = false;
   const body = opts.rows
     .map((row) => {
+      const divider =
+        row.secondary && !divided && opts.rows.some((r) => !r.secondary)
+          ? `<tr class="sct-rb-divider"><th colspan="3" scope="rowgroup">Other team stats</th></tr>`
+          : "";
+      if (row.secondary) divided = true;
+      const cls = row.secondary ? " is-secondary" : "";
       const share =
         row.away === null || row.home === null
           ? 50
           : awayShare({ away: row.away, home: row.home, better: row.better });
       return (
-        `<tr class="sct-rb-stat">` +
+        divider +
+        `<tr class="sct-rb-stat${cls}">` +
         value(row, "away") +
         `<th scope="row" class="sct-rb-stat-name">${escapeHtml(row.label)}</th>` +
         value(row, "home") +
         `</tr>` +
-        `<tr class="sct-rb-barrow" aria-hidden="true"><td colspan="3">` +
+        `<tr class="sct-rb-barrow${cls}" aria-hidden="true"><td colspan="3">` +
         `<span class="sct-rb-bar">` +
         `<span class="sct-rb-bar-away" style="width:${share}%"></span>` +
         `<span class="sct-rb-bar-home" style="width:${Math.round((100 - share) * 10) / 10}%"></span>` +
@@ -494,13 +576,25 @@ export function renderWhyWon(input: RecapBodyInput): string {
       ? `${game.away.short} vs ${game.home.short} by the numbers`
       : `Why the ${game[result.winner].short} won`;
 
+  // The key advantages first, then the rows that back them in the same
+  // order, then everything else as secondary stats (mak, 2026-09-30). A tie
+  // has no advantages, so its rows keep their order and all read as key.
+  const keys = takeaways(input).map((t) => t.row);
+  const ordered = keys.length
+    ? [
+        ...keys.map((k) => rows.find((r) => r.label === k)).filter((r): r is StatRow => r !== undefined),
+        ...rows.filter((r) => !keys.includes(r.label)),
+      ]
+    : rows;
+
   const table = renderStatCompare({
     caption: `Team stats comparison, ${game.away.short} vs ${game.home.short}`,
     awayName: game.away.short,
     homeName: game.home.short,
     awayInk: colorsOf(input, game.away.abbr).ink,
     homeInk: colorsOf(input, game.home.abbr).ink,
-    rows: rows.map((row) => ({
+    rows: ordered.map((row) => ({
+      secondary: keys.length > 0 && !keys.includes(row.label),
       label: row.label,
       away: row.away,
       home: row.home,
@@ -510,22 +604,36 @@ export function renderWhyWon(input: RecapBodyInput): string {
     })),
   });
 
-  const items = takeaways(input);
-  const winnerAbbr = result.winner ? game[result.winner].abbr : null;
-  const strip =
-    items.length && winnerAbbr
-      ? `<ul class="sct-rb-takeaways" style="${escapeHtml(teamStyle(input, winnerAbbr))}">` +
-        items
-          .map(
-            (t) =>
-              `<li><span class="sct-rb-take-value">${escapeHtml(t.value)}</span> ` +
-              `<span class="sct-rb-take-label">${escapeHtml(t.label)}</span></li>`,
-          )
-          .join("") +
-        `</ul>`
-      : "";
+  // The key advantages themselves sit in the recap story, above this
+  // (mak, 2026-09-30); the table still leads with their rows.
+  return section("why", heading, subtitle(battlesLine(input, rows)) + table);
+}
 
-  return section("why", heading, subtitle(battlesLine(input, rows)) + table + strip);
+/**
+ * The winner's key advantages ("+1.8 yards/play", "SEA 5.9 · NE 4.1") under a
+ * "Key advantages" label, in the winner's colour, or "" for a tie or a game
+ * without team stats. In the recap story, under its text.
+ */
+export function renderTakeaways(input: RecapBodyInput, extra = ""): string {
+  const result = scoreboardResult(input.game);
+  const items = takeaways(input);
+  const winnerAbbr = result?.winner ? input.game[result.winner].abbr : null;
+  if (!items.length || !winnerAbbr) return "";
+  return (
+    `<div class="sct-rb-advantages${extra ? ` ${extra}` : ""}">` +
+    `<p class="sct-rb-kicker">Key advantages</p>` +
+    `<ul class="sct-rb-takeaways" style="${escapeHtml(teamStyle(input, winnerAbbr))}">` +
+    items
+      .map(
+        (t) =>
+          `<li><span class="sct-rb-take-value">${escapeHtml(t.value)}</span> ` +
+          `<span class="sct-rb-take-label">${escapeHtml(t.label)}</span> ` +
+          `<span class="sct-rb-take-sub">${escapeHtml(t.sub)}</span></li>`,
+      )
+      .join("") +
+    `</ul>` +
+    `</div>`
+  );
 }
 
 /* ------------------------------------------------ section 2: head-to-head */
@@ -775,111 +883,487 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
 
 /* --------------------------------------------------------- section 4: FAQ */
 
+export interface FaqLink {
+  text: string;
+  href: string;
+  cta: string;
+}
+
 export interface FaqItem {
   question: string;
   /** Plain text: what the JSON-LD carries, and what the page shows. */
   answer: string;
   /** A phrase in the answer to render as a link, and where to. */
-  link?: { text: string; href: string; cta: string };
+  link?: FaqLink;
+  /** More of the same, for an answer that links more than one page. */
+  links?: FaqLink[];
 }
 
 /** The questions, built once for both the page and its FAQPage JSON-LD. */
 export function recapFaq(input: RecapBodyInput): FaqItem[] {
+  return pickFaq(faqPool(input));
+}
+
+/** A candidate question: its topic group (the display order) and its priority. */
+interface FaqCandidate extends FaqItem {
+  group: "result" | "fantasy" | "flow" | "history" | "betting";
+  score: number;
+}
+
+const FAQ_GROUPS: FaqCandidate["group"][] = ["result", "fantasy", "flow", "history", "betting"];
+const FAQ_MAX = 15;
+
+/** The strongest questions, at most 15, shown by topic in priority order within each. */
+function pickFaq(pool: FaqCandidate[]): FaqItem[] {
+  const kept = [...pool].sort((a, b) => b.score - a.score).slice(0, FAQ_MAX);
+  return FAQ_GROUPS.flatMap((g) =>
+    kept
+      .filter((c) => c.group === g)
+      .sort((a, b) => b.score - a.score)
+      .map(({ question, answer, link, links }) => ({ question, answer, ...(link ? { link } : {}), ...(links ? { links } : {}) })),
+  );
+}
+
+const ROUND_WORDS: Record<string, string> = {
+  "Wild Card": "the Wild Card round",
+  "Divisional Round": "the Divisional Round",
+};
+
+/** "Week 1 of the 2026 season", "the 2021 Wild Card round", "Super Bowl LVI". */
+function whenPlayed(game: ScoreboardGame, round: string): string {
+  if (game.gameType !== "playoff") return `${round} of the ${game.seasonLabel} season`;
+  if (/super bowl/i.test(round)) return `Super Bowl ${superBowlNumeral(Number(game.seasonLabel))}`;
+  return `${ROUND_WORDS[round] ?? `the ${round}`} of the ${game.seasonLabel} playoffs`;
+}
+
+function ordinalQuarter(q: number): string {
+  return q <= 4 ? `${["first", "second", "third", "fourth"][q - 1]} quarter` : "overtime";
+}
+
+function pctText(p: number): string {
+  if (p > 0.995) return ">99%";
+  if (p < 0.005) return "<1%";
+  return `${Math.round(p * 100)}%`;
+}
+
+function playerLink(p: { name: string; logUrl: string | null }, season: string): FaqLink | null {
+  return p.logUrl ? { text: `${p.name}'s ${season} game log`, href: p.logUrl, cta: "faq-gamelog" } : null;
+}
+
+/**
+ * Every question the page can answer truthfully, each scored for how often it
+ * is searched after a game and how much this page adds (mak's FAQ spec,
+ * 2026-09-30). Completed-game intent only: no predictions, no "who will win".
+ */
+function faqPool(input: RecapBodyInput): FaqCandidate[] {
   const { game, series, links } = input;
+  const facts = input.faqFacts ?? {};
   const result = scoreboardResult(game);
   const round = game.roundLabel.replace(/^(AFC|NFC)\s+/, "");
   const pair = `${game.away.short} vs ${game.home.short}`;
-  const items: FaqItem[] = [];
+  const when = whenPlayed(game, round);
+  const season = game.seasonLabel;
+  const pool: FaqCandidate[] = [];
+  const add = (c: FaqCandidate): void => {
+    pool.push(c);
+  };
+  if (!result) return pool;
+  const w = result.winner;
+  const l = w === "home" ? "away" : w === "away" ? "home" : null;
+  const half = (side: "away" | "home"): number => (game[side].quarters ?? []).slice(0, 2).reduce((a, b) => a + b, 0);
+  const teamShort = (abbr: string): string =>
+    abbr === game.home.abbr ? game.home.short : abbr === game.away.abbr ? game.away.short : abbr;
 
-  if (result) {
-    const date = game.kickoff ? ` on ${longDate(game.kickoff)}` : "";
-    const at = game.venue ? ` at ${game.venue.name}` : "";
-    const high = Math.max(result.away, result.home);
-    const low = Math.min(result.away, result.home);
-    items.push({
-      question: `Who won the ${game.seasonLabel} ${pair} ${round} game?`,
+  /* ---- result */
+  const date = game.kickoff ? ` on ${longDate(game.kickoff)}` : "";
+  const venue = game.venue
+    ? ` at ${game.venue.name}${game.venue.city ? ` in ${game.venue.city}${game.venue.state ? `, ${game.venue.state},` : ""}` : ""}`
+    : "";
+  add({
+    group: "result",
+    score: 100,
+    question: `Who won the ${season} ${pair} ${round} game?`,
+    answer:
+      w && l
+        ? `The ${game[w].name} beat the ${game[l].name} ${result[w]}${DASH}${result[l]} in ${when}. ` +
+          `The game was played${venue}${date}.`
+        : `The ${game.away.name} and ${game.home.name} tied ${result.away}${DASH}${result.home} in ${when}. ` +
+          `The game was played${venue}${date}.`,
+  });
+
+  if (game.away.quarters && game.home.quarters) {
+    const ha = half("away");
+    const hh = half("home");
+    const halfText =
+      ha === hh
+        ? `The teams were tied ${ha}${DASH}${hh} at halftime`
+        : `The ${game[ha > hh ? "away" : "home"].short} led ${Math.max(ha, hh)}${DASH}${Math.min(ha, hh)} at halftime`;
+    const second = (side: "away" | "home"): number => result[side] - half(side) - (game[side].ot ?? 0);
+    const ot = game.away.ot !== null || game.home.ot !== null;
+    add({
+      group: "result",
+      score: 95,
+      question: `What was the final score of ${pair}?`,
       answer:
-        result.winner === null
-          ? `The ${game.away.name} and ${game.home.name} tied ${result.away}${DASH}${result.home}${at}${date}.`
-          : `The ${game[result.winner].name} won ${high}${DASH}${low}${at}${date}.`,
+        (w && l
+          ? `The final score was ${game[w].short} ${result[w]}, ${game[l].short} ${result[l]}${ot ? " in overtime" : ""}. `
+          : `The final score was ${game.away.short} ${result.away}, ${game.home.short} ${result.home}${ot ? " after overtime" : ""}. `) +
+        `${halfText}, and the second half went ${game.away.short} ${second("away")}, ${game.home.short} ${second("home")}` +
+        `${ot ? ` before overtime` : ""}.`,
     });
   }
 
-  const top = input.topScorers ?? [];
-  if (top.length) {
-    const first = top[0]!;
-    const second = top[1];
-    items.push({
-      question: `Who scored the most fantasy points in the ${game.seasonLabel} ${pair} ${round} game?`,
+  if (facts.story && w && l) {
+    const top = facts.fantasy?.[0];
+    const to = facts.turnovers;
+    const toLine =
+      to && to.away !== to.home
+        ? ` The ${game[to.away > to.home ? "away" : "home"].short} committed ${Math.max(to.away, to.home)} turnover${Math.max(to.away, to.home) === 1 ? "" : "s"},` +
+          ` the ${game[to.away > to.home ? "home" : "away"].short} ${Math.min(to.away, to.home) === 0 ? "none" : Math.min(to.away, to.home)}.`
+        : "";
+    add({
+      group: "result",
+      score: 90,
+      question: `What happened in the ${pair} game?`,
       answer:
-        `${first.name} led all players with ${first.ppr.toFixed(1)} PPR points (${first.line}).` +
-        (second ? ` ${second.name} was next with ${second.ppr.toFixed(1)}.` : ""),
+        `${facts.story}` +
+        (top ? ` ${top.name} led all players with ${top.line}.` : "") +
+        toLine,
     });
   }
 
-  if (series.games.length) {
-    const record = seriesRecord(input);
-    const n = series.games.length;
-    const includes = series.games.some((g) => g.current) ? `, including this ${round} game` : "";
-    items.push({
-      question: `What is the ${pair} record since ${series.sinceSeason}?`,
-      answer: record.leader
-        ? `The ${record.leader.short} lead ${record.text} across ${n} meeting${n === 1 ? "" : "s"}${includes}.`
-        : `The series is tied ${record.text} across ${n} meeting${n === 1 ? "" : "s"}${includes}.`,
+  if (facts.winningPlay && w) {
+    const wp = facts.winningPlay;
+    const mine = w === "home" ? wp.home : wp.away;
+    const theirs = w === "home" ? wp.away : wp.home;
+    add({
+      group: "result",
+      score: 78,
+      question: `What was the game-winning score in ${pair}?`,
+      answer:
+        `${wp.text} with ${wp.clock} left in the ${ordinalQuarter(wp.quarter)} gave the ${game[w].short} a ` +
+        `${mine}${DASH}${theirs} lead they never gave up.` +
+        (mine === result[w] && theirs === (l ? result[l] : 0) ? ` It was the final score of the game.` : ""),
     });
   }
 
+  /* ---- fantasy */
+  const fant = facts.fantasy ?? [];
+  if (fant.length) {
+    const a = fant[0]!;
+    const b = fant[1];
+    const link = playerLink(a, season);
+    add({
+      group: "fantasy",
+      score: 88,
+      question: `Who scored the most fantasy points in ${pair}?`,
+      answer:
+        `${a.name} led the game with ${a.ppr.toFixed(1)} PPR fantasy points` +
+        `${a.finish ? `, the ${a.finish} of ${round}` : ""}, on ${a.line}.` +
+        (b ? ` ${b.name} was next with ${b.ppr.toFixed(1)}${b.finish ? ` (${b.finish})` : ""}.` : "") +
+        (link ? ` See ${link.text}.` : ""),
+      ...(link ? { link } : {}),
+    });
+    // The player-specific question, only for a genuinely big day.
+    if (a.ppr >= 20 || (a.finish !== null && Number(a.finish.replace(/\D/g, "")) <= 12)) {
+      const opp = a.team === game.home.abbr ? game.away.short : game.home.short;
+      const share =
+        a.targetShare !== null && a.targetShare >= 0.2
+          ? ` He drew ${Math.round(a.targetShare * 100)}% of his team's targets.`
+          : a.carryShare !== null && a.carryShare >= 0.4
+            ? ` He handled ${Math.round(a.carryShare * 100)}% of his team's carries.`
+            : "";
+      add({
+        group: "fantasy",
+        score: 70,
+        question: `How many fantasy points did ${a.name} score against the ${opp}?`,
+        answer:
+          (a.ppr.toFixed(1) === a.std.toFixed(1)
+            ? `${a.name} scored ${a.ppr.toFixed(1)} fantasy points against the ${opp} in ${when}, the same in PPR, ` +
+              `half-PPR and standard scoring because he had no catches, on ${a.line}.`
+            : `${a.name} scored ${a.ppr.toFixed(1)} points in PPR leagues, ${a.half.toFixed(1)} in half-PPR and ` +
+              `${a.std.toFixed(1)} in standard scoring against the ${opp} in ${when}, on ${a.line}.`) + share,
+      });
+    }
+  }
+
+  const ld = facts.leaders;
+  if (ld && (ld.passing || ld.rushing || ld.receiving)) {
+    const parts = [
+      ld.passing ? `${ld.passing.name} (${ld.passing.team}) led all passers with ${ld.passing.line}` : "",
+      ld.rushing ? `${ld.rushing.name} (${ld.rushing.team}) led in rushing with ${ld.rushing.line}` : "",
+      ld.receiving ? `${ld.receiving.name} (${ld.receiving.team}) led in receiving with ${ld.receiving.line}` : "",
+    ].filter(Boolean);
+    add({
+      group: "fantasy",
+      score: 80,
+      question: `Who led ${pair} in passing, rushing and receiving?`,
+      answer: `${parts.join(". ")}.`,
+    });
+  }
+
+  if (facts.xfp?.volume) {
+    const v = facts.xfp.volume;
+    add({
+      group: "fantasy",
+      score: 54,
+      question: `Who had the highest expected fantasy points in ${pair}?`,
+      answer:
+        `${v.name} had the most fantasy opportunity in the game, worth ${v.xfp.toFixed(1)} expected PPR points (xFP) ` +
+        `at league-average rates, and scored ${v.ppr.toFixed(1)}. Expected points measure the volume of a player's ` +
+        `pass attempts, carries and targets, not how well he used them.`,
+    });
+  }
+  const ov = facts.xfp?.over;
+  const un = facts.xfp?.under;
+  if (ov || un) {
+    const parts = [
+      ov ? `${ov.name} outperformed his expected fantasy points the most, scoring ${ov.ppr.toFixed(1)} PPR points on ${ov.xfp.toFixed(1)} xFP (+${(ov.ppr - ov.xfp).toFixed(1)})` : "",
+      un ? `${un.name} fell furthest short, with ${un.ppr.toFixed(1)} points on ${un.xfp.toFixed(1)} xFP (${MINUS}${(un.xfp - un.ppr).toFixed(1)})` : "",
+    ].filter(Boolean);
+    const fpa = links.pointsAllowed ? { text: "fantasy points allowed by position", href: links.pointsAllowed, cta: "faq-fpa" } : null;
+    add({
+      group: "fantasy",
+      score: 62,
+      question: `Who outperformed and underperformed expected fantasy points in ${pair}?`,
+      answer:
+        `${parts.join(". ")}. A gap either way reflects efficiency and touchdowns in one game; it is not a forecast.` +
+        (fpa ? ` For matchups ahead, see ${fpa.text}.` : ""),
+      ...(fpa ? { link: fpa } : {}),
+    });
+  }
+
+  /* ---- how the game went */
+  if (facts.comeback && w && l) {
+    const cb = facts.comeback;
+    const sw = facts.swing;
+    const wp = facts.winningPlay;
+    add({
+      group: "flow",
+      score: 76,
+      question: `How did the ${game[w].short} come back to beat the ${game[l].short}?`,
+      answer:
+        `The ${game[w].short}' chances of winning fell as low as ${pctText(cb.low)} ${cb.lowPeriod}. ` +
+        (sw && sw.team === game[w].abbr
+          ? `${sw.text} in the ${ordinalQuarter(sw.quarter)} was the biggest swing of the game. `
+          : "") +
+        (wp ? `${wp.text} then put them ahead for good.` : `They finished the comeback with a ${result[w]}${DASH}${result[l]} win.`),
+    });
+  } else if (w && l && input.stats[w] && input.stats[l]) {
+    const ws = input.stats[w]!;
+    const ls = input.stats[l]!;
+    const reasons: string[] = [];
+    if (ws.yardsPerPlay !== null && ls.yardsPerPlay !== null && ws.yardsPerPlay > ls.yardsPerPlay)
+      reasons.push(`averaged ${ws.yardsPerPlay.toFixed(1)} yards per play to ${ls.yardsPerPlay.toFixed(1)}`);
+    if (ws.turnovers !== null && ls.turnovers !== null && ws.turnovers < ls.turnovers)
+      reasons.push(`won the turnover battle ${ls.turnovers}${DASH}${ws.turnovers}`);
+    if (ws.totalYards !== null && ls.totalYards !== null && ws.totalYards > ls.totalYards)
+      reasons.push(`outgained them ${ws.totalYards}${DASH}${ls.totalYards}`);
+    if (reasons.length) {
+      add({
+        group: "flow",
+        score: 76,
+        question: `How did the ${game[w].short} beat the ${game[l].short}?`,
+        answer:
+          `The ${game[w].short} beat the ${game[l].short} ${result[w]}${DASH}${result[l]} because they ${list(reasons.slice(0, 3))}.` +
+          (facts.winningPlay ? ` ${facts.winningPlay.text} put them ahead for good.` : ""),
+      });
+    }
+  }
+
+  if (facts.swing && Math.abs(facts.swing.after - facts.swing.before) >= 0.25) {
+    const sw = facts.swing;
+    add({
+      group: "flow",
+      score: 50,
+      question: `What was the turning point of ${pair}?`,
+      answer:
+        `${sw.text} with ${sw.clock} left in the ${ordinalQuarter(sw.quarter)} was the biggest swing of the game, ` +
+        `moving the ${game.home.short}' win probability from ${pctText(sw.before)} to ${pctText(sw.after)}.`,
+    });
+  }
+
+  const to = facts.turnovers;
+  if (to && to.away !== to.home) {
+    const better = to.away < to.home ? "away" : "home";
+    const worse = better === "away" ? "home" : "away";
+    add({
+      group: "flow",
+      score: 60,
+      question: `Which team won the turnover battle in ${pair}?`,
+      answer:
+        `The ${game[better].short} won the turnover battle ${to[worse]}${DASH}${to[better]}: the ${game[worse].short} gave the ball away ` +
+        `${to[worse]} time${to[worse] === 1 ? "" : "s"} and the ${game[better].short} ${to[better] === 0 ? "not at all" : `${to[better]} time${to[better] === 1 ? "" : "s"}`}.` +
+        (w === better ? ` The ${game[better].short} won the game.` : ` The ${game[worse].short} won the game anyway.`),
+    });
+  }
+
+  /* ---- history */
   const allTime = recapAllTime(input);
   if (allTime) {
     const [awaySide, homeSide] = rivalryTeams(input);
-    items.push({
+    add({
+      group: "history",
+      score: 86,
       question: `What is the all-time ${pair} record?`,
       answer: allTimeAnswer(allTime, awaySide, homeSide),
     });
   }
 
-  if (series.upcoming.length) {
-    const visits = series.upcoming.map((g) => {
-      const away = input.teams[g.away]?.short ?? g.away;
-      const home = input.teams[g.home]?.short ?? g.home;
-      const when = g.kickoff ? `${g.weekLabel}, ${fullDate(g.kickoff)}: ` : `${g.weekLabel}, date to be set: `;
-      return g.neutral
-        ? `${when}the ${away} and ${home} meet${g.venueCity ? ` in ${g.venueCity}` : ""}.`
-        : `${when}the ${away} visit the ${home}.`;
-    });
-    items.push({
-      question: `When do the ${game.away.short} and ${game.home.short} play next?`,
-      answer: visits.join(" "),
+  // The meeting before this one, from the full history when the page has it.
+  const all = [...(input.rivalry?.allGames ?? [])].sort((a, b) => a.date.localeCompare(b.date));
+  // The history dates games by their Eastern date; a night kickoff is the next day in UTC.
+  const thisDate = game.kickoff ? new Date(game.kickoff).toLocaleDateString("en-CA", { timeZone: EASTERN }) : null;
+  const prior = thisDate ? all.filter((g) => g.date < thisDate) : [];
+  const prev = prior[prior.length - 1];
+  if (prev) {
+    const pw = prev.awayScore >= prev.homeScore ? prev.away : prev.home;
+    const pl = pw === prev.away ? prev.home : prev.away;
+    const hi = Math.max(prev.awayScore, prev.homeScore);
+    const lo = Math.min(prev.awayScore, prev.homeScore);
+    const what = prev.superBowl ? `Super Bowl ${superBowlNumeral(prev.season)}` : prev.playoff ? `the ${prev.season} playoffs` : `the ${prev.season} season`;
+    add({
+      group: "history",
+      score: 74,
+      question: `When did the ${game.away.short} and ${game.home.short} last play before this game?`,
+      answer:
+        prev.awayScore === prev.homeScore
+          ? `Before ${game.gameType === "playoff" ? `the ${season} ${round}${/round$/i.test(round) ? "" : " round"}` : `${round} of ${season}`}, the ${teamShort(prev.away)} and ${teamShort(prev.home)} last met in ${what} on ${longDate(`${prev.date}T12:00:00Z`)}, a ${hi}${DASH}${lo} tie.`
+          : `Before ${game.gameType === "playoff" ? `the ${season} ${round}${/round$/i.test(round) ? "" : " round"}` : `${round} of ${season}`}, they last met in ${what} on ${longDate(`${prev.date}T12:00:00Z`)}, when the ${teamShort(pw)} beat the ${teamShort(pl)} ${hi}${DASH}${lo}.`,
     });
   }
 
-  if (series.upcoming.length) items.push({
-    question: `Should I start ${game.away.short} or ${game.home.short} players in fantasy when they play each other?`,
-    answer:
-      "It depends on your roster, not only the player's ranking: who else you could start, " +
-      "whether you're favored that week, and your league's scoring. Redraft Command's " +
-      "Start/Sit Tool weighs all of that and gives one call with a confidence level.",
-    link: { text: "Redraft Command's Start/Sit Tool", href: links.startSit, cta: "faq-startsit" },
-  });
+  const bowls = all.filter((g) => g.superBowl && !(thisDate && g.date === thisDate));
+  const playoffs = all.filter((g) => g.playoff);
+  if (bowls.length) {
+    const lines = bowls.map((g) => {
+      const gw = g.awayScore > g.homeScore ? g.away : g.home;
+      const gl = gw === g.away ? g.home : g.away;
+      return `the ${teamShort(gw)} won Super Bowl ${superBowlNumeral(g.season)} ${Math.max(g.awayScore, g.homeScore)}${DASH}${Math.min(g.awayScore, g.homeScore)} over the ${teamShort(gl)} after the ${g.season} season`;
+    });
+    add({
+      group: "history",
+      score: 82,
+      question: `Have the ${game.away.short} and ${game.home.short} played in the Super Bowl?`,
+      answer: `Yes, ${bowls.length === 1 ? "once" : `${bowls.length} times`}: ${lines.join("; ")}.`,
+    });
+  } else if (playoffs.length) {
+    const wins: Record<string, number> = {};
+    for (const g of playoffs) {
+      if (g.awayScore === g.homeScore) continue;
+      const gw = g.awayScore > g.homeScore ? g.away : g.home;
+      wins[gw] = (wins[gw] ?? 0) + 1;
+    }
+    const [x, y] = [game.away.abbr, game.home.abbr];
+    add({
+      group: "history",
+      score: 66,
+      question: `Have the ${game.away.short} and ${game.home.short} met in the playoffs?`,
+      answer:
+        `Yes, ${playoffs.length} time${playoffs.length === 1 ? "" : "s"}, most recently in the ${playoffs[playoffs.length - 1]!.season} playoffs. ` +
+        `The ${teamShort(x)} are ${wins[x] ?? 0}${DASH}${wins[y] ?? 0} against the ${teamShort(y)} in the postseason.`,
+    });
+  }
 
-  return items;
+  if (series.games.length >= 2) {
+    const record = seriesRecord(input);
+    const n = series.games.length;
+    add({
+      group: "history",
+      score: 40,
+      question: `What is the ${pair} record since ${series.sinceSeason}?`,
+      answer: record.leader
+        ? `The ${record.leader.short} lead ${record.text} across ${n} meetings since the ${series.sinceSeason} season, including this game.`
+        : `The series is tied ${record.text} across ${n} meetings since the ${series.sinceSeason} season, including this game.`,
+    });
+  }
+
+  /* ---- betting results */
+  const odds = facts.odds;
+  if (odds && w !== undefined) {
+    const fav = odds.favorite === game.home.abbr ? "home" : odds.favorite === game.away.abbr ? "away" : null;
+    const pickem = !fav || odds.line === 0;
+    const points = result.away + result.home;
+    const lineText = pickem ? "a pick'em" : `${game[fav!].short} ${MINUS}${trimNum(odds.line)}`;
+    const cover = !pickem ? result[fav!] - result[fav === "home" ? "away" : "home"] - odds.line : 0;
+    const coverText = pickem
+      ? w
+        ? `the ${game[w].short} won outright`
+        : "the game ended level"
+      : cover === 0
+        ? "the game landed exactly on the number, a push"
+        : cover > 0
+          ? `the ${game[fav!].short} covered by ${trimNum(cover)}`
+          : `the ${game[fav === "home" ? "away" : "home"].short} covered as ${trimNum(odds.line)}-point underdogs`;
+    add({
+      group: "betting",
+      score: 84,
+      question: `What was the closing spread for ${pair}?`,
+      // The line and what it implied; who covered is its own question.
+      answer:
+        `The consensus closing spread at kickoff was ${lineText}` +
+        `${pickem ? "" : `, making the ${game[fav!].name} ${trimNum(odds.line)}-point favorites`}, ` +
+        `with a closing total of ${trimNum(odds.total)}. ` +
+        (pickem
+          ? `That implied about ${(odds.total / 2).toFixed(1)} points for each side.`
+          : `That implied about ${((odds.total + odds.line) / 2).toFixed(1)} points for the ${game[fav!].short} and ` +
+            `${((odds.total - odds.line) / 2).toFixed(1)} for the ${game[fav === "home" ? "away" : "home"].short}.`),
+    });
+    add({
+      group: "betting",
+      score: 72,
+      question: pickem || cover !== 0 ? `Who covered the spread in ${pair}?` : `Was ${pair} a push against the spread?`,
+      answer:
+        pickem || cover !== 0
+          ? `${coverText.charAt(0).toUpperCase()}${coverText.slice(1)} against the closing line of ${lineText}. ` +
+            `The final margin was ${Math.abs(result.home - result.away)} point${Math.abs(result.home - result.away) === 1 ? "" : "s"}.`
+          : `Yes. The ${game[fav!].short} closed as ${trimNum(odds.line)}-point favorites and won by exactly ${trimNum(odds.line)}, ` +
+            `so the spread was a push: neither side covered, and spread bets were refunded.`,
+    });
+    const off = points - odds.total;
+    add({
+      group: "betting",
+      score: 83,
+      question: `Did ${pair} go over or under the total?`,
+      answer:
+        off === 0
+          ? `Neither: ${points} points landed exactly on the closing total of ${trimNum(odds.total)}, a push.`
+          : `The game went ${off > 0 ? "over" : "under"}. The consensus closing total was ${trimNum(odds.total)}, and the teams ` +
+            `combined for ${points} points, ${trimNum(Math.abs(off))} ${off > 0 ? "over" : "under"} the number.`,
+    });
+  }
+
+  // Links to the winner's schedule, from the result answer.
+  if (w) {
+    const sched = facts.schedules?.[game[w].abbr];
+    const first = pool.find((c) => c.group === "result");
+    if (sched && first && !first.link) {
+      first.answer += ` See the ${game[w].short}' ${season} schedule.`;
+      first.link = { text: `${game[w].short}' ${season} schedule`, href: sched, cta: "faq-schedule" };
+    }
+  }
+  return pool;
+}
+
+function trimNum(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
 export function renderFaq(input: RecapBodyInput, items: FaqItem[] = recapFaq(input)): string {
   if (items.length === 0) return "";
   const answer = (item: FaqItem): string => {
     let html = escapeHtml(item.answer);
-    if (item.link) {
+    for (const link of [...(item.link ? [item.link] : []), ...(item.links ?? [])]) {
       html = html.replace(
-        escapeHtml(item.link.text),
-        `<a href="${escapeHtml(item.link.href)}" data-cta="${item.link.cta}">${escapeHtml(item.link.text)}</a>`,
+        escapeHtml(link.text),
+        `<a href="${escapeHtml(link.href)}" data-cta="${link.cta}">${escapeHtml(link.text)}</a>`,
       );
     }
     return html;
   };
   return section(
     "faq",
-    `${input.game.away.short} vs ${input.game.home.short} FAQ`,
+    `${input.game.away.short} vs ${input.game.home.short} Game FAQ`,
     `<div class="sct-rb-faq-list">` +
       items
         .map(
@@ -951,6 +1435,37 @@ export function renderRedraftCard(input: RecapBodyInput): string {
     )}</p>` +
     `<a class="sct-rb-button" href="${escapeHtml(links.redraftCommand)}" data-cta="recap-sidebar">Connect your league</a>` +
     `<p class="sct-rb-redraft-note">Works with Sleeper, ESPN and Fleaflicker. No password needed.</p>` +
+    `</section>`
+  );
+}
+
+/**
+ * The Redraft Command card as a full-width strip, for the matchup page's
+ * Recap tab: the pitch on the left, the button on the right (mak,
+ * 2026-09-30). The sidebar keeps the card for the Fantasy tab; the page hides
+ * that one while Recap is open, so the offer shows once.
+ */
+export function renderRedraftStrip(input: RecapBodyInput): string {
+  const { game, series, links } = input;
+  const away = input.teams[game.away.abbr]!;
+  const home = input.teams[game.home.abbr]!;
+  const before = series.upcoming.length ? series.upcoming[0]!.weekLabel : "your next matchup";
+  return (
+    `<section class="sct-rb-card sct-rb-redraft is-strip" aria-labelledby="sct-rb-redraft-strip">` +
+    `<span class="sct-rb-ring" aria-hidden="true"></span>` +
+    `<div class="sct-rb-redraft-pitch">` +
+    `<h3 class="sct-rb-redraft-title" id="sct-rb-redraft-strip">${escapeHtml(
+      `Got a ${away.singular} or ${home.singular} on your team?`,
+    )}</h3>` +
+    `<p class="sct-rb-redraft-text">${escapeHtml(
+      `Redraft Command reads your roster, league settings and opponent, then tells you ` +
+        `whether to start, sit, trade or hold them before ${before}.`,
+    )}</p>` +
+    `</div>` +
+    `<div class="sct-rb-redraft-act">` +
+    `<a class="sct-rb-button" href="${escapeHtml(links.redraftCommand)}" data-cta="recap-strip">Connect your league</a>` +
+    `<p class="sct-rb-redraft-note">Works with Sleeper, ESPN and Fleaflicker. No password needed.</p>` +
+    `</div>` +
     `</section>`
   );
 }

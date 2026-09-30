@@ -49,13 +49,13 @@ import {
   renderFantasyMatchups,
   renderFantasySection,
   topScorers,
+  usageFacts,
   verdictPlayers,
   type FantasySectionInput,
 } from "./fantasy-section";
 import {
   bettingSeason,
   pointsAllowed,
-  seasonGames,
   seasonToDate,
   storedMeetings,
   storedSeasons,
@@ -65,7 +65,7 @@ import { statLine } from "./leaders-strip";
 import { shareImageAlt, shareImageFile, type ShareImageInput } from "./og-image";
 import { gameNotes, schemaVideo, type GameVideo } from "./game-notes";
 import { renderPossessions } from "./possessions";
-import { renderWinProbability } from "./win-probability";
+import { renderWinProbability, winProbabilityModel } from "./win-probability";
 import type { ScoringPlay } from "./scoring-plays";
 import {
   beforeAfter,
@@ -73,12 +73,10 @@ import {
   jsonLdScript,
   renderBeforeAfter,
   renderExploreCard,
+  bettingEnabled,
   renderBetting,
   renderExplore,
   renderHighlights,
-  gameAfter,
-  renderMeantCards,
-  spreadLabel,
   type BettingExtras,
   videoSchema,
   type ExploreColumn,
@@ -87,13 +85,14 @@ import {
   type SeasonSide,
 } from "./recap-extras";
 import { type NflTeam } from "../team/teams";
+import { titleCase } from "../player/title-case";
 import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
 import { logger } from "../logger";
 import { loadPlayers } from "../player/data";
 import { appearances } from "./appearances";
 import { buildGamePlayers, nameKey, type GamePlayers } from "./game-players";
 import { renderLeadersStrip } from "./leaders-strip";
-import { renderScoringSummary, validateScoringPlays } from "./scoring-summary";
+import { renderScoringSummary, runningScore, validateScoringPlays } from "./scoring-summary";
 import { historyForPair } from "./rivalry-data";
 import { rivalryIntroFor } from "./rivalry-notes";
 import {
@@ -118,9 +117,14 @@ import {
   recapFaq,
   recapFaqSchema,
   renderRecapBody,
+  renderRedraftStrip,
+  renderTakeaways,
   renderStatCompare,
   type BodyTeam,
   type CompareRow,
+  type FaqFacts,
+  type FaqFantasyPlayer,
+  type FaqPlayer,
   type FaqScorer,
   type RecapBodyInput,
 } from "./recap-body";
@@ -528,7 +532,7 @@ function renderGameScoring(data: MatchupData): string {
 
 /* ------------------------------------------- stored seasons: extras */
 
-/** The Betting tab's extras: the pair's priced meetings, each club's season against the lines, and what is next. */
+/** The Betting tab's extras: the pair's priced meetings and each club's season against the lines. */
 function bettingExtras(data: MatchupData, game: ScoreboardGame, options: MatchupRenderOptions): BettingExtras | null {
   const meeting = data.featured;
   if (!meeting) return null;
@@ -536,40 +540,12 @@ function bettingExtras(data: MatchupData, game: ScoreboardGame, options: Matchup
   const home = game.home.abbr;
   const through = { seasonType: meeting.seasonType, week: meeting.week } as const;
   const seasons = storedSeasons(meeting.season - HISTORY_SEASONS, meeting.season);
-  const next: BettingExtras["next"] = {};
-  for (const side of seasonSides(data)) {
-    const after = gameAfter(side, game);
-    if (!after) {
-      next[side.abbr] = null;
-      continue;
-    }
-    const opp = after.opponent?.nickname ?? after.opponentName;
-    const home = after.homeAway === "home";
-    const label = `${home ? `${opp} at ${side.short}` : `${side.short} at ${opp}`}, ${after.weekLabel}`;
-    const team = side.abbr === meeting.away.code.toUpperCase() ? meeting.away : meeting.home;
-    const oppCode = after.opponent?.code.toUpperCase() ?? null;
-    const stored = oppCode
-      ? seasonGames(meeting.season).find(
-          (g) =>
-            g.seasonType === after.seasonType &&
-            g.week === after.week &&
-            [g.away, g.home].includes(side.abbr) &&
-            [g.away, g.home].includes(oppCode),
-        )
-      : undefined;
-    next[side.abbr] = {
-      label,
-      url: scheduleGameUrl(team, after, meeting.season, options, side.games),
-      line: stored?.odds ? spreadLabel(stored.odds) : null,
-    };
-  }
   return {
     meetings: storedMeetings(seasons, away, home, { season: meeting.season, ...through }),
     seasons: {
       [away]: bettingSeason(meeting.season, away, through, "away"),
       [home]: bettingSeason(meeting.season, home, through, "home"),
     },
-    next,
   };
 }
 
@@ -644,6 +620,245 @@ function faqScorers(data: MatchupData): FaqScorer[] {
   return topScorers(input)
     .slice(0, 2)
     .map((t) => ({ name: t.name, ppr: t.ppr, line: statLine(t.player) }));
+}
+
+/**
+ * What the page's FAQ may say beyond the box score: every figure is one the
+ * page itself prints (leaders, fantasy lines and finishes, xFP, the win
+ * probability, the scoring plays, the closing line), so the FAQ never says
+ * something the page cannot back. A part without data is left out, and the
+ * question that needs it is not asked.
+ */
+function faqFacts(
+  data: MatchupData,
+  options: MatchupRenderOptions,
+  game: ScoreboardGame,
+  meeting: Meeting,
+): FaqFacts {
+  const facts: FaqFacts = {};
+  const season = meeting.season;
+  const logUrl = (name: string): string | null => {
+    const profile = getPlayerProfileUrl(name);
+    if (!profile) return null;
+    return `${profile.endsWith("/") ? profile : `${profile}/`}game-log/?log=${season}`;
+  };
+  const plural = (n: number, one: string, many = `${one}s`): string =>
+    n === 1 && /^(touchdown|interception)$/.test(one) ? `${one === "interception" ? "an" : "a"} ${one}` : `${n} ${n === 1 ? one : many}`;
+  const code = (team: NflTeam | null): string => team?.code.toUpperCase() ?? "";
+
+  // The story: the recap's own summary and yardage sentences.
+  const recap = buildRecap({
+    game,
+    awayCity: meeting.away.city,
+    homeCity: meeting.home.city,
+    awayStats: boxStatsFor(data.boxscore, meeting.away),
+    homeStats: boxStatsFor(data.boxscore, meeting.home),
+    winnerPostseason: null,
+    next: null,
+    notes: [],
+  });
+  facts.story = recap?.dek ?? null;
+
+  // Leaders and fantasy, from the game's own stat lines.
+  const stats = data.gameStats;
+  if (stats) {
+    const pass = [...stats.passing].sort((a, b) => b.yards - a.yards)[0];
+    const rush = [...stats.rushing].sort((a, b) => b.yards - a.yards)[0];
+    const rec = [...stats.receiving].sort((a, b) => b.yards - a.yards)[0];
+    const player = (row: { player: { name: string }; team: NflTeam | null; position: string | null }, line: string): FaqPlayer => ({
+      name: row.player.name,
+      team: code(row.team),
+      pos: row.position,
+      line,
+      logUrl: logUrl(row.player.name),
+    });
+    facts.leaders = {
+      ...(pass
+        ? {
+            passing: player(
+              pass,
+              `${pass.completions} of ${pass.attempts} for ${plural(pass.yards, "yard")}` +
+                [pass.touchdowns ? plural(pass.touchdowns, "touchdown") : "", pass.interceptions ? plural(pass.interceptions, "interception") : ""]
+                  .filter(Boolean)
+                  .map((part, i, all) => (i === all.length - 1 && all.length > 1 ? ` and ${part}` : i === 0 ? `${all.length > 1 ? "," : " and"} ${part}` : `, ${part}`))
+                  .join(""),
+            ),
+          }
+        : {}),
+      ...(rush
+        ? {
+            rushing: player(
+              rush,
+              `${plural(rush.carries, "carry", "carries")} for ${plural(rush.yards, "yard")}` +
+                (rush.touchdowns ? ` and ${plural(rush.touchdowns, "touchdown")}` : ""),
+            ),
+          }
+        : {}),
+      ...(rec
+        ? {
+            receiving: player(
+              rec,
+              `${plural(rec.receptions, "catch", "catches")} for ${plural(rec.yards, "yard")}` +
+                (rec.touchdowns ? ` and ${plural(rec.touchdowns, "touchdown")}` : ""),
+            ),
+          }
+        : {}),
+    };
+
+    const fantasy = fantasyInput(data);
+    const usage = fantasy ? usageFacts(fantasy) : null;
+    const lineOf = (name: string): string => {
+      const p = Object.values(gamePlayers(data)).find((x) => x.name === name);
+      return p ? statLine(p).replace(/\bREC\b/g, "catches").replace(/\bYDS\b/g, "yards").replace(/\bATT\b/g, "carries") : "";
+    };
+    facts.fantasy = [...stats.fantasy]
+      .filter((r) => ["QB", "RB", "WR", "TE"].includes((r.position ?? "").toUpperCase()))
+      .sort((a, b) => b.ppr - a.ppr)
+      .slice(0, 3)
+      .map((r): FaqFantasyPlayer => {
+        const share = usage?.shares.get(r.player.name);
+        return {
+          name: r.player.name,
+          team: code(r.team),
+          pos: r.position,
+          line: faqLine(data, r.player.name) || lineOf(r.player.name),
+          logUrl: logUrl(r.player.name),
+          ppr: r.ppr,
+          half: r.half,
+          std: r.standard,
+          finish: r.positionFinish === null || !r.position ? null : `${r.position}${r.positionFinish}`,
+          targetShare: share?.target ?? null,
+          carryShare: share?.carry ?? null,
+        };
+      });
+    if (usage) {
+      facts.xfp = {
+        ...(usage.over ? { over: usage.over } : {}),
+        ...(usage.under ? { under: usage.under } : {}),
+        ...(usage.volume ? { volume: usage.volume } : {}),
+      };
+    }
+  }
+
+  // The scoring plays: the score that won it, and the win probability.
+  const plays = data.boxscore?.scoringPlays ?? [];
+  const short = (abbr: string): string =>
+    abbr === game.home.abbr ? game.home.short : abbr === game.away.abbr ? game.away.short : abbr;
+  if (plays.length && validateScoringPlays(game, plays).length === 0) {
+    const winner = runningScore(game, plays).find((s) => s.tag === "winner");
+    facts.winningPlay = winner
+      ? {
+          text: playSentenceShort(winner.play, short(winner.play.team)),
+          team: winner.play.team,
+          quarter: winner.play.quarter,
+          clock: winner.play.clock,
+          away: winner.away,
+          home: winner.home,
+        }
+      : null;
+
+    const model = winProbabilityModel({ game, plays, odds: data.boxscore?.odds ?? null });
+    const result = scoreboardResult(game);
+    if (model && result?.winner) {
+      const winnerIsHome = result.winner === "home";
+      let low = 1;
+      let lowAt = 0;
+      for (const [sec, p] of model.curve) {
+        const mine = winnerIsHome ? p : 1 - p;
+        if (mine < low) {
+          low = mine;
+          lowAt = sec;
+        }
+      }
+      const period = lowAt < 1800 ? "in the first half" : lowAt < 2700 ? "in the third quarter" : lowAt < 3600 ? "in the fourth quarter" : "in overtime";
+      facts.comeback = low < 0.25 ? { low, lowPeriod: period } : null;
+      const big = [...model.swings].sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before))[0];
+      facts.swing = big
+        ? {
+            text: playSentenceShort(big.play, short(big.play.team)),
+            team: big.play.team,
+            before: big.before,
+            after: big.after,
+            quarter: big.play.quarter,
+            clock: big.play.clock,
+          }
+        : null;
+    }
+  }
+
+  const as = boxStatsFor(data.boxscore, meeting.away);
+  const hs = boxStatsFor(data.boxscore, meeting.home);
+  facts.turnovers = as?.turnovers != null && hs?.turnovers != null ? { away: as.turnovers, home: hs.turnovers } : null;
+
+  const odds = data.boxscore?.odds ?? null;
+  facts.odds =
+    odds && odds.total !== null && bettingEnabled() && (odds.favorite !== null || odds.line === 0)
+      ? { favorite: odds.favorite, line: odds.line, total: odds.total }
+      : null;
+
+  const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
+  const hasSchedule = (PUBLIC_SECTIONS as readonly string[]).includes("schedule");
+  facts.schedules = {
+    [meeting.away.code.toUpperCase()]: hasSchedule
+      ? `${sectionPath(teamPrefix, meeting.away.slug, "schedule")}${options.linkQuery ?? ""}`
+      : null,
+    [meeting.home.code.toUpperCase()]: hasSchedule
+      ? `${sectionPath(teamPrefix, meeting.home.slug, "schedule")}${options.linkQuery ?? ""}`
+      : null,
+  };
+  return facts;
+}
+
+/** A player's game in words, from the box score: "8 catches for 122 yards and a touchdown". */
+function faqLine(data: MatchupData, name: string): string {
+  const st = data.gameStats;
+  if (!st) return "";
+  const plural = (n: number, one: string, many = `${one}s`): string =>
+    n === 1 && /^(touchdown|interception|catch|carry)$/.test(one) ? `${/^i/.test(one) ? "an" : "a"} ${one}` : `${n} ${n === 1 ? one : many}`;
+  const parts: string[] = [];
+  const pass = st.passing.find((r) => r.player.name === name);
+  const rush = st.rushing.find((r) => r.player.name === name);
+  const rec = st.receiving.find((r) => r.player.name === name);
+  if (pass && pass.attempts > 0) {
+    parts.push(
+      `${pass.completions} of ${pass.attempts} passing for ${plural(pass.yards, "yard")}` +
+        (pass.touchdowns ? ` and ${plural(pass.touchdowns, "touchdown")}` : ""),
+    );
+  }
+  if (rec && rec.receptions > 0) {
+    parts.push(`${plural(rec.receptions, "catch", "catches")} for ${plural(rec.yards, "yard")}` + (rec.touchdowns ? ` and ${plural(rec.touchdowns, "touchdown")}` : ""));
+  }
+  if (rush && rush.carries > 0) {
+    parts.push(`${plural(rush.carries, "carry", "carries")} for ${plural(rush.yards, "rushing yard")}` + (rush.touchdowns ? ` and ${plural(rush.touchdowns, "touchdown")}` : ""));
+  }
+  return parts.slice(0, 2).join(", plus ");
+}
+
+/** "Jason Myers' 26-yard field goal", for the FAQ's sentences, from the play's own fields. */
+function playSentenceShort(play: ScoringPlay, teamShort: string): string {
+  const own = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
+  const y = play.yards ?? null;
+  const yd = y !== null ? `${y}-yard ` : "";
+  const { scorer, passer } = play;
+  switch (play.type) {
+    case "pass_td":
+      if (scorer && passer) return `${own(passer)} ${yd}touchdown pass to ${scorer}`;
+      break;
+    case "rush_td":
+      if (scorer) return `${own(scorer)} ${yd}touchdown run`;
+      break;
+    case "field_goal":
+      return scorer ? `${own(scorer)} ${yd}field goal` : `A ${teamShort} field goal`;
+    case "int_return_td":
+      if (scorer) return `${own(scorer)} ${yd}interception return for a touchdown`;
+      break;
+    case "fumble_return_td":
+      if (scorer) return `${own(scorer)} fumble return for a touchdown`;
+      break;
+    case "safety":
+      return `A ${teamShort} safety`;
+  }
+  return scorer ? `${own(scorer)} touchdown` : `A ${teamShort} touchdown`;
 }
 
 /* ------------------------------------------- the recap's added sections */
@@ -730,10 +945,10 @@ function defenseLines(data: MatchupData, game: ScoreboardGame): Record<string, D
   return out;
 }
 
-/** Redraft Command's start/sit launcher for one player, from his slug. */
+/** Redraft Command's start/sit page for one player, from his slug. */
 function startSitFor(name: string): string | null {
   const slug = getPlayerSlugByName(name);
-  return slug ? `${START_SIT_URL}${encodeURIComponent(slug)}` : null;
+  return slug ? `${START_SIT_URL}/${encodeURIComponent(slug)}` : null;
 }
 
 const fantasyCache = new WeakMap<MatchupData, FantasySectionInput | null>();
@@ -911,7 +1126,6 @@ function renderGameExplore(data: MatchupData, input: RecapBodyInput, options: Ma
 function renderAddedSections(data: MatchupData, input: RecapBodyInput, options: MatchupRenderOptions): AddedSections {
   const game = input.game;
   return {
-    meant: renderMeantCards(game, seasonSides(data)),
     highlights: renderHighlights(game, gameVideo(data)),
     winProbability: renderGameWinProbability(data),
     possessions: renderGamePossessions(data),
@@ -922,7 +1136,6 @@ function renderAddedSections(data: MatchupData, input: RecapBodyInput, options: 
 
 /** The recap build spec's sections, one by one, for the tabs to place. */
 interface AddedSections {
-  meant: string;
   highlights: string;
   winProbability: string;
   possessions: string;
@@ -1090,6 +1303,7 @@ export function recapBodyInput(
       matchupAnalyzer: process.env["SC_MATCHUP_ANALYZER_URL"]?.trim() || null,
     },
     topScorers: faqScorers(data),
+    faqFacts: faqFacts(data, options, game, meeting),
     info: {
       tv: meeting.network ?? data.boxscore?.broadcast ?? null,
       attendance: data.boxscore?.attendance ?? null,
@@ -1136,6 +1350,8 @@ function pageRivalry(
       awayScore: m.score!.away,
       homeScore: m.score!.home,
       playoff: m.seasonType === "post",
+      // Postseason week 5 is the Super Bowl, as the schedule numbers it.
+      superBowl: m.seasonType === "post" && m.week === 5,
       url: linked(m),
     });
   }
@@ -1627,10 +1843,23 @@ function statTeam(team: NflTeam | null): string {
     : "";
 }
 
-/** The name cell every stat table shares: face, link, position. */
+/** "SEA · WR": the team first, then the position in its ink (mak, 2026-09-30). */
+function teamPosition(teamCode: string | null | undefined, position: string | null | undefined, className: string): string {
+  const pos = (position ?? "").trim();
+  const code = (teamCode ?? "").trim().toUpperCase();
+  if (!pos && !code) return "";
+  return (
+    `<span class="${className}">` +
+    (code ? `<span class="sct-pos-team">${escapeHtml(code)}</span>` : "") +
+    (pos && code ? `<span class="sct-pos-dot" aria-hidden="true"> · </span>` : "") +
+    (pos ? `<span class="sct-pos" data-pos="${escapeHtml(pos.toUpperCase())}">${escapeHtml(pos)}</span>` : "") +
+    `</span>`
+  );
+}
+
+/** The name cell every stat table shares: face, link, team and position. */
 function statName(
   row: { player: { id: string; name: string }; team: NflTeam | null; position: string | null },
-  startSit: string | null = null,
 ): string {
   // The flex box is an inner span, not the cell. `display:flex` on a <th>
   // takes it out of table layout altogether, which left the name column a
@@ -1646,11 +1875,7 @@ function statName(
     playerPhoto(row.player.id, "sct-mu-ps-photo", 32) +
     `<span class="sct-mu-ps-who">` +
     playerName(row.player.name, "sct-mu-ps-link") +
-    positionTag(row.position, row.team?.code, "sct-mu-ps-meta") +
-    (startSit
-      ? `<a class="sct-mu-ps-ss" href="${escapeHtml(startSit)}" data-cta="player-stats-startsit" ` +
-        `aria-label="${escapeHtml(`Start or sit ${row.player.name}`)}">Start/Sit →</a>`
-      : "") +
+    teamPosition(row.team?.code, row.position, "sct-mu-ps-meta") +
     `</span>` +
     `</span>` +
     `</th>`
@@ -1675,6 +1900,8 @@ interface StatColumn {
   sorted?: boolean;
   /** Header labels per scoring format, for the column the switch relabels. */
   formats?: Record<"ppr" | "half" | "std", string>;
+  /** An action column: no sort button, its label for screen readers only. */
+  action?: boolean;
 }
 
 /** A numeric column, which is all of them but the name. */
@@ -1695,10 +1922,13 @@ function statTable(
   label: string,
   columns: StatColumn[],
   rows: string[],
+  after = "",
 ): string {
   if (rows.length === 0) return "";
   const header = (column: StatColumn): string =>
-    `<th scope="col" data-sort-type="${column.type}"` +
+    column.action
+      ? `<th scope="col" class="sct-mu-ps-act" data-no-sort><span class="sct-visually-hidden">${escapeHtml(column.label)}</span></th>`
+      : `<th scope="col" data-sort-type="${column.type}"` +
     (column.sorted ? ` data-sort-default="descending"` : "") +
     (column.formats
       ? (["ppr", "half", "std"] as const)
@@ -1719,6 +1949,7 @@ function statTable(
     `<tbody>${rows.join("")}</tbody>` +
     `</table>` +
     `</div>` +
+    after +
     `</div>`
   );
 }
@@ -1792,6 +2023,53 @@ function statCell(
   );
 }
 
+/** "Fantasy Points: Patriots vs Seahawks, Week 1 2026", over the fantasy leaders. */
+function fantasyTitle(data: MatchupData): string {
+  const game = matchupScoreboardGame(data);
+  if (!game) return "";
+  const round = game.gameType === "playoff" ? game.roundLabel.replace(/^(AFC|NFC)\s+/, "") : game.roundLabel;
+  return h2(`Fantasy Points: ${game.away.short} vs ${game.home.short}, ${round} ${game.seasonLabel}`);
+}
+
+/** The Start/Sit action, at the far right of a row rather than under the name. */
+const ACTION_COLUMN: StatColumn = { label: "Start/Sit", type: "text", action: true };
+
+/**
+ * The four fantasy leaders at the head of Player Stats: name, team and
+ * position, points and the week's positional finish, all three scorings on
+ * each figure for the switch to swap.
+ */
+function fantasyLeaders(rows: FantasyRow[]): string {
+  const top = rows
+    .filter((r) => ["QB", "RB", "WR", "TE"].includes((r.position ?? "").toUpperCase()))
+    .sort((a, b) => b.ppr - a.ppr)
+    .slice(0, 4);
+  if (top.length === 0) return "";
+  const fin = (rank: number | null, pos: string | null): string => (rank === null || !pos ? "—" : `${pos}${rank}`);
+  return (
+    `<div class="sct-mu-fl">` +
+    `<p class="sct-rb-kicker">Fantasy leaders</p>` +
+    `<ol class="sct-mu-fl-list">` +
+    top
+      .map(
+        (r) =>
+          `<li class="sct-mu-fl-item">` +
+          playerName(r.player.name, "sct-mu-fl-name") +
+          teamPosition(r.team?.code, r.position, "sct-mu-fl-meta") +
+          `<span class="sct-mu-fl-pts">` +
+          `<span class="sct-mu-fl-num" data-ps-swap data-ppr="${r.ppr.toFixed(1)}" data-half="${r.half.toFixed(1)}" ` +
+          `data-std="${r.standard.toFixed(1)}">${r.ppr.toFixed(1)}</span> <span class="sct-mu-fl-unit">PTS</span></span>` +
+          `<span class="sct-mu-fl-fin" data-ps-swap data-ppr="${escapeHtml(fin(r.positionFinish, r.position))}" ` +
+          `data-half="${escapeHtml(fin(r.halfFinish, r.position))}" data-std="${escapeHtml(fin(r.standardFinish, r.position))}">` +
+          `${escapeHtml(fin(r.positionFinish, r.position))}</span>` +
+          `</li>`,
+      )
+      .join("") +
+    `</ol>` +
+    `</div>`
+  );
+}
+
 /**
  * The box score, by category, both teams in one table.
  *
@@ -1830,6 +2108,17 @@ function renderPlayerStats(data: MatchupData): string {
     active.set(p.name, fantasy?.contexts[id]?.active ?? false);
   }
   const startSit = (name: string): string | null => (active.get(name) ? startSitFor(name) : null);
+  const actionCell = (name: string): string => {
+    const href = startSit(name);
+    return (
+      `<td class="sct-mu-ps-act" data-sort="">` +
+      (href
+        ? `<a class="sct-mu-ps-ss" href="${escapeHtml(href)}" data-cta="player-stats-startsit" ` +
+          `aria-label="${escapeHtml(`Start or sit ${name}`)}">Start/Sit →</a>`
+        : "") +
+      `</td>`
+    );
+  };
 
   // A quarterback's runs sit on his passing row, so his whole game reads on
   // one line and he is not listed twice. A quarterback who ran but threw no
@@ -1839,7 +2128,7 @@ function renderPlayerStats(data: MatchupData): string {
   const rushCells = (rush: RushingRow | undefined): string =>
     rush
       ? statCell(rush.carries, rush.carries) +
-        statCell(rush.yards, rush.yards, "is-key") +
+        statCell(rush.yards, rush.yards) +
         statCell(rush.touchdowns, rush.touchdowns, "sct-mu-ps-edge")
       : blank(2) + statCell("—", null, "sct-mu-ps-edge");
   const passerIds = new Set(stats.passing.map((row) => row.player.id));
@@ -1847,17 +2136,18 @@ function renderPlayerStats(data: MatchupData): string {
     ...stats.passing.map(
       (row: PassingRow) =>
         `<tr>` +
-        statName(row, startSit(row.player.name)) +
+        statName(row) +
+        fantasyCells(row) +
         // Sorted on completions: the column reads "CMP/ATT" and CMP is the
         // number it leads with, so ordering by anything else would order it
         // by a figure the eye is not on.
         statCell(`${row.completions}/${row.attempts}`, row.completions) +
-        statCell(row.yards, row.yards, "is-key") +
+        statCell(row.yards, row.yards) +
         statCell(row.touchdowns, row.touchdowns) +
         statCell(row.interceptions, row.interceptions, "sct-mu-ps-edge") +
         rushCells(rushBy.get(row.player.id)) +
         statCell(row.rating === null ? "—" : row.rating.toFixed(1), row.rating) +
-        fantasyCells(row) +
+        actionCell(row.player.name) +
         `</tr>`,
     ),
     ...stats.rushing
@@ -1865,12 +2155,13 @@ function renderPlayerStats(data: MatchupData): string {
       .map(
         (rush) =>
           `<tr>` +
-          statName(rush, startSit(rush.player.name)) +
+          statName(rush) +
+          fantasyCells(rush) +
           blank(3) +
           statCell("—", null, "sct-mu-ps-edge") +
           rushCells(rush) +
           blank(1) +
-          fantasyCells(rush) +
+          actionCell(rush.player.name) +
           `</tr>`,
       ),
   ];
@@ -1891,51 +2182,66 @@ function renderPlayerStats(data: MatchupData): string {
   const points = (id: string): number => byPlayer.get(id)?.ppr ?? -Infinity;
   skillIds.sort((a, b) => points(b) - points(a));
 
-  const skill = skillIds.map((id) => {
+  // The top scorers show; the rest wait behind "Show all players" once the
+  // bundle has run (mak, 2026-09-30). Without it every row shows.
+  const SKILL_SHOWN = 8;
+  const skill = skillIds.map((id, at) => {
     const rush: RushingRow | undefined = rushBy.get(id);
     const rec: ReceivingRow | undefined = recBy.get(id);
     const row = (rush ?? rec)!;
     return (
-      `<tr>` +
-      statName(row, startSit(row.player.name)) +
+      `<tr${at >= SKILL_SHOWN ? ` class="sct-mu-ps-more"` : ""}>` +
+      statName(row) +
+      fantasyCells(row) +
       statCell(row.position ?? "—", row.position, "sct-mu-ps-pos") +
       (rush
         ? statCell(rush.carries, rush.carries) +
-          statCell(rush.yards, rush.yards, "is-key") +
+          statCell(rush.yards, rush.yards) +
           statCell(rush.touchdowns, rush.touchdowns, "sct-mu-ps-edge")
         : blank(2) + statCell("—", null, "sct-mu-ps-edge")) +
       (rec
         ? statCell(rec.targets, rec.targets) +
           statCell(rec.receptions, rec.receptions) +
-          statCell(rec.yards, rec.yards, "is-key") +
+          statCell(rec.yards, rec.yards) +
           statCell(rec.touchdowns, rec.touchdowns)
         : blank(4)) +
-      fantasyCells(row) +
+      actionCell(row.player.name) +
       `</tr>`
     );
   });
+  const hidden = Math.max(0, skill.length - SKILL_SHOWN);
+  const more = hidden
+    ? `<button type="button" class="sct-mu-ps-toggle" data-ps-more hidden aria-expanded="false" ` +
+      `data-more="${escapeHtml(`Show all ${skill.length} players`)}" data-less="Show fewer players">` +
+      `${escapeHtml(`Show all ${skill.length} players`)}</button>`
+    : "";
 
   // Passing over the combined table, each the full width of the section. The
   // combined table runs to eleven columns, which no half-width column holds.
   const passingBlock =
-    statTable("Passing", "Passing statistics", [
+    statTable("Quarterbacks", "Quarterback statistics", [
+      // Fantasy points and the finish straight after the name, so the eye runs
+      // player, points, finish; the box score is the context after them.
+      { label: "FPTS", type: "number", formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
+      FANTASY_COLUMNS[1]!,
       col("CMP/ATT"),
-      col("Pass YDS", true),
+      col("Pass YDS"),
       col("TD"),
       col("INT"),
       col("Rush ATT"),
       col("Rush YDS"),
       col("Rush TD"),
       col("Rate"),
-      // FPTS in every format, as on the table below: the switch still swaps the values.
-      { label: "FPTS", type: "number", formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
-      FANTASY_COLUMNS[1]!,
+      ACTION_COLUMN,
     ], passing);
 
   const skillBlock = statTable(
-    "Rushing & Receiving",
-    "Rushing and receiving statistics",
+    "WRs, RBs, & TEs",
+    "Receiver, running back and tight end statistics",
     [
+      // FPTS in every format: the switch still swaps the values under it.
+      { label: "FPTS", type: "number", sorted: true, formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
+      FANTASY_COLUMNS[1]!,
       { label: "POS", type: "text" },
       col("Rush ATT"),
       col("Rush YDS"),
@@ -1944,11 +2250,10 @@ function renderPlayerStats(data: MatchupData): string {
       col("REC"),
       col("Rec YDS"),
       col("Rec TD"),
-      // FPTS in every format: the switch still swaps the values under it.
-      { label: "FPTS", type: "number", sorted: true, formats: { ppr: "FPTS", half: "FPTS", std: "FPTS" } },
-      FANTASY_COLUMNS[1]!,
+      ACTION_COLUMN,
     ],
     skill,
+    more,
   );
 
   const board = passingBlock + skillBlock;
@@ -1960,17 +2265,25 @@ function renderPlayerStats(data: MatchupData): string {
     // The heading and the scoring switch share a row. The client builds the
     // PPR / Half / Standard switch in the slot; without it the tables stay in
     // PPR, which is what the server printed.
+    // Three layers (mak, 2026-09-30): the fantasy leaders under the game's
+    // fantasy title, the tables under "Player Stats", then the Redraft
+    // Command banner.
+    fantasyTitle(data) +
+    fantasyLeaders(stats.fantasy) +
     `<div class="sct-mu-ps-head">` +
     h2("Player Stats") +
     `<div class="sct-mu-scoring-slot" data-sct-scoring-slot></div>` +
     `</div>` +
     blocks +
-    // A note, not an ad: no heading, no button, and only under a table that
-    // has players in it.
     (byPlayer.size
-      ? `<p class="sct-mu-rc-note">Have one of these players? ` +
-        `<a href="${escapeHtml(REDRAFT_COMMAND_URL)}" data-cta="fantasy-table-footer">Redraft Command</a> ` +
-        `tells you whether to start, sit, trade or hold him based on your roster and league settings.</p>`
+      ? `<aside class="sct-mu-ps-cta" aria-label="Redraft Command">` +
+        `<div class="sct-mu-ps-cta-text">` +
+        `<p class="sct-mu-ps-cta-title">Need a decision on one of these players?</p>` +
+        `<p class="sct-mu-ps-cta-sub">Get start/sit, trade and roster advice tailored to your league.</p>` +
+        `</div>` +
+        `<a class="sct-mu-ps-cta-button" href="${escapeHtml(REDRAFT_COMMAND_URL)}" data-cta="player-stats-banner">` +
+        `Open Redraft Command →</a>` +
+        `</aside>`
       : "") +
     `</section>`
   );
@@ -2138,6 +2451,40 @@ function usageRing(
 }
 
 /**
+ * A share as compact horizontal bars: name and percentage on one line, the bar
+ * under it. Carry Share uses it (mak, 2026-09-30) — three backs read faster
+ * down a column than around a second ring beside Target Share's.
+ */
+function usageShareBars(team: TeamUsage, spec: (typeof USAGE_RINGS)[number], ink: string): string {
+  const total = team[spec.total];
+  const slices = team[spec.key];
+  const head =
+    `<h4 class="sct-mu-usage-metric-h">${escapeHtml(spec.heading)}` +
+    (total > 0 ? `<span class="sct-mu-usage-denom">${total} ${escapeHtml(spec.unit)}</span>` : "") +
+    `</h4>`;
+  if (total <= 0 || slices.length === 0) {
+    return `<div class="sct-mu-usage-metric">${head}<p class="sct-mu-usage-none">${escapeHtml(spec.unavailable)}</p></div>`;
+  }
+  const rows = slices.map((slice) => {
+    const name = slice.player
+      ? playerName(slice.label, "sct-mu-usage-share-name")
+      : `<span class="sct-mu-usage-share-name is-other">${escapeHtml(slice.label)}</span>`;
+    return (
+      `<li class="sct-mu-usage-share" title="${escapeHtml(usageTip(slice, spec.unit, spec.metric))}">` +
+      `<span class="sct-mu-usage-share-head">${name}` +
+      `<span class="sct-mu-usage-share-pct">${usagePercent(slice.share)}</span></span>` +
+      `<span class="sct-mu-usage-track" aria-hidden="true"><span class="sct-mu-usage-fill"${styleAttr([
+        `width:${Math.round(slice.share * 100)}%`,
+        slice.player ? `background:${ink}` : `background:${USAGE_INK_OTHER}`,
+      ])}></span></span>` +
+      `<span class="sct-visually-hidden">, ${slice.value} ${escapeHtml(spec.unit)}</span>` +
+      `</li>`
+    );
+  });
+  return `<div class="sct-mu-usage-metric">${head}<ol class="sct-mu-usage-shares">${rows.join("")}</ol></div>`;
+}
+
+/**
  * Snap share, as a ranked list rather than a ring.
  *
  * Snap percentages are not a distribution — five players can each be on the
@@ -2159,6 +2506,9 @@ function usageBars(team: TeamUsage): string {
       playerName(row.player.name, "sct-mu-usage-bar-name") +
       // No team code: the player is already inside his own team's panel.
       positionTag(row.position, null, "sct-mu-usage-bar-meta") +
+      // The count on the name's line and the bar straight under it: two lines
+      // a row, not three (mak, 2026-09-30).
+      `<span class="sct-mu-usage-bar-raw">${row.snaps} snaps</span>` +
       `<span class="sct-mu-usage-bar-pct">${usagePercent(share)}</span>` +
       `</span>` +
       `<span class="sct-mu-usage-track" aria-hidden="true">` +
@@ -2166,7 +2516,6 @@ function usageBars(team: TeamUsage): string {
         `width:${Math.round((share ?? 0) * 100)}%`,
       ])}></span>` +
       `</span>` +
-      `<span class="sct-mu-usage-bar-raw">${row.snaps} snaps</span>` +
       `</span>` +
       `</li>`
     );
@@ -2189,7 +2538,10 @@ function usageBars(team: TeamUsage): string {
  */
 function usagePanel(team: TeamUsage, ink: string): string {
   const bars = usageBars(team);
-  const rings = USAGE_RINGS.map((spec) => usageRing(team, spec, ink));
+  // Target Share keeps its ring; Carry Share is compact bars.
+  const rings = USAGE_RINGS.map((spec) =>
+    spec.key === "carries" ? usageShareBars(team, spec, ink) : usageRing(team, spec, ink),
+  );
   // A team with no snaps in the log and nothing to distribute has no panel.
   // The rings above return their own "unavailable" line, so this asks the data
   // rather than the markup.
@@ -2625,59 +2977,6 @@ function seasonNote(data: MatchupData, sa: TeamStats | null, sb: TeamStats | nul
     : games.length
       ? `${season} regular season, through ${played}${spread} ${played === 1 && !spread ? "game" : "games"}.`
       : `${season} regular season to date.`;
-}
-
-/** Season Form's rows on a recap, spelled out the way "Why won" labels its rows. */
-const FORM_ROWS: ReadonlyArray<{ key: string; label: string; better: CompareRow["better"] }> = [
-  { key: "record", label: "Record", better: "higher" },
-  { key: "off-points", label: "Points per game", better: "higher" },
-  { key: "off-total-yards", label: "Yards per game", better: "higher" },
-  { key: "off-yards-per-play", label: "Yards per play", better: "higher" },
-  { key: "def-points", label: "Points allowed per game", better: "lower" },
-  { key: "def-total-yards", label: "Yards allowed per game", better: "lower" },
-];
-
-/**
- * Season Form on a recap page, drawn in the "Why won" design — the figure
- * either side of the stat, the better one emphasised, a split bar under each
- * row — so the two comparisons on the page read as one. The record's bar is
- * drawn from wins. League ranks are left to the team hubs.
- */
-function renderSeasonForm(data: MatchupData): string {
-  if (!describesNow(data)) return "";
-  const { left: a, right: b, leftPage, rightPage } = sides(data);
-  const sa = leftPage.stats;
-  const sb = rightPage.stats;
-  if (!sa && !sb) return "";
-
-  const number = (row: StatRow | null): number | null => {
-    if (!row) return null;
-    const n = row.key === "record" ? Number(row.value.split("-")[0]) : Number.parseFloat(row.value);
-    return Number.isFinite(n) ? n : null;
-  };
-  const rows: CompareRow[] = FORM_ROWS.flatMap(({ key, label, better }) => {
-    const l = key === "record" ? recordRow(leftPage) : findRow(sa, key);
-    const r = key === "record" ? recordRow(rightPage) : findRow(sb, key);
-    if (!l && !r) return [];
-    return [{ label, away: number(l), home: number(r), awayText: l?.value ?? "—", homeText: r?.value ?? "—", better }];
-  });
-  if (rows.length === 0) return "";
-
-  const colors = heroPairColors(a.abbreviation, b.abbreviation);
-  return (
-    `<section class="sct-rb-section sct-mu-form" aria-labelledby="sct-rb-form">` +
-    `<h2 class="sct-rb-h2" id="sct-rb-form">Season Form</h2>` +
-    `<p class="sct-rb-sub">${escapeHtml(seasonNote(data, sa, sb))}</p>` +
-    renderStatCompare({
-      caption: `Season stats comparison, ${a.nickname} vs ${b.nickname}`,
-      awayName: a.nickname,
-      homeName: b.nickname,
-      awayInk: colors.away.ink,
-      homeInk: colors.home.ink,
-      rows,
-    }) +
-    `</section>`
-  );
 }
 
 /**
@@ -3191,11 +3490,38 @@ function themeInks(html: string, game: ScoreboardGame): { html: string; style: s
     style.push(`--mu-ink-${side}-light:${ink}`, `--mu-ink-${side}-dark:${darkInk(ink)}`);
     const esc = ink.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     out = out.replace(
-      new RegExp(`(?<=[";\\s])(color|--rb-team|--ls-team|--rb-away|--rb-home|--rb-at-ink|stroke|fill):${esc}(?=[;"])`, "gi"),
+      new RegExp(`(?<=[";\\s])(color|--rb-team|--ls-team|--ss-ink|--rb-away|--rb-home|--rb-at-ink|stroke|fill):${esc}(?=[;"])`, "gi"),
       `$1:var(--mu-ink-${side})`,
     );
   }
   return { html: out, style };
+}
+
+/**
+ * Section titles in Title Case, as the player pages set theirs (mak,
+ * 2026-09-30): "Why the Seahawks Won". Only the section H2s; the recap's own
+ * headline keeps its sentence case.
+ */
+function sectionTitleCase(html: string): string {
+  // titleCase() capitalises the first letter of a word, which for "(through"
+  // is the bracket; "(Through Week 3)" is the title-case form.
+  const cased = (text: string): string => titleCase(text).replace(/\(([a-z])/g, (_, c: string) => `(${c.toUpperCase()}`);
+  const titles = (part: string): string =>
+    part
+      .replace(
+        /(<h2 class="(?:sct-rb-h2|sct-h2)"[^>]*>)([^<]*)(<\/h2>)/g,
+        (_, open: string, text: string, close: string) => open + cased(text) + close,
+      )
+      // The section titles set as H3s wear the same case (mak, 2026-09-30).
+      .replace(
+        /(<h3 class="sct-rb-h3[^"]*"[^>]*>)([^<]*)(<\/h3>)/g,
+        (_, open: string, text: string, close: string) => open + cased(text) + close,
+      );
+  // The sidebar's card titles are not section titles; they keep their case.
+  return html
+    .split(/(<aside class="sct-rb-aside"[\s\S]*?<\/aside>)/)
+    .map((part) => (part.startsWith('<aside class="sct-rb-aside"') ? part : titles(part)))
+    .join("");
 }
 
 /** The completed game's tabs, in bar order: the hash, the label, the panel's id. */
@@ -3210,7 +3536,8 @@ type RecapTabId = (typeof RECAP_TABS)[number][0];
 
 /**
  * A completed game's page: the scoreboard across the full width, the sticky
- * tab bar under it, then two columns — the five tab panels and the always-visible
+ * tab bar under it, on the Recap tab its lead (leaders, story, video) across
+ * the full width too, then two columns — the five tab panels and the always-visible
  * sections (fantasy outlook, FAQ, Keep exploring) in the main one, the sidebar
  * beside it.
  *
@@ -3241,8 +3568,11 @@ function recapTabs(
     );
   };
 
+  let foot = "";
   const body = renderRecapBody(input, {
     arrange: (own) => {
+      // The FAQ closes every tab, after Keep exploring (mak, 2026-09-30).
+      foot = own.outlook + added.explore + own.faq;
       const fantasy = fantasyInput(data);
       const fantasyTab = fantasy
         ? renderFantasySection(fantasy, renderGameMatchups(data, game))
@@ -3250,30 +3580,41 @@ function recapTabs(
       return (
         panel(
           "recap",
-          renderGameLeadersStrip(data) +
-            renderGameRecap(data, options, added.meant) +
-            own.why +
-            renderGameScoring(data) +
-            added.highlights,
+          own.why +
+            renderGameScoring(data),
         ) +
-        // Player stats and usage, restored under the fantasy section.
-        panel("fantasy", fantasyTab + renderPlayerStats(data) + renderUsage(data)) +
+        // Player stats and usage lead the tab, above the fantasy section (mak, 2026-09-30).
+        panel("fantasy", renderPlayerStats(data) + renderUsage(data) + fantasyTab) +
         panel("game-flow", added.winProbability + added.possessions) +
-        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game) + renderSeasonForm(data)) +
-        panel("betting", added.betting) +
-        // Below the panels, on every tab.
-        own.outlook +
-        own.faq +
-        added.explore
+        panel("head-to-head", own.headToHead + renderSeasonToDate(data, game)) +
+        panel("betting", added.betting)
       );
+      // Below the panels, on every tab, but under both columns at the full
+      // width rather than beside the sidebar (mak, 2026-09-30): see `foot`.
     },
     asideAfter: renderGameBeforeAfter(data, options),
   });
 
   const top = renderTabBar(game, RECAP_TABS.filter(([id]) => present.has(id)));
+  // The Recap tab's lead — leaders, then the story with its highlights video
+  // as one game-summary module — across the full width above both columns
+  // (mak, 2026-09-30). Part of the Recap tab: the script shows and hides it
+  // with that panel, and without the script it reads first, above the rest.
+  // The winner's three edges sit under the story's text, beside the video
+  // (mak, 2026-09-30); they stay under "Why won" as well.
+  const leadHtml =
+    renderGameLeadersStrip(data) +
+    (renderGameRecap(data, options, renderTakeaways(input, "sct-mu-keys") + added.highlights) || added.highlights) +
+    // Redraft Command as a strip under the story (mak, 2026-09-30).
+    renderRedraftStrip(input);
+  const lead = leadHtml
+    ? `<div class="sct-rb sct-mu-lead is-active" data-mu-tab="recap">` +
+      `<div class="sct-mu-tabpanel">${leadHtml}</div></div>`
+    : "";
   // The scoreboard sits above the tab bar and both columns, on every tab, as
   // the player pages put their header above their tabs.
-  const themed = themeInks(renderHero(data, options) + top + body, game);
+  const footer = foot ? `<div class="sct-rb sct-mu-foot">${foot}</div>` : "";
+  const themed = themeInks(sectionTitleCase(renderHero(data, options) + top + lead + body + footer), game);
   return { top: "", body: themed.html, style: themed.style };
 }
 

@@ -1,0 +1,1032 @@
+/*
+ * StatChasers — Fantasy Strength of Schedule
+ *
+ * A sibling of fpa.css, and a sibling for the same reason: each tool's sheet is
+ * enqueued on its own, so a page mounting [statchasers_strength_of_schedule]
+ * must not need another tool's CSS. The brand tokens are restated rather than
+ * imported.
+ *
+ * The layout is the standalone Strength-of-Schedule-SOS app's; the dress is
+ * this app's (house style for ported tools). The five matchup colours are the
+ * FPA table's diverging washes and inks, so a green cell here means what a
+ * green cell there means.
+ *
+ * Theme armour. Divi styles bare elements and ids inside the content column —
+ * `p` padding, `#left-area ul` list padding, `.entry-content table:not(.variations)`
+ * frames, `.entry-content tr td` padding, `#left-area table th` ink — so every
+ * rule that names a table, a list or a link starts with
+ * `:is(.scsos, #scsos-armour)`: `:is()` weighs as its heaviest argument, which
+ * is an id, and that outranks all of those without an `!important` each. The
+ * id is never an element's; its only job is weight. tests/table-armour.test.mjs
+ * fails a table rule written without it.
+ */
+
+:where(.scsos),
+:where(body.scsos-page) {
+  --sc-navy: #0b1634;
+  --sc-ink: #0b1220;
+  --sc-gold: #d4af37;
+  --sc-gold-soft: #f2d36b;
+  --sc-gold-deep: #a87905;
+
+  --sc-muted: #64748b;
+  --sc-muted-strong: #475569;
+  --sc-border: #e5e7eb;
+  --sc-hairline: rgba(15, 23, 42, 0.08);
+  --sc-surface: #ffffff;
+  --sc-surface-soft: #f7f9fc;
+  --sc-surface-sink: #f1f5f9;
+
+  --sc-radius: 16px;
+  --sc-radius-sm: 12px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --scsos-good: #16a34a;
+  --scsos-bad: #dc2626;
+
+  /* The FPA table's scale (fpa.css explains the derivation): green the
+     exploitable pole, red the one to avoid, red the darker arm so the two
+     survive red-green colour blindness. Neutral is the page's sink tint. */
+  --scsos-smash-wash: #77c488;
+  --scsos-smash-ink: #004f21;
+  --scsos-favorable-wash: #aee2b7;
+  --scsos-favorable-ink: #096a30;
+  --scsos-neutral-wash: #eef2f6;
+  --scsos-neutral-ink: #1e293b;
+  --scsos-tough-wash: #e8a69b;
+  --scsos-tough-ink: #8d140c;
+  --scsos-avoid-wash: #d6786a;
+  --scsos-avoid-ink: #5d0000;
+
+  /* Grid density: one token each, so a narrow tier retunes it once. */
+  --scsos-wk-w: 50px;
+  --scsos-cell-pad: 3px;
+}
+
+body.scsos-page {
+  margin: 0;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.scsos {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  container-type: inline-size;
+  container-name: scsos;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-family: var(--sc-font);
+  font-size: 14px;
+  /* Stated, not inherited: Divi's body is 500. */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.scsos.is-embed {
+  max-width: none;
+  padding: 0 0 50px;
+}
+
+.scsos *,
+.scsos *::before,
+.scsos *::after {
+  box-sizing: border-box;
+}
+
+/* Host padding on bare elements, zeroed at one class so the component rules
+   below, which come later, still win on source order. See fpa.css. */
+.scsos :where(p, h1, h2, h3, h4, h5, h6, ul, ol, li, figure, blockquote) {
+  padding: 0;
+}
+
+/* One family, pinned: a theme that sets fonts from its options panel emits
+   `!important` itself. */
+.scsos,
+.scsos * {
+  font-family: var(--sc-font) !important;
+}
+
+.scsos-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.scsos-h1 {
+  margin: 0 0 16px;
+  color: var(--sc-navy);
+  font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.scsos[aria-busy="true"] .scsos-view {
+  opacity: 0.55;
+  transition: opacity 120ms ease;
+}
+
+/* -------------------------------------------------------------------- bar */
+
+.scsos-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+/* Team / Player: two flush segments, the active one filled, as the source. */
+.scsos-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 280px;
+  max-width: 100%;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--sc-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 14px;
+  color: var(--sc-muted-strong);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-tab + a.scsos-tab {
+  border-left: 1px solid var(--sc-border);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-tab.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-tab:not(.is-active):hover {
+  color: var(--sc-navy);
+  background: var(--sc-surface-soft);
+}
+
+.scsos-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.scsos-control {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.scsos-control-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.scsos-opts {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-opt {
+  padding: 6px 13px;
+  border-radius: 999px;
+  color: var(--sc-muted-strong);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-opt.is-active {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-opt:not(.is-active):hover {
+  color: var(--sc-navy);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  background: var(--sc-surface);
+  color: var(--sc-navy);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-export:hover {
+  border-color: var(--sc-gold);
+}
+
+/* ------------------------------------------------------------------ cards */
+
+.scsos-view {
+  padding-top: 18px;
+}
+
+.scsos-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.scsos-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 117px;
+  min-width: 0;
+  padding: 10px 18px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(11, 31, 58, 0.14);
+  border-left-width: 4px;
+  border-radius: 18px;
+  background: var(--sc-surface);
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.06), 0 8px 24px -8px rgba(11, 31, 58, 0.14);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.scsos-card.is-good {
+  border-left-color: var(--scsos-good);
+}
+
+.scsos-card.is-bad {
+  border-left-color: var(--scsos-bad);
+}
+
+.scsos-card[role="button"] {
+  cursor: pointer;
+}
+
+.scsos-card[role="button"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(11, 31, 58, 0.08), 0 14px 30px -10px rgba(11, 31, 58, 0.22);
+}
+
+.scsos-card[role="button"]:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+}
+
+/* The faded crest, bottom right. */
+.scsos .scsos-card-mark {
+  position: absolute;
+  right: -12px;
+  bottom: -16px;
+  width: 112px;
+  height: 112px;
+  max-width: none;
+  object-fit: contain;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.scsos-card-title {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scsos-card.is-good .scsos-card-title {
+  color: #15803d;
+}
+
+.scsos-card.is-bad .scsos-card-title {
+  color: #b91c1c;
+}
+
+/* Two lines reserved, so every card's stat block sits on one baseline. */
+.scsos-card-note {
+  position: relative;
+  display: -webkit-box;
+  min-height: 2.6em;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.scsos-card-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.scsos .scsos-card-img {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  max-width: none;
+  object-fit: contain;
+}
+
+.scsos .scsos-card-img.is-headshot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: var(--sc-surface-sink);
+}
+
+.scsos-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.scsos-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+:is(.scsos, #scsos-armour) .scsos-card-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sc-ink);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-card-name:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+.scsos-card-value {
+  flex: none;
+  color: var(--sc-ink);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.scsos-card-value small {
+  margin-left: 3px;
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.scsos-card-row.is-sub {
+  margin-top: 5px;
+}
+
+.scsos-card-sub,
+.scsos-card-delta {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.scsos-card-sub {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scsos-card-delta {
+  flex: none;
+}
+
+/* Full names by default; "F. Last" once the room runs out. */
+.scsos-pname-short {
+  display: none;
+}
+
+.scsos-cards.is-short .scsos-pname-full,
+.scsos.is-compact .scsos-player .scsos-pname-full {
+  display: none;
+}
+
+.scsos-cards.is-short .scsos-pname-short,
+.scsos.is-compact .scsos-player .scsos-pname-short {
+  display: inline;
+}
+
+/* -------------------------------------------------------------- read line */
+
+.scsos-read {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.scsos-read-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.scsos-read-text svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--sc-muted);
+}
+
+.scsos-read-text strong {
+  color: var(--sc-ink);
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-afpa-link {
+  flex: none;
+  color: var(--sc-navy);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--sc-gold);
+}
+
+:is(.scsos, #scsos-armour) a.scsos-afpa-link:hover {
+  color: var(--sc-gold-deep);
+}
+
+:is(.scsos, #scsos-armour) hr.scsos-rule {
+  height: 0;
+  margin: 0 0 12px;
+  border: 0;
+  border-top: 1px solid var(--sc-hairline);
+  background: none;
+}
+
+/* ----------------------------------------------------------------- legend */
+
+.scsos-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.scsos-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.scsos-legend-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scsos-legend-title {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  /* `#left-area ul` sets 26px, at id weight. */
+  line-height: 1.3;
+  list-style: none;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-swatches li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  list-style: none;
+}
+
+.scsos-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- popovers */
+
+.scsos-pop {
+  position: relative;
+}
+
+.scsos-pop > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.scsos-pop > summary::-webkit-details-marker {
+  display: none;
+}
+
+.scsos-info {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.scsos-info:hover {
+  color: var(--sc-ink);
+}
+
+.scsos-pop-body {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -8px;
+  z-index: 40;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface);
+  color: var(--sc-muted-strong);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.25);
+}
+
+.scsos-pop-body.is-right {
+  left: auto;
+  right: 0;
+  width: 320px;
+}
+
+.scsos-pop-body p {
+  margin: 0 0 8px;
+}
+
+.scsos-pop-title {
+  color: var(--sc-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pop-list {
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--sc-hairline);
+  line-height: 1.4;
+  list-style: none;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pop-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pop-list li > span:first-child {
+  flex: none;
+  color: var(--sc-ink);
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pop-list li > span:last-child {
+  text-align: right;
+}
+
+:is(.scsos, #scsos-armour) ul.scsos-pop-list li.is-current > span {
+  color: var(--sc-gold-deep);
+}
+
+/* The baseline badge: the brand gold where the source had amber. */
+.scsos-baseline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--sc-gold-soft);
+  border-radius: 999px;
+  background: #fdf7e1;
+  color: #7a5700;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.scsos-baseline-pill:hover {
+  background: #fbefc4;
+}
+
+.scsos-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+}
+
+/* ------------------------------------------------------------------ table */
+
+.scsos-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(.scsos, #scsos-armour) table.scsos-table {
+  width: 100%;
+  min-width: max-content;
+  margin: 0;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 2px;
+  background: var(--sc-surface);
+  color: var(--sc-ink);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table th,
+:is(.scsos, #scsos-armour) .scsos-table td {
+  border: 0;
+  vertical-align: middle;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th {
+  padding: 10px var(--scsos-cell-pad);
+  border-radius: 4px;
+  background: var(--sc-navy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th.is-week {
+  min-width: var(--scsos-wk-w);
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th.is-playoff {
+  white-space: normal;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th.is-sorted {
+  background: var(--sc-gold-deep);
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th .scsos-sort {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th .scsos-sort:hover {
+  color: var(--sc-gold-soft);
+}
+
+/* The first column: sticky, so a team or player stays in view down the season. */
+:is(.scsos, #scsos-armour) .scsos-table th.is-first,
+:is(.scsos, #scsos-armour) .scsos-table th.scsos-first {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table thead th.is-first {
+  z-index: 3;
+  min-width: 72px;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody th.scsos-first {
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: var(--sc-surface);
+  box-shadow: 2px 0 0 var(--sc-surface), 3px 0 0 var(--sc-border);
+  /* Stated: `#left-area table th` greys every th it can reach. */
+  color: var(--sc-ink);
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody td {
+  padding: var(--scsos-cell-pad);
+  border-radius: 4px;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody td.scsos-rank {
+  min-width: 42px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody td.scsos-rank.is-muted {
+  color: var(--sc-muted);
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody td.scsos-wk {
+  min-width: var(--scsos-wk-w);
+  padding: 4px 2px;
+  font-weight: 700;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tbody td.scsos-wk[data-bucket="bye"] {
+  color: var(--sc-muted);
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tr:hover > td,
+:is(.scsos, #scsos-armour) .scsos-table tr:hover > th.scsos-first {
+  filter: brightness(0.97);
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tr.is-focus > td,
+:is(.scsos, #scsos-armour) .scsos-table tr.is-focus > th.scsos-first {
+  box-shadow: inset 0 2px 0 var(--sc-gold), inset 0 -2px 0 var(--sc-gold);
+}
+
+:is(.scsos, #scsos-armour) .scsos-table tr.is-focus > th.scsos-first {
+  background: #fdf7e1;
+}
+
+.scsos-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scsos .scsos-team img {
+  width: 20px;
+  height: 20px;
+  max-width: none;
+  object-fit: contain;
+}
+
+:is(.scsos, #scsos-armour) .scsos-player {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  color: var(--sc-ink);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+:is(.scsos, #scsos-armour) a.scsos-player:hover {
+  color: var(--sc-gold-deep);
+  text-decoration: underline;
+}
+
+.scsos-opp,
+.scsos-afpa {
+  display: block;
+}
+
+.scsos-afpa {
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.scsos-afpa-only {
+  font-weight: 800;
+}
+
+/* The five matchup colours, and the bye — on the cells and the legend alike. */
+:is(.scsos, #scsos-armour) [data-bucket="smash"] {
+  background: var(--scsos-smash-wash);
+  color: var(--scsos-smash-ink);
+}
+
+:is(.scsos, #scsos-armour) [data-bucket="favorable"] {
+  background: var(--scsos-favorable-wash);
+  color: var(--scsos-favorable-ink);
+}
+
+:is(.scsos, #scsos-armour) [data-bucket="neutral"] {
+  background: var(--scsos-neutral-wash);
+  color: var(--scsos-neutral-ink);
+}
+
+:is(.scsos, #scsos-armour) [data-bucket="tough"] {
+  background: var(--scsos-tough-wash);
+  color: var(--scsos-tough-ink);
+}
+
+:is(.scsos, #scsos-armour) [data-bucket="avoid"] {
+  background: var(--scsos-avoid-wash);
+  color: var(--scsos-avoid-ink);
+}
+
+:is(.scsos, #scsos-armour) [data-bucket="bye"] {
+  background: var(--sc-surface-soft);
+}
+
+.scsos-swatch[data-bucket="bye"] {
+  border: 1px dashed var(--sc-border);
+}
+
+.scsos-empty {
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- responsive */
+
+/* The column, not the window: embedded, this lives in a WordPress content
+   column that can be much narrower than the screen. */
+@container scsos (max-width: 860px) {
+  .scsos-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@container scsos (max-width: 640px) {
+  .scsos-bar {
+    align-items: stretch;
+  }
+
+  .scsos-tabs {
+    width: 100%;
+  }
+
+  .scsos-filters {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .scsos-read {
+    flex-direction: column;
+  }
+
+  .scsos-read .scsos-afpa-link {
+    margin-left: 23px;
+  }
+
+  .scsos-legend-row {
+    justify-content: center;
+  }
+
+  .scsos-legend {
+    justify-content: center;
+  }
+
+  .scsos-card {
+    padding: 10px 12px 12px 14px;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-card-name,
+  .scsos-card-value {
+    font-size: 17px;
+  }
+
+  /* "+1.2 vs league avg" becomes "+1.2 vs avg", as the source did when tight. */
+  .scsos-card-league {
+    display: none;
+  }
+
+  .scsos {
+    --scsos-wk-w: 46px;
+  }
+}
+
+@container scsos (max-width: 420px) {
+  .scsos-cards {
+    gap: 8px;
+  }
+
+  .scsos-card-sub {
+    display: none;
+  }
+
+  .scsos-card-row.is-sub {
+    justify-content: flex-end;
+  }
+
+  :is(.scsos, #scsos-armour) .scsos-card-name,
+  .scsos-card-value {
+    font-size: 15px;
+  }
+
+  .scsos .scsos-card-img {
+    display: none;
+  }
+
+  .scsos-pop-body.is-right {
+    width: 280px;
+  }
+}

@@ -101,6 +101,21 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     assert.deepEqual(loose, [], "these lose to Divi's table rules on an embedded page");
   });
 
+  test("every sos.css selector naming its table, a list or a link carries the id-weight prefix", () => {
+    // `#left-area ul` and `#left-area table th` are id weight; so is this prefix.
+    const all = selectors(read("sos.css"));
+    const loose = all.filter(
+      (s) =>
+        (/\.scsos-table\b/.test(s) || /\bul\.scsos-/.test(s) || /\ba\.scsos-/.test(s)) &&
+        !s.startsWith(":is(.scsos, #scsos-armour) "),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's rules on an embedded page");
+    assert.ok(
+      all.includes(":is(.scsos, #scsos-armour) table.scsos-table"),
+      "the table frame itself must be armed",
+    );
+  });
+
   test("the id in the prefix is never an element's id", () => {
     // Its only job is weight. A real element carrying it would be styled as a
     // tool root by every table rule in team.css.
@@ -110,7 +125,7 @@ describe("whole table families are lifted, so no rule is left behind", () => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(p);
-        else if (/\.ts$/.test(entry.name) && readFileSync(p, "utf8").includes("sct-table-armour")) hits.push(p);
+        else if (/\.ts$/.test(entry.name) && /sct-table-armour|scsos-armour/.test(readFileSync(p, "utf8"))) hits.push(p);
       }
     };
     walk(src);

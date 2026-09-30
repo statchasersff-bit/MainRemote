@@ -22,7 +22,6 @@
 
 import { listNewsForPlayerName, listNewsForTeam } from "../news-query";
 import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
-import { outlookFaq, type OutlookFaq } from "./outlook-faq";
 import {
   careerHighs,
   careerStatRows,
@@ -55,6 +54,7 @@ import {
 } from "./overview-data";
 import { statsTabAdvanced, type LogSeason, type StatsTabAdvanced } from "./stats-tab-data";
 import { practiceStamp } from "./injury-tab-data";
+import { newsTeammates, sameName, seasonOpens, weekTopTargets, type NewsMate } from "./news-tab-data";
 import { logger } from "../logger";
 import { ensureTeams } from "../teams";
 import {
@@ -139,8 +139,14 @@ import type {
   SeasonTierStat,
 } from "./types";
 
-/** Wire items about this player, for the News & Analysis tab. */
-const PLAYER_NEWS_LIMIT = 12;
+/**
+ * Wire items about this player, for the News tab. Forty since mak's News spec
+ * (2026-09-30): the feed is the whole season, grouped by week.
+ */
+const PLAYER_NEWS_LIMIT = 40;
+
+/** Teammates' items for the News tab's teammates section (spec 4.3 shows six). */
+const MATE_NEWS_LIMIT = 6;
 
 /**
  * Stories about the player's TEAM, shown beneath their own.
@@ -413,14 +419,6 @@ export interface PlayerPageData {
    */
   outlookDrivers: OutlookDriver[];
 
-  /**
-   * The Outlook tab's questions, answered from the strip above them.
-   *
-   * Derived like the other four FAQ blocks and NOT part of the authored
-   * decision layer — see lib/player/outlook-faq.ts for why the draft and
-   * start/sit answers are measurements rather than calls.
-   */
-  outlookFaq: OutlookFaq[];
 
   /**
    * The Stats tab's aggregates: the career table, its totals, the records and
@@ -452,6 +450,13 @@ export interface PlayerPageData {
    * standalone app's News tab was mostly made of.
    */
   teamNews: NewsItem[];
+
+  /** The teammates tied to his value, by usage, for the News tab (news-tab-data.ts). */
+  newsMates: NewsMate[];
+  /** Those teammates' own archive items this season, newest first. */
+  mateNews: Array<{ item: NewsItem; mate: NewsMate }>;
+  /** His club's most-targeted player each week, from the stored box scores. */
+  weekTopTargets: Record<number, { name: string; targets: number }>;
 
   /**
    * The current injury designation, straight off the roster snapshot.
@@ -491,6 +496,34 @@ async function newsForPlayer(name: string): Promise<NewsItem[]> {
     // else. Every other section is served from disk.
     return [];
   }
+}
+
+/**
+ * The News tab's teammates' own items from this season, newest first. Matched
+ * on the exact player tag, as the player's own news is.
+ */
+async function newsForMates(
+  mates: NewsMate[],
+  season: number,
+): Promise<Array<{ item: NewsItem; mate: NewsMate }>> {
+  const since = seasonOpens(season);
+  const out: Array<{ item: NewsItem; mate: NewsMate }> = [];
+  for (const mate of mates) {
+    try {
+      const rows = await listNewsForPlayerName(mate.name, 20);
+      for (const item of rows) {
+        const ts = itemTimestamp(item);
+        if (sameName(item.playerName, mate.name) && ts !== null && new Date(ts).toISOString().slice(0, 10) >= since) {
+          out.push({ item, mate });
+        }
+      }
+    } catch {
+      // The archive being unavailable costs the section, nothing else.
+    }
+  }
+  return out
+    .sort((a, b) => (itemTimestamp(b.item) ?? 0) - (itemTimestamp(a.item) ?? 0))
+    .slice(0, MATE_NEWS_LIMIT);
 }
 
 /**
@@ -1143,6 +1176,8 @@ export async function getPlayerPageData(
 
   const news = await newsForPlayer(player.name);
   const teamNews = await teamNewsFor(team, news);
+  const newsMates = newsTeammates(player, leagueSeason, allPlayers);
+  const mateNews = await newsForMates(newsMates, leagueSeason);
 
   const outlook2026 = loadFantasyOutlook2026()[player.id] ?? null;
   // Built once and shared: the strip renders it and the outlook FAQ answers
@@ -1217,20 +1252,6 @@ export async function getPlayerPageData(
     }),
     fantasyOutlook2026: outlook2026,
     outlookDrivers: drivers,
-    // Built from the strip rather than beside it, so an answer cannot claim a
-    // rank the cards above it do not show. The season is the outlook's own,
-    // for the reason the tab's heading uses it: that record is stamped for the
-    // year it is about, and `season` here is the stats year.
-    outlookFaq: outlookFaq({
-      name: player.name,
-      position: player.position,
-      team: player.team,
-      season: outlook2026?.season ?? season,
-      drivers,
-      keyStats: outlook2026?.keyStats ?? null,
-      dynasty: loadDynastyRankings()[player.slug] ?? null,
-      rosterPct: rosterPctFor(player.id),
-    }),
 
     statsProfile: {
       career: careerRows,
@@ -1261,6 +1282,9 @@ export async function getPlayerPageData(
       return ts !== null && (newest === null || ts > newest) ? ts : newest;
     }, null),
     teamNews,
+    newsMates,
+    mateNews,
+    weekTopTargets: team ? weekTopTargets(leagueSeason, team.code) : {},
     designation,
     rosterFetchedAt: rosterFetchedAt(),
     leagueSeason,
@@ -1325,6 +1349,8 @@ export function playerDataVersion(
     data.news.length,
     data.newsUpdatedAtMs ?? 0,
     data.teamNews.length,
+    data.mateNews.length,
+    data.mateNews[0] ? itemTimestamp(data.mateNews[0].item) ?? 0 : 0,
     // The designation and the snapshot it came from: a player going from
     // Questionable to Out has to invalidate this page, and the stamp covers the
     // case where a refresh clears a designation entirely.

@@ -36,6 +36,8 @@ describe("the key", () => {
       "/team",
       "/schedule",
       "/embed/player-stats",
+      "/embed/sos",
+      "/strength-of-schedule",
       "/api/news",
     ]) {
       const res = await get(path);
@@ -59,8 +61,8 @@ describe("the key", () => {
     assert.equal((await get("/player/jacoby-brissett/", keyed)).status, 200);
   });
 
-  test("assets, the root page, /embed.js and health stay public", async () => {
-    for (const path of ["/player.css", "/embed.js", "/", "/api/healthz"]) {
+  test("assets, the root page, /embed.js, health and the CSV downloads stay public", async () => {
+    for (const path of ["/player.css", "/sos.css", "/embed.js", "/", "/api/healthz", "/sos/download.csv"]) {
       const res = await get(path);
       assert.notEqual(res.status, 403, path);
     }
@@ -92,6 +94,11 @@ describe("the browser proxy", () => {
     assert.match(stats, new RegExp(`data-sca-endpoint="${PROXY}/embed/player-stats"`));
     const handcuffs = await (await get("/embed/rb-handcuffs", keyed)).text();
     assert.match(handcuffs, new RegExp(`data-rbh-endpoint="${PROXY}/embed/rb-handcuffs"`));
+    const sos = await get("/embed/sos", keyed);
+    // 404 with no FPA ingested; when there is a board, its swaps go through the proxy.
+    if (sos.status === 200) {
+      assert.match(await sos.text(), new RegExp(`data-scsos-endpoint="${PROXY}/embed/sos"`));
+    }
   });
 
   test("the news fragment names the proxy for its refresh, and keeps its asset origin", async () => {

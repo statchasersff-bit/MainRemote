@@ -38,14 +38,8 @@
  * palest step never has to carry meaning alone.
  */
 
-import {
-  escapeHtml,
-  escapeJsonLd,
-  itemTimestamp,
-  safeUrl,
-  type NewsItem,
-} from "./render";
-import { easternParts, newsStamp, splitHeadline } from "./news-card";
+import { escapeHtml, escapeJsonLd, safeUrl } from "./render";
+import { easternParts } from "./news-card";
 // The tab strip's headings and standfirsts come from the same function the
 // document head uses, so a heading swapped in by a click and one loaded with
 // the page are generated from one place. player-seo.ts imports nothing from
@@ -63,6 +57,7 @@ import {
   type LogColumn,
   positionMomentumMetrics,
   recentGames,
+  TIER_FILL,
   weeklyTier,
   weeklyTierLabel,
   type WeeklyTier,
@@ -86,18 +81,12 @@ import type {
   CareerSeasonStat,
   GameLogEntry,
 } from "./player/types";
-import { gameLogFaq } from "./player/game-log-faq";
 import { type RiskLevel } from "./player/injury";
 import { type CareerStatRow } from "./player/stats-profile";
 import { canonicalizeMatchupPair } from "./matchup/pair";
-import {
-  percentileLevel,
-  percentileRead,
-  percentileWord,
-} from "./player/fantasy-read";
+import { percentileWord } from "./player/fantasy-read";
 import type { OutlookBand } from "./player/types";
 import {
-  designationSeverity,
   headerKind,
   matchupBand,
   OUTLOOK_SEASON,
@@ -105,9 +94,13 @@ import {
   type MatchupBand,
 } from "./player/header";
 import { renderOverviewSections } from "./player/overview";
-import { renderStatsTabParts, STATS_LEAD_ID, statsTabFaqs } from "./player/stats-tab";
-import { renderOutlookTab } from "./player/outlook-tab";
-import { renderInjuryTab } from "./player/injury-tab";
+import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
+import { outlookTabParts } from "./player/outlook-tab";
+import { injuryTabParts } from "./player/injury-tab";
+import { renderNewsTab } from "./player/news-tab";
+import { renderFaqSection, selectFaq, tabHref } from "./player/faq-engine";
+import { gameLogPool, statsPool } from "./player/faq-pools";
+import { titleCase } from "./player/title-case";
 
 export interface PlayerRenderOptions {
   /**
@@ -196,7 +189,9 @@ const SECTION_HEADINGS: Record<string, string> = {
   injury: "Injury Update & History",
   "game-log": "Game Log",
   outlook: "Fantasy Outlook",
-  news: "News & Analysis",
+  // mak, 2026-09-30 (was "News & Analysis"); worded "Latest {name} News &
+  // Updates" by sectionHeading() below.
+  news: "News & Updates",
   bio: "Bio",
 };
 
@@ -225,6 +220,7 @@ export function sectionHeading(
   // for stats, a game log and an outlook, and not for the others. The outlook's
   // year is the one it projects, which is not always the season on the page.
   if (section === "outlook") return `${playerName} ${phrase} ${OUTLOOK_SEASON}`;
+  if (section === "news") return `Latest ${playerName} ${phrase}`;
   const dated = season && (section === "stats" || section === "game-log");
   return dated ? `${playerName} ${phrase} ${season}` : `${playerName} ${phrase}`;
 }
@@ -500,22 +496,6 @@ function ordinal(n: number): string {
 
 /* --------------------------------------------------------------- the palette */
 
-/**
- * The four finish tiers, as one hue in four monotone lightness steps.
- *
- * Validated rather than chosen: OKLCH lightness ascends 0.359 / 0.500 / 0.628 /
- * 0.754 in even steps, and the palest step still clears 2:1 against the white
- * surface these pages render on, which is the floor an ordinal ramp's light end
- * has to hold. Anchored on SC Blue so the page's data and the page's brand are
- * the same colour.
- */
-const TIER_FILL: Record<WeeklyTier, string> = {
-  pos1: "#0b3a7a",
-  pos2: "#2f63a8",
-  pos3: "#5a8cc4",
-  bust: "#8fb3da",
-};
-
 /** The weekly-points series and its trailing average. Two hues, validated. */
 const SERIES_POINTS = "#2f63a8";
 const SERIES_AVERAGE = "#a87905";
@@ -623,8 +603,9 @@ function renderRail(cells: RailCell[], variant: "hero" | "open" = "open"): strin
    the marker-on-a-track that briefly replaced it. A filled bar states a
    proportion ("73% complete") and a percentile is a position in a distribution
    rather than a proportion of one, so neither mark was saying the right thing.
-   Both tabs now print the reading in words with the rate and the ordinal
-   under it — see efficiencyRows(). */
+   The reading in words with the rate and the ordinal under it replaced both,
+   and that block (the Stats tab's Efficiency Profile) was removed in turn on
+   2026-09-30. */
 
 interface SparkPoint {
   week: number;
@@ -841,6 +822,19 @@ interface Section {
   id: string;
   label: string;
   html: string;
+}
+
+/**
+ * A tab that ends footer, then the peers rail, then its FAQ (mak, 2026-09-30:
+ * Stats, Outlook and Injury). On the all-tabs page the panel carries its own
+ * copy of the rail, as the Overview does; on a section page the panel is
+ * `body` and the rest follows it, with the way back to the profile under the
+ * footer.
+ */
+interface TabParts {
+  body: string;
+  foot: string;
+  faq: string;
 }
 
 /**
@@ -1074,155 +1068,6 @@ function renderFantasySnapshot(data: PlayerPageData): string {
 }
 
 /**
- * The efficiency rates, as READINGS rather than as a meter chart.
- *
- * The same three or four numbers the Stats tab now carries as bars, read back
- * as what they mean: "73.0% completion, 85th percentile — elite for the
- * position". Stats says the rate, this says whether it is any good.
- *
- * Returned as data rather than markup so the snapshot's sentence can pick the
- * best and worst out of the same list the section renders.
- */
-interface EfficiencyRead {
-  /** The column label — "TD per attempt". */
-  label: string;
-  /** How it reads mid-sentence — "touchdown rate". */
-  phrase: string;
-  value: string;
-  percentile: number | null;
-}
-
-function efficiencyReads(data: PlayerPageData): EfficiencyRead[] {
-  const { benchmarks, rates } = data;
-  if (!benchmarks || !rates) return [];
-
-  const isQB = benchmarks.position === "QB";
-  const p = benchmarks.percentile;
-
-  const reads: EfficiencyRead[] = [
-    {
-      label: isQB ? "Yards per attempt" : "Yards per catch",
-      phrase: isQB ? "downfield efficiency" : "yards per catch",
-      value: num(rates.yardsPerCatch),
-      percentile: p?.yardsPerCatch ?? null,
-    },
-    {
-      label: isQB ? "Completion rate" : "Catch rate",
-      phrase: isQB ? "accuracy" : "his catch rate",
-      value: pct(rates.catchPct),
-      percentile: p?.catchPct ?? null,
-    },
-    {
-      label: isQB ? "TD per attempt" : "TD per target",
-      phrase: "touchdown rate",
-      value: pct(rates.tdPerTarget, 1),
-      percentile: p?.tdPerTarget ?? null,
-    },
-  ];
-
-  if (isQB && rates.fpPerUsage !== undefined) {
-    reads.push({
-      label: "Points per usage",
-      phrase: "scoring per dropback",
-      value: num(rates.fpPerUsage, 2),
-      percentile: p?.fpPerUsage ?? null,
-    });
-  }
-
-  return reads;
-}
-
-/**
- * The efficiency rows, and the line that says what they are ranked against.
- *
- * The Stats tab's "Efficiency Profile". Overview used to carry the same rows as
- * "What Is Driving The Production" (removed 2026-09-29 — the Overview's meters
- * section, lib/player/overview.ts, answers that now), and the two had to be the
- * same markup for the reason that follows. They were not: Stats drew a marker on a
- * percentile track with a two-word verdict in a fifth column, Overview drew a
- * phrase with the rate muted underneath, and the two disagreed about the order
- * of the metrics as well. Two renderings of one measurement is how a page ends
- * up contradicting itself over a rounding rule.
- */
-function efficiencyRows(data: PlayerPageData): string {
-  const reads = efficiencyReads(data);
-  if (reads.length === 0) return "";
-
-  const rows = reads
-    .map((read) => {
-      const meaning = percentileRead(read.percentile);
-      return (
-        `<div class="scp-dr-row" data-level="${escapeHtml(
-          percentileLevel(read.percentile),
-        )}">` +
-        `<p class="scp-dr-label">${escapeHtml(read.label)}</p>` +
-        `<div class="scp-dr-read">` +
-        `<p class="scp-dr-value">${escapeHtml(meaning || read.value)}</p>` +
-        // Unranked, the reading IS the raw rate, and the evidence line would
-        // be the same string again underneath it. In four columns that read as
-        // a rate with a unit under it; in two it reads as a mistake.
-        (read.percentile === null
-          ? ""
-          : `<p class="scp-dr-detail">${escapeHtml(
-              `${read.value} ${DOT} ${ordinal(read.percentile)} percentile`,
-            )}</p>`) +
-        `</div>` +
-        `</div>`
-      );
-    })
-    .join("");
-
-  return `<div class="scp-dr">${rows}</div>`;
-}
-
-/** What the percentiles are measured against, or why there are none. */
-function efficiencyNote(data: PlayerPageData): string {
-  const marks = data.benchmarks;
-  if (!marks) return "";
-  return marks.playerQualified
-    ? `Against every ${marks.position} with at least ${marks.qualifiedThreshold} ` +
-      `${marks.position === "QB" ? "attempts" : "targets"} in ${marks.season}.`
-    : `Not enough volume to rank against the position yet.`;
-}
-
-/**
- * Efficiency Profile — the Overview tab's block, under a Stats tab heading.
- *
- * It used to be its own thing: a rate, a marker on a percentile track, the
- * ordinal, and a two-word verdict in a fifth column. That is four columns of
- * chrome around the one sentence a reader wants, and the same four numbers
- * already read better one tab over, where the READING is the value and the
- * rate is its evidence. Two designs for one measurement is not two viewpoints,
- * it is a drift waiting to happen — so this is now literally the same markup,
- * from the same function, in the same order.
- *
- * What is left here that Overview does not have is the scoring style, which is
- * about where the points came FROM rather than how efficiently they were
- * earned. It takes the same line treatment Overview gives "Fantasy style".
- */
-function renderProduction(data: PlayerPageData): string {
-  const td = data.tdDependency;
-  const rows = efficiencyRows(data);
-
-  const style =
-    td.label === "N/A"
-      ? ""
-      : `<p class="scp-styleline">` +
-        `<span class="scp-styleline-label">Scoring style</span>` +
-        `<span class="scp-styleline-value">${escapeHtml(td.label)}</span>` +
-        `<span class="scp-styleline-sub">${escapeHtml(
-          `${pct(td.pct)} of fantasy points came from touchdowns`,
-        )}</span>` +
-        `</p>`;
-
-  if (!rows && !style) return "";
-
-  return (
-    sectionHead("Efficiency Profile", efficiencyNote(data)) + rows + style
-  );
-}
-
-/**
  * Role Direction: the usage metrics that define this position, recent vs season.
  *
  * Usage rather than production, deliberately. Points are the outcome and
@@ -1437,11 +1282,17 @@ function renderBio(
 
   const narrative = renderBioNarrative(data);
   const timeline = renderCareerTimeline(data);
-  const faq = renderFaq(
-    data.bioProfile.faq,
-    options,
-    `${data.player.name} FAQ`,
+  // The Bio tab's FAQ owns the evergreen entity searches (faq-engine.ts).
+  const statsHref = tabHref(data, options, "stats");
+  const items = selectFaq(
+    data.bioProfile.faq.map((f) => ({
+      key: f.key,
+      q: f.question,
+      a: f.answer,
+      link: f.key === "experience" || f.key === "teams" ? { href: statsHref, text: "View his career statistics." } : null,
+    })),
   );
+  const faq = items.length ? `<div class="scp-ox">${renderFaqSection("bio", data, items, options)}</div>` : "";
 
   if (!narrative && !timeline && !faq) return "";
 
@@ -2357,21 +2208,10 @@ function renderGameLogFaq(
   data: PlayerPageData,
   options: PlayerRenderOptions,
 ): string {
-  const stats = data.seasonLogStats;
-  if (!stats) return "";
-
-  const items = gameLogFaq({
-    name: data.player.name,
-    position: data.player.position,
-    season: data.logSeason,
-    inProgress: data.logSeason === data.season,
-    played: playedWeeks(data),
-    stats,
-    format: data.format,
-    otherSeasons: data.logSeasons.filter((year) => year !== data.logSeason),
-  });
-
-  return renderFaq(items, options, `${data.player.name} Game Log FAQ`);
+  // Last game, a named week, best and worst: the Game Log's own intents
+  // (faq-pools.ts). Season totals are the Stats tab's.
+  const items = selectFaq(gameLogPool(data, options));
+  return items.length ? `<div class="scp-ox">${renderFaqSection("game-log", data, items, options)}</div>` : "";
 }
 
 /* --------------------------------------------------------- upcoming games */
@@ -2825,27 +2665,17 @@ function renderStatsSnapshot(data: PlayerPageData): string {
     });
   }
 
+  // Two rates after the fantasy pair (mak, 2026-09-30: simplify the strip
+  // under the chart); the strip at the top of the tab has the rest.
   if (position === "QB" && t.passAtt > 0) {
     cells.push({ value: per(t.passYd, 0), label: "Pass yds/g" });
     cells.push({ value: per(t.passTd), label: "Pass TD/g" });
-    cells.push({
-      value: `${((t.passCmp / t.passAtt) * 100).toFixed(1)}%`,
-      label: "Comp %",
-    });
-    if (t.rushYd > 0) cells.push({ value: per(t.rushYd, 0), label: "Rush yds/g" });
   } else if (position === "RB") {
-    cells.push({ value: per(t.rushAtt), label: "Carries/g" });
     cells.push({ value: per(t.rushYd, 0), label: "Rush yds/g" });
     cells.push({ value: per(t.rec), label: "Rec/g" });
-    cells.push({
-      value: per(t.rushTd + t.recTd, 2),
-      label: "TD/g",
-    });
   } else {
     cells.push({ value: per(t.tgt), label: "Targets/g" });
-    cells.push({ value: per(t.rec), label: "Rec/g" });
     cells.push({ value: per(t.recYd, 0), label: "Rec yds/g" });
-    cells.push({ value: per(t.recTd + t.rushTd, 2), label: "TD/g" });
   }
 
   return (
@@ -3004,33 +2834,15 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
   );
 }
 
-/** The questions people type, answered from the totals above them. */
+/** The Stats tab's FAQ: season and career totals, position-aware (faq-pools.ts). */
 function renderStatsFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const faq = data.statsProfile.faq;
-  // One block for both FAQs (mak, 2026-09-30): the spec's "{Name} stats FAQ"
-  // (lib/player/stats-tab.ts) asks the same four things, so a question of
-  // it shows only when this list has nothing on its topic. The questions
-  // here, and their answers, are the schema's; the spec's are visible only.
-  const topics = new Set(faq.map((f) => faqTopic(f.question)));
-  const extra = statsTabFaqs(data, options)
-    .filter((f) => !topics.has(faqTopic(f.question)))
-    .map((f) => ({ question: f.question, answer: f.text }));
-  return renderFaq(faq, options, "Common Questions", extra);
+  const items = selectFaq(statsPool(data, options));
+  return items.length ? `<div class="scp-ox scp-st">${renderFaqSection("stats", data, items, options)}</div>` : "";
 }
 
-/** What a stats question is about, so the two FAQs' versions of it match. */
-function faqTopic(question: string): string {
-  const q = question.toLowerCase();
-  if (q.includes("fantasy points")) return "fantasy";
-  if (q.includes("career stats")) return "career";
-  if (q.includes("touchdowns")) return "td";
-  if (q.includes("yards")) return "yards";
-  return q;
-}
-
-function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string {
+function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabParts | null {
   const snapshot = renderStatsSnapshot(data);
-  const efficiency = renderProduction(data);
+  // The "Efficiency Profile" block was removed at mak's request (2026-09-30).
   const career = renderCareerStats(data);
   const faq = renderStatsFaq(data, options);
   // The sections of mak's Stats tab spec of 2026-09-29 (lib/player/stats-tab.ts).
@@ -3040,7 +2852,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
   // is the whole tab.
   const spec = renderStatsTabParts(data, options);
 
-  if (!snapshot && !career && !efficiency && !spec.top && !spec.rest) return "";
+  if (!snapshot && !career && !spec.top && !spec.rest) return null;
 
   /*
    * The heading, and nothing under it.
@@ -3063,15 +2875,11 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): string
   // it now heads the tab and becomes the WordPress H1 (promoteLeadHeading).
   const heading = spec.top.includes(`id="${STATS_LEAD_ID}"`) ? "" : h2(`${data.player.name} Stats ${data.season}`);
 
-  return (
-    heading +
-    spec.top +
-    snapshot +
-    efficiency +
-    career +
-    faq +
-    spec.rest
-  );
+  return {
+    body: heading + spec.top + snapshot + career + spec.rest,
+    foot: spec.foot,
+    faq,
+  };
 }
 
 /**
@@ -3109,279 +2917,53 @@ const RISK_WORD: Record<RiskLevel, string> = {
   high: "High",
 };
 
-/** The questions people type, answered from the record above them. */
-function renderInjuryFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
-  // Named for the player and the subject rather than "Common Questions": these
-  // are the sentences somebody typed into a search box, and the heading over
-  // them should read like the thing they were looking for.
-  return renderFaq(
-    data.injury?.faq ?? [],
-    options,
-    `${data.player.name} Injury FAQ`,
-  );
-}
 
-function renderInjury(data: PlayerPageData, options: PlayerRenderOptions): string {
-  if (!data.injury) return "";
+/**
+ * The Injury tab: its heading, mak's spec (lib/player/injury-tab.ts), and one
+ * FAQ, which stands after the Nearby Positional Peers rail (mak, 2026-09-30).
+ * `faq` is returned apart so the section page can print it after the rail it
+ * shares with every tab; the all-tabs page carries its own copy of the rail
+ * inside the panel, as the Overview does.
+ *
+ * The injury record's own questions (data.injury.faq) are folded into the
+ * spec's FAQ where it doesn't already ask them, and the FAQPage node is built
+ * from exactly what prints — mak approved that schema change on 2026-09-30.
+ */
+function renderInjury(
+  data: PlayerPageData,
+  options: PlayerRenderOptions,
+): TabParts | null {
+  if (!data.injury) return null;
 
   // The tab's heading, and the thing that names the panel — on the scoped URL
-  // as well. See renderHero().
-  // No subtitle since 2026-09-30: the status panel's answer follows the H1.
+  // as well. See renderHero(). No subtitle since 2026-09-30: the status
+  // panel's answer follows the H1.
   const heading = h2(`${data.player.name} Injury Update & History`);
 
   // The original tab's sections (status card, at-a-glance grade and tiles,
   // availability profile, body-part table and history) were removed on
-  // 2026-09-30 at mak's request. mak's Injury tab spec (lib/player/injury-tab.ts)
-  // carries the tab now; the FAQ stays last.
-  return heading + renderInjuryTab(data, options) + renderInjuryFaq(data, options);
+  // 2026-09-30 at mak's request.
+  const parts = injuryTabParts(data, options, data.injury.faq ?? []);
+  if (!parts) return { body: heading, foot: "", faq: "" };
+  options.faqSink?.push(...parts.faqText);
+  return { body: heading + parts.body, foot: parts.foot, faq: parts.faq };
 }
 
 /* -------------------------------------------------------------------- news */
 
 /**
- * The current injury report card.
- *
- * The one genuinely time-sensitive thing on the page, so it leads the tab and
- * carries the snapshot time — it must never look fresher than it is.
- *
- * **Rendered only when there IS a designation.** A player with none gets no
- * card, because the absence of a filing is not a clean bill of health: this
- * snapshot reports what clubs have filed, and "nothing filed" and "fit" are
- * different claims. The standalone app had the same rule and this keeps it.
- */
-function renderDesignation(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const designation = data.designation;
-  if (!designation?.injuryStatus) return "";
-
-  const now = options.now ?? Date.now();
-  const severity = designationSeverity(designation.injuryStatus);
-
-  const detail = [designation.injuryBodyPart, designation.practice]
-    .filter((part): part is string => Boolean(part))
-    .map((part) => escapeHtml(part))
-    .join(` <span class="scp-report-dot">\u00b7</span> `);
-
-  const stamp =
-    data.rosterFetchedAt > 0
-      ? `<p class="scp-report-stamp">Designation as of ` +
-        `<time datetime="${escapeHtml(new Date(data.rosterFetchedAt).toISOString())}"` +
-        ` data-ts="${data.rosterFetchedAt}" data-ts-compact>` +
-        `${escapeHtml(relativeAge(data.rosterFetchedAt, now))}</time></p>`
-      : "";
-
-  return (
-    `<section class="scp-report" data-severity="${escapeHtml(severity)}">` +
-    `<div class="scp-report-head">` +
-    `<p class="scp-report-label">Current injury report</p>` +
-    `<span class="scp-report-pill">${escapeHtml(designation.injuryStatus)}</span>` +
-    `</div>` +
-    (detail ? `<p class="scp-report-detail">${detail}</p>` : "") +
-    stamp +
-    `</section>`
-  );
-}
-
-/**
- * One news card — the team hub's card, under this page's class prefix.
- *
- * The two surfaces draw the same story and now draw it the same way: picture
- * above the words, the kicker and the Eastern stamp, the headline, a byline,
- * and a way through to the report. The shared decisions behind that card — what
- * the kicker says for an X post, which timezone the stamp is in, whether the
- * headline still carries the "Name:" the feed wrote on the front of it — are in
- * lib/news-card.ts so the two pages cannot drift into telling a reader
- * different things about one item.
- *
- * Two differences from the hub's card, both because of where this one sits:
- *
- *   - No crest watermark and no team tint in the picture well. Rule 2 at the
- *     top of this file: on a player page the team is an accent behind the
- *     headshot and a hairline on the hero, and the news column is neither. The
- *     well's wash falls back to brand navy, which is what --team-primary
- *     resolves to everywhere on this page that is not the hero.
- *   - The summary is printed on the lead card only. The grid cards are the
- *     hub's compact card and stay it; the lead is a row, and its text column
- *     would otherwise be three lines tall beside a picture twice that.
- *
- * `showPlayer` is for the team's stories, where which player a story is about
- * is the thing the reader needs and the headline has just had that name
- * stripped off it. On the player's own stories the name is the page.
- */
-function renderNewsCard(
-  item: NewsItem,
-  options: { featured: boolean; showPlayer: boolean },
-): string {
-  const href = safeUrl(item.link ?? null);
-  const image = safeUrl(item.image ?? null);
-  const ts = itemTimestamp(item);
-  const headline = escapeHtml(splitHeadline(item));
-  const name = (item.playerName ?? "").trim();
-
-  // Decorative: the headline sits directly beside it and carries the meaning,
-  // so a repeat of the name here would be read out twice.
-  const media = image
-    ? `<img class="scp-news-photo" src="${escapeHtml(image)}" alt=""` +
-      ` width="${options.featured ? 640 : 480}" height="${options.featured ? 360 : 270}"` +
-      ` loading="lazy" decoding="async" />`
-    : `<span class="scp-news-photo-empty" aria-hidden="true"></span>`;
-
-  const heading =
-    `<h4 class="scp-news-title">` +
-    (href
-      ? `<a class="scp-news-link" href="${escapeHtml(href)}"` +
-        ` target="_blank" rel="noopener noreferrer">${headline}</a>`
-      : headline) +
-    `</h4>`;
-
-  const summary =
-    options.featured && item.summary
-      ? `<p class="scp-news-summary">${escapeHtml(item.summary)}</p>`
-      : "";
-
-  const credit = (item.source ?? "").trim();
-  const byline =
-    (options.showPlayer && name) || credit
-      ? `<p class="scp-news-byline">` +
-        (options.showPlayer && name
-          ? `<span class="scp-news-player">${escapeHtml(name)}</span>`
-          : "") +
-        (credit ? `<span class="scp-news-source">${escapeHtml(credit)}</span>` : "") +
-        `</p>`
-      : "";
-
-  return (
-    `<li class="scp-news-item">` +
-    `<article class="scp-newscard${options.featured ? " is-featured" : ""}">` +
-    `<div class="scp-news-well">${media}</div>` +
-    `<div class="scp-news-body">` +
-    newsStamp(item, ts, "scp") +
-    heading +
-    summary +
-    byline +
-    (href
-      ? `<p class="scp-news-cta"><span class="scp-news-read">Read report ${ARROW}</span></p>`
-      : "") +
-    `</div></article></li>`
-  );
-}
-
-/** A list of cards. A <ul> rather than the hub's <ol>: nothing here is ranked. */
-function renderNewsList(
-  items: NewsItem[],
-  options: { lead: boolean; showPlayer: boolean; extraClass?: string },
-): string {
-  return (
-    `<ul class="scp-news${options.extraClass ? ` ${options.extraClass}` : ""}">` +
-    items
-      .map((item, i) =>
-        renderNewsCard(item, {
-          featured: options.lead && i === 0,
-          showPlayer: options.showPlayer,
-        }),
-      )
-      .join("") +
-    `</ul>`
-  );
-}
-
-/**
- * News & Analysis.
- *
- * The standalone app's version of this tab had two lazily-fetched views behind
- * a toggle — articles and the injury report — and showed nothing at all for the
- * twenty-four teams whose club sites it did not scrape. This one has no toggle
- * and no fetch: everything is already in the response, so stacking the sections
- * is both simpler and strictly more readable than hiding half of them behind a
- * button. It also covers all 32 teams, because the club feeds this app ingests
- * for the team hubs are the same feeds.
- *
- * Three blocks, in the order a reader needs them: what is true right now (the
- * designation), what is being said about this player, and what is being said
- * about their team.
- *
- * Only the player's own newest story leads. The hub gives the whole column one
- * lead for the same reason: a second one further down does not read as a second
- * lead, it reads as the page having lost track of which story is the story.
- *
- * There are no impact tags or generated blurbs on these cards. The original had
- * them; this app does not produce them, and inventing a "high impact" label
- * would be the page asserting an editorial judgement nobody made.
+ * The News tab: mak's News spec of 2026-09-30 (lib/player/news-tab.ts), which
+ * replaced the designation card and the two headline lists this tab used to
+ * be. The panel heading, the section page's H1, was "News & Analysis" until
+ * mak approved "Latest News & Updates" the same day.
  */
 function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const report = renderDesignation(data, options);
-
-  // The cross-link now runs News -> Injury, the reverse of what it used to.
-  // The full status, this season's availability and the whole history lead the
-  // Injury tab; this card is the same designation kept beside the reporting
-  // that explains it, and it should hand a reader on rather than be the end of
-  // the road. The Injury section's own URL: an in-page #injury anchor is dead
-  // on the /news/ page, where the injury panel is not rendered.
-  const injuryHref = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/injury/${options.linkQuery ?? ""}`;
-  const reportLink = report
-    ? `<p class="scp-note">` +
-      `<a class="scp-crosslink" href="${escapeHtml(injuryHref)}">` +
-      escapeHtml(`See ${data.player.name}'s full injury history`) +
-      `</a></p>`
-    : "";
-
-  const own = data.news.length
-    ? h3(`Latest On ${data.player.name}`) +
-      renderNewsList(data.news, { lead: true, showPlayer: false })
-    : "";
-
-  const team = data.teamNews.length
-    ? h3(data.team ? `Around The ${data.team.nickname}` : "Around The League") +
-      renderNewsList(data.teamNews, {
-        lead: false,
-        showPlayer: true,
-        extraClass: "scp-news--team",
-      }) +
-      teamHubLink(data, options)
-    : "";
-
-  // Nothing to say is said by dropping the tab, not by an empty heading — the
-  // navigation is built from what rendered. A designation on its own is still
-  // worth a tab: it is the most time-sensitive fact on the page.
-  if (!report && !own && !team) return "";
-
-  return (
-    h2("News & Analysis", `Injury status and the latest reporting on ${data.player.name}`) +
-    report +
-    reportLink +
-    own +
-    team
-  );
+  const tab = renderNewsTab(data, options);
+  // The panel names the player, as every section's heading does; it is the
+  // section page's H1 when WordPress hands the heading to the tool.
+  return tab ? h2(`Latest ${data.player.name} News & Updates`) + tab : "";
 }
 
-/** A way through to the team hub's News section, which is where the rest of this lives. */
-function teamHubLink(data: PlayerPageData, options: PlayerRenderOptions): string {
-  if (!data.team) return "";
-  const prefix = options.teamPathPrefix ?? "/team/";
-  const href = `${prefix}${data.team.slug}/news/${options.linkQuery ?? ""}`;
-  return (
-    `<p class="scp-news-more">` +
-    siteLink(href, `All ${data.team.fullName} news`, "scp-news-more-link") +
-    `</p>`
-  );
-}
-
-/**
- * A coarse relative age.
- *
- * Coarse on purpose: the server renders this into cacheable HTML, so a string
- * that changes every minute would make every fragment stale within one. The
- * client refines it from the `data-ts` attribute once it loads — the same split
- * the team hub uses.
- */
-function relativeAge(ms: number, now: number): string {
-  const hours = Math.floor((now - ms) / 3_600_000);
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  const months = Math.floor(days / 30);
-  return months < 12 ? `${months}mo ago` : `${Math.floor(months / 12)}y ago`;
-}
 
 /* --------------------------------------------------------- page assembly */
 
@@ -3561,7 +3143,8 @@ function renderPositionPeers(
     `<section class="scp-peers" aria-labelledby="scp-peers-h">` +
     // The Overview's section-title device (.scp-ox-h2), so it reads as one
     // more section of the page, like the FAQ above it.
-    `<h2 class="scp-ox-h2" id="scp-peers-h">Nearby Positional Peers</h2>` +
+    // "QBs like Jacoby Brissett" (mak, 2026-09-30), not "Nearby Positional Peers".
+    `<h2 class="scp-ox-h2" id="scp-peers-h">${escapeHtml(titleCase(`${pos}s like ${data.player.name}`))}</h2>` +
     // Scrolled to centre the marked card by client/player.ts. Without it the
     // rail simply starts at its best-ranked end, which is a fine place to
     // start reading and needs nothing.
@@ -3590,9 +3173,14 @@ export function renderPlayerPage(
   // spec of 2026-09-29 (lib/player/outlook-tab.ts). Only on a tab that exists
   // already, so no player gains an Outlook URL from this.
   const existingOutlook = renderOutlook2026(data);
-  const outlook = existingOutlook.exists
-    ? existingOutlook.html + renderOutlookTab(data, options)
-    : "";
+  const outlookSpec = existingOutlook.exists ? outlookTabParts(data, withFaq("outlook")) : null;
+  const outlookParts: TabParts | null = existingOutlook.exists
+    ? {
+        body: existingOutlook.html + (outlookSpec?.body ?? ""),
+        foot: outlookSpec?.foot ?? "",
+        faq: outlookSpec?.faq ?? "",
+      }
+    : null;
 
   /*
    * Overview is the interpretation layer now — see the note above
@@ -3648,9 +3236,20 @@ export function renderPlayerPage(
   // here; they moved to Stats, and what is left is the thing this tab is named
   // for. A reader asking "what did he do in Week 3" gets a page of weeks.
   const gameLog = renderGameLog(data, withFaq("game-log"));
-  const stats = renderStats(data, withFaq("stats"));
-  const injury = renderInjury(data, withFaq("injury"));
-  const news = renderNews(data, options);
+  const statsParts = renderStats(data, withFaq("stats"));
+  const injuryParts = renderInjury(data, withFaq("injury"));
+  const split = new Map<string, TabParts>();
+  if (statsParts) split.set("stats", statsParts);
+  if (outlookParts) split.set("outlook", outlookParts);
+  if (injuryParts) split.set("injury", injuryParts);
+  // The rail above the footer and FAQ, as on the Overview; the copy after the
+  // panels stands down while one of these tabs is open (.scp-peers-out).
+  const whole = (parts: TabParts | null): string =>
+    parts ? parts.body + parts.foot + renderPositionPeers(data, options) + parts.faq : "";
+  const stats = whole(statsParts);
+  const outlook = whole(outlookParts);
+  const injury = whole(injuryParts);
+  const news = renderNews(data, withFaq("news"));
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing. A backup
@@ -3702,6 +3301,10 @@ export function renderPlayerPage(
       : undefined;
 
   if (scoped) {
+    // The Injury panel without the rail and FAQ it carries on the all-tabs
+    // page: here both follow the panel.
+    const parts = split.get(scoped.id);
+    const panelHtml = parts ? parts.body : scoped.html;
     const prefix = options.playerPathPrefix ?? "/player/";
     const back =
       `<p class="scp-back">` +
@@ -3741,18 +3344,21 @@ export function renderPlayerPage(
       (options.ownHeading
         ? LEAD_HEADINGS[scoped.id]
           ? promoteLeadHeading(
-              scoped.html,
+              panelHtml,
               LEAD_HEADINGS[scoped.id]!,
               scoped.id === "stats" ? undefined : sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
             )
           : promoteHeading(
-              scoped.html,
+              panelHtml,
               sectionHeading(data.player.name, scoped.id, data.season) ?? undefined,
             )
-        : scoped.html) +
+        : panelHtml) +
       `</section>` +
-      back +
-      renderPositionPeers(data, options) +
+      // A split tab (TabParts): rail, then its footer and the way back, then
+      // its FAQ (mak, 2026-09-30). Every other tab: the way back, then the rail.
+      (parts
+        ? parts.foot + back + renderPositionPeers(data, options) + parts.faq
+        : back + renderPositionPeers(data, options)) +
       renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
       `</div>`
     );

@@ -924,6 +924,45 @@ at the defaults gives back the table that was sent. Card ids are
   O-line rating in `curation.json` and read as 50. That affects only the
   reason and flag text.
 
+### Strength of Schedule (`/strength-of-schedule`)
+
+The ninth tool, ported 2026-09-30 from `statchasersff-bit/Strength-of-Schedule-SOS`
+(Team SOS / Player SOS, QB-TE, PPR/Half/Std, four insight cards, a W1-W17 grid
+with PO2, PO3 and ROS). Mounted by `[statchasers_strength_of_schedule]` on
+`/nfl/fantasy-football-strength-of-schedule/`; the old standalone plugin's
+`[statchasers_sos]` is to be swapped out (plugin readme 1.10.18).
+
+**The source's model, our data (mak, 2026-09-30).** The source computed aFPA
+itself and shipped a June 2025-only snapshot as static JSON. Here the aFPA is
+the FPA table's adjusted view (`getFpaTable`), the same formula already blended
+with 2026 by `fpa/blend.ts`, so SOS moves whenever FPA is ingested. Code:
+`lib/sos/sos-model.ts` (pure: ranks, buckets, spans, cards),
+`lib/sos/sos-data.ts` (reads FPA, schedule, player list), `sos-render.ts`,
+`client/sos.ts`, `public/sos.css`.
+
+**Rank directions are the source's, on purpose (mak's call):** a DEFENSE rank 1
+is the toughest (lowest aFPA) — the opposite of the FPA page — and buckets are
+1-5 Avoid, 6-10 Tough, 11-22 Neutral, 23-27 Favorable, 28-32 Smash. A SCHEDULE
+rank (OVR/ROS/Play Off) 1 is the easiest, dense. Weeks 1-17 only; PO3 = 15-17,
+PO2 = 16-17; ROS starts at the first week with a game not yet final.
+
+**Player SOS list:** `data/sos/player-pool.json`, from
+`node scripts/sos/buildPlayerPool.mjs` — the source's rule (Sleeper projects 8+
+PPR in any single game) over the weeks still to play, with team and slug from
+`data/player/players.json`. Rebuilt daily in production (`live-refresh.ts`,
+step "sos player list"); by hand in the workspace.
+
+**SEO:** only the source's title, H1 and description (approved), shipped in the
+fragment's `scsos-page-data` island. No schema, no FAQ. The view is
+`?tab&pos&scoring` on the page's own URL (the plugin reads it, the bundle writes
+it) and never part of a canonical. CSV: `/sos/download.csv` (public).
+
+**Divergences from the source:** house dress (FPA's colour scale), link pills
+instead of select dropdowns, `title`s and `<details>` instead of Radix
+tooltips/popovers, the baseline badge names the live blend phase instead of a
+fixed "Preseason Baseline Active", CSV has 17 week columns (the source's
+header said 18) plus PO2/PO3, and card deltas print one decimal.
+
 ## Architecture decisions
 
 - **Refreshes are driven by traffic, not only by a timer.** `index.ts` still runs

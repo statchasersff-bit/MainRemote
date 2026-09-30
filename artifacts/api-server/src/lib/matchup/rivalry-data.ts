@@ -35,10 +35,17 @@ function load(): History {
       games: Row[];
     };
     throughSeason = raw.throughSeason;
+    // A season's Super Bowl is its last game: a playoff game on the latest
+    // date the season has, from the 1966 season (the first) on.
+    const lastDate = new Map<number, string>();
+    for (const [season, date] of raw.games) {
+      if ((lastDate.get(season) ?? "") < date) lastDate.set(season, date);
+    }
     for (const [season, date, away, home, awayScore, homeScore, playoff] of raw.games) {
       const key = pairKey(away, home);
       const list = byPair.get(key) ?? [];
-      list.push({ season, date, away, home, awayScore, homeScore, playoff: playoff === 1, url: null });
+      const superBowl = playoff === 1 && season >= 1966 && lastDate.get(season) === date;
+      list.push({ season, date, away, home, awayScore, homeScore, playoff: playoff === 1, superBowl, url: null });
       byPair.set(key, list);
     }
   } catch (err) {

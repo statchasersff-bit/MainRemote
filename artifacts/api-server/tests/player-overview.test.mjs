@@ -131,7 +131,7 @@ describe("overview sections", () => {
       "Jacoby Brissett 2026 Game Log",
       "Career Fantasy Stats by Season",
       "Rest-of-Season Outlook and Availability",
-      "Jacoby Brissett Fantasy FAQ",
+      "Jacoby Brissett Fantasy Football FAQ",
     ]);
   });
 
@@ -192,7 +192,9 @@ describe("overview sections", () => {
     assert.ok(doc.querySelector(".scp-ox-status").classList.contains("is-bad"));
     const next = doc.querySelector(".scp-ox-wk.is-next");
     assert.ok([...next.querySelectorAll(".scp-ox-chip")].some((c) => text(c) === "Out"));
-    assert.match(text(doc.querySelector(".scp-ox-faq details p")), /is listed as IR and will not play/);
+    assert.match(text(doc.querySelector(".scp-ox-faq details p")), /^No: Jacoby Brissett is on injured reserve for Week 4 .+, so he should sit\./);
+    // Injury questions are the Injury tab's (faq-engine.ts): none here.
+    assert.ok(![...doc.querySelectorAll(".scp-ox-faq summary")].some((q) => /injured/i.test(text(q))));
   });
 
   test("below the percentile threshold: no meters, and the read uses rates instead", () => {
@@ -207,17 +209,22 @@ describe("overview sections", () => {
       .map((c) => c.querySelector(".scp-ox-wk-pts"))
       .filter(Boolean)
       .reduce((sum, el) => sum + Number(el.textContent), 0);
-    const tables = doc.querySelectorAll(".scp-ox-table");
-    const logTotal = Number(text(tables[0].querySelector("tr.is-tot td:nth-child(4)")));
-    const season = Number(text(tables[1].querySelector("tr.is-cur td:nth-child(8)")));
+    // The Game Log tab's table classes since 2026-09-30; totals in a <tfoot>.
+    const log = doc.querySelector("table.scp-table--filled.scp-ox-log");
+    const careerTable = doc.querySelector("table.scp-table--filled.scp-ox-career");
+    assert.equal(log.querySelector("caption"), null, "no scoring caption");
+    const logTotal = Number(text(log.querySelector("tfoot tr.scp-total td:nth-child(4)")));
+    const season = Number(text(careerTable.querySelector("tr.is-cur td:nth-child(8)")));
     assert.equal(logTotal.toFixed(1), strip.toFixed(1));
     assert.equal(season.toFixed(1), logTotal.toFixed(1), "the career table's current row is the log's sum");
-    assert.equal(text(tables[0].querySelector("tr.is-tot td:nth-child(3)")), "1–2");
+    assert.equal(text(log.querySelector("tfoot tr.scp-total td:nth-child(3)")), "1–2");
+    // Weekly finishes are the Game Log's tier pills.
+    assert.ok(log.querySelector("tbody td.scp-col-fin .scp-tier[data-tier]"));
   });
 
   test("career totals are summed from the season rows", () => {
     const doc = render(state());
-    const career = doc.querySelectorAll(".scp-ox-table")[1].querySelector("tr.is-tot");
+    const career = doc.querySelector(".scp-ox-career tfoot tr.scp-total");
     const tds = [...career.querySelectorAll("td")].map(text);
     // GP, pass yds, TD, INT, rush yds, pts, PPG
     assert.equal(tds[1], String(3 + 14 + 8));
@@ -228,7 +235,7 @@ describe("overview sections", () => {
 
   test("a traded player's season row names both clubs", () => {
     const doc = render(state({ seasonClubs: { 2026: ["ARI", "NYJ"], 2025: ["ARI"], 2024: ["NE"] } }));
-    assert.equal(text(doc.querySelector(".scp-ox-table tr.is-cur td")), "ARI/NYJ");
+    assert.equal(text(doc.querySelector(".scp-ox-career tr.is-cur td")), "ARI/NYJ");
   });
 
   test("the Redraft Command links carry the player and their tags", () => {
@@ -264,7 +271,7 @@ describe("overview sections", () => {
     assert.ok(rail.previousElementSibling.matches(".scp-ox"));
     assert.equal(
       rail.nextElementSibling.firstElementChild.getAttribute("aria-labelledby"),
-      "scp-ox-faq-h",
+      "scp-faq-overview-h",
       "directly above the FAQ",
     );
   });

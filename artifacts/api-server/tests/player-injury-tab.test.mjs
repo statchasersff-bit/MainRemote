@@ -281,11 +281,23 @@ describe("rendered", () => {
     const chipGames = items.map((li) => Number((li.querySelector(".scp-in-chip.is-bad")?.textContent ?? "0").replace(/\D/g, "")));
     assert.equal(chipGames.reduce((a, b) => a + b, 0), 11);
     assert.equal(doc.querySelectorAll(".scp-in-bodymap circle.scp-bm-hit, .scp-in-bodymap circle.scp-bm-thru").length, 4);
+    // The state-aware Injury FAQ (faq-engine.ts, 2026-09-30): a healthy
+    // player gets no "what injury" or "why isn't he playing".
     const faq = [...doc.querySelectorAll(".scp-in-faq details")];
-    assert.equal(faq.length, 5);
-    assert.match(faq[3].textContent, /^How many games[\s\S]*11 regular-season games across his career: 8 for a right thumb fracture in 2016, 2 for a hamstring injury in 2023 and 1 for a left MCL sprain in 2019\./);
+    const qs = faq.map((d) => d.querySelector("summary").textContent);
+    assert.deepEqual(qs, [
+      "Is Jacoby Brissett injured?",
+      "Is Jacoby Brissett playing this week?",
+      "Has Jacoby Brissett missed any games this season?",
+      "What is Jacoby Brissett's injury history?",
+      "What was Jacoby Brissett's most recent injury?",
+      "Does Jacoby Brissett have any recurring injuries?",
+      "What was Jacoby Brissett's worst injury?",
+    ]);
+    assert.match(faq[3].textContent, /4 logged NFL injuries, which have cost him 11 games in all: 8 for a right thumb fracture in 2016, 2 for a hamstring injury in 2023 and 1 for a left MCL sprain in 2019\./);
     assert.match(faq[0].textContent, /As of September 29, 2026/);
     assert.ok(faq[0].hasAttribute("open"));
+    assert.equal(doc.querySelector("#scp-faq-injury-h").textContent, "Jacoby Brissett Injury FAQ");
   });
 
   test("the practice card with nothing on file says so", () => {
@@ -326,7 +338,7 @@ describe("rendered", () => {
     assert.ok(doc.querySelector(".scp-in-gl.is-mid"));
   });
 
-  test("no SEO: nothing here feeds the FAQPage sink", () => {
+  test("the tab itself feeds no sink: the page pushes its FAQ (renderInjury)", () => {
     const sink = [];
     tab.renderInjuryTab(state(), { now: NOW, faqSink: sink });
     assert.equal(sink.length, 0);

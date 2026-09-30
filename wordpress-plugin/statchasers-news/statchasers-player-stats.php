@@ -547,9 +547,18 @@ function statchasers_player_stats_shortcode( $atts = array() ): string {
 	 * @param string $pos    The position rendered.
 	 * @param string $season The season requested, or '' for the newest.
 	 */
-	return statchasers_player_stats_shortcode_heading() . (string) apply_filters(
+	$heading  = statchasers_player_stats_shortcode_heading();
+	$fragment = statchasers_player_stats_strip_islands( (string) $data['html'] );
+
+	// The hero carries the intro as its description, so the fragment's own
+	// copy of it would print the same words twice.
+	if ( '' !== $heading && '' !== statchasers_player_stats_lead() ) {
+		$fragment = statchasers_player_stats_strip_intro( $fragment );
+	}
+
+	return $heading . (string) apply_filters(
 		'statchasers_player_stats_fragment_html',
-		statchasers_player_stats_strip_islands( (string) $data['html'] ),
+		$fragment,
 		$args['pos'],
 		$args['season']
 	);
@@ -580,7 +589,7 @@ function statchasers_player_stats_request_data(): ?array {
 }
 
 /**
- * The address's title, H1 and description, as the API wrote them.
+ * The address's title, H1, description and hero lead, as the API wrote them.
  *
  * The fragment carries them in an inert island (renderMetaIsland() in the
  * API's player-stats-render.ts), so the words live in one place —
@@ -588,7 +597,7 @@ function statchasers_player_stats_request_data(): ?array {
  * plugin used to keep its own copy of the position titles, less the season,
  * because it had no way to know which season that was.
  *
- * @return array{title?:string,h1?:string,description?:string}
+ * @return array{title?:string,h1?:string,description?:string,lead?:string}
  */
 function statchasers_player_stats_page_copy(): array {
 	static $copy = null;
@@ -607,7 +616,7 @@ function statchasers_player_stats_page_copy(): array {
  * The title/H1/description island out of a rendered fragment.
  *
  * @param string $html Rendered fragment.
- * @return array{title?:string,h1?:string,description?:string}
+ * @return array{title?:string,h1?:string,description?:string,lead?:string}
  */
 function statchasers_player_stats_parse_copy( string $html ): array {
 	$copy = array();
@@ -621,7 +630,7 @@ function statchasers_player_stats_parse_copy( string $html ): array {
 		return $copy;
 	}
 
-	foreach ( array( 'title', 'h1', 'description' ) as $key ) {
+	foreach ( array( 'title', 'h1', 'description', 'lead' ) as $key ) {
 		if ( isset( $decoded[ $key ] ) && is_string( $decoded[ $key ] ) ) {
 			$value = trim( wp_strip_all_tags( $decoded[ $key ] ) );
 			if ( '' !== $value ) {
@@ -659,8 +668,9 @@ function statchasers_player_stats_title(): string {
  * The schedule's arrangement, for the same reason: "Let the tool supply the
  * heading" empties the theme's title on every tool page, and a tool that
  * answers with nothing leaves the page with no H1. No standfirst: the table's
- * own intro is the paragraph directly beneath. Off in every other mode unless
- * the probe or a filter says to print.
+ * The table's intro is the hero's description (sc-home-hero-minimal's
+ * __description), and the shortcode drops the fragment's own copy of it. Off in
+ * every other mode unless the probe or a filter says to print.
  */
 function statchasers_player_stats_shortcode_heading(): string {
 	$tool_mode = function_exists( 'statchasers_h1_tool_supplies_heading' )
@@ -674,7 +684,22 @@ function statchasers_player_stats_shortcode_heading(): string {
 		return '';
 	}
 
-	return statchasers_page_heading_html( statchasers_player_stats_h1() );
+	return statchasers_page_heading_html( statchasers_player_stats_h1(), statchasers_player_stats_lead() );
+}
+
+/** The hero's description — the table's intro as one paragraph — or ''. */
+function statchasers_player_stats_lead(): string {
+	$copy = statchasers_player_stats_page_copy();
+	return isset( $copy['lead'] ) ? $copy['lead'] : '';
+}
+
+/**
+ * The fragment less its intro block, which the hero has printed instead.
+ *
+ * @param string $html Rendered fragment.
+ */
+function statchasers_player_stats_strip_intro( string $html ): string {
+	return (string) preg_replace( '#<div class="sca-intro">.*?</div>#s', '', $html, 1 );
 }
 
 /** The page's H1, or '' to leave the theme's. */

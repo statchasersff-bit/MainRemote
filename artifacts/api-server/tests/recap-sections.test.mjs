@@ -82,12 +82,14 @@ describe("win probability, score-only", () => {
     assert.equal(Math.round(model.kickoff * 100), 60);
   });
 
-  test("the kickoff sentence gives each side its own chance", () => {
+  test("the story sentence opens at the home side's own chance", () => {
     const at = (line, favorite) => wp.wpSubtitle(GAME, wp.winProbabilityModel({ game: GAME, plays: PLAYS, odds: { favorite, line, total: 49.5 } }));
-    assert.match(at(3.5, "LAR"), /was a 60% favorite at kickoff/);
+    assert.match(at(3.5, "LAR"), /^Los Angeles opened at 60% win probability/);
     // The regression: the home underdog was printed with the favourite's 60%.
-    assert.match(at(3.5, "ARI"), /had a 40% chance at kickoff/);
-    assert.match(at(13, "LAR"), /was an 83% favorite at kickoff/);
+    assert.match(at(3.5, "ARI"), /^Los Angeles opened at 40% win probability/);
+    assert.match(at(13, "LAR"), /^Los Angeles opened at 83% win probability/);
+    // One sentence, ending on how it finished (mak, 2026-09-30).
+    assert.match(at(3.5, "LAR"), /win\.$/);
   });
 
   test("exactly three plays swing it by a point or more, all Rams scores", () => {
@@ -106,7 +108,6 @@ describe("win probability, score-only", () => {
     const html = wp.renderWinProbability({ game: GAME, plays: PLAYS, odds: ODDS, playerUrl: () => null });
     assert.equal((html.match(/class="sct-wp-play"/g) ?? []).length, 3);
     assert.doesNotMatch(html.replace(/<[^>]+>/g, ""), /Jr\.\./);
-    assert.match(html, /After halftime no score moved the Rams(&#39;|') chances by even one point/);
     assert.match(html, /role="img"/);
   });
 
@@ -173,6 +174,15 @@ describe("possessions", () => {
     );
   });
 
+  test("the takeaway compares the winner's plays and efficiency, from the printed figures", () => {
+    // 57 plays to 54; 235 yards on 19 dropbacks (12.4) against 122 on 36 (3.4).
+    assert.equal(poss.callingTakeaway(input), "Los Angeles ran 3 more plays and gained 9.0 more yards per dropback.");
+    const html = poss.renderPossessions(input);
+    assert.match(html, /class="sct-pc-compare"/);
+    // Turnovers get the marked row when the two sides differ.
+    assert.match(html, /<tr class="is-key"><th scope="row">Turnovers<\/th>/);
+  });
+
   test("the Rams scored on their second possession, and the pick-six is an Arizona interception", () => {
     const notes = poss.possessionNotes(input);
     assert.match(notes[0], /^The Rams opened the scoring on their second possession/);
@@ -227,7 +237,8 @@ describe("betting, video and the jump links", () => {
     const html = extras.renderHighlights(GAME, { youtubeId: "VfMqgtKsoag", title: "Highlights", uploadDate: "2022-01-18", publisher: "NFL" });
     assert.match(html, /<button type="button" class="sct-hl-play" data-hl-embed="https:\/\/www\.youtube-nocookie\.com\/embed\/VfMqgtKsoag\?autoplay=1&amp;rel=0"/);
     assert.match(html, /<noscript><a class="sct-hl-noscript" href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag"/);
-    assert.match(html, /Not playing\? <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">Watch on YouTube<\/a>/);
+    assert.match(html, /<h2 class="sct-rb-h2" id="highlights">Game Highlights<\/h2>/);
+    assert.match(html, /Official NFL highlights · Opens from <a href="https:\/\/www\.youtube\.com\/watch\?v=VfMqgtKsoag" target="_blank" rel="noopener">YouTube<\/a>/);
     assert.doesNotMatch(html, /<iframe/);
     assert.equal(extras.renderHighlights(GAME, null), "");
   });

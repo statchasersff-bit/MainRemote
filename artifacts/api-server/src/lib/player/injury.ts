@@ -322,6 +322,12 @@ function article(word: string): string {
 }
 
 /** The distinct body parts in a record, most-injured first. */
+/** Body parts an injury's type can name more precisely than its filed body part. */
+const PART_WORDS = [
+  "thumb", "finger", "hand", "wrist", "elbow", "forearm", "shoulder", "neck", "back", "rib", "chest",
+  "hip", "groin", "hamstring", "quad", "thigh", "knee", "calf", "shin", "ankle", "achilles", "foot", "heel", "toe",
+];
+
 function bodyParts(nfl: NflInjuryEntry[]): { label: string; count: number; missed: number }[] {
   const byPart = new Map<string, { label: string; count: number; missed: number }>();
 
@@ -329,9 +335,12 @@ function bodyParts(nfl: NflInjuryEntry[]): { label: string; count: number; misse
     // The recorded body part where there is one, and the region otherwise:
     // "hamstring" is what somebody searches, and "Upper Leg" is a filing
     // category that nobody has ever typed into a search box.
-    const label = (entry.bodyPart ?? "").trim()
-      ? (entry.bodyPart as string).trim().toLowerCase()
-      : classifyRegion(entry).toLowerCase();
+    // The injury's own word first when it names a part: the record files a
+    // thumb fracture under "wrist", and the answer said "affecting the
+    // wrist" for one (fixed 2026-09-30).
+    const named = PART_WORDS.find((w) => new RegExp(`\\b${w}\\b`, "i").test(entry.type ?? ""));
+    const recorded = (entry.bodyPart ?? "").trim().toLowerCase();
+    const label = named ?? (recorded && recorded !== "unknown" ? recorded : classifyRegion(entry).toLowerCase());
 
     const row = byPart.get(label);
     if (row) {

@@ -1013,12 +1013,17 @@ function statchasers_player_heading( string $slug, string $section ): string {
 		'injury'   => 'Injury Update & History',
 		'game-log' => 'Game Log',
 		'outlook'  => 'Fantasy Outlook',
-		'news'     => 'News & Analysis',
+		// Was "News & Analysis"; mak approved the change on 2026-09-30.
+		'news'     => 'News & Updates',
 		'bio'      => 'Bio',
 	);
 
 	if ( ! isset( $phrases[ $section ] ) ) {
 		return $name . ' Fantasy Football Stats & Analysis';
+	}
+
+	if ( 'news' === $section ) {
+		return sprintf( 'Latest %s %s', $name, $phrases['news'] );
 	}
 
 	$dated = in_array( $section, array( 'stats', 'game-log', 'outlook' ), true );

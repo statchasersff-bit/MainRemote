@@ -323,6 +323,7 @@ require_once "$dir/statchasers-fpa.php";
 require_once "$dir/statchasers-schedule.php";
 require_once "$dir/statchasers-player-stats.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
+require_once "$dir/statchasers-sos.php";
 // And for its position URLs, near the bottom.
 require_once "$dir/statchasers-rankings.php";
 // The key header and the browser proxy's allowlist, against the stubbed
@@ -376,10 +377,10 @@ if ( 'main' === $group ) {
 	is( isset( $other['headers']['X-StatChasers-Key'] ), false, 'a look-alike host never gets the key' );
 	$third = statchasers_add_embed_key( array(), 'https://api.sleeper.app/v1/players' );
 	is( isset( $third['headers']['X-StatChasers-Key'] ), false, 'another service never gets the key' );
-	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
+	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rb-handcuffs/player/4034', 'api/news' ) as $ok_path ) {
 		is( statchasers_proxy_allowed( $ok_path ), true, "proxy forwards $ok_path" );
 	}
-	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'api/x/accounts', '' ) as $no_path ) {
+	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'api/x/accounts', '' ) as $no_path ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
 	echo "\n";
@@ -387,6 +388,12 @@ if ( 'main' === $group ) {
 
 if ( 'containers' === $group ) {
 	require __DIR__ . '/smoke-containers.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'sos' === $group || 'sosleak' === $group ) {
+	require __DIR__ . '/smoke-sos.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -738,6 +745,7 @@ is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen Fantasy 
 is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats ' . STATCHASERS_TEAM_SEASON, 'player H1: stats is dated' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook ' . STATCHASERS_TEAM_SEASON, 'player H1: so is the outlook' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Update & History', 'player H1: injury is not' );
+is( statchasers_player_heading( 'josh-allen-h1-test', 'news' ), 'Latest Josh Allen News & Updates', 'player H1: news leads with Latest (mak, 2026-09-30)' );
 
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 $GLOBALS['page'] = array();
@@ -994,7 +1002,7 @@ is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same 
  */
 echo "\nevery tool enqueues the host rules\n";
 
-foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs' ) as $tool ) {
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos' ) as $tool ) {
 	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
 	is(
 		false !== strpos( $src, 'statchasers_tool_header_layer_css()' ),
@@ -1010,7 +1018,7 @@ foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats'
 
 // And the width cap, which is what holds a tool at the site's content width.
 // rb-handcuffs shipped without it and grew with the window when zoomed out.
-foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs' ) as $tool ) {
+foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats', 'rb-handcuffs', 'sos' ) as $tool ) {
 	$src = (string) file_get_contents( "$dir/statchasers-$tool.php" );
 	is(
 		false !== strpos( $src, 'statchasers_team_full_width_css()' ),
@@ -1720,9 +1728,11 @@ $flush_rows = array(
 	'_transient_sc_stats_ssr_bak_4',
 	'_transient_sc_rbh_ssr_5',
 	'_transient_sc_rbh_ssr_bak_5',
+	'_transient_sc_sos_ssr_6',
+	'_transient_sc_sos_ssr_bak_6',
 );
 $GLOBALS['wpdb']->rows = $flush_rows;
-foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush' ) as $flush ) {
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush' ) as $flush ) {
 	$flush();
 }
 is(
@@ -1739,12 +1749,13 @@ is(
 		'_transient_sc_sched_ssr_bak_3',
 		'_transient_sc_stats_ssr_bak_4',
 		'_transient_sc_rbh_ssr_bak_5',
+		'_transient_sc_sos_ssr_bak_6',
 	),
 	'every tool\'s fresh copies go and every backup stays'
 );
 
 $GLOBALS['wpdb']->rows = $flush_rows;
-foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush' ) as $flush ) {
+foreach ( array( 'statchasers_team_flush', 'statchasers_player_flush', 'statchasers_fpa_flush', 'statchasers_rankings_flush', 'statchasers_schedule_flush', 'statchasers_player_stats_flush', 'statchasers_rb_handcuffs_flush', 'statchasers_sos_flush' ) as $flush ) {
 	$flush( true );
 }
 is( array_values( $GLOBALS['wpdb']->rows ), array( '_transient_sc_teamXssr_ccc' ), 'the full cleanup takes the backups and indexes too, and nothing that only looks similar' );
@@ -1857,7 +1868,7 @@ is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule,
  * The other groups. Their failures are this run's failures — a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

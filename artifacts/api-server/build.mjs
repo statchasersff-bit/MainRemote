@@ -210,6 +210,14 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-rb-handcuffs.js"),
   });
 
+  // The strength-of-schedule bundle. Separate for the same reason as the
+  // other eight: one shortcode's page should not download another's code.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/sos.ts")],
+    outfile: path.join(outDir, "statchasers-sos.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -247,6 +255,8 @@ async function buildClient() {
   const handcuffsCss = await readFile(
     path.resolve(artifactDir, "public", "rb-handcuffs.css"),
   );
+  const sosJs = await readFile(path.join(outDir, "statchasers-sos.js"));
+  const sosCss = await readFile(path.resolve(artifactDir, "public", "sos.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -264,6 +274,8 @@ async function buildClient() {
     .update(statsCss)
     .update(handcuffsJs)
     .update(handcuffsCss)
+    .update(sosJs)
+    .update(sosCss)
     .digest("hex")
     .slice(0, 12);
 

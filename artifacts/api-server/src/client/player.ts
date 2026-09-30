@@ -612,6 +612,47 @@ function wireStateSwap(root: HTMLElement): void {
  * and the totals as text, so without this the totals simply stand. Rates and
  * ranks carry neither attribute and never change.
  */
+/**
+ * The News tab's filters (mak's News spec, 4.2). Without this script every
+ * item stays visible, which is the no-JS fallback. A week group with nothing
+ * left in it hides too, and the status note says when a filter matches none.
+ * "moves" matches the items carrying data-group="moves".
+ */
+function wireNewsFilter(root: HTMLElement): void {
+  for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-news-filter]"))) {
+    if (group.dataset.wired) continue;
+    group.dataset.wired = "1";
+    const scope = group.closest("section") ?? root;
+    const buttons = Array.from(group.querySelectorAll<HTMLButtonElement>("button[data-f]"));
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const f = button.dataset.f ?? "all";
+        let shown = 0;
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+        for (const wk of Array.from(scope.querySelectorAll<HTMLElement>(".scp-nw-wk"))) {
+          let any = false;
+          for (const item of Array.from(wk.querySelectorAll<HTMLElement>(".scp-nw-item"))) {
+            const ok = f === "all" || item.dataset.type === f || (item.dataset.group ?? "") === f;
+            item.hidden = !ok;
+            if (ok) {
+              any = true;
+              shown += 1;
+            }
+          }
+          // A pending recap row counts as a game item.
+          if (!any && (f === "all" || f === "game") && wk.querySelector(".scp-nw-pending")) any = true;
+          wk.hidden = !any;
+        }
+        const empty = scope.querySelector<HTMLElement>("#scp-nw-empty");
+        if (empty) empty.hidden = shown > 0;
+        // A match folded into the older weeks opens them.
+        const older = scope.querySelector<HTMLDetailsElement>(".scp-nw-older");
+        if (older && f !== "all" && older.querySelector(".scp-nw-item:not([hidden])")) older.open = true;
+      });
+    }
+  }
+}
+
 function wireStatsToggle(root: HTMLElement): void {
   for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-seg]"))) {
     const section = group.closest("section") ?? root;
@@ -681,6 +722,7 @@ function wireProfile(root: HTMLElement): void {
   wireExpandableLog(root);
   wirePeerRail(root);
   wireStatsToggle(root);
+  wireNewsFilter(root);
   wireCareerChart(root);
   wireStateSwap(root);
   wireFrameHeight(root);

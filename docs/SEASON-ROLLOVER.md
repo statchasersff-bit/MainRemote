@@ -46,6 +46,8 @@ FPA has a preseason mode (`preseason_baseline`) that ranks defences on the previ
 
 Do this before week 1, or the FPA table keeps showing 2026 through the start of the season.
 
+**Strength of Schedule follows this switch.** It reads the FPA table's configured season (not the schedule's), so from March to August it maps the 2027 slate onto the finished 2026 FPA, which is the right baseline. The baseline badge then still describes 2026's blend phase until the preseason ingest; after it, "Preseason Baseline Active". The Player SOS list (`scripts/sos/buildPlayerPool.mjs`) follows Sleeper's own season and needs nothing.
+
 ### 3. Week 1 (early September): the year labels
 
 Flip these the week the first 2027 games are played. Not in March.

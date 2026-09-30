@@ -38,6 +38,7 @@ import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, teamInk } from "./header";
 import { outlookMeasures, type DriverRow, type OutlookMeasures } from "./outlook-tab-data";
 import type { UpcomingGame } from "./upcoming";
+import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 const MINUS = "−";
@@ -210,6 +211,22 @@ function model(data: PlayerPageData): Model | null {
     upcoming: (data.upcoming ?? []).slice(0, 4),
     scoring: SCORING_SHORT[data.format] ?? "PPR",
   };
+}
+
+/** "a weekly starter in superflex and 2QB leagues and a streamer in 1QB leagues", for the Overview FAQ. */
+export function leagueFit(data: PlayerPageData): string | null {
+  const m = model(data);
+  return m && m.chips ? fitSentence(m) : null;
+}
+
+/**
+ * "QB2, streamer": the tier and the 12-team league's call in a few words, for
+ * the News tab's quick answers. Null when the tab itself would have no tier.
+ */
+export function outlookShort(data: PlayerPageData): string | null {
+  const m = model(data);
+  if (!m || m.rank === null || !m.chips) return null;
+  return `${bucket(m.pos, m.rank)}, ${m.chips[1].label.toLowerCase()}`;
 }
 
 /** "QB2": the fantasy tier a rank sits in. */
@@ -763,62 +780,147 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
 
 /* ------------------------------------------------------------- section 7: FAQ */
 
-function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions): string {
-  const items: Array<{ q: string; html: string }> = [];
-  const leagues = LEAGUES[m.pos]!;
-  const fav = favorable(m);
-  if (m.chips) {
-    items.push({
-      q: `Is ${m.name} worth rostering in fantasy football?`,
-      html: escapeHtml(`${m.chips[0].kind === "bad" && m.chips[1].kind === "bad" ? "Mostly not: " : "Yes, in the right league: "}he's ${fitSentence(m)}.${fav.length ? ` His next favorable ${fav.length === 1 ? "matchup is" : "matchups are"} ${matchupList(fav)}.` : ""}`),
-    });
-  }
+/**
+ * The Outlook FAQ (faq-engine.ts): forward-looking only. Rest-of-season value,
+ * rank against the projection, buy or sell, role, volume trend, upside, risk,
+ * the schedule and the playoffs, each answered with the model's own numbers.
+ * Rosterability is the Overview's; last season's line is the Stats tab's.
+ */
+function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions): Array<FaqCandidate | null> {
+  const pool: Array<FaqCandidate | null> = [];
+  const through = m.week >= 1 && m.now ? ` through Week ${m.week}` : "";
+  const ros = m.week >= 1 ? `the rest of the ${m.season} season` : `the ${m.season} season`;
+  const top = topDriver(m);
+  const weak = weakDriver(m);
+  const drv = (d: DriverRow): string => `${d.label.toLowerCase()} (${d.value} ${d.unit}, ${ordinal(d.rank!)} of ${d.of} ${m.pos}s in ${m.measures!.season})`;
+  const noun = m.pos === "QB" ? "pass attempts" : m.pos === "RB" ? "touches" : "targets";
+  const log = data.season === m.season ? (data.gameLog ?? []).filter((e) => (e.game_status ?? "active") === "active" && e.stats) : [];
+  const vol = (e: (typeof log)[number]): number =>
+    m.pos === "QB" ? e.stats.pass_att ?? 0 : m.pos === "RB" ? (e.stats.rush_att ?? 0) + (e.stats.rec_tgt ?? 0) : e.stats.rec_tgt ?? 0;
+
+  // 1. The outlook.
   const tier = tierLine(m);
-  if (tier) {
-    const top = topDriver(m);
-    const weak = weakDriver(m);
-    const reasons = [
-      top && top.tier === "good" ? `${top.label.toLowerCase()} (${ordinal(top.rank!)} of ${top.of} last season) supports him` : "",
-      weak ? `${weak.label.toLowerCase()} (${ordinal(weak.rank!)} of ${weak.of}) holds him back` : "",
-    ].filter(Boolean);
-    items.push({
-      q: `What is ${m.name}'s rest-of-season outlook?`,
-      html:
-        escapeHtml(`${tier}.${reasons.length ? ` ${cap(listWords(reasons))}.` : ""} `) +
-        a(m.rc, "See his live rank in Redraft Command") +
-        ".",
+  if (tier && m.chips) {
+    pool.push({
+      key: "outlook",
+      q: `What is ${m.name}'s fantasy outlook for ${ros}?`,
+      a: `${m.name} projects as ${/^[aeiou]/i.test(tier) ? "an" : "a"} ${tier.charAt(0).toLowerCase() + tier.slice(1)} for ${ros}: ${fitSentence(m)}.` +
+        (top && top.tier === "good" ? ` His ${drv(top)} supports that.` : "") +
+        (weak ? ` His ${drv(weak)} holds him back.` : ""),
+      link: { href: m.rc, text: `See his live rank in Redraft Command.` },
     });
   }
-  if (m.prior) {
-    const stats = `${options.playerPathPrefix ?? "/player/"}${m.slug}/stats/${options.linkQuery ?? ""}`;
-    items.push({
-      q: `How did ${m.name} do in fantasy in ${m.prior.season}?`,
-      html:
-        escapeHtml(
-          `He scored ${one(m.prior.points)} ${m.scoring} points in ${m.prior.gp} games (${one(m.prior.ppg)} per game)${m.prior.rank ? ` and finished ${m.pos}${m.prior.rank}` : ""}. `,
-        ) +
-        a(stats, "See his career stats") +
-        ".",
+
+  // 2. Rank against the projection.
+  if (m.rank !== null) {
+    pool.push({
+      key: "rosrank",
+      q: `What is ${m.name}'s rest-of-season fantasy ranking?`,
+      a: `${m.name} is the ${m.pos}${m.rank} in ${m.scoring} points per game${through}` +
+        (m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
+        `. That puts him in ${bucket(m.pos, m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
     });
   }
+
+  // 3. Buy low or sell high, from the gap between rank and projection.
+  if (m.rank !== null && m.projected && m.week >= 2 && !m.injured) {
+    const gap = m.projected - m.rank;
+    pool.push({
+      key: "trade",
+      q: `Should I buy low or sell high on ${m.name}?`,
+      a: gap >= 6
+        ? `${m.name} is outperforming his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, so his trade value is near its high. Selling is reasonable if an offer pays for the ${bucket(m.pos, m.rank)} he has been rather than the ${bucket(m.pos, m.projected)} he was projected to be.`
+        : gap <= -6
+          ? `${m.name} is below his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, which is a buy-low window if his usage holds` +
+            (top && top.tier === "good" ? `: his ${drv(top)} is still there.` : ".")
+          : `Neither: ${m.name} is playing to his projection, ${m.pos}${m.rank} against about ${m.pos}${m.projected}, so his price matches his production. Hold him unless a trade fills a bigger need.`,
+    });
+  }
+
+  // 4. Role going forward.
   const depth = data.depth;
   if (depth) {
-    const q = depth.order === 1 && m.pos === "QB" ? `Could ${m.name} lose his starting job?` : `Will ${m.name} keep his role?`;
-    const ans =
-      depth.order === 1
-        ? `He's the listed starter${depth.next ? `, with ${depth.next.name} next on the depth chart` : ""}. ${m.injured ? `He's currently ${m.injured.toLowerCase()}.` : "Nothing on the chart threatens the job today, so it's his to lose on performance."}`
-        : `He's ${depth.position}${depth.order} on the depth chart, so a bigger role needs a change ahead of him.`;
-    items.push({ q, html: escapeHtml(ans) });
+    pool.push({
+      key: "role",
+      q: `What is ${m.name}'s projected role going forward?`,
+      a: depth.order === 1
+        ? `${m.name} is the listed starting ${depth.position}${depth.next ? `, with ${depth.next.name} next on the depth chart` : ""}. ` +
+          (m.injured ? `He is ${m.injured.toLowerCase()} for now, which puts that role on hold.` : `Nothing on the chart threatens the job, so the role is his to lose on performance.`)
+        : `${m.name} is ${depth.position}${depth.order} on the depth chart, so a bigger role needs an injury or a change ahead of him.`,
+    });
   }
-  if (items.length === 0) return "";
-  // Not pushed to options.faqSink: the FAQPage JSON-LD is an SEO change, which
-  // mak approves separately.
-  return (
-    open("scp-ol-faq-h", `${m.name} outlook FAQ`, "") +
-    `<div class="scp-ox-faq scp-ol-faq">` +
-    items.map((f, i) => `<details${i === 0 ? " open" : ""}><summary>${escapeHtml(f.q)}</summary><p>${f.html}</p></details>`).join("") +
-    `</div></section>`
-  );
+
+  // 5. Volume trend (three games or more).
+  if (log.length >= 3) {
+    const season = log.reduce((t, e) => t + vol(e), 0) / log.length;
+    const recent = log.slice(-2).reduce((t, e) => t + vol(e), 0) / 2;
+    const diff = recent - season;
+    const steady = Math.abs(diff) < Math.max(1.5, season * 0.08);
+    pool.push({
+      key: "volume",
+      q: `Will ${m.name} get more ${noun}?`,
+      a: `${m.name}'s ${noun} are ${steady ? "holding steady" : diff > 0 ? "trending up" : "trending down"}: ${one(recent)} a game over his last two games against ${one(season)} for the season.` +
+        (m.pos === "QB" ? ` Game script drives much of that, and trailing teams throw more.` : ` His share of the offense is what his fantasy value rides on.`),
+    });
+  }
+
+  // 6. Upside.
+  const bestWeek = log.length ? [...log].sort((x, y) => getEntryPoints(y.stats, data.format) - getEntryPoints(x.stats, data.format))[0] : null;
+  const fav = favorable(m);
+  if (bestWeek || (top && top.tier === "good") || fav.length) {
+    const parts: string[] = [];
+    if (bestWeek) parts.push(`his ceiling this season is ${one(getEntryPoints(bestWeek.stats, data.format))} ${m.scoring} points (Week ${bestWeek.week}${bestWeek.pos_rank ? `, ${m.pos}${bestWeek.pos_rank}` : ""})`);
+    if (top && top.tier === "good") parts.push(`his ${drv(top)} gives him a weekly floor to build on`);
+    if (fav.length) parts.push(`${matchupList(fav)} ${fav.length === 1 ? "is a top-10 matchup" : "are top-10 matchups"} for ${m.pos}s`);
+    pool.push({
+      key: "upside",
+      q: `What is ${m.name}'s fantasy football upside?`,
+      a: `${m.name}'s upside: ${listWords(parts)}.`,
+    });
+  }
+
+  // 7. Risk.
+  const risks: string[] = [];
+  if (m.injured) risks.push(`he is ${m.injured.toLowerCase()}`);
+  if (depth?.order === 1 && depth.next && !m.injured) risks.push(`${depth.next.name} is next on the depth chart if he is benched or hurt`);
+  if (weak) risks.push(`his ${drv(weak)} limits his scoring`);
+  const tough = m.upcoming.filter((g) => g.matchup && matchupBand(g.matchup.rank) === "tough");
+  if (tough.length) risks.push(`${listWords(tough.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week}`))} ${tough.length === 1 ? "is a tough matchup" : "are tough matchups"}`);
+  if (risks.length) {
+    pool.push({
+      key: "risk",
+      q: `What could hurt ${m.name}'s fantasy value?`,
+      a: `${m.name}'s risks: ${listWords(risks)}.`,
+      link: { href: `${options.playerPathPrefix ?? "/player/"}${m.slug}/injury/${options.linkQuery ?? ""}`, text: `See his injury status and history.` },
+    });
+  }
+
+  // 8. The remaining schedule, and 9. the playoffs.
+  const strip = (data.upcomingStrip ?? []).filter((g) => g.matchup);
+  if (strip.length >= 3) {
+    const soft = strip.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
+    const hard = strip.filter((g) => matchupBand(g.matchup!.rank) === "tough").length;
+    pool.push({
+      key: "schedule",
+      q: `How difficult is ${m.name}'s remaining fantasy schedule?`,
+      a: `${soft > hard ? "Favorable" : hard > soft ? "Difficult" : "About average"}: of his next ${word(strip.length)} games, ${soft} ${soft === 1 ? "comes" : "come"} against a top-10 matchup for ${m.pos}s and ${hard} against one of the stingiest defenses, by ${m.scoring} points allowed to the position.`,
+    });
+  }
+  const playoffs = strip.filter((g) => g.week >= 15 && g.week <= 17);
+  if (playoffs.length >= 2) {
+    const soft = playoffs.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
+    pool.push({
+      key: "playoffs",
+      q: `Is ${m.name} a good fantasy playoff option?`,
+      a: `His Weeks 15 to 17 opponents are ${listWords(playoffs.map((g) => `the ${oppName(g)} (${ordinal(g.matchup!.rank)} in points allowed to ${m.pos}s)`))}; ${soft ? `${word(soft)} of them ${soft === 1 ? "is" : "are"} favorable` : "none of them is a top-10 matchup"}.`,
+    });
+  }
+  return pool;
+}
+
+function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions): string {
+  const items = selectFaq(outlookPool(m, data, options));
+  return renderFaqSection("outlook", data, items, options, "scp-ol-faq");
 }
 
 /* ------------------------------------------------------------------ the tab */
@@ -827,17 +929,29 @@ function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions)
 const SHOW_CONTRACT = false;
 
 export function renderOutlookTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+  const parts = outlookTabParts(data, options);
+  return parts ? parts.body + parts.foot + parts.faq : "";
+}
+
+/**
+ * The tab split at its footer and FAQ, which the page stands under the peers
+ * rail, footer first (mak, 2026-09-30).
+ */
+export function outlookTabParts(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+): { body: string; foot: string; faq: string } | null {
   const m = model(data);
-  if (!m) return "";
-  const body =
+  if (!m) return null;
+  const main =
     renderTake(m) +
     renderExpect(m) +
     renderRead(m, data) +
     renderDrivers(m) +
     (SHOW_CONTRACT ? renderContract(m, data) : "") +
-    renderTriggers(m, data) +
-    renderFaq(m, data, options);
-  if (!body) return "";
+    renderTriggers(m, data);
+  const faq = renderFaq(m, data, options);
+  if (!main && !faq) return null;
   const ms = m.measures;
   const noun = ms ? `${{ QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[ms.position] ?? ms.position}s` : "";
   const foot =
@@ -847,10 +961,7 @@ export function renderOutlookTab(data: PlayerPageData, options: PlayerRenderOpti
         ` Fantasy points use ${m.scoring} scoring.`,
     )}</p></footer>`;
   const ink = teamInk(data.team);
-  return (
-    `<div class="scp-ox scp-st scp-ol"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>` +
-    body +
-    foot +
-    `</div>`
-  );
+  const wrap = (html: string): string =>
+    html ? `<div class="scp-ox scp-st scp-ol"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";
+  return { body: wrap(main), foot: wrap(foot), faq: wrap(faq) };
 }

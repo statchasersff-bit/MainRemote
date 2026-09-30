@@ -808,15 +808,23 @@ function renderFaqSchema(items: StatsFaq[], options: StatsRenderOptions): string
 }
 
 /**
- * The address's title, H1 and description, for the WordPress plugin to print
+ * The address's title, H1, description and hero lead, for the WordPress plugin to print
  * — so the plugin keeps no copy of the words and the season in them is the
  * API's. Embedded only; the plugin strips it once read.
  */
 function renderMetaIsland(table: StatsTable, options: StatsRenderOptions): string {
   if (!options.embed) return "";
+  const season = openingSeason(table, options);
   return (
     `<script type="application/json" class="sca-page-data">` +
-    escapeJsonLd(JSON.stringify(statsPageCopy(table.position, openingSeason(table, options)))) +
+    escapeJsonLd(
+      JSON.stringify({
+        ...statsPageCopy(table.position, season),
+        // The intro as one paragraph: the site hero's description, when the
+        // plugin prints the hero (it then drops .sca-intro from the fragment).
+        lead: introCopy(season).join(" "),
+      }),
+    ) +
     `</script>`
   );
 }
@@ -839,7 +847,8 @@ export function renderStatsPage(
     // WordPress page prints it (from renderMetaIsland()).
     (options.embed
       ? ""
-      : `<h1 class="sca-h1">${escapeHtml(statsPageCopy(table.position, season).h1)}</h1>`) +
+      : `<h1 class="sca-h1">${escapeHtml(statsPageCopy(table.position, season).h1)}</h1>` +
+        `<div class="sca-h1-underline" aria-hidden="true"></div>`) +
     renderIntro(season) +
     renderControls(table, options) +
     // One block, because it is the unit a season switch replaces: the cards

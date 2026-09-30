@@ -2,10 +2,10 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.17
+Stable tag: 1.10.18
 License: GPL-2.0-or-later
 
-Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats and the RB handcuff rankings into WordPress pages.
+Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings and the fantasy football strength of schedule into WordPress pages.
 
 == Why this file exists ==
 
@@ -19,6 +19,11 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.18 =
+* New shortcode: [statchasers_strength_of_schedule], the fantasy football strength of schedule, ported from the standalone Strength-of-Schedule-SOS app. That app's own plugin ([statchasers_sos]) shipped a June data snapshot inside itself and drew the board in a Shadow DOM over a server-rendered copy; now the API computes the board from the live FPA table and the season's schedule and the shortcode prints it, like the other tools. Team SOS and Player SOS, QB/RB/WR/TE, PPR/Half-PPR/Standard: every weekly opponent, aFPA and rank is in the page's HTML. The view is shareable as ?tab=&pos=&scoring= on the page, read back only on the page that mounts the board and only from those lists; the canonical stays the bare page. The fragment carries the page's title, H1 and meta description (approved), applied through Rank Math and core; no schema node is added.
+* The browser proxy forwards a fifth path, embed/sos, for the board's tab, position and scoring switch.
+* To switch over: replace [statchasers_sos] with [statchasers_strength_of_schedule] on /nfl/fantasy-football-strength-of-schedule/, then deactivate and delete the old "StatChasers Strength of Schedule" plugin, whose title, description, canonical and schema filters would otherwise fight these. Needs the matching API deploy.
 
 = 1.10.17 =
 * The RB handcuffs board is held to the site's content width. It was the one tool that never loaded the width cap, so on a builder page it ran the width of the window and grew wider as the page was zoomed out. The page also drops the sidebar column, like every other tool page.
