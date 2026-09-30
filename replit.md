@@ -242,8 +242,9 @@ _Replace the heading above with the project's name, and this line with one sente
     share, and the takeaways.
   - `matchup/fpa-delta.ts` — `fantasy_points_allowed_games`, re-ranked at two
     cutoffs (weeks before the game, weeks through it) to give each defense a
-    before and an after. Week 1 has no before, and the block renames itself
-    rather than drawing an arrow from nothing. The FPA ingest clears its cache.
+    before and an after. **Computed but not rendered**: `matchup-data.ts` still
+    queries it for every final game, and no block on the page shows it. Either
+    render it or drop the query. The FPA ingest clears its cache.
 
   **Sorting.** The five player tables (the four stat tables and the usage
   table) carry `data-sct-sortable`; `wireSortableTables()` in
@@ -402,8 +403,8 @@ own rewrite rules and owned its own SEO. Here the server renders the profile and
 `[statchasers_player]` prints it into a statchasers.com page, exactly as the news
 tool and the hubs work — and Rank Math keeps the SEO.
 
-- `data/player/*.json` — **the whole dataset, committed**. ~13MB across the
-  player dictionary, three seasons of game logs, game scores, bios, dynasty
+- `data/player/*.json` — **the whole dataset, committed**. ~33MB across the
+  player dictionary, game logs for every season from 2009 (`game_logs/`), game scores, bios, dynasty
   rankings, injury history, season production, Sleeper roster percentages, the
   2026 outlook and the advanced stats tables. This is what makes a player page
   cheap: assembling one is arithmetic over objects already in memory, with no
@@ -564,8 +565,9 @@ prints it, like the other three.
 - `POST /api/fpa/ingest` — runs the ingest **inside the deployment**, against
   the database the deployment reads, and answers when it has finished (a second
   or two).
-  Guarded by `INGEST_SECRET`, like `POST /api/ingest`; set it, because each call
-  costs two ~7MB fetches from nflverse. `scripts/refresh-fpa.mjs` is the
+  Guarded by `INGEST_SECRET`, like `POST /api/ingest`: with it unset every write
+  route answers 503 (`src/lib/ingest-auth.ts`), because each call here costs two
+  ~7MB fetches from nflverse. `scripts/refresh-fpa.mjs` is the
   scheduled caller. `lib/fpa/refresh.ts` holds the run: one at a time across
   both paths, every affected cache dropped, the outcome kept for `/api/status`.
 
@@ -628,7 +630,8 @@ had clicked lived in component state rather than in the markup — so to a crawl
 they were not on the page. Here the API renders all five panels per request and
 `[statchasers_rankings]` prints them, like the other four.
 
-- `data/rankings/redraft-<season>.csv` — the published board,
+- `data/rankings/redraft-<season>.csv` and `ros-<season>.csv` — the two
+  published boards, redraft and rest of season, each edited on its own,
   `Position,Final Rank,Player`. Ranks are **positional**: QB1 and RB1 are both
   rank 1. An optional `redraft-<season>.meta.json` beside it carries the
   "updated" line. Adding a 2027 file is a data drop, not a code change — the
@@ -636,7 +639,7 @@ they were not on the page. Here the API renders all five panels per request and
 - `src/lib/rankings/rankings-data.ts` — the read, and the domain. `TIER_RULES`
   is where a tier boundary moves; it is **editorial**, not computed, because the
   cliff between QB5 and QB6 is a judgement about the position. `POSITION_LIMITS`
-  is how deep each board goes (40/50/100/40) — the source file runs to 713
+  is how deep each board goes (40/50/100/40) — the source files run to 362
   players and the page has no business printing all of them.
 - Team abbreviations and player links come from `data/player/players.json`, the
   dictionary the player pages already load, rather than the 700 kB Sleeper map
@@ -649,11 +652,13 @@ they were not on the page. Here the API renders all five panels per request and
   `/rest-of-season-rankings/qb`, `/rb`, `/wr`, `/te`; All is the bare path —
   and its own title and canonical. Every one of them still carries all five
   panels; the path only decides which is open.
-- `src/routes/rankings.ts` — `/rest-of-season-rankings` and its four position
-  pages, `/rest-of-season-rankings/download.csv` (built from the same load the
-  page renders, and carrying the derived tier and team columns the source file
-  does not have) and `/embed/rankings`. `/rankings`, `?pos=`, `/RB` and `/all`
-  301 to the one spelling of each board.
+- `src/routes/rankings.ts` — two boards. `/rankings` is the redraft board, one
+  address, with `?pos=` opening a panel (the canonical ignores it).
+  `/rest-of-season-rankings` and its four position pages are the ROS board,
+  where `?pos=`, `/RB` and `/all` 301 to the one spelling of each board. Each
+  has a `download.csv` (built from the same load the page renders, and carrying
+  the derived tier and team columns the source file does not have), and
+  `/embed/rankings` serves either.
 - `src/client/rankings.ts` — tab behaviour only: switch in place, push the
   board's address, Back walks the tabs (`wireTabs` address mode, as the player
   pages' section bar uses it). Deliberately no sorting: a
@@ -677,8 +682,9 @@ The sixth tool, ported from the standalone `nfl-schedule` repo. There the
 browser fetched a JSON season and React drew the board from it; here it is a
 server module and the board arrives as markup. The normalization boundary is
 unchanged, deliberately — nflverse publishes a compact machine feed, and
-normalizing once is what keeps the weekly board, the team lens and the season
-matrix from each growing their own special cases.
+normalizing once is what keeps the weekly board and the season matrix from
+each growing their own special cases. (The third view, the team lens, is gone:
+a team's schedule is the team hub's Schedule tab, and `?view=team` 301s there.)
 
 It is the only tool here whose data can change while somebody is reading it,
 and most of what is distinctive about it follows from that.
@@ -777,7 +783,7 @@ the primary slot and everything that was navy text becomes gold text.
 
 What did NOT come across is structure, which stays server-rendered: the three
 views, the When/Matchup/TV grid, the market coverage floor, the centred sidebar
-cards, the team lens's extra result and TV columns, and the rule that home and
+cards, and the rule that home and
 away are always stated in words and never carried by position alone.
 
 **The fragment answers 503, not an empty shell, when the feed is down.** That is
@@ -789,8 +795,9 @@ because a schedule a few hours stale is still almost entirely correct.
 
 The seventh tool, ported from the standalone `NFL-Advanced-Player-Stats` repo,
 which WordPress mounted as an iframe at `/nfl/nfl-player-stats/`. One grouped,
-sortable table per position (QB/RB/WR/TE) and season (2023, 2024, 2025, and
-the 2023-2025 multi-season table), with the StatChasers grades and five
+sortable table per position (QB/RB/WR/TE) and season (2023, 2024, 2025, 2026
+built weekly through week 17, and the 2023-2025 multi-season table, which
+nothing rebuilds), with the StatChasers grades and five
 grade-leader cards. Everything is now rendered on the server, and
 `client/player-stats.ts` adds sorting, the filters, the views and swapping
 seasons in place. The controls are one command bar — position and season
@@ -976,6 +983,14 @@ at the defaults gives back the table that was sent. Card ids are
   "This app isn't live yet". `feedHosts` is a list, `lastSource` names the route
   that actually served the feed, and `feedKeyConfigured` says whether
   `DYNASTY_NEWS_API_KEY` reached this environment at all.
+
+- **`/api/data/health` watches everything else the same way.** 503 with
+  `reasons` when the database does not answer, the data directory is missing
+  the player index or rankings, the FPA snapshot is over 8 days old in season,
+  or (production, where the refresh runs) the daily rebuild has not finished in
+  30 hours, a step failed in season, or the game-log refresh is failing. Point
+  the uptime monitor at it alongside `/api/ingest/health`. Failed daily steps
+  are ignored March to August, when three of them fail by design.
 
 - **`/api/ingest/health` is for machines; `/api/status` is for people.**
   `/api/status` always answers 200 and describes everything, which is right for
