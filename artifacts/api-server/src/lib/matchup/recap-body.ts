@@ -86,6 +86,8 @@ export interface UpcomingGame {
 export interface RecapBodyLinks {
   redraftCommand: string;
   startSit: string;
+  projections: string;
+  tradeCalculator: string;
   pointsAllowed: string | null;
   strengthOfSchedule: string | null;
   /** Redraft Command's matchup analyzer, when the site has one configured. */
@@ -850,6 +852,12 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
       "fantasy-outlook-startsit",
     ) +
     card(
+      "Fantasy Football Projections",
+      `See the latest weekly and rest-of-season projections for ${game.away.short} and ${game.home.short} players.`,
+      links.projections,
+      "fantasy-outlook-projections",
+    ) +
+    card(
       "Matchup Analyzer",
       "Your starters against your opponent's, with the swing plays for this week.",
       links.matchupAnalyzer,
@@ -870,6 +878,12 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
           : "Where these two matchups fall in each team's fantasy playoff run.",
       links.strengthOfSchedule,
       "fantasy-outlook-sos",
+    ) +
+    card(
+      "Redraft Command",
+      "Connect your league for personalized lineup, trade and roster advice.",
+      links.redraftCommand,
+      "fantasy-outlook-redraft",
     );
 
   return section(
@@ -1446,21 +1460,23 @@ export function renderRedraftCard(input: RecapBodyInput): string {
  * that one while Recap is open, so the offer shows once.
  */
 export function renderRedraftStrip(input: RecapBodyInput): string {
-  const { game, series, links } = input;
+  const { game, links } = input;
   const away = input.teams[game.away.abbr]!;
   const home = input.teams[game.home.abbr]!;
-  const before = series.upcoming.length ? series.upcoming[0]!.weekLabel : "your next matchup";
   return (
     `<section class="sct-rb-card sct-rb-redraft is-strip" aria-labelledby="sct-rb-redraft-strip">` +
     `<span class="sct-rb-ring" aria-hidden="true"></span>` +
     `<div class="sct-rb-redraft-pitch">` +
     `<h3 class="sct-rb-redraft-title" id="sct-rb-redraft-strip">${escapeHtml(
-      `Got a ${away.singular} or ${home.singular} on your team?`,
+      `Got a ${away.singular} or ${home.singular} on your fantasy team?`,
     )}</h3>` +
-    `<p class="sct-rb-redraft-text">${escapeHtml(
-      `Redraft Command reads your roster, league settings and opponent, then tells you ` +
-        `whether to start, sit, trade or hold them before ${before}.`,
-    )}</p>` +
+    // Three tools named in one sentence rather than three more buttons.
+    `<p class="sct-rb-redraft-text">` +
+    `Check their next matchup with the ` +
+    `<a href="${escapeHtml(links.startSit)}" data-cta="recap-strip-startsit">Start/Sit Tool</a>, compare their value in the ` +
+    `<a href="${escapeHtml(links.tradeCalculator)}" data-cta="recap-strip-trade">Fantasy Trade Calculator</a>, or connect your ` +
+    `league for personalized advice in <a href="${escapeHtml(links.redraftCommand)}" data-cta="recap-strip-redraft">Redraft Command</a>.` +
+    `</p>` +
     `</div>` +
     `<div class="sct-rb-redraft-act">` +
     `<a class="sct-rb-button" href="${escapeHtml(links.redraftCommand)}" data-cta="recap-strip">Connect your league</a>` +

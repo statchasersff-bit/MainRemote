@@ -1,0 +1,159 @@
+[
+  {
+    "slug": "kendrick-bourne",
+    "facts": []
+  },
+  {
+    "slug": "raheim-sanders",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2025-08-26",
+        "team": "LAC",
+        "quote": "Sanders signed with the Los Angeles Chargers as an undrafted free agent on April 26, 2025. On August 26, Sanders was waived by the Chargers due to final roster cuts."
+      }
+    ]
+  },
+  {
+    "slug": "shedeur-sanders",
+    "facts": []
+  },
+  {
+    "slug": "darnell-mooney",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2020-07-21",
+        "team": "CHI",
+        "quote": "Mooney was selected by the Chicago Bears with the 173rd pick in the fifth round of the 2020 NFL draft. He signed a four-year rookie contract with the team on July 21."
+      }
+    ]
+  },
+  {
+    "slug": "joshua-palmer",
+    "facts": []
+  },
+  {
+    "slug": "demarcus-robinson",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2022-08-16",
+        "team": "LV",
+        "quote": "On March 22, 2022, Robinson signed a one-year deal with the Las Vegas Raiders. He was released on August 16."
+      }
+    ]
+  },
+  {
+    "slug": "kimani-vidal",
+    "facts": []
+  },
+  {
+    "slug": "aj-dillon",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2024-08-27",
+        "team": "GB",
+        "quote": "Dillon re-signed with the Packers on March 15, 2024 on a one-year qualifying offer, worth up to $2.575 million, but valued at just $1.125 million against the salary cap. On August 27, he was placed on injured reserve with a neck injury, officially ending his 2024 season."
+      }
+    ]
+  },
+  {
+    "slug": "calvin-ridley",
+    "facts": []
+  },
+  {
+    "slug": "isaiah-williams",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2025-10-04",
+        "team": "NYJ",
+        "quote": "On September 10, 2025, Williams was signed by the New York Jets off the Bengals' practice squad. He was released on October 4, and re-signed to the practice squad."
+      }
+    ]
+  },
+  {
+    "slug": "malik-davis",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2022-08-31",
+        "team": "DAL",
+        "quote": "After going undrafted in the 2022 NFL draft, Davis signed with the Dallas Cowboys as a free agent on April 30, 2022. He was part of the last cuts to reach the 53 player limit and was signed with the Dallas' practice squad on August 31."
+      },
+      {
+        "type": "Waived",
+        "date": "2025-04-30",
+        "team": "DAL",
+        "quote": "Davis signed a reserve/future contract with the Cowboys on January 8, 2025. He was waived on April 30, to clear roster space for rookies Jaydon Blue and Phil Mafah."
+      }
+    ]
+  },
+  {
+    "slug": "kendre-miller",
+    "facts": []
+  },
+  {
+    "slug": "carson-wentz",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2019-06-06",
+        "team": "PHI",
+        "quote": "On April 29, 2019, the Eagles exercised the fifth-year option on Wentz's contract. On June 6, they signed him to a four-year, $128 million contract extension with $107 million guaranteed, keeping Wentz under contract through the 2024 season.",
+        "terms": {
+          "years": 4,
+          "totalM": 128
+        }
+      }
+    ]
+  },
+  {
+    "slug": "mason-taylor",
+    "facts": []
+  },
+  {
+    "slug": "colby-parkinson",
+    "facts": []
+  },
+  {
+    "slug": "daniel-carlson",
+    "facts": [
+      {
+        "type": "Tender",
+        "date": "2021-04-29",
+        "team": "LV",
+        "quote": "The Raiders placed a second-round restricted free agent tender on Carlson on March 17, 2021. He signed the tender on April 29."
+      }
+    ]
+  },
+  {
+    "slug": "roman-wilson",
+    "facts": []
+  },
+  {
+    "slug": "sean-tucker",
+    "facts": []
+  },
+  {
+    "slug": "tory-horton",
+    "facts": []
+  },
+  {
+    "slug": "elic-ayomanor",
+    "facts": []
+  },
+  {
+    "slug": "emari-demercado",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2026-08-30",
+        "team": "KC",
+        "quote": "On March 12, 2026, Demercado signed a one-year, $1.25 million contract with the Kansas City Chiefs. On August 30, he was waived as part of final roster cuts."
+      }
+    ]
+  }
+]

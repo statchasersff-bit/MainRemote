@@ -61,12 +61,16 @@ export interface FantasySectionInput {
   playerUrl: (name: string) => string | null;
   /** The start/sit launcher for one player, or null when he has no slug. */
   startSitUrl: (name: string) => string | null;
+  /** The start/sit comparison of two players, or null when either has no slug. */
+  startSitCompareUrl: (a: string, b: string) => string | null;
+  /** Sleeper's rostered and started rates for a player, 0–100; null when unknown. */
+  rosterRate: (sleeperId: string) => { owned: number; started: number } | null;
   /** False for a playoff game, whose points most season-long leagues never score. */
   countsInSeasonLong: boolean;
   /** Each side's next game after this one, when the season is still being played. */
   next: Record<string, { label: string; opponent: string } | null> | null;
   injuries: GameInjuryNotes | null;
-  links: { redraftCommand: string };
+  links: { redraftCommand: string; projections: string; tradeCalculator: string };
 }
 
 type Format = "ppr" | "half" | "std";
@@ -844,22 +848,120 @@ export function renderFantasySection(input: FantasySectionInput, matchups = ""):
       ? ""
       : `<p class="sct-fp-playoff">Playoff game: these points don't count in most season-long fantasy leagues.</p>`) +
     wrap("usage", usageBlock) +
-    // The call to action after the analysis, not before it (mak, 2026-09-30).
+    // The call to action after the analysis, not before it (mak, 2026-09-30):
+    // what happened, then where to look for what happens next.
     (usageBlock
-      ? `<aside class="sct-mu-ps-cta sct-fp-cta" aria-label="Redraft Command">` +
-        `<div class="sct-mu-ps-cta-text">` +
-        `<p class="sct-mu-ps-cta-title">Turn this usage into a lineup decision.</p>` +
-        `<p class="sct-mu-ps-cta-sub">See whether these workloads should change your start/sit, trade or waiver decisions.</p>` +
-        `</div>` +
-        `<a class="sct-mu-ps-cta-button" href="${escapeHtml(input.links.redraftCommand)}" data-cta="fantasy-usage-banner">` +
-        `Open Redraft Command →</a>` +
-        `</aside>`
+      ? banner(
+          "Looking ahead to next week?",
+          "Past production tells you what happened. See the latest weekly and rest-of-season projections for every fantasy player.",
+          input.links.projections,
+          "View Fantasy Football Projections",
+          "fantasy-projections-banner",
+        )
       : "") +
     wrap("verdicts", verdicts) +
+    wrap("decisions", renderDecisions(input, usage)) +
+    (verdicts
+      ? banner(
+          "Did this game change a player's trade value?",
+          "Compare players and evaluate a deal using current fantasy values and your league settings.",
+          input.links.tradeCalculator,
+          "Fantasy Football Trade Calculator",
+          "fantasy-trade-banner",
+        )
+      : "") +
     wrap("stock", stockBlock) +
     wrap("injuries", injuries) +
     wrap("matchups", matchups) +
     `</section>`
+  );
+}
+
+/** The navy call-to-action banner these sections close a block with. */
+function banner(title: string, sub: string, href: string, action: string, cta: string): string {
+  return (
+    `<aside class="sct-mu-ps-cta sct-fp-cta" aria-label="${escapeHtml(action)}">` +
+    `<div class="sct-mu-ps-cta-text">` +
+    `<p class="sct-mu-ps-cta-title">${escapeHtml(title)}</p>` +
+    `<p class="sct-mu-ps-cta-sub">${escapeHtml(sub)}</p>` +
+    `</div>` +
+    `<a class="sct-mu-ps-cta-button" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(action)} →</a>` +
+    `</aside>`
+  );
+}
+
+/** The positions a start/sit comparison is offered for. */
+const DECISION_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
+/** Below this many expected PPR points in the game, a player had no role to judge. */
+const DECISION_MIN_XFP = 6;
+/** Rostered in fewer leagues than this, few readers have the decision. */
+const DECISION_MIN_OWNED = 50;
+/** Started in this many leagues or more, he is a must-start: nothing to decide. */
+const DECISION_MUST_START = 97;
+/** Start rates further apart than this are not a coin flip. */
+const DECISION_MAX_GAP = 30;
+
+/**
+ * Start/sit decisions: at most three pairs of same-position players from this
+ * game that fantasy managers really do choose between, each linked to its
+ * comparison page. A pair is a decision when both are widely rostered, neither
+ * is a must-start, and leagues start them at similar rates (Sleeper's rates,
+ * the same reading the player pages print) — this game's workload alone put
+ * Ja'Marr Chase against Tee Higgins. Never every combination, and no player
+ * in two pairs. Nothing for a playoff game or once the season is over: there
+ * is no next week to decide.
+ */
+function renderDecisions(input: FantasySectionInput, usage: Usage[]): string {
+  if (!input.countsInSeasonLong || !input.next) return "";
+  const pool = usage
+    .map((u) => ({ u, rate: u.row.ctx ? input.rosterRate(u.row.ctx.sleeperId) : null }))
+    .filter(
+      (c): c is { u: Usage; rate: { owned: number; started: number } } =>
+        !!c.u.row.ctx?.active &&
+        !!c.u.row.p.pos &&
+        DECISION_POSITIONS.has(c.u.row.p.pos) &&
+        c.u.x.ppr >= DECISION_MIN_XFP &&
+        c.rate !== null &&
+        c.rate.owned >= DECISION_MIN_OWNED &&
+        c.rate.started < DECISION_MUST_START,
+    );
+  const pairs: Array<{ a: Usage; b: Usage; weight: number; href: string }> = [];
+  for (let i = 0; i < pool.length; i += 1) {
+    for (let j = i + 1; j < pool.length; j += 1) {
+      const a = pool[i]!;
+      const b = pool[j]!;
+      if (a.u.row.p.pos !== b.u.row.p.pos) continue;
+      if (Math.abs(a.rate.started - b.rate.started) > DECISION_MAX_GAP) continue;
+      const href = input.startSitCompareUrl(a.u.row.p.name, b.u.row.p.name);
+      if (href) pairs.push({ a: a.u, b: b.u, weight: a.rate.started + b.rate.started, href });
+    }
+  }
+  // The pairs the most lineups hold first.
+  pairs.sort((x, y) => y.weight - x.weight);
+  const used = new Set<Usage>();
+  const chosen = pairs.filter((p) => {
+    if (used.size >= 6 || used.has(p.a) || used.has(p.b)) return false;
+    used.add(p.a);
+    used.add(p.b);
+    return true;
+  });
+  if (chosen.length === 0) return "";
+  const nextLabel = (u: Usage): string | null => input.next?.[u.row.p.team]?.label ?? null;
+  return (
+    `<h3 class="sct-rb-h3" id="decisions">Start/Sit decisions</h3>` +
+    `<ul class="sct-fp-decisions">` +
+    chosen
+      .map(({ a, b, href }) => {
+        // Name the week only when both players' next game is the same one.
+        const week = nextLabel(a) && nextLabel(a) === nextLabel(b) ? `${nextLabel(a)} ` : "";
+        return (
+          `<li><a class="sct-fp-decision" href="${escapeHtml(href)}" data-cta="fantasy-compare">` +
+          `<span class="sct-fp-decision-q">${escapeHtml(`${a.row.p.name} or ${b.row.p.name}?`)}</span>` +
+          `<span class="sct-fp-decision-go">${escapeHtml(`Compare their ${week}outlook →`)}</span></a></li>`
+        );
+      })
+      .join("") +
+    `</ul>`
   );
 }
 

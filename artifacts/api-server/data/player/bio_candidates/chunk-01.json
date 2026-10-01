@@ -1,0 +1,407 @@
+[
+  {
+    "slug": "travis-hunter",
+    "facts": []
+  },
+  {
+    "slug": "bijan-robinson",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2023-05-12",
+        "team": "ATL",
+        "quote": "Robinson was selected by the Atlanta Falcons in the first round with the eighth overall pick in the 2023 NFL draft. On May 12, 2023, Robinson signed his four-year rookie contract worth $21.96 million fully guaranteed.",
+        "terms": {
+          "years": 4,
+          "totalM": 21.96
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jahmyr-gibbs",
+    "facts": []
+  },
+  {
+    "slug": "jaxon-smith-njigba",
+    "facts": []
+  },
+  {
+    "slug": "jamarr-chase",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2025-03-18",
+        "team": "CIN",
+        "quote": "On March 18, 2025, Chase signed a four-year, $161 million contract extension with the Bengals, making him the highest paid non-quarterback in NFL history at the time.",
+        "terms": {
+          "years": 4,
+          "totalM": 161
+        }
+      }
+    ]
+  },
+  {
+    "slug": "christian-mccaffrey",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2017-05-04",
+        "team": "CAR",
+        "quote": "On May 4, 2017, the Carolina Panthers signed McCaffrey to a four-year, $17.2 million contract with a signing bonus of $10.7 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 17.2
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2020-04-16",
+        "team": "CAR",
+        "quote": "On April 16, 2020, McCaffrey signed a four-year, $64 million contract extension with the Panthers through the 2025 season, making him the highest-paid running back in NFL history.",
+        "terms": {
+          "years": 4,
+          "totalM": 64
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2022-10-20",
+        "team": "SF",
+        "quote": "McCaffrey was traded to the 49ers on October 20, 2022, in exchange for a second, third, and fourth-round pick in the 2023 NFL draft, and a fifth-round pick in the 2024 draft."
+      }
+    ]
+  },
+  {
+    "slug": "derrick-henry",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2016-05-09",
+        "team": "TEN",
+        "quote": "On May 9, 2016, the Titans signed Henry to a four-year, $5.40 million contract with $3.30 million guaranteed and a signing bonus of $2.13 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 5.4
+        }
+      },
+      {
+        "type": "Signed",
+        "date": "2024-03-12",
+        "team": "BAL",
+        "quote": "On March 12, 2024, Henry signed with the Baltimore Ravens on a two-year, $16 million deal worth up to $20 million which also included $9 million fully guaranteed in the first year.",
+        "terms": {
+          "years": 2,
+          "totalM": 16
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2025-05-14",
+        "team": "BAL",
+        "quote": "On May 14, 2025, Henry signed a two-year contract extension with the Ravens worth $30 million total with $25 million guaranteed.",
+        "terms": {
+          "years": 2,
+          "totalM": 30
+        }
+      }
+    ]
+  },
+  {
+    "slug": "james-cook",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2025-08-13",
+        "team": "BUF",
+        "quote": "On August 13, 2025, after a short holdout from practice, Cook and the Bills reached agreement on a four-year, $48 million contract extension.",
+        "terms": {
+          "years": 4,
+          "totalM": 48
+        }
+      }
+    ]
+  },
+  {
+    "slug": "kenneth-walker",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-03-12",
+        "team": "KC",
+        "quote": "On March 12, 2026, Walker signed a three-year, $45 million contract with the Kansas City Chiefs.",
+        "terms": {
+          "years": 3,
+          "totalM": 45
+        }
+      }
+    ]
+  },
+  {
+    "slug": "ceedee-lamb",
+    "facts": []
+  },
+  {
+    "slug": "lamar-jackson",
+    "facts": []
+  },
+  {
+    "slug": "trey-mcbride",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2025-04-03",
+        "team": "ARI",
+        "quote": "On April 3, 2025, McBride signed a four-year contract extension with the Cardinals worth $76 million with $43 million guaranteed, making him the highest-paid tight end in NFL history at the time of the signing.",
+        "terms": {
+          "years": 4,
+          "totalM": 76
+        }
+      }
+    ]
+  },
+  {
+    "slug": "josh-allen",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2021-08-06",
+        "team": "BUF",
+        "quote": "In May 2021, the Bills exercised the fifth-year option on Allen's rookie contract, tying him to the team through the 2022 season. On August 6, 2021, Allen signed a six-year contract extension worth up to $258 million with $150 million guaranteed that would go through to the 2028 season.",
+        "terms": {
+          "years": 6,
+          "totalM": 258
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2025-03-09",
+        "team": "BUF",
+        "quote": "On March 9, 2025, Allen signed a six-year contract extension with the Bills worth $330 million, of which $250 million guaranteed, the largest guaranteed money ever given to an NFL player at the time of signing.",
+        "terms": {
+          "years": 6,
+          "totalM": 330
+        }
+      }
+    ]
+  },
+  {
+    "slug": "amon-ra-st-brown",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-06-17",
+        "team": "DET",
+        "quote": "He signed his four-year rookie contract with Detroit on June 17, 2021."
+      },
+      {
+        "type": "Contract",
+        "date": "2024-04-24",
+        "team": "DET",
+        "quote": "On April 24, 2024, St. Brown signed a four-year, $120 million contract extension, keeping him under contract with the Lions through the 2028 season.",
+        "terms": {
+          "years": 4,
+          "totalM": 120
+        }
+      }
+    ]
+  },
+  {
+    "slug": "chris-olave",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2026-07-30",
+        "team": "NO",
+        "quote": "On July 30, 2026, Olave agreed to a four-year, $132 million contract extension with the Saints.",
+        "terms": {
+          "years": 4,
+          "totalM": 132
+        }
+      }
+    ]
+  },
+  {
+    "slug": "george-pickens",
+    "facts": [
+      {
+        "type": "Traded",
+        "date": "2025-05-07",
+        "team": "DAL",
+        "quote": "On May 7, 2025, the Steelers traded Pickens and a 2027 sixth-round pick to the Dallas Cowboys for a 2026 third-round pick (No. 76: Drew Allar) and a 2027 fifth-round pick."
+      }
+    ]
+  },
+  {
+    "slug": "ashton-jeanty",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-05-08",
+        "team": "LV",
+        "quote": "On May 8, 2025, Jeanty signed a four-year contract with the Raiders."
+      }
+    ]
+  },
+  {
+    "slug": "chase-brown",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2023-10-28",
+        "team": "CIN",
+        "quote": "Brown was selected by the Cincinnati Bengals in the fifth round, 163rd overall pick, of the 2023 NFL draft. He was placed on injured reserve on October 28, 2023, with a hamstring injury, and reactivated on November 25."
+      }
+    ]
+  },
+  {
+    "slug": "saquon-barkley",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-03-13",
+        "team": "PHI",
+        "quote": "On March 13, 2024, Barkley signed a three-year $37.75 million deal with the Philadelphia Eagles, of which $26 million was guaranteed over the first two years.",
+        "terms": {
+          "years": 3,
+          "totalM": 37.75
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2025-03-04",
+        "team": "PHI",
+        "quote": "On March 4, 2025, Barkley signed a two-year, $41.2 million contract extension with the Eagles that includes $36 million guaranteed and up to $15 million more in incentives.",
+        "terms": {
+          "years": 2,
+          "totalM": 41.2
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jonathan-taylor",
+    "facts": [
+      {
+        "type": "Activated",
+        "date": "2023-10-07",
+        "team": "IND",
+        "quote": "On October 7, 2023, he was activated, and signed a three-year, $42 million extension with the Colts."
+      },
+      {
+        "type": "Contract",
+        "date": "2023-10-07",
+        "team": "IND",
+        "quote": "On October 7, 2023, he was activated, and signed a three-year, $42 million extension with the Colts.",
+        "terms": {
+          "years": 3,
+          "totalM": 42
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2026-08-06",
+        "team": "IND",
+        "quote": "On August 6, 2026, the Colts signed Taylor to a two-year, $44 million contract extension with $39 million guaranteed, making him the second-highest paid running back in the league.",
+        "terms": {
+          "years": 2,
+          "totalM": 44
+        }
+      }
+    ]
+  },
+  {
+    "slug": "kyren-williams",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2022-09-13",
+        "team": "LAR",
+        "quote": "After not playing in the preseason, on September 8, 2022, Williams suffered a high ankle sprain on the first kick return in the Rams' season-opening 31–10 loss to the Buffalo Bills. He was placed on injured reserve on September 13, 2022."
+      },
+      {
+        "type": "Placed on IR",
+        "date": "2023-10-21",
+        "team": "LAR",
+        "quote": "During Week 6 against the Arizona Cardinals, Williams finished with a season-high 158 rushing yards and a touchdown on 20 carries as the Rams won 26–9 but sprained his left ankle in the process. Placed on injured reserve on October 21, 2023, Williams was re-activated on November 25, 2023, after missing four games."
+      },
+      {
+        "type": "Activated",
+        "date": "2023-11-25",
+        "team": "LAR",
+        "quote": "During Week 6 against the Arizona Cardinals, Williams finished with a season-high 158 rushing yards and a touchdown on 20 carries as the Rams won 26–9 but sprained his left ankle in the process. Placed on injured reserve on October 21, 2023, Williams was re-activated on November 25, 2023, after missing four games."
+      },
+      {
+        "type": "Contract",
+        "date": "2025-08-05",
+        "team": "LAR",
+        "quote": "On August 5, 2025, Williams signed a three-year, $33 million contract extension with the Rams.",
+        "terms": {
+          "years": 3,
+          "totalM": 33
+        }
+      }
+    ]
+  },
+  {
+    "slug": "drake-london",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2026-06-02",
+        "team": "ATL",
+        "quote": "On June 2, 2026, London signed a four-year, $141 million contract extension, including $100 million guaranteed, keeping him under contract with the Falcons until 2030.",
+        "terms": {
+          "years": 4,
+          "totalM": 141
+        }
+      }
+    ]
+  },
+  {
+    "slug": "justin-jefferson",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2023-10-11",
+        "team": "MIN",
+        "quote": "On October 11, 2023, the Vikings placed Jefferson on injured reserve, due to a hamstring injury suffered in Week 5 against the Kansas City Chiefs."
+      },
+      {
+        "type": "Activated",
+        "date": "2023-11-28",
+        "team": "MIN",
+        "quote": "The Vikings activated Jefferson off of injured reserve on November 28, 2023."
+      },
+      {
+        "type": "Contract",
+        "date": "2024-06-03",
+        "team": "MIN",
+        "quote": "On June 3, 2024, Jefferson signed a four-year, $140 million contract extension that includes $110 million guaranteed, keeping him under contract with the Vikings through the 2028 season.",
+        "terms": {
+          "years": 4,
+          "totalM": 140
+        }
+      }
+    ]
+  },
+  {
+    "slug": "brandon-aubrey",
+    "facts": []
+  },
+  {
+    "slug": "devonta-smith",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2024-04-15",
+        "team": "PHI",
+        "quote": "On April 15, 2024, Smith signed a three-year, $75 million contract extension with the Eagles.",
+        "terms": {
+          "years": 3,
+          "totalM": 75
+        }
+      }
+    ]
+  }
+]

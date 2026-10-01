@@ -1088,6 +1088,7 @@ function statchasers_team_pages_screen(): void {
  */
 const STATCHASERS_TEAM_SECTIONS = array(
 	'outlook',
+	'usage',
 	'stats',
 	'schedule',
 	'depth-chart',
@@ -1157,6 +1158,17 @@ add_action(
 			'index.php?pagename=' . $base . '/$matches[1]&sc_section=$matches[2]',
 			'top'
 		);
+
+		// A changed section list is dead until the rule table is rebuilt, and
+		// an upgrade does not run the activation hook that asks for that (the
+		// Usage section, 1.10.20). Same remedy as the matchup and rankings
+		// rules: remember the rule's signature and ask for the flush that
+		// statchasers-news.php performs at the end of this `init`.
+		$signature = md5( $base . '|' . $sections );
+		if ( get_option( 'statchasers_team_rules' ) !== $signature ) {
+			update_option( 'statchasers_team_rules', $signature, false );
+			update_option( 'statchasers_needs_flush', 1, false );
+		}
 	}
 );
 
@@ -1248,6 +1260,17 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 				'title'       => sprintf( '%s Fantasy Football Outlook %s', $name, $season ),
 				'description' => sprintf(
 					'%1$s fantasy outlook for %2$s: projected win total, offensive pace and pass rate, the %3$s players who carry fantasy value and the roles behind them.',
+					$name,
+					$season,
+					$nick
+				),
+			);
+
+		case 'usage':
+			return array(
+				'title'       => sprintf( '%s Target Share & Snap Counts %s: Usage Report', $name, $season ),
+				'description' => sprintf(
+					'%1$s target share, snap share and red-zone touches for %2$s, updated every Tuesday: the %3$s target tree, backfield split, pass map and buy-low / sell-high signals.',
 					$name,
 					$season,
 					$nick
@@ -1350,6 +1373,7 @@ function statchasers_team_heading( string $slug, string $section ): string {
 	// Mirrors SECTION_HEADINGS in src/lib/team-render.ts, saying the same
 	// words. The Outlook is the hub, so it takes the hub's phrase below.
 	$phrases = array(
+		'usage'       => 'Usage & Opportunity Report',
 		'stats'       => 'Stats',
 		'schedule'    => 'Schedule',
 		'depth-chart' => 'Depth Chart',
@@ -1584,6 +1608,7 @@ function statchasers_team_breadcrumbs( $crumbs ) {
 	}
 
 	$labels = array(
+		'usage'       => 'Usage',
 		'stats'       => 'Stats',
 		'schedule'    => 'Schedule',
 		'depth-chart' => 'Depth Chart',

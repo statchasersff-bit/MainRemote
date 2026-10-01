@@ -42,7 +42,7 @@ import {
   meetingHasOwnAddress,
   type MatchupGameRef,
 } from "./pair";
-import { getPlayerSlugByName } from "../player/data";
+import { getPlayerSlugByName, loadRosterPct } from "../player/data";
 import type { DefenseLine } from "./fantasy-points";
 import { playerContexts, ratesFor } from "./fantasy-data";
 import {
@@ -111,7 +111,17 @@ import {
   type ScoreboardGame,
   type ScoreboardTeam,
 } from "./scoreboard-hero";
-import { buildRecap, renderRecap, START_SIT_URL, superBowlNumeral } from "./recap";
+import {
+  buildRecap,
+  LEAGUE_ANALYZER_URL,
+  PROJECTIONS_URL,
+  REDRAFT_COMMAND_URL,
+  renderRecap,
+  START_SIT_URL,
+  startSitCompareUrl,
+  superBowlNumeral,
+  TRADE_CALCULATOR_URL,
+} from "./recap";
 import { recapNotes } from "./recap-notes";
 import {
   recapFaq,
@@ -951,6 +961,13 @@ function startSitFor(name: string): string | null {
   return slug ? `${START_SIT_URL}/${encodeURIComponent(slug)}` : null;
 }
 
+/** Redraft Command's start/sit comparison of two players, or null when either has no slug. */
+function startSitCompareFor(a: string, b: string): string | null {
+  const slugA = getPlayerSlugByName(a);
+  const slugB = getPlayerSlugByName(b);
+  return slugA && slugB && slugA !== slugB ? startSitCompareUrl(slugA, slugB) : null;
+}
+
 const fantasyCache = new WeakMap<MatchupData, FantasySectionInput | null>();
 
 /** The fantasy section's input, memoised: the section, the game logs and the FAQ all read it. */
@@ -985,10 +1002,15 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
       rates: ratesFor(meeting.season),
       playerUrl: getPlayerProfileUrl,
       startSitUrl: startSitFor,
+      startSitCompareUrl: startSitCompareFor,
+      rosterRate: (id) => {
+        const r = loadRosterPct().players[id];
+        return r && typeof r.started === "number" ? { owned: r.owned, started: r.started } : null;
+      },
       countsInSeasonLong: !post,
       next: live ? next : null,
       injuries: notes.injuries ?? null,
-      links: { redraftCommand: REDRAFT_COMMAND_URL },
+      links: { redraftCommand: REDRAFT_COMMAND_URL, projections: PROJECTIONS_URL, tradeCalculator: TRADE_CALCULATOR_URL },
     };
   }
   fantasyCache.set(data, input);
@@ -1201,8 +1223,6 @@ export function matchupRecapSchema(
   return jsonLdScript([breadcrumbSchema(crumbs), videoSchema(game, video)]);
 }
 
-/** Redraft Command's own page, for the sidebar's "Connect your league". */
-const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 
 /**
  * The recap body's input, from the page data: the same game object as the
@@ -1297,6 +1317,8 @@ export function recapBodyInput(
     links: {
       redraftCommand: REDRAFT_COMMAND_URL,
       startSit: START_SIT_URL,
+      projections: PROJECTIONS_URL,
+      tradeCalculator: TRADE_CALCULATOR_URL,
       pointsAllowed: getFPAUrl(),
       strengthOfSchedule: getSOSUrl(),
       // No address yet: the card shows once SC_MATCHUP_ANALYZER_URL names one.
@@ -2275,17 +2297,38 @@ function renderPlayerStats(data: MatchupData): string {
     `<div class="sct-mu-scoring-slot" data-sct-scoring-slot></div>` +
     `</div>` +
     blocks +
-    (byPlayer.size
-      ? `<aside class="sct-mu-ps-cta" aria-label="Redraft Command">` +
-        `<div class="sct-mu-ps-cta-text">` +
-        `<p class="sct-mu-ps-cta-title">Need a decision on one of these players?</p>` +
-        `<p class="sct-mu-ps-cta-sub">Get start/sit, trade and roster advice tailored to your league.</p>` +
-        `</div>` +
-        `<a class="sct-mu-ps-cta-button" href="${escapeHtml(REDRAFT_COMMAND_URL)}" data-cta="player-stats-banner">` +
-        `Open Redraft Command →</a>` +
-        `</aside>`
-      : "") +
+    (byPlayer.size ? renderDecisionModule() : "") +
     `</section>`
+  );
+}
+
+/**
+ * "Need a decision?": three Redraft Command tools, each for its own question,
+ * and the hub under them — rather than one generic "Open Redraft Command".
+ */
+function renderDecisionModule(): string {
+  const option = (title: string, text: string, href: string, action: string, cta: string): string =>
+    `<li class="sct-mu-decide-opt">` +
+    `<p class="sct-mu-decide-name">${escapeHtml(title)}</p>` +
+    `<p class="sct-mu-decide-text">${escapeHtml(text)}</p>` +
+    `<a class="sct-mu-ps-cta-button" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(action)} →</a>` +
+    `</li>`;
+  return (
+    `<aside class="sct-mu-ps-cta sct-mu-decide" aria-label="Redraft Command">` +
+    `<p class="sct-mu-ps-cta-title">Need a decision on one of these players?</p>` +
+    `<ul class="sct-mu-decide-list">` +
+    option("Start/Sit", "Compare your lineup options for this week.", START_SIT_URL, "Compare Players", "decide-startsit") +
+    option("Trade Calculator", "See whether a trade improves your roster.", TRADE_CALCULATOR_URL, "Analyze a Trade", "decide-trade") +
+    option(
+      "League Analyzer",
+      "Find strengths, weaknesses and opportunities across your roster.",
+      LEAGUE_ANALYZER_URL,
+      "Analyze My League",
+      "decide-league",
+    ) +
+    `</ul>` +
+    `<a class="sct-mu-decide-all" href="${escapeHtml(REDRAFT_COMMAND_URL)}" data-cta="decide-redraft">Explore all Redraft Command tools →</a>` +
+    `</aside>`
   );
 }
 

@@ -1,0 +1,404 @@
+{
+ "comment": "mak's manual fact rulings (2026-10-01 batch review). Applied by mergeVerification.mjs AFTER the log and search passes, so they survive re-verification. A ruling pins the verdict/confidence shown on the review page and, when `proposed` is present, exactly what publishes on approval. Conflicting archive/announcement dates are settled here per event, never by a global one-day shift. A ruling may also pin `events` ([{date, status: agreed|signed|processed}]): the move's distinct dated events, stored side by side; `proposed.date` stays the one the page prints.",
+ "rulings": {
+  "43f169afae5b": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-04-10",
+    "precision": "day",
+    "team": "ATL",
+    "headline": "Fifth-year option for 2027 exercised"
+   },
+   "note": "mak 2026-10-01: APPROVE, high confidence — the Falcons announced it themselves (~$11.323M for 2027)."
+  },
+  "9fd298f8e197": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-04-28",
+    "precision": "day",
+    "team": "DET",
+    "headline": "Fifth-year option for 2027 exercised"
+   },
+   "note": "mak 2026-10-01: APPROVE — ~$14.293M fully guaranteed for 2027; AP noted Detroit had not yet publicly announced at that moment."
+  },
+  "a3ed13f38496": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-07-23",
+    "precision": "day",
+    "team": "DAL",
+    "headline": "Agreed to a four-year, $14 million rookie contract"
+   },
+   "note": "mak 2026-10-01: Jul 23 is the agreement date (NFL tracker says signed Jul 23; Dallas later said the class officially signed Jul 25) — store Jul 23 as agreed to terms.",
+   "events": [
+    {
+     "date": "2020-07-23",
+     "status": "agreed"
+    },
+    {
+     "date": "2020-07-25",
+     "status": "signed"
+    }
+   ]
+  },
+  "feb4c39366f8": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2017-05-04",
+    "precision": "day",
+    "team": "CAR",
+    "terms": {
+     "years": 4,
+     "totalM": 17.2
+    },
+    "headline": "Signed a four-year, $17.2 million rookie contract"
+   },
+   "note": "mak 2026-10-01: APPROVE — keep May 4, 2017, four years ~$17.2M."
+  },
+  "dc71884e6410": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2016-05-09",
+    "precision": "day",
+    "team": "TEN",
+    "terms": {
+     "years": 4,
+     "totalM": 5.4
+    },
+    "headline": "Signed a four-year, $5.4 million rookie contract"
+   },
+   "note": "mak 2026-10-01: NFL.com and the Titans both support the signing — HIGH, not medium. $3.3M fully guaranteed, $2.13M signing bonus."
+  },
+  "58e168abb3cb": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "note": "mak 2026-10-01: DET official 2021 log: 'The Detroit Lions sign LB Derrick Barnes and WR Amon-Ra St. Brown.' (2021-06-17). Was missed by an abbreviation-splitting bug in the log parser, fixed same day."
+  },
+  "e08ae54122f4": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2025-03-09",
+    "precision": "day",
+    "team": "BUF",
+    "terms": {
+     "years": 6,
+     "totalM": 330
+    },
+    "headline": "Agreed to a six-year, $330 million contract"
+   },
+   "note": "mak 2026-10-01: APPROVE — 'Agreed to' is right ($250M guaranteed; Buffalo itself says 'reached an agreement')."
+  },
+  "702bbfa35b3a": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2021-08-06",
+    "precision": "day",
+    "team": "BUF",
+    "terms": {
+     "years": 6,
+     "totalM": 258
+    },
+    "headline": "Signed a six-year, $258 million contract extension"
+   },
+   "note": "mak 2026-10-01: Buffalo initially said agreed to terms, but NFL.com says Buffalo announced the same day that Allen had signed — 'Signed' on Aug 6 is supportable."
+  },
+  "bc447b473bd5": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2018-07-22",
+    "precision": "day",
+    "team": "NYG",
+    "terms": {
+     "years": 4,
+     "totalM": 31.2
+    },
+    "headline": "Signed a four-year, $31.2 million rookie contract with the Giants"
+   },
+   "note": "mak 2026-10-01: use Jul 22 — the Giants' contemporaneous article says he signed when he reported Jul 22; the archive's Jul 21 line does not make this date-uncertain.",
+   "events": [
+    {
+     "date": "2018-07-22",
+     "status": "signed"
+    },
+    {
+     "date": "2018-07-21",
+     "status": "processed"
+    }
+   ]
+  },
+  "5126f7f6c827": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Tender",
+    "date": "2026-03-07",
+    "precision": "day",
+    "team": "DAL",
+    "headline": "Received a second-round restricted free agent tender"
+   },
+   "note": "mak 2026-10-01: APPROVE HIGH — Dallas officially says the second-round, $5.76M tender was placed March 7."
+  },
+  "f04b0c0fb8d3": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Re-signed",
+    "date": "2026-02-21",
+    "precision": "day",
+    "team": "DAL",
+    "terms": {
+     "years": 3,
+     "totalM": 24
+    },
+    "headline": "Agreed to a three-year, $24 million contract"
+   },
+   "note": "mak 2026-10-01: APPROVE as agreed to terms — three years, $24M, $16M guaranteed; Feb 21 is clearly the agreement date."
+  },
+  "07379d89e25e": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2025-03-10",
+    "precision": "day",
+    "team": "DAL",
+    "terms": {
+     "years": 1,
+     "totalM": 3
+    },
+    "headline": "Agreed to a one-year contract"
+   },
+   "note": "mak 2026-10-01: Mar 10 was the negotiating-window agreement; Dallas' 2025 ledger says signed Mar 14. Storing the agreement on Mar 10 with 'Agreed to' wording.",
+   "events": [
+    {
+     "date": "2025-03-10",
+     "status": "agreed"
+    },
+    {
+     "date": "2025-03-14",
+     "status": "signed"
+    }
+   ]
+  },
+  "b2092e6baab3": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-07-28",
+    "precision": "day",
+    "team": "CIN",
+    "terms": {
+     "years": 4,
+     "totalM": 8.6
+    },
+    "headline": "Signed a four-year, $8.6 million rookie contract with the Bengals"
+   },
+   "note": "mak 2026-10-01: Bengals' release and current player transaction history both say 7-28-20; the old archive's Jul 27 does not override that.",
+   "events": [
+    {
+     "date": "2020-07-28",
+     "status": "signed"
+    },
+    {
+     "date": "2020-07-27",
+     "status": "processed"
+    }
+   ]
+  },
+  "aebfa4db7aa3": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-08-04",
+    "precision": "day",
+    "team": "BAL",
+    "terms": {
+     "years": 4,
+     "totalM": 140
+    },
+    "yearFrom": "heading",
+    "headline": "Agreed to a four-year, $140 million contract extension"
+   },
+   "note": "mak 2026-10-01: Aug 4 = agreed to terms ($140M / $108M guaranteed supported); the Ravens' log says signed Aug 5. Storing the agreement event.",
+   "events": [
+    {
+     "date": "2026-08-04",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-08-05",
+     "status": "signed"
+    }
+   ]
+  },
+  "70c918cda576": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-04-23",
+    "precision": "day",
+    "team": "BAL",
+    "headline": "Fifth-year option for 2027 exercised"
+   },
+   "note": "mak 2026-10-01: APPROVE — Ravens reported picking up the 2027 option, citing ~$28M."
+  },
+  "2a1f2066a832": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2023-06-14",
+    "precision": "day",
+    "team": "BAL",
+    "terms": {
+     "years": 4,
+     "totalM": 14
+    },
+    "headline": "Signed a four-year, $14 million rookie contract"
+   },
+   "note": "mak 2026-10-01: APPROVE — Ravens announced June 14; Wikipedia's June 15 was correctly caught."
+  },
+  "04eb4a16014e": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "note": "mak 2026-10-01: NYG official 2025 log: '06/18 — RB Cam Skattebo — Selection List Signing'; the Giants' June 19 article says he signed Wednesday (June 18). Was missed because 'Signing' was not in the parser's verb list, fixed same day."
+  },
+  "05f9e5f94d90": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2023-09-07",
+    "precision": "day",
+    "team": "CIN",
+    "terms": {
+     "years": 5,
+     "totalM": 275
+    },
+    "headline": "Agreed to a five-year, $275 million contract extension"
+   },
+   "note": "mak 2026-10-01: Sep 7 = agreement reported; the Bengals document the signing on Sep 9, 2023 (photos, career transaction history). Storing the agreement event; the signing date is settled, not uncertain.",
+   "events": [
+    {
+     "date": "2023-09-07",
+     "status": "agreed"
+    },
+    {
+     "date": "2023-09-09",
+     "status": "signed"
+    }
+   ]
+  },
+  "03a16b3faeaa": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Activated",
+    "date": "2021-10-16",
+    "precision": "day",
+    "team": "HOU",
+    "yearFrom": "heading"
+   },
+   "note": "mak 2026-10-01: the Texans' dedicated 'Transactions (10-16-2021)' release says they activated Collins on Oct 16; the archive's 10-15 row is the backend date. Store Oct 16."
+  },
+  "3a215b395a64": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2021-09-21",
+    "precision": "day",
+    "team": "HOU",
+    "yearFrom": "heading"
+   },
+   "note": "mak 2026-10-01: the Texans' official transaction announcement dated Sep 21 says they placed Collins on IR; the archive's 9/20 row is the backend date. Store Sep 21."
+  },
+  "a7f4e609f928": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2022-03-18",
+    "precision": "day",
+    "team": "LV",
+    "headline": "Traded to the Las Vegas Raiders"
+   },
+   "note": "mak 2026-10-01: use Mar 18 — NFL's official transactions database says traded 03/18 and the Raiders announced the completed acquisition Mar 18; Mar 17 was when the deal was reported/agreed.",
+   "events": [
+    {
+     "date": "2022-03-17",
+     "status": "agreed"
+    },
+    {
+     "date": "2022-03-18",
+     "status": "processed"
+    }
+   ]
+  },
+  "b223923df634": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Tender",
+    "date": "2022-03-08",
+    "precision": "day",
+    "team": "GB",
+    "headline": "Packers placed the franchise tag on him"
+   },
+   "note": "mak 2026-10-01: APPROVE — NFL confirms Green Bay used the franchise tag on Adams before the March 8 deadline."
+  },
+  "99b3186ebbe8": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2017-12-29",
+    "precision": "day",
+    "team": "GB",
+    "terms": {
+     "years": 4,
+     "totalM": 58
+    },
+    "headline": "Signed a four-year, $58 million contract extension"
+   },
+   "note": "mak 2026-10-01: keep Dec 29 — the Packers' own Dec 29 announcement says they signed Adams; the archive's Dec 28 is noted as a conflict, not adopted.",
+   "events": [
+    {
+     "date": "2017-12-29",
+     "status": "signed"
+    },
+    {
+     "date": "2017-12-28",
+     "status": "processed"
+    }
+   ]
+  },
+  "f05731921b7d": {
+   "verdict": "APPROVE",
+   "confidence": "MEDIUM",
+   "proposed": {
+    "type": "Signed",
+    "date": "2014-06-12",
+    "precision": "day",
+    "team": "GB"
+   },
+   "note": "mak 2026-10-01: keep Jun 12 — the Packers' contemporaneous June 12 article says they signed Adams; the historical archive says June 11. Public signing date stored; medium confidence on the exact processing date.",
+   "events": [
+    {
+     "date": "2014-06-12",
+     "status": "signed"
+    },
+    {
+     "date": "2014-06-11",
+     "status": "processed"
+    }
+   ]
+  }
+ }
+}

@@ -37,6 +37,7 @@ import {
   type TeamRoster,
 } from "./roster";
 import type { NflTeam } from "./teams";
+import { usageVersion } from "./usage";
 
 /** Stories shown before "View more" reveals the rest. */
 export const TEAM_NEWS_VISIBLE = 10;
@@ -242,5 +243,7 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     data.nextOpponentDefense?.rankLabel ?? "",
     data.state.season,
     data.state.week,
+    // The Usage tab reads a file the daily chain rebuilds in place.
+    usageVersion(data.state.season),
   ].join("-");
 }

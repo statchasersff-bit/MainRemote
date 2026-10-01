@@ -1,0 +1,46 @@
+[
+  { "slug": "nick-mullens", "facts": [
+    { "type": "Tender", "date": "2020-05-01", "team": "SF",
+      "quote": "On March 5, 2020, Mullens was assigned a one-year, $750,000 exclusive-rights free agent tender by the 49ers. He signed the contract on May 1." }
+  ] },
+  { "slug": "nick-westbrook-ikhine", "facts": [] },
+  { "slug": "nikko-remigio", "facts": [
+    { "type": "Placed on IR", "date": "2023-08-29", "team": "KC",
+      "quote": "After not being selected in the 2023 NFL draft, Remigio signed with the Kansas City Chiefs as an undrafted free agent. He was waived/injured on August 29, 2023 and placed on injured reserve." }
+  ] },
+  { "slug": "noah-brown", "facts": [] },
+  { "slug": "noah-fant", "facts": [] },
+  { "slug": "noah-gray", "facts": [] },
+  { "slug": "noah-whittington", "facts": [] },
+  { "slug": "olamide-zaccheaus", "facts": [
+    { "type": "Tender", "date": "2022-04-19", "team": "ATL",
+      "quote": "On April 19, 2022, Zaccheaus signed his right-of-refusal tender, ensuring his return to the Falcons." }
+  ] },
+  { "slug": "phil-mafah", "facts": [] },
+  { "slug": "pierre-strong", "facts": [] },
+  { "slug": "rasheen-ali", "facts": [
+    { "type": "Placed on IR", "date": "2024-09-05", "team": "BAL",
+      "quote": "Ali was selected by the Baltimore Ravens in the fifth round (165th overall) in the 2024 NFL draft. He was placed on injured reserve on September 5 due to a neck injury." }
+  ] },
+  { "slug": "robert-tonyan", "facts": [
+    { "type": "Tender", "date": "2021-05-27", "team": "GB",
+      "quote": "The Packers placed a second-round restricted free agent tender on Tonyan on March 17, 2021. On May 27, Tonyan signed his tender worth $3.4 million." }
+  ] },
+  { "slug": "ronnie-rivers", "facts": [] },
+  { "slug": "sam-roush", "facts": [
+    { "type": "Signed", "date": "2026-07-10", "team": "CHI",
+      "quote": "Roush was selected by the Chicago Bears in the third round, with the 69th overall pick, of the 2026 NFL Draft. He signed his rookie contract on July 10." }
+  ] },
+  { "slug": "savion-williams", "facts": [] },
+  { "slug": "scotty-miller", "facts": [] },
+  { "slug": "simi-fehoko", "facts": [] },
+  { "slug": "sincere-mccormick", "facts": [] },
+  { "slug": "skyy-moore", "facts": [] },
+  { "slug": "stephen-carlson", "facts": [
+    { "type": "Signed", "date": "2019-11-01", "team": "CLE",
+      "quote": "The Browns signed Carlson to their active roster on November 1, 2019." },
+    { "type": "Tender", "date": "2021-04-14", "team": "CLE",
+      "quote": "Carlson was given an exclusive-rights free agent tender by the Browns on March 5, 2021. He signed the one-year contract on April 14." }
+  ] },
+  { "slug": "stone-smartt", "facts": [] }
+]

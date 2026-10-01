@@ -1,0 +1,182 @@
+[
+  { "slug": "marvin-mims", "facts": [] },
+  { "slug": "jj-mccarthy", "facts": [
+    { "type": "Signed", "date": "2024-07-19", "team": "MIN",
+      "quote": "On July 19, 2024 the Vikings signed a four-year, fully-guaranteed contract worth $21.85 million that included a $12.71 million signing bonus and a fifth-year team option.",
+      "terms": { "years": 4, "totalM": 21.85 } },
+    { "type": "Traded", "date": "2026-09-28", "team": "NYG",
+      "quote": "On September 28, 2026, McCarthy was traded to the New York Giants to play for head coach John Harbaugh, the brother of his college coach." }
+  ] },
+  { "slug": "jaydon-blue", "facts": [
+    { "type": "Signed", "date": "2026-08-31", "team": "PHI",
+      "quote": "On August 31, 2026, Blue was signed to the Philadelphia Eagles practice squad." }
+  ] },
+  { "slug": "troy-franklin", "facts": [] },
+  { "slug": "theo-johnson", "facts": [] },
+  { "slug": "christian-kirk", "facts": [
+    { "type": "Signed", "date": "2022-03-16", "team": "JAX",
+      "quote": "On March 16, 2022, Kirk signed a four-year, $72 million contract with the Jacksonville Jaguars.",
+      "terms": { "years": 4, "totalM": 72 } },
+    { "type": "Traded", "date": "2025-03-12", "team": "HOU",
+      "quote": "On March 12, 2025, Kirk was traded to the Houston Texans in exchange for a seventh-round pick in the 2026 NFL draft." },
+    { "type": "Signed", "date": "2026-03-18", "team": "SF",
+      "quote": "On March 18, 2026, Kirk signed a one-year, $6 million contract with the San Francisco 49ers.",
+      "terms": { "years": 1, "totalM": 6 } }
+  ] },
+  { "slug": "odell-beckham", "facts": [
+    { "type": "Signed", "date": "2014-05-19", "team": "NYG",
+      "quote": "He signed a four-year contract with the Giants on May 19, 2014." },
+    { "type": "Suspended", "date": "2015-12-21", "team": "NYG",
+      "quote": "Beckham was held to no receptions in the first half, but he finished the game with six receptions for 76 receiving yards, which included a game-tying touchdown as the Giants lost to the Panthers by a score of 38–35. On December 21, 2015, the NFL Disciplinary Committee suspended Beckham one game without pay for multiple violations of safety-related playing rules." },
+    { "type": "Contract", "date": "2018-08-27", "team": "NYG",
+      "quote": "On August 27, 2018, Beckham signed a five-year, $95 million contract extension with the Giants with $41 million fully guaranteed with a total of $65 million in guarantees.",
+      "terms": { "years": 5, "totalM": 95 } },
+    { "type": "Signed", "date": "2021-11-11", "team": "LAR",
+      "quote": "Beckham signed a one-year deal with the Los Angeles Rams on November 11, 2021." },
+    { "type": "Signed", "date": "2023-04-09", "team": "BAL",
+      "quote": "On April 9, 2023, Beckham signed a one-year contract with the Baltimore Ravens." },
+    { "type": "Released", "date": "2024-03-13", "team": "BAL",
+      "quote": "On March 13, 2024, Beckham was released by the Ravens." },
+    { "type": "Signed", "date": "2024-05-08", "team": "MIA",
+      "quote": "On May 8, 2024, Beckham signed a one-year contract with the Miami Dolphins." },
+    { "type": "Waived", "date": "2026-09-29", "team": "NYG",
+      "quote": "On September 29, 2026, the Giants waived Beckham." }
+  ] },
+  { "slug": "tyson-bagent", "facts": [
+    { "type": "Contract", "date": "2025-08-20", "team": "CHI",
+      "quote": "On August 20, 2025, Bagent signed a two-year, $10 million contract extension with the Bears.",
+      "terms": { "years": 2, "totalM": 10 } }
+  ] },
+  { "slug": "roschon-johnson", "facts": [] },
+  { "slug": "ty-simpson", "facts": [] },
+  { "slug": "seth-mcgowan", "facts": [] },
+  { "slug": "ricky-pearsall", "facts": [
+    { "type": "Signed", "date": "2024-06-21", "team": "SF",
+      "quote": "On June 21, 2024, the San Francisco 49ers signed Pearsall to a four-year, $12.35 million contract that includes a signing bonus of $5.93 million and is fully guaranteed at signing.",
+      "terms": { "years": 4, "totalM": 12.35 } }
+  ] },
+  { "slug": "jake-tonges", "facts": [
+    { "type": "Signed", "date": "2022-04-30", "team": "CHI",
+      "quote": "Tonges signed with the Chicago Bears as an undrafted free agent on April 30, 2022." },
+    { "type": "Signed", "date": "2023-01-09", "team": "CHI",
+      "quote": "He signed a reserve/future contract with Chicago on January 9, 2023." },
+    { "type": "Signed", "date": "2023-09-27", "team": "SF",
+      "quote": "On September 27, 2023, Tonges signed with the San Francisco 49ers' practice squad." },
+    { "type": "Signed", "date": "2024-02-13", "team": "SF",
+      "quote": "He signed a reserve/future contract with the 49ers on February 13, 2024." },
+    { "type": "Re-signed", "date": "2025-04-17", "team": "SF",
+      "quote": "On April 17, 2025, Tonges re-signed with the 49ers." },
+    { "type": "Re-signed", "date": "2026-03-12", "team": "SF",
+      "quote": "On March 12, 2026, Tonges re-signed with San Francisco on a two-year, $8 million contract, with $3.5 million guaranteed.",
+      "terms": { "years": 2, "totalM": 8 } }
+  ] },
+  { "slug": "devin-neal", "facts": [
+    { "type": "Signed", "date": "2025-05-09", "team": "NO",
+      "quote": "Neal was selected by the New Orleans Saints in the sixth round with the 184th overall pick in the 2025 NFL draft.  On May 9, 2025, Neal signed a four-year contract worth $4,451,312." },
+    { "type": "Signed", "date": "2026-09-30", "team": "MIN",
+      "quote": "On September 30, 2026, Neal was signed to the Minnesota Vikings practice squad." }
+  ] },
+  { "slug": "jordan-james", "facts": [] },
+  { "slug": "cole-kmet", "facts": [
+    { "type": "Contract", "date": "2023-07-26", "team": "CHI",
+      "quote": "On July 26, 2023, Kmet signed a four-year, $50 million contract extension with the Bears.",
+      "terms": { "years": 4, "totalM": 50 } }
+  ] },
+  { "slug": "darnell-washington", "facts": [
+    { "type": "Signed", "date": "2023-05-12", "team": "PIT",
+      "quote": "Washington was drafted 93rd overall in the 2023 NFL draft by the Pittsburgh Steelers and on May 12, 2023, he signed his rookie contract." },
+    { "type": "Contract", "date": "2026-06-03", "team": "PIT",
+      "quote": "On June 3, 2026, Washington agreed to a four-year, $42 million contract extension with the Steelers, including $21 million guaranteed.",
+      "terms": { "years": 4, "totalM": 42 } }
+  ] },
+  { "slug": "case-keenum", "facts": [
+    { "type": "Waived", "date": "2014-08-31", "team": "HOU",
+      "quote": "On August 31, 2014, Keenum was waived by the Texans to clear a roster space for recently acquired quarterback Ryan Mallett." },
+    { "type": "Claimed", "date": "2014-09-01", "team": "LAR",
+      "quote": "On September 1, 2014, Keenum was claimed off waivers by the St. Louis Rams." },
+    { "type": "Signed", "date": "2014-12-15", "team": "HOU",
+      "quote": "On December 15, 2014, Keenum was signed off the Rams' practice squad back to the Texans." },
+    { "type": "Traded", "date": "2015-03-11", "team": "LAR",
+      "quote": "On March 11, 2015, Keenum was traded to the Rams for a seventh-round pick in 2016." },
+    { "type": "Signed", "date": "2017-03-31", "team": "MIN",
+      "quote": "On March 31, 2017, Keenum signed a one-year contract with the Minnesota Vikings." },
+    { "type": "Signed", "date": "2018-03-14", "team": "DEN",
+      "quote": "On March 14, 2018, Keenum signed a two-year, $36 million contract with the Denver Broncos.",
+      "terms": { "years": 2, "totalM": 36 } },
+    { "type": "Signed", "date": "2020-03-24", "team": "CLE",
+      "quote": "On March 24, 2020, Keenum signed a three-year, $18 million contract with the Cleveland Browns.",
+      "terms": { "years": 3, "totalM": 18 } },
+    { "type": "Traded", "date": "2022-03-20", "team": "BUF",
+      "quote": "On March 20, 2022, Keenum was traded to the Buffalo Bills for a 2022 seventh-round pick." },
+    { "type": "Signed", "date": "2023-03-17", "team": "HOU",
+      "quote": "On March 17, 2023, Keenum signed with the Texans on a two-year, $6.25 million contract.",
+      "terms": { "years": 2, "totalM": 6.25 } },
+    { "type": "Signed", "date": "2025-04-03", "team": "CHI",
+      "quote": "On April 3, 2025, Keenum signed a one-year deal worth up to $3 million with the Chicago Bears." },
+    { "type": "Contract", "date": "2026-03-09", "team": "CHI",
+      "quote": "On March 9, 2026, Keenum signed a two-year, $5.5 million contract extension with the Bears.",
+      "terms": { "years": 2, "totalM": 5.5 } }
+  ] },
+  { "slug": "brashard-smith", "facts": [] },
+  { "slug": "trey-benson", "facts": [
+    { "type": "Signed", "date": "2024-07-18", "team": "ARI",
+      "quote": "On July 18, 2024, Benson signed his four-year rookie contract with the Cardinals." }
+  ] },
+  { "slug": "deejay-dallas", "facts": [
+    { "type": "Signed", "date": "2020-07-28", "team": "SEA",
+      "quote": "The Seahawks signed Dallas to a four-year, $3.789 million contract, including a $494k signing bonus, on July 28, 2020.",
+      "terms": { "years": 4, "totalM": 3.789 } },
+    { "type": "Signed", "date": "2024-03-14", "team": "ARI",
+      "quote": "On March 14, 2024, Dallas signed a three-year contract with the Arizona Cardinals." },
+    { "type": "Waived", "date": "2025-08-26", "team": "ARI",
+      "quote": "On August 26, 2025, Dallas was waived by the Cardinals as part of final roster cuts." },
+    { "type": "Signed", "date": "2025-08-28", "team": "CAR",
+      "quote": "On August 28, 2025, Dallas was signed to the Carolina Panthers' practice squad." },
+    { "type": "Signed", "date": "2025-12-16", "team": "JAX",
+      "quote": "On December 16, 2025, Dallas was signed by the Jacksonville Jaguars off of the Panthers practice squad." },
+    { "type": "Re-signed", "date": "2026-02-16", "team": "JAX",
+      "quote": "On February 16, 2026, Dallas re-signed with the Jaguars." },
+    { "type": "Signed", "date": "2026-09-02", "team": "MIN",
+      "quote": "On September 2, 2026, Dallas signed to the Minnesota Vikings practice squad." }
+  ] },
+  { "slug": "brandon-aiyuk", "facts": [
+    { "type": "Signed", "date": "2020-06-26", "team": "SF",
+      "quote": "Aiyuk was selected by the San Francisco 49ers in the first round (25th overall) in the 2020 NFL draft, acquired in a trade with the Minnesota Vikings for San Francisco's 31st (Jeff Gladney), 117th (D.J. Wonnum) and 176th (K.J. Osborn) picks. On June 26, 2020, he signed a four-year, $12.5 million contract with a $6.6 million signing bonus.",
+      "terms": { "years": 4, "totalM": 12.5 } },
+    { "type": "Contract", "date": "2024-08-30", "team": "SF",
+      "quote": "On August 30, 2024, Aiyuk signed a four-year, $120 million contract extension with the 49ers.",
+      "terms": { "years": 4, "totalM": 120 } }
+  ] },
+  { "slug": "dawson-knox", "facts": [
+    { "type": "Signed", "date": "2019-06-14", "team": "BUF",
+      "quote": "The Buffalo Bills selected Knox in the third round with the 96th overall pick in the 2019 NFL draft. Knox signed his rookie contract with the team on June 14, 2019." },
+    { "type": "Contract", "date": "2022-09-07", "team": "BUF",
+      "quote": "On September 7, 2022, the Bills signed Knox to a four-year $53.6 million extension, making him one of the top paid tight ends in the league.",
+      "terms": { "years": 4, "totalM": 53.6 } },
+    { "type": "Placed on IR", "date": "2023-10-26", "team": "BUF",
+      "quote": "The Bills drafted tight end Dalton Kincaid in the first round of the 2023 NFL draft to complement Knox, signaling an intent to use more double tight end formations on offense. On October 26, 2023, Knox was placed on injured reserve after undergoing wrist surgery." },
+    { "type": "Re-signed", "date": "2026-03-10", "team": "BUF",
+      "quote": "On March 10, 2026, Knox re-signed with the Bills on a three-year contract." }
+  ] },
+  { "slug": "darius-slayton", "facts": [
+    { "type": "Contract", "date": "2023-03-16", "team": "NYG",
+      "quote": "On March 16, 2023, Slayton signed a two-year contract extension with the Giants." },
+    { "type": "Re-signed", "date": "2025-03-10", "team": "NYG",
+      "quote": "On March 10, 2025, Slayton re-signed with the Giants on a three-year, $36 million contract.",
+      "terms": { "years": 3, "totalM": 36 } },
+    { "type": "Released", "date": "2026-09-07", "team": "NYG",
+      "quote": "On September 7, 2026, Slayton was released by the Giants." },
+    { "type": "Signed", "date": "2026-09-22", "team": "IND",
+      "quote": "On September 22, 2026, Slayton signed with the Indianapolis Colts." }
+  ] },
+  { "slug": "mac-jones", "facts": [
+    { "type": "Signed", "date": "2021-07-06", "team": "NE",
+      "quote": "Jones was also the first quarterback drafted in the first round by the Patriots since Drew Bledsoe in 1993. On July 6, 2021, Jones signed his four-year rookie contract, worth $15.6 million fully guaranteed.",
+      "terms": { "years": 4, "totalM": 15.6 } },
+    { "type": "Traded", "date": "2024-03-14", "team": "JAX",
+      "quote": "On March 14, 2024, Jones was traded to the Jacksonville Jaguars in exchange for a 2024 sixth-round pick (No. 193: Joe Milton)." },
+    { "type": "Signed", "date": "2025-03-14", "team": "SF",
+      "quote": "On March 14, 2025, Jones signed a two-year, $7 million contract with the San Francisco 49ers.",
+      "terms": { "years": 2, "totalM": 7 } }
+  ] }
+]

@@ -1364,6 +1364,7 @@ body.sct-page.is-embed {
 }
 
 .sct[data-sct-tabs="js"] #outlook.is-active ~ [data-sct-faq-for="outlook"],
+.sct[data-sct-tabs="js"] #usage.is-active ~ [data-sct-faq-for="usage"],
 .sct[data-sct-tabs="js"] #stats.is-active ~ [data-sct-faq-for="stats"],
 .sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"],
 .sct[data-sct-tabs="js"] #schedule.is-active ~ [data-sct-faq-for="schedule"] {
@@ -1379,6 +1380,7 @@ body.sct-page.is-embed {
   }
 
   .sct:not([data-sct-tabs="js"]) #outlook:target ~ [data-sct-faq-for="outlook"],
+  .sct:not([data-sct-tabs="js"]) #usage:target ~ [data-sct-faq-for="usage"],
   .sct:not([data-sct-tabs="js"]) #stats:target ~ [data-sct-faq-for="stats"],
   .sct:not([data-sct-tabs="js"]) #depth-chart:target ~ [data-sct-faq-for="depth-chart"],
   .sct:not([data-sct-tabs="js"]) #schedule:target ~ [data-sct-faq-for="schedule"] {
@@ -2272,6 +2274,14 @@ body.sct-page.is-embed {
   color: var(--sc-muted-strong);
   font-size: 0.85rem;
   line-height: 1.6;
+}
+
+/* A link under an answer (the Usage question's "See the full usage report"),
+   kept out of .sct-faq-a so the schema answer and the visible one match. */
+.sct-faq-more {
+  margin: 4px 0 0 20px;
+  padding: 0;
+  font-size: 0.85rem;
 }
 
 /* -------------------------------------------------------- advanced stats */
@@ -9159,6 +9169,124 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
   margin: 24px 0 8px;
 }
 
+/* "Need a decision?": three tools side by side on the navy banner, the hub
+   link under them. */
+.sct .sct-mu-decide {
+  display: block;
+}
+
+.sct .sct-mu-decide-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-mu-decide-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.sct .sct-mu-decide-name {
+  --sc-font: var(--rb-display);
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.sct .sct-mu-decide-text {
+  flex: 1;
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.sct .sct-mu-decide-opt .sct-mu-ps-cta-button {
+  font-size: 15px;
+}
+
+.sct .sct-mu-decide-all {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff !important;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-underline-offset: 3px;
+}
+
+@container (max-width: 620px) {
+  .sct .sct-mu-decide-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Start/sit decisions: one row per pair, the question then the link. */
+.sct .sct-fp-decisions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sct .sct-fp-decisions li {
+  display: flex;
+  margin: 0;
+}
+
+.sct .sct-fp-decision {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--rb-line);
+  border-left: 4px solid var(--rb-gold);
+  border-radius: 10px;
+  background: var(--rb-card);
+  color: var(--rb-ink) !important;
+  text-decoration: none;
+}
+
+.sct .sct-fp-decision:hover {
+  border-color: var(--rb-ink);
+  border-left-color: var(--rb-gold);
+}
+
+.sct .sct-fp-decision-q {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.sct .sct-fp-decision-go {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rb-slate);
+}
+
+/* The Recap strip names its three tools inline, on navy. */
+.sct-rb .sct-rb-redraft-text a {
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--rb-gold);
+  text-underline-offset: 3px;
+}
+
 /* ---- Game flow, retold (mak, 2026-09-30) */
 
 /* The story line: the section's one sentence, a step up from a sub-line. */
@@ -12241,5 +12369,970 @@ a.sct-ex-game:hover .sct-ex-line {
 @media (max-width: 480px) {
   .sct .sct-wp-label {
     display: none;
+  }
+}
+
+/* ------------------------------------------- usage & opportunity report */
+/*
+ * The Usage tab (src/lib/team/usage-render.ts). Light cards on the hub's
+ * surface tokens; numbers in a condensed display face set through `--sc-font`
+ * (the theme armour pins every element to that token, so a plain font-family
+ * would lose — see .sct-sbh); semantic colours as tokens below. The team's own
+ * colours only reach the data: bar segments (inline, computed server-side so
+ * ink contrast is known) and the pass map's heat tint.
+ *
+ * Responsive through a container query on the section rather than the window:
+ * on statchasers.com this prints into a WordPress column. No entrance motion;
+ * the only hover effect is a bar segment's brightness.
+ */
+
+/* Theme armour for the report, measured 2026-09-30 in the Divi sim: Divi's
+   `.entry-content ul` / `#left-area ul` (padding 0 0 23px 1em, line-height
+   26px) outrank the hub's one-class element reset, `p:last-of-type` zeroed
+   declared padding, and `h1-h6 { line-height: 1em }` reached the sub-heads.
+   So, as with the tables, every .sct-us rule carries the id-weight prefix,
+   and this reset at the same weight comes FIRST so every declared value
+   below still wins on source order. tests/table-armour.test.mjs keeps new
+   rules prefixed. */
+:is(.sct, #sct-table-armour) .sct-us :where(p, ul, ol, li, h3, h4) {
+  padding: 0;
+  line-height: inherit;
+}
+
+/* The FAQ tail's answers keep the shared .sct-faq-a line-height; only
+   Divi's paragraph padding is taken back here. */
+:is(.sct, #sct-table-armour) :where([data-sct-faq-for="usage"]) :where(p) {
+  padding: 0;
+}
+:is(.sct, #sct-table-armour) .sct-us {
+  --us-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --us-green: #15803d;
+  --us-green-soft: #dcfce7;
+  --us-red: #b91c1c;
+  --us-red-soft: #fee2e2;
+  --us-amber: #b45309;
+  --us-amber-soft: #fef3c7;
+  --us-blue: #1d4e8c;
+  --us-blue-soft: #dbeafe;
+  --us-gold: var(--sc-gold);
+  --us-gold-soft: #fbf3d5;
+  --us-radius: 14px;
+  container-type: inline-size;
+  container-name: usage;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-num {
+  --sc-font: var(--us-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-num.is-big {
+  font-size: 2.1rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-num.is-mid {
+  font-size: 1.45rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 5px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  background: var(--us-green-soft);
+  color: var(--us-green);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-intro {
+  margin: 12px 0 22px;
+  padding: 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.95rem;
+}
+
+/* The Target Tree, the Backfield Split and the pass map sit on the page, not
+   in a box (mak, 2026-09-30): same content and spacing between blocks, no
+   frame. The class stays as the section grouper the tests select. */
+:is(.sct, #sct-table-armour) .sct-us-card {
+  margin: 0 0 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us .sct-us-h3 {
+  margin: 0 0 2px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-us .sct-us-h4 {
+  margin: 0 0 10px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sub {
+  margin: 0 0 14px;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 0.86rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-label {
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-ink);
+  font-size: 0.9rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-fine {
+  margin: 8px 0 0;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+}
+
+/* The environment strip: five equal cards, two across on a narrow column. */
+:is(.sct, #sct-table-armour) .sct-us-env {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-envcard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--us-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-rank {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-rank.is-good {
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-rank.is-context {
+  color: var(--us-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-envnote {
+  color: var(--sc-muted-strong);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* Stacked bars: the Target Tree and the backfield's weighted opportunities. */
+:is(.sct, #sct-table-armour) .sct-us-bar {
+  display: flex;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-seg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 2px solid var(--sc-surface);
+  transition: filter 0.15s ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-seg:last-child {
+  border-right: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-seg:hover {
+  filter: brightness(1.12);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-seg-pct {
+  --sc-font: var(--us-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-seg-name {
+  position: absolute;
+  bottom: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  opacity: 0.9;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sc-ink);
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key.is-def {
+  flex-basis: 100%;
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-val {
+  color: var(--sc-muted);
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* The situational grid: a table in divs, owner in green. */
+:is(.sct, #sct-table-armour) .sct-us-grid {
+  display: grid;
+  gap: 2px;
+  margin: 18px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-grow {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.3fr) repeat(var(--us-cols, 3), minmax(0, 1fr));
+  gap: 12px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  font-size: 0.85rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-grow.is-head {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gsit {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gn {
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gcell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gbar {
+  flex: 1 1 auto;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gbar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--us-blue);
+  opacity: 0.55;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gval {
+  --sc-font: var(--us-display);
+  min-width: 3ch;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gcell.is-owner .sct-us-gbar > span {
+  background: var(--us-green);
+  opacity: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gcell.is-owner .sct-us-gval {
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface-soft);
+  font-size: 0.8rem;
+  color: var(--sc-muted-strong);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-chip .sct-us-num {
+  color: var(--sc-navy);
+  font-size: 1.4rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-takeaways {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-takeaway {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--sc-border);
+  border-left: 4px solid var(--us-gold);
+  border-radius: 10px;
+  background: var(--sc-surface-soft);
+  font-size: 0.88rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-takeaway strong {
+  color: var(--sc-navy);
+}
+
+/* Run direction, below a dashed rule inside the backfield card. */
+:is(.sct, #sct-table-armour) .sct-us-run {
+  margin: 20px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px dashed var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-line {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-line li {
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gaps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gap,
+:is(.sct, #sct-table-armour) .sct-us-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 6px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  background: var(--sc-surface-soft);
+  text-align: center;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gap-att,
+:is(.sct, #sct-table-armour) .sct-us-zone-ypa {
+  color: var(--sc-muted-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gap.is-best,
+:is(.sct, #sct-table-armour) .sct-us-zone.is-best {
+  border-color: var(--us-gold);
+  background: var(--us-gold-soft);
+  box-shadow: inset 0 0 0 2px var(--us-gold);
+}
+
+/* The pass-location field. */
+:is(.sct, #sct-table-armour) .sct-us-zones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-los {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-los::before,
+:is(.sct, #sct-table-armour) .sct-us-los::after {
+  content: "";
+  flex: 1 1 auto;
+  border-top: 2px dashed var(--sc-border);
+}
+
+/* The player table. Every rule carries the id-weight prefix the other hub
+   tables do — see the armour note above .sct-hist. */
+:is(.sct, #sct-table-armour) .sct-us-scroll {
+  margin: 0 0 14px;
+  overflow-x: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--us-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-scroll:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-us-table:not(.variations) {
+  width: 100%;
+  min-width: 920px;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table :where(th, td) {
+  padding: 12px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  color: var(--sc-ink);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table thead th {
+  padding: 10px 12px;
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted) !important;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table td.is-toggle {
+  width: 44px;
+  padding-right: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table th.is-player {
+  min-width: 190px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-detail > td {
+  padding: 16px 18px 18px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--sc-border);
+  border-radius: 8px;
+  background: var(--sc-surface);
+  color: var(--sc-navy);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-toggle:hover {
+  border-color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-toggle:focus-visible {
+  outline: 2px solid var(--sc-navy);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-toggle[aria-expanded="true"] {
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+/* No script: every profile shows and the buttons, which could do nothing, go. */
+:is(.sct, #sct-table-armour):not([data-sct-usage="js"]) .sct-us-toggle {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-table tr.sct-us-detail[hidden]:where(.sct:not([data-sct-usage="js"]) *) {
+  display: table-row;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-name {
+  display: block;
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-role,
+:is(.sct, #sct-table-armour) .sct-us-lrank,
+:is(.sct, #sct-table-armour) .sct-us-cap {
+  display: block;
+  margin-top: 2px;
+  color: var(--sc-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-lrank {
+  color: var(--us-blue);
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gauge {
+  position: relative;
+  display: block;
+  width: 120px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: 4px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gauge-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--us-gold), var(--us-green));
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gauge.is-plain .sct-us-gauge-fill {
+  background: var(--us-blue);
+  opacity: 0.55;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-gauge-mark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 13px;
+  background: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-share {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-delta {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-delta.is-up {
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-delta.is-down {
+  color: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-delta.is-flat {
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 30px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark-bar {
+  width: 7px;
+  border-radius: 2px 2px 0 0;
+  background: var(--us-blue);
+  opacity: 0.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark-bar.is-last {
+  opacity: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark-bar.is-dnp {
+  background: var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark.is-up .sct-us-spark-bar:not(.is-dnp) {
+  background: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-spark.is-down .sct-us-spark-bar:not(.is-dnp) {
+  background: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-up {
+  color: var(--us-green);
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier.is-set {
+  background: var(--us-green-soft);
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier.is-solid {
+  background: var(--us-blue-soft);
+  color: var(--us-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier.is-volatile {
+  background: var(--us-red-soft);
+  color: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier.is-stash {
+  background: var(--us-amber-soft);
+  color: var(--us-amber);
+}
+
+/* The advanced profile inside a detail row. */
+:is(.sct, #sct-table-armour) .sct-us-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 18px;
+  margin: 0 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-metric-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-metric-label {
+  color: var(--sc-muted-strong);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-metric .sct-us-num {
+  font-size: 1.15rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pbar {
+  display: block;
+  height: 5px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pbar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--us-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pbar.is-hot > span {
+  background: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pbar.is-cold > span {
+  background: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pnote {
+  margin: 0;
+  padding: 0;
+  font-size: 0.86rem;
+  white-space: normal;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-pnote strong {
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0 0 22px;
+  color: var(--sc-muted-strong);
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-legend li {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Signal cards. */
+:is(.sct, #sct-table-armour) .sct-us-signals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  border: 1px solid var(--sc-border);
+  border-top: 4px solid var(--us-blue);
+  border-radius: var(--us-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-buy {
+  border-top-color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-sell {
+  border-top-color: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-watch {
+  border-top-color: var(--us-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-kind {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-buy .sct-us-kind {
+  color: var(--us-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-sell .sct-us-kind {
+  color: var(--us-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal.is-watch .sct-us-kind {
+  color: var(--us-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal-name {
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-signal-body {
+  flex: 1 1 auto;
+  margin: 6px 0 12px;
+  padding: 0;
+  font-size: 0.86rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-proof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 0 0;
+  border-top: 1px dashed var(--sc-border);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-proof li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--sc-muted);
+  font-size: 0.74rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-proof .sct-us-num {
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-close {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-close .sct-textlink {
+  display: inline;
+  font-size: inherit;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-source {
+  margin: 0;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+}
+
+@container usage (max-width: 860px) {
+  :is(.sct, #sct-table-armour) .sct-us-env {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-signals,
+  :is(.sct, #sct-table-armour) .sct-us-takeaways {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container usage (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-us-seg-name {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-seg-pct {
+    font-size: 0.85rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-num.is-big {
+    font-size: 1.7rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-gaps {
+    gap: 4px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-gap,
+  :is(.sct, #sct-table-armour) .sct-us-zone {
+    padding: 10px 2px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-gap .sct-us-label,
+  :is(.sct, #sct-table-armour) .sct-us-zone .sct-us-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-grow {
+    grid-template-columns: minmax(96px, 1fr) repeat(var(--us-cols, 3), minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-gbar {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-us-gval {
+    text-align: left;
   }
 }

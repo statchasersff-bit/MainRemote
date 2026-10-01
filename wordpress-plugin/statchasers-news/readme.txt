@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.18
+Stable tag: 1.10.20
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings and the fantasy football strength of schedule into WordPress pages.
@@ -19,6 +19,12 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.20 =
+* Team hubs get a seventh section address, /nfl/teams/<team>/usage/ — the Usage & Opportunity Report (approved): its own H1 ("<Team> Usage & Opportunity Report <season>"), title ("<Team> Target Share & Snap Counts <season>: Usage Report"), meta description, breadcrumb and sitemap entry, mirroring the API. The team rewrite now remembers its rule signature, so this upgrade flushes permalinks by itself. Needs the matching API deploy.
+
+= 1.10.19 =
+* Team hubs load Barlow Condensed (the matchup pages' face, same handle and URL) for the new Usage & Opportunity Report's numbers. The report itself ships in the API's hub fragment; this release only adds the font. Without it the numbers fall back to Arial Narrow.
 
 = 1.10.18 =
 * New shortcode: [statchasers_strength_of_schedule], the fantasy football strength of schedule, ported from the standalone Strength-of-Schedule-SOS app. That app's own plugin ([statchasers_sos]) shipped a June data snapshot inside itself and drew the board in a Shadow DOM over a server-rendered copy; now the API computes the board from the live FPA table and the season's schedule and the shortcode prints it, like the other tools. Team SOS and Player SOS, QB/RB/WR/TE, PPR/Half-PPR/Standard: every weekly opponent, aFPA and rank is in the page's HTML. The view is shareable as ?tab=&pos=&scoring= on the page, read back only on the page that mounts the board and only from those lists; the canonical stays the bare page. The fragment carries the page's title, H1 and meta description (approved), applied through Rank Math and core; no schema node is added.

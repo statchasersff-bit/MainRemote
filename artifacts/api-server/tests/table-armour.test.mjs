@@ -94,11 +94,21 @@ describe("whole table families are lifted, so no rule is left behind", () => {
   });
 
   test("every team.css selector naming a table carries the id-weight prefix", () => {
-    const roots = /\.sct-(?:hist|mu-linescore|mu-table|mu-ps-table|rb-table)\b(?!-)/;
+    const roots = /\.sct-(?:hist|mu-linescore|mu-table|mu-ps-table|rb-table|us-table)\b(?!-)/;
     const loose = selectors(read("team.css")).filter(
       (s) => roots.test(s) && !s.startsWith(":is(.sct, #sct-table-armour) "),
     );
     assert.deepEqual(loose, [], "these lose to Divi's table rules on an embedded page");
+  });
+
+  test("every team.css selector in the Usage report carries the id-weight prefix", () => {
+    // Divi's `.entry-content ul`, `p:last-of-type` and heading rules outrank a
+    // one-class rule; measured in the Divi sim 2026-09-30. The family is lifted
+    // whole, so its rules still rank against each other as written.
+    const loose = selectors(read("team.css")).filter(
+      (s) => /\.sct-us\b/.test(s) && !s.startsWith(":is(.sct, #sct-table-armour)"),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's element rules on an embedded page");
   });
 
   test("every sos.css selector naming its table, a list or a link carries the id-weight prefix", () => {

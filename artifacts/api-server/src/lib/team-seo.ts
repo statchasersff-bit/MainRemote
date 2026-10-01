@@ -63,6 +63,16 @@ function sectionMeta(
     };
   }
 
+  // Approved by mak 2026-09-30 with the Usage tab's own address.
+  if (section === "usage") {
+    return {
+      title: `${name} Target Share & Snap Counts ${season}: Usage Report`,
+      description:
+        `${name} target share, snap share and red-zone touches for ${season}, updated every ` +
+        `Tuesday: the ${nick} target tree, backfield split, pass map and buy-low / sell-high signals.`,
+    };
+  }
+
   if (section === "stats") {
     return {
       title: `${name} Stats ${season}: Offense, Defense & NFL Rankings`,

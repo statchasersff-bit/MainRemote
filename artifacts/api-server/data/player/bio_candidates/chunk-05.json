@@ -1,0 +1,127 @@
+[
+  { "slug": "brian-thomas", "facts": [] },
+  { "slug": "bryce-young", "facts": [
+    { "type": "Signed", "date": "2023-07-21", "team": "CAR",
+      "quote": "The Panthers had acquired the pick from the Chicago Bears in a trade that included the ninth overall pick, wide receiver D. J. Moore, and additional draft selections. He signed a four-year, fully guaranteed rookie contract worth $37.9 million on July 21, 2023.",
+      "terms": { "years": 4, "totalM": 37.9 } }
+  ] },
+  { "slug": "courtland-sutton", "facts": [
+    { "type": "Contract", "date": "2021-11-22", "team": "DEN",
+      "quote": "On November 22, 2021, Sutton signed a four-year $60.8 million contract extension with the Broncos through the 2025 season.",
+      "terms": { "years": 4, "totalM": 60.8 } },
+    { "type": "Contract", "date": "2025-07-28", "team": "DEN",
+      "quote": "On July 28, 2025, Sutton signed a four-year, $92 million ($41 million guaranteed) contract extension with the Broncos.",
+      "terms": { "years": 4, "totalM": 92 } }
+  ] },
+  { "slug": "justin-herbert", "facts": [] },
+  { "slug": "blake-corum", "facts": [] },
+  { "slug": "jake-ferguson", "facts": [
+    { "type": "Contract", "date": "2025-07-27", "team": "DAL",
+      "quote": "On July 27, 2025, Ferguson signed a four-year, $52 million contract extension with the Cowboys, keeping him under contract through the 2029 season.",
+      "terms": { "years": 4, "totalM": 52 } }
+  ] },
+  { "slug": "chris-godwin", "facts": [
+    { "type": "Contract", "date": "2025-03-11", "team": "TB",
+      "quote": "On March 11, 2025, Godwin signed a three-year, $66 million extension with the Buccaneers.",
+      "terms": { "years": 3, "totalM": 66 } }
+  ] },
+  { "slug": "kyle-monangai", "facts": [] },
+  { "slug": "jk-dobbins", "facts": [
+    { "type": "Signed", "date": "2024-04-18", "team": "LAC",
+      "quote": "On April 18, 2024, Dobbins signed a one-year contract with the Los Angeles Chargers." },
+    { "type": "Signed", "date": "2025-06-11", "team": "DEN",
+      "quote": "On June 11, 2025, Dobbins signed a one-year, $5.25 million contract with the Denver Broncos.",
+      "terms": { "years": 1, "totalM": 5.25 } },
+    { "type": "Contract", "date": "2026-03-10", "team": "DEN",
+      "quote": "On March 10, 2026, Dobbins signed a two-year, $16 million contract extension with the Broncos.",
+      "terms": { "years": 2, "totalM": 16 } }
+  ] },
+  { "slug": "rico-dowdle", "facts": [
+    { "type": "Signed", "date": "2024-03-18", "team": "DAL",
+      "quote": "On March 18, 2024, Dowdle signed a one-year contract with the Cowboys." },
+    { "type": "Signed", "date": "2025-03-12", "team": "CAR",
+      "quote": "On March 12, 2025, Dowdle signed a one-year, $6.25 million contract with the Carolina Panthers, to be the backup behind Chuba Hubbard and replace Miles Sanders.",
+      "terms": { "years": 1, "totalM": 6.25 } },
+    { "type": "Signed", "date": "2026-03-13", "team": "PIT",
+      "quote": "On March 13, 2026, Dowdle signed a two-year, $12.25 million contract with the Pittsburgh Steelers.",
+      "terms": { "years": 2, "totalM": 12.25 } }
+  ] },
+  { "slug": "jacory-croskey-merritt", "facts": [
+    { "type": "Signed", "date": "2025-05-09", "team": "WAS",
+      "quote": "Croskey-Merritt was selected by the Washington Commanders in the seventh round (245th overall) of the 2025 NFL draft. He signed his four-year rookie contract on May 9, 2025." }
+  ] },
+  { "slug": "jayden-daniels", "facts": [] },
+  { "slug": "denzel-boston", "facts": [] },
+  { "slug": "cameron-dicker", "facts": [
+    { "type": "Signed", "date": "2022-05-09", "team": "LAR",
+      "quote": "After going undrafted, Dicker signed with the Los Angeles Rams as an undrafted free agent on May 9, 2022." },
+    { "type": "Signed", "date": "2022-08-26", "team": "BAL",
+      "quote": "On August 26, 2022, Dicker was signed by the Baltimore Ravens as a punter and kicker; however, he was waived two days later as part of final roster cuts." },
+    { "type": "Signed", "date": "2022-10-04", "team": "PHI",
+      "quote": "On October 4, 2022, Dicker was signed by the Philadelphia Eagles to their practice squad." },
+    { "type": "Signed", "date": "2022-11-03", "team": "LAC",
+      "quote": "On November 3, 2022, Dicker was signed to the Los Angeles Chargers practice squad following an injury to kicker Taylor Bertolet who was filling in for an injured Dustin Hopkins." },
+    { "type": "Contract", "date": "2024-08-30", "team": "LAC",
+      "quote": "On August 30, 2024, Dicker signed a four-year, $22.04 million contract extension with the Chargers.",
+      "terms": { "years": 4, "totalM": 22.04 } }
+  ] },
+  { "slug": "marvin-harrison", "facts": [
+    { "type": "Signed", "date": "2024-05-23", "team": "ARI",
+      "quote": "Harrison was selected by the Arizona Cardinals fourth overall in the 2024 NFL draft. He signed his four-year rookie contract, worth $35.3 million fully guaranteed, on May 23, 2024.",
+      "terms": { "years": 4, "totalM": 35.3 } }
+  ] },
+  { "slug": "devaughn-vele", "facts": [
+    { "type": "Traded", "date": "2025-08-20", "team": "NO",
+      "quote": "On August 20, 2025, the Broncos traded Vele to the New Orleans Saints in exchange for a 2026 fourth-round pick (No. 108: Jonah Coleman) and a 2027 seventh-round pick." }
+  ] },
+  { "slug": "dalton-schultz", "facts": [
+    { "type": "Signed", "date": "2023-03-24", "team": "HOU",
+      "quote": "On March 24, 2023, Schultz signed a one-year contract as a free agent with the Houston Texans." },
+    { "type": "Contract", "date": "2024-03-08", "team": "HOU",
+      "quote": "On March 8, 2024, Schultz signed a three-year, $36 million contract extension with the Texans.",
+      "terms": { "years": 3, "totalM": 36 } },
+    { "type": "Contract", "date": "2026-03-10", "team": "HOU",
+      "quote": "On March 10, 2026, Schultz agreed to a one-year, $12.6 million contract extension with Houston.",
+      "terms": { "years": 1, "totalM": 12.6 } }
+  ] },
+  { "slug": "jordan-addison", "facts": [] },
+  { "slug": "jake-bates", "facts": [
+    { "type": "Signed", "date": "2023-07-31", "team": "HOU",
+      "quote": "After going undrafted in the 2023 NFL draft, Bates signed with the Houston Texans on July 31, 2023." },
+    { "type": "Released", "date": "2023-08-12", "team": "HOU",
+      "quote": "After going undrafted in the 2023 NFL draft, Bates signed with the Houston Texans on July 31, 2023. He was released in training camp on August 12, 2023." },
+    { "type": "Signed", "date": "2024-06-18", "team": "DET",
+      "quote": "On June 18, 2024, Bates signed a two-year contract with the Detroit Lions." },
+    { "type": "Re-signed", "date": "2026-03-25", "team": "DET",
+      "quote": "On March 25, 2026, Bates re-signed with the Lions." }
+  ] },
+  { "slug": "xavier-worthy", "facts": [] },
+  { "slug": "bo-nix", "facts": [] },
+  { "slug": "dallas-goedert", "facts": [
+    { "type": "Signed", "date": "2018-05-09", "team": "PHI",
+      "quote": "On May 9, 2018, the Eagles signed Goedert to a four-year, $5.62 million contract that includes $2.90 million guaranteed and a signing bonus of $2.17 million.",
+      "terms": { "years": 4, "totalM": 5.62 } },
+    { "type": "Contract", "date": "2021-11-19", "team": "PHI",
+      "quote": "On November 19, 2021, Goedert signed a four-year, $57 million extension with the Philadelphia Eagles, with $35 million guaranteed.",
+      "terms": { "years": 4, "totalM": 57 } }
+  ] },
+  { "slug": "michael-pittman", "facts": [
+    { "type": "Traded", "date": "2026-03-13", "team": "PIT",
+      "quote": "On March 13, 2026, the Colts traded Pittman to the Pittsburgh Steelers along with a 2026 seventh-round pick in exchange for a 2026 sixth-round pick; he subsequently agreed to a three-year, $59 million contract extension with Pittsburgh." }
+  ] },
+  { "slug": "jordan-mason", "facts": [
+    { "type": "Traded", "date": "2025-03-18", "team": "MIN",
+      "quote": "On March 18, 2025, the 49ers traded Mason and a 2025 sixth round pick (187th overall) to the Minnesota Vikings for a 2025 fifth round pick (160th overall) and a 2026 sixth round pick." }
+  ] },
+  { "slug": "juwan-johnson", "facts": [
+    { "type": "Signed", "date": "2020-04-27", "team": "NO",
+      "quote": "Johnson signed with the New Orleans Saints as an undrafted free agent following the 2020 NFL draft on April 27, 2020." },
+    { "type": "Waived", "date": "2020-09-05", "team": "NO",
+      "quote": "Johnson signed with the New Orleans Saints as an undrafted free agent following the 2020 NFL draft on April 27, 2020. He was waived during final roster cuts on September 5, 2020, and signed to the team's practice squad the next day." },
+    { "type": "Contract", "date": "2023-03-11", "team": "NO",
+      "quote": "On March 11, 2023, Johnson signed a two-year contract extension with the Saints." },
+    { "type": "Contract", "date": "2025-03-12", "team": "NO",
+      "quote": "On March 12, 2025, Johnson signed a three-year, $30.75 million contract extension with the Saints.",
+      "terms": { "years": 3, "totalM": 30.75 } }
+  ] }
+]

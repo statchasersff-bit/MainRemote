@@ -107,8 +107,20 @@ describe("in season", () => {
 
   test("the expectation panels: ~QB30, QB16, QB17, and no number in the last one", () => {
     const rks = [...doc.querySelectorAll(".scp-ol-ex .scp-ol-rk")].map((r) => r.textContent);
-    assert.deepEqual(rks, ["~QB30", "QB16", "QB17", "Live rank, updated after every game"]);
+    assert.deepEqual(rks, ["~QB30", "QB16", "QB17", "Live rank"]);
+    // Short labels (mak, 2026-10-01): "Preseason", "Through Week 3".
+    assert.deepEqual(
+      [...doc.querySelectorAll(".scp-ol-ex .scp-ol-when")].map((r) => r.textContent),
+      ["Preseason", "2025 final", "Through Week 3", "Rest of season"],
+    );
     assert.equal(doc.querySelectorAll(".scp-ol-arrow[aria-hidden='true']").length, 2);
+  });
+
+  test("the hero: a meta line under the tier, and the chips under a Best fit label", () => {
+    // mak's hero rework of 2026-10-01: rank · PPG · headline stat, no prose.
+    assert.equal(doc.querySelector(".scp-ol-meta").textContent, "QB17 through Week 3 · 16.5 PPG · 34.6 att/game");
+    assert.equal(doc.querySelector(".scp-ol-sum"), null);
+    assert.equal(doc.querySelector(".scp-ol-fithead").textContent, "Best fit");
   });
 
   test("rank strips: N bars from the server, his highlighted, labelled", () => {
@@ -122,13 +134,13 @@ describe("in season", () => {
     assert.equal(doc.querySelector(".scp-ol-drv .scp-ol-val strong").textContent, "34.6");
   });
 
-  test("every Redraft Command link carries ?player= and its data-cta", () => {
+  test("exactly two Redraft Command links: the sidebar card and the risk-foot line", () => {
+    // mak, 2026-10-01: one main CTA plus one subtle bottom CTA. The expect-panel
+    // button and the prose link are gone; a third link reappearing is the bug.
     const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.includes("?player=jacoby-brissett")]);
     for (const [, has] of ctas) assert.ok(has);
-    const names = ctas.map(([c]) => c).filter(Boolean);
-    for (const cta of ["redraft-command-outlook-expect", "redraft-command-outlook-prose", "redraft-command-outlook-sidebar", "redraft-command-outlook-risk"]) {
-      assert.ok(names.includes(cta), cta);
-    }
+    const names = ctas.map(([c]) => c).filter(Boolean).sort();
+    assert.deepEqual(names, ["redraft-command-outlook-risk", "redraft-command-outlook-sidebar"]);
   });
 
   test("the byline dates only the preseason piece, which is archived collapsed", () => {
@@ -141,9 +153,17 @@ describe("in season", () => {
     assert.match(prev.querySelector("summary").textContent, /^Read our preseason outlook \(June 2026\)$/);
   });
 
-  test("every upside and risk bullet carries a number or a name", () => {
-    for (const li of doc.querySelectorAll(".scp-ol-ur li")) {
-      assert.match(li.textContent, /\d|[A-Z][a-z]+ [A-Z]/, li.textContent);
+  test("every upside and risk bullet is a claim with its evidence as subtext", () => {
+    const items = [...doc.querySelectorAll(".scp-ol-ur li")];
+    assert.ok(items.length >= 2);
+    for (const li of items) {
+      // The claim line carries no period; the evidence under it keeps the
+      // number or the name (mak, 2026-10-01).
+      const claim = li.querySelector(".scp-ol-claim");
+      const evid = li.querySelector(".scp-ol-evid");
+      assert.ok(claim && evid, li.textContent);
+      assert.doesNotMatch(claim.textContent, /\.$/);
+      assert.match(evid.textContent, /\d|[A-Z][a-z]+ [A-Z]/, evid.textContent);
     }
   });
 
@@ -174,7 +194,7 @@ describe("edge states", () => {
     for (const chip of doc.querySelectorAll(".scp-ol-fit .scp-ol-chip")) {
       assert.match(chip.textContent, /Bench stash|Waiver wire/);
     }
-    assert.match(doc.querySelector(".scp-ol-card.is-risk li").textContent, /^Injury\./);
+    assert.equal(doc.querySelector(".scp-ol-card.is-risk li .scp-ol-claim").textContent, "Injury");
   });
 
   test("no advanced line: the drivers section is left out, the rest still renders", () => {

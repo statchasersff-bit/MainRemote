@@ -1,0 +1,17 @@
+[
+  { "slug": "aaron-rodgers", "facts": [
+    { "type": "Activated", "date": "2021-11-13", "team": "GB", "yearFrom": "heading", "quote": "Rodgers was activated off the reserve/COVID-19 list on November 13, and returned to play the next day against the Seahawks, a game the Packers won 17–0." },
+    { "type": "Activated", "date": "2023-12-20", "team": "NYJ", "yearFrom": "heading", "quote": "He was activated off injured reserve on December 20, but the Jets announced he would not play again this season after their Week 15 loss to the Dolphins mathematically eliminated them from playoff contention." }
+  ] },
+  { "slug": "joe-flacco", "facts": [
+    { "type": "Signed", "date": "2023-12-14", "team": "CLE", "yearFrom": "heading", "quote": "After reverting to the practice squad, he officially joined the active roster after signing a one-year deal with Cleveland on December 14." }
+  ] },
+  { "slug": "lamar-jackson", "facts": [
+    { "type": "Contract", "date": "2023-04-27", "team": "BAL", "yearFrom": "heading", "terms": { "years": 5, "totalM": 260 }, "quote": "On March 27, Jackson stated publicly via his personal Twitter account that he had requested a trade on March 2, saying the Ravens' front office \"has not been interested in meeting my value\" during negotiations for a long-term contract. The stalemate ended on April 27, when Jackson signed a five-year contract worth $260 million with $185 million guaranteed." }
+  ] },
+  { "slug": "nico-collins", "facts": [
+    { "type": "Contract", "date": "2024-05-29", "team": "HOU", "yearFrom": "heading", "quote": "On May 29, Collins agreed to a three-year contract extension with the Texans, worth a maximum of $75 million, with $52 million guaranteed." },
+    { "type": "Placed on IR", "date": "2024-10-09", "team": "HOU", "yearFrom": "heading", "quote": "On October 9, the Texans placed Collins on injured reserve." },
+    { "type": "Activated", "date": "2024-11-09", "team": "HOU", "yearFrom": "heading", "quote": "On October 9, the Texans placed Collins on injured reserve. He was activated from IR on November 9." }
+  ] }
+]

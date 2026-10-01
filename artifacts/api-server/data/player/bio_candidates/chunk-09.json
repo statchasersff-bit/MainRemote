@@ -1,0 +1,207 @@
+[
+  { "slug": "michael-mayer", "facts": [
+    { "type": "Contract", "date": "2026-09-12", "team": "LV",
+      "quote": "On September 12, 2026, Mayer signed a three-year, $45 million contract extension with the Raiders.",
+      "terms": { "years": 3, "totalM": 45 } }
+  ] },
+  { "slug": "fernando-mendoza", "facts": [] },
+  { "slug": "pat-bryant", "facts": [] },
+  { "slug": "geno-smith", "facts": [
+    { "type": "Signed", "date": "2017-03-28", "team": "NYG",
+      "quote": "On March 28, 2017, Smith signed with the New York Giants." },
+    { "type": "Signed", "date": "2018-04-01", "team": "LAC",
+      "quote": "On April 1, 2018, Smith signed a one-year contract with the Los Angeles Chargers." },
+    { "type": "Signed", "date": "2019-05-15", "team": "SEA",
+      "quote": "Smith signed with the Seattle Seahawks on May 15, 2019." },
+    { "type": "Re-signed", "date": "2020-05-20", "team": "SEA",
+      "quote": "Smith re-signed with the Seahawks on May 20, 2020." },
+    { "type": "Re-signed", "date": "2021-04-22", "team": "SEA",
+      "quote": "Smith re-signed with the Seahawks for a third season on April 22, 2021." },
+    { "type": "Re-signed", "date": "2022-04-19", "team": "SEA",
+      "quote": "The Seahawks re-signed Smith on April 19, 2022, but the NFL disapproved his new contract that same day after conducting the league's mandatory review; the issue was eventually resolved." },
+    { "type": "Re-signed", "date": "2023-03-14", "team": "SEA",
+      "quote": "On March 14, 2023, Smith re-signed with the Seahawks on a three-year, $75 million deal.",
+      "terms": { "years": 3, "totalM": 75 } },
+    { "type": "Traded", "date": "2025-03-13", "team": "LV",
+      "quote": "On March 13, 2025, Smith was traded to the Las Vegas Raiders in exchange for the 92nd overall pick (Jalen Milroe) in the 2025 NFL draft." },
+    { "type": "Traded", "date": "2026-03-11", "team": "NYJ",
+      "quote": "On March 11, 2026, Smith and a seventh-round pick in the 2026 NFL draft were traded to the New York Jets in exchange for a sixth-round pick in the 2026 draft." }
+  ] },
+  { "slug": "mack-hollins", "facts": [
+    { "type": "Waived", "date": "2019-12-03", "team": "PHI",
+      "quote": "On December 3, 2019, Hollins was waived by the Eagles." },
+    { "type": "Claimed", "date": "2019-12-04", "team": "MIA",
+      "quote": "On December 4, 2019, Hollins was claimed off waivers by the Miami Dolphins." },
+    { "type": "Re-signed", "date": "2021-03-23", "team": "MIA",
+      "quote": "Hollins re-signed with the Dolphins on March 23, 2021." },
+    { "type": "Signed", "date": "2022-03-17", "team": "LV",
+      "quote": "On March 17, 2022, Hollins signed with the Raiders." },
+    { "type": "Signed", "date": "2023-03-21", "team": "ATL",
+      "quote": "On March 21, 2023, Hollins signed a one-year contract with the Atlanta Falcons." },
+    { "type": "Signed", "date": "2024-03-14", "team": "BUF",
+      "quote": "On March 14, 2024, Hollins signed a one-year contract with the Buffalo Bills." },
+    { "type": "Signed", "date": "2025-03-14", "team": "NE",
+      "quote": "On March 14, 2025, Hollins signed a two-year contract with the New England Patriots." },
+    { "type": "Placed on IR", "date": "2025-12-27", "team": "NE",
+      "quote": "On March 14, 2025, Hollins signed a two-year contract with the New England Patriots. On December 27, he was placed on injured reserve due to an abdomen injury." }
+  ] },
+  { "slug": "dylan-sampson", "facts": [
+    { "type": "Signed", "date": "2025-05-09", "team": "CLE",
+      "quote": "Sampson was selected in the fourth round, with the 126th overall pick of the 2025 NFL draft by the Cleveland Browns. He signed a contract with the team on May 9, 2025." }
+  ] },
+  { "slug": "jerry-jeudy", "facts": [
+    { "type": "Traded", "date": "2024-03-13", "team": "CLE",
+      "quote": "On March 13, 2024, the Broncos traded Jeudy to the Cleveland Browns for 2024 fifth and sixth-round picks." },
+    { "type": "Contract", "date": "2024-03-19", "team": "CLE",
+      "quote": "On March 13, 2024, the Broncos traded Jeudy to the Cleveland Browns for 2024 fifth and sixth-round picks. On March 19, Jeudy signed a three-year, $58 million contract extension with the Browns, with $41 million guaranteed.",
+      "terms": { "years": 3, "totalM": 58 } }
+  ] },
+  { "slug": "omar-cooper", "facts": [] },
+  { "slug": "mike-gesicki", "facts": [
+    { "type": "Signed", "date": "2018-06-18", "team": "MIA",
+      "quote": "On June 18, 2018, the Miami Dolphins signed Gesicki to a four-year, $6.61 million contract that includes $3.66 million guaranteed and a signing bonus of $2.88 million.",
+      "terms": { "years": 4, "totalM": 6.61 } },
+    { "type": "Signed", "date": "2023-03-20", "team": "NE",
+      "quote": "On March 20, 2023, Gesicki signed with the New England Patriots on a one-year deal worth up to $9 million.",
+      "terms": { "years": 1, "totalM": 9 } },
+    { "type": "Signed", "date": "2024-03-14", "team": "CIN",
+      "quote": "On March 14, 2024, Gesicki signed a one-year $2.5 million contract with the Cincinnati Bengals.",
+      "terms": { "years": 1, "totalM": 2.5 } },
+    { "type": "Re-signed", "date": "2025-03-08", "team": "CIN",
+      "quote": "On March 8, 2025, Gesicki re-signed with Cincinnati on a three-year, $25.5 million contract.",
+      "terms": { "years": 3, "totalM": 25.5 } },
+    { "type": "Placed on IR", "date": "2025-10-15", "team": "CIN",
+      "quote": "On March 8, 2025, Gesicki re-signed with Cincinnati on a three-year, $25.5 million contract. On October 15, Gesicki was placed on injured reserve due to a pectoral injury he suffered in Week 6 against the Green Bay Packers." }
+  ] },
+  { "slug": "jauan-jennings", "facts": [
+    { "type": "Contract", "date": "2024-05-29", "team": "SF",
+      "quote": "On March 11, 2024, the 49ers placed a tender on Jennings. On May 29, he signed a two-year, $15.4 million contract extension with the 49ers.",
+      "terms": { "years": 2, "totalM": 15.4 } },
+    { "type": "Signed", "date": "2026-05-07", "team": "MIN",
+      "quote": "On May 7, 2026, Jennings signed a one-year contract worth up to $13 million with the Minnesota Vikings.",
+      "terms": { "years": 1, "totalM": 13 } }
+  ] },
+  { "slug": "chig-okonkwo", "facts": [
+    { "type": "Signed", "date": "2026-03-12", "team": "WAS",
+      "quote": "On March 12, 2026, Okonkwo signed a three-year, $30 million contract with the Washington Commanders.",
+      "terms": { "years": 3, "totalM": 30 } }
+  ] },
+  { "slug": "jacoby-brissett", "facts": [
+    { "type": "Signed", "date": "2016-06-16", "team": "NE",
+      "quote": "On June 16, 2016, Brissett signed a four-year rookie contract with the Patriots, a contract he negotiated on his own." },
+    { "type": "Placed on IR", "date": "2016-10-07", "team": "NE",
+      "quote": "Because the Patriots needed a roster spot for Tom Brady after Brady's Deflategate suspension had ended, Brissett was placed on injured reserve on October 7, 2016, after having thumb surgery." },
+    { "type": "Activated", "date": "2016-12-21", "team": "NE",
+      "quote": "The Patriots activated Brissett from the injured reserve list; he began practicing on November 30, 2016, and was activated to the 53-man roster on December 21, 2016." },
+    { "type": "Traded", "date": "2017-09-02", "team": "IND",
+      "quote": "On September 2, 2017, Brissett was traded to the Indianapolis Colts for wide receiver Phillip Dorsett; the Colts had needed another quarterback after Andrew Luck suffered an injury." },
+    { "type": "Contract", "date": "2019-09-02", "team": "IND",
+      "quote": "On September 2, 2019, Brissett signed a two-year, $30 million contract with the Colts, with $20 million guaranteed, a contract he again negotiated himself because he doesn't \"like people to BS on his behalf.\"",
+      "terms": { "years": 2, "totalM": 30 } },
+    { "type": "Signed", "date": "2021-03-18", "team": "MIA",
+      "quote": "On March 18, 2021, Brissett signed a one-year, $5 million contract with the Dolphins, reuniting Brissett with Dolphins head coach Brian Flores, who served as the Patriots linebacker coach during Brissett's rookie season with the team.",
+      "terms": { "years": 1, "totalM": 5 } },
+    { "type": "Signed", "date": "2022-03-25", "team": "CLE",
+      "quote": "On March 25, 2022, Brissett signed a one-year, $4.65 million contract with the Browns.",
+      "terms": { "years": 1, "totalM": 4.65 } },
+    { "type": "Signed", "date": "2023-03-16", "team": "WAS",
+      "quote": "On March 16, 2023, Brissett signed a one-year, $10 million contract with the Washington Commanders.",
+      "terms": { "years": 1, "totalM": 10 } },
+    { "type": "Signed", "date": "2024-03-15", "team": "NE",
+      "quote": "On March 15, 2024, Brissett signed a one-year, $8 million deal to return to the New England Patriots.",
+      "terms": { "years": 1, "totalM": 8 } },
+    { "type": "Signed", "date": "2025-03-14", "team": "ARI",
+      "quote": "On March 14, 2025, Brissett signed a two-year, $12.5 million contract with the Arizona Cardinals.",
+      "terms": { "years": 2, "totalM": 12.5 } }
+  ] },
+  { "slug": "aaron-rodgers", "facts": [
+    { "type": "Contract", "date": "2013-04-26", "team": "GB",
+      "quote": "On April 26, 2013, the Packers and Rodgers agreed to a 5-year, $110 million contract extension making him the highest paid player in NFL history.",
+      "terms": { "years": 5, "totalM": 110 } },
+    { "type": "Contract", "date": "2018-08-29", "team": "GB",
+      "quote": "On August 29, 2018, Rodgers signed a four-year extension with the Packers worth $134 million featuring a $57.5 million signing bonus.",
+      "terms": { "years": 4, "totalM": 134 } },
+    { "type": "Traded", "date": "2023-04-26", "team": "NYJ",
+      "quote": "On April 26, 2023, Rodgers was traded to the Jets, along with the Packers' first and fifth-round selections in the 2023 NFL draft, in exchange for the Jets' first, second (via Cleveland) and sixth-round selections in the 2023 draft and a conditional second-round selection (which would have converted to a first if Rodgers played 65% of the offensive snaps in 2023, but it did not happen) in the 2024 NFL draft." },
+    { "type": "Released", "date": "2025-03-12", "team": "NYJ",
+      "quote": "The Jets therefore kept him on the roster until March 12, the start of the 2025 NFL year, when they officially released him." }
+  ] },
+  { "slug": "kaleb-johnson", "facts": [
+    { "type": "Traded", "date": "2026-08-30", "team": "GB",
+      "quote": "On August 30, 2026, the Steelers traded Johnson to the Green Bay Packers for a 2028 sixth-round pick." }
+  ] },
+  { "slug": "deshaun-watson", "facts": [
+    { "type": "Signed", "date": "2017-05-12", "team": "HOU",
+      "quote": "On May 12, 2017, the Texans signed Watson to a four-year, $13.84 million contract featuring an $8.21 million signing bonus.",
+      "terms": { "years": 4, "totalM": 13.84 } },
+    { "type": "Contract", "date": "2020-09-05", "team": "HOU",
+      "quote": "On April 28, 2020, the Texans exercised the fifth-year option on Watson's contract. On September 5, Watson signed a four-year, $177.5 million contract extension with $111 million in guarantees, keeping him under contract through the 2025 season.",
+      "terms": { "years": 4, "totalM": 177.5 } },
+    { "type": "Traded", "date": "2022-03-18", "team": "CLE",
+      "quote": "On March 18, 2022, Watson and the Texans' 2024 sixth-round draft pick were traded to the Browns in exchange for the Browns' first-round draft picks in 2022, 2023, and 2024, as well as the Browns' third-round pick in 2023 and fourth-round picks in 2022 and 2024." }
+  ] },
+  { "slug": "chris-brooks", "facts": [
+    { "type": "Signed", "date": "2023-04-29", "team": "MIA",
+      "quote": "On April 29, 2023, Brooks signed with the Miami Dolphins as an undrafted free agent." },
+    { "type": "Released", "date": "2024-09-02", "team": "MIA",
+      "quote": "Brooks was released by the Dolphins on September 2, 2024, with an injury settlement." },
+    { "type": "Signed", "date": "2024-09-03", "team": "GB",
+      "quote": "Brooks was signed by the Green Bay Packers to their practice squad on September 3, 2024." },
+    { "type": "Re-signed", "date": "2026-03-04", "team": "GB",
+      "quote": "On March 4, 2026, Brooks re-signed with the Packers." }
+  ] },
+  { "slug": "tyler-bass", "facts": [
+    { "type": "Signed", "date": "2020-05-07", "team": "BUF",
+      "quote": "Bass signed a four-year, $3.475 million contract with the Bills on May 7, 2020.",
+      "terms": { "years": 4, "totalM": 3.475 } },
+    { "type": "Contract", "date": "2023-04-20", "team": "BUF",
+      "quote": "On April 20, 2023, Bass signed a four-year, $21 million extension with the Bills.",
+      "terms": { "years": 4, "totalM": 21 } }
+  ] },
+  { "slug": "drew-lock", "facts": [
+    { "type": "Placed on IR", "date": "2019-09-01", "team": "DEN",
+      "quote": "Lock was selected by the Denver Broncos in the second round (42nd overall) in the 2019 NFL draft. He suffered a thumb injury in the preseason and was placed on injured reserve on September 1, 2019." },
+    { "type": "Activated", "date": "2019-11-30", "team": "DEN",
+      "quote": "On November 30, 2019, the Broncos activated Lock off of injured reserve and named him the starter for the Week 13 matchup the next day against the Los Angeles Chargers." },
+    { "type": "Traded", "date": "2022-03-16", "team": "SEA",
+      "quote": "On March 16, 2022, Lock was traded to the Seattle Seahawks with two first-round picks, two second-round picks, a fifth-round pick, defensive lineman Shelby Harris, and tight end Noah Fant in exchange for quarterback Russell Wilson." },
+    { "type": "Re-signed", "date": "2023-03-20", "team": "SEA",
+      "quote": "Lock re-signed with the Seahawks on March 20, 2023." },
+    { "type": "Signed", "date": "2024-03-14", "team": "NYG",
+      "quote": "On March 14, 2024, Lock signed with the New York Giants on a one-year, $5 million deal.",
+      "terms": { "years": 1, "totalM": 5 } },
+    { "type": "Signed", "date": "2025-04-15", "team": "SEA",
+      "quote": "On April 15, 2025, Lock signed a two-year, $5 million deal to return to the Seahawks as the backup for Sam Darnold.",
+      "terms": { "years": 2, "totalM": 5 } }
+  ] },
+  { "slug": "jalen-mcmillan", "facts": [
+    { "type": "Placed on IR", "date": "2025-08-26", "team": "TB",
+      "quote": "In Tampa Bay's second preseason game against the Pittsburgh Steelers, McMillan landed awkwardly after colliding with Daryl Porter Jr. while attempting to make a catch. He was placed on injured reserve prior to the start of the regular season on August 26, 2025." }
+  ] },
+  { "slug": "cyrus-allen", "facts": [] },
+  { "slug": "cade-otton", "facts": [
+    { "type": "Re-signed", "date": "2026-03-12", "team": "TB",
+      "quote": "On March 12, 2026, Otton re-signed with the Buccaneers on a three-year, $30 million contract.",
+      "terms": { "years": 3, "totalM": 30 } }
+  ] },
+  { "slug": "michael-penix", "facts": [] },
+  { "slug": "george-holani", "facts": [
+    { "type": "Signed", "date": "2024-05-03", "team": "SEA",
+      "quote": "Holani signed with the Seattle Seahawks as an undrafted free agent on May 3, 2024." },
+    { "type": "Waived", "date": "2024-08-27", "team": "SEA",
+      "quote": "Holani signed with the Seattle Seahawks as an undrafted free agent on May 3, 2024. He was waived on August 27, and re-signed to the practice squad." }
+  ] },
+  { "slug": "justice-hill", "facts": [
+    { "type": "Contract", "date": "2023-03-17", "team": "BAL",
+      "quote": "On March 17, 2023, Hill signed a two-year contract extension with the Ravens." },
+    { "type": "Contract", "date": "2024-09-20", "team": "BAL",
+      "quote": "On September 20, 2024, Hill agreed to a new two–year, $6 million contract extension with Baltimore.",
+      "terms": { "years": 2, "totalM": 6 } }
+  ] },
+  { "slug": "ryan-flournoy", "facts": [
+    { "type": "Waived", "date": "2025-08-28", "team": "DAL",
+      "quote": "Flournoy was waived by the Cowboys on August 28, 2025, and re-signed to the practice squad." },
+    { "type": "Contract", "date": "2026-09-11", "team": "DAL",
+      "quote": "On September 11, 2026, Flournoy signed a one-year contract extension with the Cowboys through the 2027 season." }
+  ] }
+]

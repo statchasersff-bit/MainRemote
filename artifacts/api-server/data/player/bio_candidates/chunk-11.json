@@ -1,0 +1,159 @@
+[
+  { "slug": "raheim-sanders", "facts": [
+    { "type": "Signed", "date": "2025-04-26", "team": "LAC",
+      "quote": "Sanders signed with the Los Angeles Chargers as an undrafted free agent on April 26, 2025." },
+    { "type": "Claimed", "date": "2025-08-27", "team": "CLE",
+      "quote": "On August 27, 2025, Sanders was claimed off waivers by the Cleveland Browns." }
+  ] },
+  { "slug": "jayden-higgins", "facts": [] },
+  { "slug": "kendrick-bourne", "facts": [
+    { "type": "Signed", "date": "2017-04-30", "team": "SF",
+      "quote": "On April 30, 2017, the San Francisco 49ers signed Bourne to a three-year, $1.67 million contract as an undrafted free agent.",
+      "terms": { "years": 3, "totalM": 1.67 } },
+    { "type": "Signed", "date": "2021-03-19", "team": "NE",
+      "quote": "On March 19, 2021, Bourne signed a three-year, $15 million contract with the New England Patriots.",
+      "terms": { "years": 3, "totalM": 15 } },
+    { "type": "Contract", "date": "2024-03-21", "team": "NE",
+      "quote": "On March 21, 2024, Bourne signed a three-year, $33 million contract extension with the Patriots.",
+      "terms": { "years": 3, "totalM": 33 } },
+    { "type": "Signed", "date": "2025-09-09", "team": "SF",
+      "quote": "On September 9, 2025, Bourne signed a one-year contract worth up to $5 million to reunite with his former team, the 49ers." },
+    { "type": "Signed", "date": "2026-03-09", "team": "ARI",
+      "quote": "On March 9, 2026, Bourne signed a two-year, $10 million contract worth up to $12 million with the Arizona Cardinals.",
+      "terms": { "years": 2, "totalM": 10 } }
+  ] },
+  { "slug": "darnell-mooney", "facts": [
+    { "type": "Signed", "date": "2024-03-15", "team": "ATL",
+      "quote": "On March 15, 2024, Mooney signed a three-year, $39 million contract with the Atlanta Falcons.",
+      "terms": { "years": 3, "totalM": 39 } },
+    { "type": "Released", "date": "2026-03-09", "team": "ATL",
+      "quote": "On March 9, 2026, Mooney was released by the Falcons." },
+    { "type": "Signed", "date": "2026-03-17", "team": "NYG",
+      "quote": "On March 17, 2026, Mooney signed a one-year, $10 million contract with the New York Giants.",
+      "terms": { "years": 1, "totalM": 10 } }
+  ] },
+  { "slug": "joshua-palmer", "facts": [
+    { "type": "Signed", "date": "2021-07-23", "team": "LAC",
+      "quote": "Palmer signed his four-year rookie contract with the Chargers on July 23, 2021." },
+    { "type": "Signed", "date": "2025-03-13", "team": "BUF",
+      "quote": "On March 13, 2025, Palmer signed a three-year deal with the Buffalo Bills." }
+  ] },
+  { "slug": "kimani-vidal", "facts": [] },
+  { "slug": "demarcus-robinson", "facts": [
+    { "type": "Signed", "date": "2016-05-06", "team": "KC",
+      "quote": "On May 6, 2016, the Chiefs signed Robinson to a four-year, $2.85 million contract that includes a signing bonus of $517,172.",
+      "terms": { "years": 4, "totalM": 2.85 } },
+    { "type": "Re-signed", "date": "2020-04-08", "team": "KC",
+      "quote": "On April 8, 2020, Robinson re-signed with the Chiefs on a one-year deal." },
+    { "type": "Re-signed", "date": "2021-03-25", "team": "KC",
+      "quote": "On March 25, 2021, the Chiefs re-signed Robinson to another one-year contract." },
+    { "type": "Signed", "date": "2022-03-22", "team": "LV",
+      "quote": "On March 22, 2022, Robinson signed a one-year deal with the Las Vegas Raiders." },
+    { "type": "Signed", "date": "2022-08-23", "team": "BAL",
+      "quote": "Robinson signed a one-year deal with the Baltimore Ravens on August 23, 2022." },
+    { "type": "Signed", "date": "2023-06-12", "team": "LAR",
+      "quote": "On June 12, 2023, Robinson signed a one-year contract with the Los Angeles Rams." },
+    { "type": "Re-signed", "date": "2024-02-23", "team": "LAR",
+      "quote": "On February 23, 2024, Robinson re-signed with the Rams on a one-year deal reportedly worth $5 million.",
+      "terms": { "years": 1, "totalM": 5 } },
+    { "type": "Signed", "date": "2025-03-13", "team": "SF",
+      "quote": "On March 13, 2025, Robinson signed with the San Francisco 49ers on a two-year, $9.5 million contract.",
+      "terms": { "years": 2, "totalM": 9.5 } }
+  ] },
+  { "slug": "aj-dillon", "facts": [
+    { "type": "Signed", "date": "2020-07-01", "team": "GB",
+      "quote": "Dillon was selected by the Green Bay Packers with the 62nd pick in the second round of the 2020 NFL draft. He signed his four-year rookie contract on July 1, 2020, worth $5.3 million, with a signing bonus of $1.4 million.",
+      "terms": { "years": 4, "totalM": 5.3 } },
+    { "type": "Activated", "date": "2020-12-10", "team": "GB",
+      "quote": "He was activated from the list on December 10, 2020, ahead of the Packers' Week 14 game versus the Lions, but Dillon did not record any stats in that game." },
+    { "type": "Re-signed", "date": "2024-03-15", "team": "GB",
+      "quote": "Dillon re-signed with the Packers on March 15, 2024 on a one-year qualifying offer, worth up to $2.575 million, but valued at just $1.125 million against the salary cap." },
+    { "type": "Signed", "date": "2025-03-13", "team": "PHI",
+      "quote": "On March 13, 2025, Dillon signed a one-year contract with the Philadelphia Eagles." },
+    { "type": "Signed", "date": "2026-03-18", "team": "CAR",
+      "quote": "On March 18, 2026, Dillon signed a one-year contact with the Carolina Panthers." }
+  ] },
+  { "slug": "malik-davis", "facts": [
+    { "type": "Signed", "date": "2022-04-30", "team": "DAL",
+      "quote": "After going undrafted in the 2022 NFL draft, Davis signed with the Dallas Cowboys as a free agent on April 30, 2022." },
+    { "type": "Signed", "date": "2024-01-17", "team": "DAL",
+      "quote": "He signed a reserve/future contract with Dallas on January 17, 2024." },
+    { "type": "Waived", "date": "2024-08-27", "team": "DAL",
+      "quote": "He was waived by the Cowboys on August 27, 2024, and re-signed to the practice squad." },
+    { "type": "Signed", "date": "2025-01-08", "team": "DAL",
+      "quote": "Davis signed a reserve/future contract with the Cowboys on January 8, 2025." }
+  ] },
+  { "slug": "calvin-ridley", "facts": [
+    { "type": "Signed", "date": "2018-07-05", "team": "ATL",
+      "quote": "Ridley was drafted by the Atlanta Falcons in the first round with the 26th overall pick in the 2018 NFL Draft. On July 5, 2018, Ridley signed a four-year deal worth $10.9 million featuring a $6.1 million signing bonus.",
+      "terms": { "years": 4, "totalM": 10.9 } },
+    { "type": "Traded", "date": "2022-11-01", "team": "JAX",
+      "quote": "On November 1, 2022, despite being suspended for at least the entire 2022 season, the Falcons traded Ridley to the Jacksonville Jaguars for conditional 2023 sixth-round and 2024 fourth-round picks." },
+    { "type": "Signed", "date": "2024-03-15", "team": "TEN",
+      "quote": "On March 15, 2024, Ridley signed a four-year $92 million deal with the Tennessee Titans.",
+      "terms": { "years": 4, "totalM": 92 } }
+  ] },
+  { "slug": "isaiah-williams", "facts": [
+    { "type": "Signed", "date": "2024-04-28", "team": "DET",
+      "quote": "On April 28, 2024, Williams signed with the Detroit Lions as an undrafted free agent, after not being selected in the 2024 NFL draft." },
+    { "type": "Claimed", "date": "2024-11-08", "team": "CIN",
+      "quote": "On November 8, 2024, Williams was claimed off waivers by the Cincinnati Bengals." },
+    { "type": "Waived", "date": "2025-08-26", "team": "CIN",
+      "quote": "On August 26, 2025, Williams was waived by the Bengals as part of final roster cuts and re-signed to the practice squad the next day." },
+    { "type": "Signed", "date": "2025-09-10", "team": "NYJ",
+      "quote": "On September 10, 2025, Williams was signed by the New York Jets off the Bengals' practice squad." }
+  ] },
+  { "slug": "kendre-miller", "facts": [
+    { "type": "Placed on IR", "date": "2025-10-20", "team": "NO",
+      "quote": "Miller made seven appearances for New Orleans during the 2025 season, recording 47 rushes for 193 yards and one touchdown. On October 20, 2025, Miller was placed on injured reserve after suffering a torn ACL in Week 7 against the Chicago Bears." }
+  ] },
+  { "slug": "carson-wentz", "facts": [
+    { "type": "Traded", "date": "2021-03-17", "team": "IND",
+      "quote": "Wentz was traded to the Indianapolis Colts on March 17, 2021, in exchange for a 2021 third-round pick and a 2022 first-round pick." },
+    { "type": "Traded", "date": "2022-03-16", "team": "WAS",
+      "quote": "Wentz, along with the Colts' second and seventh round picks in the 2022 NFL draft, were traded to the Washington Commanders on March 16, 2022, in exchange for 2022 second and third round picks and a conditional third-round pick in the 2023 NFL draft." },
+    { "type": "Released", "date": "2023-02-27", "team": "WAS",
+      "quote": "On February 27, 2023, the Commanders released Wentz after one season with the team." },
+    { "type": "Signed", "date": "2023-11-08", "team": "LAR",
+      "quote": "On November 8, 2023, Wentz signed with the Los Angeles Rams to be the backup to Matthew Stafford." },
+    { "type": "Signed", "date": "2024-04-02", "team": "KC",
+      "quote": "On April 2, 2024, Wentz signed with the Kansas City Chiefs to be the backup to Patrick Mahomes." },
+    { "type": "Signed", "date": "2025-08-24", "team": "MIN",
+      "quote": "On August 24, 2025, Wentz signed with the Minnesota Vikings as a backup to J. J. McCarthy." },
+    { "type": "Re-signed", "date": "2026-03-19", "team": "MIN",
+      "quote": "On March 19, 2026, Wentz re-signed with the Vikings on a one-year, $3 million contract.",
+      "terms": { "years": 1, "totalM": 3 } }
+  ] },
+  { "slug": "eli-stowers", "facts": [] },
+  { "slug": "mason-taylor", "facts": [] },
+  { "slug": "colby-parkinson", "facts": [
+    { "type": "Signed", "date": "2024-03-14", "team": "LAR",
+      "quote": "On March 14, 2024, Parkinson signed a three-year contract with the Los Angeles Rams worth up to $22.5 million." }
+  ] },
+  { "slug": "roman-wilson", "facts": [] },
+  { "slug": "daniel-carlson", "facts": [
+    { "type": "Signed", "date": "2018-10-23", "team": "LV",
+      "quote": "Carlson was signed by the Oakland Raiders on October 23, 2018, after the team released fellow rookie kicker Matt McCrane." },
+    { "type": "Contract", "date": "2021-12-09", "team": "LV",
+      "quote": "On December 9, 2021, Carlson signed a four-year, $18.4 million extension with the Raiders, making him the third-highest-paid kicker in the NFL.",
+      "terms": { "years": 4, "totalM": 18.4 } },
+    { "type": "Signed", "date": "2026-08-24", "team": "NO",
+      "quote": "On August 24, 2026, Carlson signed with the New Orleans Saints." }
+  ] },
+  { "slug": "jack-bech", "facts": [] },
+  { "slug": "chimere-dike", "facts": [] },
+  { "slug": "sean-tucker", "facts": [
+    { "type": "Signed", "date": "2023-04-29", "team": "TB",
+      "quote": "After going undrafted in 2023 NFL draft, Tucker signed with the Tampa Bay Buccaneers as an undrafted free agent on April 29, 2023." }
+  ] },
+  { "slug": "kyle-williams", "facts": [] },
+  { "slug": "tory-horton", "facts": [] },
+  { "slug": "emari-demercado", "facts": [
+    { "type": "Signed", "date": "2026-03-12", "team": "KC",
+      "quote": "On March 12, 2026, Demercado signed a one-year, $1.25 million contract with the Kansas City Chiefs.",
+      "terms": { "years": 1, "totalM": 1.25 } },
+    { "type": "Claimed", "date": "2026-08-31", "team": "DAL",
+      "quote": "On August 31, 2026, Demercado was claimed off waivers by the Dallas Cowboys." }
+  ] },
+  { "slug": "elic-ayomanor", "facts": [] }
+]

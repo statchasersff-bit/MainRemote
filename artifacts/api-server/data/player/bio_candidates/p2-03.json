@@ -1,0 +1,62 @@
+[
+  { "slug": "dalton-kincaid", "facts": [] },
+  { "slug": "parker-washington", "facts": [
+    { "type": "Placed on IR", "date": "2023-10-07", "team": "JAX",
+      "quote": "His Penn State teammate, tight end Brenton Strange, was also drafted by Jacksonville, in the second round (61st overall). He was placed on injured reserve on October 7, 2023." }
+  ] },
+  { "slug": "patrick-mahomes", "facts": [
+    { "type": "Contract", "date": "2020-07-06", "team": "KC",
+      "quote": "On April 30, 2020, the Chiefs picked up the fifth-year option on Mahomes's contract. On July 6, he signed a ten-year extension worth $477 million with an additional $26 million in potential bonuses for a total of $503 million." },
+    { "type": "Contract", "date": "2021-03-12", "team": "KC",
+      "quote": "On March 12, 2021, Mahomes restructured his contract to save the Chiefs $17 million in salary cap space." },
+    { "type": "Contract", "date": "2023-09-18", "team": "KC",
+      "quote": "On September 18, 2023, the Chiefs and Mahomes agreed to restructure his contract, giving him $210.6 million between 2023 and 2026, the most money in NFL history over a four-season span." }
+  ] },
+  { "slug": "dj-moore", "facts": [
+    { "type": "Activated", "date": "2020-12-16", "team": "CAR",
+      "quote": "He was placed on the reserve/COVID-19 list by the Panthers on December 7, 2020, and activated on December 16." },
+    { "type": "Traded", "date": "2023-03-15", "team": "CHI",
+      "quote": "On March 10, 2023, the Panthers agreed to trade Moore and the ninth overall pick in the 2023 NFL draft, as well as several other draft picks (including their 2024 first-round pick, later used to draft Caleb Williams), to the Chicago Bears for the first overall pick in the 2023 NFL draft, which the Panthers used to select Bryce Young. The trade was made official when the league calendar year began on March 15." }
+  ] },
+  { "slug": "george-kittle", "facts": [
+    { "type": "Contract", "date": "2020-08-13", "team": "SF",
+      "quote": "On August 13, 2020, Kittle signed a five-year, $75 million contract with the 49ers with an $18 million signing bonus, making him the highest-paid tight end in the league.",
+      "terms": { "years": 5, "totalM": 75 } },
+    { "type": "Activated", "date": "2026-08-23", "team": "SF", "yearFrom": "heading",
+      "quote": "On August 23, the 49ers activated him from the PUP list." }
+  ] },
+  { "slug": "dak-prescott", "facts": [] },
+  { "slug": "aj-brown", "facts": [] },
+  { "slug": "mike-evans", "facts": [] },
+  { "slug": "travis-kelce", "facts": [] },
+  { "slug": "travis-etienne", "facts": [] },
+  { "slug": "brock-purdy", "facts": [] },
+  { "slug": "tucker-kraft", "facts": [
+    { "type": "Signed", "date": "2023-05-17", "team": "GB",
+      "quote": "Kraft was selected in the third round, 78th overall, by the Green Bay Packers in the 2023 NFL draft. He signed his rookie contract on May 17." }
+  ] },
+  { "slug": "chuba-hubbard", "facts": [
+    { "type": "Signed", "date": "2021-05-06", "team": "CAR",
+      "quote": "He was also selected by the Calgary Stampeders in the fifth round (43rd overall) of the 2021 CFL draft before signing a four-year contract, worth $4.2 million, with the Panthers on May 6, 2021.",
+      "terms": { "years": 4, "totalM": 4.2 } }
+  ] },
+  { "slug": "jameson-williams", "facts": [
+    { "type": "Suspended", "date": "2023-04-21", "team": "DET",
+      "quote": "Williams was one of four Lions players suspended for violating the NFL's gambling policy after an investigation by the league. The announcement was made in an NFL press release on April 21, 2023." }
+  ] },
+  { "slug": "caleb-williams", "facts": [
+    { "type": "Signed", "date": "2024-07-17", "team": "CHI", "yearFrom": "heading",
+      "quote": "Williams was named the Bears' starter in May. On July 17, he signed his four-year rookie contract, worth $39.4 million fully guaranteed.",
+      "terms": { "years": 4, "totalM": 39.4 } }
+  ] },
+  { "slug": "terry-mclaurin", "facts": [] },
+  { "slug": "treveyon-henderson", "facts": [] },
+  { "slug": "bhayshul-tuten", "facts": [] },
+  { "slug": "jaylen-warren", "facts": [] },
+  { "slug": "drake-maye", "facts": [] },
+  { "slug": "jadarian-price", "facts": [] },
+  { "slug": "jalen-coker", "facts": [
+    { "type": "Waived", "date": "2024-08-28", "team": "CAR",
+      "quote": "Coker signed with the Carolina Panthers as an undrafted free agent on May 10, 2024. Coker was waived on August 28, and subsequently re-signed to the practice squad." }
+  ] }
+]

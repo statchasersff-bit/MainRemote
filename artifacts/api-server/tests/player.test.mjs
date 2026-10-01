@@ -1984,50 +1984,44 @@ describe("the bio tab", () => {
       const res = await get(`/player/${player.slug}/bio/`);
       if (res.status !== 200) continue;
       const doc = new JSDOM(res.body).window.document;
-      if (!doc.querySelector("#bio .scp-bio")) continue;
+      if (!doc.querySelector("#bio .scp-bo")) continue;
       pages.push({ player, doc, body: res.body });
     }
     return pages;
   }
 
-  test("the bio opens on the paragraph, and the paragraph carries the facts", async () => {
+  test("the spec sections replace the old narrative and timeline", async () => {
+    // mak, 2026-09-30: two bios and two timelines on one page confuse readers
+    // and split the page's subject. The spec's bio text and Career Timeline
+    // take the old ones' place, under the tab's single "{Name} Bio" heading.
     const pages = await bioPages(4);
     assert.ok(pages.length > 0, "at least one player has a bio");
 
     for (const page of pages) {
-      // The labelled fact grid is gone; the opening paragraph is the only
-      // place these answers live now, so it has to actually contain them.
-      // Born-on and the college are the two every bio derives — a birth date
-      // gives the age, and the college line is the one searched for by name.
-      const prose = page.doc.querySelector("#bio .scp-bio").textContent;
-      assert.equal(page.doc.querySelector("#bio .scp-facts"), null);
-      assert.match(
-        prose,
-        /Born on \w+ \d{1,2}, \d{4}/,
-        `${page.player.slug}: the paragraph gives the birth date`,
-      );
-      assert.match(
-        prose,
-        /played college football at /,
-        `${page.player.slug}: the paragraph names the college`,
-      );
+      const bio = page.doc.querySelector("#bio");
+      assert.equal(bio.querySelector(".scp-bio"), null, `${page.player.slug}: the old narrative is gone`);
+      assert.equal(bio.querySelector(".scp-stints"), null, `${page.player.slug}: the old timeline is gone`);
+      const headings = [...bio.querySelectorAll("h2")].map((h) => h.textContent.trim());
+      assert.equal(headings.filter((h) => /\bBio$/.test(h)).length, 1, `${page.player.slug}: one bio heading (${headings.join(" | ")})`);
+      assert.ok(headings.includes(`${page.player.name} Bio`));
+      assert.equal(headings.filter((h) => /timeline/i.test(h)).length, 1, `${page.player.slug}: one timeline`);
 
-      const narrative = page.doc.querySelector("#bio .scp-bio");
-      const timeline = page.doc.querySelector("#bio .scp-stints");
-      if (timeline) {
-        assert.ok(
-          narrative.compareDocumentPosition(timeline) & 4,
-          "the paragraph opens the tab, above the timeline",
-        );
-      }
+      // The bio text comes first and carries the facts the Quick Facts show.
+      const prose = bio.querySelector(".scp-bo-prose");
+      const journey = bio.querySelector(".scp-bo-journey");
+      if (prose && journey) assert.ok(prose.compareDocumentPosition(journey) & 4, "the bio text opens the tab");
+      const quick = Object.fromEntries([...bio.querySelectorAll(".scp-bo-facts dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
+      if (quick.Born && prose) assert.match(prose.textContent, /Born \w+ \d{1,2}, \d{4}/, `${page.player.slug}: the text gives the birth date`);
+      if ((quick.College || quick.Colleges) && prose) assert.match(prose.textContent, /played college football at /);
     }
   });
 
-  test("bio is about the person, never about fantasy", async () => {
-    // The whole architectural point of this tab. Overview, Stats, Game Log,
-    // Outlook and Injury each answer a lineup question; Bio answers "who is
-    // he?", and a page that does both ranks for neither set of queries as well
-    // as either would alone.
+  test("bio text is about the person; fantasy lives only in three marked places", async () => {
+    // The tab answers "who is he?", and a page that also answers lineup
+    // questions ranks for neither as well. mak's rule (option A, 2026-09-30):
+    // fantasy wording is allowed only in the Redraft Command card, the inline
+    // Redraft Command prompt and the "best fantasy season" stop chip. The bio
+    // text, stop sentences, timeline, transactions, footer and FAQ carry none.
     const banned = [
       "fantasy",
       "ppg",
@@ -2043,14 +2037,27 @@ describe("the bio tab", () => {
       "efficiency",
       "target share",
       "snap share",
+      "redraft",
     ];
+    const ALLOWED = ".is-rc, .scp-bo-cta, .scp-bo-best";
 
     for (const page of await bioPages(6)) {
-      const text = page.doc.querySelector("#bio").textContent.toLowerCase();
+      const bio = page.doc.querySelector("#bio");
+      // The three places are what they say they are.
+      const rc = bio.querySelector('[data-cta="redraft-command-bio-sidebar"]');
+      if (rc) assert.ok(rc.closest(".is-rc"), "the sidebar CTA sits in the Redraft Command card");
+      const inline = bio.querySelector('[data-cta="redraft-command-bio-inline"]');
+      if (inline) assert.ok(inline.closest(".scp-bo-cta"), "the inline CTA sits in the prompt");
+      // On the timeline block since 2026-10-01: "Best: 235.4 pts (2025)".
+      for (const chip of bio.querySelectorAll(".scp-bo-best")) assert.match(chip.textContent, /^Best: [\d,.]+ pts \(\d{4}\)$/);
+
+      const clone = bio.cloneNode(true);
+      clone.querySelectorAll(ALLOWED).forEach((n) => n.remove());
+      const text = clone.textContent.toLowerCase();
       for (const word of banned) {
         assert.ok(
           !text.includes(word),
-          `${page.player.slug}: the bio says "${word}", which belongs on another tab`,
+          `${page.player.slug}: the bio says "${word}" outside the Redraft Command card, prompt and best-season chip`,
         );
       }
     }
@@ -2058,34 +2065,22 @@ describe("the bio tab", () => {
 
   test("the career timeline runs forwards and never predates the draft", async () => {
     for (const page of await bioPages(6)) {
-      const stints = [...page.doc.querySelectorAll("#bio .scp-stint[data-kind='nfl']")];
-      if (stints.length === 0) continue;
+      const stops = [...page.doc.querySelectorAll("#bio .scp-bo-stop")];
+      if (stops.length === 0) continue;
 
-      const years = stints.map((stint) => {
-        const text = stint.querySelector(".scp-stint-years").textContent.trim();
-        return Number(text.slice(0, 4));
-      });
-
+      // A traded season is two stops in one year, so the years never go back.
+      const years = stops.map((stop) => Number(stop.querySelector(".scp-bo-yrs").textContent.trim().slice(0, 4)));
       for (let i = 1; i < years.length; i += 1) {
-        assert.ok(
-          years[i] > years[i - 1],
-          `${page.player.slug}: the timeline runs ${years[i - 1]} then ${years[i]}`,
-        );
+        assert.ok(years[i] >= years[i - 1], `${page.player.slug}: the timeline runs ${years[i - 1]} then ${years[i]}`);
       }
 
       // The bug this is here for: the upstream stats API answers for seasons a
       // player was not in the league by handing back his CURRENT team with an
       // empty stat line, which put a 2016 draftee on a roster in 2005.
-      //
-      // Read off the paragraph, which is where the draft year lives now that
-      // the fact grid is gone: "... in the third round of the 2016 NFL Draft".
-      const prose = page.doc.querySelector("#bio .scp-bio")?.textContent ?? "";
-      const draftYear = Number(prose.match(/(\d{4}) NFL Draft/)?.[1]);
+      const drafted = [...page.doc.querySelectorAll("#bio .scp-bo-facts dt")].find((dt) => dt.textContent === "Drafted");
+      const draftYear = Number(drafted?.nextElementSibling.textContent.match(/(\d{4})/)?.[1]);
       if (!Number.isFinite(draftYear)) continue;
-      assert.ok(
-        years[0] >= draftYear,
-        `${page.player.slug}: the timeline starts in ${years[0]}, before the ${draftYear} draft`,
-      );
+      assert.ok(years[0] >= draftYear, `${page.player.slug}: the timeline starts in ${years[0]}, before the ${draftYear} draft`);
     }
   });
 
@@ -2100,16 +2095,15 @@ describe("the bio tab", () => {
     const res = await get("/player/deebo-samuel/bio/");
     if (res.status !== 200) return t.skip("no deebo-samuel profile in this data");
     const doc = new JSDOM(res.body).window.document;
-    const clubs = [...doc.querySelectorAll("#bio .scp-stint[data-kind='nfl']")].map((n) =>
-      n.textContent,
-    );
+    const clubs = [...doc.querySelectorAll("#bio .scp-bo-stops h3")].map((n) => n.textContent);
     const sf = clubs.filter((text) => /49ers/.test(text)).length;
     if (sf < 2 || !clubs.some((text) => /Commanders/.test(text))) {
       return t.skip("the data no longer has him leaving and returning");
     }
+    assert.ok(clubs.some((text) => /49ers.*second stint/.test(text)), "the return is marked as a second stint");
 
-    const prose = doc.querySelector("#bio .scp-bio").textContent;
-    assert.match(prose, /has since played for the Washington Commanders and returned to the San Francisco 49ers\./);
+    const prose = doc.querySelector("#bio .scp-bo-prose").textContent;
+    assert.match(prose, /played for the Washington Commanders \(2025\) and returned to the San Francisco 49ers in 2026\./);
 
     const answer = [...doc.querySelectorAll("script, .scp-tab-faq p, [class*='faq'] p")]
       .map((n) => n.textContent)
@@ -2122,28 +2116,25 @@ describe("the bio tab", () => {
     );
   });
 
-  test("a draft is printed only when it is known, never guessed", async () => {
+  test("\"Undrafted\" is printed only when both nflverse files agree", async () => {
     // draft.json writes year: null both for a player who went undrafted and for
-    // one it could not resolve — Marvin Harrison Jr. went fourth overall and
-    // carries a null row. So the page must never print "undrafted".
+    // one it could not resolve (Marvin Harrison Jr. went fourth overall and
+    // carries a null row), so a missing draft record never means undrafted.
+    // The page says "Undrafted" only from the fact store's `undrafted` record,
+    // which exists only when draft_picks.csv has no row for him AND
+    // players.csv has no draft year (scripts/player/buildBioSources.mjs).
+    const store = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "player", "bio_sources.json"), "utf8"));
     for (const page of await bioPages(8)) {
-      assert.ok(
-        !/undrafted/i.test(page.doc.querySelector("#bio").textContent),
-        `${page.player.slug}: the bio claims a draft status the data cannot support`,
-      );
+      const facts = store.players[page.player.slug]?.facts ?? [];
+      const agreed = facts.some((f) => f.field === "undrafted" && f.status === "approved");
+      const text = page.doc.querySelector("#bio").textContent;
+      if (!agreed) assert.doesNotMatch(text, /undrafted/i, `${page.player.slug}: says undrafted without the two files agreeing`);
 
-      // The draft has no block of its own and no cell of its own — the
-      // paragraph carries it, and it names a year or it is not mentioned.
+      // The draft has no block of its own: the Quick Facts row carries it.
       assert.equal(page.doc.querySelector("#bio .scp-draft"), null);
       assert.equal(page.doc.querySelector("#bio .scp-facts"), null);
-
-      const prose = page.doc.querySelector("#bio .scp-bio")?.textContent ?? "";
-      if (!/NFL Draft/.test(prose)) continue;
-      assert.match(
-        prose,
-        /\d{4} NFL Draft/,
-        "a draft the paragraph mentions names its year",
-      );
+      const prose = page.doc.querySelector("#bio .scp-bo-prose")?.textContent ?? "";
+      if (/NFL Draft/.test(prose)) assert.match(prose, /\d{4} NFL Draft/, "a draft the text mentions names its year");
     }
   });
 

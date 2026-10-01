@@ -48,9 +48,12 @@ function ordinal(n: number): string {
  */
 export const OUTLOOK_SEASON = 2026;
 
-/** Where the start/sit tool lives: Redraft Command's launcher on statchasers.com. */
+/**
+ * A player's start/sit page is this plus his slug. The final address, not the
+ * /launch/ path that redirects to it.
+ */
 export const STARTSIT_BASE =
-  "https://statchasers.com/redraft-command/launch/who-should-i-start/";
+  "https://statchasers.com/redraft-command/who-should-i-start/";
 
 /**
  * Three bands, for a restrained tint rather than a red-to-green ramp.

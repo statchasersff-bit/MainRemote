@@ -1,0 +1,368 @@
+[
+  {
+    "slug": "dalton-kincaid",
+    "facts": []
+  },
+  {
+    "slug": "patrick-mahomes",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2017-07-20",
+        "team": "KC",
+        "quote": "On July 20, 2017, the Chiefs signed Mahomes to a guaranteed four-year, $16.42 million contract that included a signing bonus of $10.08 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 16.42
+        }
+      }
+    ]
+  },
+  {
+    "slug": "parker-washington",
+    "facts": []
+  },
+  {
+    "slug": "dj-moore",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2022-03-18",
+        "team": "CAR",
+        "quote": "On March 18, 2022, Moore signed a three-year, $61.9 million contract extension with the Panthers through the 2025 season.",
+        "terms": {
+          "years": 3,
+          "totalM": 61.9
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2024-07-31",
+        "team": "CHI",
+        "quote": "On July 31, 2024, Moore and the Bears agreed to a four-year, $110 million contract extension.",
+        "terms": {
+          "years": 4,
+          "totalM": 110
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2026-03-11",
+        "team": "BUF",
+        "quote": "On March 11, 2026, Chicago traded Moore, along with a 2026 fifth-round pick (165th overall), to the Buffalo Bills in exchange for a 2026 second-round pick (60th overall, which was traded to the Tennessee Titans and used for their selection of Anthony Hill Jr.)."
+      }
+    ]
+  },
+  {
+    "slug": "george-kittle",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2017-05-04",
+        "team": "SF",
+        "quote": "On May 4, 2017, the 49ers signed Kittle to a four-year, $2.69 million contract that included a signing bonus of $298,287.",
+        "terms": {
+          "years": 4,
+          "totalM": 2.69
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2025-04-29",
+        "team": "SF",
+        "quote": "On April 29, 2025, the 49ers and Kittle agreed to a four-year, $76.4 million contract extension with $40 million guaranteed.",
+        "terms": {
+          "years": 4,
+          "totalM": 76.4
+        }
+      }
+    ]
+  },
+  {
+    "slug": "dak-prescott",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2024-09-08",
+        "team": "DAL",
+        "quote": "On September 8, 2024, Prescott and the Cowboys agreed to terms on a four-year contract extension worth $240 million, including $231 million guaranteed and an $80 million signing bonus.",
+        "terms": {
+          "years": 4,
+          "totalM": 240
+        }
+      }
+    ]
+  },
+  {
+    "slug": "aj-brown",
+    "facts": [
+      {
+        "type": "Traded",
+        "date": "2022-04-28",
+        "team": "PHI",
+        "quote": "On April 28, 2022, during the 2022 NFL draft, Brown was traded to the Philadelphia Eagles for the 18th overall pick in the 2022 draft, which the Titans used to select wide receiver Treylon Burks from Arkansas, a player widely compared to Brown, while Tennessee also received a third-round pick."
+      },
+      {
+        "type": "Contract",
+        "date": "2024-04-25",
+        "team": "PHI",
+        "quote": "On April 25, 2024, Brown signed a three-year, $96 million contract extension, keeping him with the Eagles through the 2029 season.",
+        "terms": {
+          "years": 3,
+          "totalM": 96
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2026-06-01",
+        "team": "NE",
+        "quote": "On June 1, 2026, Brown was traded to the New England Patriots in exchange for a 2027 fifth-round pick and a 2028 first-round pick."
+      }
+    ]
+  },
+  {
+    "slug": "mike-evans",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2018-03-09",
+        "team": "TB",
+        "quote": "On March 9, 2018, Evans signed a five-year, $82.5 million contract extension with the Buccaneers with $55 million guaranteed.",
+        "terms": {
+          "years": 5,
+          "totalM": 82.5
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2024-03-04",
+        "team": "TB",
+        "quote": "On March 4, 2024, Evans signed a two-year, $52 million contract extension with the Buccaneers.",
+        "terms": {
+          "years": 2,
+          "totalM": 52
+        }
+      },
+      {
+        "type": "Signed",
+        "date": "2026-03-12",
+        "team": "SF",
+        "quote": "On March 12, 2026, Evans signed a three-year deal worth up to $42.4 million with the San Francisco 49ers, ending his 12-year tenure with the Buccaneers.",
+        "terms": {
+          "years": 3,
+          "totalM": 42.4
+        }
+      }
+    ]
+  },
+  {
+    "slug": "travis-kelce",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2013-06-06",
+        "team": "KC",
+        "quote": "On June 6, 2013, the Chiefs signed Kelce to a four-year, $3.12 million rookie contract that also included a signing bonus of $703,304.",
+        "terms": {
+          "years": 4,
+          "totalM": 3.12
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2020-08-14",
+        "team": "KC",
+        "quote": "On August 14, 2020, Kelce signed a four-year, $57 million contract extension with the Chiefs through the 2025 season.",
+        "terms": {
+          "years": 4,
+          "totalM": 57
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2024-04-29",
+        "team": "KC",
+        "quote": "On April 29, 2024, Kelce signed a two-year extension with the Chiefs for a reported $34.25 million, making him the highest-paid tight end in the NFL.",
+        "terms": {
+          "years": 2,
+          "totalM": 34.25
+        }
+      }
+    ]
+  },
+  {
+    "slug": "travis-etienne",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-07-19",
+        "team": "JAX",
+        "quote": "On July 19, 2021, Etienne signed his four-year rookie contract with the Jaguars, worth $12.9 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 12.9
+        }
+      },
+      {
+        "type": "Signed",
+        "date": "2026-03-13",
+        "team": "NO",
+        "quote": "On March 13, 2026, Etienne signed a four-year, $52 million contract with the New Orleans Saints.",
+        "terms": {
+          "years": 4,
+          "totalM": 52
+        }
+      }
+    ]
+  },
+  {
+    "slug": "brock-purdy",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2025-05-20",
+        "team": "SF",
+        "quote": "On May 20, 2025, Purdy signed a five-year, $265 million contract extension with the 49ers.",
+        "terms": {
+          "years": 5,
+          "totalM": 265
+        }
+      }
+    ]
+  },
+  {
+    "slug": "colston-loveland",
+    "facts": []
+  },
+  {
+    "slug": "tucker-kraft",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2026-09-12",
+        "team": "GB",
+        "quote": "On September 12, 2026, Green Bay Packers and Kraft agreed to a four-year, $75 million contract extension with a signing bonus of $26.5 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 75
+        }
+      }
+    ]
+  },
+  {
+    "slug": "chuba-hubbard",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2024-11-07",
+        "team": "CAR",
+        "quote": "On November 7, 2024, the Panthers signed Hubbard to a four-year, $33.2 million extension, with $15 million guaranteed.",
+        "terms": {
+          "years": 4,
+          "totalM": 33.2
+        }
+      }
+    ]
+  },
+  {
+    "slug": "quinshon-judkins",
+    "facts": []
+  },
+  {
+    "slug": "jameson-williams",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2025-09-06",
+        "team": "DET",
+        "quote": "The Lions picked up the fifth-year option on Williams' contract. On September 6, 2025, Williams signed a three-year contract extension worth up to $83 million.",
+        "terms": {
+          "years": 3,
+          "totalM": 83
+        }
+      }
+    ]
+  },
+  {
+    "slug": "caleb-williams",
+    "facts": []
+  },
+  {
+    "slug": "terry-mclaurin",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2019-06-06",
+        "team": "WAS",
+        "quote": "With their first-round pick in the same draft, the Redskins also drafted McLaurin's college quarterback, Dwayne Haskins. He signed his four-year rookie contract on June 6, 2019."
+      }
+    ]
+  },
+  {
+    "slug": "treveyon-henderson",
+    "facts": []
+  },
+  {
+    "slug": "bhayshul-tuten",
+    "facts": []
+  },
+  {
+    "slug": "jaylen-warren",
+    "facts": [
+      {
+        "type": "Re-signed",
+        "date": "2025-04-22",
+        "team": "PIT",
+        "quote": "On April 22, 2025, Warren re-signed with Pittsburgh on a one-year restricted free agent tender worth $5.3 million.",
+        "terms": {
+          "years": 1,
+          "totalM": 5.3
+        }
+      }
+    ]
+  },
+  {
+    "slug": "drake-maye",
+    "facts": []
+  },
+  {
+    "slug": "luther-burden",
+    "facts": []
+  },
+  {
+    "slug": "jadarian-price",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-05-29",
+        "team": "SEA",
+        "quote": "On May 29, 2026, he signed a four-year, $16.7 million contract with the Seahawks.",
+        "terms": {
+          "years": 4,
+          "totalM": 16.7
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jalen-coker",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-05-10",
+        "team": "CAR",
+        "quote": "Coker signed with the Carolina Panthers as an undrafted free agent on May 10, 2024."
+      },
+      {
+        "type": "Contract",
+        "date": "2026-06-12",
+        "team": "CAR",
+        "quote": "On June 12, 2026, Coker signed a three-year, $35 million contract extension with the Panthers.",
+        "terms": {
+          "years": 3,
+          "totalM": 35
+        }
+      }
+    ]
+  }
+]

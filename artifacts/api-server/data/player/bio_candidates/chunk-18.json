@@ -1,0 +1,238 @@
+[
+  { "slug": "jeremy-ruckert", "facts": [
+    { "type": "Contract", "date": "2025-12-17", "team": "NYJ",
+      "quote": "On December 17, 2025, Ruckert signed a two-year, $10 million contract extension with the Jets.",
+      "terms": { "years": 2, "totalM": 10 } }
+  ] },
+  { "slug": "jerome-ford", "facts": [
+    { "type": "Placed on IR", "date": "2022-10-04", "team": "CLE",
+      "quote": "Ford was selected by the Cleveland Browns in the fifth round, 156th overall, of the 2022 NFL draft. He suffered an ankle injury in Week 4 and was placed on injured reserve on October 4, 2022." },
+    { "type": "Signed", "date": "2026-03-19", "team": "WAS",
+      "quote": "On March 19, 2026, Ford signed a one-year, $1.4 million contract with the Washington Commanders.",
+      "terms": { "years": 1, "totalM": 1.4 } },
+    { "type": "Placed on IR", "date": "2026-08-18", "team": "WAS",
+      "quote": "On March 19, 2026, Ford signed a one-year, $1.4 million contract with the Washington Commanders. Ford was placed on injured reserve on August 18, and was released with an injury settlement a week later." },
+    { "type": "Signed", "date": "2026-09-16", "team": "MIN",
+      "quote": "On September 16, 2026, Ford signed to the Minnesota Vikings practice squad." },
+    { "type": "Released", "date": "2026-09-29", "team": "MIN",
+      "quote": "On September 16, 2026, Ford signed to the Minnesota Vikings practice squad. On September 29, he was released from Vikings practice squad." }
+  ] },
+  { "slug": "jimmy-horn", "facts": [
+    { "type": "Waived", "date": "2026-09-15", "team": "CAR",
+      "quote": "On September 15, 2026, Horn was waived by the Panthers following a muffed punt and a near-fumble (ruled down by contact) during their season-opening loss to the Chicago Bears." },
+    { "type": "Signed", "date": "2026-09-18", "team": "CLE",
+      "quote": "On September 18, 2026, Horn signed with the Cleveland Browns practice squad." }
+  ] },
+  { "slug": "joe-milton", "facts": [
+    { "type": "Signed", "date": "2024-05-10", "team": "NE",
+      "quote": "Milton signed his rookie contract with the Patriots on May 10, 2024." },
+    { "type": "Traded", "date": "2025-04-03", "team": "DAL",
+      "quote": "On April 3, 2025, the Patriots traded Milton to the Dallas Cowboys along with a 2025 seventh-round pick in exchange for a 2025 fifth-round pick." },
+    { "type": "Waived", "date": "2026-08-31", "team": "DAL",
+      "quote": "On August 31, 2026, Dallas waived Milton and re-signed him back to the practice squad after he lost the backup job to Sam Howell." }
+  ] },
+  { "slug": "john-bates", "facts": [
+    { "type": "Signed", "date": "2021-05-13", "team": "WAS",
+      "quote": "Bates was drafted by the Washington Football Team in the fourth round (124th overall) of the 2021 NFL draft. He signed his four-year rookie contract on May 13, 2021." },
+    { "type": "Contract", "date": "2025-03-11", "team": "WAS",
+      "quote": "After his rookie deal deal expired, Bates signed a three-year, $21,000,000 contract extension with the Commanders on March 11, 2025." }
+  ] },
+  { "slug": "john-metchie", "facts": [
+    { "type": "Traded", "date": "2025-08-18", "team": "PHI",
+      "quote": "On August 18, 2025, Metchie and a 2026 sixth-round pick were traded to the Philadelphia Eagles in exchange for Harrison Bryant and a 2026 fifth-round pick." },
+    { "type": "Traded", "date": "2025-10-29", "team": "NYJ",
+      "quote": "On October 29, 2025, Metchie and a 2027 sixth-round pick were traded to the New York Jets in exchange for Michael Carter II and a 2027 seventh-round pick." },
+    { "type": "Signed", "date": "2026-03-11", "team": "CAR",
+      "quote": "On March 11, 2026, Metchie signed a one-year, $1.9 million contract with the Carolina Panthers.",
+      "terms": { "years": 1, "totalM": 1.9 } }
+  ] },
+  { "slug": "johnny-mundt", "facts": [
+    { "type": "Signed", "date": "2017-04-29", "team": "LAR",
+      "quote": "Mundt signed with the Los Angeles Rams as an undrafted free agent on April 29, 2017." },
+    { "type": "Waived", "date": "2017-09-03", "team": "LAR",
+      "quote": "He was waived by the Rams on September 3, 2017, and was re-signed to the practice squad." },
+    { "type": "Waived", "date": "2017-11-21", "team": "LAR",
+      "quote": "He was waived by the Rams on November 21, 2017, and was re-signed to the practice squad." },
+    { "type": "Signed", "date": "2018-01-08", "team": "LAR",
+      "quote": "He signed a reserve/future contract with the Rams on January 8, 2018." },
+    { "type": "Re-signed", "date": "2020-04-17", "team": "LAR",
+      "quote": "Mundt re-signed on a one-year exclusive-rights free agent contract with the Rams on April 17, 2020." },
+    { "type": "Re-signed", "date": "2021-03-18", "team": "LAR",
+      "quote": "Mundt re-signed on a one-year exclusive-rights free agent contract with the Rams on April 17, 2020. He signed another one-year contract on March 18, 2021." },
+    { "type": "Signed", "date": "2022-03-16", "team": "MIN",
+      "quote": "On March 16, 2022, Mundt signed a two-year contract with the Minnesota Vikings." },
+    { "type": "Re-signed", "date": "2024-03-08", "team": "MIN",
+      "quote": "On March 8, 2024, Mundt re-signed with the Vikings." },
+    { "type": "Signed", "date": "2025-03-12", "team": "JAX",
+      "quote": "On March 12, 2025, Mundt signed with the Jacksonville Jaguars." },
+    { "type": "Released", "date": "2026-03-10", "team": "JAX",
+      "quote": "On March 10, 2026, Mundt was released by the Jaguars." },
+    { "type": "Signed", "date": "2026-03-13", "team": "PHI",
+      "quote": "On March 13, 2026, Mundt signed a one-year contract with the Philadelphia Eagles." }
+  ] },
+  { "slug": "johnny-wilson", "facts": [
+    { "type": "Waived", "date": "2026-08-21", "team": "PHI",
+      "quote": "On August 21, 2026, it was announced that Wilson was waived by the Philadelphia Eagles due to a lingering knee injury." }
+  ] },
+  { "slug": "jonathan-mingo", "facts": [
+    { "type": "Traded", "date": "2024-11-05", "team": "DAL",
+      "quote": "On November 5, 2024, Mingo and a 2025 seventh-round draft pick (#247-Tommy Akingbesote) were traded to the Dallas Cowboys in exchange for a 2025 fourth-round pick (#114-Trevor Etienne)." }
+  ] },
+  { "slug": "jonnu-smith", "facts": [
+    { "type": "Signed", "date": "2017-05-17", "team": "TEN",
+      "quote": "On May 17, 2017, the Titans signed Smith to a four-year, $3.1 million contract that included a signing bonus of $706,288.",
+      "terms": { "years": 4, "totalM": 3.1 } },
+    { "type": "Signed", "date": "2021-03-19", "team": "NE",
+      "quote": "On March 19, 2021, the New England Patriots signed Smith to a four-year, $50 million deal.",
+      "terms": { "years": 4, "totalM": 50 } },
+    { "type": "Traded", "date": "2023-03-15", "team": "ATL",
+      "quote": "On March 15, 2023, Smith was traded to the Falcons in exchange for a 2023 seventh-round draft pick, reuniting him with head coach Arthur Smith, who was Smith's tight end coach and offensive coordinator during his time in Tennessee." },
+    { "type": "Released", "date": "2024-02-27", "team": "ATL",
+      "quote": "On February 27, 2024, Smith was released by the Falcons." },
+    { "type": "Signed", "date": "2024-03-07", "team": "MIA",
+      "quote": "On March 7, 2024, Smith signed a two-year. $10 million contract with the Miami Dolphins.",
+      "terms": { "years": 2, "totalM": 10 } },
+    { "type": "Traded", "date": "2025-06-30", "team": "PIT",
+      "quote": "On June 30, 2025, Smith, along with Jalen Ramsey and a 2027 seventh-round pick, was traded to the Pittsburgh Steelers in exchange for Minkah Fitzpatrick and a 2027 fifth-round pick." },
+    { "type": "Signed", "date": "2026-08-29", "team": "GB",
+      "quote": "On August 29, 2026, Smith signed with the Green Bay Packers." }
+  ] },
+  { "slug": "jordan-watkins", "facts": [] },
+  { "slug": "jordan-whittington", "facts": [] },
+  { "slug": "josh-oliver", "facts": [
+    { "type": "Placed on IR", "date": "2019-11-18", "team": "JAX",
+      "quote": "Oliver was drafted by the Jacksonville Jaguars in the third round, 69th overall, of the 2019 NFL draft. He was placed on injured reserve on November 18, 2019." },
+    { "type": "Traded", "date": "2021-03-18", "team": "BAL",
+      "quote": "On March 18, 2021, Oliver was traded to the Baltimore Ravens in exchange for a conditional 2022 seventh-round selection." },
+    { "type": "Signed", "date": "2023-03-15", "team": "MIN",
+      "quote": "On March 15, 2023, Oliver signed a three-year, $21 million contract with the Minnesota Vikings.",
+      "terms": { "years": 3, "totalM": 21 } },
+    { "type": "Contract", "date": "2025-06-10", "team": "MIN",
+      "quote": "On June 10, 2025, Oliver signed a three-year, $23.25 million contract extension with the Vikings.",
+      "terms": { "years": 3, "totalM": 23.25 } },
+    { "type": "Placed on IR", "date": "2026-09-29", "team": "MIN",
+      "quote": "On September 29, 2026, Oliver was placed on the Vikings injured reserve list after he tore his biceps against the Tampa Bay Buccaneers on week 3." }
+  ] },
+  { "slug": "josh-whyle", "facts": [
+    { "type": "Waived", "date": "2025-08-26", "team": "TEN",
+      "quote": "On August 26, 2025, Whyle was waived by the Titans as part of final roster cuts." },
+    { "type": "Signed", "date": "2025-08-28", "team": "GB",
+      "quote": "On August 28, 2025, Whyle signed with the Green Bay Packers' practice squad." },
+    { "type": "Signed", "date": "2025-11-04", "team": "GB",
+      "quote": "On August 28, 2025, Whyle signed with the Green Bay Packers' practice squad. He was signed to the active roster on November 4." }
+  ] },
+  { "slug": "juju-smith-schuster", "facts": [
+    { "type": "Signed", "date": "2017-05-17", "team": "PIT",
+      "quote": "On May 17, 2017, the Steelers signed him to a four-year, $4.19 million contract with $1.84 million guaranteed and a signing bonus of $1.19 million.",
+      "terms": { "years": 4, "totalM": 4.19 } },
+    { "type": "Re-signed", "date": "2021-03-19", "team": "PIT",
+      "quote": "On March 19, 2021, Smith-Schuster re-signed with the Steelers on a one-year, $8 million contract.",
+      "terms": { "years": 1, "totalM": 8 } },
+    { "type": "Signed", "date": "2022-03-20", "team": "KC",
+      "quote": "Smith-Schuster signed with the Chiefs on March 20, 2022." },
+    { "type": "Signed", "date": "2023-03-17", "team": "NE",
+      "quote": "On March 17, 2023, Smith-Schuster signed a three-year, $33 million contract with the Patriots.",
+      "terms": { "years": 3, "totalM": 33 } },
+    { "type": "Signed", "date": "2024-08-26", "team": "KC",
+      "quote": "On August 26, 2024, the Chiefs signed Smith-Schuster to a one-year deal, reuniting him with the team he played for in 2022." },
+    { "type": "Re-signed", "date": "2025-03-15", "team": "KC",
+      "quote": "On March 15, 2025, Smith-Schuster re-signed with the Chiefs on a one-year contract." },
+    { "type": "Signed", "date": "2026-06-02", "team": "NYG",
+      "quote": "On June 2, 2026, Smith-Schuster signed with the New York Giants." }
+  ] },
+  { "slug": "julius-chestnut", "facts": [
+    { "type": "Waived", "date": "2022-10-01", "team": "TEN",
+      "quote": "Following the final roster cuts made by the Titans, Chestnut, along with fellow undrafted rookie Tre Avery, made the team. After being inactive the first three games, he was waived on October 1, 2022." },
+    { "type": "Re-signed", "date": "2024-03-13", "team": "TEN",
+      "quote": "On March 13, 2024, Chestnut re-signed with the Titans on a one-year contract, once again as the third running back on the depth chart." },
+    { "type": "Re-signed", "date": "2025-03-19", "team": "TEN",
+      "quote": "On March 19, 2025, Chestnut re-signed with the Titans on a one-year contract." },
+    { "type": "Re-signed", "date": "2026-03-17", "team": "TEN",
+      "quote": "On March 17, 2026, Chestnut re-signed with the Titans on a one-year contract." }
+  ] },
+  { "slug": "justin-watson", "facts": [
+    { "type": "Signed", "date": "2022-02-04", "team": "KC",
+      "quote": "The Chiefs signed Watson to a one-year deal on February 4, 2022." },
+    { "type": "Re-signed", "date": "2023-04-17", "team": "KC",
+      "quote": "Watson re-signed with the Chiefs on April 17, 2023." },
+    { "type": "Signed", "date": "2025-03-14", "team": "HOU",
+      "quote": "On March 14, 2025, Watson signed with the Houston Texans." },
+    { "type": "Released", "date": "2026-08-30", "team": "HOU",
+      "quote": "On August 30, 2026, Watson was released by the Texans." }
+  ] },
+  { "slug": "kalel-mullings", "facts": [
+    { "type": "Placed on IR", "date": "2025-09-26", "team": "TEN",
+      "quote": "Mullings was selected by the Tennessee Titans with the 188th overall pick in the sixth round of the 2025 NFL draft. After playing through an ankle injury in Week 3 against the Indianapolis Colts, Mullings was placed on injured reserve on September 26, 2025." }
+  ] },
+  { "slug": "kameron-johnson", "facts": [] },
+  { "slug": "kareem-hunt", "facts": [
+    { "type": "Released", "date": "2018-11-30", "team": "KC",
+      "quote": "On November 30, 2018, Hunt was released by the Chiefs after a videotape surfaced of him pushing a woman to the ground and then kicking her." },
+    { "type": "Signed", "date": "2019-02-11", "team": "CLE",
+      "quote": "Hunt was signed by the Cleveland Browns on February 11, 2019." },
+    { "type": "Contract", "date": "2020-09-08", "team": "CLE",
+      "quote": "On September 8, 2020, the Browns signed Hunt to a two-year, $13.25 million contract extension.",
+      "terms": { "years": 2, "totalM": 13.25 } },
+    { "type": "Signed", "date": "2023-09-20", "team": "CLE",
+      "quote": "On September 20, 2023, Hunt signed a one-year contract worth $4 million to return to the Browns following a season-ending injury to Chubb.",
+      "terms": { "years": 1, "totalM": 4 } },
+    { "type": "Re-signed", "date": "2025-03-17", "team": "KC",
+      "quote": "Hunt re-signed with the Chiefs on a one-year deal on March 17, 2025." }
+  ] },
+  { "slug": "keandre-lambert-smith", "facts": [
+    { "type": "Placed on IR", "date": "2026-01-10", "team": "LAC",
+      "quote": "He made 10 appearances (two starts) for Los Angeles during his rookie campaign, recording five receptions for 51 yards and one touchdown. Lambert-Smith was placed on season-ending injured reserve on January 10, 2026, due to a hamstring injury suffered in Week 18 against the Denver Broncos." }
+  ] },
+  { "slug": "kendall-milton", "facts": [
+    { "type": "Signed", "date": "2024-05-03", "team": "PHI",
+      "quote": "Milton was signed by the Philadelphia Eagles as an undrafted free agent on May 3, 2024." },
+    { "type": "Waived", "date": "2024-08-27", "team": "PHI",
+      "quote": "Milton was signed by the Philadelphia Eagles as an undrafted free agent on May 3, 2024. He was waived on August 27." },
+    { "type": "Signed", "date": "2024-08-29", "team": "CIN",
+      "quote": "On August 29, 2024, Milton was signed to the Cincinnati Bengals' practice squad." },
+    { "type": "Signed", "date": "2025-01-02", "team": "CIN",
+      "quote": "On January 2, 2025, the Bengals signed Milton to their active roster." },
+    { "type": "Waived", "date": "2025-08-26", "team": "CIN",
+      "quote": "On August 26, 2025, Milton was waived by the Bengals as part of final roster cuts and re-signed to the practice squad the next day." },
+    { "type": "Re-signed", "date": "2026-02-20", "team": "CIN",
+      "quote": "Milton re-signed with the Bengals on February 20, 2026." },
+    { "type": "Waived", "date": "2026-08-30", "team": "CIN",
+      "quote": "Milton re-signed with the Bengals on February 20, 2026. On August 30, he was waived as part of final roster cuts and re-signed to the practice squad the next day." }
+  ] },
+  { "slug": "kene-nwangwu", "facts": [
+    { "type": "Signed", "date": "2021-05-15", "team": "MIN",
+      "quote": "On May 15, 2021, he signed his rookie contract with Minnesota, worth $4.23 million with a $752K signing bonus." },
+    { "type": "Placed on IR", "date": "2021-09-01", "team": "MIN",
+      "quote": "On May 15, 2021, he signed his rookie contract with Minnesota, worth $4.23 million with a $752K signing bonus. Nwangwu was placed on injured reserve on September 1." },
+    { "type": "Waived", "date": "2024-08-27", "team": "MIN",
+      "quote": "On August 27, 2024, Nwangwu was waived by the Vikings as a part of final roster cuts." },
+    { "type": "Claimed", "date": "2024-08-28", "team": "NO",
+      "quote": "On August 28, 2024, Nwangwu was claimed off waivers by the New Orleans Saints, but was waived the next day after failing his physical." },
+    { "type": "Signed", "date": "2024-09-09", "team": "NYJ",
+      "quote": "On September 9, 2024, Nwangwu signed with the New York Jets practice squad." },
+    { "type": "Re-signed", "date": "2025-03-19", "team": "NYJ",
+      "quote": "On March 19, 2025, Nwangwu re-signed with the Jets." },
+    { "type": "Re-signed", "date": "2026-03-19", "team": "NYJ",
+      "quote": "On March 19, 2026, Nwangwu re-signed with the Jets on a one-year, $2 million contract.",
+      "terms": { "years": 1, "totalM": 2 } }
+  ] },
+  { "slug": "kenny-mcintosh", "facts": [
+    { "type": "Placed on IR", "date": "2023-09-09", "team": "SEA",
+      "quote": "McIntosh was drafted by the Seattle Seahawks in the seventh round (237th overall) of the 2023 NFL draft. He was placed on injured reserve on September 9, 2023." },
+    { "type": "Placed on IR", "date": "2025-07-28", "team": "SEA",
+      "quote": "On July 28, 2025, the Seahawks placed McIntosh on injured reserve after he suffered a torn ACL in training camp." },
+    { "type": "Waived", "date": "2026-07-27", "team": "SEA",
+      "quote": "On July 27, 2026, McIntosh was waived by the Seahawks." }
+  ] },
+  { "slug": "kenny-pickett", "facts": [
+    { "type": "Traded", "date": "2024-03-16", "team": "PHI",
+      "quote": "On March 16, 2024, he was traded to the Philadelphia Eagles along with a 2024 fourth-round pick (No. 120; Jaylen Wright) in exchange for a 2024 third-round pick (No. 98; Payton Wilson) and two 2025 seventh-round picks (No. 223 went to the Seattle Seahawks where they selected Damien Martinez) (No. 229; Donte Kent)." },
+    { "type": "Traded", "date": "2025-03-12", "team": "CLE",
+      "quote": "On March 12, 2025, the Eagles traded Pickett to the Cleveland Browns in exchange for Dorian Thompson-Robinson and a fifth-round pick in the 2025 NFL draft." },
+    { "type": "Traded", "date": "2025-08-25", "team": "LV",
+      "quote": "On August 25, 2025, Pickett was traded to the Las Vegas Raiders in exchange for a fifth-round pick (141st overall) in the 2026 NFL draft." },
+    { "type": "Signed", "date": "2026-03-11", "team": "CAR",
+      "quote": "On March 11, 2026, Pickett signed a one-year, $4 million contract with the Carolina Panthers.",
+      "terms": { "years": 1, "totalM": 4 } }
+  ] }
+]

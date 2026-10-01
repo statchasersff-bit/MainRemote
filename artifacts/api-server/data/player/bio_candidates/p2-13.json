@@ -1,0 +1,154 @@
+[
+  {
+    "slug": "jacob-saylors",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2023-08-29",
+        "team": "CIN",
+        "quote": "After going undrafted in the 2023 NFL draft, Saylors signed with the Cincinnati Bengals on April 30, 2023. He was waived by the Bengals on August 29."
+      },
+      {
+        "type": "Waived",
+        "date": "2024-08-12",
+        "team": "NYG",
+        "quote": "On June 18, 2024. Saylors signed with the New York Giants. He was waived by the Giants on August 12."
+      },
+      {
+        "type": "Waived",
+        "date": "2025-08-26",
+        "team": "DET",
+        "quote": "On July 29, 2025, Saylors signed with the Detroit Lions. He was waived on August 26 as part of final roster cuts, and re-signed to the practice squad."
+      }
+    ]
+  },
+  {
+    "slug": "mac-jones",
+    "facts": []
+  },
+  {
+    "slug": "andrei-iosivas",
+    "facts": []
+  },
+  {
+    "slug": "austin-ekeler",
+    "facts": []
+  },
+  {
+    "slug": "joe-mixon",
+    "facts": []
+  },
+  {
+    "slug": "kavontae-turpin",
+    "facts": []
+  },
+  {
+    "slug": "justin-fields",
+    "facts": []
+  },
+  {
+    "slug": "elijah-arroyo",
+    "facts": []
+  },
+  {
+    "slug": "joe-flacco",
+    "facts": [
+      {
+        "type": "Traded",
+        "date": "2019-03-13",
+        "team": "DEN",
+        "quote": "On February 13, 2019, the Ravens agreed to trade Flacco to the Denver Broncos in exchange for their fourth-round pick in the 2019 NFL draft. The deal became official on March 13."
+      },
+      {
+        "type": "Activated",
+        "date": "2021-11-30",
+        "team": "NYJ",
+        "yearFrom": "heading",
+        "quote": "He was placed on the reserve/COVID-19 list by the Jets on November 23 as a close contact with White, who tested positive for COVID-19. Flacco was activated on November 30."
+      }
+    ]
+  },
+  {
+    "slug": "isaiah-davis",
+    "facts": []
+  },
+  {
+    "slug": "ryan-fitzgerald",
+    "facts": []
+  },
+  {
+    "slug": "anthony-richardson",
+    "facts": []
+  },
+  {
+    "slug": "nick-folk",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2009-12-21",
+        "team": "DAL",
+        "yearFrom": "heading",
+        "quote": "Although the Cowboys won the game, the team lost faith in Folk and he was waived on December 21, and was replaced by Shaun Suisham."
+      },
+      {
+        "type": "Re-signed",
+        "date": "2012-03-14",
+        "team": "NYJ",
+        "yearFrom": "heading",
+        "quote": "On March 14, Folk was re-signed by the Jets."
+      },
+      {
+        "type": "Contract",
+        "date": "2014-03-10",
+        "team": "NYJ",
+        "terms": {
+          "years": 4,
+          "totalM": 12
+        },
+        "quote": "Set to become a free agent during the 2014 offseason, it was announced on February 28, 2014, that the Jets had placed the franchise tag on Folk. On March 10, it was announced that Folk had signed a 4-year, $12 million contract."
+      }
+    ]
+  },
+  {
+    "slug": "audric-estime",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2025-10-14",
+        "team": "PHI",
+        "quote": "On August 29, 2025, Estimé signed with the Philadelphia Eagles practice squad. He was released by the Eagles on October 14."
+      }
+    ]
+  },
+  {
+    "slug": "jahan-dotson",
+    "facts": []
+  },
+  {
+    "slug": "xavier-legette",
+    "facts": []
+  },
+  {
+    "slug": "ty-johnson",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2023-08-29",
+        "team": "BUF",
+        "quote": "On August 21, 2023, Johnson signed with the Buffalo Bills. He was waived on August 29, and re-signed to the practice squad."
+      }
+    ]
+  },
+  {
+    "slug": "adam-trautman",
+    "facts": []
+  },
+  {
+    "slug": "ahmani-marshall",
+    "facts": []
+  },
+  {
+    "slug": "alexander-mattison",
+    "facts": []
+  }
+]

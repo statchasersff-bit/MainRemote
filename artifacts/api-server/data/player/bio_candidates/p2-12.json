@@ -1,0 +1,157 @@
+[
+  {
+    "slug": "marvin-mims",
+    "facts": []
+  },
+  {
+    "slug": "jaydon-blue",
+    "facts": []
+  },
+  {
+    "slug": "jj-mccarthy",
+    "facts": []
+  },
+  {
+    "slug": "christian-kirk",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2026-08-30",
+        "team": "SF",
+        "quote": "On March 18, 2026, Kirk signed a one-year, $6 million contract with the San Francisco 49ers. He was placed on injured reserve on August 30."
+      }
+    ]
+  },
+  {
+    "slug": "odell-beckham",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2021-11-08",
+        "team": "CLE",
+        "quote": "After being excused from two practices earlier in the week following outrage on social media by Beckham's father over the way Beckham was being used in the Browns offense, the Browns released a statement on November 5, 2021, saying that they would be releasing Beckham. He was waived on November 8."
+      },
+      {
+        "type": "Signed",
+        "date": "2026-06-01",
+        "team": "NYG",
+        "quote": "On April 20, 2026, Beckham worked out for the New York Giants. On June 1, Beckham re-signed with the Giants, reuniting him with head coach John Harbaugh, whom he played for in 2023 in Baltimore."
+      }
+    ]
+  },
+  {
+    "slug": "roschon-johnson",
+    "facts": []
+  },
+  {
+    "slug": "tyson-bagent",
+    "facts": []
+  },
+  {
+    "slug": "seth-mcgowan",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-05-08",
+        "team": "IND",
+        "quote": "McGowan was selected by the Indianapolis Colts in the seventh round with the 238th overall pick of the 2026 NFL draft. He signed his rookie contract on May 8."
+      }
+    ]
+  },
+  {
+    "slug": "ty-simpson",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-07-25",
+        "team": "LAR",
+        "quote": "On April 23, 2026, the Los Angeles Rams selected Simpson in the first round, with the 13th overall pick of the 2026 NFL draft. On July 25, he signed a 4-year, $25.4 million fully guaranteed contract.",
+        "terms": {
+          "years": 4,
+          "totalM": 25.4
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jake-tonges",
+    "facts": []
+  },
+  {
+    "slug": "ricky-pearsall",
+    "facts": []
+  },
+  {
+    "slug": "cole-kmet",
+    "facts": []
+  },
+  {
+    "slug": "darnell-washington",
+    "facts": []
+  },
+  {
+    "slug": "devin-neal",
+    "facts": []
+  },
+  {
+    "slug": "brashard-smith",
+    "facts": []
+  },
+  {
+    "slug": "case-keenum",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2014-10-28",
+        "team": "LAR",
+        "quote": "On September 1, 2014, Keenum was claimed off waivers by the St. Louis Rams. He was waived by the Rams on October 28 in order to make room on the roster for newly acquired safety Mark Barron."
+      },
+      {
+        "type": "Tender",
+        "date": "2016-04-18",
+        "team": "LAR",
+        "yearFrom": "heading",
+        "quote": "On April 18, Keenum signed a one-year first round restricted free-agent tender with the Rams."
+      }
+    ]
+  },
+  {
+    "slug": "trey-benson",
+    "facts": []
+  },
+  {
+    "slug": "brandon-aiyuk",
+    "facts": []
+  },
+  {
+    "slug": "dawson-knox",
+    "facts": []
+  },
+  {
+    "slug": "deejay-dallas",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-10-01",
+        "team": "CAR",
+        "quote": "On August 28, 2025, Dallas was signed to the Carolina Panthers' practice squad. He was signed to the active roster on October 1."
+      },
+      {
+        "type": "Released",
+        "date": "2026-08-30",
+        "team": "JAX",
+        "quote": "On February 16, 2026, Dallas re-signed with the Jaguars. He was released on August 30 during the final roster cuts."
+      },
+      {
+        "type": "Signed",
+        "date": "2026-09-16",
+        "team": "MIN",
+        "quote": "On September 2, 2026, Dallas signed to the Minnesota Vikings practice squad. He was signed to the active roster on September 16."
+      }
+    ]
+  },
+  {
+    "slug": "darius-slayton",
+    "facts": []
+  }
+]

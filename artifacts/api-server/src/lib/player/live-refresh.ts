@@ -314,6 +314,9 @@ export function refreshDailyData(): Promise<void> {
         }
       }
       await step("ownership", "player/buildRosterPct.mjs");
+      // The Bio tab's fact store: nflverse bulk files (conditional, so an
+      // unchanged file is a 304), Wikidata when its last pass is a week old.
+      await step("bio sources", "player/buildBioSources.mjs");
       await step("handcuff depth", "rb-handcuffs/refresh.mjs");
       await step("handcuff stats", "rb-handcuffs/buildStats.mjs", [season]);
       await step("sos player list", "sos/buildPlayerPool.mjs");
@@ -324,6 +327,9 @@ export function refreshDailyData(): Promise<void> {
           ? { name: "fpa", ok: true }
           : { name: "fpa", ok: false, error: "FPA ingest failed; see the log and /api/status fpa" },
       );
+      // The team hubs' Usage report. nflverse posts a week by about
+      // Wednesday; the builder refuses to write fewer weeks than disk.
+      await step("team usage", "team/buildUsage.mjs", [season]);
       await step("advanced stats", "player-stats/buildSeason.mjs", [season]);
       await step("player advanced stats", "player-stats/buildSeason.mjs", [
         season,

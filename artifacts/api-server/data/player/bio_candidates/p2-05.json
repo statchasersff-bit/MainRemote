@@ -1,0 +1,140 @@
+[
+  {
+    "slug": "bryce-young",
+    "facts": []
+  },
+  {
+    "slug": "courtland-sutton",
+    "facts": []
+  },
+  {
+    "slug": "justin-herbert",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2023-07-25",
+        "team": "LAC",
+        "quote": "On April 28, 2023, the Chargers picked up the fifth-year option on Herbert's contract. On July 25, he signed a five-year extension worth $262.5 million, which extends through the 2029 season.",
+        "terms": {
+          "years": 5,
+          "totalM": 262.5
+        }
+      },
+      {
+        "type": "Placed on IR",
+        "date": "2023-12-12",
+        "team": "LAC",
+        "yearFrom": "heading",
+        "quote": "On December 12, the Chargers announced Herbert would undergo surgery and was placed on injured reserve, ending his season."
+      }
+    ]
+  },
+  {
+    "slug": "jake-ferguson",
+    "facts": []
+  },
+  {
+    "slug": "chris-godwin",
+    "facts": []
+  },
+  {
+    "slug": "jk-dobbins",
+    "facts": []
+  },
+  {
+    "slug": "rico-dowdle",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2020-04-27",
+        "team": "DAL",
+        "quote": "Dowdle was signed as an undrafted free agent by the Dallas Cowboys after the 2020 NFL draft on April 27."
+      }
+    ]
+  },
+  {
+    "slug": "jacory-croskey-merritt",
+    "facts": []
+  },
+  {
+    "slug": "jayden-daniels",
+    "facts": []
+  },
+  {
+    "slug": "cameron-dicker",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2022-08-16",
+        "team": "LAR",
+        "quote": "After going undrafted, Dicker signed with the Los Angeles Rams as an undrafted free agent on May 9, 2022. He was released by Los Angeles on August 16."
+      }
+    ]
+  },
+  {
+    "slug": "marvin-harrison",
+    "facts": []
+  },
+  {
+    "slug": "devaughn-vele",
+    "facts": []
+  },
+  {
+    "slug": "dalton-schultz",
+    "facts": []
+  },
+  {
+    "slug": "jordan-addison",
+    "facts": []
+  },
+  {
+    "slug": "jake-bates",
+    "facts": []
+  },
+  {
+    "slug": "xavier-worthy",
+    "facts": []
+  },
+  {
+    "slug": "bo-nix",
+    "facts": []
+  },
+  {
+    "slug": "dallas-goedert",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-03-15",
+        "team": "PHI",
+        "quote": "On March 15, 2026, after going unsigned the first week of free agency, Goedert would sign a one-year, $7 million contract to return to the Eagles.",
+        "terms": {
+          "years": 1,
+          "totalM": 7
+        }
+      }
+    ]
+  },
+  {
+    "slug": "michael-pittman",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2024-03-11",
+        "team": "IND",
+        "quote": "On March 5, 2024, the Colts placed the franchise tag on Pittman. On March 11, he signed a three-year, $71.5 million contract extension with $46 million guaranteed.",
+        "terms": {
+          "years": 3,
+          "totalM": 71.5
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jordan-mason",
+    "facts": []
+  },
+  {
+    "slug": "juwan-johnson",
+    "facts": []
+  }
+]

@@ -1,0 +1,133 @@
+[
+  {
+    "slug": "joe-milton",
+    "facts": []
+  },
+  {
+    "slug": "john-bates",
+    "facts": []
+  },
+  {
+    "slug": "john-metchie",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2022-05-14",
+        "team": "HOU",
+        "quote": "He was also selected by the BC Lions in the seventh round (59th overall) of the 2022 CFL draft before signing a four-year contract, worth $8 million, with the Texans on May 14, 2022.",
+        "terms": {
+          "years": 4,
+          "totalM": 8
+        }
+      }
+    ]
+  },
+  {
+    "slug": "johnny-mundt",
+    "facts": []
+  },
+  {
+    "slug": "johnny-wilson",
+    "facts": []
+  },
+  {
+    "slug": "jonathan-mingo",
+    "facts": []
+  },
+  {
+    "slug": "jonnu-smith",
+    "facts": []
+  },
+  {
+    "slug": "jordan-watkins",
+    "facts": []
+  },
+  {
+    "slug": "josh-oliver",
+    "facts": []
+  },
+  {
+    "slug": "josh-whyle",
+    "facts": []
+  },
+  {
+    "slug": "juju-smith-schuster",
+    "facts": []
+  },
+  {
+    "slug": "julius-chestnut",
+    "facts": []
+  },
+  {
+    "slug": "justin-watson",
+    "facts": []
+  },
+  {
+    "slug": "kalel-mullings",
+    "facts": []
+  },
+  {
+    "slug": "kareem-hunt",
+    "facts": [
+      {
+        "type": "Tender",
+        "date": "2020-04-20",
+        "team": "CLE",
+        "quote": "On March 16, 2020, the Browns placed a second-round restricted free agent tender on Hunt. He signed the tender on April 20, 2020."
+      },
+      {
+        "type": "Activated",
+        "date": "2019-11-04",
+        "team": "CLE",
+        "yearFrom": "heading",
+        "quote": "Hunt was reinstated from suspension on November 4. He made his Browns debut in Week 10 against the Buffalo Bills."
+      }
+    ]
+  },
+  {
+    "slug": "keandre-lambert-smith",
+    "facts": []
+  },
+  {
+    "slug": "kendall-milton",
+    "facts": []
+  },
+  {
+    "slug": "kene-nwangwu",
+    "facts": []
+  },
+  {
+    "slug": "kenny-mcintosh",
+    "facts": []
+  },
+  {
+    "slug": "kenny-pickett",
+    "facts": []
+  },
+  {
+    "slug": "kenny-yeboah",
+    "facts": []
+  },
+  {
+    "slug": "ko-kieft",
+    "facts": []
+  },
+  {
+    "slug": "kyle-allen",
+    "facts": [
+      {
+        "type": "Re-signed",
+        "date": "2018-10-30",
+        "team": "CAR",
+        "yearFrom": "heading",
+        "quote": "Allen was re-signed to the Panthers practice squad on October 30."
+      },
+      {
+        "type": "Tender",
+        "date": "2021-03-18",
+        "team": "WAS",
+        "quote": "Washington placed an exclusive-rights free agent tender on Allen on March 10, 2021, which he signed on March 18."
+      }
+    ]
+  }
+]

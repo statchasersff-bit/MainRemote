@@ -2950,17 +2950,28 @@ button.scp-search-opt {
   font-weight: 700;
 }
 
-.scp .scp-ol .scp-ol-sum {
+/* mak's hero rework (2026-10-01): the serif sentence became this meta line,
+   and the chips sit under a "Best fit" label instead of floating. */
+.scp .scp-ol .scp-ol-meta {
   margin: 0;
   color: var(--scp-ph-ink-2);
-  font-family: var(--scp-ph-serif);
-  font-size: 18px;
-  line-height: 1.55;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-ol .scp-ol-fithead {
+  margin: 0 0 6px;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .scp .scp-ol .scp-ol-fits {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 250px;
 }
 
@@ -2969,7 +2980,7 @@ button.scp-search-opt {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: #f4f6f9;
   font-size: 14px;
@@ -3011,9 +3022,11 @@ button.scp-search-opt {
   background: #fff;
 }
 
+/* ~20% shorter (mak, 2026-10-01): same four panels, tighter padding and a
+   smaller rank figure. */
 .scp .scp-ol .scp-ol-ex {
   position: relative;
-  padding: 20px 22px;
+  padding: 14px 18px;
 }
 
 .scp .scp-ol .scp-ol-ex + .scp-ol-ex {
@@ -3026,9 +3039,9 @@ button.scp-search-opt {
 }
 
 .scp .scp-ol .scp-ol-rk {
-  margin: 6px 0 4px;
+  margin: 4px 0 2px;
   color: var(--scp-ph-ink);
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 800;
   font-stretch: 72%;
   font-variant-numeric: tabular-nums;
@@ -3036,15 +3049,19 @@ button.scp-search-opt {
 }
 
 .scp .scp-ol .scp-ol-rk.is-text {
-  margin: 8px 0 12px;
-  font-size: 22px;
+  margin: 7px 0 3px;
+  font-size: 19px;
   font-stretch: 85%;
   line-height: 1.2;
 }
 
 .scp .scp-ol .scp-ol-exsub {
   color: var(--scp-ph-ink-2);
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.scp .scp-ol .scp-ol-ex.is-ros .scp-ol-exsub {
+  color: #9fb0c8;
 }
 
 .scp .scp-ol .scp-ol-ex.is-now {
@@ -3066,28 +3083,6 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-ex.is-ros .scp-ol-rk {
   color: #fff;
-}
-
-.scp .scp-ol .scp-ol-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  padding: 0 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.scp .scp-ol .scp-ol-btn.is-gold {
-  background: var(--scp-ph-gold);
-  /* The page's link rules paint anchors in the team colour; this is a button. */
-  color: var(--scp-ph-ink) !important;
-}
-
-.scp .scp-ol .scp-ol-btn.is-gold:hover {
-  background: #edc766;
 }
 
 .scp .scp-ol .scp-ol-arrow {
@@ -3155,8 +3150,11 @@ button.scp-search-opt {
 
 /* ---- drivers: the rank strips */
 
+/* Compressed to mak's note of 2026-10-01: same three rows and the same six
+   tiles below, ~90px shorter — tighter row padding, a smaller verdict word,
+   shorter bars. Nothing is dropped; the strips stay the centerpiece. */
 .scp .scp-ol .scp-ol-drivers {
-  padding: 6px 24px;
+  padding: 4px 20px;
   border: 1px solid var(--scp-ph-line);
   border-radius: 16px;
   background: #fff;
@@ -3165,9 +3163,9 @@ button.scp-search-opt {
 .scp .scp-ol .scp-ol-drv {
   display: grid;
   grid-template-columns: 200px 150px minmax(0, 1fr);
-  gap: 20px;
+  gap: 16px;
   align-items: center;
-  padding: 18px 0;
+  padding: 10px 0;
 }
 
 .scp .scp-ol .scp-ol-drv + .scp-ol-drv {
@@ -3184,7 +3182,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-dverdict {
   margin-top: 2px;
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   font-stretch: 80%;
   line-height: 1.1;
@@ -3210,7 +3208,7 @@ button.scp-search-opt {
 .scp .scp-ol .scp-ol-val strong {
   display: block;
   color: var(--scp-ph-ink);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   font-stretch: 80%;
   font-variant-numeric: tabular-nums;
@@ -3225,13 +3223,13 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-dots i {
   display: block;
-  height: 18px;
+  height: 12px;
   border-radius: 3px;
   background: #e6eaf0;
 }
 
 .scp .scp-ol .scp-ol-dots i.is-me {
-  height: 30px;
+  height: 22px;
   background: var(--scp-team, var(--scp-ph-ink));
   box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--scp-team, var(--scp-ph-ink));
 }
@@ -3239,7 +3237,7 @@ button.scp-search-opt {
 .scp .scp-ol .scp-ol-axis {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--scp-ph-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -3258,14 +3256,14 @@ button.scp-search-opt {
 .scp .scp-ol .scp-ol-adv {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   border: 1px solid var(--scp-ph-line);
   border-radius: 14px;
   background: #fff;
 }
 
 .scp .scp-ol .scp-ol-adv div {
-  padding: 14px 16px;
+  padding: 10px 14px;
 }
 
 .scp .scp-ol .scp-ol-adv div + div {
@@ -3279,7 +3277,7 @@ button.scp-search-opt {
 
 .scp .scp-ol .scp-ol-adv dd {
   margin: 2px 0 0;
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
   font-stretch: 80%;
   font-variant-numeric: tabular-nums;
@@ -3344,29 +3342,45 @@ button.scp-search-opt {
   line-height: 1.55;
 }
 
+/* One split card (mak, 2026-10-01): the two boxes share a border, a check
+   or a dot leads each claim, and the evidence sits under it as subtext. */
 .scp .scp-ol .scp-ol-ur {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  overflow: hidden;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 16px;
+  background: #fff;
 }
 
-.scp .scp-ol .scp-ol-card.is-up {
-  border-top: 4px solid var(--scp-ph-good);
+.scp .scp-ol .scp-ol-ur .scp-ol-card {
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
 
-.scp .scp-ol .scp-ol-card.is-risk {
-  border-top: 4px solid var(--scp-ph-bad);
+.scp .scp-ol .scp-ol-ur .scp-ol-card.is-risk {
+  border-left: 1px solid var(--scp-ph-line);
+}
+
+.scp .scp-ol .scp-ol-ur .scp-ol-card.is-up h3 {
+  color: var(--scp-ph-good) !important;
+}
+
+.scp .scp-ol .scp-ol-ur .scp-ol-card.is-risk h3 {
+  color: var(--scp-ph-bad) !important;
 }
 
 .scp .scp-ol .scp-ol-ur ul {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .scp .scp-ol .scp-ol-ur li {
+  position: relative;
   margin: 0;
-  padding: 12px 0;
+  padding: 10px 0 10px 22px;
   border-top: 1px solid #eef1f5;
   color: var(--scp-ph-ink-2);
   font-size: 15px;
@@ -3377,8 +3391,40 @@ button.scp-search-opt {
   border-top: 0;
 }
 
-.scp .scp-ol .scp-ol-ur li strong {
+.scp .scp-ol .scp-ol-ur li::before {
+  position: absolute;
+  left: 0;
+  top: 9px;
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-ur .is-up li::before {
+  content: "✓";
+  color: var(--scp-ph-good);
+}
+
+.scp .scp-ol .scp-ol-ur .is-risk li::before {
+  content: "•";
+  color: var(--scp-ph-bad);
+}
+
+.scp .scp-ol .scp-ol-claim {
+  display: block;
   color: var(--scp-ph-ink);
+  font-weight: 700;
+}
+
+.scp .scp-ol .scp-ol-evid {
+  display: block;
+  margin-top: 1px;
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+/* "Preseason outlook originally published …" as tiny metadata (mak, 2026-10-01). */
+.scp .scp-ol .scp-st-byline {
+  margin: 0 0 10px;
+  font-size: 12px;
 }
 
 .scp .scp-ol .scp-ol-sched {
@@ -3455,6 +3501,11 @@ button.scp-search-opt {
 
   .scp .scp-ol .scp-ol-ur {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp .scp-ol .scp-ol-ur .scp-ol-card.is-risk {
+    border-left: 0;
+    border-top: 1px solid var(--scp-ph-line);
   }
 }
 
@@ -9635,4 +9686,613 @@ a.scp-peer:focus-visible {
 .scp .scp-table tbody th[scope="row"],
 .scp .scp-table tfoot th {
   color: var(--sc-navy) !important;
+}
+
+/* ---------------------------------------------------------------- bio tab */
+
+/*
+ * mak's Bio spec (2026-09-30, lib/player/bio-tab.ts): quick facts, the career
+ * journey rail, the stop cards and the transactions log, from the spec's
+ * Appendix A. Scoped .scp-bo inside .scp-ox.scp-st, like the other spec tabs.
+ */
+
+.scp .scp-bo .scp-bo-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 16px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.scp .scp-bo .scp-bo-grid dt {
+  margin: 0;
+  color: var(--scp-ph-muted);
+  font-weight: 400;
+}
+
+.scp .scp-bo .scp-bo-grid dd {
+  margin: 0;
+  color: var(--scp-ph-ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+.scp .scp-bo .scp-bo-grid.is-links a {
+  color: var(--scp-team);
+  text-decoration: none;
+}
+
+.scp .scp-bo .scp-bo-grid.is-links a:hover {
+  text-decoration: underline;
+}
+
+/* the journey rail */
+
+.scp .scp-bo .scp-bo-journey {
+  margin: 0;
+  padding: 22px;
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 16px;
+}
+
+.scp .scp-bo .scp-bo-rail {
+  display: grid;
+  gap: 4px;
+}
+
+.scp .scp-bo .scp-bo-stop {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scp .scp-bo .scp-bo-band {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 86px;
+  padding: 12px 12px 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--c);
+  color: #ffffff;
+}
+
+.scp .scp-bo .scp-bo-band::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: var(--a, transparent);
+}
+
+.scp .scp-bo .scp-bo-ab {
+  font-size: 24px;
+  font-weight: 800;
+  font-stretch: 72%;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.scp .scp-bo .scp-bo-yrs {
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+.scp .scp-bo .scp-bo-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.scp .scp-bo .scp-bo-stop.is-cur .scp-bo-band {
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--c);
+}
+
+.scp .scp-bo .scp-bo-stop.is-cur {
+  padding: 0 5px;
+}
+
+.scp .scp-bo .scp-bo-st {
+  padding: 10px 4px 0;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-bo .scp-bo-st b {
+  display: block;
+  color: var(--scp-ph-ink);
+  font-size: 17px;
+  font-weight: 700;
+  font-stretch: 80%;
+}
+
+/* The best fantasy season, on the block it happened in (mak, 2026-10-01) —
+   one of the bio's three marked fantasy spots. */
+.scp .scp-bo .scp-bo-best {
+  padding: 3px 4px 0;
+  color: var(--scp-st-gold);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-bo .scp-bo-axis {
+  display: grid;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--scp-ph-line);
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp .scp-bo .scp-bo-note {
+  margin: 12px 0 0;
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+/* every stop */
+
+.scp .scp-bo .scp-bo-stops {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-bo .scp-bo-stops::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 15px;
+  width: 2px;
+  background: var(--scp-ph-line);
+}
+
+.scp .scp-bo .scp-bo-stops > li {
+  position: relative;
+  margin: 0;
+  padding: 0 0 16px 44px;
+  list-style: none;
+}
+
+.scp .scp-bo .scp-bo-stops > li::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 7px;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 3px solid #f6f7f9;
+  border-radius: 50%;
+  background: var(--c, var(--scp-ph-ink-2));
+}
+
+.scp .scp-bo .scp-bo-stops > li.is-college::before {
+  background: var(--scp-ph-muted);
+}
+
+.scp .scp-bo .scp-bo-ev {
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 12px;
+}
+
+.scp .scp-bo .scp-bo-ev h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  color: var(--scp-ph-ink);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp .scp-bo .scp-bo-yr {
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.scp .scp-bo .scp-bo-chip {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--scp-ph-good-soft);
+  color: var(--scp-ph-good);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp .scp-bo .scp-bo-ev p {
+  margin: 6px 0 0;
+  padding: 0;
+  color: var(--scp-ph-ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* The sub-heading of the merged section (mak, 2026-10-01): the stop list
+   lives under the timeline's own H2 now, and the chips row is gone. */
+.scp .scp-bo .scp-bo-stophead {
+  margin: 28px 0 10px;
+  color: var(--scp-ph-ink) !important;
+  font-size: 17px !important;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scp .scp-bo .scp-bo-stopnote {
+  margin: -4px 0 14px;
+  color: var(--scp-ph-muted);
+  font-size: 13px;
+}
+
+.scp .scp-bo .scp-bo-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: #f6ebcf;
+  color: var(--scp-ph-ink);
+  font-size: 15px;
+}
+
+.scp .scp-bo .scp-bo-cta a {
+  color: var(--scp-ph-ink);
+  font-weight: 700;
+}
+
+/* transactions */
+
+.scp .scp-bo .scp-bo-txlog {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 14px;
+}
+
+.scp .scp-bo .scp-bo-txlog li {
+  display: grid;
+  grid-template-columns: 120px 120px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin: 0;
+  padding: 12px 18px;
+  font-size: 14px;
+  list-style: none;
+}
+
+.scp .scp-bo .scp-bo-txlog li + li {
+  border-top: 1px solid #eef1f5;
+}
+
+.scp .scp-bo .scp-bo-txlog time {
+  font-weight: 700;
+}
+
+.scp .scp-bo .scp-bo-tx {
+  display: inline-block;
+  justify-self: start;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.scp .scp-bo .scp-bo-tx.is-trade {
+  background: #e6ecf5;
+  color: var(--scp-ph-ink);
+}
+
+.scp .scp-bo .scp-bo-tx.is-draft {
+  background: var(--scp-ph-gold-soft);
+  color: var(--scp-ph-gold);
+}
+
+.scp .scp-bo .scp-bo-tx.is-sign {
+  background: var(--scp-ph-good-soft);
+  color: var(--scp-ph-good);
+}
+
+.scp .scp-bo .scp-bo-tx.is-deal {
+  background: var(--scp-ph-mid-soft);
+  color: var(--scp-ph-mid);
+}
+
+.scp .scp-bo .scp-bo-src {
+  margin: 12px 0 0;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .scp .scp-bo .scp-bo-journey {
+    padding: 16px;
+  }
+
+  .scp .scp-bo .scp-bo-txlog li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* -------------------------------------------- game log: ladder and cards */
+
+/*
+ * "Where His Weeks Finished" and the "Game-by-Game Breakdown" cards, to mak's
+ * Game Log spec of 2026-10-01. The spec's CSS verbatim, under the site's
+ * armour: classes scp-gl-prefixed, every selector led by `.scp`, modifier
+ * classes `is-` flagged so a host theme's own `.best` or `.w` cannot land
+ * here, and the spec's tokens mapped onto the header block's (--ink is
+ * --scp-ph-ink, --team is --scp-team, and so on — same values). The spec's
+ * --gold is #b8871f, deliberately darker than --scp-ph-gold: it sits behind
+ * white badge text. The `.num` utility is already the wrapper's default
+ * (.scp-ox sets tabular figures).
+ */
+.scp .scp-gl-ladder {
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 16px;
+  padding: 26px 28px 20px;
+}
+.scp .scp-gl-track {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: #edf0f4;
+  /* Room above for the labels; has-below adds it underneath too. */
+  margin: 64px 0 10px;
+}
+.scp .scp-gl-track.has-below {
+  margin-bottom: 58px;
+}
+.scp .scp-gl-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 7px;
+}
+.scp .scp-gl-band.is-b1 {
+  left: 0;
+  background: linear-gradient(90deg, #e9c15c, #f3db9a);
+}
+.scp .scp-gl-band.is-b2 {
+  background: #d9e1ec;
+  border-radius: 0;
+}
+.scp .scp-gl-pin {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.scp .scp-gl-pin i {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--scp-ph-ink);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(14, 27, 46, 0.3);
+}
+.scp .scp-gl-pin.is-best i {
+  background: var(--scp-team);
+}
+.scp .scp-gl-pin span {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  text-align: center;
+  font-size: 12px;
+  color: var(--scp-ph-muted);
+  line-height: 1.25;
+}
+.scp .scp-gl-pin.is-below span {
+  bottom: auto;
+  top: 26px;
+}
+/* Hidden visually, kept for screen readers. */
+.scp .scp-gl-pin.is-nolabel span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.scp .scp-gl-pin span strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  font-stretch: 80%;
+  color: var(--scp-ph-ink);
+}
+.scp .scp-gl-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-gl-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-gl-key span::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 8px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.scp .scp-gl-key .is-k1::before {
+  background: #e9c15c;
+}
+.scp .scp-gl-key .is-k2::before {
+  background: #d9e1ec;
+}
+.scp .scp-gl-key .is-k3::before {
+  background: #edf0f4;
+}
+/* The weeks whose labels found no room, on their own line — no swatch. */
+.scp .scp-gl-key .scp-gl-also {
+  flex-basis: 100%;
+}
+.scp .scp-gl-key .scp-gl-also::before {
+  content: none;
+}
+/* The 10-plus-game legend: every week in order, compact. */
+.scp .scp-gl-legend {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--scp-ph-muted);
+}
+
+.scp .scp-gl-games {
+  display: grid;
+  gap: 14px;
+}
+.scp .scp-gl-game {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 120px;
+  gap: 20px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  /* The left border carries the tier: gold for tier 1, red for a bust. */
+  border-left: 5px solid var(--scp-ph-line);
+}
+.scp .scp-gl-game.is-t12 {
+  border-left-color: #b8871f;
+}
+.scp .scp-gl-game.is-low {
+  border-left-color: var(--scp-ph-bad);
+}
+.scp .scp-gl-when {
+  font-size: 13px;
+  color: var(--scp-ph-muted);
+}
+.scp .scp-gl-opp {
+  font-size: 20px;
+  font-weight: 800;
+  font-stretch: 80%;
+  margin: 2px 0;
+}
+.scp .scp-gl-score {
+  font-size: 14px;
+  font-weight: 700;
+}
+.scp .scp-gl-score.is-w {
+  color: var(--scp-ph-good);
+}
+.scp .scp-gl-score.is-l {
+  color: var(--scp-ph-bad);
+}
+.scp .scp-gl-head {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.scp .scp-gl-line {
+  font-size: 14px;
+  color: var(--scp-ph-ink-2);
+  margin: 0 0 6px;
+}
+.scp .scp-gl-note {
+  margin: 0;
+  font-family: var(--scp-ph-serif);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--scp-ph-ink);
+}
+.scp .scp-gl-fp {
+  text-align: right;
+}
+.scp .scp-gl-fp b {
+  display: block;
+  font-size: 34px;
+  font-weight: 800;
+  font-stretch: 76%;
+  line-height: 1;
+}
+.scp .scp-gl-fbadge {
+  display: inline-block;
+  min-width: 48px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #edf0f4;
+  color: var(--scp-ph-ink-2);
+}
+.scp .scp-gl-fbadge.is-t12 {
+  background: #b8871f;
+  color: #fff;
+}
+.scp .scp-gl-fbadge.is-t24 {
+  background: #e6ecf5;
+  color: var(--scp-ph-ink);
+}
+.scp .scp-gl-fbadge.is-low {
+  background: var(--scp-ph-bad-soft);
+  color: var(--scp-ph-bad);
+}
+.scp .scp-gl-byline {
+  font-size: 13px;
+  color: var(--scp-ph-muted);
+  margin: 0 0 18px;
+}
+
+@media (max-width: 640px) {
+  .scp .scp-gl-ladder {
+    padding: 22px 16px 16px;
+  }
+  .scp .scp-gl-game {
+    grid-template-columns: 1fr auto;
+    gap: 10px 16px;
+  }
+  .scp .scp-gl-body {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
