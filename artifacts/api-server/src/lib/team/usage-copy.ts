@@ -411,7 +411,8 @@ export function passNote(view: UsageView, qbName: string): string {
 
 export const TIER_LABEL = {
   set: "Set & forget",
-  solid: "Solid starter",
+  starter: "Starter",
+  flex: "Flex",
   volatile: "Volatile",
   stash: "Stash",
 } as const;

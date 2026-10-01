@@ -37,6 +37,7 @@ import {
   type TeamRoster,
 } from "./roster";
 import type { NflTeam } from "./teams";
+import { coachingVersion } from "./coaching";
 import { usageVersion } from "./usage";
 
 /** Stories shown before "View more" reveals the rest. */
@@ -243,7 +244,9 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     data.nextOpponentDefense?.rankLabel ?? "",
     data.state.season,
     data.state.week,
-    // The Usage tab reads a file the daily chain rebuilds in place.
+    // The Usage tab reads a file the daily chain rebuilds in place; the
+    // Coaching tab reads one that hand edits and new club entries change.
     usageVersion(data.state.season),
+    coachingVersion(data.state.season),
   ].join("-");
 }

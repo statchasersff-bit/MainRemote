@@ -703,10 +703,15 @@ describe("embedded mode", () => {
     // IR falls off the four-deep preview and the chart correctly shows someone
     // else first. The answer has to say why, or it reads as a wrong answer to
     // anyone who knows the roster.
+    //
+    // Out designations only, matching sidelinedBehind(): a Questionable RB4
+    // off a four-deep chart is a healthy scratch next week, not a chart
+    // mystery, and the FAQ deliberately leaves him unexplained.
     const charted2 = [...doc.querySelectorAll("#depth-chart .sct-depth-name-long, #depth-chart .sct-depth-name")]
       .map((n) => n.textContent.trim());
-    const outNames = [...doc.querySelectorAll(".sct-injury-name")]
-      .map((n) => n.textContent.trim())
+    const outNames = [...doc.querySelectorAll(".sct-injury")]
+      .filter((row) => row.querySelector('.sct-injury-status[data-severity="out"]'))
+      .map((row) => row.querySelector(".sct-injury-name")?.textContent.trim())
       .filter((n) => n && !charted2.includes(n));
     if (outNames.length) {
       const mentioned = entries.some((e) =>

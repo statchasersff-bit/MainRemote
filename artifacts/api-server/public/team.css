@@ -1365,6 +1365,7 @@ body.sct-page.is-embed {
 
 .sct[data-sct-tabs="js"] #outlook.is-active ~ [data-sct-faq-for="outlook"],
 .sct[data-sct-tabs="js"] #usage.is-active ~ [data-sct-faq-for="usage"],
+.sct[data-sct-tabs="js"] #coaching.is-active ~ [data-sct-faq-for="coaching"],
 .sct[data-sct-tabs="js"] #stats.is-active ~ [data-sct-faq-for="stats"],
 .sct[data-sct-tabs="js"] #depth-chart.is-active ~ [data-sct-faq-for="depth-chart"],
 .sct[data-sct-tabs="js"] #schedule.is-active ~ [data-sct-faq-for="schedule"] {
@@ -1381,6 +1382,7 @@ body.sct-page.is-embed {
 
   .sct:not([data-sct-tabs="js"]) #outlook:target ~ [data-sct-faq-for="outlook"],
   .sct:not([data-sct-tabs="js"]) #usage:target ~ [data-sct-faq-for="usage"],
+  .sct:not([data-sct-tabs="js"]) #coaching:target ~ [data-sct-faq-for="coaching"],
   .sct:not([data-sct-tabs="js"]) #stats:target ~ [data-sct-faq-for="stats"],
   .sct:not([data-sct-tabs="js"]) #depth-chart:target ~ [data-sct-faq-for="depth-chart"],
   .sct:not([data-sct-tabs="js"]) #schedule:target ~ [data-sct-faq-for="schedule"] {
@@ -12879,7 +12881,7 @@ a.sct-ex-game:hover .sct-ex-line {
 }
 
 :is(.sct, #sct-table-armour) .sct-us-table :where(th, td) {
-  padding: 12px 12px;
+  padding: 9px 12px;
   border: 0;
   border-bottom: 1px solid var(--sc-hairline);
   color: var(--sc-ink);
@@ -12958,6 +12960,17 @@ a.sct-ex-game:hover .sct-ex-line {
   font-weight: 800;
 }
 
+/* In the table the name is a block, so the link's usual underline would run
+   the full column width and read as a rule through the identity cell. */
+:is(.sct, #sct-table-armour) .sct-us-name.sct-player-link {
+  border-bottom: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-name.sct-player-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sc-gold);
+}
+
 :is(.sct, #sct-table-armour) .sct-us-role,
 :is(.sct, #sct-table-armour) .sct-us-lrank,
 :is(.sct, #sct-table-armour) .sct-us-cap {
@@ -12982,11 +12995,20 @@ a.sct-ex-game:hover .sct-ex-line {
   white-space: nowrap;
 }
 
+/* WOPR is the table's lead metric: its number outranks the share columns. */
+:is(.sct, #sct-table-armour) .sct-us-num.is-wopr {
+  font-size: 1.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-share .sct-us-num.is-mid {
+  font-size: 1.2rem;
+}
+
 :is(.sct, #sct-table-armour) .sct-us-gauge {
   position: relative;
   display: block;
-  width: 120px;
-  height: 7px;
+  width: 130px;
+  height: 9px;
   margin-top: 6px;
   border-radius: 4px;
   background: var(--sc-surface-sink);
@@ -13038,11 +13060,20 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-muted);
 }
 
+/* The trail is a second read, not a first: faded until the row is hovered or
+   its profile has focus, so the big share + delta carry the column. */
 :is(.sct, #sct-table-armour) .sct-us-spark {
   display: inline-flex;
   align-items: flex-end;
   gap: 3px;
-  height: 30px;
+  height: 22px;
+  opacity: 0.35;
+  transition: opacity 120ms ease;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-row:hover .sct-us-spark,
+:is(.sct, #sct-table-armour) .sct-us-row:focus-within .sct-us-spark {
+  opacity: 1;
 }
 
 :is(.sct, #sct-table-armour) .sct-us-spark-bar {
@@ -13089,9 +13120,14 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--us-green);
 }
 
-:is(.sct, #sct-table-armour) .sct-us-tier.is-solid {
+:is(.sct, #sct-table-armour) .sct-us-tier.is-starter {
   background: var(--us-blue-soft);
   color: var(--us-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-tier.is-flex {
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
 }
 
 :is(.sct, #sct-table-armour) .sct-us-tier.is-volatile {
@@ -13164,11 +13200,41 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--sc-navy);
 }
 
+:is(.sct, #sct-table-armour) .sct-us-key-help {
+  margin: 0 0 22px;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-sum {
+  display: inline-block;
+  color: var(--sc-muted-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-sum::-webkit-details-marker {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-sum::before {
+  content: "▸ ";
+  color: var(--sc-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-help[open] .sct-us-key-sum::before {
+  content: "▾ ";
+}
+
+:is(.sct, #sct-table-armour) .sct-us-key-sum:hover {
+  color: var(--sc-navy);
+}
+
 :is(.sct, #sct-table-armour) .sct-us-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  margin: 0 0 22px;
+  margin: 10px 0 0;
   color: var(--sc-muted-strong);
   font-size: 0.78rem;
 }
@@ -13308,6 +13374,10 @@ a.sct-ex-game:hover .sct-ex-line {
     font-size: 1.7rem;
   }
 
+  :is(.sct, #sct-table-armour) .sct-us-num.is-wopr {
+    font-size: 1.45rem;
+  }
+
   :is(.sct, #sct-table-armour) .sct-us-gaps {
     gap: 4px;
   }
@@ -13334,5 +13404,634 @@ a.sct-ex-game:hover .sct-ex-line {
 
   :is(.sct, #sct-table-armour) .sct-us-gval {
     text-align: left;
+  }
+}
+
+/* ------------------------------------------------- coaching profile ---- */
+
+/* Same armour as the usage report above it: every selector carries the
+   id-weight prefix so Divi's bare-element rules lose on specificity, and the
+   block takes back the theme's paragraph/list padding once at the root.
+   tests/table-armour.test.mjs keeps new rules prefixed. */
+:is(.sct, #sct-table-armour) .sct-co :where(p, ul, ol, li, h3, h4) {
+  padding: 0;
+  line-height: inherit;
+}
+
+:is(.sct, #sct-table-armour) :where([data-sct-faq-for="coaching"]) :where(p) {
+  padding: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-co {
+  --co-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --co-green: #15803d;
+  --co-green-soft: #dcfce7;
+  --co-red: #b91c1c;
+  --co-red-soft: #fee2e2;
+  --co-amber: #b45309;
+  --co-amber-soft: #fef3c7;
+  --co-blue: #1d4e8c;
+  --co-blue-soft: #dbeafe;
+  --co-gold-soft: #fbf3d5;
+  --co-radius: 14px;
+  container-type: inline-size;
+  container-name: coaching;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-intro {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-h3 {
+  margin: 0 0 2px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-h4 {
+  margin: 0 0 6px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1rem !important;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-body {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-block {
+  margin: 0 0 26px;
+}
+
+/* --------------------------------------------- coach card + tendencies */
+
+:is(.sct, #sct-table-armour) .sct-co-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.6fr;
+  gap: 18px;
+  align-items: start;
+  margin: 0 0 26px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--co-radius);
+  background: linear-gradient(
+    135deg,
+    var(--team-primary, #0b1634) 0%,
+    color-mix(in srgb, var(--team-primary, #0b1634) 72%, #000) 100%
+  );
+  color: var(--co-ink, #fff);
+}
+
+/* The team-secondary diagonal slash, clipped by the card. */
+:is(.sct, #sct-table-armour) .sct-co-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -40%;
+  right: -16%;
+  width: 34%;
+  height: 180%;
+  background: var(--team-secondary, var(--sc-gold));
+  opacity: 0.22;
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-kicker {
+  margin: 0;
+  color: var(--sc-gold);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-name {
+  --sc-font: var(--co-display);
+  margin: 4px 0 8px;
+  padding: 0;
+  color: inherit !important;
+  font-size: 2.1rem !important;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-tree {
+  display: inline-block;
+  margin: 0;
+  padding: 3px 10px;
+  border: 1px solid var(--sc-gold);
+  border-radius: 999px;
+  color: var(--sc-gold);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-card-sub {
+  margin: 10px 0 0;
+  font-size: 0.84rem;
+  opacity: 0.92;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-path {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px dashed color-mix(in srgb, currentColor 32%, transparent);
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-step-years {
+  flex: none;
+  font-weight: 700;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rel {
+  margin: 14px 0 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-label {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+}
+
+/* The rating word rides a soft chip so the semantic colour reads on any of
+   the 32 primaries behind it. */
+:is(.sct, #sct-table-armour) .sct-co-rating {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rating.is-high {
+  background: var(--co-green-soft);
+  color: var(--co-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rating.is-medium {
+  background: var(--co-amber-soft);
+  color: var(--co-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rating.is-low {
+  background: var(--co-red-soft);
+  color: var(--co-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-relbar {
+  display: block;
+  height: 7px;
+  margin: 9px 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-relbar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--sc-gold), #4ade80);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-rel-note {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ledger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 10px 0 0;
+  padding-top: 9px;
+  border-top: 1px dashed color-mix(in srgb, currentColor 32%, transparent);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-ledger-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-scroll {
+  overflow-x: auto;
+}
+
+:is(.sct, #sct-table-armour) table.sct-co-table:not(.variations),
+:is(.sct, #sct-table-armour) table.sct-co-dossier:not(.variations),
+:is(.sct, #sct-table-armour) table.sct-co-finishes:not(.variations) {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+:is(.sct, #sct-table-armour) table.sct-co-table:not(.variations) {
+  min-width: 560px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-co-dossier:not(.variations),
+:is(.sct, #sct-table-armour) table.sct-co-finishes:not(.variations) {
+  min-width: 640px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-th {
+  padding: 9px 10px;
+  border: 0;
+  background: var(--sc-surface-soft);
+  color: var(--sc-muted) !important;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-td {
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--sc-hairline);
+  color: var(--sc-ink);
+  font-size: 0.84rem;
+  font-weight: 400;
+  text-align: left;
+  vertical-align: top;
+}
+
+:is(.sct, #sct-table-armour) th.sct-co-td {
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-cell-sub {
+  display: block;
+  margin-top: 1px;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-td.is-now {
+  color: var(--sc-navy);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-td.is-avg {
+  color: var(--sc-muted);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-change {
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-change.is-up {
+  color: var(--co-green);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-change.is-down {
+  color: var(--co-red);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-change.is-flat {
+  color: var(--sc-muted);
+}
+
+/* ------------------------------------------------------------ shift cards */
+
+:is(.sct, #sct-table-armour) .sct-co-shifts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-shift {
+  padding: 14px 16px;
+  border: 1px solid var(--sc-border);
+  border-left: 4px solid var(--sc-gold);
+  border-radius: 12px;
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-shift-stat {
+  --sc-font: var(--co-display);
+  margin: 0 0 4px;
+  color: var(--sc-navy);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-shift-unit {
+  margin-left: 6px;
+  color: var(--sc-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------ staff strip */
+
+:is(.sct, #sct-table-armour) .sct-co-staff {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 26px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-staffcard {
+  padding: 14px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: 12px;
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-staffcard.is-watch {
+  border-top: 3px solid var(--co-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-role {
+  margin: 0 0 6px;
+  color: var(--sc-muted-strong);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-staffcard.is-watch .sct-co-role {
+  color: var(--co-amber);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-role.is-blue {
+  color: var(--co-blue);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-staff-sub {
+  margin: 0 0 8px;
+  color: var(--co-blue);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------- dossier + finishes */
+
+:is(.sct, #sct-table-armour) .sct-co-num {
+  --sc-font: var(--co-display);
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+:is(.sct, #sct-table-armour) tr.is-current .sct-co-td {
+  background: var(--co-gold-soft);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finish.is-good {
+  color: var(--co-green);
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-finish.is-bad {
+  color: var(--co-red);
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-fnote {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------------ rookie note */
+
+:is(.sct, #sct-table-armour) .sct-co-rookie {
+  margin: 0 0 26px;
+  padding: 12px 16px;
+  border: 1px solid var(--sc-border);
+  border-left: 4px solid var(--co-blue);
+  border-radius: 10px;
+  background: var(--sc-surface);
+}
+
+/* ----------------------------------------------------------------- panels */
+
+:is(.sct, #sct-table-armour) .sct-co-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 20px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-panel {
+  padding: 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--co-radius);
+  background: var(--sc-surface);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-panel-sub {
+  margin: 0 0 4px;
+  color: var(--sc-muted);
+  font-size: 0.78rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-key {
+  margin: 0 0 10px;
+  color: var(--sc-muted);
+  font-size: 0.7rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-brow {
+  display: grid;
+  grid-template-columns: minmax(96px, 150px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-blabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-btrack {
+  position: relative;
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--sc-surface-sink);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bfill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  border-radius: 6px;
+  background: var(--co-blue);
+  opacity: 0.75;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bfill.is-gold {
+  background: var(--sc-gold);
+  opacity: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bmark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-bval {
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-cols {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 120px;
+  margin: 14px 0 4px;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 100%;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-colval {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-colbar {
+  display: block;
+  width: 100%;
+  max-width: 44px;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--co-blue) 55%, #fff);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-col.is-current .sct-co-colbar {
+  background: var(--sc-gold);
+}
+
+:is(.sct, #sct-table-armour) .sct-co-collabel {
+  color: var(--sc-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-co-note {
+  margin: 10px 0 0;
+  font-size: 0.84rem;
+}
+
+/* ------------------------------------------------------------ bottom line */
+
+:is(.sct, #sct-table-armour) .sct-co-bottom {
+  margin: 0;
+  padding: 14px 18px;
+  border: 1px solid var(--sc-gold);
+  border-radius: var(--co-radius);
+  background: var(--co-gold-soft);
+  font-size: 0.9rem;
+}
+
+/* The LOW-reliability caveat other sections carry (coachingCaveat()). It sits
+   outside .sct-co, so it carries its own tokens. */
+:is(.sct, #sct-table-armour) .sct-co-caveat {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #b91c1c;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #7f1d1d;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@container coaching (max-width: 860px) {
+  :is(.sct, #sct-table-armour) .sct-co-grid,
+  :is(.sct, #sct-table-armour) .sct-co-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-co-shifts,
+  :is(.sct, #sct-table-armour) .sct-co-staff {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container coaching (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-co-brow {
+    grid-template-columns: minmax(84px, 110px) 1fr auto;
+    gap: 7px;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-co-name {
+    font-size: 1.8rem !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-co-cols {
+    gap: 6px;
   }
 }

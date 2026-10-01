@@ -7,11 +7,12 @@
    "from": "MIN",
    "to": "BUF",
    "nflverseDate": "2020-03-16",
-   "officialDate": "2020-03-19",
+   "officialDate": "2020-03-18",
    "logUrl": "https://www.buffalobills.com/team/transactions/2020",
    "players": [
     "stefon-diggs"
-   ]
+   ],
+   "note": "mak 2026-10-01: the NFL's official league transaction database lists 03/18; both club archives' 03/19 is processing. Previously set to the Bills log date."
   },
   "1469": {
    "from": "HOU",
@@ -69,11 +70,12 @@
    "from": "KC",
    "to": "MIA",
    "nflverseDate": "2022-03-23",
-   "officialDate": "2022-03-25",
+   "officialDate": "2022-03-23",
    "logUrl": "https://www.miamidolphins.com/team/transactions/2022",
    "players": [
     "tyreek-hill"
-   ]
+   ],
+   "note": "mak 2026-10-01: Kansas City's official Mar 23 announcement is the user-facing trade event; the Miami archive's Mar 25 (the prior value here) is processing."
   },
   "1685": {
    "from": "NE",

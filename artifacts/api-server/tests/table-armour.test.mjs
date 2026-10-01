@@ -111,6 +111,14 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     assert.deepEqual(loose, [], "these lose to Divi's element rules on an embedded page");
   });
 
+  test("every team.css selector in the Coaching profile carries the id-weight prefix", () => {
+    // Same armour as the usage family beside it, for the same Divi rules.
+    const loose = selectors(read("team.css")).filter(
+      (s) => /\.sct-co\b/.test(s) && !s.startsWith(":is(.sct, #sct-table-armour)"),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's element rules on an embedded page");
+  });
+
   test("every sos.css selector naming its table, a list or a link carries the id-weight prefix", () => {
     // `#left-area ul` and `#left-area table th` are id weight; so is this prefix.
     const all = selectors(read("sos.css"));

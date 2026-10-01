@@ -399,6 +399,1895 @@
      "status": "processed"
     }
    ]
+  },
+  "cc3460e70259": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-06-14",
+    "precision": "day",
+    "team": "CHI",
+    "yearFrom": "heading"
+   },
+   "events": [
+    {
+     "date": "2019-06-14",
+     "status": "signed"
+    },
+    {
+     "date": "2019-06-13",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: use Jun 14 — the Bears' contemporaneous article says they signed him Friday, June 14; the archive's Jun 13 is the processing date."
+  },
+  "a2e7993bcc1e": {
+   "verdict": "DATE UNCERTAIN",
+   "confidence": "MEDIUM",
+   "note": "mak 2026-10-01 batch 2: genuine conflict — Detroit's archive says Jul 12, AP said Detroit announced the signing Jul 13. Neither is confidently the physical signing date; keep as uncertain rather than inventing certainty."
+  },
+  "96e0bf8ba889": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-14",
+    "precision": "day",
+    "team": "MIA"
+   },
+   "events": [
+    {
+     "date": "2021-05-14",
+     "status": "signed"
+    },
+    {
+     "date": "2021-05-13",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: Miami's own announcement and NFL.com explicitly say May 14 and show him signing that day — much stronger than the archive's May 13 entry."
+  },
+  "b50a3b96d2e4": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-05-30",
+    "precision": "day",
+    "team": "MIA",
+    "terms": {
+     "years": 3,
+     "totalM": 84.75
+    },
+    "headline": "Agreed to a three-year, $84.75 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — 'Agreed to' on May 30 is the safe wording."
+  },
+  "5b006d7d3223": {
+   "verdict": "APPROVE",
+   "confidence": "MEDIUM",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-03-24",
+    "precision": "day",
+    "team": "DEN",
+    "headline": "Contract restructured to create cap space",
+    "terms": {
+     "years": 0
+    }
+   },
+   "note": "mak 2026-10-01 batch 2: probably approve, keep MEDIUM — plausible and supported by the cited reports, but no official Broncos/NFL transaction record found."
+  },
+  "a11ae5909a1b": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2023-10-07",
+    "precision": "day",
+    "team": "JAX"
+   },
+   "note": "mak 2026-10-01 batch 2: the Jaguars officially announced on Oct 7 that Washington was placed on reserve/injured; 'unable to verify' was wrong."
+  },
+  "672943da5fbf": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-02-18",
+    "precision": "day",
+    "team": "KC",
+    "headline": "Restructured contract to create about $43.6 million in cap space"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — NFL confirms $43.56M in cap space created; 'about $43.6 million' is accurate."
+  },
+  "9c3a568159d6": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-03-12",
+    "precision": "day",
+    "team": "KC",
+    "headline": "Restructured contract to create $21.6 million in cap space"
+   },
+   "note": "mak 2026-10-01 batch 2: ESPN reported the restructure Mar 12, creating $21.6M; no evidence Mar 13 is the better transaction date."
+  },
+  "f429b3d6fc98": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2021-03-12",
+    "precision": "day",
+    "team": "KC",
+    "headline": "Restructured contract to create about $17 million in cap space"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — NFL confirms the restructure was being executed as part of the club's cap-space plan; the ~$17M figure is widely reported."
+  },
+  "a73d46239ab5": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2020-07-06",
+    "precision": "day",
+    "team": "KC",
+    "terms": {
+     "years": 10,
+     "totalM": 503
+    },
+    "headline": "Signed a 10-year contract extension worth up to $503 million"
+   },
+   "note": "mak 2026-10-01 batch 2: use '10-year extension worth up to $503M' — the $477M figure was guarantee mechanisms, not ordinary base contract value."
+  },
+  "3fbcd231ed2f": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-07-30",
+    "precision": "day",
+    "team": "CHI",
+    "terms": {
+     "years": 4,
+     "totalM": 110
+    },
+    "headline": "Signed a four-year, $110 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE HIGH — the Bears officially say Jul 30 and a four-year extension through 2029; $110M reported."
+  },
+  "bd5a79eccfaa": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2022-03-18",
+    "precision": "day",
+    "team": "CAR",
+    "terms": {
+     "years": 3,
+     "totalM": 61.884
+    },
+    "headline": "Agreed to a three-year, $61.9 million contract extension"
+   },
+   "events": [
+    {
+     "date": "2022-03-18",
+     "status": "agreed"
+    },
+    {
+     "date": "2022-03-17",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: store Mar 18 as the agreement ('Agreed to' wording); the archive's Mar 17 signing stays as the processing-date conflict."
+  },
+  "b58016ff0dc1": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Contract",
+    "date": "2021-04-30",
+    "precision": "day",
+    "team": "CAR",
+    "headline": "Panthers exercised his fifth-year option"
+   },
+   "events": [
+    {
+     "date": "2021-04-29",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Panthers announced the option pickup Apr 30 ($11.116M supported); Apr 29 may reflect the internal decision/process."
+  },
+  "5aeaf2e78b8e": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Activated",
+    "date": "2020-12-16",
+    "precision": "day",
+    "team": "CAR"
+   },
+   "events": [
+    {
+     "date": "2020-12-15",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: use Dec 16, the public activation; do not automatically prefer the archive's Dec 15 processing row."
+  },
+  "1867331d8b94": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Activated",
+    "date": "2026-08-23",
+    "precision": "day",
+    "team": "SF",
+    "yearFrom": "heading"
+   },
+   "note": "mak 2026-10-01 batch 2: the 49ers explicitly announced Kittle was activated from Active/PUP on Aug 23; 'unable to verify' was wrong."
+  },
+  "69a6effc9be1": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2017-05-04",
+    "precision": "day",
+    "team": "SF",
+    "terms": {
+     "years": 4,
+     "totalM": 2.69
+    },
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 2: HIGH for date/length — the 49ers announced May 4 that Kittle signed his four-year rookie contract; dollar terms are secondary-source level."
+  },
+  "0038228b1acb": {
+   "verdict": "EDIT",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-04-29",
+    "precision": "day",
+    "team": "KC",
+    "terms": {
+     "years": 0,
+     "totalM": 34.25
+    },
+    "headline": "Signed a new two-year, $34.25 million contract"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE with the wording fix — NFL says new two-year, $34.25M deal; calling it a simple 'extension' is misleading because it reworked the two existing years."
+  },
+  "6473c03531f2": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2013-06-06",
+    "precision": "day",
+    "team": "KC",
+    "terms": {
+     "years": 4,
+     "totalM": 3.12
+    },
+    "headline": "Signed his rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 2: the Chiefs published an announcement dated Jun 6, 2013 saying they signed Kelce; 'unable to verify' was incorrect. HIGH for the date; dollar figures stay secondary-source."
+  },
+  "45c2c12d7b1e": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-03-11",
+    "precision": "day",
+    "team": "NO",
+    "terms": {
+     "years": 4,
+     "totalM": 52
+    },
+    "headline": "Signed a four-year, $52 million contract with the Saints"
+   },
+   "events": [
+    {
+     "date": "2026-03-09",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-03-11",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Saints' official page dated Mar 11 says they signed Etienne (the 'agree to terms' headline notwithstanding) — Mar 11, 2026 Signed is supportable."
+  },
+  "125a1ae39911": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-07-19",
+    "precision": "day",
+    "team": "JAX",
+    "terms": {
+     "years": 4,
+     "totalM": 12.9
+    },
+    "headline": "Signed a four-year, $12.9 million rookie contract with the Jaguars"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — club/NFL contemporaneous reporting supports Jul 19."
+  },
+  "6314e6d1f61d": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-06",
+    "precision": "day",
+    "team": "CAR",
+    "terms": {
+     "years": 4,
+     "totalM": 4.2
+    },
+    "headline": "Agreed to terms on a four-year rookie contract worth about $4.2 million"
+   },
+   "events": [
+    {
+     "date": "2021-05-06",
+     "status": "agreed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Panthers' official announcement explicitly says agreed to terms May 6; it does not establish physical signing that day."
+  },
+  "bbfbc7ccdf29": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Suspended",
+    "date": "2023-04-21",
+    "precision": "day",
+    "team": "DET",
+    "headline": "Suspended six games for violating the NFL gambling policy"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — NFL confirms an initial six-game suspension; the later reduction to four games is a separate subsequent event, not a rewrite of the original."
+  },
+  "095c3e201681": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-06-06",
+    "precision": "day",
+    "team": "WAS"
+   },
+   "events": [
+    {
+     "date": "2019-06-06",
+     "status": "signed"
+    },
+    {
+     "date": "2019-06-05",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the official NFL/Washington media guide gives Jun 6, 2019 Signed/draft choice; use Jun 6 over the web archive's Jun 5."
+  },
+  "d88cbcd6292f": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-03-10",
+    "precision": "day",
+    "team": "HOU",
+    "terms": {
+     "years": 2,
+     "totalM": 13
+    },
+    "headline": "Agreed to a two-year, $13 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE as 'Agreed to' — NFL confirms a two-year, $13M extension agreement on Mar 10."
+  },
+  "a0be14a23731": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-05-22",
+    "precision": "day",
+    "team": "SEA",
+    "terms": {
+     "years": 4,
+     "totalM": 4.6
+    },
+    "headline": "Signed a four-year, $4.6 million rookie contract with the Seahawks"
+   },
+   "events": [
+    {
+     "date": "2019-05-22",
+     "status": "signed"
+    },
+    {
+     "date": "2019-05-21",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Seahawks' contemporaneous article says they signed Metcalf Wednesday, May 22; use May 22 over the archive's May 21."
+  },
+  "1a8cf459821d": {
+   "verdict": "MISSING",
+   "proposed": {
+    "type": "Suspended",
+    "date": "2025-12-22",
+    "precision": "day",
+    "team": "PIT",
+    "headline": "Suspended two games by the NFL"
+   },
+   "note": "mak 2026-10-01 batch 2: the league announcement was Monday Dec 22 (the article was updated Dec 23); the stored event date is the announcement, Dec 22."
+  },
+  "ad33bc6dfc03": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-03-13",
+    "precision": "day",
+    "team": "NYG",
+    "terms": {
+     "years": 3,
+     "totalM": 40
+    },
+    "headline": "Signed a three-year, $40 million contract"
+   },
+   "events": [
+    {
+     "date": "2026-03-09",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-03-13",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: Giants transaction log and current player bio both explicitly say signed Mar 13, 2026; $40M / up to $47.5M supported."
+  },
+  "baf539c6ea2e": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-06-20",
+    "precision": "day",
+    "team": "NE",
+    "terms": {
+     "years": 4,
+     "totalM": 36
+    },
+    "headline": "Signed a four-year, $36 million contract extension with the Patriots"
+   },
+   "note": "mak 2026-10-01 batch 2: APPROVE — four years, $36M, $17M guaranteed; Jun 20 is solid."
+  },
+  "ccf184ae1166": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-19",
+    "precision": "day",
+    "team": "NE"
+   },
+   "note": "mak 2026-10-01 batch 2: the Patriots' press release announced the signing May 19 and an official NFL transaction PDF records Signed/Draft Choice May 19; the current web archive's May 18 appears inconsistent, so no processed event is stored."
+  },
+  "13886f23293b": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-03-14",
+    "precision": "day",
+    "team": "SEA",
+    "terms": {
+     "years": 4,
+     "totalM": 15.45
+    },
+    "headline": "Signed a multi-year contract with the Seahawks"
+   },
+   "events": [
+    {
+     "date": "2019-03-14",
+     "status": "signed"
+    },
+    {
+     "date": "2019-03-13",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Seahawks explicitly say they signed Myers on Thursday, Mar 14; their player bio's Mar 13 is likely processed/acquisition metadata."
+  },
+  "9c12337e1ff1": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Claimed",
+    "date": "2018-08-21",
+    "precision": "day",
+    "team": "NYJ"
+   },
+   "events": [
+    {
+     "date": "2018-08-20",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: use Aug 21 for the actual/public claim (Myers' Seahawks bio, matching the public chronology); the Jets archive's Aug 20 stays as the processing date. A genuine one-day discrepancy."
+  },
+  "ece4f4c6c3b9": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Released",
+    "date": "2018-08-20",
+    "precision": "day",
+    "team": "SEA"
+   },
+   "events": [
+    {
+     "date": "2018-08-19",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Seahawks explicitly announced Monday Aug 20 that they waived him; use Aug 20, not Aug 19."
+  },
+  "92ca78cf0bac": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2018-01-03",
+    "precision": "day",
+    "team": "SEA",
+    "headline": "Signed a reserve/future contract with the Seahawks"
+   },
+   "events": [
+    {
+     "date": "2018-01-02",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Seahawks explicitly say they signed him to a future contract Wednesday Jan 3."
+  },
+  "126c6f540d40": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Released",
+    "date": "2017-10-17",
+    "precision": "day",
+    "team": "JAX"
+   },
+   "events": [
+    {
+     "date": "2017-10-16",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 2: the Jaguars' contemporaneous announcement says they released Myers Tuesday Oct 17; the archive's Oct 16 stays as the processing date."
+  },
+  "f16e5e7fb1bf": {
+   "verdict": "APPROVE",
+   "confidence": "MEDIUM",
+   "proposed": {
+    "type": "Signed",
+    "date": "2015-03-03",
+    "precision": "day",
+    "team": "JAX"
+   },
+   "note": "mak 2026-10-01 batch 2: the Jaguars' own later reporting explicitly says Myers signed on March 3 (their transaction archive currently says Mar 2 — the archive isn't infallible)."
+  },
+  "33d1b1fb39ce": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2024-04-03",
+    "precision": "day",
+    "team": "HOU",
+    "headline": "Traded to the Houston Texans"
+   },
+   "events": [
+    {
+     "date": "2024-04-03",
+     "status": "agreed"
+    },
+    {
+     "date": "2024-04-04",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: use Apr 3 — Buffalo says the deal was finalized that day; no need to push to Apr 4 just because Houston's log processed it then."
+  },
+  "00c1155e6199": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2020-03-18",
+    "precision": "day",
+    "team": "BUF",
+    "headline": "Traded to the Buffalo Bills"
+   },
+   "events": [
+    {
+     "date": "2020-03-16",
+     "status": "agreed"
+    },
+    {
+     "date": "2020-03-19",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the NFL's official league transaction database lists 03/18, not Mar 19 or Mar 20; both club archives' 03/19 stays as processing, the Mar 16 report as the agreement. Matching fix in trade_date_overrides.json (tradeId 1468)."
+  },
+  "1d24d1a6a3c2": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2018-07-31",
+    "precision": "day",
+    "team": "MIN",
+    "terms": {
+     "years": 5,
+     "totalM": 72
+    },
+    "headline": "Signed a five-year, $72 million contract extension"
+   },
+   "events": [
+    {
+     "date": "2018-07-31",
+     "status": "signed"
+    },
+    {
+     "date": "2018-07-30",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Vikings explicitly announced Jul 31 that Diggs signed the extension — don't call the date uncertain."
+  },
+  "be1d6a2561da": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2025-09-17",
+    "precision": "day",
+    "team": "MIN"
+   },
+   "note": "mak 2026-10-01 batch 3: the Vikings themselves announced the IR placement Sep 17; do not preserve Wikipedia's Sep 16."
+  },
+  "d3894cd57b93": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-05-16",
+    "precision": "day",
+    "team": "DET",
+    "terms": {
+     "years": 4,
+     "totalM": 212
+    },
+    "headline": "Signed a four-year, $212 million contract extension with the Lions"
+   },
+   "events": [
+    {
+     "date": "2024-05-13",
+     "status": "agreed"
+    },
+    {
+     "date": "2024-05-16",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Lions officially announced May 16 that Goff signed the extension; May 13 is the agreement date."
+  },
+  "a1cff437d06b": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2021-03-18",
+    "precision": "day",
+    "team": "DET",
+    "headline": "Traded from the Rams to the Lions in the Matthew Stafford deal"
+   },
+   "events": [
+    {
+     "date": "2021-01-30",
+     "status": "agreed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the NFL's official trade database and Detroit's announcement both use Mar 18; the Lions' archived log's Mar 17 (league-year start) is not adopted."
+  },
+  "a4f5275a5e36": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2016-06-09",
+    "precision": "day",
+    "team": "LAR",
+    "terms": {
+     "years": 4,
+     "totalM": 27.9
+    },
+    "headline": "Signed a four-year, $27.9 million rookie contract with the Rams"
+   },
+   "note": "mak 2026-10-01 batch 3: HIGH — NFL explicitly says he signed June 9; terms about $27.9M."
+  },
+  "9f8f7f056be9": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-07-09",
+    "precision": "day",
+    "team": "LV"
+   },
+   "events": [
+    {
+     "date": "2019-07-09",
+     "status": "signed"
+    },
+    {
+     "date": "2019-07-08",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Raiders officially announced the signing Jul 9; the Jul 8 archive date should not override it."
+  },
+  "16043f09535f": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2025-07-18",
+    "precision": "day",
+    "team": "DEN",
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 3: the Broncos' own page dated Jul 18, 2025 says 'Running back RJ Harvey signed his four-year rookie contract'; Wikipedia's Jul 17 is wrong."
+  },
+  "152009257839": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-04-29",
+    "precision": "day",
+    "team": "ATL",
+    "headline": "Fifth-year option exercised"
+   },
+   "note": "mak 2026-10-01 batch 3: HIGH — the Falcons officially announced it Apr 29, 2024 ($10.88M fully guaranteed for 2025)."
+  },
+  "44bf17a7187d": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-06-29",
+    "precision": "day",
+    "team": "ATL",
+    "terms": {
+     "years": 4,
+     "totalM": 32.9
+    },
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 3: the Falcons' own article dated June 29, 2021 says 'Kyle Pitts signed his rookie contract on Tuesday afternoon' — 'unable to verify' was wrong."
+  },
+  "fc24444d57ad": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2025-07-28",
+    "precision": "day",
+    "team": "DEN",
+    "terms": {
+     "years": 4,
+     "totalM": 92
+    },
+    "headline": "Signed a four-year, $92 million contract extension with the Broncos"
+   },
+   "note": "mak 2026-10-01 batch 3: the Broncos say he officially signed the four-year extension that day — use 'Signed', not merely 'Agreed'."
+  },
+  "8e5f974fe76c": {
+   "verdict": "EDIT",
+   "proposed": {
+    "type": "Contract",
+    "date": "2021-11-22",
+    "precision": "day",
+    "team": "DEN",
+    "terms": {
+     "years": 4,
+     "totalM": 60.8
+    },
+    "headline": "Agreed to a four-year, $60.8 million contract extension with the Broncos"
+   },
+   "note": "mak 2026-10-01 batch 3: use 'Agreed to terms' — the Broncos' own wording is an agreement."
+  },
+  "19ceb2ef9651": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2025-03-10",
+    "precision": "day",
+    "team": "TB",
+    "terms": {
+     "years": 3,
+     "totalM": 66
+    },
+    "headline": "Agreed to a new three-year, $66 million contract"
+   },
+   "events": [
+    {
+     "date": "2025-03-10",
+     "status": "agreed"
+    },
+    {
+     "date": "2025-03-12",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Bucs say he agreed to terms Mar 10 and later say he put pen to paper Mar 12; the agreement event is stored."
+  },
+  "2822c7a5b403": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2024-03-18",
+    "precision": "day",
+    "team": "DAL",
+    "headline": "Agreed to terms on a one-year contract"
+   },
+   "events": [
+    {
+     "date": "2024-03-18",
+     "status": "agreed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Cowboys explicitly say he agreed to terms on a one-year deal (Dallas publishes no transaction log)."
+  },
+  "2a81ec2ea9ce": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2025-05-09",
+    "precision": "day",
+    "team": "WAS",
+    "headline": "Signed his rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 3: the Commanders officially announced he signed his rookie deal May 9 — 'unable to verify' was wrong."
+  },
+  "a6b1b90c79c9": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-08-30",
+    "precision": "day",
+    "team": "LAC",
+    "terms": {
+     "years": 4,
+     "totalM": 22.004
+    },
+    "headline": "Agreed to a four-year, $22 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 3: 'Agreed to terms' is safest — the Chargers' official announcement says agreed to terms, and their transaction log also records a signing that day, so Aug 30 is solid either way."
+  },
+  "e9545aba180a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-04-27",
+    "precision": "day",
+    "team": "NO",
+    "headline": "Agreed to terms as an undrafted free agent"
+   },
+   "events": [
+    {
+     "date": "2020-04-27",
+     "status": "agreed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Saints officially announced their UDFAs, including Johnson, had agreed to terms — 'Agreed to terms', not Signed."
+  },
+  "f13bd1c6cbec": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-17",
+    "precision": "day",
+    "team": "CIN"
+   },
+   "events": [
+    {
+     "date": "2021-05-17",
+     "status": "signed"
+    },
+    {
+     "date": "2021-05-16",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Bengals' direct announcement says they signed McPherson May 17; the archive's May 16 entry is the same recurring one-day discrepancy."
+  },
+  "76b9fd1ab30e": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-07-01",
+    "precision": "day",
+    "team": "GB"
+   },
+   "events": [
+    {
+     "date": "2020-07-01",
+     "status": "signed"
+    },
+    {
+     "date": "2020-06-30",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 3: the Packers explicitly announced Jul 1 that Love had signed; keep Jul 1 despite the archive showing Jun 30."
+  },
+  "2b1c4148f0f5": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2024-07-27",
+    "precision": "day",
+    "team": "GB",
+    "terms": {
+     "years": 4,
+     "totalM": 220
+    },
+    "headline": "Signed a four-year, $220 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 3: the Packers say he officially signed Jul 27."
+  },
+  "f8772cc3af20": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-07-05",
+    "precision": "day",
+    "team": "JAX",
+    "terms": {
+     "years": 4,
+     "totalM": 36.8
+    },
+    "headline": "Signed a four-year, $36.8 million rookie contract"
+   },
+   "events": [
+    {
+     "date": "2021-07-05",
+     "status": "signed"
+    },
+    {
+     "date": "2021-07-04",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Jaguars explicitly say he signed his rookie contract Monday morning, July 5 — not date-uncertain."
+  },
+  "c7da405b203c": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-05-21",
+    "precision": "day",
+    "team": "LAR",
+    "terms": {
+     "years": 1,
+     "totalM": 55
+    },
+    "headline": "Signed a one-year, $55 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 4: the Rams explicitly say Stafford has signed a contract extension May 21 — change 'Agreed to' back to 'Signed'."
+  },
+  "26cf03f62ddf": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2013-07-10",
+    "precision": "day",
+    "team": "DET",
+    "terms": {
+     "years": 3,
+     "totalM": 53
+    },
+    "headline": "Signed a three-year, $53 million contract extension"
+   },
+   "note": "mak 2026-10-01 batch 4: reject Wikipedia's Jul 7 — NFL says Detroit announced Stafford signed the extension July 10, 2013; three years / $53M is supported."
+  },
+  "c83ae7d5ce0e": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2017-09-26",
+    "precision": "day",
+    "team": "KC",
+    "headline": "Signed off the Panthers' practice squad"
+   },
+   "note": "mak 2026-10-01 batch 4: the Chiefs directly say they signed Butker off Carolina's practice squad Sep 26 — 'unable to verify' was wrong."
+  },
+  "bc1aa8606d35": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2017-05-05",
+    "precision": "day",
+    "team": "CAR",
+    "terms": {
+     "years": 4,
+     "totalM": 2.48
+    },
+    "headline": "Signed his four-year rookie contract with Carolina"
+   },
+   "note": "mak 2026-10-01 batch 4: HIGH for the date and signing — the Panthers explicitly say Butker signed his four-year rookie contract that day; the dollar figures stay secondary-source."
+  },
+  "a20d2712118d": {
+   "verdict": "UNABLE TO VERIFY",
+   "confidence": "LOW",
+   "note": "mak 2026-10-01 batch 4: keep LOW / unverified — no strong primary source for the exact tender-signing date; the caution is justified."
+  },
+  "914716837966": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2025-03-13",
+    "precision": "day",
+    "team": "PIT"
+   },
+   "note": "mak 2026-10-01 batch 4: the Steelers' official announcement and transaction log both say he signed Mar 13."
+  },
+  "5c5208c68f8a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-05-09",
+    "precision": "day",
+    "team": "ARI",
+    "terms": {
+     "years": 4,
+     "totalM": 35.2
+    },
+    "headline": "Signed a four-year, $35.2 million rookie contract"
+   },
+   "events": [
+    {
+     "date": "2019-05-09",
+     "status": "signed"
+    },
+    {
+     "date": "2019-05-08",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: settled — the Cardinals' contemporaneous article and photo explicitly show Murray signing Thursday, May 9; the May 8 archive line is the processing conflict."
+  },
+  "1087cca5c001": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Tender",
+    "date": "2022-06-16",
+    "precision": "day",
+    "team": "NE",
+    "terms": {
+     "years": 1,
+     "totalM": 3.986
+    },
+    "headline": "Signed his second-round restricted free agent tender"
+   },
+   "note": "mak 2026-10-01 batch 4: the Patriots explicitly announced they signed Meyers June 16 — no reason to retain 'date uncertain'."
+  },
+  "5c772d9a9302": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Re-signed",
+    "date": "2024-03-10",
+    "precision": "day",
+    "team": "TB",
+    "terms": {
+     "years": 3
+    },
+    "headline": "Agreed to a three-year contract to stay with the Buccaneers"
+   },
+   "events": [
+    {
+     "date": "2024-03-10",
+     "status": "agreed"
+    },
+    {
+     "date": "2024-03-13",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Bucs record the agreement Mar 10 and explicitly announce the actual signing Mar 13 — both events tracked, agreement stored."
+  },
+  "ca9cdb5caa2f": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2024-03-13",
+    "precision": "day",
+    "team": "MIN",
+    "terms": {
+     "years": 1,
+     "totalM": 10
+    },
+    "headline": "Agreed to terms on a one-year, $10 million contract"
+   },
+   "events": [
+    {
+     "date": "2024-03-13",
+     "status": "agreed"
+    },
+    {
+     "date": "2024-03-14",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Vikings say he agreed Mar 13 and their own tracker says signed contract Mar 14 — the agreement event is stored, the signing kept beside it."
+  },
+  "bca317cc8021": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2021-11-12",
+    "precision": "day",
+    "team": "CAR"
+   },
+   "events": [
+    {
+     "date": "2021-11-11",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Panthers' direct announcement says they placed Darnold on IR Friday Nov 12; the archive's Nov 11 line is the processing conflict."
+  },
+  "cf0fb85cc36a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2018-08-23",
+    "precision": "day",
+    "team": "PIT",
+    "terms": {
+     "years": 5
+    },
+    "headline": "Signed a new five-year contract with the Steelers"
+   },
+   "events": [
+    {
+     "date": "2018-08-23",
+     "status": "signed"
+    },
+    {
+     "date": "2018-08-22",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Steelers' contemporaneous article explicitly says he was signed to the new five-year deal Aug 23; the archive's Aug 22 is the processing date."
+  },
+  "1b17c8379ed7": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2015-10-03",
+    "precision": "day",
+    "team": "PIT"
+   },
+   "note": "mak 2026-10-01 batch 4: the Steelers directly announced his signing Oct 3 ('The Steelers signed free agent kicker Chris Boswell') — 'unable to verify' was wrong."
+  },
+  "d1b5b5245b94": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Waived",
+    "date": "2015-08-16",
+    "precision": "day",
+    "team": "NYG"
+   },
+   "note": "mak 2026-10-01 batch 4: the Giants' official article explicitly says they waived Boswell Aug 16."
+  },
+  "c01336a06e67": {
+   "verdict": "DATE UNCERTAIN",
+   "confidence": "LOW",
+   "note": "mak 2026-10-01 batch 4: do not use Wikipedia's Sep 2 blindly — the Giants article announcing the re-sign is dated Sep 3 while the archive shows Sep 1. A genuine date conflict until a transaction-wire source settles it."
+  },
+  "ee06292649d2": {
+   "verdict": "APPROVE",
+   "confidence": "MEDIUM",
+   "proposed": {
+    "type": "Signed",
+    "date": "2015-01-07",
+    "precision": "day",
+    "team": "NYG",
+    "headline": "Signed a reserve/future contract"
+   },
+   "events": [
+    {
+     "date": "2015-01-07",
+     "status": "signed"
+    },
+    {
+     "date": "2015-01-06",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 4: the Giants' photo archive explicitly labels him signed Jan 7; the current transaction archive's Jan 6 is kept as a processing-date conflict."
+  },
+  "39e76f503db3": {
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-03-13",
+    "precision": "day",
+    "team": "SEA",
+    "headline": "Signed a one-year contract worth up to $2.1 million"
+   },
+   "note": "mak 2026-10-01 batch 5: HIGH — Seattle's official article, player bio and transaction log all say signed Mar 13, 2026; the one-year term is Seattle's own. 'Worth up to $2.1 million' is the right phrasing: that figure is a secondary-source maximum, not necessarily the base value."
+  },
+  "fd23e97c3ffb": {
+   "verdict": "EDIT",
+   "confidence": "MEDIUM",
+   "proposed": {
+    "type": "Tender",
+    "date": "2017-02-02",
+    "precision": "day",
+    "team": "PIT",
+    "headline": "Signed his exclusive-rights free-agent tender"
+   },
+   "note": "mak 2026-10-01 batch 5: upgrade from LOW — UPI contemporaneously reported (citing NFL Network's James Palmer) that Boswell signed his one-year, $615,000 exclusive-rights tender Feb 2. MEDIUM, not HIGH, only because no dedicated Steelers announcement is in hand."
+  },
+  "a05bab5b4edc": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-12",
+    "precision": "day",
+    "team": "BAL"
+   },
+   "events": [
+    {
+     "date": "2021-05-12",
+     "status": "signed"
+    },
+    {
+     "date": "2021-05-11",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 5: the Ravens' contemporaneous May 12 article says Bateman was 'now under contract' and their social media showed him signing ('Inked'); a later club article calls him the Ravens' first rookie to sign. The archive's May 11 is another processing-date conflict."
+  },
+  "00d3f9c7bf09": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2018-07-24",
+    "precision": "day",
+    "team": "CLE"
+   },
+   "events": [
+    {
+     "date": "2018-07-24",
+     "status": "signed"
+    },
+    {
+     "date": "2018-07-23",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 5: Cleveland's own Jul 24 article says 'The Cleveland Browns have signed QB Baker Mayfield' — keep Jul 24; the Jul 23 archive line is a processing-date conflict."
+  },
+  "17f598ecc31f": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2022-01-05",
+    "precision": "day",
+    "team": "CLE"
+   },
+   "events": [
+    {
+     "date": "2022-01-04",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 5: the Browns' dedicated Jan 5, 2022 announcement explicitly says they placed Mayfield on IR — keep Jan 5; Jan 4 is the archive/processing date."
+  },
+  "67675dfebac6": {
+   "verdict": "UNABLE TO VERIFY",
+   "confidence": "LOW",
+   "note": "mak 2026-10-01 batch 5: still not enough for HIGH — no clean Eagles primary source found in this pass; keep lower confidence unless a contemporary Eagles/NFL source turns up."
+  },
+  "4434bf32ad6b": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2023-08-31",
+    "precision": "day",
+    "team": "MIN",
+    "terms": {
+     "years": 4,
+     "totalM": 68.5
+    },
+    "headline": "Agreed to a four-year, $68.5 million contract extension with the Minnesota Vikings"
+   },
+   "note": "mak 2026-10-01 batch 6: approve with the amount fixed — $63.5M is wrong; NFL reported four years, $68.5M, and Minnesota's article says he signed Thursday while the headline says agreed to terms."
+  },
+  "418ba0ea7206": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2021-12-16",
+    "precision": "day",
+    "team": "DET",
+    "headline": "Placed on injured reserve by the Detroit Lions"
+   },
+   "note": "mak 2026-10-01 batch 6: Detroit's transaction log says 12/16 place TE T.J. Hockenson on Reserve/Injured; the Dec 17 article discusses the surgery but does not establish Dec 17 as the transaction. Dec 17 not approved."
+  },
+  "ac7b6eb23fb7": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2019-12-02",
+    "precision": "day",
+    "team": "DET",
+    "headline": "Placed on injured reserve by the Detroit Lions"
+   },
+   "events": [
+    {
+     "date": "2019-12-01",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Detroit has a dedicated Dec 2 article placing Hockenson on Reserve/Injured; the archive's Dec 1 is the processing date."
+  },
+  "b25d423f39e8": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-05-09",
+    "precision": "day",
+    "team": "DET",
+    "terms": {
+     "years": 4,
+     "totalM": 19.8
+    },
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 6: APPROVE — store as 'Signed his four-year rookie contract with the Detroit Lions.'"
+  },
+  "d3b89a0ecf2f": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Re-signed",
+    "date": "2026-03-11",
+    "precision": "day",
+    "team": "SEA",
+    "headline": "Re-signed with the Seattle Seahawks on a multi-year contract"
+   },
+   "events": [
+    {
+     "date": "2026-03-09",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-03-11",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Seattle's article says signed a multi-year deal Mar 11 and its ledger says 03/11 Re-signed WR Rashid Shaheed. The reported 3-year/$51M stays out of the stored wording (Seattle did not publish the terms; medium confidence if ever retained)."
+  },
+  "099f1f8b5619": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2026-06-25",
+    "precision": "day",
+    "team": "JAX",
+    "terms": {
+     "years": 3,
+     "totalM": 36
+    },
+    "headline": "Signed a three-year contract extension with the Jacksonville Jaguars worth up to $48 million"
+   },
+   "events": [
+    {
+     "date": "2026-06-24",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-06-25",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Jacksonville's log says 06/25 extended and the article says he signed Thursday. 'Worth up to $48M', not simply '$48M contract'."
+  },
+  "23058e871050": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Re-signed",
+    "date": "2024-03-13",
+    "precision": "day",
+    "team": "TB",
+    "terms": {
+     "years": 3,
+     "totalM": 12.3
+    },
+    "headline": "Re-signed with the Tampa Bay Buccaneers on a three-year contract"
+   },
+   "events": [
+    {
+     "date": "2024-03-11",
+     "status": "agreed"
+    },
+    {
+     "date": "2024-03-13",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Tampa's article says he signed a new three-year contract Wednesday and the log says 03/13 Re-signed. Cleaner as a re-signing than an extension."
+  },
+  "26c560f32d15": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Claimed",
+    "date": "2019-12-04",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Claimed off waivers by the Indianapolis Colts"
+   },
+   "note": "mak 2026-10-01 batch 6: the Colts themselves say Dec 4 they claimed kicker Chase McLaughlin off waivers — 'unable to verify' upgraded to HIGH."
+  },
+  "8efc5da09e25": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2019-12-30",
+    "precision": "day",
+    "team": "IND",
+    "terms": {
+     "years": 1
+    },
+    "headline": "Signed a one-year contract extension"
+   },
+   "events": [
+    {
+     "date": "2019-12-30",
+     "status": "signed"
+    },
+    {
+     "date": "2019-12-29",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: the Colts' dedicated Dec 30 article says they signed three players to one-year extensions, including McLaughlin — use the public signing date over the archive's Dec 29."
+  },
+  "b395a6e43a0b": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-11-06",
+    "precision": "day",
+    "team": "SF",
+    "headline": "Signed a one-year contract"
+   },
+   "note": "mak 2026-10-01 batch 6: the official 49ers transaction log says 11/06 signed K Chase McLaughlin to a one-year deal — don't use Nov 7."
+  },
+  "3d5133451dce": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2019-09-01",
+    "precision": "day",
+    "team": "MIN",
+    "headline": "Signed to the Minnesota Vikings' practice squad"
+   },
+   "events": [
+    {
+     "date": "2019-08-31",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Minnesota published a dedicated Sep 1 article saying McLaughlin was added to the practice squad."
+  },
+  "daf8a73b77ee": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Waived",
+    "date": "2020-09-05",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Waived by the Indianapolis Colts"
+   },
+   "events": [
+    {
+     "date": "2020-09-04",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Indianapolis' Sep 5 article lists McLaughlin among the waived players."
+  },
+  "47cd491d7fb8": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Re-signed",
+    "date": "2023-03-23",
+    "precision": "day",
+    "team": "CAR",
+    "headline": "Agreed to a two-year contract to remain with the Carolina Panthers"
+   },
+   "note": "mak 2026-10-01 batch 6: Carolina's own Mar 23 article says the Panthers agreed to terms on a new two-year deal with their kicker Thursday — HIGH for date/type/length."
+  },
+  "e5430ba37b58": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2021-05-17",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Signed with the Indianapolis Colts"
+   },
+   "events": [
+    {
+     "date": "2021-05-16",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: Colts official article: May 17, 2021 — Colts Sign K Eddy Pineiro."
+  },
+  "33e84b0dc3ae": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Waived",
+    "date": "2021-08-24",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Waived by the Indianapolis Colts"
+   },
+   "events": [
+    {
+     "date": "2021-08-23",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 6: HIGH from the Colts' dedicated announcement."
+  },
+  "df51f4384034": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2022-05-18",
+    "precision": "day",
+    "team": "WAS",
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 7: now verifiable — Washington's official gallery 'Commanders sign 2022 draft class' labels his signing photo 05182022, and the club later confirmed the class had officially signed. No dollar terms without separate verification. (Supersedes the batch-4 hold.)"
+  },
+  "2e56623bbe1a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Placed on IR",
+    "date": "2023-11-04",
+    "precision": "day",
+    "team": "NYG",
+    "headline": "Placed on injured reserve by the New York Giants"
+   },
+   "note": "mak 2026-10-01 batch 6: the Giants' transaction ledger clearly lists 11/04 — TE Darren Waller — Reserve/Injured. 'Unable to verify' upgraded to HIGH."
+  },
+  "bea1744db12c": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2022-09-10",
+    "precision": "day",
+    "team": "LV",
+    "headline": "Signed a three-year contract extension"
+   },
+   "note": "mak 2026-10-01 batch 6: the Raiders directly announced 'Raiders sign TE Darren Waller to three-year extension' and their log matches Sep 10. The $51M figure stays out of the stored wording (medium confidence on the money if ever retained)."
+  },
+  "352ea0ed1437": {
+   "verdict": "APPROVE",
+   "proposed": {
+    "type": "Signed",
+    "date": "2015-05-07",
+    "precision": "day",
+    "team": "BAL",
+    "terms": {
+     "years": 4,
+     "totalM": 2.39
+    },
+    "headline": "Signed a four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 6: APPROVE — store as 'Signed a four-year rookie contract with the Baltimore Ravens.'"
+  },
+  "ce334d87e095": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-05-08",
+    "precision": "day",
+    "team": "SF",
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 6: directly verified — the 49ers signed six of their eight 2026 draft picks to four-year deals May 8 and Stribling is explicitly listed. 'Unable to verify' was wrong."
+  },
+  "0d5b4fde76a6": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-04-06",
+    "precision": "day",
+    "team": "LV",
+    "headline": "Signed with the Las Vegas Raiders on a contract worth up to $172 million"
+   },
+   "note": "mak 2026-10-01 batch 7: Las Vegas officially announced the signing Apr 6. 'Worth up to $172M' — the five-year headline value overstates the practical economics (one guaranteed year plus options), so the year count stays out of the wording."
+  },
+  "508a24e0dd04": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Contract",
+    "date": "2020-03-16",
+    "precision": "day",
+    "team": "MIN",
+    "terms": {
+     "years": 2,
+     "totalM": 66
+    },
+    "headline": "Agreed to a two-year, $66 million contract extension with the Minnesota Vikings"
+   },
+   "note": "mak 2026-10-01 batch 7: Mar 16 is when Cousins' agent announced the agreement; the Vikings' formal agreed-in-principle announcement came Mar 17. Cleaner than Mar 17 for the agreement event."
+  },
+  "8d0e1592e866": {
+   "verdict": "MISSING",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Tender",
+    "date": "2017-02-28",
+    "precision": "day",
+    "team": "WAS",
+    "headline": "Received the exclusive franchise tag from Washington for the 2017 season"
+   },
+   "events": [
+    {
+     "date": "2017-02-27",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: the team's direct announcement says Feb 28 and explicitly says Washington placed the exclusive tag that day; the archive's Feb 27 is kept as the processing date."
+  },
+  "08e53f70874d": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2012-05-31",
+    "precision": "day",
+    "team": "WAS",
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 7: directly verified by both Washington and NFL.com."
+  },
+  "7c691d184ca0": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-03-12",
+    "precision": "day",
+    "team": "MIA",
+    "terms": {
+     "years": 3,
+     "totalM": 67.5
+    },
+    "headline": "Signed a three-year, $67.5 million contract with the Miami Dolphins"
+   },
+   "events": [
+    {
+     "date": "2026-03-09",
+     "status": "agreed"
+    },
+    {
+     "date": "2026-03-12",
+     "status": "signed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: Miami's official transaction page and player bio both say signed Mar 12; NFL reports 3 years / $67.5M / $45M fully guaranteed."
+  },
+  "144da0c60085": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2024-08-27",
+    "precision": "day",
+    "team": "GB",
+    "headline": "Traded to the Green Bay Packers for a 2025 seventh-round draft pick"
+   },
+   "note": "mak 2026-10-01 batch 7: Green Bay's official transaction history dates the acquisition Aug 27 — do not use Aug 26."
+  },
+  "88fe16816304": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Traded",
+    "date": "2022-03-23",
+    "precision": "day",
+    "team": "MIA",
+    "headline": "Traded to the Miami Dolphins in exchange for five draft picks"
+   },
+   "events": [
+    {
+     "date": "2022-03-23",
+     "status": "agreed"
+    },
+    {
+     "date": "2022-03-25",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: Kansas City's official Mar 23 announcement: 'The Kansas City Chiefs have traded wide receiver Tyreek Hill to the Miami Dolphins' (2022 1st, 2nd, 4th + 2023 4th, 6th). Matching fix in trade_date_overrides.json (tradeId 1643): the page prints the nflverse row, which a prior pass had moved to the Miami archive's Mar 25."
+  },
+  "16ff60de293e": {
+   "verdict": "EDIT",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2016-05-15",
+    "precision": "day",
+    "team": "KC",
+    "headline": "Signed his four-year rookie contract"
+   },
+   "note": "mak 2026-10-01 batch 7: Kansas City's official transaction archive says 05/15 — Eric Murray, Tyreek Hill signed. Do not approve May 17; dollar figures stay out without a stronger source than Spotrac/Wikipedia."
+  },
+  "72006c162925": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2026-03-11",
+    "precision": "day",
+    "team": "LV",
+    "headline": "Signed with the Las Vegas Raiders"
+   },
+   "note": "mak 2026-10-01 batch 7: Las Vegas directly announced the signing. The $1.6M figure stays out without independent verification."
+  },
+  "7a63cec5195a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2023-03-17",
+    "precision": "day",
+    "team": "IND",
+    "terms": {
+     "years": 4,
+     "totalM": 22.5
+    },
+    "headline": "Signed with the Indianapolis Colts"
+   },
+   "note": "mak 2026-10-01 batch 7: Colts transaction history: 03/17 — Matt Gay signed as free agent. The reported four-year/$22.5M stays in the data at medium confidence but out of the stored wording."
+  },
+  "f3eed5431ba2": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-11-17",
+    "precision": "day",
+    "team": "LAR",
+    "headline": "Signed with the Los Angeles Rams after being signed off the Indianapolis Colts' practice squad"
+   },
+   "events": [
+    {
+     "date": "2020-11-16",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: the Rams' contemporaneous article says they announced the signing Tuesday Nov 17; the archive's Nov 16 line is another processing-date conflict."
+  },
+  "119ec3419f5a": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Released",
+    "date": "2020-11-06",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Released from the Indianapolis Colts' practice squad"
+   },
+   "events": [
+    {
+     "date": "2020-11-05",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: Indianapolis has a dedicated Nov 6 article: released kicker Matt Gay from the practice squad."
+  },
+  "9e73947b0ede": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Signed",
+    "date": "2020-09-15",
+    "precision": "day",
+    "team": "IND",
+    "headline": "Signed to the Indianapolis Colts' practice squad"
+   },
+   "events": [
+    {
+     "date": "2020-09-14",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: Colts official article: 'today signed kicker Matt Gay to their practice squad', Sep 15."
+  },
+  "4003ff210fdb": {
+   "verdict": "APPROVE",
+   "confidence": "HIGH",
+   "proposed": {
+    "type": "Waived",
+    "date": "2020-09-05",
+    "precision": "day",
+    "team": "TB",
+    "headline": "Waived by the Tampa Bay Buccaneers"
+   },
+   "events": [
+    {
+     "date": "2020-09-04",
+     "status": "processed"
+    }
+   ],
+   "note": "mak 2026-10-01 batch 7: the Bucs' archive says Sep 4, but Tampa's dedicated cutdown announcement is dated Sep 5 and explicitly lists Gay among the players waived Saturday — the public event is Sep 5."
   }
  }
 }

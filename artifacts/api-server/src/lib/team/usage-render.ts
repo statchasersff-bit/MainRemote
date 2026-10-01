@@ -88,8 +88,8 @@ function distance(a: string, b: string): number {
   return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
 }
 
-/** Ink that reads on `bg`. */
-function inkOn(bg: string): string {
+/** Ink that reads on `bg`. The coaching tab's coach card borrows it. */
+export function inkOn(bg: string): string {
   return luminance(bg) > 0.4 ? "#0b1220" : "#ffffff";
 }
 
@@ -261,7 +261,7 @@ function targetTree(view: UsageView, team: NflTeam): string {
   return (
     `<div class="sct-us-card">` +
     h3("The Target Tree") +
-    `<p class="sct-us-sub">${e(`All ${att} ${team.nickname} pass attempts through Week ${view.throughWeek} — hover a segment`)}</p>` +
+    `<p class="sct-us-sub">${e(`All ${att} ${team.nickname} pass attempts through Week ${view.throughWeek}`)}</p>` +
     stackedBar(segs, `${team.nickname} target shares: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`) +
     `</div>`
   );
@@ -297,7 +297,6 @@ function backfield(view: UsageView, team: NflTeam): string {
   const bar = stackedBar(
     segs,
     `${team.nickname} weighted opportunities: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`,
-    "Weighted opportunities = carries + 2 × targets (a target is worth roughly twice a carry in PPR).",
   );
 
   // The grid: highest share in each row is the owner, in green.
@@ -470,7 +469,7 @@ function woprCell(p: UsagePlayer): string {
     const scale = 0.9;
     return (
       `<td class="sct-us-td">` +
-      `${num(w.toFixed(2), "is-mid")}<span class="sct-us-cap">${e(woprCaption(p))}</span>` +
+      `${num(w.toFixed(2), "is-wopr")}<span class="sct-us-cap">${e(woprCaption(p))}</span>` +
       `<span class="sct-us-gauge" role="img" aria-label="${e(`WOPR ${w.toFixed(2)}; elite line ${line.toFixed(2)}`)}">` +
       `<span class="sct-us-gauge-fill" style="width:${Math.min(100, (100 * w) / scale).toFixed(0)}%"></span>` +
       `<span class="sct-us-gauge-mark" style="left:${((100 * line) / scale).toFixed(1)}%"></span></span>` +
@@ -480,7 +479,7 @@ function woprCell(p: UsagePlayer): string {
   const caption = p.pos === "QB" ? "every dropback" : `touch share ${p.touchShare ?? 0}%`;
   const width = p.pos === "QB" ? 100 : (p.touchShare ?? 0);
   return (
-    `<td class="sct-us-td">${num("—", "is-mid")}<span class="sct-us-cap">${e(caption)}</span>` +
+    `<td class="sct-us-td">${num("—", "is-wopr")}<span class="sct-us-cap">${e(caption)}</span>` +
     `<span class="sct-us-gauge is-plain" role="img" aria-label="${e(caption)}"><span class="sct-us-gauge-fill" style="width:${width}%"></span></span></td>`
   );
 }
@@ -631,13 +630,16 @@ function table(view: UsageView, team: NflTeam): string {
 function legend(): string {
   const items: Array<[string, string, string]> = [
     ["set", "Set & forget", "20%+ target share or locked bell-cow role — start everywhere"],
-    ["solid", "Solid starter", "15–19% share — confident WR2/3 or flex"],
+    ["starter", "Starter", "17–19% target share or a lead back's full workload — weekly lineup play"],
+    ["flex", "Flex", "15–16% share or a committee lead — matchup-dependent"],
     ["volatile", "Volatile", "under 15% — deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
     ["", "WOPR", "1.5 × target share + 0.7 × air-yards share"],
     ["", "+ button", "opens the full advanced profile — first-read share, air-yards share, xFP/FPOE — with percentile bars vs. the league"],
   ];
   return (
+    `<details class="sct-us-key-help">` +
+    `<summary class="sct-us-key-sum">How to read this table</summary>` +
     `<ul class="sct-us-legend">` +
     items
       .map(
@@ -645,7 +647,7 @@ function legend(): string {
           `<li>${tier ? `<span class="sct-us-tier is-${tier}">${e(label)}</span>` : `<strong>${e(label)}:</strong>`} ${e(text)}</li>`,
       )
       .join("") +
-    `</ul>`
+    `</ul></details>`
   );
 }
 
