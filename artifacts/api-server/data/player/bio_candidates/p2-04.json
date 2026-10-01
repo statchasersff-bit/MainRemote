@@ -1,0 +1,59 @@
+[
+  { "slug": "kaimi-fairbairn", "facts": [
+    { "type": "Contract", "date": "2020-03-10", "team": "HOU",
+      "quote": "On March 10, 2020, Fairbairn was signed to a four-year, $17.65 million contract with the Texans.",
+      "terms": { "years": 4, "totalM": 17.65 } }
+  ] },
+  { "slug": "cam-little", "facts": [] },
+  { "slug": "dk-metcalf", "facts": [] },
+  { "slug": "isaiah-likely", "facts": [] },
+  { "slug": "rhamondre-stevenson", "facts": [] },
+  { "slug": "jason-myers", "facts": [
+    { "type": "Released", "date": "2018-08-20", "team": "SEA",
+      "quote": "On January 3, 2018, Myers signed with the Seattle Seahawks. On August 20, he was released after losing the starting kicking job to veteran Sebastian Janikowski." }
+  ] },
+  { "slug": "trevor-lawrence", "facts": [
+    { "type": "Contract", "date": "2024-06-14", "team": "JAX",
+      "quote": "On April 29, 2024, the Jaguars picked up the fifth-year option on Lawrence's contract. On June 14, he signed a five-year, $275 million contract extension with $142 million guaranteed, which tied him with Joe Burrow as the highest paid player in NFL history at the time of the signing.",
+      "terms": { "years": 5, "totalM": 275 } }
+  ] },
+  { "slug": "rome-odunze", "facts": [] },
+  { "slug": "matthew-stafford", "facts": [
+    { "type": "Contract", "date": "2025-02-28", "team": "LAR",
+      "quote": "After being given permission to speak with other teams, Stafford had discussions with the New York Giants and Las Vegas Raiders before deciding to remain with the Rams and agreeing to a restructured contract on February 28, 2025." }
+  ] },
+  { "slug": "stefon-diggs", "facts": [
+    { "type": "Released", "date": "2026-03-11", "team": "NE",
+      "quote": "On March 4, 2026, the Patriots informed Diggs that he would be released at the start of the new league year. On March 11, he was officially released." }
+  ] },
+  { "slug": "aaron-jones", "facts": [
+    { "type": "Contract", "date": "2021-03-26", "team": "GB",
+      "quote": "On March 26, 2021, Jones signed a four-year, $48 million contract with the Packers.",
+      "terms": { "years": 4, "totalM": 48 } },
+    { "type": "Placed on IR", "date": "2025-09-16", "team": "MIN",
+      "quote": "On March 9, 2025, Jones re-signed with the Vikings on a two-year, $20 million contract. After starting Minnesota's first two games of the year, he was placed on injured reserve due to a hamstring injury on September 16." }
+  ] },
+  { "slug": "michael-wilson", "facts": [] },
+  { "slug": "jared-goff", "facts": [
+    { "type": "Contract", "date": "2019-09-03", "team": "LAR",
+      "quote": "On April 23, 2019, the Rams picked up the fifth-year option on Goff's contract. On September 3, he agreed to a four-year extension worth $134 million with $110 million guaranteed.",
+      "terms": { "years": 4, "totalM": 134 } }
+  ] },
+  { "slug": "josh-jacobs", "facts": [
+    { "type": "Contract", "date": "2023-08-26", "team": "LV",
+      "quote": "On March 6, 2023, the Raiders placed the franchise tag on Jacobs. On August 26, Jacobs and the Raiders agreed to a one-year deal worth up to $12 million." }
+  ] },
+  { "slug": "devon-achane", "facts": [] },
+  { "slug": "tony-pollard", "facts": [] },
+  { "slug": "tyler-shough", "facts": [] },
+  { "slug": "carnell-tate", "facts": [] },
+  { "slug": "deebo-samuel", "facts": [] },
+  { "slug": "matthew-golden", "facts": [] },
+  { "slug": "mark-andrews", "facts": [] },
+  { "slug": "rj-harvey", "facts": [] },
+  { "slug": "kyle-pitts", "facts": [
+    { "type": "Contract", "date": "2026-06-23", "team": "ATL", "yearFrom": "heading",
+      "quote": "On June 23, Pitts and the Falcons agreed to a three-year, $54 million contract, with $36 million fully guaranteed.",
+      "terms": { "years": 3, "totalM": 54 } }
+  ] }
+]

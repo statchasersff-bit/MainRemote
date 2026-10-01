@@ -1,0 +1,133 @@
+[
+  {
+    "slug": "evan-mcpherson",
+    "facts": []
+  },
+  {
+    "slug": "jordyn-tyson",
+    "facts": []
+  },
+  {
+    "slug": "khalil-shakir",
+    "facts": []
+  },
+  {
+    "slug": "romeo-doubs",
+    "facts": []
+  },
+  {
+    "slug": "marshawn-lloyd",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-05-14",
+        "team": "GB",
+        "quote": "Lloyd was selected in the third round with the 88th overall pick of the 2024 NFL draft by the Green Bay Packers. On May 14, he signed his contract with the Packers."
+      }
+    ]
+  },
+  {
+    "slug": "jordan-love",
+    "facts": []
+  },
+  {
+    "slug": "alec-pierce",
+    "facts": []
+  },
+  {
+    "slug": "quentin-johnston",
+    "facts": []
+  },
+  {
+    "slug": "harrison-butker",
+    "facts": [
+      {
+        "type": "Tender",
+        "date": "2019-04-15",
+        "team": "KC",
+        "quote": "On April 15, 2019, Butker signed his exclusive rights free agent tender with the Chiefs."
+      }
+    ]
+  },
+  {
+    "slug": "dontayvion-wicks",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2023-05-05",
+        "team": "GB",
+        "quote": "Wicks was selected by the Green Bay Packers in the fifth round (159th overall) of the 2023 NFL draft. He signed his rookie contract on May 5."
+      }
+    ]
+  },
+  {
+    "slug": "kenny-gainwell",
+    "facts": []
+  },
+  {
+    "slug": "rachaad-white",
+    "facts": []
+  },
+  {
+    "slug": "makai-lemon",
+    "facts": []
+  },
+  {
+    "slug": "kyler-murray",
+    "facts": []
+  },
+  {
+    "slug": "jakobi-meyers",
+    "facts": [
+      {
+        "type": "Tender",
+        "date": "2022-06-13",
+        "team": "NE",
+        "quote": "On March 13, 2022, the Patriots placed a second-round restricted free agent tender on Meyers. Meyers signed the second-round tender on June 13, 2022, worth $3.9 million."
+      }
+    ]
+  },
+  {
+    "slug": "hunter-henry",
+    "facts": []
+  },
+  {
+    "slug": "rashod-bateman",
+    "facts": []
+  },
+  {
+    "slug": "jayden-reed",
+    "facts": []
+  },
+  {
+    "slug": "alvin-kamara",
+    "facts": []
+  },
+  {
+    "slug": "baker-mayfield",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2022-12-05",
+        "team": "CAR",
+        "quote": "With a 1–5 record, Mayfield later requested his release from the Panthers, which was granted on December 5, 2022."
+      }
+    ]
+  },
+  {
+    "slug": "adonai-mitchell",
+    "facts": []
+  },
+  {
+    "slug": "wandale-robinson",
+    "facts": []
+  },
+  {
+    "slug": "zach-charbonnet",
+    "facts": []
+  },
+  {
+    "slug": "tyler-allgeier",
+    "facts": []
+  }
+]

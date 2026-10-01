@@ -1,0 +1,178 @@
+[
+  {
+    "slug": "jonah-coleman",
+    "facts": []
+  },
+  {
+    "slug": "harrison-mevis",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2024-08-11",
+        "team": "CAR",
+        "quote": "Mevis signed with the Carolina Panthers as an undrafted free agent on May 10, 2024. Despite participating in minicamp, OTAs and the first part of training camp and kicking a 41-yard field goal to account for all of Carolina's points in a 17-3 preseason-opening loss to the New England Patriots, he was waived by the Panthers on August 11."
+      },
+      {
+        "type": "Waived",
+        "date": "2025-08-26",
+        "team": "NYJ",
+        "quote": "On June 18, 2025, the New York Jets signed Mevis. He converted three of four field goals and two PAT attempts during the preseason, but was waived on August 26 as part of final roster cuts and re-signed to the practice squad the next day."
+      }
+    ]
+  },
+  {
+    "slug": "jonathon-brooks",
+    "facts": []
+  },
+  {
+    "slug": "tyler-loop",
+    "facts": []
+  },
+  {
+    "slug": "sam-darnold",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2022-09-01",
+        "team": "CAR",
+        "quote": "On September 1, 2022, Darnold was placed on injured reserve. On November 7, Darnold was activated back to the roster by the Panthers."
+      },
+      {
+        "type": "Activated",
+        "date": "2022-11-07",
+        "team": "CAR",
+        "quote": "On September 1, 2022, Darnold was placed on injured reserve. On November 7, Darnold was activated back to the roster by the Panthers."
+      }
+    ]
+  },
+  {
+    "slug": "chris-boswell",
+    "facts": [
+      {
+        "type": "Waived",
+        "date": "2015-08-16",
+        "team": "NYG",
+        "quote": "On January 7, 2015, Boswell signed a reserve/future contract with the New York Giants. On August 16, Boswell was waived by the Giants, but was re-signed on September 2."
+      },
+      {
+        "type": "Re-signed",
+        "date": "2015-09-02",
+        "team": "NYG",
+        "quote": "On January 7, 2015, Boswell signed a reserve/future contract with the New York Giants. On August 16, Boswell was waived by the Giants, but was re-signed on September 2."
+      },
+      {
+        "type": "Signed",
+        "date": "2017-02-02",
+        "team": "PIT",
+        "quote": "On February 2, 2017, the Steelers signed Boswell to a one-year, exclusive-rights contract."
+      },
+      {
+        "type": "Tender",
+        "date": "2018-04-05",
+        "team": "PIT",
+        "quote": "On March 12, 2018, the Steelers placed a second-round restricted free-agent tender on Boswell. On April 5, he signed the tender."
+      },
+      {
+        "type": "Contract",
+        "date": "2018-08-23",
+        "team": "PIT",
+        "quote": "On August 23, 2018, the Steelers signed Boswell to a new five-year deal, keeping him under contract through the 2022 season."
+      }
+    ]
+  },
+  {
+    "slug": "will-reichard",
+    "facts": []
+  },
+  {
+    "slug": "emanuel-wilson",
+    "facts": []
+  },
+  {
+    "slug": "tj-hockenson",
+    "facts": []
+  },
+  {
+    "slug": "rashid-shaheed",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2022-08-30",
+        "team": "NO",
+        "quote": "On May 2, 2022, Shaheed signed with the New Orleans Saints as an undrafted free agent. On August 30, Shaheed was released by the Saints; he was re-signed to the team's practice squad the next day."
+      }
+    ]
+  },
+  {
+    "slug": "cj-stroud",
+    "facts": []
+  },
+  {
+    "slug": "tyjae-spears",
+    "facts": []
+  },
+  {
+    "slug": "brenton-strange",
+    "facts": []
+  },
+  {
+    "slug": "chase-mclaughlin",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2019-12-30",
+        "team": "IND",
+        "quote": "On December 4, 2019, McLaughlin was claimed off waivers by the Indianapolis Colts due to an injury to longtime starter Adam Vinatieri. On December 30, McLaughlin was signed to a one-year extension through 2020."
+      },
+      {
+        "type": "Waived",
+        "date": "2022-05-02",
+        "team": "CLE",
+        "quote": "On April 5, 2022, McLaughlin re-signed with the Browns. He was waived on May 2."
+      }
+    ]
+  },
+  {
+    "slug": "terrance-ferguson",
+    "facts": []
+  },
+  {
+    "slug": "jaxson-dart",
+    "facts": []
+  },
+  {
+    "slug": "kenyon-sadiq",
+    "facts": []
+  },
+  {
+    "slug": "eddy-pineiro",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2018-09-01",
+        "team": "LV",
+        "quote": "Piñeiro signed with the Oakland Raiders as an undrafted free agent on May 4, 2018. He was placed on injured reserve on September 1."
+      },
+      {
+        "type": "Placed on IR",
+        "date": "2020-09-08",
+        "team": "CHI",
+        "quote": "On August 11, Ahmed was waived, effectively making Piñeiro the Bears' kicker for the 2020 season. However, Piñeiro struggled with a groin injury that prevented him from kicking in training camp and resulted in him being placed on injured reserve on September 8, ending his season before it even started."
+      },
+      {
+        "type": "Waived",
+        "date": "2021-08-24",
+        "team": "IND",
+        "quote": "Piñeiro signed with the Indianapolis Colts on May 17, 2021. He was waived on August 24."
+      }
+    ]
+  },
+  {
+    "slug": "brian-robinson",
+    "facts": []
+  },
+  {
+    "slug": "darren-waller",
+    "facts": []
+  }
+]

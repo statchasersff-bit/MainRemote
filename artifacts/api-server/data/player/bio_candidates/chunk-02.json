@@ -1,0 +1,330 @@
+[
+  {
+    "slug": "puka-nacua",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2023-06-20",
+        "team": "LAR",
+        "quote": "Nacua was selected by the Los Angeles Rams of the National Football League (NFL) in the fifth round, 177th overall, of the 2023 NFL draft, and was the 20th wide receiver picked. On June 20, 2023, Nacua signed a four-year rookie contract worth $4.08 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 4.08
+        }
+      }
+    ]
+  },
+  {
+    "slug": "brock-bowers",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-05-09",
+        "team": "LV",
+        "quote": "Bowers was selected by the Las Vegas Raiders in the first round with the 13th overall pick in the 2024 NFL draft. On May 9, 2024, Bowers signed a four-year fully-guaranteed contract worth $18.1 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 18.1
+        }
+      }
+    ]
+  },
+  {
+    "slug": "javonte-williams",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-07-23",
+        "team": "DEN",
+        "quote": "Williams signed his four-year rookie contract with Denver on July 23, 2021."
+      },
+      {
+        "type": "Signed",
+        "date": "2025-03-10",
+        "team": "DAL",
+        "quote": "On March 10, 2025, Williams signed a one-year, $3.5 million contract with the Dallas Cowboys.",
+        "terms": {
+          "years": 1,
+          "totalM": 3.5
+        }
+      },
+      {
+        "type": "Re-signed",
+        "date": "2026-02-21",
+        "team": "DAL",
+        "quote": "On February 21, 2026, Williams re-signed with the Cowboys on a three-year, $24 million contract, with $16 million guaranteed.",
+        "terms": {
+          "years": 3,
+          "totalM": 24
+        }
+      }
+    ]
+  },
+  {
+    "slug": "omarion-hampton",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-05-19",
+        "team": "LAC",
+        "quote": "On May 19, 2025, the Chargers signed Hampton to a four-year, $17.77 million rookie contract.",
+        "terms": {
+          "years": 4,
+          "totalM": 17.77
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jeremiyah-love",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-05-08",
+        "team": "ARI",
+        "quote": "On May 8, 2026, he signed a four-year, $53 million contract with the Cardinals, making him the best paid Running Back in the history of the NFL by total contract value.",
+        "terms": {
+          "years": 4,
+          "totalM": 53
+        }
+      }
+    ]
+  },
+  {
+    "slug": "rashee-rice",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2024-10-03",
+        "team": "KC",
+        "quote": "The Chiefs placed Rice on injured reserve on October 3, 2024."
+      }
+    ]
+  },
+  {
+    "slug": "malik-nabers",
+    "facts": []
+  },
+  {
+    "slug": "tee-higgins",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2020-07-28",
+        "team": "CIN",
+        "quote": "In the 2020 NFL draft, Higgins was selected by the Cincinnati Bengals in the second round with the 33rd overall pick. On July 28, 2020, Higgins signed his rookie deal, a four-year contract worth $8.6 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 8.6
+        }
+      },
+      {
+        "type": "Re-signed",
+        "date": "2024-06-17",
+        "team": "CIN",
+        "quote": "On June 17, 2024, Higgins re-signed with the Bengals on a one-year contract."
+      }
+    ]
+  },
+  {
+    "slug": "zay-flowers",
+    "facts": []
+  },
+  {
+    "slug": "tyler-warren",
+    "facts": []
+  },
+  {
+    "slug": "cam-skattebo",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-06-18",
+        "team": "NYG",
+        "quote": "Skattebo was selected in the fourth round, with the 105th overall selection, by the New York Giants in the 2025 NFL draft. He signed his rookie contract on June 18, 2025."
+      }
+    ]
+  },
+  {
+    "slug": "joe-burrow",
+    "facts": []
+  },
+  {
+    "slug": "nico-collins",
+    "facts": []
+  },
+  {
+    "slug": "jalen-hurts",
+    "facts": []
+  },
+  {
+    "slug": "garrett-wilson",
+    "facts": []
+  },
+  {
+    "slug": "sam-laporta",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2025-11-15",
+        "team": "DET",
+        "quote": "LaPorta began the 2025 season as Detroit's starting tight end, and recorded 489 yards and three touchdowns over the team's first nine games. After suffering a back injury in Week 10 against the Washington Commanders, LaPorta was placed on injured reserve on November 15, 2025."
+      }
+    ]
+  },
+  {
+    "slug": "davante-adams",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2014-06-12",
+        "team": "GB",
+        "quote": "On June 12, 2014, he signed a contract with the Packers."
+      },
+      {
+        "type": "Contract",
+        "date": "2017-12-29",
+        "team": "GB",
+        "quote": "On December 29, 2017, Adams signed a four-year, $58 million contract extension with the Packers.",
+        "terms": {
+          "years": 4,
+          "totalM": 58
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2022-03-18",
+        "team": "LV",
+        "quote": "On March 18, 2022, the Packers traded Adams to the Las Vegas Raiders in exchange for their 2022 first-round pick (later used to select Quay Walker) and second-round pick."
+      },
+      {
+        "type": "Traded",
+        "date": "2024-10-15",
+        "team": "NYJ",
+        "quote": "On October 15, 2024, the Raiders traded Adams to the New York Jets in exchange for a 2025 conditional mid-round draft selection that if Adams were to be named to the 2024 All-Pro Team as either a first or second-team All-Pro, or the Jets advanced to the AFC Championship Game or Super Bowl LIX with Adams on their active roster, would have been a second round selection."
+      },
+      {
+        "type": "Released",
+        "date": "2025-03-04",
+        "team": "NYJ",
+        "quote": "On March 4, 2025, Adams was released by the Jets."
+      }
+    ]
+  },
+  {
+    "slug": "breece-hall",
+    "facts": []
+  },
+  {
+    "slug": "tetairoa-mcmillan",
+    "facts": []
+  },
+  {
+    "slug": "david-montgomery",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2023-03-16",
+        "team": "DET",
+        "quote": "On March 16, 2023, Montgomery signed a three-year, $18 million contract with the Lions.",
+        "terms": {
+          "years": 3,
+          "totalM": 18
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2026-03-11",
+        "team": "HOU",
+        "quote": "On March 11, 2026, the Detroit Lions traded Montgomery to the Houston Texans in exchange for a 2026 fourth-round pick, a 2027 seventh-round pick, and offensive lineman Juice Scruggs."
+      }
+    ]
+  },
+  {
+    "slug": "bucky-irving",
+    "facts": []
+  },
+  {
+    "slug": "dandre-swift",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2020-07-13",
+        "team": "DET",
+        "quote": "On July 13, 2020, the Lions signed Swift to a four-year contract, worth $8.5 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 8.5
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2023-04-29",
+        "team": "PHI",
+        "quote": "On April 29, 2023, the Eagles traded a 2025 fourth-round pick for Swift and a swap of 2023 seventh-round picks during the 2023 NFL draft."
+      },
+      {
+        "type": "Signed",
+        "date": "2024-03-13",
+        "team": "CHI",
+        "quote": "On March 13, 2024, Swift signed a three-year, $24 million contract with the Chicago Bears.",
+        "terms": {
+          "years": 3,
+          "totalM": 24
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2026-09-11",
+        "team": "CHI",
+        "quote": "On September 11, 2026, Swift signed a three-year, $33.75 million extension with the Bears that included $27.5 million in guaranteed money.",
+        "terms": {
+          "years": 3,
+          "totalM": 33.75
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jaylen-waddle",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-05-14",
+        "team": "MIA",
+        "quote": "On May 14, 2021, Waddle signed with the Dolphins on a $27.1 million deal."
+      },
+      {
+        "type": "Traded",
+        "date": "2026-03-18",
+        "team": "DEN",
+        "quote": "On March 18, 2026, the Dolphins traded Waddle along with a 2026 fourth-round pick (111th overall, Kage Casey) to the Denver Broncos in exchange for their 2026 first (30th overall, which the Jets used to select Omar Cooper), third (94th overall, Chris Bell), and fourth-round (130th overall, Trey Moore) picks."
+      }
+    ]
+  },
+  {
+    "slug": "christian-watson",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2022-07-20",
+        "team": "GB",
+        "quote": "On July 20, 2022, he signed his rookie contract, a four-year deal with the Packers worth $9,241,031."
+      },
+      {
+        "type": "Contract",
+        "date": "2026-06-04",
+        "team": "GB",
+        "quote": "On June 4, 2026, Watson signed a four-year, $110.5 million extension with the Packers.",
+        "terms": {
+          "years": 4,
+          "totalM": 110.5
+        }
+      }
+    ]
+  },
+  {
+    "slug": "emeka-egbuka",
+    "facts": []
+  }
+]

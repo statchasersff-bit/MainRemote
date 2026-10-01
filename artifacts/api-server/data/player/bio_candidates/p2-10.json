@@ -1,0 +1,89 @@
+[
+  {
+    "slug": "zach-ertz",
+    "facts": []
+  },
+  {
+    "slug": "james-conner",
+    "facts": []
+  },
+  {
+    "slug": "cairo-santos",
+    "facts": []
+  },
+  {
+    "slug": "tre-harris",
+    "facts": []
+  },
+  {
+    "slug": "ray-davis",
+    "facts": []
+  },
+  {
+    "slug": "jameis-winston",
+    "facts": []
+  },
+  {
+    "slug": "tyquan-thornton",
+    "facts": []
+  },
+  {
+    "slug": "gunnar-helm",
+    "facts": []
+  },
+  {
+    "slug": "david-njoku",
+    "facts": []
+  },
+  {
+    "slug": "najee-harris",
+    "facts": []
+  },
+  {
+    "slug": "marcus-mariota",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2015-07-21",
+        "team": "TEN",
+        "quote": "Mariota and the Titans agreed to a contract on July 21. This made him the last 2015 first-round pick to be signed and, for the second consecutive year, the Titans were the last team to sign their first-round pick."
+      }
+    ]
+  },
+  {
+    "slug": "evan-engram",
+    "facts": [
+      {
+        "type": "Placed on IR",
+        "date": "2019-12-17",
+        "team": "NYG",
+        "yearFrom": "heading",
+        "quote": "In Week 3 against the Tampa Bay Buccaneers, Engram caught six passes for 113 yards and a 75-yard touchdown as the Giants won 32–31, catching the first career NFL touchdown from rookie Daniel Jones. On December 17, Engram was placed on injured reserve with a foot injury after missing the last five games."
+      }
+    ]
+  },
+  {
+    "slug": "jake-elliott",
+    "facts": []
+  },
+  {
+    "slug": "samaje-perine",
+    "facts": []
+  },
+  {
+    "slug": "wil-lutz",
+    "facts": []
+  },
+  {
+    "slug": "greg-dulcich",
+    "facts": []
+  },
+  {
+    "slug": "tua-tagovailoa",
+    "facts": []
+  },
+  {
+    "slug": "jayden-higgins",
+    "facts": []
+  }
+]

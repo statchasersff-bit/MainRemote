@@ -320,6 +320,16 @@ function statchasers_team_enqueue_assets(): void {
 	wp_enqueue_style( STATCHASERS_TEAM_HANDLE );
 	wp_enqueue_script( STATCHASERS_TEAM_HANDLE );
 
+	// The hub's Usage report sets its numbers in Barlow Condensed, the face the
+	// matchup pages already load; same handle and URL, so a page that mounts
+	// both enqueues it once. See statchasers_matchup_font_url().
+	if ( function_exists( 'statchasers_matchup_font_url' ) ) {
+		$font = statchasers_matchup_font_url();
+		if ( '' !== $font ) {
+			wp_enqueue_style( 'statchasers-matchup-font', $font, array(), null );
+		}
+	}
+
 	// Rides on the handle above, so it is scoped to hub pages by the same
 	// condition that loads the stylesheet at all — no body class, no filter
 	// priority, no theme internals in the way. See the divi layout section.

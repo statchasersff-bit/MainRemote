@@ -163,6 +163,8 @@ function statchasers_player_roster( bool $fresh = false ): array {
 			'teamName' => trim( (string) ( $player['teamName'] ?? '' ) ),
 			'id'       => trim( (string) ( $player['id'] ?? '' ) ),
 			'previous' => $previous,
+			// The Bio spec's index rule: false keeps /bio/ out of the sitemap.
+			'bioIndex' => false !== ( $player['bioIndex'] ?? true ),
 		);
 	}
 

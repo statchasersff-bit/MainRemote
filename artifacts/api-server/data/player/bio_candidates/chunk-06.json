@@ -1,0 +1,146 @@
+[
+  { "slug": "evan-mcpherson", "facts": [
+    { "type": "Signed", "date": "2021-05-17", "team": "CIN",
+      "quote": "He signed his four-year rookie contract with the Bengals on May 17, 2021." },
+    { "type": "Contract", "date": "2024-08-16", "team": "CIN",
+      "quote": "On August 16, 2024, McPherson signed a three-year, $16.5 million contract extension with the Bengals.",
+      "terms": { "years": 3, "totalM": 16.5 } }
+  ] },
+  { "slug": "jordyn-tyson", "facts": [
+    { "type": "Signed", "date": "2026-05-08", "team": "NO",
+      "quote": "On May 8, 2026, he signed a four-year, $32.49 million contract with the Saints.",
+      "terms": { "years": 4, "totalM": 32.49 } }
+  ] },
+  { "slug": "khalil-shakir", "facts": [] },
+  { "slug": "romeo-doubs", "facts": [
+    { "type": "Signed", "date": "2022-05-26", "team": "GB",
+      "quote": "Doubs was selected by the Green Bay Packers in the fourth round, 132nd overall, of the 2022 NFL draft. He signed his four-year rookie contract on May 26, 2022." },
+    { "type": "Signed", "date": "2026-03-12", "team": "NE",
+      "quote": "On March 12, 2026, Doubs signed a four-year, $68 million contract with the New England Patriots.",
+      "terms": { "years": 4, "totalM": 68 } }
+  ] },
+  { "slug": "marshawn-lloyd", "facts": [
+    { "type": "Placed on IR", "date": "2024-09-17", "team": "GB",
+      "quote": "On May 14, he signed his contract with the Packers.  On September 17, 2024, Lloyd was placed on injured reserve." }
+  ] },
+  { "slug": "jordan-love", "facts": [
+    { "type": "Signed", "date": "2020-07-01", "team": "GB",
+      "quote": "The move shocked draft analysts and the news media, as the Packers already had an MVP quarterback in Aaron Rodgers. On July 1, 2020, Love signed his rookie four-year, fully guaranteed contract worth over $12.3 million with a signing bonus of over $6.5 million." },
+    { "type": "Contract", "date": "2024-07", "team": "GB",
+      "quote": "In July 2024, Love signed a new $220 million, four-year extension with the Packers; at an average of $55 million a year, which tied him for the highest average annual value at the time of the signing.",
+      "terms": { "years": 4, "totalM": 220 } }
+  ] },
+  { "slug": "alec-pierce", "facts": [
+    { "type": "Re-signed", "date": "2026-03-12", "team": "IND",
+      "quote": "On March 12, 2026, Pierce re-signed with the Colts on a four-year, $114 million contract.",
+      "terms": { "years": 4, "totalM": 114 } }
+  ] },
+  { "slug": "quentin-johnston", "facts": [
+    { "type": "Signed", "date": "2023-05-11", "team": "LAC",
+      "quote": "Johnston was selected by the Los Angeles Chargers with the 21st overall pick in the 2023 NFL draft. On May 11, 2023, Johnston signed a 4-year fully guaranteed rookie contract worth $14,188,786, which included a $7,319,116 signing bonus." }
+  ] },
+  { "slug": "harrison-butker", "facts": [
+    { "type": "Signed", "date": "2017-05-05", "team": "CAR",
+      "quote": "The Carolina Panthers selected Butker in the seventh round (233rd overall) in the 2017 NFL draft. On May 5, 2017, he signed a four-year, $2.48 million contract that included a signing bonus of $83,112.",
+      "terms": { "years": 4, "totalM": 2.48 } },
+    { "type": "Signed", "date": "2017-09-26", "team": "KC",
+      "quote": "On September 26, 2017, Butker was signed by the Kansas City Chiefs off the Panthers' practice squad." },
+    { "type": "Contract", "date": "2024-08-05", "team": "KC",
+      "quote": "On August 5, 2024, the Chiefs re-signed Butker to a four-year, $25.6 million extension.",
+      "terms": { "years": 4, "totalM": 25.6 } }
+  ] },
+  { "slug": "dontayvion-wicks", "facts": [
+    { "type": "Traded", "date": "2026-04-11", "team": "PHI",
+      "quote": "On April 11, 2026, the Packers traded Wicks to the Philadelphia Eagles in exchange for a 2026 fifth-round pick (No. 153: Jager Burton) and a 2027 sixth-round pick." }
+  ] },
+  { "slug": "kenny-gainwell", "facts": [
+    { "type": "Signed", "date": "2021-06-03", "team": "PHI",
+      "quote": "He signed his four-year rookie contract with Philadelphia on June 3, 2021." },
+    { "type": "Signed", "date": "2025-03-13", "team": "PIT",
+      "quote": "On March 13, 2025, Gainwell signed a one-year contract with the Pittsburgh Steelers." },
+    { "type": "Signed", "date": "2026-03-13", "team": "TB",
+      "quote": "On March 13, 2026, Gainwell signed a two-year, $14 million contract with the Tampa Bay Buccaneers.",
+      "terms": { "years": 2, "totalM": 14 } }
+  ] },
+  { "slug": "rachaad-white", "facts": [
+    { "type": "Signed", "date": "2026-03-13", "team": "WAS",
+      "quote": "On March 13, 2026, White signed a one-year, $2 million contract with the Washington Commanders.",
+      "terms": { "years": 1, "totalM": 2 } }
+  ] },
+  { "slug": "tre-tucker", "facts": [] },
+  { "slug": "makai-lemon", "facts": [] },
+  { "slug": "kyler-murray", "facts": [
+    { "type": "Signed", "date": "2019-05-09", "team": "ARI",
+      "quote": "On May 9, 2019, Murray signed his four-year rookie contract, worth $35.2 million with the Cardinals.",
+      "terms": { "years": 4, "totalM": 35.2 } },
+    { "type": "Contract", "date": "2022-07-21", "team": "ARI",
+      "quote": "On July 21, 2022, Murray signed a five-year, $230.5 million contract extension to stay with the Cardinals, with $160 million being guaranteed.",
+      "terms": { "years": 5, "totalM": 230.5 } },
+    { "type": "Released", "date": "2026-03-11", "team": "ARI",
+      "quote": "On March 11, 2026, Murray was released by the Cardinals after seven seasons." },
+    { "type": "Signed", "date": "2026-03-12", "team": "MIN",
+      "quote": "On March 12, 2026, Murray signed a one-year contract with the Minnesota Vikings, worth the veteran's minimum salary, $1.3 million.",
+      "terms": { "years": 1, "totalM": 1.3 } }
+  ] },
+  { "slug": "jakobi-meyers", "facts": [
+    { "type": "Signed", "date": "2023-03-16", "team": "LV",
+      "quote": "On March 16, 2023, Meyers signed a three-year, $33 million contract with the Las Vegas Raiders.",
+      "terms": { "years": 3, "totalM": 33 } },
+    { "type": "Traded", "date": "2025-11-04", "team": "JAX",
+      "quote": "On November 4, 2025, the Raiders traded Meyers to the Jacksonville Jaguars in exchange for 2026 fourth (No. 117) and sixth round (No. 182) picks." }
+  ] },
+  { "slug": "hunter-henry", "facts": [
+    { "type": "Signed", "date": "2021-03-19", "team": "NE",
+      "quote": "On March 19, 2021, Henry signed a three-year, $37.5 million contract with the New England Patriots.",
+      "terms": { "years": 3, "totalM": 37.5 } },
+    { "type": "Contract", "date": "2024-03-08", "team": "NE",
+      "quote": "On March 8, 2024, Henry signed a three-year contract extension with the Patriots." },
+    { "type": "Contract", "date": "2026-08-10", "team": "NE",
+      "quote": "On August 10, 2026, the Patriots signed Henry to a two-year extension worth up to $20 million with $14.5 million guaranteed." }
+  ] },
+  { "slug": "rashod-bateman", "facts": [
+    { "type": "Signed", "date": "2021-05-12", "team": "BAL",
+      "quote": "On May 12, 2021, Bateman signed with the Ravens on a $12.6 million contract that included a $6.5 million signing bonus." }
+  ] },
+  { "slug": "jayden-reed", "facts": [
+    { "type": "Signed", "date": "2023-07-20", "team": "GB",
+      "quote": "Reed was selected in the second round, 50th overall, by the Green Bay Packers in the 2023 NFL draft. He signed his rookie contract on July 20, 2023." },
+    { "type": "Contract", "date": "2026-04-24", "team": "GB",
+      "quote": "On April 24, 2026, the Packers signed Reed to a three-year contract extension worth $50.25 million.",
+      "terms": { "years": 3, "totalM": 50.25 } }
+  ] },
+  { "slug": "alvin-kamara", "facts": [] },
+  { "slug": "baker-mayfield", "facts": [
+    { "type": "Signed", "date": "2018-07-24", "team": "CLE",
+      "quote": "Mayfield signed a four-year rookie contract with the Browns on July 24, 2018, with the deal worth $32.68 million in guaranteed salary." },
+    { "type": "Placed on IR", "date": "2022-01-05", "team": "CLE",
+      "quote": "After the Browns were eliminated from the postseason following a Week 17 loss to the Steelers, the Browns announced Mayfield would undergo surgery on the torn labrum, ending Mayfield's season. He was placed on injured reserve on January 5, 2022." },
+    { "type": "Traded", "date": "2022-07-06", "team": "CAR",
+      "quote": "On July 6, 2022, Mayfield was traded to the Panthers for a 2024 conditional fifth-round draft pick." },
+    { "type": "Claimed", "date": "2022-12-06", "team": "LAR",
+      "quote": "On December 6, 2022, Mayfield was claimed off waivers by the Rams after starting quarterback Matthew Stafford sustained a spinal cord injury on December 2." },
+    { "type": "Signed", "date": "2023-03-15", "team": "TB",
+      "quote": "On March 15, 2023, the Tampa Bay Buccaneers signed Mayfield to a one-year, $4 million contract that includes a signing bonus of $2.87 million.",
+      "terms": { "years": 1, "totalM": 4 } },
+    { "type": "Contract", "date": "2024-03-10", "team": "TB",
+      "quote": "On March 10, 2024, Mayfield signed a three-year contract extension with the Buccaneers, worth up to $100 million, with $50 million guaranteed." },
+    { "type": "Contract", "date": "2026-09-08", "team": "TB",
+      "quote": "On September 8, 2026, the Buccaneers and Mayfield agreed to a 3-year, $165 million contract extension.",
+      "terms": { "years": 3, "totalM": 165 } }
+  ] },
+  { "slug": "adonai-mitchell", "facts": [
+    { "type": "Traded", "date": "2025-11-04", "team": "NYJ",
+      "quote": "On November 4, 2025, the Colts traded Mitchell along with two first round picks (2026 (No. 16) and 2027) to the New York Jets in exchange for cornerback Sauce Gardner." }
+  ] },
+  { "slug": "wandale-robinson", "facts": [
+    { "type": "Signed", "date": "2026-03-12", "team": "TEN",
+      "quote": "On March 12, 2026, Robinson signed a four-year deal with the Tennessee Titans worth $70 million with $38 million guaranteed.",
+      "terms": { "years": 4, "totalM": 70 } }
+  ] },
+  { "slug": "zach-charbonnet", "facts": [] },
+  { "slug": "tyler-allgeier", "facts": [
+    { "type": "Signed", "date": "2026-03-12", "team": "ARI",
+      "quote": "On March 12, 2026, Allgeier signed a two-year, $12.25 million contract with the Arizona Cardinals.",
+      "terms": { "years": 2, "totalM": 12.25 } }
+  ] }
+]

@@ -444,7 +444,9 @@ echo "\nteam section meta mirrors the API\n";
 $news = statchasers_team_section_meta( 'new-england-patriots', 'news' );
 is( $news['title'], 'New England Patriots News 2026: Injuries, Roster Moves & Fantasy Impact', 'news title' );
 is( in_array( 'news', STATCHASERS_TEAM_SECTIONS, true ), true, 'news is a public section' );
-is( count( STATCHASERS_TEAM_SECTIONS ), 6, 'six sections' );
+is( count( STATCHASERS_TEAM_SECTIONS ), 7, 'seven sections' );
+is( statchasers_team_heading( 'new-england-patriots', 'usage' ), 'New England Patriots Usage & Opportunity Report 2026', 'usage' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['title'], 'New England Patriots Target Share & Snap Counts 2026: Usage Report', 'usage title' );
 
 echo "\nurl switches default on\n";
 is( statchasers_team_section_urls_enabled(), true, 'team sections' );
@@ -1839,6 +1841,7 @@ $GLOBALS['pages_by_path'] = array();
 
 $sitemap = apply_filters( 'rank_math/sitemap/page_content', '' );
 is( false !== strpos( $sitemap, 'https://example.com/p/911/stats/' ), true, 'a team hub gets its section URLs' );
+is( false !== strpos( $sitemap, 'https://example.com/p/911/usage/' ), true, 'the Usage report is in the sitemap' );
 is( false === strpos( $sitemap, '/p/912/' ), true, 'a page at a team slug without the hub shortcode gets none' );
 
 $GLOBALS['pages']         = $saved_pages;

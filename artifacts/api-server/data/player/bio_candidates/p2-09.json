@@ -1,0 +1,48 @@
+[
+  { "slug": "fernando-mendoza", "facts": [] },
+  { "slug": "geno-smith", "facts": [] },
+  { "slug": "mack-hollins", "facts": [] },
+  { "slug": "dylan-sampson", "facts": [] },
+  { "slug": "jerry-jeudy", "facts": [] },
+  { "slug": "mike-gesicki", "facts": [] },
+  { "slug": "chig-okonkwo", "facts": [] },
+  { "slug": "jauan-jennings", "facts": [
+    { "type": "Waived", "date": "2020-09-05", "team": "SF",
+      "quote": "Jennings was selected by the San Francisco 49ers in the seventh round (217th overall) of the 2020 NFL draft. He was waived on September 5, but was signed to the practice squad the next day." },
+    { "type": "Contract", "date": "2025-09-03", "team": "SF",
+      "quote": "Though the 49ers and Jennings did not come to an agreement on a contract extension, they agreed to a contract restructure that would increase the ceiling of his 2025 salary to $10.5 million by incorporating $3 million worth of play-time incentives on September 3." }
+  ] },
+  { "slug": "jacoby-brissett", "facts": [] },
+  { "slug": "aaron-rodgers", "facts": [
+    { "type": "Placed on IR", "date": "2017-12-19", "team": "GB", "yearFrom": "heading",
+      "quote": "However, on December 19, Rodgers was placed back on injured reserve after the Packers were eliminated from playoff contention." },
+    { "type": "Contract", "date": "2023-07-26", "team": "NYJ",
+      "quote": "On July 26, 2023, Rodgers took a pay cut and agreed to a reworked contract with the Jets." },
+    { "type": "Signed", "date": "2025-06-06", "team": "PIT",
+      "quote": "On June 6, 2025, the Pittsburgh Steelers agreed to terms with Rodgers on a one-year deal. The following day, he officially signed his one-year, $13.65 million contract, which includes $10 million guaranteed and can be worth up to $19.5 million with incentives.",
+      "terms": { "years": 1, "totalM": 13.65 } },
+    { "type": "Signed", "date": "2026-05-16", "team": "PIT",
+      "quote": "On May 16, 2026, Rodgers returned to the Steelers for his 22nd season, signing a one-year deal worth up to $25 million." }
+  ] },
+  { "slug": "kaleb-johnson", "facts": [] },
+  { "slug": "deshaun-watson", "facts": [
+    { "type": "Contract", "date": "2022-03-18", "team": "CLE",
+      "quote": "On March 18, 2022, Watson and the Texans' 2024 sixth-round draft pick were traded to the Browns in exchange for the Browns' first-round draft picks in 2022, 2023, and 2024, as well as the Browns' third-round pick in 2023 and fourth-round picks in 2022 and 2024. As part of the trade, Watson signed a new, fully guaranteed, five-year, $230 million deal with the Browns, making it the largest guaranteed contract in NFL history at the time of the signing.",
+      "terms": { "years": 5, "totalM": 230 } }
+  ] },
+  { "slug": "chris-brooks", "facts": [
+    { "type": "Signed", "date": "2024-09-17", "team": "GB",
+      "quote": "Brooks was signed by the Green Bay Packers to their practice squad on September 3, 2024. He was signed to the Packers' active roster on September 17." }
+  ] },
+  { "slug": "tyler-bass", "facts": [] },
+  { "slug": "drew-lock", "facts": [] },
+  { "slug": "jalen-mcmillan", "facts": [] },
+  { "slug": "cade-otton", "facts": [] },
+  { "slug": "michael-penix", "facts": [] },
+  { "slug": "george-holani", "facts": [
+    { "type": "Tender", "date": "2026-03-16", "team": "SEA",
+      "quote": "Designated as an exclusive rights free agent in the 2026 offseason, the Seahawks tendered Holani on March 2, 2026. Holani signed the tender on March 16." }
+  ] },
+  { "slug": "justice-hill", "facts": [] },
+  { "slug": "ryan-flournoy", "facts": [] }
+]

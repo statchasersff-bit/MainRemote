@@ -469,6 +469,47 @@ describe("the WordPress fragment", () => {
  * leaders, that a category nobody produced in is absent rather than zeroed, and
  * that a game with no result carries no leaders block at all.
  */
+/**
+ * The Fantasy tab's links into Redraft Command: Projections after Fantasy
+ * Points vs Expected, Trade Calculator after the verdicts, player start/sit
+ * pages at their final address, and comparison pages only for real decisions.
+ */
+describe("fantasy tab tool links", () => {
+  const GAME = "/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/";
+  const RC = "https://statchasers.com/redraft-command/";
+
+  test("projections and trade calculator banners, at their final addresses", async () => {
+    const { doc } = await dom(GAME);
+    assert.equal(
+      doc.querySelector('[data-cta="fantasy-projections-banner"]')?.getAttribute("href"),
+      `${RC}fantasy-football-projections`,
+    );
+    assert.equal(
+      doc.querySelector('[data-cta="fantasy-trade-banner"]')?.getAttribute("href"),
+      `${RC}fantasy-football-trade-calculator`,
+    );
+    assert.equal(doc.querySelectorAll('a[href*="/launch/"]').length, 0, "nothing goes through the /launch/ redirect");
+    for (const a of doc.querySelectorAll('[data-cta="verdict-startsit"]')) {
+      assert.match(a.getAttribute("href"), /^https:\/\/statchasers\.com\/redraft-command\/who-should-i-start\/[a-z0-9-]+$/);
+    }
+  });
+
+  test("comparisons: at most three, slugs in order, nobody twice", async () => {
+    const { doc } = await dom(GAME);
+    const links = [...doc.querySelectorAll('a[data-cta="fantasy-compare"]')];
+    assert.ok(links.length <= 3, `got ${links.length}`);
+    const names = [];
+    for (const a of links) {
+      const m = a.getAttribute("href").match(/who-should-i-start\/([a-z0-9-]+)-or-([a-z0-9-]+)$/);
+      assert.ok(m, a.getAttribute("href"));
+      assert.ok(m[1] < m[2], "the same pair always gets the same address");
+      const q = a.querySelector(".sct-fp-decision-q").textContent.replace(/\?$/, "").split(" or ");
+      names.push(...q);
+    }
+    assert.equal(new Set(names).size, names.length);
+  });
+});
+
 describe("game leaders", () => {
   const PLAYED = "/nfl/new-england-patriots-vs-seattle-seahawks/";
 
@@ -476,12 +517,20 @@ describe("game leaders", () => {
     const { doc } = await dom(PLAYED);
     // The pair has no meeting coming, so its page is the recap layout and the
     // leaders are the strip under the hero — see leaders-strip.ts.
-    // The fantasy table has players, so the Redraft Command banner closes it.
-    const banner = doc.querySelector(".sct-mu-playerstats > aside.sct-mu-ps-cta:last-child");
+    // The fantasy table has players, so the decision module closes it: three
+    // Redraft Command tools, then the hub.
+    const banner = doc.querySelector(".sct-mu-playerstats > aside.sct-mu-decide:last-child");
     if (doc.querySelector(".sct-mu-playerstats table")) {
-      assert.ok(banner, "the banner is the section's last element");
-      assert.equal(banner.querySelector("a").getAttribute("data-cta"), "player-stats-banner");
-      assert.equal(banner.querySelector("a").textContent, "Open Redraft Command →");
+      assert.ok(banner, "the decision module is the section's last element");
+      assert.deepEqual(
+        [...banner.querySelectorAll("a")].map((a) => [a.getAttribute("data-cta"), a.getAttribute("href")]),
+        [
+          ["decide-startsit", "https://statchasers.com/redraft-command/who-should-i-start"],
+          ["decide-trade", "https://statchasers.com/redraft-command/fantasy-football-trade-calculator"],
+          ["decide-league", "https://statchasers.com/redraft-command/fantasy-football-league-analyzer"],
+          ["decide-redraft", "https://statchasers.com/redraft-command/"],
+        ],
+      );
     }
     const block = doc.querySelector('section.sct-ls[aria-label="Game leaders"]');
     assert.ok(block, "a played matchup carries the leaders strip");
@@ -1188,7 +1237,7 @@ describe("sortable stat tables", () => {
     // straight over the tables, and the banner closes it.
     assert.ok(doc.querySelector(".sct-mu-playerstats > h2:first-child + .sct-mu-fl + .sct-mu-ps-head + .sct-mu-ps-row"));
     assert.match(doc.querySelector(".sct-mu-playerstats > h2:first-child").textContent, /^Fantasy Points: Bills vs Patriots, /);
-    assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-ps-cta");
+    assert.equal(doc.querySelector(".sct-mu-playerstats > :last-child").className, "sct-mu-ps-cta sct-mu-decide");
     assert.equal(doc.querySelector(".sct-mu-scoring"), null, "the switch is built by the bundle, not sent");
   });
 

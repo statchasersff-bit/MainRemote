@@ -336,33 +336,33 @@ function matchupList(games: UpcomingGame[]): string {
   return listWords(games.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week}`));
 }
 
-function rankLabel(m: Model): string {
-  return m.rank === null ? "" : `${m.pos}${m.rank}`;
-}
-
 /* ------------------------------------------------------ section 1: the take */
+
+/** "EPA per play" → "EPA/play", "attempts per game" → "att/game". */
+function compactUnit(unit: string): string {
+  return unit.replace(/\battempts\b/g, "att").replace(/\byards\b/g, "yds").replace(/ per /g, "/");
+}
 
 function renderTake(m: Model): string {
   const tier = tierLine(m);
   if (!tier || !m.chips) return "";
   const leagues = LEAGUES[m.pos]!;
   const top = topDriver(m);
-  const why = [
-    m.preseason
-      ? `He finished ${rankLabel(m)} last season`
-      : `He's ${rankLabel(m)} through Week ${m.week}` +
-        (m.projected ? ` against a preseason ~${m.pos}${m.projected} projection` : ""),
-    top && top.tier === "good" ? `, and the reason is ${top.label.toLowerCase()}: ${top.value} ${top.unit}, ${ordinal(top.rank!)} of ${top.of} ${m.pos}s last season.` : ".",
-  ].join("");
-  const groups = fitGroups(m);
-  const todo = groups.map(([c, where]) =>
-    c.kind === "good"
-      ? `start him in ${where} leagues`
-      : c.kind === "bad"
-        ? `leave him on waivers in ${where} leagues`
-        : `treat him as ${chipPhrase(c)} in ${where} leagues`,
-  );
-  const summary = `${why} ${todo.length ? `${cap(listWords(todo))}.` : ""}`.trim();
+
+  // mak's hero rework, 2026-10-01: the sentence that sat under the tier line
+  // ("He's QB2 through Week 3, and the reason is efficiency: …") became a
+  // dot-separated meta line — the rank, the rate and the headline stat. The
+  // full reasoning lives one section down, in Our Take; the league-by-league
+  // call is the chips beside it, now anchored under a "Best fit" label
+  // instead of floating.
+  const meta: string[] = [];
+  if (m.preseason) {
+    if (m.prior?.rank) meta.push(`${m.pos}${m.prior.rank} last season`, `${one(m.prior.ppg)} PPG`);
+  } else if (m.rank !== null) {
+    meta.push(`${m.pos}${m.rank} through Week ${m.week}`);
+    if (m.now) meta.push(`${one(m.now.ppg)} PPG`);
+  }
+  if (top && top.tier === "good") meta.push(`${top.value} ${compactUnit(top.unit)}`);
 
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
@@ -370,9 +370,11 @@ function renderTake(m: Model): string {
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
     `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
-    `<p class="scp-ol-sum">${escapeHtml(summary)}</p>` +
+    (meta.length ? `<p class="scp-ol-meta">${escapeHtml(meta.join(" · "))}</p>` : "") +
     `</div>` +
-    `<div class="scp-ol-fits" role="list" aria-label="Value by league type">` +
+    `<div class="scp-ol-fitwrap">` +
+    `<div class="scp-ol-fithead" aria-hidden="true">Best fit</div>` +
+    `<div class="scp-ol-fits" role="list" aria-label="Best fit by league type">` +
     m.chips
       .map(
         (chip, i) =>
@@ -380,7 +382,7 @@ function renderTake(m: Model): string {
           `<span class="scp-ol-chip is-${chip.kind}">${escapeHtml(chip.label)}</span></div>`,
       )
       .join("") +
-    `</div>` +
+    `</div></div>` +
     `</div></section>`
   );
 }
@@ -400,8 +402,10 @@ function renderExpect(m: Model): string {
   const panels: string[] = [];
   const arrow = `<span class="scp-ol-arrow" aria-hidden="true">›</span>`;
   if (m.projected) {
+    // Short labels (mak, 2026-10-01): "Preseason", "Through Week n" — the
+    // panel row reads as a progression, and the long forms made it a caption.
     panels.push(
-      `<div class="scp-ol-ex"><div class="scp-ol-when">Preseason projection</div>` +
+      `<div class="scp-ol-ex"><div class="scp-ol-when">Preseason</div>` +
         `<div class="scp-ol-rk">~${m.pos}${m.projected}</div>` +
         `<div class="scp-ol-exsub">${escapeHtml(`Viewed as ${preseasonWords(m.pos, m.projected)}`)}</div>${arrow}</div>`,
     );
@@ -415,7 +419,7 @@ function renderExpect(m: Model): string {
   }
   if (!m.preseason && m.now?.rank) {
     panels.push(
-      `<div class="scp-ol-ex is-now"><div class="scp-ol-when">${m.season} through Week ${m.week}</div>` +
+      `<div class="scp-ol-ex is-now"><div class="scp-ol-when">Through Week ${m.week}</div>` +
         `<div class="scp-ol-rk">${m.pos}${m.now.rank}</div>` +
         `<div class="scp-ol-exsub">${escapeHtml(`${one(m.now.ppg)} PPG over ${m.now.gp} games`)}</div></div>`,
     );
@@ -428,10 +432,12 @@ function renderExpect(m: Model): string {
     );
   }
   if (panels.length === 0) return "";
+  // No button here (mak, 2026-10-01): Redraft Command gets one main CTA — the
+  // sidebar card in Our Take — and one quiet one at the foot of upside/risk.
   panels.push(
     `<div class="scp-ol-ex is-ros"><div class="scp-ol-when">Rest of season</div>` +
-      `<div class="scp-ol-rk is-text">Live rank, updated after every game</div>` +
-      `<a class="scp-ol-btn is-gold" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-expect">See it in Redraft Command</a></div>`,
+      `<div class="scp-ol-rk is-text">Live rank</div>` +
+      `<div class="scp-ol-exsub">Updated after every game</div></div>`,
   );
 
   let lede = "";
@@ -514,17 +520,19 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
   } else if (depth && depth.order > 1) {
     out.push(`He's ${m.pos}${depth.order} on the depth chart, so his value depends on the players ahead of him.`);
   }
-  // 4. What to do.
-  if (m.chips) {
-    const leagues = LEAGUES[m.pos]!;
-    const fav = favorable(m);
-    let p = `Until something changes, he's ${fitSentence(m)}.`;
-    if (fav.length) {
-      p += ` The next favorable ${fav.length === 1 ? "matchup is" : "matchups are"} ${listWords(
+  // 4. The schedule ahead. This paragraph used to reopen with the league-fit
+  // sentence ("Until something changes, he's a weekly starter in superflex
+  // and 2QB…") — the third statement of the league call on one tab. mak
+  // (2026-10-01): the league types are said once, in the hero, so the close
+  // keeps only what is new here. With no favorable matchup coming, it is
+  // nothing, and the take ends on the role paragraph.
+  const fav = favorable(m);
+  if (fav.length) {
+    out.push(
+      `The next favorable ${fav.length === 1 ? "matchup is" : "matchups are"} ${listWords(
         fav.slice(0, 2).map((g) => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)} against ${m.pos}s)`),
-      )}.`;
-    }
-    out.push(p);
+      )}.`,
+    );
   }
   return out;
 }
@@ -533,20 +541,20 @@ function renderRead(m: Model, data: PlayerPageData): string {
   const record = data.fantasyOutlook2026;
   const published = dateParts((record as unknown as { generatedAt?: string } | null)?.generatedAt);
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  const cta = a(m.rc, `check ${m.last}'s rest-of-season rank in Redraft Command`, ` data-cta="redraft-command-outlook-prose"`);
 
+  // No Redraft Command link in the prose (mak, 2026-10-01): the tab carries
+  // exactly two — the sidebar card beside this text, and the quiet line at
+  // the foot of upside/risk. The take ends on its own last sentence.
   let prose: string[];
   let byline: string;
   let archive = "";
   if (m.preseason) {
     if (preseasonParas.length === 0) return "";
     prose = preseasonParas.map((p) => escapeHtml(p));
-    prose.push(`To see where he ranks the rest of the way, ${cta}.`);
     byline = `By the StatChasers staff.${published ? ` Published <time datetime="${published.iso}">${published.text}</time>.` : ""}`;
   } else {
     prose = paragraphs(m, data).map((p) => escapeHtml(p));
     if (prose.length === 0) return "";
-    prose[prose.length - 1] += ` To see where he ranks against every other ${m.pos} the rest of the way, ${cta}.`;
     // mak, 2026-09-30: no "Updated automatically after Week n" line.
     byline = published ? `Preseason outlook originally published <time datetime="${published.iso}">${published.text}</time>.` : "";
     if (preseasonParas.length && published) {
@@ -720,7 +728,12 @@ function schedChips(m: Model): string {
 function renderTriggers(m: Model, data: PlayerPageData): string {
   const up: string[] = [];
   const risk: string[] = [];
-  const b = (label: string, text: string): string => `<strong>${escapeHtml(label)}</strong> ${escapeHtml(text)}`;
+  // The claim is the line you read; the evidence sits under it as subtext
+  // (mak, 2026-10-01). Both halves are the same words as before — what moved
+  // is the emphasis, so the list scans as six claims instead of six sentences.
+  const b = (label: string, text: string): string =>
+    `<span class="scp-ol-claim">${escapeHtml(label.replace(/\.$/, ""))}</span>` +
+    `<span class="scp-ol-evid">${escapeHtml(text)}</span>`;
 
   const fav = favorable(m);
   const games = m.upcoming.filter((g) => g.matchup);

@@ -20,6 +20,7 @@
 import { escapeHtml } from "./render";
 import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
+import { bioDescription } from "./player/bio-seo";
 
 export interface PlayerPageMeta {
   title: string;
@@ -78,12 +79,17 @@ function sectionMeta(
     // whose queries are biographical — age, height, college, draft, where he
     // is from — and a title promising fantasy analysis would be competing for
     // the wrong ones while the profile page competes for the right ones.
+    // The Bio spec's title and description (2.11, approved by mak
+    // 2026-09-30), from the sourced fact store when the player has a record.
     const profile = data.bioProfile;
     const born = profile.facts.find((fact) => fact.label === "Born")?.value;
     const college = profile.college;
+    const title = `${player.name} Bio: Age, Height, College, Draft & Career Teams | ${SITE_NAME}`;
+    const specDescription = data.bioPage ? bioDescription(data, data.bioPage) : null;
+    if (specDescription) return { title, description: specDescription };
 
     return {
-      title: `${player.name} Bio: Age, Height, College, Draft & Career | ${SITE_NAME}`,
+      title,
       description:
         `${player.name} bio: age, height, weight` +
         `${born ? `, born ${born}` : ""}` +

@@ -152,7 +152,9 @@ function wireTabs(root: HTMLElement): void {
    */
   function writeUrl(url: string, mode: "push" | "replace"): void {
     try {
-      const current = location.pathname + location.search;
+      // The hash counts: the Usage tab's address is the hub plus `#usage`, so
+      // leaving it for the Outlook is the same path with the hash dropped.
+      const current = location.pathname + location.search + location.hash;
       if (url === current) return;
       if (mode === "push") history.pushState(null, "", url);
       else history.replaceState(null, "", url);
@@ -162,11 +164,19 @@ function wireTabs(root: HTMLElement): void {
     }
   }
 
+  /** Where a tab lives: its path, plus the hash for a hub-only panel. */
+  function tabUrl(link: HTMLAnchorElement): string {
+    const url = new URL(link.href, location.origin);
+    return url.pathname + url.hash;
+  }
+
   /** The tab whose address this path is, or null for the page we landed on. */
   function fromPath(path: string): string | null {
     for (const tab of tabs) {
       const href = tab.link.getAttribute("href");
       if (!href) continue;
+      // A hub panel with no address of its own (`#usage`) is found by its hash.
+      if (href.includes("#")) continue;
       // Compared as paths rather than by string equality: the href may be
       // relative and the location is always absolute.
       // The trailing slash is dropped from both: the Outlook tab links to the
@@ -202,7 +212,7 @@ function wireTabs(root: HTMLElement): void {
         link.dataset["sctLead"] ?? "",
         link.dataset["scTitle"] ?? "",
       );
-      writeUrl(new URL(link.href, location.origin).pathname, "push");
+      writeUrl(tabUrl(link), "push");
     });
   }
 
@@ -239,7 +249,7 @@ function wireTabs(root: HTMLElement): void {
       tab.link.dataset["sctLead"] ?? "",
       tab.link.dataset["scTitle"] ?? "",
     );
-    writeUrl(new URL(tab.link.href, location.origin).pathname, "replace");
+    writeUrl(tabUrl(tab.link), "replace");
   });
 
   /**
@@ -253,7 +263,8 @@ function wireTabs(root: HTMLElement): void {
    */
   window.addEventListener("popstate", () => {
     const path = location.pathname;
-    const id = fromPath(path);
+    const hashed = location.hash.replace(/^#/, "");
+    const id = tabs.some((tab) => tab.id === hashed) ? hashed : fromPath(path);
 
     if (id) {
       active = id;
@@ -746,6 +757,34 @@ function wireUsageDetail(root: HTMLElement): void {
   }
 }
 
+/**
+ * The Usage report's + / − profile toggles.
+ *
+ * Every profile row is in the HTML with `hidden`, and team.css shows them all
+ * until this has run (`data-sct-usage="js"`), so with scripting off the table
+ * reads fully expanded and the buttons are hidden. A button owns the row its
+ * aria-controls names.
+ */
+function wireUsageProfiles(root: HTMLElement): void {
+  const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".sct-us-toggle"));
+  if (buttons.length === 0) return;
+  for (const button of buttons) {
+    const id = button.getAttribute("aria-controls");
+    const row = id ? document.getElementById(id) : null;
+    if (!row) continue;
+    const glyph = button.querySelector("span");
+    const label = button.getAttribute("aria-label") ?? "";
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(open));
+      row.hidden = !open;
+      if (glyph) glyph.textContent = open ? "\u2212" : "+";
+      button.setAttribute("aria-label", open ? label.replace(/^Show/, "Hide") : label.replace(/^Hide/, "Show"));
+    });
+  }
+  root.dataset["sctUsage"] = "js";
+}
+
 /* ------------------------------------------------------ scoring switch ---- */
 
 type ScoringFormat = "ppr" | "half" | "std";
@@ -1233,6 +1272,7 @@ function boot(): void {
     wireHighlights(root);
     wirePlayerStatsMore(root);
     wireUsageDetail(root);
+    wireUsageProfiles(root);
     wireBarHeight(root);
     wireFrameHeight(root);
   }

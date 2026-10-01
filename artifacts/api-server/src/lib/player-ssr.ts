@@ -30,6 +30,7 @@ import {
 } from "./player/player-data";
 import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
+import { bioPersonNode } from "./player/bio-seo";
 import { LruCache } from "./lru";
 
 export interface PlayerSsrResult {
@@ -148,6 +149,11 @@ function pageDataIsland(data: PlayerPageData, options: PlayerRenderOptions): str
       JSON.stringify({
         title: meta.title.replace(/ \| StatChasers$/, ""),
         description: meta.description,
+        // Bio (spec 2.11): the Person node the plugin makes the ProfilePage's
+        // mainEntity, and the index rule it applies to robots and the sitemap.
+        ...(options.section === "bio" && data.bioPage
+          ? { person: bioPersonNode(data, data.bioPage), index: data.bioPage.indexable }
+          : {}),
       }),
     ) +
     `</script>`

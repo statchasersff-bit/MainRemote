@@ -1,0 +1,52 @@
+[
+  { "slug": "tahj-washington", "facts": [] },
+  { "slug": "teddy-bridgewater", "facts": [] },
+  { "slug": "terrell-jennings", "facts": [
+    { "type": "Signed", "date": "2024-12-21", "team": "NE",
+      "quote": "On August 27, 2024, Jennings was released by the Patriots as part of final roster cuts and re-signed to the practice squad the following day. On December 21, Jennings was signed to the 53-man active roster." },
+    { "type": "Signed", "date": "2025-10-29", "team": "NE",
+      "quote": "On August 26, 2025, Jennings was released by the Patriots as part of final roster cuts and re-signed to the practice squad the following day. On October 29, Jennings was signed to the 53-man active roster." }
+  ] },
+  { "slug": "tim-patrick", "facts": [
+    { "type": "Tender", "date": "2020-04-18", "team": "DEN",
+      "quote": "Patrick signed a one-year exclusive-rights free agent tender with the Broncos on April 18, 2020." },
+    { "type": "Tender", "date": "2021-05-18", "team": "DEN",
+      "quote": "The Broncos placed a second-round restricted free agent tender on Patrick on March 16, 2021. He signed the one-year contract on May 18." },
+    { "type": "Signed", "date": "2024-09-24", "team": "DET",
+      "quote": "On August 27, 2024, Patrick was signed to the Detroit Lions' practice squad. He was signed to the team's active roster on September 24." }
+  ] },
+  { "slug": "tip-reiman", "facts": [] },
+  { "slug": "tommy-devito", "facts": [
+    { "type": "Signed", "date": "2023-10-31", "team": "NYG", "yearFrom": "heading",
+      "quote": "DeVito was signed to the Giants' active roster on October 31." }
+  ] },
+  { "slug": "tommy-tremble", "facts": [] },
+  { "slug": "trevor-etienne", "facts": [] },
+  { "slug": "trey-lance", "facts": [] },
+  { "slug": "treylon-burks", "facts": [
+    { "type": "Waived", "date": "2025-10-07", "team": "TEN", "yearFrom": "heading",
+      "quote": "On October 7, Burks was waived by the Titans." }
+  ] },
+  { "slug": "tutu-atwell", "facts": [] },
+  { "slug": "ty-chandler", "facts": [] },
+  { "slug": "tylan-wallace", "facts": [] },
+  { "slug": "tyler-badie", "facts": [
+    { "type": "Signed", "date": "2024-01-08", "team": "DEN",
+      "quote": "On August 29, 2023, Badie was waived by the Broncos and re-signed to the practice squad. He signed a reserve/future contract on January 8, 2024." }
+  ] },
+  { "slug": "tyler-conklin", "facts": [] },
+  { "slug": "tyler-goodson", "facts": [] },
+  { "slug": "tyler-higbee", "facts": [] },
+  { "slug": "tyler-huntley", "facts": [
+    { "type": "Activated", "date": "2021-12-30", "team": "BAL", "yearFrom": "heading",
+      "quote": "On December 30, Huntley was activated and named the starter for the Ravens against the Los Angeles Rams and the Steelers in Weeks 17 and 18 respectively." },
+    { "type": "Tender", "date": "2023-04-24", "team": "BAL",
+      "quote": "On March 15, 2023, the Ravens placed a tender on Huntley that allowed them to match another team's contract offer as they continued negotiations on a new contract. He officially signed the tender, which was worth $2.627 million, on April 24." },
+    { "type": "Signed", "date": "2025-10-24", "team": "BAL",
+      "quote": "On August 27, 2025, Huntley was signed to the Baltimore Ravens' practice squad to fill the third-string quarterback role. He was signed to the active roster on October 24." }
+  ] },
+  { "slug": "tyrell-shavers", "facts": [] },
+  { "slug": "tyrod-taylor", "facts": [] },
+  { "slug": "ulysses-bentley", "facts": [] },
+  { "slug": "van-jefferson", "facts": [] }
+]

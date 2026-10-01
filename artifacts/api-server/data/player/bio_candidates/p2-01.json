@@ -1,0 +1,60 @@
+[
+  { "slug": "travis-hunter", "facts": [] },
+  { "slug": "bijan-robinson", "facts": [
+    { "type": "Contract", "date": "2026-08-04", "team": "ATL", "yearFrom": "heading",
+      "quote": "On August 4, the Falcons signed Robinson to a three-year contract extension worth up to $75 million, with $51 million guaranteed, making him the highest paid running back in NFL history, surpassing Saquon Barkley." }
+  ] },
+  { "slug": "jahmyr-gibbs", "facts": [
+    { "type": "Contract", "date": "2026-08-06", "team": "DET", "yearFrom": "heading",
+      "quote": "On August 6, the Lions signed Gibbs to a three-year, $67.5 million deal that could be worth up to $75.75 million and includes $51.5 million guaranteed.",
+      "terms": { "years": 3, "totalM": 67.5 } }
+  ] },
+  { "slug": "jaxon-smith-njigba", "facts": [] },
+  { "slug": "jamarr-chase", "facts": [] },
+  { "slug": "ceedee-lamb", "facts": [
+    { "type": "Contract", "date": "2024-08-26", "team": "DAL",
+      "quote": "On August 26, 2024, Lamb signed a four-year, $136 million deal with $100 million guaranteed and a $38 million signing bonus to stay with the Cowboys through the 2028 season.",
+      "terms": { "years": 4, "totalM": 136 } }
+  ] },
+  { "slug": "christian-mccaffrey", "facts": [
+    { "type": "Activated", "date": "2024-11-09", "team": "SF", "yearFrom": "heading",
+      "quote": "Following their bye week, the 49ers opened McCaffrey's 21-day practice window on November 4. He was activated on November 9 and made his season debut in Week 10 against the Tampa Bay Buccaneers." }
+  ] },
+  { "slug": "derrick-henry", "facts": [] },
+  { "slug": "james-cook", "facts": [
+    { "type": "Signed", "date": "2022-05-16", "team": "BUF",
+      "quote": "Cook was selected by the Buffalo Bills in the second round (63rd overall) of the 2022 NFL draft. On May 16, Cook signed his a rookie contract, a four-year deal worth $5.8 million, with $2.9 million guaranteed.",
+      "terms": { "years": 4, "totalM": 5.8 } }
+  ] },
+  { "slug": "kenneth-walker", "facts": [] },
+  { "slug": "lamar-jackson", "facts": [] },
+  { "slug": "trey-mcbride", "facts": [] },
+  { "slug": "amon-ra-st-brown", "facts": [] },
+  { "slug": "chris-olave", "facts": [] },
+  { "slug": "josh-allen", "facts": [
+    { "type": "Signed", "date": "2018-07-25", "team": "BUF",
+      "quote": "The Buffalo Bills drafted Allen as the seventh overall pick in the 2018 NFL draft, trading up from 12th overall with the Tampa Bay Buccaneers to make the selection. On July 25, he signed a four-year, fully guaranteed $21 million contract with the Bills.",
+      "terms": { "years": 4, "totalM": 21 } }
+  ] },
+  { "slug": "george-pickens", "facts": [] },
+  { "slug": "ashton-jeanty", "facts": [] },
+  { "slug": "chase-brown", "facts": [
+    { "type": "Activated", "date": "2023-11-25", "team": "CIN",
+      "quote": "Brown was selected by the Cincinnati Bengals in the fifth round, 163rd overall pick, of the 2023 NFL draft. He was placed on injured reserve on October 28, 2023, with a hamstring injury, and reactivated on November 25." }
+  ] },
+  { "slug": "saquon-barkley", "facts": [
+    { "type": "Signed", "date": "2018-07-22", "team": "NYG",
+      "quote": "Barkley was selected by the New York Giants with the second overall selection in the 2018 draft. On July 22, 2018, Barkley signed a four-year rookie contract, worth $31.2 million fully guaranteed.",
+      "terms": { "years": 4, "totalM": 31.2 } }
+  ] },
+  { "slug": "brandon-aubrey", "facts": [
+    { "type": "Contract", "date": "2026-04-20", "team": "DAL",
+      "quote": "Designated as a restricted free agent in the 2026 offseason, the Cowboys placed a second-round tender on Aubrey on March 7, 2026. On April 20, Aubrey and the Cowboys agreed to a record-breaking four-year deal, $28 million contract with $20 million guaranteed.",
+      "terms": { "years": 4, "totalM": 28 } }
+  ] },
+  { "slug": "drake-london", "facts": [] },
+  { "slug": "jonathan-taylor", "facts": [] },
+  { "slug": "justin-jefferson", "facts": [] },
+  { "slug": "kyren-williams", "facts": [] },
+  { "slug": "devonta-smith", "facts": [] }
+]

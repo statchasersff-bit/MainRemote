@@ -40,6 +40,7 @@ import type {
   PlayerBio,
   RosterPctDoc,
 } from "./types";
+import type { BioSourcesDoc } from "./bio-tab-data";
 
 const DATA_DIR = dataPath("player");
 
@@ -53,6 +54,7 @@ const GAME_SCORES_FILE = path.join(DATA_DIR, "game_scores.json");
 const DYNASTY_FILE = path.join(DATA_DIR, "dynasty_rankings.json");
 const BIOS_FILE = path.join(DATA_DIR, "bios.json");
 const BIO_FACTS_FILE = path.join(DATA_DIR, "bio_facts.json");
+const BIO_SOURCES_FILE = path.join(DATA_DIR, "bio_sources.json");
 const DRAFT_FILE = path.join(DATA_DIR, "draft.json");
 const OUTLOOK_FILE = path.join(DATA_DIR, "fantasy_outlook_2026.json");
 const PRODUCTION_FILE = path.join(DATA_DIR, "player_production.json");
@@ -382,6 +384,12 @@ export const loadBios = lazy<Record<string, PlayerBio>>(BIOS_FILE, {});
  */
 export const loadBioFacts = lazy<Record<string, BioFacts>>(BIO_FACTS_FILE, {});
 
+/**
+ * The Bio spec's fact store (scripts/player/buildBioSources.mjs): one sourced,
+ * reconciled record per field per player, plus the source table.
+ */
+export const loadBioSources = lazy<BioSourcesDoc>(BIO_SOURCES_FILE, { version: 0, generatedAt: "", sources: {}, players: {} });
+
 /** Draft year, round, pick, team and college, keyed by slug. */
 export const loadDraft = lazy<Record<string, DraftRecord>>(DRAFT_FILE, {});
 
@@ -523,6 +531,7 @@ export function dataStamp(): string {
     DYNASTY_FILE,
     BIOS_FILE,
     BIO_FACTS_FILE,
+    BIO_SOURCES_FILE,
     DRAFT_FILE,
     OUTLOOK_FILE,
     PRODUCTION_FILE,

@@ -1349,7 +1349,7 @@ add_filter(
 		// biographical cluster named outright. Bio is the one section whose
 		// queries are not fantasy queries, and its title says so.
 		if ( 'bio' === $section ) {
-			$title .= ': Age, Height, College, Draft & Career';
+			$title .= ': Age, Height, College, Draft & Career Teams';
 		}
 
 		if ( 'game-log' === $section ) {
@@ -1423,7 +1423,10 @@ function statchasers_player_indexed_section(): string {
  * The profile itself is left alone: its title and description are stored on
  * its page by the builder, where an editor may have changed them.
  *
- * @return array{title:string,description:string}|null
+ * On /bio/ the island also carries the Bio spec's Person node and index
+ * decision (mak, 2026-09-30), kept here as `person` and `index`.
+ *
+ * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool}|null
  */
 function statchasers_player_request_meta(): ?array {
 	static $meta = false;
@@ -1456,10 +1459,65 @@ function statchasers_player_request_meta(): ?array {
 			'title'       => $title,
 			'description' => $description,
 		);
+		if ( is_array( $copy['person'] ?? null ) && 'Person' === ( $copy['person']['@type'] ?? '' ) ) {
+			$meta['person'] = $copy['person'];
+		}
+		if ( is_bool( $copy['index'] ?? null ) ) {
+			$meta['index'] = $copy['index'];
+		}
 	}
 
 	return $meta;
 }
+
+/* ------------------------------------------------------------- bio schema */
+
+/**
+ * The Bio section as a ProfilePage about a Person (Bio spec 2.11, approved by
+ * mak 2026-09-30).
+ *
+ * The Person arrives from the API (bio-seo.ts) without an address; it gets
+ * the profile's permalink as its url and `<profile>#person` as its @id, the
+ * one every section can share. Rank Math's page node becomes a ProfilePage
+ * whose mainEntity is that Person. Its BreadcrumbList already ends at Bio
+ * (statchasers_player_breadcrumbs) and the FAQPage is grafted separately.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_player_bio_schema( $data ) {
+	if ( ! is_array( $data ) || 'bio' !== statchasers_player_indexed_section() ) {
+		return $data;
+	}
+
+	$meta    = statchasers_player_request_meta();
+	$queried = get_queried_object();
+	if ( ! $meta || empty( $meta['person'] ) || ! $queried instanceof WP_Post ) {
+		return $data;
+	}
+
+	$profile          = trailingslashit( (string) get_permalink( $queried->ID ) );
+	$person           = $meta['person'];
+	$person['@id']    = $profile . '#person';
+	$person['url']    = $profile;
+	$data['statchasersPlayerPerson'] = $person;
+
+	foreach ( $data as $key => $node ) {
+		if ( ! is_array( $node ) || empty( $node['@type'] ) ) {
+			continue;
+		}
+		foreach ( (array) $node['@type'] as $type ) {
+			if ( is_string( $type ) && 'WebPage' === $type ) {
+				$data[ $key ]['@type']      = 'ProfilePage';
+				$data[ $key ]['mainEntity'] = array( '@id' => $person['@id'] );
+				break 2;
+			}
+		}
+	}
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_player_bio_schema', 21 );
 
 /**
  * The self-referencing canonical for a section URL, or ''.
@@ -1519,6 +1577,17 @@ add_filter(
 	function ( $robots ) {
 		if ( '' === statchasers_player_indexed_section() ) {
 			return $robots;
+		}
+
+		// A thin bio (spec 2.11's index rule, decided by the API) is
+		// noindex, follow until it has enough verified facts.
+		if ( 'bio' === statchasers_player_indexed_section() ) {
+			$meta = statchasers_player_request_meta();
+			if ( $meta && false === ( $meta['index'] ?? true ) ) {
+				$robots['index']  = 'noindex';
+				$robots['follow'] = 'follow';
+				return $robots;
+			}
 		}
 
 		// These exist to be indexed, stated rather than inherited, as the team
@@ -1622,7 +1691,13 @@ function statchasers_player_sitemap_sections( $content ) {
 		$profile = trailingslashit( (string) get_permalink( (int) $id ) );
 		$lastmod = (string) get_post_modified_time( 'c', true, (int) $id );
 
+		// A noindex bio stays out of the sitemap (Bio spec 2.11).
+		$row = statchasers_player_roster_row( (string) $post->post_name );
+
 		foreach ( STATCHASERS_PLAYER_INDEXED_SECTIONS as $section ) {
+			if ( 'bio' === $section && is_array( $row ) && false === ( $row['bioIndex'] ?? true ) ) {
+				continue;
+			}
 			$extra .= "\t<url>\n\t\t<loc>" . esc_url( user_trailingslashit( $profile . $section ) ) . "</loc>\n" .
 				( '' === $lastmod ? '' : "\t\t<lastmod>" . esc_html( $lastmod ) . "</lastmod>\n" ) .
 				"\t</url>\n";

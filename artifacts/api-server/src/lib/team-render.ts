@@ -42,6 +42,8 @@ import {
   type OutlookPlayer,
 } from "./team/outlook";
 import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
+import { buildUsageView } from "./team/usage";
+import { renderUsageSection } from "./team/usage-render";
 import { statsFaq } from "./team/stats-faq";
 import { depthFaq } from "./team/depth-faq";
 import { scheduleFaq } from "./team/schedule-faq";
@@ -127,6 +129,7 @@ export interface TeamRenderOptions {
  */
 export const PUBLIC_SECTIONS = [
   "outlook",
+  "usage",
   "stats",
   "schedule",
   "depth-chart",
@@ -174,6 +177,7 @@ export function sectionPath(
  */
 const SECTION_HEADINGS: Record<string, string> = {
   outlook: "Fantasy Football Outlook",
+  usage: "Usage & Opportunity Report",
   stats: "Stats",
   schedule: "Schedule",
   "depth-chart": "Depth Chart",
@@ -665,11 +669,12 @@ function renderNav(
       // The title the tab's address carries on WordPress, for the bundle to set
       // before it pushes that address. The hub's stored title is the Outlook's.
       const title = teamPageMeta(team, season, "", isHub ? "outlook" : section.id).title;
+      const href = sectionPath(prefix, team.slug, section.id);
 
       return (
         `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
         ` id="${escapeHtml(section.id)}-tab"` +
-        ` href="${escapeHtml(sectionPath(prefix, team.slug, section.id))}"` +
+        ` href="${escapeHtml(href)}"` +
         ` data-sct-panel-id="${escapeHtml(section.id)}"` +
         ` data-sct-heading="${escapeHtml(heading)}"` +
         ` data-sct-lead="${escapeHtml(lead)}"` +
@@ -3494,6 +3499,10 @@ export function renderTeamPage(
   const scheduleFaqItems: FaqSink = [];
   const scheduleTail: TailSink = { html: "" };
   const outlook = renderOutlook(data, outlookFaq, outlookTail);
+  const usage = renderUsageSection(
+    buildUsageView(team.abbreviation, data.state.season, data.roster?.players ?? null),
+    team,
+  );
 
   const sidebar =
     renderInjuryPanel(data) +
@@ -3534,6 +3543,14 @@ export function renderTeamPage(
       html: outlook,
       faq: outlookFaq,
       tail: outlookTail.html,
+    },
+    // Between Outlook and Stats, per the spec.
+    {
+      id: "usage",
+      label: "Usage",
+      html: usage.html,
+      faq: usage.faq,
+      tail: usage.faqHtml,
     },
     // Directly right of Outlook rather than behind the news archive: it now
     // opens with the Team Snapshot and expands it, so it is the whole team at a

@@ -1,0 +1,20 @@
+[
+  { "slug": "will-dissly", "facts": [] },
+  { "slug": "will-levis", "facts": [
+    { "type": "Waived", "date": "2026-08-30", "team": "TEN",
+      "quote": "Levis entered the 2026 training camp behind Ward and competing with recently signed free agent Mitchell Trubisky for a spot on the roster as the backup quarterback. On August 30, Levis was waived by the Titans as part of final roster cuts before the start of the 2026 season." }
+  ] },
+  { "slug": "xavier-smith", "facts": [] },
+  { "slug": "zach-wilson", "facts": [] },
+  { "slug": "zaire-mitchell-paden", "facts": [] },
+  { "slug": "zamir-white", "facts": [
+    { "type": "Placed on IR", "date": "2024-12-10", "team": "LV", "yearFrom": "heading",
+      "quote": "On December 10, the Las Vegas Raiders placed White on injured reserve, ending his season." }
+  ] },
+  { "slug": "zavier-scott", "facts": [] },
+  { "slug": "zay-jones", "facts": [
+    { "type": "Signed", "date": "2017-05-18", "team": "BUF",
+      "quote": "The Buffalo Bills selected Jones in the second round with the 37th overall pick in the 2017 NFL draft. On May 18, the Bills signed Jones to a four-year, $6.77 million contract with $3.84 million guaranteed and a signing bonus of $3.07 million.",
+      "terms": { "years": 4, "totalM": 6.77 } }
+  ] }
+]

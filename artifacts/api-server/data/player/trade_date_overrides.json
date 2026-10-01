@@ -1,0 +1,379 @@
+{
+ "version": 1,
+ "generatedAt": "2026-09-30T22:15:09Z",
+ "note": "Trade dates where the club's official transaction log disagrees with nflverse trades.csv (fact-check 2026-09-30, bio_verification.json `trades`, verdict DATE UNCERTAIN). The log date is the official transaction date; nflverse often carries the agreement date. buildBioSources.mjs applies officialDate by tradeId. Approved by mak 2026-09-30.",
+ "trades": {
+  "1468": {
+   "from": "MIN",
+   "to": "BUF",
+   "nflverseDate": "2020-03-16",
+   "officialDate": "2020-03-19",
+   "logUrl": "https://www.buffalobills.com/team/transactions/2020",
+   "players": [
+    "stefon-diggs"
+   ]
+  },
+  "1469": {
+   "from": "HOU",
+   "to": "ARI",
+   "nflverseDate": "2020-03-16",
+   "officialDate": "2020-03-19",
+   "logUrl": "https://www.azcardinals.com/team/transactions/2020",
+   "players": [
+    "deandre-hopkins"
+   ]
+  },
+  "1624": {
+   "from": "PHI",
+   "to": "NYJ",
+   "nflverseDate": "2021-10-26",
+   "officialDate": "2021-10-24",
+   "logUrl": "https://www.newyorkjets.com/team/transactions/2021",
+   "players": [
+    "joe-flacco"
+   ]
+  },
+  "1630": {
+   "from": "DEN",
+   "to": "SEA",
+   "nflverseDate": "2022-03-08",
+   "officialDate": "2022-03-15",
+   "logUrl": "https://www.denverbroncos.com/team/transactions/2022",
+   "players": [
+    "drew-lock",
+    "noah-fant"
+   ]
+  },
+  "1631": {
+   "from": "IND",
+   "to": "WAS",
+   "nflverseDate": "2022-03-09",
+   "officialDate": "2022-03-15",
+   "logUrl": "https://www.commanders.com/team/transactions/2022",
+   "players": [
+    "carson-wentz"
+   ]
+  },
+  "1638": {
+   "from": "GB",
+   "to": "LV",
+   "nflverseDate": "2022-03-17",
+   "officialDate": "2022-03-18",
+   "logUrl": "https://www.raiders.com/news/raiders-acquire-wr-davante-adams-green-bay-packers-trade",
+   "players": [
+    "davante-adams"
+   ],
+   "note": "mak 2026-10-01: NFL official transactions database and the Raiders completed-acquisition announcement both say Mar 18; Mar 17 was the reported agreement (club logs carry 03-17)."
+  },
+  "1643": {
+   "from": "KC",
+   "to": "MIA",
+   "nflverseDate": "2022-03-23",
+   "officialDate": "2022-03-25",
+   "logUrl": "https://www.miamidolphins.com/team/transactions/2022",
+   "players": [
+    "tyreek-hill"
+   ]
+  },
+  "1685": {
+   "from": "NE",
+   "to": "LV",
+   "nflverseDate": "2022-05-12",
+   "officialDate": "2022-05-13",
+   "logUrl": "https://www.raiders.com/team/transactions/2022",
+   "players": [
+    "jarrett-stidham"
+   ]
+  },
+  "1707": {
+   "from": "CLE",
+   "to": "CAR",
+   "nflverseDate": "2022-07-06",
+   "officialDate": "2022-07-12",
+   "logUrl": "https://www.panthers.com/team/transactions/2022",
+   "players": [
+    "baker-mayfield"
+   ]
+  },
+  "1724": {
+   "from": "CAR",
+   "to": "CHI",
+   "nflverseDate": "2023-03-10",
+   "officialDate": "2023-03-15",
+   "logUrl": "https://www.chicagobears.com/team/transactions/2023",
+   "players": [
+    "dj-moore"
+   ]
+  },
+  "1726": {
+   "from": "MIA",
+   "to": "LAR",
+   "nflverseDate": "2023-03-12",
+   "officialDate": "2023-03-15",
+   "logUrl": "https://www.therams.com/team/transactions/2023",
+   "players": [
+    "hunter-long"
+   ]
+  },
+  "1727": {
+   "from": "NE",
+   "to": "ATL",
+   "nflverseDate": "2023-03-13",
+   "officialDate": "2023-03-15",
+   "logUrl": "https://www.atlantafalcons.com/team/transactions/2023",
+   "players": [
+    "jonnu-smith"
+   ]
+  },
+  "1729": {
+   "from": "LV",
+   "to": "NYG",
+   "nflverseDate": "2023-03-14",
+   "officialDate": "2023-03-15",
+   "logUrl": "https://www.raiders.com/team/transactions/2023",
+   "players": [
+    "darren-waller"
+   ]
+  },
+  "1736": {
+   "from": "GB",
+   "to": "NYJ",
+   "nflverseDate": "2023-04-24",
+   "officialDate": "2023-04-26",
+   "logUrl": "https://www.packers.com/team/transactions/2023",
+   "players": [
+    "aaron-rodgers"
+   ]
+  },
+  "1766": {
+   "from": "DET",
+   "to": "PHI",
+   "nflverseDate": "2023-04-29",
+   "officialDate": "2023-05-01",
+   "logUrl": "https://www.detroitlions.com/team/transactions/2023",
+   "players": [
+    "dandre-swift"
+   ]
+  },
+  "1785": {
+   "from": "SF",
+   "to": "DAL",
+   "nflverseDate": "2023-08-25",
+   "officialDate": "2023-08-26",
+   "logUrl": "https://www.49ers.com/team/transactions/2023",
+   "players": [
+    "trey-lance"
+   ]
+  },
+  "1821": {
+   "from": "NE",
+   "to": "JAX",
+   "nflverseDate": "2024-03-13",
+   "officialDate": "2024-03-14",
+   "logUrl": "https://www.jaguars.com/team/transactions/2024",
+   "players": [
+    "mac-jones"
+   ]
+  },
+  "1829": {
+   "from": "PIT",
+   "to": "PHI",
+   "nflverseDate": "2024-03-15",
+   "officialDate": "2024-03-16",
+   "logUrl": "https://www.philadelphiaeagles.com/team/transactions/2024",
+   "players": [
+    "kenny-pickett"
+   ]
+  },
+  "1834": {
+   "from": "NYJ",
+   "to": "DEN",
+   "nflverseDate": "2024-04-22",
+   "officialDate": "2024-04-23",
+   "logUrl": "https://www.denverbroncos.com/team/transactions/2024",
+   "players": [
+    "zach-wilson"
+   ]
+  },
+  "1877": {
+   "from": "TEN",
+   "to": "GB",
+   "nflverseDate": "2024-08-26",
+   "officialDate": "2024-08-27",
+   "logUrl": "https://www.packers.com/team/transactions/2024",
+   "players": [
+    "malik-willis"
+   ]
+  },
+  "1889": {
+   "from": "TEN",
+   "to": "KC",
+   "nflverseDate": "2024-10-23",
+   "officialDate": "2024-10-24",
+   "logUrl": "https://www.chiefs.com/team/transactions/2024",
+   "players": [
+    "deandre-hopkins"
+   ]
+  },
+  "1905": {
+   "from": "PHI",
+   "to": "CLE",
+   "nflverseDate": "2025-03-10",
+   "officialDate": "2025-03-12",
+   "logUrl": "https://www.clevelandbrowns.com/team/transactions/2025",
+   "players": [
+    "kenny-pickett"
+   ]
+  },
+  "1907": {
+   "from": "SEA",
+   "to": "PIT",
+   "nflverseDate": "2025-03-09",
+   "officialDate": "2025-03-13",
+   "logUrl": "https://www.steelers.com/team/transactions/2025",
+   "players": [
+    "dk-metcalf"
+   ]
+  },
+  "1908": {
+   "from": "SEA",
+   "to": "LV",
+   "nflverseDate": "2025-03-07",
+   "officialDate": "2025-03-13",
+   "logUrl": "https://www.raiders.com/team/transactions/2025",
+   "players": [
+    "geno-smith"
+   ]
+  },
+  "1909": {
+   "from": "JAX",
+   "to": "HOU",
+   "nflverseDate": "2025-03-06",
+   "officialDate": "2025-03-13",
+   "logUrl": "https://www.houstontexans.com/team/transactions/2025",
+   "players": [
+    "christian-kirk"
+   ]
+  },
+  "1912": {
+   "from": "SF",
+   "to": "WAS",
+   "nflverseDate": "2025-03-01",
+   "officialDate": "2025-03-12",
+   "logUrl": "https://www.49ers.com/team/transactions/2025",
+   "players": [
+    "deebo-samuel"
+   ]
+  },
+  "1956": {
+   "from": "NYG",
+   "to": "MIA",
+   "nflverseDate": "2025-07-01",
+   "officialDate": "2025-07-07",
+   "logUrl": "https://www.miamidolphins.com/team/transactions/2025",
+   "players": [
+    "darren-waller"
+   ]
+  },
+  "1958": {
+   "from": "HOU",
+   "to": "PHI",
+   "nflverseDate": "2025-08-17",
+   "officialDate": "2025-08-18",
+   "logUrl": "https://www.philadelphiaeagles.com/team/transactions/2025",
+   "players": [
+    "john-metchie"
+   ]
+  },
+  "1961": {
+   "from": "KC",
+   "to": "SF",
+   "nflverseDate": "2025-08-20",
+   "officialDate": "2025-08-21",
+   "logUrl": "https://www.chiefs.com/team/transactions/2025",
+   "players": [
+    "skyy-moore"
+   ]
+  },
+  "1964": {
+   "from": "WAS",
+   "to": "SF",
+   "nflverseDate": "2025-08-22",
+   "officialDate": "2025-08-24",
+   "logUrl": "https://www.49ers.com/team/transactions/2025",
+   "players": [
+    "brian-robinson"
+   ]
+  },
+  "1969": {
+   "from": "CLE",
+   "to": "LV",
+   "nflverseDate": "2025-08-25",
+   "officialDate": "2025-08-26",
+   "logUrl": "https://www.clevelandbrowns.com/team/transactions/2025",
+   "players": [
+    "kenny-pickett"
+   ]
+  },
+  "2042": {
+   "from": "DET",
+   "to": "HOU",
+   "nflverseDate": "2026-03-02",
+   "officialDate": "2026-03-11",
+   "logUrl": "https://www.detroitlions.com/team/transactions/2026",
+   "players": [
+    "david-montgomery"
+   ]
+  },
+  "2044": {
+   "from": "CHI",
+   "to": "BUF",
+   "nflverseDate": "2026-03-05",
+   "officialDate": "2026-03-11",
+   "logUrl": "https://www.buffalobills.com/team/transactions/2026",
+   "players": [
+    "dj-moore"
+   ]
+  },
+  "2051": {
+   "from": "IND",
+   "to": "PIT",
+   "nflverseDate": "2026-03-09",
+   "officialDate": "2026-03-13",
+   "logUrl": "https://www.colts.com/team/transactions/2026",
+   "players": [
+    "michael-pittman"
+   ]
+  },
+  "2052": {
+   "from": "LV",
+   "to": "NYJ",
+   "nflverseDate": "2026-03-10",
+   "officialDate": "2026-03-11",
+   "logUrl": "https://www.raiders.com/team/transactions/2026",
+   "players": [
+    "geno-smith"
+   ]
+  },
+  "2056": {
+   "from": "NYJ",
+   "to": "KC",
+   "nflverseDate": "2026-03-16",
+   "officialDate": "2026-03-18",
+   "logUrl": "https://www.newyorkjets.com/team/transactions/2026",
+   "players": [
+    "justin-fields"
+   ]
+  },
+  "2061": {
+   "from": "GB",
+   "to": "PHI",
+   "nflverseDate": "2026-04-10",
+   "officialDate": "2026-04-11",
+   "logUrl": "https://www.philadelphiaeagles.com/team/transactions/2026",
+   "players": [
+    "dontayvion-wicks"
+   ]
+  }
+ }
+}

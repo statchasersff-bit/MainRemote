@@ -1,0 +1,3558 @@
+{
+ "batch": "05",
+ "players": [
+  {
+   "slug": "derrick-henry",
+   "facts": [
+    {
+     "id": "dc71884e6410",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2016-05-09",
+      "event": "signed",
+      "type": "Signed",
+      "team": "TEN",
+      "headline": "Signed a four-year rookie contract with the Titans",
+      "description": "The Titans' second-round pick (45th overall) signed his four-year rookie contract on May 9, 2016, his first day in the building. Reported value $5.40 million with a $2.13 million signing bonus.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 5.4,
+       "maxM": null,
+       "guaranteedM": 3.3,
+       "signingBonusM": 2.13,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2016-05-09",
+      "signed": "2016-05-09",
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Tennessee Titans",
+       "title": "Titans agree to terms with six draft picks",
+       "url": "https://www.tennesseetitans.com/news/titans-agree-to-terms-with-six-draft-picks-17130818",
+       "date": "2016-05-09"
+      },
+      {
+       "publisher": "NFL.com",
+       "title": "Tennessee Titans sign Derrick Henry to rookie contract",
+       "url": "https://www.nfl.com/news/tennessee-titans-sign-derrick-henry-to-rookie-contract-0ap3000000660841",
+       "date": "2016-05-09"
+      },
+      {
+       "publisher": "ProFootballTalk",
+       "title": "Titans agree to deals with six draft picks, including Derrick Henry",
+       "url": "https://profootballtalk.nbcsports.com/2016/05/09/titans-agree-to-deals-with-six-draft-picks-including-derrick-henry/",
+       "date": "2016-05-09"
+      }
+     ],
+     "notes": "Date, team and signing confirmed by the club site and NFL.com. The club log starts in 2017. Dollar figures ($5.40M total / $3.30M guaranteed / $2.13M bonus) come only from Spotrac-type sources, so they are structure-level MEDIUM."
+    },
+    {
+     "id": "54b602becc4a",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2024-03-13",
+      "event": "signed",
+      "type": "Signed",
+      "team": "BAL",
+      "headline": "Signed a two-year, $16 million contract with the Ravens",
+      "description": "Henry agreed to a two-year, $16 million deal (up to $20 million with incentives, $9 million fully guaranteed) on March 12, 2024 during the negotiating window; the Ravens officially signed him on March 13 when the league year opened.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 16,
+       "maxM": 20,
+       "guaranteedM": 9,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-03-12",
+      "signed": "2024-03-13",
+      "officialLog": "2024-03-13"
+     },
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Signed RB Derrick Henry",
+       "url": null,
+       "date": "2024-03-13"
+      },
+      {
+       "publisher": "Sports Illustrated",
+       "title": "Ravens signing RB Derrick Henry to two-year deal",
+       "url": "https://www.si.com/nfl/2024/03/12/ravens-signing-rb-derrick-henry-to-two-year-deal",
+       "date": "2024-03-12"
+      },
+      {
+       "publisher": "CBS Sports",
+       "title": "Ravens signing Derrick Henry: two-year deal worth up to $20 million",
+       "url": "https://www.cbssports.com/nfl/news/ravens-signing-derrick-henry-former-titans-star-gets-two-year-deal-worth-up-to-20-million",
+       "date": "2024-03-12"
+      }
+     ],
+     "notes": "Stored date 2024-03-12 is the reported agreement date; the official signing is 2024-03-13 (club log). Either keep 03-12 and say 'Agreed to a two-year, $16 million deal' or move the 'Signed' move to 03-13. Terms correct; note the $20M max is incentives."
+    },
+    {
+     "id": "59e11fb736af",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2025-05-19",
+      "event": "signed",
+      "type": "Contract",
+      "team": "BAL",
+      "headline": "Signed a two-year, $30 million contract extension with the Ravens",
+      "description": "Henry agreed to a two-year, $30 million extension with $25 million guaranteed on May 14, 2025 and signed it on May 19, keeping him under contract through 2027.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 30,
+       "maxM": null,
+       "guaranteedM": 25,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-05-14",
+      "signed": "2025-05-19",
+      "officialLog": "2025-05-19"
+     },
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Signed RB Derrick Henry to a contract extension (through 2027)",
+       "url": null,
+       "date": "2025-05-19"
+      },
+      {
+       "publisher": "Baltimore Ravens",
+       "title": "Derrick Henry signs two-year extension",
+       "url": "https://www.baltimoreravens.com/news/derrick-henry-ravens-two-year-extension-contract-2025",
+       "date": "2025-05-19"
+      },
+      {
+       "publisher": "ESPN",
+       "title": "RB Derrick Henry agrees to two-year, $30M extension with Ravens",
+       "url": "https://africa.espn.com/nfl/story/_/id/45146544/rb-derrick-henry-agrees-two-year-30m-extension-ravens",
+       "date": "2025-05-14"
+      },
+      {
+       "publisher": "AP",
+       "title": "Ravens reach 2-year, $30 million extension with Derrick Henry, AP source says",
+       "url": "https://www.wsls.com/sports/2025/05/14/ravens-reach-2-year-30-million-extension-with-running-back-derrick-henry-ap-source-says/",
+       "date": "2025-05-14"
+      }
+     ],
+     "notes": "May 14 is the agreement (ESPN/AP 'agrees'); the official log records the signing on May 19. Either reword to 'Agreed to' on 05-14 or move to 05-19. Money matches ($30M, $25M guaranteed)."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2020-03-16",
+     "type": "Tender",
+     "team": "TEN",
+     "headline": "Designated the Titans' franchise player",
+     "description": "The Titans placed the non-exclusive franchise tag (about $10.3 million) on Henry. Reports date it Monday, March 16, 2020, while the Titans' log shows March 15. He signed the franchise tender on April 1 (club log; AP says April 2).",
+     "sources": [
+      {
+       "publisher": "Tennessee Titans (official transaction log)",
+       "title": "Designated RB DERRICK HENRY as the Franchise Player",
+       "url": null,
+       "date": "2020-03-15"
+      },
+      {
+       "publisher": "Tennessee Titans (official transaction log)",
+       "title": "Signed RB DERRICK HENRY as the Franchise Player",
+       "url": null,
+       "date": "2020-04-01"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Titans to use franchise tag on Derrick Henry",
+       "url": "https://profootballrumors.com/2020/03/titans-to-use-franchise-tag-on-derrick-henry",
+       "date": "2020-03-16"
+      },
+      {
+       "publisher": "AP",
+       "title": "Titans, Derrick Henry agree to contract before NFL deadline",
+       "url": "https://www.wsls.com/sports/2020/07/15/titans-derrick-henry-agree-to-contract-before-nfl-deadline/",
+       "date": "2020-07-15"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2020-07-15",
+     "type": "Contract",
+     "team": "TEN",
+     "headline": "Agreed to a four-year, $50 million contract with the Titans",
+     "description": "On the July 15, 2020 franchise-tag deadline, Henry and the Titans agreed to a four-year, $50 million deal with $25.5 million guaranteed, replacing the tag.",
+     "sources": [
+      {
+       "publisher": "AP",
+       "title": "Titans, Derrick Henry agree to contract before NFL deadline",
+       "url": "https://www.wsls.com/sports/2020/07/15/titans-derrick-henry-agree-to-contract-before-nfl-deadline/",
+       "date": "2020-07-15"
+      },
+      {
+       "publisher": "WVLT",
+       "title": "Titans, Derrick Henry agree to terms on multi-year contract",
+       "url": "https://www.wvlt.tv/2020/07/15/titans-derrick-henry-agree-to-terms-on-multi-year-contract/",
+       "date": "2020-07-15"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "saquon-barkley",
+   "facts": [
+    {
+     "id": "dfe97d17ceab",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2024-03-13",
+      "event": "announced",
+      "type": "Signed",
+      "team": "PHI",
+      "headline": "Signed a three-year, $37.75 million contract with the Eagles",
+      "description": "Barkley agreed to a three-year, $37.75 million deal (up to $46.75 million with incentives, $26 million guaranteed) on March 11, 2024; the Eagles made it official on March 13 when the league year opened.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 37.75,
+       "maxM": 46.75,
+       "guaranteedM": 26,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-03-11",
+      "signed": "2024-03-13",
+      "officialLog": "2024-03-13"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Agreed to terms with RB Saquon Barkley on a three-year contract",
+       "url": null,
+       "date": "2024-03-13"
+      },
+      {
+       "publisher": "ESPN (via 6abc)",
+       "title": "Eagles to sign ex-Giants RB Saquon Barkley to 3-year deal, ESPN sources say",
+       "url": "https://6abc.com/philadelphia-eagles-saquon-barkley-news-nfl/14514611/",
+       "date": "2024-03-11"
+      },
+      {
+       "publisher": "PhillyVoice",
+       "title": "Saquon Barkley contract details, cap hit",
+       "url": "https://phillyvoice.com/eagles-news-saquon-barkley-contract-details-cap-hit-2024",
+       "date": "2024-03-13"
+      }
+     ],
+     "notes": "Stored date is the official date (the club log entry on 03-13; reported agreement was 03-11). The club log wording is 'agreed to terms', but free agents could only sign from 03-13, so 03-13 is the official signing date. The $26M is guaranteed at signing, not strictly 'over the first two years'."
+    },
+    {
+     "id": "51a378153497",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2025-03-04",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "PHI",
+      "headline": "Agreed to a two-year, $41.2 million contract extension with the Eagles",
+      "description": "The Eagles and Barkley agreed on a two-year, $41.2 million extension with $36 million guaranteed that runs through 2028.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 41.2,
+       "maxM": null,
+       "guaranteedM": 36,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-03-04",
+      "signed": null,
+      "officialLog": "2025-03-04"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Agreed to terms on a two-year contract extension with RB Saquon Barkley through the 2028 season",
+       "url": null,
+       "date": "2025-03-04"
+      },
+      {
+       "publisher": "AP",
+       "title": "Eagles make Barkley highest-paid running back with 2-year, $41.2M deal, AP source says",
+       "url": "https://www.ksat.com/sports/2025/03/04/eagles-make-barkley-highest-paid-running-back-with-2-year-412m-deal-ap-source-says/",
+       "date": "2025-03-04"
+      },
+      {
+       "publisher": "PhillyVoice",
+       "title": "Eagles agree to two-year contract extension with RB Saquon Barkley",
+       "url": "https://www.phillyvoice.com/report-eagles-agree-two-year-contract-extension-rb-saquon-barkley",
+       "date": "2025-03-04"
+      }
+     ],
+     "notes": "Date, team and money are right. The club's own record says 'agreed to terms', not 'signed'; no separate signing date was found, so the wording should be 'Agreed to'. The 'up to $15 million more in incentives' figure appears in some reports but no official max value was confirmed, so maxM is left null. Do not carry the 'highest-paid running back' claim (it was true by AAV on that date)."
+    },
+    {
+     "id": "bc447b473bd5",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2018-07-22",
+      "event": "signed",
+      "type": "Signed",
+      "team": "NYG",
+      "headline": "Signed a four-year, $31.2 million rookie contract with the Giants",
+      "description": "The No. 2 overall pick signed a fully guaranteed four-year, $31.2 million rookie deal with a $20.76 million signing bonus when he reported to rookie camp; the club holds a fifth-year option.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 31.2,
+       "maxM": null,
+       "guaranteedM": 31.2,
+       "signingBonusM": 20.76,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2018-07-22",
+      "officialLog": "2018-07-21"
+     },
+     "sources": [
+      {
+       "publisher": "New York Giants",
+       "title": "Giants sign rookie Saquon Barkley",
+       "url": "https://giants.com/news/giants-sign-rookie-saquon-barkley",
+       "date": "2018-07-22"
+      },
+      {
+       "publisher": "New York Giants (official transaction log)",
+       "title": "RB Saquon Barkley - Signed",
+       "url": null,
+       "date": "2018-07-21"
+      },
+      {
+       "publisher": "NFL.com",
+       "title": "Saquon Barkley signs four-year, $31.2M rookie deal",
+       "url": "https://www.nfl.com/news/saquon-barkley-signs-four-year-31-2m-rookie-deal-0ap3000000941478",
+       "date": "2018-07-22"
+      },
+      {
+       "publisher": "ProFootballTalk",
+       "title": "Giants sign Saquon Barkley",
+       "url": "https://profootballtalk.nbcsports.com/2018/07/22/giants-sign-saquon-barkley/",
+       "date": "2018-07-22"
+      }
+     ],
+     "notes": "The club transaction log dates the signing 2018-07-21, while the Giants' own news story, NFL.com and PFT all report it on 2018-07-22 (signed when he reported to camp). Recommend keeping 2018-07-22. Terms are correct."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2021-04-29",
+     "type": "Contract",
+     "team": "NYG",
+     "headline": "Giants exercised the fifth-year option on his rookie contract",
+     "description": "The Giants picked up Barkley's 2022 fifth-year option (about $7.2 million) ahead of the May 3, 2021 deadline.",
+     "sources": [
+      {
+       "publisher": "New York Giants",
+       "title": "Giants pick up fifth-year option on Saquon Barkley",
+       "url": "https://www.giants.com/news/saquon-barkley-fifth-year-option-giants-2021",
+       "date": "2021-04-29"
+      },
+      {
+       "publisher": "NFL.com",
+       "title": "Giants pick up fifth-year option on RB Saquon Barkley",
+       "url": "https://www.nfl.com/news/giants-pick-up-fifth-year-option-on-rb-saquon-barkley",
+       "date": "2021-04-29"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2023-03-07",
+     "type": "Tender",
+     "team": "NYG",
+     "headline": "Designated the Giants' franchise player",
+     "description": "The Giants placed the franchise tag on Barkley on March 7, 2023.",
+     "sources": [
+      {
+       "publisher": "New York Giants (official transaction log)",
+       "title": "RB Saquon Barkley - Designated Franchise Player",
+       "url": null,
+       "date": "2023-03-07"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2023-07-25",
+     "type": "Contract",
+     "team": "NYG",
+     "headline": "Signed a reworked one-year franchise contract worth up to $11 million",
+     "description": "After no long-term deal was reached by the July deadline, Barkley signed a one-year deal paying the $10.1 million tag amount plus up to $909,000 in incentives, with a $2 million signing bonus, and reported to camp.",
+     "sources": [
+      {
+       "publisher": "New York Giants (official transaction log)",
+       "title": "RB Saquon Barkley - Franchise Player Signing",
+       "url": null,
+       "date": "2023-07-25"
+      },
+      {
+       "publisher": "CBS Sports",
+       "title": "Giants and Saquon Barkley agree to terms on a 1-year deal",
+       "url": "https://www.cbssports.com/nfl/news/giants-and-saquon-barkley-agree-to-terms-on-a-1-year-deal-rb-will-report-to-training-camp/",
+       "date": "2023-07-25"
+      },
+      {
+       "publisher": "AP (Amsterdam News)",
+       "title": "Saquon Barkley, Giants settle on 1-year deal worth up to $11 million",
+       "url": "https://amsterdamnews.com/news/2023/07/25/saquon-barkley-giants-settle-on-1-year-deal-worth-up-to-11-million-ap-source-says/",
+       "date": "2023-07-25"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "omarion-hampton",
+   "facts": [
+    {
+     "id": "da34487f7add",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2025-05-19",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LAC",
+      "headline": "Signed a four-year, $17.77 million rookie contract with the Chargers",
+      "description": "The 22nd overall pick signed his fully guaranteed four-year rookie deal ($17.77 million, $9.57 million signing bonus) on May 19, 2025; the club holds a fifth-year option.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 17.77,
+       "maxM": null,
+       "guaranteedM": 17.77,
+       "signingBonusM": 9.57,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2025-05-19",
+      "officialLog": "2025-05-19"
+     },
+     "sources": [
+      {
+       "publisher": "Los Angeles Chargers (official transaction log)",
+       "title": "Signed RB Omarion Hampton.",
+       "url": null,
+       "date": "2025-05-19"
+      },
+      {
+       "publisher": "Sports Illustrated (Chargers)",
+       "title": "Chargers' Omarion Hampton rookie contract details revealed",
+       "url": "https://www.si.com/nfl/chargers/chargers-omarion-hampton-rookie-contract-details",
+       "date": "2025-05-19"
+      },
+      {
+       "publisher": "Spotrac",
+       "title": "Omarion Hampton contract",
+       "url": "https://www.spotrac.com/nfl/player/97818",
+       "date": null
+      }
+     ],
+     "notes": "Date is from the official log. The money figures come from SI and Spotrac and match the 2025 rookie scale for pick 22."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "dandre-swift",
+   "facts": [
+    {
+     "id": "a2e7993bcc1e",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2020-07-13",
+      "event": "announced",
+      "type": "Signed",
+      "team": "DET",
+      "headline": "Signed a four-year, $8.5 million rookie contract with the Lions",
+      "description": "The 35th overall pick signed his four-year rookie contract, reported at $8.5 million; the Lions announced the signing along with Jeff Okudah, Quintez Cephus and Jason Huntley.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 8.5,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": null,
+      "officialLog": "2020-07-12"
+     },
+     "sources": [
+      {
+       "publisher": "Detroit Lions (official transaction log)",
+       "title": "The Detroit Lions sign CB Jeff Okudah, RB D'Andre Swift, WR Quintez Cephus and RB Jason Huntley.",
+       "url": null,
+       "date": "2020-07-12"
+      },
+      {
+       "publisher": "AP (via Morning Sun)",
+       "title": "Detroit signs 1st-round pick Okudah, Swift, Cephus, Huntley",
+       "url": "https://www.pressreader.com/usa/morning-sun/20200715/281775631461530",
+       "date": "2020-07-13"
+      },
+      {
+       "publisher": "WXYZ",
+       "title": "Lions sign first-round pick Okudah, Swift, Cephus, Huntley",
+       "url": "https://www.wxyz.com/sports/lions-sign-first-round-pick-okudah-swift-cephus-huntley",
+       "date": "2020-07-13"
+      },
+      {
+       "publisher": "NFL.com",
+       "title": "Lions second-round pick D'Andre Swift signs",
+       "url": "https://www.nfl.com/news/lions-second-round-pick-d-andre-swift-signs",
+       "date": null
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Lions sign D'Andre Swift",
+       "url": "https://profootballrumors.com/2020/07/lions-sign-dandre-swift",
+       "date": "2020-07-05"
+      }
+     ],
+     "notes": "Three candidate dates. Swift posted a photo of himself signing on a Saturday in early July (PFR places it the weekend of July 4-5, 2020; Pride of Detroit's story is dated July 6). The club log records the signing on 2020-07-12, and AP says the club announced it on Monday (July 13). Recommend the official club date 2020-07-12, or keep 07-13 as the announcement date. $8.5M total is from PFR; no guarantee/bonus figure was confirmed."
+    },
+    {
+     "id": "dade213df59a",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-04-29",
+      "event": "traded",
+      "type": "Traded",
+      "team": "PHI",
+      "headline": "Traded from the Lions to the Eagles",
+      "description": "During the 2023 draft the Lions sent Swift and a 2023 seventh-round pick (No. 249) to Philadelphia for a 2025 fourth-round pick and a 2023 seventh-round pick (No. 219).",
+      "terms": null,
+      "trade": {
+       "from": "DET",
+       "to": "PHI",
+       "officialDate": "2023-04-29",
+       "agreedDate": "2023-04-29",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2025,
+         "round": 4,
+         "originalTeam": "PHI",
+         "conditional": false,
+         "note": ""
+        },
+        {
+         "year": 2023,
+         "round": 7,
+         "originalTeam": "PHI",
+         "conditional": false,
+         "note": "No. 219 overall; swapped for DET's No. 249, which went to PHI with Swift"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2023-04-29",
+      "signed": null,
+      "officialLog": "2023-04-29"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Eagles agreed to trade a 2025 fourth-round pick and a 2023 seventh-round pick (No. 219 overall) to the Lions in exchange for RB D'Andre Swift and a 2023 seventh-round pick (No. 249 overall).",
+       "url": null,
+       "date": "2023-04-29"
+      },
+      {
+       "publisher": "Detroit Lions (official transaction log)",
+       "title": "The Detroit Lions trade RB D'Andre Swift to the Philadelphia Eagles.",
+       "url": null,
+       "date": "2023-05-01"
+      },
+      {
+       "publisher": "ESPN",
+       "title": "Eagles trade for Lions RB D'Andre Swift, sources say",
+       "url": "https://africa.espn.com/nfl/story/_/id/36320914/eagles-trade-lions-rb-dandre-swift-sources-say",
+       "date": "2023-04-29"
+      }
+     ],
+     "notes": "Date and picks match the Eagles' log and ESPN. The Lions' own log lists the trade on 2023-05-01, likely their post-draft processing entry; 2023-04-29 is the date of the trade."
+    },
+    {
+     "id": "b67987e8ba82",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2024-03-13",
+      "event": "announced",
+      "type": "Signed",
+      "team": "CHI",
+      "headline": "Signed a three-year, $24.5 million contract with the Bears",
+      "description": "Swift agreed to a three-year, $24.5 million deal with $15.3 million guaranteed on March 11, 2024; the Bears announced it on March 13 when the league year opened.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 24.5,
+       "maxM": null,
+       "guaranteedM": 15.3,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-03-11",
+      "signed": "2024-03-13",
+      "officialLog": "2024-03-13"
+     },
+     "sources": [
+      {
+       "publisher": "Chicago Bears (official transaction log)",
+       "title": "Agreed to terms with RB D'Andre Swift on three-year contract.",
+       "url": null,
+       "date": "2024-03-13"
+      },
+      {
+       "publisher": "ESPN (via ABC7 Chicago)",
+       "title": "Agent: Bears to sign RB D'Andre Swift to 3-year, $24.5M deal",
+       "url": "https://abc7chicago.com/post/agent-bears-to-sign-rb-dandre-swift-to-3-year-$245m-deal/14514259/",
+       "date": "2024-03-11"
+      }
+     ],
+     "notes": "Money is wrong: reported as $24.5 million (not $24 million), with $15.3 million guaranteed. The 03-13 date is the club's official entry; agreement was reported 03-11."
+    },
+    {
+     "id": "202159bf879f",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-09-12",
+      "event": "signed",
+      "type": "Contract",
+      "team": "CHI",
+      "headline": "Signed a three-year, $33.75 million contract extension with the Bears",
+      "description": "Swift agreed on September 11, 2026 to a three-year, $33.75 million extension with $27.5 million guaranteed, and the Bears recorded the signing on September 12. It runs through 2029.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 33.75,
+       "maxM": null,
+       "guaranteedM": 27.5,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-09-11",
+      "signed": "2026-09-12",
+      "officialLog": "2026-09-12"
+     },
+     "sources": [
+      {
+       "publisher": "Chicago Bears (official transaction log)",
+       "title": "Signed RB D'Andre Swift to three-year contract extension through 2029.",
+       "url": null,
+       "date": "2026-09-12"
+      },
+      {
+       "publisher": "Chicago Sun-Times",
+       "title": "Bears, RB D'Andre Swift agree to contract extension",
+       "url": "https://chicago.suntimes.com/bears/2026/09/11/bears-dandre-swift-contract-extension-running-back-ben-johnson-nfl",
+       "date": "2026-09-11"
+      },
+      {
+       "publisher": "NBC Sports (Rotoworld)",
+       "title": "Bears sign D'Andre Swift to three-year extension",
+       "url": "https://www.nbcsports.com/fantasy/football/player-news/2026-09-11/bears-sign-dandre-swift-to-three-year-extension",
+       "date": "2026-09-11"
+      }
+     ],
+     "notes": "09-11 is when the agreement was reported (Sun-Times: 'agreed to terms'); the official log records the signing on 09-12. Either reword to 'Agreed to' on 09-11 or move to 09-12. The money matches ($33.75M, $27.5M guaranteed per reports)."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "travis-etienne",
+   "facts": [
+    {
+     "id": "125a1ae39911",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-07-19",
+      "event": "signed",
+      "type": "Signed",
+      "team": "JAX",
+      "headline": "Signed a four-year, $12.9 million rookie contract with the Jaguars",
+      "description": "The 25th overall pick signed his four-year rookie contract (about $12.9 million with a $6.74 million signing bonus, no offset language) on Monday, July 19, 2021; the club holds a fifth-year option.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 12.9,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": 6.74,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2021-07-19",
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Jacksonville Jaguars",
+       "title": "OFFICIAL: Etienne signs rookie contract",
+       "url": "https://www.jaguars.com/news/official-etienne-signs-rookie-contract",
+       "date": "2021-07-19"
+      },
+      {
+       "publisher": "NFL.com",
+       "title": "Jaguars agree to terms with 1st-round RB Travis Etienne",
+       "url": "https://www.nfl.com/news/jaguars-agree-to-terms-with-1st-round-rb-travis-etienne",
+       "date": "2021-07-19"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Minor NFL Transactions: 7/19/21",
+       "url": "https://www.profootballrumors.com/transactions/page/1028",
+       "date": "2021-07-19"
+      }
+     ],
+     "notes": "The club says he signed on a Monday, which was July 19, 2021. Some local stories dated July 20 say 'agrees to terms'. The Jaguars' log has no entry. The $12.9M total and $6.74M bonus are secondary-source figures (Spotrac/NFL.com recap)."
+    },
+    {
+     "id": "45c2c12d7b1e",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2026-03-11",
+      "event": "agreed",
+      "type": "Signed",
+      "team": "NO",
+      "headline": "Agreed to a four-year, $52 million contract with the Saints",
+      "description": "Etienne's agreement with New Orleans was reported on March 9, 2026, during the negotiating window. The Saints announced on March 11, the first day of the league year, that they had agreed to terms on a four-year contract.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 52,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-09",
+      "signed": null,
+      "officialLog": "2026-03-11"
+     },
+     "sources": [
+      {
+       "publisher": "New Orleans Saints (official transaction log)",
+       "title": "Agreed to terms with G David Edwards, RB Travis Etienne Jr., TE Noah Fant ...",
+       "url": null,
+       "date": "2026-03-11"
+      },
+      {
+       "publisher": "New Orleans Saints",
+       "title": "Travis Etienne Jr. player page: 'Agreed to terms with the New Orleans Saints (UFA-Jax.) on four-year contract, 3/11/26'",
+       "url": "https://www.neworleanssaints.com/team/players-roster/travis-etienne/",
+       "date": "2026-03-11"
+      },
+      {
+       "publisher": "AP",
+       "title": "Running back Travis Etienne and guard David Edwards are joining the Saints, AP sources say",
+       "url": "https://www.register-herald.com/sports/national_sports/running-back-travis-etienne-and-guard-david-edwards-are-joining-the-saints-ap-sources-say/article_80da1c49-0cf6-5cd0-bcbf-27215db78f25.html",
+       "date": "2026-03-09"
+      }
+     ],
+     "notes": "The stored date 2026-03-13 is not supported: the club log and the Saints' player page both give 3/11/26, the first day of the league year, and the AP reported the agreement on Monday (March 9). The four years and $52 million are reported ($13M per year), but guarantee figures conflict ($24M at signing vs $28M total, and Spotrac lists a $47.4M total), so guaranteedM is null. No separate 'signed' date was found, so use 'Agreed to' with 03-11."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2024-04-29",
+     "type": "Contract",
+     "team": "JAX",
+     "headline": "Jaguars exercised the fifth-year option on his rookie contract",
+     "description": "The Jaguars exercised Etienne's 2025 fifth-year option (about $6.1 million) on April 29, 2024, the same day as Trevor Lawrence's. GM Trent Baalke had announced the plan during the draft two days earlier.",
+     "sources": [
+      {
+       "publisher": "Jacksonville Jaguars",
+       "title": "Roster Moves: Jaguars exercise fifth-year option on QB Trevor Lawrence and RB Travis Etienne Jr.",
+       "url": "https://www.jaguars.com/news/roster-moves-jaguars-exercise-fifth-year-option-on-qb-trevor-lawrence-and-rb-travis-etienne-jr",
+       "date": "2024-04-29"
+      },
+      {
+       "publisher": "AP (via ClickOrlando)",
+       "title": "Jaguars pick up fifth-year options on contracts for QB Trevor Lawrence and RB Travis Etienne",
+       "url": "https://clickorlando.com/sports/2024/04/29/jaguars-pick-up-fifth-year-options-on-contracts-for-qb-trevor-lawrence-and-rb-travis-etienne",
+       "date": "2024-04-29"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "dk-metcalf",
+   "facts": [
+    {
+     "id": "a0be14a23731",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2019-05-21",
+      "event": "signed",
+      "type": "Signed",
+      "team": "SEA",
+      "headline": "Signed a four-year, $4.6 million rookie contract with the Seahawks",
+      "description": "The Seahawks signed their second-round pick (64th overall) to a four-year rookie deal worth about $4.6 million.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 4.6,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2019-05-21",
+      "officialLog": "2019-05-21"
+     },
+     "sources": [
+      {
+       "publisher": "Seattle Seahawks (official transaction log)",
+       "title": "Signed drafted rookie WR DK Metcalf.",
+       "url": null,
+       "date": "2019-05-21"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "This Date In Transactions History: Seahawks Sign D.K. Metcalf",
+       "url": "https://www.profootballrumors.com/2021/05/this-date-in-transactions-history-seahawks-sign-d-k-metcalf",
+       "date": "2021-05-22"
+      }
+     ],
+     "notes": "The club log dates the signing 2019-05-21; Pro Football Rumors' anniversary piece says May 22, 2019 (the stored date). Recommend the official 05-21. Caution: in this batch several club-log dates (NYG, DET, SEA) sit one day before the club's own press dates, so a one-day offset in the log is possible. $4.6M total is from PFR only."
+    },
+    {
+     "id": "e34e97e24b4e",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2022-07-28",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "SEA",
+      "headline": "Agreed to a three-year, $72 million contract extension with the Seahawks",
+      "description": "Metcalf and Seattle agreed on July 28, 2022 to a three-year, $72 million extension with $58.2 million guaranteed and a $30 million signing bonus; the club recorded the signing on July 29.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 72,
+       "maxM": null,
+       "guaranteedM": 58.2,
+       "signingBonusM": 30,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2022-07-28",
+      "signed": "2022-07-29",
+      "officialLog": "2022-07-29"
+     },
+     "sources": [
+      {
+       "publisher": "Seattle Seahawks (official transaction log)",
+       "title": "Signed WR DK Metcalf to a contract extension.",
+       "url": null,
+       "date": "2022-07-29"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Seahawks, DK Metcalf Agree To Extension",
+       "url": "https://www.profootballrumors.com/2022/07/seahawks-wr-dk-metcalf-agree-to-extension",
+       "date": "2022-07-28"
+      }
+     ],
+     "notes": "The stored move is worded as an agreement on 07-28, which is correct; the official signing followed on 07-29. If the headline says 'Signed', move it to 07-29."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2025-03-13",
+     "type": "Traded",
+     "team": "PIT",
+     "headline": "Traded from the Seahawks to the Steelers",
+     "description": "Agreed March 9, 2025, official March 13: Seattle sent Metcalf and a 2025 sixth-round pick (No. 185) to Pittsburgh for a 2025 second-round pick (No. 52) and a 2025 seventh-round pick (No. 223).",
+     "sources": [
+      {
+       "publisher": "Pittsburgh Steelers (official transaction log)",
+       "title": "Acquired WR DK Metcalf and a 2025 sixth-round pick (185th overall) from Seattle for a 2025 second-round pick (52nd overall) and 2025 seventh-round pick (223rd overall).",
+       "url": null,
+       "date": "2025-03-13"
+      },
+      {
+       "publisher": "Seattle Seahawks (official transaction log)",
+       "title": "Traded WR DK Metcalf and a 2025 sixth-round pick to Pittsburgh for a 2025 second-round pick and seventh-round pick.",
+       "url": null,
+       "date": "2025-03-13"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Seahawks, Steelers Agree To D.K. Metcalf Trade",
+       "url": "https://www.profootballrumors.com/2025/03/seahawks-steelers-agree-to-d-k-metcalf-trade",
+       "date": "2025-03-09"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2025-03-13",
+     "type": "Contract",
+     "team": "PIT",
+     "headline": "Signed a four-year, $132 million contract extension with the Steelers",
+     "description": "As part of the trade, Metcalf got a four-year, $132 million extension ($33 million per year) through 2029, with $60 million guaranteed. It was agreed with the trade on March 9 and signed after the trade became official.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Seahawks, Steelers Agree To D.K. Metcalf Trade",
+       "url": "https://www.profootballrumors.com/2025/03/seahawks-steelers-agree-to-d-k-metcalf-trade",
+       "date": "2025-03-09"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Contract Details: Metcalf, Chubb, Joseph, Dickson",
+       "url": "https://www.profootballrumors.com/2025/06/nfl-contract-notes-metcalf-chubb-joseph-dickson",
+       "date": "2025-06-28"
+      }
+     ],
+     "confidence": "MEDIUM"
+    },
+    {
+     "date": "2025-12-23",
+     "type": "Suspended",
+     "team": "PIT",
+     "headline": "Suspended two games by the NFL",
+     "description": "The league suspended Metcalf two games for grabbing a fan's shirt in the stands during the Steelers-Lions game; the suspension voided about $45 million in future guarantees. He appealed.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Steelers WR D.K. Metcalf Issued Two-Game Suspension",
+       "url": "https://www.profootballrumors.com/2025/12/steelers-wr-d-k-metcalf-issued-two-game-suspension",
+       "date": "2025-12-23"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ],
+   "missingNotes": "The extension's exact signing date was not confirmed; the club log records only the trade on 2025-03-13. The outcome of the suspension appeal was not checked. Pro Football Rumors also reports a cap restructure on 2026-08-27, turning a $23M salary into a signing bonus; it is a routine cap move and was left out of the list."
+  },
+  {
+   "slug": "jared-goff",
+   "facts": [
+    {
+     "id": "a1cff437d06b",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-03-17",
+      "event": "traded",
+      "type": "Traded",
+      "team": "DET",
+      "headline": "Traded from the Rams to the Lions in the Matthew Stafford deal",
+      "description": "Agreed January 30, 2021, and official when the 2021 league year opened: the Rams sent Goff, a 2021 third-round pick and first-round picks in 2022 and 2023 to Detroit for Matthew Stafford.",
+      "terms": null,
+      "trade": {
+       "from": "LAR",
+       "to": "DET",
+       "officialDate": "2021-03-17",
+       "agreedDate": "2021-01-30",
+       "returnToFrom": [
+        "QB Matthew Stafford"
+       ],
+       "picks": []
+      }
+     },
+     "dates": {
+      "agreed": "2021-01-30",
+      "signed": null,
+      "officialLog": "2021-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Detroit Lions (official transaction log)",
+       "title": "The Detroit Lions acquire QB Jared Goff and undisclosed draft picks via trade with the Los Angeles Rams in exchange for QB Matthew Stafford",
+       "url": null,
+       "date": "2021-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Lions Trade Matthew Stafford To Rams For Jared Goff",
+       "url": "https://www.profootballrumors.com/2021/01/lions-trade-matthew-stafford-to-rams-for-jared-goff",
+       "date": "2021-01-31"
+      }
+     ],
+     "notes": "The Lions' log records the trade on 2021-03-17, the first day of the 2021 league year. The stored 03-18 (from Wikipedia) was not confirmed by any stronger source. Recommend 2021-03-17. The trade was agreed and reported January 30-31, 2021. The picks (2021 3rd, 2022 1st, 2023 1st, all LAR's own) went TO Detroit with Goff; Detroit, the club that received him, gave only Stafford, so picks[] here (what the Rams received) is empty. The pick years/rounds are from PFR ('two first-round picks and a 2021 third'), which does not give the exact years; 2022 and 2023 are widely reported but not confirmed here by an official source."
+    },
+    {
+     "id": "d3894cd57b93",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-05-13",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "DET",
+      "headline": "Agreed to a four-year, $212 million contract extension with the Lions",
+      "description": "On May 13, 2024 Goff and the Lions agreed to a four-year, $212 million extension with $170 million guaranteed and a $73 million signing bonus, running through 2027 with a 2028 option and including a no-trade clause. It was finalized by May 16.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 212,
+       "maxM": null,
+       "guaranteedM": 170,
+       "signingBonusM": 73,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-05-13",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Lions, Jared Goff Agree To Extension",
+       "url": "https://www.profootballrumors.com/2024/05/lions-jared-goff-agree-to-extension",
+       "date": "2024-05-13"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Latest On Jared Goff's Lions Extension",
+       "url": "https://www.profootballrumors.com/2024/05/latest-on-jared-goffs-lions-extension",
+       "date": "2024-05-16"
+      }
+     ],
+     "notes": "The agreement was reported on Monday, May 13, 2024. PFR's May 16 update calls the deal 'now finalized' while Goff discussed it, but no source gave an exact signing date and the Lions' log has no entry. Either use 'Agreed to' on 05-13, or keep 05-16 only if a Lions release confirms the signing that day. Terms are right. The 'second-highest-paid' AAV claim ($53M, behind Joe Burrow) held on that date but should not be stored."
+    },
+    {
+     "id": "9c072c56cdc0",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2019-09-03",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "LAR",
+      "headline": "Agreed to a four-year, $134 million contract extension with the Rams",
+      "description": "Goff and the Rams agreed on September 3, 2019 to a four-year, $134 million extension with $110 million guaranteed, making the total six years and about $161 million through 2024.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 134,
+       "maxM": null,
+       "guaranteedM": 110,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2019-09-03",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Rams, Jared Goff Agree To Extension",
+       "url": "https://www.profootballrumors.com/2019/09/rams-jared-goff-agree-to-extension",
+       "date": "2019-09-03"
+      }
+     ],
+     "notes": "The stored move is correctly phrased as an agreement on 09-03 (Wikipedia: 'he agreed'). No Rams log entry or separate signing date was found. The $110M guarantee was a record at the time; do not store that claim. Only one non-official source was reached (the search budget ran out), hence MEDIUM."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2016-06-09",
+     "type": "Signed",
+     "team": "LAR",
+     "headline": "Signed a four-year rookie contract with the Rams",
+     "description": "The No. 1 overall pick signed his slotted four-year rookie deal worth about $28 million as the Rams signed their draft class.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Rams To Sign No. 1 Pick Jared Goff Today",
+       "url": "https://www.profootballrumors.com/2016/06/rams-sign-rookie-jared-goff",
+       "date": "2016-06-09"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Rams Sign Entire Draft Class",
+       "url": "https://www.profootballrumors.com/2016/06/rams-sign-entire-draft-class",
+       "date": "2016-06-09"
+      }
+     ],
+     "confidence": "MEDIUM"
+    },
+    {
+     "date": "2019-04-23",
+     "type": "Contract",
+     "team": "LAR",
+     "headline": "Rams exercised the fifth-year option on his rookie contract",
+     "description": "The Rams picked up Goff's 2020 fifth-year option, worth $22.783 million.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Rams Exercise Jared Goff's Option",
+       "url": "https://www.profootballrumors.com/2019/04/rams-exercise-jared-goffs-option",
+       "date": "2019-04-23"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ],
+   "missingNotes": "PFR also reports a March 2026 restructure (salary converted to bonus, void year added). It is a routine cap move and was not listed."
+  },
+  {
+   "slug": "courtland-sutton",
+   "facts": [
+    {
+     "id": "8e5f974fe76c",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-11-22",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "DEN",
+      "headline": "Agreed to a four-year, $60.8 million contract extension with the Broncos",
+      "description": "Sutton and Denver agreed on November 22, 2021 to a four-year, $60.8 million extension through 2025, with $34.9 million guaranteed and a $6 million signing bonus.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 60.8,
+       "maxM": null,
+       "guaranteedM": 34.9,
+       "signingBonusM": 6,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2021-11-22",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Broncos, Courtland Sutton Agree To Extension",
+       "url": "https://www.profootballrumors.com/2021/11/broncos-courtland-sutton-agree-to-extension",
+       "date": "2021-11-22"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Details On Broncos WR Extensions",
+       "url": "https://www.profootballrumors.com/2021/11/details-on-broncos-wr-extensions",
+       "date": "2021-11-27"
+      }
+     ],
+     "notes": "Date and money are right, but 11-22 is the reported agreement. The Broncos' log has no entry and no separate signing date was found, so the wording should be 'Agreed to', not 'Signed'."
+    },
+    {
+     "id": "fc24444d57ad",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-07-28",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "DEN",
+      "headline": "Agreed to a four-year, $92 million contract extension with the Broncos",
+      "description": "Sutton agreed on July 28, 2025 to a four-year, $92 million extension ($23 million per year) with $41 million in total guarantees, $27 million of it new money.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 92,
+       "maxM": null,
+       "guaranteedM": 41,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-07-28",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Broncos, WR Courtland Sutton Agree To Extension",
+       "url": "https://www.profootballrumors.com/2025/07/broncos-wr-courtland-sutton-agree-to-extension",
+       "date": "2025-07-28"
+      }
+     ],
+     "notes": "Date and terms match the reports, but 07-28 is the agreement date; the Broncos' log has no signing entry. Reword to 'Agreed to'. Guaranteed money is $41M total, of which $27M is new."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2018-05-10",
+     "type": "Signed",
+     "team": "DEN",
+     "headline": "Signed his rookie contract with the Broncos",
+     "description": "The Broncos signed their 2018 second-round pick (40th overall) along with the rest of their draft class. Contract figures were not verified.",
+     "sources": [
+      {
+       "publisher": "Denver Broncos (official transaction log)",
+       "title": "Signed ... WR Courtland Sutton ... (all draft choices).",
+       "url": null,
+       "date": "2018-05-10"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "dallas-goedert",
+   "facts": [
+    {
+     "id": "bdee871e7445",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2018-05-08",
+      "event": "agreed",
+      "type": "Signed",
+      "team": "PHI",
+      "headline": "Agreed to a four-year rookie contract with the Eagles",
+      "description": "The Eagles agreed to terms on four-year contracts with their 2018 draft picks, including second-round pick (49th overall) Goedert, on May 8, 2018.",
+      "terms": {
+       "newYears": 4,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2018-05-08",
+      "signed": null,
+      "officialLog": "2018-05-08"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Agreed to terms on four-year contracts with the following draft picks: Dallas Goedert, Avonte Maddox, Josh Sweat, Matt Pryor and Jordan Mailata.",
+       "url": null,
+       "date": "2018-05-08"
+      }
+     ],
+     "notes": "The club log dates it 2018-05-08, not 05-09. The four years are confirmed. The $5.62M total, $2.90M guaranteed and $2.17M bonus could not be confirmed outside Wikipedia/Spotrac, so they are left null; they fit the rookie scale for pick 49 but are unverified."
+    },
+    {
+     "id": "89bcfa6ad8e4",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-11-18",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "PHI",
+      "headline": "Agreed to a four-year contract extension with the Eagles",
+      "description": "The Eagles agreed to terms with Goedert on a four-year extension through 2025, weeks after trading Zach Ertz. Reported value is $57 million to $59 million with about $35 million guaranteed.",
+      "terms": {
+       "newYears": 4,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": 10.22,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2021-11-18",
+      "signed": null,
+      "officialLog": "2021-11-18"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Agreed to terms with TE Dallas Goedert on a four-year contract extension through 2025.",
+       "url": null,
+       "date": "2021-11-18"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Eagles Sign Dallas Goedert To Four-Year Extension",
+       "url": "https://www.profootballrumors.com/2021/11/eagles-sign-dallas-goedert-to-four-year-extension",
+       "date": "2021-11-19"
+      }
+     ],
+     "notes": "Date: the club log says 2021-11-18 (agreed to terms); PFR's story is dated 11-19, so recommend 11-18. Money conflicts: Wikipedia and later PFR references say $57M with $35M guaranteed, while PFR's contract-detail story says $59M with $35.7M guaranteed ($14.92M at signing, $10.22M signing bonus). Totals are null until an official or major-outlet figure settles it. The 'highest-paid tight end' framing should not be stored."
+    },
+    {
+     "id": "bdf7ee89dc43",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-16",
+      "event": "signed",
+      "type": "Re-signed",
+      "team": "PHI",
+      "headline": "Re-signed with the Eagles on a one-year, $7 million contract",
+      "description": "After the first week of free agency, Goedert agreed on March 15, 2026 to return to Philadelphia on a one-year, $7 million deal ($4.25 million signing bonus, guaranteed); the Eagles signed him on March 16.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 7,
+       "maxM": null,
+       "guaranteedM": 4.25,
+       "signingBonusM": 4.25,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-15",
+      "signed": "2026-03-16",
+      "officialLog": "2026-03-16"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Signed TE Dallas Goedert to a one-year contract.",
+       "url": null,
+       "date": "2026-03-16"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Eagles To Re-Sign TE Dallas Goedert",
+       "url": "https://www.profootballrumors.com/2026/03/eagles-to-re-sign-te-dallas-goedert",
+       "date": "2026-03-15"
+      }
+     ],
+     "notes": "03-15 is the reported agreement and the official signing is 03-16. His contract had expired and he returned to the same club, so the type should be 'Re-signed', not 'Signed'."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2025-05-07",
+     "type": "Contract",
+     "team": "PHI",
+     "headline": "Agreed to a reworked 2025 contract with the Eagles",
+     "description": "Goedert took a pay cut in the final year of his extension, from $14.25 million to $10 million with $1 million in incentives, to stay in Philadelphia.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Field Yates)",
+       "title": "Eagles Expected To Retain TE Dallas Goedert On Reworked Deal",
+       "url": "https://www.profootballrumors.com/2025/05/eagles-expected-to-retain-te-dallas-goedert-on-reworked-deal",
+       "date": "2025-05-07"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "slug": "dontayvion-wicks",
+   "facts": [
+    {
+     "id": "b60aa63abd18",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2026-04-13",
+      "event": "traded",
+      "type": "Traded",
+      "team": "PHI",
+      "headline": "Traded from the Packers to the Eagles",
+      "description": "Philadelphia agreed on April 10-11, 2026 to acquire Wicks from Green Bay for a 2026 fifth-round pick and a 2027 sixth-round pick; the Packers recorded the trade on April 13.",
+      "terms": null,
+      "trade": {
+       "from": "GB",
+       "to": "PHI",
+       "officialDate": "2026-04-13",
+       "agreedDate": "2026-04-11",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2026,
+         "round": 5,
+         "originalTeam": null,
+         "conditional": false,
+         "note": "Pick number (No. 153) and its later use on Jager Burton not confirmed from a non-Wikipedia source"
+        },
+        {
+         "year": 2027,
+         "round": 6,
+         "originalTeam": null,
+         "conditional": false,
+         "note": ""
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2026-04-11",
+      "signed": null,
+      "officialLog": "2026-04-13"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "The Eagles agreed to acquire wide receiver Dontayvion Wicks from the Green Bay Packers in exchange for a 2026 fifth-round pick and a 2027 sixth-round pick. The Eagles and Wicks also agreed to terms on a one-year extension that keeps him under contract through 2027.",
+       "url": null,
+       "date": "2026-04-11"
+      },
+      {
+       "publisher": "Green Bay Packers (official transaction log)",
+       "title": "WR Dontayvion Wicks traded to the Philadelphia Eagles in exchange for a 2026 fifth-round pick and a 2027 sixth-round pick",
+       "url": null,
+       "date": "2026-04-13"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Eagles Acquire, Extend WR Dontayvion Wicks",
+       "url": "https://www.profootballrumors.com/2026/04/eagles-acquire-extend-wr-dontayvion-wicks",
+       "date": "2026-04-10"
+      }
+     ],
+     "notes": "Picks and teams are right. The date depends on the event: Schefter reported the deal on 04-10, the Eagles announced the agreement on 04-11 (the stored date), and the Packers' log records the completed trade on 04-13. Keep 04-11 with 'agreed to acquire' wording, or use 04-13 as the official date."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2026-04-11",
+     "type": "Contract",
+     "team": "PHI",
+     "headline": "Agreed to a one-year contract extension with the Eagles",
+     "description": "Along with the trade, Wicks agreed to a one-year extension, reported as a one-year, $12.5 million deal, that keeps him under contract through 2027.",
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "The Eagles and Wicks also agreed to terms on a one-year extension that keeps him under contract through 2027.",
+       "url": null,
+       "date": "2026-04-11"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Eagles Acquire, Extend WR Dontayvion Wicks",
+       "url": "https://www.profootballrumors.com/2026/04/eagles-acquire-extend-wr-dontayvion-wicks",
+       "date": "2026-04-10"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ],
+   "missingNotes": "The 2023-05-05 rookie signing (Green Bay log) is already on file."
+  },
+  {
+   "slug": "tyler-allgeier",
+   "facts": [
+    {
+     "id": "41e7bd0eada8",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-12",
+      "event": "signed",
+      "type": "Signed",
+      "team": "ARI",
+      "headline": "Signed a two-year, $12.25 million contract with the Cardinals",
+      "description": "Allgeier agreed on March 9, 2026 to a two-year, $12.25 million deal with Arizona, and the Cardinals announced the signing on March 12.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 12.25,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-09",
+      "signed": "2026-03-12",
+      "officialLog": "2026-03-12"
+     },
+     "sources": [
+      {
+       "publisher": "Arizona Cardinals (official transaction log)",
+       "title": "Cardinals sign RB TYLER ALLGEIER, OL ELIJAH WILKINSON to 2-year contracts ...",
+       "url": null,
+       "date": "2026-03-12"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing NFL Network's Mike Garafolo)",
+       "title": "Cardinals, RB Tyler Allgeier Agree To Deal",
+       "url": "https://www.profootballrumors.com/2026/03/cardinals-rb-tyler-allgeier-agree-to-deal",
+       "date": "2026-03-09"
+      }
+     ],
+     "notes": "Date and length come from the club log; the $12.25M is from Garafolo. No guarantee figure was confirmed."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2022-05-12",
+     "type": "Signed",
+     "team": "ATL",
+     "headline": "Signed a four-year rookie contract with the Falcons",
+     "description": "The Falcons signed their fifth-round pick (151st overall) to a four-year rookie contract.",
+     "sources": [
+      {
+       "publisher": "Atlanta Falcons (official transaction log)",
+       "title": "Falcons signed Tyler Allgeier to four-year rookie contract",
+       "url": null,
+       "date": "2022-05-12"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "NFL Draft Pick Signings: 5/12/22",
+       "url": "https://www.profootballrumors.com/2022/05/nfl-draft-pick-signings-5-12-22",
+       "date": "2022-05-12"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "brian-robinson",
+   "facts": [
+    {
+     "id": "4e7093ff1989",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2025-08-24",
+      "event": "traded",
+      "type": "Traded",
+      "team": "SF",
+      "headline": "Traded from the Commanders to the 49ers",
+      "description": "Agreed August 22, 2025, official August 24: Washington sent Robinson to San Francisco for a 2026 sixth-round pick and kept about $3.4 million of his 2025 salary.",
+      "terms": null,
+      "trade": {
+       "from": "WAS",
+       "to": "SF",
+       "officialDate": "2025-08-24",
+       "agreedDate": "2025-08-22",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2026,
+         "round": 6,
+         "originalTeam": "SF",
+         "conditional": false,
+         "note": "PFR's player page calls it conditional, but its trade story and both club logs describe a plain sixth-round pick; no condition was confirmed"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2025-08-22",
+      "signed": null,
+      "officialLog": "2025-08-24"
+     },
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers have acquired RB Brian Robinson Jr. from the Washington Commanders in exchange for a sixth-round pick in 2026.",
+       "url": null,
+       "date": "2025-08-24"
+      },
+      {
+       "publisher": "Washington Commanders (official transaction log)",
+       "title": "Traded RB Brian Robinson Jr.",
+       "url": null,
+       "date": "2025-08-24"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "49ers To Acquire RB Brian Robinson From Commanders",
+       "url": "https://www.profootballrumors.com/2025/08/49ers-to-acquire-rb-brian-robinson-from-commanders",
+       "date": "2025-08-22"
+      }
+     ],
+     "notes": "Stored date is the official date. The agreement was reported two days earlier. 'originalTeam: SF' is assumed from the club's wording ('a sixth-round pick'), not stated explicitly."
+    },
+    {
+     "id": "2a7249fbeda8",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-26",
+      "event": "signed",
+      "type": "Signed",
+      "team": "ATL",
+      "headline": "Signed a one-year, $2.5 million contract with the Falcons",
+      "description": "Reported on March 24, 2026 as expected to sign a one-year, $2.5 million deal; the Falcons signed him on March 26.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 2.5,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-24",
+      "signed": "2026-03-26",
+      "officialLog": "2026-03-26"
+     },
+     "sources": [
+      {
+       "publisher": "Atlanta Falcons (official transaction log)",
+       "title": "Falcons sign RB Brian Robinson Jr., RB Tyler Goodson",
+       "url": null,
+       "date": "2026-03-26"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Falcons Expected To Sign Brian Robinson",
+       "url": "https://www.profootballrumors.com/2026/03/falcons-expected-to-sign-brian-robinson",
+       "date": "2026-03-24"
+      }
+     ],
+     "notes": "Matches the official log. The dollar figure comes from reports, not the club."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "jalen-nailor",
+   "facts": [
+    {
+     "id": "10382279a38e",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-12",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LV",
+      "headline": "Signed a three-year, $35 million contract with the Raiders",
+      "description": "Nailor agreed on March 9, 2026 to a three-year, $35 million deal with Las Vegas that includes $23 million guaranteed; the Raiders signed him on March 12.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 35,
+       "maxM": null,
+       "guaranteedM": 23,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-09",
+      "signed": "2026-03-12",
+      "officialLog": "2026-03-12"
+     },
+     "sources": [
+      {
+       "publisher": "Las Vegas Raiders (official transaction log)",
+       "title": "Signed C Tyler Linderbaum, LB Quay Walker, DE Kwity Paye and WR Jalen Nailor.",
+       "url": null,
+       "date": "2026-03-12"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Raiders To Add WR Jalen Nailor",
+       "url": "https://www.profootballrumors.com/2026/03/raiders-to-add-wr-jalen-nailor",
+       "date": "2026-03-09"
+      }
+     ],
+     "notes": "Date, team, length, total and guarantee are confirmed. The $6 million signing bonus in the stored quote was not confirmed, so it is left null. PFR also mentions a September 2026 cap restructure; it is routine and not listed as missing."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2022-05-12",
+     "type": "Signed",
+     "team": "MIN",
+     "headline": "Signed his rookie contract with the Vikings",
+     "description": "The Vikings signed their 2022 sixth-round pick to his rookie contract. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "Minnesota Vikings (official transaction log)",
+       "title": "Signed S Lewis Cine, DE Esezi Otomewo, RB Ty Chandler, WR Jalen Nailor and TE Nick Muse.",
+       "url": null,
+       "date": "2022-05-12"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "jauan-jennings",
+   "facts": [
+    {
+     "id": "5e1f7ea6b51a",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-05-29",
+      "event": "signed",
+      "type": "Contract",
+      "team": "SF",
+      "headline": "Signed a two-year deal worth up to $15.4 million with the 49ers",
+      "description": "Jennings signed a two-year deal worth up to $15.4 million that replaced his $4.89 million second-round restricted free agent tender for 2024 and extended him one year, through 2025. It included a $6.21 million signing bonus and four void years.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": 15.4,
+       "guaranteedM": 8.44,
+       "signingBonusM": 6.21,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-05-29",
+      "signed": "2024-05-29",
+      "officialLog": "2024-05-29"
+     },
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers signed Jauan Jennings to a one-year extension through the 2025 season.",
+       "url": null,
+       "date": "2024-05-29"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "49ers Extend WR Jauan Jennings",
+       "url": "https://www.profootballrumors.com/2024/05/49ers-to-extend-wr-jauan-jennings",
+       "date": "2024-05-29"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Contract Details: Jennings, Slayton, Maye",
+       "url": "https://www.profootballrumors.com/2024/06/nfl-contract-details-jennings-slayton-maye",
+       "date": "2024-06-01"
+      }
+     ],
+     "notes": "Date and team are right. The terms need correcting. The club calls it a one-year extension through 2025: the deal replaced the 2024 RFA tender, so only one new year was added. $15.4M is the maximum ('up to'), not the base value. Guarantees: PFR first reported $10.5M; its contract-detail story gives $8.44M at signing. It is not a 'two-year, $15.4 million contract extension'."
+    },
+    {
+     "id": "4f3043a8c234",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-05-07",
+      "event": "agreed",
+      "type": "Signed",
+      "team": "MIN",
+      "headline": "Agreed to a one-year contract worth up to $13 million with the Vikings",
+      "description": "Jennings agreed to a one-year deal with Minnesota: an $8 million base plus up to $5 million in incentives for playing time, catches, yards and touchdowns.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 8,
+       "maxM": 13,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-05-07",
+      "signed": null,
+      "officialLog": "2026-05-07"
+     },
+     "sources": [
+      {
+       "publisher": "Minnesota Vikings (official transaction log)",
+       "title": "Agreed to terms with WR Jauan Jennings.",
+       "url": null,
+       "date": "2026-05-07"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Vikings To Sign WR Jauan Jennings",
+       "url": "https://www.profootballrumors.com/2026/05/vikings-to-sign-wr-jauan-jennings",
+       "date": "2026-05-07"
+      }
+     ],
+     "notes": "The club log says 'agreed to terms', not 'signed'. Store the value as $8M base with a $13M maximum, not a $13M contract. The quote's 'worth up to $13 million' is accurate."
+    },
+    {
+     "id": "4fcd71ee3b22",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-09-03",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "SF",
+      "headline": "Agreed to a reworked contract adding $3 million in incentives",
+      "description": "With no extension reached, the 49ers and Jennings agreed to add $3 million in playing-time incentives to his 2025 pay, raising his possible earnings from $7.5 million to $10.5 million.",
+      "terms": {
+       "newYears": 0,
+       "totalM": null,
+       "maxM": 10.5,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-09-03",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "49ers, Jauan Jennings Agree To Reworked Deal",
+       "url": "https://www.profootballrumors.com/2025/09/49ers-jauan-jennings-agree-to-reworked-deal",
+       "date": "2025-09-03"
+      }
+     ],
+     "notes": "Matches Schefter via PFR. No official club entry. It is a restructure, not an extension."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2024-03-11",
+     "type": "Tender",
+     "team": "SF",
+     "headline": "Tendered as a restricted free agent by the 49ers",
+     "description": "The 49ers gave Jennings a second-round restricted free agent tender ($4.89 million), later replaced by his May 2024 deal.",
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers have tendered a one-year contract to restricted free agent WR Jauan Jennings.",
+       "url": null,
+       "date": "2024-03-11"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "49ers Extend WR Jauan Jennings",
+       "url": "https://www.profootballrumors.com/2024/05/49ers-to-extend-wr-jauan-jennings",
+       "date": "2024-05-29"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ],
+   "missingNotes": "The club log also shows one-year tender contracts signed on 2022-04-19 and 2023-04-17 (exclusive-rights level). They are minor and not listed. His 2020 rookie signing was not found in the log."
+  },
+  {
+   "slug": "justice-hill",
+   "facts": [
+    {
+     "id": "5ed6e70104d9",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-03-17",
+      "event": "signed",
+      "type": "Re-signed",
+      "team": "BAL",
+      "headline": "Re-signed with the Ravens on a two-year, $4.5 million contract",
+      "description": "Hill was a pending free agent when his rookie contract ended. The Ravens brought him back on a two-year deal worth $4.5 million (up to $5 million), reported March 15, 2023 and signed March 17.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 4.5,
+       "maxM": 5,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2023-03-15",
+      "signed": "2023-03-17",
+      "officialLog": "2023-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Re-signed S Geno Stone and RB Justice Hill.",
+       "url": null,
+       "date": "2023-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Ravens To Re-Sign RB Justice Hill",
+       "url": "https://www.profootballrumors.com/2023/03/ravens-to-re-sign-rb-justice-hill",
+       "date": "2023-03-15"
+      }
+     ],
+     "notes": "The date is right, but this was a re-signing of an expiring rookie contract, not an extension; the type should be 'Re-signed'. Terms: two years, $4.5M, max $5M."
+    },
+    {
+     "id": "7fbeb5940963",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2024-09-20",
+      "event": "signed",
+      "type": "Contract",
+      "team": "BAL",
+      "headline": "Signed a two-year, $6 million contract extension with the Ravens",
+      "description": "Hill and the Ravens agreed to, and the club recorded, a two-year, $6 million extension through 2026 on September 20, 2024.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 6,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-09-20",
+      "signed": "2024-09-20",
+      "officialLog": "2024-09-20"
+     },
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Signed RB Justice Hill to a two-year contract extension (through 2026)",
+       "url": null,
+       "date": "2024-09-20"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing NFL Network's Ian Rapoport)",
+       "title": "Ravens, RB Justice Hill Agree To Extension",
+       "url": "https://www.profootballrumors.com/2024/09/ravens-rb-justice-hill-agree-to-extension",
+       "date": "2024-09-20"
+      }
+     ],
+     "notes": "Agreement and signing were on the same day."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2019-05-02",
+     "type": "Signed",
+     "team": "BAL",
+     "headline": "Signed his rookie contract with the Ravens",
+     "description": "The Ravens signed their 2019 fourth-round pick to his rookie contract. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Signed draft choices RB Justice Hill, DT Daylon Mack, CB Iman Marshall and G Ben Powers",
+       "url": null,
+       "date": "2019-05-02"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "marcus-mariota",
+   "facts": [
+    {
+     "id": "e5f2604d85ff",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2020-03-24",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LV",
+      "headline": "Signed a two-year, $17.6 million contract with the Raiders",
+      "description": "Mariota agreed on March 16, 2020 to a two-year, $17.6 million deal with $7.5 million guaranteed to back up Derek Carr; the Raiders signed him on March 24. The deal carried playing-time incentives and a 2021 escalator.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 17.6,
+       "maxM": null,
+       "guaranteedM": 7.5,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2020-03-16",
+      "signed": "2020-03-24",
+      "officialLog": "2020-03-24"
+     },
+     "sources": [
+      {
+       "publisher": "Las Vegas Raiders (official transaction log)",
+       "title": "Signed LB Cory Littleton, QB Marcus Mariota, TE Jason Witten, WR Nelson Agholor, RB Rod Smith and LB Kyle Wilber.",
+       "url": null,
+       "date": "2020-03-24"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Raiders Agree To Terms With QB Marcus Mariota",
+       "url": "https://www.profootballrumors.com/2020/03/raiders-agree-to-terms-with-qb-marcus-mariota",
+       "date": "2020-03-16"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Contract Details: Brees, Mariota, Apple, Desir, Henne",
+       "url": "https://www.profootballrumors.com/2020/03/nfl-contract-details-brees-mariota-apple-desir-henne",
+       "date": "2020-03-23"
+      }
+     ],
+     "notes": "03-16 is the agreement date; the official signing is 03-24 (club log). Use 'Agreed to' on 03-16 or move to 03-24. Money is correct."
+    },
+    {
+     "id": "8493c608e62f",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2022-03-25",
+      "event": "signed",
+      "type": "Signed",
+      "team": "ATL",
+      "headline": "Signed a two-year, $18.75 million contract with the Falcons",
+      "description": "Mariota agreed on March 21, 2022 to a two-year, $18.75 million deal with Atlanta after the Matt Ryan trade, and the Falcons signed him on March 25. The second year worked like an option with a $3 million roster bonus.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 18.75,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2022-03-21",
+      "signed": "2022-03-25",
+      "officialLog": "2022-03-25"
+     },
+     "sources": [
+      {
+       "publisher": "Atlanta Falcons (official transaction log)",
+       "title": "Falcons sign QB Marcus Mariota to two-year contract",
+       "url": null,
+       "date": "2022-03-25"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN)",
+       "title": "Falcons, QB Marcus Mariota Agree To Deal",
+       "url": "https://www.profootballrumors.com/2022/03/falcons-qb-marcus-mariota-agree-to-deal",
+       "date": "2022-03-21"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Contract Details: Miller, Robinson, Reddick, Mariota, ...",
+       "url": "https://www.profootballrumors.com/2022/03/contract-details-miller-robinson-reddick-mariota-jensen-collins-brown-norwell",
+       "date": "2022-03-22"
+      }
+     ],
+     "notes": "03-21 is the agreement date; the official signing is 03-25. Money is correct."
+    },
+    {
+     "id": "e45841304f35",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-03-20",
+      "event": "announced",
+      "type": "Signed",
+      "team": "PHI",
+      "headline": "Signed a one-year, $5 million contract with the Eagles",
+      "description": "Mariota agreed on March 17, 2023 to a one-year, $5 million deal (up to $8 million) with Philadelphia; the Eagles announced it on March 20.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 5,
+       "maxM": 8,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2023-03-17",
+      "signed": null,
+      "officialLog": "2023-03-20"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Agreed to terms with quarterback Marcus Mariota on a one-year deal.",
+       "url": null,
+       "date": "2023-03-20"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Eagles To Sign QB Marcus Mariota",
+       "url": "https://www.profootballrumors.com/2023/03/eagles-to-sign-qb-marcus-mariota",
+       "date": "2023-03-17"
+      }
+     ],
+     "notes": "03-20 is the club's official announcement. The club wording is 'agreed to terms'; if strict, the headline could read 'Agreed to' on 03-20. The max value is $8M."
+    },
+    {
+     "id": "ea3248f46893",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-03-12",
+      "event": "agreed",
+      "type": "Re-signed",
+      "team": "WAS",
+      "headline": "Agreed to re-sign with the Commanders on a one-year, $8 million contract",
+      "description": "Mariota agreed on March 12, 2025 to return to Washington on a one-year, $8 million deal.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 8,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-03-12",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors (citing NFL Network's Tom Pelissero)",
+       "title": "Commanders To Re-Sign QB Marcus Mariota",
+       "url": "https://www.profootballrumors.com/2025/03/commanders-to-re-sign-qb-marcus-mariota",
+       "date": "2025-03-12"
+      }
+     ],
+     "notes": "The agreement was reported on 2025-03-12, the day the league year opened. No official signing date was found, and the Commanders' log has no entry for 2025. The stored 03-13 is unconfirmed; recommend 'Agreed to' on 03-12 unless a club source gives the signing date. Terms match."
+    },
+    {
+     "id": "73b63a7873ac",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2026-03-09",
+      "event": "agreed",
+      "type": "Re-signed",
+      "team": "WAS",
+      "headline": "Agreed to re-sign with the Commanders on a one-year, $7 million contract",
+      "description": "Mariota agreed on March 9, 2026 to a one-year deal with a $7 million base value that can reach $11 million with incentives.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 7,
+       "maxM": 11,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-09",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors (citing NFL Network's Tom Pelissero)",
+       "title": "Commanders To Re-Sign Marcus Mariota",
+       "url": "https://www.profootballrumors.com/2026/03/commanders-to-re-sign-marcus-mariota",
+       "date": "2026-03-09"
+      }
+     ],
+     "notes": "The agreement was reported 2026-03-09. The stored 03-11 is the first day of the league year and may be the signing date, but no club log entry or release confirms it. Recommend 'Agreed to' on 03-09 or confirming 03-11 with the club. Terms ($7M base, $11M max) are right."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2018-04-18",
+     "type": "Contract",
+     "team": "TEN",
+     "headline": "Titans exercised the fifth-year option on his rookie contract",
+     "description": "Titans GM Jon Robinson said on April 18, 2018 that the club would exercise Mariota's 2019 fifth-year option 'over the next couple of days'. The exact filing date was not confirmed.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Titans Pick Up Marcus Mariota's Option",
+       "url": "https://www.profootballrumors.com/2018/04/titans-pick-up-marcus-mariota-option",
+       "date": "2018-04-18"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ],
+   "missingNotes": "His 2015 Titans rookie contract is not on file and was not sourced (the search budget ran out). PFR also mentions a pay cut with the Raiders for 2021 ($3.5M); it was not sourced in detail."
+  },
+  {
+   "slug": "aj-dillon",
+   "facts": [
+    {
+     "id": "1cc00bbee6bf",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2020-06-30",
+      "event": "signed",
+      "type": "Signed",
+      "team": "GB",
+      "headline": "Signed a four-year, $5.29 million rookie contract with the Packers",
+      "description": "The 62nd overall pick signed his four-year rookie deal worth about $5.29 million with a $1.404 million signing bonus.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 5.29,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": 1.404,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2020-06-30",
+      "officialLog": "2020-06-30"
+     },
+     "sources": [
+      {
+       "publisher": "Green Bay Packers (official transaction log)",
+       "title": "RB AJ Dillon signed",
+       "url": null,
+       "date": "2020-06-30"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Packers Sign A.J. Dillon",
+       "url": "https://www.profootballrumors.com/2020/07/packers-sign-a-j-dillon",
+       "date": "2020-07-01"
+      }
+     ],
+     "notes": "The club log dates the signing 2020-06-30, while PFR (and the stored move) say July 1. Recommend the official 06-30, with the same caution about a possible one-day log offset noted elsewhere in this batch. Terms are right ($5.3M rounds $5.29M; bonus $1.404M)."
+    }
+   ],
+   "missing": [],
+   "missingNotes": "Later moves (2024 re-signing, 2025 PHI, 2026 CAR) are already on file. PFR notes the 2024 Packers deal was a one-year qualifying-offer contract ($2.6M, $1.35M guaranteed); that move was not in this batch's check list."
+  },
+  {
+   "slug": "ricky-pearsall",
+   "facts": [
+    {
+     "id": "1cbe4c7b5553",
+     "verdict": "DATE UNCERTAIN",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-06-20",
+      "event": "signed",
+      "type": "Signed",
+      "team": "SF",
+      "headline": "Signed a four-year rookie contract with the 49ers",
+      "description": "The 49ers signed their first-round pick (31st overall) to a four-year rookie contract with a fifth-year option, completing their 2024 draft class signings.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 12.35,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": 5.93,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2024-06-20",
+      "officialLog": "2024-06-21"
+     },
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers have signed WR Ricky Pearsall to a four-year deal.",
+       "url": null,
+       "date": "2024-06-21"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "49ers Sign First-Round WR Ricky Pearsall, Wrap Up Draft Class Signings",
+       "url": "https://www.profootballrumors.com/2024/06/49ers-sign-first-round-wr-ricky-pearsall-wrap-up-draft-class-signings",
+       "date": "2024-06-20"
+      }
+     ],
+     "notes": "The club log says 2024-06-21. PFR reported the signing 'today' in a story posted at 8:39 pm on Thursday, June 20, 2024, which suggests the log date may be the next day in UTC. Recommend 06-20 unless a 49ers release says otherwise. The $12.35M total and $5.93M bonus come only from Wikipedia/Spotrac; they fit the rookie scale for pick 31 but were not confirmed. 'Fully guaranteed at signing' was not confirmed either."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "jacob-saylors",
+   "facts": [
+    {
+     "id": "ef1e6238b547",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-01-05",
+      "event": "signed",
+      "type": "Contract",
+      "team": "DET",
+      "headline": "Signed a one-year contract extension with the Lions",
+      "description": "On January 5, 2026 the Lions re-signed Saylors to an extension running through the 2026 season. It is a standard contract, not a reserve/future deal.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2026-01-05",
+      "officialLog": "2026-01-05"
+     },
+     "sources": [
+      {
+       "publisher": "Detroit Lions (official transaction log)",
+       "title": "The Detroit Lions re-sign OL Michael Niese, RB Jacob Saylors and CB Nick Whiteside.",
+       "url": null,
+       "date": "2026-01-05"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Minor NFL Transactions: 1/5/26",
+       "url": "https://www.profootballrumors.com/2026/01/minor-nfl-transactions-1-5-26",
+       "date": "2026-01-05"
+      }
+     ],
+     "notes": "The club calls it a 're-sign' and PFR says the deals were extensions through 2026 while he was still under contract, so 'Contract' (extension) fits. No money figures were published."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "adam-trautman",
+   "facts": [
+    {
+     "id": "f2f414ab0da0",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-04-29",
+      "event": "traded",
+      "type": "Traded",
+      "team": "DEN",
+      "headline": "Traded from the Saints to the Broncos",
+      "description": "During the 2023 draft New Orleans sent Trautman and a 2023 seventh-round pick (No. 257) to Denver for a 2023 sixth-round pick (No. 195).",
+      "terms": null,
+      "trade": {
+       "from": "NO",
+       "to": "DEN",
+       "officialDate": "2023-04-29",
+       "agreedDate": "2023-04-29",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2023,
+         "round": 6,
+         "originalTeam": "DEN",
+         "conditional": false,
+         "note": "No. 195 overall"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2023-04-29",
+      "signed": null,
+      "officialLog": "2023-04-29"
+     },
+     "sources": [
+      {
+       "publisher": "Denver Broncos (official transaction log)",
+       "title": "Acquired TE Adam Trautman and 2023 seventh-round pick from Saints in exchange for 2023 sixth-round pick.",
+       "url": null,
+       "date": "2023-04-29"
+      },
+      {
+       "publisher": "New Orleans Saints (official transaction log)",
+       "title": "Traded TE Adam Trautman and a seventh round draft pick in exchange for a sixth round draft pick.",
+       "url": null,
+       "date": "2023-04-29"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Adam Trautman player news (trade to Broncos)",
+       "url": "https://www.profootballrumors.com/players/adam-trautman",
+       "date": "2023-04-29"
+      }
+     ],
+     "notes": "Both club logs confirm it. No. 257 was a seventh-rounder (Mr. Irrelevant slot), not a sixth as PFR's summary implied."
+    },
+    {
+     "id": "9cc55112da0d",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-03-12",
+      "event": "agreed",
+      "type": "Re-signed",
+      "team": "DEN",
+      "headline": "Agreed to re-sign with the Broncos on a two-year contract",
+      "description": "With his rookie contract expiring, Trautman agreed on March 12, 2024 to return to Denver on a two-year deal.",
+      "terms": {
+       "newYears": 2,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-03-12",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Adam Trautman player news (March 2024 re-signing)",
+       "url": "https://www.profootballrumors.com/players/adam-trautman",
+       "date": "2024-03-12"
+      }
+     ],
+     "notes": "His 2020 rookie deal was expiring, so this was a re-signing of a pending free agent, not an extension. PFR dates the agreement 03-12; the stored 03-13 (the league-year start) may be the signing but is not confirmed, and the Broncos' log has no 2024 entry. No dollar figure was confirmed."
+    },
+    {
+     "id": "e6be6857540f",
+     "verdict": "EDIT",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-10",
+      "event": "signed",
+      "type": "Re-signed",
+      "team": "DEN",
+      "headline": "Re-signed with the Broncos on a three-year, $17 million contract",
+      "description": "Trautman agreed on March 8, 2026 to a three-year, $17 million deal (up to $18.5 million, $9.5 million guaranteed at signing) and the Broncos re-signed him on March 10.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 17,
+       "maxM": 18.5,
+       "guaranteedM": 9.5,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-08",
+      "signed": "2026-03-10",
+      "officialLog": "2026-03-10"
+     },
+     "sources": [
+      {
+       "publisher": "Denver Broncos (official transaction log)",
+       "title": "Re-signed TE Nate Adkins. Re-signed RB J.K. Dobbins. Re-signed ILB Alex Singleton. Re-signed ILB Justin Strnad. Re-signed TE Adam Trautman.",
+       "url": null,
+       "date": "2026-03-10"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Adam Trautman player news (March 2026 deal)",
+       "url": "https://www.profootballrumors.com/players/adam-trautman",
+       "date": "2026-03-08"
+      }
+     ],
+     "notes": "The club calls it a re-signing (he was a pending free agent), not an extension. 03-08 is the agreement and 03-10 the official signing. Money is right ($17M; max $18.5M; $9.5M guaranteed)."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2020-07-26",
+     "type": "Signed",
+     "team": "NO",
+     "headline": "Signed his rookie contract with the Saints",
+     "description": "The Saints signed their 2020 third-round pick to his rookie contract. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "New Orleans Saints (official transaction log)",
+       "title": "Signed draft picks G/C Cesar Ruiz, LB Zack Baun, QB Tommy Stevens and TE Adam Trautman.",
+       "url": null,
+       "date": "2020-07-26"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "caleb-lohner",
+   "facts": [
+    {
+     "id": "c36b8f06d998",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-05-09",
+      "event": "signed",
+      "type": "Signed",
+      "team": "DEN",
+      "headline": "Signed his rookie contract with the Broncos",
+      "description": "The Broncos signed their 2025 seventh-round pick (241st overall) to his four-year rookie contract on May 9, 2025.",
+      "terms": {
+       "newYears": 4,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2025-05-09",
+      "officialLog": "2025-05-09"
+     },
+     "sources": [
+      {
+       "publisher": "Denver Broncos (official transaction log)",
+       "title": "Signed ... TE Caleb Lohner (draft pick) ...",
+       "url": null,
+       "date": "2025-05-09"
+      }
+     ],
+     "notes": "The club log dates the signing 2025-05-09, not 05-06. The $4.309M value was not confirmed outside Wikipedia (it fits a seventh-round four-year scale deal), so totalM is null. Four years is the standard rookie length."
+    }
+   ],
+   "missing": [],
+   "missingNotes": "He was waived 2025-08-26 before the 2026-01-26 future contract; waivers are checked separately."
+  },
+  {
+   "slug": "davis-allen",
+   "facts": [
+    {
+     "id": "ca11ef80aa6a",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2023-06-20",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LAR",
+      "headline": "Signed a four-year rookie contract with the Rams",
+      "description": "The Rams signed their 2023 fifth-round pick (175th overall) to his four-year rookie contract on June 20, 2023, along with Puka Nacua.",
+      "terms": {
+       "newYears": 4,
+       "totalM": 4.08,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": null,
+      "signed": "2023-06-20",
+      "officialLog": "2023-06-20"
+     },
+     "sources": [
+      {
+       "publisher": "Los Angeles Rams (official transaction log)",
+       "title": "Signed 2023 draft picks TE Davis Allen and WR Puka Nacua.",
+       "url": null,
+       "date": "2023-06-20"
+      }
+     ],
+     "notes": "The date and team match the official log. The $4.08M value fits the 2023 fifth-round scale but was confirmed only by Wikipedia/Spotrac-type data; MEDIUM for that reason."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "gardner-minshew",
+   "facts": [
+    {
+     "id": "226bbafb0c44",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-08-27",
+      "event": "traded",
+      "type": "Traded",
+      "team": "PHI",
+      "headline": "Traded from the Jaguars to the Eagles",
+      "description": "Jacksonville traded Minshew to Philadelphia for a conditional 2022 sixth-round pick that could rise to a fifth-rounder if he played at least 50% of snaps in three games; the Eagles released QB Nick Mullens to make room.",
+      "terms": null,
+      "trade": {
+       "from": "JAX",
+       "to": "PHI",
+       "officialDate": "2021-08-27",
+       "agreedDate": "2021-08-27",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2022,
+         "round": 6,
+         "originalTeam": "PHI",
+         "conditional": true,
+         "note": "Would become a fifth-rounder if Minshew played 50%+ of offensive snaps in three games; the final outcome was not confirmed here"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2021-08-27",
+      "signed": null,
+      "officialLog": "2021-08-27"
+     },
+     "sources": [
+      {
+       "publisher": "Philadelphia Eagles (official transaction log)",
+       "title": "Acquired QB Gardner Minshew from Jacksonville in exchange for a conditional sixth-round pick in 2022. The team also released QB Nick Mullens.",
+       "url": null,
+       "date": "2021-08-27"
+      },
+      {
+       "publisher": "Jacksonville Jaguars (official transaction log)",
+       "title": "Gardner Minshew II (QB) traded to Philadelphia Eagles.",
+       "url": null,
+       "date": "2021-08-27"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Jaguars Trade QB Gardner Minshew To Eagles",
+       "url": "https://www.profootballrumors.com/2021/08/jaguars-trade-qb-gardner-minshew-to-eagles",
+       "date": "2021-08-28"
+      }
+     ],
+     "notes": "Both club logs date the trade 2021-08-27; the stored 08-28 is when PFR/Wikipedia reported it. The pick details are right. The escalator condition should be kept; whether it was met was not confirmed."
+    },
+    {
+     "id": "c7af458a800b",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-03-17",
+      "event": "signed",
+      "type": "Signed",
+      "team": "IND",
+      "headline": "Signed a one-year, $3.5 million contract with the Colts",
+      "description": "Minshew agreed on March 16, 2023 to a fully guaranteed one-year, $3.5 million deal that could reach $5.5 million through playing-time incentives; the Colts signed him on March 17.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 3.5,
+       "maxM": 5.5,
+       "guaranteedM": 3.5,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2023-03-16",
+      "signed": "2023-03-17",
+      "officialLog": "2023-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Indianapolis Colts (official transaction log)",
+       "title": "Gardner Minshew (QB) signed as free agent",
+       "url": null,
+       "date": "2023-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Colts, QB Gardner Minshew Agree To Deal",
+       "url": "https://www.profootballrumors.com/2023/03/colts-qb-gardner-minshew-agree-to-deal",
+       "date": "2023-03-16"
+      }
+     ],
+     "notes": "Matches the official log and the reported terms."
+    },
+    {
+     "id": "412a8e051231",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2024-03-14",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LV",
+      "headline": "Signed a two-year, $25 million contract with the Raiders",
+      "description": "Minshew agreed on March 11, 2024 to a two-year, $25 million deal with $15 million guaranteed; the Raiders signed him on March 14.",
+      "terms": {
+       "newYears": 2,
+       "totalM": 25,
+       "maxM": null,
+       "guaranteedM": 15,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-03-11",
+      "signed": "2024-03-14",
+      "officialLog": "2024-03-14"
+     },
+     "sources": [
+      {
+       "publisher": "Las Vegas Raiders (official transaction log)",
+       "title": "Signed DT Christian Wilkins, QB Gardner Minshew II and TE Harrison Bryant.",
+       "url": null,
+       "date": "2024-03-14"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing Tom Pelissero)",
+       "title": "Raiders To Sign QB Gardner Minshew",
+       "url": "https://www.profootballrumors.com/2024/03/raiders-to-sign-qb-gardner-minshew",
+       "date": "2024-03-11"
+      }
+     ],
+     "notes": "Matches. Guaranteed money is $15M."
+    },
+    {
+     "id": "184f50abd09d",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-03-17",
+      "event": "signed",
+      "type": "Signed",
+      "team": "KC",
+      "headline": "Signed a one-year contract with the Chiefs",
+      "description": "After the Raiders released him on March 12, 2025, Minshew agreed on March 13 to a one-year deal to back up Patrick Mahomes; the Chiefs signed him on March 17.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-03-13",
+      "signed": "2025-03-17",
+      "officialLog": "2025-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Kansas City Chiefs (official transaction log)",
+       "title": "Kareem Hunt (RB), Gardner Minshew (QB) signed.",
+       "url": null,
+       "date": "2025-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Chiefs To Sign QB Gardner Minshew",
+       "url": "https://www.profootballrumors.com/2025/03/chiefs-to-sign-qb-gardner-minshew",
+       "date": "2025-03-13"
+      }
+     ],
+     "notes": "Date, team and length are confirmed. The $1.17M figure (a veteran-minimum-level amount) was not confirmed by any source reached, so totalM is null."
+    },
+    {
+     "id": "d195f17f7fa4",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-03-12",
+      "event": "signed",
+      "type": "Signed",
+      "team": "ARI",
+      "headline": "Signed a one-year, $5.75 million contract with the Cardinals",
+      "description": "Minshew agreed on March 9, 2026 to a one-year deal with a $5.75 million base value (incentives to about $8 million), and the Cardinals signed him on March 12.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 5.75,
+       "maxM": 8,
+       "guaranteedM": 5.14,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-09",
+      "signed": "2026-03-12",
+      "officialLog": "2026-03-12"
+     },
+     "sources": [
+      {
+       "publisher": "Arizona Cardinals (official transaction log)",
+       "title": "Cardinals sign RB TYLER ALLGEIER, OL ELIJAH WILKINSON to 2-year contracts and QB GARDNER MINSHEW ... to 1-year contracts",
+       "url": null,
+       "date": "2026-03-12"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing Schefter and Pelissero)",
+       "title": "Cardinals To Sign QB Gardner Minshew",
+       "url": "https://www.profootballrumors.com/2026/03/cardinals-to-sign-qb-gardner-minshew",
+       "date": "2026-03-09"
+      }
+     ],
+     "notes": "Schefter first reported $8.25M; Pelissero clarified it as a $5.75M base with incentives to about $8M, and PFR's player page lists $5.14M fully guaranteed. The stored $5.75M is the base value."
+    }
+   ],
+   "missing": [],
+   "missingNotes": "His 2019 Jaguars rookie contract (sixth round) is not on file and was not sourced; the Jaguars' log has only the draft entry."
+  },
+  {
+   "slug": "jarquez-hunter",
+   "facts": [
+    {
+     "id": "7ba3db2636ed",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2026-08-27",
+      "event": "traded",
+      "type": "Traded",
+      "team": "MIA",
+      "headline": "Traded from the Rams to the Dolphins",
+      "description": "The Rams traded Hunter to Miami for wide receiver Tutu Atwell. Both clubs announced the agreement on August 27, 2026, pending physicals.",
+      "terms": null,
+      "trade": {
+       "from": "LAR",
+       "to": "MIA",
+       "officialDate": null,
+       "agreedDate": "2026-08-27",
+       "returnToFrom": [
+        "WR Tutu Atwell"
+       ],
+       "picks": []
+      }
+     },
+     "dates": {
+      "agreed": "2026-08-27",
+      "signed": null,
+      "officialLog": "2026-08-27"
+     },
+     "sources": [
+      {
+       "publisher": "Miami Dolphins (official transaction log)",
+       "title": "Agreed to terms with the Los Angeles Rams to acquire running back Jarquez Hunter in exchange for wide receiver Tutu Atwell, pending physicals.",
+       "url": null,
+       "date": "2026-08-27"
+      },
+      {
+       "publisher": "Los Angeles Rams (official transaction log)",
+       "title": "Agreed to terms with Miami Dolphins on trade to acquire WR Tutu Atwell in exchange for RB Jarquez Hunter.",
+       "url": null,
+       "date": "2026-08-27"
+      }
+     ],
+     "notes": "Both club logs confirm the trade and the return. Both entries say 'agreed' (Miami's adds 'pending physicals'); no separate completion date was found. Miami waiving him three days later shows the trade went through. IMPORTANT for the Bio: the Dolphins' log shows Hunter WAIVED on 2026-08-30, so currentTeam 'MIA' may be stale (waivers are checked separately)."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2025-05-30",
+     "type": "Signed",
+     "team": "LAR",
+     "headline": "Signed his rookie contract with the Rams",
+     "description": "The Rams signed their 2025 draft pick (fourth round) to his rookie contract. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "Los Angeles Rams (official transaction log)",
+       "title": "Signed 2025 draft pick RB Jarquez Hunter.",
+       "url": null,
+       "date": "2025-05-30"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "josh-oliver",
+   "facts": [
+    {
+     "id": "59fa2dc4c81e",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2021-03-17",
+      "event": "traded",
+      "type": "Traded",
+      "team": "BAL",
+      "headline": "Traded from the Jaguars to the Ravens",
+      "description": "Jacksonville traded Oliver to Baltimore for a conditional 2022 draft pick when the 2021 league year opened.",
+      "terms": null,
+      "trade": {
+       "from": "JAX",
+       "to": "BAL",
+       "officialDate": "2021-03-17",
+       "agreedDate": null,
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2022,
+         "round": null,
+         "originalTeam": "BAL",
+         "conditional": true,
+         "note": "The Ravens' log calls it an 'undisclosed' 2022 pick and PFR/Rapoport a 'conditional draft pick'; the seventh round comes only from Wikipedia and was not confirmed"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": null,
+      "signed": null,
+      "officialLog": "2021-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Baltimore Ravens (official transaction log)",
+       "title": "Acquired TE Josh Oliver from the Jacksonville Jaguars in exchange for a 2022 undisclosed draft choice.",
+       "url": null,
+       "date": "2021-03-17"
+      },
+      {
+       "publisher": "Jacksonville Jaguars (official transaction log)",
+       "title": "Josh Oliver (TE) traded to Baltimore.",
+       "url": null,
+       "date": "2021-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing Ian Rapoport)",
+       "title": "Ravens Acquire TE Josh Oliver From Jaguars",
+       "url": "https://www.profootballrumors.com/2021/03/ravens-acquire-te-josh-oliver-from-jaguars",
+       "date": "2021-03-17"
+      }
+     ],
+     "notes": "Both club logs and PFR date it 2021-03-17, not 03-18. The pick is a 2022 conditional selection; its round (seventh, per Wikipedia) is unconfirmed."
+    },
+    {
+     "id": "45233d6dbcf4",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-03-15",
+      "event": "announced",
+      "type": "Signed",
+      "team": "MIN",
+      "headline": "Signed a three-year, $21 million contract with the Vikings",
+      "description": "Oliver agreed on March 13, 2023 to a three-year, $21 million deal with $10.75 million guaranteed (up to $24 million with incentives); the Vikings announced it on March 15 when the league year opened.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 21,
+       "maxM": 24,
+       "guaranteedM": 10.75,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2023-03-13",
+      "signed": "2023-03-15",
+      "officialLog": "2023-03-15"
+     },
+     "sources": [
+      {
+       "publisher": "Minnesota Vikings (official transaction log)",
+       "title": "Agreed to terms with TE Josh Oliver, OLB Marcus Davenport and CB Byron Murphy.",
+       "url": null,
+       "date": "2023-03-15"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Vikings To Sign TE Josh Oliver",
+       "url": "https://www.profootballrumors.com/2023/03/vikings-to-sign-te-josh-oliver",
+       "date": "2023-03-13"
+      }
+     ],
+     "notes": "The stored date is the club's official date (first day of the league year); the club's wording is 'agreed to terms'. Terms match."
+    },
+    {
+     "id": "b97b0c5ed582",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-06-10",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "MIN",
+      "headline": "Agreed to a three-year, $23.25 million contract extension with the Vikings",
+      "description": "Oliver agreed on June 10, 2025 to a three-year extension with a base value of $23.25 million, up to $27.5 million, and $11.9 million in new guarantees. It runs through 2028.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 23.25,
+       "maxM": 27.5,
+       "guaranteedM": 11.9,
+       "signingBonusM": null,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-06-10",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Vikings, TE Josh Oliver Agree To Extension",
+       "url": "https://www.profootballrumors.com/2025/06/vikings-te-josh-oliver-agree-to-extension",
+       "date": "2025-06-10"
+      }
+     ],
+     "notes": "Date and base value are right, but the report is of an agreement; no signing date or club log entry was found. Reword to 'Agreed to'. Add max $27.5M and $11.9M new guarantees."
+    }
+   ],
+   "missing": [],
+   "missingNotes": "His 2019 Jaguars rookie contract (third round) is not on file and was not sourced; the Jaguars' log has only the draft entry."
+  },
+  {
+   "slug": "mecole-hardman",
+   "facts": [
+    {
+     "id": "24b5d3b7459e",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-10-18",
+      "event": "traded",
+      "type": "Traded",
+      "team": "KC",
+      "headline": "Traded from the Jets back to the Chiefs",
+      "description": "The Jets sent Hardman and a 2025 seventh-round pick to Kansas City for a 2025 sixth-round pick, reuniting him with his original team.",
+      "terms": null,
+      "trade": {
+       "from": "NYJ",
+       "to": "KC",
+       "officialDate": "2023-10-18",
+       "agreedDate": "2023-10-18",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2025,
+         "round": 6,
+         "originalTeam": "KC",
+         "conditional": false,
+         "note": "The Jets also sent a 2025 seventh-round pick to KC with Hardman"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2023-10-18",
+      "signed": null,
+      "officialLog": "2023-10-18"
+     },
+     "sources": [
+      {
+       "publisher": "Kansas City Chiefs (official transaction log)",
+       "title": "Mecole Hardman (WR) aquired via trade with New York Jets",
+       "url": null,
+       "date": "2023-10-18"
+      },
+      {
+       "publisher": "New York Jets (official transaction log)",
+       "title": "Traded WR Mecole Hardman Jr. to the Kansas City Chiefs.",
+       "url": null,
+       "date": "2023-10-18"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Jets, Chiefs Agree On Mecole Hardman Trade",
+       "url": "https://www.profootballrumors.com/2023/10/jets-chiefs-agree-on-mecole-hardman-trade",
+       "date": "2023-10-18"
+      }
+     ],
+     "notes": "Matches both club logs and Schefter's report."
+    },
+    {
+     "id": "b5ba76b1b87c",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-06-07",
+      "event": "signed",
+      "type": "Re-signed",
+      "team": "KC",
+      "headline": "Re-signed with the Chiefs on a one-year contract",
+      "description": "Hardman, who finished 2023 with Kansas City, agreed on June 6, 2024 to return on a one-year deal, and the Chiefs signed him on June 7.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-06-06",
+      "signed": "2024-06-07",
+      "officialLog": "2024-06-07"
+     },
+     "sources": [
+      {
+       "publisher": "Kansas City Chiefs (official transaction log)",
+       "title": "Mecole Hardman (WR) signed",
+       "url": null,
+       "date": "2024-06-07"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing Tom Pelissero)",
+       "title": "Chiefs To Re-Sign WR Mecole Hardman",
+       "url": "https://www.profootballrumors.com/2024/06/chiefs-to-re-sign-wr-mecole-hardman",
+       "date": "2024-06-06"
+      }
+     ],
+     "notes": "Date confirmed. He returned to the club he finished 2023 with, so the type should be 'Re-signed'. The $1.125M figure was not confirmed by any source reached, so totalM is null."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2019-05-03",
+     "type": "Signed",
+     "team": "KC",
+     "headline": "Signed his rookie contract with the Chiefs",
+     "description": "The Chiefs signed their 2019 second-round pick to his rookie contract along with the rest of their rookie class. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "Kansas City Chiefs (official transaction log)",
+       "title": "Nick Allegretti (G), Rashad Fenton (DB), Mecole Hardman (WR), Darwin Thompson (RB), ... signed",
+       "url": null,
+       "date": "2019-05-03"
+      }
+     ],
+     "confidence": "HIGH"
+    }
+   ]
+  },
+  {
+   "slug": "noah-gray",
+   "facts": [
+    {
+     "id": "2e8a418072f9",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2024-09-05",
+      "event": "agreed",
+      "type": "Contract",
+      "team": "KC",
+      "headline": "Agreed to a three-year, $19.5 million contract extension with the Chiefs",
+      "description": "Gray and the Chiefs agreed on September 5, 2024 to a three-year, $19.5 million extension through 2027 with a $6 million signing bonus and $10 million guaranteed at signing.",
+      "terms": {
+       "newYears": 3,
+       "totalM": 19.5,
+       "maxM": null,
+       "guaranteedM": 10,
+       "signingBonusM": 6,
+       "extension": true
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2024-09-05",
+      "signed": null,
+      "officialLog": null
+     },
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Chiefs Extend TE Noah Gray",
+       "url": "https://www.profootballrumors.com/2024/09/chiefs-extend-te-noah-gray",
+       "date": "2024-09-05"
+      }
+     ],
+     "notes": "Date, length and value match. The Chiefs' log has no entry, and only one non-official outlet was reached (the search budget ran out), hence MEDIUM."
+    }
+   ],
+   "missing": []
+  },
+  {
+   "slug": "trey-lance",
+   "facts": [
+    {
+     "id": "1cd582952b70",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2023-08-26",
+      "event": "traded",
+      "type": "Traded",
+      "team": "DAL",
+      "headline": "Traded from the 49ers to the Cowboys",
+      "description": "San Francisco traded Lance to Dallas for the Cowboys' 2024 fourth-round pick.",
+      "terms": null,
+      "trade": {
+       "from": "SF",
+       "to": "DAL",
+       "officialDate": "2023-08-26",
+       "agreedDate": "2023-08-26",
+       "returnToFrom": [],
+       "picks": [
+        {
+         "year": 2024,
+         "round": 4,
+         "originalTeam": "DAL",
+         "conditional": false,
+         "note": "Later used on Malik Mustapha according to Wikipedia; not independently confirmed here"
+        }
+       ]
+      }
+     },
+     "dates": {
+      "agreed": "2023-08-26",
+      "signed": null,
+      "officialLog": "2023-08-26"
+     },
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers have traded QB Trey Lance to the Cowboys in exchange for Dallas' 2024 fourth-round draft choice.",
+       "url": null,
+       "date": "2023-08-26"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Cowboys To Decline Trey Lance's Fifth-Year Option (trade recap)",
+       "url": "https://www.profootballrumors.com/2024/05/cowboys-to-decline-trey-lances-fifth-year-option",
+       "date": "2024-05-01"
+      }
+     ],
+     "notes": "Matches the official log. There is no DAL log."
+    },
+    {
+     "id": "a9b85d9efaa6",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2025-04-08",
+      "event": "signed",
+      "type": "Signed",
+      "team": "LAC",
+      "headline": "Signed a one-year contract worth up to $6.2 million with the Chargers",
+      "description": "Lance agreed on April 4, 2025 to a one-year deal worth up to $6.2 million with incentives, and the Chargers signed him on April 8.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": 6.2,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-04-04",
+      "signed": "2025-04-08",
+      "officialLog": "2025-04-08"
+     },
+     "sources": [
+      {
+       "publisher": "Los Angeles Chargers (official transaction log)",
+       "title": "Signed QB Trey Lance.",
+       "url": null,
+       "date": "2025-04-08"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Chargers To Sign QB Trey Lance",
+       "url": "https://www.profootballrumors.com/2025/04/chargers-to-sign-qb-trey-lance",
+       "date": "2025-04-04"
+      }
+     ],
+     "notes": "04-04 is the agreement; the official signing is 04-08. The stored '$2 million with $1.5 million guaranteed' was not confirmed; reports give only a one-year deal 'worth up to $6.2 million'. Use the max or confirm the base."
+    },
+    {
+     "id": "afaad3e3c8bd",
+     "verdict": "EDIT",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2026-03-19",
+      "event": "signed",
+      "type": "Re-signed",
+      "team": "LAC",
+      "headline": "Re-signed with the Chargers on a one-year contract worth up to $6.75 million",
+      "description": "Lance agreed on March 14, 2026 to return on a one-year deal worth up to $6.75 million with $2 million guaranteed at signing (an $800,000 signing bonus plus $1.2 million of base salary); the Chargers re-signed him on March 19.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": 6.75,
+       "guaranteedM": 2,
+       "signingBonusM": 0.8,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-14",
+      "signed": "2026-03-19",
+      "officialLog": "2026-03-19"
+     },
+     "sources": [
+      {
+       "publisher": "Los Angeles Chargers (official transaction log)",
+       "title": "Re-signed QB Trey Lance.",
+       "url": null,
+       "date": "2026-03-19"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Trey Lance player news (Chargers re-signing)",
+       "url": "https://www.profootballrumors.com/players/trey-lance",
+       "date": "2026-03-14"
+      }
+     ],
+     "notes": "03-14 is the agreement; the official re-signing is 03-19. $6.75M is the maximum ('up to'), not the contract value; $2M is guaranteed."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2021-07-27",
+     "type": "Signed",
+     "team": "SF",
+     "headline": "Signed a four-year rookie contract with the 49ers",
+     "description": "The No. 3 overall pick signed his four-year rookie contract with a fifth-year option. The terms were not verified.",
+     "sources": [
+      {
+       "publisher": "San Francisco 49ers (official transaction log)",
+       "title": "The 49ers today have signed QB Trey Lance to a four-year deal.",
+       "url": null,
+       "date": "2021-07-27"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2024-05-01",
+     "type": "Contract",
+     "team": "DAL",
+     "headline": "Cowboys declined the fifth-year option on his rookie contract",
+     "description": "Dallas declined Lance's $22.41 million fifth-year option for 2025, making him a free agent after the 2024 season.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Todd Archer)",
+       "title": "Cowboys To Decline Trey Lance's Fifth-Year Option",
+       "url": "https://www.profootballrumors.com/2024/05/cowboys-to-decline-trey-lances-fifth-year-option",
+       "date": "2024-05-01"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ]
+  },
+  {
+   "slug": "zach-wilson",
+   "facts": [
+    {
+     "id": "c64e6863cac9",
+     "verdict": "APPROVE",
+     "confidence": "HIGH",
+     "verified": {
+      "date": "2025-03-17",
+      "event": "signed",
+      "type": "Signed",
+      "team": "MIA",
+      "headline": "Signed a one-year, $6 million contract with the Dolphins",
+      "description": "Wilson agreed on March 10, 2025 to a fully guaranteed one-year, $6 million deal (up to $10 million) to back up Tua Tagovailoa; Miami signed him on March 17.",
+      "terms": {
+       "newYears": 1,
+       "totalM": 6,
+       "maxM": 10,
+       "guaranteedM": 6,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2025-03-10",
+      "signed": "2025-03-17",
+      "officialLog": "2025-03-17"
+     },
+     "sources": [
+      {
+       "publisher": "Miami Dolphins (official transaction log)",
+       "title": "Signed quarterback Zach Wilson as an unrestricted free agent.",
+       "url": null,
+       "date": "2025-03-17"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Dolphins To Sign QB Zach Wilson",
+       "url": "https://www.profootballrumors.com/2025/03/dolphins-to-sign-qb-zach-wilson",
+       "date": "2025-03-10"
+      }
+     ],
+     "notes": "Matches the official log; the deal is fully guaranteed with a $10M max."
+    },
+    {
+     "id": "4413fd192afb",
+     "verdict": "APPROVE",
+     "confidence": "MEDIUM",
+     "verified": {
+      "date": "2026-03-26",
+      "event": "signed",
+      "type": "Signed",
+      "team": "NO",
+      "headline": "Signed a one-year contract with the Saints",
+      "description": "Wilson agreed on March 24, 2026 to a one-year deal to compete for the backup job behind Tyler Shough, and the Saints signed him on March 26.",
+      "terms": {
+       "newYears": 1,
+       "totalM": null,
+       "maxM": null,
+       "guaranteedM": null,
+       "signingBonusM": null,
+       "extension": false
+      },
+      "trade": null
+     },
+     "dates": {
+      "agreed": "2026-03-24",
+      "signed": "2026-03-26",
+      "officialLog": "2026-03-26"
+     },
+     "sources": [
+      {
+       "publisher": "New Orleans Saints (official transaction log)",
+       "title": "Signed QB Zach Wilson to a one-year contract.",
+       "url": null,
+       "date": "2026-03-26"
+      },
+      {
+       "publisher": "Pro Football Rumors (citing ESPN's Adam Schefter)",
+       "title": "Saints To Sign QB Zach Wilson",
+       "url": "https://www.profootballrumors.com/2026/03/saints-to-sign-qb-zach-wilson",
+       "date": "2026-03-24"
+      }
+     ],
+     "notes": "Date, team and length are confirmed. The $1.4M value was not confirmed by any source reached, so totalM is null."
+    }
+   ],
+   "missing": [
+    {
+     "date": "2021-07-28",
+     "type": "Signed",
+     "team": "NYJ",
+     "headline": "Signed a four-year, $35.15 million rookie contract with the Jets",
+     "description": "The No. 2 overall pick signed his fully guaranteed four-year rookie deal (about $35.15 million) with a fifth-year option.",
+     "sources": [
+      {
+       "publisher": "New York Jets (official transaction log)",
+       "title": "Signed QB Zach Wilson.",
+       "url": null,
+       "date": "2021-07-28"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Zach Wilson player news (rookie deal value)",
+       "url": "https://www.profootballrumors.com/players/zach-wilson/page/3",
+       "date": null
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2024-04-23",
+     "type": "Traded",
+     "team": "DEN",
+     "headline": "Traded from the Jets to the Broncos",
+     "description": "Agreed April 22, 2024: the Jets sent Wilson and a 2024 seventh-round pick (No. 256) to Denver for a 2024 sixth-round pick (No. 203), and the clubs split his $5.45 million 2024 pay. The Broncos' log records the trade April 23 and the Jets' April 24.",
+     "sources": [
+      {
+       "publisher": "Denver Broncos (official transaction log)",
+       "title": "Acquired QB Zach Wilson and a 2024 seventh-round pick from the N.Y. Jets in exchange for a 2024 sixth-round pick.",
+       "url": null,
+       "date": "2024-04-23"
+      },
+      {
+       "publisher": "New York Jets (official transaction log)",
+       "title": "Traded QB Zach Wilson to the Denver Broncos.",
+       "url": null,
+       "date": "2024-04-24"
+      },
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Jets To Trade QB Zach Wilson To Broncos",
+       "url": "https://www.profootballrumors.com/2024/04/jets-to-trade-qb-zach-wilson-to-broncos",
+       "date": "2024-04-22"
+      }
+     ],
+     "confidence": "HIGH"
+    },
+    {
+     "date": "2024-04-30",
+     "type": "Contract",
+     "team": "DEN",
+     "headline": "Broncos declined the fifth-year option on his rookie contract",
+     "description": "Denver declined Wilson's $22.41 million fifth-year option for 2025, making him a free agent after the 2024 season.",
+     "sources": [
+      {
+       "publisher": "Pro Football Rumors",
+       "title": "Broncos To Decline Zach Wilson's Fifth-Year Option",
+       "url": "https://www.profootballrumors.com/2024/04/broncos-to-decline-zach-wilsons-fifth-year-option",
+       "date": "2024-04-30"
+      }
+     ],
+     "confidence": "MEDIUM"
+    }
+   ]
+  }
+ ]
+}

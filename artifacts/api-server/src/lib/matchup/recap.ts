@@ -28,6 +28,21 @@ import { scoreboardResult, type ScoreboardGame, type ScoreboardTeam } from "./sc
 export const START_SIT_URL =
   "https://statchasers.com/redraft-command/who-should-i-start";
 
+/** Redraft Command's tools the matchup page links, each at its final address. */
+export const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
+export const PROJECTIONS_URL = "https://statchasers.com/redraft-command/fantasy-football-projections";
+export const TRADE_CALCULATOR_URL = "https://statchasers.com/redraft-command/fantasy-football-trade-calculator";
+export const LEAGUE_ANALYZER_URL = "https://statchasers.com/redraft-command/fantasy-football-league-analyzer";
+
+/**
+ * A start/sit comparison page: `<a>-or-<b>`, the slugs in alphabetical order
+ * so the same two players always get the same address from any game.
+ */
+export function startSitCompareUrl(slugA: string, slugB: string): string {
+  const [first, second] = [slugA, slugB].sort();
+  return `${START_SIT_URL}/${encodeURIComponent(first!)}-or-${encodeURIComponent(second!)}`;
+}
+
 /** One of the winner's games in the postseason the recapped game belongs to. */
 export interface RecapPostseasonGame {
   /** "Wild Card", "Divisional Round", "Super Bowl". */

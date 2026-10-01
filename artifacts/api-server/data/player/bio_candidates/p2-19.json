@@ -1,0 +1,107 @@
+[
+  {
+    "slug": "kylen-granson",
+    "facts": []
+  },
+  {
+    "slug": "lan-larison",
+    "facts": []
+  },
+  {
+    "slug": "lew-nichols",
+    "facts": []
+  },
+  {
+    "slug": "liljordan-humphrey",
+    "facts": []
+  },
+  {
+    "slug": "lucas-krull",
+    "facts": []
+  },
+  {
+    "slug": "luke-farrell",
+    "facts": []
+  },
+  {
+    "slug": "luke-mccaffrey",
+    "facts": []
+  },
+  {
+    "slug": "luke-musgrave",
+    "facts": []
+  },
+  {
+    "slug": "malachi-corley",
+    "facts": []
+  },
+  {
+    "slug": "marquez-valdes-scantling",
+    "facts": []
+  },
+  {
+    "slug": "mason-rudolph",
+    "facts": []
+  },
+  {
+    "slug": "mason-tipton",
+    "facts": []
+  },
+  {
+    "slug": "mecole-hardman",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-06-07",
+        "team": "KC",
+        "quote": "In the ensuing offseason Hardman entered free-agency, and ultimately returned to the Chiefs for the 2024 season after signing a one-year, $1.125 million contract on June 7, 2024.",
+        "terms": {
+          "years": 1,
+          "totalM": 1.125
+        }
+      }
+    ]
+  },
+  {
+    "slug": "michael-carter",
+    "facts": []
+  },
+  {
+    "slug": "miles-sanders",
+    "facts": []
+  },
+  {
+    "slug": "mitchell-trubisky",
+    "facts": []
+  },
+  {
+    "slug": "mo-alie-cox",
+    "facts": [
+      {
+        "type": "Tender",
+        "date": "2021-05-03",
+        "team": "IND",
+        "quote": "The Colts placed a second-round restricted free agent tender on March 17, 2021. He signed the one-year contract on May 3."
+      }
+    ]
+  },
+  {
+    "slug": "myles-price",
+    "facts": []
+  },
+  {
+    "slug": "nate-adkins",
+    "facts": []
+  },
+  {
+    "slug": "nick-chubb",
+    "facts": [
+      {
+        "type": "Activated",
+        "date": "2020-11-14",
+        "team": "CLE",
+        "quote": "Chubb was activated from injured reserve on November 14, 2020. During Week 10 against the Houston Texans, in his first game back from injury, Chubb recorded 19 carries for 126 yards and a touchdown, and sealed the win for the Browns with a 59-yard run late in the fourth quarter."
+      }
+    ]
+  }
+]

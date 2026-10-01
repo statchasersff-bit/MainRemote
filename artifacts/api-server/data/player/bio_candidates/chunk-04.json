@@ -1,0 +1,528 @@
+[
+  {
+    "slug": "kaimi-fairbairn",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2024-03-06",
+        "team": "HOU",
+        "quote": "On March 6, 2024, Fairbairn signed a three-year, $15.9 million contract extension with the Texans through 2026.",
+        "terms": {
+          "years": 3,
+          "totalM": 15.9
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2026-03-10",
+        "team": "HOU",
+        "quote": "On March 10, 2026, Fairbairn signed a two-year, $13 million contract extension with the Texans, making him the highest-paid kicker in the league.",
+        "terms": {
+          "years": 2,
+          "totalM": 13
+        }
+      }
+    ]
+  },
+  {
+    "slug": "cam-little",
+    "facts": []
+  },
+  {
+    "slug": "dk-metcalf",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2019-05-22",
+        "team": "SEA",
+        "quote": "On May 22, 2019, Metcalf signed a four-year deal with the Seahawks worth $4.6 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 4.6
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2022-07-28",
+        "team": "SEA",
+        "quote": "On July 28, 2022, Metcalf and the Seahawks agreed to terms on a three-year, $72 million extension with $58.2 million guaranteed and a $30 million signing bonus.",
+        "terms": {
+          "years": 3,
+          "totalM": 72
+        }
+      }
+    ]
+  },
+  {
+    "slug": "isaiah-likely",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-03-12",
+        "team": "NYG",
+        "quote": "On March 12, 2026, Likely signed a three-year, $40 million contract with the New York Giants.",
+        "terms": {
+          "years": 3,
+          "totalM": 40
+        }
+      }
+    ]
+  },
+  {
+    "slug": "rhamondre-stevenson",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-05-19",
+        "team": "NE",
+        "quote": "He signed his four-year rookie contract with New England on May 19, 2021."
+      },
+      {
+        "type": "Contract",
+        "date": "2024-06-20",
+        "team": "NE",
+        "quote": "On June 20, 2024, Stevenson signed a four-year, $36 million contract extension that included $17 million guaranteed with the Patriots.",
+        "terms": {
+          "years": 4,
+          "totalM": 36
+        }
+      }
+    ]
+  },
+  {
+    "slug": "trevor-lawrence",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-07-05",
+        "team": "JAX",
+        "quote": "After undergoing surgery to repair a torn labrum in his left shoulder, Lawrence was officially selected first overall by the Jacksonville Jaguars, which had finished with a league-worst 1–15 record the previous season. On July 5, 2021, he signed his four-year rookie contract, worth $36.8 million with a $24.1 million signing bonus.",
+        "terms": {
+          "years": 4,
+          "totalM": 36.8
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jason-myers",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2015-03-03",
+        "team": "JAX",
+        "quote": "On March 3, 2015, Myers signed with the Jaguars."
+      },
+      {
+        "type": "Released",
+        "date": "2017-10-17",
+        "team": "JAX",
+        "quote": "On October 17, 2017, after six games, Myers was released by the Jaguars."
+      },
+      {
+        "type": "Signed",
+        "date": "2018-01-03",
+        "team": "SEA",
+        "quote": "On January 3, 2018, Myers signed with the Seattle Seahawks."
+      },
+      {
+        "type": "Claimed",
+        "date": "2018-08-21",
+        "team": "NYJ",
+        "quote": "On August 21, 2018, Myers was claimed off waivers by the New York Jets."
+      },
+      {
+        "type": "Signed",
+        "date": "2019-03-14",
+        "team": "SEA",
+        "quote": "On March 14, 2019, Myers signed a four-year, $15.45 million contract with the Seahawks.",
+        "terms": {
+          "years": 4,
+          "totalM": 15.45
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2023-01-18",
+        "team": "SEA",
+        "quote": "On January 18, 2023, Myers signed a four-year contract extension with the Seahawks which made him the second-highest paid kicker in the league behind only Justin Tucker."
+      }
+    ]
+  },
+  {
+    "slug": "rome-odunze",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-07-16",
+        "team": "CHI",
+        "quote": "On July 16, 2024, Odunze signed his four-year rookie contract with the Bears worth $22.7 million.",
+        "terms": {
+          "years": 4,
+          "totalM": 22.7
+        }
+      }
+    ]
+  },
+  {
+    "slug": "matthew-stafford",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2013-07-07",
+        "team": "DET",
+        "quote": "On July 7, 2013, Stafford agreed to a three-year, $53 million extension with the Lions with $41.5 million guaranteed through 2017.",
+        "terms": {
+          "years": 3,
+          "totalM": 53
+        }
+      },
+      {
+        "type": "Placed on IR",
+        "date": "2019-12-18",
+        "team": "DET",
+        "quote": "On December 18, 2019, he was placed on injured reserve after missing the previous six games and the Lions missing the playoffs for the third consecutive season."
+      },
+      {
+        "type": "Traded",
+        "date": "2021-03-18",
+        "team": "LAR",
+        "quote": "On March 18, 2021, Stafford was traded to the Los Angeles Rams in a package involving Jared Goff, a 2021 third-round pick and two first-round picks in 2022 and 2023."
+      },
+      {
+        "type": "Contract",
+        "date": "2022-03-19",
+        "team": "LAR",
+        "quote": "On March 19, 2022, Stafford signed a four-year, $160 million extension with the Rams.",
+        "terms": {
+          "years": 4,
+          "totalM": 160
+        }
+      },
+      {
+        "type": "Placed on IR",
+        "date": "2022-12-05",
+        "team": "LAR",
+        "quote": "Following the Rams' Week 13 loss to the Seahawks, head coach Sean McVay revealed that Stafford suffered a spinal cord contusion which would end his season. Stafford was placed on injured reserve on December 5, 2022."
+      },
+      {
+        "type": "Contract",
+        "date": "2026-05-21",
+        "team": "LAR",
+        "quote": "On May 21, 2026, Stafford signed a one-year, $55 million contract extension with the Rams.",
+        "terms": {
+          "years": 1,
+          "totalM": 55
+        }
+      }
+    ]
+  },
+  {
+    "slug": "harold-fannin",
+    "facts": []
+  },
+  {
+    "slug": "stefon-diggs",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2018-07-31",
+        "team": "MIN",
+        "quote": "On July 31, 2018, Diggs signed a five-year, $72 million contract extension with the Vikings through the 2023 season.",
+        "terms": {
+          "years": 5,
+          "totalM": 72
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2020-03-20",
+        "team": "BUF",
+        "quote": "On March 20, 2020, the Vikings traded Diggs and their seventh-round draft pick to the Buffalo Bills for their first, fifth, and sixth-round picks in the 2020 NFL draft, in addition to a fourth-round pick in the 2021 NFL draft."
+      },
+      {
+        "type": "Contract",
+        "date": "2022-04-06",
+        "team": "BUF",
+        "quote": "On April 6, 2022, Diggs signed a four-year, $96 million contract extension with the Bills through the 2027 season.",
+        "terms": {
+          "years": 4,
+          "totalM": 96
+        }
+      },
+      {
+        "type": "Traded",
+        "date": "2024-04-03",
+        "team": "HOU",
+        "quote": "On April 3, 2024, Diggs, along with a sixth-round selection in the 2024 NFL draft and a fifth-round selection in the 2025 NFL draft, was traded to the Houston Texans in exchange for a second-round selection originally acquired from the Minnesota Vikings in the 2025 NFL draft."
+      },
+      {
+        "type": "Signed",
+        "date": "2025-03-28",
+        "team": "NE",
+        "quote": "On March 28, 2025, Diggs signed a three-year, $63.5 million contract with the New England Patriots.",
+        "terms": {
+          "years": 3,
+          "totalM": 63.5
+        }
+      },
+      {
+        "type": "Signed",
+        "date": "2026-08-07",
+        "team": "WAS",
+        "quote": "On August 7, 2026, Diggs signed a one-year contract worth up to $12 million with the Washington Commanders.",
+        "terms": {
+          "years": 1,
+          "totalM": 12
+        }
+      }
+    ]
+  },
+  {
+    "slug": "aaron-jones",
+    "facts": [
+      {
+        "type": "Released",
+        "date": "2024-03-11",
+        "team": "GB",
+        "quote": "On March 11, 2024, Jones was released by the Packers after seven seasons."
+      },
+      {
+        "type": "Signed",
+        "date": "2024-03-12",
+        "team": "MIN",
+        "quote": "On March 12, 2024, Jones signed a one-year contract with the Minnesota Vikings."
+      },
+      {
+        "type": "Re-signed",
+        "date": "2025-03-09",
+        "team": "MIN",
+        "quote": "On March 9, 2025, Jones re-signed with the Vikings on a two-year, $20 million contract.",
+        "terms": {
+          "years": 2,
+          "totalM": 20
+        }
+      }
+    ]
+  },
+  {
+    "slug": "michael-wilson",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2026-09-03",
+        "team": "ARI",
+        "quote": "On September 3, 2026, Wilson signed a three-year, $75 million contract extension with the Cardinals.",
+        "terms": {
+          "years": 3,
+          "totalM": 75
+        }
+      }
+    ]
+  },
+  {
+    "slug": "jared-goff",
+    "facts": [
+      {
+        "type": "Traded",
+        "date": "2021-03-18",
+        "team": "DET",
+        "quote": "On March 18, 2021, Goff was traded alongside the Rams' first round draft picks in 2022 and 2023, and a 2021 third-round pick to the Detroit Lions in exchange for quarterback Matthew Stafford."
+      },
+      {
+        "type": "Contract",
+        "date": "2024-05-16",
+        "team": "DET",
+        "quote": "On May 16, 2024, Goff signed a four-year, $212 million contract extension, with $170 million guaranteed, keeping him under contract with the Lions through the 2027 season, with an option for 2028.",
+        "terms": {
+          "years": 4,
+          "totalM": 212
+        }
+      }
+    ]
+  },
+  {
+    "slug": "josh-jacobs",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2019-07-09",
+        "team": "LV",
+        "quote": "The Oakland Raiders selected Jacobs in the first round with the 24th overall pick in the 2019 NFL draft,  a pick that was acquired from the Chicago Bears in the September 2018 Khalil Mack trade. He signed his four-year rookie contract with the team on July 9, 2019."
+      },
+      {
+        "type": "Signed",
+        "date": "2024-03-14",
+        "team": "GB",
+        "quote": "On March 14, 2024, Jacobs signed a four-year, $48 million contract with the Green Bay Packers.",
+        "terms": {
+          "years": 4,
+          "totalM": 48
+        }
+      }
+    ]
+  },
+  {
+    "slug": "devon-achane",
+    "facts": [
+      {
+        "type": "Contract",
+        "date": "2026-05-13",
+        "team": "MIA",
+        "quote": "On May 13, 2026, Achane signed a four-year, $64 million contract extension with the Dolphins.",
+        "terms": {
+          "years": 4,
+          "totalM": 64
+        }
+      }
+    ]
+  },
+  {
+    "slug": "tony-pollard",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2024-03-14",
+        "team": "TEN",
+        "quote": "Pollard signed a three-year, $21.75 million deal with the Tennessee Titans on March 14, 2024, and was named the starting running back for the 2024 season.",
+        "terms": {
+          "years": 3,
+          "totalM": 21.75
+        }
+      }
+    ]
+  },
+  {
+    "slug": "tyler-shough",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-07-21",
+        "team": "NO",
+        "quote": "After the Saints' former starting quarterback Derek Carr announced his retirement after the draft, the team's head coach Kellen Moore declared that Shough, Spencer Rattler, and Jake Haener would compete for the starting role. On July 21, 2025, Shough signed a four-year contract with the team."
+      }
+    ]
+  },
+  {
+    "slug": "carnell-tate",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2026-05-08",
+        "team": "TEN",
+        "quote": "On May 8, 2026, he signed a four-year, $51.1 million contract, which included a $33.6 million signing bonus, with the Titans.",
+        "terms": {
+          "years": 4,
+          "totalM": 51.1
+        }
+      }
+    ]
+  },
+  {
+    "slug": "deebo-samuel",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2019-07-25",
+        "team": "SF",
+        "quote": "Samuel was selected by the San Francisco 49ers in the second round (36th overall) of the 2019 NFL draft. He signed a four-year contract with the 49ers on July 25, 2019."
+      },
+      {
+        "type": "Traded",
+        "date": "2025-03-12",
+        "team": "WAS",
+        "quote": "On March 12, 2025, Samuel was traded to the Washington Commanders for a fifth-round selection in the 2025 NFL draft."
+      },
+      {
+        "type": "Signed",
+        "date": "2026-08-01",
+        "team": "SF",
+        "quote": "On August 1, 2026, Samuel signed a one-year, $7 million contract with the San Francisco 49ers.",
+        "terms": {
+          "years": 1,
+          "totalM": 7
+        }
+      }
+    ]
+  },
+  {
+    "slug": "josh-downs",
+    "facts": []
+  },
+  {
+    "slug": "matthew-golden",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-05-19",
+        "team": "GB",
+        "quote": "He was the first wide receiver selected in the first round by the Packers since Javon Walker in 2002. Golden signed his four-year rookie contract on May 19, 2025 worth $17.58 million fully guaranteed.",
+        "terms": {
+          "years": 4,
+          "totalM": 17.58
+        }
+      }
+    ]
+  },
+  {
+    "slug": "mark-andrews",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2018-05-16",
+        "team": "BAL",
+        "quote": "On May 16, 2018, the Baltimore Ravens signed Andrews to a four-year, $3.45 million contract that includes a signing bonus of $836,660.",
+        "terms": {
+          "years": 4,
+          "totalM": 3.45
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2021-09-06",
+        "team": "BAL",
+        "quote": "On September 6, 2021, the Ravens signed Andrews to a four-year, $56 million extension including $37.6 million guaranteed.",
+        "terms": {
+          "years": 4,
+          "totalM": 56
+        }
+      },
+      {
+        "type": "Contract",
+        "date": "2025-12-03",
+        "team": "BAL",
+        "quote": "On December 3, 2025, Andrews agreed to a three-year, $39.3 million contract extension with the Ravens.",
+        "terms": {
+          "years": 3,
+          "totalM": 39.3
+        }
+      }
+    ]
+  },
+  {
+    "slug": "rj-harvey",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2025-07-17",
+        "team": "DEN",
+        "quote": "Harvey was selected by the Denver Broncos in the second round (60th overall) in the 2025 NFL draft. On July 17, 2025, Harvey signed his four-year rookie contract."
+      }
+    ]
+  },
+  {
+    "slug": "kyle-pitts",
+    "facts": [
+      {
+        "type": "Signed",
+        "date": "2021-06-29",
+        "team": "ATL",
+        "quote": "Pitts was selected in the first round with the fourth overall by the Atlanta Falcons in the 2021 NFL draft, making him the highest drafted tight end in NFL history. He signed his four-year rookie contract, worth $32.9 million, on June 29, 2021.",
+        "terms": {
+          "years": 4,
+          "totalM": 32.9
+        }
+      }
+    ]
+  }
+]

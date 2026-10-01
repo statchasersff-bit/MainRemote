@@ -97,7 +97,9 @@ import { renderOverviewSections } from "./player/overview";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { outlookTabParts } from "./player/outlook-tab";
 import { injuryTabParts } from "./player/injury-tab";
+import { renderBioTab } from "./player/bio-tab";
 import { renderNewsTab } from "./player/news-tab";
+import { renderGamelogStory } from "./player/gamelog-sections";
 import { renderFaqSection, selectFaq, tabHref } from "./player/faq-engine";
 import { gameLogPool, statsPool } from "./player/faq-pools";
 import { titleCase } from "./player/title-case";
@@ -1280,21 +1282,40 @@ function renderBio(
 ): string {
   if (data.bioProfile.empty) return "";
 
-  const narrative = renderBioNarrative(data);
-  const timeline = renderCareerTimeline(data);
+  // mak's Bio spec (2026-09-30) replaces the old narrative and career
+  // timeline: two bios and two timelines on one page confuse readers and
+  // split the page's subject. A player with no fact record keeps the old ones.
+  const spec = renderBioTab(data, options);
+  const narrative = spec ? "" : renderBioNarrative(data);
+  const timeline = spec ? "" : renderCareerTimeline(data);
   // The Bio tab's FAQ owns the evergreen entity searches (faq-engine.ts).
   const statsHref = tabHref(data, options, "stats");
-  const items = selectFaq(
-    data.bioProfile.faq.map((f) => ({
-      key: f.key,
-      q: f.question,
-      a: f.answer,
-      link: f.key === "experience" || f.key === "teams" ? { href: statsHref, text: "View his career statistics." } : null,
-    })),
-  );
+  const pool = data.bioProfile.faq.map((f) => ({
+    key: f.key,
+    q: f.question,
+    a: f.answer,
+    link: f.key === "experience" || f.key === "teams" ? { href: statsHref, text: "View his career statistics." } : null,
+  }));
+  // Spec 2.8 question 7 (approved by mak 2026-09-30), asked only when true.
+  // "Member of" the roster, never "played in" the game: the source is the
+  // Super Bowl week's roster (bio-tab-data.ts).
+  const rings = data.bioPage?.superBowls ?? [];
+  if (rings.length) {
+    const each = rings.map((b) => `the ${b.team} team that won Super Bowl ${b.name} after the ${b.season} season`);
+    const at = pool.findIndex((f) => f.key === "teams");
+    pool.splice(at < 0 ? pool.length : at + 1, 0, {
+      key: "super-bowl",
+      q: `Has ${data.player.name} won a Super Bowl?`,
+      a:
+        `Yes${rings.length > 1 ? `, ${rings.length} times` : ""}. ${data.player.name} was a member of ` +
+        `${each.length > 1 ? `${each.slice(0, -1).join(", ")} and ${each[each.length - 1]}` : each[0]}.`,
+      link: null,
+    });
+  }
+  const items = selectFaq(pool);
   const faq = items.length ? `<div class="scp-ox">${renderFaqSection("bio", data, items, options)}</div>` : "";
 
-  if (!narrative && !timeline && !faq) return "";
+  if (!narrative && !timeline && !faq && !spec) return "";
 
   // The tab's heading, on the scoped URL as well as in the full profile. The
   // header's H1 subtitle names the tab too, in a shorter phrase; this is the
@@ -1303,7 +1324,8 @@ function renderBio(
   // No subtitle: it listed the facts of the table directly beneath it.
   const heading = h2(`${data.player.name} Bio`);
 
-  return heading + narrative + timeline + faq;
+  // The FAQ stays the tab's last block.
+  return heading + narrative + timeline + spec + faq;
 }
 
 /* ------------------------------------------------------------------ outlook */
@@ -2460,6 +2482,10 @@ function renderGameLog(
     renderLogTiles(current) +
     renderLogIntro(current) +
     renderWeeklyLog(current) +
+    // The two sections of mak's 2026-10-01 Game Log spec, directly after the
+    // week-by-week table as it places them: the finish ladder and the per-game
+    // cards. Everything below them predates the spec and stays.
+    renderGamelogStory(current) +
     renderLogChart(current) +
     renderRecentGames(current) +
     renderUpcoming(current, options) +
@@ -2529,6 +2555,9 @@ function renderArchiveSeason(
     renderLogTiles(data) +
     renderLogIntro(data) +
     renderWeeklyLog(data) +
+    // The spec's two sections follow the pinned year's table too, in the past
+    // tense; seasons with no stored box scores render neither, silently.
+    renderGamelogStory(data, { archive: true }) +
     `</section>`
   );
 }

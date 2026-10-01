@@ -91,6 +91,8 @@ const WILD_CARD = {
   links: {
     redraftCommand: "https://statchasers.com/redraft-command/",
     startSit: "https://statchasers.com/redraft-command/who-should-i-start",
+    projections: "https://statchasers.com/redraft-command/fantasy-football-projections",
+    tradeCalculator: "https://statchasers.com/redraft-command/fantasy-football-trade-calculator",
     pointsAllowed: "https://statchasers.com/nfl/fantasy-points-allowed-by-position/",
     strengthOfSchedule: "https://statchasers.com/nfl/fantasy-football-strength-of-schedule/",
   },
@@ -226,8 +228,10 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     const cards = [...doc.querySelectorAll("a.sct-rb-tool")];
     assert.deepEqual(cards.map((a) => a.getAttribute("data-cta")), [
       "fantasy-outlook-startsit",
+      "fantasy-outlook-projections",
       "fantasy-outlook-fpa",
       "fantasy-outlook-sos",
+      "fantasy-outlook-redraft",
     ]);
     assert.match(text(cards[0]), /start in Week 6\?/);
   });

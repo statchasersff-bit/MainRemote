@@ -42,6 +42,8 @@ import {
   resolveSlugAlias,
 } from "../lib/player/data";
 import { indexedPlayers, playerDirectory } from "../lib/player/player-data";
+import { bioIndexable } from "../lib/player/bio-tab-data";
+import { loadBioSources } from "../lib/player/data";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -368,6 +370,9 @@ router.get("/embed/players.json", (_req, res) => {
     // second one at the new address leaves the old page published, competing
     // with it, and carrying every link anyone ever made.
     previousSlugs: previousSlugsFor(row.id),
+    // The Bio spec's index rule (2.11): the plugin leaves /bio/ out of the
+    // sitemap for a player whose bio page is noindex.
+    bioIndex: bioIndexable(row.team !== null, loadBioSources().players[row.slug] ?? null),
   }));
 
   res

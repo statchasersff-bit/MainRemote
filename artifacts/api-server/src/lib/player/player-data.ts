@@ -36,6 +36,7 @@ import {
 import { itemTimestamp, searchKey, type NewsItem } from "../render";
 import { getTeamByAbbreviation, TEAMS, type NflTeam } from "../team/teams";
 import { buildBioProfile, type BioProfile } from "./bio";
+import { buildBioPage, type BioPageFacts } from "./bio-tab-data";
 import {
   buildUpcoming,
   matchupTable,
@@ -68,6 +69,7 @@ import {
   loadIndexedSlugs,
   getPlayerBySlug,
   loadBioFacts,
+  loadBioSources,
   loadBios,
   loadDraft,
   loadDynastyRankings,
@@ -126,7 +128,7 @@ import {
   type RegionTally,
   type RiskRow,
 } from "./injury";
-import { type ScoringFormat } from "./scoring";
+import { getEntryPoints, type ScoringFormat } from "./scoring";
 import type {
   CareerProfile,
   CareerSeasonStat,
@@ -407,6 +409,8 @@ export interface PlayerPageData {
    * its inputs disjoint from the rest is what keeps it that way.
    */
   bioProfile: BioProfile;
+  /** The Bio spec's sections (bio-tab-data.ts): sourced facts + stops from the logs. Null without a fact record. */
+  bioPage: BioPageFacts | null;
   fantasyOutlook2026: FantasyOutlook2026 | null;
 
   /**
@@ -1250,6 +1254,22 @@ export async function getPlayerPageData(
       currentSeason: seasons[0] ?? season,
       now: new Date(),
     }),
+    bioPage: (() => {
+      const doc = loadBioSources();
+      return buildBioPage({
+        name: player.name,
+        position: player.position ?? null,
+        number: player.number ?? null,
+        team,
+        entry: doc.players[player.slug] ?? null,
+        sources: doc.sources,
+        changedAt: doc.changedAt ?? doc.generatedAt ?? null,
+        logCareer,
+        currentSeason: seasons[0] ?? season,
+        points: (e) => getEntryPoints(e.stats, format),
+        now: new Date(),
+      });
+    })(),
     fantasyOutlook2026: outlook2026,
     outlookDrivers: drivers,
 
