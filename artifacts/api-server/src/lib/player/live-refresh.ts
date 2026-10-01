@@ -38,7 +38,7 @@
  *
  * ## And once a day, the rest of the weekly rebuild
  *
- * At 14:00 UTC (and once per boot, after the game logs), the builders that
+ * At 11:00 UTC (and once per boot, after the game logs), the builders that
  * used to be the manual weekly checklist, in dependency order:
  *
  *   1. new signings and trades — buildPlayersIndex.js (Sleeper), then
@@ -95,8 +95,14 @@ import { invalidateRankingsCache } from "../rankings/rankings-data";
 import { dataPath } from "../data-dir";
 
 const TICK_MS = 10 * 60 * 1000;
-/** When the daily rebuild runs. After Sleeper's and nflverse's overnight posts. */
-const DAILY_UTC_HOUR = 14;
+/**
+ * When the daily rebuild runs: 7am ET in the DST season (6am once the clocks
+ * fall back — still quiet, still after Sleeper's and nflverse's overnight
+ * posts). Moved from 14:00 UTC so the rebuild no longer competes with
+ * mid-morning reader traffic for the VM's memory; a week nflverse posts later
+ * the same day is caught by the FPA backstop and the next morning's run.
+ */
+const DAILY_UTC_HOUR = 11;
 /** Per daily step: the nflverse builders download several files each. */
 const DAILY_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 /** After a failed run, before the next attempt. */
@@ -167,6 +173,34 @@ export function playerRefreshStatus(): PlayerRefreshStatus {
   };
 }
 
+/**
+ * The VM's available memory in MB. /proc/meminfo's MemAvailable, which counts
+ * reclaimable cache the OOM killer would free first; os.freemem() does not and
+ * reads low on a box that is merely caching files.
+ */
+function availableMemMb(): number {
+  try {
+    const match = /MemAvailable:\s+(\d+) kB/.exec(fs.readFileSync("/proc/meminfo", "utf8"));
+    if (match) return Math.round(Number(match[1]) / 1024);
+  } catch {
+    // Not Linux, or /proc unreadable: -1 below.
+  }
+  return -1;
+}
+
+/**
+ * A breadcrumb the deployment's Logs pane can see. The app's own logging goes
+ * through pino's worker files, which that pane does not show — only stderr
+ * reaches it. When the VM is OOM-killed nothing gets to say so, so each
+ * refresh step writes a line before and after itself: the step that was
+ * running when the log went silent is the one that was killed.
+ */
+function refreshNote(event: string, what: string): void {
+  process.stderr.write(
+    `[refresh] ${new Date().toISOString()} ${event} ${what} (mem avail ${availableMemMb()}MB)\n`,
+  );
+}
+
 function runBuilder(
   script: string,
   args: string[],
@@ -177,11 +211,13 @@ function runBuilder(
       reject(new Error("scripts/ not found beside the server"));
       return;
     }
+    refreshNote("start", script);
     execFile(
       process.execPath,
       [path.join(SCRIPTS_DIR, script), ...args],
       { timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024 },
       (err, _stdout, stderr) => {
+        refreshNote(err ? "failed" : "done", script);
         if (err) reject(new Error(`${script}: ${err.message}${stderr ? ` — ${stderr.slice(-500)}` : ""}`));
         else resolve();
       },
@@ -205,13 +241,18 @@ export function reloadPlayerStats(): void {
  * nflverse code stays off the startup path, as fpa-ssr.ts does. True on success.
  */
 async function refreshFpaInProcess(caller: string): Promise<boolean> {
+  // Noted like the builders, and more pointedly: this one runs inside the
+  // server process, so its memory lands on top of everything already cached.
+  refreshNote("start", "fpa (in-process)");
   try {
     const { refreshFpa } = await import("../fpa/refresh");
     const { result, joined } = await refreshFpa();
     logger.info({ weekNumber: result.weekNumber, joined }, `${caller}: FPA refreshed`);
+    refreshNote("done", "fpa (in-process)");
     return true;
   } catch (err) {
     logger.warn({ err }, `${caller}: FPA not refreshed`);
+    refreshNote("failed", "fpa (in-process)");
     return false;
   }
 }
@@ -287,6 +328,7 @@ export function refreshDailyData(): Promise<void> {
   dailyStartedMs = Date.now();
   const season = String(seasonYear());
   running = (async () => {
+    refreshNote("start", "daily rebuild");
     const steps: DailyStep[] = [];
     const step = async (name: string, script: string, args: string[] = []) => {
       try {
@@ -344,6 +386,7 @@ export function refreshDailyData(): Promise<void> {
       invalidateTeamRenderCache();
       logger.info({ steps }, "Daily data rebuild finished");
     } finally {
+      refreshNote("done", "daily rebuild");
       dailySteps = steps;
       dailyFinishedMs = Date.now();
       running = null;

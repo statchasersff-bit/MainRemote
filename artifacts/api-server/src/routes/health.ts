@@ -19,7 +19,7 @@ router.get("/healthz", (_req, res) => {
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** FPA is a weekly ingest; a week and a day without one is a missed run. */
 const FPA_MAX_AGE_MS = 8 * DAY_MS;
-/** The daily chain runs at 14:00 UTC; this allows one late start. */
+/** The daily chain runs at 11:00 UTC; this allows one late start. */
 const DAILY_MAX_AGE_MS = 30 * 60 * 60 * 1000;
 const PROCESS_STARTED_MS = Date.now();
 
