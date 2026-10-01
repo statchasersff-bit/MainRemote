@@ -42,6 +42,8 @@ import {
   type OutlookPlayer,
 } from "./team/outlook";
 import { outlookFaq, type OutlookFaq } from "./team/outlook-faq";
+import { getTeamCoaching } from "./team/coaching";
+import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
 import { buildUsageView } from "./team/usage";
 import { renderUsageSection } from "./team/usage-render";
 import { statsFaq } from "./team/stats-faq";
@@ -597,6 +599,14 @@ interface Section {
    * panels use.
    */
   tail?: string;
+  /**
+   * A hub-only panel: its tab links to the hub's address plus `#id` rather
+   * than to a section page of its own. The client bundle already supports the
+   * pattern (it is how the Usage tab worked before it earned its URL), and
+   * with scripting off the hash drives the same :target switch as ever.
+   * Coaching wears it while its public URL waits on approval.
+   */
+  hash?: boolean;
 }
 
 /**
@@ -659,17 +669,22 @@ function renderNav(
   const items = sections
     .map((section) => {
       // The Outlook is the hub: its address is the hub's (sectionPath) and its
-      // heading is the hub's. `/outlook/` only 301s back here.
+      // heading is the hub's. `/outlook/` only 301s back here. A hash tab is a
+      // hub-only panel, so its address, heading and title are the hub's too —
+      // the page never leaves the hub's URL bar one hash.
       const isHub = section.id === HUB_SECTION;
-      const heading = isHub
+      const hubLike = isHub || section.hash === true;
+      const heading = hubLike
         ? teamHubHeading(team.fullName, season)
         : (teamSectionHeading(team.fullName, section.id, season) ?? team.fullName);
-      const lead = teamPageMeta(team, season, "", isHub ? undefined : section.id)
+      const lead = teamPageMeta(team, season, "", hubLike ? undefined : section.id)
         .description;
       // The title the tab's address carries on WordPress, for the bundle to set
       // before it pushes that address. The hub's stored title is the Outlook's.
-      const title = teamPageMeta(team, season, "", isHub ? "outlook" : section.id).title;
-      const href = sectionPath(prefix, team.slug, section.id);
+      const title = teamPageMeta(team, season, "", hubLike ? "outlook" : section.id).title;
+      const href = section.hash
+        ? `${sectionPath(prefix, team.slug, HUB_SECTION)}#${section.id}`
+        : sectionPath(prefix, team.slug, section.id);
 
       return (
         `<li><a class="sct-nav-link${section.id === active ? " is-active" : ""}"` +
@@ -3499,10 +3514,18 @@ export function renderTeamPage(
   const scheduleFaqItems: FaqSink = [];
   const scheduleTail: TailSink = { html: "" };
   const outlook = renderOutlook(data, outlookFaq, outlookTail);
-  const usage = renderUsageSection(
-    buildUsageView(team.abbreviation, data.state.season, data.roster?.players ?? null),
-    team,
+  const usageView = buildUsageView(
+    team.abbreviation,
+    data.state.season,
+    data.roster?.players ?? null,
   );
+  const usage = renderUsageSection(usageView, team);
+  const teamCoaching = getTeamCoaching(team.abbreviation, data.state.season);
+  const coaching = renderCoachingSection(teamCoaching, team, usageView);
+  // A new play-caller makes last season's data an unreliable guide, and the
+  // Outlook is where this page projects from it — the LOW rating surfaces
+  // there, per the coaching spec. Empty for HIGH and MEDIUM.
+  const caveat = coachingCaveat(teamCoaching);
 
   const sidebar =
     renderInjuryPanel(data) +
@@ -3540,7 +3563,7 @@ export function renderTeamPage(
     {
       id: "outlook",
       label: "Outlook",
-      html: outlook,
+      html: outlook === "" ? "" : caveat + outlook,
       faq: outlookFaq,
       tail: outlookTail.html,
     },
@@ -3551,6 +3574,17 @@ export function renderTeamPage(
       html: usage.html,
       faq: usage.faq,
       tail: usage.faqHtml,
+    },
+    // Between Usage and Stats, per the coaching spec. A hub-only panel: its
+    // tab is the hub's address plus #coaching, because a public URL of its
+    // own is a title/meta/sitemap surface that waits on mak's approval.
+    {
+      id: "coaching",
+      label: "Coaching",
+      html: coaching.html,
+      faq: coaching.faq,
+      tail: coaching.faqHtml,
+      hash: true,
     },
     // Directly right of Outlook rather than behind the news archive: it now
     // opens with the Team Snapshot and expands it, so it is the whole team at a

@@ -1,0 +1,214 @@
+{
+  "season": 2026,
+  "builtAt": "2026-10-01",
+  "sources": [
+    "Pro Football Reference coach pages (career history, coordinator records)",
+    "nflverse play-by-play (tendency stats)",
+    "beat reporting + broadcast confirmation (per-game play-caller ledger)"
+  ],
+  "teams": {
+    "buf": {
+      "verified": false,
+      "playCaller": {
+        "name": "Joe Brady",
+        "kicker": "Head coach · First season · Primary play-caller",
+        "tree": "Saints / Payton coaching tree",
+        "subline": "Promoted from offensive coordinator — he keeps play-calling duties as HC.",
+        "careerPath": [
+          { "role": "LSU passing-game coordinator — record-setting title offense", "years": "2019" },
+          { "role": "Carolina Panthers offensive coordinator", "years": "2020–21" },
+          { "role": "Buffalo Bills QB coach, then offensive coordinator", "years": "2022–25" },
+          { "role": "Buffalo Bills head coach & play-caller", "years": "2026" }
+        ]
+      },
+      "reliability": {
+        "priorSeasonsAsCaller": 2,
+        "sameSchemeFamily": true,
+        "explanation": "Same play-caller, third straight season. Last year's tendencies are a valid baseline for projecting this offense — the opposite of a typical first-year-HC situation.",
+        "ledger": "Brady — 3 of 3 games in 2026 · 37 straight incl. 2025"
+      },
+      "introAnswer": "Buffalo's answer is unusually clean: Joe Brady is a first-year head coach, but a third-year play-caller.",
+      "tendencies": {
+        "priorLabel": "2025 (as OC)",
+        "currentLabel": "2026 (as HC)",
+        "rows": [
+          { "label": "Pass rate (all downs)", "prior": "49.8%", "priorNum": 49.8, "feed": "passRate", "current": "51.1%", "change": { "dir": "up", "text": "+1.3" }, "nflAvg": "56%" },
+          { "label": "Pass rate over expected", "sub": "situation-adjusted", "prior": "−1.2%", "priorNum": -1.2, "feed": "proe", "current": "+1.8%", "change": { "dir": "up", "text": "+3.0" }, "nflAvg": "0%" },
+          { "label": "Neutral pace", "sub": "sec/play, score within 7", "prior": "28.9s", "priorNum": 28.9, "feed": "pace", "invert": true, "current": "27.1s", "change": { "dir": "up", "text": "faster" }, "nflAvg": "29.8s" },
+          { "label": "No-huddle rate", "prior": "4%", "current": "9%", "change": { "dir": "up", "text": "+5 — 3rd in NFL" }, "nflAvg": "5%" },
+          { "label": "Play-action rate", "prior": "24%", "current": "28%", "change": { "dir": "up", "text": "+4 — 2nd in NFL" }, "nflAvg": "22%" },
+          { "label": "Motion at snap", "prior": "48%", "current": "54%", "change": { "dir": "up", "text": "+6" }, "nflAvg": "50%" },
+          { "label": "Shotgun rate", "prior": "71%", "current": "74%", "change": { "dir": "flat", "text": "steady" }, "nflAvg": "68%" },
+          { "label": "Red-zone pass rate", "prior": "47%", "priorNum": 47, "feed": "rzPassRate", "current": "44%", "change": { "dir": "down", "text": "−3" }, "nflAvg": "52%" },
+          { "label": "4th-down go rate", "sub": "opponent territory, 2 yds or less", "prior": "18%", "current": "31%", "change": { "dir": "up", "text": "+13 — 6th in NFL" }, "nflAvg": "24%" },
+          { "label": "Analytics alignment", "sub": "goes when the win-prob model says go", "prior": "61%", "current": "83%", "change": { "dir": "up", "text": "+22 — 5th in NFL" }, "nflAvg": "68%" }
+        ]
+      },
+      "shifts": [
+        { "stat": "9%", "unit": "no-huddle", "heading": "Tempo is now a weapon.", "body": "From 4% to 9% no-huddle — 3rd in the NFL. More snaps per game means more raw opportunity for every Bill, the quietest fantasy upgrade a coach can hand out." },
+        { "stat": "31%", "unit": "4th-down go", "heading": "Drives stay alive.", "body": "Go rate on short 4th downs jumped from 18% to 31%. Extended drives convert field-goal territory into red-zone trips — touchdowns instead of three points." },
+        { "stat": "27%", "unit": "12 personnel", "heading": "Two-TE sets expanded.", "body": "Up from 20% a year ago — the formation shift that props up Kincaid and Knox together and explains part of the WR room's capped target ceiling." }
+      ],
+      "staff": {
+        "oc": {
+          "name": "Pete Carmichael",
+          "sub": "Saints OC 2009–2023 · called plays in 2011, 2012, 2016, 2021–23",
+          "hasCalledPlays": true,
+          "body": "The most experienced non-calling OC in football. A fellow Payton-tree lifer who has run a full offense before — which makes him both scheme continuity and the delegation scenario: if Brady ever hands off play-calling mid-season (HC workload, a bad stretch), the predictive baseline on this page shifts to Carmichael's Saints tendencies, not Brady's. Watch the ledger above."
+        },
+        "dc": {
+          "name": "Jim Leonhard",
+          "sub": "Pressure-heavy, two-high shell — boom/bust by design",
+          "body": "Why this matters for offense fantasy: an aggressive defense produces turnovers and short fields in wins and quick opponent scores in losses — both of which inflate Bills possessions. It's part of why this team plays the 3rd-most no-huddle snaps and why Bills games lean over the total. Start your Bills in every projected shootout."
+        },
+        "continuity": {
+          "stat": "8 of 11 retained",
+          "sub": "Offensive assistants back from 2025, incl. QB & OL coaches",
+          "body": "This is a year-three install, not a year-one install. Same terminology, same run-game staff, same quarterback room. Coaching-change risk on this page is about as low as it gets in the NFL — the opposite of the ~20 offenses breaking in new play-callers this season."
+        }
+      },
+      "dossier": [
+        {
+          "stop": "LSU · Pass-game coordinator",
+          "years": "2019",
+          "scoring": "48.4 pts/g",
+          "scoringContext": "NCAA record",
+          "thesis": "Where the system was born:",
+          "fingerprint": "Saints-tree spacing, a featured slot receiver, and the ball distributed off one dominant read. The blueprint has not changed since."
+        },
+        {
+          "stop": "Carolina Panthers · OC",
+          "years": "2020–21",
+          "scoring": "21.9 ppg",
+          "scoringContext": "24th, then fired in '21",
+          "thesis": "The DJ Moore years:",
+          "fingerprint": "with McCaffrey hurt for most of two seasons, Brady funneled the offense through Moore — 118 targets and a 26% share in 2020. Fired mid-2021 behind a bottom-of-the-league offensive line; the scheme never got a fair test."
+        },
+        {
+          "stop": "Buffalo Bills · QB coach → OC",
+          "years": "2022–25",
+          "scoring": "28.3 fantasy ppg",
+          "scoringContext": "by 2025",
+          "thesis": "The reinvention:",
+          "fingerprint": "inherited a drop-back passing team and rebuilt it into the NFL's best rushing offense — 30 rushing TDs, half of them Allen's, with the passing game simplified around one slot outlet and a seam tight end."
+        },
+        {
+          "stop": "Buffalo Bills · Head coach",
+          "years": "2026",
+          "scoring": "33.7 ppg",
+          "scoringContext": "1st in NFL",
+          "current": true,
+          "thesis": "The reunion:",
+          "fingerprint": "his first personnel request as HC was the receiver he already knows how to feed. Moore's 24.6% target share through three weeks is nearly identical to his Carolina role under Brady — that's not a coincidence, it's a system slot being refilled."
+        }
+      ],
+      "finishes": {
+        "heading": "Positional fantasy finishes under Brady",
+        "rows": [
+          {
+            "stop": "Carolina 2020",
+            "context": "CMC injured most of season",
+            "cells": [
+              { "text": "QB22", "tone": "plain" },
+              { "text": "RB16 · M. Davis", "tone": "good" },
+              { "text": "WR18 · Moore", "tone": "plain" },
+              { "text": "TE29", "tone": "bad" }
+            ]
+          },
+          {
+            "stop": "Carolina 2021",
+            "context": "fired after 12 games",
+            "cells": [
+              { "text": "QB30", "tone": "bad" },
+              { "text": "RB30", "tone": "bad" },
+              { "text": "WR24 · Moore", "tone": "plain" },
+              { "text": "TE30", "tone": "bad" }
+            ]
+          },
+          {
+            "stop": "Buffalo · OC",
+            "context": "2023–24",
+            "cells": [
+              { "text": "QB1 · Allen", "tone": "good" },
+              { "text": "RB10 · Cook", "tone": "good" },
+              { "text": "WR7 · Diggs", "tone": "good" },
+              { "text": "TE12 · Kincaid", "tone": "plain" }
+            ]
+          },
+          {
+            "stop": "Buffalo · OC",
+            "context": "2025",
+            "cells": [
+              { "text": "QB2 · Allen", "tone": "good" },
+              { "text": "RB4 · Cook", "tone": "good" },
+              { "text": "WR38 · Shakir", "tone": "bad" },
+              { "text": "TE19 · Kincaid", "tone": "plain" }
+            ]
+          },
+          {
+            "stop": "Buffalo · HC 2026",
+            "context": "pace through Week 3",
+            "current": true,
+            "cells": [
+              { "text": "QB1 · Allen", "tone": "good" },
+              { "text": "RB3 · Cook", "tone": "good" },
+              { "text": "WR12 · Moore", "tone": "good" },
+              { "text": "TE9 · Kincaid", "tone": "good" }
+            ]
+          }
+        ],
+        "note": "The pattern that prices this roster: give Brady a real quarterback and his QB and RB1 finish top-ten every year — the two Carolina seasons are what the system looks like with neither. The WR1 slot pays exactly when it's filled by a true alpha (Diggs WR7, Moore tracking WR12) and starves when it isn't (Shakir WR38 as a default WR1 last year). That's the historical case for every verdict on this page: pay for Allen, Cook and Moore; make the rest prove it."
+      },
+      "rookieNote": {
+        "label": "Rookie integration · The dynasty read",
+        "body": "Slow-cook by design: drafted skill players under Brady average a 31% snap share through Week 4 and 58% after the bye — Kincaid in 2023, Coleman in 2024 and Davis in 2024 all followed the same ramp. Don't panic-sell a Bills rookie in September; in this system the role arrives in November, and the buy window is the frustration in between."
+      },
+      "distribution": {
+        "sub": "Career target split as an NFL play-caller, vs. league average.",
+        "rows": [
+          { "label": "Wide receivers", "pct": 58, "nfl": 61 },
+          { "label": "Tight ends", "pct": 24, "nfl": 19, "gold": true },
+          { "label": "Running backs", "pct": 18, "nfl": 17 },
+          { "label": "Between the numbers", "pct": 47, "nfl": 39, "gold": true }
+        ],
+        "note": "One alpha, a fat middle, and a short game: every Brady offense has featured exactly one high-share receiver — Moore 26% in 2020, Moore 25% in '21, Diggs 28% in '23, Shakir 22% in '25, Moore 24.6% now — while tight ends and the middle of the field run well above league average and the aDOT stays bottom-five. If a Bill isn't the alpha, a tight end, or a slot, the system has no featured role for him. That's Coleman's problem in one sentence."
+      },
+      "backfield": {
+        "sub": "RB1 share of backfield weighted opportunities, by season called.",
+        "bars": [
+          { "label": "'20 CAR", "value": 54 },
+          { "label": "'21 CAR", "value": 58 },
+          { "label": "'23 BUF", "value": 61 },
+          { "label": "'24 BUF", "value": 65 },
+          { "label": "'25 BUF", "value": 68 },
+          { "label": "'26 BUF", "value": 72, "current": true, "feed": true }
+        ],
+        "note": "He narrows, he never widens: the lead back's share has grown every single season Brady has called plays — six straight years. The pattern has two halves: feed one back on early downs and in the red zone, and outsource passing downs to a veteran specialist every year. Cook's 72% share and Ty Johnson's third-down role aren't a 2026 story; they're the sixth consecutive rerun. For fantasy, that means Cook's role is as safe as any RB1 role in football — and his reception ceiling is structurally capped, not situationally."
+      },
+      "personnel": {
+        "sub": "Share of snaps and yards per play from each grouping.",
+        "rows": [
+          { "label": "11 (3 WR)", "share": 58, "result": "6.4 yds/play" },
+          { "label": "12 (2 TE)", "share": 27, "result": "7.1 yds/play", "gold": true },
+          { "label": "21 (2 RB)", "share": 9, "result": "5.2 yds/play" },
+          { "label": "Other", "share": 6, "result": "4.8 yds/play" }
+        ],
+        "note": "12 personnel is the efficiency play (7.1 yds/play, best in the NFL from two-TE sets) — and its usage is still growing. Expect defenses to force Buffalo out of it; expect Brady to resist."
+      },
+      "scoreState": {
+        "sub": "Pass rate when leading, close, and trailing.",
+        "rows": [
+          { "label": "Leading by 7+", "share": 42, "result": "42% pass" },
+          { "label": "Within 7", "share": 54, "result": "54% pass" },
+          { "label": "Trailing by 7+", "share": 63, "result": "63% pass" }
+        ],
+        "note": "A 21-point swing between game scripts. Buffalo leading = Cook's volume day. Buffalo trailing = Moore and Kincaid's target spike. Check the point spread before you set a flex — this offense tells you in advance who eats."
+      },
+      "bottomLine": "The fantasy bottom line: continuity where it matters (same play-caller, same QB, same run-game identity) plus three deliberate changes that all point the same direction — more snaps, longer drives, more two-TE sets. That mix raises the whole offense's floor, concentrates passing value in Moore and Kincaid, and keeps the red zone running through Allen's legs and Cook. It's also why last season's Bills data is still predictive this season — something you can't say for most teams with a new head coach.",
+      "faq": {
+        "question": "How does Joe Brady's offense affect Buffalo Bills fantasy players?",
+        "answer": "Brady is a first-year head coach but a third-year play-caller, so last season's Bills tendencies remain predictive — the opposite of most coaching changes. The biggest 2026 shifts all add fantasy value: no-huddle up to 9% (3rd in the NFL) for more snaps, a 31% go rate on short 4th downs that extends drives, and 12 personnel up to 27%, which concentrates passing work in Kincaid while the red zone stays run-first through Allen and Cook."
+      }
+    }
+  }
+}

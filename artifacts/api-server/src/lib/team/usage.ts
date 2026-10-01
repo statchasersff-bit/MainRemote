@@ -14,8 +14,8 @@
  * from Week 5), and which players the three signal cards name.
  */
 
-import fs from "node:fs";
 import { dataPath } from "../data-dir";
+import { readDataJson } from "./read-json";
 import { searchKey } from "../render";
 import type { RosterPlayer } from "./roster";
 
@@ -131,33 +131,12 @@ export interface TargetShareCliff {
 
 /* ------------------------------------------------------------------- read */
 
-const loaded = new Map<string, { mtimeMs: number; doc: unknown }>();
-
-/**
- * A JSON file, re-read when it changes on disk.
- *
- * The daily chain rewrites the usage file in place, and a stat is cheap next to
- * a render, so the tab never needs a reload hook of its own.
- */
-function readJson<T>(file: string): T | null {
-  try {
-    const { mtimeMs } = fs.statSync(file);
-    const hit = loaded.get(file);
-    if (hit && hit.mtimeMs === mtimeMs) return hit.doc as T;
-    const doc = JSON.parse(fs.readFileSync(file, "utf8")) as T;
-    loaded.set(file, { mtimeMs, doc });
-    return doc;
-  } catch {
-    return null;
-  }
-}
-
 export function getUsageDoc(season: number): UsageDoc | null {
-  return readJson<UsageDoc>(dataPath("team", `usage_${season}.json`));
+  return readDataJson<UsageDoc>(dataPath("team", `usage_${season}.json`));
 }
 
 export function getTargetShareCliff(): TargetShareCliff | null {
-  return readJson<TargetShareCliff>(dataPath("team", "target_share_cliff.json"));
+  return readDataJson<TargetShareCliff>(dataPath("team", "target_share_cliff.json"));
 }
 
 /** A fingerprint for the render cache: changes whenever the file is rebuilt. */
@@ -167,7 +146,7 @@ export function usageVersion(season: number): string {
 
 /* ---------------------------------------------------------------- shaping */
 
-export type Tier = "set" | "solid" | "volatile" | "stash";
+export type Tier = "set" | "starter" | "flex" | "volatile" | "stash";
 
 export interface Trend {
   /** The last three games, oldest first. */
@@ -265,21 +244,23 @@ function tierFor(p: UsagePlayer, depth: number): Tier {
   if (p.pos === "QB") {
     const rank = p.leagueRank.rank;
     if (rank != null && rank <= 8) return "set";
-    if (rank != null && rank <= 16) return "solid";
+    if (rank != null && rank <= 16) return "starter";
     return "volatile";
   }
   if (p.pos === "RB") {
     const share = p.woppShare ?? 0;
     if (depth === 1) {
       if (share >= 65) return "set";
-      if (share >= 40 || (p.woppPerGame ?? 0) >= 12) return "solid";
+      if (share >= 50 || (p.woppPerGame ?? 0) >= 15) return "starter";
+      if (share >= 40 || (p.woppPerGame ?? 0) >= 12) return "flex";
       return "volatile";
     }
     return share >= 35 ? "volatile" : "stash";
   }
   const ts = p.targetShare ?? 0;
   if (ts >= 20) return "set";
-  if (ts >= 15) return "solid";
+  if (ts >= 17) return "starter";
+  if (ts >= 15) return "flex";
   return "volatile";
 }
 

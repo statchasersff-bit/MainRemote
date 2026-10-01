@@ -71,10 +71,12 @@ async function hydrated(pathname) {
 describe("placement", () => {
   test("the panel sits between Outlook and Stats, with id usage", async () => {
     const { doc } = await page("/team/buffalo-bills/");
+    // Coaching sits between Usage and Stats since 2026-10-01, per its spec.
     const panels = [...doc.querySelectorAll("[data-sct-panel]")].map((s) => s.id);
-    assert.deepEqual(panels.slice(0, 3), ["outlook", "usage", "stats"]);
+    assert.deepEqual(panels.slice(0, 2), ["outlook", "usage"]);
+    assert.ok(panels.indexOf("stats") > panels.indexOf("usage"));
     const tabs = [...doc.querySelectorAll(".sct-nav-link")].map((a) => a.textContent);
-    assert.deepEqual(tabs.slice(0, 3), ["Outlook", "Usage", "Stats"]);
+    assert.deepEqual(tabs.slice(0, 2), ["Outlook", "Usage"]);
   });
 
   test("the tab links to the section's own address", async () => {
@@ -144,7 +146,8 @@ describe("the ten components, in order", () => {
     const intro = doc.querySelector(".sct-us-intro").textContent;
     assert.match(intro, /^Fantasy production follows opportunity, not the other way around/);
     assert.match(intro, /target share \(share of team pass attempts\)/);
-    assert.match(doc.querySelector(".sct-us-keys .is-def").textContent, /Weighted opportunities = carries \+ 2 × targets/);
+    // The weighted-opportunities caption came off the backfield legend (2026-10-01).
+    assert.equal(doc.querySelector(".sct-us-keys .is-def"), null);
   });
 
   test("Redraft Command is linked in the closing paragraph", async () => {

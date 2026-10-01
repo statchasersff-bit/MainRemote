@@ -423,7 +423,9 @@ export function contractWords(team: string, t: { quote?: string; terms?: { years
 function headlineText(team: string, t: WikiTransaction): string {
   const h = (t.headline ?? "").replace(/\.$/, "");
   const nick = team.split(" ").pop() ?? team;
-  if (h.includes(nick)) return `${h}.`;
+  // Naming the club by city counts too ("...the franchise tag from Washington").
+  const city = team.slice(0, team.length - nick.length).trim();
+  if (h.includes(nick) || (city && h.includes(city))) return `${h}.`;
   const by = t.type === "Tag" || /practice squad$|exercised$|^Designated|^Tendered/i.test(h);
   return `${h} ${by ? "by" : "with"} the ${team}.`;
 }
