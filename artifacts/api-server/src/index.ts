@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { runClubIngest, runIngest, wireIngestEnabled } from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
+import { startWatchdog } from "./lib/watchdog";
 
 const rawPort = process.env["PORT"];
 
@@ -82,6 +83,12 @@ app.listen(port, (err) => {
   // Player game logs, refreshed after each game window. Production only unless
   // SC_PLAYER_LIVE_REFRESH says otherwise; see lib/player/live-refresh.ts.
   startPlayerRefreshScheduler();
+
+  // The inbound-route watchdog: the 10-01/10-02 outages were Replit's proxy
+  // losing this VM while the process stayed healthy, so the app probes its own
+  // public URL and restarts itself when inbound goes dark. Production only;
+  // see lib/watchdog.ts.
+  startWatchdog(port);
 
   // The X poller, if it is switched on (X_NEWS_INGESTION_ENABLED).
   //
