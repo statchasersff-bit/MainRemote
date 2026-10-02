@@ -688,9 +688,8 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
         `</time>.`
       );
     }
-    if (!season.hasOverrides) {
-      return escapeHtml(`Updated automatically after Week ${season.updatedWeek}.`);
-    }
+    // mak, 2026-10-02: no "Updated automatically after Week n" line.
+    if (!season.hasOverrides) return "";
     const ms = season.updatedDateMs ?? Date.now();
     const { y, m, d } = easternDate(ms);
     const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -740,7 +739,7 @@ export function renderBreakdownSection(games: StoryGame[], season: StorySeason):
   return (
     `<section class="scp-ox-sec scp-gl-sec" aria-labelledby="${id}">` +
     `<h2 class="scp-ox-h2" id="${id}">${escapeHtml(titleCase("Game-by-game breakdown"))}</h2>` +
-    `<p class="scp-gl-byline">${byline}</p>` +
+    (byline ? `<p class="scp-gl-byline">${byline}</p>` : "") +
     `<div class="scp-gl-games">${cards}</div>` +
     `</section>`
   );

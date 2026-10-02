@@ -1605,16 +1605,8 @@ button.scp-search-opt {
   color: var(--scp-ph-muted);
 }
 
-/* ---- the peers rail, moved ---- */
-
-/* The Overview, Stats, Outlook and Injury tabs carry the rail above their FAQs; the copy after the panels
-   stands down while that tab is the open one, and every other tab keeps it. */
-.scp:has(> #overview.is-active) > .scp-peers-out,
-.scp:has(> #stats.is-active) > .scp-peers-out,
-.scp:has(> #outlook.is-active) > .scp-peers-out,
-.scp:has(> #injury.is-active) > .scp-peers-out {
-  display: none;
-}
+/* Every tab carries the peers rail above its own FAQ (mak, 2026-10-02), so
+   there is no copy after the panels to stand down any more. */
 
 /* ---- faq ---- */
 

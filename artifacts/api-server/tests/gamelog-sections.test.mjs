@@ -198,11 +198,8 @@ describe("game-by-game breakdown (Brissett, Part 6)", () => {
     );
   });
 
-  test("the byline says the copy is generated", () => {
-    assert.equal(
-      doc.querySelector(".scp-gl-byline").textContent,
-      "Updated automatically after Week 3.",
-    );
+  test("no byline on generated copy (mak, 2026-10-02)", () => {
+    assert.equal(doc.querySelector(".scp-gl-byline"), null);
   });
 
   test("week 3: season high in a shootout", () => {

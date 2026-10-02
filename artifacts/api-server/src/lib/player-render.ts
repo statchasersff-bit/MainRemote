@@ -98,7 +98,7 @@ import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { outlookTabParts } from "./player/outlook-tab";
 import { injuryTabParts } from "./player/injury-tab";
 import { renderBioTab } from "./player/bio-tab";
-import { renderNewsTab } from "./player/news-tab";
+import { renderNewsTabParts } from "./player/news-tab";
 import { renderGamelogStory } from "./player/gamelog-sections";
 import { renderFaqSection, selectFaq, tabHref } from "./player/faq-engine";
 import { gameLogPool, statsPool } from "./player/faq-pools";
@@ -1279,8 +1279,8 @@ function renderBioNarrative(data: PlayerPageData): string {
 function renderBio(
   data: PlayerPageData,
   options: PlayerRenderOptions,
-): string {
-  if (data.bioProfile.empty) return "";
+): TabParts | null {
+  if (data.bioProfile.empty) return null;
 
   // mak's Bio spec (2026-09-30) replaces the old narrative and career
   // timeline: two bios and two timelines on one page confuse readers and
@@ -1315,7 +1315,7 @@ function renderBio(
   const items = selectFaq(pool);
   const faq = items.length ? `<div class="scp-ox">${renderFaqSection("bio", data, items, options)}</div>` : "";
 
-  if (!narrative && !timeline && !faq && !spec) return "";
+  if (!narrative && !timeline && !faq && !spec) return null;
 
   // The tab's heading, on the scoped URL as well as in the full profile. The
   // header's H1 subtitle names the tab too, in a shorter phrase; this is the
@@ -1324,8 +1324,9 @@ function renderBio(
   // No subtitle: it listed the facts of the table directly beneath it.
   const heading = h2(`${data.player.name} Bio`);
 
-  // The FAQ stays the tab's last block.
-  return heading + narrative + timeline + spec + faq;
+  // The FAQ stays the tab's last block, under the peers rail the page stands
+  // above it (mak, 2026-10-02).
+  return { body: heading + narrative + timeline + spec, foot: "", faq };
 }
 
 /* ------------------------------------------------------------------ outlook */
@@ -2444,8 +2445,8 @@ function kickoffLine(game: UpcomingGame): string {
 function renderGameLog(
   data: PlayerPageData,
   options: PlayerRenderOptions,
-): string {
-  if (data.gameLog.length === 0) return "";
+): TabParts | null {
+  if (data.gameLog.length === 0) return null;
 
   /*
    * No label under the heading.
@@ -2466,7 +2467,9 @@ function renderGameLog(
   // The panel's own heading, printed on the scoped URL too.
   const heading = h2(`${data.player.name} Game Log ${current.season}`);
 
-  return (
+  // The FAQ split out, so the page can stand the peers rail above it
+  // (mak, 2026-10-02).
+  const body =
     heading +
     // No scoring control here, and none anywhere else either. This tab used to
     // print its own toggle on a scoped URL, because a section page had no
@@ -2494,9 +2497,8 @@ function renderGameLog(
     // it is that block's filter, and a reader changing years is looking at the
     // thing that changes.
     renderLogCareer(data, seasons) +
-    renderArchiveSeason(data, options, seasons) +
-    renderGameLogFaq(current, options)
-  );
+    renderArchiveSeason(data, options, seasons);
+  return { body, foot: "", faq: renderGameLogFaq(current, options) };
 }
 
 /**
@@ -2986,11 +2988,12 @@ function renderInjury(
  * be. The panel heading, the section page's H1, was "News & Analysis" until
  * mak approved "Latest News & Updates" the same day.
  */
-function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const tab = renderNewsTab(data, options);
+function renderNews(data: PlayerPageData, options: PlayerRenderOptions): TabParts | null {
+  const parts = renderNewsTabParts(data, options);
+  if (!parts) return null;
   // The panel names the player, as every section's heading does; it is the
   // section page's H1 when WordPress hands the heading to the tool.
-  return tab ? h2(`Latest ${data.player.name} News & Updates`) + tab : "";
+  return { body: h2(`Latest ${data.player.name} News & Updates`) + parts.body, foot: "", faq: parts.faq };
 }
 
 
@@ -3252,33 +3255,47 @@ export function renderPlayerPage(
   // lib/player/overview.ts. Its FAQ feeds the page's one FAQPage node.
   const overview =
     (overviewBody ? `<div class="scp-ov">${overviewBody}</div>` : "") +
-    // The peers rail sits above the Overview's FAQ, and under every other tab
-    // where it always stood (see the copy after the panels below).
+    // The peers rail sits above the Overview's FAQ, as it now does on every
+    // other tab too (mak, 2026-10-02).
     renderOverviewSections(data, withFaq("overview"), {
       peers: renderPositionPeers(data, options),
     });
 
-  const bio = renderBio(data, withFaq("bio"));
+  const bioParts = renderBio(data, withFaq("bio"));
 
   // Stats is totals, Game Log is games — the split the Stats tab is built on.
   // The career table and the career-finish tiles were both aggregates filed
   // here; they moved to Stats, and what is left is the thing this tab is named
   // for. A reader asking "what did he do in Week 3" gets a page of weeks.
-  const gameLog = renderGameLog(data, withFaq("game-log"));
+  const gameLogParts = renderGameLog(data, withFaq("game-log"));
   const statsParts = renderStats(data, withFaq("stats"));
   const injuryParts = renderInjury(data, withFaq("injury"));
+  const newsParts = renderNews(data, withFaq("news"));
   const split = new Map<string, TabParts>();
   if (statsParts) split.set("stats", statsParts);
+  if (gameLogParts) split.set("game-log", gameLogParts);
   if (outlookParts) split.set("outlook", outlookParts);
   if (injuryParts) split.set("injury", injuryParts);
-  // The rail above the footer and FAQ, as on the Overview; the copy after the
-  // panels stands down while one of these tabs is open (.scp-peers-out).
-  const whole = (parts: TabParts | null): string =>
-    parts ? parts.body + parts.foot + renderPositionPeers(data, options) + parts.faq : "";
-  const stats = whole(statsParts);
-  const outlook = whole(outlookParts);
-  const injury = whole(injuryParts);
-  const news = renderNews(data, withFaq("news"));
+  if (newsParts) split.set("news", newsParts);
+  if (bioParts) split.set("bio", bioParts);
+  // Every tab carries the rail above its FAQ, as on the Overview (mak,
+  // 2026-10-02) — so there is no copy after the panels any more. The Stats
+  // footer closes its page, under the FAQ (mak, 2026-10-02); the Injury
+  // footer keeps its place above the rail.
+  const whole = (id: string, parts: TabParts | null): string =>
+    parts
+      ? parts.body +
+        (id === "stats" ? "" : parts.foot) +
+        renderPositionPeers(data, options) +
+        parts.faq +
+        (id === "stats" ? parts.foot : "")
+      : "";
+  const stats = whole("stats", statsParts);
+  const gameLog = whole("game-log", gameLogParts);
+  const outlook = whole("outlook", outlookParts);
+  const injury = whole("injury", injuryParts);
+  const news = whole("news", newsParts);
+  const bio = whole("bio", bioParts);
 
   // Built from what actually rendered: a section that produced no markup is not
   // in the page and must not be in the navigation pointing at nothing. A backup
@@ -3383,10 +3400,15 @@ export function renderPlayerPage(
             )
         : panelHtml) +
       `</section>` +
-      // A split tab (TabParts): rail, then its footer and the way back, then
-      // its FAQ (mak, 2026-09-30). Every other tab: the way back, then the rail.
+      // The tab's footer, the way back, the rail, then its FAQ (mak,
+      // 2026-09-30) — except Stats, whose footer closes the page under the
+      // FAQ (mak, 2026-10-02).
       (parts
-        ? parts.foot + back + renderPositionPeers(data, options) + parts.faq
+        ? (scoped.id === "stats" ? "" : parts.foot) +
+          back +
+          renderPositionPeers(data, options) +
+          parts.faq +
+          (scoped.id === "stats" ? parts.foot : "")
         : back + renderPositionPeers(data, options)) +
       renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
       `</div>`
@@ -3428,14 +3450,9 @@ export function renderPlayerPage(
     renderNav(sections, data, options) +
     `</div>` +
     body +
-    // Outside the panels: the rail stands under whichever tab is open, because
-    // it is the way out of the page rather than part of any one tab's argument.
-    // The Overview carries its own copy above its FAQ, so this one stands down
-    // while that tab is open — see .scp-peers-out in player.css.
-    (() => {
-      const rail = renderPositionPeers(data, options);
-      return rail ? `<div class="scp-peers-out">${rail}</div>` : "";
-    })() +
+    // No copy outside the panels any more: every tab carries the rail above
+    // its own FAQ (mak, 2026-10-02), so a shared one under the panels would
+    // double it on every tab.
     // Document order, so the node reads down the page the way the questions do.
     renderPlayerFaqSchema(
       sections.flatMap((section) => faqBySection.get(section.id) ?? []),

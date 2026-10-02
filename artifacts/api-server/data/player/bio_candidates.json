@@ -1,6 +1,6 @@
 {
  "version": 1,
- "verifiedAt": "2026-10-02T13:47:56.041Z",
+ "verifiedAt": "2026-10-02T22:41:59.065Z",
  "players": {
   "travis-hunter": {
    "title": "Travis Hunter",
@@ -30363,14 +30363,16 @@
       "team": "KC"
      },
      "quote": "On April 15, 2019, Butker signed his exclusive rights free agent tender with the Chiefs.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "No KC log line for the tender and no non-Wikipedia source for the April 15 date; searches only returned Wikipedia-derived text. It is plausible (he was an ERFA after 2018 and signed an extension in June) but unconfirmed. mak 2026-10-01 batch 4: keep LOW / unverified — no strong primary source for the exact tender-signing date; the caution is justified.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "No KC log line for the tender and no non-Wikipedia source for the April 15 date; searches only returned Wikipedia-derived text. It is plausible (he was an ERFA after 2018 and signed an extension in June) but unconfirmed. mak 2026-10-02 batch 26: APPROVE HIGH, releasing the batch-4 hold — PFT reported that Monday (Apr. 15, 2019) that Butker had signed the tender and specifically said the transaction appeared on the NFL's official transactions list; the NFL's official record satisfies the source hierarchy.",
       "official": null,
       "sources": [],
       "verified": {
@@ -30395,7 +30397,7 @@
       "date": "2019-04-15",
       "precision": "day",
       "team": "KC",
-      "headline": "Signed his exclusive-rights free agent tender"
+      "headline": "Signed his exclusive-rights free-agent tender with the Kansas City Chiefs"
      }
     },
     {
@@ -30788,14 +30790,16 @@
       "team": "PHI"
      },
      "quote": "He signed his four-year rookie contract with Philadelphia on June 3, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the PHI official transaction log for 2021. mak 2026-10-01 batch 5: still not enough for HIGH — no clean Eagles primary source found in this pass; keep lower confidence unless a contemporary Eagles/NFL source turns up.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the PHI official transaction log for 2021. mak 2026-10-02 batch 28: APPROVE HIGH, releasing the batch-26 hold — the Eagles published a June 3, 2021 article explicitly stating they signed Gainwell to a four-year contract; their ledger's June 2 stays the processing date.",
       "official": null,
       "sources": [],
       "verified": null,
@@ -30806,7 +30810,14 @@
       "type": "Signed",
       "date": "2021-06-03",
       "precision": "day",
-      "team": "PHI"
+      "team": "PHI",
+      "headline": "Signed his four-year rookie contract with the Philadelphia Eagles",
+      "events": [
+       {
+        "date": "2021-06-02",
+        "status": "processed"
+       }
+      ]
      }
     },
     {
@@ -38449,14 +38460,16 @@
       "team": "JAX"
      },
      "quote": "On November 10, 2020, the Jacksonville Jaguars signed McLaughlin off of the Vikings' practice squad to fill in for the injured Josh Lambo.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
+      "verdict": "EDIT",
       "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-11-09, 1 day(s) before the stored date (2020-11-10). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "notes": "The archived log dates this move 2020-11-09, 1 day(s) before the stored date (2020-11-10). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 26: mak's wording — more transaction-accurate than the generic 'signed with'. A contemporaneous report reproduces Jacksonville's own Nov. 10 announcement (Saturday Tradition); mak said HIGH/MEDIUM-HIGH, stored MEDIUM per the house cap on non-club-direct sources. The Jaguars' log Nov. 9 stays the processed event.",
       "official": {
        "date": "2020-11-09",
        "team": "JAX",
@@ -38478,13 +38491,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2020-11-10",
       "precision": "day",
       "team": "JAX",
+      "headline": "Signed by the Jacksonville Jaguars off the Minnesota Vikings' practice squad to the active roster",
       "events": [
        {
         "date": "2020-11-09",
@@ -38503,24 +38518,34 @@
       "team": "NYJ"
      },
      "quote": "On December 14, 2020, McLaughlin was claimed off waivers by the New York Jets.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the NYJ official transaction log for 2020.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the NYJ official transaction log for 2020. mak 2026-10-02 batch 26: APPROVE HIGH, releasing the hold — the Jets directly announced the claim Dec. 14, 2020. The Jets' 2020 log carries the same acquisition dated Dec. 13, kept as the processed event; its Traded mislabel 767a53e93c40 is rejected (Williams pattern).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Claimed",
       "date": "2020-12-14",
       "precision": "day",
-      "team": "NYJ"
+      "team": "NYJ",
+      "headline": "Claimed off waivers by the New York Jets",
+      "events": [
+       {
+        "date": "2020-12-13",
+        "status": "processed"
+       }
+      ]
      }
     },
     {
@@ -39122,21 +39147,16 @@
       "precision": "day",
       "team": "NYJ"
      },
-     "proposed": {
-      "type": "Traded",
-      "date": "2020-12-13",
-      "precision": "day",
-      "team": "NYJ"
-     },
+     "proposed": null,
      "quote": "Acquired DT Trevon Coley via waivers (from the Arizona Cardinals). Acquired K Chase McLaughlin via waivers (from the Jacksonville Jaguars). Returned LB Noah Dawkins and WR Jaleel Scott to the Practice Squad.",
      "method": "official-log",
      "confidence": 0.95,
      "missing": true,
      "verification": {
       "pass": "official-log",
-      "verdict": "MISSING",
+      "verdict": "REJECT",
       "confidence": "HIGH",
-      "notes": "In the club's official transaction log; not in the Wikipedia reading.",
+      "notes": "In the club's official transaction log; not in the Wikipedia reading. mak 2026-10-02 batch 26: REJECT — the Jets' log line 'Acquired K Chase McLaughlin via waivers (from the Jacksonville Jaguars)' is the same December 2020 waiver claim as fact c053d1af01af (approved, Dec. 14 user-facing with Dec. 13 processed), mislabeled Traded by the log parser's acquire rule and bulk-approved 09-30 — same class as Isaiah Williams (batch 22); publishing both would print a wrong Traded row beside the claim.",
       "official": {
        "date": "2020-12-13",
        "team": "NYJ",
@@ -39149,11 +39169,12 @@
         "url": "https://www.newyorkjets.com/team/transactions/2020",
         "date": "2020-12-13"
        }
-      ]
+      ],
+      "ruling": true
      },
-     "status": "approved",
-     "decision": "approved",
-     "decidedAt": "2026-10-01T02:22:43.452Z"
+     "status": "rejected",
+     "decision": "rejected",
+     "decidedAt": "2026-10-02T22:17:34.206Z"
     },
     {
      "id": "734ceddec9f6",
@@ -39539,14 +39560,16 @@
       "team": "LV"
      },
      "quote": "Piñeiro signed with the Oakland Raiders as an undrafted free agent on May 4, 2018.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-05-03, 1 day(s) before the stored date (2018-05-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-05-03, 1 day(s) before the stored date (2018-05-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 26: upgrade to HIGH — multiple sources including his current official NFL team bio (49ers) explicitly give May 4, 2018 (official club bio source class, Alie-Cox precedent). The Raiders' archive May 3 stays the processed event.",
       "official": {
        "date": "2018-05-03",
        "team": "LV",
@@ -39568,13 +39591,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-05-04",
       "precision": "day",
       "team": "LV",
+      "headline": "Signed with the Oakland Raiders as an undrafted free agent",
       "events": [
        {
         "date": "2018-05-03",
@@ -39783,7 +39808,9 @@
       "team": "NYJ"
      },
      "quote": "On December 6, 2021, Piñeiro signed with the New York Jets.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -40054,7 +40081,9 @@
       "team": "LV"
      },
      "quote": "Piñeiro signed with the Oakland Raiders as an undrafted free agent on May 4, 2018. He was placed on injured reserve on September 1.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -40108,7 +40137,9 @@
       "team": "CHI"
      },
      "quote": "On August 11, Ahmed was waived, effectively making Piñeiro the Bears' kicker for the 2020 season. However, Piñeiro struggled with a groin injury that prevented him from kicking in training camp and resulted in him being placed on injured reserve on September 8, ending his season before it even started.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:17:33.598Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -44984,14 +45015,16 @@
       }
      },
      "quote": "On May 9, 2013, Allen signed a four-year, $2.81 million contract with the Chargers, which included a $613,800 signing bonus.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "No club log before 2017 and my web-search budget ran out before this 2013 item could be sourced. Nothing contradicts May 9, 2013 / $2.81M, but it is unconfirmed.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "No club log before 2017 and my web-search budget ran out before this 2013 item could be sourced. Nothing contradicts May 9, 2013 / $2.81M, but it is unconfirmed. mak 2026-10-02 batch 28: APPROVE HIGH, releasing the batch-11 hold — NFL.com says Allen was one of four Chargers draft picks signed that Thursday (May 9, 2013) and an official Chargers media guide also lists May 9. The 4yr/$2.81M Wikipedia terms stay out.",
       "official": null,
       "sources": [],
       "verified": {
@@ -45008,18 +45041,15 @@
        "agreed": null,
        "signed": null,
        "officialLog": null
-      }
+      },
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2013-05-09",
       "precision": "day",
       "team": "LAC",
-      "terms": {
-       "years": 4,
-       "totalM": 2.81
-      },
-      "headline": "Signed his rookie contract"
+      "headline": "Signed his rookie contract with the San Diego Chargers"
      }
     },
     {
@@ -45202,14 +45232,16 @@
       "team": "LAC"
      },
      "quote": "He was placed on the reserve/COVID-19 list by the Chargers on December 31, 2020, and activated on January 7, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-01-06, 1 day(s) before the stored date (2021-01-07). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-01-06, 1 day(s) before the stored date (2021-01-07). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: date moved Jan. 7→Jan. 6, 2021 — the Chargers’ official transaction log is explicit on Jan. 6 and no stronger club source pins Jan. 7.",
       "official": {
        "date": "2021-01-06",
        "team": "LAC",
@@ -45231,19 +45263,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Activated",
-      "date": "2021-01-07",
+      "date": "2021-01-06",
       "precision": "day",
       "team": "LAC",
-      "events": [
-       {
-        "date": "2021-01-06",
-        "status": "processed"
-       }
-      ]
+      "headline": "Activated from the reserve/COVID-19 list by the Los Angeles Chargers"
      }
     },
     {
@@ -45880,18 +45908,21 @@
       "team": "NYG"
      },
      "quote": "On November 18, 2024, during the Giants’ bye week, Jones was benched in favor of Tommy DeVito due to his poor performance. On November 22, Jones asked to be released by the Giants, a request granted by owner and president John Mara.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the NYG official transaction log for 2024.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the NYG official transaction log for 2024. mak 2026-10-02 batch 28: APPROVE HIGH — Giants president John Mara's official statement confirms Jones asked for his release that morning (Nov. 22, 2024) and the team agreed.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
@@ -46391,14 +46422,16 @@
       "team": "LAR"
      },
      "quote": "Kupp was placed on the reserve/COVID-19 list by the Rams on December 29, 2020, which forced him out of Week 17. He was activated on January 6, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-01-05, 1 day(s) before the stored date (2021-01-06). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-01-05, 1 day(s) before the stored date (2021-01-06). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — the Rams' official site published the activation Jan. 6, 2021; their transaction backend's Jan. 5 stays the processing date.",
       "official": {
        "date": "2021-01-05",
        "team": "LAR",
@@ -46420,13 +46453,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Activated",
       "date": "2021-01-06",
       "precision": "day",
       "team": "LAR",
+      "headline": "Activated from the reserve/COVID-19 list by the Los Angeles Rams",
       "events": [
        {
         "date": "2021-01-05",
@@ -46983,10 +47018,10 @@
      },
      "proposed": {
       "type": "Contract",
-      "date": "2026-03-08",
+      "date": "2026-03-06",
       "precision": "day",
       "team": "NYG",
-      "headline": "Took a pay cut to stay with the Giants"
+      "headline": "Agreed to a restructured contract with the New York Giants"
      },
      "quote": "Singletary's 2026 salary was reduced from $5 million to about $1.3 million, with up to $1 million in incentives, to keep his roster spot.",
      "method": "search",
@@ -46994,9 +47029,9 @@
      "missing": true,
      "verification": {
       "pass": "search",
-      "verdict": "MISSING",
-      "confidence": "LOW",
-      "notes": "Singletary's 2026 salary was reduced from $5 million to about $1.3 million, with up to $1 million in incentives, to keep his roster spot.",
+      "verdict": "EDIT",
+      "confidence": "MEDIUM",
+      "notes": "Singletary's 2026 salary was reduced from $5 million to about $1.3 million, with up to $1 million in incentives, to keep his roster spot. mak 2026-10-02 batch 28: date moved Mar. 8→Mar. 6, 2026 (the agreement date) with agreement wording, releasing the batch-11 hold. mak said MEDIUM-HIGH (Yahoo Sports); stored MEDIUM per the house cap. mak's terms if ever wanted: base reduced to $1.3M with up to $1M in incentives — not stored, secondary-sourced.",
       "sources": [
        {
         "publisher": "Pro Football Rumors",
@@ -47004,9 +47039,12 @@
         "url": "https://www.profootballrumors.com/players/devin-singletary",
         "date": "2026-03-08"
        }
-      ]
+      ],
+      "ruling": true
      },
-     "status": "candidate"
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z"
     }
    ]
   },
@@ -47236,24 +47274,28 @@
       "team": "NYG"
      },
      "quote": "On October 11, 2017, Raymond was signed to the New York Giants' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
+      "verdict": "APPROVE",
       "confidence": "LOW",
-      "notes": "Not found in the NYG official transaction log for 2017.",
+      "notes": "Not found in the NYG official transaction log for 2017. mak 2026-10-02 batch 28: approved with mak's practice-squad wording; no club-direct source cited in this pass, so confidence is left as stored.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2017-10-11",
       "precision": "day",
-      "team": "NYG"
+      "team": "NYG",
+      "headline": "Signed to the New York Giants' practice squad"
      }
     },
     {
@@ -47266,24 +47308,28 @@
       "team": "NYG"
      },
      "quote": "On October 11, 2017, Raymond was signed to the New York Giants' practice squad. He was released on October 31, but was re-signed the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the NYG official transaction log for 2017.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the NYG official transaction log for 2017. mak 2026-10-02 batch 28: APPROVE HIGH — the Giants' own records say his practice-squad contract was terminated Oct. 31, 2017 (noted verifiable since batch 11).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
       "date": "2017-10-31",
       "precision": "day",
-      "team": "NYG"
+      "team": "NYG",
+      "headline": "Released from the New York Giants' practice squad"
      }
     },
     {
@@ -47296,7 +47342,9 @@
       "team": "NYG"
      },
      "quote": "On September 1, 2018, Raymond was waived by the Giants.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -47350,14 +47398,16 @@
       "team": "TEN"
      },
      "quote": "On September 25, 2018, Raymond was signed to the Tennessee Titans' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
+      "verdict": "APPROVE",
       "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-09-24, 1 day(s) before the stored date (2018-09-25). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "notes": "The archived log dates this move 2018-09-24, 1 day(s) before the stored date (2018-09-25). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: approved with mak's practice-squad wording — keep Sep. 25 event / Sep. 24 processing.",
       "official": {
        "date": "2018-09-24",
        "team": "TEN",
@@ -47379,13 +47429,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-09-25",
       "precision": "day",
       "team": "TEN",
+      "headline": "Signed to the Tennessee Titans' practice squad",
       "events": [
        {
         "date": "2018-09-24",
@@ -47404,14 +47456,16 @@
       "team": "TEN"
      },
      "quote": "On September 25, 2018, Raymond was signed to the Tennessee Titans' practice squad. He was released on October 2.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
+      "verdict": "APPROVE",
       "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-10-01, 1 day(s) before the stored date (2018-10-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "notes": "The archived log dates this move 2018-10-01, 1 day(s) before the stored date (2018-10-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: approved with mak's practice-squad wording — keep Oct. 2 public-facing / Oct. 1 processing.",
       "official": {
        "date": "2018-10-01",
        "team": "TEN",
@@ -47433,13 +47487,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
       "date": "2018-10-02",
       "precision": "day",
       "team": "TEN",
+      "headline": "Released from the Tennessee Titans' practice squad",
       "events": [
        {
         "date": "2018-10-01",
@@ -47492,24 +47548,28 @@
       "team": "TEN"
      },
      "quote": "On December 24, 2018, Raymond was signed to the Titans practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the TEN official transaction log for 2018.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Not found in the TEN official transaction log for 2018. mak 2026-10-02 batch 28: date moved Dec. 24→Dec. 23, 2018 per the Titans' official log, releasing the batch-11 hold.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
-      "date": "2018-12-24",
+      "date": "2018-12-23",
       "precision": "day",
-      "team": "TEN"
+      "team": "TEN",
+      "headline": "Signed to the Tennessee Titans' practice squad"
      }
     },
     {
@@ -47812,7 +47872,9 @@
       }
      },
      "quote": "On March 11, 2026, Raymond signed a one-year, $5.1 million contract with the Chicago Bears.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -49926,14 +49988,16 @@
       "team": "PHI"
      },
      "quote": "On December 3, 2019, Hollins was waived by the Eagles.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-12-02, 1 day(s) before the stored date (2019-12-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-12-02, 1 day(s) before the stored date (2019-12-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Eagles announcement of the Dec. 3, 2019 waiver.",
       "official": {
        "date": "2019-12-02",
        "team": "PHI",
@@ -49955,7 +50019,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -49980,14 +50045,16 @@
       "team": "MIA"
      },
      "quote": "On December 4, 2019, Hollins was claimed off waivers by the Miami Dolphins.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-12-03, 1 day(s) before the stored date (2019-12-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-12-03, 1 day(s) before the stored date (2019-12-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Miami confirmation of the Dec. 4, 2019 waiver claim.",
       "official": {
        "date": "2019-12-03",
        "team": "MIA",
@@ -50009,7 +50076,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Claimed",
@@ -52087,24 +52155,33 @@
       "team": "NE"
      },
      "quote": "Because the Patriots needed a roster spot for Tom Brady after Brady's Deflategate suspension had ended, Brissett was placed on injured reserve on October 7, 2016, after having thumb surgery.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "No official transaction log before 2017.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "No official transaction log before 2017. mak 2026-10-02 batch 28: APPROVE HIGH — the Patriots' later official article explicitly says Oct. 7, 2016, even though their transaction archive shows Oct. 6 (kept as processing).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Placed on IR",
       "date": "2016-10-07",
       "precision": "day",
-      "team": "NE"
+      "team": "NE",
+      "events": [
+       {
+        "date": "2016-10-06",
+        "status": "processed"
+       }
+      ]
      }
     },
     {
@@ -52117,24 +52194,28 @@
       "team": "NE"
      },
      "quote": "The Patriots activated Brissett from the injured reserve list; he began practicing on November 30, 2016, and was activated to the 53-man roster on December 21, 2016.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "No official transaction log before 2017.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "No official transaction log before 2017. mak 2026-10-02 batch 28: APPROVE HIGH per the Patriots' own records.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Activated",
       "date": "2016-12-21",
       "precision": "day",
-      "team": "NE"
+      "team": "NE",
+      "headline": "Activated from injured reserve to the New England Patriots' 53-man roster"
      }
     },
     {
@@ -54679,7 +54760,7 @@
       "date": "2020-04-28",
       "precision": "day",
       "team": "HOU",
-      "headline": "Texans exercised his fifth-year option for 2021"
+      "headline": "The Houston Texans exercised the fifth-year option on his rookie contract for the 2021 season"
      },
      "quote": "Houston exercised the fifth-year option on Watson's rookie contract for 2021 (about $17.3 million per NFL.com). The exact date is taken from the batch quote; NFL.com's report is undated in the fetched copy.",
      "method": "search",
@@ -54687,9 +54768,9 @@
      "missing": true,
      "verification": {
       "pass": "search",
-      "verdict": "MISSING",
-      "confidence": "LOW",
-      "notes": "Houston exercised the fifth-year option on Watson's rookie contract for 2021 (about $17.3 million per NFL.com). The exact date is taken from the batch quote; NFL.com's report is undated in the fetched copy.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Houston exercised the fifth-year option on Watson's rookie contract for 2021 (about $17.3 million per NFL.com). The exact date is taken from the batch quote; NFL.com's report is undated in the fetched copy. mak 2026-10-02 batch 28: APPROVE HIGH, releasing the batch-12 hold — NFL.com's fifth-year-option tracker explicitly says Houston exercised it Apr. 28, 2020.",
       "sources": [
        {
         "publisher": "NFL.com",
@@ -54697,9 +54778,12 @@
         "url": "https://www.nfl.com/news/texans-exercise-deshaun-watson-s-fifth-year-option-0ap3000001111994",
         "date": null
        }
-      ]
+      ],
+      "ruling": true
      },
-     "status": "candidate"
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z"
     }
    ]
   },
@@ -54719,25 +54803,23 @@
       "team": "MIA"
      },
      "quote": "On April 29, 2023, Brooks signed with the Miami Dolphins as an undrafted free agent.",
-     "status": "candidate",
+     "status": "rejected",
+     "decision": "rejected",
+     "decidedAt": "2026-10-02T22:37:02.192Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
+      "verdict": "REJECT",
       "confidence": "LOW",
-      "notes": "Not found in the MIA official transaction log for 2023.",
+      "notes": "Not found in the MIA official transaction log for 2023. mak 2026-10-02 batch 28: REJECT as a duplicate — mak's requested version (May 12, 2023, Dolphins UDFA signing) is already live as approved log fact 5aa4f4190485, which now carries his wording; this Apr. 29 Wikipedia twin would print a second row (log-twin pattern: Williams, Mullens, Dortch, Carlson).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
-     "proposed": {
-      "type": "Signed",
-      "date": "2023-04-29",
-      "precision": "day",
-      "team": "MIA"
-     }
+     "proposed": null
     },
     {
      "id": "439060cb80f9",
@@ -54749,24 +54831,28 @@
       "team": "MIA"
      },
      "quote": "Brooks was released by the Dolphins on September 2, 2024, with an injury settlement.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
+      "verdict": "EDIT",
       "confidence": "LOW",
-      "notes": "Not found in the MIA official transaction log for 2024.",
+      "notes": "Not found in the MIA official transaction log for 2024. mak 2026-10-02 batch 28: Released→Injury settlement per mak (Estime pattern); no confidence stated in this pass, left as stored.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Released",
+      "type": "Injury settlement",
       "date": "2024-09-02",
       "precision": "day",
-      "team": "MIA"
+      "team": "MIA",
+      "headline": "Reached an injury settlement with the Miami Dolphins"
      }
     },
     {
@@ -54822,24 +54908,32 @@
       "team": "GB"
      },
      "quote": "On March 4, 2026, Brooks re-signed with the Packers.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the GB official transaction log for 2026.",
+      "verdict": "EDIT",
+      "confidence": "MEDIUM",
+      "notes": "Not found in the GB official transaction log for 2026. mak 2026-10-02 batch 28: Re-signed→Contract with agreement wording, releasing the batch-12 hold — Reuters/PFT and his agency support the Mar. 4, 2026 date and terms. mak said HIGH/MEDIUM-HIGH; stored MEDIUM per the house cap on non-club-direct sources.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Re-signed",
+      "type": "Contract",
       "date": "2026-03-04",
       "precision": "day",
-      "team": "GB"
+      "team": "GB",
+      "headline": "Agreed to a two-year, $4.85 million contract to remain with the Green Bay Packers",
+      "terms": {
+       "years": 2,
+       "totalM": 4.85
+      }
      }
     },
     {
@@ -54982,7 +55076,8 @@
       "type": "Signed",
       "date": "2023-05-12",
       "precision": "day",
-      "team": "MIA"
+      "team": "MIA",
+      "headline": "Signed with the Miami Dolphins as an undrafted free agent"
      },
      "quote": "Signed linebacker Mitchell Agude, quarterback James Blackman, cornerback Ethan Bonner, running back Chris Brooks, defensive end Randy Charlton, wide receiver Chris Coleman, wide receiver Daewood Davis, tight end Julian Hill, tackle Jarrett Horst, offensive lineman Alex Jensen, linebacker Aubrey Miller, defensive tackle Anthony Montalvo, linebacker Garrett Nelson, defensive tackle Brandon Pili, offensive lineman DJ Scaife, safety Keidron Smith, tackle James Tunstall, punter Michael Turk, offensive lineman Alama Uluave, linebacker Zeke Vandenburgh and safety Bennett Williams.",
      "method": "official-log",
@@ -54992,7 +55087,7 @@
       "pass": "official-log",
       "verdict": "MISSING",
       "confidence": "HIGH",
-      "notes": "In the club's official transaction log; not in the Wikipedia reading.",
+      "notes": "In the club's official transaction log; not in the Wikipedia reading. mak 2026-10-02 batch 28: wording per mak — Miami directly says he signed May 12, 2023. Reworded by ruling alone; decision kept (Carlson pattern). Its Apr. 29 Wikipedia twin c78d2e575574 was rejected as a duplicate.",
       "official": {
        "date": "2023-05-12",
        "team": "MIA",
@@ -55005,7 +55100,8 @@
         "url": "https://www.miamidolphins.com/team/transactions/2023",
         "date": "2023-05-12"
        }
-      ]
+      ],
+      "ruling": true
      },
      "status": "approved",
      "decision": "approved",
@@ -58341,14 +58437,16 @@
       "team": "KC"
      },
      "quote": "On 30 September 2017, the Chiefs waived Santos from injured reserve.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the KC official transaction log for 2017. mak 2026-10-02 batch 24: HOLD — a contemporaneous Chiefs beat report supports the Sep. 30, 2017 waiver/injury settlement (https://chiefsdigest.com/?p=57579), but still no club-direct confirmation.",
+      "verdict": "APPROVE",
+      "confidence": "MEDIUM",
+      "notes": "Not found in the KC official transaction log for 2017. mak 2026-10-02 batch 28: APPROVE, releasing the batch-24 hold — contemporary Chiefs reporting (Chiefs Digest) says he was waived after an injury settlement and PFR independently records the waiver Sep. 30, 2017. mak said MEDIUM-HIGH; stored MEDIUM per the house cap on non-club-direct sources.",
       "official": null,
       "sources": [],
       "verified": null,
@@ -58359,7 +58457,8 @@
       "type": "Waived",
       "date": "2017-09-30",
       "precision": "day",
-      "team": "KC"
+      "team": "KC",
+      "headline": "Waived by the Kansas City Chiefs after reaching an injury settlement"
      }
     },
     {
@@ -58372,14 +58471,16 @@
       "team": "CHI"
      },
      "quote": "On 20 November 2017, Santos signed with the Chicago Bears.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-11-19, 1 day(s) before the stored date (2017-11-20). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-11-19, 1 day(s) before the stored date (2017-11-20). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2017-11-19",
        "team": "CHI",
@@ -58401,7 +58502,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
@@ -58426,14 +58528,16 @@
       "team": "NYJ"
      },
      "quote": "On 15 March 2018, Santos signed a one-year contract with the New York Jets.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-03-16, 1 day(s) after the stored date (2018-03-15). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-03-16, 1 day(s) after the stored date (2018-03-15). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: date moved Mar. 15→Mar. 16, 2018 — both the Jets archive and Santos' current Bears bio use Mar. 16.",
       "official": {
        "date": "2018-03-16",
        "team": "NYJ",
@@ -58455,19 +58559,18 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
-      "date": "2018-03-15",
+      "date": "2018-03-16",
       "precision": "day",
       "team": "NYJ",
-      "events": [
-       {
-        "date": "2018-03-16",
-        "status": "processed"
-       }
-      ]
+      "headline": "Signed a one-year contract with the New York Jets",
+      "terms": {
+       "years": 1
+      }
      }
     },
     {
@@ -58480,14 +58583,16 @@
       "team": "NYJ"
      },
      "quote": "On 15 March 2018, Santos signed a one-year contract with the New York Jets. He was released on 22 August 2018.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-08-21, 1 day(s) before the stored date (2018-08-22). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-08-21, 1 day(s) before the stored date (2018-08-22). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2018-08-21",
        "team": "NYJ",
@@ -58509,7 +58614,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
@@ -58534,14 +58640,16 @@
       "team": "LAR"
      },
      "quote": "On 2 October 2018, Santos signed with the Los Angeles Rams to serve as their starting kicker while Greg Zuerlein recovered from a groin injury.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-10-01, 1 day(s) before the stored date (2018-10-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-10-01, 1 day(s) before the stored date (2018-10-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2018-10-01",
        "team": "LAR",
@@ -58563,7 +58671,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
@@ -58588,14 +58697,16 @@
       "team": "TB"
      },
      "quote": "On 12 November 2018, Santos was signed by the Tampa Bay Buccaneers after Chandler Catanzaro was released.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-11-11, 1 day(s) before the stored date (2018-11-12). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-11-11, 1 day(s) before the stored date (2018-11-12). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2018-11-11",
        "team": "TB",
@@ -58617,7 +58728,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
@@ -58642,14 +58754,16 @@
       "team": "TB"
      },
      "quote": "On 13 March 2019, Santos re-signed with the Buccaneers.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-03-12, 1 day(s) before the stored date (2019-03-13). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-03-12, 1 day(s) before the stored date (2019-03-13). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2019-03-12",
        "team": "TB",
@@ -58671,7 +58785,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Re-signed",
@@ -58696,14 +58811,16 @@
       "team": "TB"
      },
      "quote": "On 13 March 2019, Santos re-signed with the Buccaneers. On 31 August, Santos was released by the Buccaneers.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-08-30, 1 day(s) before the stored date (2019-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-08-30, 1 day(s) before the stored date (2019-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2019-08-30",
        "team": "TB",
@@ -58725,7 +58842,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
@@ -58750,14 +58868,16 @@
       "team": "TEN"
      },
      "quote": "On 4 September 2019, Santos was signed by the Titans after Ryan Succop was placed on injured reserve.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-09-03, 1 day(s) before the stored date (2019-09-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-09-03, 1 day(s) before the stored date (2019-09-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2019-09-03",
        "team": "TEN",
@@ -58779,7 +58899,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
@@ -58804,14 +58925,16 @@
       "team": "CHI"
      },
      "quote": "Santos signed with the Bears on 25 August 2020.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-08-24, 1 day(s) before the stored date (2020-08-25). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2020-08-24, 1 day(s) before the stored date (2020-08-25). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date.",
       "official": {
        "date": "2020-08-24",
        "team": "CHI",
@@ -58833,7 +58956,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
@@ -58858,14 +58982,16 @@
       "team": "CHI"
      },
      "quote": "Santos signed with the Bears on 25 August 2020. He was released on 5 September during final roster cuts, and was placed on the team's practice squad a day later.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-09-04, 1 day(s) before the stored date (2020-09-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2020-09-04, 1 day(s) before the stored date (2020-09-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — Chicago's current official Santos bio lists this exact transaction date (club-bio source class).",
       "official": {
        "date": "2020-09-04",
        "team": "CHI",
@@ -58887,7 +59013,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Released",
@@ -62217,10 +62344,10 @@
      },
      "proposed": {
       "type": "Contract",
-      "date": "2018-04-18",
+      "date": "2018-04-24",
       "precision": "day",
       "team": "TEN",
-      "headline": "Titans exercised the fifth-year option on his rookie contract"
+      "headline": "The Tennessee Titans exercised the fifth-year option on his rookie contract"
      },
      "quote": "Titans GM Jon Robinson said on April 18, 2018 that the club would exercise Mariota's 2019 fifth-year option 'over the next couple of days'. The exact filing date was not confirmed.",
      "method": "search",
@@ -62228,9 +62355,9 @@
      "missing": true,
      "verification": {
       "pass": "search",
-      "verdict": "MISSING",
-      "confidence": "MEDIUM",
-      "notes": "Titans GM Jon Robinson said on April 18, 2018 that the club would exercise Mariota's 2019 fifth-year option 'over the next couple of days'. The exact filing date was not confirmed. mak 2026-10-02 batch 22: HOLD — do not store Apr. 18, 2018 as the exercised date; it only documents Tennessee saying it would exercise the option. Keep HOLD until the actual filing date is found.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Titans GM Jon Robinson said on April 18, 2018 that the club would exercise Mariota's 2019 fifth-year option 'over the next couple of days'. The exact filing date was not confirmed. mak 2026-10-02 batch 28: date moved Apr. 18→Apr. 24, 2018, releasing the batch-22 hold — NFL.com explicitly reports the exercise on Apr. 24; Apr. 18 was only the stated plan.",
       "sources": [
        {
         "publisher": "Pro Football Rumors",
@@ -62241,7 +62368,9 @@
       ],
       "ruling": true
      },
-     "status": "candidate"
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z"
     },
     {
      "id": "e5fe73a76bb0",
@@ -69059,25 +69188,23 @@
       "team": "DET"
      },
      "quote": "On April 28, 2024, Williams signed with the Detroit Lions as an undrafted free agent, after not being selected in the 2024 NFL draft.",
-     "status": "candidate",
+     "status": "rejected",
+     "decision": "rejected",
+     "decidedAt": "2026-10-02T22:37:02.192Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
+      "verdict": "REJECT",
       "confidence": "LOW",
-      "notes": "Not found in the DET official transaction log for 2024.",
+      "notes": "Not found in the DET official transaction log for 2024. mak 2026-10-02 batch 28: REJECT as a duplicate — mak's requested version (May 10, 2024, Lions UDFA signing) is already live as approved log fact 39912ddbf718, which now carries his wording; this Apr. 28 Wikipedia twin would print a second row.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
-     "proposed": {
-      "type": "Signed",
-      "date": "2024-04-28",
-      "precision": "day",
-      "team": "DET"
-     }
+     "proposed": null
     },
     {
      "id": "a4fe31e93a29",
@@ -69420,7 +69547,8 @@
       "type": "Signed",
       "date": "2024-05-10",
       "precision": "day",
-      "team": "DET"
+      "team": "DET",
+      "headline": "Signed with the Detroit Lions as an undrafted free agent"
      },
      "quote": "The Detroit Lions sign S Chelen Garnes, CB Morice Norris, K James Turner, OLB Isaac Ukwu, S Loren Strickland, LS Hogan Hatten, LB Steele Chambers, LB DaRon Gilbert, OLB Nate Lynn, OL Duke Clemens, C Bryan Hudson, C Kingsley Eguakun, WR Jalon Calhoun, WR Isaiah Williams and TE Isaac Rex.",
      "method": "official-log",
@@ -69430,7 +69558,7 @@
       "pass": "official-log",
       "verdict": "MISSING",
       "confidence": "HIGH",
-      "notes": "In the club's official transaction log; not in the Wikipedia reading.",
+      "notes": "In the club's official transaction log; not in the Wikipedia reading. mak 2026-10-02 batch 28: wording per mak — direct Lions announcement and transaction log give May 10, 2024. Reworded by ruling alone; decision kept. Its Apr. 28 Wikipedia twin 336bba228662 was rejected as a duplicate.",
       "official": {
        "date": "2024-05-10",
        "team": "DET",
@@ -69443,7 +69571,8 @@
         "url": "https://www.detroitlions.com/team/transactions/2024",
         "date": "2024-05-10"
        }
-      ]
+      ],
+      "ruling": true
      },
      "status": "approved",
      "decision": "approved",
@@ -86559,14 +86688,16 @@
       "team": "KC"
      },
      "quote": "On November 29, 2017, Firkser was signed to the practice squad of the Kansas City Chiefs.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the KC official transaction log for 2017. mak 2026-10-01 batch 20: HOLD — the Nov 29, 2017 Chiefs practice-squad signing is database-only (PFR transaction log; no contemporaneous story found). Caution: Chiefs.com shows a Nov 28 'signed to Practice Squad' entry that is likely his 2024 stint, not 2017. Stays pending.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Not found in the KC official transaction log for 2017. mak 2026-10-02 batch 28: date moved Nov. 29→Nov. 28, 2017 per the Chiefs' official log, releasing the batch-24 hold.",
       "official": null,
       "sources": [],
       "verified": null,
@@ -86575,9 +86706,10 @@
      },
      "proposed": {
       "type": "Signed",
-      "date": "2017-11-29",
+      "date": "2017-11-28",
       "precision": "day",
-      "team": "KC"
+      "team": "KC",
+      "headline": "Signed to the Kansas City Chiefs' practice squad"
      }
     },
     {
@@ -108187,14 +108319,16 @@
       "team": "LAR"
      },
      "quote": "On December 12, 2019, Dortch was signed to the Los Angeles Rams' practice squad. He signed a reserve/future contract with the Rams on December 31.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the LAR official transaction log for 2019. mak 2026-10-02 batch 24: HOLD — the Rams' official 2019 log confirms his Dec. 12 practice-squad signing but not a Dec. 31 reserve/future contract (https://www.therams.com/team/transactions/2019).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Not found in the LAR official transaction log for 2019. mak 2026-10-02 batch 28: date moved Dec. 31, 2019→Jan. 9, 2020 on the direct Rams announcement, releasing the batch-24 hold (the Rams' 2019 log had confirmed only his Dec. 12 practice-squad signing).",
       "official": null,
       "sources": [],
       "verified": null,
@@ -108203,9 +108337,10 @@
      },
      "proposed": {
       "type": "Signed",
-      "date": "2019-12-31",
+      "date": "2020-01-09",
       "precision": "day",
-      "team": "LAR"
+      "team": "LAR",
+      "headline": "Signed a reserve/future contract with the Los Angeles Rams"
      }
     },
     {
@@ -115649,14 +115784,16 @@
       "team": "SF"
      },
      "quote": "On September 4, 2017, McNichols was signed to the practice squad of the San Francisco 49ers.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-09-03, 1 day(s) before the stored date (2017-09-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-09-03, 1 day(s) before the stored date (2017-09-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — a direct 49ers announcement supports Sep. 4, 2017 as the public-facing date; Sep. 3 stays the processing date.",
       "official": {
        "date": "2017-09-03",
        "team": "SF",
@@ -115678,13 +115815,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2017-09-04",
       "precision": "day",
       "team": "SF",
+      "headline": "Signed to the San Francisco 49ers' practice squad",
       "events": [
        {
         "date": "2017-09-03",
@@ -115736,14 +115875,16 @@
       "team": "IND"
      },
      "quote": "On September 3, 2018, McNichols was signed to the Indianapolis Colts' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-09-02, 1 day(s) before the stored date (2018-09-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-09-02, 1 day(s) before the stored date (2018-09-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Colts announcement; Sep. 2 stays the processing date.",
       "official": {
        "date": "2018-09-02",
        "team": "IND",
@@ -115765,13 +115906,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-09-03",
       "precision": "day",
       "team": "IND",
+      "headline": "Signed to the Indianapolis Colts' practice squad",
       "events": [
        {
         "date": "2018-09-02",
@@ -115790,14 +115933,16 @@
       "team": "IND"
      },
      "quote": "On September 3, 2018, McNichols was signed to the Indianapolis Colts' practice squad. He was released 10 days later, but was re-signed on September 18.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-09-17, 1 day(s) before the stored date (2018-09-18). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-09-17, 1 day(s) before the stored date (2018-09-18). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — the Colts directly announced it Sep. 18, 2018; Sep. 17 stays the processing date.",
       "official": {
        "date": "2018-09-17",
        "team": "IND",
@@ -115819,13 +115964,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Re-signed",
       "date": "2018-09-18",
       "precision": "day",
       "team": "IND",
+      "headline": "Re-signed to the Indianapolis Colts' practice squad",
       "events": [
        {
         "date": "2018-09-17",
@@ -115878,14 +116025,16 @@
       "team": "TEN"
      },
      "quote": "On December 3, 2018, McNichols was signed by the Tennessee Titans off the Broncos' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
+      "verdict": "APPROVE",
       "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-12-02, 1 day(s) before the stored date (2018-12-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "notes": "The archived log dates this move 2018-12-02, 1 day(s) before the stored date (2018-12-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: approved with mak's wording; Dec. 2 stays the processing date.",
       "official": {
        "date": "2018-12-02",
        "team": "TEN",
@@ -115907,13 +116056,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-12-03",
       "precision": "day",
       "team": "TEN",
+      "headline": "Signed by the Tennessee Titans off the Denver Broncos' practice squad",
       "events": [
        {
         "date": "2018-12-02",
@@ -115932,7 +116083,9 @@
       "team": "TEN"
      },
      "quote": "On December 3, 2018, McNichols was signed by the Tennessee Titans off the Broncos' practice squad. He was waived on August 31, 2019.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -115986,14 +116139,16 @@
       "team": "CHI"
      },
      "quote": "On November 19, 2019, McNichols was signed to the Chicago Bears' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-11-18, 1 day(s) before the stored date (2019-11-19). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-11-18, 1 day(s) before the stored date (2019-11-19). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Bears article on Nov. 19, 2019; Nov. 18 stays the processing date.",
       "official": {
        "date": "2019-11-18",
        "team": "CHI",
@@ -116015,13 +116170,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2019-11-19",
       "precision": "day",
       "team": "CHI",
+      "headline": "Signed to the Chicago Bears' practice squad",
       "events": [
        {
         "date": "2019-11-18",
@@ -116040,24 +116197,28 @@
       "team": "CHI"
      },
      "quote": "On November 19, 2019, McNichols was signed to the Chicago Bears' practice squad. He was waived on December 11.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the CHI official transaction log for 2019.",
+      "verdict": "EDIT",
+      "confidence": "MEDIUM",
+      "notes": "Not found in the CHI official transaction log for 2019. mak 2026-10-02 batch 25: Waived→Released (he was on the practice squad, so released is the cleaner wording) and no longer LOW — CBS/RotoWire contemporaneously reported the release Dec. 11 and additional transaction coverage matches (https://www.cbssports.com/fantasy/football/news/jeremy-mcnichols-cut-by-bears/). mak said MEDIUM-HIGH; stored MEDIUM per the house cap on non-club-direct sources.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Waived",
+      "type": "Released",
       "date": "2019-12-11",
       "precision": "day",
-      "team": "CHI"
+      "team": "CHI",
+      "headline": "Released from the Chicago Bears' practice squad"
      }
     },
     {
@@ -116070,14 +116231,16 @@
       "team": "JAX"
      },
      "quote": "On December 18, 2019, McNichols was signed to the Jacksonville Jaguars' practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-12-17, 1 day(s) before the stored date (2019-12-18). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-12-17, 1 day(s) before the stored date (2019-12-18). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH, releasing the batch-25 hold — Jacksonville published a direct Dec. 18, 2019 announcement saying it signed McNichols that day; the backend log's Dec. 17 stays the processing date.",
       "official": {
        "date": "2019-12-17",
        "team": "JAX",
@@ -116099,13 +116262,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2019-12-18",
       "precision": "day",
       "team": "JAX",
+      "headline": "Signed to the Jacksonville Jaguars' practice squad",
       "events": [
        {
         "date": "2019-12-17",
@@ -117367,14 +117532,16 @@
       }
      },
      "quote": "On March 19, 2026, Ford signed a one-year, $1.4 million contract with the Washington Commanders.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "The Commanders' log confirms he was on their roster in 2026 (IR, Aug. 18), but the saved log has no March 2026 signing entry. The only cited source (USA Today, URL dated March 14) cannot be fetched from here. Neither the March 19 date nor the one-year, $1.4M terms could be confirmed. The March 14 URL date suggests the agreement was reported by then.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The Commanders' log confirms he was on their roster in 2026 (IR, Aug. 18), but the saved log has no March 2026 signing entry. The only cited source (USA Today, URL dated March 14) cannot be fetched from here. Neither the March 19 date nor the one-year, $1.4M terms could be confirmed. The March 14 URL date suggests the agreement was reported by then. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-19 hold — Washington published a dedicated March 19 announcement saying it had signed Ford (https://www.commanders.com/news/commanders-sign-jerome-ford). The one-year, $1.4M terms stay out: Wikipedia/USA Today only, not separately sourced.",
       "official": null,
       "sources": [
        {
@@ -117411,17 +117578,14 @@
        "agreed": null,
        "signed": null,
        "officialLog": null
-      }
+      },
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2026-03-19",
       "precision": "day",
       "team": "WAS",
-      "terms": {
-       "years": 1,
-       "totalM": 1.4
-      },
       "headline": "Signed with the Washington Commanders"
      }
     },
@@ -118577,14 +118741,16 @@
       "team": "LAR"
      },
      "quote": "He was waived by the Rams on September 3, 2017, and was re-signed to the practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-09-02, 1 day(s) before the stored date (2017-09-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-09-02, 1 day(s) before the stored date (2017-09-03). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Rams announcement and Rams bio for the Sep. 3, 2017 waiver.",
       "official": {
        "date": "2017-09-02",
        "team": "LAR",
@@ -118606,7 +118772,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -118631,14 +118798,16 @@
       "team": "LAR"
      },
      "quote": "He was waived by the Rams on November 21, 2017, and was re-signed to the practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-11-20, 1 day(s) before the stored date (2017-11-21). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-11-20, 1 day(s) before the stored date (2017-11-21). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — direct Rams announcement of the Nov. 21, 2017 waiver.",
       "official": {
        "date": "2017-11-20",
        "team": "LAR",
@@ -118660,7 +118829,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -118685,14 +118855,16 @@
       "team": "LAR"
      },
      "quote": "He signed a reserve/future contract with the Rams on January 8, 2018.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-01-07, 1 day(s) before the stored date (2018-01-08). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-01-07, 1 day(s) before the stored date (2018-01-08). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: APPROVE HIGH — a direct Rams article and his official biography both use Jan. 8, 2018.",
       "official": {
        "date": "2018-01-07",
        "team": "LAR",
@@ -118714,13 +118886,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-01-08",
       "precision": "day",
       "team": "LAR",
+      "headline": "Signed a reserve/future contract with the Los Angeles Rams",
       "events": [
        {
         "date": "2018-01-07",
@@ -118739,24 +118913,31 @@
       "team": "LAR"
      },
      "quote": "Mundt re-signed on a one-year exclusive-rights free agent contract with the Rams on April 17, 2020.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the LAR official transaction log for 2020.",
+      "verdict": "APPROVE",
+      "confidence": "MEDIUM",
+      "notes": "Not found in the LAR official transaction log for 2020. mak 2026-10-02 batch 25: APPROVE MEDIUM, releasing the batch-21 hold — the Rams' own later roster overview confirms he returned by signing the one-year tender (https://www.therams.com/news/rams-offseason-roster-overview-heading-into-draft-month), while the exact Apr. 17 date rests on contemporaneous transaction reporting. MEDIUM not HIGH per mak.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Re-signed",
       "date": "2020-04-17",
       "precision": "day",
-      "team": "LAR"
+      "team": "LAR",
+      "headline": "Re-signed with the Los Angeles Rams on a one-year exclusive-rights tender",
+      "terms": {
+       "years": 1
+      }
      }
     },
     {
@@ -118769,24 +118950,31 @@
       "team": "LAR"
      },
      "quote": "Mundt re-signed on a one-year exclusive-rights free agent contract with the Rams on April 17, 2020. He signed another one-year contract on March 18, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the LAR official transaction log for 2021.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Not found in the LAR official transaction log for 2021. mak 2026-10-02 batch 25: Re-signed→Contract — the Rams' own March 18 material says agreed to terms, which is more precise than treating it as a confirmed signature.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Re-signed",
+      "type": "Contract",
       "date": "2021-03-18",
       "precision": "day",
-      "team": "LAR"
+      "team": "LAR",
+      "headline": "Agreed to terms on a one-year contract with the Los Angeles Rams",
+      "terms": {
+       "years": 1
+      }
      }
     },
     {
@@ -122971,24 +123159,28 @@
       "team": "LAC"
      },
      "quote": "He made 10 appearances (two starts) for Los Angeles during his rookie campaign, recording five receptions for 51 yards and one touchdown. Lambert-Smith was placed on season-ending injured reserve on January 10, 2026, due to a hamstring injury suffered in Week 18 against the Denver Broncos.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the LAC official transaction log for 2026.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the LAC official transaction log for 2026. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-21 hold — direct Chargers announcement of the Jan. 10, 2026 move (https://www.chargers.com/news/activate-tucker-fisk-elevate-dalevon-campbell-isas-waxter).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Placed on IR",
       "date": "2026-01-10",
       "precision": "day",
-      "team": "LAC"
+      "team": "LAC",
+      "headline": "Placed on injured reserve by the Los Angeles Chargers"
      }
     },
     {
@@ -123499,14 +123691,16 @@
       "team": "MIN"
      },
      "quote": "On May 15, 2021, he signed his rookie contract with Minnesota, worth $4.23 million with a $752K signing bonus. Nwangwu was placed on injured reserve on September 1.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-08-31, 1 day(s) before the stored date (2021-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-08-31, 1 day(s) before the stored date (2021-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: date moved Sep. 1→Aug. 31, 2021 per Minnesota's official transaction log — unlike the one-day cases with a stronger club article, no Sep. 1 club announcement was found.",
       "official": {
        "date": "2021-08-31",
        "team": "MIN",
@@ -123528,19 +123722,14 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Placed on IR",
-      "date": "2021-09-01",
+      "date": "2021-08-31",
       "precision": "day",
-      "team": "MIN",
-      "events": [
-       {
-        "date": "2021-08-31",
-        "status": "processed"
-       }
-      ]
+      "team": "MIN"
      }
     },
     {
@@ -123596,24 +123785,28 @@
       "team": "NO"
      },
      "quote": "On August 28, 2024, Nwangwu was claimed off waivers by the New Orleans Saints, but was waived the next day after failing his physical.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the NO official transaction log for 2024.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the NO official transaction log for 2024. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-21 hold — the Saints' own roster-moves article says Nwangwu was awarded to them off waivers (https://www.neworleanssaints.com/news/new-orleans-saints-2024-practice-squad-announced-roster-moves-transactions-2024-nfl-season).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Claimed",
       "date": "2024-08-28",
       "precision": "day",
-      "team": "NO"
+      "team": "NO",
+      "headline": "Claimed off waivers by the New Orleans Saints"
      }
     },
     {
@@ -124605,14 +124798,16 @@
       "team": "NYJ"
      },
      "quote": "Yeboah signed with the New York Jets as an undrafted free agent on May 7, 2021. He was waived on August 31, and re-signed to the practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-08-30, 1 day(s) before the stored date (2021-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-08-30, 1 day(s) before the stored date (2021-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: date moved Aug. 31→Aug. 30, 2021 — the Jets officially waived him Aug. 30, with a public roster-cuts article also listing him among the waived players.",
       "official": {
        "date": "2021-08-30",
        "team": "NYJ",
@@ -124634,19 +124829,14 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
-      "date": "2021-08-31",
+      "date": "2021-08-30",
       "precision": "day",
-      "team": "NYJ",
-      "events": [
-       {
-        "date": "2021-08-30",
-        "status": "processed"
-       }
-      ]
+      "team": "NYJ"
      }
     },
     {
@@ -125488,14 +125678,14 @@
       "team": "CAR"
      },
      "quote": "On April 28, 2018, Allen signed with the Carolina Panthers as an undrafted free agent. He was waived on September 1 and was signed to the Panthers' practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-08-31, 1 day(s) before the stored date (2018-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-08-31, 1 day(s) before the stored date (2018-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 29: date moved Sep. 1→Aug. 31, 2018, releasing the batch-28 hold — Carolina's official transaction log lists Allen as waived Aug. 31, and the Panthers' Sep. 1 roster-cutdown article lists him among the players waived as part of Saturday's moves; the club then signed him to the practice squad on Sep. 1 (clean chronology: Aug. 31 waived, Sep. 1 PS).",
       "official": {
        "date": "2018-08-31",
        "team": "CAR",
@@ -125517,20 +125707,17 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
-      "date": "2018-09-01",
+      "date": "2018-08-31",
       "precision": "day",
-      "team": "CAR",
-      "events": [
-       {
-        "date": "2018-08-31",
-        "status": "processed"
-       }
-      ]
-     }
+      "team": "CAR"
+     },
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:41:59.332Z"
     },
     {
      "id": "0d3d6cccc990",
@@ -125964,14 +126151,16 @@
       "yearFrom": "heading"
      },
      "quote": "Allen was re-signed to the Panthers practice squad on October 30.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:37:02.037Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-10-29, 1 day(s) before the stored date (2018-10-30). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-10-29, 1 day(s) before the stored date (2018-10-30). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 28: Re-signed→Signed and date moved Oct. 30→Oct. 29, 2018 per Carolina's official log.",
       "official": {
        "date": "2018-10-29",
        "team": "CAR",
@@ -125993,20 +126182,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Re-signed",
-      "date": "2018-10-30",
+      "type": "Signed",
+      "date": "2018-10-29",
       "precision": "day",
       "team": "CAR",
-      "yearFrom": "heading",
-      "events": [
-       {
-        "date": "2018-10-29",
-        "status": "processed"
-       }
-      ]
+      "headline": "Signed to the Carolina Panthers' practice squad"
      }
     },
     {
@@ -126240,14 +126424,16 @@
       "team": "IND"
      },
      "quote": "He signed his four-year rookie contract with Indianapolis on May 19, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-05-18, 1 day(s) before the stored date (2021-05-19). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-05-18, 1 day(s) before the stored date (2021-05-19). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the Colts directly announced on May 19, 2021 that Granson and Sam Ehlinger had signed; the log's May 18 stays the processed event.",
       "official": {
        "date": "2021-05-18",
        "team": "IND",
@@ -126269,13 +126455,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2021-05-19",
       "precision": "day",
       "team": "IND",
+      "headline": "Signed his four-year rookie contract with the Indianapolis Colts",
       "events": [
        {
         "date": "2021-05-18",
@@ -127104,14 +127292,16 @@
       "team": "NO"
      },
      "quote": "Humphrey was signed by the New Orleans Saints as an undrafted free agent following the 2019 NFL draft. He was waived on August 31, 2019, and was signed to the practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-08-30, 1 day(s) before the stored date (2019-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-08-30, 1 day(s) before the stored date (2019-08-31). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the Saints' contemporaneous Aug. 31, 2019 roster-reduction article explicitly lists him among the waived players; the archive's Aug. 30 is the processing date.",
       "official": {
        "date": "2019-08-30",
        "team": "NO",
@@ -127133,7 +127323,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -127158,14 +127349,16 @@
       "team": "NO"
      },
      "quote": "On September 5, 2020, Humphrey was waived by the Saints and signed to the practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-09-04, 1 day(s) before the stored date (2020-09-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2020-09-04, 1 day(s) before the stored date (2020-09-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the Saints' Sep. 5, 2020 roster-cutdown announcement explicitly lists Humphrey among the players waived 'today'; the archive's Sep. 4 is the processing date.",
       "official": {
        "date": "2020-09-04",
        "team": "NO",
@@ -127187,7 +127380,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -133219,14 +133413,16 @@
       "team": "IND"
      },
      "quote": "On April 21, 2017, Alie-Cox signed with the Indianapolis Colts, having not played organized football since his freshman year of high school.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-04-20, 1 day(s) before the stored date (2017-04-21). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-04-20, 1 day(s) before the stored date (2017-04-21). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the Colts' own Apr. 21, 2017 article explicitly says they signed him that Friday; the log's Apr. 20 stays the processed event.",
       "official": {
        "date": "2017-04-20",
        "team": "IND",
@@ -133248,13 +133444,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2017-04-21",
       "precision": "day",
       "team": "IND",
+      "headline": "Signed with the Indianapolis Colts as an undrafted free agent",
       "events": [
        {
         "date": "2017-04-20",
@@ -133347,14 +133545,16 @@
       "team": "IND"
      },
      "quote": "He was re-signed to the Colts' practice squad on October 7, 2017.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-10-06, 1 day(s) before the stored date (2017-10-07). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-10-06, 1 day(s) before the stored date (2017-10-07). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH with mak's more precise practice-squad wording — the Colts published a dedicated Oct. 7, 2017 announcement; the log's Oct. 6 stays the processed event.",
       "official": {
        "date": "2017-10-06",
        "team": "IND",
@@ -133376,13 +133576,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Re-signed",
       "date": "2017-10-07",
       "precision": "day",
       "team": "IND",
+      "headline": "Re-signed to the Indianapolis Colts' practice squad",
       "events": [
        {
         "date": "2017-10-06",
@@ -133435,14 +133637,16 @@
       "team": "IND"
      },
      "quote": "On September 1, 2018, Alie-Cox was waived by the Colts and was signed to the practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-08-31, 1 day(s) before the stored date (2018-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-08-31, 1 day(s) before the stored date (2018-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — Indianapolis' Sep. 1, 2018 roster-cuts article explicitly lists Alie-Cox among the waived players; the log's Aug. 31 stays the processed event.",
       "official": {
        "date": "2018-08-31",
        "team": "IND",
@@ -133464,7 +133668,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
@@ -134217,14 +134422,16 @@
       "team": "CLE"
      },
      "quote": "The Browns placed him on injured reserve on October 5, 2020.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-10-04, 1 day(s) before the stored date (2020-10-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2020-10-04, 1 day(s) before the stored date (2020-10-05). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the Browns' later official Chubb activation article explicitly states he had been placed on IR Oct. 5, 2020, resolving the Oct. 4 archive discrepancy (kept as processed).",
       "official": {
        "date": "2020-10-04",
        "team": "CLE",
@@ -134246,7 +134453,8 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Placed on IR",
@@ -134484,14 +134692,16 @@
       "team": "CLE"
      },
      "quote": "Chubb was activated from injured reserve on November 14, 2020. During Week 10 against the Houston Texans, in his first game back from injury, Chubb recorded 19 carries for 126 yards and a touchdown, and sealed the win for the Browns with a 59-yard run late in the fourth quarter.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2020-11-13, 1 day(s) before the stored date (2020-11-14). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2020-11-13, 1 day(s) before the stored date (2020-11-14). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — Cleveland published a direct Nov. 14, 2020 roster announcement; the log's Nov. 13 stays the processed event.",
       "official": {
        "date": "2020-11-13",
        "team": "CLE",
@@ -134513,13 +134723,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Activated",
       "date": "2020-11-14",
       "precision": "day",
       "team": "CLE",
+      "headline": "Activated from injured reserve by the Cleveland Browns",
       "events": [
        {
         "date": "2020-11-13",
@@ -134854,14 +135066,16 @@
       "team": "SF"
      },
      "quote": "On May 4, 2017, Mullens signed with the San Francisco 49ers as an undrafted free agent.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2017-05-03, 1 day(s) before the stored date (2017-05-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2017-05-03, 1 day(s) before the stored date (2017-05-04). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — the 49ers' May 4, 2017 announcement lists Mullens among the 18 UDFAs who signed three-year contracts; the log's May 3 stays the processed event.",
       "official": {
        "date": "2017-05-03",
        "team": "SF",
@@ -134883,13 +135097,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2017-05-04",
       "precision": "day",
       "team": "SF",
+      "headline": "Signed with the San Francisco 49ers as an undrafted free agent",
       "events": [
        {
         "date": "2017-05-03",
@@ -134941,14 +135157,16 @@
       "team": "SF"
      },
      "quote": "On January 2, 2018, the 49ers signed Mullens to a reserve/futures contract after he spent his entire rookie season on the practice squad.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2018-01-01, 1 day(s) before the stored date (2018-01-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2018-01-01, 1 day(s) before the stored date (2018-01-02). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH — San Francisco published the reserve/future announcement Jan. 2, 2018; the log's Jan. 1 stays the processed event.",
       "official": {
        "date": "2018-01-01",
        "team": "SF",
@@ -134970,13 +135188,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2018-01-02",
       "precision": "day",
       "team": "SF",
+      "headline": "Signed a reserve/future contract with the San Francisco 49ers",
       "events": [
        {
         "date": "2018-01-01",
@@ -135034,14 +135254,16 @@
       "team": "PHI"
      },
      "quote": "On June 14, 2021, Mullens signed a one-year contract with the Eagles.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-06-13, 1 day(s) before the stored date (2021-06-14). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-06-13, 1 day(s) before the stored date (2021-06-14). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: Signed→Contract — Philadelphia's direct announcement says 'agreed to terms', not that he had signed that day; HIGH. The Eagles log's Jun. 13 'Agreed to terms with QB Nick Mullens' stays the processed event.",
       "official": {
        "date": "2021-06-13",
        "team": "PHI",
@@ -135063,13 +135285,18 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
-      "type": "Signed",
+      "type": "Contract",
       "date": "2021-06-14",
       "precision": "day",
       "team": "PHI",
+      "headline": "Agreed to terms on a one-year contract with the Philadelphia Eagles",
+      "terms": {
+       "years": 1
+      },
       "events": [
        {
         "date": "2021-06-13",
@@ -135116,14 +135343,16 @@
       "team": "CLE"
      },
      "quote": "Mullens was signed to the Cleveland Browns' practice squad on September 1, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2021-08-31, 1 day(s) before the stored date (2021-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2021-08-31, 1 day(s) before the stored date (2021-09-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH with mak's practice-squad wording — Cleveland directly announced the practice-squad signing Sep. 1, 2021; the log's Aug. 31 stays the processed event.",
       "official": {
        "date": "2021-08-31",
        "team": "CLE",
@@ -135145,13 +135374,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2021-09-01",
       "precision": "day",
       "team": "CLE",
+      "headline": "Signed to the Cleveland Browns' practice squad",
       "events": [
        {
         "date": "2021-08-31",
@@ -135545,14 +135776,16 @@
       "team": "SF"
      },
      "quote": "On March 5, 2020, Mullens was assigned a one-year, $750,000 exclusive-rights free agent tender by the 49ers. He signed the contract on May 1.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "DATE UNCERTAIN",
-      "confidence": "MEDIUM",
-      "notes": "The club log dates it April 30, 2020, while the club article is dated May 1 (stored). The tender was placed March 4 per the log, though the article says March 5. I lean April 30 (log). The $750K amount is not confirmed.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The club log dates it April 30, 2020, while the club article is dated May 1 (stored). The tender was placed March 4 per the log, though the article says March 5. I lean April 30 (log). The $750K amount is not confirmed. mak 2026-10-02 batch 27: APPROVE HIGH, no longer date-uncertain — the 49ers' official transaction history explicitly records Apr. 30, 2020.",
       "official": null,
       "sources": [
        {
@@ -135589,14 +135822,15 @@
        "agreed": null,
        "signed": "2020-04-30",
        "officialLog": "2020-04-30"
-      }
+      },
+      "ruling": true
      },
      "proposed": {
       "type": "Tender",
       "date": "2020-04-30",
       "precision": "day",
       "team": "SF",
-      "headline": "Signed his exclusive rights free agent tender",
+      "headline": "Signed his one-year exclusive-rights free-agent tender with the San Francisco 49ers",
       "terms": {
        "years": 1
       }
@@ -135962,24 +136196,28 @@
       "team": "TEN"
      },
      "quote": "Westbrook-Ikhine was signed by the Tennessee Titans as an undrafted free agent on April 26, 2020. He was waived at the end of training camp during final roster cuts on September 5, but was signed by to the practice squad the next day.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the TEN official transaction log for 2020.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Not found in the TEN official transaction log for 2020. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-23 hold — Tennessee's final-cuts article explicitly includes Nick Westbrook in its waived list, and the team transaction page then shows him signing to the practice squad (https://www.tennesseetitans.com/news/roster-moves-titans-trim-roster-to-53-players).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
       "date": "2020-09-05",
       "precision": "day",
-      "team": "TEN"
+      "team": "TEN",
+      "headline": "Waived by the Tennessee Titans"
      }
     },
     {
@@ -136642,14 +136880,16 @@
       }
      },
      "quote": "On May 11, 2017, the Cowboys signed Brown to a four-year, $2.47 million contract that included a signing bonus of $71,938.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Dallas is the one club missing from the local transaction logs, and the web-search quota ran out before a Cowboys, NFL.com or AP source for the rookie signing could be found. The draft is confirmed; the date, value and bonus are not.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "Dallas is the one club missing from the local transaction logs, and the web-search quota ran out before a Cowboys, NFL.com or AP source for the rookie signing could be found. The draft is confirmed; the date, value and bonus are not. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-21 hold — Dallas directly says Brown was among eight draft picks who had signed their rookie deals May 11 (https://www.dallascowboys.com/news/eight-of-cowboys-nine-2017-draft-picks-sign-their-rookie-contracts-432086). The $2.47M value and signing bonus stay out (Wikipedia-only).",
       "official": null,
       "sources": [
        {
@@ -136680,18 +136920,18 @@
        "agreed": null,
        "signed": null,
        "officialLog": null
-      }
+      },
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2017-05-11",
       "precision": "day",
       "team": "DAL",
+      "headline": "Signed his four-year rookie contract with the Dallas Cowboys",
       "terms": {
-       "years": 4,
-       "totalM": 2.47
-      },
-      "headline": "Signed his four-year rookie contract"
+       "years": 4
+      }
      }
     },
     {
@@ -138293,24 +138533,28 @@
       "team": "DAL"
      },
      "quote": "On August 30, 2026, Mafah was waived by the Cowboys as part of final roster cuts.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "The Cowboys publish no transaction log.",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The Cowboys publish no transaction log. mak 2026-10-02 batch 25: APPROVE HIGH, releasing the batch-21 hold — Dallas's own transaction roundup lists Mafah under the Aug. 30 waived players (Dallas publishes no yearly log; the roundup is club-direct).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Waived",
       "date": "2026-08-30",
       "precision": "day",
-      "team": "DAL"
+      "team": "DAL",
+      "headline": "Waived by the Dallas Cowboys"
      }
     },
     {
@@ -138998,24 +139242,28 @@
       "team": "GB"
      },
      "quote": "On April 24, 2020, the Packers re-signed Tonyan as an exclusive-rights free agent, putting him under contract in Green Bay for another year.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the GB official transaction log for 2020.",
+      "verdict": "APPROVE",
+      "confidence": "MEDIUM",
+      "notes": "Not found in the GB official transaction log for 2020. mak 2026-10-02 batch 27: APPROVE MEDIUM, releasing the batch-25 hold — no longer Wikipedia-only: CBS/RotoWire reported the signed tender citing ESPN's Rob Demovsky, and an independent Packers transaction-history database records Apr. 24, 2020. Not HIGH per mak — still no same-day Packers announcement.",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Re-signed",
       "date": "2020-04-24",
       "precision": "day",
-      "team": "GB"
+      "team": "GB",
+      "headline": "Signed his exclusive-rights free-agent tender with the Green Bay Packers"
      }
     },
     {
@@ -139028,7 +139276,9 @@
       "team": "GB"
      },
      "quote": "On October 28, 2021, Tonyan tore the ACL in his left knee during the Packers week 8 game against the Arizona Cardinals, forcing him to miss the remainder of the 2021 season. He was placed on injured reserve on November 1, 2021.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
@@ -139390,14 +139640,16 @@
       "team": "KC"
      },
      "quote": "On March 11, 2025, Tonyan re-signed with the Chiefs. He was released on August 26 as part of final roster cuts and re-signed with the Chiefs practice squad on August 28.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
-      "confidence": "LOW",
-      "notes": "Not found in the KC official transaction log for 2025. mak 2026-10-02 batch 23: HOLD — the Chiefs-direct source found is Aug. 29, 2025 for his promotion to the active roster, not an Aug. 28 practice-squad re-signing.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "Not found in the KC official transaction log for 2025. mak 2026-10-02 batch 25: significant correction, superseding the batch-23 hold — Kansas City's official records show Tonyan was signed to the practice squad Aug. 27, then signed from the practice squad to the active roster Aug. 28 (https://www.chiefs.com/team/transactions/2025; the stored KC log carries both lines). The Aug. 27 PS signing is its own fact via zz-manual-batch25.json; the batch-23 note's Aug. 29 promotion date was wrong.",
       "official": null,
       "sources": [],
       "verified": null,
@@ -139405,10 +139657,11 @@
       "ruling": true
      },
      "proposed": {
-      "type": "Re-signed",
+      "type": "Signed",
       "date": "2025-08-28",
       "precision": "day",
-      "team": "KC"
+      "team": "KC",
+      "headline": "Signed from the Kansas City Chiefs' practice squad to the active roster"
      }
     },
     {
@@ -139691,6 +139944,44 @@
      "status": "approved",
      "decision": "approved",
      "decidedAt": "2026-09-30T22:31:18.829Z"
+    },
+    {
+     "id": "a54d42d42787",
+     "field": "transaction",
+     "value": {
+      "type": "Signed",
+      "date": "2025-08-27",
+      "precision": "day",
+      "team": "KC",
+      "headline": "Signed to the Kansas City Chiefs' practice squad"
+     },
+     "proposed": {
+      "type": "Signed",
+      "date": "2025-08-27",
+      "precision": "day",
+      "team": "KC",
+      "headline": "Signed to the Kansas City Chiefs' practice squad"
+     },
+     "quote": "Kansas City's official 2025 transaction page lists Tonyan among the players signed to the practice squad on Aug. 27, 2025, the day before his signing to the active roster.",
+     "method": "search",
+     "confidence": 0.8,
+     "missing": true,
+     "verification": {
+      "pass": "search",
+      "verdict": "MISSING",
+      "confidence": "HIGH",
+      "notes": "Kansas City's official 2025 transaction page lists Tonyan among the players signed to the practice squad on Aug. 27, 2025, the day before his signing to the active roster.",
+      "sources": [
+       {
+        "publisher": "Kansas City Chiefs (official transaction page)",
+        "url": "https://www.chiefs.com/team/transactions/2025",
+        "date": "2025-08-27"
+       }
+      ]
+     },
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:01:50.835Z"
     }
    ]
   },
@@ -142611,25 +142902,23 @@
       "team": "CLE"
      },
      "quote": "After going undrafted in the 2019 NFL draft, Carlson signed with the Cleveland Browns as an undrafted free agent in May 2019.",
-     "status": "candidate",
+     "status": "rejected",
+     "decision": "rejected",
+     "decidedAt": "2026-10-02T22:01:51.012Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "UNABLE TO VERIFY",
+      "verdict": "REJECT",
       "confidence": "LOW",
-      "notes": "Not found in the CLE official transaction log for 2019.",
+      "notes": "Not found in the CLE official transaction log for 2019. mak 2026-10-02 batch 25: REJECT as a duplicate — mak's requested exact-date version (May 2, 2019 UDFA signing) is already live as approved log fact 4994fc62d053, which now carries his wording; publishing this month-only Wikipedia twin would print a second row (fourth log-twin case: Williams, Mullens, Dortch, now Carlson).",
       "official": null,
       "sources": [],
       "verified": null,
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
-     "proposed": {
-      "type": "Signed",
-      "date": "2019-05",
-      "precision": "month",
-      "team": "CLE"
-     }
+     "proposed": null
     },
     {
      "id": "5e3363407fe5",
@@ -142954,14 +143243,16 @@
       "team": "CLE"
      },
      "quote": "The Browns signed Carlson to their active roster on November 1, 2019.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "official-log",
-      "verdict": "DATE CONFLICT",
-      "confidence": "MEDIUM",
-      "notes": "The archived log dates this move 2019-10-31, 1 day(s) before the stored date (2019-11-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json).",
+      "verdict": "APPROVE",
+      "confidence": "HIGH",
+      "notes": "The archived log dates this move 2019-10-31, 1 day(s) before the stored date (2019-11-01). The stored date is kept as the event; the archive date is recorded as the processing date. If a contemporaneous club announcement pins the event day, prefer it (rule in data/player/bio_rulings.json). mak 2026-10-02 batch 27: APPROVE HIGH with mak's elevation wording — Cleveland's Nov. 4 article says Carlson had been elevated Friday, which was Nov. 1, 2019; the archive's Oct. 31 stays the processed event.",
       "official": {
        "date": "2019-10-31",
        "team": "CLE",
@@ -142983,13 +143274,15 @@
         }
        ]
       },
-      "dates": null
+      "dates": null,
+      "ruling": true
      },
      "proposed": {
       "type": "Signed",
       "date": "2019-11-01",
       "precision": "day",
       "team": "CLE",
+      "headline": "Elevated from the Cleveland Browns' practice squad to the active roster",
       "events": [
        {
         "date": "2019-10-31",
@@ -143008,14 +143301,16 @@
       "team": "CLE"
      },
      "quote": "Carlson was given an exclusive-rights free agent tender by the Browns on March 5, 2021. He signed the one-year contract on April 14.",
-     "status": "candidate",
+     "status": "approved",
+     "decision": "approved",
+     "decidedAt": "2026-10-02T22:26:11.968Z",
      "method": "extracted",
      "confidence": 0.7,
      "verification": {
       "pass": "search",
-      "verdict": "DATE UNCERTAIN",
-      "confidence": "MEDIUM",
-      "notes": "The Browns log dates the signing April 13 (stored: April 14). The same log dates the tender March 4, while the club article announcing it is dated March 5, so the log appears to run a day early; April 14 is therefore plausible but not independently confirmed. Recommend 2021-04-14 only if another source appears, otherwise the log's 2021-04-13.",
+      "verdict": "EDIT",
+      "confidence": "HIGH",
+      "notes": "The Browns log dates the signing April 13 (stored: April 14). The same log dates the tender March 4, while the club article announcing it is dated March 5, so the log appears to run a day early; April 14 is therefore plausible but not independently confirmed. Recommend 2021-04-14 only if another source appears, otherwise the log's 2021-04-13. mak 2026-10-02 batch 27: date moved Apr. 14→Apr. 13, 2021 — the strongest exact-date source is Cleveland's official transaction log ('Signed TE Stephen Carlson (exclusive rights)' on Apr. 13); the Apr. 15 Browns article confirms the signing but does not establish Apr. 14. The prior signed/processed event pair is dropped.",
       "official": null,
       "sources": [
        {
@@ -143058,27 +143353,18 @@
        "agreed": null,
        "signed": "2021-04-14",
        "officialLog": "2021-04-13"
-      }
+      },
+      "ruling": true
      },
      "proposed": {
       "type": "Tender",
-      "date": "2021-04-14",
+      "date": "2021-04-13",
       "precision": "day",
       "team": "CLE",
-      "headline": "Signed his exclusive-rights free agent tender with the Browns",
+      "headline": "Signed his exclusive-rights free-agent tender with the Cleveland Browns",
       "terms": {
        "years": 1
-      },
-      "events": [
-       {
-        "date": "2021-04-14",
-        "status": "signed"
-       },
-       {
-        "date": "2021-04-13",
-        "status": "processed"
-       }
-      ]
+      }
      }
     },
     {
@@ -143524,7 +143810,8 @@
       "type": "Signed",
       "date": "2019-05-02",
       "precision": "day",
-      "team": "CLE"
+      "team": "CLE",
+      "headline": "Signed with the Cleveland Browns as an undrafted free agent"
      },
      "quote": "Signed TE Stephen Carlson",
      "method": "official-log",
@@ -143534,7 +143821,7 @@
       "pass": "official-log",
       "verdict": "MISSING",
       "confidence": "HIGH",
-      "notes": "In the club's official transaction log; not in the Wikipedia reading.",
+      "notes": "In the club's official transaction log; not in the Wikipedia reading. mak 2026-10-02 batch 25: wording per mak — Cleveland's official transaction log records the signing May 2 (https://www.clevelandbrowns.com/team/transactions/2019) and its article the next day says the Browns had signed Carlson and the other UDFAs (https://www.clevelandbrowns.com/news/browns-sign-15-undrafted-free-agents). Reworded by ruling alone; decision kept.",
       "official": {
        "date": "2019-05-02",
        "team": "CLE",
@@ -143547,7 +143834,8 @@
         "url": "https://www.clevelandbrowns.com/team/transactions/2019",
         "date": "2019-05-02"
        }
-      ]
+      ],
+      "ruling": true
      },
      "status": "approved",
      "decision": "approved",

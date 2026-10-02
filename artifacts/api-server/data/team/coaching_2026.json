@@ -205,7 +205,7 @@
         {
           "stop": "Panthers · OC",
           "years": "2020-21",
-          "scoring": "19.9 ppg",
+          "scoring": "19.8 ppg",
           "scoringContext": "best finish 24th in NFL",
           "thesis": "The Panthers years:",
           "fingerprint": "TEs took 14% of targets (league 21%) in 2021; the lead back handled 40% of backfield weighted opportunities."
@@ -1938,7 +1938,7 @@
         {
           "stop": "Bears · HC",
           "years": "2025-26",
-          "scoring": "27.8 ppg",
+          "scoring": "26.5 ppg",
           "scoringContext": "through Week 3, 5th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -2330,7 +2330,7 @@
         {
           "stop": "Bengals · HC",
           "years": "2019-26",
-          "scoring": "23.8 ppg",
+          "scoring": "23.5 ppg",
           "scoringContext": "through Week 3, 12th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -3159,7 +3159,7 @@
         {
           "stop": "Rams · OC",
           "years": "2012-14",
-          "scoring": "20.3 ppg",
+          "scoring": "20.2 ppg",
           "scoringContext": "best finish 21st in NFL",
           "thesis": "The Rams years:",
           "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
@@ -3183,7 +3183,7 @@
         {
           "stop": "Cowboys · HC",
           "years": "2025-26",
-          "scoring": "28.5 ppg",
+          "scoring": "28 ppg",
           "scoringContext": "through Week 3, 7th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -4276,7 +4276,7 @@
         {
           "stop": "Packers · HC",
           "years": "2019-26",
-          "scoring": "24.4 ppg",
+          "scoring": "25 ppg",
           "scoringContext": "through Week 3, 24th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -4673,7 +4673,7 @@
         {
           "stop": "Texans · OC",
           "years": "2025-26",
-          "scoring": "20.9 ppg",
+          "scoring": "22.9 ppg",
           "scoringContext": "through Week 3, 26th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -5024,7 +5024,7 @@
         {
           "stop": "Colts · HC",
           "years": "2023-26",
-          "scoring": "24.2 ppg",
+          "scoring": "24.3 ppg",
           "scoringContext": "through Week 3, 15th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -5432,7 +5432,7 @@
         {
           "stop": "Jaguars · HC",
           "years": "2025-26",
-          "scoring": "27.6 ppg",
+          "scoring": "27.8 ppg",
           "scoringContext": "through Week 3, 10th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -5789,7 +5789,7 @@
         {
           "stop": "Chiefs · HC",
           "years": "2013-16",
-          "scoring": "24.7 ppg",
+          "scoring": "24.6 ppg",
           "scoringContext": "best finish 6th in NFL",
           "thesis": "The Chiefs years:",
           "fingerprint": "TEs took 29% of targets (league 22%) in 2016; the lead back handled 59% of backfield weighted opportunities."
@@ -5805,7 +5805,7 @@
         {
           "stop": "Chiefs · HC",
           "years": "2018-26",
-          "scoring": "27.3 ppg",
+          "scoring": "27 ppg",
           "scoringContext": "through Week 3, 7th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -6602,7 +6602,7 @@
         {
           "stop": "Rams · HC",
           "years": "2017-26",
-          "scoring": "25.2 ppg",
+          "scoring": "25.6 ppg",
           "scoringContext": "through Week 3, 20th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -6808,19 +6808,19 @@
       }
     },
     "lv": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Klint Kubiak",
         "kicker": "Head coach · First season as caller here · Primary play-caller",
         "tree": "Gary Kubiak / Shanahan wide-zone family",
-        "subline": "Said at his introductory press conference he plans to keep calling plays; ESPN's 2026 play-caller preview lists him as the caller.",
+        "subline": "Kubiak said when hired that he would retain play-calling duties while emphasizing a collaborative staff process; current 2026 Raiders coverage continues to identify him as the play-caller.",
         "careerPath": [
           {
             "role": "Vikings QB coach, then OC & play-caller",
             "years": "2019-21"
           },
           {
-            "role": "Broncos pass game coordinator (took over calls late 2022); 49ers pass game coordinator",
+            "role": "Broncos QB coach (play-caller Wks 11-16, 2022); 49ers pass game coordinator",
             "years": "2022-23"
           },
           {
@@ -6836,7 +6836,7 @@
       "reliability": {
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
-        "explanation": "New play-caller (Chip Kelly (fired in-season 2025; Greg Olson finished) called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
+        "explanation": "New play-caller (Chip Kelly (Wks 1-12), then Greg Olson from Week 13 called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
         "ledger": "Kubiak — 3 of 3 games in 2026 · first season"
       },
       "introAnswer": "For the Raiders the answer is: new fingerprints. Klint Kubiak is calling this offense for the first time in 2026 — so the 2026 sample, not last year's, is the signal.",
@@ -6984,13 +6984,13 @@
       "staff": {
         "oc": {
           "name": "Andrew Janocko",
-          "sub": "Janocko, 37, hired from Seahawks QB coach; first NFL coordinator job, longtime Kubiak lieutenant",
+          "sub": "Janocko, 38, is a first-time NFL OC with no documented primary game-day calling experience. He has worked alongside Kubiak in Minnesota, New Orleans and Seattle and now supports Kubiak's game-planning and play-calling.",
           "hasCalledPlays": false,
           "body": "Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are Kubiak's."
         },
         "dc": {
           "name": "Rob Leonard",
-          "sub": "—",
+          "sub": "Player-driven base 3-4 emphasizing front discipline and playing fast. Leonard is a first-time DC and defensive play-caller after serving as Las Vegas' run-game coordinator/DL coach; his 2025 unit allowed 3.9 yards per rush, tied for second-best in the NFL.",
           "body": "Through Week 3 the defense allows -0.18 EPA per play (1st in the NFL, a top-ten unit). A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets."
         },
         "continuity": {
@@ -7009,12 +7009,12 @@
           "fingerprint": "WRs took 63% of targets (league 59%) in 2021; the lead back handled 54% of backfield weighted opportunities."
         },
         {
-          "stop": "Broncos · Interim caller",
-          "years": "2022 (late)",
-          "scoring": "16.9 ppg",
-          "scoringContext": "best finish 32nd in NFL",
-          "thesis": "The Broncos years:",
-          "fingerprint": "RBs took 25% of targets (league 19%) in 2022; the lead back handled 36% of backfield weighted opportunities."
+          "stop": "Broncos · QB coach",
+          "years": "2022 (play-caller Wks 11-16)",
+          "scoring": "16.8 ppg",
+          "scoringContext": "26th in NFL over Wks 11-16",
+          "thesis": "The Broncos stint:",
+          "fingerprint": "WRs took 53% of targets (league 60%) in 2022 (Wks 11-16); the lead back handled 58% of backfield weighted opportunities."
         },
         {
           "stop": "Saints · OC",
@@ -7069,23 +7069,23 @@
           },
           {
             "stop": "Broncos 2022",
-            "context": "Interim caller",
+            "context": "QB coach · Wks 11-16",
             "cells": [
               {
-                "text": "QB16 · Wilson",
+                "text": "QB21 · Wilson",
                 "tone": "plain"
               },
               {
-                "text": "RB32",
-                "tone": "bad"
-              },
-              {
-                "text": "WR22 · Jeudy",
+                "text": "RB20 · Murray",
                 "tone": "plain"
               },
               {
-                "text": "TE30",
-                "tone": "bad"
+                "text": "WR20 · Jeudy",
+                "tone": "plain"
+              },
+              {
+                "text": "TE12 · Dulcich",
+                "tone": "plain"
               }
             ]
           },
@@ -7157,7 +7157,7 @@
             ]
           }
         ],
-        "note": "Kubiak has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data."
+        "note": "Kubiak has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
         "sub": "Target split by position across Kubiak's play-calling seasons since 2016, vs. league average.",
@@ -7169,12 +7169,12 @@
           },
           {
             "label": "Tight ends",
-            "pct": 24,
+            "pct": 25,
             "nfl": 22
           },
           {
             "label": "Running backs",
-            "pct": 21,
+            "pct": 20,
             "nfl": 18
           }
         ],
@@ -7189,7 +7189,7 @@
           },
           {
             "label": "'22 DEN",
-            "value": 36
+            "value": 58
           },
           {
             "label": "'24 NO",
@@ -7236,12 +7236,12 @@
       }
     },
     "mia": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Bobby Slowik",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Kyle Shanahan tree (West Coast)",
-        "subline": "ESPN's 2026 play-caller preview lists Slowik as Miami's caller; Hafley is defense-minded and calls the defense himself.",
+        "tree": "Kyle Shanahan tree",
+        "subline": "Slowik is Miami's offensive play-caller in 2026 after previously calling Houston's offense in 2023-24. Current Dolphins coverage and Slowik's own in-season comments directly confirm his play-calling role.",
         "careerPath": [
           {
             "role": "49ers defensive QC, then pass game specialist under Kyle Shanahan",
@@ -7418,7 +7418,7 @@
         },
         "dc": {
           "name": "Sean Duggan",
-          "sub": "'Multiple' front — base 4-3 with 3-4 looks mixed in; the scheme is Hafley's and the HC calls the defensive plays",
+          "sub": "Multiple, Hafley-led defense that bases out of a 4-3 while shifting into 3-4 structures from the same personnel. Hafley is the defensive play-caller; Sean Duggan serves as coordinator and assists with communication, adjustments and game planning.",
           "body": "Through Week 3 the defense allows 0.16 EPA per play (29th in the NFL, bottom-ten). A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers."
         },
         "continuity": {
@@ -7588,15 +7588,15 @@
       }
     },
     "min": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Kevin O'Connell",
         "kicker": "Head coach · Fifth season as caller here · Primary play-caller",
         "tree": "McVay / Shanahan tree",
-        "subline": "ESPN's 2026 preview lists O'Connell entering his fifth season calling plays. Phillips called a preseason game and offseason columns urged a handoff — recheck weekly.",
+        "subline": "O'Connell remains Minnesota's regular-season offensive play-caller in 2026, his fifth season in the role. Wes Phillips received preseason calling opportunities, but Vikings coverage explicitly says O'Connell normally handles the calls.",
         "careerPath": [
           {
-            "role": "Washington QB coach, pass game coordinator, then OC",
+            "role": "Washington QB coach, pass game coordinator, then OC — play-caller from Week 6, 2019 after Jay Gruden's firing",
             "years": "2017-19"
           },
           {
@@ -7760,13 +7760,13 @@
       "staff": {
         "oc": {
           "name": "Wes Phillips",
-          "sub": "OC since 2022 running the offense during the week without calling plays — the same job O'Connell had under McVay; called the 2026 preseason Broncos game",
+          "sub": "Phillips has served as Minnesota's OC since 2022 and plays a major role in weekly game planning while O'Connell calls regular-season games — the same job O'Connell had under McVay. Phillips has received multiple preseason play-calling opportunities, including the 2026 Ravens and Broncos games.",
           "hasCalledPlays": false,
           "body": "Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are O'Connell's."
         },
         "dc": {
           "name": "Brian Flores",
-          "sub": "Hyper-aggressive pressure scheme: league-high blitz rate from double-mug and split-field looks, backed by heavy zone",
+          "sub": "Hyper-aggressive, disguise-heavy pressure defense built around double-mug/all-up fronts, simulated and split-safety pressures, with vision/zone coverages behind them. Flores has consistently operated at or near the NFL's highest blitz rates.",
           "body": "Through Week 3 the defense allows -0.18 EPA per play (1st in the NFL, a top-ten unit). A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets."
         },
         "continuity": {
@@ -7777,9 +7777,17 @@
       },
       "dossier": [
         {
+          "stop": "Commanders · OC",
+          "years": "2019 (play-caller Wk 6 on)",
+          "scoring": "17.5 ppg",
+          "scoringContext": "28th in NFL over Wks 6+",
+          "thesis": "The Commanders stint:",
+          "fingerprint": "WRs took 65% of targets (league 58%) in 2019 (Wks 6+); the lead back handled 58% of backfield weighted opportunities."
+        },
+        {
           "stop": "Vikings · HC",
           "years": "2022-26",
-          "scoring": "22.9 ppg",
+          "scoring": "22.7 ppg",
           "scoringContext": "through Week 3, 16th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -7908,25 +7916,29 @@
         "rows": [
           {
             "label": "Wide receivers",
-            "pct": 60,
+            "pct": 61,
             "nfl": 59
           },
           {
             "label": "Tight ends",
-            "pct": 25,
+            "pct": 23,
             "nfl": 22
           },
           {
             "label": "Running backs",
             "pct": 16,
-            "nfl": 18
+            "nfl": 19
           }
         ],
-        "note": "The lean: tight ends run 3 points above league average under O'Connell (25% vs 22%). Position splits this stable are scheme, and scheme is what carries week to week."
+        "note": "The lean: running backs run 3 points below league average under O'Connell (16% vs 19%). Position splits this stable are scheme, and scheme is what carries week to week."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
         "bars": [
+          {
+            "label": "'19 WAS",
+            "value": 58
+          },
           {
             "label": "'22 MIN",
             "value": 71
@@ -7973,26 +7985,26 @@
         ],
         "note": "A 6-point pass-rate swing between leading and trailing. Ahead, the backfield eats; behind, the targets spike — check the spread before you set a flex. Through Week 3 some of these buckets are thin (play counts shown), so treat the splits as early reads."
       },
-      "bottomLine": "The fantasy bottom line: fifth season of the same play-caller makes this one of the more projectable offenses in the league: early-down pass rate below league average (42% vs 55%), and red-zone pass rate below league average (43% vs 56%). The target tree leans TE, and the lead back holds 71% of the backfield's weighted opportunities. Every number on this page is computed from nflverse play-by-play and FTN charting — when it changes, the page changes.",
+      "bottomLine": "The fantasy bottom line: fifth season of the same play-caller makes this one of the more projectable offenses in the league: early-down pass rate below league average (42% vs 55%), and red-zone pass rate below league average (43% vs 56%). The target tree leans RB, and the lead back holds 71% of the backfield's weighted opportunities. Every number on this page is computed from nflverse play-by-play and FTN charting — when it changes, the page changes.",
       "faq": {
         "question": "How does Kevin O'Connell's play-calling affect Vikings fantasy players?",
-        "answer": "Kevin O'Connell is calling the Vikings offense for the fifth straight season, so last year's tendencies remain predictive. Through Week 3 2026, the offense shows early-down pass rate below league average (42% vs 55%) and red-zone pass rate below league average (43% vs 56%). The lead back handles 71% of backfield weighted opportunities, and the target split leans toward tight ends (25% vs a 22% league average). All numbers are derived from nflverse play-by-play data."
+        "answer": "Kevin O'Connell is calling the Vikings offense for the fifth straight season, so last year's tendencies remain predictive. Through Week 3 2026, the offense shows early-down pass rate below league average (42% vs 55%) and red-zone pass rate below league average (43% vs 56%). The lead back handles 71% of backfield weighted opportunities, and the target split leans toward running backs (16% vs a 19% league average). All numbers are derived from nflverse play-by-play data."
       }
     },
     "ne": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Josh McDaniels",
         "kicker": "Offensive coordinator · 16th season as caller here · Primary play-caller",
-        "tree": "Belichick / Patriots (Erhardt-Perkins) tree",
-        "subline": "Explicitly the caller in 2025 (2nd-best scoring offense; AP Assistant Coach of the Year) with no 2026 report of any change; Vrabel is a defensive-background HC.",
+        "tree": "Belichick / Patriots lineage; historically Erhardt-Perkins-based terminology with substantial evolution over McDaniels' career",
+        "subline": "McDaniels remains New England's offensive play-caller in 2026 after directing the NFL's second-highest-scoring offense in 2025 and winning AP Assistant Coach of the Year; Vrabel's September 2026 comments describe the Maye-McDaniels caller communication directly.",
         "careerPath": [
           {
-            "role": "Patriots assistant/QB coach, then OC & play-caller under Belichick",
+            "role": "Patriots assistant, then QB coach & play-caller (2005); OC & play-caller from 2006 under Belichick",
             "years": "2001-08"
           },
           {
-            "role": "Broncos HC (called his own plays); Rams OC",
+            "role": "Broncos HC (called his own plays, fired Dec. 2010); Rams OC & play-caller",
             "years": "2009-11"
           },
           {
@@ -8000,7 +8012,7 @@
             "years": "2012-21"
           },
           {
-            "role": "Raiders HC (kept play-calling)",
+            "role": "Raiders HC (kept play-calling, fired after Week 8, 2023)",
             "years": "2022-23"
           },
           {
@@ -8166,7 +8178,7 @@
         },
         "dc": {
           "name": "Zak Kuhr",
-          "sub": "Vrabel protégé who took over defensive calls mid-2025 when Terrell Williams stepped away and ran a top-5 scoring defense through the Super Bowl LX run",
+          "sub": "Aggressive, man-oriented Vrabel defense featuring single-high structures, varied pressures, zone blitzes and run-front movement. Kuhr became the primary caller in Week 2 of 2025 after Terrell Williams stepped away, called the final 20 games through the Super Bowl LX run, and was promoted to DC for 2026; New England finished 2025 fourth in scoring defense.",
           "body": "Through Week 3 the defense allows -0.04 EPA per play (10th in the NFL, a top-ten unit). A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets."
         },
         "continuity": {
@@ -8177,19 +8189,43 @@
       },
       "dossier": [
         {
+          "stop": "Patriots · QB coach",
+          "years": "2005",
+          "scoring": "23.7 ppg",
+          "scoringContext": "best finish 10th in NFL",
+          "thesis": "The Patriots years:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
           "stop": "Patriots · OC",
-          "years": "2005-08",
-          "scoring": "27.6 ppg",
+          "years": "2006-08",
+          "scoring": "28.8 ppg",
           "scoringContext": "best finish 1st in NFL",
           "thesis": "The Patriots years:",
           "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
         },
         {
           "stop": "Broncos · HC",
-          "years": "2009-10",
-          "scoring": "21 ppg",
-          "scoringContext": "best finish 19th in NFL",
+          "years": "2009",
+          "scoring": "20.4 ppg",
+          "scoringContext": "best finish 20th in NFL",
           "thesis": "The Broncos years:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
+          "stop": "Broncos · HC",
+          "years": "2010 (play-caller Wks 1-13)",
+          "scoring": "21.3 ppg",
+          "scoringContext": "19th in NFL over Wks 1-13",
+          "thesis": "The Broncos stint:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
+          "stop": "Rams · OC",
+          "years": "2011",
+          "scoring": "12.1 ppg",
+          "scoringContext": "best finish 32nd in NFL",
+          "thesis": "The Rams years:",
           "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
         },
         {
@@ -8202,16 +8238,24 @@
         },
         {
           "stop": "Raiders · HC",
-          "years": "2022-23",
-          "scoring": "21.4 ppg",
+          "years": "2022",
+          "scoring": "23.2 ppg",
           "scoringContext": "best finish 12th in NFL",
           "thesis": "The Raiders years:",
-          "fingerprint": "WRs took 68% of targets (league 60%) in 2023; the lead back handled 62% of backfield weighted opportunities."
+          "fingerprint": "TEs took 18% of targets (league 21%) in 2022; the lead back handled 78% of backfield weighted opportunities."
+        },
+        {
+          "stop": "Raiders · HC",
+          "years": "2023 (play-caller Wks 1-8)",
+          "scoring": "15.8 ppg",
+          "scoringContext": "30th in NFL over Wks 1-8",
+          "thesis": "The Raiders stint:",
+          "fingerprint": "TEs took 12% of targets (league 21%) in 2023 (Wks 1-8); the lead back handled 80% of backfield weighted opportunities."
         },
         {
           "stop": "Patriots · OC",
           "years": "2025-26",
-          "scoring": "20.4 ppg",
+          "scoring": "26.3 ppg",
           "scoringContext": "through Week 3, 31st in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -8267,22 +8311,22 @@
           },
           {
             "stop": "Raiders 2023",
-            "context": "HC",
+            "context": "HC · Wks 1-8",
             "cells": [
               {
-                "text": "QB28",
+                "text": "QB30",
                 "tone": "bad"
               },
               {
-                "text": "RB28",
-                "tone": "bad"
-              },
-              {
-                "text": "WR10 · Adams",
+                "text": "RB9 · Jacobs",
                 "tone": "good"
               },
               {
-                "text": "TE35",
+                "text": "WR13 · Adams",
+                "tone": "plain"
+              },
+              {
+                "text": "TE37",
                 "tone": "bad"
               }
             ]
@@ -8333,14 +8377,14 @@
             ]
           }
         ],
-        "note": "Positional finishes are season-long PPR ranks from nflverse scoring data. McDaniels's offenses have put up repeated top-ten positional seasons — the system has paid fantasy investors before."
+        "note": "Positional finishes are season-long PPR ranks from nflverse scoring data. A row with a week range covers only the games he called that season, ranked against the league over the same weeks. McDaniels's offenses have put up repeated top-ten positional seasons — the system has paid fantasy investors before."
       },
       "distribution": {
         "sub": "Target split by position across McDaniels's play-calling seasons since 2016, vs. league average.",
         "rows": [
           {
             "label": "Wide receivers",
-            "pct": 57,
+            "pct": 56,
             "nfl": 59
           },
           {
@@ -8350,12 +8394,12 @@
           },
           {
             "label": "Running backs",
-            "pct": 24,
+            "pct": 25,
             "nfl": 20,
             "gold": true
           }
         ],
-        "note": "The lean: running backs run 4 points above league average under McDaniels (24% vs 20%). Position splits this stable are scheme, and scheme is what carries week to week."
+        "note": "The lean: running backs run 5 points above league average under McDaniels (25% vs 20%). Position splits this stable are scheme, and scheme is what carries week to week."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -8374,7 +8418,7 @@
           },
           {
             "label": "'23 LV",
-            "value": 62
+            "value": 80
           },
           {
             "label": "'25 NE",
@@ -8413,16 +8457,16 @@
       "bottomLine": "The fantasy bottom line: 16th season of the same play-caller makes this one of the more projectable offenses in the league: red-zone pass rate above league average (80% vs 56%), and motion at snap below league average (46.6% vs 58%). The target tree leans RB, and the lead back holds 51% of the backfield's weighted opportunities. Every number on this page is computed from nflverse play-by-play and FTN charting — when it changes, the page changes.",
       "faq": {
         "question": "How does Josh McDaniels's play-calling affect Patriots fantasy players?",
-        "answer": "Josh McDaniels is calling the Patriots offense for the 16th straight season, so last year's tendencies remain predictive. Through Week 3 2026, the offense shows red-zone pass rate above league average (80% vs 56%) and motion at snap below league average (46.6% vs 58%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward running backs (24% vs a 20% league average). All numbers are derived from nflverse play-by-play data."
+        "answer": "Josh McDaniels is calling the Patriots offense for the 16th straight season, so last year's tendencies remain predictive. Through Week 3 2026, the offense shows red-zone pass rate above league average (80% vs 56%) and motion at snap below league average (46.6% vs 58%). The lead back handles 51% of backfield weighted opportunities, and the target split leans toward running backs (25% vs a 20% league average). All numbers are derived from nflverse play-by-play data."
       }
     },
     "no": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Kellen Moore",
         "kicker": "Head coach · Second season as caller here · Primary play-caller",
-        "tree": "Garrett-era Cowboys staff; Coryell-family passing game",
-        "subline": "Hiring-era reporting: 'Moore will call the offensive plays, while Nussmeier takes on his first coordinator job.' No report of a handoff found; 2026 coverage still frames it as Moore's offense.",
+        "tree": "Dallas/Jason Garrett lineage with broad modern pro-style and Coryell influences",
+        "subline": "Moore remains New Orleans' offensive play-caller in 2026 after handling the role throughout his first Saints season in 2025. Current Saints material explicitly identifies him as the head coach and play-caller.",
         "careerPath": [
           {
             "role": "Cowboys QB coach, then OC & play-caller — No. 1 offense in 2021",
@@ -8593,13 +8637,13 @@
       "staff": {
         "oc": {
           "name": "Doug Nussmeier",
-          "sub": "First-time NFL coordinator who has never called NFL plays; college OC at Alabama, Michigan and Florida, and 7 prior seasons on Moore's staffs",
-          "hasCalledPlays": false,
-          "body": "Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are Moore's."
+          "sub": "Nussmeier is in his second season as Saints OC and first NFL coordinator stint, but has extensive college coordinator/play-calling experience — including Alabama, Michigan and Florida — and NFL preseason calling reps with Dallas and New Orleans. 2026 is his ninth consecutive season on the same staff as Moore.",
+          "hasCalledPlays": true,
+          "body": "A coordinator who has run his own offense before — which makes him the delegation scenario: if Moore ever hands off play-calling mid-season, the predictive baseline on this page changes with it. Watch the ledger above."
         },
         "dc": {
           "name": "Brandon Staley",
-          "sub": "Fangio-tree two-high, light-box system; Cover-3 zone-match principles with heavy disguise",
+          "sub": "Fangio-tree, multiple 3-4 defense built around disguise and split-safety structures. Staley mixes Cover 3, Quarters and Cover 6 zone-match concepts while adapting fronts and coverage structure to personnel.",
           "body": "Through Week 3 the defense allows 0.08 EPA per play (24th in the NFL, bottom-ten). A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers."
         },
         "continuity": {
@@ -8612,7 +8656,7 @@
         {
           "stop": "Cowboys · OC",
           "years": "2019-22",
-          "scoring": "27.6 ppg",
+          "scoring": "27.7 ppg",
           "scoringContext": "best finish 1st in NFL",
           "thesis": "The Cowboys years:",
           "fingerprint": "TEs took 24% of targets (league 21%) in 2022; the lead back handled 48% of backfield weighted opportunities."
@@ -8636,7 +8680,7 @@
         {
           "stop": "Saints · HC",
           "years": "2025-26",
-          "scoring": "22.5 ppg",
+          "scoring": "19.4 ppg",
           "scoringContext": "through Week 3, 11th in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -8841,23 +8885,23 @@
       }
     },
     "nyg": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Matt Nagy",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
         "tree": "Andy Reid West Coast tree",
-        "subline": "2026 reporting: 'Nagy will call the Giants' offensive plays throughout the year,' working from the booth. Harbaugh is a special-teams/defense-background HC.",
+        "subline": "Nagy is the Giants' 2026 offensive play-caller and operates from the booth — he confirmed the booth arrangement on Sept. 10 and Week 1 coverage documents him calling from there. Harbaugh is a special-teams/defense-background HC.",
         "careerPath": [
           {
             "role": "Eagles quality control under Andy Reid",
             "years": "2008-12"
           },
           {
-            "role": "Chiefs QB coach, then OC — took over play-calling Dec 2017",
+            "role": "Chiefs QB coach, then OC — took over play-calling Week 13 of 2017, through the Wild Card",
             "years": "2013-17"
           },
           {
-            "role": "Bears head coach",
+            "role": "Bears head coach — called 2018-19, Wks 1-9 of 2020 and Wks 1-3 of 2021; Bill Lazor called the rest",
             "years": "2018-21"
           },
           {
@@ -9027,7 +9071,7 @@
         },
         "dc": {
           "name": "Dennard Wilson",
-          "sub": "Dean Pees-style Ravens system: multiple and pressure-based, physical press corners, heavy Cover 2/quarters",
+          "sub": "Dean Pees/Mike Macdonald-influenced, multiple pressure defense built around quarters-heavy match coverage, disguised two-high/single-high rotations and creative pressure packages. Wilson emphasizes physicality and front movement and is the defensive play-caller.",
           "body": "Through Week 3 the defense allows 0.12 EPA per play (27th in the NFL, bottom-ten). A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers."
         },
         "continuity": {
@@ -9039,11 +9083,11 @@
       "dossier": [
         {
           "stop": "Chiefs · OC",
-          "years": "2017 (Dec on)",
-          "scoring": "25.9 ppg",
-          "scoringContext": "best finish 6th in NFL",
-          "thesis": "The Chiefs years:",
-          "fingerprint": "WRs took 46% of targets (league 57%) in 2017; the lead back handled 73% of backfield weighted opportunities."
+          "years": "2017 (play-caller Wk 13 on)",
+          "scoring": "28.6 ppg",
+          "scoringContext": "6th in NFL over Wks 13+",
+          "thesis": "The Chiefs stint:",
+          "fingerprint": "TEs took 32% of targets (league 21%) in 2017 (Wks 13+); the lead back handled 70% of backfield weighted opportunities."
         },
         {
           "stop": "Bears · HC",
@@ -9052,6 +9096,22 @@
           "scoringContext": "best finish 9th in NFL",
           "thesis": "The Bears years:",
           "fingerprint": "TEs took 12% of targets (league 21%) in 2019; the lead back handled 47% of backfield weighted opportunities."
+        },
+        {
+          "stop": "Bears · HC",
+          "years": "2020 (play-caller Wks 1-9)",
+          "scoring": "19.8 ppg",
+          "scoringContext": "29th in NFL over Wks 1-9",
+          "thesis": "The Bears stint:",
+          "fingerprint": "a league-typical WR/TE/RB target split in 2020 (Wks 1-9); the lead back handled 66% of backfield weighted opportunities."
+        },
+        {
+          "stop": "Bears · HC",
+          "years": "2021 (play-caller Wks 1-3)",
+          "scoring": "13.3 ppg",
+          "scoringContext": "31st in NFL over Wks 1-3",
+          "thesis": "The Bears stint:",
+          "fingerprint": "a league-typical WR/TE/RB target split in 2021 (Wks 1-3); the lead back handled 73% of backfield weighted opportunities."
         },
         {
           "stop": "Giants · OC",
@@ -9066,28 +9126,6 @@
       "finishes": {
         "heading": "Positional fantasy finishes under Nagy",
         "rows": [
-          {
-            "stop": "Chiefs 2017",
-            "context": "OC",
-            "cells": [
-              {
-                "text": "QB4 · Smith",
-                "tone": "good"
-              },
-              {
-                "text": "RB4 · Hunt",
-                "tone": "good"
-              },
-              {
-                "text": "WR8 · Hill",
-                "tone": "good"
-              },
-              {
-                "text": "TE1 · Kelce",
-                "tone": "good"
-              }
-            ]
-          },
           {
             "stop": "Bears 2018",
             "context": "HC",
@@ -9133,6 +9171,50 @@
             ]
           },
           {
+            "stop": "Bears 2020",
+            "context": "HC · Wks 1-9",
+            "cells": [
+              {
+                "text": "QB28",
+                "tone": "bad"
+              },
+              {
+                "text": "RB14 · Montgomery",
+                "tone": "plain"
+              },
+              {
+                "text": "WR9 · Robinson",
+                "tone": "good"
+              },
+              {
+                "text": "TE6 · Graham",
+                "tone": "good"
+              }
+            ]
+          },
+          {
+            "stop": "Bears 2021",
+            "context": "HC · Wks 1-3",
+            "cells": [
+              {
+                "text": "QB34",
+                "tone": "bad"
+              },
+              {
+                "text": "RB21 · Montgomery",
+                "tone": "plain"
+              },
+              {
+                "text": "WR66",
+                "tone": "bad"
+              },
+              {
+                "text": "TE33",
+                "tone": "bad"
+              }
+            ]
+          },
+          {
             "stop": "Giants · 2026",
             "context": "pace through Week 3",
             "current": true,
@@ -9156,35 +9238,35 @@
             ]
           }
         ],
-        "note": "Nagy has 3 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data."
+        "note": "Nagy has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
         "sub": "Target split by position across Nagy's play-calling seasons since 2016, vs. league average.",
         "rows": [
           {
             "label": "Wide receivers",
-            "pct": 52,
-            "nfl": 58
+            "pct": 55,
+            "nfl": 59
           },
           {
             "label": "Tight ends",
-            "pct": 24,
+            "pct": 23,
             "nfl": 21
           },
           {
             "label": "Running backs",
-            "pct": 24,
-            "nfl": 21
+            "pct": 22,
+            "nfl": 20
           }
         ],
-        "note": "The lean: wide receivers run 6 points below league average under Nagy (52% vs 58%). Position splits this stable are scheme, and scheme is what carries week to week."
+        "note": "The lean: wide receivers run 4 points below league average under Nagy (55% vs 59%). Position splits this stable are scheme, and scheme is what carries week to week."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
         "bars": [
           {
             "label": "'17 KC",
-            "value": 73
+            "value": 70
           },
           {
             "label": "'18 CHI",
@@ -9193,6 +9275,14 @@
           {
             "label": "'19 CHI",
             "value": 47
+          },
+          {
+            "label": "'20 CHI",
+            "value": 66
+          },
+          {
+            "label": "'21 CHI",
+            "value": 73
           },
           {
             "label": "'26 NYG",
@@ -9227,27 +9317,27 @@
       "bottomLine": "The fantasy bottom line: a new play-caller means 2025 data is context at best — what you can bank on is what Nagy is showing now: red-zone pass rate below league average (43% vs 56%), and early-down pass rate below league average (45.7% vs 55%). The target tree leans WR, and the lead back holds 64% of the backfield's weighted opportunities. Every number on this page is computed from nflverse play-by-play and FTN charting — when it changes, the page changes.",
       "faq": {
         "question": "How does Matt Nagy's play-calling affect Giants fantasy players?",
-        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 3 2026, the offense shows red-zone pass rate below league average (43% vs 56%) and early-down pass rate below league average (45.7% vs 55%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 58% league average). All numbers are derived from nflverse play-by-play data."
+        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 3 2026, the offense shows red-zone pass rate below league average (43% vs 56%) and early-down pass rate below league average (45.7% vs 55%). The lead back handles 64% of backfield weighted opportunities, and the target split leans toward wide receivers (55% vs a 59% league average). All numbers are derived from nflverse play-by-play data."
       }
     },
     "nyj": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Frank Reich",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Reid/Pederson West Coast branch, evolved through his own Colts system",
-        "subline": "Feb 2026: Glenn handed 'full control of the offense' to Reich and calls the defensive plays himself.",
+        "tree": "Pederson/Reid West Coast influence blended with Reich's own Chargers/Colts system",
+        "subline": "Aaron Glenn handed Reich control of the offense while taking over defensive play-calling himself. Current 2026 coverage confirms Reich is calling the Jets offense — the Jets documented him calling from the booth in preseason, and regular-season reporting discusses his specific play calls.",
         "careerPath": [
           {
             "role": "Chargers QB coach, then OC & play-caller",
             "years": "2013-15"
           },
           {
-            "role": "Eagles OC — Super Bowl LII champions",
+            "role": "Eagles OC — Super Bowl LII champions (Pederson called the plays)",
             "years": "2016-17"
           },
           {
-            "role": "Colts HC, then Panthers HC (called plays at both)",
+            "role": "Colts HC, then Panthers HC — called plays at both; fired Week 9 of 2022 and after Week 12 of 2023",
             "years": "2018-23"
           },
           {
@@ -9259,7 +9349,7 @@
       "reliability": {
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
-        "explanation": "New play-caller (Tanner Engstrand (first-time caller, called all of 2025; departed after a push to demote him from play-calling) called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
+        "explanation": "New play-caller (Tanner Engstrand — a first-time NFL play-caller (prior calling at the University of San Diego and the XFL's DC Defenders); no 2025 in-season handoff reported, and he departed after a push to demote him from play-calling called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
         "ledger": "Reich — 3 of 3 games in 2026 · first season"
       },
       "introAnswer": "For the Jets the answer is: new fingerprints. Frank Reich is calling this offense for the first time in 2026 — so the 2026 sample, not last year's, is the signal.",
@@ -9413,7 +9503,7 @@
         },
         "dc": {
           "name": "Brian Duker",
-          "sub": "More 'multiple' in 2026 with increased 3-4 base looks — but HC Aaron Glenn calls the defensive plays; Duker is a first-time DC",
+          "sub": "Glenn-led multiple defense using both 4-3 and 3-4 structures, extensive nickel/four-down spacing and varied four- and five-man fronts. Glenn is the defensive play-caller; first-time DC Brian Duker coordinates the unit and supports game planning.",
           "body": "Through Week 3 the defense allows -0.03 EPA per play (12th in the NFL). A middle-of-the-pack unit so far — game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
@@ -9433,19 +9523,35 @@
         },
         {
           "stop": "Colts · HC",
-          "years": "2018-22",
-          "scoring": "24.3 ppg",
+          "years": "2018-21",
+          "scoring": "26.1 ppg",
           "scoringContext": "best finish 5th in NFL",
           "thesis": "The Colts years:",
-          "fingerprint": "a league-typical WR/TE/RB target split in 2022; the lead back handled 43% of backfield weighted opportunities."
+          "fingerprint": "RBs took 23% of targets (league 19%) in 2021; the lead back handled 66% of backfield weighted opportunities."
+        },
+        {
+          "stop": "Colts · HC",
+          "years": "2022 (play-caller Wks 1-9)",
+          "scoring": "14.7 ppg",
+          "scoringContext": "32nd in NFL over Wks 1-9",
+          "thesis": "The Colts stint:",
+          "fingerprint": "RBs took 25% of targets (league 20%) in 2022 (Wks 1-9); the lead back handled 45% of backfield weighted opportunities."
         },
         {
           "stop": "Panthers · HC",
-          "years": "2023",
-          "scoring": "13.9 ppg",
-          "scoringContext": "best finish 31st in NFL",
-          "thesis": "The Panthers years:",
-          "fingerprint": "WRs took 64% of targets (league 60%) in 2023; the lead back handled 58% of backfield weighted opportunities."
+          "years": "2023 (play-caller Wks 1-6)",
+          "scoring": "18.7 ppg",
+          "scoringContext": "23rd in NFL over Wks 1-6",
+          "thesis": "The Panthers stint:",
+          "fingerprint": "WRs took 68% of targets (league 61%) in 2023 (Wks 1-6); the lead back handled 55% of backfield weighted opportunities."
+        },
+        {
+          "stop": "Panthers · HC",
+          "years": "2023 (play-caller Wks 11-12)",
+          "scoring": "10 ppg",
+          "scoringContext": "30th in NFL over Wks 11-12",
+          "thesis": "The Panthers stint:",
+          "fingerprint": "WRs took 68% of targets (league 61%) in 2023 (Wks 11-12); the lead back handled 56% of backfield weighted opportunities."
         },
         {
           "stop": "Jets · OC",
@@ -9460,28 +9566,6 @@
       "finishes": {
         "heading": "Positional fantasy finishes under Reich",
         "rows": [
-          {
-            "stop": "Colts 2020",
-            "context": "HC",
-            "cells": [
-              {
-                "text": "QB20 · Rivers",
-                "tone": "plain"
-              },
-              {
-                "text": "RB6 · Taylor",
-                "tone": "good"
-              },
-              {
-                "text": "WR42",
-                "tone": "bad"
-              },
-              {
-                "text": "TE28",
-                "tone": "bad"
-              }
-            ]
-          },
           {
             "stop": "Colts 2021",
             "context": "HC",
@@ -9506,44 +9590,66 @@
           },
           {
             "stop": "Colts 2022",
-            "context": "HC",
+            "context": "HC · Wks 1-9",
             "cells": [
               {
-                "text": "QB27",
-                "tone": "bad"
-              },
-              {
-                "text": "RB33",
-                "tone": "bad"
-              },
-              {
-                "text": "WR20 · Pittman",
+                "text": "QB24 · Ryan",
                 "tone": "plain"
               },
               {
-                "text": "TE35",
+                "text": "RB36",
+                "tone": "bad"
+              },
+              {
+                "text": "WR19 · Pittman",
+                "tone": "plain"
+              },
+              {
+                "text": "TE28",
                 "tone": "bad"
               }
             ]
           },
           {
             "stop": "Panthers 2023",
-            "context": "HC",
+            "context": "HC · Wks 1-6",
             "cells": [
               {
-                "text": "QB23 · Young",
-                "tone": "plain"
-              },
-              {
-                "text": "RB27",
+                "text": "QB27",
                 "tone": "bad"
               },
               {
-                "text": "WR17 · Thielen",
+                "text": "RB31",
+                "tone": "bad"
+              },
+              {
+                "text": "WR3 · Thielen",
+                "tone": "good"
+              },
+              {
+                "text": "TE24 · Hurst",
+                "tone": "plain"
+              }
+            ]
+          },
+          {
+            "stop": "Panthers 2023",
+            "context": "HC · Wks 11-12",
+            "cells": [
+              {
+                "text": "QB28",
+                "tone": "bad"
+              },
+              {
+                "text": "RB16 · Hubbard",
                 "tone": "plain"
               },
               {
-                "text": "TE39",
+                "text": "WR50",
+                "tone": "bad"
+              },
+              {
+                "text": "TE30",
                 "tone": "bad"
               }
             ]
@@ -9572,25 +9678,25 @@
             ]
           }
         ],
-        "note": "Reich has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data."
+        "note": "Reich has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
         "sub": "Target split by position across Reich's play-calling seasons since 2016, vs. league average.",
         "rows": [
           {
             "label": "Wide receivers",
-            "pct": 57,
+            "pct": 58,
             "nfl": 59
           },
           {
             "label": "Tight ends",
-            "pct": 23,
+            "pct": 21,
             "nfl": 21
           },
           {
             "label": "Running backs",
-            "pct": 20,
-            "nfl": 19
+            "pct": 21,
+            "nfl": 20
           }
         ],
         "note": "No position runs more than a few points from league average under Reich — the target tree follows the talent here, so depth-chart changes move this split more than scheme does."
@@ -9598,10 +9704,6 @@
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
         "bars": [
-          {
-            "label": "'19 IND",
-            "value": 48
-          },
           {
             "label": "'20 IND",
             "value": 46
@@ -9612,11 +9714,15 @@
           },
           {
             "label": "'22 IND",
-            "value": 43
+            "value": 45
           },
           {
             "label": "'23 CAR",
-            "value": 58
+            "value": 55
+          },
+          {
+            "label": "'23 CAR",
+            "value": 56
           },
           {
             "label": "'26 NYJ",
@@ -9655,12 +9761,12 @@
       }
     },
     "phi": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Sean Mannion",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Shanahan / McVay tree (via Matt LaFleur's Packers)",
-        "subline": "Sirianni confirmed Mannion calls plays, from the booth, starting Week 1. First-time caller at any level — two total years of coaching.",
+        "tree": "McVay/Shanahan family via Matt LaFleur, with Mannion also having played under Sean McVay and Kevin O'Connell",
+        "subline": "Mannion is Philadelphia's primary offensive play-caller in 2026 and calls from the booth. Week 1 was his first regular-season play-calling assignment at any level after only two prior seasons as an NFL coach; the Eagles billed the opener as his play-calling debut and October coverage discusses his calls directly.",
         "careerPath": [
           {
             "role": "NFL backup QB — Rams' Super Bowl LIII backup",
@@ -9837,7 +9943,7 @@
         },
         "dc": {
           "name": "Vic Fangio",
-          "sub": "Fangio system, year 3: ~90% two-high shells with league-leading disguise rate, late safety rotations",
+          "sub": "Fangio system, Year 3: roughly 90% two-high pre-snap shells in 2025, extensive coverage disguise and late open-to-closed safety rotations into Cover 3, Quarters and other match structures.",
           "body": "Through Week 3 the defense allows 0.08 EPA per play (24th in the NFL, bottom-ten). A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers."
         },
         "continuity": {
@@ -9960,23 +10066,23 @@
       }
     },
     "pit": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Mike McCarthy",
         "kicker": "Head coach · First season as caller here · Primary play-caller",
-        "tree": "Holmgren / West Coast tree (Green Bay lineage)",
-        "subline": "Said at his introductory press conference he will call plays and 'run the offense'; Angelichio holds the OC title without calling duties.",
+        "tree": "Paul Hackett / West Coast lineage, with strong Green Bay influence",
+        "subline": "McCarthy said at his introductory press conference that he would call the offensive plays and run the offense. OC Brian Angelichio has subsequently confirmed McCarthy handles game-day play-calling.",
         "careerPath": [
           {
             "role": "Saints OC, then 49ers OC — primary play-caller",
             "years": "2000-05"
           },
           {
-            "role": "Packers head coach; called his own plays most of the tenure",
+            "role": "Packers head coach — called his own plays except most of 2015 (Tom Clements called the first 12 games; McCarthy reclaimed the role from Week 14)",
             "years": "2006-18"
           },
           {
-            "role": "Cowboys head coach; took over play-calling 2023-24",
+            "role": "Cowboys head coach; took over play-calling 2023-24 (Kellen Moore called 2020-22)",
             "years": "2020-24"
           },
           {
@@ -9988,7 +10094,7 @@
       "reliability": {
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
-        "explanation": "New play-caller (Arthur Smith (left for the Ohio State OC job after McCarthy's hire) called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
+        "explanation": "New play-caller (Arthur Smith — departed for Ohio State during Pittsburgh's 2026 coaching transition called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
         "ledger": "McCarthy — 4 of 4 games in 2026 · first season"
       },
       "introAnswer": "For the Steelers the answer is: new fingerprints. Mike McCarthy is calling this offense for the first time in 2026 — so the 2026 sample, not last year's, is the signal.",
@@ -10136,13 +10242,13 @@
       "staff": {
         "oc": {
           "name": "Brian Angelichio",
-          "sub": "Ex-Vikings passing-game coordinator/TE coach, with McCarthy in Green Bay 2016-18; no record of primary play-calling anywhere",
+          "sub": "Angelichio has no documented NFL primary play-calling experience. He previously served as Ithaca's offensive coordinator from 2000-05 and as Pitt's offensive coordinator for the 2011 BBVA Compass Bowl, and worked under McCarthy in Green Bay from 2016-18, most recently as Vikings passing-game coordinator/TE coach.",
           "hasCalledPlays": false,
           "body": "Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are McCarthy's."
         },
         "dc": {
           "name": "Patrick Graham",
-          "sub": "Multiple-front 3-4 base, usually 2-4-5 in practice, dynamic blitz packages",
+          "sub": "Personnel-driven, multiple 3-4 defense with four-down variations, movable edge rushers and flexible fronts. Graham calls the defense and emphasizes versatility and creating pressure with the front when possible while retaining situational blitz packages.",
           "body": "Through Week 3 the defense allows 0 EPA per play (15th in the NFL). A middle-of-the-pack unit so far — game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
@@ -10170,9 +10276,25 @@
         },
         {
           "stop": "Packers · HC",
-          "years": "2006-18",
-          "scoring": "26 ppg",
+          "years": "2006-14",
+          "scoring": "27.1 ppg",
           "scoringContext": "best finish 1st in NFL",
+          "thesis": "The Packers years:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
+          "stop": "Packers · HC",
+          "years": "2015 (play-caller Wk 14 on)",
+          "scoring": "19.8 ppg",
+          "scoringContext": "21st in NFL over Wks 14+",
+          "thesis": "The Packers stint:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
+          "stop": "Packers · HC",
+          "years": "2016-18",
+          "scoring": "23.5 ppg",
+          "scoringContext": "best finish 4th in NFL",
           "thesis": "The Packers years:",
           "fingerprint": "WRs took 66% of targets (league 59%) in 2018; the lead back handled 48% of backfield weighted opportunities."
         },
@@ -10393,12 +10515,12 @@
       }
     },
     "sea": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Brian Fleury",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Shanahan tree (49ers staff 2019-25)",
-        "subline": "First-time offensive caller at any level; Macdonald: 'All play callers have to be first-time play callers at some point.' Fleury kept the scheme that just won the Super Bowl (Kubiak left for the Raiders HC job).",
+        "tree": "Kyle Shanahan tree — Fleury spent 2019-25 on the 49ers staff, moving from defensive quality control in 2019 to the offensive staff in 2020 and eventually run-game coordinator/TE coach",
+        "subline": "Seattle hired Fleury to call the offense after Klint Kubiak left to become Raiders head coach, and the 2026 opener was Fleury's first regular-season game as an offensive play-caller. Macdonald: 'All play callers have to be first-time play callers at some point.'",
         "careerPath": [
           {
             "role": "49ers defensive QC, then offensive QC",
@@ -10575,7 +10697,7 @@
         },
         "dc": {
           "name": "Aden Durde",
-          "sub": "Macdonald calls the defensive plays in his Ravens-style scheme — disguise, early-down dominance, takeaways; Durde runs the day-to-day",
+          "sub": "Macdonald-led, disguise-heavy defense built around extensive nickel/dime and two-high shells, simulated pressures and unpredictable four-man rushes — the NFL's No. 1 scoring defense and No. 1 defensive DVOA in 2025 despite a bottom-six blitz rate. Macdonald remains the regular-season defensive play-caller; Durde coordinates preparation and game planning and receives preseason calling reps.",
           "body": "Through Week 3 the defense allows -0.16 EPA per play (3rd in the NFL, a top-ten unit). A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets."
         },
         "continuity": {
@@ -10698,15 +10820,15 @@
       }
     },
     "sf": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Kyle Shanahan",
         "kicker": "Head coach · Tenth season as caller here · Primary play-caller",
-        "tree": "Shanahan tree — he is its head; wide-zone West Coast family",
-        "subline": "Retained play-calling when Klay Kubiak was promoted to OC; Sept 2026 game coverage still has Shanahan calling. Extension signed Sept 2026.",
+        "tree": "Mike Shanahan / Gary Kubiak wide-zone West Coast family; Kyle Shanahan leads its modern NFL branch",
+        "subline": "Shanahan remains San Francisco's primary offensive play-caller in 2026. Klay Kubiak's promotion to OC did not change the arrangement, and current 2026 game coverage continues to document Shanahan calling the offense. Multi-year extension signed during the 2026 offseason; publicly reported Sept. 11, 2026.",
         "careerPath": [
           {
-            "role": "Texans OC — youngest OC in the NFL at the time",
+            "role": "Texans OC — youngest OC in the NFL at the time; full-time game-day caller from 2009",
             "years": "2008-09"
           },
           {
@@ -10870,13 +10992,13 @@
       "staff": {
         "oc": {
           "name": "Klay Kubiak",
-          "sub": "On the 49ers staff since 2021, OC since 2025; never a primary regular-season caller — viewed as Shanahan's groomed successor",
-          "hasCalledPlays": false,
-          "body": "Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are Shanahan's."
+          "sub": "Kubiak has been on the 49ers staff since 2021 and OC since 2025 — a trusted Shanahan lieutenant receiving developmental play-calling reps. Shanahan remains the primary regular-season caller, but Kubiak called 2024 preseason games and the entire 2024 Week 18 regular-season finale at Arizona, his NFL regular-season play-calling debut.",
+          "hasCalledPlays": true,
+          "body": "A coordinator who has run his own offense before — which makes him the delegation scenario: if Shanahan ever hands off play-calling mid-season, the predictive baseline on this page changes with it. Watch the ledger above."
         },
         "dc": {
           "name": "Raheem Morris",
-          "sub": "Morris (hired Feb 2026): hybrid odd/five-man front with aggressive blitzing and disguised coverages — a clear departure from the prior four-down, low-blitz scheme",
+          "sub": "More multiple version of San Francisco's four-down foundation, adding five-man fronts, stand-up rushers, front movement and greater alignment versatility. Morris brings broader front and coverage multiplicity rather than replacing the existing defensive identity wholesale.",
           "body": "Through Week 3 the defense allows -0.01 EPA per play (14th in the NFL). A middle-of-the-pack unit so far — game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
@@ -10888,8 +11010,16 @@
       "dossier": [
         {
           "stop": "Texans · OC",
-          "years": "2008-09",
-          "scoring": "23.6 ppg",
+          "years": "2008 (partial caller)",
+          "scoring": "22.9 ppg",
+          "scoringContext": "best finish 17th in NFL",
+          "thesis": "The Texans years:",
+          "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
+        },
+        {
+          "stop": "Texans · OC",
+          "years": "2009",
+          "scoring": "24.3 ppg",
           "scoringContext": "best finish 10th in NFL",
           "thesis": "The Texans years:",
           "fingerprint": "scoring data only for this stop — it predates our target-tracking window (2016)."
@@ -10921,7 +11051,7 @@
         {
           "stop": "49ers · HC",
           "years": "2017-26",
-          "scoring": "25.7 ppg",
+          "scoring": "25.1 ppg",
           "scoringContext": "through Week 3, 2nd in NFL",
           "current": true,
           "thesis": "The current stop:",
@@ -11127,12 +11257,12 @@
       }
     },
     "tb": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Zac Robinson",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Shanahan / McVay tree (5 seasons on McVay's Rams staff)",
-        "subline": "No explicit in-season statement found; Robinson spoke of 'bringing play-caller stability to the franchise' at his hiring, Bowles is a defensive HC, and AP frames TB's OCs as the succession of callers — the fifth OC in five years.",
+        "tree": "Sean McVay branch of the Shanahan coaching tree (5 seasons on McVay's Rams staff)",
+        "subline": "Tampa Bay explicitly identifies Robinson as its new offensive play-caller in 2026 — its offensive preview opens 'The Bucs have a new play-caller in Zac Robinson' and Bowles discussed Robinson's first action as the play-caller in preseason. He previously called Atlanta's offense throughout 2024 and 2025.",
         "careerPath": [
           {
             "role": "NFL journeyman QB (NE/SEA/DET/CIN)",
@@ -11309,7 +11439,7 @@
         },
         "dc": {
           "name": "—",
-          "sub": "No DC on the 2026 staff — the defense is Bowles' own, with George Edwards and Larry Foote splitting coordinator-level duties",
+          "sub": "Bowles-led hybrid defense with a 3-4 base and 4-2-5 nickel, featuring disguised coverages, exotic fire-zone pressures and varied blitz sources. Tampa Bay is emphasizing better four-man pressure in 2026 after blitzing on 35.0% of pass-rush snaps in 2025, third-highest in the NFL. There is no formal DC; George Edwards coordinates the pass defense and Larry Foote coordinates the run game.",
           "body": "Through Week 3 the defense allows -0.08 EPA per play (7th in the NFL, a top-ten unit). A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets."
         },
         "continuity": {
@@ -11322,7 +11452,7 @@
         {
           "stop": "Falcons · OC",
           "years": "2024-25",
-          "scoring": "21.9 ppg",
+          "scoring": "21.8 ppg",
           "scoringContext": "best finish 13th in NFL",
           "thesis": "The Falcons years:",
           "fingerprint": "WRs took 53% of targets (league 58%) in 2025; the lead back handled 73% of backfield weighted opportunities."
@@ -11480,12 +11610,12 @@
       }
     },
     "ten": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "Brian Daboll",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Belichick / Patriots (Erhardt-Perkins) tree, with an Alabama stop",
-        "subline": "CBS calls him outright 'new Titans play caller Brian Daboll'; the Saleh-Daboll setup mirrors Saleh/Shanahan in San Francisco, each owning his side of the ball. Saleh calls the defense.",
+        "tree": "Belichick/Patriots lineage with Erhardt-Perkins roots, later influenced by Alabama and Daboll's spread evolution in Buffalo",
+        "subline": "Daboll is Tennessee's primary offensive play-caller in 2026 — Titans and national coverage explicitly identify him in the role, and Saleh has discussed specific plays Daboll called — while Saleh concentrates on the defense, mirroring the Saleh/Shanahan split in San Francisco.",
         "careerPath": [
           {
             "role": "Patriots/Jets assistant, then OC of Browns, Dolphins and Chiefs",
@@ -11508,7 +11638,7 @@
       "reliability": {
         "priorSeasonsAsCaller": 0,
         "sameSchemeFamily": false,
-        "explanation": "New play-caller (HC Brian Callahan (Wks 1-3), then QB coach Bo Hardegree from Week 4 called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
+        "explanation": "New play-caller (Brian Callahan (Wks 1-3), then Bo Hardegree Weeks 4-18 — Hardegree kept the calls after Callahan was fired called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
         "ledger": "Daboll — 3 of 3 games in 2026 · first season"
       },
       "introAnswer": "For the Titans the answer is: new fingerprints. Brian Daboll is calling this offense for the first time in 2026 — so the 2026 sample, not last year's, is the signal.",
@@ -11662,7 +11792,7 @@
         },
         "dc": {
           "name": "Gus Bradley",
-          "sub": "Saleh calls the defensive plays with Bradley as DC — a 'fast and violent,' Seattle/Cover-3-tree pairing",
+          "sub": "Saleh-led 4-3 defense with Seattle/Cover-3 roots, emphasizing speed, physicality and a streamlined structure with modern coverage and pressure adjustments — Tennessee switched from its prior 3-4 to a 4-3 under Saleh. Saleh calls the defense on Sundays; longtime collaborator Gus Bradley coordinates the unit during the week.",
           "body": "Through Week 3 the defense allows 0.03 EPA per play (20th in the NFL). A middle-of-the-pack unit so far — game script here is week-to-week, so check the spread before leaning on it."
         },
         "continuity": {
@@ -11699,7 +11829,7 @@
         {
           "stop": "Bills · OC",
           "years": "2018-21",
-          "scoring": "24 ppg",
+          "scoring": "24.1 ppg",
           "scoringContext": "best finish 2nd in NFL",
           "thesis": "The Bills years:",
           "fingerprint": "WRs took 71% of targets (league 59%) in 2021; the lead back handled 57% of backfield weighted opportunities."
@@ -11921,12 +12051,12 @@
       }
     },
     "was": {
-      "verified": false,
+      "verified": true,
       "playCaller": {
         "name": "David Blough",
         "kicker": "Offensive coordinator · First season as caller here · Primary play-caller",
-        "tree": "Kingsbury staff tree (internal promotion off Kingsbury's own offense)",
-        "subline": "AP: Blough, 'who never has called plays in the NFL, takes over the offense'; Quinn is publicly committed to riding out his young coordinators' growing pains.",
+        "tree": "Ben Johnson / Kevin O'Connell influences, with Kingsbury carryover from Blough's two seasons on Washington's staff",
+        "subline": "Blough is Washington's primary offensive play-caller in 2026 — the promotion gave him his first game-day play-calling assignment at any level after two seasons as Washington's assistant quarterbacks coach, and Week 1 coverage has Daniels discussing what 'Blough calls' directly. Quinn is publicly committed to riding out his young coordinators' growing pains.",
         "careerPath": [
           {
             "role": "Purdue starting QB",
@@ -11948,11 +12078,11 @@
       },
       "reliability": {
         "priorSeasonsAsCaller": 0,
-        "sameSchemeFamily": true,
-        "explanation": "New play-caller, but from the same scheme family as Kliff Kingsbury (parted ways after the 5-12 2025 season) — some carryover is real, but treat 2025 numbers as context, not baseline.",
+        "sameSchemeFamily": false,
+        "explanation": "New play-caller (Kliff Kingsbury (parted ways after the 5-12 2025 season) called plays here in 2025). Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.",
         "ledger": "Blough — 3 of 3 games in 2026 · first season"
       },
-      "introAnswer": "For the Commanders the answer is: new fingerprints. David Blough is calling this offense for the first time in 2026, though from the same scheme family as his predecessor — so the 2026 sample, not last year's, is the signal.",
+      "introAnswer": "For the Commanders the answer is: new fingerprints. David Blough is calling this offense for the first time in 2026 — so the 2026 sample, not last year's, is the signal.",
       "tendencies": {
         "priorLabel": "2025 (prev. staff)",
         "currentLabel": "2026 (Blough)",
@@ -12103,7 +12233,7 @@
         },
         "dc": {
           "name": "Daronte Jones",
-          "sub": "Flores-influenced pressure scheme — 3-4 base with 3/4/5-man fronts, blitz and sim-pressure from all levels, zone behind it",
+          "sub": "Multiple, disguise-heavy pressure defense influenced by Brian Flores, Mike Zimmer, Lou Anarumo and Vance Joseph. Jones mixes 3-4 and 4-3 spacing, varied fronts and pressure looks, with extensive pre-snap checks designed to force offenses to adjust. Jones is Washington's defensive play-caller.",
           "body": "Through Week 3 the defense allows 0.08 EPA per play (24th in the NFL, bottom-ten). A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers."
         },
         "continuity": {

@@ -143,10 +143,9 @@ describe("in season", () => {
     assert.deepEqual(names, ["redraft-command-outlook-risk", "redraft-command-outlook-sidebar"]);
   });
 
-  test("the byline dates only the preseason piece, which is archived collapsed", () => {
-    const byline = doc.querySelector(".scp-st-byline").textContent;
-    assert.match(byline, /^Preseason outlook originally published /);
-    assert.doesNotMatch(byline, /Updated automatically/);
+  test("no byline on the in-season take; the preseason piece is archived collapsed", () => {
+    // mak, 2026-10-02: no "Preseason outlook originally published" line.
+    assert.equal(doc.querySelector(".scp-st-byline"), null);
     assert.doesNotMatch(doc.querySelector(".scp-ol").textContent, /Contract terms aren't available/);
     const prev = doc.querySelector("details.scp-ol-prev");
     assert.ok(prev && !prev.open);

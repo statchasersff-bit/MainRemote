@@ -44,7 +44,6 @@ import {
 } from "./news-tab-data";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
-const SCORING_WORDS = { ppr: "full PPR", half: "half-PPR", standard: "standard" } as const;
 /** Week groups shown open; older ones fold into a <details> (spec 4.9). */
 const OPEN_GROUPS = 6;
 const TEAM_ITEMS = 8;
@@ -73,12 +72,6 @@ function stamp(ms: number, hasTime: boolean): string {
   const iso = hasTime ? new Date(ms).toISOString() : etDay(ms);
   const day = shortDay(etDay(ms));
   return `<time datetime="${escapeHtml(iso)}">${escapeHtml(hasTime ? `${day}, ${easternParts(ms).time}` : day)}</time>`;
-}
-
-function longDate(ms: number): string {
-  const d = etDay(ms);
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  return `<time datetime="${escapeHtml(new Date(ms).toISOString())}">${months[Number(d.slice(5, 7)) - 1]} ${Number(d.slice(8, 10))}, ${d.slice(0, 4)}</time>`;
 }
 
 const impactPill = (impact: Impact, prefix = ""): string =>
@@ -142,11 +135,6 @@ function renderLatest(
   fallback: NewsItem | null,
   injuryHref: string,
 ): string {
-  const last = ctx.last;
-  const newest = lead?.ms ?? (fallback ? itemTimestamp(fallback) : null);
-  const lede =
-    escapeHtml(`Every update on ${last} with what it means for your fantasy team.`) +
-    (newest ? ` Last update ${longDate(newest)}.` : "");
   let body: string;
   if (lead) {
     const stats = lead.panel
@@ -180,9 +168,9 @@ function renderLatest(
   } else {
     return "";
   }
-  // "Latest Story": the panel heading above already reads "Latest {name}
-  // News & Updates" (mak, 2026-09-30).
-  return open("scp-nw-latest-h", "Latest story", lede) + body + `</section>`;
+  // No "Latest story" heading or lede (mak, 2026-10-02): the panel heading
+  // above already reads "Latest {name} News & Updates".
+  return `<section class="scp-ox-sec">` + body + `</section>`;
 }
 
 /* -------------------------------------------------------- section 2: feed */
@@ -383,7 +371,6 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
   const items = (data.teamNews ?? []).filter((i) => i.link).slice(0, TEAM_ITEMS);
   if (items.length === 0 || !data.team) return "";
   const proper = properNouns(loadPlayers(), data.team.code);
-  const outlets = [...new Set(items.map((i) => (i.source ?? "").trim()).filter(Boolean))];
   const rows = items
     .map((item) => {
       const ts = itemTimestamp(item);
@@ -398,7 +385,8 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
   const prefix = options.teamPathPrefix ?? "/team/";
   const more = `${prefix}${data.team.slug}/news/${options.linkQuery ?? ""}`;
   return (
-    open("scp-nw-team-h", `Around the ${data.team.nickname}`, outlets.length ? escapeHtml(`Team reporting from ${outlets.join(", ")}.`) : "") +
+    // No "Team reporting from …" lede (mak, 2026-10-02).
+    open("scp-nw-team-h", `Around the ${data.team.nickname}`, "") +
     `<ul class="scp-nw-list">${rows}</ul>` +
     `<a class="scp-ox-more" href="${escapeHtml(more)}" target="_top">${escapeHtml(`All ${data.team.fullName} news`)}</a>` +
     `</section>`
@@ -452,9 +440,13 @@ function newsPool(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lea
 
 /* ---------------------------------------------------------------- the tab */
 
-export function renderNewsTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+/**
+ * The tab split at its FAQ, which the page stands under the peers rail
+ * (mak, 2026-10-02) — same shape as outlookTabParts.
+ */
+export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOptions = {}): { body: string; faq: string } | null {
   const ctx = context(data, options);
-  if (!ctx) return "";
+  if (!ctx) return null;
   const { items, pending } = buildFeed(ctx, data.news ?? []);
   const lead = pickLead(items);
   const feedItems = items.filter((i) => i !== lead);
@@ -463,34 +455,20 @@ export function renderNewsTab(data: PlayerPageData, options: PlayerRenderOptions
   const latest = renderLatest(data, ctx, lead, lead ? null : data.news?.[0] ?? null, injuryHref);
   const mates = renderMates(data, ctx, options);
   const team = renderTeam(data, options);
-  if (!latest && !team && !mates) return "";
+  if (!latest && !team && !mates) return null;
 
-  const sources = [
-    ...new Set(
-      [...items.filter((i) => i.external).map((i) => i.source.name), ...(data.mateNews ?? []).map((m) => (m.item.source ?? "").trim())].filter(Boolean),
-    ),
-  ];
-  const newest = Math.max(lead?.ms ?? 0, ...items.map((i) => i.ms));
-  const foot =
-    `<footer class="scp-st-foot"><p>` +
-    escapeHtml(
-      `Player updates come from ${sources.length ? sources.join(", ") : "the outlets named on each item"}; game recaps are written by StatChasers from the box score. ` +
-        `Fantasy takes and impact labels are StatChasers' read of each update. ` +
-        `Fantasy points use ${SCORING_WORDS[data.format]} scoring. Team headlines link to the original publisher.`,
-    ) +
-    (newest > 0 ? ` Last update ${longDate(newest)}.` : "") +
-    `</p></footer>`;
-
+  // No sourcing/methodology footer (mak, 2026-10-02).
   const ink = teamInk(data.team);
   const faq = renderFaqSection("news", data, selectFaq(newsPool(data, ctx, items, lead, options)), options);
-  return (
-    `<div class="scp-ox scp-st scp-nw"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>` +
-    latest +
-    renderFeed(data, ctx, feedItems, pending, options, injuryHref) +
-    mates +
-    team +
-    faq +
-    foot +
-    `</div>`
-  );
+  const wrap = (html: string): string =>
+    html ? `<div class="scp-ox scp-st scp-nw"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";
+  return {
+    body: wrap(latest + renderFeed(data, ctx, feedItems, pending, options, injuryHref) + mates + team),
+    faq: wrap(faq),
+  };
+}
+
+export function renderNewsTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
+  const parts = renderNewsTabParts(data, options);
+  return parts ? parts.body + parts.faq : "";
 }

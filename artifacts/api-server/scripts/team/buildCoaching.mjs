@@ -498,7 +498,7 @@ async function loadScoring() {
     const ppgs = [...seasonMap.values()].map((e) => (e.games ? e.pts / e.games : null));
     for (const [c, e] of seasonMap) {
       const ppg = e.games ? e.pts / e.games : null;
-      out.set(`${c}|${season}`, { ppg: round(ppg, 1), rank: rankOf(ppgs, ppg), games: e.games });
+      out.set(`${c}|${season}`, { ppg: round(ppg, 1), rank: rankOf(ppgs, ppg), games: e.games, pts: e.pts });
     }
   }
   const windowCache = new Map(); // `${season}|${from}-${to}` -> Map(club -> entry)
@@ -813,7 +813,11 @@ function composeEntry({
     const ppgs = win
       ? [scoring.window(c, stop.seasons[0], win.from, win.to)].filter((p) => p?.ppg != null)
       : seasonsHere.map((yr) => scoring.get(`${c}|${yr}`)).filter(Boolean);
-    const ppg = ppgs.length ? round(ppgs.reduce((a, b) => a + b.ppg, 0) / ppgs.length, 1) : null;
+    // Pooled, not a mean of season means: total points over total games, so a
+    // 3-game current season doesn't weigh the same as a full 17-game one.
+    const totalGames = ppgs.reduce((a, b) => a + (b.games ?? 0), 0);
+    const totalPts = ppgs.reduce((a, b) => a + (b.pts ?? (b.ppg ?? 0) * (b.games ?? 0)), 0);
+    const ppg = totalGames ? round(totalPts / totalGames, 1) : null;
     const bestRank = ppgs.length ? Math.min(...ppgs.map((p) => p.rank ?? 32)) : null;
     // Fingerprint prose from whatever layers exist for those seasons.
     const splitYears = seasonsHere.filter((yr) => layerFor(stop, yr));

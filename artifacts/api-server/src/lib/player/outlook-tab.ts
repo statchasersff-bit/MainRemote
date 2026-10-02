@@ -555,8 +555,9 @@ function renderRead(m: Model, data: PlayerPageData): string {
   } else {
     prose = paragraphs(m, data).map((p) => escapeHtml(p));
     if (prose.length === 0) return "";
-    // mak, 2026-09-30: no "Updated automatically after Week n" line.
-    byline = published ? `Preseason outlook originally published <time datetime="${published.iso}">${published.text}</time>.` : "";
+    // mak, 2026-09-30: no "Updated automatically after Week n" line;
+    // 2026-10-02: no "Preseason outlook originally published" line either.
+    byline = "";
     if (preseasonParas.length && published) {
       archive =
         `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
@@ -783,7 +784,8 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
       : "";
   const noun = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[m.pos] ?? m.pos;
   return (
-    open("scp-ol-ur-h", "What could change his value", "The specific things that would move him up or down from here.") +
+    // No lede (mak, 2026-10-02).
+    open("scp-ol-ur-h", "What could change his value", "") +
     `<div class="scp-ol-ur">${card("Upside", up, "up")}${card("Risk", risk, "risk")}</div>` +
     `<div class="scp-ol-cta"><span>${escapeHtml(`Weighing ${m.last} against another ${noun} on your roster?`)}</span>` +
     `<a href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-risk">Compare them in Redraft Command</a></div>` +
@@ -965,14 +967,8 @@ export function outlookTabParts(
     renderTriggers(m, data);
   const faq = renderFaq(m, data, options);
   if (!main && !faq) return null;
-  const ms = m.measures;
-  const noun = ms ? `${{ QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[ms.position] ?? ms.position}s` : "";
-  const foot =
-    `<footer class="scp-st-foot"><p>${escapeHtml(
-      `This outlook is built from StatChasers data and updated automatically after each game week; the preseason outlook is kept as published.` +
-        (ms ? ` Driver ranks compare the ${ms.field} ${noun} who played at least six games in ${ms.season}.` : "") +
-        ` Fantasy points use ${m.scoring} scoring.`,
-    )}</p></footer>`;
+  // No methodology footer (mak, 2026-10-02).
+  const foot = "";
   const ink = teamInk(data.team);
   const wrap = (html: string): string =>
     html ? `<div class="scp-ox scp-st scp-ol"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";

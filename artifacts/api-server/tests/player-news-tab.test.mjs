@@ -232,7 +232,9 @@ describe("rendered", () => {
 
   test("the lead leads, is not in the feed, and the Moves filter shows only with moves", () => {
     const doc = render(state()).window.document;
-    assert.equal(doc.querySelector("#scp-nw-latest-h").textContent, "Latest Story");
+    // No "Latest story" heading or lede (mak, 2026-10-02).
+    assert.equal(doc.querySelector("#scp-nw-latest-h"), null);
+    assert.equal(doc.querySelector(".scp-nw .scp-st-foot"), null);
     assert.equal(doc.querySelector(".scp-nw-lead h3").textContent, "Brissett posts season high in loss at San Francisco");
     // One feature card, no navy panel (2026-09-30, second pass).
     assert.equal(doc.querySelector(".scp-nw-lead .scp-nw-pts").textContent, "25.6 fantasy points · QB4");

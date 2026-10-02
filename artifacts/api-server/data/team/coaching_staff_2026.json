@@ -1418,11 +1418,11 @@
       "playCaller": {
         "name": "Klint Kubiak",
         "title": "Head coach",
-        "basis": "reported",
-        "note": "Said at his introductory press conference he plans to keep calling plays; ESPN's 2026 play-caller preview lists him as the caller."
+        "basis": "confirmed",
+        "note": "Kubiak said when hired that he would retain play-calling duties while emphasizing a collaborative staff process; current 2026 Raiders coverage continues to identify him as the play-caller."
       },
       "priorSeasonsAsCaller": 0,
-      "prev2025Caller": "Chip Kelly (fired in-season 2025; Greg Olson finished)",
+      "prev2025Caller": "Chip Kelly (Wks 1-12), then Greg Olson from Week 13",
       "sameSchemeFamily": false,
       "tree": "Gary Kubiak / Shanahan wide-zone family",
       "callingStops": [
@@ -1436,11 +1436,13 @@
         },
         {
           "team": "DEN",
-          "role": "Interim caller",
-          "years": "2022 (late)",
+          "role": "QB coach",
+          "years": "2022 (play-caller Wks 11-16)",
           "seasons": [
             2022
-          ]
+          ],
+          "fromWeek": 11,
+          "toWeek": 16
         },
         {
           "team": "NO",
@@ -1473,7 +1475,7 @@
           "years": "2019-21"
         },
         {
-          "role": "Broncos pass game coordinator (took over calls late 2022); 49ers pass game coordinator",
+          "role": "Broncos QB coach (play-caller Wks 11-16, 2022); 49ers pass game coordinator",
           "years": "2022-23"
         },
         {
@@ -1487,19 +1489,36 @@
       ],
       "ocIsCaller": false,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "Janocko, 37, hired from Seahawks QB coach; first NFL coordinator job, longtime Kubiak lieutenant",
-      "dcSchemeNote": null,
+      "ocNote": "Janocko, 38, is a first-time NFL OC with no documented primary game-day calling experience. He has worked alongside Kubiak in Minnesota, New Orleans and Seattle and now supports Kubiak's game-planning and play-calling.",
+      "dcSchemeNote": "Player-driven base 3-4 emphasizing front discipline and playing fast. Leonard is a first-time DC and defensive play-caller after serving as Las Vegas' run-game coordinator/DL coach; his 2025 unit allowed 3.9 yards per rush, tied for second-best in the NFL.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2026,
       "sources": [
         "https://www.clickondetroit.com/sports/2026/02/10/raiders-officially-hire-klint-kubiak-head-coach-after-his-super-bowl-win-with-seahawks/",
         "https://en.wikipedia.org/wiki/Klint_Kubiak",
-        "https://abc7.com/post/calls-plays-every-nfl-team-2026-what-know/19783946/"
+        "https://abc7.com/post/calls-plays-every-nfl-team-2026-what-know/19783946/",
+        "https://www.raiders.com/news/raiders-announce-2026-coaching-staff",
+        "https://www.raiders.com/team/coaches-roster/andrew-janocko",
+        "https://www.raiders.com/news/andrew-janocko-las-vegas-raiders-offensive-coordinator-history-in-mind-nfl-2026-season",
+        "https://www.espn.com/nfl/story/_/id/47941780/sources-raiders-expected-hire-andrew-janocko-oc",
+        "https://www.raiders.com/video/kirk-cousins-klint-kubiak-nfl-week-4-chiefs-2026-season",
+        "https://www.vikings.com/news/klint-kubiak-offensive-coordinator",
+        "https://www.nfl.com/_amp/broncos-coach-nathaniel-hackett-turns-over-play-calling-duties-klint-kubiak",
+        "https://www.nfl.com/news/2022-nfl-season-week-17-what-we-learned-from-sunday-s-games",
+        "https://www.espn.com/nfl/story/_/id/41018846/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-nathaniel-hackett",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.raiders.com/news/raiders-greg-olson-interim-offensive-coordinator-pete-carroll-2025-coaching-staff",
+        "https://www.raiders.com/news/versus-raiders-chargers-both-looking-to-rebound-offensively-in-week-13",
+        "https://www.raiders.com/news/rob-leonard-named-raiders-defensive-coordinator",
+        "https://www.raiders.com/team/coaches-roster/rob-leonard",
+        "https://www.raiders.com/news/inside-rob-leonard-s-successful-debut-as-raiders-defensive-coordinator",
+        "https://www.raiders.com/news/rob-leonard-defensive-line-coach-run-game-coordinator-enters-third-year-with-raiders"
       ],
       "gaps": [
-        "The DEN 2022 stop is a partial-season takeover (from Nov 20), so that season's full Broncos numbers are not his.",
-        "No sourced scheme descriptor for DC Rob Leonard (promoted from DL/run game coordinator)."
-      ]
+        "DEN 2022 is partial: Kubiak called Weeks 11-16; Justin Outten handled Weeks 17-18 after Nathaniel Hackett's firing.",
+        "sameSchemeFamily=false is a classification judgment reflecting the transition from the Chip Kelly-built 2025 offense to Kubiak's wide-zone/play-action system."
+      ],
+      "verified": true
     },
     "mia": {
       "hc": "Jeff Hafley",
@@ -1508,13 +1527,13 @@
       "playCaller": {
         "name": "Bobby Slowik",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "ESPN's 2026 play-caller preview lists Slowik as Miami's caller; Hafley is defense-minded and calls the defense himself."
+        "basis": "confirmed",
+        "note": "Slowik is Miami's offensive play-caller in 2026 after previously calling Houston's offense in 2023-24. Current Dolphins coverage and Slowik's own in-season comments directly confirm his play-calling role."
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Mike McDaniel",
       "sameSchemeFamily": true,
-      "tree": "Kyle Shanahan tree (West Coast)",
+      "tree": "Kyle Shanahan tree",
       "callingStops": [
         {
           "team": "HOU",
@@ -1554,18 +1573,35 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "Last called plays as Texans OC 2023-24; scheme is predominantly West Coast, run-heavy",
-      "dcSchemeNote": "'Multiple' front — base 4-3 with 3-4 looks mixed in; the scheme is Hafley's and the HC calls the defensive plays",
+      "ocNote": "Slowik's only prior primary calling stop was Houston in 2023-24. His offense comes from the Shanahan tree and emphasizes running the ball, marrying run/pass concepts, play-action, movement and precision in the passing game.",
+      "dcSchemeNote": "Multiple, Hafley-led defense that bases out of a 4-3 while shifting into 3-4 structures from the same personnel. Hafley is the defensive play-caller; Sean Duggan serves as coordinator and assists with communication, adjustments and game planning.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2026,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Miami_Dolphins_season",
         "https://abc7.com/post/calls-plays-every-nfl-team-2026-what-know/19783946/",
-        "https://www.local10.com/sports/local/2026/01/24/dolphins-promote-bobby-slowik-to-offensive-coordinator/"
+        "https://www.local10.com/sports/local/2026/01/24/dolphins-promote-bobby-slowik-to-offensive-coordinator/",
+        "https://www.miamidolphins.com/news/miami-dolphins-announce-2026-coaching-staff",
+        "https://www.miamidolphins.com/team/coaches-roster/",
+        "https://www.miamidolphins.com/team/coaches-roster/bobby-slowik",
+        "https://www.miamidolphins.com/news/transcript-oc-bobby-slowik-dc-sean-duggan-and-stc-chris-tabor-introductory-press-conference-feb-4",
+        "https://www.miamidolphins.com/news/transcript-oc-bobby-slowik-press-conference-september-17",
+        "https://www.miamidolphins.com/news/transcript-oc-bobby-slowik-press-conference-september-10",
+        "https://www.miamidolphins.com/news/transcript-hc-jeff-hafley-nfl-combine-press-conference-feb-24",
+        "https://www.miamidolphins.com/news/transcript-dc-sean-duggan-press-conference-august-6",
+        "https://www.miamidolphins.com/news/transcript-dc-sean-duggan-press-conference-september-17",
+        "https://www.miamidolphins.com/team/coaches-roster/sean-duggan",
+        "https://www.miamidolphins.com/news/transcript-dc-sean-duggan-press-conference-may-13",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.espn.com/nfl/story/_/id/47717683/source-dolphins-promote-bobby-slowik-offensive-coordinator",
+        "https://www.houstontexans.com/news/mcclain-slowik-stroud-planning-to-satisfy-appetites-of-wide-receivers-hungry-to-excel",
+        "https://www.houstontexans.com/news/transcripts-12-03-2024-press-conferences",
+        "https://www.nfl.com/news/texans-fire-oc-bobby-slowik-two-seasons"
       ],
       "gaps": [
-        "McDaniel as Miami's 2025 primary caller was not explicitly re-confirmed; treated as the standing arrangement."
-      ]
+        "sameSchemeFamily=yes is unusually well supported rather than merely inferred: Slowik directly says he and McDaniel come from the same Shanahan tree and share the same schematic 'bones' and 'roots', although each runs his own variation."
+      ],
+      "verified": true
     },
     "min": {
       "hc": "Kevin O'Connell",
@@ -1574,14 +1610,23 @@
       "playCaller": {
         "name": "Kevin O'Connell",
         "title": "Head coach",
-        "basis": "reported",
-        "note": "ESPN's 2026 preview lists O'Connell entering his fifth season calling plays. Phillips called a preseason game and offseason columns urged a handoff — recheck weekly."
+        "basis": "confirmed",
+        "note": "O'Connell remains Minnesota's regular-season offensive play-caller in 2026, his fifth season in the role. Wes Phillips received preseason calling opportunities, but Vikings coverage explicitly says O'Connell normally handles the calls."
       },
       "priorSeasonsAsCaller": 4,
       "prev2025Caller": "Kevin O'Connell",
       "sameSchemeFamily": true,
       "tree": "McVay / Shanahan tree",
       "callingStops": [
+        {
+          "team": "WAS",
+          "role": "OC",
+          "years": "2019 (play-caller Wk 6 on)",
+          "seasons": [
+            2019
+          ],
+          "fromWeek": 6
+        },
         {
           "team": "MIN",
           "role": "HC",
@@ -1597,7 +1642,7 @@
       ],
       "careerPath": [
         {
-          "role": "Washington QB coach, pass game coordinator, then OC",
+          "role": "Washington QB coach, pass game coordinator, then OC — play-caller from Week 6, 2019 after Jay Gruden's firing",
           "years": "2017-19"
         },
         {
@@ -1611,18 +1656,37 @@
       ],
       "ocIsCaller": false,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "OC since 2022 running the offense during the week without calling plays — the same job O'Connell had under McVay; called the 2026 preseason Broncos game",
-      "dcSchemeNote": "Hyper-aggressive pressure scheme: league-high blitz rate from double-mug and split-field looks, backed by heavy zone",
+      "ocNote": "Phillips has served as Minnesota's OC since 2022 and plays a major role in weekly game planning while O'Connell calls regular-season games — the same job O'Connell had under McVay. Phillips has received multiple preseason play-calling opportunities, including the 2026 Ravens and Broncos games.",
+      "dcSchemeNote": "Hyper-aggressive, disguise-heavy pressure defense built around double-mug/all-up fronts, simulated and split-safety pressures, with vision/zone coverages behind them. Flores has consistently operated at or near the NFL's highest blitz rates.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2022,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Minnesota_Vikings_season",
         "https://abc7.com/post/calls-plays-every-nfl-team-2026-what-know/19783946/",
-        "https://www.matchquarters.com/p/brian-flores-vikings-all-up-hawk-coverage"
+        "https://www.matchquarters.com/p/brian-flores-vikings-all-up-hawk-coverage",
+        "https://www.vikings.com/news/2026-coaching-staff-updates-promotions-hires",
+        "https://www.vikings.com/team/coaches-roster/",
+        "https://www.vikings.com/team/coaches-roster/kevin-o-connell",
+        "https://www.vikings.com/team/coaches-roster/wes-phillips",
+        "https://www.vikings.com/news/kevin-oconnell-press-conference-intro-takeaways",
+        "https://www.commanders.com/news/kevin-o-connell-all-i-know-is-to-be-consistent-and-show-up-for-work-in-first-gam",
+        "https://www.commanders.com/news/interim-head-coach-bill-callahan-press-conference-five-takeaways",
+        "https://www.vikings.com/news/ravens-preseason-game-observations-2026",
+        "https://www.vikings.com/news/kevin-oconnell-micd-up-broncos-preseason-game-2026",
+        "https://www.vikings.com/news/2023-kevin-o-connell-wrap-preseason-roster-decisions",
+        "https://www.vikings.com/news/brian-flores-defensive-coordinator-contract-extension-2026",
+        "https://www.vikings.com/news/defense-performance-improvement-next-gen-stats-offseason-2025",
+        "https://www.vikings.com/news/lunchbreak-blitz-rate-pounds-of-pressure-leading-nfl",
+        "https://www.vikings.com/news/lions-week-9-game-preview-nfc-north-2025",
+        "https://www.nfl.com/news/the-coverage-that-turned-the-seahawks-into-super-bowl-winners-and-is-taking-the-nfl-by-storm",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.espn.com/nfl/story/_/id/41018846/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-nathaniel-hackett"
       ],
       "gaps": [
-        "ESPN's preview says O'Connell still calls plays while a preseason mic'd-up piece shows Phillips calling; went with ESPN since preseason delegation is weak evidence, but a quiet handoff cannot be fully ruled out."
-      ]
+        "O'Connell's 2019 Washington stint was partial-season: Jay Gruden called Weeks 1-5; O'Connell took over beginning Week 6. The WAS stop carries fromWeek:6, so its page rows are computed over Weeks 6+ only.",
+        "Phillips' preseason calls count as limited prior calling experience, not evidence of a regular-season handoff; ocHasCalledPlaysBefore stays false per the primary/regular-season convention (CAR/CIN/DEN/JAX), with the preseason reps noted in the ocNote."
+      ],
+      "verified": true
     },
     "ne": {
       "hc": "Mike Vrabel",
@@ -1631,20 +1695,27 @@
       "playCaller": {
         "name": "Josh McDaniels",
         "title": "Offensive coordinator",
-        "basis": "inferred",
-        "note": "Explicitly the caller in 2025 (2nd-best scoring offense; AP Assistant Coach of the Year) with no 2026 report of any change; Vrabel is a defensive-background HC."
+        "basis": "confirmed",
+        "note": "McDaniels remains New England's offensive play-caller in 2026 after directing the NFL's second-highest-scoring offense in 2025 and winning AP Assistant Coach of the Year; Vrabel's September 2026 comments describe the Maye-McDaniels caller communication directly."
       },
       "priorSeasonsAsCaller": 15,
       "prev2025Caller": "Josh McDaniels",
       "sameSchemeFamily": true,
-      "tree": "Belichick / Patriots (Erhardt-Perkins) tree",
+      "tree": "Belichick / Patriots lineage; historically Erhardt-Perkins-based terminology with substantial evolution over McDaniels' career",
       "callingStops": [
         {
           "team": "NE",
-          "role": "OC",
-          "years": "2005-08",
+          "role": "QB coach",
+          "years": "2005",
           "seasons": [
-            2005,
+            2005
+          ]
+        },
+        {
+          "team": "NE",
+          "role": "OC",
+          "years": "2006-08",
+          "seasons": [
             2006,
             2007,
             2008
@@ -1653,10 +1724,26 @@
         {
           "team": "DEN",
           "role": "HC",
-          "years": "2009-10",
+          "years": "2009",
           "seasons": [
-            2009,
+            2009
+          ]
+        },
+        {
+          "team": "DEN",
+          "role": "HC",
+          "years": "2010 (play-caller Wks 1-13)",
+          "seasons": [
             2010
+          ],
+          "toWeek": 13
+        },
+        {
+          "team": "STL",
+          "role": "OC",
+          "years": "2011",
+          "seasons": [
+            2011
           ]
         },
         {
@@ -1679,11 +1766,19 @@
         {
           "team": "LV",
           "role": "HC",
-          "years": "2022-23",
+          "years": "2022",
           "seasons": [
-            2022,
-            2023
+            2022
           ]
+        },
+        {
+          "team": "LV",
+          "role": "HC",
+          "years": "2023 (play-caller Wks 1-8)",
+          "seasons": [
+            2023
+          ],
+          "toWeek": 8
         },
         {
           "team": "NE",
@@ -1697,11 +1792,11 @@
       ],
       "careerPath": [
         {
-          "role": "Patriots assistant/QB coach, then OC & play-caller under Belichick",
+          "role": "Patriots assistant, then QB coach & play-caller (2005); OC & play-caller from 2006 under Belichick",
           "years": "2001-08"
         },
         {
-          "role": "Broncos HC (called his own plays); Rams OC",
+          "role": "Broncos HC (called his own plays, fired Dec. 2010); Rams OC & play-caller",
           "years": "2009-11"
         },
         {
@@ -1709,7 +1804,7 @@
           "years": "2012-21"
         },
         {
-          "role": "Raiders HC (kept play-calling)",
+          "role": "Raiders HC (kept play-calling, fired after Week 8, 2023)",
           "years": "2022-23"
         },
         {
@@ -1719,20 +1814,43 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "15 prior NE seasons as primary caller plus HC calling stints in Denver and Las Vegas",
-      "dcSchemeNote": "Vrabel protégé who took over defensive calls mid-2025 when Terrell Williams stepped away and ran a top-5 scoring defense through the Super Bowl LX run",
+      "ocNote": "McDaniels has 15 prior New England seasons with play-calling responsibility entering 2026, including 2005 when he called the offense while officially serving as quarterbacks coach. He also has primary calling experience as Denver and Las Vegas head coach and St. Louis offensive coordinator.",
+      "dcSchemeNote": "Aggressive, man-oriented Vrabel defense featuring single-high structures, varied pressures, zone blitzes and run-front movement. Kuhr became the primary caller in Week 2 of 2025 after Terrell Williams stepped away, called the final 20 games through the Super Bowl LX run, and was promoted to DC for 2026; New England finished 2025 fourth in scoring defense.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2025,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_New_England_Patriots_season",
         "https://en.wikipedia.org/wiki/Josh_McDaniels",
         "https://www.si.com/nfl/patriots-mike-vrabel-hiring-josh-mcdaniels-offensive-coordinator",
-        "https://www.bostonglobe.com/2026/02/17/sports/patriots-zak-kuhr-defensive-coordinator"
+        "https://www.bostonglobe.com/2026/02/17/sports/patriots-zak-kuhr-defensive-coordinator",
+        "https://www.patriots.com/team/coaches-roster/josh-mcdaniels",
+        "https://www.patriots.com/news/patriots-coaching-staff-updates-for-2026",
+        "https://www.patriots.com/news/analysis-what-fresh-ideas-could-the-patriots-add-to-their-scheme-for-the-upcoming-season",
+        "https://www.patriots.com/news/transcript-head-coach-mile-vrabel-press-conference-9-30",
+        "https://www.nfl.com/news/patriots-oc-josh-mcdaniels-rematch-seahawks-different-game-super-bowl-loss",
+        "https://www.patriots.com/news/patriots-hc-mike-vrabel-name-ap-nfl-coach-of-the-year-oc-josh-mcdaniels-named-assistant-coach-of-the-year",
+        "https://www.patriots.com/news/ask-pfw-a-blizzard-of-offseason-action-part-i-142521",
+        "https://www.patriots.com/news/patriots-name-josh-mcdaniels-offensive-coordinator-152231",
+        "https://www.patriots.com/news/mcdaniels-takes-control-of-the-patriots-offense-133216",
+        "https://www.nfl.com/news/as-expected-mcdaniels-becomes-pats-offensive-coordinator-09000d5d826b6eb4",
+        "https://www.patriots.com/news/rams-hire-mcdaniels-as-offensive-coordinator-87131",
+        "https://www.nfl.com/news/rams-qbs-coach-curl-retires-mcdaniels-takes-over-offense-09000d5d81dca2d7",
+        "https://www.philadelphiaeagles.com/news/head-coach-andy-reid-3573783",
+        "https://www.nfl.com/news/new-broncos-coach-fox-begins-filling-assistant-spots-09000d5d81dbe993",
+        "https://www.raiders.com/news/quick-hits-josh-mcdaniels-raiders-reflect-on-the-2022-season",
+        "https://www.raiders.com/news/three-and-out-bucky-brooks-observations-from-raiders-week-4-win",
+        "https://www.patriots.com/team/coaches-roster/zak-kuhr",
+        "https://www.patriots.com/news/analysis-patriots-promote-zak-kuhr-to-defensive-coordinator-terrell-williams-named-assistant-head-coach",
+        "https://www.patriots.com/news/patriots-linebackers-coach-zak-kuhr-stepping-up-as-defense-s-primary-play-caller",
+        "https://www.patriots.com/news/patriots-defense-using-some-added-fuel-as-motivation-during-super-bowl-run",
+        "https://www.patriots.com/news/after-further-review-drake-maye-film-breakdown-defense-review-and-quick-hit-film-notes-from-the-week-2-win-over-the-steelers",
+        "https://www.patriots.com/team/coaches-roster/terrell-williams"
       ],
       "gaps": [
-        "No 2026-dated article confirms McDaniels still calls plays this season (2025 is explicit).",
-        "2005 counted as a calling season per his bio though his title that year was QB coach."
-      ]
+        "priorSeasonsAsCaller=15 includes 2005, when McDaniels was the primary offensive play-caller but officially held only the quarterbacks-coach title; he was formally named OC in January 2006.",
+        "Denver 2010 and Las Vegas 2023 are partial seasons: fired Dec. 6, 2010 (last game called: Week 13, Dec. 5; Mike McCoy called the rest) and after Week 8 on Oct. 31, 2023 (Bo Hardegree took over). Those stops carry toWeek:13 and toWeek:8, so their page rows are computed over those windows only."
+      ],
+      "verified": true
     },
     "no": {
       "hc": "Kellen Moore",
@@ -1741,13 +1859,13 @@
       "playCaller": {
         "name": "Kellen Moore",
         "title": "Head coach",
-        "basis": "inferred",
-        "note": "Hiring-era reporting: 'Moore will call the offensive plays, while Nussmeier takes on his first coordinator job.' No report of a handoff found; 2026 coverage still frames it as Moore's offense."
+        "basis": "confirmed",
+        "note": "Moore remains New Orleans' offensive play-caller in 2026 after handling the role throughout his first Saints season in 2025. Current Saints material explicitly identifies him as the head coach and play-caller."
       },
       "priorSeasonsAsCaller": 1,
       "prev2025Caller": "Kellen Moore",
       "sameSchemeFamily": true,
-      "tree": "Garrett-era Cowboys staff; Coryell-family passing game",
+      "tree": "Dallas/Jason Garrett lineage with broad modern pro-style and Coryell influences",
       "callingStops": [
         {
           "team": "DAL",
@@ -1805,19 +1923,40 @@
         }
       ],
       "ocIsCaller": false,
-      "ocHasCalledPlaysBefore": false,
-      "ocNote": "First-time NFL coordinator who has never called NFL plays; college OC at Alabama, Michigan and Florida, and 7 prior seasons on Moore's staffs",
-      "dcSchemeNote": "Fangio-tree two-high, light-box system; Cover-3 zone-match principles with heavy disguise",
+      "ocHasCalledPlaysBefore": true,
+      "ocNote": "Nussmeier is in his second season as Saints OC and first NFL coordinator stint, but has extensive college coordinator/play-calling experience — including Alabama, Michigan and Florida — and NFL preseason calling reps with Dallas and New Orleans. 2026 is his ninth consecutive season on the same staff as Moore.",
+      "dcSchemeNote": "Fangio-tree, multiple 3-4 defense built around disguise and split-safety structures. Staley mixes Cover 3, Quarters and Cover 6 zone-match concepts while adapting fronts and coverage structure to personnel.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2025,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_New_Orleans_Saints_season",
         "https://en.wikipedia.org/wiki/Kellen_Moore",
-        "https://amp.nfl.com/news/eagles-qb-coach-doug-nussmeier-rejoins-kellen-moore-as-saints-offensive-coordinator"
+        "https://amp.nfl.com/news/eagles-qb-coach-doug-nussmeier-rejoins-kellen-moore-as-saints-offensive-coordinator",
+        "https://www.neworleanssaints.com/team/coaches-roster/",
+        "https://www.neworleanssaints.com/team/coaches-roster/kellen-moore",
+        "https://www.neworleanssaints.com/team/players-roster/juwan-johnson/situational/2024/pre/",
+        "https://www.neworleanssaints.com/team/coaches-roster/doug-nussmeier",
+        "https://www.neworleanssaints.com/news/new-orleans-saints-coaching-staff-2025-saints-coordinators-assistant-coaches-kellen-moore",
+        "https://www.neworleanssaints.com/team/coaches-roster/brandon-staley",
+        "https://www.neworleanssaints.com/news/brandon-staley-new-orleans-saints-defensive-coordinator-coaching-staff-2025-personnel-scheme",
+        "https://www.neworleanssaints.com/news/scouting-experts-highlight-historic-depth-at-2026-nfl-combine",
+        "https://www.nfl.com/news/justin-reid-says-playing-for-saints-a-dream-come-true-aims-to-be-tone-setter-alongside-tyrann-mathieu",
+        "https://www.neworleanssaints.com/news/key-takeaways-from-saints-training-camp-media-availability-day-5",
+        "https://www.matchquarters.com/p/saints-will-6-coverage-brandon-staley-base-defense",
+        "https://www.louisianasports.net/2025/08/08/rosss-piece/latest-stories/",
+        "https://www.neworleanssaints.com/news/postgame-quotes-jacksonville-jaguars-24-new-orleans-saints-20-2026-nfl-preseason-week-1",
+        "https://www.dallascowboys.com/news/big-opportunity-for-assistant-coaches-on-sunday",
+        "https://floridagators.com/news/2015/7/13/30932",
+        "https://www.upi.com/Sports_News/College-Football/2017/09/04/Florida-Gators-looking-to-get-offense-on-track-after-disappointing-effort-vs-Michigan-Wolverines/6411504569831/",
+        "https://www.footballscoop.com/2025/03/04/report-doug-nussmeier-candidate-dallas-cowboys-offensive-coordinator",
+        "https://www.chargers.com/news/5-things-to-know-kellen-moore-chargers-offensive-coordinator",
+        "https://www.philadelphiaeagles.com/news/eagles-name-kellen-moore-offensive-coordinator",
+        "https://www.philadelphiaeagles.com/news/kellen-moore-named-new-orleans-saints-head-coach"
       ],
       "gaps": [
-        "Moore's play-calling as Chargers OC (2023) and Eagles OC (2024) is inferred from context; explicit confirmation exists only for Dallas 2019-22 and the Saints job."
-      ]
+        "Washington 2009-11 is not counted among Nussmeier's play-calling seasons: Nick Saban said he was not the primary caller there before Alabama. His documented primary calling is collegiate (e.g. Alabama, Florida) plus NFL preseason reps, so ocHasCalledPlaysBefore=yes rests on the college record, consistent with the ATL/Rees and KC/Bieniemy convention."
+      ],
+      "verified": true
     },
     "nyg": {
       "hc": "John Harbaugh",
@@ -1826,8 +1965,8 @@
       "playCaller": {
         "name": "Matt Nagy",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "2026 reporting: 'Nagy will call the Giants' offensive plays throughout the year,' working from the booth. Harbaugh is a special-teams/defense-background HC."
+        "basis": "confirmed",
+        "note": "Nagy is the Giants' 2026 offensive play-caller and operates from the booth — he confirmed the booth arrangement on Sept. 10 and Week 1 coverage documents him calling from there. Harbaugh is a special-teams/defense-background HC."
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Mike Kafka (named caller by Brian Daboll; Daboll fired at 2-8, Kafka finished as interim HC)",
@@ -1837,10 +1976,11 @@
         {
           "team": "KC",
           "role": "OC",
-          "years": "2017 (Dec on)",
+          "years": "2017 (play-caller Wk 13 on)",
           "seasons": [
             2017
-          ]
+          ],
+          "fromWeek": 13
         },
         {
           "team": "CHI",
@@ -1850,6 +1990,24 @@
             2018,
             2019
           ]
+        },
+        {
+          "team": "CHI",
+          "role": "HC",
+          "years": "2020 (play-caller Wks 1-9)",
+          "seasons": [
+            2020
+          ],
+          "toWeek": 9
+        },
+        {
+          "team": "CHI",
+          "role": "HC",
+          "years": "2021 (play-caller Wks 1-3)",
+          "seasons": [
+            2021
+          ],
+          "toWeek": 3
         },
         {
           "team": "NYG",
@@ -1866,11 +2024,11 @@
           "years": "2008-12"
         },
         {
-          "role": "Chiefs QB coach, then OC — took over play-calling Dec 2017",
+          "role": "Chiefs QB coach, then OC — took over play-calling Week 13 of 2017, through the Wild Card",
           "years": "2013-17"
         },
         {
-          "role": "Bears head coach",
+          "role": "Bears head coach — called 2018-19, Wks 1-9 of 2020 and Wks 1-3 of 2021; Bill Lazor called the rest",
           "years": "2018-21"
         },
         {
@@ -1884,19 +2042,46 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "Prior primary calling in Chicago and late-2017 Kansas City; his Bears offenses ranked 22nd or worse in scoring in three of four years",
-      "dcSchemeNote": "Dean Pees-style Ravens system: multiple and pressure-based, physical press corners, heavy Cover 2/quarters",
+      "ocNote": "Nagy has prior primary calling experience with Kansas City and Chicago. Chicago ranked 9th, 29th, 22nd and 27th in scoring during his four seasons as HC, though Bill Lazor handled much of the play-calling in the second half of 2020 and from Week 4 onward in 2021.",
+      "dcSchemeNote": "Dean Pees/Mike Macdonald-influenced, multiple pressure defense built around quarters-heavy match coverage, disguised two-high/single-high rotations and creative pressure packages. Wilson emphasizes physicality and front movement and is the defensive play-caller.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2026,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_New_York_Giants_season",
         "https://en.wikipedia.org/wiki/Matt_Nagy",
-        "https://bigblueview.com/new-york-giants-news/153786/matt-nagy-hired-offensive-coordinator-john-harbaugh-andy-reid"
+        "https://bigblueview.com/new-york-giants-news/153786/matt-nagy-hired-offensive-coordinator-john-harbaugh-andy-reid",
+        "https://www.giants.com/news/john-harbaugh-announces-2026-coaching-staff-coordinators-matt-nagy-dennard-wilson-chris-horton",
+        "https://www.giants.com/team/coaches-roster/coaches_copy",
+        "https://www.giants.com/news/quotes-9-10-asst-hc-ststc-chris-horton-oc-matt-nagy-dc-dennard-wilson-wr-malik-nabers",
+        "https://www.giants.com/news/the-best-win-is-the-next-one-behind-the-bench-for-the-launch-of-the-john-harbaugh-era",
+        "https://www.giants.com/news/quotes-9-24-oc-matt-nagy-asst-hc-stc-chris-horton-dc-dennard-wilson-wr-malik-nabers-rb-cam-skattebo",
+        "https://www.giants.com/news/2026-nfl-season-jaxson-dart-matt-nagy-brian-callahan-greg-roman-cam-skattebo-john-harbaugh",
+        "https://www.giants.com/news/cover-3-what-we-re-learning-about-john-harbaugh-and-his-staff",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.espn.com/nfl/story/_/id/46157629/mike-kafka-giants-play-caller-brian-daboll-says",
+        "https://www.giants.com/news/te-coach-tim-kelly-to-serve-as-giants-new-oc-mike-kafka-to-continue-calling-plays",
+        "https://www.giants.com/news/mike-kafka-shane-bowen-offensive-line-jermaine-eluemunor-deonte-banks-cor-dale-flott-patriots-2025-preseason",
+        "https://www.chiefs.com/news/chiefs-oc-matt-nagy-passing-the-test-of-recent-play-calling-duties-20037004",
+        "https://www.nfl.com/news/andy-reid-gives-chiefs-play-calling-role-to-matt-nagy-0ap3000000886304",
+        "https://www.nfl.com/news/matt-nagy-trubisky-certainly-a-part-of-going-to-bears-0ap3000000904740",
+        "https://www.chiefs.com/news/what-we-learned-from-tuesday-s-media-availability-20493435",
+        "https://www.chicagobears.com/news/4-things-we-learned-from-nagy-at-combine",
+        "https://www.chicagobears.com/news/matt-nagy-relinquishing-play-calling-duties-to-offensive-coordinator-bill-lazor",
+        "https://www.nfl.com/_amp/matt-nagy-realizes-time-is-now-for-his-bears-offense",
+        "https://www.espn.com/blog/chicago-bears/post/_/id/4710828/chicago-bears-finding-offensive-identity-under-new-playcaller-bill-lazor",
+        "https://www.chicagobears.com/news/quick-hits-bears-show-resiliency-by-rebounding-week-4-lions-win-2021",
+        "https://www.nfl.com/_amp/bears-fire-hc-matt-nagy-after-four-seasons",
+        "https://www.giants.com/news/unpredictable-dynamic-decisive-unapologetic-dennard-wilson-s-brand-of-defense",
+        "https://www.giants.com/news/20-questions-in-20-days-what-does-the-new-defense-look-like",
+        "https://www.giants.com/news/2026-training-camp-west-virginia-cam-skattebo-malik-nabers-jaxson-dart-john-harbaugh-dennard-wilson",
+        "https://www.giants.com/news/fact-or-fiction-top-tandems-most-intriguing-picks"
       ],
       "gaps": [
-        "Sources conflict on Nagy's Bears calling years (2018-19 listed as the defensible core; he delegated to Bill Lazor 2019-21 per his bio).",
-        "The KC 2017 stop is partial-season (December on)."
-      ]
+        "KC 2017 is partial: Nagy took over beginning Week 13 (Reid: the final five regular-season games) and retained the role through the Wild Card loss. The stop carries fromWeek:13, so its rows compute over Weeks 13+ including the playoff.",
+        "CHI 2020 and 2021 are partial caller seasons: Bill Lazor took over beginning Week 10 of 2020 and Week 4 of 2021; those stops carry toWeek:9 and toWeek:3. The old 'sources conflict on Bears calling years' caveat is resolved — the exact handoff weeks are documented.",
+        "sameSchemeFamily=yes is the broad Reid/Kansas City lineage (Kafka and Nagy both developed under Reid), not identical system continuity: the Giants describe the 2026 offense as a new blend of Nagy, Brian Callahan and Greg Roman concepts."
+      ],
+      "verified": true
     },
     "nyj": {
       "hc": "Aaron Glenn",
@@ -1905,13 +2090,13 @@
       "playCaller": {
         "name": "Frank Reich",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "Feb 2026: Glenn handed 'full control of the offense' to Reich and calls the defensive plays himself."
+        "basis": "confirmed",
+        "note": "Aaron Glenn handed Reich control of the offense while taking over defensive play-calling himself. Current 2026 coverage confirms Reich is calling the Jets offense — the Jets documented him calling from the booth in preseason, and regular-season reporting discusses his specific play calls."
       },
       "priorSeasonsAsCaller": 0,
-      "prev2025Caller": "Tanner Engstrand (first-time caller, called all of 2025; departed after a push to demote him from play-calling)",
+      "prev2025Caller": "Tanner Engstrand — a first-time NFL play-caller (prior calling at the University of San Diego and the XFL's DC Defenders); no 2025 in-season handoff reported, and he departed after a push to demote him from play-calling",
       "sameSchemeFamily": false,
-      "tree": "Reid/Pederson West Coast branch, evolved through his own Colts system",
+      "tree": "Pederson/Reid West Coast influence blended with Reich's own Chargers/Colts system",
       "callingStops": [
         {
           "team": "SD",
@@ -1925,22 +2110,41 @@
         {
           "team": "IND",
           "role": "HC",
-          "years": "2018-22",
+          "years": "2018-21",
           "seasons": [
             2018,
             2019,
             2020,
-            2021,
-            2022
+            2021
           ]
+        },
+        {
+          "team": "IND",
+          "role": "HC",
+          "years": "2022 (play-caller Wks 1-9)",
+          "seasons": [
+            2022
+          ],
+          "toWeek": 9
         },
         {
           "team": "CAR",
           "role": "HC",
-          "years": "2023",
+          "years": "2023 (play-caller Wks 1-6)",
           "seasons": [
             2023
-          ]
+          ],
+          "toWeek": 6
+        },
+        {
+          "team": "CAR",
+          "role": "HC",
+          "years": "2023 (play-caller Wks 11-12)",
+          "seasons": [
+            2023
+          ],
+          "fromWeek": 11,
+          "toWeek": 12
         },
         {
           "team": "NYJ",
@@ -1957,11 +2161,11 @@
           "years": "2013-15"
         },
         {
-          "role": "Eagles OC — Super Bowl LII champions",
+          "role": "Eagles OC — Super Bowl LII champions (Pederson called the plays)",
           "years": "2016-17"
         },
         {
-          "role": "Colts HC, then Panthers HC (called plays at both)",
+          "role": "Colts HC, then Panthers HC — called plays at both; fired Week 9 of 2022 and after Week 12 of 2023",
           "years": "2018-23"
         },
         {
@@ -1971,19 +2175,43 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "Long calling résumé (SD, IND, CAR); in Carolina 2023 he ceded calls after an 0-6 start, took them back three games later, and was fired in November",
-      "dcSchemeNote": "More 'multiple' in 2026 with increased 3-4 base looks — but HC Aaron Glenn calls the defensive plays; Duker is a first-time DC",
+      "ocNote": "Reich has extensive NFL play-calling experience with San Diego, Indianapolis and Carolina. In Carolina in 2023, he called the first six games, handed the role to Thomas Brown for three games, reclaimed it for two games, then was fired.",
+      "dcSchemeNote": "Glenn-led multiple defense using both 4-3 and 3-4 structures, extensive nickel/four-down spacing and varied four- and five-man fronts. Glenn is the defensive play-caller; first-time DC Brian Duker coordinates the unit and supports game planning.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2025,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_New_York_Jets_season",
         "https://en.wikipedia.org/wiki/Frank_Reich",
-        "https://www.click2houston.com/sports/2026/02/04/jets-hire-veteran-coach-frank-reich-as-offensive-coordinator/"
+        "https://www.click2houston.com/sports/2026/02/04/jets-hire-veteran-coach-frank-reich-as-offensive-coordinator/",
+        "https://www.newyorkjets.com/news/2026-combine-aaron-glenn-will-call-defensive-plays-this-season-02-24-2026",
+        "https://www.newyorkjets.com/news/hc-aaron-glenn-on-jets-defensive-front-a-little-bit-of-everything",
+        "https://www.newyorkjets.com/news/jets-defensive-coordinator-brian-duker-building-versatile-unit",
+        "https://www.newyorkjets.com/team/coaches-roster/brian-duker",
+        "https://www.newyorkjets.com/news/brian-duker-jets-defensive-coordinator-01-28-2026",
+        "https://www.newyorkjets.com/news/notebook-jets-frank-reich-calling-plays-from-the-box-08-28-2026",
+        "https://www.espn.com/nfl/story/_/id/47825789/jets-hire-frank-reich-offensive-coordinator",
+        "https://www.espn.com/nfl/story/_/id/47899429/new-york-jets-aaron-glenn-coaching-staff-changes-offseason",
+        "https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/jets-oc-frank-reich-on-breece-hall-my-mindset-is-if-hes-healthy-just-play-ball",
+        "https://jetsxfactor.com/2026/09/25/jets-pivotal-frank-reich-data-fourth-down-call/",
+        "https://www.newyorkjets.com/news/jets-hire-tanner-engstrand-offensive-coordinator-01-31-2025",
+        "https://www.newyorkjets.com/news/jets-tanner-engstrand-encouraged-by-offense-09-11-25",
+        "https://www.espn.com/nfl/story/_/id/47745686/jets-oc-tanner-engstrand-parting-ways-sources-say",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://library.sfo2.cdn.digitaloceanspaces.com/publications/football/yearbooks/FSDCHMG-2015-los-angeles-chargers-media-guide.pdf",
+        "https://www.nfl.com/news/frank-reich-joins-eagles-as-offensive-coordinator-0ap3000000624932",
+        "https://www.colts.com/news/what-will-the-colts-offense-look-like-under-frank-reich-we-re-going-to--20363110",
+        "https://www.nfl.com/news/panthers-head-coach-frank-reich-hands-over-play-calling-duties-to-offensive-coor",
+        "https://www.nfl.com/news/panthers-hc-frank-reich-taking-back-play-calling-duties-after-giving-them-to-oc-",
+        "https://www.nfl.com/news/panthers-firing-frank-reich-after-1-10-start-to-first-season-in-carolina",
+        "https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/doug-pederson-will-call-offensive-plays-confirms-schwartz-as-dc/",
+        "https://www.inquirer.com/philly/sports/eagles/eagles-vikings-patriots-super-bowl-coach-doug-pederson-unorthodox-play-calling-20180123.html"
       ],
       "gaps": [
-        "Eagles 2016-17 excluded from calling stops: sources do not settle whether Reich or Pederson called plays there.",
-        "The CAR 2023 stop includes a mid-season handoff and return, so that season's numbers are partly Thomas Brown's."
-      ]
+        "PHI OC 2016-17 is excluded from Reich's calling history because Doug Pederson was the primary game-day play-caller: Pederson announced in 2016 he would call plays, and Reich himself said during the 2017 Super Bowl run, 'It's Doug calling the plays.'",
+        "IND 2022 and CAR 2023 are partial: Reich was fired after Week 9 of 2022 (Parks Frazier called the rest) and CAR 2023 is split into two windowed stops — Thomas Brown called the three games between Reich's Wks 1-6 and Wks 11-12 stretches, and again after the firing. Page rows compute over those windows only.",
+        "sameSchemeFamily=false is a classification judgment comparing Engstrand's Ben Johnson/Lions lineage with Reich's established offensive system."
+      ],
+      "verified": true
     },
     "phi": {
       "hc": "Nick Sirianni",
@@ -1992,13 +2220,13 @@
       "playCaller": {
         "name": "Sean Mannion",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "Sirianni confirmed Mannion calls plays, from the booth, starting Week 1. First-time caller at any level — two total years of coaching."
+        "basis": "confirmed",
+        "note": "Mannion is Philadelphia's primary offensive play-caller in 2026 and calls from the booth. Week 1 was his first regular-season play-calling assignment at any level after only two prior seasons as an NFL coach; the Eagles billed the opener as his play-calling debut and October coverage discusses his calls directly."
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Kevin Patullo",
       "sameSchemeFamily": false,
-      "tree": "Shanahan / McVay tree (via Matt LaFleur's Packers)",
+      "tree": "McVay/Shanahan family via Matt LaFleur, with Mannion also having played under Sean McVay and Kevin O'Connell",
       "callingStops": [
         {
           "team": "PHI",
@@ -2029,18 +2257,45 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "Zero play-calling experience at any level before 2026; hired to install a version of the Shanahan offense — the Eagles' fifth OC in five years",
-      "dcSchemeNote": "Fangio system, year 3: ~90% two-high shells with league-leading disguise rate, late safety rotations",
+      "ocNote": "Mannion entered 2026 with no prior play-calling experience and only two seasons as a coach: Packers offensive assistant in 2024 and quarterbacks coach in 2025. His new Eagles offense — the fifth different offensive coordinator in five seasons (2022-26) — draws heavily from the LaFleur/McVay/Shanahan family while retaining selected concepts that previously worked in Philadelphia.",
+      "dcSchemeNote": "Fangio system, Year 3: roughly 90% two-high pre-snap shells in 2025, extensive coverage disguise and late open-to-closed safety rotations into Cover 3, Quarters and other match structures.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2021,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Philadelphia_Eagles_season",
         "https://www.phillyvoice.com/upside-downside-sean-mannion-eagles-new-offensive-coordinator-josh-grizzard-nfl-coaching-analysis/",
-        "https://fantasynerds.com/news/story/2026/09/09/eagles-oc-sean-mannion-likely-to-call-plays-from-booth-in-week-1-1618485"
+        "https://fantasynerds.com/news/story/2026/09/09/eagles-oc-sean-mannion-likely-to-call-plays-from-booth-in-week-1-1618485",
+        "https://www.philadelphiaeagles.com/news/how-the-eagles-built-a-new-offense",
+        "https://www.philadelphiaeagles.com/video/sean-mannion-press-conference-september-10-2026",
+        "https://www.philadelphiaeagles.com/team/coaches/sean-mannion",
+        "https://www.philadelphiaeagles.com/team/coaches/",
+        "https://www.philadelphiaeagles.com/news/eagles-sean-mannion-offensive-coordinator-hire",
+        "https://www.philadelphiaeagles.com/news/sean-mannion-eagles-five-things-to-know-offensive-coordinator",
+        "https://www.nfl.com/news/eagles-hire-packers-qbs-coach-sean-mannion-as-new-offensive-coordinator",
+        "https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/nick-sirianni-new-eagles-oc-sean-mannion-has-an-obsession-to-get-better",
+        "https://www.philadelphiaeagles.com/news/eagles-2026-offense-sean-mannion-jalen-hurts-dave-spadaro",
+        "https://www.philadelphiaeagles.com/news/what-did-eagles-fans-learn-about-sean-mannion-from-his-introductory-press-conference",
+        "https://www.philadelphiaeagles.com/news/eagles-players-embrace-sean-mannion-and-the-new-look-offense",
+        "https://www.nfl.com/news/why-eagles-oc-sean-mannion-s-beautiful-mind-matters-more-than-new-scheme",
+        "https://www.philadelphiaeagles.com/news/eagles-name-kevin-patullo-offensive-coordinator",
+        "https://www.philadelphiaeagles.com/news/cowboys-eagles-daily-updates-week-1-2025",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.philadelphiaeagles.com/news/eagles-offense-ramps-up-under-kevin-patullo",
+        "https://www.philadelphiaeagles.com/team/coaches/vic-fangio",
+        "https://www.philadelphiaeagles.com/news/cooper-dejean-prepares-for-third-year-in-vic-fangio-s-defense",
+        "https://www.nfl.com/news/next-gen-stats-new-advanced-metrics-you-need-to-know-for-the-2025-nfl-season",
+        "https://www.matchquarters.com/p/fangio-cover-9-eagles-two-high-disguise",
+        "https://www.matchquarters.com/p/vic-fangio-quarters-coverage-eagles-scheme-2024",
+        "https://www.matchquarters.com/p/how-fangio-defense-disguises-coverage",
+        "https://www.pff.com/news/nfl-pff-grades-and-data-key-insights-for-every-nfl-week-6-game-2",
+        "https://www.packers.com/news/packers-announce-2024-coaching-staff-changes",
+        "https://www.packers.com/news/packers-announce-coaching-staff-changes-2025"
       ],
       "gaps": [
-        "Scheme-family call (false) rests on reporting that Mannion installs a Shanahan-family system while Patullo ran Sirianni's in-house offense."
-      ]
+        "sameSchemeFamily=false is well supported: Philadelphia itself describes Mannion's system as a new offense, with materially more Shanahan/McVay-family under-center, wide-zone, motion and play-action elements than the Sirianni/Patullo continuity offense of 2025.",
+        "The old 'league-leading disguise rate' claim was dropped: PFF had Philadelphia disguising on 45% of snaps, third-highest at the time, and MatchQuarters' 488 disguised snaps (98% open-to-closed) does not establish a full-season No. 1 ranking — 'extensive coverage disguise' is what the data supports."
+      ],
+      "verified": true
     },
     "pit": {
       "hc": "Mike McCarthy",
@@ -2049,13 +2304,13 @@
       "playCaller": {
         "name": "Mike McCarthy",
         "title": "Head coach",
-        "basis": "reported",
-        "note": "Said at his introductory press conference he will call plays and 'run the offense'; Angelichio holds the OC title without calling duties."
+        "basis": "confirmed",
+        "note": "McCarthy said at his introductory press conference that he would call the offensive plays and run the offense. OC Brian Angelichio has subsequently confirmed McCarthy handles game-day play-calling."
       },
       "priorSeasonsAsCaller": 0,
-      "prev2025Caller": "Arthur Smith (left for the Ohio State OC job after McCarthy's hire)",
+      "prev2025Caller": "Arthur Smith — departed for Ohio State during Pittsburgh's 2026 coaching transition",
       "sameSchemeFamily": false,
-      "tree": "Holmgren / West Coast tree (Green Bay lineage)",
+      "tree": "Paul Hackett / West Coast lineage, with strong Green Bay influence",
       "callingStops": [
         {
           "team": "NO",
@@ -2080,7 +2335,7 @@
         {
           "team": "GB",
           "role": "HC",
-          "years": "2006-18",
+          "years": "2006-14",
           "seasons": [
             2006,
             2007,
@@ -2090,8 +2345,23 @@
             2011,
             2012,
             2013,
-            2014,
-            2015,
+            2014
+          ]
+        },
+        {
+          "team": "GB",
+          "role": "HC",
+          "years": "2015 (play-caller Wk 14 on)",
+          "seasons": [
+            2015
+          ],
+          "fromWeek": 14
+        },
+        {
+          "team": "GB",
+          "role": "HC",
+          "years": "2016-18",
+          "seasons": [
             2016,
             2017,
             2018
@@ -2121,11 +2391,11 @@
           "years": "2000-05"
         },
         {
-          "role": "Packers head coach; called his own plays most of the tenure",
+          "role": "Packers head coach — called his own plays except most of 2015 (Tom Clements called the first 12 games; McCarthy reclaimed the role from Week 14)",
           "years": "2006-18"
         },
         {
-          "role": "Cowboys head coach; took over play-calling 2023-24",
+          "role": "Cowboys head coach; took over play-calling 2023-24 (Kellen Moore called 2020-22)",
           "years": "2020-24"
         },
         {
@@ -2135,19 +2405,44 @@
       ],
       "ocIsCaller": false,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "Ex-Vikings passing-game coordinator/TE coach, with McCarthy in Green Bay 2016-18; no record of primary play-calling anywhere",
-      "dcSchemeNote": "Multiple-front 3-4 base, usually 2-4-5 in practice, dynamic blitz packages",
+      "ocNote": "Angelichio has no documented NFL primary play-calling experience. He previously served as Ithaca's offensive coordinator from 2000-05 and as Pitt's offensive coordinator for the 2011 BBVA Compass Bowl, and worked under McCarthy in Green Bay from 2016-18, most recently as Vikings passing-game coordinator/TE coach.",
+      "dcSchemeNote": "Personnel-driven, multiple 3-4 defense with four-down variations, movable edge rushers and flexible fronts. Graham calls the defense and emphasizes versatility and creating pressure with the front when possible while retaining situational blitz packages.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2026,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Pittsburgh_Steelers_season",
         "https://en.wikipedia.org/wiki/Mike_McCarthy_(American_football)",
-        "https://steelersnow.com/mike-mccarthy-outlines-steelers-oc-brian-angelichios-role/"
+        "https://steelersnow.com/mike-mccarthy-outlines-steelers-oc-brian-angelichios-role/",
+        "https://www.steelers.com/news/steelers-welcome-mccarthy-back-home",
+        "https://www.steelers.com/news/mccarthy-outlines-vision-for-offense-defense-in-pittsburgh",
+        "https://www.steelers.com/team/coaches-roster/mike-mccarthy",
+        "https://www.steelers.com/news/steelers-complete-2026-coaching-staff",
+        "https://www.steelers.com/team/coaches-roster/brian-angelichio",
+        "https://www.steelers.com/news/coordinators-corner-new-coordinators-share-their-takes",
+        "https://www.steelers.com/team/coaches-roster/patrick-graham",
+        "https://www.steelers.com/news/graham-touts-multitude-of-options-on-defensive-line",
+        "https://www.steelers.com/news/four-down-territory-the-simple-math-of-defense",
+        "https://www.steelers.com/news/2026-camp-blog-embracing-change",
+        "https://www.steelers.com/news/steelers-release-initial-2026-depth-chart",
+        "https://www.packers.com/news/mike-mccarthy-named-green-bay-s-14th-head-coach-2452545",
+        "https://www.nfl.com/news/mike-mccarthy-explains-decision-to-give-up-play-calling-0ap3000000470259",
+        "https://www.nfl.com/news/mike-mccarthy-takes-back-packers-playcalling-duties-0ap3000000599611",
+        "https://www.nfl.com/news/mike-mccarthy-i-ll-never-give-up-play-calling-again-0ap3000000680593",
+        "https://www.nfl.com/news/cowboys-hc-mike-mccarthy-offense-still-in-dak-s-language-despite-play-calling-ch",
+        "https://www.espn.com/nfl/story/_/id/41018846/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-nathaniel-hackett",
+        "https://www.espn.com/nfl/story/_/id/38664090/cowboys-transition-chargers-kellen-moore-mike-mccarthy-mnf",
+        "https://static.clubs.nfl.com/image/upload/v1571173874/49ers/umzyq7woq56beuzup1ug.pdf",
+        "https://scarletknights.com/news/2011/2/3/rutgers_football_names_brian_angelichio_tight_ends_coach",
+        "https://ohiostatebuckeyes.com/news/2026/1/31/football-arthur-smith-joins-ohio-state-as-offensive-coordinator",
+        "https://www.espn.com/college-football/story/_/id/47719237/source-ohio-state-hires-former-steelers-oc-arthur-smith"
       ],
       "gaps": [
-        "GB tenure includes a part of 2015 delegated to Tom Clements (resumed that December).",
-        "McCarthy sat out 2025; Dallas 2020-22 excluded (Kellen Moore called those)."
-      ]
+        "GB 2015 is partial: Tom Clements called the first 12 games; McCarthy reclaimed duties beginning Week 14 and kept them afterward. The 2015 stop carries fromWeek:14, so its page rows compute over Weeks 14+ only.",
+        "Dallas 2020-22 is correctly excluded: Kellen Moore was the primary caller; McCarthy took over in 2023. McCarthy sat out 2025.",
+        "ocHasCalledPlaysBefore=false is the 'limited/college' case, not a clean no: Ithaca OC 2000-05 ('in charge of the offense') and the 2011 Pitt bowl OC job, but no source documents him as a primary game-day play-caller, so the boolean follows the no-documented-primary-calling convention with the college history in the ocNote.",
+        "sameSchemeFamily=false is a taxonomy judgment comparing Arthur Smith's run/play-action system with McCarthy's West Coast-rooted offense."
+      ],
+      "verified": true
     },
     "sea": {
       "hc": "Mike Macdonald",
@@ -2156,13 +2451,13 @@
       "playCaller": {
         "name": "Brian Fleury",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "First-time offensive caller at any level; Macdonald: 'All play callers have to be first-time play callers at some point.' Fleury kept the scheme that just won the Super Bowl (Kubiak left for the Raiders HC job)."
+        "basis": "confirmed",
+        "note": "Seattle hired Fleury to call the offense after Klint Kubiak left to become Raiders head coach, and the 2026 opener was Fleury's first regular-season game as an offensive play-caller. Macdonald: 'All play callers have to be first-time play callers at some point.'"
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Klint Kubiak",
       "sameSchemeFamily": true,
-      "tree": "Shanahan tree (49ers staff 2019-25)",
+      "tree": "Kyle Shanahan tree — Fleury spent 2019-25 on the 49ers staff, moving from defensive quality control in 2019 to the offensive staff in 2020 and eventually run-game coordinator/TE coach",
       "callingStops": [
         {
           "team": "SEA",
@@ -2193,18 +2488,41 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "Has never called offensive plays at any level (his only calling experience was as an FCS defensive coordinator); Seattle's fourth OC in four seasons",
-      "dcSchemeNote": "Macdonald calls the defensive plays in his Ravens-style scheme — disguise, early-down dominance, takeaways; Durde runs the day-to-day",
+      "ocNote": "2026 is Fleury's first offensive play-calling job at any level — he previously called defense and special teams in college, but never offense. He is Seattle's fourth different OC in four seasons (Waldron, Grubb, Kubiak, Fleury), but was hired specifically to preserve much of Kubiak's Shanahan-family Super Bowl offense.",
+      "dcSchemeNote": "Macdonald-led, disguise-heavy defense built around extensive nickel/dime and two-high shells, simulated pressures and unpredictable four-man rushes — the NFL's No. 1 scoring defense and No. 1 defensive DVOA in 2025 despite a bottom-six blitz rate. Macdonald remains the regular-season defensive play-caller; Durde coordinates preparation and game planning and receives preseason calling reps.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2024,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Seattle_Seahawks_season",
         "https://www.nfl.com/news/seahawks-hiring-49ers-tight-ends-coach-brian-fleury-as-offensive-coordinator",
-        "https://www.fox13seattle.com/sports/macdonald-decision-trust-fleury-new-seahawks-coordinator"
+        "https://www.fox13seattle.com/sports/macdonald-decision-trust-fleury-new-seahawks-coordinator",
+        "https://www.seahawks.com/news/seahawks-hire-offensive-coordinator-brian-fleury",
+        "https://www.seahawks.com/news/mike-macdonald-on-new-seahawks-offensive-coordinator-brian-fleury-it-felt-like-he-was-one-of-us",
+        "https://www.seahawks.com/news/seahawks-offensive-coordinator-brian-fleury-not-looking-for-huge-changes-but-to-maintain-what-made-seattle-s-offense-successful",
+        "https://www.seahawks.com/news/takeaways-from-seahawks-coordinators-brian-fleury-aden-durde-jay-harbaugh",
+        "https://www.seahawks.com/news/offensive-coordinator-brian-fleury-brings-familiarity-fresh-ideas-to-seahawks-offense",
+        "https://www.seahawks.com/news/seahawks-offensive-coordinator-brian-fleury-vision-will-come-to-life-in-season-opener",
+        "https://www.nfl.com/news/defending-champion-seahawks-are-trusting-the-offense-to-an-unknown-what-will-it-look-like",
+        "https://www.nfl.com/news/first-impressions-of-seahawks-new-offense-and-how-it-might-look-if-sam-darnold-misses-time",
+        "https://www.seahawks.com/news/seattle-seahawks-finalize-2026-coaching-staff",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.seahawks.com/news/seahawks-hire-klint-kubiak-as-offensive-coordinator",
+        "https://www.seahawks.com/news/seahawks-part-ways-with-offensive-coordinator-ryan-grubb",
+        "https://www.seahawks.com/news/seahawks-announce-seven-additions-to-2024-coaching-staff",
+        "https://www.seahawks.com/news/the-seahawks-plan-for-kenneth-walker-iii-other-things-we-learned-from-mike-macdonald-s-monday-press-conference",
+        "https://www.seahawks.com/news/jadarian-price-making-progress-other-takeaways-from-mike-macdonald-s-monday-press-conference",
+        "https://www.seahawks.com/news/how-mike-macdonald-s-flexibility-has-helped-the-seahawks-defense-thrive",
+        "https://www.seahawks.com/news/seattle-seahawks-2025-defense-is-stamped-in-history",
+        "https://www.seahawks.com/news/dark-side-defense-leads-seahawks-into-postseason-it-s-a-special-group",
+        "https://www.seahawks.com/news/seahawks-defense-displaying-pretty-rare-ability-to-pressure-quarterbacks-with-multiple-players",
+        "https://www.seahawks.com/news/seahawks-defense-knows-there-s-a-deeper-level-to-uncover-in-year-3-under-mike-macdonald"
       ],
       "gaps": [
-        "That Kubiak called Seattle's plays in 2025 is inferred from his OC role and the first-time-caller framing around Fleury's hire."
-      ]
+        "Fleury's prior calling experience was defense AND special teams in college (his own account plus NFL's profile), never offense — the old 'only an FCS defensive coordinator' wording was incomplete. ocHasCalledPlaysBefore=false means offensive play-calling specifically.",
+        "sameSchemeFamily=yes is strongly supported rather than inferred: Macdonald explicitly sought continuity with Kubiak's offense, both come through the Shanahan/Kubiak branch, Fleury worked with Kubiak in San Francisco in 2023, and Week 1 personnel rates nearly matched 2025 (with more 21 personnel).",
+        "The 2026 OC change was not a performance firing: Seattle wanted to retain Kubiak, who left after the Super Bowl win for the Raiders HC job."
+      ],
+      "verified": true
     },
     "sf": {
       "hc": "Kyle Shanahan",
@@ -2213,20 +2531,27 @@
       "playCaller": {
         "name": "Kyle Shanahan",
         "title": "Head coach",
-        "basis": "reported",
-        "note": "Retained play-calling when Klay Kubiak was promoted to OC; Sept 2026 game coverage still has Shanahan calling. Extension signed Sept 2026."
+        "basis": "confirmed",
+        "note": "Shanahan remains San Francisco's primary offensive play-caller in 2026. Klay Kubiak's promotion to OC did not change the arrangement, and current 2026 game coverage continues to document Shanahan calling the offense. Multi-year extension signed during the 2026 offseason; publicly reported Sept. 11, 2026."
       },
       "priorSeasonsAsCaller": 9,
       "prev2025Caller": "Kyle Shanahan",
       "sameSchemeFamily": true,
-      "tree": "Shanahan tree — he is its head; wide-zone West Coast family",
+      "tree": "Mike Shanahan / Gary Kubiak wide-zone West Coast family; Kyle Shanahan leads its modern NFL branch",
       "callingStops": [
         {
           "team": "HOU",
           "role": "OC",
-          "years": "2008-09",
+          "years": "2008 (partial caller)",
           "seasons": [
-            2008,
+            2008
+          ]
+        },
+        {
+          "team": "HOU",
+          "role": "OC",
+          "years": "2009",
+          "seasons": [
             2009
           ]
         },
@@ -2278,7 +2603,7 @@
       ],
       "careerPath": [
         {
-          "role": "Texans OC — youngest OC in the NFL at the time",
+          "role": "Texans OC — youngest OC in the NFL at the time; full-time game-day caller from 2009",
           "years": "2008-09"
         },
         {
@@ -2291,19 +2616,49 @@
         }
       ],
       "ocIsCaller": false,
-      "ocHasCalledPlaysBefore": false,
-      "ocNote": "On the 49ers staff since 2021, OC since 2025; never a primary regular-season caller — viewed as Shanahan's groomed successor",
-      "dcSchemeNote": "Morris (hired Feb 2026): hybrid odd/five-man front with aggressive blitzing and disguised coverages — a clear departure from the prior four-down, low-blitz scheme",
+      "ocHasCalledPlaysBefore": true,
+      "ocNote": "Kubiak has been on the 49ers staff since 2021 and OC since 2025 — a trusted Shanahan lieutenant receiving developmental play-calling reps. Shanahan remains the primary regular-season caller, but Kubiak called 2024 preseason games and the entire 2024 Week 18 regular-season finale at Arizona, his NFL regular-season play-calling debut.",
+      "dcSchemeNote": "More multiple version of San Francisco's four-down foundation, adding five-man fronts, stand-up rushers, front movement and greater alignment versatility. Morris brings broader front and coverage multiplicity rather than replacing the existing defensive identity wholesale.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2017,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_San_Francisco_49ers_season",
         "https://en.wikipedia.org/wiki/Kyle_Shanahan",
-        "https://profootballrumors.com/2025/01/49ers-promote-klay-kubiak-to-oc-shanahan-still-calling-plays"
+        "https://profootballrumors.com/2025/01/49ers-promote-klay-kubiak-to-oc-shanahan-still-calling-plays",
+        "https://www.49ers.com/team/coaches-roster/kyle-shanahan",
+        "https://www.49ers.com/team/coaches-roster/",
+        "https://www.49ers.com/news/john-lynch-kyle-shanahan-talk-offseason-coaching-changes",
+        "https://www.49ers.com/team/coaches-roster/klay-kubiak",
+        "https://49ers.1rmg.com/transcripts/offensive-coordinator-klay-kubiak-press-conference-5-8-25/",
+        "https://www.49ers.com/news/report-day-takeaways-john-lynch-shares-team-updates-ahead-of-training-camp-2026",
+        "https://www.49ers.com/news/49ers-fall-to-the-titans-17-13-five-takeaways-from-sfvsten",
+        "https://www.sfchronicle.com/sports/49ers/article/49ers-kyle-shanahan-promotes-klay-kubiak-20023097.php",
+        "https://sports.yahoo.com/kyle-shanahan-gave-play-calling-052505914.html",
+        "https://www.espn.com/nfl/story/_/id/41018846/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-nathaniel-hackett",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.espn.com/nfl/story/_/id/49711157/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-mike-mccarthy",
+        "https://www.49ers.com/news/what-the-49ers-and-rams-had-to-say-after-week-1",
+        "https://www.sfchronicle.com/sports/49ers/article/sf-49ers-players-credit-coach-kyle-shanahan-s-22451536.php",
+        "https://www.nfl.com/news/49ers-give-hc-kyle-shanahan-multiyear-contract-extension",
+        "https://www.49ers.com/team/coaches-roster/raheem-morris",
+        "https://www.49ers.com/news/49ers-announce-coaching-staff-moves-raheem-morris-matt-eberflus-roman-sapolu",
+        "https://www.49ers.com/news/raheem-morris-building-off-of-the-49ers-standard",
+        "https://www.49ers.com/news/combine-prospects-to-watch-for-the-49ers-in-the-2026-draft-r-mason-thomas-kc-concepcion",
+        "https://www.therams.com/news/raheem-morris-lays-out-vision-for-rams-defense",
+        "https://www.houstontexans.com/news/shanahan-calling-the-shots-2673045",
+        "https://www.houstontexans.com/news/kubiak-facing-key-personnel-decisions-2664459",
+        "https://www.washingtonpost.com/sports/redskins/nfl-play-calling-is-an-arduous-collective-process/2011/11/11/gIQAchJEGN_story.html",
+        "https://www.nfl.com/news/kyle-shanahan-joins-cleveland-browns-as-oc-0ap2000000321397",
+        "https://www.nfl.com/news/atlanta-falcons-agree-to-5-year-deal-with-alex-mack-0ap3000000642731",
+        "https://www.nfl.com/news/kyle-shanahan-plans-to-coordinate-49ers-offense-0ap3000000784520"
       ],
       "gaps": [
+        "Houston 2008 is partial: Shanahan contributed calls throughout the year (shared with Gary Kubiak) but did not call his first complete NFL game until the season finale; 2009 was his first full season as Houston's game-day caller. The 2008 stop is labeled partial rather than week-windowed because the split was within games, not between weeks.",
+        "San Francisco 2024 has one exception inside the 2017-26 stop: Klay Kubiak called the Week 18 finale after also receiving preseason reps; priorSeasonsAsCaller=9 keeps the season-level convention.",
+        "ocHasCalledPlaysBefore=true rests on the 2024 Week 18 regular-season game — an actual regular-season start, unlike the preseason-only coordinators who stay false (CAR/CIN/DEN/JAX/MIN convention). The old 'groomed successor' framing was dropped as speculative.",
         "Each individual SF season's play-calling was not separately verified; endpoints are sourced."
-      ]
+      ],
+      "verified": true
     },
     "tb": {
       "hc": "Todd Bowles",
@@ -2312,13 +2667,13 @@
       "playCaller": {
         "name": "Zac Robinson",
         "title": "Offensive coordinator",
-        "basis": "inferred",
-        "note": "No explicit in-season statement found; Robinson spoke of 'bringing play-caller stability to the franchise' at his hiring, Bowles is a defensive HC, and AP frames TB's OCs as the succession of callers — the fifth OC in five years."
+        "basis": "confirmed",
+        "note": "Tampa Bay explicitly identifies Robinson as its new offensive play-caller in 2026 — its offensive preview opens 'The Bucs have a new play-caller in Zac Robinson' and Bowles discussed Robinson's first action as the play-caller in preseason. He previously called Atlanta's offense throughout 2024 and 2025."
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Josh Grizzard (fired after one season)",
       "sameSchemeFamily": true,
-      "tree": "Shanahan / McVay tree (5 seasons on McVay's Rams staff)",
+      "tree": "Sean McVay branch of the Shanahan coaching tree (5 seasons on McVay's Rams staff)",
       "callingStops": [
         {
           "team": "ATL",
@@ -2358,19 +2713,40 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "Two seasons running the Falcons offense before Tampa",
-      "dcSchemeNote": "No DC on the 2026 staff — the defense is Bowles' own, with George Edwards and Larry Foote splitting coordinator-level duties",
+      "ocNote": "Robinson spent two full seasons as Atlanta's primary offensive play-caller before joining Tampa Bay — from the booth in 2024, then from the sideline beginning Week 4 of 2025. His offense comes directly from Sean McVay's system and retains broad conceptual overlap with the Liam Coen/Josh Grizzard offense, while adding more of Robinson's wide-zone and run/pass-marriage concepts.",
+      "dcSchemeNote": "Bowles-led hybrid defense with a 3-4 base and 4-2-5 nickel, featuring disguised coverages, exotic fire-zone pressures and varied blitz sources. Tampa Bay is emphasizing better four-man pressure in 2026 after blitzing on 35.0% of pass-rush snaps in 2025, third-highest in the NFL. There is no formal DC; George Edwards coordinates the pass defense and Larry Foote coordinates the run game.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2022,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Tampa_Bay_Buccaneers_season",
         "https://baynews9.com/fl/tampa/sports/2026/01/27/zac-robinson-bucs-offensive-coordinator",
-        "https://www.nfl.com/news/buccaneers-fire-josh-grizzard-one-season-offensive-coordinator"
+        "https://www.nfl.com/news/buccaneers-fire-josh-grizzard-one-season-offensive-coordinator",
+        "https://www.buccaneers.com/news/zac-robinson-hired-bucs-offensive-coordinator",
+        "https://www.buccaneers.com/news/buccaneers-offensive-preview-training-camp-2026",
+        "https://www.buccaneers.com/news/chris-godwin-jr-assumes-leadership-role-wr-room-2026-otas",
+        "https://www.buccaneers.com/video/todd-bowles-on-zac-robinson-first-action-as-play-caller-press-conference",
+        "https://www.atlantafalcons.com/news/falcons-offensive-coordinator-zac-robinson-preparing-play-caller-raheem-morris",
+        "https://www.atlantafalcons.com/news/zac-robinson-call-plays-sideline-week-4-change",
+        "https://www.atlantafalcons.com/news/zac-robinson-falcons-offense-play-calling-sideline",
+        "https://www.buccaneers.com/news/buccaneers-make-changes-2026-coaching-staff",
+        "https://www.buccaneers.com/news/bucs-offense-step-further-ahead-scheme-continuity-2025",
+        "https://www.buccaneers.com/news/2025-game-preview-buccaneers-seahawks-week-5",
+        "https://www.buccaneers.com/news/baker-mayfield-sees-retooled-offense-zac-robinson-2026-bucs-blitz",
+        "https://www.buccaneers.com/news/graham-barton-hypes-run-game-under-zac-robinson-commitment-technique-2026",
+        "https://www.buccaneers.com/news/baker-mayfield-bucs-are-in-good-place-with-new-offense",
+        "https://www.buccaneers.com/team/coaches-roster/",
+        "https://www.buccaneers.com/news/bucs-announce-additions-2026-coaching-staff",
+        "https://www.buccaneers.com/news/alex-anzalone-diversified-role-todd-bowles-defense-2026",
+        "https://www.buccaneers.com/news/buccaneers-defensive-preview-training-camp-2026",
+        "https://www.buccaneers.com/news/todd-bowles-unpacks-changes-on-defense-non-negotiables-candid-discussion-ronde-barber-show-bucs-blitz",
+        "https://www.buccaneers.com/team/coaches-roster/george-edwards",
+        "https://www.buccaneers.com/team/coaches-roster/larry-foote"
       ],
       "gaps": [
-        "No fetched source explicitly states Robinson holds 2026 play-calling duties; inferred as noted.",
-        "That Robinson personally called plays in Atlanta 2024-25 is inferred from OC-as-caller framing."
-      ]
+        "sameSchemeFamily=yes is a broad-family classification: Grizzard retained Coen's McVay-derived system in 2025 and Robinson comes from the same tree, but Tampa Bay describes the 2026 offense as retooled and Robinson is introducing meaningful new run-game concepts — family continuity, not identical scheme continuity.",
+        "Edwards and Foote are not co-DCs: Tampa Bay designates them pass-game coordinator and run-game coordinator/OLBs coach; no one carries the defensive-coordinator title."
+      ],
+      "verified": true
     },
     "ten": {
       "hc": "Robert Saleh",
@@ -2379,13 +2755,13 @@
       "playCaller": {
         "name": "Brian Daboll",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "CBS calls him outright 'new Titans play caller Brian Daboll'; the Saleh-Daboll setup mirrors Saleh/Shanahan in San Francisco, each owning his side of the ball. Saleh calls the defense."
+        "basis": "confirmed",
+        "note": "Daboll is Tennessee's primary offensive play-caller in 2026 — Titans and national coverage explicitly identify him in the role, and Saleh has discussed specific plays Daboll called — while Saleh concentrates on the defense, mirroring the Saleh/Shanahan split in San Francisco."
       },
       "priorSeasonsAsCaller": 0,
-      "prev2025Caller": "HC Brian Callahan (Wks 1-3), then QB coach Bo Hardegree from Week 4",
+      "prev2025Caller": "Brian Callahan (Wks 1-3), then Bo Hardegree Weeks 4-18 — Hardegree kept the calls after Callahan was fired",
       "sameSchemeFamily": false,
-      "tree": "Belichick / Patriots (Erhardt-Perkins) tree, with an Alabama stop",
+      "tree": "Belichick/Patriots lineage with Erhardt-Perkins roots, later influenced by Alabama and Daboll's spread evolution in Buffalo",
       "callingStops": [
         {
           "team": "CLE",
@@ -2466,18 +2842,49 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": true,
-      "ocNote": "The franchise's most experienced OC hire — prior calling stops in Cleveland, Miami, Kansas City, Alabama, Buffalo and the 2024 Giants",
-      "dcSchemeNote": "Saleh calls the defensive plays with Bradley as DC — a 'fast and violent,' Seattle/Cover-3-tree pairing",
+      "ocNote": "Highly experienced primary caller with previous stops in Cleveland, Miami, Kansas City, Alabama, Buffalo and the 2024 Giants; 2026 is his first season directing Tennessee's offense. Mike Kafka, not Daboll, called the Giants offense in 2025.",
+      "dcSchemeNote": "Saleh-led 4-3 defense with Seattle/Cover-3 roots, emphasizing speed, physicality and a streamlined structure with modern coverage and pressure adjustments — Tennessee switched from its prior 3-4 to a 4-3 under Saleh. Saleh calls the defense on Sundays; longtime collaborator Gus Bradley coordinates the unit during the week.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2026,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Tennessee_Titans_season",
         "https://www.nfl.com/news/titans-hire-brian-daboll-offensive-coordinator",
-        "https://new.cbssports.com/fantasy/football/news/cam-wards-fantasy-stock-rises-under-new-titans-play-caller-brian-daboll/"
+        "https://new.cbssports.com/fantasy/football/news/cam-wards-fantasy-stock-rises-under-new-titans-play-caller-brian-daboll/",
+        "https://www.tennesseetitans.com/team/coaches-roster/brian-daboll",
+        "https://www.tennesseetitans.com/news/titans-finalize-coaching-staff-under-robert-saleh",
+        "https://www.cbssports.com/fantasy/football/news/cam-wards-fantasy-stock-rises-under-new-titans-play-caller-brian-daboll/",
+        "https://www.tennesseetitans.com/news/titans-select-wr-carnell-tate-in-first-round-of-thursday-s-nfl-draft",
+        "https://www.tennesseetitans.com/news/hot-topics-from-titans-hc-robert-saleh-s-zoom-call-on-friday",
+        "https://www.tennesseetitans.com/news/new-titans-te-daniel-bellinger-ready-to-do-his-part-in-oc-brian-daboll-s-offense",
+        "https://www.giants.com/news/brian-daboll-play-caller-2024-offense-daniel-jones-week-one-minnesota-vikings",
+        "https://www.giants.com/news/game-preview-brian-daboll-returns-play-caller-in-preseason-opener-vs-lions-mike-kafka",
+        "https://www.espn.com/nfl/story/_/id/41018846/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-nathaniel-hackett",
+        "https://www.espn.com/nfl/story/_/id/46157629/mike-kafka-giants-play-caller-brian-daboll-says",
+        "https://www.espn.com/nfl/story/_/id/46137832/nfl-playcallers-32-teams-mike-mcdaniel-sean-mcvay-brian-schottenheimer",
+        "https://www.giants.com/news/brian-daboll-relieved-of-duties-mike-kafka-to-serve-as-giants-interim-head-coach",
+        "https://www.miamidolphins.com/news/top-news-dolphins-assistants-reflect-on-week-1-look-to-sunday",
+        "https://www.nfl.com/news/young-qbs-continue-on-auditions-with-fins-browns-09000d5d82272070",
+        "https://www.nfl.com/news/chiefs-hire-ex-dolphins-oc-daboll-to-operate-their-offense-09000d5d8269804c",
+        "https://www.arrowheadpride.com/2012/10/13/3497262/kc-chiefs-play-calling-offense-brian-daboll",
+        "https://www.si.com/college/2017/12/28/alabama-offense-brian-daboll-lane-kiffin",
+        "https://www.buffalobills.com/news/bills-today-brian-daboll-calls-game-from-the-sideline",
+        "https://www.buffalobills.com/news/bills-name-brian-daboll-offensive-coordinator-20252410",
+        "https://www.tennesseetitans.com/news/titans-hc-brian-callahan-hands-off-play-calling-duties-to-qbs-coach-bo-hardegree",
+        "https://www.tennesseetitans.com/news/six-things-to-watch-for-the-titans-in-sunday-s-game-at-the-texans-x9795",
+        "https://www.tennesseetitans.com/news/titans-interim-hc-mike-mccoy-ready-to-lead-and-win",
+        "https://www.tennesseetitans.com/news/interim-head-coach-mike-mccoy-x9065",
+        "https://www.tennesseetitans.com/news/titans-hire-gus-bradley-as-defensive-coordinator",
+        "https://www.tennesseetitans.com/news/new-titans-dc-gus-bradley-preaches-consistency-while-playing-fast-and-violent",
+        "https://www.tennesseetitans.com/team/coaches-roster/gus-bradley",
+        "https://www.tennesseetitans.com/news/six-things-to-watch-for-the-titans-in-thursday-s-preseason-opener-vs-the-49ers",
+        "https://www.tennesseetitans.com/team/coaches-roster/robert-saleh"
       ],
       "gaps": [
-        "Primary-caller status at the CLE/MIA/KC stops is presumed from the OC title under defensive head coaches."
-      ]
+        "NYG 2025 is excluded from Daboll's caller history: Mike Kafka regained the job before the season (Kafka also called 2022-23; Daboll called 2024 only).",
+        "sameSchemeFamily=false is a taxonomy judgment: Hardegree retained Callahan's existing 2025 system after taking over the headset, whereas Daboll brought his own offensive structure in 2026.",
+        "The old CLE/MIA/KC presumed-caller caveat is deleted: contemporary coverage documents Daboll as Cleveland's coordinator and play-caller, Miami's own retrospective calls him the 2011 play-caller, 2012 Chiefs coverage discusses his calls directly, and Giants.com's nine-prior-calling-seasons summary (CLE 2 + MIA 1 + KC 1 + Alabama 1 + BUF 4) corroborates the arithmetic."
+      ],
+      "verified": true
     },
     "was": {
       "hc": "Dan Quinn",
@@ -2486,13 +2893,13 @@
       "playCaller": {
         "name": "David Blough",
         "title": "Offensive coordinator",
-        "basis": "reported",
-        "note": "AP: Blough, 'who never has called plays in the NFL, takes over the offense'; Quinn is publicly committed to riding out his young coordinators' growing pains."
+        "basis": "confirmed",
+        "note": "Blough is Washington's primary offensive play-caller in 2026 — the promotion gave him his first game-day play-calling assignment at any level after two seasons as Washington's assistant quarterbacks coach, and Week 1 coverage has Daniels discussing what 'Blough calls' directly. Quinn is publicly committed to riding out his young coordinators' growing pains."
       },
       "priorSeasonsAsCaller": 0,
       "prev2025Caller": "Kliff Kingsbury (parted ways after the 5-12 2025 season)",
-      "sameSchemeFamily": true,
-      "tree": "Kingsbury staff tree (internal promotion off Kingsbury's own offense)",
+      "sameSchemeFamily": false,
+      "tree": "Ben Johnson / Kevin O'Connell influences, with Kingsbury carryover from Blough's two seasons on Washington's staff",
       "callingStops": [
         {
           "team": "WAS",
@@ -2523,18 +2930,46 @@
       ],
       "ocIsCaller": true,
       "ocHasCalledPlaysBefore": false,
-      "ocNote": "Never a primary play-caller anywhere before 2026 — his playing career ended only ~2 years before the promotion",
-      "dcSchemeNote": "Flores-influenced pressure scheme — 3-4 base with 3/4/5-man fronts, blitz and sim-pressure from all levels, zone behind it",
+      "ocNote": "Blough entered 2026 without prior game-day play-calling experience at any level. Quinn had given him developmental practice calling reps, but 2026 was his first competitive calling assignment. His playing career ended in 2023 before he joined Washington's staff in 2024.",
+      "dcSchemeNote": "Multiple, disguise-heavy pressure defense influenced by Brian Flores, Mike Zimmer, Lou Anarumo and Vance Joseph. Jones mixes 3-4 and 4-3 spacing, varied fronts and pressure looks, with extensive pre-snap checks designed to force offenses to adjust. Jones is Washington's defensive play-caller.",
       "inSeasonChange2026": null,
       "hcFirstSeasonWithTeam": 2024,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Washington_Commanders_season",
         "https://en.wikipedia.org/wiki/David_Blough",
-        "https://www.thebanner.com/sports/commanders-nfl/commanders-coordinators-growing-pains-M46ZN3NTXVCZ5H6ILJC2S6KAHY/"
+        "https://www.thebanner.com/sports/commanders-nfl/commanders-coordinators-growing-pains-M46ZN3NTXVCZ5H6ILJC2S6KAHY/",
+        "https://www.commanders.com/news/commanders-announce-2026-coaching-staff",
+        "https://www.commanders.com/team/coaches-roster/",
+        "https://www.commanders.com/team/coaches-roster/david-blough",
+        "https://www.commanders.com/news/takeaways-david-bloug-press-conference",
+        "https://www.commanders.com/news/commanders-david-blough-transcripts-feb-10",
+        "https://www.commanders.com/news/david-blough-builds-commanders-playbook",
+        "https://www.commanders.com/news/jayden-daniels-blessing-working-david-blough",
+        "https://www.commanders.com/news/commanders-minicam-things-to-watch-2026",
+        "https://www.nfl.com/news/commanders-qb-jayden-daniels-on-learning-david-blough-s-offense-i-ve-still-got-a-long-way-to-go",
+        "https://www.nfl.com/_amp/commanders-jayden-daniels-loves-new-offense-aims-to-avoid-injury",
+        "https://www.commanders.com/news/instant-analysis-commanders-eagles-week-1-2026",
+        "https://www.commanders.com/news/key-takeaways-commanders-eagles-week-1-2026",
+        "https://www.commanders.com/news/oc-kliff-kingsbury-oct-16-transcripts",
+        "https://www.nfl.com/_amp/commanders-oc-kliff-kingsbury-part-ways-dc-joe-whitt-jr-fired",
+        "https://www.commanders.com/news/commanders-hire-daronte-jones-as-defensive-coordinator",
+        "https://www.commanders.com/news/key-takeaways-daronte-jones-press-conference",
+        "https://www.commanders.com/news/commanders-daronte-jones-transcripts-feb-10",
+        "https://www.commanders.com/news/top-quotes-daronte-jones-defensive-scheme-philosophy-violence-commanders",
+        "https://www.commanders.com/news/transcripts-olb-odafe-oweh-08-03-26",
+        "https://www.commanders.com/news/top-10-quotes--daronte-jones-commanders",
+        "https://www.commanders.com/news/transcripts-dt-daron-payne-08-01-26",
+        "https://www.commanders.com/news/transcripts-hc-dan-quinn",
+        "https://www.commanders.com/news/odafe-oweh-attack-daronte-jones-defense",
+        "https://www.commanders.com/news/leo-chenal-love-daronte-jones-linebacker-friendly-scheme"
       ],
       "gaps": [
-        "sameSchemeFamily=true is a judgment call: internal promotion from Kingsbury's staff implies system continuity, but no source labels his scheme explicitly."
-      ]
+        "sameSchemeFamily=no despite the internal promotion: Washington retained some familiar elements and Blough's relationship with Daniels, but team coverage says most of the 2026 offense is new material, partially derived from Ben Johnson's system — more under-center, more huddle, different terminology, deliberate run/pass marriage.",
+        "Do not describe Jones as a 3-4-base coordinator: he explicitly calls the defense multiple and treats 3-4/4-3 labels as interchangeable spacing structures ('They're just numbers'), and his influences span Flores, Zimmer, Anarumo and Vance Joseph rather than one system.",
+        "Jones, not Quinn, is the 2026 defensive play-caller: Quinn had taken the calls from Joe Whitt Jr. late in 2025, but Washington gave Jones the headset in 2026.",
+        "ocHasCalledPlaysBefore=no stands despite developmental practice reps — those were practice periods, not competitive game-day calling."
+      ],
+      "verified": true
     },
     "buf": {
       "verified": true,

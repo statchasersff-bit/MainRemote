@@ -1123,7 +1123,7 @@ describe("the game log tab", () => {
   /** The Game Log FAQ on a page, as {question, answer} pairs. */
   async function logFaq(slug, section = "/game-log/") {
     const { doc } = await dom(`/player/${slug}${section}`);
-    return [...doc.querySelectorAll("#game-log .scp-tab-faq details")].map((item) => ({
+    return [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")].map((item) => ({
       question: item.querySelector("summary")?.textContent.trim() ?? "",
       answer: item.querySelector("p")?.textContent.trim() ?? "",
     }));
@@ -1137,7 +1137,7 @@ describe("the game log tab", () => {
 
     for (const player of roster.slice(0, 40)) {
       const { doc } = await dom(`/player/${player.slug}/game-log/`);
-      const items = [...doc.querySelectorAll("#game-log .scp-tab-faq details")];
+      const items = [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")];
       if (items.length === 0) continue;
 
       // The Game Log FAQ leads with his last game (faq-pools.ts, 2026-09-30):
@@ -1214,7 +1214,7 @@ describe("the game log tab", () => {
     const offered = [
       ...doc.querySelectorAll('#game-log .scp-season-opt:not([data-season="all"])'),
     ].map((el) => el.textContent.trim());
-    const items = [...doc.querySelectorAll("#game-log .scp-tab-faq details")].map((item) =>
+    const items = [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")].map((item) =>
       item.querySelector("summary")?.textContent.trim() ?? "",
     );
     const archive = items.some((q) => /previous seasons/.test(q));
@@ -1226,7 +1226,7 @@ describe("the game log tab", () => {
 
     assert.ok(archive, "a player with several seasons is told where they are");
     const answer =
-      [...doc.querySelectorAll("#game-log .scp-tab-faq details")]
+      [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")]
         .find((item) => /previous seasons/.test(item.textContent))
         ?.querySelector("p")?.textContent ?? "";
     for (const year of answer.match(/\b20\d{2}\b/g) ?? []) {
@@ -1248,7 +1248,7 @@ describe("the game log tab", () => {
 
     const table = doc.querySelector("#game-log table.scp-table--log");
     const summary = doc.querySelector("#game-log .scp-logintro .scp-note");
-    const faq = doc.querySelector("#game-log .scp-tab-faq");
+    const faq = doc.querySelector(".scp-tab-faq[data-faq-tab='game-log']");
 
     assert.ok(
       table.compareDocumentPosition(list) & 4,
@@ -2565,7 +2565,7 @@ describe("the positional peers rail", () => {
     }
   });
 
-  test("stands above the Overview's FAQ, and under every other tab", async () => {
+  test("stands above every tab's FAQ; the Stats footer closes its page", async () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const inside = doc.querySelector("#overview > .scp-peers");
     assert.ok(inside, "the Overview carries the rail");
@@ -2574,52 +2574,57 @@ describe("the positional peers rail", () => {
       "scp-faq-overview-h",
       "directly above the FAQ",
     );
-    const outside = doc.querySelector(".scp-peers-out > .scp-peers");
-    assert.ok(outside, "and the other tabs keep theirs");
-    assert.equal(
-      outside.closest("[data-scp-panel]"),
-      null,
-      "outside the panels, or it would vanish with its tab",
-    );
+    // Every tab carries its own copy above its FAQ now (mak, 2026-10-02), so
+    // the shared one after the panels is gone, and the CSS that stood it down
+    // with it.
+    assert.equal(doc.querySelector(".scp-peers-out"), null, "no copy outside the panels");
     const css = await get("/player.css");
-    assert.match(
-      css.body,
-      /\.scp:has\(> #overview\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #stats\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #outlook\.is-active\) > \.scp-peers-out,\s*\.scp:has\(> #injury\.is-active\) > \.scp-peers-out \{\s*display: none;/,
-      "the outside copy stands down while a tab carrying its own is open",
-    );
+    assert.doesNotMatch(css.body, /scp-peers-out/, "and no stylesheet rule for one");
 
-    // Stats, Outlook and Injury: the tab's footer (and on a section page the
-    // way back), then the rail, then its FAQ (mak, 2026-09-30) — the panel's
-    // own rail on the profile, the page's on the section page.
-    const FAQ = { stats: '.scp-tab-faq[data-faq-tab="stats"]', outlook: ".scp-ol-faq", injury: ".scp-in-faq" };
-    let split = 0;
+    // Each tab: the rail, then its FAQ (mak, 2026-10-02). The Injury footer
+    // stays above the rail (mak, 2026-09-30); the Stats footer closes the
+    // page under the FAQ (mak, 2026-10-02); the Outlook's is gone.
+    const FAQ = {
+      stats: '.scp-tab-faq[data-faq-tab="stats"]',
+      "game-log": '.scp-tab-faq[data-faq-tab="game-log"]',
+      outlook: ".scp-ol-faq",
+      injury: ".scp-in-faq",
+      news: '.scp-tab-faq[data-faq-tab="news"]',
+      bio: '.scp-tab-faq[data-faq-tab="bio"]',
+    };
+    let tabs = 0;
     for (const [id, faq] of Object.entries(FAQ)) {
       const rail = doc.querySelector(`#${id} > .scp-peers`);
       if (!rail) continue;
-      split += 1;
-      // The footer ABOVE the rail (mak, 2026-09-30).
-      assert.ok(rail.previousElementSibling?.querySelector(".scp-st-foot"), `${id}: the footer precedes the rail`);
-      const last = doc.querySelector(`#${id}`).lastElementChild;
-      assert.ok(last.matches(faq) || last.querySelector(faq), `${id}: the FAQ closes the panel`);
+      tabs += 1;
+      const panelFaq = doc.querySelector(`#${id} ${faq}`);
+      if (panelFaq) {
+        assert.ok(
+          rail.compareDocumentPosition(panelFaq) & 4, // DOCUMENT_POSITION_FOLLOWING
+          `${id}: the rail precedes the FAQ`,
+        );
+      }
+      if (id === "injury") {
+        assert.ok(rail.previousElementSibling?.querySelector(".scp-st-foot"), "injury: the footer precedes the rail");
+      }
+      if (id === "stats") {
+        const last = doc.querySelector("#stats").lastElementChild;
+        assert.ok(last.querySelector(".scp-st-foot") || last.matches(".scp-st-foot"), "stats: the footer closes the panel");
+      }
       const page = await dom(`/player/${fixture.slug}/${id}/`);
       assert.equal(page.doc.querySelectorAll(".scp-peers").length, 1, `${id}: one rail on the section page`);
       const order = [...page.doc.querySelectorAll(`.scp-peers, .scp-st-foot, .scp-back, ${faq}`)].map((el) =>
         el.matches(faq) ? "faq" : el.className.split(" ")[0],
       );
-      assert.deepEqual(
-        order,
-        ["scp-st-foot", "scp-back", "scp-peers", "faq"],
-        `${id}: footer and the way back, rail, FAQ in their order`,
-      );
+      const expected =
+        id === "stats"
+          ? ["scp-back", "scp-peers", "faq", "scp-st-foot"]
+          : id === "injury"
+            ? ["scp-st-foot", "scp-back", "scp-peers", "faq"]
+            : ["scp-back", "scp-peers", "faq"];
+      assert.deepEqual(order, expected, `${id}: the way back, rail, FAQ (and the footer where it goes) in their order`);
     }
-    assert.ok(split >= 2, "the fixture carries at least two split tabs");
-
-    // And on a section-scoped page too, which is that page's version of a tab.
-    const scoped = await dom(`/player/${fixture.slug}/bio/`);
-    assert.ok(
-      scoped.doc.querySelector("[data-scp-peers]"),
-      "the section page keeps the way out of the page",
-    );
+    assert.ok(tabs >= 4, "the fixture carries most of the tabs");
   });
 
   test("the heading carries no subheading", async () => {
@@ -2803,7 +2808,7 @@ describe("the embedded fragment", () => {
 
     const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
     const island = doc.querySelector("script.scp-faq-data");
-    const rendered = [...doc.querySelectorAll("#game-log .scp-tab-faq details")];
+    const rendered = [...doc.querySelectorAll(".scp-tab-faq[data-faq-tab='game-log'] details")];
     if (rendered.length === 0) return;
 
     assert.ok(island, "the rendered FAQ ships its data island");
