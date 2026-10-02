@@ -1,0 +1,26 @@
+{
+ "comment": "Manual additions from mak's batch-17 review (2026-10-01). Same shape as the search pass.",
+ "players": [
+  {
+   "slug": "audric-estime",
+   "facts": [],
+   "missing": [
+    {
+     "date": "2026-09-12",
+     "type": "Placed on IR",
+     "team": "NO",
+     "headline": "Placed on injured reserve",
+     "description": "Placed on injured reserve by the New Orleans Saints; the club's Sep 22 injury-settlement announcement records he had been on IR since Sep 12.",
+     "confidence": "HIGH",
+     "sources": [
+      {
+       "publisher": "New Orleans Saints",
+       "url": null,
+       "date": "2026-09-12"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

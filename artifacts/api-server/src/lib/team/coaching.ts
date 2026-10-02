@@ -56,6 +56,11 @@ export interface BarRow {
 export interface TeamCoaching {
   /** False until mak's verification pass signs the numbers off. */
   verified: boolean;
+  /**
+   * True on an entry written by hand rather than by buildCoaching.mjs. The
+   * builder's weekly `--force all` pass regenerates every entry except these.
+   */
+  handWritten?: boolean;
   playCaller: {
     name: string;
     kicker: string;
@@ -100,14 +105,20 @@ export interface TeamCoaching {
     }>;
     note: string;
   };
-  rookieNote: { label: string; body: string };
+  /** Optional: needs per-coach rookie-ramp history, which only hand-written entries carry. */
+  rookieNote?: { label: string; body: string };
   distribution: { sub: string; rows: BarRow[]; note: string };
   backfield: {
     sub: string;
     bars: Array<{ label: string; value: number; current?: boolean; feed?: boolean }>;
     note: string;
   };
-  personnel: { sub: string; rows: BarRow[]; note: string };
+  /**
+   * Optional: personnel groupings have no free in-season source (SumerSports
+   * holds them behind SumerPass; nflverse participation lands post-season),
+   * so generated entries omit the panel rather than estimate it.
+   */
+  personnel?: { sub: string; rows: BarRow[]; note: string };
   scoreState: { sub: string; rows: BarRow[]; note: string };
   bottomLine: string;
   faq: { question: string; answer: string };

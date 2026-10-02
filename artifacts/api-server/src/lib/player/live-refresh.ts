@@ -372,6 +372,11 @@ export function refreshDailyData(): Promise<void> {
       // The team hubs' Usage report. nflverse posts a week by about
       // Wednesday; the builder refuses to write fewer weeks than disk.
       await step("team usage", "team/buildUsage.mjs", [season]);
+      // The Coaching tab's computed layer: every generated entry's tendency
+      // numbers, score states and prose re-derive from the same nflverse
+      // feeds. --force all regenerates every non-hand-written entry (the
+      // builder preserves entries it did not generate, i.e. the Bills).
+      await step("team coaching", "team/buildCoaching.mjs", [season, "--force", "all"]);
       await step("advanced stats", "player-stats/buildSeason.mjs", [season]);
       await step("player advanced stats", "player-stats/buildSeason.mjs", [
         season,
