@@ -540,7 +540,6 @@ button.scp-search-opt {
   --scp-ph-board-label: #9fb0c8;
   --scp-ph-board-rule: #26395a;
   --scp-ph-gold-soft: #fdf6e3;
-  --scp-ph-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --scp-ph-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --scp-team: var(--scp-ph-ink-2);
 }
@@ -814,6 +813,7 @@ button.scp-search-opt {
 
 .scp .scp-pboard-stats > div {
   padding: 4px 14px;
+  text-align: center;
 }
 
 .scp .scp-pboard-stats > div + div {
@@ -1667,6 +1667,16 @@ button.scp-search-opt {
   }
 }
 
+/* The Bio tab's career read holds its row longer (mak, 2026-10-01: Quick
+   Facts and "More on" sit beside the stop list, not under it): a slimmer
+   sidebar from 960px down, one column only under 700px. */
+@media (max-width: 960px) and (min-width: 700px) {
+  .scp .scp-bo .scp-ox-read {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 24px;
+  }
+}
+
 @media (max-width: 640px) {
   .scp .scp-ox-meters,
   .scp .scp-ox-two {
@@ -1721,6 +1731,13 @@ button.scp-search-opt {
   padding-top: 0;
 }
 
+/* The Bio tab keeps its "{Name} Bio" panel heading, so its wrapper is not
+   :first-child; its lead sits on the heading's own 18px margin all the same
+   (mak, 2026-10-01: the 40px gap above the byline was too much). */
+.scp .scp-head + .scp-bo > .scp-ox-sec:first-child {
+  padding-top: 0;
+}
+
 /* The section H2s wear the Overview's (.scp-ox-h2: 17px, 28px gold rule) on
    every tab since 2026-09-30 (mak), so the 28px condensed override that was
    here is gone. The tab's lead heading, its H1 on WordPress, is .is-lead
@@ -1728,7 +1745,8 @@ button.scp-search-opt {
 .scp .scp-ox-h2.is-lead {
   padding: 0 0 10px;
   color: var(--sc-navy) !important;
-  font-size: 22px !important;
+  /* The same 24px as .scp-h2 (mak, 2026-10-01). */
+  font-size: 24px !important;
   font-stretch: 100%;
   letter-spacing: -0.01em;
   line-height: 1.5;
@@ -1751,7 +1769,6 @@ button.scp-search-opt {
 
 .scp .scp-st .scp-ox-prose {
   max-width: none;
-  font-family: var(--scp-ph-serif);
 }
 
 .scp .scp-st-byline {
@@ -2619,7 +2636,6 @@ button.scp-search-opt {
   margin: 14px 0 0;
   padding: 0;
   color: var(--scp-ph-ink-2);
-  font-family: var(--scp-ph-serif);
   font-size: 17px;
   line-height: 1.6;
 }
@@ -4420,7 +4436,8 @@ button.scp-search-opt {
   position: relative;
   margin: 0;
   padding-bottom: 10px;
-  font-size: 22px !important;
+  /* 24px, up from 22 (mak, 2026-10-01: the tab H1s a touch bigger). */
+  font-size: 24px !important;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--sc-navy) !important;
@@ -9509,11 +9526,12 @@ a.scp-peer:focus-visible {
   font-family: var(--sc-font) !important;
 }
 
-/* The read's prose is the one serif on the page. Three classes, so it wins
+/* The reads' prose is in the tool's face too (mak, 2026-10-01: one face for
+   all flowing text — it was the page's one serif). Three classes, so it wins
    over the two-class pin just above. */
 .scp .scp-ox .scp-ox-prose,
 .scp .scp-ox .scp-ox-prose * {
-  font-family: var(--scp-ph-serif) !important;
+  font-family: var(--sc-font) !important;
 }
 
 /* The header's links declare their own ink, and a theme's `#main-content a`
@@ -9935,6 +9953,17 @@ a.scp-peer:focus-visible {
 
 /* The sub-heading of the merged section (mak, 2026-10-01): the stop list
    lives under the timeline's own H2 now, and the chips row is gone. */
+/* The sidebar drops level with the heading (mak, 2026-10-01: Quick Facts sat
+   too close under the timeline card), except in the lead fallback, where it
+   tops out with the bio text. */
+.scp .scp-bo .scp-ox-read > .scp-ox-aside {
+  margin-top: 28px;
+}
+
+.scp .scp-bo .scp-bo-lead .scp-ox-read > .scp-ox-aside {
+  margin-top: 0;
+}
+
 .scp .scp-bo .scp-bo-stophead {
   margin: 28px 0 10px;
   color: var(--scp-ph-ink) !important;
@@ -10239,7 +10268,6 @@ a.scp-peer:focus-visible {
 }
 .scp .scp-gl-note {
   margin: 0;
-  font-family: var(--scp-ph-serif);
   font-size: 16px;
   line-height: 1.55;
   color: var(--scp-ph-ink);

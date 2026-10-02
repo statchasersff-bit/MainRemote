@@ -229,8 +229,14 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       assert.ok(doc.getElementById(id), `nav names a real panel: ${id}`);
       assert.equal(
         link.getAttribute("href"),
-        // The Outlook is the hub, so its tab links to the hub.
-        id === "outlook" ? "/team/new-england-patriots/" : `/team/new-england-patriots/${id}/`,
+        // The Outlook is the hub, so its tab links to the hub. Coaching is
+        // hub-only — its public URL waits on approval — so its tab is the
+        // hub's address plus the panel hash (see team-render.ts).
+        id === "outlook"
+          ? "/team/new-england-patriots/"
+          : id === "coaching"
+            ? "/team/new-england-patriots/#coaching"
+            : `/team/new-england-patriots/${id}/`,
         `${id}: the tab links to the section's own URL`,
       );
       // What the H1 above the fragment becomes when this tab is chosen. The

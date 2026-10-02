@@ -24,6 +24,17 @@
     "deandre-hopkins"
    ]
   },
+  "1603": {
+   "from": "JAX",
+   "to": "PHI",
+   "nflverseDate": "2021-08-28",
+   "officialDate": "2021-08-27",
+   "logUrl": "https://www.jaguars.com/team/transactions/2021",
+   "players": [
+    "gardner-minshew"
+   ],
+   "note": "mak 2026-10-01 batch 16: both the Jacksonville and Philadelphia logs date the trade Aug 27; nflverse carries the Aug 28 report date."
+  },
   "1624": {
    "from": "PHI",
    "to": "NYJ",
@@ -166,6 +177,17 @@
    "players": [
     "trey-lance"
    ]
+  },
+  "1820": {
+   "from": "CIN",
+   "to": "HOU",
+   "nflverseDate": "2024-03-13",
+   "officialDate": "2024-03-14",
+   "logUrl": "https://www.houstontexans.com/team/transactions/2024",
+   "players": [
+    "joe-mixon"
+   ],
+   "note": "mak 2026-10-01 batch 18: Traded carries the completed transaction — Mar 14, 2024; Mar 13 was the agreement (kept as an event on the wiki fact)."
   },
   "1821": {
    "from": "NE",
@@ -371,11 +393,12 @@
    "from": "GB",
    "to": "PHI",
    "nflverseDate": "2026-04-10",
-   "officialDate": "2026-04-11",
-   "logUrl": "https://www.philadelphiaeagles.com/team/transactions/2026",
+   "officialDate": "2026-04-13",
+   "logUrl": "https://www.packers.com/team/transactions/2026",
    "players": [
     "dontayvion-wicks"
-   ]
+   ],
+   "note": "mak 2026-10-01 batch 9: a Traded row carries the completed transaction (Mayfield principle) — the Packers' log records the completed trade Apr 13; the Eagles' Apr 11 entry says 'agreed to acquire'. Matches the approved wiki row."
   }
  }
 }

@@ -187,7 +187,10 @@ export function mergeVerification(players, decided) {
       // official-log row takes the search pass's fuller wording, keeping its
       // official quote; anything else is a duplicate.
       const dateOf = (d) => Date.parse(d.length === 7 ? `${d}-15` : d);
-      const same = (players[slug]?.facts ?? []).find((x) => x.value.team === m.team && Math.abs(dateOf(x.value.date) - dateOf(m.date)) <= 3 * DAY);
+      // A code-rejected fact never publishes, so it does not block a properly
+      // sourced search fact for the same move (mak batch 18: Mariota's 2015
+      // rookie signing, whose extracted twin failed the code check).
+      const same = (players[slug]?.facts ?? []).find((x) => x.status !== "rejected" && x.value.team === m.team && Math.abs(dateOf(x.value.date) - dateOf(m.date)) <= 3 * DAY);
       if (same) {
         if (same.method === "official-log" && m.headline) {
           same.value = { ...same.value, type: m.type, headline: m.headline };

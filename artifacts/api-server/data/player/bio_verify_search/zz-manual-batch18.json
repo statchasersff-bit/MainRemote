@@ -1,0 +1,26 @@
+{
+ "comment": "Manual additions from mak's batch-18 review (2026-10-01). Same shape as the search pass.",
+ "players": [
+  {
+   "slug": "marcus-mariota",
+   "facts": [],
+   "missing": [
+    {
+     "date": "2015-07-21",
+     "type": "Signed",
+     "team": "TEN",
+     "headline": "Signed his rookie contract",
+     "description": "Tennessee's official 2015 transaction history lists 07/21 — 'Signed first-round choice QB Marcus Mariota' — and the team article says they agreed to terms that day.",
+     "confidence": "HIGH",
+     "sources": [
+      {
+       "publisher": "Tennessee Titans (official transaction history)",
+       "url": null,
+       "date": "2015-07-21"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -284,6 +284,7 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
 /* -------------------------------------------------------------- note + bars */
 
 function rookieNote(c: TeamCoaching): string {
+  if (!c.rookieNote) return "";
   return (
     `<div class="sct-co-rookie">` +
     `<p class="sct-co-role is-blue">${e(c.rookieNote.label)}</p>` +
@@ -364,6 +365,7 @@ function backfield(c: TeamCoaching, view: UsageView | null): string {
 }
 
 function personnel(c: TeamCoaching): string {
+  if (!c.personnel) return "";
   return (
     `<div class="sct-co-panel">` +
     h3("Personnel groupings — usage & result") +
@@ -383,8 +385,9 @@ function personnel(c: TeamCoaching): string {
 }
 
 function scoreState(c: TeamCoaching): string {
+  // Solo when the entry has no personnel panel: spans both grid columns.
   return (
-    `<div class="sct-co-panel">` +
+    `<div class="sct-co-panel${c.personnel ? "" : " is-solo"}">` +
     h3("Play-calling by score state") +
     `<p class="sct-co-panel-sub">${e(c.scoreState.sub)}</p>` +
     c.scoreState.rows

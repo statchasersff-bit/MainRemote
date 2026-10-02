@@ -13867,6 +13867,11 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 20px;
 }
 
+/* A panel with no partner (entries without the personnel panel) spans the row. */
+:is(.sct, #sct-table-armour) .sct-co-panel.is-solo {
+  grid-column: 1 / -1;
+}
+
 :is(.sct, #sct-table-armour) .sct-co-panel {
   padding: 16px;
   border: 1px solid var(--sc-border);

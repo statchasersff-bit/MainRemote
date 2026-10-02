@@ -182,7 +182,7 @@ export interface BioTransaction {
   precision: "day" | "month" | "season";
   /** "Sep 2, 2017", "Mar 2024", "2024 offseason", "2016 draft", "2019". */
   when: string;
-  type: "Traded" | "Drafted" | "Signed" | "Joined" | "Re-signed" | "Released" | "Waived" | "Claimed" | "Placed on IR" | "Activated" | "Contract" | "Suspended" | "Retired" | "Tender" | "Tag";
+  type: "Traded" | "Drafted" | "Signed" | "Joined" | "Re-signed" | "Released" | "Waived" | "Waived/Injured" | "Claimed" | "Placed on IR" | "Activated" | "Contract" | "Suspended" | "Commissioner's Exempt List" | "Injury settlement" | "Reinstated" | "Retired" | "Tender" | "Tag";
   text: string;
   /** Sort key, most recent first: the date, with season-level rows placed inside their year. */
   sort: string;
@@ -422,6 +422,10 @@ export function contractWords(team: string, t: { quote?: string; terms?: { years
 // extension") is printed as written, with the club added when it is not named.
 function headlineText(team: string, t: WikiTransaction): string {
   const h = (t.headline ?? "").replace(/\.$/, "");
+  // Suspensions, reinstatements and retirements are league or player actions,
+  // not club ones: no club is appended, matching the headline-less
+  // "Suspended by the NFL." / "Retired." forms.
+  if (t.type === "Suspended" || t.type === "Reinstated" || t.type === "Retired") return `${h}.`;
   const nick = team.split(" ").pop() ?? team;
   // Naming the club by city counts too ("...the franchise tag from Washington").
   const city = team.slice(0, team.length - nick.length).trim();

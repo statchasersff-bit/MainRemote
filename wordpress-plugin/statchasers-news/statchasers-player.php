@@ -418,8 +418,9 @@ function statchasers_player_index_shortcode(): string {
 add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_shortcode' );
 
 /**
- * The profile's own webfonts: Archivo with the width axis for the header and
- * the Overview's lower sections, and Source Serif 4 for the Overview's read.
+ * The profile's own webfont: Archivo with the width axis for the header and
+ * the Overview's lower sections. (Source Serif 4 left the URL 2026-10-01 when
+ * the reads' prose moved to the tool's Inter.)
  *
  * The header is set in its own face rather than the tool's Inter (see
  * .scp-phead in player.css) — its name and big numbers use condensed widths,
@@ -429,7 +430,7 @@ add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_sho
 function statchasers_player_header_font_url(): string {
 	return (string) apply_filters(
 		'statchasers_player_header_font_url',
-		'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap'
+		'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap'
 	);
 }
 

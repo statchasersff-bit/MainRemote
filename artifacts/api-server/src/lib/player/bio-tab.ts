@@ -3,13 +3,19 @@
  * for Every Player", 2026-09-30). Since mak's follow-up the same day they
  * replace the tab's old narrative and career timeline; the FAQ stays last.
  *
- *   1. bio text + Quick Facts   under the tab's "{Name} Bio" heading (spec 2.2)
+ *   1. bio text                 full width under the tab's "{Name} Bio"
+ *                               heading (spec 2.2; mak 2026-10-01 moved the
+ *                               Quick Facts out of its sidebar)
  *   2. Career Timeline          one block per stop, width = time there (2.3)
- *   3. Every Stop in His Career stop cards + "More on" sidebar (2.4, 2.5)
- *      and the inline Redraft Command prompt (2.6)
+ *   3. Every Stop in His Career stop cards + sidebar (2.4, 2.5): Quick Facts
+ *      and the Redraft Command card above "More on", then the inline Redraft
+ *      Command prompt (2.6)
  *   4. Trades / Trades and Team Changes
  *                               each row dated to its source's precision (2.7)
- *   5. footer                   sources, regular season, last updated (2.9)
+ *
+ * The byline, the transactions lede and source line, and the footer (spec
+ * 2.9) were all removed at mak's request, 2026-10-01: nothing on the tab
+ * names its sources or update time any more.
  *
  * Fantasy wording (mak, option A): the bio text, stop sentences and footer are
  * purely biographical. Fantasy appears only in the Redraft Command card, the
@@ -40,47 +46,42 @@ function open(id: string, heading: string, lede = ""): string {
   );
 }
 
-function longDate(iso: string): { iso: string; human: string } | null {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-  const human = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" }).format(d);
-  return { iso: day, human };
-}
-
-/** The later of the fact store's last change and the game logs' last update. */
-function updated(data: PlayerPageData, page: BioPageFacts): { iso: string; human: string } | null {
-  const a = page.changedAt ? Date.parse(page.changedAt) : 0;
-  const b = data.statsUpdatedMs ?? 0;
-  const ms = Math.max(a || 0, b || 0);
-  return ms > 0 ? longDate(new Date(ms).toISOString()) : null;
-}
-
 const years = (s: BioStop, now: string): string => (s.current ? `${s.from}–${now}` : s.from === s.to ? String(s.from) : `${s.from}–${s.to}`);
 
 /* ----------------------------------------------------- 1. bio + quick facts */
 
-function renderLead(data: PlayerPageData, page: BioPageFacts, when: { iso: string; human: string } | null): string {
+/**
+ * The Quick Facts and Redraft Command panels. They sit in the career section's
+ * sidebar, directly above "More on {last}"; when the career section cannot
+ * render they fall back to a sidebar beside the bio text, so a player with no
+ * stop data still shows them.
+ */
+function sidePanels(data: PlayerPageData, page: BioPageFacts): string {
   const last = lastName(data.player.name);
   const rc = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
   const facts = page.quick.map((f) => `<dt>${escapeHtml(f.label)}</dt><dd>${escapeHtml(f.value)}</dd>`).join("");
-  const aside =
-    `<aside class="scp-ox-aside" aria-label="Quick facts">` +
+  return (
     (facts ? `<div class="scp-ox-panel scp-bo-facts"><h3>Quick Facts</h3><dl class="scp-bo-grid">${facts}</dl></div>` : "") +
     (page.status === "active"
       ? `<div class="scp-ox-panel is-rc"><h3>Redraft Command</h3>` +
         `<p>${escapeHtml(`See how Redraft Command values ${last} for the rest of ${data.leagueSeason ?? data.season}.`)}</p>` +
         `<a class="scp-ox-btn" href="${escapeHtml(rc)}" data-cta="redraft-command-bio-sidebar">${escapeHtml(`Open ${last} in Redraft Command`)} <span aria-hidden="true">→</span></a></div>`
-      : "") +
-    `</aside>`;
+      : "")
+  );
+}
+
+// No byline (mak, 2026-10-01): the footer's "Last updated" carries the date.
+function renderLead(data: PlayerPageData, page: BioPageFacts, panels: string): string {
   const prose = page.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
-  if (!prose && !facts) return "";
+  if (!prose && !panels) return "";
+  const body = prose ? `<div class="scp-ox-prose scp-bo-prose">${prose}</div>` : "";
   return (
     // No heading of its own: the tab's "{Name} Bio" heading sits right above.
-    `<section class="scp-ox-sec scp-bo-lead" aria-label="${escapeHtml(`${data.player.name} bio`)}"><div class="scp-ox-read"><div>` +
-    (when ? `<p class="scp-st-byline">By the StatChasers staff. Updated <time datetime="${when.iso}">${escapeHtml(when.human)}</time>.</p>` : "") +
-    (prose ? `<div class="scp-ox-prose scp-bo-prose">${prose}</div>` : "") +
-    `</div>${aside}</div></section>`
+    `<section class="scp-ox-sec scp-bo-lead" aria-label="${escapeHtml(`${data.player.name} bio`)}">` +
+    (panels
+      ? `<div class="scp-ox-read"><div>${body}</div><aside class="scp-ox-aside" aria-label="Quick facts">${panels}</aside></div>`
+      : body) +
+    `</section>`
   );
 }
 
@@ -96,7 +97,7 @@ function renderLead(data: PlayerPageData, page: BioPageFacts, when: { iso: strin
  * line. College stays the last line of the list, since the timeline starts at
  * the NFL.
  */
-function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerRenderOptions): string {
+function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerRenderOptions, panels: string): string {
   const stops = page.stops;
   if (stops.length === 0 && !page.college) return "";
   const last = lastName(data.player.name);
@@ -179,8 +180,10 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
   if (data.team && page.status === "active") {
     rows.push(`<dt>Team</dt><dd><a href="${escapeHtml(`${options.teamPathPrefix ?? "/team/"}${data.team.slug}/${q}`)}">${escapeHtml(data.team.nickname)}</a></dd>`);
   }
+  // Quick Facts and the Redraft Command card first, "More on {last}" below.
   const aside =
     `<aside class="scp-ox-aside" aria-label="${escapeHtml(`More on ${last}`)}">` +
+    panels +
     `<div class="scp-ox-panel"><h3>${escapeHtml(`More on ${last}`)}</h3><dl class="scp-bo-grid is-links">${rows.join("")}</dl></div></aside>`;
 
   const rc = `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(data.player.slug)}`;
@@ -215,37 +218,23 @@ function renderTransactions(page: BioPageFacts): string {
     )
     .join("");
   // Not "Transactions" until signings, releases and contracts are covered:
-  // the list must not look like a complete history.
+  // the list must not look like a complete history. No lede or source line
+  // (mak, 2026-10-01).
   const heading = page.hasDatedMoves ? "Transactions" : page.tradesOnly ? "Trades" : "Trades and team changes";
-  const lede = page.hasDatedMoves
-    ? "Most recent first. Each move carries the date its source gives: the day or month where a trade record or a reviewed Wikipedia entry states it, the season for a team change read off season rosters."
-    : page.tradesOnly
-      ? "Dated trades, most recent first. Signings, releases and contracts are not listed yet."
-      : "Most recent first. Trades carry their exact date; team changes read off season rosters carry only the season. Signings, releases and contracts are not listed yet.";
-  return (
-    open("scp-bo-tx-h", heading, lede) +
-    `<ol class="scp-bo-txlog">${rows}</ol>` +
-    `<p class="scp-bo-src">${escapeHtml(`Source: ${page.transactionSources.join(", ")}.`)}</p></section>`
-  );
+  return open("scp-bo-tx-h", heading) + `<ol class="scp-bo-txlog">${rows}</ol></section>`;
 }
 
 /* --------------------------------------------------------------- the tab */
 
+// No footer either (mak, 2026-10-01): the sources paragraph and "Last
+// updated" line went with the byline.
 export function renderBioTab(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const page = data.bioPage;
   if (!page) return "";
-  const when = updated(data, page);
-  const body =
-    renderLead(data, page, when) + renderCareer(data, page, options) + renderTransactions(page);
+  const panels = sidePanels(data, page);
+  const career = renderCareer(data, page, options, panels);
+  const body = renderLead(data, page, career ? "" : panels) + career + renderTransactions(page);
   if (!body) return "";
-  const foot =
-    `<footer class="scp-st-foot"><p>` +
-    escapeHtml(
-      `Biographical data from ${page.sources.length ? page.sources.join(", ") : "the sources named above"}. ` +
-        `Career stats are regular season only, from StatChasers' game logs (2009 on).`,
-    ) +
-    (when ? ` Last updated <time datetime="${when.iso}">${escapeHtml(when.human)}</time>.` : "") +
-    `</p></footer>`;
   const ink = teamInk(data.team);
-  return `<div class="scp-ox scp-st scp-bo"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${body}${foot}</div>`;
+  return `<div class="scp-ox scp-st scp-bo"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${body}</div>`;
 }
