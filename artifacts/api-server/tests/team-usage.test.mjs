@@ -137,15 +137,26 @@ describe("the ten components, in order", () => {
     const { doc } = await page("/team/buffalo-bills/");
     assert.equal(
       doc.querySelector(".sct-us-fresh").textContent,
-      `Updated through Week ${usage.throughWeek} · refreshed every Tuesday`,
+      `Updated through Week ${Math.max(...usage.teams.buf.games)} · refreshed daily`,
     );
+  });
+
+  test("each hub is labelled with its own last game, not the league's latest week", async () => {
+    // A Thursday game puts one matchup's week into the feed days before the
+    // rest: only the teams that played it may say that week.
+    for (const [abbr, slug] of [["ne", "new-england-patriots"], ["cle", "cleveland-browns"]]) {
+      const { doc } = await page(`/team/${slug}/`);
+      const last = Math.max(...usage.teams[abbr].games);
+      assert.equal(doc.querySelector(".sct-us-fresh").textContent, `Updated through Week ${last} · refreshed daily`, slug);
+    }
   });
 
   test("the verbatim definitions stay in plain prose", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const intro = doc.querySelector(".sct-us-intro").textContent;
     assert.match(intro, /^Fantasy production follows opportunity, not the other way around/);
-    assert.match(intro, /target share \(share of team pass attempts\)/);
+    assert.match(intro, /The essentials are target share, snap share, and red-zone touches\./);
+    assert.match(intro, /Follow the opportunity before the fantasy points follow it\.$/);
     // The weighted-opportunities caption came off the backfield legend (2026-10-01).
     assert.equal(doc.querySelector(".sct-us-keys .is-def"), null);
   });
@@ -266,6 +277,44 @@ describe("all 32 clubs", () => {
       const text = section.textContent;
       for (const bad of ["undefined", "NaN", "null", "Infinity"]) {
         assert.ok(!text.includes(bad), `${slug}: ${bad}`);
+      }
+    }
+  });
+
+  // The copy rules' three invariants (docs/USAGE-COPY-RULES.md): scope stays
+  // put, averages stay averages, description stays description. Each pattern
+  // here is a phrasing an audit caught saying more than its number measures.
+  // The intro is mak's own wording and is not generated, so it is skipped.
+  const OVERCLAIMS = [
+    [/\bengine\b/i, "run/zone 'engine' (describe the split instead)"],
+    [/\bthe plan\b/i, "play-caller intent"],
+    [/buy signal/i, "FPOE as a forecast"],
+    [/\bregresses\b/i, "FPOE as a forecast"],
+    [/floor holds/i, "xFP as a guarantee"],
+    [/talent question/i, "ruling out talent from a role share"],
+    [/hurry-up/i, "trailing split as on-field snaps"],
+    [/when he's out there/i, "target share as per-snap volume"],
+    [/sweet spot/i, "aDOT as a distribution"],
+    [/travel nowhere/i, "aDOT overstated"],
+    [/deep slice of this chart/i, "aDOT as a distribution"],
+    [/designed (for|through) him/i, "first-read share as play design"],
+    [/predicts the box score|tracks fantasy points best|the best receiver/i, "unqualified 'best stat' claim"],
+    [/as often as his arm/i, "team in-10 rate as the QB's own carries"],
+    [/(eat|cap) the receivers/i, "team red-zone rate as cause and effect"],
+    [/alpha-receiver threshold/i, "30% as a hard cut-off"],
+  ];
+
+  test("no generated sentence claims more than its number measures", async () => {
+    const index = await (await fetch(`${server.origin}/team`)).text();
+    const slugs = [...new Set([...index.matchAll(/href="\/team\/([a-z0-9-]+)\/"/g)].map((m) => m[1]))];
+    for (const slug of slugs) {
+      const { doc } = await page(`/team/${slug}/`);
+      const section = doc.querySelector("#usage");
+      section.querySelector(".sct-us-intro")?.remove();
+      const text = section.textContent;
+      for (const [re, why] of OVERCLAIMS) {
+        const hit = text.match(re);
+        assert.equal(hit, null, `${slug}: "${hit?.[0]}" - ${why}`);
       }
     }
   });

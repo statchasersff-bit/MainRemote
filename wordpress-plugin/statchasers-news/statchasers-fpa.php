@@ -4,19 +4,19 @@
  *
  * Same posture as the team hub and the player pages. The API serves /fpa with
  * `noindex, indexifembedded`, so the table is invisible to search until
- * something embeds it — this file is that something.
+ * something embeds it - this file is that something.
  *
  * ## What this replaces
  *
  * The FPA tool shipped with its own WordPress plugin, "StatChasers Data Tools",
  * built the other way round: WordPress cached the JSON, exposed it at
  * `/wp-json/statchasers/v1/fpa`, and a browser bundle drew the table from it.
- * That works for a reader and not for search — the page's own HTML was an empty
+ * That works for a reader and not for search - the page's own HTML was an empty
  * container, which is the exact problem the news tool was moved off an iframe
  * to solve. This shortcode prints the table as markup instead.
  *
- * Migrating: replace `[statchasers_fpa]` on the page — the shortcode NAME is
- * deliberately the same, so a page that already has it needs no edit — then
+ * Migrating: replace `[statchasers_fpa]` on the page - the shortcode NAME is
+ * deliberately the same, so a page that already has it needs no edit - then
  * deactivate StatChasers Data Tools. Both plugins registering the same tag
  * would collide, and WordPress keeps whichever registered last.
  *
@@ -53,7 +53,7 @@ const STATCHASERS_FPA_BACKUP_TTL = 7 * DAY_IN_SECONDS;
  *
  * The render is one indexed query over 96 rows, so this is generous. The one
  * case it protects against is a cold deployment running its lazy ingest, which
- * downloads two CSVs — and that path deliberately does not block the response,
+ * downloads two CSVs - and that path deliberately does not block the response,
  * so even then the API answers immediately.
  */
 const STATCHASERS_FPA_TIMEOUT = 6;
@@ -73,7 +73,7 @@ const STATCHASERS_FPA_VIEWS = array( 'raw', 'adjusted' );
  * landed before the bundle did. Without it the link goes somewhere that renders
  * the DEFAULT table, which is a control that appears to work and does not.
  *
- * Display state only — which of six renderings of one table to draw. It reads
+ * Display state only - which of six renderings of one table to draw. It reads
  * nothing about the reader, writes nothing, and anything not in $allowed is
  * dropped rather than corrected, so no nonce is involved and no value from the
  * URL reaches the API unvalidated.
@@ -106,7 +106,7 @@ function statchasers_fpa_query_choice( string $key, array $allowed ): string {
  * @return array{format:string,view:string,season:int}
  */
 function statchasers_fpa_args( array $atts ): array {
-	// Which keys the page set, asked BEFORE shortcode_atts fills in the rest —
+	// Which keys the page set, asked BEFORE shortcode_atts fills in the rest -
 	// afterwards "absent" and "set to the default" are the same string.
 	$given = array_change_key_case( $atts, CASE_LOWER );
 
@@ -144,7 +144,7 @@ function statchasers_fpa_args( array $atts ): array {
 
 	// A season is honoured only when it is plausibly one. Left at 0 the API
 	// serves whatever it is configured to treat as current, which is what a
-	// page should normally do — a hard-coded season is a page that silently
+	// page should normally do - a hard-coded season is a page that silently
 	// shows last year's table next September.
 	$season = (int) $atts['season'];
 	if ( $season < 1999 || $season > 2100 ) {
@@ -198,7 +198,7 @@ function statchasers_fpa_fetch( array $args ): ?array {
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
-	// A 404 here means the API has no ingested data — which is a real state, not
+	// A 404 here means the API has no ingested data - which is a real state, not
 	// a transient error, and retrying every page view will not fix it. Cached as
 	// a failure so a deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
@@ -271,7 +271,7 @@ function statchasers_fpa_enqueue_assets(): void {
 
 	// Both unconditional where the block above is not. A tool printing through
 	// the site's header, and a phone reading it through a 43px margin on each
-	// side, are wrong on every page that mounts a tool — whether or not that
+	// side, are wrong on every page that mounts a tool - whether or not that
 	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_FPA_HANDLE, statchasers_tool_header_layer_css() );
@@ -393,7 +393,7 @@ add_filter( 'body_class', 'statchasers_fpa_full_width_body_class', PHP_INT_MAX )
 /**
  * The shortcode: prints the server-rendered FPA table into the page.
  *
- * Same deliberate omissions as the other three — no canonical, no <h1>, no
+ * Same deliberate omissions as the other three - no canonical, no <h1>, no
  * title or meta description, nothing written to the URL. The page owns all of
  * it, and the table's own format/view controls are ordinary links back to this
  * app's own /fpa, which is why SC_FPA_PATH exists on the API side.
@@ -414,13 +414,13 @@ function statchasers_fpa_shortcode( $atts = array() ): string {
 	$args = statchasers_fpa_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_fpa_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_fpa_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		// No client-side render to fall back to: the bundle only adds sorting to
 		// markup that is already there. An empty string leaves the rest of the
-		// page — the H1, the copy, the internal links — intact.
+		// page - the H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return '<p><strong>StatChasers FPA:</strong> the API returned nothing. Check that the deployment is up and that the FPA ingest has run (<code>pnpm --filter @workspace/api-server run ingest-fpa</code>).</p>';
 		}
@@ -454,7 +454,7 @@ add_shortcode( STATCHASERS_FPA_SHORTCODE, 'statchasers_fpa_shortcode' );
  * Same shape as the rankings file's equivalent, and simpler than the team hub's
  * for the same reason: one mount, one fragment, one FAQ. The questions describe
  * fantasy points allowed, not the open view, so this passes NO attributes and
- * takes whatever statchasers_fpa_args() makes of that — which on a page that
+ * takes whatever statchasers_fpa_args() makes of that - which on a page that
  * writes no attributes of its own is the same combination the shortcode is
  * about to ask for, query string included, and therefore the same cached fetch.
  * A page that hard-codes format="ppr" costs one extra fetch against a

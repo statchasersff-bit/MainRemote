@@ -2,8 +2,8 @@
  * The pieces a news card is built from, shared by the two surfaces that draw
  * one.
  *
- * The team hub and the player pages render news into the same card — photo
- * above, kicker and stamp, headline, byline, a way through to the report — and
+ * The team hub and the player pages render news into the same card - photo
+ * above, kicker and stamp, headline, byline, a way through to the report - and
  * each used to own its own copy of the small decisions that card makes: which
  * timezone a stamp is in, what the kicker says when the item is an X post,
  * whether the player's name is stripped off the front of a headline the feed
@@ -33,7 +33,7 @@ export interface DateParts {
 }
 
 /**
- * Date pieces in US Eastern — the league's own timezone, and the same one the
+ * Date pieces in US Eastern - the league's own timezone, and the same one the
  * news cards already format in. Pinned rather than locale-derived so a cached
  * render is correct for every reader and identical on every request.
  */
@@ -87,7 +87,7 @@ export function splitHeadline(item: NewsItem): string {
  * The item's derived category for the wire and the club feeds, and the reporter
  * for an X post: these pages have their own card renderers, so a post arriving
  * on one would otherwise be labelled as something it is not. The feed's card
- * makes the same substitution in the same slot — see renderCardLabel in
+ * makes the same substitution in the same slot - see renderCardLabel in
  * lib/render.ts, which is also where the reasoning for showing the category
  * rather than a fixed "Player News" is written down.
  */
@@ -101,7 +101,7 @@ export function newsKicker(item: NewsItem): string {
  * The stamp line: kicker, a dot, then the date in Eastern.
  *
  * `data-ts` is what the client refines into "3 hours ago" for a recent story
- * and leaves alone for an old one — see wireTimestamps in client/enhance.ts.
+ * and leaves alone for an old one - see wireTimestamps in client/enhance.ts.
  * The class prefix differs between the two pages, so it is passed in rather
  * than assumed.
  */

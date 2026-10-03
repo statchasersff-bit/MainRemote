@@ -4,7 +4,7 @@
  * The companion to x-ingest.test.mjs: that file proves an X post reaches the
  * feed, this one proves a reader can then narrow to it. It runs the shipped
  * `public/dist/statchasers-news.js` against markup produced by the SAME
- * renderer the server uses, in jsdom — so a filter that works only because the
+ * renderer the server uses, in jsdom - so a filter that works only because the
  * test built its own convenient HTML would not pass.
  *
  * No server and no database: the markup is rendered here from fixed items, which
@@ -121,7 +121,7 @@ async function mount() {
 
   // The widget polls for fresh items on a timer and on load. There is no server
   // here, and a refresh that replaced the list would be replacing the very
-  // markup under test — so the fetch fails and the bundle keeps what it has,
+  // markup under test - so the fetch fails and the bundle keeps what it has,
   // which is its documented behaviour.
   window.fetch = async () => {
     throw new Error("offline");
@@ -219,7 +219,7 @@ describe("the source filter", () => {
 
     choose("scFilterCategory", "practice");
     const practice = visible();
-    // One wire row and one wire row — the category is not an X-only concept.
+    // One wire row and one wire row - the category is not an X-only concept.
     assert.equal(practice.length, 2);
     assert.ok(practice.every((li) => li.dataset.source === "news"));
   });
@@ -269,7 +269,7 @@ describe("the source filter", () => {
     const { doc } = await mount();
     const cards = [...doc.querySelectorAll(".sc-card-item")];
     const card = cards.find((li) => li.dataset.source === "news");
-    // "Practice", from ITEMS[0].category — the label is the item's own
+    // "Practice", from ITEMS[0].category - the label is the item's own
     // category, not a fixed string every card shares. This used to read
     // "Player News" on all of them.
     assert.equal(card.querySelector(".sc-card-label").textContent, "Practice");

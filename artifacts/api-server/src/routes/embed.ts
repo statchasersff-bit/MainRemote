@@ -39,7 +39,7 @@ export function assetVersion(): string {
 }
 
 /**
- * Where version.json can be, resolved from this module first — the bug
+ * Where version.json can be, resolved from this module first - the bug
  * lib/data-dir.ts describes, a second time. This read from process.cwd(),
  * which is the package in development and something else on the deployment,
  * so production always answered "0" and WordPress fell back to its own
@@ -55,8 +55,8 @@ const VERSION_FILES = [
 
 // The external resize listener, served as a standalone .js file. Hosting it as a
 // file (rather than inline) is what makes the embed survive WordPress/Divi: the
-// page's HTML formatter (wpautop) rewrites inline <script> bodies — inserting
-// <br>/<p> tags — which produces "Uncaught SyntaxError: Unexpected token '<'"
+// page's HTML formatter (wpautop) rewrites inline <script> bodies - inserting
+// <br>/<p> tags - which produces "Uncaught SyntaxError: Unexpected token '<'"
 // and kills the listener. A separate file has no inline body to mangle.
 export function embedScript(origin: string): string {
   return `(function () {
@@ -81,7 +81,7 @@ export function embedScript(origin: string): string {
     if (!e.data || e.data.type !== 'statchasers:height') return;
     var f = frame();
     if (!f) return;
-    // Identity of the sending window is the real check — it is precisely "this
+    // Identity of the sending window is the real check - it is precisely "this
     // came from our iframe" and cannot be spoofed by another frame on the page.
     // The origin comparison stays as the fallback for the case where the source
     // window is not exposed, and now accepts the frame's real origin as well as
@@ -93,7 +93,7 @@ export function embedScript(origin: string): string {
     }
     var h = parseInt(e.data.height, 10);
     // Set the height as inline !important so it wins over any leftover host CSS
-    // (e.g. a legacy "#statchasers-news { height: 530px !important }" rule) —
+    // (e.g. a legacy "#statchasers-news { height: 530px !important }" rule) -
     // an inline !important beats a stylesheet !important, so the frame always
     // reflects the true content height. Clear min-height for the same reason.
     if (h > 0) {
@@ -115,7 +115,7 @@ export function embedScript(origin: string): string {
     }
   });
 
-  // This file is often loaded LATE — performance plugins (WP Rocket /
+  // This file is often loaded LATE - performance plugins (WP Rocket /
   // Perfmatters / LiteSpeed) "delay JavaScript execution" until the first user
   // interaction, by which point the iframe's load-time height broadcast is long
   // gone. So don't just wait passively: ask the iframe for its height now, and
@@ -147,7 +147,7 @@ export function embedScript(origin: string): string {
 // mounts the tool directly into the page instead of sealing it inside a
 // cross-origin frame that no crawler can attribute to the host URL.
 export function embedSnippet(origin: string): string {
-  // NOTE: deliberately NOT using loading="lazy" — and we add the skip markers
+  // NOTE: deliberately NOT using loading="lazy" - and we add the skip markers
   // that the common performance plugins honor (WP Rocket / Perfmatters /
   // LiteSpeed / a3 Lazy Load). A lazy-loaded iframe gets pulled out of the DOM
   // until scrolled into view, which both hides it and breaks the postMessage
@@ -159,7 +159,7 @@ export function embedSnippet(origin: string): string {
   // the frame to the true content height. Set it close to the ACTUAL height of a
   // full page of cards (~728px) rather than oversized: performance plugins often
   // delay the resize script until the visitor interacts, and until then the
-  // placeholder IS the visible height — too tall leaves an empty gap under the
+  // placeholder IS the visible height - too tall leaves an empty gap under the
   // cards, too short shows a brief scrollbar. Matching real content avoids both.
   return (
     `<iframe id="statchasers-news" src="${origin}/" title="StatChasers NFL Player News" class="skip-lazy" data-no-lazy="1" style="width:100%;border:0;border-radius:16px;display:block;height:728px;"></iframe>\n` +
@@ -230,7 +230,7 @@ function fragmentOptions(req: Parameters<typeof publicOrigin>[0]) {
 }
 
 /**
- * GET /embed/ssr — the tool, server-rendered, as a bare HTML fragment.
+ * GET /embed/ssr - the tool, server-rendered, as a bare HTML fragment.
  *
  * This is the endpoint that makes the WordPress plugin possible: the plugin
  * fetches it during page render and drops the markup straight into the page
@@ -256,7 +256,7 @@ router.get("/embed/ssr", async (req, res) => {
   }
 });
 
-// GET /embed/ssr.html — the same fragment as raw HTML, for hand-pasting into a
+// GET /embed/ssr.html - the same fragment as raw HTML, for hand-pasting into a
 // page or for anyone wiring this up outside WordPress.
 router.get("/embed/ssr.html", async (req, res) => {
   try {
@@ -272,16 +272,16 @@ router.get("/embed/ssr.html", async (req, res) => {
 });
 
 /**
- * GET /embed/schema.json — the tool page's structured-data node, on its own.
+ * GET /embed/schema.json - the tool page's structured-data node, on its own.
  *
  * Returns a single WebPage node, NOT a complete
  * `@graph`. That is the point: the host page already has an SEO plugin
  * producing WebPage and BreadcrumbList nodes, and publishing a second graph
  * alongside it would duplicate and contradict them. Merge this node into the
- * graph you already emit — the WordPress plugin does exactly that through
+ * graph you already emit - the WordPress plugin does exactly that through
  * Rank Math's `rank_math/json_ld` filter.
  *
- * Query: `page_url` (the canonical URL of the host page — required for the node
+ * Query: `page_url` (the canonical URL of the host page - required for the node
  * to describe the right page) and optional `webpage_id` to attach it to your
  * existing WebPage node.
  */
@@ -311,7 +311,7 @@ router.get("/embed/schema.json", (req, res) => {
   });
 });
 
-// GET /embed/assets.json — where the compiled bundles live and what version
+// GET /embed/assets.json - where the compiled bundles live and what version
 // they are. Lets the plugin enqueue without hardcoding paths.
 router.get("/embed/assets.json", (req, res) => {
   const origin = publicOrigin(req);
@@ -323,7 +323,7 @@ router.get("/embed/assets.json", (req, res) => {
   });
 });
 
-// GET /embed.js — the external resize listener referenced by the iframe snippet.
+// GET /embed.js - the external resize listener referenced by the iframe snippet.
 router.get("/embed.js", (req, res) => {
   res
     .type("application/javascript")
@@ -331,12 +331,12 @@ router.get("/embed.js", (req, res) => {
     .send(embedScript(publicOrigin(req)));
 });
 
-// GET /embed.txt — raw snippet, for scripting or a quick copy.
+// GET /embed.txt - raw snippet, for scripting or a quick copy.
 router.get("/embed.txt", (req, res) => {
   res.type("text/plain").send(embedSnippet(publicOrigin(req)));
 });
 
-// GET /embed — setup instructions: the plugin first, the legacy iframe second.
+// GET /embed - setup instructions: the plugin first, the legacy iframe second.
 router.get("/embed", (req, res) => {
   const origin = publicOrigin(req);
   const snippet = embedSnippet(origin);
@@ -370,7 +370,7 @@ router.get("/embed", (req, res) => {
     they can't credit to your URL.
   </div>
 
-  <h2>Option 1 — WordPress plugin (recommended)</h2>
+  <h2>Option 1 - WordPress plugin (recommended)</h2>
   <ol>
     <li>Install and activate <code>statchasers-news</code> (see <code>wordpress-plugin/</code> in the repo).</li>
     <li>Point it at this server by adding to <code>wp-config.php</code>:
@@ -385,7 +385,7 @@ router.get("/embed", (req, res) => {
     <code>heading="0"</code> if the page already has its own section heading.
   </p>
 
-  <h2>Option 2 — server-rendered fragment, no plugin</h2>
+  <h2>Option 2 - server-rendered fragment, no plugin</h2>
   <p>
     If you'd rather not install a plugin, fetch the rendered markup yourself and
     print it into the page, then load the two assets:
@@ -399,21 +399,21 @@ router.get("/embed", (req, res) => {
     asset version if you want to cache-bust.
   </p>
 
-  <h2>Option 3 — legacy iframe</h2>
+  <h2>Option 3 - legacy iframe</h2>
   <p>Paste this into a code/HTML block (in Divi, use a <strong>Code</strong> module):</p>
   <pre><code id="snippet">${escapeHtml(snippet)}</code></pre>
   <button onclick="navigator.clipboard.writeText(document.getElementById('snippet').textContent).then(function(){this.textContent='Copied!'}.bind(this))">Copy snippet</button>
   <ol>
-    <li>The resize logic loads from <code>/embed.js</code> (an external file) on purpose — WordPress/Divi rewrites <em>inline</em> scripts and breaks them, but it can't touch an external file.</li>
-    <li>Do <strong>not</strong> set a fixed height on the surrounding module/row — leave Height blank/auto. The script sizes the frame to the content; a fixed height leaves a white block below it.</li>
+    <li>The resize logic loads from <code>/embed.js</code> (an external file) on purpose - WordPress/Divi rewrites <em>inline</em> scripts and breaks them, but it can't touch an external file.</li>
+    <li>Do <strong>not</strong> set a fixed height on the surrounding module/row - leave Height blank/auto. The script sizes the frame to the content; a fixed height leaves a white block below it.</li>
     <li>The <code>height:728px</code> in the snippet is only a placeholder shown before the script runs.</li>
-    <li>After pasting, confirm the script URL reads <code>/embed.js</code> with no stray space — Divi occasionally inserts one when a long line wraps.</li>
+    <li>After pasting, confirm the script URL reads <code>/embed.js</code> with no stray space - Divi occasionally inserts one when a long line wraps.</li>
   </ol>
   <p>
     The framed app is served with <code>noindex, indexifembedded</code>, so the
     raw tool URL won't rank on its own but Google may still use its content for
     the page embedding it. Note that this only helps on Google, and it still
-    leaves your page's own HTML empty — which is why Option 1 or 2 is better.
+    leaves your page's own HTML empty - which is why Option 1 or 2 is better.
   </p>
 
   <p class="muted">Raw iframe snippet also available at <a href="/embed.txt">/embed.txt</a>.</p>

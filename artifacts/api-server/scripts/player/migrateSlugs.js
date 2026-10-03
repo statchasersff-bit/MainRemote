@@ -5,7 +5,7 @@
  * the only file that stores one. bios.json, draft.json and bio_facts.json are
  * OBJECTS KEYED BY SLUG; fantasy_outlook_2026.json is keyed by Sleeper id and
  * carries the slug as a field; depth_charts.json carries it as `sleeper_slug`.
- * Rename a player and none of that follows him — the profile renders with no
+ * Rename a player and none of that follows him - the profile renders with no
  * bio, no draft row, no outlook and no depth-chart slot, which looks exactly
  * like a data outage and is much harder to trace back to a URL change.
  *
@@ -19,11 +19,11 @@
  *
  * WHAT IT MATCHES. Whole strings only, and only strings that are exactly a slug
  * this run moved. A slug appearing inside prose is not a key and is not
- * rewritten — the outlook bodies name players constantly and none of those are
+ * rewritten - the outlook bodies name players constantly and none of those are
  * addresses.
  *
  * WHY THE MOVE LIST IS CONSUMED. A second pass over the same list would not be
- * a no-op, it would be a corruption — and for the same reason the walk is one
+ * a no-op, it would be a corruption - and for the same reason the walk is one
  * pass. After the first run `kenneth-walker` is the running back's address, and
  * the list still says `kenneth-walker -> kenneth-walker-4634`, so running again
  * would hand his bio to the receiver. So a successful run empties `moves` in
@@ -149,8 +149,8 @@ function main() {
 
     if (!dryRun) {
       // Written back in the shape it arrived in. These files do not agree on a
-      // format — bios.json and draft.json are indented two, bio_facts.json and
-      // the outlook are minified — and a migration that normalised them would
+      // format - bios.json and draft.json are indented two, bio_facts.json and
+      // the outlook are minified - and a migration that normalised them would
       // bury four renamed keys in a million-line diff.
       fs.writeFileSync(file, serializeLike(before, after));
     }

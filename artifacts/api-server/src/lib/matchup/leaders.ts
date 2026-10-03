@@ -7,7 +7,7 @@
  * it. Four names close that; the tables under them close the rest.
  *
  * The four categories here are the summary. They are deliberately the SAME
- * numbers the Player Stats tables print in full below — this block is a way in,
+ * numbers the Player Stats tables print in full below - this block is a way in,
  * not a second source, and a leader whose yardage disagreed with the table two
  * sections down would be a bug a reader could see.
  */
@@ -50,7 +50,7 @@ function parts(pieces: Array<[number, string, string?]>): string {
  *
  * `gate` keeps a category honest: a game with no completed pass should show no
  * passing leader rather than the least-bad zero. Ties go to whoever the logs
- * list first, which is arbitrary but stable — the alternative is showing two
+ * list first, which is arbitrary but stable - the alternative is showing two
  * leaders in a slot built for one.
  */
 function best(
@@ -77,7 +77,7 @@ function best(
  * Null rather than an empty shape when nobody logged a line: the caller renders
  * nothing at all in that case, and a block of four dashes is worse than no
  * block. The appearances are passed in rather than read here, because every
- * other postgame block on the page is built from the same list — see
+ * other postgame block on the page is built from the same list - see
  * game-stats.ts, which makes it once.
  */
 export function gameLeaders(list: Appearance[]): GameLeaders | null {
@@ -138,7 +138,7 @@ export function gameLeaders(list: Appearance[]): GameLeaders | null {
         // Left for the caller to fill with the week's positional finish, which
         // needs the whole league and so is not knowable from this game alone.
         // It used to carry the position, which the tag above the name now
-        // spells out in that position's own colour — the card was printing
+        // spells out in that position's own colour - the card was printing
         // "WR" twice.
         line: "",
       }),

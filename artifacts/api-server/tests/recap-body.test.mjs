@@ -1,8 +1,8 @@
 /**
  * The recap body: everything under the scoreboard hero on a recap page.
  *
- * Driven with plain input objects, so the cases the spec names — an away win,
- * a tie, no games left, two nicknames with one initial — do not depend on
+ * Driven with plain input objects, so the cases the spec names - an away win,
+ * a tie, no games left, two nicknames with one initial - do not depend on
  * what ESPN is serving the day the suite runs. The Cardinals–Rams series is
  * the real one (2021 to 2025), in the shape the page builds it.
  */

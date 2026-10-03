@@ -8,7 +8,7 @@
  *
  * So 277 passing yards is a Stats fact and "strong passing volume" is an
  * Overview one; 73% completion is Stats and "accuracy has been a strength" is
- * Overview. This file holds the second half — the words, and the thresholds
+ * Overview. This file holds the second half - the words, and the thresholds
  * that earn them.
  *
  * Everything here is DERIVED. Each phrase is a restatement of a number that is
@@ -68,11 +68,11 @@ export function percentileLevel(percentile: number | null): string {
 /* --------------------------------------------------------- the weekly range */
 
 export interface WeeklyRange {
-  /** Worst weekly positional finish — the larger number. */
+  /** Worst weekly positional finish - the larger number. */
   floor: number;
   /** The median week. */
   typical: number;
-  /** Best weekly positional finish — the smaller number. */
+  /** Best weekly positional finish - the smaller number. */
   ceiling: number;
   weeks: number;
 }
@@ -80,7 +80,7 @@ export interface WeeklyRange {
 /**
  * Where his weeks actually landed, as a range of positional finishes.
  *
- * Observed, not projected — this is the Overview's answer to "what kind of week
+ * Observed, not projected - this is the Overview's answer to "what kind of week
  * does he give you", and it is measured off the weeks he has played. The
  * Outlook tab carries the projected version, which is authored and labelled as
  * a projection; these two must never be confused, so this one is always stamped
@@ -125,7 +125,7 @@ export interface ProfileRow {
  * The fantasy profile: six readings, no counting stats.
  *
  * Deliberately contains not one raw total. Yards, completions and touchdowns
- * are on the Stats tab; what belongs here is what they add up to — the tier he
+ * are on the Stats tab; what belongs here is what they add up to - the tier he
  * is producing at, how repeatable it has been, and what the points are made of.
  */
 export function fantasyProfile(input: {
@@ -212,7 +212,7 @@ function pctText(value: number): string {
  * Two sentences on what the season has been, assembled from clauses.
  *
  * Assembled rather than written, so it cannot say anything the numbers do not.
- * A clause whose input is missing is simply left out — the sentence gets
+ * A clause whose input is missing is simply left out - the sentence gets
  * shorter, never vaguer, and never speculative.
  */
 export function seasonSentence(input: {
@@ -225,7 +225,7 @@ export function seasonSentence(input: {
   /**
    * Efficiency percentiles, when the player qualified for them.
    *
-   * `phrase` is how the metric reads inside a sentence — "accuracy", not
+   * `phrase` is how the metric reads inside a sentence - "accuracy", not
    * "Completion rate", and certainly not "td per attempt", which is what
    * lowercasing a column label produces.
    */
@@ -243,7 +243,7 @@ export function seasonSentence(input: {
     : `${name} has averaged ${stats.ppg.toFixed(1)} points per game through ${games} in ${season}.`;
 
   // The strongest and weakest measured rates, named. Only when the player
-  // actually qualified for a percentile — see benchmarks.ts.
+  // actually qualified for a percentile - see benchmarks.ts.
   const ranked = efficiency.filter(
     (row): row is { label: string; phrase: string; percentile: number } =>
       row.percentile !== null,

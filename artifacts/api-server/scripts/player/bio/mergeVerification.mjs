@@ -192,7 +192,7 @@ export function mergeVerification(players, decided) {
       // rookie signing, whose extracted twin failed the code check).
       // A manual entry may declare itself `distinct: true` to opt out of the
       // window entirely: cutdown week stacks real back-to-back moves on one
-      // club (mak batch 25: Tonyan released 8/26, PS 8/27, active 8/28 — all KC).
+      // club (mak batch 25: Tonyan released 8/26, PS 8/27, active 8/28 - all KC).
       const same = m.distinct ? null : (players[slug]?.facts ?? []).find((x) => x.status !== "rejected" && x.value.team === m.team && Math.abs(dateOf(x.value.date) - dateOf(m.date)) <= 3 * DAY);
       if (same) {
         if (same.method === "official-log" && m.headline) {

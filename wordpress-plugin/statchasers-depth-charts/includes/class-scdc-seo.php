@@ -197,8 +197,8 @@ class SCDC_SEO {
 	/**
 	 * The canonical URL for this request, or the passed-through value when the
 	 * request isn't one of the tool's routes. The bare tool page renders the same
-	 * all-teams fantasy view as /fantasy/, so it canonicalises onto main_url() —
-	 * the URL the sitemap lists — rather than keeping its own page permalink.
+	 * all-teams fantasy view as /fantasy/, so it canonicalises onto main_url() -
+	 * the URL the sitemap lists - rather than keeping its own page permalink.
 	 *
 	 * @param string $fallback Value to return when nothing should change.
 	 * @return string
@@ -211,7 +211,7 @@ class SCDC_SEO {
 	}
 
 	/**
-	 * Never adds directives — only clears an inherited `noindex` on the team
+	 * Never adds directives - only clears an inherited `noindex` on the team
 	 * routes so they can be indexed.
 	 *
 	 * @param array $robots Robots directives.
@@ -382,10 +382,10 @@ class SCDC_SEO {
 
 	/**
 	 * How the team H1 is produced:
-	 *   auto      — rename the theme/Divi page title, and let the tool render a
+	 *   auto      - rename the theme/Divi page title, and let the tool render a
 	 *               fallback H1 that is dropped again if a theme H1 was renamed.
-	 *   theme     — only rename the theme/Divi page title.
-	 *   shortcode — only render the H1 inside the tool.
+	 *   theme     - only rename the theme/Divi page title.
+	 *   shortcode - only render the H1 inside the tool.
 	 *
 	 * @return string
 	 */
@@ -482,7 +482,7 @@ class SCDC_SEO {
 			'#<h1\b([^>]*)>(.*?)</h1>#is',
 			static function ( $matches ) use ( &$retitled, $heading, $page_title ) {
 				$attributes = $matches[1];
-				// Skip the tool's own H1 — it is removed below when a theme H1 wins.
+				// Skip the tool's own H1 - it is removed below when a theme H1 wins.
 				if ( false !== stripos( $attributes, 'data-scdc-h1' ) ) {
 					return $matches[0];
 				}
@@ -493,7 +493,7 @@ class SCDC_SEO {
 				$is_page_title = ( '' !== $page_title && 0 === strcasecmp( $text, $page_title ) );
 				$is_depth_chart = ( false !== stripos( $text, 'depth chart' ) );
 				if ( ! $is_page_title && ! $is_depth_chart ) {
-					return $matches[0]; // Unrelated H1 (site title, etc.) — leave alone.
+					return $matches[0]; // Unrelated H1 (site title, etc.) - leave alone.
 				}
 				$retitled = true;
 				return '<h1' . $attributes . ' data-scdc-h1="theme">' . esc_html( $heading ) . '</h1>';
@@ -502,7 +502,7 @@ class SCDC_SEO {
 		);
 
 		if ( null === $result ) {
-			return $html; // Regex bailed (e.g. PCRE backtrack limit) — ship the page as-is.
+			return $html; // Regex bailed (e.g. PCRE backtrack limit) - ship the page as-is.
 		}
 
 		if ( $retitled ) {
@@ -540,7 +540,7 @@ class SCDC_SEO {
 	 * Whether the admin-only diagnostics are switched on for this request.
 	 *
 	 * Enabled by `?scdc_debug=1` (or `define( 'SCDC_DEBUG', true )`) AND the
-	 * manage_options capability — never visible to logged-out visitors.
+	 * manage_options capability - never visible to logged-out visitors.
 	 *
 	 * @return bool
 	 */
@@ -570,8 +570,8 @@ class SCDC_SEO {
 		$rows = array(
 			'Detected route'   => $route['type'] . ' (' . $route['reason'] . ')',
 			'Request path'     => isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '', // phpcs:ignore
-			'Detected team'    => $team ? $team['name'] . ' (' . $team['abbr'] . ')' : '— none —',
-			'Team slug'        => $route['team_slug'] ? $route['team_slug'] : '— none —',
+			'Detected team'    => $team ? $team['name'] . ' (' . $team['abbr'] . ')' : ' - none - ',
+			'Team slug'        => $route['team_slug'] ? $route['team_slug'] : ' - none - ',
 			'View / position'  => $route['view'] . ' / ' . ( $route['position'] ? $route['position'] : 'all' ),
 			'SEO title'        => $team ? self::title( $team ) : '(page default)',
 			'Meta description' => $team ? self::description( $team ) : '(page default)',
@@ -584,7 +584,7 @@ class SCDC_SEO {
 		);
 
 		echo '<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;max-height:45vh;overflow:auto;background:#0f172a;color:#e2e8f0;font:12px/1.5 ui-monospace,monospace;padding:12px 16px;">';
-		echo '<strong style="color:#38bdf8">StatChasers depth-chart route debug</strong> <span style="opacity:.7">(admin-only — remove ?scdc_debug=1 to hide)</span>';
+		echo '<strong style="color:#38bdf8">StatChasers depth-chart route debug</strong> <span style="opacity:.7">(admin-only - remove ?scdc_debug=1 to hide)</span>';
 		echo '<table style="width:100%;border-collapse:collapse;margin-top:8px">';
 		foreach ( $rows as $label => $value ) {
 			echo '<tr><td style="padding:2px 12px 2px 0;color:#94a3b8;white-space:nowrap">' . esc_html( $label ) . '</td>';

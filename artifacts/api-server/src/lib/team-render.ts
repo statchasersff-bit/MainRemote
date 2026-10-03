@@ -1,7 +1,7 @@
 /**
  * Markup for the NFL Team Hub.
  *
- * Server-only, unlike lib/render.ts — the team page ships complete HTML and the
+ * Server-only, unlike lib/render.ts - the team page ships complete HTML and the
  * client bundle only enhances what is already there (sticky-nav highlighting,
  * closing the team switcher, relabelling timestamps). Nothing on this page is
  * built in the browser, so nothing here has to be re-runnable there.
@@ -88,7 +88,7 @@ export interface TeamRenderOptions {
   /**
    * Embedded inside a statchasers.com page. Drops the standalone page's own
    * chrome and demotes the team name to an <h2>, because the host page supplies
-   * the H1 — the same reasoning as `heading: false` on the news tool.
+   * the H1 - the same reasoning as `heading: false` on the news tool.
    */
   embed?: boolean;
   /** Where a team-switcher link points. Defaults to this app's own /team/. */
@@ -103,7 +103,7 @@ export interface TeamRenderOptions {
    * `/nfl/teams/<slug>/schedule/` has to be a different page from the team's
    * hub or it is duplicate content wearing a second address: five tabs of
    * identical markup at every URL, competing with each other. So a section page
-   * is the hero, that section, and a way back to the rest — and its heading is
+   * is the hero, that section, and a way back to the rest - and its heading is
    * the phrase the page is actually about.
    *
    * Ignored when the id does not match a section that rendered, which keeps a
@@ -145,7 +145,7 @@ export const PUBLIC_SECTIONS = [
  * The hub opens on the Outlook, so `/<slug>/` and `/<slug>/outlook/` were one
  * page answering at two self-canonical addresses. The hub keeps it:
  * `/outlook/` is a 301 to the hub, and the Outlook tab links there. It stays in
- * PUBLIC_SECTIONS so the old address redirects instead of 404ing — it is
+ * PUBLIC_SECTIONS so the old address redirects instead of 404ing - it is
  * indexed. The twin of PROFILE_SECTION in routes/player.ts.
  */
 export const HUB_SECTION = "outlook";
@@ -200,7 +200,7 @@ const SECTION_HEADINGS: Record<string, string> = {
  * The heading of the hub itself: "Buffalo Bills Fantasy Football Outlook &
  * Stats 2026".
  *
- * The hub's address is the Outlook's — `/outlook/` 301s here — so this is also
+ * The hub's address is the Outlook's - `/outlook/` 301s here - so this is also
  * the Outlook tab's heading. It replaced the panel's "2026 Fantasy Outlook",
  * which names no team, read the same on all 32 hubs, and was word for word the
  * H1 of `/outlook/` besides. Mirrored by statchasers_team_heading() in PHP.
@@ -245,8 +245,8 @@ export function h2(text: string, extraClass = ""): string {
  * section address prints its phrase twice, once as the theme's page title and
  * once here as the panel's own heading with the gold rule under it.
  *
- * The FIRST match only. A hub panel carries several `h2()`s — the Stats tab
- * alone has three — and it is the one the panel opens with that names the page;
+ * The FIRST match only. A hub panel carries several `h2()`s - the Stats tab
+ * alone has three - and it is the one the panel opens with that names the page;
  * the rest are blocks within it and stay where they are.
  *
  * `extraClass` is preserved, because some headings carry one and the styling
@@ -270,7 +270,7 @@ function promoteHeading(html: string, text?: string): string {
  *
  * `target="_top"` because these pages are read inside statchasers.com, and in
  * the legacy iframe mount a plain link would load the destination *inside the
- * frame* — a full site rendered in a 900px box. Breaking out is the correct
+ * frame* - a full site rendered in a 900px box. Breaking out is the correct
  * behaviour in the frame and a no-op when the markup is mounted directly.
  */
 function siteLink(
@@ -292,7 +292,7 @@ function siteLink(
  * The place alone, out of a standing that spells the division out after it.
  *
  * ESPN sends "2nd in AFC East", and the division half of that is the chip
- * immediately to its left — so it is the one piece of text in this row that can
+ * immediately to its left - so it is the one piece of text in this row that can
  * go without taking a fact with it. Returns nothing if the string is not in
  * that shape: ESPN also sends bare places ("1st"), and a club with no division
  * standing at all gets whatever it does send, unshortened.
@@ -309,9 +309,9 @@ function shortStanding(standing: string): string | undefined {
  * down the ladder one rung at a time and stops as soon as it fits, so the order
  * is a ranking of what a reader can most afford to lose:
  *
- *   short — the standing's division, which is the chip two to its left;
- *   tight — "Week 11" down to "W11", where the label still says BYE;
- *   drop  — the Bye chip itself, off the row.
+ *   short - the standing's division, which is the chip two to its left;
+ *   tight - "Week 11" down to "W11", where the label still says BYE;
+ *   drop  - the Bye chip itself, off the row.
  *
  * Adding a rung means a name here, a rule in team.css, and its place in
  * FACT_STAGES in client/team.ts. Nothing else reads these.
@@ -328,7 +328,7 @@ interface HeroFact {
    * The rung above this one has already spent every abbreviation there is, so
    * what is left when the row still does not fit is a choice between a chip on
    * a second line and no chip. A wrapped Bye is one short word alone on a row
-   * with the rest of the line empty beside it — it reads as a mistake, and it
+   * with the rest of the line empty beside it - it reads as a mistake, and it
    * is mak's own call that it should go instead.
    *
    * Only a fact the hub states somewhere else may carry this. The bye does:
@@ -343,7 +343,7 @@ function heroFacts(data: TeamPageData): string {
 
   facts.push({ label: "Division", value: data.team.division });
 
-  // Withheld out of season — see team-data.ts. Present here only when it means
+  // Withheld out of season - see team-data.ts. Present here only when it means
   // what the heading says it means.
   if (data.profile?.record) {
     facts.push({ label: "Record", value: data.profile.record });
@@ -375,7 +375,7 @@ function heroFacts(data: TeamPageData): string {
 
   if (facts.length === 0) return "";
 
-  // Both spellings ship, and one of them is `display: none` — so exactly one is
+  // Both spellings ship, and one of them is `display: none` - so exactly one is
   // in the accessibility tree and each fact is announced once. Which one shows
   // is client/team.ts's only layout decision: it is made by measuring this row,
   // because the width at which five chips stop fitting depends on a coach's
@@ -452,14 +452,14 @@ function teamSwitcher(team: NflTeam, options: TeamRenderOptions): string {
 
   // <details> rather than a scripted menu: it opens, closes, takes focus and
   // works on a phone with no JavaScript at all, and every destination is a real
-  // <a href> — so the switcher is also 31 crawlable internal links rather than
+  // <a href> - so the switcher is also 31 crawlable internal links rather than
   // a dead end. The client bundle only adds outside-click and Escape.
   return (
     `<details class="sct-switch" data-sct-switch>` +
     `<summary class="sct-switch-summary">` +
     // Lazy even though it is above the fold: a lazy image inside the viewport
     // is still fetched straight away, just at a lower priority than the hero
-    // crest beside it. That ordering is the point — this is a 22px decoration
+    // crest beside it. That ordering is the point - this is a 22px decoration
     // and the crest is the LCP candidate.
     `<img class="sct-switch-logo" src="${escapeHtml(team.logo)}" alt=""` +
     ` width="22" height="22" loading="lazy" decoding="async" />` +
@@ -480,8 +480,8 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
 
   // The team's name, on every one of the hub's addresses.
   //
-  // A section-scoped URL used to put the page's subject here instead — "New
-  // England Patriots Depth Chart 2026" — which meant the header rewrote itself
+  // A section-scoped URL used to put the page's subject here instead - "New
+  // England Patriots Depth Chart 2026" - which meant the header rewrote itself
   // every time a reader clicked a tab. The hero is the club's identity and it
   // does not track which panel is open. Each section prints its own heading
   // again, scoped or not, so the phrase is still on the page and still exactly
@@ -512,7 +512,7 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     //
     // They are wrapped rather than being direct children of the hero because
     // the wrapper is what carries the clip. The hero itself used to, and an
-    // `overflow: hidden` hero also clips the team switcher's dropdown — which
+    // `overflow: hidden` hero also clips the team switcher's dropdown - which
     // opens below its summary and was therefore being cut off. See
     // .sct-hero-decor in team.css.
     `<span class="sct-hero-decor" aria-hidden="true">` +
@@ -529,8 +529,8 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     `</div>` +
     // One wrapper around the three blocks beside the crest, because the row
     // they share has to break on its CONTENT rather than at a width. The
-    // switcher is a pill as wide as the team's name — "Washington Commanders"
-    // is 265px, "Chicago Bears" is 190 — so the width at which it stops fitting
+    // switcher is a pill as wide as the team's name - "Washington Commanders"
+    // is 265px, "Chicago Bears" is 190 - so the width at which it stops fitting
     // beside the title is a different width for every team. A flex row that
     // wraps answers that per team; a media query can only answer it once, for
     // the worst case. See .sct-hero-head in team.css.
@@ -543,20 +543,20 @@ function renderHero(data: TeamPageData, options: TeamRenderOptions): string {
     // the other half of the header moving under them.
     //
     // `data-sct-lead` is the hook the bundle drops it by when it would take a
-    // second line — the same trade the Bye chip makes, and mak's call for the
+    // second line - the same trade the Bye chip makes, and mak's call for the
     // same reason: this line says what the <h1> above it and the eyebrow above
     // that have already said between them, so on a phone it is two rows of
     // repetition where the hero has no rows to spare. It ships with no value
     // and stays in the markup at every width; client/team.ts sets "off" after
-    // measuring, and team.css is what hides it. A width cannot decide this —
+    // measuring, and team.css is what hides it. A width cannot decide this -
     // the line is the club's own name plus four words, so it wraps at 470px
     // for Washington and at 360px for Buffalo.
     `<p class="sct-subtitle" data-sct-lead>${escapeHtml(`${team.fullName} fantasy football hub`)}</p>` +
     `</div>` +
     // The chips and the timestamp are a row of their own rather than the tail
     // of the name block, because the name block is boxed in by the switcher
-    // beside it and they are not. Sharing that column cost them about 220px —
-    // the width of the switcher and its gap — and the Bye chip was dropping to
+    // beside it and they are not. Sharing that column cost them about 220px -
+    // the width of the switcher and its gap - and the Bye chip was dropping to
     // a second line at around 1000px with the whole of that width sitting
     // empty underneath the button. On its own grid row it spans under the
     // switcher and stays one line to roughly 780px, below which the hero
@@ -583,7 +583,7 @@ interface Section {
    * Whether the hub carries this section as a tab.
    *
    * False for a section that keeps its own public URL but has come off the tab
-   * strip — Matchups, whose every row the Schedule tab now carries a "View
+   * strip - Matchups, whose every row the Schedule tab now carries a "View
    * matchup" link in, so the two tabs were the same list twice. The page at
    * /<slug>/matchups/ still renders; the hub just stops offering a second way
    * into it.
@@ -591,7 +591,7 @@ interface Section {
   hubTab?: boolean;
   /**
    * Markup that belongs to this section but renders after the "Explore
-   * StatChasers" block rather than inside the panel — today, the section's FAQ.
+   * StatChasers" block rather than inside the panel - today, the section's FAQ.
    *
    * It has to leave the panel to get below a block that is a sibling of every
    * panel, so it is emitted as a sibling too and shown only while its own tab
@@ -628,20 +628,20 @@ interface TailSink {
  * They used to be `#stats` and friends: the panels are all in the document and
  * CSS `:target` swapped between them, so the strip worked with scripting off
  * and cost nothing to use. What it also did was leave the six section URLs of
- * every team — which exist, carry their own title, description and canonical,
- * and sit in the sitemap — with nothing on the site linking to them. Six
+ * every team - which exist, carry their own title, description and canonical,
+ * and sit in the sitemap - with nothing on the site linking to them. Six
  * indexable addresses per team, advertised and orphaned, is the shape of page
  * that does not rank however good it is.
  *
  * So each tab is a link to its own section page. With scripting off that is
  * exactly what it does: a page load, a different URL, a different H1. With
  * scripting on, client/team.ts intercepts the click, switches the panel in
- * place and pushes the same URL into the address bar — no reload, and the
+ * place and pushes the same URL into the address bar - no reload, and the
  * address still names what the reader is looking at.
  *
  * The data attributes are that contract. `data-sct-panel-id` is which panel to
  * show, since the href no longer says. `data-sct-heading` and `data-sct-lead`
- * are what the page's H1 and standfirst should read once it has — those live
+ * are what the page's H1 and standfirst should read once it has - those live
  * OUTSIDE the fragment, in the host page's own markup, so the bundle cannot
  * derive them and the server has to hand them over.
  *
@@ -670,7 +670,7 @@ function renderNav(
     .map((section) => {
       // The Outlook is the hub: its address is the hub's (sectionPath) and its
       // heading is the hub's. `/outlook/` only 301s back here. A hash tab is a
-      // hub-only panel, so its address, heading and title are the hub's too —
+      // hub-only panel, so its address, heading and title are the hub's too -
       // the page never leaves the hub's URL bar one hash.
       const isHub = section.id === HUB_SECTION;
       const hubLike = isHub || section.hash === true;
@@ -729,7 +729,7 @@ export const TIER_WORD: Record<string, string> = {
 };
 
 /**
- * The accent a card paints a rank with — the tier, plus a top-five band.
+ * The accent a card paints a rank with - the tier, plus a top-five band.
  *
  * A shade finer than the tier itself, and only ever a colour. The tier is the
  * page's verdict and stays three buckets wide everywhere it is spoken aloud,
@@ -750,7 +750,7 @@ function rankAccent(tier: string, rank: number | null): string {
  * Only used for the movement arrow, and deliberately fussy about earning it.
  * The two blocks are fetched from different ESPN documents in parallel, each
  * falls back a season on its own, and each ranks by its own reading of the
- * league — so a row only counts when it is describing the same season and has
+ * league - so a row only counts when it is describing the same season and has
  * arrived at the same rank ESPN printed on the card. Anything else would draw
  * "2nd, up 12" out of a delta measured from third place.
  */
@@ -770,15 +770,15 @@ function snapshotMovement(
  * One snapshot card: label, number, and a footer that says where the team
  * stands and which way it is going.
  *
- * Built from the same parts as the .sct-tile below it — gold mark, ruled
+ * Built from the same parts as the .sct-tile below it - gold mark, ruled
  * footer, the ordinal captioned rather than housed in a pill, a percentile
- * groove along the bottom edge — at the larger scale four across earns. That
+ * groove along the bottom edge - at the larger scale four across earns. That
  * rhyme used to span two tabs and now runs down one: the snapshot opens the
  * Stats tab and the tiles follow it, so a reader learns the shape once at the
  * top of the page and reads every block under it for free.
  *
  * "in NFL" is gone from the ordinal. The section heading names the team and the
- * season outright — "Bills Team Stats 2026" — so the league was never in doubt,
+ * season outright - "Bills Team Stats 2026" - so the league was never in doubt,
  * and four cards each repeating it cost a line apiece to say nothing. The
  * caption beside the ordinal is the one that carries it, once, quietly.
  */
@@ -793,7 +793,7 @@ function snapshotCard(
 
   // The percentile groove, flush with the bottom edge: 1st fills the card and
   // 32nd leaves a stub, so a row of four can be read as a shape before any of
-  // the ordinals are read as numbers. No rank, no groove — an empty track reads
+  // the ordinals are read as numbers. No rank, no groove - an empty track reads
   // as missing data rather than as last place.
   const track =
     metric.rankValue !== null
@@ -803,7 +803,7 @@ function snapshotCard(
       : "";
 
   // Rank left, movement right, a hairline above them. They are two different
-  // facts — where this team stands, and which way it is going — and running
+  // facts - where this team stands, and which way it is going - and running
   // them together as "2nd up 12" invites the arrow to be read as part of the
   // ordinal.
   const foot = metric.rank
@@ -818,7 +818,7 @@ function snapshotCard(
       // ordinal is measuring; a screen reader is told outright.
       `<span class="sct-metric-rank-label" aria-hidden="true">NFL rank</span>` +
       `<span class="sct-visually-hidden"> of 32` +
-      (tier !== "none" ? ` — ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
+      (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
       `</span>` +
       `</span>` +
       (move ? rankMove(move, true) : "") +
@@ -846,17 +846,17 @@ function renderSnapshot(data: TeamPageData): string {
 
   // Keyed on the season that came back, not the one the page asked for.
   // getTeamSnapshot() falls back a year when ESPN has nothing for the current
-  // season yet, and `state.statsSeasonIsPrior` describes the request — it would
+  // season yet, and `state.statsSeasonIsPrior` describes the request - it would
   // caption a block of 2025 numbers as 2026 for the whole of Week 1. The Stats
   // tab labels itself the same way, from the same evidence.
   const seasonNote =
     snapshot.season < data.state.season
-      ? `<p class="sct-note">${escapeHtml(`${snapshot.season} regular season — the ${data.state.season} season has no completed team stats yet.`)}</p>`
+      ? `<p class="sct-note">${escapeHtml(`${snapshot.season} regular season - the ${data.state.season} season has no completed team stats yet.`)}</p>`
       : `<p class="sct-note">${escapeHtml(`${snapshot.season} regular season to date.`)}</p>`;
 
   return (
     `<div class="sct-block">` +
-    // The team and the year, like every other tab's opening heading — this one
+    // The team and the year, like every other tab's opening heading - this one
     // said "Team Snapshot", which named neither, and it is the heading the
     // Stats section address promotes to its <h1>. Thirty-two pages shared one
     // generic phrase while the page title beside it read "Buffalo Bills Stats
@@ -881,7 +881,7 @@ function renderSnapshot(data: TeamPageData): string {
  * Rank, not value: the point of the bar is where this team sits among 32, and a
  * bar drawn from the raw number would make 4.2 and 4.4 yards a carry look
  * identical when they are 13th and 3rd. 1st fills the track, 32nd leaves a
- * stub — never nothing, because an empty track reads as missing data rather
+ * stub - never nothing, because an empty track reads as missing data rather
  * than as last place.
  */
 function rankFill(rank: number): string {
@@ -892,7 +892,7 @@ function rankFill(rank: number): string {
 /**
  * A metric's tier, or "none" for the ones that do not have a better end.
  *
- * `volume` rows — plays per game, pass rate — are ranked but never tinted. A
+ * `volume` rows - plays per game, pass rate - are ranked but never tinted. A
  * green bar on "66 plays a game" would be the page asserting that pace is good,
  * which it is not; it is just pace, and the reader is the one who knows whether
  * they want it.
@@ -906,7 +906,7 @@ function statTier(row: StatRow): "good" | "mid" | "poor" | "none" {
  * One row of a ladder: label, rank bar, value, rank.
  *
  * The bar carries `aria-hidden` because it says nothing the rank chip beside it
- * does not already say in words — the same reasoning as the tier colour on the
+ * does not already say in words - the same reasoning as the tier colour on the
  * snapshot cards, which is doubled by TIER_WORD rather than left to colour.
  */
 function statRow(row: StatRow): string {
@@ -923,7 +923,7 @@ function statRow(row: StatRow): string {
   const rank = row.rankLabel
     ? `<span class="sct-stat-rank" data-tier="${tier}">${escapeHtml(row.rankLabel)}` +
       (tier !== "none"
-        ? `<span class="sct-visually-hidden"> of 32 — ${escapeHtml(TIER_WORD[tier] ?? "")}</span>`
+        ? `<span class="sct-visually-hidden"> of 32 - ${escapeHtml(TIER_WORD[tier] ?? "")}</span>`
         : `<span class="sct-visually-hidden"> of 32</span>`) +
       `</span>`
     : "";
@@ -931,7 +931,7 @@ function statRow(row: StatRow): string {
   return (
     `<li class="sct-stat">` +
     `<span class="sct-stat-label">${escapeHtml(row.label)}` +
-    `<span class="sct-visually-hidden"> — ${escapeHtml(row.description)}</span></span>` +
+    `<span class="sct-visually-hidden"> - ${escapeHtml(row.description)}</span></span>` +
     bar +
     `<span class="sct-stat-value">${escapeHtml(row.value)}</span>` +
     rank +
@@ -1013,7 +1013,7 @@ function statTile(row: StatRow): string {
 
   // The percentile groove along the bottom edge. Same rank-not-value fill as a
   // ladder bar, drawn at 3px because it is a texture for scanning eight cards
-  // at once rather than a figure to be read off — the ordinal above it is the
+  // at once rather than a figure to be read off - the ordinal above it is the
   // figure. No rank, no groove, for the reason the ladder gives.
   const track =
     row.rank !== null
@@ -1023,12 +1023,12 @@ function statTile(row: StatRow): string {
       : "";
 
   // Rank left, movement right, on one ruled line: they are two different facts
-  // — where this team stands, and which way it is going — and running them
+  // - where this team stands, and which way it is going - and running them
   // together as "2nd in NFL ▲12" invited the arrow to be read as part of the
   // ordinal. The rule under the value is what makes the split legible.
   const foot = row.rankLabel
     ? `<p class="sct-tile-foot">` +
-      // The tier is carried as a word as well as a colour and a dot — a reader
+      // The tier is carried as a word as well as a colour and a dot - a reader
       // who cannot distinguish the tints still gets the judgement.
       `<span class="sct-tile-rank" data-tier="${tier}" data-accent="${accent}">` +
       `<span class="sct-tile-dot" aria-hidden="true"></span>` +
@@ -1038,7 +1038,7 @@ function statTile(row: StatRow): string {
       // ladder the ordinal belongs to; a screen reader is told outright.
       `<span class="sct-tile-rank-label" aria-hidden="true">NFL rank</span>` +
       `<span class="sct-visually-hidden"> of 32` +
-      (tier !== "none" ? ` — ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
+      (tier !== "none" ? ` - ${escapeHtml(TIER_WORD[tier] ?? "")}` : "") +
       `</span>` +
       `</span>` +
       rankMove(row, true) +
@@ -1062,14 +1062,14 @@ function statTile(row: StatRow): string {
  * Five seasons as a table.
  *
  * A real `<table>`, unlike everything else on this page. The rest of the hub is
- * lists of things that happen to be laid out in columns — a schedule, a depth
- * chart — and those are marked up as lists because that is what they are. This
+ * lists of things that happen to be laid out in columns - a schedule, a depth
+ * chart - and those are marked up as lists because that is what they are. This
  * is genuinely a matrix: every cell is the intersection of a season and a
  * metric, and a reader on a screen reader needs to be told which row and which
  * column they are in. `<th scope>` is the only thing that does that.
  *
  * It is the one block on the tab that scrolls sideways on a phone. Six metric
- * columns cannot be stacked without becoming five separate cards — at which
+ * columns cannot be stacked without becoming five separate cards - at which
  * point the comparison between seasons, the entire reason the block exists, is
  * gone. The stylesheet fades the right edge so the scroll is visible.
  */
@@ -1077,7 +1077,7 @@ function statTile(row: StatRow): string {
  * Rank tiers for the history table, finer than the page-wide three.
  *
  * The coarse buckets exist because the difference between 11th and 13th is
- * noise, and that reasoning still holds — none of these tiers is spoken aloud
+ * noise, and that reasoning still holds - none of these tiers is spoken aloud
  * as a verdict, and 11th through 22nd is one flat slate band for exactly that
  * reason. What is different here is the job: thirty numbers in a grid have to
  * be sortable by eye in a single pass, and a table where two thirds of the
@@ -1099,7 +1099,7 @@ function historyTier(row: StatRow): "elite" | "good" | "mid" | "poor" | "none" {
  * Read off the key prefix the metric definitions already use rather than a
  * second list kept in step by hand: a column added to HISTORY_KEYS lands in the
  * right group without this being touched, and one that is neither side of the
- * ball — turnover margin is the only one today — falls into its own group at
+ * ball - turnover margin is the only one today - falls into its own group at
  * the end, which is where the table wants it anyway.
  */
 function historyGroup(key: string): string {
@@ -1126,8 +1126,8 @@ function historyNumber(value: string): number | null {
  * the other axis, and the one a rank cannot give: whether 28.8 is a good number
  * FOR THIS TEAM, which is most of what five seasons side by side are for.
  *
- * "Best" is the metric's own good end — highest points scored, lowest points
- * allowed — so a volume metric has none and is skipped rather than being handed
+ * "Best" is the metric's own good end - highest points scored, lowest points
+ * allowed - so a volume metric has none and is skipped rather than being handed
  * one arbitrarily. Ties are kept: two seasons at +7 are two best seasons and
  * both get marked.
  *
@@ -1163,7 +1163,7 @@ function renderHistory(stats: TeamStats): string {
   if (stats.history.length < 2) return "";
 
   // Column heads come from the first row, so a metric ESPN dropped for one old
-  // season cannot silently shift the columns underneath it — a row that is
+  // season cannot silently shift the columns underneath it - a row that is
   // missing a cell is padded below rather than closing up.
   const columns = stats.history[0]?.cells.map((cell) => cell.key) ?? [];
   if (columns.length === 0) return "";
@@ -1171,7 +1171,7 @@ function renderHistory(stats: TeamStats): string {
   // Where one group of metrics ends and the next begins, so the stylesheet can
   // put a gap and a header divider there. Computed once from the column order
   // rather than asked per cell, because every row needs the same answer and the
-  // first column of the table is never a boundary — there is nothing to its
+  // first column of the table is never a boundary - there is nothing to its
   // left to be separated from.
   const groups = columns.map(historyGroup);
   const startsGroup = groups.map(
@@ -1187,7 +1187,7 @@ function renderHistory(stats: TeamStats): string {
       .map(
         (cell, i) =>
           `<th scope="col"${attrs(i)}>${escapeHtml(cell.label)}` +
-          `<span class="sct-visually-hidden"> — ${escapeHtml(cell.description)}</span></th>`,
+          `<span class="sct-visually-hidden"> - ${escapeHtml(cell.description)}</span></th>`,
       )
       .join("") +
     `</tr>`;
@@ -1213,7 +1213,7 @@ function renderHistory(stats: TeamStats): string {
           // table, and it is per-cell rather than a legend because a legend
           // several rows away is not an explanation of this number.
           const bestNote = best
-            ? `<span class="sct-visually-hidden"> — best of the last ` +
+            ? `<span class="sct-visually-hidden"> - best of the last ` +
               `${escapeHtml(String(seasonCount))} seasons</span>`
             : "";
           const cls =
@@ -1282,8 +1282,8 @@ function renderHistory(stats: TeamStats): string {
 /**
  * A tile grid.
  *
- * `cols` is the intended full-width row length for this block — four for the
- * eight situational metrics, three for the six volume ones — so each block
+ * `cols` is the intended full-width row length for this block - four for the
+ * eight situational metrics, three for the six volume ones - so each block
  * fills complete rows rather than leaving a stray pair hanging off the end of
  * one shared four-column grid. The stylesheet overrides it below 900px, where
  * neither number fits.
@@ -1302,7 +1302,7 @@ function statTiles(rows: StatRow[], cols: 3 | 4): string {
  *
  * Two numbers that sum to 100 are a proportion, and a proportion is the one
  * thing a bar shows better than a pair of figures does. Both halves are still
- * printed underneath — the bar is the shape, the legend is the fact.
+ * printed underneath - the bar is the shape, the legend is the fact.
  */
 function playMix(label: string, caption: string, balance: PlayBalance): string {
   return (
@@ -1326,7 +1326,7 @@ function playMix(label: string, caption: string, balance: PlayBalance): string {
  *
  * Three blocks, in the order a reader actually asks the questions: how good is
  * each unit, how does it behave in the situations that decide drives, and how
- * much work is there to go round — which is the only one of the three a fantasy
+ * much work is there to go round - which is the only one of the three a fantasy
  * manager is really here for.
  *
  * The two ladders are the same nine metrics in the same order, so the columns
@@ -1374,11 +1374,11 @@ function renderTeamStats(
   // Keyed on the season that came back, not on the one the page asked for.
   // getTeamStats() falls back a year when the current season has no completed
   // football in it yet, and the sentence has to describe what is on the screen
-  // — `state.statsSeasonIsPrior` describes the request and would say "2026" over
+  // - `state.statsSeasonIsPrior` describes the request and would say "2026" over
   // a block of 2025 numbers through the whole of Week 1.
   const seasonNote =
     stats.season < data.state.season
-      ? `${stats.season} regular season${games} — the ${data.state.season} season has no completed team stats yet.`
+      ? `${stats.season} regular season${games} - the ${data.state.season} season has no completed team stats yet.`
       : `${stats.season} regular season to date${games}.`;
 
   const blocks: string[] = [];
@@ -1389,7 +1389,7 @@ function renderTeamStats(
         h2("Offense & Defense") +
         `<p class="sct-note">${escapeHtml(seasonNote)}</p>` +
         // Stated once, plainly, because a rank is meaningless until the reader
-        // knows which way it runs — and on the defense column it runs the way
+        // knows which way it runs - and on the defense column it runs the way
         // most people would guess wrong.
         `<p class="sct-note">Ranked against all 32 teams. On defense 1st means ` +
         `fewest allowed, not most.</p>` +
@@ -1436,7 +1436,7 @@ function renderTeamStats(
     faq,
     "h3",
   );
-  // Open, for the reason faqList() gives — the questions are the index, so they
+  // Open, for the reason faqList() gives - the questions are the index, so they
   // stay on the page and only the answers fold.
   tail.html = faqBlock(questions, seasonNote);
 
@@ -1448,8 +1448,8 @@ function renderTeamStats(
 /**
  * The depth-chart slot chip: "WR2", "QB1".
  *
- * `data-pos` carries the bare position so the stylesheet can colour it — QB
- * red, RB green, WR blue, TE gold — while the text keeps the depth number,
+ * `data-pos` carries the bare position so the stylesheet can colour it - QB
+ * red, RB green, WR blue, TE gold - while the text keeps the depth number,
  * which is the part that says whether this is the starter. Derived here rather
  * than passed in because the slot string is already the only thing the three
  * call sites have, and an unrecognised position simply falls back to the
@@ -1476,7 +1476,7 @@ export function slotChip(slot: string, small = false): string {
  * "Out" and "questionable" collapsed a real distinction: doubtful is a player
  * who is probably not playing and questionable is a coin toss, and a manager
  * setting a lineup is doing nothing else but telling those two apart. The
- * colours run the way the risk does — red for gone, red-orange for doubtful,
+ * colours run the way the risk does - red for gone, red-orange for doubtful,
  * gold for the coin toss, green for a designation that is close to good news.
  *
  * Anything unrecognised lands on "questionable", the neutral middle: an
@@ -1502,7 +1502,7 @@ const SHORT_INJURY_STATUS: Record<string, string> = {
 /**
  * The status chip that sits next to a name on a card or a depth-chart row.
  *
- * One letter where there is one — Q, D, P. Spelled out and trailing a body
+ * One letter where there is one - Q, D, P. Spelled out and trailing a body
  * part this ran to "Questionable · Knee - ACL", wider than the name it was
  * annotating on a card four to a row; "Ques" was shorter but is not a word, and
  * it still took enough width in a depth-chart row to push itself onto a second
@@ -1510,7 +1510,7 @@ const SHORT_INJURY_STATUS: Record<string, string> = {
  * pass through unchanged.
  *
  * The letter is for the eye only. A screen reader is given the designation and
- * the body part in full instead — `title` is not reliably announced, and "Q"
+ * the body part in full instead - `title` is not reliably announced, and "Q"
  * read aloud is nothing at all. The Injury Report panel below still carries
  * status, body part and practice status in full, so this is a second way to the
  * same fact rather than the only one.
@@ -1518,7 +1518,7 @@ const SHORT_INJURY_STATUS: Record<string, string> = {
 /**
  * Anything carrying a designation. Widened from DepthChartEntry because the
  * outlook cards need this badge too and an outlook names a player, not a
- * depth-chart slot — these two functions only ever read the two fields.
+ * depth-chart slot - these two functions only ever read the two fields.
  */
 type Designated = Pick<RosterPlayer, "injuryStatus" | "injuryBodyPart">;
 
@@ -1551,11 +1551,11 @@ function injuryDetail(player: Designated): string {
  * Unlinked by default and on purpose: this server cannot tell whether a profile
  * exists for a given player, and a page of names pointing at 404s is worse than
  * a page of names. Set SC_PLAYER_PROFILE_URL_TEMPLATE and every name here
- * becomes a link — see lib/team/links.ts.
+ * becomes a link - see lib/team/links.ts.
  */
 export function playerName(name: string, className: string, label?: string): string {
   // `label` is already-escaped markup, for the one caller that needs the name
-  // rendered as two alternative spellings rather than as one string — see
+  // rendered as two alternative spellings rather than as one string - see
   // briefName(). It never carries anything a caller did not build here.
   const inner = label ?? escapeHtml(name);
   const href = getPlayerProfileUrl(name);
@@ -1569,7 +1569,7 @@ export function playerName(name: string, className: string, label?: string): str
 /**
  * "Rhamondre Stevenson" as "R. Stevenson", or null if it already fits.
  *
- * A depth-chart row is one line by construction — the name cell clips rather
+ * A depth-chart row is one line by construction - the name cell clips rather
  * than wraps, because a name on two lines makes that row taller than the eleven
  * around it and the column stops being a chart. Clipping alone would end a
  * quarter of the league in an ellipsis, so the long ones are shortened to
@@ -1578,7 +1578,7 @@ export function playerName(name: string, className: string, label?: string): str
  * The budget is in characters rather than pixels because this is rendered once
  * and cached for every viewport; the server cannot measure a column it will
  * never see. One budget, not two: the name now has the whole width beside the
- * photo to itself — the slot and the status moved to their own line under it —
+ * photo to itself - the slot and the status moved to their own line under it -
  * so it no longer matters whether the player is carrying a designation. Twenty
  * characters is what the cell holds four across, between the shell's full width
  * and the 1080px where the grid drops to two columns.
@@ -1586,7 +1586,7 @@ export function playerName(name: string, className: string, label?: string): str
  * Six names in the league's 810 cross it. That is the point: this is for the
  * Croskey-Merritts, not a house style that renames everybody.
  *
- * Returns null rather than a shortened form when there is nothing to shorten —
+ * Returns null rather than a shortened form when there is nothing to shorten -
  * a single-word name, or an abbreviation that would not actually be shorter.
  * The cell still clips those; there is simply no better spelling to offer.
  */
@@ -1618,8 +1618,8 @@ function briefName(name: string): string | null {
  * not findings of their own.
  *
  * The rank rides on the value rather than getting a line of its own. It is the
- * same relationship the snapshot card draws between a figure and its ordinal —
- * the reading, then what the reading is worth — and giving it a third line here
+ * same relationship the snapshot card draws between a figure and its ordinal -
+ * the reading, then what the reading is worth - and giving it a third line here
  * would make a six-item strip twice as tall for a two-character word.
  */
 function outlookFact(fact: OutlookFact): string {
@@ -1639,7 +1639,7 @@ function outlookFact(fact: OutlookFact): string {
  * The compact evidence row under a player's thesis.
  *
  * A list, not a sentence: three facts separated by dots are read by jumping
- * between them, and that is the whole job of this row — it is what a reader
+ * between them, and that is the whole job of this row - it is what a reader
  * checks the claim above against before deciding whether the paragraph below
  * is worth their time.
  *
@@ -1661,7 +1661,7 @@ function outlookStats(stats: string[]): string {
 /**
  * One player's card: a face, the call, the evidence, the case.
  *
- * The same card every other player on this page gets — the .sct-player shell,
+ * The same card every other player on this page gets - the .sct-player shell,
  * the depth chart's round team-tinted headshot well, and the position chip both
  * of them already use. The take is what is different about this block; the card
  * it arrives in should not be.
@@ -1674,7 +1674,7 @@ function outlookStats(stats: string[]): string {
  * asked for all of that attention or none of it.
  *
  * `data-pos` is on the card as well as the chip so the stylesheet can put the
- * position's colour on the card's edge — see the inset accent in team.css.
+ * position's colour on the card's edge - see the inset accent in team.css.
  *
  * `live` is whatever the roster could match by name, and null is an ordinary
  * outcome: an outlook can name a rookie Sleeper has not indexed yet. The well is
@@ -1697,7 +1697,7 @@ function outlookPlayerCard(
     : "";
 
   // The name carries the link and a stretched ::after makes the whole card
-  // clickable — the news card's device rather than the cornerstone's bare
+  // clickable - the news card's device rather than the cornerstone's bare
   // overlay, because that one lays a box over the card's whole text and these
   // cards carry a paragraph a reader may well want to select.
   const href = getPlayerProfileUrl(player.name);
@@ -1747,10 +1747,10 @@ function outlookPlayerCard(
  * The heading is the take: "Core fantasy pieces" is an assertion about which
  * four of the seven decide a draft, and it is the reason this section is a
  * curated list rather than a roster dump. It is an <h3> under the section's
- * <h2>, which is what puts the player names at <h4> — the outline follows the
+ * <h2>, which is what puts the player names at <h4> - the outline follows the
  * page rather than the other way round.
  *
- * Every card in every band carries the team crest as a watermark — the page's
+ * Every card in every band carries the team crest as a watermark - the page's
  * existing device (.sct-news-body::before), not a new one. It briefly ran on
  * the core band alone as that band's emphasis; with it on all of them the
  * heading is what tells the bands apart.
@@ -1777,7 +1777,7 @@ function outlookGroup(
  * The live roster entry for a name the outlook mentions.
  *
  * Matched on searchKey rather than the raw string, the same normalisation the
- * news pipeline attributes stories with — the outlook is written by hand and
+ * news pipeline attributes stories with - the outlook is written by hand and
  * "A.J. Brown" should find "AJ Brown" whichever way Sleeper spells it.
  *
  * It used to return the headshot alone. The whole entry, because the outlook is
@@ -1798,9 +1798,9 @@ function outlookRoster(data: TeamPageData): Map<string, RosterPlayer> {
  * Every question the page has rendered, in render order.
  *
  * Collected rather than recomputed. Four tabs carry an FAQ and each decides for
- * itself whether it renders at all — the outlook drops out once its season has
+ * itself whether it renders at all - the outlook drops out once its season has
  * passed, the stats block drops out when ESPN gave us nothing, the schedule's
- * questions go with its fixtures — so the only way to be certain the structured
+ * questions go with its fixtures - so the only way to be certain the structured
  * data describes what is actually on the page is for the sections to hand over
  * the questions as they draw them. Recomputing the same lists a second time for
  * the schema would work right up until one of those guards changed on one side
@@ -1811,21 +1811,21 @@ type FaqSink = OutlookFaq[];
 /**
  * The question list, and its entry in the page's FAQ.
  *
- * Shared by every tab that carries questions — the outlook, the stat lines, the
+ * Shared by every tab that carries questions - the outlook, the stat lines, the
  * depth chart and the schedule, built in team/outlook-faq.ts, team/stats-faq.ts,
  * team/depth-faq.ts and team/schedule-faq.ts respectively. That is where the
  * answers come from and where the rule that they may only restate what is
  * already rendered is enforced.
  *
  * Markup only: the schema for both is emitted once, at the page level. A
- * document is allowed one FAQPage, and two nodes — one per tab — is the failure
+ * document is allowed one FAQPage, and two nodes - one per tab - is the failure
  * mode that gets structured data ignored outright rather than the second one
  * merged into the first.
  *
  * Each question is its own <details>, shut by default: the questions all show,
  * and the answer opens under the one that was actually asked. A single fold
  * around the whole block hid the questions too, which is the opposite of what
- * an index is for. The questions stay in the DOM either way — a crawler reads
+ * an index is for. The questions stay in the DOM either way - a crawler reads
  * the DOM, not the open state, and the FAQPage node is built from the same
  * list.
  *
@@ -1858,16 +1858,16 @@ function faqList(items: OutlookFaq[], sink: FaqSink, tag: "h3" | "h4"): string {
 }
 
 /**
- * An FAQ as a page-level block — the shape every tab's questions take.
+ * An FAQ as a page-level block - the shape every tab's questions take.
  *
  * The block itself does not fold: the questions ARE the index, and a reader
  * scanning for the one they arrived with has to be able to see them without
- * opening anything. The folding happens one level down, per question — see
+ * opening anything. The folding happens one level down, per question - see
  * faqList().
  *
  * An <h2>, because of where this lands. The block renders after the "More
  * <team> Tools" block rather than inside its panel (see `Section.tail`), and
- * that block is an <h2> — so a band heading here would file the questions in
+ * that block is an <h2> - so a band heading here would file the questions in
  * the outline under the tool list, which is neither where they are nor what
  * they are about. At <h2> they are a section of the page, which is what they
  * now are, and their questions sit at <h3> under it.
@@ -1887,7 +1887,7 @@ function faqBlock(list: string, note = ""): string {
 }
 
 /**
- * The Schedule page's games as an ItemList — see team/schedule-schema.ts.
+ * The Schedule page's games as an ItemList - see team/schedule-schema.ts.
  *
  * Carried the way faqSchema() carries the questions: an inert island in an
  * embed, for the plugin to graft into Rank Math's graph, and JSON-LD of its own
@@ -1919,12 +1919,12 @@ function scheduleSchema(data: TeamPageData, options: TeamRenderOptions): string 
  * Standalone, this is the node itself. Embedded, it is the same questions as
  * DATA: WordPress owns the document and Rank Math owns its schema graph, so a
  * second `<script type="application/ld+json">` injected into the host page from
- * inside a mounted fragment competes with the graph rather than joining it —
+ * inside a mounted fragment competes with the graph rather than joining it -
  * the same reasoning as the embed mount adding no canonical and no H1.
  *
  * Emitting nothing was the previous answer, and it was the wrong one. The
  * indexed URL is the WordPress one, so suppressing the node there meant the
- * questions were rendered for readers and invisible to crawlers — which is
+ * questions were rendered for readers and invisible to crawlers - which is
  * most of the reason an FAQ is on the page at all. The island closes that:
  * statchasers-team.php lifts it into Rank Math's graph and strips it from the
  * markup before printing, so the questions arrive inside the one <script> the
@@ -1974,8 +1974,8 @@ function faqSchema(items: FaqSink, options: TeamRenderOptions): string {
  * page carries a timestamp because it was pulled from a provider minutes ago;
  * this one is a written opinion that will not change until somebody changes it.
  * The line carries the month it was last written for the same reason a byline
- * carries a date — it is the only thing that lets a reader judge how much of it
- * the season has already overtaken — and it keeps "not live data" beside that
+ * carries a date - it is the only thing that lets a reader judge how much of it
+ * the season has already overtaken - and it keeps "not live data" beside that
  * date so the date cannot be mistaken for a refresh.
  */
 function renderOutlook(
@@ -1993,7 +1993,7 @@ function renderOutlook(
   // An outlook written for a season the calendar has passed is dropped rather
   // than dated. "A.J. Brown arrives" is true for one offseason and misleading
   // forever after, and a heading reading 2026 on a 2027 page does not rescue
-  // the sentence under it — the reader has already taken the advice. Nothing
+  // the sentence under it - the reader has already taken the advice. Nothing
   // rewrites these but a person, so the page removes them instead of ageing
   // them.
   if (outlook.season < data.state.season) return "";
@@ -2004,7 +2004,7 @@ function renderOutlook(
 
   const meta = [
     // "Preseason outlook" stops being true the moment Week 1 kicks off, and
-    // these takes are not rewritten in-season — so once the season is under way
+    // these takes are not rewritten in-season - so once the season is under way
     // the label says when the take was written rather than implying it is
     // current. Same honesty rule as the record in the hero: see team/nfl-state.
     data.state.regularSeasonUnderway
@@ -2027,7 +2027,7 @@ function renderOutlook(
 
   // Below the tools block rather than under the bottom line. The closing take
   // is the end of the argument this section makes, and the FAQ is that argument
-  // re-cut into the forms people search for — it reads as an appendix either
+  // re-cut into the forms people search for - it reads as an appendix either
   // way, so it sits past the furniture instead of between the cards and their
   // conclusion. Assigned here, after the early returns: a tab that renders no
   // outlook must not leave questions about one on the page.
@@ -2035,7 +2035,7 @@ function renderOutlook(
 
   return (
     `<div class="sct-block">` +
-    // Printed on a section page too — the hero is the club's name alone and
+    // Printed on a section page too - the hero is the club's name alone and
     // this is what names the panel. See renderHero().
     h2(`${outlook.season} Fantasy Outlook`) +
     `<p class="sct-outlook-stamp">${meta}</p>` +
@@ -2053,7 +2053,7 @@ function renderOutlook(
  * NOT CURRENTLY MOUNTED. This sat under the outlook on the Outlook tab and was
  * taken off it; nothing calls this today. It is kept rather than deleted
  * because the block is complete and correct and the page has already moved one
- * section between tabs this week — the cost of keeping it is a function nobody
+ * section between tabs this week - the cost of keeping it is a function nobody
  * calls, and the cost of deleting it is writing it again. If it is still
  * unmounted when the hub next settles, delete it along with the .sct-player
  * rules in team.css (all but .sct-player-link, which the news byline uses).
@@ -2113,7 +2113,7 @@ function renderCornerstones(data: TeamPageData): string {
 
 /* ------------------------------------------------------------------- news */
 
-/** The card's stamp line — the shared one, under this page's class prefix. */
+/** The card's stamp line - the shared one, under this page's class prefix. */
 function newsStamp(item: NewsItem): string {
   return sharedNewsStamp(item, itemTimestamp(item), "sct");
 }
@@ -2129,8 +2129,8 @@ function renderNewsCard(
   const headline = escapeHtml(splitHeadline(item));
 
   // 16:9 on the attributes, matching the band the CSS cuts. These are the
-  // browser's before-load aspect hint, not a size — the well's own
-  // aspect-ratio governs once the stylesheet is in — and the square they used
+  // browser's before-load aspect hint, not a size - the well's own
+  // aspect-ratio governs once the stylesheet is in - and the square they used
   // to declare was a headshot's shape, from before the clubs' landscape art
   // was the common case.
   const media = image
@@ -2284,14 +2284,14 @@ export function gameDateLine(game: ScheduleGame): {
 }
 
 /**
- * "Sep 13" — the date as a table column rather than as a line of prose.
+ * "Sep 13" - the date as a table column rather than as a line of prose.
  *
  * The cards above spell the weekday because a card is read once and "Monday"
  * is the fact that makes it a night game. A column of seventeen dates is
  * scanned, not read, and the weekday is the part that makes every row start
  * with a different three letters before the month a reader is actually
  * counting down. It also drops the time, which has moved one column right into
- * the Result cell — see gameStatusCell().
+ * the Result cell - see gameStatusCell().
  *
  * The same month/day pair lib/schedule/format.ts's formatShortDate() sets for
  * the standalone tool, from this file's own Eastern parse so the row's date and
@@ -2307,7 +2307,7 @@ export function gameShortDate(game: ScheduleGame): string {
  * One side of the matchup: crest, code, name.
  *
  * `isTeam` marks the side this page is about, which is the whole reason the
- * card can afford to draw both of them — on a hub for one team, an undifferentiated
+ * card can afford to draw both of them - on a hub for one team, an undifferentiated
  * pair reads as a fixture list rather than as "your next game".
  */
 export function matchupSide(
@@ -2320,8 +2320,8 @@ export function matchupSide(
       ` width="40" height="40" loading="lazy" decoding="async" />`
     : "";
   // The abbreviation is the headline and the nickname the gloss, which is the
-  // way a scoreboard reads. With no canonical team behind the name — ESPN
-  // naming an opponent the table does not know — there is no code to print, so
+  // way a scoreboard reads. With no canonical team behind the name - ESPN
+  // naming an opponent the table does not know - there is no code to print, so
   // the name takes the headline and nothing is faked in its place.
   const code = team
     ? `<span class="sct-matchup-code">${escapeHtml(team.abbreviation.toUpperCase())}</span>`
@@ -2342,7 +2342,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
   const when = gameDateLine(next);
   const away = next.homeAway === "away";
 
-  // Away side first, home side second — the order every scoreboard uses, so the
+  // Away side first, home side second - the order every scoreboard uses, so the
   // card says who is travelling without a word for it. A neutral-site game has
   // no host to put second, so it reads "vs" and keeps this team on the left.
   const left = away || next.neutralSite ? data.team : next.opponent;
@@ -2352,7 +2352,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
   const matchup =
     // Hidden wholesale from assistive tech, with the sentence below carrying
     // the fact instead. Read out, the three crests and two codes are "NE
-    // Patriots at SEA Seahawks" — every name twice and two airport codes.
+    // Patriots at SEA Seahawks" - every name twice and two airport codes.
     `<div class="sct-matchup" aria-hidden="true">` +
     matchupSide(
       left,
@@ -2374,7 +2374,7 @@ function renderNextGamePanel(data: TeamPageData, now: number): string {
         `${next.opponent?.nickname ?? next.opponentName}`,
     )}</p>`;
 
-  // One line of context, and only when it is about the fixture actually shown —
+  // One line of context, and only when it is about the fixture actually shown -
   // see TeamPageData.nextOpponentDefense on why the two can disagree. Points
   // allowed per game with its rank, because it is the one defensive number that
   // needs no explanation and it is the number a manager is asking about.
@@ -2431,7 +2431,7 @@ function matchupHref(
  * The Matchups hub: how this team compares with each opponent.
  *
  * Not the schedule again. Schedule answers "when do they play"; this answers
- * "who are they playing and how do the two compare" — every row is a door into
+ * "who are they playing and how do the two compare" - every row is a door into
  * the pair's own page. Two meetings with a divisional opponent are two rows,
  * each with its own week, both opening the same evergreen page: the pair is
  * canonicalised once, in matchup/pair.ts, and nothing here can produce a
@@ -2518,8 +2518,8 @@ interface ResourceCard {
   /**
    * One spelling, used by both the cards and the Quick Links rail.
    *
-   * There were two — a "Patriots Player Profiles" for the cards and a "Player
-   * Profiles" for the rail — because the cards could be lifted onto any page
+   * There were two - a "Patriots Player Profiles" for the cards and a "Player
+   * Profiles" for the rail - because the cards could be lifted onto any page
    * and had to say which team they were for, while the rail sits on a page
    * whose hero, nav and every heading already say Patriots. Nothing here is
    * scoped to a team any more, so there is no team name to take off.
@@ -2592,7 +2592,7 @@ function renderQuickLinksPanel(team: NflTeam): string {
 /**
  * The name cell: one spelling, or two for the names that need shortening.
  *
- * Both are emitted when a short form exists, and CSS picks — the brief one
+ * Both are emitted when a short form exists, and CSS picks - the brief one
  * while the chart is four across, the full one from the breakpoint where it
  * drops to two columns and the room is there. Doing it this way rather than
  * choosing on the server is what keeps the abbreviation tied to the width that
@@ -2600,8 +2600,8 @@ function renderQuickLinksPanel(team: NflTeam): string {
  * "R. Stevenson" down a full-width column would be shortening a name to fit a
  * column it is not in.
  *
- * The full name is the one in the accessibility tree either way — the brief
- * span is aria-hidden, and the long one is only ever hidden visually — so a
+ * The full name is the one in the accessibility tree either way - the brief
+ * span is aria-hidden, and the long one is only ever hidden visually - so a
  * screen reader reads "Rhamondre Stevenson" at every width, once.
  */
 function depthName(player: DepthChartEntry): string {
@@ -2627,7 +2627,7 @@ function renderDepthChart(
 
   if (groups.length === 0) return "";
 
-  // Below the tools block, like the other two tabs' questions — and assigned
+  // Below the tools block, like the other two tabs' questions - and assigned
   // after the early return above, so a team whose chart did not render carries
   // no questions about one.
   tail.html = faqBlock(
@@ -2648,7 +2648,7 @@ function renderDepthChart(
             // whatever designation the player is carrying.
             //
             // The name gets a line to itself because it is the thing being
-            // looked up — four across, sharing that line with a slot chip and a
+            // looked up - four across, sharing that line with a slot chip and a
             // status pill left it about 120px, which is where the abbreviating
             // and the clipping came from. Underneath it, "RB1" and "Q" read as
             // what they are: two labels on the player above them, in a lighter
@@ -2668,7 +2668,7 @@ function renderDepthChart(
             depthName(player) +
             `<span class="sct-depth-meta">` +
             // No slot on an out row. Sleeper's number for him is the demoted
-            // one — printing "WR6" beside a receiver who is the WR1 when fit
+            // one - printing "WR6" beside a receiver who is the WR1 when fit
             // states exactly the thing that misleads. The badge beside it
             // already reads "IR", so the eye needs no second word; what it
             // cannot show is that the row sits outside the numbering, and that
@@ -2714,7 +2714,7 @@ function renderDepthChart(
         // already says whose chart this is, and repeating it was most of a
         // button that ran wider than the cards it sat under.
         //
-        // .sct-textlink, not .sct-button — the same treatment the schedule and
+        // .sct-textlink, not .sct-button - the same treatment the schedule and
         // news footers use. A filled navy button was the loudest thing on the
         // tab and it was pointing away from it; all three block footers are the
         // same quiet gold-underlined link now.
@@ -2729,7 +2729,7 @@ function renderDepthChart(
 /**
  * What is worth saying about a fixture beyond who and when.
  *
- * One list, built once, used by both the cards and the season table — the two
+ * One list, built once, used by both the cards and the season table - the two
  * surfaces sit one above the other and a game that is a division game in the
  * card and an ordinary one in the row would read as two different games.
  *
@@ -2737,7 +2737,7 @@ function renderDepthChart(
  * reader is looking for, and where the game is played comes last. The kickoff
  * time already says whether it is a night game. `neutral` is suppressed for an
  * international game because every international game is played at a neutral
- * site — printing both is one fact twice.
+ * site - printing both is one fact twice.
  */
 /**
  * "Texans" for a full name too long for the schedule table's opponent column,
@@ -2748,7 +2748,7 @@ function renderDepthChart(
  * first seven letters of one that does not.
  *
  * The fallback is one step in rather than two. The column prints the full name
- * now — "Houston Texans", as the standalone tool's lens does — so the shorter
+ * now - "Houston Texans", as the standalone tool's lens does - so the shorter
  * spelling is the nickname, which is what this table printed until it took the
  * lens's dress. The abbreviation is only reached for a name whose nickname is
  * no shorter than the name itself, which is the unresolved-opponent case.
@@ -2783,7 +2783,7 @@ export function fixtureTags(
  * This is the fallback's fallback now: every network the NFL schedule names has
  * a logo, so the only strings that reach here are the local call signs ESPN
  * sends in place of one ("WBZ", "KHOU"), which are already short. The table
- * stays because those are not the only strings it can ever send — a future
+ * stays because those are not the only strings it can ever send - a future
  * "Prime Video" arriving where no logo matched is better as "Prime" than as
  * "Prime Vid…" in a 66px cell. Anything not listed passes through untouched
  * rather than being truncated to something unreadable, which is the same rule
@@ -2805,7 +2805,7 @@ function shortNetwork(network: string): string {
 /**
  * A broadcaster as its own logo, or as the short text when it has none.
  *
- * The <use> points at a symbol defined once per page by networkDefs() — a
+ * The <use> points at a symbol defined once per page by networkDefs() - a
  * season carries the same four or five networks across seventeen rows, and
  * repeating the path data on each of them is the same picture seventeen times.
  *
@@ -2815,7 +2815,7 @@ function shortNetwork(network: string): string {
  * centres, so a box that is a rounding off the ratio costs a stray pixel of air
  * rather than a squashed wordmark. `--sct-net-aspect` is the same crop as a
  * number, which is what lets the stylesheet size the box to the shape instead
- * of leaving that air — see .sct-net-mark. The label is the broadcaster's full
+ * of leaving that air - see .sct-net-mark. The label is the broadcaster's full
  * name, because "CBS" is what the text version says and a logo should not read
  * as less.
  *
@@ -2844,8 +2844,8 @@ export function networkHtml(network: string, className: string): string {
  * The symbols the marks on this page point at, defined once.
  *
  * Only the networks this team actually plays on: a schedule that never touches
- * Netflix has no reason to carry its path. The block is inert — no size, hidden
- * from assistive tech — and lives inside the schedule section so it travels
+ * Netflix has no reason to carry its path. The block is inert - no size, hidden
+ * from assistive tech - and lives inside the schedule section so it travels
  * with the only thing that references it.
  *
  * Each part carries its own fill, because these are the broadcasters' real
@@ -2890,7 +2890,7 @@ export function networkDefs(networks: Array<string | null>): string {
  * says something in August and "W 27-20" in September is the same table twice.
  * That is why the cell is never empty.
  *
- * What it says before kickoff is the time, not the word "Upcoming" — the
+ * What it says before kickoff is the time, not the word "Upcoming" - the
  * standalone tool's lens puts the clock here, and it is the better tenant: on
  * seventeen unplayed rows "Upcoming" is the same word seventeen times, while
  * the window is the thing a reader came to the column for. That is also what
@@ -2901,7 +2901,7 @@ export function networkDefs(networks: Array<string | null>): string {
 export function gameStatusCell(game: ScheduleGame): string {
   if (game.result) {
     const { outcome, teamScore, opponentScore } = game.result;
-    // An en dash between the scores, as a score line is set — the hyphen read
+    // An en dash between the scores, as a score line is set - the hyphen read
     // as a subtraction next to a W.
     return (
       `<span class="sct-result" data-outcome="${outcome}">` +
@@ -2930,7 +2930,7 @@ export function gameStatusCell(game: ScheduleGame): string {
  * One upcoming fixture.
  *
  * The card is read top to bottom as: which week and where it is played, who it
- * is against, then when and on what. That ordering is the whole design — the
+ * is against, then when and on what. That ordering is the whole design - the
  * three lines that used to sit loose in the middle (date, venue, network) are
  * now one metadata block below a hairline, and the home/away chip that used to
  * dangle at the bottom has moved up to pair with the week, which is the other
@@ -2955,8 +2955,8 @@ export function renderUpcomingCard(
       `<span class="sct-game-tag" data-kind="${tag.kind}">${escapeHtml(tag.label)}</span>`,
   );
 
-  // Venue and network on one line. Either can be missing — ESPN has no network
-  // for a game it has not scheduled a window for — and a lone separator is
+  // Venue and network on one line. Either can be missing - ESPN has no network
+  // for a game it has not scheduled a window for - and a lone separator is
   // worse than a shorter line. The network is markup rather than text because
   // it may be a mark; the venue is escaped here so the two can be joined.
   const where = [
@@ -3021,7 +3021,7 @@ export function renderUpcomingCard(
  * The full season as rows, with the bye slotted into its own week.
  *
  * Inserting the bye is what turns a list of 17 fixtures into a calendar a
- * fantasy manager can read — the week their roster loses a starter is the one
+ * fantasy manager can read - the week their roster loses a starter is the one
  * week that is not in the fixture list at all.
  *
  * ## The columns are the standalone tool's
@@ -3039,7 +3039,7 @@ export function renderUpcomingCard(
  *    cards above still name the venue for the games that have not been played.
  * 3. **The DIV / INTL / NEUTRAL pills are gone from the rows.** The division
  *    games are listed in full by the slate card in the rail beside this table,
- *    which is where the standalone tool leaves them too — and the pills were
+ *    which is where the standalone tool leaves them too - and the pills were
  *    the first thing the old row dropped when it narrowed anyway.
  *
  * The head row is `aria-hidden`: these are list items with a grid over them,
@@ -3095,7 +3095,7 @@ function renderFullSchedule(
             // a window yet, and dropping the cell would shift every column to
             // its right on exactly those rows.
             `<span class="sct-srow-tv"></span>`) +
-        // The cell is emitted even when there is no pair page to point at —
+        // The cell is emitted even when there is no pair page to point at -
         // an opponent this server cannot resolve to a team, which is what a
         // TBD playoff slot looks like. Dropping it on those rows alone would
         // leave a five-column row in a six-column table.
@@ -3148,15 +3148,15 @@ function renderFullSchedule(
  * sidebar, brought onto the hub's Schedule tab in the same rail: the season in
  * five numbers with the home/road split, the path through it, the division
  * slate, and where the rest of the opponents come from. Everything is
- * arithmetic on the rows to the left — team/season-shape.ts does the counting
+ * arithmetic on the rows to the left - team/season-shape.ts does the counting
  * and states what it refuses to infer.
  *
  * ## Dress
  *
  * House components, not the source's: `.sct-mix` is the card, `.sct-mix-label`
  * the eyebrow, `.sct-mix-caption` the fine print, and the bars are the ladder's
- * geometry. The one thing carried over intact is the colour logic — home takes
- * the team's own primary, away takes the gold — because that is the pair
+ * geometry. The one thing carried over intact is the colour logic - home takes
+ * the team's own primary, away takes the gold - because that is the pair
  * `.sct-mix-seg` already uses one tab over for the pass/run split, and two
  * different meanings for the same two colours on one page is worse than either
  * choice.
@@ -3237,7 +3237,7 @@ function renderSeasonShape(
   // Eighteen weeks as eighteen blocks, and no number in them: filled for home,
   // hollow for away, dashed for the bye, which is the source's strip exactly.
   // At the rail's twelve pixels a week there is nowhere to put a number anyway.
-  // Never colour alone — every block carries its week and its opponent in a
+  // Never colour alone - every block carries its week and its opponent in a
   // title and in a hidden label.
   const strip =
     `<ol class="sct-path">` +
@@ -3386,7 +3386,7 @@ function renderSchedule(
   // The table and the four summary cards side by side, as the standalone tool's
   // team lens lays them out: the fixtures in the fluid column, a 300px rail of
   // cards whose first one starts level with the head row. The cards fall under
-  // the table as a band once the rail stops paying for itself — see team.css.
+  // the table as a band once the rail stops paying for itself - see team.css.
   //
   // Not a grid when there is no shape to put in the rail. seasonShape() returns
   // null for a schedule that rendered no rows, and a two-column layout with an
@@ -3494,19 +3494,19 @@ export function renderTeamPage(
 
   // The Outlook tab is the outlook alone. Fantasy Cornerstones used to follow
   // it; renderCornerstones() is still here and still correct, just not mounted
-  // — see the note above it.
+  // - see the note above it.
   //
   // A sink PER SECTION rather than one for the page, because a section-scoped
   // URL emits one panel and its schema must describe that panel alone. The
-  // sections still all render — the tab strip is built from what produced
-  // markup — so a single sink would put the Stats questions in the Schedule
+  // sections still all render - the tab strip is built from what produced
+  // markup - so a single sink would put the Stats questions in the Schedule
   // page's FAQPage, which is markup saying something the page does not.
   // Concatenated in section order below, which is the render order the
   // page-level FAQPage already had.
   const outlookFaq: FaqSink = [];
   const statsFaq: FaqSink = [];
   // The questions each tab drew, as markup. They render below the tools block
-  // rather than inside their panel — see `Section.tail`.
+  // rather than inside their panel - see `Section.tail`.
   const outlookTail: TailSink = { html: "" };
   const statsTail: TailSink = { html: "" };
   const depthChartFaq: FaqSink = [];
@@ -3523,7 +3523,7 @@ export function renderTeamPage(
   const teamCoaching = getTeamCoaching(team.abbreviation, data.state.season);
   const coaching = renderCoachingSection(teamCoaching, team, usageView);
   // A new play-caller makes last season's data an unreliable guide, and the
-  // Outlook is where this page projects from it — the LOW rating surfaces
+  // Outlook is where this page projects from it - the LOW rating surfaces
   // there, per the coaching spec. Empty for HIGH and MEDIUM.
   const caveat = coachingCaveat(teamCoaching);
 
@@ -3549,7 +3549,7 @@ export function renderTeamPage(
   // ladders directly below it, and a reader who opens Stats is asking the
   // question it answers first. Concatenated rather than folded into
   // renderTeamStats() so the tab still appears carrying the snapshot alone when
-  // ESPN's season statistics fail but its team summary does not — the two come
+  // ESPN's season statistics fail but its team summary does not - the two come
   // from different endpoints and fail independently.
   const stats =
     renderSnapshot(data) + renderTeamStats(data, statsFaq, statsTail);
@@ -3633,8 +3633,8 @@ export function renderTeamPage(
    *
    * The tab strip is replaced by a link back to the hub, because a strip of
    * five tabs that all leave this URL is navigation pretending to be tabs.
-   * Everything else — the hero, the resources block, the markup of the section
-   * itself — is unchanged, so the two addresses render the same component and
+   * Everything else - the hero, the resources block, the markup of the section
+   * itself - is unchanged, so the two addresses render the same component and
    * cannot drift.
    *
    * An unknown id finds nothing here and falls through to the hub below, which
@@ -3650,7 +3650,7 @@ export function renderTeamPage(
 
   // Hoisted above the scoped branch, because a section page now carries the
   // strip as well. It used to render without one on the grounds that five tabs
-  // all leaving the URL is navigation pretending to be tabs — true when they
+  // all leaving the URL is navigation pretending to be tabs - true when they
   // were `#hash` links, and the opposite of true now that they are addresses.
   // A reader who arrives on the Schedule page with no way to reach the Depth
   // Chart is the cost of leaving it off, and it is paid by every visitor from
@@ -3683,7 +3683,7 @@ export function renderTeamPage(
 
   // `is-default` marks the panel that shows when the URL names no section. It
   // is a class rather than :first-of-type because the CSS must not depend on
-  // this element being the first <section> among its siblings — the hero and
+  // this element being the first <section> among its siblings - the hero and
   // the resources block are sections too, and a reorder here would silently
   // blank the page rather than fail visibly.
   // The hub's FAQPage: every section's questions, in the order the sections
@@ -3739,13 +3739,13 @@ export function renderTeamPage(
  *
  * It was the team switcher's own grid at full page width, and that is what it
  * has stopped being. The switcher's shape is two conference columns, each a
- * stack of four division lists — right for a 620px dropdown, wrong for a page:
+ * stack of four division lists - right for a 620px dropdown, wrong for a page:
  * across a desktop shell it left the right half of the screen empty and spread
  * eight division headings down a scroll, which reads as a sitemap rather than
  * as the front door to 32 hubs.
  *
  * So the axes swap here. The conference is a full-width band with a ruled
- * heading, and its four divisions sit side by side beneath it — the shape of
+ * heading, and its four divisions sit side by side beneath it - the shape of
  * the league, at about a third of the height. The rows keep the switcher's
  * classes, because the row is genuinely the same thing in both places; only
  * the arrangement around them is the index's own (see .sct-index-* in
@@ -3802,7 +3802,7 @@ function renderTeamIndexGrid(
  *
  * No hero and no H1: the page at /nfl/teams/ supplies both, the same division
  * of labour every other mount here follows. Without this the container page is
- * whatever WordPress content happens to sit in it — which is what it was, a
+ * whatever WordPress content happens to sit in it - which is what it was, a
  * stub list of 32 links in the theme's own styling, looking nothing like the
  * hubs it points at.
  */

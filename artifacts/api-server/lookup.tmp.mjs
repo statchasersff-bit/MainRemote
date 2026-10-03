@@ -11,7 +11,7 @@ for (const q of names) {
     if (p.status === "Inactive" && hits.length > 1) continue;
     console.log(`\n##### ${p.name} (${p.position}, ${p.team}, id ${p.id}, exp ${p.years_exp}, depth ${p.depth_chart_order}, ${p.status})`);
     const d = draft[p.slug];
-    if (d) console.log(`draft: ${d.year} r${d.round} p${d.pick} ${d.draft_team} — ${d.college}`);
+    if (d) console.log(`draft: ${d.year} r${d.round} p${d.pick} ${d.draft_team} - ${d.college}`);
     for (const row of (prod[p.id] ?? []).slice(0, 2)) {
       const t = row.totals;
       console.log(`${row.season}: ${row.gamesPlayed}g  ${JSON.stringify(t)}  ppr ${row.ppr.total} (${row.ppr.ppg}/g, finish ${row.ppr.posFinishPpg} ppg / ${row.ppr.posFinishTotal} total)`);

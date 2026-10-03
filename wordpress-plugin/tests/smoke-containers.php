@@ -19,8 +19,8 @@ if ( ! function_exists( 'statchasers_team_is_container_page' ) ) {
 echo "\nthe players container mounts itself\n";
 /*
  * The failure this covers: a container page built in Divi is neither empty nor
- * the old stub, so statchasers_player_write_index() leaves it alone — correctly,
- * it is the editor's page — and /nfl/players/ ships with a heading, a sentence
+ * the old stub, so statchasers_player_write_index() leaves it alone - correctly,
+ * it is the editor's page - and /nfl/players/ ships with a heading, a sentence
  * and no roster under it. The container is the one page that mounts itself.
  *
  * Only the positive case is asserted, and only once: the predicate memoises,
@@ -55,7 +55,7 @@ echo "\nthe teams container mounts itself\n";
  * The same failure, on the other container, and the reason this block exists at
  * all: /nfl/players/ grew the self-mount and /nfl/teams/ did not, so the hubs'
  * own parent shipped as a paragraph and 32 bullets in the theme's list styling
- * — no grid, and no team.css either, because the enqueue gate only asked about
+ * - no grid, and no team.css either, because the enqueue gate only asked about
  * shortcodes and the container carries none.
  *
  * Asserted the same way and for the same reason: the predicate memoises, so the

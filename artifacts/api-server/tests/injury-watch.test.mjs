@@ -2,7 +2,7 @@
  * Which injury designations reach Injury Watch.
  *
  * The bug this pins down: Sleeper demotes an injured player on the depth chart,
- * so a genuine WR1 who lands on IR is listed sixth at his position — and a
+ * so a genuine WR1 who lands on IR is listed sixth at his position - and a
  * panel gated on depth alone then hides the one injury a fantasy manager came
  * to the page for, while still printing the WR4 who is questionable. The gate
  * has to use a relevance signal the injury does not move.
@@ -58,7 +58,7 @@ const NE = [
     search_rank: 40,
   }),
   // A designation that the old depth gate did let through. It still belongs on
-  // the page — just not above the IR.
+  // the page - just not above the IR.
   player({
     player_id: "101",
     full_name: "Fourth Receiver",
@@ -80,7 +80,7 @@ const NE = [
     search_rank: null,
     injury_status: "IR",
   }),
-  // Off the depth chart entirely AND unranked — the same verdict, by the other
+  // Off the depth chart entirely AND unranked - the same verdict, by the other
   // half of the gate.
   player({
     player_id: "103",

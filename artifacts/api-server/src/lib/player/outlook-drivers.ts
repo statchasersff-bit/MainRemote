@@ -1,7 +1,7 @@
 /**
  * The four things driving a player's outlook, measured rather than written.
  *
- * The Outlook tab's decision layer is authored — a rest-of-season rank, a floor,
+ * The Outlook tab's decision layer is authored - a rest-of-season rank, a floor,
  * a buy/hold call are judgements, and they live in fantasy_outlook_2026.json.
  * This strip is the opposite: four numbers off the player's own advanced line,
  * each read against the distribution every other player at that position
@@ -20,7 +20,7 @@
  *   TE   Routes · Targets · Red Zone · Role Security
  *
  * One substitution from the obvious set is worth naming. The natural fourth QB
- * card is "Environment" — how good the offence around him is — and this server
+ * card is "Environment" - how good the offence around him is - and this server
  * has no measure of that which is about the quarterback rather than about his
  * team. Efficiency (EPA per play, against the position) is a real number about
  * the player, so that is the card. A card the data cannot fill is not rendered
@@ -32,7 +32,7 @@
  *     back with four carries for 60 yards is the most efficient runner in
  *     football, which is true and useless.
  *   - The same threshold decides whether the PLAYER is ranked. Below it the
- *     measurement still renders — it is his real number — but the tier word and
+ *     measurement still renders - it is his real number - but the tier word and
  *     the "8th of 192" line are withheld rather than computed from a sample too
  *     small to carry them. `ranked` says which case the reader is looking at.
  *
@@ -51,7 +51,7 @@ const MIN_GAMES = 6;
 export interface OutlookDriver {
   /** "Passing Volume". */
   label: string;
-  /** The tier word — "Heavy" — or the bare number when the player is unranked. */
+  /** The tier word - "Heavy" - or the bare number when the player is unranked. */
   value: string;
   /** "35.4 pass attempts per game". Always the real measurement. */
   detail: string;
@@ -70,7 +70,7 @@ interface DriverSpec {
   read: (stats: OutlookKeyStats, games: number) => number | null;
   /** How the number reads on the card, without the unit. */
   format: (value: number) => string;
-  /** " pass attempts per game" — appended to the formatted number. */
+  /** " pass attempts per game" - appended to the formatted number. */
   unit: string;
   /**
    * Tier words from the BEST end of the distribution to the worst.
@@ -352,7 +352,7 @@ function measuredDriver(
       label: spec.label,
       value: spec.format(value),
       detail: spec.unit.replace(/^ /, ""),
-      context: `${games} ${games === 1 ? "game" : "games"} — too few to rank`,
+      context: `${games} ${games === 1 ? "game" : "games"} - too few to rank`,
       level: "",
       ranked: false,
     };
@@ -389,7 +389,7 @@ function measuredDriver(
  * The four cards, or fewer.
  *
  * A card whose metric is missing from this player's line is dropped rather than
- * dashed out — the same rule the rest of the page follows. An outlook with no
+ * dashed out - the same rule the rest of the page follows. An outlook with no
  * advanced line behind it produces the role card alone, or nothing.
  */
 export function outlookDrivers(
@@ -411,7 +411,7 @@ export function outlookDrivers(
   // right. A quarterback's and a back's outlook starts with whether they have
   // the job; a receiver's and a tight end's starts with how often they are on
   // the field for a passing down, which is the question BEFORE "how many
-  // targets" — a full route share on six targets a game is a different player
+  // targets" - a full route share on six targets a game is a different player
   // from a half share on the same six.
   const leadWithRoutes = position === "WR" || position === "TE";
   const routes =

@@ -1,13 +1,13 @@
 /**
  * Matchup pages: /nfl/<a>-vs-<b>/ and the fragment the plugin mounts.
  *
- * One address per pair. Every other spelling of the same pair — the teams
- * reversed, an abbreviation, a nickname — is a 301 to it, and anything that is
+ * One address per pair. Every other spelling of the same pair - the teams
+ * reversed, an abbreviation, a nickname - is a 301 to it, and anything that is
  * not a pair of two different real teams is a 404. Nothing falls through to a
  * team hub: a URL under /nfl/ that is not a matchup is not a page.
  *
  * Beneath the pair, one address per meeting: /nfl/<a>-vs-<b>/2026-week-1/. It
- * exists only once the pair's own page has stopped leading with that game —
+ * exists only once the pair's own page has stopped leading with that game -
  * inside RECENT_WINDOW_MS the dated URL 301s up to the pair, so the recap has
  * exactly one address at any moment and the two never compete.
  */
@@ -40,7 +40,7 @@ function isEmbed(req: Request): boolean {
   return TRUTHY.has(String(req.query["embed"] ?? "").trim().toLowerCase());
 }
 
-/** This origin's own paths — the prefixes used when nothing overrides them. */
+/** This origin's own paths - the prefixes used when nothing overrides them. */
 const MATCHUP_PATH_PREFIX = "/nfl/";
 const TEAM_PATH_PREFIX = "/team/";
 
@@ -218,7 +218,7 @@ router.get("/embed/matchup/:pair", (req, res) => {
     // fragment carries no URL of its own.
     const prefixes = publicPrefixes();
     // `?game=2026-week-1` is how the plugin asks for a dated page. The pretty
-    // path is the only public spelling — the same split the team sections use,
+    // path is the only public spelling - the same split the team sections use,
     // where WordPress owns the URL and this origin owns the fragment.
     const raw = String(req.query["game"] ?? "").trim();
     const game = raw ? parseGameSegment(raw) : null;
@@ -264,7 +264,7 @@ router.get("/embed/matchup/:pair", (req, res) => {
         .set("X-Matchup-Image", result.shareImage?.path ?? "")
         .set("X-Matchup-Image-Alt", encodeURIComponent(result.shareImage?.alt ?? ""))
         // "current" tells the plugin the pair page is still leading with this
-        // game, so the dated WordPress URL must 301 up to the pair's — the
+        // game, so the dated WordPress URL must 301 up to the pair's - the
         // mirror of what this origin's own route does above. Empty when the
         // request was not a game address at all.
         .set(

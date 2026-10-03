@@ -1,5 +1,5 @@
 /**
- * outlookPrep.js — build per-player input files for the 2026 outlook workflow.
+ * outlookPrep.js - build per-player input files for the 2026 outlook workflow.
  *
  * Writes data/.outlook_parts/<slug>.in.json for every eligible QB/RB/WR/TE
  * player that is NOT already present (and not manually edited) in

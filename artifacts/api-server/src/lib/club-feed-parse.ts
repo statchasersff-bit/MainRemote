@@ -1,9 +1,9 @@
 /**
  * A club's RSS document, turned into rows. No network, no logging, no state.
  *
- * Split from lib/club-news.ts so the part with the interesting failure modes —
+ * Split from lib/club-news.ts so the part with the interesting failure modes -
  * CDATA, a channel with exactly one item, an item with no guid, a feed that
- * carries no standfirst — can be exercised directly. The orchestration next
+ * carries no standfirst - can be exercised directly. The orchestration next
  * door is a pool and a loop; this is where a wrong assumption about the format
  * silently stores a truncated headline.
  */
@@ -22,7 +22,7 @@ export interface ClubFeedTeam {
  *
  * The ingest contract narrowed to what a club actually carries: an id and a
  * title always, a team and an outlet always (both are known here, which is the
- * whole point), and never a playerName — clubs write about themselves and do
+ * whole point), and never a playerName - clubs write about themselves and do
  * not tag the players they mention.
  */
 export interface ClubNewsItem extends RawNewsItem {
@@ -51,7 +51,7 @@ export function clubFeedUrl(team: ClubFeedTeam): string {
 /**
  * The outlet name for a club: its domain, verbatim.
  *
- * "patriots.com", not "New England Patriots" — this field names the
+ * "patriots.com", not "New England Patriots" - this field names the
  * publication, which is the thing `source` means everywhere else in the
  * archive, and the site is the publication. Not title-cased: capitalising the
  * first letter gives "Patriots.com" for the clubs whose domain is one word and
@@ -71,8 +71,8 @@ export function clubOutlet(team: ClubFeedTeam): string {
  *
  * A parser rather than a handful of regexes. The feeds are machine-generated
  * and look uniform enough to slice up by hand, but every field here is CDATA
- * wrapping arbitrary editorial text — apostrophes, ampersands, the occasional
- * bracket — and a regex that is wrong about one of those does not throw, it
+ * wrapping arbitrary editorial text - apostrophes, ampersands, the occasional
+ * bracket - and a regex that is wrong about one of those does not throw, it
  * silently stores a truncated headline.
  *
  * `isArray` pins <item> to an array. Without it a club with exactly one story
@@ -159,7 +159,7 @@ function toItem(team: ClubFeedTeam, raw: RssItem): ClubNewsItem | null {
 /**
  * Every usable item in one club's feed document.
  *
- * Items that cannot be identified — no title, or neither a guid nor a link —
+ * Items that cannot be identified - no title, or neither a guid nor a link -
  * are dropped rather than stored under a generated id. A row whose identity is
  * invented is a row the next ingest cannot recognise, which is how an archive
  * fills up with copies of the same story.

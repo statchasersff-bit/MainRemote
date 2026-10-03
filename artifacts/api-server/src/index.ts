@@ -28,7 +28,7 @@ app.listen(port, (err) => {
   logger.info({ port }, "Server listening");
 
   // The wire: on startup, then every 10 minutes. Not in the development
-  // workspace unless asked for — see wireIngestEnabled().
+  // workspace unless asked for - see wireIngestEnabled().
   if (wireIngestEnabled()) {
     runIngest()
       .then((result) => {
@@ -94,13 +94,13 @@ app.listen(port, (err) => {
   //
   // Wrapped, and last, on purpose: this is the newest and least critical of the
   // three providers, and the one reading a source nobody here controls. Nothing
-  // it can do — not a bad configuration, not an unreachable provider, not a
-  // database it cannot read — may be allowed to stop a server that has already
+  // it can do - not a bad configuration, not an unreachable provider, not a
+  // database it cannot read - may be allowed to stop a server that has already
   // bound its port from serving the news it already has. startXScheduler() is
   // itself written not to throw; this is the second line of that defence.
   try {
     startXScheduler();
   } catch (err) {
-    logger.error({ err }, "[X INGEST] scheduler failed to start — continuing without it");
+    logger.error({ err }, "[X INGEST] scheduler failed to start - continuing without it");
   }
 });

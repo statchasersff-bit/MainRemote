@@ -5,7 +5,7 @@
  * and team/schedule-faq.ts, and it breaks their shape in one way worth stating
  * plainly: those four derive every answer from the rows rendered above them, so
  * an answer cannot contradict the table. Several of these are written copy.
- * There is no fixture behind "how often are the rankings updated" — the honest
+ * There is no fixture behind "how often are the rankings updated" - the honest
  * answer is a sentence somebody wrote, not a field somebody published.
  *
  * So the rule the other four enforce by construction is enforced here by hand,
@@ -18,7 +18,7 @@
  * If a Half-PPR file is ever published, or the board moves, the answers change
  * with the file.
  *
- * The copy is otherwise as supplied, including its rest-of-season framing —
+ * The copy is otherwise as supplied, including its rest-of-season framing -
  * which, since the page moved to /rest-of-season-rankings, is what its title,
  * meta description and CSV say too. Reword them together.
  */
@@ -38,7 +38,7 @@ export interface RankingsFaq {
 /** The heading the block prints, kept beside the questions it introduces. */
 export const RANKINGS_FAQ_HEADING = "Rest of Season Fantasy Football Rankings FAQ";
 
-/** "A", "A and B", "A, B and C" — the Oxford-less form the rest of the page uses. */
+/** "A", "A and B", "A, B and C" - the Oxford-less form the rest of the page uses. */
 function listOf(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0] ?? "";
@@ -67,7 +67,7 @@ function tierNames(
 /**
  * One clause per position, for the answers that name players.
  *
- * "Josh Allen and Lamar Jackson at quarterback" — the position last, because
+ * "Josh Allen and Lamar Jackson at quarterback" - the position last, because
  * the reader is scanning for the name and the position is what tells them
  * which name they just read.
  */
@@ -90,7 +90,7 @@ function byPositionClauses(
  * The top-tier answer.
  *
  * "Who are the best players" has a real answer on a tiered board and it is the
- * top tier, so that is what this prints — read from the board rather than typed
+ * top tier, so that is what this prints - read from the board rather than typed
  * out here, because a hand-written list of names is wrong the first time an
  * injury moves one. It also has to say what the board does not claim: ranks are
  * positional, so there is no overall No. 1 and the side-by-side view is not
@@ -121,9 +121,9 @@ function bestPlayersAnswer(data: RankingsData): string {
  * The trade-target answer.
  *
  * The rankings publish no buy list and this answer does not invent one. What a
- * tiered board actually supports is the tier argument — the players at the top
+ * tiered board actually supports is the tier argument - the players at the top
  * of the second tier are the ones most often priced like the tier below and
- * ranked with the tier above — so the answer explains that and names the top of
+ * ranked with the tier above - so the answer explains that and names the top of
  * tier 2 as the worked example. Two per position, because the point is the
  * method and a 29-name paragraph is not read by anybody.
  */
@@ -139,7 +139,7 @@ function tradeTargetsAnswer(data: RankingsData): string {
   const worked =
     clauses === ""
       ? ""
-      : ` On this board that means the top of tier 2 — ${clauses} — where the ` +
+      : ` On this board that means the top of tier 2 - ${clauses} - where the ` +
         `distance to tier 1 is smaller than the difference in what the two ` +
         `tiers cost.`;
 
@@ -155,7 +155,7 @@ function tradeTargetsAnswer(data: RankingsData): string {
  * The claim that makes rankings useful on the wire is depth: a board that
  * stopped at startable players would have nothing to say about the free agent
  * you are considering. This one runs past that, so the answer counts the rows
- * rather than asserting "deep" — the numbers come from the boards as rendered,
+ * rather than asserting "deep" - the numbers come from the boards as rendered,
  * which is POSITION_LIMITS as far as the published file reaches.
  */
 function waiverAnswer(data: RankingsData): string {
@@ -170,7 +170,7 @@ function waiverAnswer(data: RankingsData): string {
   const depth =
     counts.length === 0
       ? ""
-      : ` The boards run past starter depth — ${listOf(counts)} — so a free ` +
+      : ` The boards run past starter depth - ${listOf(counts)} - so a free ` +
         `agent and the player he would replace usually both appear on the ` +
         `same board, and the tier each sits in is the comparison.`;
 
@@ -186,7 +186,7 @@ function waiverAnswer(data: RankingsData): string {
 /**
  * The formats the board offers, as the format row draws them.
  *
- * renderScoring() prints three options and makes one of them live — the one the
+ * renderScoring() prints three options and makes one of them live - the one the
  * published file is scored in. The other two are marked unavailable rather than
  * offered as buttons that would not change the order, and this answer says the
  * same thing in a sentence. Both read `data.scoring`, so the page and the FAQ
@@ -212,8 +212,8 @@ function scoringAnswer(data: RankingsData): string {
 /**
  * The refresh answer, carrying the board's own "updated" line.
  *
- * The page prints that line twice already — once under the controls and once in
- * the All board's caption — and an FAQ that says "updated throughout the
+ * The page prints that line twice already - once under the controls and once in
+ * the All board's caption - and an FAQ that says "updated throughout the
  * season" beside a date three weeks old is the kind of thing that makes a
  * reader stop trusting the date. So the date comes along.
  */
@@ -230,8 +230,8 @@ function updatedAnswer(data: RankingsData): string {
 /**
  * The questions, in the order they are printed.
  *
- * Definition first, then the names — "who is best" is the question the page is
- * found on and the one the board answers most directly — then the mechanics of
+ * Definition first, then the names - "who is best" is the question the page is
+ * found on and the one the board answers most directly - then the mechanics of
  * the board, then the two comparisons a reader arrives with (weekly rankings,
  * trade value), then what the rankings are used for: trades, waivers, drops.
  * Scoring last, because it qualifies everything above it rather than being

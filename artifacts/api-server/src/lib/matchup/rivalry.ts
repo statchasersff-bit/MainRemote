@@ -1,7 +1,7 @@
 /**
  * The all-time series: the top of the head-to-head section.
  *
- * Every figure is counted from one source per page — the complete list of
+ * Every figure is counted from one source per page - the complete list of
  * meetings when the page has it, or a precomputed summary when it does not,
  * never some of each. The list comes from data/rivalry/all-time.json (every
  * game since 1920, built by scripts/build-rivalry-history.mjs) plus the
@@ -9,8 +9,8 @@
  *
  * Location and relocation history ("when the Cardinals played in Chicago") is
  * only ever printed from the hand-written intro in rivalry-notes.ts. The
- * generated intro says when they first met, how often, and — for a division
- * pair — since when, all of which the list can prove.
+ * generated intro says when they first met, how often, and - for a division
+ * pair - since when, all of which the list can prove.
  *
  * Pure: input in, HTML and sentences out.
  */
@@ -113,7 +113,7 @@ export function allTimeSummary(input: RivalryInput, away: string, home: string):
 
 /**
  * The first season from which the pair met twice in every regular season up
- * to `through` — the schedule of division rivals — or null. The 1982 strike
+ * to `through` - the schedule of division rivals - or null. The 1982 strike
  * season is forgiven. Never earlier than 1970, when today's division names
  * began, so "AFC East rivals since" is a claim about the AFC East.
  */
@@ -257,7 +257,7 @@ function tile(label: string, number: string, caption: string, numberAttrs = ""):
 function largestTile(s: AllTimeSummary, team: RivalryTeam): string {
   const win = s.largestWin[team.abbr] ?? null;
   const label = `Largest ${team.short} win`;
-  if (!win) return tile(label, "—", "No wins yet", ` data-none="1"`);
+  if (!win) return tile(label, "-", "No wins yet", ` data-none="1"`);
   const score = escapeHtml(`${win.winnerScore}${DASH}${win.loserScore}`);
   const number = win.url
     ? `<a class="sct-rb-at-link" href="${escapeHtml(win.url)}">${score}</a>`

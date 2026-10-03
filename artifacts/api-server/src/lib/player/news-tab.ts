@@ -442,7 +442,7 @@ function newsPool(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lea
 
 /**
  * The tab split at its FAQ, which the page stands under the peers rail
- * (mak, 2026-10-02) — same shape as outlookTabParts.
+ * (mak, 2026-10-02) - same shape as outlookTabParts.
  */
 export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOptions = {}): { body: string; faq: string } | null {
   const ctx = context(data, options);

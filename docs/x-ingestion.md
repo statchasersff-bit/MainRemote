@@ -17,7 +17,7 @@
 > | `X_PROVIDER=official` (X API v2) | ~$80–110/mo | set `X_API_BEARER_TOKEN` |
 >
 > The webhook route is both the cheapest and the freshest because it bills per
-> matched post instead of per request — at 37 accounts, polling pays ~320,000
+> matched post instead of per request - at 37 accounts, polling pays ~320,000
 > times a month to be told "nothing new".
 >
 > **Verified so far:** the whole pipeline end to end against a fixture provider
@@ -26,7 +26,7 @@
 > of the feed). **Not verified:** the vendor's own side, which needs an API key.
 >
 > **First thing to do next time:** decide the route, set the credential, and run
-> `node scripts/x-webhook-rules.mjs` (dry run — it prints, it does not spend).
+> `node scripts/x-webhook-rules.mjs` (dry run - it prints, it does not spend).
 
 Public posts from a configurable list of NFL reporters are pulled into the
 **existing** news tool: same table, same dedupe, same feed, same team pages,
@@ -63,13 +63,13 @@ existed. `/api/x/status` reports which state it is in.
 
 ## Managing reporters
 
-`/admin/x` — add, remove, enable, disable, re-prioritise, and toggle
+`/admin/x` - add, remove, enable, disable, re-prioritise, and toggle
 originals / replies / reposts / quotes per account. Adding a reporter is a row,
 not a deploy.
 
 Writes are guarded by `INGEST_SECRET` (the same secret `POST /api/ingest`
 already uses, sent as `x-ingest-secret`); the page asks for it once per tab. If
-`INGEST_SECRET` is unset every write answers 503 — the same shared guard
+`INGEST_SECRET` is unset every write answers 503 - the same shared guard
 (`src/lib/ingest-auth.ts`) as `POST /api/ingest` and `POST /api/fpa/ingest`.
 
 The 37 seed handles are in `src/lib/x/accounts.ts` and are applied
@@ -80,16 +80,16 @@ changed stays changed, a reporter you removed does not come back.
 
 | `X_PROVIDER` | What it reads | Cost at this volume | Current? |
 |---|---|---|---|
-| `public` (default) | the profile timeline X publishes for embed widgets | free | **no — see below** |
+| `public` (default) | the profile timeline X publishes for embed widgets | free | **no - see below** |
 | `api` | any commercial JSON API that resells X posts | ~$0.02–$0.15 per 1,000 posts | yes |
 | `official` | X API v2 `/2/users/:id/tweets` | ~$0.005 per post read | yes |
-| *(none)* | a provider's **webhook** pushes to us — see below | ~$0.00015 per matched tweet | yes, seconds |
+| *(none)* | a provider's **webhook** pushes to us - see below | ~$0.00015 per matched tweet | yes, seconds |
 
 Switching is two environment variables and a restart. Nothing else in the
-application knows which one produced a post — that is what `XPostProvider` in
+application knows which one produced a post - that is what `XPostProvider` in
 `src/lib/x/types.ts` is for.
 
-### `public` — free, and measured
+### `public` - free, and measured
 
 Two hard limits, both measured from this deployment on 2026-09-16 rather than
 assumed:
@@ -106,11 +106,11 @@ So this route can carry a handful of reporters at a slow cadence. It cannot
 carry a 37-account watchlist at any cadence, and the scheduler says so at
 startup when more than eight accounts are enabled on it.
 
-A `429` pauses **all** polling for `X_RATE_LIMIT_COOLDOWN_MS` (default 5 min) —
+A `429` pauses **all** polling for `X_RATE_LIMIT_COOLDOWN_MS` (default 5 min) -
 not just the account that received it, because the budget being spent is the
 IP's, not the account's.
 
-### `api` — the route to current posts at this price point
+### `api` - the route to current posts at this price point
 
 ```
 X_PROVIDER=api
@@ -131,19 +131,19 @@ object and differ only in spelling. The normaliser reads `id_str` / `id` /
 found wherever the vendor put it (`data`, `tweets`, `data.tweets`, `results`, or
 a bare array). All three shapes are pinned by `tests/x-rest-provider.test.mjs`.
 
-This adapter does no scraping of its own — it is an HTTP client for an API the
+This adapter does no scraping of its own - it is an HTTP client for an API the
 operator has an account with. **These vendors obtain their data by scraping X,
 and X's terms prohibit that**; the exposure sits with the vendor, the service
 may break or disappear, and that is worth knowing before depending on one.
 
-### `official` — authoritative, and priced accordingly
+### `official` - authoritative, and priced accordingly
 
 The `$200/month` Basic tier closed on 2026-06-01; new developers are on
 pay-per-use at **$0.005 per post read**, capped at 2M reads/month. For 37
 reporters that is roughly **$80–110/month**, not the $10–30 originally assumed.
 `since_id` is passed on every call, so only new posts are ever read and billed.
 
-### Push — posts this server did not fetch
+### Push - posts this server did not fetch
 
 ```
 POST /api/x/posts          # guarded by INGEST_SECRET
@@ -153,7 +153,7 @@ POST /api/x/posts          # guarded by INGEST_SECRET
 The counterpart to the poller, and the same idea as `POST /api/ingest`'s push
 mode: whatever collected the posts is not this server's concern, and everything
 after they arrive is. A pushed post goes through **the same `ingestPosts()`**
-a polled post does — deduplicated on its post id, filtered by its author's
+a polled post does - deduplicated on its post id, filtered by its author's
 toggles, tagged with player, team and category, rendered on the same card.
 
 The body is tolerant: a bare array or `{posts: [...]}`, with each post in the
@@ -178,29 +178,29 @@ Notes:
 * 200 posts per request; the script batches for you.
 
 This is the seam that keeps acquisition and storage separate. If you run a
-collector under your own arrangement — an enterprise credential, a vendor
-export, a permitted crawler, or a person with a keyboard — it drives the feed
+collector under your own arrangement - an enterprise credential, a vendor
+export, a permitted crawler, or a person with a keyboard - it drives the feed
 without any change to the news tool.
 
-### Real-time delivery by webhook — the cheapest and freshest route
+### Real-time delivery by webhook - the cheapest and freshest route
 
 Polling asks 37 questions every five minutes and is told "nothing new" almost
 every time. A filter rule inverts it: the provider watches the accounts and
 POSTs only when one of them posts. Lower latency, fewer moving parts here, and
 with a provider that bills per *matched tweet* rather than per request, roughly
-**20× cheaper** — because you stop paying for the silence.
+**20× cheaper** - because you stop paying for the silence.
 
 Worked example with twitterapi.io (any provider with filter rules + webhooks
 fits the same shape):
 
-**1. See what needs registering** — built from the accounts enabled right now:
+**1. See what needs registering** - built from the accounts enabled right now:
 
 ```
 X_RULES_URL=https://<deployment>/api/x/webhook/rules node scripts/x-webhook-rules.mjs
 ```
 
 The 37 seeded reporters come to ~740 characters as `from:` terms and the
-provider caps a rule's filter at **255**, so this chunks them — currently into
+provider caps a rule's filter at **255**, so this chunks them - currently into
 three rules of 12–13 handles. Also shown in `/admin/x` under "Real-time filter
 rules".
 
@@ -211,7 +211,7 @@ explicit and never happens automatically):
 X_RULES_URL=... X_API_KEY=<provider key> X_WEBHOOK_URL=https://<deployment>/api/x/webhook   node scripts/x-webhook-rules.mjs --register [--exclude-retweets] [--interval 60]
 ```
 
-Keep the printed `rule_id`s — they are the only handle on a rule that is billing.
+Keep the printed `rule_id`s - they are the only handle on a rule that is billing.
 
 **3. Configure the app to accept deliveries:**
 
@@ -219,7 +219,7 @@ Keep the printed `rule_id`s — they are the only handle on a rule that is billi
 X_WEBHOOK_SECRET=<the key the provider will send in X-API-Key>
 ```
 
-Without it the endpoint answers `503` and stores nothing — an unguarded public
+Without it the endpoint answers `503` and stores nothing - an unguarded public
 URL that writes into the archive is a way to put arbitrary headlines on the
 page, which is the same call `POST /api/ingest` makes about its push mode.
 
@@ -252,13 +252,13 @@ proxy rotation, and a commercial anti-bot-bypass flag. That is
 access-control circumvention and evasion, it is explicitly out of scope for this
 project, and none of it is in this codebase. Only publicly served content is
 read, with an honest User-Agent, one request at a time, backing off when asked
-to. If the free route is not enough — and measurably it is not — the answer is
+to. If the free route is not enough - and measurably it is not - the answer is
 to pay a provider, not to work around a refusal.
 
 ## Polling
 
 Every `X_POLL_TICK_MS` (default 30s) the poller claims up to `X_POLL_BATCH`
-(default 4) accounts whose own interval has elapsed — so 37 accounts on a
+(default 4) accounts whose own interval has elapsed - so 37 accounts on a
 5-minute cadence spread themselves across ten ticks instead of arriving as one
 burst of 37 requests.
 
@@ -274,11 +274,11 @@ burst of 37 requests.
 | `X_POLL_REQUEST_GAP_MS` | 2s | pause between the requests inside one tick |
 | `X_RATE_LIMIT_COOLDOWN_MS` | 5 min | how long a 429 pauses **all** polling |
 | `X_SEED_ACCOUNTS` | on | off for tests |
-| `X_WEBHOOK_SECRET` | — | the key a delivery must present; falls back to `X_API_KEY` |
+| `X_WEBHOOK_SECRET` | - | the key a delivery must present; falls back to `X_API_KEY` |
 
 **The claim is the write.** An account is moved to `last_checked_at = now()` by
-an UPDATE whose WHERE clause still contains the due test, so two instances — or
-a restart overlapping the tick it interrupted — cannot both claim it. There is
+an UPDATE whose WHERE clause still contains the due test, so two instances - or
+a restart overlapping the tick it interrupted - cannot both claim it. There is
 no in-memory queue to lose and no lock to leak, which is why a restart is
 uneventful and why a post cannot be processed by two jobs.
 
@@ -302,7 +302,7 @@ the age cutoff. All four are per-account toggles.
 Each post is run through the tool's **existing** intelligence: the Sleeper
 roster index resolves the player named in the text (and his team with him, which
 is a fact rather than a guess), the club map resolves a single named team, and
-`lib/news-category.ts` classifies it — injury, transaction, practice, depth
+`lib/news-category.ts` classifies it - injury, transaction, practice, depth
 chart, rumor, fantasy, other. Category is **derived at read time and never
 stored**, so improving the rules re-reads the whole archive with no backfill.
 
@@ -316,7 +316,7 @@ no new URL state and nothing for a crawler to index.
 
 * X ingestion cannot throw into startup, into a request, or into another provider.
 * A failing account is recorded and backed off; the other 36 carry on.
-* A `200` carrying an unparseable document is a **failure**, not a quiet success —
+* A `200` carrying an unparseable document is a **failure**, not a quiet success -
   the shape of this endpoint changes without notice and must not look like
   "the reporters went quiet".
 * Logs are `[X INGEST]`-prefixed; per-post and per-failure lines only, so a quiet

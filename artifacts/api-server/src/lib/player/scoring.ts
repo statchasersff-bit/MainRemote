@@ -3,7 +3,7 @@
  *
  * Ported from the player-pages app's `shared/scoring.ts`. Raw stat lines are
  * stored once and every format is derived from them, which is what lets one
- * page answer for Standard, Half-PPR and PPR without three copies of the data —
+ * page answer for Standard, Half-PPR and PPR without three copies of the data -
  * and, more to the point, what keeps the weekly ranks, the tier-finish rates
  * and the volatility numbers consistent with whichever format is on screen.
  *
@@ -81,7 +81,7 @@ export function getEntryPoints(
 /** One line of a weekly scoring breakdown: what produced the points. */
 export interface PointsComponent {
   label: string;
-  /** The countable behind it — "277 yds", "2 TD". Empty when there is none. */
+  /** The countable behind it - "277 yds", "2 TD". Empty when there is none. */
   detail: string;
   points: number;
 }
@@ -96,7 +96,7 @@ export interface PointsComponent {
  *
  * Components worth nothing are dropped, so a passing line does not print four
  * empty rushing rows. It deliberately does NOT reconcile itself against
- * `getEntryPoints` — that value can come from Sleeper and include scoring this
+ * `getEntryPoints` - that value can come from Sleeper and include scoring this
  * function does not model. The renderer prints the difference as its own line
  * rather than quietly padding one of these, because an unexplained remainder is
  * exactly the thing a breakdown is supposed to reveal.

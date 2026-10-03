@@ -8,7 +8,7 @@
     "types": ["node"]
   },
   "include": ["src"],
-  // src/client is browser code and needs DOM lib rather than node types — it is
+  // src/client is browser code and needs DOM lib rather than node types - it is
   // typechecked by tsconfig.client.json instead.
   "exclude": ["src/client"],
   "references": [

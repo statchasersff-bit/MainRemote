@@ -3,8 +3,8 @@
  *
  * Ported from the standalone Redraft-Rankings-table app
  * (statchasersff-bit/Redraft-Rankings-table), which was a Vite SPA that fetched
- * a CSV in the browser and drew the boards from it. The rankings themselves —
- * the tier rules, the per-position limits, the side-by-side "All" view — are
+ * a CSV in the browser and drew the boards from it. The rankings themselves -
+ * the tier rules, the per-position limits, the side-by-side "All" view - are
  * that app's and are reproduced here unchanged. What is new is where they run:
  * on the server, so `[statchasers_rankings]` prints a finished board into a
  * WordPress page the way the other four tools do.
@@ -21,7 +21,7 @@
  *     applies: the shortcode decides where a link goes, not the renderer.
  *
  * A player who resolves to no page is rendered as plain text. That is rule 1
- * from fpa-render.ts — a field we do not have is not rendered — and it is why
+ * from fpa-render.ts - a field we do not have is not rendered - and it is why
  * the four free agents in the current board lose their link and keep their row
  * rather than pointing at a 404.
  */
@@ -85,7 +85,7 @@ export interface RankingsData {
   byPosition: Record<StatPosition, TierGroup[]>;
   /** The rank-aligned side-by-side board. */
   all: AllRow[];
-  /** Fingerprint of the files this was built from — the response ETag. */
+  /** Fingerprint of the files this was built from - the response ETag. */
   version: string;
 }
 
@@ -114,7 +114,7 @@ export const POSITION_PLURALS: Record<StatPosition, string> = {
 /**
  * Where each tier ends, as `[lastRank, tier]` in ascending order.
  *
- * These are editorial, not computed — the cliff between QB5 and QB6 is a
+ * These are editorial, not computed - the cliff between QB5 and QB6 is a
  * judgement about the position, and the whole point of a tiered board is that
  * somebody drew the lines. Copied verbatim from the standalone app.
  */
@@ -128,7 +128,7 @@ export const TIER_RULES: Record<StatPosition, Array<[number, number]>> = {
 /**
  * How deep each board goes.
  *
- * The CSV runs far deeper than this — 261 wide receivers — because it is the
+ * The CSV runs far deeper than this - 261 wide receivers - because it is the
  * working file the rankings are maintained in. Printing all 713 would be a page
  * nobody reads past the top of, so the boards stop where the tiers do.
  */
@@ -173,7 +173,7 @@ export function normalizeName(name: string): string {
  *
  * Hand-rolled rather than papaparse, because the file this reads is one we
  * produce: three columns, no quoting, no embedded newlines. A row that is not
- * those three things is dropped rather than guessed at — a malformed line
+ * those three things is dropped rather than guessed at - a malformed line
  * should cost one player, not the board.
  */
 export function parseRankingsCsv(csv: string): Array<{
@@ -222,7 +222,7 @@ let resolverCache: Map<string, Resolved> | null = null;
  * Keyed on the position too, because normalised names are not unique across the
  * league and matching a wide receiver against a quarterback of the same name
  * would print the wrong team. Where several entries collide on one key the one
- * with a page wins, then the active one — the dictionary carries retired
+ * with a page wins, then the active one - the dictionary carries retired
  * players, and the board is about who is playing.
  *
  * `slug` is only set for players the player-page index actually covers, so a

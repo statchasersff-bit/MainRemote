@@ -2,8 +2,8 @@
  * Matchup page regression tests.
  *
  * Same posture as team.test.mjs: fetch the served HTML and assert on it with
- * no JavaScript run. What these lock is the URL contract — one address per
- * pair, every other spelling a 301, everything else a 404 — and that the page
+ * no JavaScript run. What these lock is the URL contract - one address per
+ * pair, every other spelling a 301, everything else a 404 - and that the page
  * lays itself out for the state the data declares rather than for a date.
  */
 
@@ -87,7 +87,7 @@ describe("one address per pair", () => {
   });
 
   test("every other spelling of the pair is a 301 to it", async () => {
-    // Reversed, abbreviated, nicknamed — the reader's route in cannot mint a
+    // Reversed, abbreviated, nicknamed - the reader's route in cannot mint a
     // second page for the same query.
     for (const path of [
       "/nfl/philadelphia-eagles-vs-new-england-patriots/",
@@ -172,7 +172,7 @@ describe("one address per meeting", () => {
     const links = [...doc.querySelectorAll("a.sct-mu-recap")];
 
     // The pair page carries a link per archived meeting and none for the game
-    // it is still leading with — that game has one address until the window
+    // it is still leading with - that game has one address until the window
     // closes, and a link into a redirect would say otherwise.
     const state = doc.querySelector("[data-sct-root]").getAttribute("data-matchup-state");
     const featuredRow = doc.querySelector(".sct-mu-row.is-featured");
@@ -205,7 +205,7 @@ describe("one address per meeting", () => {
     const [, season, week] = /(\d{4})-week-(\d{1,2})\/$/.exec(href);
     const h1 = page.doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    // Away then home, whichever way round that was — see scoreboardHeading().
+    // Away then home, whichever way round that was - see scoreboardHeading().
     assert.match(
       h1[0].textContent.trim(),
       new RegExp(
@@ -272,7 +272,7 @@ describe("the page follows its state", () => {
     }
 
     // Where to Watch exists only for an upcoming game, and only from real
-    // schedule fields — never a "check local listings" line.
+    // schedule fields - never a "check local listings" line.
     const watch = doc.querySelector(".sct-mu-watch");
     if (state !== "upcoming") assert.equal(watch, null, "no watch block unless upcoming");
     if (watch) {
@@ -306,7 +306,7 @@ describe("the page follows its state", () => {
     const tables = block.querySelectorAll(".sct-mu-table");
     assert.equal(tables.length, 1, `snapshot drew ${tables.length} tables`);
 
-    // Each column is a TEAM, named by nickname alone — no "offense"/"defense"
+    // Each column is a TEAM, named by nickname alone - no "offense"/"defense"
     // qualifier, because both halves of the ladder are in the same column.
     const sides = [...tables[0].querySelectorAll(".sct-mu-cmp-side")].map((n) =>
       n.textContent.trim(),
@@ -386,7 +386,7 @@ describe("links between the family", () => {
       assert.ok(m, `${href} is a pair path`);
       assert.ok(m[1] < m[2], `${href} is in canonical order`);
       assert.ok(m[1] === "new-england-patriots" || m[2] === "new-england-patriots");
-      // Every one resolves without a redirect — the hub never links a spelling
+      // Every one resolves without a redirect - the hub never links a spelling
       // the route would have to correct.
       assert.equal((await get(href)).status, 200, href);
     }
@@ -408,7 +408,7 @@ describe("links between the family", () => {
     // `target="_top"` is for siteLink(), which leaves the tool for the main
     // site. These go to the tool's own pages, and carrying the target means a
     // sandboxed preview frame blocks the navigation and the link does nothing
-    // — which is exactly how this was found.
+    // - which is exactly how this was found.
     for (const path of [CANON, "/team/new-england-patriots/matchups/"]) {
       const { doc } = await dom(path);
       const links = [
@@ -443,7 +443,7 @@ describe("the WordPress fragment", () => {
     assert.match(res.headers.get("x-matchup-season"), /^2\d{3}$/);
     assert.ok(!/<h1\b/i.test(res.body), "the host page owns the H1");
     assert.match(res.body, /<h2 class="sct-sbh-title"[^>]*data-sct-hero-heading>/, "the hero's H2 is marked for promotion");
-    // The islands allowed are the SportsEvent and, on a recap layout, the FAQ —
+    // The islands allowed are the SportsEvent and, on a recap layout, the FAQ -
     // inert JSON the plugin lifts into the head and strips, not assets.
     const scripts = [...res.body.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0]);
     assert.ok(
@@ -516,7 +516,7 @@ describe("game leaders", () => {
   test("a completed game names who led it", async () => {
     const { doc } = await dom(PLAYED);
     // The pair has no meeting coming, so its page is the recap layout and the
-    // leaders are the strip under the hero — see leaders-strip.ts.
+    // leaders are the strip under the hero - see leaders-strip.ts.
     // The fantasy table has players, so the decision module closes it: three
     // Redraft Command tools, then the hub.
     const banner = doc.querySelector(".sct-mu-playerstats > aside.sct-mu-decide:last-child");
@@ -572,7 +572,7 @@ describe("game leaders", () => {
 
 describe("fantasy matchups", () => {
   // CANON rather than the played pair: this block is the PREGAME question, and
-  // the postgame page no longer carries it at all — pointing this at a finished
+  // the postgame page no longer carries it at all - pointing this at a finished
   // game would leave the test passing on an element that is never there.
   test("each defense is rated by position, once, with its scale stated", async () => {
     const { doc } = await dom(CANON);
@@ -612,8 +612,8 @@ describe("fantasy matchups", () => {
   test("the softest defense is the green one, as the FPA legend has it", async () => {
     // This block, the bar beside it and the FPA tool all have to agree on which
     // end of the scale is the good news. They did not: the chip was tiered off
-    // an inverted rank, so 1st — the most points allowed, the best matchup for
-    // the offense facing it — came out red while 32nd came out green.
+    // an inverted rank, so 1st - the most points allowed, the best matchup for
+    // the offense facing it - came out red while 32nd came out green.
     for (const path of [CANON, "/nfl/new-england-patriots-vs-seattle-seahawks/"]) {
       const { doc } = await dom(path);
       const block = doc.querySelector(".sct-mu-fantasy");
@@ -630,12 +630,12 @@ describe("fantasy matchups", () => {
   });
 
   test("a team's colour is the same everywhere on the page", async () => {
-    // Several pairings share a primary — Patriots and Seahawks are both
-    // #002244 — and a team that changes colour between two tables is worse
+    // Several pairings share a primary - Patriots and Seahawks are both
+    // #002244 - and a team that changes colour between two tables is worse
     // than no colour at all.
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/");
     // The Snapshot is one table now, so the comparison that matters is across
-    // BLOCKS — Snapshot against Fantasy Matchups — rather than within one.
+    // BLOCKS - Snapshot against Fantasy Matchups - rather than within one.
     // On a recap every comparison is a "Why won" table, coloured by
     // --rb-away / --rb-home and named in its header.
     const recapTables = [...doc.querySelectorAll(".sct-rb-table[style*='--rb-away']")];
@@ -685,7 +685,7 @@ describe("fantasy matchups", () => {
  * The postgame page.
  *
  * Addressed by a pair whose meeting has actually been played, so these run
- * against whichever of the two fixtures below is in that state — and skip
+ * against whichever of the two fixtures below is in that state - and skip
  * cleanly rather than failing when neither is, because a suite that depends on
  * the calendar is a suite that goes red every February.
  */
@@ -722,29 +722,35 @@ async function fixturePage() {
 }
 
 describe("the fixture page", () => {
-  test("the hero is the scoreboard with the kickoff where the scores go", async () => {
+  // mak's 2026-10-03 spec: the upcoming page leads with the decision-layer
+  // hero (split team gradient, match line, chips, betting strip) instead of
+  // the scoreboard. It falls back to the scoreboard only without a preview.
+  test("the hero is the preview hero with the kickoff in its chips", async () => {
     const page = await fixturePage();
     if (!page) return;
     const { doc } = page;
 
-    const hero = doc.querySelector("header.sct-sbh");
-    assert.ok(hero, "there is a scoreboard hero");
-    assert.equal(hero.getAttribute("data-status"), "upcoming");
     assert.equal(doc.querySelectorAll("h1").length, 1, "still exactly one H1");
-    assert.ok(hero.querySelector("h1"), "and it is inside the hero");
+    const hero = doc.querySelector("header.sct-pv-hero") ?? doc.querySelector("header.sct-sbh");
+    assert.ok(hero, "there is a hero");
+    assert.ok(hero.querySelector("h1"), "and the H1 is inside it");
+    if (!hero.matches(".sct-pv-hero")) return;
 
-    assert.equal(hero.querySelector(".sct-sbh-badge").textContent, "Upcoming");
-    assert.equal(hero.querySelectorAll(".sct-sbh-team").length, 2, "two sides");
+    assert.equal(hero.querySelectorAll(".sct-pv-side").length, 2, "two sides");
     assert.equal(hero.querySelectorAll(".sct-sbh-score, table").length, 0, "no score, no table");
-    assert.equal(hero.querySelectorAll(".is-winner").length, 0, "nobody has won it");
-    assert.ok(hero.querySelector(".sct-sbh-kickoff"), "the kickoff stands in for the score");
-    const time = hero.querySelector("time");
-    if (time) {
-      assert.match(
-        time.textContent,
-        /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}, \d{4}, (\d{1,2}:\d{2} [AP]M ET|Time TBD)$/,
-        `kickoff reads as a date and a time: ${time.textContent}`,
-      );
+    const chips = [...hero.querySelectorAll(".sct-pv-chip")].map((n) => n.textContent);
+    assert.match(chips[0] ?? "", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}, \d{4}( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/, `kickoff chip: ${chips[0]}`);
+
+    // The strip's implied totals are (total -/+ spread) / 2 of what it prints.
+    const cells = [...hero.querySelectorAll(".sct-pv-bet")].map((c) => ({
+      k: c.querySelector(".sct-pv-bet-k").textContent,
+      v: c.querySelector(".sct-pv-bet-v").textContent,
+    }));
+    if (cells.length) {
+      const total = Number(cells.find((c) => c.k === "Total").v);
+      const implied = cells.filter((c) => / implied$/.test(c.k)).map((c) => Number(c.v));
+      assert.equal(implied.length, 2, "both implied totals");
+      assert.ok(Math.abs(implied[0] + implied[1] - total) < 0.02, "implied totals add up to the total");
     }
   });
 });
@@ -785,7 +791,7 @@ describe("the postgame page", () => {
     const page = await postgamePage();
     if (!page) return;
     const table = page.doc.querySelector(".sct-mu-linescore");
-    // Absent is allowed — ESPN's box score is a separate upstream and the page
+    // Absent is allowed - ESPN's box score is a separate upstream and the page
     // renders without it. What is not allowed is a line that disagrees.
     if (!table) return;
 
@@ -880,7 +886,7 @@ describe("the postgame page", () => {
       n.textContent.trim().toUpperCase(),
     );
     // The one column no free source can fill. If it ever appears here, it was
-    // invented — see the note in game-stats.ts.
+    // invented - see the note in game-stats.ts.
     assert.ok(!columns.some((c) => c.includes("ROUTE")), columns.join(" / "));
 
     for (const row of block.querySelectorAll("tbody tr")) {
@@ -908,7 +914,7 @@ describe("the postgame page", () => {
 
     // The hero's order: away on the left, home on the right. The panels came
     // back in the order the game log met the two teams, and before that were
-    // sorted alphabetically by pair — either way, not the scoreboard's order.
+    // sorted alphabetically by pair - either way, not the scoreboard's order.
     const names = panels.map((p) =>
       p.querySelector(".sct-mu-usage-team-name").textContent.trim(),
     );
@@ -919,7 +925,7 @@ describe("the postgame page", () => {
       assert.deepEqual(names, hero.filter((name) => names.includes(name)), `panels ${names.join(", ")} vs hero ${hero.join(", ")}`);
     }
 
-    // The table is still in the HTML — one copy of it, collapsed, not a second
+    // The table is still in the HTML - one copy of it, collapsed, not a second
     // rendering of the same rows beside the charts.
     const tables = [...block.querySelectorAll(".sct-mu-ps-table")];
     assert.equal(tables.length, 1, "exactly one usage table in the DOM");
@@ -988,7 +994,7 @@ describe("the postgame page", () => {
           `${name} carries its raw count`,
         );
       }
-      // These are shares of one denominator, so they are a whole — give or take
+      // These are shares of one denominator, so they are a whole - give or take
       // the rounding of six numbers.
       assert.ok(Math.abs(sum - 100) <= 3, `slices sum to ${sum}%`);
     }
@@ -1006,8 +1012,8 @@ describe("the postgame page", () => {
       let previous = Infinity;
       for (const bar of bars) {
         const printed = bar.querySelector(".sct-mu-usage-bar-pct").textContent.trim();
-        assert.match(printed, /^(\d+%|—)$/, `${printed} is a share`);
-        if (printed === "—") continue;
+        assert.match(printed, /^(\d+%| - )$/, `${printed} is a share`);
+        if (printed === "-") continue;
         const share = Number(printed.slice(0, -1));
         assert.ok(share >= 0 && share <= 100, `${printed} is a share`);
         assert.ok(share <= previous, `${share}% is out of order`);
@@ -1036,8 +1042,8 @@ describe("the postgame page", () => {
     const tags = [...doc.querySelectorAll(".sct-pos")];
     assert.ok(tags.length >= 4, "positions are marked up, not baked into a string");
 
-    // The four skill positions carry an ink; anything else — a kicker in the
-    // fantasy table — is left to inherit rather than given a fifth colour.
+    // The four skill positions carry an ink; anything else - a kicker in the
+    // fantasy table - is left to inherit rather than given a fifth colour.
     const coloured = new Set(["QB", "RB", "WR", "TE"]);
     let seen = 0;
     for (const tag of tags) {
@@ -1232,7 +1238,7 @@ describe("sortable stat tables", () => {
       .flatMap((t) => [...t.querySelectorAll("tbody tr")])
       .filter((r) => r.cells[0].getAttribute("data-sort") === "Josh Allen");
     assert.equal(allen.length, 1, "one row for Josh Allen");
-    assert.notEqual(allen[0].cells[7].textContent, "—", "his carries are on the Passing row");
+    assert.notEqual(allen[0].cells[7].textContent, "-", "his carries are on the Passing row");
     // The fantasy leaders open the section, the "Player Stats" title sits
     // straight over the tables, and the banner closes it.
     assert.ok(doc.querySelector(".sct-mu-playerstats > h2:first-child + .sct-mu-fl + .sct-mu-ps-head + .sct-mu-ps-row"));
@@ -1390,7 +1396,7 @@ describe("sortable stat tables", () => {
 /*
  * The hero is ONE block, not two columns.
  *
- * `.sct-hero-text` is the team hub hero's named grid area — `grid-area: text`,
+ * `.sct-hero-text` is the team hub hero's named grid area - `grid-area: text`,
  * which is only meaningful inside `.sct-hero-inner`'s `grid-template-areas`.
  * The matchup hero borrowed the class for the `min-width: 0` on it and brought
  * the placement along: a grid-area name that matches no line resolves against
@@ -1420,7 +1426,7 @@ describe("the matchup hero is one block", () => {
   }
 
   // Both states, through the same helpers the rest of this file uses to find a
-  // pair that is actually in each one — the hero is built by one function and
+  // pair that is actually in each one - the hero is built by one function and
   // `.is-final` only changes what goes in it, so a borrowed class would be in
   // both, but a test that invents a game segment 404s instead of asserting.
   for (const [label, page] of [
@@ -1433,7 +1439,7 @@ describe("the matchup hero is one block", () => {
       if (!found) return;
       const { doc } = found;
 
-      const hero = doc.querySelector(".sct-sbh");
+      const hero = doc.querySelector(".sct-sbh, .sct-pv-hero");
       assert.ok(hero, "the hero renders");
 
       const offenders = [...hero.querySelectorAll("*")]

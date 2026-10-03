@@ -6,7 +6,7 @@
 // figures: `ingest-fpa.mjs` runs the ingest HERE and writes to whatever
 // DATABASE_URL this process has. Run from a development shell it refreshes
 // development, while the deployment goes on serving whatever seeded it. This
-// script writes nothing — it POSTs the deployment's own endpoint, so the ingest
+// script writes nothing - it POSTs the deployment's own endpoint, so the ingest
 // runs inside the deployment, against the database the deployment reads.
 //
 // Required env:  FPA_INGEST_URL  e.g. https://<deployment>/api/fpa/ingest
@@ -15,8 +15,8 @@
 //                FPA_BASELINE    baseline season override, likewise
 //                FPA_INGEST_TIMEOUT_MS  default 300000
 //
-// The server answers when the ingest has finished — two ~7MB CSVs and a
-// transaction, a couple of seconds when nflverse is quick — so the exit code is
+// The server answers when the ingest has finished - two ~7MB CSVs and a
+// transaction, a couple of seconds when nflverse is quick - so the exit code is
 // the real verdict and a scheduled run that reports success actually wrote
 // something. The timeout is generous because the download is someone else's.
 
@@ -67,7 +67,7 @@ try {
       (body.joined ? " (joined a run already in flight)" : "");
   } catch {
     // Not JSON. Print what came back rather than hiding it behind a parse
-    // error — an HTML error page from a proxy is the answer, not a crash.
+    // error - an HTML error page from a proxy is the answer, not a crash.
   }
   console.log(`FPA refresh OK: ${summary}`);
 } catch (err) {

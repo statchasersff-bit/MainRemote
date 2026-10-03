@@ -3,14 +3,14 @@
  *
  * Server-rendered in full like the usage tab beside it: everything is in the
  * HTML the server sends, and nothing here needs the client bundle. The ten
- * components render in the build spec's order — header + intro, the coach
+ * components render in the build spec's order - header + intro, the coach
  * card beside the tendencies table, three shift cards, the staff strip, the
  * career dossier, the positional finishes, the rookie note, the two
  * fingerprint panels, the two situational panels, and the gold bottom line.
  *
  * The section is mostly the evergreen layer read from
- * data/team/coaching_<season>.json. The weekly surface our own feed carries —
- * the four env-backed tendency rows and the current backfield bar — is read
+ * data/team/coaching_<season>.json. The weekly surface our own feed carries -
+ * the four env-backed tendency rows and the current backfield bar - is read
  * live from the usage view handed in, so those cells move with the daily
  * chain while everything editorial stays put (see coaching.ts).
  */
@@ -48,12 +48,12 @@ function header(): string {
   return `<div class="sct-co-head"><h2 class="sct-h2">Coaching Profile &amp; Tendencies</h2></div>`;
 }
 
-/** The continuity principle in plain prose near the top — the citable claim. */
+/** The continuity principle in plain prose near the top - the citable claim. */
 function intro(c: TeamCoaching, team: NflTeam): string {
   return (
     `<p class="sct-co-intro">` +
     e(
-      "Play-calling tendencies carry over from season to season when the play-caller stays the same — and become unreliable the moment he changes. " +
+      "Play-calling tendencies carry over from season to season when the play-caller stays the same - and become unreliable the moment he changes. " +
         `That's the whole reason this module exists: before you trust any ${team.nickname} projection, you need to know whose fingerprints are on the offense and how stable they are. ` +
         c.introAnswer,
     ) +
@@ -126,7 +126,7 @@ function liveCell(
   }
   const dir = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
   const rank = env?.rank;
-  const tail = dir !== "flat" && rank != null && rank <= 8 ? ` — ${ordinal(rank)} in NFL` : "";
+  const tail = dir !== "flat" && rank != null && rank <= 8 ? ` - ${ordinal(rank)} in NFL` : "";
   const rounded = Math.round(value * 10) / 10;
   const places = Number.isInteger(Math.round(delta * 10) / 10) ? 0 : 1;
   return {
@@ -135,17 +135,38 @@ function liveCell(
   };
 }
 
-const ARROWS = { up: "▲", down: "▼", flat: "—" } as const;
+const ARROWS = { up: "▲", down: "▼", flat: "-" } as const;
+
+/**
+ * How a row is counted, behind a small "i" beside its label. A native popover,
+ * as on the RB handcuffs notes: the top layer lifts it out of the table's
+ * scroll box and any host stacking context, and the browser handles Escape and
+ * click-away. These rates are denominator-sensitive, and this is where a
+ * reader finds out why ours differs from another site's.
+ */
+function methodNote(label: string, def: string, id: string): string {
+  return (
+    `<button type="button" class="sct-co-def-btn" popovertarget="${e(id)}"` +
+    ` aria-label="${e(`How ${label.toLowerCase()} is counted`)}" title="How this is counted">i</button>` +
+    `<div class="sct-co-def" id="${e(id)}" popover>` +
+    `<p class="sct-co-def-head">${e(label)}` +
+    `<button type="button" class="sct-co-def-close" popovertarget="${e(id)}"` +
+    ` popovertargetaction="hide" aria-label="Close">&times;</button></p>` +
+    `<p class="sct-co-def-body">${e(def)}</p>` +
+    `</div>`
+  );
+}
 
 function tendenciesTable(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
   const rows = c.tendencies.rows
-    .map((row) => {
+    .map((row, i) => {
       const live = liveCell(row, view);
       const current = live?.current ?? row.current;
       const change = live?.change ?? row.change;
       return (
         `<tr>` +
         `<th scope="row" class="sct-co-td is-tendency">${e(row.label)}` +
+        (row.def ? methodNote(row.label, row.def, `sct-co-def-${i}`) : "") +
         (row.sub ? `<span class="sct-co-cell-sub">${e(row.sub)}</span>` : "") +
         `</th>` +
         `<td class="sct-co-td">${e(row.prior)}</td>` +
@@ -295,7 +316,7 @@ function rookieNote(c: TeamCoaching): string {
 
 /**
  * One labelled bar: fill = the share, an optional thin marker = the league
- * average. The number always rides beside the bar — never colour-only.
+ * average. The number always rides beside the bar - never colour-only.
  */
 function barRow(row: BarRow, label: string, value: string): string {
   const width = row.pct ?? row.share ?? 0;
@@ -368,7 +389,7 @@ function personnel(c: TeamCoaching): string {
   if (!c.personnel) return "";
   return (
     `<div class="sct-co-panel">` +
-    h3("Personnel groupings — usage & result") +
+    h3("Personnel groupings - usage & result") +
     `<p class="sct-co-panel-sub">${e(c.personnel.sub)}</p>` +
     c.personnel.rows
       .map((row) =>
@@ -408,7 +429,7 @@ function bottomLine(c: TeamCoaching): string {
  * The LOW-reliability caveat the rest of the page carries.
  *
  * Rendered beside anything that projects from last season's data when the
- * team's play-caller is new. Empty for HIGH and MEDIUM — the caveat is the
+ * team's play-caller is new. Empty for HIGH and MEDIUM - the caveat is the
  * exception, not a banner on all 32 pages.
  */
 export function coachingCaveat(c: TeamCoaching | null): string {
@@ -416,7 +437,7 @@ export function coachingCaveat(c: TeamCoaching | null): string {
   const name = c.playCaller.name;
   return (
     `<p class="sct-co-caveat">${e(
-      `New play-caller: ${name} is calling plays for the first season here, so last year's tendencies are an unreliable guide — see the Coaching tab before trusting season-over-season projections.`,
+      `New play-caller: ${name} is calling plays for the first season here, so last year's tendencies are an unreliable guide - see the Coaching tab before trusting season-over-season projections.`,
     )}</p>`
   );
 }

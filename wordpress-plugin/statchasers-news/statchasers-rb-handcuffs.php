@@ -4,7 +4,7 @@
  *
  * Same posture as the other tools. The API serves /rb-handcuff-rankings with
  * `noindex, indexifembedded`, so the board is invisible to search until
- * something embeds it — this file is that something.
+ * something embeds it - this file is that something.
  *
  * ## What this replaces
  *
@@ -24,16 +24,16 @@
  * Migrating: on the /rb-handcuff-rankings/ page, replace [statchasers_handcuffs]
  * with [statchasers_rb_handcuffs], then deactivate and delete the
  * statchasers-handcuffs plugin. The tags do not collide, so the two can coexist
- * while the swap is made — but both add a schema node for the tool, so do not
+ * while the swap is made - but both add a schema node for the tool, so do not
  * leave both on one page.
  *
  * ## What it keeps from that plugin
  *
  * Rank Math stays the SEO authority: nothing here prints a canonical, a title,
  * a robots directive or a heading. What it adds is what Rank Math cannot
- * know — that the page is a tool, as a CreativeWork node on Rank Math's graph,
+ * know - that the page is a tool, as a CreativeWork node on Rank Math's graph,
  * and the FAQ the fragment prints under the board, as a FAQPage node beside
- * it — each with a standalone fallback when Rank Math is absent. And the
+ * it - each with a standalone fallback when Rank Math is absent. And the
  * crawlable "Related tools" line under the board, filterable as it was.
  *
  * @package StatChasers\News
@@ -98,7 +98,7 @@ function statchasers_rb_handcuffs_fetch(): ?array {
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
-	// A 404 means the API has no snapshot — a real state, not a transient
+	// A 404 means the API has no snapshot - a real state, not a transient
 	// error. Cached as a failure for a minute so a deployment mid-setup costs
 	// one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
@@ -358,7 +358,7 @@ function statchasers_rb_handcuffs_related_links(): string {
 /**
  * The shortcode: prints the server-rendered board into the page.
  *
- * Same deliberate omissions as the other tools — no canonical, no heading, no
+ * Same deliberate omissions as the other tools - no canonical, no heading, no
  * title or meta description, nothing written to the URL. The page owns all of
  * it.
  *
@@ -377,7 +377,7 @@ function statchasers_rb_handcuffs_shortcode( $atts = array() ): string {
 
 	$data = statchasers_rb_handcuffs_fetch();
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_rb_handcuffs_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -453,8 +453,8 @@ const STATCHASERS_RB_HANDCUFFS_PAGE_TYPES = array( 'WebPage', 'CollectionPage', 
  * the key Rank Math uses varies by page type.
  *
  * By a closed list of page types, not "any @type containing Page". FAQPage
- * contains it too, and this runs at priority 99 — after the FAQ island has put
- * its node in the graph — so the substring test could hang the board on the
+ * contains it too, and this runs at priority 99 - after the FAQ island has put
+ * its node in the graph - so the substring test could hang the board on the
  * FAQPage, whose mainEntity is its list of questions, and throw them away.
  * QAPage is left off for the same reason. And a node that already names a
  * mainEntity keeps it: this is an addition to the graph, never a replacement
@@ -494,7 +494,7 @@ function statchasers_rb_handcuffs_rank_math_schema( $data ) {
 add_filter( 'rank_math/json_ld', 'statchasers_rb_handcuffs_rank_math_schema', 99 );
 
 /**
- * The node on its own when Rank Math is absent — never alongside it, so there
+ * The node on its own when Rank Math is absent - never alongside it, so there
  * can never be two graphs.
  */
 function statchasers_rb_handcuffs_print_fallback_schema(): void {

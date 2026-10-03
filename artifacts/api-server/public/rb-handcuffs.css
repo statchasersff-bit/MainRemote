@@ -1,12 +1,12 @@
 /*
- * StatChasers — RB Handcuff Rankings
+ * StatChasers - RB Handcuff Rankings
  *
  * A sibling of team.css, fpa.css, rankings.css and player-stats.css, and a
  * sibling for the same reason: the stylesheets are enqueued independently, so
  * a page mounting [statchasers_rb_handcuffs] must not need another tool's CSS.
  * The brand tokens are restated rather than imported.
  *
- * The LAYOUT is the standalone Redraft-RB-Handcuff-Rankings app's — the weight
+ * The LAYOUT is the standalone Redraft-RB-Handcuff-Rankings app's - the weight
  * model on top (allocation bar, three pillar sliders, Re-rank), the model
  * reference and badge guide under it, then the board: Rk, Player, Team,
  * Handcuff For, Score, Note and Comp, a row that opens into its breakdown, a
@@ -62,7 +62,7 @@
 
   /*
    * The tier bars under each score: the app's gold, blue, green and slate.
-   * Bars only — a tier colour never carries text, so it needs no contrast
+   * Bars only - a tier colour never carries text, so it needs no contrast
    * against white, and the number above it is always printed.
    */
   --rbh-tier-elite: #e8b21e;
@@ -78,8 +78,8 @@
   --rbh-bar-none: #cbd5e1;
 
   /*
-   * The handcuff types. The app's hues — emerald, purple, sky, amber, red,
-   * orange, zinc — each darkened until it clears 4.5:1 on white and on the
+   * The handcuff types. The app's hues - emerald, purple, sky, amber, red,
+   * orange, zinc - each darkened until it clears 4.5:1 on white and on the
    * zebra stripe: they are text colours here, and the app's were drawn on
    * navy.
    */
@@ -2430,7 +2430,7 @@ html.rbh-locked body {
 /* font-family and list-style are the two properties a theme reaches through
    inheritance. `!important` because a theme that sets fonts from an options
    panel emits it itself; the family is still the token, so a host retunes it
-   by setting --sc-font. Do NOT add spacing here — see fpa.css. */
+   by setting --sc-font. Do NOT add spacing here - see fpa.css. */
 :is(.rbh, .rbh-layer, body.rbh-page),
 :is(.rbh, .rbh-layer, body.rbh-page) * {
   font-family: var(--sc-font) !important;
@@ -2446,7 +2446,7 @@ html.rbh-locked body {
 /*                                                                         */
 /* Every declaration below RESTATES one already made above, at a           */
 /* specificity a host theme cannot reach. Nothing here is a new design     */
-/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* decision - if a value in this block disagrees with the rule it mirrors, */
 /* this block is the one that is wrong.                                    */
 /*                                                                         */
 /* Divi styles bare elements inside the content area (see                  */
@@ -2454,8 +2454,8 @@ html.rbh-locked body {
 /* classes, because one class and two elements TIES Divi's.                */
 /* ====================================================================== */
 
-/* Divi's table rule is `.entry-content table:not(.variations)` — (0,2,1),
-   because `:not()` counts its argument — and it beat the `.rbh .rbh-table`
+/* Divi's table rule is `.entry-content table:not(.variations)` - (0,2,1),
+   because `:not()` counts its argument - and it beat the `.rbh .rbh-table`
    this used to be: measured 2026-09-29, the grey frame and 15px of margin were
    still arriving. The repeated `:not()` keeps this one class ahead. */
 .rbh table.rbh-table:not(.variations) {
@@ -2486,7 +2486,7 @@ html.rbh-locked body {
 }
 
 /* The player column is a <th> too. It took the theme's #666 and weight 700,
-   and the name link inside inherits the weight — every name went bold. */
+   and the name link inside inherits the weight - every name went bold. */
 .rbh .rbh-table tbody th {
   color: var(--sc-ink) !important;
   font-weight: 600;

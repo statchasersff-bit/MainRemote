@@ -6,9 +6,9 @@
 # cheap and has to say "nothing to do" most of the time. Two things make it
 # stale, and neither is true on an ordinary turn:
 #
-#   * a file under src/ is newer than the bundle in dist/ — the preview serves
+#   * a file under src/ is newer than the bundle in dist/ - the preview serves
 #     dist/, so a src/ edit is invisible until it is rebuilt; or
-#   * nothing is listening on the port at all — the server died, or a previous
+#   * nothing is listening on the port at all - the server died, or a previous
 #     restart took the Replit workflow down with it.
 #
 # public/*.css and public/*.html are deliberately NOT checked: the dev server
@@ -21,7 +21,7 @@ APP="$ROOT/artifacts/api-server"
 ENTRY="$APP/dist/index.mjs"
 # Written last by build.mjs's client pass, so its presence means all six browser
 # bundles under public/dist made it out. A half-finished or clobbered client
-# build leaves the page serving 404s for its own enhancement script — which is
+# build leaves the page serving 404s for its own enhancement script - which is
 # silent, because every tool page is built to work without one.
 CLIENT_STAMP="$APP/public/dist/version.json"
 

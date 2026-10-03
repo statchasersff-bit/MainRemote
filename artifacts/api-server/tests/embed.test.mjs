@@ -1,7 +1,7 @@
 /**
  * The legacy iframe embed's parent-side resize listener (`/embed.js`).
  *
- * Every failure mode here is SILENT — a dropped height message leaves the frame
+ * Every failure mode here is SILENT - a dropped height message leaves the frame
  * at its placeholder height and the only symptom on the live page is a tool
  * that scrolls inside its own box. Nothing throws, nothing logs. So the
  * listener gets its own suite: the script is fetched from the running server,
@@ -14,7 +14,7 @@ import { JSDOM } from "jsdom";
 import { startServer } from "./helpers/server.mjs";
 
 const HOST_PAGE = "https://statchasers.com/nfl/player-news/";
-/** Where the pasted snippet points the frame — the tool's public origin. */
+/** Where the pasted snippet points the frame - the tool's public origin. */
 const FRAME_ORIGIN = "https://news.statchasers.com";
 /** The snippet ships a fixed height; a rejected message must leave it alone. */
 const PLACEHOLDER = "728px";

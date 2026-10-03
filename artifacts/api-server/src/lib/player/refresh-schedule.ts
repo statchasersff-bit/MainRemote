@@ -1,6 +1,6 @@
 /**
  * When the after-game player refresh is due. Pure, and on its own so the
- * tests can pin the rule without loading the server — see live-refresh.ts.
+ * tests can pin the rule without loading the server - see live-refresh.ts.
  */
 
 /** Kickoff to final, plus the time Sleeper takes to post: generous on purpose. */
@@ -27,7 +27,7 @@ export function latestDueMs(kickoffs: number[], nowMs: number): number {
     if (over > nowMs) continue;
     if (over > due) due = over;
     // A catch-up follows a game that was already over by then, and only for a
-    // few days after it — not the morning before, and not all season.
+    // few days after it - not the morning before, and not all season.
     if (over <= catchUpMs && catchUpMs - kickoff <= CATCH_UP_WINDOW_MS && catchUpMs > due) {
       due = catchUpMs;
     }

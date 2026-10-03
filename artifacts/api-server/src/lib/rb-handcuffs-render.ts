@@ -2,8 +2,8 @@
  * Markup for the RB handcuff rankings.
  *
  * Server-only, like the other tools' renderers. The whole board is in the
- * response — every backup, the starter he backs up, his score, tier and type,
- * and under each row the breakdown and the reasons it ranks where it does —
+ * response - every backup, the starter he backs up, his score, tier and type,
+ * and under each row the breakdown and the reasons it ranks where it does -
  * and client/rb-handcuffs.ts takes over the controls on top of it: the weight
  * sliders that re-rank the board, sorting, the expandable rows, the compare
  * tray and the player card.
@@ -18,7 +18,7 @@
  *
  * 1. A field we do not have is not rendered. The engine has no role trend,
  *    ADP, rostered share or committee flag for anyone this season, so none of
- *    those appear — the code for them is here, and they will when it does.
+ *    those appear - the code for them is here, and they will when it does.
  * 2. Nothing predicts beyond what the model says. The scores are the engine's
  *    (lib/rb-handcuffs/engine), rescored at the default weights by the same
  *    module the bundle re-ranks with.
@@ -89,7 +89,7 @@ const MONTHS = [
   "August", "September", "October", "November", "December",
 ];
 
-/** "August 17, 2026", in UTC — no locale default, so the render is deterministic. */
+/** "August 17, 2026", in UTC - no locale default, so the render is deterministic. */
 function formatDate(iso: string | null): string | null {
   if (!iso) return null;
   const date = new Date(iso);
@@ -162,7 +162,7 @@ function pct(weight: number): number {
 
 /**
  * The weight model: an allocation bar, the three pillar sliders and the
- * Re-rank button. `hidden` until the bundle wires it — every input here
+ * Re-rank button. `hidden` until the bundle wires it - every input here
  * re-ranks rows already on the page, and without the bundle it is a form that
  * does nothing.
  */
@@ -389,7 +389,7 @@ function renderStarter(p: HandcuffPlayer, fresh: boolean): string {
 
 function renderNote(p: HandcuffPlayer): string {
   const type = handcuffType(p.handcuffType);
-  if (!p.handcuffType) return `<span class="rbh-na">—</span>`;
+  if (!p.handcuffType) return `<span class="rbh-na">-</span>`;
   if (!type) return `<span class="rbh-note-text">${escapeHtml(p.handcuffType)}</span>`;
   return (
     `<span class="rbh-note rbh-type-${type.key}" title="${escapeHtml(type.label)}">` +
@@ -414,7 +414,7 @@ function renderMetric(
     (value != null && rank != null
       ? ` <span class="rbh-metric-rank">(#${rank}${poolSize ? ` of ${poolSize}` : ""})</span>`
       : "") +
-    `</span><span class="rbh-metric-value">${value ?? "—"}</span></p>` +
+    `</span><span class="rbh-metric-value">${value ?? "-"}</span></p>` +
     `<span class="rbh-bar"><span class="rbh-bar-fill is-${barBand(value)}" style="width:${width}%"></span></span>` +
     `<p class="rbh-metric-desc">${escapeHtml(description)}</p>` +
     `</div>`
@@ -515,7 +515,7 @@ function renderRow(p: HandcuffPlayer, fresh: boolean, options: HandcuffRenderOpt
       : renderName(p, options)) +
     // Mobile parity, as the standalone table had it: the Handcuff For column
     // drops out on a narrow table, and which starter a backup is behind is
-    // the whole point of the tool — so it moves under the name.
+    // the whole point of the tool - so it moves under the name.
     (p.starterName
       ? `<span class="rbh-for">for ${escapeHtml(p.starterName)}${statusTag(p, fresh)}</span>`
       : "") +
@@ -547,7 +547,7 @@ function renderTable(board: HandcuffBoard, options: HandcuffRenderOptions): stri
     `<table class="rbh-table" data-rbh-table>` +
     // Names the table for screen readers and for anything parsing the page's
     // structure. The standalone table's caption, word for word.
-    `<caption class="rbh-sr-only">NFL RB handcuff rankings — backup running backs ranked by` +
+    `<caption class="rbh-sr-only">NFL RB handcuff rankings - backup running backs ranked by` +
     ` handcuff score, with their team, the starter they back up, and the case for each.</caption>` +
     `<thead><tr>` +
     `<th scope="col" class="rbh-th-rank" data-sort="rank" data-sort-type="number" data-sort-dir="ascending"` +
@@ -579,7 +579,7 @@ function renderTable(board: HandcuffBoard, options: HandcuffRenderOptions): stri
  * re-ranks it, sorts it, and on a phone abbreviates the names. This is the
  * board's own answer to "who are the best RB handcuffs", in plain sentences a
  * reader or a crawler can take at face value, and it does not move with the
- * sliders — it is the StatChasers ranking, which the note under the heading
+ * sliders - it is the StatChasers ranking, which the note under the heading
  * says.
  */
 function renderBest(board: HandcuffBoard, options: HandcuffRenderOptions): string {
@@ -734,7 +734,7 @@ function renderSection(
     `<summary>${icon("chevron", "rbh-chev")}` +
     `<span class="rbh-section-text"><span class="rbh-section-head">` +
     `<span class="rbh-section-name">${escapeHtml(name)}</span>` +
-    `<span class="rbh-section-rank is-${tone}">${rank != null ? `#${rank}` : "—"}</span>` +
+    `<span class="rbh-section-rank is-${tone}">${rank != null ? `#${rank}` : "-"}</span>` +
     `</span>` +
     `<span class="rbh-section-sub">${escapeHtml(subLabel)}</span></span>` +
     `</summary>` +
@@ -781,7 +781,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
     const c = pto.components;
     const has = (flag: string): boolean => pto.flags.includes(flag);
     const rows: string[] = [];
-    // A component with no data is left out entirely — its weight was already
+    // A component with no data is left out entirely - its weight was already
     // spread across the others in the score, so a "No data" row is noise.
     if (!has("missing_starter_durability_history")) {
       rows.push(
@@ -812,7 +812,7 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
           "Starter Age Risk",
           rankText(ranks["starterAgeRisk"], String(c.starterAgeRisk.score)),
           driverTone(ranks["starterAgeRisk"], c.starterAgeRisk.score),
-          "RB-specific age curve for the current starter — older starters are likelier to decline or miss time.",
+          "RB-specific age curve for the current starter - older starters are likelier to decline or miss time.",
           age != null ? `age ${age}` : undefined,
         ),
       );
@@ -835,16 +835,16 @@ function renderPathSection(p: HandcuffPlayer, season: number): string {
           "Starter Quality Vulnerability",
           rankText(ranks["starterQualityVulnerability"], String(c.starterQualityVulnerability.score)),
           driverTone(ranks["starterQualityVulnerability"], c.starterQualityVulnerability.score),
-          "Inverted Player Quality of the current starter — a weaker starter is easier to unseat. Backup Player Quality is NOT included here.",
+          "Inverted Player Quality of the current starter - a weaker starter is easier to unseat. Backup Player Quality is NOT included here.",
         ),
       );
     }
     if (has("committee_usage_detected")) {
-      rows.push(`<p class="rbh-warn-note">Committee usage detected — backup already shares the backfield.</p>`);
+      rows.push(`<p class="rbh-warn-note">Committee usage detected - backup already shares the backfield.</p>`);
     }
     if (pto.source === "fallback" && !has("committee_usage_detected")) {
       rows.push(
-        `<p class="rbh-muted">Not enough data to break this down — score uses a neutral baseline.</p>`,
+        `<p class="rbh-muted">Not enough data to break this down - score uses a neutral baseline.</p>`,
       );
     }
     body = rows.join("");
@@ -902,7 +902,7 @@ const BACKFIELD_ROWS: Array<{
     label: "Backfield Goal Line",
     kind: "count",
     tooltip:
-      "Combined {season} starter + top backup goal-line carries per game — high-value scoring touches, ranked vs every team's {season} backfield.",
+      "Combined {season} starter + top backup goal-line carries per game - high-value scoring touches, ranked vs every team's {season} backfield.",
   },
   {
     key: "routes",
@@ -918,12 +918,12 @@ function renderBackfieldSection(p: HandcuffPlayer, season: number): string {
   const body = bv
     ? BACKFIELD_ROWS.map((row) => {
         const c = bv[row.key];
-        // A metric nobody has — routes, in season — was left out of the score,
+        // A metric nobody has - routes, in season - was left out of the score,
         // so it is left off the card rather than shown as "No data".
         if (c.perGame == null && c.percentile == null) return "";
         return renderDriver(
           row.label,
-          rankText(ranks[row.key], c.percentile != null ? String(c.percentile) : "—"),
+          rankText(ranks[row.key], c.percentile != null ? String(c.percentile) : "-"),
           driverTone(ranks[row.key], c.percentile),
           row.tooltip.replace(/\{season\}/g, String(season)),
           backfieldValue(c.perGame, row.kind),
@@ -990,7 +990,7 @@ function renderQualitySection(p: HandcuffPlayer): string {
       `<span class="rbh-driver-score is-warn">No stats available</span></p>`;
   return renderSection(
     "Player Quality",
-    "How good this backup is as a player — independent of his current role behind the starter.",
+    "How good this backup is as a player - independent of his current role behind the starter.",
     p.playerQualityScore,
     p.playerQualityRank,
     p.poolSize,
@@ -1002,7 +1002,7 @@ function renderQualitySection(p: HandcuffPlayer): string {
 /**
  * The player card, as the bundle's drawer shows it: identity, the verdict, the
  * summary, why he ranks here, and the three breakdowns. The standalone
- * player-card-drawer.tsx, section for section, less the depth chart — the
+ * player-card-drawer.tsx, section for section, less the depth chart - the
  * static build it was published as never had depth-chart data to show there.
  *
  * Nothing on it moves with the weights, which is why it can be rendered here
@@ -1031,7 +1031,7 @@ export function renderHandcuffCard(
     : "";
 
   // This week's report on the starter, which is part of why the path score is
-  // what it is — shown only while it is fresh enough to have counted.
+  // what it is - shown only while it is fresh enough to have counted.
   const starterStatus =
     statusFresh && p.starterInjuryStatus && p.starterName
       ? `<span class="rbh-pill is-warn">${escapeHtml(`${p.starterName}: ${p.starterInjuryStatus}`)}</span>`
@@ -1052,8 +1052,8 @@ export function renderHandcuffCard(
   const adp =
     p.adpOrCost != null || p.rosteredPct != null
       ? `<p class="rbh-kv"><span>ADP / Rostered</span><span>${
-          p.adpOrCost != null ? `#${p.adpOrCost}` : "—"
-        } / ${p.rosteredPct != null ? `${p.rosteredPct}%` : "—"}</span></p>`
+          p.adpOrCost != null ? `#${p.adpOrCost}` : "-"
+        } / ${p.rosteredPct != null ? `${p.rosteredPct}%` : "-"}</span></p>`
       : "";
   const cost =
     p.costScore != null ? `<p class="rbh-kv"><span>Cost Value</span><span>${p.costScore}</span></p>` : "";

@@ -1,8 +1,8 @@
 /**
  * RB composite-grade engine.
  *
- * Produces five normalized 0-100 grades — Volume, Production, Explosiveness,
- * Receiving, Elusiveness — plus a blended Overall RB Grade. Every input stat is
+ * Produces five normalized 0-100 grades - Volume, Production, Explosiveness,
+ * Receiving, Elusiveness - plus a blended Overall RB Grade. Every input stat is
  * first converted to a percentile rank across the supplied population (never a
  * raw average), so grades are always relative to the RB pool passed in.
  *
@@ -23,7 +23,7 @@ import { atLeast, clampScore, mix, percentileColumnAgainst, toFiniteNumber as nu
  * Qualifier for the percentile baseline. Tiny-sample backs would otherwise
  * distort the distribution, so percentiles are ranked against RBs meeting this
  * bar (a real ground game OR a real receiving role). Scores are still produced
- * for everyone — unqualified RBs are just measured against the qualified curve.
+ * for everyone - unqualified RBs are just measured against the qualified curve.
  */
 export function isQualifiedRb(row: Record<string, unknown>, scale = 1): boolean {
   return num(row.rushAttempts) >= atLeast(50, scale) || num(row.targets) >= atLeast(25, scale);
@@ -40,7 +40,7 @@ export interface RbCompositeScores {
 
 export type RbScoreKey = keyof RbCompositeScores;
 
-/** Display metadata for each grade — drives column labels, tooltips, radar axes. */
+/** Display metadata for each grade - drives column labels, tooltips, radar axes. */
 export interface RbScoreCategory {
   key: RbScoreKey;
   label: string;
@@ -61,7 +61,7 @@ export const RB_SCORE_CATEGORIES: RbScoreCategory[] = [
     label: 'Volume',
     shortLabel: 'Vol',
     description:
-      'Volume (0-100): workload & opportunity per game — identifies bellcows and high-floor backs. Rush Att/G 35%, Targets/G 30%, Snap% 15%, GL Carries/G 15%, RZ Opp/G 5%.',
+      'Volume (0-100): workload & opportunity per game - identifies bellcows and high-floor backs. Rush Att/G 35%, Targets/G 30%, Snap% 15%, GL Carries/G 15%, RZ Opp/G 5%.',
   },
   {
     key: 'productionScore',
@@ -98,10 +98,10 @@ export const RB_SCORE_KEYS: RbScoreKey[] = RB_SCORE_CATEGORIES.map(c => c.key);
 
 type RbRow = Record<string, unknown>;
 
-// Safe rate helpers — return 0 when the denominator is 0 so divide-by-zero rows
+// Safe rate helpers - return 0 when the denominator is 0 so divide-by-zero rows
 // sink to the bottom of the curve rather than throwing or spiking.
 const fumbleRate = (r: RbRow) => { const a = num(r.rushAttempts); return a > 0 ? num(r.fumbles) / a : 0; };
-// Broken tackles per attempt — invert the "attempts per broken tackle" rate so
+// Broken tackles per attempt - invert the "attempts per broken tackle" rate so
 // higher = breaks tackles more often. 0 attempts/brk-tkl (never broke one) → 0.
 const brokenTackleRate = (r: RbRow) => { const x = num(r.rushAttemptsPerBrokenTackle); return x > 0 ? 1 / x : 0; };
 // A season count per game played. No games → 0, to the bottom of the curve.

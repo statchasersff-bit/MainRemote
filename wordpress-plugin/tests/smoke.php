@@ -6,7 +6,7 @@
  *
  * `php -l` proves a file parses. It does not prove the plugin LOADS: a function
  * declared twice across two files, a constant used before the file defining it
- * is required, a hook callback naming a function that does not exist — all of
+ * is required, a hook callback naming a function that does not exist - all of
  * those parse cleanly and fatal on activation, which on shared hosting is
  * discovered by a white screen.
  *
@@ -90,7 +90,7 @@ function get_queried_object_id() { $o = get_queried_object(); return $o instance
  * Tag boundaries matter here, unlike most of these stubs. WordPress matches a
  * whole registered tag; a strpos for "[statchasers_team" also finds
  * "[statchasers_team_index", which would make an index page answer yes to "is
- * this a team hub" — the exact confusion the two predicates exist to avoid. A
+ * this a team hub" - the exact confusion the two predicates exist to avoid. A
  * stub that cannot tell them apart cannot test them apart.
  */
 function has_shortcode( $content, $tag ) {
@@ -125,7 +125,7 @@ function get_page_uri( $id ) { return 'nfl'; }
  * difference.
  *
  * statchasers_team_find_page() matches on slug AND parent, which is the whole
- * point of it — so a stub that ignores post_parent would let a page built in
+ * point of it - so a stub that ignores post_parent would let a page built in
  * the wrong container pass for one built in the right one. That is the bug
  * these exist to catch.
  */
@@ -355,7 +355,7 @@ function is( $got, $want, $label ) {
 /*
  * Two groups, two processes.
  *
- * Several predicates memoise their answer in a `static` — which is right in
+ * Several predicates memoise their answer in a `static` - which is right in
  * WordPress, where a request renders one page and a Divi template asks the same
  * question hundreds of times, and which means a process can only ever see ONE
  * answer from each of them. `statchasers_team_post_has_index_shortcode()` is
@@ -546,7 +546,7 @@ is( statchasers_h1_tool_supplies_heading(), false, 'any other mode leaves it to 
  * The bug this covers shipped: one measurement taken on a team hub answered for
  * player pages too, so a site whose hub title comes from a builder layout (no
  * H1) and whose player pages come from page.php (one H1) printed a second H1 on
- * every player page — on the setting whose whole job is to prevent that.
+ * every player page - on the setting whose whole job is to prevent that.
  */
 $GLOBALS['options'][ STATCHASERS_H1_MODE_OPTION ] = 'auto';
 $GLOBALS['options'][ STATCHASERS_H1_OPTION ]      = array(
@@ -587,7 +587,7 @@ echo "\nindex container state\n";
  * The state the rebuild button reads.
  *
  * The button exists because the write used to be reachable only from the page
- * build, which is only offered while pages are missing — so a container still
+ * build, which is only offered while pages are missing - so a container still
  * carrying the old wall of links on a complete site had no way to be fixed.
  * These are the five answers it distinguishes; only `empty` and `stub` are
  * written, and `custom` is the one that must never be.
@@ -652,7 +652,7 @@ is(
  *
  * Opening the generated stub in Divi wraps the same words in [et_pb_section]
  * and friends. Reading that as "somebody arranged this page" is what left
- * /nfl/teams/ alone through three releases — and it is the same wrapper that
+ * /nfl/teams/ alone through three releases - and it is the same wrapper that
  * put the grid in the footer, because the_content appends after the closing
  * [/et_pb_section], below every section the builder laid out.
  */
@@ -700,7 +700,7 @@ is( statchasers_h1_should_replace(), false, 'off: never' );
  * The emptied title leaves the source, not just the screen.
  *
  * An SEO audit read View Source on /nfl/players/josh-allen/ and found Divi's
- * `<h1 class="entry-title main_title"></h1>` — the :empty rule hid it from
+ * `<h1 class="entry-title main_title"></h1>` - the :empty rule hid it from
  * readers and from nobody else. The buffer runs from loop_start to the first
  * the_content, which is exactly the span page.php prints the title in.
  */
@@ -779,7 +779,7 @@ is(
 is(
 	statchasers_team_index_is_stub( '<p>' . $lead . '</p><p>and my own note</p>' ),
 	false,
-	'the lead alone is not enough — the wall of links is the signature'
+	'the lead alone is not enough - the wall of links is the signature'
 );
 
 echo "\nplayer index body\n";
@@ -825,7 +825,7 @@ $GLOBALS['page'] = array();
  * `nfl/teams/matchup` while every rewrite rule, filter and sitemap entry in
  * the plugin addresses it as `nfl/matchup`. All 496 pair URLs then resolved to
  * no page, and WordPress's 404 guess redirected each of them to the stray page
- * by slug — so "View matchup" on a hub landed on the holder's own notice.
+ * by slug - so "View matchup" on a hub landed on the holder's own notice.
  *
  * Asserted on the PARENT rather than on "a page was created", because a page
  * was always created; it was created in the wrong place, and the old builder
@@ -902,8 +902,8 @@ unset( $GLOBALS['pages'] );
  * The width a tool is held to inside its host page.
  *
  * The bug: `#left-area { width: 100% }` takes the sidebar's share back, which
- * is right, and on a page Divi has widened the content container for — any
- * page opened in the Divi Builder — it also takes the whole window. Same
+ * is right, and on a page Divi has widened the content container for - any
+ * page opened in the Divi Builder - it also takes the whole window. Same
  * stylesheet on a player page that had not been through the builder gave the
  * content column. One rule, two widths, and the team hubs came out ~700px
  * wider than the player pages they are supposed to match.
@@ -937,7 +937,7 @@ is( false !== strpos( $css, 'width:100%!important' ), true, 'and the sidebar sha
  * `.container { width: 80% }` is not in a media query, so on a phone the
  * profile is read through a 39px margin on each side. The full-width CSS above
  * cannot fix it: that block only speaks inside `min-width: 981px`. These pin
- * the two halves meeting — one rule for every width — and the `!important`,
+ * the two halves meeting - one rule for every width - and the `!important`,
  * without which a Divi Builder page's own container rule outweighs this one.
  */
 $mobile = statchasers_tool_mobile_gutter_css();
@@ -955,7 +955,7 @@ is(
  *
  * Padding `.container` fixed the player pages and left the team hubs flush
  * against the glass, because Divi's page.php prints `.container`, `#content-area`
- * and `#left-area` only when the page builder is NOT used — a hub that has been
+ * and `#left-area` only when the page builder is NOT used - a hub that has been
  * through the builder, and a Theme Builder body layout, both go straight into
  * `#main-content`. So the padding belongs on `#main-content`, the one wrapper
  * every shape prints, and `.container` has to give its own gutter up rather
@@ -976,8 +976,8 @@ is(
  * The site's header outranks the tool.
  *
  * Every tool's sticky furniture carries a z-index meant to be read against its
- * own rows, and on a Theme Builder header — where Divi's 99999 sits on the menu
- * module, inside a wrapper that is itself a stacking context — those small
+ * own rows, and on a Theme Builder header - where Divi's 99999 sits on the menu
+ * module, inside a wrapper that is itself a stacking context - those small
  * numbers win instead, and the tab bar prints through the open mobile menu.
  *
  * The second assertion is the one that matters. `position: relative` is the
@@ -997,7 +997,7 @@ is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same 
  * This is the assertion that would have caught the actual mistake. The gutter
  * went in on the player pages, because that is where it was reported, and the
  * teams index was still reading through a 43px margin on each side a day later
- * — the same "fixed where it was seen rather than everywhere it applied" that
+ * - the same "fixed where it was seen rather than everywhere it applied" that
  * the host-override blocks in the stylesheets already record having done once.
  * Both rules are about the HOST page, so every file that mounts a tool wants
  * them; a sixth tool added without these two lines is the regression.
@@ -1037,7 +1037,7 @@ foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats'
  * payload so the answers are not sitting in the page twice. Three things can
  * break silently: the parse can come back empty and leave the page with no
  * structured data, a malformed entry can reach the node, and the strip can take
- * the table with it. The last is the one worth a test — a greedy pattern there
+ * the table with it. The last is the one worth a test - a greedy pattern there
  * eats everything between the island and the next </script> on the page.
  */
 /*
@@ -1045,7 +1045,7 @@ foreach ( array( 'team', 'player', 'fpa', 'schedule', 'rankings', 'player-stats'
  *
  * The controls are links, and the bundle intercepts them so that switching
  * scoring format does not change the page's address. This is the path when it
- * cannot — scripting off, or a click that beat the bundle to the page — and
+ * cannot - scripting off, or a click that beat the bundle to the page - and
  * before it existed the link went somewhere that rendered the DEFAULT table.
  * A control that appears to work and does not is worse than one that is absent.
  *
@@ -1356,7 +1356,7 @@ $GLOBALS['page'] = array();
  */
 echo "\nthe advanced stats table reads its address\n";
 
-// The position is read only on the page that mounts the table — see
+// The position is read only on the page that mounts the table - see
 // smoke-headings.php for an article that does not.
 $stats_page               = new WP_Post();
 $stats_page->ID           = 12;
@@ -1376,8 +1376,8 @@ is( statchasers_player_stats_args( array() ), array( 'pos' => 'qb', 'season' => 
 is( statchasers_player_stats_title(), '', 'with no fragment, the bare page keeps its own title' );
 is( statchasers_player_stats_canonical(), '', 'and its own canonical' );
 
-// A position address — the address outranking the attribute, its title and
-// its canonical — is asserted in smoke-headings.php: the "does this page mount
+// A position address - the address outranking the attribute, its title and
+// its canonical - is asserted in smoke-headings.php: the "does this page mount
 // the table" answer those read is memoised, and an earlier group has already
 // asked it about a page of its own.
 
@@ -1441,8 +1441,8 @@ is(
 
 /*
  * The RB handcuff board's schema node: one CreativeWork, hung off whichever
- * node is the page, with no rating — the standalone plugin's final answer after
- * WebApplication earned it a Search Console error — and the season read off the
+ * node is the page, with no rating - the standalone plugin's final answer after
+ * WebApplication earned it a Search Console error - and the season read off the
  * fragment rather than written in.
  */
 echo "\nthe RB handcuff board describes itself to Rank Math\n";
@@ -1765,7 +1765,7 @@ $GLOBALS['wpdb'] = $saved_wpdb;
 
 /*
  * The RB handcuff board as mainEntity: a WebPage (or kin) only. The old test
- * was "any @type containing Page", and FAQPage contains it — its mainEntity is
+ * was "any @type containing Page", and FAQPage contains it - its mainEntity is
  * its questions.
  */
 echo "\nthe RB handcuff board never takes the FAQPage's mainEntity\n";
@@ -1868,7 +1868,7 @@ is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Sch
 is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), false, 'and another team\'s title is not this team\'s' );
 
 /*
- * The other groups. Their failures are this run's failures — a split that only
+ * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
 foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak' ) as $child_group ) {

@@ -2,8 +2,8 @@
  * Hand-written sentences for a game recap, per game.
  *
  * The recap (recap.ts) is written from the box score and says only what the
- * numbers on the page can back. What a person knows and the data does not —
- * a quarterback's first playoff win, a record broken — goes here, and is
+ * numbers on the page can back. What a person knows and the data does not -
+ * a quarterback's first playoff win, a record broken - goes here, and is
  * printed as given at the start of the recap's third paragraph, before the
  * line about where the win led.
  *

@@ -1,12 +1,12 @@
 /**
  * The Fantasy Points Allowed routes.
  *
- *   GET /fpa                      — the standalone page
+ *   GET /fpa                      - the standalone page
  *   GET /fpa?format=ppr&view=adjusted
- *   GET /fpa?embed=1              — the same page, stripped for embedding
- *   GET /fpa/download.csv         — the table on screen, as CSV
- *   GET /embed/fpa                — the bare fragment, for the WordPress mount
- *   POST /api/fpa/ingest          — refresh the figures now
+ *   GET /fpa?embed=1              - the same page, stripped for embedding
+ *   GET /fpa/download.csv         - the table on screen, as CSV
+ *   GET /embed/fpa                - the bare fragment, for the WordPress mount
+ *   POST /api/fpa/ingest          - refresh the figures now
  *
  * `/embed/fpa` is also what the bundle re-fetches when a reader changes scoring
  * format or view, which is why both page routes hand the markup an address for
@@ -15,7 +15,7 @@
  *
  * Mirrors routes/team.ts and routes/player.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does
- * not compete with statchasers.com — and by the same token the page is
+ * not compete with statchasers.com - and by the same token the page is
  * invisible to search until `[statchasers_fpa]` embeds it.
  */
 
@@ -58,7 +58,7 @@ const TEAM_PATH_PREFIX = "/team/";
  * Only `embed`, and only as the canonical `?embed=1`.
  *
  * Echoing the whole query into every team link would let any parameter anyone
- * appends mint 32 more crawlable URLs — the duplicate URL space the canonical
+ * appends mint 32 more crawlable URLs - the duplicate URL space the canonical
  * work exists to prevent. Format and view are page state and deliberately do
  * not propagate into links off the page.
  */
@@ -185,7 +185,7 @@ router.get("/fpa", (req, res) => {
  * The table as CSV.
  *
  * Built from the same `getFpaTable` the page renders, so the file and the
- * screen can never disagree — the standalone app generated its CSV from a
+ * screen can never disagree - the standalone app generated its CSV from a
  * second query and a second formatter.
  */
 router.get("/fpa/download.csv", (req, res) => {
@@ -234,7 +234,7 @@ router.get("/embed/fpa", (req, res) => {
         // statchasers.com page, where a relative /embed/fpa resolves against
         // WordPress. Built from the request rather than configured, so it is
         // whatever origin the plugin actually reached us on. The CSV is the
-        // same kind of thing — a route on this server, not a page on theirs.
+        // same kind of thing - a route on this server, not a page on theirs.
         endpoint: browserEndpoint(req, FPA_FRAGMENT_PATH),
         csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
       });
@@ -267,7 +267,7 @@ router.get("/embed/fpa", (req, res) => {
 });
 
 /**
- * POST /api/fpa/ingest — refresh the figures now.
+ * POST /api/fpa/ingest - refresh the figures now.
  *
  * The scheduled path. `scripts/ingest-fpa.mjs` writes to whatever database the
  * process running it is pointed at, which makes it the wrong tool for
@@ -278,14 +278,14 @@ router.get("/embed/fpa", (req, res) => {
  * Point a Replit Scheduled Deployment at `scripts/refresh-fpa.mjs` weekly, in
  * season, after Monday night.
  *
- * Answers when the ingest has finished — two ~7MB CSVs and a transaction, which
- * measured a second and a half from the workspace — because a scheduler needs
+ * Answers when the ingest has finished - two ~7MB CSVs and a transaction, which
+ * measured a second and a half from the workspace - because a scheduler needs
  * the verdict, and a 202 that always says "accepted" would report a broken
  * upstream as a successful refresh. A caller that gives up waiting does not
  * cancel anything: the run finishes and `/api/status` reports it.
  *
  * Guarded by INGEST_SECRET exactly as POST /api/ingest is, and for a sharper
- * reason than that one has — each call costs two large fetches from nflverse,
+ * reason than that one has - each call costs two large fetches from nflverse,
  * so an open endpoint is a way to spend someone else's bandwidth. Unset refuses.
  */
 router.post("/api/fpa/ingest", (req, res) => {
@@ -312,7 +312,7 @@ router.post("/api/fpa/ingest", (req, res) => {
 
       res.set("Cache-Control", "no-store").json({
         ok: true,
-        // True when a run was already going and this request waited on it —
+        // True when a run was already going and this request waited on it -
         // one ingest, two callers, and nobody left guessing which.
         joined,
         season: result.currentSeason,

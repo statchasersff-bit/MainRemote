@@ -4,7 +4,7 @@
  * WordPress enqueues every tool's CSS and JS with `?ver=<the version
  * /embed/assets.json reports>`. The version was read from process.cwd(), which
  * is the package in development and in this suite, and somewhere else on the
- * deployment — so production answered "0", WordPress fell back to its own
+ * deployment - so production answered "0", WordPress fell back to its own
  * constant, and no deploy ever busted a cached asset. The server here is
  * started from another directory on purpose.
  */

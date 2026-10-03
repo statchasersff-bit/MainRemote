@@ -3,7 +3,7 @@
  *
  * All of it is read from the environment at call time rather than at module
  * load, so a value can be changed on a running process in a test without
- * reaching into module state — and so importing this file costs nothing and
+ * reaching into module state - and so importing this file costs nothing and
  * can never throw on a deployment that has none of it set.
  */
 
@@ -23,7 +23,7 @@ export function xIngestionEnabled(): boolean {
 /**
  * Whether startup applies the seed account list.
  *
- * On by default — a fresh deployment should arrive with the reporters already
+ * On by default - a fresh deployment should arrive with the reporters already
  * configured. Off is for a test, which needs the account table to contain
  * exactly the rows it put there and nothing else; 37 real handles appearing in
  * the middle of a fixture-driven run is not a seed, it is contamination.
@@ -46,7 +46,7 @@ function envMs(name: string, fallback: number): number {
 /**
  * How often the queue wakes up.
  *
- * The tick is short and the work per tick is small — that is what "staggered"
+ * The tick is short and the work per tick is small - that is what "staggered"
  * means here. Every 30 seconds the poller claims at most X_POLL_BATCH accounts
  * whose own interval has elapsed, so 37 accounts on a 5-minute interval spread
  * themselves across ten ticks instead of arriving as one burst of 37 outbound
@@ -57,7 +57,7 @@ export function tickIntervalMs(): number {
   return envMs("X_POLL_TICK_MS", 30_000);
 }
 
-/** Accounts claimed per tick. Small on purpose — see tickIntervalMs. */
+/** Accounts claimed per tick. Small on purpose - see tickIntervalMs. */
 export function pollBatchSize(): number {
   const raw = Number(process.env["X_POLL_BATCH"]);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 4;
@@ -115,11 +115,11 @@ export function backoffCapMs(): number {
  * requests in under a second from this machine earned a 429 on all four. The
  * batch is checked one account at a time anyway (see runXSweep), and this
  * spreads those few requests over the front of the tick instead of firing them
- * back to back — which is what "stagger across the interval" has to mean when
+ * back to back - which is what "stagger across the interval" has to mean when
  * the interval belongs to someone else's server.
  */
 export function requestGapMs(): number {
-  // Zero is a meaningful value here, unlike every other interval in this file —
+  // Zero is a meaningful value here, unlike every other interval in this file -
   // it is what a test sets so a fixture-driven sweep does not spend six seconds
   // being polite to a local stub. So this reads the variable itself rather than
   // going through envMs(), whose "0 means unset" rule is right for the others.
@@ -130,7 +130,7 @@ export function requestGapMs(): number {
 /**
  * How long to stop polling entirely after being rate-limited.
  *
- * A 429 is not a fact about the account that happened to receive it — it is a
+ * A 429 is not a fact about the account that happened to receive it - it is a
  * fact about this IP's budget, and backing off that one account while
  * continuing to hammer the other thirty-six with the same budget would be
  * exactly the wrong reading of it. Measured recovery was about two minutes;

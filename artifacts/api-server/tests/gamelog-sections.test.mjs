@@ -1,6 +1,6 @@
 /**
- * The Game Log tab's generated sections — "Where His Weeks Finished" and the
- * "Game-by-Game Breakdown" — against the spec's own test cases.
+ * The Game Log tab's generated sections - "Where His Weeks Finished" and the
+ * "Game-by-Game Breakdown" - against the spec's own test cases.
  *
  * Part 6 of mak's 2026-10-01 spec is Jacoby Brissett's 2026 through Week 3
  * with the expected output written out word for word, and these tests assert
@@ -12,7 +12,7 @@
  * Driven through the pure section renderers with plain input objects, so
  * nothing here depends on what is in the stores the day the suite runs. The
  * one knowing deviation from Part 6: the QB1 band is asserted at 37.1%, not
- * the spec's worked 35.5% — 35.5 is 11/31, the pin position of rank 12,
+ * the spec's worked 35.5% - 35.5 is 11/31, the pin position of rank 12,
  * where the spec's own formula and its half-rank rationale (and its QB2
  * worked example, 23.5/31 = 75.8%) put the band edge at 11.5/31. See
  * bandEdges() in src/lib/player/gamelog-sections.ts.

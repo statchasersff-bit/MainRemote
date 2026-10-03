@@ -1,13 +1,13 @@
 /**
  * The NFL Player Page routes.
  *
- *   GET /player                      — index of the indexed players
- *   GET /player/:slug                — the player page
- *   GET /player/:slug/:section/      — one section of it, at its own address
- *   GET /player/:slug?embed=1        — the same page, stripped for embedding
- *   GET /player/:slug?format=half    — the same page in another scoring format
- *   GET /embed/player/:slug          — the bare fragment, for the WordPress mount
- *   GET /embed/players               — the index of every profile, for /nfl/players/
+ *   GET /player                      - index of the indexed players
+ *   GET /player/:slug                - the player page
+ *   GET /player/:slug/:section/      - one section of it, at its own address
+ *   GET /player/:slug?embed=1        - the same page, stripped for embedding
+ *   GET /player/:slug?format=half    - the same page in another scoring format
+ *   GET /embed/player/:slug          - the bare fragment, for the WordPress mount
+ *   GET /embed/players               - the index of every profile, for /nfl/players/
  *
  * `/player/:slug/:section/` is the public spelling: the address the canonical
  * names, the tab strip links to and the WordPress rewrite mirrors under
@@ -17,7 +17,7 @@
  *
  * Mirrors routes/team.ts, including the posture that matters most: every route
  * ships `noindex, indexifembedded`, so the bare tool URL does not compete with
- * statchasers.com — and, by the same token, these pages are invisible to search
+ * statchasers.com - and, by the same token, these pages are invisible to search
  * until something embeds them. `[statchasers_player]` is that something.
  *
  * Unlike the team hub there is no alias redirect. A team has a handful of
@@ -58,7 +58,7 @@ function isEmbed(req: Request): boolean {
   return TRUTHY.has(String(req.query["embed"] ?? "").trim().toLowerCase());
 }
 
-/** This origin's own player path — the prefix used when nothing overrides it. */
+/** This origin's own player path - the prefix used when nothing overrides it. */
 const PLAYER_PATH_PREFIX = "/player/";
 const TEAM_PATH_PREFIX = "/team/";
 const MATCHUP_PATH_PREFIX = "/nfl/";
@@ -69,7 +69,7 @@ const FPA_PATH = "/fpa";
  *
  * Only `embed`, and only as the canonical `?embed=1`. Echoing the whole query
  * back into every link would let any parameter anyone appends mint another
- * crawlable URL — the duplicate URL space the canonical work exists to prevent.
+ * crawlable URL - the duplicate URL space the canonical work exists to prevent.
  * The scoring format is deliberately NOT carried: it is per-page state, and
  * propagating it would multiply every link by three.
  */
@@ -135,7 +135,7 @@ function playerSectionPath(slug: string, section: string): string {
  * The profile opens on the Overview, so `/<slug>/` and `/<slug>/overview/` were
  * one page answering at two self-canonical addresses. The profile keeps it:
  * `/overview/` is a 301 to the profile, and the Overview tab links there. Kept
- * in SECTIONS so the old address redirects instead of 404ing — it is indexed.
+ * in SECTIONS so the old address redirects instead of 404ing - it is indexed.
  */
 const PROFILE_SECTION = "overview";
 
@@ -158,7 +158,7 @@ function queryString(req: Request, drop: string[] = []): string {
  *
  * A slug changes when two players share a name and the claim on the bare form
  * moves, or when a source corrects a spelling. The profile is the same profile,
- * so the old URL is a 301 rather than a 404 — the pages are indexed under it
+ * so the old URL is a 301 rather than a 404 - the pages are indexed under it
  * and the links to them are in other people's posts.
  *
  * The section rides along, so `/player/<old>/injury/` lands on
@@ -203,7 +203,7 @@ function section(req: Request): string | undefined {
  *
  * Same constraint as `?adv=`, and the same reason: a season with no log file
  * behind it is ignored rather than rendered as an empty table. Whether this
- * PLAYER played that season is the data layer's call, not the router's — it is
+ * PLAYER played that season is the data layer's call, not the router's - it is
  * the only thing holding the list of seasons he appeared in.
  *
  * Deliberately not part of the canonical. One game log per player is the page
@@ -243,7 +243,7 @@ function notFound(res: Response): void {
 /**
  * A real player, a section we do not serve.
  *
- * A true 404, deliberately — falling through to the profile here would let any
+ * A true 404, deliberately - falling through to the profile here would let any
  * path segment mint an indexable copy of it, once per player. The way back is
  * the profile the reader nearly reached, not the roster index: they have the
  * right player and the wrong page, and sending them to the top of the list is
@@ -290,7 +290,7 @@ router.get("/player", (req, res) => {
  *
  * `scripts/create-player-pages.sh` needs a name, a position and a team for
  * every page it creates, and the alternative to this endpoint is a copy of the
- * player list pasted into the script — which is stale the moment a rookie is
+ * player list pasted into the script - which is stale the moment a rookie is
  * added. The deployment is the thing that knows which slugs resolve, so it is
  * the thing that answers.
  *
@@ -317,7 +317,7 @@ function indexHash(value: string): string {
  * The index as a fragment, for the container page at /nfl/players/.
  *
  * Every profile has a mount; the page that lists them did not, so it was left
- * as whatever the builder wrote into it once — a stub list in the theme's own
+ * as whatever the builder wrote into it once - a stub list in the theme's own
  * styling, in front of the profiles it points at. This is that page's mount,
  * and the twin of /embed/teams.
  *
@@ -389,7 +389,7 @@ router.get("/player/:slug", (req, res) => {
       return;
     }
 
-    // `?section=` is the internal spelling — it is how the WordPress plugin
+    // `?section=` is the internal spelling - it is how the WordPress plugin
     // fetches a scoped fragment. A reader or a crawler holding it is sent to
     // the one public address that section has, or the same page would answer
     // at two URLs. The rest of the query rides along: ?format=half names a
@@ -436,8 +436,8 @@ router.get("/player/:slug", (req, res) => {
 
       const dev = liveReload().enabled;
 
-      // The version fingerprints every input to the RENDER — the data, not the
-      // shell — so in development an edit to player.html would revalidate to a
+      // The version fingerprints every input to the RENDER - the data, not the
+      // shell - so in development an edit to player.html would revalidate to a
       // 304 and the preview would keep showing the old markup. Validators are
       // for production; a dev response is always fresh and never conditional.
       if (!dev) {
@@ -482,7 +482,7 @@ router.get("/player/:slug", (req, res) => {
  * The address the canonical names and the tab strip links to. The segment is
  * checked against the closed list BEFORE the player is looked up, so an unknown
  * section on a real player is a 404 rather than the full profile wearing a
- * second name — an unbounded supply of duplicates is exactly what the check
+ * second name - an unbounded supply of duplicates is exactly what the check
  * prevents.
  *
  * Everything else about the render is identical to the profile's: same hero,
@@ -574,7 +574,7 @@ router.get("/player/:slug/:section", (req, res) => {
  * The bare fragment, for the WordPress plugin to print into a page.
  *
  * The direct mount is what makes the content belong to the statchasers.com URL
- * rather than to an iframe — the same reason the news tool has /embed/ssr and
+ * rather than to an iframe - the same reason the news tool has /embed/ssr and
  * the hubs have /embed/team/:slug. Always rendered in embedded mode: the host
  * page supplies the H1 and the page chrome.
  */
@@ -587,12 +587,12 @@ router.get("/embed/player/:slug", (req, res) => {
     }
 
     // Resolved rather than redirected. This address is not indexed and nobody
-    // types it — it is the fetch a WordPress page makes for its own body — so a
+    // types it - it is the fetch a WordPress page makes for its own body - so a
     // 301 here would only cost that page a round trip. The public URLs are the
     // ones that get the redirect.
     const slug = resolveSlugAlias(requested) ?? requested;
 
-    // Links point at the public site's pages, not at this origin — otherwise
+    // Links point at the public site's pages, not at this origin - otherwise
     // clicking a team inside a WordPress page would send the reader to the bare
     // tool.
     const playerPrefix = (

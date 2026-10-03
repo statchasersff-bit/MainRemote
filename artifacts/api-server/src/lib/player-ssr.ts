@@ -8,12 +8,12 @@
  *
  * The rendered fragment is cached per player and per option set, keyed on a
  * fingerprint of the underlying data. That makes it an exact cache rather than
- * a timed one — a rebuilt data file or a new news item produces a new key and
+ * a timed one - a rebuilt data file or a new news item produces a new key and
  * the next request re-renders, and nothing else does.
  *
  * The cache is bounded and larger than the team hub's, because the population
  * is: there are 32 teams and several hundred indexed players. It is a memory
- * ceiling, not a working constraint — a miss costs one render, and a render is
+ * ceiling, not a working constraint - a miss costs one render, and a render is
  * arithmetic over JSON already in memory.
  */
 
@@ -35,7 +35,7 @@ import { LruCache } from "./lru";
 
 export interface PlayerSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   season: number;
   /** The player's display name, for the 404-vs-500 distinction upstream. */
@@ -60,7 +60,7 @@ function optionKey(
     options.matchupPathPrefix ?? "",
     options.fpaPath ?? "",
     options.linkQuery ?? "",
-    // The section scopes the whole render — one panel instead of seven, a
+    // The section scopes the whole render - one panel instead of seven, a
     // different heading, no tab strip. Left out of the key, a request for
     // ?section=injury poisons the cache for the full profile at the same slug.
     options.section ?? "",
@@ -69,7 +69,7 @@ function optionKey(
     // renders the opening heading as an <h1> and the plain request renders it
     // as an <h2>, so left out of the key WHICHEVER REQUEST ARRIVES FIRST pins
     // the answer for every later one at that slug. A host running "let the tool
-    // supply the heading" — which also empties the theme's own title — then
+    // supply the heading" - which also empties the theme's own title - then
     // serves pages with no <h1> at all, or a plain mount serves two.
     options.ownHeading ?? false,
     data.format ?? "ppr",
@@ -98,7 +98,7 @@ async function renderWithData(
   dataOptions: PlayerDataOptions,
 ): Promise<{ result: PlayerSsrResult; data: PlayerPageData } | null> {
   // Warm the news freshness snapshot before its version is read into the cache
-  // key — the same ordering lib/ssr.ts and lib/team-ssr.ts need, and for the
+  // key - the same ordering lib/ssr.ts and lib/team-ssr.ts need, and for the
   // same reason: a cold first render would otherwise key itself on the empty
   // version and then serve that entry to requests looking at a different one.
   // Best effort: a database that cannot answer costs this page its news, not
@@ -133,7 +133,7 @@ const INDEXED_SECTIONS = new Set(["stats", "game-log", "outlook", "injury", "new
  * On WordPress a section URL is a rewrite onto the profile page, so Rank Math
  * would give it the profile's title, description and canonical: six pages
  * claiming to be one. The plugin reads this and hands Rank Math the section's
- * own copy — written here, once, by playerPageMeta(), the same words this
+ * own copy - written here, once, by playerPageMeta(), the same words this
  * server's standalone page wears. The title goes without the site name; the
  * plugin appends its own. Embedded section fragments only: the profile's
  * title is the one stored on its page.

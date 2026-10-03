@@ -11,7 +11,7 @@ const GAME_LOGS_DIR = path.resolve(DATA_DIR, 'game_logs');
 const PLAYERS_FILE = path.resolve(DATA_DIR, 'players.json');
 
 // Derived, not typed: a hardcoded list is wrong every September and fails
-// silently — the build succeeds and every page shows last season. Name seasons
+// silently - the build succeeds and every page shows last season. Name seasons
 // on the command line to rebuild one year: `node buildGameLogs.js 2026`.
 const SEASONS = seasonsFromArgs();
 const REGULAR_WEEKS = 18;
@@ -191,7 +191,7 @@ async function main() {
         }
         seasonData[playerId].push({
           week,
-          opp: opp || '—',
+          opp: opp || '-',
           team: team || null,
           stats: extracted,
         });
@@ -205,8 +205,8 @@ async function main() {
       console.warn(`  Every week failed for ${season}; leaving the file on disk alone.`);
       continue;
     }
-    // A season with no games yet — every March to September, when the
-    // unattended refresh asks for the new league year — or a response that
+    // A season with no games yet - every March to September, when the
+    // unattended refresh asks for the new league year - or a response that
     // came back empty. Writing it would publish an empty season file (and
     // could replace a full one with nothing).
     if (Object.keys(seasonData).length === 0) {

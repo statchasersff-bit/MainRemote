@@ -1,8 +1,8 @@
 /**
  * Where a player's efficiency sits among everyone else at their position.
  *
- * The page's one piece of genuine league context. Efficiency rates — yards per
- * catch, catch rate, touchdowns per target — are meaningless in isolation:
+ * The page's one piece of genuine league context. Efficiency rates - yards per
+ * catch, catch rate, touchdowns per target - are meaningless in isolation:
  * 12.8 yards per catch is excellent for a tight end and unremarkable for a
  * deep-threat receiver. So each rate is reported against the position's own
  * distribution for that season, as a percentile.
@@ -15,7 +15,7 @@
  * is true and useless.
  *
  * The same threshold decides whether the PLAYER gets percentiles. Below it the
- * benchmarks still render — the position averages are worth seeing — but the
+ * benchmarks still render - the position averages are worth seeing - but the
  * player's own percentiles are withheld rather than computed from a sample too
  * small to mean anything. `playerQualified` says which case the reader is
  * looking at, and the renderer says so on the page.
@@ -63,7 +63,7 @@ function statValue(stats: GameLogStats, key: string): number {
  * A quarterback's "targets" are pass attempts and their "catches" are
  * completions, so the same three rates describe throwing accuracy for a QB and
  * receiving for everyone else. Quarterbacks additionally get fantasy points per
- * usage — attempts plus twice carries — which is the closest thing to an
+ * usage - attempts plus twice carries - which is the closest thing to an
  * efficiency-per-opportunity number the position has.
  */
 function positionBenchmarks(

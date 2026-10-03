@@ -42,8 +42,8 @@ export function emptyPosRecord<T>(make: () => T): Record<FantasyPosition, T> {
 /**
  * Raw and adjusted FPA for every defense, for one scoring format.
  *
- * Offense strength is each team's own per-game production at the position — the
- * mirror image of FPA — averaged over the opponents a defense actually faced,
+ * Offense strength is each team's own per-game production at the position - the
+ * mirror image of FPA - averaged over the opponents a defense actually faced,
  * counting repeat meetings each time. A defense that faced offenses averaging
  * two points a game above league average has two points taken off its raw
  * figure.

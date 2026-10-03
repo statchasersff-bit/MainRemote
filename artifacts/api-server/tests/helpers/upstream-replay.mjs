@@ -2,7 +2,7 @@
  * A local stand-in for ESPN and Sleeper, serving responses recorded on
  * 2026-09-30 (tests/fixtures/team-upstream-2026-09-30.json.gz) for the ten
  * teams tests/team.test.mjs visits: NE, WAS, LV, CAR, PHI, BUF, DAL, BAL, CIN
- * and GB.
+ * and GB, plus the league standings table (recorded 2026-10-03).
  *
  * Point a server at it with `replay.env` (the SC_*_BASE overrides in
  * src/lib/team/upstream.ts). Anything not recorded answers 404, which the

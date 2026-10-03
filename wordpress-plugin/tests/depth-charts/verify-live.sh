@@ -28,7 +28,7 @@ for team in houston-texans dallas-cowboys buffalo-bills; do
   "${CURL[@]}" -D - -o /dev/null "$url" | grep -iE '^(x-scdc-route|cf-cache-status|x-cache|x-litespeed-cache):' | sed 's/^/    /'
 done
 
-section "$TOOL/fantasy/  (parent — must keep its generic title)  [$(status_of "$TOOL/fantasy/")]"
+section "$TOOL/fantasy/  (parent - must keep its generic title)  [$(status_of "$TOOL/fantasy/")]"
 head_tags "$TOOL/fantasy/"
 
 section 'Invalid slugs must 404 (not 200, not a soft 404)'

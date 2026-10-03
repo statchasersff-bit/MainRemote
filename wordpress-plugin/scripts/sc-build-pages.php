@@ -10,7 +10,7 @@
  *
  * HOW TO USE IT
  *
- *   1. Upload this file to the WordPress root — the directory holding
+ *   1. Upload this file to the WordPress root - the directory holding
  *      wp-load.php, usually public_html/.
  *   2. Give it a token. Add a line to wp-config.php, above "That's all, stop
  *      editing!":
@@ -33,7 +33,7 @@
  *   6. Optionally add &images=1 to also sideload the 32 team crests as featured
  *      images. Off by default: it is 32 remote downloads in one request, and on
  *      shared hosting that is the one step likely to hit max_execution_time.
- *      It is resumable — pages that already have a featured image are skipped —
+ *      It is resumable - pages that already have a featured image are skipped -
  *      so if it dies partway, just load the same URL again.
  *
  *   7. DELETE THIS FILE, and take the define() back out of wp-config.php. It
@@ -42,7 +42,7 @@
  *
  * WHAT IT DOES NOT DO
  *
- * No canonical, no <title>, no meta description of its own — Rank Math owns
+ * No canonical, no <title>, no meta description of its own - Rank Math owns
  * those, and the three meta values written below are the page's only ones.
  * Same division of labour as the plugin.
  *
@@ -53,8 +53,8 @@
  * No token lives in this file. It used to: a fixed secret, committed, which
  * made it the same secret on every site this file was ever uploaded to and
  * readable by anyone who could read the repository. The token now comes from
- * the site itself — SC_BUILD_PAGES_TOKEN in wp-config.php, or the environment
- * variable of the same name — so each install has its own and it is never in
+ * the site itself - SC_BUILD_PAGES_TOKEN in wp-config.php, or the environment
+ * variable of the same name - so each install has its own and it is never in
  * version control. See step 2 above.
  */
 
@@ -177,7 +177,7 @@ $sc_token = '' !== sc_build_token() ? sc_require_token() : '';
  * Find the WordPress root from wherever this file happens to have been dropped.
  *
  * "Put it in the WordPress root" assumes you can tell which directory that is,
- * and on shared hosting you often cannot — the root may be public_html, or
+ * and on shared hosting you often cannot - the root may be public_html, or
  * public_html/<domain>, or somewhere a control panel calls something else
  * entirely. So look, rather than insist.
  *
@@ -260,7 +260,7 @@ if ( null === $sc_build_root ) {
 require_once $sc_build_root . '/wp-load.php';
 
 // wp-config.php has run, so its constant is readable now. Before anything else
-// — the admin check included — so an unconfigured install says so plainly.
+// - the admin check included - so an unconfigured install says so plainly.
 if ( '' === $sc_token ) {
 	$sc_token = sc_require_token();
 }
@@ -296,7 +296,7 @@ $sc_log = array();
  * version, and no amount of reasoning from outside the server could say why.
  * This does not guess. It asks PHP which file defines the running shortcode,
  * and lists every StatChasers file it can find with the version each one
- * declares — so "which copy is live" stops being a theory.
+ * declares - so "which copy is live" stops being a theory.
  *
  * @return array<int,array{0:string,1:string}> Label/value pairs.
  */
@@ -325,7 +325,7 @@ function sc_diagnostics() {
 			$out[] = array( '[statchasers_team] is defined in', '(could not resolve: ' . $e->getMessage() . ')' );
 		}
 	} else {
-		$out[] = array( '[statchasers_team]', 'NOT REGISTERED — no plugin is providing it' );
+		$out[] = array( '[statchasers_team]', 'NOT REGISTERED - no plugin is providing it' );
 	}
 
 	if ( defined( 'STATCHASERS_NEWS_VERSION' ) ) {
@@ -346,7 +346,7 @@ function sc_diagnostics() {
 		$out[] = array(
 			'Plugin: ' . $data['Name'],
 			sprintf(
-				'v%s — %s — %s',
+				'v%s - %s - %s',
 				$data['Version'],
 				$file,
 				in_array( $file, $active, true ) ? 'ACTIVE' : 'inactive'
@@ -358,7 +358,7 @@ function sc_diagnostics() {
 		if ( false === stripos( $file, 'statchasers' ) && false === stripos( (string) $data['Name'], 'statchasers' ) ) {
 			continue;
 		}
-		$out[] = array( 'MU-plugin: ' . $data['Name'], sprintf( 'v%s — %s — always on', $data['Version'], $file ) );
+		$out[] = array( 'MU-plugin: ' . $data['Name'], sprintf( 'v%s - %s - always on', $data['Version'], $file ) );
 	}
 
 	// Modification times say whether an upload landed at all.
@@ -370,13 +370,13 @@ function sc_diagnostics() {
 				$out[] = array(
 					'File on disk',
 					sprintf(
-						'%s — modified %s — %d bytes',
+						'%s - modified %s - %d bytes',
 						$target,
 						gmdate( 'Y-m-d H:i:s', (int) filemtime( $target ) ) . ' UTC',
 						(int) filesize( $target )
 					),
 				);
-				$out[] = array( 'Writable?', is_writable( $target ) ? 'yes' : 'NO — uploads cannot replace it' );
+				$out[] = array( 'Writable?', is_writable( $target ) ? 'yes' : 'NO - uploads cannot replace it' );
 			}
 		}
 	}
@@ -432,7 +432,7 @@ function sc_ensure_page( $slug, $title, $parent, $content, $go ) {
 	$existing = sc_find_page( $slug, $parent );
 
 	if ( $existing ) {
-		sc_say( 'skip', sprintf( 'exists: %s (post %d) — left alone', $slug, $existing ) );
+		sc_say( 'skip', sprintf( 'exists: %s (post %d) - left alone', $slug, $existing ) );
 		return $existing;
 	}
 
@@ -493,7 +493,7 @@ function sc_set_meta( $id, $key, $value, $go ) {
  * Sideload the team crest as the featured image.
  *
  * Skipped when one is already set, or every re-run would put another 32 copies
- * in the media library — which is also what makes the image pass resumable
+ * in the media library - which is also what makes the image pass resumable
  * after a timeout.
  *
  * @param int    $id   Post ID.
@@ -519,7 +519,7 @@ function sc_set_crest( $id, $name, $abbr, $go ) {
 	$file = download_url( $url, 30 );
 
 	if ( is_wp_error( $file ) ) {
-		sc_say( 'warn', sprintf( '%s: crest download failed (%s) — set it by hand', $name, $file->get_error_message() ) );
+		sc_say( 'warn', sprintf( '%s: crest download failed (%s) - set it by hand', $name, $file->get_error_message() ) );
 		return;
 	}
 
@@ -550,7 +550,7 @@ function sc_set_crest( $id, $name, $abbr, $go ) {
 /* ------------------------------------------------------------------- the work */
 
 if ( ! shortcode_exists( 'statchasers_team' ) ) {
-	sc_say( 'warn', 'The [statchasers_team] shortcode is not registered — is the StatChasers plugin active? Pages will be created but will render nothing until it is.' );
+	sc_say( 'warn', 'The [statchasers_team] shortcode is not registered - is the StatChasers plugin active? Pages will be created but will render nothing until it is.' );
 }
 
 // The parents, resolved or created one path segment at a time.
@@ -568,7 +568,7 @@ foreach ( explode( '/', SC_BUILD_PARENT_PATH ) as $sc_segment ) {
 
 	if ( ! $sc_next ) {
 		if ( $sc_go ) {
-			sc_say( 'warn', sprintf( 'could not resolve or create /%s/ — stopping', $sc_segment ) );
+			sc_say( 'warn', sprintf( 'could not resolve or create /%s/ - stopping', $sc_segment ) );
 			break;
 		}
 		// Planning: there is no real id to hang the children off, so the plan
@@ -597,14 +597,14 @@ foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
 
 		$sc_content = (string) get_post_field( 'post_content', $sc_before );
 		if ( false === strpos( $sc_content, 'statchasers_team' ) && false === strpos( $sc_content, 'sc_team_hub' ) ) {
-			sc_say( 'warn', sprintf( '%s (post %d) has no [statchasers_team] in its content — nothing on it will be indexable.', $sc_slug, $sc_before ) );
+			sc_say( 'warn', sprintf( '%s (post %d) has no [statchasers_team] in its content - nothing on it will be indexable.', $sc_slug, $sc_before ) );
 		}
 	} elseif ( $sc_id ) {
 		++$sc_created;
 	}
 
 	// Rank Math. The plugin emits no title/description/robots of its own by
-	// design, so these three are the page's only ones — and the robots value is
+	// design, so these three are the page's only ones - and the robots value is
 	// the difference between a hub that ranks and 32 pages that quietly don't.
 	//
 	// The title is the one the plugin's own builder writes (the no-section
@@ -632,7 +632,7 @@ if ( $sc_teams_parent ) {
 	$sc_index_content = (string) get_post_field( 'post_content', $sc_teams_parent );
 
 	/*
-	 * The body is the intro and the MOUNT — not 32 links.
+	 * The body is the intro and the MOUNT - not 32 links.
 	 *
 	 * This used to write the lead plus a <ul> of all 32 hubs, which is how the
 	 * published /nfl/teams/ ended up showing the wall of links in the theme's
@@ -642,7 +642,7 @@ if ( $sc_teams_parent ) {
 	 * other way the page gets built and it was never brought in step.
 	 *
 	 * Written when the page is empty, and OVER the stub the old version of this
-	 * block wrote — recognised the same way the plugin recognises it: our own
+	 * block wrote - recognised the same way the plugin recognises it: our own
 	 * lead sentence, a wall of links to the team path, and no shortcode of any
 	 * kind. Anything else is somebody's own page and is left alone.
 	 */
@@ -655,7 +655,7 @@ if ( $sc_teams_parent ) {
 	$sc_index_mounted = false !== strpos( $sc_index_content, '[statchasers_team_index' );
 
 	if ( $sc_index_mounted ) {
-		sc_say( 'skip', 'index page already mounts the grid — left alone' );
+		sc_say( 'skip', 'index page already mounts the grid - left alone' );
 	} elseif ( '' === trim( $sc_index_content ) || $sc_index_is_stub ) {
 		$sc_body = '<p>' . esc_html( $sc_index_lead ) . "</p>\n\n[statchasers_team_index]";
 		$sc_what = $sc_index_is_stub ? 'replaced the 32-link stub with' : 'wrote';
@@ -672,7 +672,7 @@ if ( $sc_teams_parent ) {
 			sc_say( 'plan', 'would ' . $sc_what . ' the grid mount on /' . SC_BUILD_PARENT_PATH . '/' );
 		}
 	} else {
-		sc_say( 'skip', 'index page has content of its own — left alone' );
+		sc_say( 'skip', 'index page has content of its own - left alone' );
 	}
 }
 
@@ -698,7 +698,7 @@ header( 'Content-Type: text/html; charset=utf-8' );
 <!doctype html>
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow">
-<title>StatChasers — build team pages</title>
+<title>StatChasers - build team pages</title>
 <style>
 	body { font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	       max-width: 820px; margin: 40px auto; padding: 0 20px; color: #0b1634; }
@@ -723,10 +723,10 @@ header( 'Content-Type: text/html; charset=utf-8' );
 	          border: 1px solid #f5c2c2; border-radius: 10px; }
 </style>
 
-<h1>StatChasers — team page builder</h1>
+<h1>StatChasers - team page builder</h1>
 <p>
 	<span class="mode <?php echo $sc_go ? 'live' : 'dry'; ?>">
-		<?php echo $sc_go ? 'LIVE — changes were written' : 'DRY RUN — nothing was written'; ?>
+		<?php echo $sc_go ? 'LIVE - changes were written' : 'DRY RUN - nothing was written'; ?>
 	</span>
 </p>
 
@@ -763,7 +763,7 @@ header( 'Content-Type: text/html; charset=utf-8' );
 		<p><a href="<?php echo $sc_self; ?>?key=<?php echo $sc_key; ?>&amp;go=1">
 			<code><?php echo $sc_self; ?>?key=…&amp;go=1</code></a></p>
 		<p>Add <code>&amp;images=1</code> to also import the 32 team crests as
-		featured images. That step is resumable — reload if it times out.</p>
+		featured images. That step is resumable - reload if it times out.</p>
 	<?php else : ?>
 		<p><strong>Done.</strong> Check one page before trusting the other 31:
 		<code>/<?php echo SC_BUILD_PARENT_PATH; ?>/philadelphia-eagles/</code></p>

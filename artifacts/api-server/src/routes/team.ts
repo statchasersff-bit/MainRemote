@@ -1,14 +1,14 @@
 /**
  * The NFL Team Hub routes.
  *
- *   GET /team                     — index of all 32 teams
- *   GET /team/:slug               — the team hub page
- *   GET /team/:slug?embed=1       — the same page, stripped for embedding
- *   GET /embed/team/:slug         — the bare fragment, for the WordPress mount
- *   GET /embed/teams              — the index of all 32, for the container page
+ *   GET /team                     - index of all 32 teams
+ *   GET /team/:slug               - the team hub page
+ *   GET /team/:slug?embed=1       - the same page, stripped for embedding
+ *   GET /embed/team/:slug         - the bare fragment, for the WordPress mount
+ *   GET /embed/teams              - the index of all 32, for the container page
  *
- * A slug that is not canonical but still names a team — "/team/NE",
- * "/team/patriots", "/team/oakland" — is redirected to the canonical URL rather
+ * A slug that is not canonical but still names a team - "/team/NE",
+ * "/team/patriots", "/team/oakland" - is redirected to the canonical URL rather
  * than served. One page, one address: the same rule that makes the news tool
  * 404 everything except "/" (see app.ts). Anything that names no team at all is
  * a 404 with a way back, not a redirect to an arbitrary team.
@@ -54,14 +54,14 @@ function isEmbed(req: Request): boolean {
  *
  * Only `embed` is preserved, and only as the canonical `?embed=1`. Echoing the
  * whole query back into 31 links would let any parameter anyone appends mint 31
- * more crawlable URLs — the duplicate URL space the canonical work exists to
+ * more crawlable URLs - the duplicate URL space the canonical work exists to
  * prevent.
  */
 function switcherQuery(req: Request): string {
   return isEmbed(req) ? "?embed=1" : "";
 }
 
-/** This origin's own team path — the prefix used when nothing overrides it. */
+/** This origin's own team path - the prefix used when nothing overrides it. */
 const TEAM_PATH_PREFIX = "/team/";
 
 /**
@@ -70,7 +70,7 @@ const TEAM_PATH_PREFIX = "/team/";
  * A closed list, not free text: `?section=` reaches the renderer, and an
  * unrecognised id there would silently fall through to the hub under a URL that
  * promised one section. Ids match the tab ids in team-render.ts, and the list
- * is mirrored by STATCHASERS_TEAM_SECTIONS in the WordPress plugin — that is
+ * is mirrored by STATCHASERS_TEAM_SECTIONS in the WordPress plugin - that is
  * what mints these URLs, so the two lists cannot drift without a rewrite rule
  * pointing at a section the API will not scope to.
  *
@@ -112,7 +112,7 @@ function embedQuery(req: Request): string {
 /**
  * A section's address on this origin. The hub is `/team/<slug>` here, without
  * the slash sectionPath() gives it, because that is the form the hub's own
- * canonical names — so the Outlook, which is the hub, redirects there.
+ * canonical names - so the Outlook, which is the hub, redirects there.
  */
 function teamSectionPath(slug: string, section: string): string {
   return section === HUB_SECTION
@@ -186,7 +186,7 @@ async function sendTeamPage(
   try {
     const result = await renderTeamAppPage(publicDir, team, {
       // Built from the path alone (lib/request.ts), so ?embed=1 can never mint
-      // a second canonical for the same page — and on a section URL the path
+      // a second canonical for the same page - and on a section URL the path
       // IS the pretty form, so the canonical is self-referencing for free.
       canonical: canonicalUrl(req),
       embed,
@@ -195,12 +195,12 @@ async function sendTeamPage(
     });
 
     // Development only: the same reload snippet the news page gets, so editing
-    // team.css or team.html refreshes the Replit preview. Inert in production —
+    // team.css or team.html refreshes the Replit preview. Inert in production -
     // liveReload() is a no-op unless setupLiveReload() actually armed it.
     const dev = liveReload().enabled;
 
-    // The version fingerprints every input to the RENDER — the data, not the
-    // shell — so in development an edit to team.html would revalidate to a 304
+    // The version fingerprints every input to the RENDER - the data, not the
+    // shell - so in development an edit to team.html would revalidate to a 304
     // and the preview would keep showing the old markup. Validators are for
     // production; a dev response is always fresh and never conditional.
     if (!dev) {
@@ -266,7 +266,7 @@ router.get("/team/:slug", (req, res) => {
 
     if (canonicalTeam) {
       // `?section=` is the internal spelling. A public section has one address
-      // — the pretty one — so the query form is sent there rather than served,
+      // - the pretty one - so the query form is sent there rather than served,
       // or the same page would answer at two URLs.
       if (scoped && isPublicSection(scoped)) {
         res.redirect(
@@ -356,7 +356,7 @@ router.get("/team/:slug/:section", (req, res) => {
  * The bare fragment, for the WordPress plugin to print into a page.
  *
  * The direct mount is what makes the content belong to the statchasers.com URL
- * rather than to an iframe — the same reason the news tool has /embed/ssr. The
+ * rather than to an iframe - the same reason the news tool has /embed/ssr. The
  * fragment is always rendered in embedded mode: the host page supplies the H1
  * and the page chrome.
  */
@@ -373,7 +373,7 @@ function indexHash(value: string): string {
  * The index as a fragment, for the container page at /nfl/teams/.
  *
  * The 32 hubs each have a mount; the page that lists them did not, so it was
- * left as whatever WordPress content the plugin wrote into it once — a stub
+ * left as whatever WordPress content the plugin wrote into it once - a stub
  * list in the theme's styling, in front of 32 pages that look nothing like it.
  * This is that page's mount.
  *
@@ -388,7 +388,7 @@ router.get("/embed/teams", (req, res) => {
     linkQuery: fragmentLinkQuery(prefix),
   });
 
-  // The list is the 32 teams and their crests — it changes when a team moves,
+  // The list is the 32 teams and their crests - it changes when a team moves,
   // which is to say never in a season. Fingerprinted over the markup itself, so
   // a path-prefix change is a different fragment rather than the old one served
   // for the rest of the TTL. Same djb2 the SSR caches key on.
@@ -414,7 +414,7 @@ router.get("/embed/team/:slug", (req, res) => {
     }
 
     // Switcher links point at the public site's team pages, not at this
-    // origin — otherwise clicking a team inside a WordPress page would send
+    // origin - otherwise clicking a team inside a WordPress page would send
     // the reader to the bare tool.
     const prefix = (process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX).trim();
 
@@ -424,7 +424,7 @@ router.get("/embed/team/:slug", (req, res) => {
         teamPathPrefix: prefix,
         linkQuery: fragmentLinkQuery(prefix),
         section: section(req),
-        // `?h1=1` — the host has emptied its own page title, so the panel's
+        // `?h1=1` - the host has emptied its own page title, so the panel's
         // heading becomes the page's <h1>. Same contract as routes/player.ts.
         ownHeading: String(req.query["h1"] ?? "").trim() === "1",
         matchupPathPrefix: (process.env["SC_MATCHUP_PATH_PREFIX"] ?? "/nfl/").trim(),

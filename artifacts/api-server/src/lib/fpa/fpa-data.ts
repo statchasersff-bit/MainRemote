@@ -7,7 +7,7 @@
  *
  * **Rank 1 is the softest defense.** That is the industry convention
  * (FantasyPros and the rest) and it is the one that matches how the table is
- * read — you are looking for the matchup to attack, so the thing you want at
+ * read - you are looking for the matchup to attack, so the thing you want at
  * the top is the defense giving up the most. It is stated on the page too,
  * because a rank column with no stated direction is a coin flip.
  */
@@ -18,7 +18,7 @@ import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { FANTASY_POSITIONS, type FantasyPosition, type ScoringFormat } from "./nflverse";
 import { describeDataMode, type FpaView } from "./blend";
 
-// Re-exported so callers have one import for "the FPA read layer" — the split
+// Re-exported so callers have one import for "the FPA read layer" - the split
 // between this file and blend.ts exists to keep the pure half free of a
 // database import, not to give consumers two places to look.
 export { describeDataMode, parseFpaView, FPA_VIEWS, type FpaView } from "./blend";
@@ -37,7 +37,7 @@ export interface FpaRow {
   gamesPlayed: number;
   /** Points allowed per game, and the rank of that figure, per position. */
   byPos: Record<FantasyPosition, { fpa: number; rank: number }>;
-  /** The four positions summed — the whole offense. */
+  /** The four positions summed - the whole offense. */
   offFpa: number;
   offRank: number;
 }
@@ -54,7 +54,7 @@ export interface FpaTableData {
   dataMode: string;
   /** One paragraph saying exactly what the number is a mix of. */
   methodology: string;
-  /** Fingerprint of everything rendered — the render cache key. */
+  /** Fingerprint of everything rendered - the render cache key. */
   version: string;
 }
 
@@ -122,7 +122,7 @@ export async function getFpaTable(
  * was read from the database on every FPA page, every matchup page (twice)
  * and every player page's upcoming games. An in-process ingest drops it
  * straight away (fpa/refresh.ts); the window only bounds how long an ingest
- * run from another process — scripts/ingest-fpa.mjs — takes to show.
+ * run from another process - scripts/ingest-fpa.mjs - takes to show.
  */
 const TABLE_MEMO_MS = 5 * 60 * 1000;
 const tableMemo = new Map<string, { table: FpaTableData; at: number }>();
@@ -191,7 +191,7 @@ async function readFpaTable(
     offRank: offRanks[i]!,
   }));
 
-  // Softest overall first — the table's default reading, and the one the sort
+  // Softest overall first - the table's default reading, and the one the sort
   // control starts from.
   rows.sort((a, b) => a.offRank - b.offRank);
 
@@ -235,7 +235,7 @@ async function readFpaTable(
  * started, and a deployment that has never run an ingest looks identical there
  * to one that ran a perfect ingest before its last redeploy. This is the figure
  * that would have said, out loud, that production was serving a table written
- * two days earlier — so it is what /api/status reports.
+ * two days earlier - so it is what /api/status reports.
  *
  * Newest row rather than an aggregate: one ingest writes every row for the
  * season inside one transaction, so the newest one carries the week and the
@@ -247,7 +247,7 @@ export interface FpaSnapshotState {
   writtenAtMs: number | null;
   /** Weeks of the season the figure includes. Null in preseason, or with no rows. */
   weekNumber: number | null;
-  /** What the blend was — "preseason_baseline", "week_3". Null with no rows. */
+  /** What the blend was - "preseason_baseline", "week_3". Null with no rows. */
   dataMode: string | null;
 }
 

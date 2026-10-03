@@ -7,8 +7,8 @@
  * Half-PPR and PPR: change the format and every rank, share and rate below is
  * recomputed from the same numbers rather than looked up in a second table.
  *
- * The expensive pieces — a season's whole rank table, a season's team usage
- * aggregate — are computed once per (season, format) and held, because they are
+ * The expensive pieces - a season's whole rank table, a season's team usage
+ * aggregate - are computed once per (season, format) and held, because they are
  * the same for every player on the page and rebuilding them per profile would
  * make the first render of each player O(league).
  */
@@ -25,7 +25,7 @@ import type { GameLogEntry, GameLogStats, GameScore, Player } from "./types";
  * Delegates to the one team table (`lib/team/teams.ts`), so "JAC", "WSH",
  * "OAK" and "LA" land where they should without this module carrying a mapping
  * of its own. Unknown strings are passed through upper-cased rather than
- * dropped — an unrecognised opponent should still group with itself.
+ * dropped - an unrecognised opponent should still group with itself.
  */
 export function teamCode(abbr: string | null | undefined): string {
   if (!abbr) return "";
@@ -149,7 +149,7 @@ const oppRanksCache = new Map<string, Map<string, number>>();
  * reader looking for a matchup to attack expects at the top. It is also the
  * only direction this number may have, because the player page prints it a few
  * inches above the upcoming-games cards, which rank the same quantity from the
- * FPA snapshots — two opposed scales on one tab is a rank column that means
+ * FPA snapshots - two opposed scales on one tab is a rank column that means
  * whichever thing the reader guessed.
  */
 export function buildOppRanks(
@@ -376,7 +376,7 @@ export const PPG_MIN_GAMES = 4;
 export interface SeasonStanding {
   /** His place in it: 14 for the QB14. */
   rank: number;
-  /** The number that put him there — a rate or a total, per `measure`. */
+  /** The number that put him there - a rate or a total, per `measure`. */
   value: number;
   /** Which of the two tables he came off. */
   measure: "ppg" | "total";
@@ -398,7 +398,7 @@ const standingsCache = new Map<string, SeasonStandings>();
  * Every player's positional finish for one season, the whole league at once.
  *
  * The same question positionalFinish() in player-data.ts answers for ONE
- * player, asked once for everybody — because the player index prints six
+ * player, asked once for everybody - because the player index prints six
  * hundred of these and doing it a player at a time would sort the league's
  * points six hundred times over.
  *
@@ -409,7 +409,7 @@ const standingsCache = new Map<string, SeasonStandings>();
  * October most are rates, and a row says which it is rather than leaving the
  * reader to assume. A player who has not taken part in a game this season is
  * in neither table and gets no standing at all, which is the honest rendering
- * of "he has not played" — not a rank of last.
+ * of "he has not played" - not a rank of last.
  */
 export function buildSeasonStandings(
   season: number,
@@ -468,7 +468,7 @@ export function buildSeasonStandings(
     // played gets a standing, and the ones who clear the minimum then take
     // their place on the table the page prefers. Written in this order rather
     // than as a conditional per player because the two tables are ranked
-    // independently — a player's index in one says nothing about the other.
+    // independently - a player's index in one says nothing about the other.
     tables.totals.forEach((row, i) => {
       byId.set(row.id, {
         rank: i + 1,
@@ -503,7 +503,7 @@ const teamMaxWeekCache = new Map<string, number>();
  * Needed because the league does not play a week at once. On a Friday in
  * September two teams have played the Thursday game and thirty have not, so a
  * league-wide "weeks played" pads twenty-eight rosters with an absence from a
- * game that has not kicked off — and then counts it against them as a game
+ * game that has not kicked off - and then counts it against them as a game
  * missed. The unit is the team's schedule, not the calendar.
  */
 function getTeamMaxWeek(season: number, team: string | null): number {
@@ -543,7 +543,7 @@ export function leagueWeeksLogged(season: number): number {
 
 function getSeasonMaxWeek(season: number, team: string | null): number {
   const max = leagueWeeksLogged(season);
-  // 18 weeks from 2021, 17 before — a season with no logs yet still shows its
+  // 18 weeks from 2021, 17 before - a season with no logs yet still shows its
   // full shape rather than collapsing to nothing.
   const fullSeason = season >= 2021 ? 18 : 17;
 
@@ -553,7 +553,7 @@ function getSeasonMaxWeek(season: number, team: string | null): number {
    * Padding it to its full shape is what the rule above does for a finished
    * season, and it is right there: the weeks a player is missing from a
    * completed season are weeks he missed. In September it is a different claim
-   * entirely — sixteen rows of "Did not play" under a player who has not missed
+   * entirely - sixteen rows of "Did not play" under a player who has not missed
    * anything, for weeks nobody has played. The table would be asserting
    * absences from the future.
    *
@@ -592,7 +592,7 @@ function getGameScore(
  *
  * A game log that lists only the weeks somebody played reads as a clean season.
  * The weeks that are missing are frequently the most important thing on the
- * page — a bye is nothing, five straight "out" weeks is the story — so they are
+ * page - a bye is nothing, five straight "out" weeks is the story - so they are
  * printed as rows rather than left as gaps for the reader to notice.
  */
 export function fillMissingWeeks(
@@ -613,7 +613,7 @@ export function fillMissingWeeks(
     const isBye = byeWeek === w;
     filled.push({
       week: w,
-      opp: isBye ? "BYE" : "—",
+      opp: isBye ? "BYE" : "-",
       stats: { pts_ppr: 0 },
       game_status: isBye ? "bye" : "out",
     });

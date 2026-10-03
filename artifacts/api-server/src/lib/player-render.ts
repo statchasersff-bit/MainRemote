@@ -4,7 +4,7 @@
  * Server-only, like lib/team-render.ts and for the same reason: the page ships
  * complete HTML and client/player.ts only enhances what is already there. This
  * replaces a 3,200-line React profile that built every one of these sections in
- * the browser, which meant a crawler received an empty div — the same problem
+ * the browser, which meant a crawler received an empty div - the same problem
  * the news tool and the team hubs were moved off an iframe to solve.
  *
  * The rules are the team hub's, unchanged:
@@ -20,8 +20,8 @@
  *
  * And one this page adds, because it is the one that gets broken:
  *
- * 3. **Nothing here predicts.** Every label — "Heating Up", "TD-Driven",
- *    "Elite" — is a restatement of a number that is printed beside it. The page
+ * 3. **Nothing here predicts.** Every label - "Heating Up", "TD-Driven",
+ *    "Elite" - is a restatement of a number that is printed beside it. The page
  *    describes what happened and says what it is calling that; it never asserts
  *    what happens next. Where the source data is a projection (the 2026
  *    outlook), it is kept apart from the measured sections rather than adopted
@@ -30,8 +30,8 @@
  *    removed by request; the tab and the heading are what is left doing that
  *    job, so neither should be softened into something vaguer.
  *
- * A note on colour. The four finish tiers are an ORDINAL scale — POS1 through
- * Bust is an order, not a set of identities — so they take one hue in four
+ * A note on colour. The four finish tiers are an ORDINAL scale - POS1 through
+ * Bust is an order, not a set of identities - so they take one hue in four
  * monotone lightness steps rather than four hues. The order is then visible in
  * the colour itself, and the page stays on-brand instead of becoming a chart
  * with a fruit salad in it. Every tier also carries its own text label, so the
@@ -43,7 +43,7 @@ import { easternParts } from "./news-card";
 // The tab strip's headings and standfirsts come from the same function the
 // document head uses, so a heading swapped in by a click and one loaded with
 // the page are generated from one place. player-seo.ts imports nothing from
-// here — only a comment mentions it — so this does not close a cycle.
+// here - only a comment mentions it - so this does not close a cycle.
 import { playerPageMeta } from "./player-seo";
 import type { NflTeam } from "./team/teams";
 import {
@@ -108,7 +108,7 @@ export interface PlayerRenderOptions {
   /**
    * Embedded inside a statchasers.com page. Drops the standalone page's chrome
    * and demotes the player's name to an <h2>, because the host page supplies
-   * the H1 — the same reasoning as the team hub's embed mode.
+   * the H1 - the same reasoning as the team hub's embed mode.
    */
   embed?: boolean;
   /** Where a player link points. Defaults to this app's own /player/. */
@@ -119,7 +119,7 @@ export interface PlayerRenderOptions {
    * Where matchup pages live. Defaults to this app's own /nfl/.
    *
    * Only the upcoming-games cards use it, and they build the address through
-   * canonicalizeMatchupPair() like everywhere else — so a fixture against
+   * canonicalizeMatchupPair() like everywhere else - so a fixture against
    * Seattle and Seattle's own page against this club are one URL, whichever
    * side the reader arrived from.
    */
@@ -134,7 +134,7 @@ export interface PlayerRenderOptions {
   linkQuery?: string;
   /**
    * Where the start/sit tool lives, for the control bar's button. Defaults to
-   * Redraft Command's launcher on statchasers.com — an absolute URL rather than
+   * Redraft Command's launcher on statchasers.com - an absolute URL rather than
    * a path, because this one destination is on the live site whether the markup
    * is being served standalone here or printed into a WordPress page there.
    */
@@ -157,7 +157,7 @@ export interface PlayerRenderOptions {
    * `/fantasy-football/players/<slug>/injury/` has to be a different page from
    * the player's main one or it is duplicate content wearing a second address:
    * six tabs of identical markup at every URL, competing with each other. So a
-   * section page is the hero, that section, and a way back to the rest — and
+   * section page is the hero, that section, and a way back to the rest - and
    * its heading is the phrase the page is actually about.
    *
    * Ignored when the id does not match a section that rendered, which keeps a
@@ -169,7 +169,7 @@ export interface PlayerRenderOptions {
    *
    * Set by the WordPress plugin's "the tool supplies the heading" mode, which
    * empties the theme's page title. Without it the theme prints the same phrase
-   * above the tool and the page carries the heading twice — once in the theme's
+   * above the tool and the page carries the heading twice - once in the theme's
    * serif, once here with the gold rule under it.
    *
    * Exactly one panel is promoted either way. See promoteHeading(). The
@@ -200,7 +200,7 @@ const SECTION_HEADINGS: Record<string, string> = {
 /**
  * The heading of the profile itself: "Josh Allen Fantasy Football Stats & Analysis".
  *
- * The profile's address is the Overview's address — `/overview/` 301s here — so
+ * The profile's address is the Overview's address - `/overview/` 301s here - so
  * this is also the Overview tab's heading. It names the player and the intent,
  * like the six section headings beside it. The two it replaced did not: the
  * panel's "2026 Fantasy Snapshot" was the same words on every profile, and the
@@ -218,7 +218,7 @@ export function sectionHeading(
 ): string | null {
   const phrase = SECTION_HEADINGS[section];
   if (!phrase) return null;
-  // "Jacoby Brissett Stats 2026" — the year is part of the phrase people type
+  // "Jacoby Brissett Stats 2026" - the year is part of the phrase people type
   // for stats, a game log and an outlook, and not for the others. The outlook's
   // year is the one it projects, which is not always the season on the page.
   if (section === "outlook") return `${playerName} ${phrase} ${OUTLOOK_SEASON}`;
@@ -229,7 +229,7 @@ export function sectionHeading(
 
 /* ------------------------------------------------------------------ atoms */
 
-const DASH = "—";
+const DASH = "-";
 
 /** The interpunct these pages join short facts with. */
 const DOT = "·";
@@ -275,15 +275,15 @@ function h3(text: string): string {
 /**
  * Promote a panel's own heading to the page's <h1>.
  *
- * Every section opens with `h2()` — "Jacoby Brissett Stats 2026" and its six
- * siblings — because the fragment is normally mounted in a page that already
+ * Every section opens with `h2()` - "Jacoby Brissett Stats 2026" and its six
+ * siblings - because the fragment is normally mounted in a page that already
  * has an H1 of its own. On a section address the host prints that same phrase
  * in the theme's title and the reader sees it twice: once in the theme's serif
  * at the top, once here with the gold rule under it, saying the same words.
  *
  * Where the host has agreed to stand down (the plugin's "the tool supplies the
  * heading" mode empties the theme's title), the panel's heading IS the page's
- * heading and should be marked up as one. Only the class stays — the styling is
+ * heading and should be marked up as one. Only the class stays - the styling is
  * `.scp-h2` in both cases, so this changes the document outline and nothing a
  * reader can see.
  *
@@ -333,7 +333,7 @@ function promoteLeadHeading(html: string, id: string, fallbackText?: string): st
  * A section heading with the gold rule under it.
  *
  * The Stats tab is a sequence of six blocks and an h3 alone was not enough to
- * mark where one ends and the next begins — the page read as a stack of
+ * mark where one ends and the next begins - the page read as a stack of
  * components. The rule is drawn by the heading rather than by a sibling node,
  * for the reason .scp-h2::after gives: it cannot be left behind by a heading
  * that moves.
@@ -343,7 +343,7 @@ function sectionHead(text: string, sub = "", aside = ""): string {
     `<h3 class="scp-sect-title">${escapeHtml(text)}</h3>` +
     (sub ? `<p class="scp-sect-sub">${escapeHtml(sub)}</p>` : "");
 
-  // `aside` is a control that belongs to this block — the game log's season
+  // `aside` is a control that belongs to this block - the game log's season
   // selector is the one that uses it. On the heading's row rather than above
   // it, because a row of eleven years standing on its own line reads as a
   // section of the page; on the heading's row it reads as this block's filter,
@@ -359,12 +359,12 @@ function sectionHead(text: string, sub = "", aside = ""): string {
  * A question-and-answer block, with FAQPage markup on the standalone page.
  *
  * Shared by the Stats and Injury tabs because both answer the same SHAPE of
- * query — a question somebody typed, answered from numbers already rendered
- * above it — and two copies would drift on the one thing that matters here:
+ * query - a question somebody typed, answered from numbers already rendered
+ * above it - and two copies would drift on the one thing that matters here:
  * the schema, and whether it is safe to emit.
  *
  * Embedded, WordPress owns the document's schema and a second FAQPage inside
- * the host's article is a conflict rather than an enhancement — the same reason
+ * the host's article is a conflict rather than an enhancement - the same reason
  * this mount adds no canonical and no H1. So the fragment ships the same
  * questions as INERT DATA instead, and statchasers-player.php lifts them into
  * Rank Math's graph: the markup then arrives inside the one <script> the page
@@ -387,7 +387,7 @@ function renderFaq(
   if (items.length === 0 && visibleOnly.length === 0) return "";
 
   /*
-   * One question, one fold — the shape the team hubs use.
+   * One question, one fold - the shape the team hubs use.
    *
    * These blocks were four questions with all four answers permanently open,
    * which is a wall of restated prose at the bottom of a tab that has already
@@ -395,7 +395,7 @@ function renderFaq(
    * scanning for the one they arrived with sees every question at once and
    * opens the single answer they came for.
    *
-   * Shut by default, and per question rather than one fold around the block —
+   * Shut by default, and per question rather than one fold around the block -
    * a single fold hides the questions too, which is the opposite of what an
    * index is for. The answers stay in the DOM either way: a crawler reads the
    * DOM rather than the open state, and the FAQPage node below is built from
@@ -516,7 +516,7 @@ interface Tile {
  * A stat tile, which is deliberately not a chart.
  *
  * Four numbers with no shared scale and no ordering between them are a set of
- * facts, not a series — drawing them as bars would invite a comparison that
+ * facts, not a series - drawing them as bars would invite a comparison that
  * means nothing. See the form heuristic: a single headline number is a tile.
  */
 function renderTiles(tiles: Tile[], extraClass = ""): string {
@@ -540,7 +540,7 @@ function renderTiles(tiles: Tile[], extraClass = ""): string {
 interface RailCell {
   value: string;
   label: string;
-  /** The qualifier under the label — "4 seasons", "in 2025", "Moderate". */
+  /** The qualifier under the label - "4 seasons", "in 2025", "Moderate". */
   sub?: string;
   /** "gold" paints this one figure. Reserved for fantasy and the live season. */
   accent?: string;
@@ -557,7 +557,7 @@ interface RailCell {
 /**
  * A stat rail: one row of figures, divided by hairlines and nothing else.
  *
- * The Stats tab is built from three component languages and no fourth — RAILS
+ * The Stats tab is built from three component languages and no fourth - RAILS
  * (this), DATA PANELS (the passing and fantasy cards) and TABLES. Before it
  * had one language, the rounded card, repeated down the page until the bottom
  * half read as a dashboard: career rates, finish history and career bests were
@@ -568,7 +568,7 @@ interface RailCell {
  * the difference is whether the repeated thing is doing the same JOB each
  * time. Here it always is: four or seven numbers that belong to one record.
  *
- *   hero   bordered and filled, larger figures. The season strip only — it is
+ *   hero   bordered and filled, larger figures. The season strip only - it is
  *          the answer to the query and the one rail that is a container.
  *   open   no box at all. A rule above, hairlines between, and the section
  *          heading doing the work the border used to.
@@ -601,7 +601,7 @@ function renderRail(cells: RailCell[], variant: "hero" | "open" = "open"): strin
 
 /* ------------------------------------------------------------- chart marks */
 
-/* The percentile METER — a filled bar read left to right — is gone, and so is
+/* The percentile METER - a filled bar read left to right - is gone, and so is
    the marker-on-a-track that briefly replaced it. A filled bar states a
    proportion ("73% complete") and a percentile is a position in a distribution
    rather than a proportion of one, so neither mark was saying the right thing.
@@ -618,7 +618,7 @@ interface SparkPoint {
 /**
  * Weekly points with a three-game trailing average over them.
  *
- * Two series, so it carries a legend — identity is never colour alone. The
+ * Two series, so it carries a legend - identity is never colour alone. The
  * points line is 2px and the average is drawn beneath it; markers sit at 8px so
  * they are a real hit target for the tooltip client/player.ts attaches, and the
  * <title> on each keeps the bare SVG readable with no script at all.
@@ -637,7 +637,7 @@ function renderSparkline(
   const averageLabel = options.averageLabel ?? "3-game average";
 
   // A fixed aspect ratio, scaled uniformly by the stylesheet. The obvious
-  // alternative — preserveAspectRatio="none" plus a fixed CSS height — stretches
+  // alternative - preserveAspectRatio="none" plus a fixed CSS height - stretches
   // the drawing horizontally, which turns a 2px stroke into a 2px-by-nx one and
   // every circular marker into an ellipse.
   const width = 640;
@@ -682,7 +682,7 @@ function renderSparkline(
     `<text class="scp-spark-tick" x="${padX - 8}" y="${baselineY + 4}"` +
     ` text-anchor="end">0</text>`;
 
-  // Week numbers under the first, last and best points only — a label on every
+  // Week numbers under the first, last and best points only - a label on every
   // point is noise, and these three are the ones a reader looks for.
   const bestIndex = points.reduce(
     (best, point, i) => (point.value > points[best]!.value ? i : best),
@@ -734,13 +734,13 @@ function renderSparkline(
  * Chase's page and wants Tee Higgins has, until now, had to leave through a
  * link that happens to mention him. This is the way from any player page to
  * any other, and it sits above the header because that is where a reader looks
- * for it — before the page's own identity, not buried inside it.
+ * for it - before the page's own identity, not buried inside it.
  *
  * Three things it deliberately is NOT:
  *
  *   NOT a <form>. A form with no action submits to the current URL, so one
  *   Enter keypress would reload the page with a query string on it and mint a
- *   second address for the same content — the exact duplication the canonical
+ *   second address for the same content - the exact duplication the canonical
  *   work exists to prevent. Same call, and the same reason, as the news tool's
  *   filters. Enter opens the highlighted player instead.
  *
@@ -750,7 +750,7 @@ function renderSparkline(
  *
  *   NOT shipped visible. It ships `hidden` and client/player-search.ts reveals
  *   it, because without that script it is a box that swallows typing and does
- *   nothing — worse than no box at all. The rest of the page is complete
+ *   nothing - worse than no box at all. The rest of the page is complete
  *   without script and stays that way: this is navigation, not content, and it
  *   is the only part of the page that is allowed to depend on the bundle.
  *
@@ -760,7 +760,7 @@ function renderSparkline(
  *
  * ONE EXCEPTION, and it is the index's: a club row there is not a destination.
  * The index IS the roster, grouped by club, so a reader who picks the Chiefs
- * out of this box has asked to be shown the Chiefs' players — not to be taken
+ * out of this box has asked to be shown the Chiefs' players - not to be taken
  * off the page they were reading to a hub that answers a different question.
  * `clubsFilter` is what says so, the index is the only caller that passes it,
  * and everything it changes happens in client/player-search.ts: the club row
@@ -785,14 +785,14 @@ function renderPlayerSearch(
     `<div class="scp-search" data-scp-search` +
     ` data-scp-prefix="${escapeHtml(prefix)}"` +
     // The clubs in the island are destinations too, and they live under a
-    // different path — on WordPress, under a different page entirely.
+    // different path - on WordPress, under a different page entirely.
     ` data-scp-team-prefix="${escapeHtml(teamPrefix)}"` +
     // Printed only by the index, read only by the client, and meaningless
-    // without a directory in the same root to hand the pick to — which is why
+    // without a directory in the same root to hand the pick to - which is why
     // the client checks for one rather than trusting this on its own.
     (mode.clubsFilter ? ` data-scp-club-filter` : "") +
     ` data-scp-query="${escapeHtml(query)}" hidden>` +
-    // The label wraps the control, so the two need no for/id pair — which
+    // The label wraps the control, so the two need no for/id pair - which
     // matters here because a WordPress page may print two of these fragments
     // and a fixed id would then be in the document twice. Every id this widget
     // needs for its ARIA relations is minted per root by the client.
@@ -844,14 +844,14 @@ interface TabParts {
  *
  * Plain anchors switched by `:target` in CSS, exactly as the team hub does it:
  * every tab's content is in the initial HTML, the strip works with scripting
- * disabled, and the only URL state it can produce is a `#hash` — not a second
+ * disabled, and the only URL state it can produce is a `#hash` - not a second
  * crawlable address for the same page. The tab roles and arrow-key behaviour
  * are added by client/player.ts, which can deliver what those roles promise.
  */
 /**
  * The section bar.
  *
- * Links to the sections' own addresses, not to `#hash` — the same change the
+ * Links to the sections' own addresses, not to `#hash` - the same change the
  * team hub's strip took, for the same reason. Seven section URLs per profile,
  * each with its own title, description and canonical, and nothing on the site
  * pointing at any of them is several thousand orphaned pages once the roster
@@ -863,7 +863,7 @@ interface TabParts {
  *
  * `data-scp-panel-id` is which panel to show, since the href no longer says.
  * `data-scp-heading` and `data-scp-lead` are what the H1 and standfirst above
- * the fragment should read once it has — those belong to the host page, so the
+ * the fragment should read once it has - those belong to the host page, so the
  * bundle cannot derive them and the server has to hand them over.
  */
 function renderNav(
@@ -924,15 +924,15 @@ function renderNav(
  * The scoring-format switch.
  *
  * Real links to real URLs, because the format genuinely changes every number on
- * the page — it is not tool state to be hidden in a hash. `rel="nofollow"` and
+ * the page - it is not tool state to be hidden in a hash. `rel="nofollow"` and
  * the canonical on the PPR URL keep the three variants from becoming three
  * competing pages; PPR is the default and the one address that ranks.
  */
 /**
  * This page's own URL, with one piece of its state changed.
  *
- * Every control that is a real link — the game log's season selector, and the
- * scoring toggle before the control bar traded it for the start/sit button —
+ * Every control that is a real link - the game log's season selector, and the
+ * scoring toggle before the control bar traded it for the start/sit button -
  * builds its href here, so none of them can drop the state the others own.
  * Assembling them by hand is how `?format=half` used to lose `?embed=1`, which
  * silently unframed the page it was rendered into. The format is still carried
@@ -963,12 +963,12 @@ function pageUrl(
   const query = params.toString();
   // The section is a path segment now, not a parameter. It used to be
   // `?section=`, which is still what the WordPress plugin fetches a fragment
-  // with, but it is no longer an address — so a control on a section page has
+  // with, but it is no longer an address - so a control on a section page has
   // to rebuild the section's own URL or following it would land the reader back
   // on the full profile with their format change and none of their place.
   const section = options.section ? `${options.section}/` : "";
   // A control inside a panel on the FULL profile has to name that panel, or
-  // following it reopens the page on the first tab — changing the season on the
+  // following it reopens the page on the first tab - changing the season on the
   // game log and landing on Overview. A section URL is already that page.
   const hash = !options.section && changes.hash ? `#${changes.hash}` : "";
   return `${prefix}${data.player.slug}/${section}${query ? `?${query}` : ""}${hash}`;
@@ -981,8 +981,8 @@ function pageUrl(
 /**
  * The Overview tab: what the numbers mean.
  *
- * It used to be a third arrangement of the same figures — 2026 totals, career
- * points per game, season-end finishes, efficiency rates, best week — all of
+ * It used to be a third arrangement of the same figures - 2026 totals, career
+ * points per game, season-end finishes, efficiency rates, best week - all of
  * which now live on Stats or in the Game Log, where somebody asking "what
  * happened" will look for them. Three tabs showing the same numbers in three
  * layouts gave none of them a reason to exist.
@@ -993,8 +993,8 @@ function pageUrl(
  *   "What does it mean?" -> here.
  *
  * "277 passing yards" is a Stats fact; "strong passing volume" is this page.
- * Every phrase on this tab is still derived from a measured number — the
- * thresholds are in lib/player/fantasy-read.ts — and the numbers themselves
+ * Every phrase on this tab is still derived from a measured number - the
+ * thresholds are in lib/player/fantasy-read.ts - and the numbers themselves
  * appear only as the evidence under a reading, never as the point.
  */
 
@@ -1015,7 +1015,7 @@ function renderFantasySnapshot(data: PlayerPageData): string {
   const reads: Array<{ label: string; value: string; mod: string }> = [];
 
   // Only when there IS a ranked finish. Without one this cell fell back to the
-  // scoring rate, which is the next cell along — the same number twice under
+  // scoring rate, which is the next cell along - the same number twice under
   // two labels, which is worse than three cells.
   if (badge) {
     reads.push({
@@ -1044,7 +1044,7 @@ function renderFantasySnapshot(data: PlayerPageData): string {
     `<section class="scp-read-hero">` +
     // The page's section heading, the same one the Outlook tab and the Stats
     // tab open on. This was an 11px gold eyebrow, which is a label worn over a
-    // display line — there is no display line here, only the strip, so the
+    // display line - there is no display line here, only the strip, so the
     // eyebrow was the tab's <h2> set six sizes below every other heading.
     h2(`${data.season} Fantasy Snapshot`) +
     `<div class="scp-read-grid">` +
@@ -1054,7 +1054,7 @@ function renderFantasySnapshot(data: PlayerPageData): string {
         // three beside it. A strip of four identically weighted cells has no
         // winner, and a scouting sheet is read from its headline outwards.
         // Label first in the MARKUP and second on screen (the cell places the
-        // two rows) — "Scoring rate, 16.5 PPG" is the order it has to be said
+        // two rows) - "Scoring rate, 16.5 PPG" is the order it has to be said
         // in, and the reverse of the order it reads best in.
         (read, i) =>
           `<div class="scp-read-cell" data-mod="${escapeHtml(read.mod)}"` +
@@ -1074,7 +1074,7 @@ function renderFantasySnapshot(data: PlayerPageData): string {
  *
  * Usage rather than production, deliberately. Points are the outcome and
  * touches are the input, and a role that is growing shows up in the input
- * first — which is the only reason a "trending" section is worth printing at
+ * first - which is the only reason a "trending" section is worth printing at
  * all. Metrics marked `context` are the team's behaviour rather than the
  * player's, and are labelled as such instead of being scored as their doing.
  */
@@ -1140,14 +1140,14 @@ function renderList(items: unknown, className: string): string {
  * The bio, which is generated from the record rather than written.
  *
  * `data/player/bios.json` is produced by a deterministic template over the game
- * logs and the draft table — no coach names, no adjectives nobody measured, no
+ * logs and the draft table - no coach names, no adjectives nobody measured, no
  * claims the numbers do not support. It is rendered defensively because it is
  * the one data file whose shape is free-form.
  */
 /* ------------------------------------------------------------------ bio */
 
 /*
- * The Bio tab — a player dossier, and nothing else.
+ * The Bio tab - a player dossier, and nothing else.
  *
  * Every other tab here answers a fantasy question. This one answers "who is
  * he?", and the most valuable thing about it is what it leaves out: no points
@@ -1157,12 +1157,12 @@ function renderList(items: unknown, className: string): string {
  *
  * Three blocks, in the order the question gets answered:
  *
- *   1. a short factual story — who he is, in a paragraph
- *   2. the career timeline — every club, with its years and its badge
+ *   1. a short factual story - who he is, in a paragraph
+ *   2. the career timeline - every club, with its years and its badge
  *   3. the questions, answered directly
  *
- * The labelled fact grid — age, height, weight, born, college, high school,
- * experience, draft — used to sit between one and two, and every one of those
+ * The labelled fact grid - age, height, weight, born, college, high school,
+ * experience, draft - used to sit between one and two, and every one of those
  * facts is a clause of the paragraph above it. "Born on December 11, 1992,
  * Brissett attended William T. Dwyer (FL) and played college football at North
  * Carolina State" says the same thing as three cells of the grid, in the order
@@ -1185,7 +1185,7 @@ function renderList(items: unknown, className: string): string {
  * A vertical rail with a team logo per stop, rather than a stack of cards:
  * this is the one block on the player pages that is genuinely a sequence, and
  * drawing it as a sequence is what stops Bio looking like every other tab. The
- * college sits at the top with no years — we know where a player went, not
+ * college sits at the top with no years - we know where a player went, not
  * when, and a made-up range would be worse than none.
  *
  * Each stop is a full-width row, not a run of inline spans hugging the rail.
@@ -1196,7 +1196,7 @@ function renderList(items: unknown, className: string): string {
  *
  *   YEARS   the range, tabular, so the column scans as a column
  *   CLUB    crest, club name, and the badge for the stop that is current
- *   COUNT   how long it lasted — right-aligned, against the far edge
+ *   COUNT   how long it lasted - right-aligned, against the far edge
  *
  * and under the club, when there is one, the line that says what kind of stop
  * it was: the draft that started the career, or the return to a club already
@@ -1229,7 +1229,7 @@ function renderCareerTimeline(data: PlayerPageData): string {
         : "";
 
       // The second line, when the stop has something to say beyond its years.
-      // Both halves are rare — most stints are a club and a date range — so
+      // Both halves are rare - most stints are a club and a date range - so
       // the line is emitted only when one of them is there, never as an empty
       // row of air under every stop.
       const sub = [stint.note, stint.detail].filter(Boolean).join(" · ");
@@ -1335,8 +1335,8 @@ function renderBio(
  * The Outlook tab.
  *
  * Every other tab on this page answers "what happened". This one answers the
- * only question a fantasy manager actually arrives with — what should I expect
- * from here, and what do I do with him — and it is the one place on the page
+ * only question a fantasy manager actually arrives with - what should I expect
+ * from here, and what do I do with him - and it is the one place on the page
  * where the answer is allowed to be forward-looking. Rule 3 at the top of this
  * file is not suspended here so much as quarantined to here: the tab is named
  * for the season it is about, the projected numbers are labelled as projections,
@@ -1345,11 +1345,11 @@ function renderBio(
  *
  * Six blocks, in the order a decision gets made:
  *
- *   1. the head — role, rest-of-season call, confidence, and the written read
- *   2. what drives it — four measured cards, adapted to the position
- *   3. the range of outcomes — floor, expected, ceiling, on one spectrum
- *   4. what moves it — upside triggers against warning signs
- *   5. how to use him — by format, and when not to
+ *   1. the head - role, rest-of-season call, confidence, and the written read
+ *   2. what drives it - four measured cards, adapted to the position
+ *   3. the range of outcomes - floor, expected, ceiling, on one spectrum
+ *   4. what moves it - upside triggers against warning signs
+ *   5. how to use him - by format, and when not to
  *   6. the verdict
  *
  * Blocks 1, 3, 4, 5 and 6 are authored (fantasy_outlook_2026.json) and block 2
@@ -1367,7 +1367,7 @@ function renderBio(
  * three separate facts; one axis says they are three points on the same one,
  * which is what a range is and is the whole reason the section is worth having.
  *
- * The axis runs worst rank on the left to best on the right — ranks invert, so
+ * The axis runs worst rank on the left to best on the right - ranks invert, so
  * the axis is drawn on `worst - rank` and every position below is a percentage
  * of that span. The expected band is a painted segment rather than a point,
  * because a projection precise to one rank is a precision nobody has.
@@ -1384,7 +1384,7 @@ function renderOutlookRange(data: PlayerPageData): string {
   }
 
   // The axis is the whole claim, floor's bad end to ceiling's good end. A record
-  // whose bands were authored inconsistently — a ceiling worse than the floor —
+  // whose bands were authored inconsistently - a ceiling worse than the floor -
   // would divide by zero or draw backwards, so it is dropped instead.
   const worst = Math.max(floor.worst, expected.worst, ceiling.worst);
   const best = Math.min(floor.best, expected.best, ceiling.best);
@@ -1424,7 +1424,7 @@ function renderOutlookRange(data: PlayerPageData): string {
   return (
     h3("Range Of Outcomes") +
     `<p class="scp-sub">${escapeHtml(
-      `Projected ${OUTLOOK_SEASON} positional finish. A range, not a number — nobody has the number.`,
+      `Projected ${OUTLOOK_SEASON} positional finish. A range, not a number - nobody has the number.`,
     )}</p>` +
     `<div class="scp-range">` +
     `<div class="scp-range-axis">` +
@@ -1452,7 +1452,7 @@ function renderOutlookRange(data: PlayerPageData): string {
  * are the two directions the same season can go, and colouring them as a verdict
  * makes the page assert something the bullets themselves do not.
  *
- * It is also the block that ages best — these are the lines to rewrite in
+ * It is also the block that ages best - these are the lines to rewrite in
  * October, without touching anything else on the tab.
  */
 function renderOutlookMoves(data: PlayerPageData): string {
@@ -1531,7 +1531,7 @@ function renderOutlookUsage(data: PlayerPageData): string {
  * is a slab rather than a card because it is the conclusion rather than another
  * reading, and because the tab has to end on something that looks like an
  * answer. `data-tone` is derived from the call's own words rather than authored
- * separately — an author who writes "Sell" should not also have to remember to
+ * separately - an author who writes "Sell" should not also have to remember to
  * mark it as a caution.
  */
 function verdictTone(call: string): string {
@@ -1582,7 +1582,7 @@ function renderOutlook2026(data: PlayerPageData): { exists: boolean; html: strin
 /*
  * What this tab is and is not.
  *
- * It answers one question — "show me every game he played and what he did" —
+ * It answers one question - "show me every game he played and what he did" -
  * and it answers it with a table. Season totals belong to Stats, the written
  * take belongs to Outlook, the designation belongs to Injury, and none of them
  * are repeated here. What IS here beyond the table earns its place by making
@@ -1611,7 +1611,7 @@ function scoreLabel(entry: GameLogEntry): string {
 /**
  * One cell of the log.
  *
- * A ratio prints as a box score writes it — 27/37, not 0.73 — because that is
+ * A ratio prints as a box score writes it - 27/37, not 0.73 - because that is
  * the form a reader can check against the game they watched. A "per" column is
  * a rate and gets a decimal; everything else is a count.
  */
@@ -1645,18 +1645,18 @@ function playedWeeks(data: PlayerPageData): GameLogEntry[] {
  * change: the block is a way OUT of this page rather than a setting on it.
  *
  * It sits under the fixtures because that is where a reader runs out of this
- * season — the weeks played, then the weeks coming, then "and here are his
+ * season - the weeks played, then the weeks coming, then "and here are his
  * other years". At the top it was a row of eleven years standing between a
  * heading that had just named 2026 and the 2026 numbers that answer it.
  *
  * It is not a block of its own down there either: the caller puts it on the
- * heading row of the block it opens — "<name> career stats by season" under All, the year's
- * own heading when one is pinned — so the row of years and the name of what
+ * heading row of the block it opens - "<name> career stats by season" under All, the year's
+ * own heading when one is pinned - so the row of years and the name of what
  * they produced are one line rather than two stacked sections.
  *
  * And the active season is not in the list. A switcher offers somewhere to go;
  * the year the tab above is already showing is not somewhere to go. What is
- * left is exactly the archive — which is also exactly the list the game-log
+ * left is exactly the archive - which is also exactly the list the game-log
  * FAQ's "previous seasons" answer is built from, so the two cannot disagree.
  *
  * Picking one of them no longer navigates away from the season on screen: it
@@ -1666,7 +1666,7 @@ function playedWeeks(data: PlayerPageData): GameLogEntry[] {
  * "All" leads the row and is where the selector rests. A bare row of eleven
  * years had no unselected state to show, so the block below it was empty until
  * the reader guessed that a year was clickable; All gives the default a name
- * and puts the career table under it — every season on one screen, which is
+ * and puts the career table under it - every season on one screen, which is
  * the question a list of eleven years is usually being asked. Picking a year
  * swaps that one block, and All is the way back. See renderLogCareer().
  */
@@ -1676,7 +1676,7 @@ function renderLogSeasons(
 ): string {
   // The ACTIVE season is never a chip: it is the tab, always on screen above
   // this, and offering it would be offering the reader where they already are.
-  // The pinned year IS a chip, and it is the lit one — it is the selector's
+  // The pinned year IS a chip, and it is the lit one - it is the selector's
   // state now that choosing a year adds a block instead of replacing the page.
   const others = data.logSeasons.filter((year) => year !== data.season);
   if (others.length === 0) return "";
@@ -1690,7 +1690,7 @@ function renderLogSeasons(
     ` href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 
   // Clearing the pin IS the All state, so both the lit year and the All chip
-  // build the same href — one to leave, one to stay put.
+  // build the same href - one to leave, one to stay put.
   const clear = pageUrl(data, options, { log: data.season, hash: "game-log" });
 
   const chips =
@@ -1706,7 +1706,7 @@ function renderLogSeasons(
       .join("");
 
   // No visible label. "More <player> game logs" was a heading over a row of
-  // years, and the row now sits on the heading of the block it opens — which
+  // years, and the row now sits on the heading of the block it opens - which
   // names that block outright, in bigger type, one line across. The <nav> keeps
   // the name for a screen reader, where there is no layout to read it from.
   return (
@@ -1721,7 +1721,7 @@ function renderLogSeasons(
  *
  * Rates, not totals: this tab is about what one week from this player looks
  * like, and the totals are the Stats tab's answer to a different question. Over
- * games PLAYED — per-game over weeks on a roster measures availability while
+ * games PLAYED - per-game over weeks on a roster measures availability while
  * wearing the clothes of production.
  */
 function renderLogTiles(data: PlayerPageData): string {
@@ -1772,8 +1772,8 @@ function renderLogIntro(data: PlayerPageData): string {
  * What one week's points were made of.
  *
  * The coefficients from scoring.ts, itemised. The total this is printed under
- * can come from Sleeper and carries scoring the breakdown does not model —
- * return yardage, two-point conversions, fumbles — so the difference is printed
+ * can come from Sleeper and carries scoring the breakdown does not model -
+ * return yardage, two-point conversions, fumbles - so the difference is printed
  * as its own line rather than folded into one of the others. A breakdown that
  * quietly balances itself is worth less than one that shows where it cannot.
  */
@@ -1825,7 +1825,7 @@ function renderScoringBreakdown(entry: GameLogEntry, format: ScoringFormat): str
  * Everything here is context the row itself cannot carry without becoming
  * twelve more columns: where the week sat against the player's own season, what
  * it finished as, how hard the matchup was, and what the points were made of.
- * Collapsed by the client — see the note on the table below for why it is not
+ * Collapsed by the client - see the note on the table below for why it is not
  * collapsed by the server.
  */
 function renderWeekDetail(
@@ -1845,7 +1845,7 @@ function renderWeekDetail(
       label: "Weekly finish",
       value:
         `${player.position ?? ""}${entry.pos_rank}` +
-        // "QB6 · QB1 week" — the rank, then the tier that rank lands in, which
+        // "QB6 · QB1 week" - the rank, then the tier that rank lands in, which
         // is the form the label is read in.
         (tier ? ` · ${weeklyTierLabel(tier, player.position)} week` : ""),
     });
@@ -1864,7 +1864,7 @@ function renderWeekDetail(
   if (entry.opp_rank_vs_pos) {
     facts.push({
       label: "Matchup",
-      // "ranked 7th in points allowed", not "the 7th-most" — one phrasing that
+      // "ranked 7th in points allowed", not "the 7th-most" - one phrasing that
       // survives rank 1, where "the 1st-most" is not English. The direction is
       // stated under the table rather than in every row.
       value: `${entry.opp} ranked ${ordinal(entry.opp_rank_vs_pos)} in points ` +
@@ -1939,7 +1939,7 @@ function renderWeeklyLog(data: PlayerPageData): string {
    * Result is drawn only for a season that HAS results.
    *
    * The final scores come from a different source than the logs do, and it
-   * does not reach as far back — so an older season rendered eighteen rows
+   * does not reach as far back - so an older season rendered eighteen rows
    * under a "Result" heading with nothing in any of them, which reads as a
    * table that is broken rather than as a column that does not apply. Same
    * rule the receiver's rushing columns already follow: a column that is empty
@@ -1997,7 +1997,7 @@ function renderWeeklyLog(data: PlayerPageData): string {
           ? `<span class="scp-opp-rank" title="${escapeHtml(
               `${entry.opp} ranked ${ordinal(oppRank)} in points allowed to ${
                 player.position ?? "this position"
-              } that season — 1st allows the most`,
+              } that season - 1st allows the most`,
             )}">${escapeHtml(ordinal(oppRank))}</span>`
           : "") +
         `</td>` +
@@ -2032,7 +2032,7 @@ function renderWeeklyLog(data: PlayerPageData): string {
    *
    * It used to have none, deliberately: a caption restating the heading, the
    * scoring the controls already name and the "Finish" header is three things
-   * the reader has passed on the way down. The opponent chip is different — a
+   * the reader has passed on the way down. The opponent chip is different - a
    * bare "20th" beside LAC is a coin flip unless the direction is written
    * down, and the direction currently lives only in a title attribute, which a
    * phone has no way to open.
@@ -2040,7 +2040,7 @@ function renderWeeklyLog(data: PlayerPageData): string {
    * The wording is the upcoming-games caption's, to the word. The two blocks
    * rank the same quantity from different sources (this one from the season's
    * own logs, that one from the FPA snapshots) and the reader has no reason to
-   * care which — what they cannot survive is the two of them being read in
+   * care which - what they cannot survive is the two of them being read in
    * opposite directions, which is what a second phrasing would invite.
    */
   const oppNote = seasonLog.some((entry) => entry.opp_rank_vs_pos)
@@ -2066,8 +2066,8 @@ function renderWeeklyLog(data: PlayerPageData): string {
  *
  * Weekly points against the season average, and nothing else. The Overview tab
  * already draws the same series under a three-game trailing average, which is a
- * question about form; this one is a question about consistency — how many
- * weeks were above the line a manager was starting him on — so the reference is
+ * question about form; this one is a question about consistency - how many
+ * weeks were above the line a manager was starting him on - so the reference is
  * flat and the chart stays a second reading of the FPTS column rather than an
  * analysis of its own. The table is the hero.
  */
@@ -2141,7 +2141,7 @@ function renderRecentGames(data: PlayerPageData): string {
  * The season divided, under the sentence that added it up.
  *
  * Programmatic and factual, which is the only kind of summary this page is
- * allowed to generate: it restates the table for a reader — and for a crawler —
+ * allowed to generate: it restates the table for a reader - and for a crawler -
  * that wants the shape of the season in a sentence rather than in eighteen
  * rows. It says nothing the table does not.
  *
@@ -2150,7 +2150,7 @@ function renderRecentGames(data: PlayerPageData): string {
  * dividend: "that is worth 16.5 points" and "has averaged 16.5 points per
  * game" are the same sentence twice, which is exactly how it read once the two
  * paragraphs moved next to each other. So at one game the averages are dropped
- * — along with "of those weeks", which has nothing to refer back to — and the
+ * - along with "of those weeks", which has nothing to refer back to - and the
  * paragraph renders as nothing at all. The lede above it has already said
  * everything one game supports, and the week's finish is in the table's own
  * Finish column.
@@ -2167,7 +2167,7 @@ function logSummarySentences(data: PlayerPageData): string {
 
   if (!single) {
     // Per-game throughout: the tiles add the season up, this divides it.
-    // Only the rates that have a prose name — a completion percentage is not
+    // Only the rates that have a prose name - a completion percentage is not
     // something a player "averaged", and a tile label in a sentence reads like
     // a column header that wandered out of the table.
     const averages = perGameRates(played, player.position)
@@ -2220,7 +2220,7 @@ function logSummarySentences(data: PlayerPageData): string {
  * The Game Log FAQ.
  *
  * Deliberately last, under the summary sentence. Everything it answers is
- * already on the tab — that is the point: the FAQ is the form a search engine
+ * already on the tab - that is the point: the FAQ is the form a search engine
  * can lift an answer out of, not a second source of numbers. It repeats the
  * tiles and the table in the words somebody typed.
  *
@@ -2248,7 +2248,7 @@ function renderGameLogFaq(
  * dashes in the stat columns reads as though the player was inactive. Results
  * are a table; fixtures are cards.
  *
- * Every card carries the same four things — the week, who, how hard, and when —
+ * Every card carries the same four things - the week, who, how hard, and when -
  * and nothing else. In particular there is no projected-points figure, because
  * this codebase has no per-game projection to print: the rankings file is a
  * season-long positional order, not a weekly forecast. The card has a slot for
@@ -2273,8 +2273,8 @@ function renderUpcoming(
    * rather than two competing for it. Which side the reader came from cannot
    * reach the URL.
    *
-   * Null when either club cannot be resolved — a TBD playoff slot, an opponent
-   * the schedule names and the team table does not — and a card without a pair
+   * Null when either club cannot be resolved - a TBD playoff slot, an opponent
+   * the schedule names and the team table does not - and a card without a pair
    * simply has no link, rather than one pointing at a page that is not there.
    */
   const matchupPrefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
@@ -2299,7 +2299,7 @@ function renderUpcoming(
       //
       // The band does two jobs now: the tint it always carried, and the word
       // underneath it. One function so the colour and the word can never
-      // disagree — a rank tinted as favourable and captioned "Tough" is worse
+      // disagree - a rank tinted as favourable and captioned "Tough" is worse
       // than either signal on its own.
       const band = game.matchup ? matchupBand(game.matchup.rank) : null;
       const matchup = game.matchup
@@ -2324,7 +2324,7 @@ function renderUpcoming(
         (index === 0 ? ` data-next="1"` : "") +
         `>` +
         // The first card is the one being played next, and the gold rule on it
-        // was the only thing saying so — a decoration a reader has to guess at.
+        // was the only thing saying so - a decoration a reader has to guess at.
         // The word makes the claim the rule was already making.
         //
         // A sibling of the week line rather than inside it: "Week 2" is the
@@ -2352,7 +2352,7 @@ function renderUpcoming(
           ? `<a class="scp-next-cta" href="${escapeHtml(href)}">` +
             `<span>View matchup</span>` +
             `<span class="scp-sr">${escapeHtml(
-              ` — ${data.team?.fullName ?? "this team"} vs ${game.opponentName}`,
+              ` - ${data.team?.fullName ?? "this team"} vs ${game.opponentName}`,
             )}</span>` +
             ARROW +
             `</a>`
@@ -2367,7 +2367,7 @@ function renderUpcoming(
    *
    * "14th vs QB" means nothing on its own, and "14th easiest" would be a claim
    * about a scale this block does not own. The points-allowed table ranks
-   * descending — rank 1 allows the most — which is verified in
+   * descending - rank 1 allows the most - which is verified in
    * lib/fpa/fpa-data.ts rather than assumed here, so the caption states the
    * direction outright and leaves the reader to call it easy or hard.
    */
@@ -2377,7 +2377,7 @@ function renderUpcoming(
    * The caption defines the rank in a sentence; the link is where the reader
    * checks it. The phrase itself is the anchor rather than a "see also" tacked
    * on the end, because the words a reader stops on are the words that should
-   * be clickable — and the rest of the sentence stays plain so the definition
+   * be clickable - and the rest of the sentence stays plain so the definition
    * still reads as one statement.
    */
   const fpaHref = `${options.fpaPath ?? DEFAULT_FPA_PATH}${
@@ -2438,7 +2438,7 @@ function kickoffLine(game: UpcomingGame): string {
 /**
  * The Game Log tab.
  *
- * Stats is totals, Game Log is games — the split the Stats tab is built on. The
+ * Stats is totals, Game Log is games - the split the Stats tab is built on. The
  * career table and the career-finish tiles were both aggregates filed here;
  * they moved, and what is left is the thing this tab is named for.
  */
@@ -2451,7 +2451,7 @@ function renderGameLog(
   /*
    * No label under the heading.
    *
-   * It read "2026 Season (Through Week 1)" — a caption restating the year the
+   * It read "2026 Season (Through Week 1)" - a caption restating the year the
    * heading had just given, in the one position on the tab where a reader is
    * most willing to be told something. The tiles give "Games played"
    * instead, which is how far in we are.
@@ -2474,13 +2474,13 @@ function renderGameLog(
     // No scoring control here, and none anywhere else either. This tab used to
     // print its own toggle on a scoped URL, because a section page had no
     // control bar above it to carry one; the bar came back when the sections
-    // became addresses, and then the toggle went from the bar. `?format=half` is still a URL the server renders — what
+    // became addresses, and then the toggle went from the bar. `?format=half` is still a URL the server renders - what
     // is gone is the control that advertised it, on the page where the numbers
     // it changes live.
     //
-    // Tiles first, prose second. The paragraph reads as a gloss on the tiles —
+    // Tiles first, prose second. The paragraph reads as a gloss on the tiles -
     // the same season, in sentences, with the context a grid of six numbers
-    // cannot carry — and a reader who only wants the number gets it without
+    // cannot carry - and a reader who only wants the number gets it without
     // reading past a paragraph to reach it.
     renderLogTiles(current) +
     renderLogIntro(current) +
@@ -2493,7 +2493,7 @@ function renderGameLog(
     renderRecentGames(current) +
     renderUpcoming(current, options) +
     // One or the other, never both: All is the selector's resting state. The
-    // selector itself goes INTO whichever one renders, on its heading's row —
+    // selector itself goes INTO whichever one renders, on its heading's row -
     // it is that block's filter, and a reader changing years is looking at the
     // thing that changes.
     renderLogCareer(data, seasons) +
@@ -2510,8 +2510,8 @@ function renderGameLog(
  * to SEE 2025, not to lose 2026, so the tab is now always the active season
  * and the pinned year is an extra block under the selector.
  *
- * The data already carries both — `gameLog`/`stats` are the active season's
- * and `seasonLog`/`seasonLogStats` are the pinned one's — so this is a view
+ * The data already carries both - `gameLog`/`stats` are the active season's
+ * and `seasonLog`/`seasonLogStats` are the pinned one's - so this is a view
  * over the same object rather than a second load, and it is the identity when
  * nothing is pinned.
  */
@@ -2529,8 +2529,8 @@ function activeSeasonView(data: PlayerPageData): PlayerPageData {
 /**
  * A pinned archive season, under the selector that pinned it.
  *
- * The same three blocks the active season leads with — the tiles, the
- * paragraph, the table — and none of the ones that only make sense for a
+ * The same three blocks the active season leads with - the tiles, the
+ * paragraph, the table - and none of the ones that only make sense for a
  * season in progress: no fixtures, because a finished year has none; no
  * trailing-five and no consistency chart, because both are readings of current
  * FORM and this block is a record.
@@ -2570,7 +2570,7 @@ function renderArchiveSeason(
  * The same career table the Stats tab carries, rendered from the same
  * statsProfile, so the two cannot drift. It belongs in both places for
  * different reasons: on Stats it is the totals, and here it is the index to
- * eleven game logs — the reader is standing in front of a row of years being
+ * eleven game logs - the reader is standing in front of a row of years being
  * asked to pick one, and this is the screen that tells them which year is
  * worth opening.
  *
@@ -2582,7 +2582,7 @@ function renderArchiveSeason(
  */
 function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
   if (data.logSeason !== data.season) return "";
-  // Nothing to index for a player with one season — and the selector that
+  // Nothing to index for a player with one season - and the selector that
   // would offer All is not drawn for one either.
   if (data.logSeasons.filter((year) => year !== data.season).length === 0) return "";
 
@@ -2598,7 +2598,7 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
   );
 }
 
-/** Career totals by season — the counting stats, not the rates. */
+/** Career totals by season - the counting stats, not the rates. */
 
 /* --------------------------------------------------------- advanced stats */
 
@@ -2609,7 +2609,7 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
  * carries the percentile that says whether it is any good. The value is always
  * printed; the bar beside it is league context, never the only reading.
  *
- * Absent entirely for a player who is not in the table — which is most of the
+ * Absent entirely for a player who is not in the table - which is most of the
  * league, and why the tab is dropped rather than shown empty.
  */
 /* -------------------------------------------------------------------- stats */
@@ -2617,8 +2617,8 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
 /**
  * The Stats tab.
  *
- * One page for one question — "what are his stats this season and over his
- * career" — which is a single intent that used to be spread across three
+ * One page for one question - "what are his stats this season and over his
+ * career" - which is a single intent that used to be spread across three
  * places: season totals half-stated on Overview, the career table filed under
  * Game Log, and an Advanced Stats tab competing for the same searches with a
  * thinner page.
@@ -2629,7 +2629,7 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
  * or a record. Nothing on this tab knows what a week is.
  *
  * Advanced metrics are NOT on this tab. They were, briefly, as its last
- * section — forty percentile bars across six groups, which buried the career
+ * section - forty percentile bars across six groups, which buried the career
  * records under a wall of EPA and pressure rates that a general reader scrolls
  * past. They are not a tab of their own either: that page competed with this
  * one for the same queries on thinner content.
@@ -2642,7 +2642,7 @@ function renderLogCareer(data: PlayerPageData, seasonNav = ""): string {
  * "career stats" variant, and the records give the page somewhere to stop.
  */
 
-/** A whole number with thousands separators. Never a dash — callers guard. */
+/** A whole number with thousands separators. Never a dash - callers guard. */
 function count(value: number): string {
   return Math.round(value).toLocaleString("en-US");
 }
@@ -2653,7 +2653,7 @@ function count(value: number): string {
  * FANTASY FIRST, and per game.
  *
  * It used to open on games, passing yards, touchdowns, completion percentage,
- * interceptions and passer rating, with fantasy points added at the end — a
+ * interceptions and passer rating, with fantasy points added at the end - a
  * row that answers "how did he play" and says nothing about the question this
  * site exists for until its last cell. A reader who wanted passer rating did
  * not come here for it. So the two fantasy figures lead and are set larger,
@@ -2661,7 +2661,7 @@ function count(value: number): string {
  * survives a bye and a one-game sample, and season totals are what the career
  * table underneath is for.
  *
- * Passer rating has not been dropped — it moved down into Production, where it
+ * Passer rating has not been dropped - it moved down into Production, where it
  * sits with the rest of the line it belongs to.
  *
  * Position-aware, because the four numbers a reader wants after the fantasy
@@ -2676,7 +2676,7 @@ function renderStatsSnapshot(data: PlayerPageData): string {
   const g = row.gamesPlayed;
   const per = (value: number, digits = 1) => (value / g).toFixed(digits);
 
-  // The two that lead. `lead` sets them larger than the rest of the rail —
+  // The two that lead. `lead` sets them larger than the rest of the rail -
   // hierarchy by size, because a row of six equal figures has no answer in it.
   const cells: RailCell[] = [
     {
@@ -2714,7 +2714,7 @@ function renderStatsSnapshot(data: PlayerPageData): string {
   );
 }
 
-/* statTable() — the two-column label/value table — went with the cards it was
+/* statTable() - the two-column label/value table - went with the cards it was
    the inside of. Production is figure-over-label columns now, which reads as a
    stat sheet rather than as a settings page. */
 
@@ -2722,7 +2722,7 @@ function renderStatsSnapshot(data: PlayerPageData): string {
  * Career, season by season.
  *
  * Reaches further back than the game logs do, because it is built off the
- * production snapshot — see lib/player/stats-profile.ts. There is no TEAM
+ * production snapshot - see lib/player/stats-profile.ts. There is no TEAM
  * column: that file does not record one, and a column that is blank for most of
  * a career is worse than no column.
  */
@@ -2766,7 +2766,7 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
    * Eleven seasons across twelve columns is one long sheet, and a reader
    * scanning for a passing line has to count headers to find where it starts.
    * The groups say where each block of columns begins and cost one row to do
-   * it. Marked aria-hidden and skipped by the sorter — see wireSortableLog,
+   * it. Marked aria-hidden and skipped by the sorter - see wireSortableLog,
    * which reads the LAST header row so these are not mistaken for sort buttons.
    */
   const groups: Array<{ label: string; span: number }> = isQb
@@ -2852,7 +2852,7 @@ function renderCareerStats(data: PlayerPageData, aside = ""): string {
 
   return (
     // No line under the heading. It read "11 seasons, 102 games. Fantasy points
-    // in PPR" — the season count is the number of rows, the games are the
+    // in PPR" - the season count is the number of rows, the games are the
     // Career row's own GP cell, and the format is named by the column head
     // ("FPTS/G (PPR)") and by the hero's lead cell above it. Three facts the
     // table states, restated above the table.
@@ -2889,7 +2889,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
    * The heading, and nothing under it.
    *
    * There were two lines here and both were restating their surroundings. A
-   * subtitle listed the section headings that follow it — "fantasy production,
+   * subtitle listed the section headings that follow it - "fantasy production,
    * efficiency, career stats and career bests" is a table of contents for four
    * blocks a reader can already see. Under that, a meta row gave the position,
    * the club, the season, the games played and the week, every one of which is
@@ -2897,7 +2897,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
    * the heading carries the year, and the rail underneath opens on the fantasy
    * rate with the games behind it.
    *
-   * What they were for was authority — who, which season, how far in — and the
+   * What they were for was authority - who, which season, how far in - and the
    * page earns that by being right rather than by captioning itself.
    */
   // The panel's own heading, printed on the scoped URL too. Since 2026-09-30
@@ -2919,7 +2919,7 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
  * Reordered around the question people actually arrive with. Somebody who
  * searches a player's name and the word "injury" wants three things, in this
  * order: is he hurt right now, is he playing, what happened. The career record
- * — the durability grade, the body-region tallies, the five-year timeline — is
+ * - the durability grade, the body-region tallies, the five-year timeline - is
  * what they want SECOND, and it used to be the whole tab with the current
  * designation filed one tab over under News.
  *
@@ -2927,14 +2927,14 @@ function renderStats(data: PlayerPageData, options: PlayerRenderOptions): TabPar
  *
  *   1. current status, with this season's availability beside it
  *   2. the career record at a glance
- *   3. the availability profile — four readings, each with its record printed
+ *   3. the availability profile - four readings, each with its record printed
  *   4. injuries by body part, as a table
  *   5. the history itself, one entry at a time, as real prose in the HTML
  *   6. the questions people type, answered from the record
  *
  * A note on the history, because it is the part that carries the most weight
- * and has the least behind it. Those records have no per-entry provenance —
- * no source, no URL, no retrieved-at — and the script that produced them
+ * and has the least behind it. Those records have no per-entry provenance -
+ * no source, no URL, no retrieved-at - and the script that produced them
  * scraped a dev server of an app that is not in this repository. The page
  * therefore says what it can defend and nothing more: that it is a compiled
  * record, and when the file it came from was last written. See the note under
@@ -2958,7 +2958,7 @@ const RISK_WORD: Record<RiskLevel, string> = {
  *
  * The injury record's own questions (data.injury.faq) are folded into the
  * spec's FAQ where it doesn't already ask them, and the FAQPage node is built
- * from exactly what prints — mak approved that schema change on 2026-09-30.
+ * from exactly what prints - mak approved that schema change on 2026-09-30.
  */
 function renderInjury(
   data: PlayerPageData,
@@ -2966,7 +2966,7 @@ function renderInjury(
 ): TabParts | null {
   if (!data.injury) return null;
 
-  // The tab's heading, and the thing that names the panel — on the scoped URL
+  // The tab's heading, and the thing that names the panel - on the scoped URL
   // as well. See renderHero(). No subtitle since 2026-09-30: the status
   // panel's answer follows the H1.
   const heading = h2(`${data.player.name} Injury Update & History`);
@@ -3003,7 +3003,7 @@ function renderNews(data: PlayerPageData, options: PlayerRenderOptions): TabPart
  * The page's FAQ, once, from the sections that actually shipped.
  *
  * Standalone this is the FAQPage node; embedded it is the inert island that
- * statchasers-player.php lifts into Rank Math's graph — the same two shapes
+ * statchasers-player.php lifts into Rank Math's graph - the same two shapes
  * renderFaq() used to emit per block, hoisted so the document gets one of them.
  *
  * Collected from the sections that are ON THIS PAGE rather than from every
@@ -3059,12 +3059,12 @@ function renderPlayerFaqSchema(
 /* ------------------------------------------------------------------ peers */
 
 /**
- * "Nearby Positional Peers" — the rail at the foot of every player page.
+ * "Nearby Positional Peers" - the rail at the foot of every player page.
  *
  * Ported from the standalone app's RankNeighborsRail, and it answers the
  * question the header's rank cell asks and cannot itself answer: QB16 of whom?
  * The three players either side, with this one among them in true rank order
- * and marked, is that answer in a form a reader can act on — every card is the
+ * and marked, is that answer in a form a reader can act on - every card is the
  * next page.
  *
  * Three deliberate differences from the app it came from:
@@ -3075,12 +3075,12 @@ function renderPlayerFaqSchema(
  *
  *   It survives September. The original ranked on points per game with a
  *   four-game minimum, which in week 2 is a rail that never appears for
- *   anybody. This one slices whichever table the header is ranking by — the
- *   rate once it exists, points scored until then — and the subheading says
+ *   anybody. This one slices whichever table the header is ranking by - the
+ *   rate once it exists, points scored until then - and the subheading says
  *   which, so the cards and the header can never disagree.
  *
- *   Its cards are this site's, not that app's. Same structure — portrait well,
- *   rank pill, name, club, the figure — in the player page's own tokens, with
+ *   Its cards are this site's, not that app's. Same structure - portrait well,
+ *   rank pill, name, club, the figure - in the player page's own tokens, with
  *   the club's colour as the one accent, which is the rule the hero follows.
  *
  * Outside the tab panels, so it stands under whichever tab is open. That is
@@ -3112,7 +3112,7 @@ function renderPositionPeers(
         `<span class="scp-peer-well">` +
         // Nothing behind the portrait. The original app laid the player's
         // initials under it as a fallback for a thumbnail the CDN does not
-        // have — but Sleeper's thumbnails are CUTOUTS on transparency, so the
+        // have - but Sleeper's thumbnails are CUTOUTS on transparency, so the
         // letters did not sit behind a missing image, they sat behind the
         // player's shoulders on every card that had one. A player with no
         // thumbnail gets the club's wash and nothing else, which is the well
@@ -3134,7 +3134,7 @@ function renderPositionPeers(
         `<span class="scp-peer-value">` +
         `<b>${escapeHtml(num(row.value))}</b> ${escapeHtml(unit)}` +
         `</span>` +
-        // The club's mark, faint, behind the text — the hero's watermark at
+        // The club's mark, faint, behind the text - the hero's watermark at
         // card scale, and the same 4%-of-the-page device the production grid
         // uses rather than a third idea of what a watermark is.
         (row.team
@@ -3200,7 +3200,7 @@ export function renderPlayerPage(
   // The written 2026 take is its own tab, ahead of Overview: it is the one
   // block on the page that says what to expect rather than what happened, and
   // buried at the bottom of a long overview nobody scrolled to it. Players
-  // without a written outlook simply do not get the tab — same rule as the rest.
+  // without a written outlook simply do not get the tab - same rule as the rest.
   // Under everything the tab already had: the sections of mak's Outlook tab
   // spec of 2026-09-29 (lib/player/outlook-tab.ts). Only on a tab that exists
   // already, so no player gains an Outlook URL from this.
@@ -3215,7 +3215,7 @@ export function renderPlayerPage(
     : null;
 
   /*
-   * Overview is the interpretation layer now — see the note above
+   * Overview is the interpretation layer now - see the note above
    * renderFantasySnapshot(). What left: the 2026 counting totals and the best
    * week (Stats owns them), the efficiency meters and the career rate tiles
    * (moved to Stats, then removed there on 2026-09-30), and the season-finish
@@ -3231,7 +3231,7 @@ export function renderPlayerPage(
    * The grouping is what carries the rhythm: the gap INSIDE a band is small
    * and the gap BETWEEN bands is large, so the tab reads as three things with
    * parts rather than as seven equal blocks with the same air around each. A
-   * band whose every section returned "" is not emitted — an empty wrapper
+   * band whose every section returned "" is not emitted - an empty wrapper
    * still draws its own top margin.
    */
   const band = (parts: string[]): string => {
@@ -3247,11 +3247,11 @@ export function renderPlayerPage(
     // strip and the career table further down the tab answer all five.
     band([renderRoleDirection(data)]);
 
-  // The wrapper is what every rule on this tab is scoped to — the sections
+  // The wrapper is what every rule on this tab is scoped to - the sections
   // below reuse markup the Stats and Injury tabs own, and Overview's tighter
   // rhythm must not follow those classes onto the other tabs.
   //
-  // Under it, the sections of the Overview spec — see
+  // Under it, the sections of the Overview spec - see
   // lib/player/overview.ts. Its FAQ feeds the page's one FAQPage node.
   const overview =
     (overviewBody ? `<div class="scp-ov">${overviewBody}</div>` : "") +
@@ -3263,7 +3263,7 @@ export function renderPlayerPage(
 
   const bioParts = renderBio(data, withFaq("bio"));
 
-  // Stats is totals, Game Log is games — the split the Stats tab is built on.
+  // Stats is totals, Game Log is games - the split the Stats tab is built on.
   // The career table and the career-finish tiles were both aggregates filed
   // here; they moved to Stats, and what is left is the thing this tab is named
   // for. A reader asking "what did he do in Week 3" gets a page of weeks.
@@ -3279,7 +3279,7 @@ export function renderPlayerPage(
   if (newsParts) split.set("news", newsParts);
   if (bioParts) split.set("bio", bioParts);
   // Every tab carries the rail above its FAQ, as on the Overview (mak,
-  // 2026-10-02) — so there is no copy after the panels any more. The Stats
+  // 2026-10-02) - so there is no copy after the panels any more. The Stats
   // footer closes its page, under the FAQ (mak, 2026-10-02); the Injury
   // footer keeps its place above the rail.
   const whole = (id: string, parts: TabParts | null): string =>
@@ -3329,13 +3329,13 @@ export function renderPlayerPage(
    *
    * It carries the strip, with the current tab marked, plus a link back to the
    * full profile. It used to carry no strip at all, on the grounds that six
-   * tabs that all leave this URL is navigation pretending to be tabs — true
+   * tabs that all leave this URL is navigation pretending to be tabs - true
    * while they were `#hash` links and the opposite of true now they are
    * addresses. A reader arriving here from search had no way to reach the
    * other six, and those six had nothing linking to them.
    *
-   * Everything else — the hero, the control bar, the markup of the section
-   * itself — is unchanged, so the two addresses render the same component and
+   * Everything else - the hero, the control bar, the markup of the section
+   * itself - is unchanged, so the two addresses render the same component and
    * cannot drift.
    */
   // The Overview is not a section page: it is the profile, which opens on it.
@@ -3371,7 +3371,7 @@ export function renderPlayerPage(
       // block at the bottom of the page. Kept as its own attribute because the
       // plugin's regex is deployed separately from this render.
       ` data-log-season="${escapeHtml(String(data.season))}"` +
-      // The pinned archive year, when there is one — state, not subject.
+      // The pinned archive year, when there is one - state, not subject.
       (data.logSeason === data.season
         ? ""
         : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
@@ -3401,7 +3401,7 @@ export function renderPlayerPage(
         : panelHtml) +
       `</section>` +
       // The tab's footer, the way back, the rail, then its FAQ (mak,
-      // 2026-09-30) — except Stats, whose footer closes the page under the
+      // 2026-09-30) - except Stats, whose footer closes the page under the
       // FAQ (mak, 2026-10-02).
       (parts
         ? (scoped.id === "stats" ? "" : parts.foot) +
@@ -3415,7 +3415,7 @@ export function renderPlayerPage(
     );
   }
 
-  // `is-default` marks the panel shown when the URL names no section — a class
+  // `is-default` marks the panel shown when the URL names no section - a class
   // rather than :first-of-type, because the CSS must not depend on this element
   // being the first <section> among its siblings. Same reasoning as the hub.
   const body = sections
@@ -3467,10 +3467,10 @@ export function renderPlayerPage(
 /*
  * The index of every profile: the container page at /nfl/players/ mounts it as
  * a fragment, and /player on this origin is the same thing in a page shell.
- * Neither carries a heading of its own — the host page supplies it.
+ * Neither carries a heading of its own - the host page supplies it.
  *
  * It used to be six hundred names in thirty-two <ul>s. That was honest about
- * what it had — a list of slugs — and it was the one surface here that looked
+ * what it had - a list of slugs - and it was the one surface here that looked
  * nothing like the pages it points at: no portrait, no club colour, no
  * position ink, no number, and no way to find a player on it but the browser's
  * own find-in-page.
@@ -3497,7 +3497,7 @@ export function renderPlayerPage(
  * Nothing here needs JavaScript to be complete: every player, every portrait,
  * every standing is in the markup the server sends, grouped and ordered. The
  * chips and the search box are the two things that are not, so both ship
- * hidden and the client reveals them — the convention renderPlayerSearch()
+ * hidden and the client reveals them - the convention renderPlayerSearch()
  * already set, and the reason is the same: a control with no script behind it
  * is a promise the page cannot keep.
  */
@@ -3513,7 +3513,7 @@ interface PlayerIndexOptions {
  * The order rows read in within a club: the depth chart's, not the alphabet's.
  *
  * A roster that opens with its quarterback and ends with its kicker is the
- * order every other surface on this site lists a team in — the depth chart,
+ * order every other surface on this site lists a team in - the depth chart,
  * the outlook cards, the matchup tables. Alphabetical order is the order of a
  * list that expects to be searched rather than read.
  */
@@ -3527,7 +3527,7 @@ function positionOrder(position: string | null | undefined): number {
 /**
  * The portrait for one row.
  *
- * The dictionary's own URL when it has one, Sleeper's thumbnail otherwise —
+ * The dictionary's own URL when it has one, Sleeper's thumbnail otherwise -
  * the same two-step the hero and the peers rail make, and the same CDN keyed
  * by the same id. A player Sleeper has no thumbnail for gets the empty well,
  * which is the well doing its job rather than a broken image; the client
@@ -3543,14 +3543,14 @@ function directoryShot(row: DirectoryPlayer): string {
 /**
  * How loudly one row reads: the rank band it falls in.
  *
- * A card of eighteen rows all shouting equally is a card nobody scans — the
+ * A card of eighteen rows all shouting equally is a card nobody scans - the
  * eye has to read every name to find the six that matter. The band is what
  * the stylesheet varies name weight, pill fill and row tint by, so the page
  * can be read at a glance rather than a row at a time.
  *
  * The cut points are finishBadge()'s, not new ones. It already knows that a
- * position's shape decides where "startable" ends — QB12 is an every-week
- * starter where WR12 is a first-rounder — and it maps onto the same ordinal
+ * position's shape decides where "startable" ends - QB12 is an every-week
+ * starter where WR12 is a first-rounder - and it maps onto the same ordinal
  * tier ramp this stylesheet paints finishes with everywhere else. A second,
  * flat set of cut points here would only disagree with it.
  *
@@ -3637,7 +3637,7 @@ function renderDirectoryClub(
   const ordered = rows.slice().sort((a, b) => {
     const byPosition = positionOrder(a.position) - positionOrder(b.position);
     if (byPosition !== 0) return byPosition;
-    // Inside a position, the table's order — and the players with no standing
+    // Inside a position, the table's order - and the players with no standing
     // after the ones who have one, rather than mixed in at an arbitrary place.
     const aRank = a.standing?.rank ?? Number.POSITIVE_INFINITY;
     const bRank = b.standing?.rank ?? Number.POSITIVE_INFINITY;
@@ -3659,7 +3659,7 @@ function renderDirectoryClub(
   const style = styleAttr([team && `--club:${team.primaryColor}`]);
 
   // How many of them are actually producing. The bare roster count answered a
-  // question nobody asked — thirty-two cards all saying "about seventeen" —
+  // question nobody asked - thirty-two cards all saying "about seventeen" -
   // where "6 of 18 scoring" is the one number that separates a club worth
   // opening from a club with three names on it a reader has heard of.
   const scoring = ordered.filter((row) => directoryBand(row) !== "idle").length;
@@ -3740,7 +3740,7 @@ function renderDirectoryFilters(rows: DirectoryPlayer[]): string {
      * thirty-two chips beside the five positions would be the toolbar's whole
      * height for a choice the search box above already makes better. This is
      * the chosen club's name and the way back out of it, and nothing until one
-     * is chosen — which is why it ships hidden and empty rather than absent:
+     * is chosen - which is why it ships hidden and empty rather than absent:
      * the client fills in the name, and the words around it stay here with the
      * rest of the page's words.
      */
@@ -3751,7 +3751,7 @@ function renderDirectoryFilters(rows: DirectoryPlayer[]): string {
     `<span data-scp-dir-club-name></span>` +
     `<span class="scp-dir-chip-x" aria-hidden="true">${TIMES}</span>` +
     // The mark is decoration; this is what the button actually says.
-    `<span class="scp-sr"> — clear the team filter and show every club</span>` +
+    `<span class="scp-sr"> - clear the team filter and show every club</span>` +
     `</button>` +
     `</div></div>` +
     `</div>`
@@ -3764,7 +3764,7 @@ function renderDirectoryFilters(rows: DirectoryPlayer[]): string {
  * It exists because the standings column is meaningless without it. "QB14" is
  * a claim about a season, a scoring format and a measure, and a page that
  * prints six hundred of them and says none of the three is asking to be
- * misread — particularly in September, when the rank is over points scored in
+ * misread - particularly in September, when the rank is over points scored in
  * a game or two rather than the rate it will be by October.
  */
 function renderDirectoryNote(data: PlayerDirectory, shown: number): string {
@@ -3835,7 +3835,7 @@ function renderPlayerDirectory(
  * The index as a bare fragment, for the WordPress container page to print.
  *
  * No heading: the page at /nfl/players/ supplies it, the same division of
- * labour every other mount here follows — and, since the hero came off the
+ * labour every other mount here follows - and, since the hero came off the
  * standalone page too, the only thing this fragment now drops is the shell.
  */
 export function renderPlayerIndexFragment(
@@ -3844,8 +3844,8 @@ export function renderPlayerIndexFragment(
 ): string {
   return (
     // data-scp-index is what the client boots the directory from, and it is
-    // deliberately not data-scp-root: the profile's wiring — tabs, charts,
-    // sortable tables, the header fitter — has nothing to do on this page.
+    // deliberately not data-scp-root: the profile's wiring - tabs, charts,
+    // sortable tables, the header fitter - has nothing to do on this page.
     `<div class="scp is-embed" data-scp-index="1">` +
     `<div class="scp-section">${renderPlayerDirectory(data, options)}</div>` +
     `</div>`
@@ -3869,7 +3869,7 @@ export function renderPlayerIndex(
     // The same bundle public/player.html gives a profile, for the same reason:
     // the search box and the position chips are both shipped hidden for a
     // client to reveal, and on this page there was no client to do it. They
-    // have been inert here since the index grew them — visible, because a
+    // have been inert here since the index grew them - visible, because a
     // `display` of their own beat the `hidden` attribute, and unwired.
     `<script src="/dist/statchasers-player.js" defer></script>` +
     `</body></html>`

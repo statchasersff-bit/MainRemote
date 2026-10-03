@@ -9,7 +9,7 @@
  * Math's sitemap index via `rank_math/sitemap/index` (and with robots.txt when
  * Rank Math is not active).
  *
- * `lastmod` is only emitted when we genuinely know when the data changed — the
+ * `lastmod` is only emitted when we genuinely know when the data changed - the
  * timestamp of the last successful depth-chart refresh. Never a synthetic date.
  */
 

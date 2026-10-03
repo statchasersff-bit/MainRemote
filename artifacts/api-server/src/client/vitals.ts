@@ -2,8 +2,8 @@
  * Real-user Core Web Vitals reporting.
  *
  * Lab tools measure a single synthetic load; they can't see what real visitors
- * experience across devices and networks, and — critically for an interactive
- * tool — INP only exists once someone actually clicks something.
+ * experience across devices and networks, and - critically for an interactive
+ * tool - INP only exists once someone actually clicks something.
  *
  * This module is built as its OWN bundle (public/dist/statchasers-vitals.js),
  * not folded into the main one. Sites that haven't configured an endpoint never
@@ -25,7 +25,7 @@ interface VitalPayload {
   rating: string;
   /** Which tool produced this, so metrics aren't averaged across the site. */
   tool: string;
-  /** The page the tool is embedded in — the URL that actually gets ranked. */
+  /** The page the tool is embedded in - the URL that actually gets ranked. */
   page: string;
   /** True when measured inside an iframe; see note above. */
   framed: boolean;

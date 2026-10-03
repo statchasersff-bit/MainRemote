@@ -6,25 +6,65 @@
  * Writes `data/team/usage_<season>.json`: for every club, the numbers the Usage
  * tab draws (team environment, target tree, backfield split, run direction,
  * pass-location map, the player table and each player's advanced profile).
- * Numbers only — every sentence on the tab is written at render time from
+ * Numbers only - every sentence on the tab is written at render time from
  * these, by src/lib/team/usage-copy.ts, so nothing here is prose.
  *
  * Sources, all free, all regular season:
- *   - nflverse play-by-play — targets, carries, air yards, red/green zone,
+ *   - nflverse play-by-play - targets, carries, air yards, red/green zone,
  *     situations, run gap, pass location, pass rate over expected, pace;
- *   - nflverse snap_counts (PFR) — weekly offensive snap share;
- *   - nflverse ftn_charting (FTN Data, CC-BY-SA 4.0) — `read_thrown`, which is
+ *   - nflverse snap_counts (PFR) - weekly offensive snap share;
+ *   - nflverse ftn_charting (FTN Data, CC-BY-SA 4.0) - `read_thrown`, which is
  *     where first-read share comes from;
- *   - ffverse ffopportunity ep_weekly — expected fantasy points (xFP) and the
+ *   - ffverse ffopportunity ep_weekly - expected fantasy points (xFP) and the
  *     actual points they are compared with (FPOE), PPR;
- *   - nflverse pfr_advstats (rushing) — yards after contact;
- *   - nflverse stats_player — positions, and last season's line for the
+ *   - nflverse pfr_advstats (rushing) - yards after contact;
+ *   - nflverse stats_player - positions, and last season's line for the
  *     year-over-year chip;
- *   - dynastyprocess ids — gsis ↔ sleeper ↔ pfr.
+ *   - dynastyprocess ids - gsis ↔ sleeper ↔ pfr.
+ *
+ * Team environment definitions (each card's NFL rank is over these exact
+ * numbers, so they are the audit trail). Every one is regular season,
+ * offense only, from nflverse play-by-play. Plays with play_type "no_play"
+ * (wiped out by penalty), two-point tries, kneels (play_type "qb_kneel") and
+ * spikes (qb_spike) are dropped first:
+ *   - qualifying plays / game = (dropbacks + runs) / games. A dropback is
+ *     nflverse `pass` == 1: completions, incompletions, interceptions, sacks
+ *     and scrambles. A run is `rush` == 1 (designed runs). This is why it can
+ *     sit under a box-score count: PFR's offensive plays include kneels and
+ *     spikes (NE 2026 wk 1-3: 178 here, 180 at PFR, the gap is 2 kneels).
+ *   - red-zone pass rate = dropbacks / (dropbacks + designed runs), snaps
+ *     starting at the opponent's 20 or closer (yardline_100 <= 20). Sacks and
+ *     scrambles count as passes, since the play was called as one (NE wk 1-3:
+ *     9 passes + 2 sacks + 1 scramble vs 3 runs = 80%). Inside-the-10 rate is
+ *     the same over yardline_100 <= 10.
+ *   - pass rate = dropbacks / (dropbacks + designed runs), all snaps.
+ *   - PROE = mean of nflverse `pass_oe` over the same snaps.
+ *   - neutral pace = mean seconds between consecutive snaps of one drive,
+ *     both snaps with win probability 0.2-0.8 and more than 2:00 left in the
+ *     half; gaps over 60s are dropped (timeouts, reviews, quarter breaks).
+ *     Pace is the one number taken before the spike filter, so a spike counts
+ *     as a snap there.
+ *   - team xFP / game = sum of every player's ffopportunity xFP (PPR) for the
+ *     club / games. A completion credits both passer and receiver, so this is
+ *     combined opportunity value, not a fixed pool the players split.
+ *
+ * Player per-game numbers (weighted opps, xFP, FPOE) divide by the games the
+ * player was active (a snap or a touch that week), not the team's games, so a
+ * back who missed time is not penalised. The page labels them "per active
+ * game" and the RB ranks compare like with like. Weighted opportunities =
+ * carries + 2 x targets; backfield shares use season totals.
+ *
+ * Pass map ("Where <QB> Attacks") = the primary passer's own attempts only
+ * (most dropbacks), binned by pass_location and deep = 20+ air yards; a
+ * backup's throws are left out. Attempts with no location or air yards
+ * (spikes are already gone, some throwaways) are not mapped.
+ * deepTargets = a player's targets 20+ air yards, from any passer.
+ * rushYards = box-score rushing yards: carries, scrambles AND kneels.
+ * rzTouches = red-zone opportunities: carries + targets inside the 20.
  *
  * NOT built, on purpose (the spec: omit rather than estimate): route share,
  * TPRR, YPRR, slot rate and personnel groupings. nflverse publishes
- * participation — where routes and personnel come from — only after the
+ * participation - where routes and personnel come from - only after the
  * season. A situational SNAP split for the backfield needs the same file, so
  * the backfield grid is a share of the running backs' carries + targets in
  * each situation instead, and says so on the page.
@@ -222,7 +262,7 @@ export async function buildUsage(season) {
   // ---- play by play
   const teams = new Map(); // club -> team accumulator
   const players = new Map(); // `${club}|${gsis}` -> player accumulator
-  const teamWeekPass = new Map(); // `${club}|${week}` -> pass attempts
+  const teamWeekTargets = new Map(); // `${club}|${week}` -> targets
   const teamGamesByWeek = new Map(); // club -> Set(week)
   const weeksSeen = new Set();
 
@@ -244,7 +284,7 @@ export async function buildUsage(season) {
       airYards: 0,
       firstReadTargets: 0,
       runs: { LE: [0, 0], LT: [0, 0], MID: [0, 0], RT: [0, 0], RE: [0, 0] },
-      zones: {},
+      zones: {}, // passer gsis -> zone -> {att, yds, receivers}
       rbSituation: { early: 0, third: 0, rz: 0, in10: 0, twoMin: 0, trailing: 0 },
       dropbacks: new Map(), // passer gsis -> count
     }));
@@ -257,10 +297,12 @@ export async function buildUsage(season) {
       receptions: 0,
       airYards: 0,
       ezTargets: 0,
+      deepTargets: 0,
       firstReadTargets: 0,
       carries: 0,
       gzCarries: 0,
       rzTouches: 0,
+      rushYards: 0,
       designedRuns: 0,
       scrambles: 0,
       dropbacks: 0,
@@ -289,6 +331,11 @@ export async function buildUsage(season) {
     const twoPt = r.two_point_attempt === "1";
     if (twoPt) continue;
     if (playType !== "pass" && playType !== "run") {
+      // Kneels count nowhere else, but the box score's rushing yards include
+      // them, and the QB copy quotes that number (NE 2026 wk 1-3: Maye 82).
+      if (playType === "qb_kneel" && r.rusher_player_id && r.rusher_player_id !== "NA") {
+        playerAcc(c, r.rusher_player_id).rushYards += num(r.rushing_yards) ?? 0;
+      }
       last = null;
       continue;
     }
@@ -358,7 +405,6 @@ export async function buildUsage(season) {
     // Targets.
     if (r.pass_attempt === "1" && r.sack !== "1") {
       t.passAtt += 1;
-      teamWeekPass.set(`${c}|${week}`, (teamWeekPass.get(`${c}|${week}`) ?? 0) + 1);
       const air = num(r.air_yards);
       const passer = r.passer_player_id;
       if (passer && passer !== "NA" && air != null) {
@@ -369,10 +415,12 @@ export async function buildUsage(season) {
       if (air != null) t.airYards += air;
       const read = readThrown.get(`${r.game_id}:${r.play_id}`);
 
-      // Pass map.
-      if (air != null && r.pass_location && r.pass_location !== "NA") {
+      // Pass map, per passer: the chart is titled for the starter, so a
+      // backup's throws must not land in his zones (NE 2026: Maye 80 of 86).
+      if (air != null && passer && passer !== "NA" && r.pass_location && r.pass_location !== "NA") {
         const zone = `${air >= 20 ? "D" : "S"}${r.pass_location[0].toUpperCase()}`;
-        const z = (t.zones[zone] ??= { att: 0, yds: 0, receivers: {} });
+        const mine = (t.zones[passer] ??= {});
+        const z = (mine[zone] ??= { att: 0, yds: 0, receivers: {} });
         z.att += 1;
         z.yds += num(r.passing_yards) ?? 0;
         const rec = r.receiver_player_id;
@@ -382,11 +430,13 @@ export async function buildUsage(season) {
       const rec = r.receiver_player_id;
       if (rec && rec !== "NA") {
         t.targets += 1;
+        teamWeekTargets.set(`${c}|${week}`, (teamWeekTargets.get(`${c}|${week}`) ?? 0) + 1);
         const p = playerAcc(c, rec);
         p.targets += 1;
         if (r.complete_pass === "1") p.receptions += 1;
         if (air != null) p.airYards += air;
         if (air != null && yl != null && air >= yl) p.ezTargets += 1;
+        if (air != null && air >= 20) p.deepTargets += 1;
         if (read && firstRead(read)) {
           p.firstReadTargets += 1;
           t.firstReadTargets += 1;
@@ -412,6 +462,7 @@ export async function buildUsage(season) {
       if (runner && runner !== "NA") {
         const p = playerAcc(c, runner);
         p.carries += 1;
+        p.rushYards += num(r.rushing_yards) ?? 0;
         if (yl != null && yl <= 10) p.gzCarries += 1;
         const w = weekAcc(p, week);
         if (yl != null && yl <= 20) {
@@ -527,18 +578,18 @@ export async function buildUsage(season) {
     const allTeamSnaps = games.reduce((s, w) => s + (teamSnaps.get(`${p.club}|${w}`) ?? 0), 0);
     const x = xfp.get(`${p.club}|${p.id}`);
     const ya = yac.get(p.id);
-    const ts = pct(p.targets, t.passAtt);
+    const ts = pct(p.targets, t.targets);
     const ays = pct(p.airYards, t.airYards);
     const rbRoomOpps = t.rbSituation; // totals only used for shares below
 
     const weekly = games.map((w) => {
       const wk = p.weeks.get(w);
-      const pass = teamWeekPass.get(`${p.club}|${w}`) ?? 0;
+      const tgts = teamWeekTargets.get(`${p.club}|${w}`) ?? 0;
       const snap = snapWeeks.get(w);
       const playedThis = snap != null || wk != null;
       return {
         week: w,
-        ts: playedThis ? round(pct(wk?.targets ?? 0, pass), 1) : null,
+        ts: playedThis ? round(pct(wk?.targets ?? 0, tgts), 1) : null,
         snap: snap != null ? Math.round(snap * 100) : null,
         rz: playedThis ? (wk?.rz ?? 0) : null,
       };
@@ -560,13 +611,15 @@ export async function buildUsage(season) {
       wopr: ts != null && ays != null ? round(1.5 * (ts / 100) + 0.7 * (ays / 100), 2) : null,
       adot: p.targets ? round(p.airYards / p.targets, 1) : null,
       ezTargets: p.ezTargets,
+      deepTargets: p.deepTargets,
       firstReadShare: readThrown.size && t.firstReadTargets ? round(pct(p.firstReadTargets, t.firstReadTargets), 1) : null,
       snapShare: allTeamSnaps ? round(pct(snaps.has(`${p.club}|${p.id}`) ? snapTotals.get(`${p.club}|${p.id}`).snaps : 0, allTeamSnaps), 0) : null,
       rzTouches: p.rzTouches,
+      rushYards: p.rushYards,
       gzCarries: p.gzCarries,
       wopp: p.carries + 2 * p.targets,
       woppPerGame: round((p.carries + 2 * p.targets) / gp, 1),
-      hvt: p.gzCarries + p.targets,
+      hvt: p.gzCarries + p.receptions,
       lastSeasonWoppPerGame: (() => {
         const l = lastSeason.get(p.id);
         return l && l.games ? round(l.wopp / l.games, 1) : null;
@@ -670,8 +723,9 @@ export async function buildUsage(season) {
     const passerId = [...t.dropbacks.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
     const zones = {};
-    const zoneTotal = Object.values(t.zones).reduce((s, z) => s + z.att, 0);
-    for (const [key, z] of Object.entries(t.zones)) {
+    const passerZones = (passerId && t.zones[passerId]) || {};
+    const zoneTotal = Object.values(passerZones).reduce((s, z) => s + z.att, 0);
+    for (const [key, z] of Object.entries(passerZones)) {
       const [topId, topN] = Object.entries(z.receivers).sort((a, b) => b[1] - a[1])[0] ?? [null, 0];
       const zoneTargets = Object.values(z.receivers).reduce((s, n) => s + n, 0);
       zones[key] = {
@@ -696,6 +750,7 @@ export async function buildUsage(season) {
       passAttempts: t.passAtt,
       targets: t.targets,
       passerId,
+      passerZoneAttempts: zoneTotal,
       env: {
         proe: envEntry(c, "proe", 1),
         rzPassRate: envEntry(c, "rzPassRate", 0),

@@ -1,7 +1,7 @@
 /**
  * Boots the built server on a free port for the test run and tears it down
- * afterwards. Tests run against the real compiled artefacts — dist/index.mjs
- * and public/dist/*.js — because the point of this suite is to catch a build
+ * afterwards. Tests run against the real compiled artefacts - dist/index.mjs
+ * and public/dist/*.js - because the point of this suite is to catch a build
  * or plugin change that quietly breaks the crawlable output, and testing
  * source modules directly would miss exactly that.
  */
@@ -42,7 +42,7 @@ export async function startServer(env = {}, options = {}) {
       ...process.env,
       // No live ingest during tests. Two reasons: the suite shouldn't depend on
       // a third-party feed being up, and a background ingest landing mid-run
-      // legitimately changes the content version — which would make the ETag
+      // legitimately changes the content version - which would make the ETag
       // and "last updated" assertions flap for reasons that aren't bugs. The
       // tests read the data already in the database.
       DYNASTY_NEWS_API_URL: "",
@@ -52,8 +52,8 @@ export async function startServer(env = {}, options = {}) {
       SC_BROWSER_PROXY: "",
       ...env,
       PORT: String(port),
-      // Overridable, because the development-only surfaces — the preview
-      // switcher and the /preview/* harness — are otherwise untestable: their
+      // Overridable, because the development-only surfaces - the preview
+      // switcher and the /preview/* harness - are otherwise untestable: their
       // single guard is this variable, so a suite that can only ever set it to
       // "test" can assert that they are ABSENT and nothing about whether they
       // are correct when present. That gap is how a tool went missing from the
@@ -65,7 +65,7 @@ export async function startServer(env = {}, options = {}) {
 
   // BOTH pipes must be drained. The server logs every request through pino, so
   // an unread stdout pipe fills its buffer and the server process blocks
-  // forever mid-write — which looks exactly like a hung test suite.
+  // forever mid-write - which looks exactly like a hung test suite.
   let stderr = "";
   child.stderr.on("data", (d) => {
     stderr += d.toString();

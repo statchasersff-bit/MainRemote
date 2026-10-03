@@ -12,7 +12,7 @@
  *
  * Divi's Theme Builder can render one body template across all 32 team pages,
  * and its dynamic content covers the post title and the featured image. It has
- * no notion of "this page's team colour" — so a hero that is meant to be the
+ * no notion of "this page's team colour" - so a hero that is meant to be the
  * Eagles' hero rather than a generic one needs the team's own values from
  * somewhere. This file is that somewhere: the same 32 rows the API renders
  * from, exposed to Divi as CSS custom properties and a shortcode.
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The 32 teams, keyed by the page slug they live at.
  *
  * Mirrors artifacts/api-server/src/lib/team/teams.ts and the TEAM_COLORS /
- * TEAM_ACCENTS maps in src/lib/render.ts — the same values the hub paints its
+ * TEAM_ACCENTS maps in src/lib/render.ts - the same values the hub paints its
  * own hero with, so a Divi hero above it cannot disagree about what colour a
  * team is. If a team ever moves or rebrands, both sides change together.
  */
@@ -75,7 +75,7 @@ const STATCHASERS_DIVI_TEAMS = array(
  *
  * Reads `get_queried_object()` rather than `get_post()` on purpose. Divi swaps
  * the global post while it renders a Theme Builder layout, so a shortcode
- * placed inside the template sees the LAYOUT's post, not the page's — and the
+ * placed inside the template sees the LAYOUT's post, not the page's - and the
  * team would come out wrong or empty. The queried object is the page either
  * way, which is what makes one template safe across all 32.
  *
@@ -93,7 +93,7 @@ function statchasers_divi_team(): ?array {
 
 	$slug = (string) $object->post_name;
 	// array_key_exists rather than isset(): isset() cannot take a constant
-	// array offset — that is a parse error, not a false.
+	// array offset - that is a parse error, not a false.
 	if ( ! array_key_exists( $slug, STATCHASERS_DIVI_TEAMS ) ) {
 		return null;
 	}
@@ -109,7 +109,7 @@ function statchasers_divi_team(): ?array {
 }
 
 /**
- * Body classes so a Divi template — or plain CSS — can target team pages.
+ * Body classes so a Divi template - or plain CSS - can target team pages.
  *
  * `sc-team-page` for "any team hub", `sc-team-<slug>` for one team. WordPress
  * emits no slug-based class of its own, and `page-id-1234` is not something
@@ -134,7 +134,7 @@ add_filter( 'body_class', 'statchasers_divi_body_class' );
 /**
  * Give every team page Divi's full-width layout.
  *
- * The hub is a full-bleed tool — a hero, a sticky tab strip, four-across metric
+ * The hub is a full-bleed tool - a hero, a sticky tab strip, four-across metric
  * cards, a schedule grid. Divi's default page layout is `et_right_sidebar`,
  * which hands it about three quarters of the column and draws a vertical rule
  * down the boundary. The published Eagles page was the hub squeezed into 1120px
@@ -235,7 +235,7 @@ add_action( 'wp_head', 'statchasers_divi_head_vars', 1 );
  * One team field, for a Divi Text/Code module in the hero.
  *
  * Divi's own dynamic content already covers the page title and the featured
- * image; this covers what it cannot know — the division, the nickname, the
+ * image; this covers what it cannot know - the division, the nickname, the
  * colours, the crest URL.
  *
  *   [sc_team]                    Philadelphia Eagles
@@ -289,7 +289,7 @@ add_shortcode( 'sc_team', 'statchasers_divi_team_shortcode' );
  * way.
  *
  * Putting the hub in page content and giving the template a Post Content module
- * is still the better arrangement — the content then survives the template
+ * is still the better arrangement - the content then survives the template
  * being unassigned, and it is what the WP-CLI script writes.
  *
  * @return string
@@ -309,7 +309,7 @@ add_shortcode( 'sc_team_hub', 'statchasers_divi_hub_shortcode' );
  *
  * The main plugin only enqueues when it finds the shortcode in post content.
  * A hub mounted from a Theme Builder layout is invisible to that check, so the
- * stylesheet would be enqueued mid-render and printed in the footer — the
+ * stylesheet would be enqueued mid-render and printed in the footer - the
  * flash of unstyled markup the plugin README warns about. Registering here on
  * `wp_enqueue_scripts` puts it back in the head. Idempotent: the plugin's own
  * function checks `wp_style_is()` before registering.
@@ -330,7 +330,7 @@ add_action( 'wp_enqueue_scripts', 'statchasers_divi_enqueue' );
  * is sticky and parks at top:0, which is underneath a fixed header. The API
  * cannot know what is above it, so the host page has to say.
  *
- * Measured rather than hard-coded — a Divi Theme Builder header is whatever you
+ * Measured rather than hard-coded - a Divi Theme Builder header is whatever you
  * built, it shrinks when `.et-fixed-header` kicks in, and it is a different
  * height on mobile. Reads the position too: a header that scrolls away needs no
  * offset at all, and hard-coding 80px there would leave a permanent gap.

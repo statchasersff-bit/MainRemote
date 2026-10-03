@@ -1,8 +1,8 @@
 /**
  * Running the Fantasy Points Allowed ingest, from wherever asks for it.
  *
- * `fpa/ingest.ts` does the work. This owns the two questions around it — when a
- * run is allowed to start, and what the last one did — because there is now
+ * `fpa/ingest.ts` does the work. This owns the two questions around it - when a
+ * run is allowed to start, and what the last one did - because there is now
  * more than one caller:
  *
  *   - **POST /api/fpa/ingest**, the scheduled refresh. The only path that
@@ -13,7 +13,7 @@
  *     serving whatever seeded it. That is how production came to serve a table
  *     written on 20 September for two days afterwards.
  *   - **the cold-database fallback** in fpa-ssr.ts, which fires once when the
- *     table is empty and never again — see the note there. It is a safety net
+ *     table is empty and never again - see the note there. It is a safety net
  *     under a first deploy, not a refresh.
  *
  * Two properties, and the endpoint would be unsafe without either:
@@ -44,7 +44,7 @@ export interface FpaRefreshResult {
   joined: boolean;
 }
 
-/** Outcome of the most recent run in THIS process — see the header. */
+/** Outcome of the most recent run in THIS process - see the header. */
 export interface FpaRefreshState {
   lastAttemptMs: number | null;
   lastSuccessMs: number | null;
@@ -79,7 +79,7 @@ export function fpaRefreshStatus(): FpaRefreshState & { running: boolean } {
  * reaches back into this module, and taking the render layer as a static import
  * would put the whole SSR graph behind anything that merely wants to start an
  * ingest. The list is longer than the rendered FPA table because the numbers
- * are read in three more places — the matchup pages' before/after ranks, and
+ * are read in three more places - the matchup pages' before/after ranks, and
  * the player pages' upcoming-games block, both of which hold them for longer
  * than one request.
  *
@@ -116,7 +116,7 @@ async function dropCaches(): Promise<void> {
 /**
  * Run the ingest, or join the one already running.
  *
- * Rejects when the ingest rejects, including for a caller that joined — the
+ * Rejects when the ingest rejects, including for a caller that joined - the
  * failure belongs to everyone waiting on that run.
  */
 export async function refreshFpa(
@@ -124,7 +124,7 @@ export async function refreshFpa(
 ): Promise<FpaRefreshResult> {
   if (inFlight) {
     const running = inFlight;
-    logger.info("FPA refresh already in flight — joining it");
+    logger.info("FPA refresh already in flight - joining it");
     return running.then((result) => ({ result, joined: true }));
   }
 

@@ -2,15 +2,15 @@
 
 A self-contained WordPress plugin that pulls NFL depth charts, caches them
 locally, and renders the StatChasers depth-chart UI on the front end. No external
-host, API server, or GitHub workflow is required — everything runs inside
+host, API server, or GitHub workflow is required - everything runs inside
 WordPress.
 
 **Sources (blended, matching the StatChasers app):**
 
-- **FantasyPros** — the Fantasy tab (QB/RB/WR/TE/K), in ECR order, stored in
+- **FantasyPros** - the Fantasy tab (QB/RB/WR/TE/K), in ECR order, stored in
   dedicated `FAN_*` columns.
-- **Footballguys** — Offense / Defense / Special-Teams columns (team depth order).
-- **ESPN** — baseline/fallback for any column the others don't supply.
+- **Footballguys** - Offense / Defense / Special-Teams columns (team depth order).
+- **ESPN** - baseline/fallback for any column the others don't supply.
 
 ## What it does
 
@@ -29,13 +29,13 @@ WordPress.
   - The Download button exports exactly what's on screen as a CSV (one row per
     Team + Position, players in depth order). It opens natively in Excel. (The
     standalone app produced `.xlsx` via a 400 KB library; the plugin uses CSV to
-    avoid bundling that — same data and UX, different file extension.)
+    avoid bundling that - same data and UX, different file extension.)
 - Shows **“Depth chart data has not been refreshed yet.”** until the first
   successful refresh.
 - Serves **32 server-recognized team routes** (e.g.
   `/nfl/nfl-depth-charts/fantasy/houston-texans/`) from that same tool, each with
   its own title, meta description, self-referencing canonical, H1, intro and
-  Open Graph tags in the initial HTML response — see
+  Open Graph tags in the initial HTML response - see
   [Team SEO routes](#team-seo-routes). Unrecognized slugs 404.
 - Publishes **`/nfl-depth-charts-sitemap.xml`** (main URL + all 32 team URLs) and
   registers it with Rank Math's sitemap index.
@@ -54,7 +54,7 @@ WordPress.
    **Refresh NFL Depth Charts**. The "NFL pages" panel there links to both pages
    and warns if either is missing its shortcode.
 
-> Existing pages at those paths are **reused, not overwritten** — if you already
+> Existing pages at those paths are **reused, not overwritten** - if you already
 > have a `/nfl/` or `/nfl/nfl-depth-charts/` page, just make sure it contains the
 > relevant shortcode.
 
@@ -71,7 +71,7 @@ WordPress.
    └─ /nfl/nfl-depth-charts/{view}/{team}/{position?}/   ← virtual (rewrite-handled)
 ```
 - `/nfl/` and `/nfl/nfl-depth-charts/` are **real, indexable pages** (no `noindex`).
-- The nested `{view}/{team}/{position}` URLs are **virtual** — handled by rewrite
+- The nested `{view}/{team}/{position}` URLs are **virtual** - handled by rewrite
   rules, never real pages.
 - The 32 `/{view}/{team-slug}/` routes are **indexable landing pages** with their
   own title, description, self-referencing canonical, H1 and intro (see
@@ -122,7 +122,7 @@ After changing it, re-save Settings → Permalinks to flush the rules.
 
 ## Team SEO routes
 
-Each of the 32 teams has its own indexable landing page **inside the same tool** —
+Each of the 32 teams has its own indexable landing page **inside the same tool** -
 one WordPress page, no duplicated Divi layouts, no 32 fake posts:
 
 ```
@@ -139,7 +139,7 @@ Requested directly (curl / View Source / Googlebot), that URL returns:
 <h1>Houston Texans Depth Chart</h1>
 ```
 
-and the tool below it is already showing Houston — the team is resolved in PHP
+and the tool below it is already showing Houston - the team is resolved in PHP
 before render, so there is no "load all teams, then switch" flash.
 
 ### How it fits together
@@ -165,9 +165,9 @@ request is one of these routes, so no other page on the site is affected.
 
 - The **canonical is self-referencing** for each team URL; filtered variants
   consolidate onto it. The bare `/nfl/nfl-depth-charts/` renders the same view as
-  `/nfl/nfl-depth-charts/fantasy/`, so it canonicalises there — the URL the
+  `/nfl/nfl-depth-charts/fantasy/`, so it canonicalises there - the URL the
   sitemap lists. Only one canonical tag is ever emitted.
-- **Robots** is only touched to *clear* an inherited `noindex` — nothing is added.
+- **Robots** is only touched to *clear* an inherited `noindex` - nothing is added.
 - **Breadcrumbs** are filtered, not duplicated: Rank Math builds both its visible
   trail and its `BreadcrumbList` schema from the same list, so the two agree.
 - The plugin's own visible breadcrumbs render only when Rank Math's breadcrumbs
@@ -180,7 +180,7 @@ request is one of these routes, so no other page on the site is affected.
 
 `SCDC_SEASON` (default **2026**) is defined once in the main plugin file. Roll the
 whole section over by changing it there, by defining it in `wp-config.php`, or via
-the `scdc_season` filter. Nothing calls `date( 'Y' )` — NFL season naming doesn't
+the `scdc_season` filter. Nothing calls `date( 'Y' )` - NFL season naming doesn't
 change on January 1.
 
 ### The H1
@@ -191,7 +191,7 @@ Team routes never carry two H1s. In order:
    module / theme header prints "Houston Texans Depth Chart" server-side.
 2. The tool also renders its own `<h1 data-scdc-h1="tool">`.
 3. A response-buffer pass on team routes only retitles the first H1 that is either
-   the page title or already mentions "depth chart", and then drops the tool's H1 —
+   the page title or already mentions "depth chart", and then drops the tool's H1 -
    so a Divi text module with a hard-coded "NFL Depth Charts" heading is handled
    too, and only one H1 survives.
 
@@ -203,8 +203,8 @@ or `shortcode` (tool H1 only). If the theme wraps the *site* title in an H1, use
 
 `https://statchasers.com/nfl-depth-charts-sitemap.xml` is generated on request
 (main URL + 32 team URLs) and added to Rank Math's sitemap index. `lastmod` is only
-emitted when there is real information to report — the timestamp of the last
-successful depth-chart refresh — never a synthetic date.
+emitted when there is real information to report - the timestamp of the last
+successful depth-chart refresh - never a synthetic date.
 
 ### Caching
 
@@ -215,7 +215,7 @@ WP Rocket, LiteSpeed, WP Super Cache and Cloudflare do by default).
   `/fantasy/{team}/` into `/fantasy/`.
 - Cloudflare: no Page Rule that strips path segments or caches by hostname only.
 - Every response on a tool route carries `X-SCDC-Route: team:houston-texans` (or
-  `main`) — a quick way to prove a cached page belongs to the URL that served it.
+  `main`) - a quick way to prove a cached page belongs to the URL that served it.
   Disable it with the `scdc_send_route_header` filter.
 - Purge the page cache once after deploying, so old copies with the generic title
   are dropped.
@@ -225,7 +225,7 @@ WP Rocket, LiteSpeed, WP Super Cache and Cloudflare do by default).
 Append `?scdc_debug=1` (or `define( 'SCDC_DEBUG', true )`) **while logged in as an
 administrator** for a panel listing the detected route, team, slug, SEO title,
 canonical, season, H1 source and indexability. It renders for nobody else, and
-without the query argument or the constant it never renders at all — remove the
+without the query argument or the constant it never renders at all - remove the
 constant before you're done.
 
 ## How data flows

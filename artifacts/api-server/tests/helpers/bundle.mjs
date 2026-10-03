@@ -10,7 +10,7 @@
  *
  * So the module is bundled on demand with the esbuild that already builds this
  * app, and imported. Only modules that import nothing stateful are worth
- * reaching this way — that is why lib/news-merge.ts and lib/club-feed-parse.ts
+ * reaching this way - that is why lib/news-merge.ts and lib/club-feed-parse.ts
  * are separate files at all.
  */
 
@@ -63,7 +63,7 @@ export async function importModule(relative) {
  * subject never reads. One entry that re-exports both gives one copy, which is
  * what a running server has.
  *
- * `source` is TypeScript, and is written beside the bundle — so it refers to
+ * `source` is TypeScript, and is written beside the bundle - so it refers to
  * the app's own modules as "../src/lib/...".
  */
 export async function importSource(source) {

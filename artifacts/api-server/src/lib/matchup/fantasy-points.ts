@@ -3,8 +3,8 @@
  *
  * The one scoring engine the matchup pages use. The Sleeper logs carry their
  * own PPR figure, but only for the regular season's offensive players; a
- * playoff game has no log at all. Computing from the line means every game —
- * Wild Card included — scores the same way, and a figure on the page can be
+ * playoff game has no log at all. Computing from the line means every game -
+ * Wild Card included - scores the same way, and a figure on the page can be
  * checked by hand against the stats printed beside it.
  *
  * Pure: a stat line and a format in, a number rounded to one decimal out.

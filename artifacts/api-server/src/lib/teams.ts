@@ -3,8 +3,8 @@
  *
  * This used to run in the browser: every visitor downloaded Sleeper's full
  * player dictionary (several megabytes) just to colour a card and pick a logo.
- * That can't work for server rendering — the team colours have to be in the
- * HTML we send — and it was a large third-party fetch on every cold visit, so
+ * That can't work for server rendering - the team colours have to be in the
+ * HTML we send - and it was a large third-party fetch on every cold visit, so
  * the lookup now lives here. The team abbreviation rides along on each item in
  * the API response, and the client no longer talks to Sleeper at all.
  *
@@ -88,7 +88,7 @@ function readDiskCache(): void {
       );
     }
   } catch {
-    // No cache yet (or it's corrupt) — we'll fetch a fresh one.
+    // No cache yet (or it's corrupt) - we'll fetch a fresh one.
   }
 }
 
@@ -109,7 +109,7 @@ function readRosterDiskCache(): void {
       );
     }
   } catch {
-    // No cache yet (or it's corrupt) — the next refresh rebuilds it.
+    // No cache yet (or it's corrupt) - the next refresh rebuilds it.
   }
 }
 
@@ -182,7 +182,7 @@ async function fetchTeams(): Promise<void> {
 }
 
 /**
- * Refresh the map if it's missing or stale. Never throws — a failure just means
+ * Refresh the map if it's missing or stale. Never throws - a failure just means
  * cards render without team colours, which is cosmetic.
  */
 export async function ensureTeams(): Promise<void> {
@@ -198,7 +198,7 @@ export async function ensureTeams(): Promise<void> {
   // other part of the roster and none of it, and without this check it would
   // look warm for twelve hours while every ingested post was filed under
   // nobody. The tagging happens once, on the way in, so "it will be right after
-  // the next refresh" is not a recovery — those rows stay untagged for good.
+  // the next refresh" is not a recovery - those rows stay untagged for good.
   const complete =
     Object.keys(teams).length > 0 && rosterFetchedAt() > 0 && namedPlayerCount() > 0;
   if (warm && complete) return;

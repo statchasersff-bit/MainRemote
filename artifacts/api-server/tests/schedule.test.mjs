@@ -5,7 +5,7 @@
  * without executing any JavaScript, because the whole point of the port is that
  * the board arrives complete. The standalone app this replaced shipped an empty
  * container and drew the season from React state, so the assertion that matters
- * most here is the boring one — that a response nobody ran a bundle against
+ * most here is the boring one - that a response nobody ran a bundle against
  * already contains every game.
  *
  * ## Why this suite serves its own slate
@@ -13,14 +13,14 @@
  * Every other suite here reads data that is already in the repository. This
  * tool's data is a file on nflverse's server, and pointing the tests at it
  * would mean a suite that fails when a Thursday game is flexed, when a score is
- * corrected, or when GitHub is slow — none of which are bugs in this code. So
+ * corrected, or when GitHub is slow - none of which are bugs in this code. So
  * the tests serve tests/fixtures/schedule-2024.csv over loopback and pin the
  * season to 2024 (SC_SCHEDULE_CSV_URL, SC_SCHEDULE_SEASON), and the live layer
  * is switched off (SC_SCHEDULE_ESPN=0).
  *
  * The fixture is not synthetic: it is the real 2024 regular season as nflverse
  * published it, reduced to the columns the parser reads. A made-up slate would
- * let a normalization bug through precisely where the real feed is awkward —
+ * let a normalization bug through precisely where the real feed is awkward -
  * the five neutral-site internationals, the Thanksgiving and Christmas games,
  * and the two teams whose codes the feed spells differently from ours.
  */
@@ -154,7 +154,7 @@ describe("the slate", () => {
       );
     }
 
-    // The bye is DERIVED — it is not a row in the feed — so this is the one
+    // The bye is DERIVED - it is not a row in the feed - so this is the one
     // assertion that catches a normalization bug silently dropping a game.
     const table = [...teams.values()];
     const byeCounts = new Map();
@@ -205,7 +205,7 @@ describe("the slate", () => {
   test("the internationals are flagged and the domestic games are not", async () => {
     const data = await mod.getSchedule(SEASON);
     const international = data.games.filter((game) => game.international);
-    // Sao Paulo, London x3, Munich — the five neutral sites of 2024.
+    // Sao Paulo, London x3, Munich - the five neutral sites of 2024.
     assert.equal(international.length, 5);
     assert.ok(
       international.every((game) => game.venueFlag !== ""),
@@ -374,7 +374,7 @@ describe("the broadcaster marks", () => {
   test("the frame a mark is drawn in starts at the origin", () => {
     // The regression this exists for: the outer <svg> repeated the symbol's
     // CROP, offset and all, while <use> places the symbol at the outer user
-    // space's origin — so the window sat one whole offset away from the
+    // space's origin - so the window sat one whole offset away from the
     // artwork. The Netflix N lost its left 5.4 of 13.2 units on production and
     // YouTube's wordmark, cropped from x=409.29, missed its box entirely.
     for (const mark of Object.values(marks.NETWORK_MARKS)) {
@@ -427,7 +427,7 @@ describe("a divisional rematch still to come", () => {
   /**
    * The regression this exists for: inside the fourteen days a finished game
    * linked to the pair's page, but for a pair that meets again the page leads
-   * with the rematch — so a Week 2 result opened a January preview.
+   * with the rematch - so a Week 2 result opened a January preview.
    */
   test("the recent result links to its dated recap, the one-off to the pair", () => {
     const html = render.renderSchedulePage(
@@ -472,7 +472,7 @@ describe("the schedule page", () => {
    * of them and matchup/pair.ts owns the rule that picks between them: a
    * finished game the pair's page has let go of has a dated address of its own,
    * and everything else is the pair. The fixture is the whole of 2024, so every
-   * row here is on the far side of that fourteen-day window — which makes this
+   * row here is on the far side of that fourteen-day window - which makes this
    * the dated case, and the one a reader opening a past week actually wants.
    */
   test("every game on the board opens the two clubs' own page", async () => {
@@ -533,7 +533,7 @@ describe("the schedule page", () => {
     const spoken = link.querySelector(".scs-visually-hidden").textContent;
     assert.match(spoken, /^Matchup: .+ (at|vs) .+$/, spoken);
 
-    // And the visible label is not the accessible name — it is decoration that
+    // And the visible label is not the accessible name - it is decoration that
     // the stylesheet is free to drop.
     for (const hidden of link.querySelectorAll("[aria-hidden='true']")) {
       assert.ok(
@@ -548,7 +548,7 @@ describe("the schedule page", () => {
    *
    * The board is a grid and the heading row is a sibling of the game rows
    * sharing its template, so a fourth cell in one and three in the other is a
-   * board whose headings sit over the wrong columns — which looks like a CSS
+   * board whose headings sit over the wrong columns - which looks like a CSS
    * bug and is a markup one.
    */
   test("the board's head has one cell per column", async () => {
@@ -571,7 +571,7 @@ describe("the schedule page", () => {
   /**
    * The grid has no such links, and should not.
    *
-   * A cell there is already a link — to that week's board — and 576 of them
+   * A cell there is already a link - to that week's board - and 576 of them
    * pointing somewhere else instead would make the matrix a different tool.
    */
   test("the season grid carries no matchup links", async () => {
@@ -592,13 +592,13 @@ describe("the schedule page", () => {
    * The grid's own questions.
    *
    * Two things are being defended. The first is that the matrix has a FAQ at
-   * all — it is a different set from the weekly board's, it is about the board
+   * all - it is a different set from the weekly board's, it is about the board
    * rather than about a fixture, and both are one <h2> and a stack of folds.
    *
    * The second is the one that matters: every number in those answers is
    * counted off the slate rather than recited from the league's usual
    * arithmetic. The fixture is a real, whole 2024 season, so 32, 18, 272 and 17
-   * are all derivable — and matrixFacts() withholds the count questions
+   * are all derivable - and matrixFacts() withholds the count questions
    * entirely when the rows disagree, which is the case a half-loaded feed would
    * otherwise answer with a false claim about the season.
    */
@@ -612,7 +612,7 @@ describe("the schedule page", () => {
 
     const items = [...doc.querySelectorAll(".scs-faq-item")];
     // A floor, not a count: two of the entries are withheld when the rows
-    // disagree. The ceiling is the point of the assertion — the four
+    // disagree. The ceiling is the point of the assertion - the four
     // near-duplicate "where can I see the full schedule" phrasings were merged
     // into one on purpose, and a set that grows back past a dozen is the
     // thin-content regression rather than better coverage.
@@ -667,7 +667,7 @@ describe("the schedule page", () => {
    * The two views are asked different things, and the heading says which.
    *
    * A matrix that inherited "NFL Week 3 Schedule FAQ", or a board that answered
-   * "what does @ mean", would be one view describing the other — which is the
+   * "what does @ mean", would be one view describing the other - which is the
    * whole failure mode of hanging two question sets off one renderer.
    */
   test("the weekly board keeps its own questions", async () => {
@@ -687,7 +687,7 @@ describe("the schedule page", () => {
   /**
    * The page says what it is exactly once.
    *
-   * The grid used to name itself again above the board — "2026 NFL Schedule
+   * The grid used to name itself again above the board - "2026 NFL Schedule
    * Grid" under an <h1> reading "2026 NFL Schedule", with the same sentence
    * under both. The heading and the standfirst are what the page is found by,
    * so they are asserted here; the second copy of them is asserted gone.
@@ -738,8 +738,8 @@ describe("the schedule page", () => {
   });
 
   /**
-   * Embedded, the host page owns the heading — its own or the one the plugin
-   * generates — so the fragment prints none. `?h1=1` is the host saying it has
+   * Embedded, the host page owns the heading - its own or the one the plugin
+   * generates - so the fragment prints none. `?h1=1` is the host saying it has
    * stood its title down, which is the only case where the fragment's heading
    * is the page's.
    */
@@ -767,8 +767,8 @@ describe("the schedule page", () => {
 
   /**
    * The team lens was this tool's third view until the team hub's Schedule tab
-   * took it over. Every link to it — a bookmark, a paste, the bye card on an
-   * old cached page — has to land on the season it asked for rather than on
+   * took it over. Every link to it - a bookmark, a paste, the bye card on an
+   * old cached page - has to land on the season it asked for rather than on
    * whatever week the board happens to be showing today.
    */
   test("a team lens link is redirected to that team's Schedule tab", async () => {
@@ -946,7 +946,7 @@ describe("the schedule page", () => {
     assert.equal(onWeek.status, 301);
     assert.equal(onWeek.headers.location, "/schedule/week-2");
 
-    // `?view=week` with no week named means the week the season is on — which
+    // `?view=week` with no week named means the week the season is on - which
     // is a moving target, hence 302, and an address, hence a redirect at all.
     const board = await rawGet("/schedule?view=week&filter=division");
     assert.equal(board.status, 302);
@@ -965,7 +965,7 @@ describe("the schedule page", () => {
    *
    * This is the assertion the link is worth having. Which of a pair's two
    * addresses a finished game has is a rule with a fourteen-day constant in it,
-   * and a board that got it wrong would not look broken — every link would
+   * and a board that got it wrong would not look broken - every link would
    * still work, through a 301, and nothing on the page would say so. Asked of
    * the server rather than of the rule, so a change to either side shows up
    * here.
@@ -1056,7 +1056,7 @@ describe("the embed fragment", () => {
     const res = await rawGet("/embed/schedule");
     assert.ok(!/<link[^>]+stylesheet/i.test(res.body));
 
-    // A <script> is allowed here only as INERT DATA — the FAQ island the
+    // A <script> is allowed here only as INERT DATA - the FAQ island the
     // plugin lifts into the host page's own graph, which is the arrangement
     // team-render.ts and rankings-render.ts already use and which this
     // assertion used to predate. What the fragment must never carry is
@@ -1081,7 +1081,7 @@ describe("the embed fragment", () => {
  * The fragment as statchasers.com actually asks for it.
  *
  * The board's own controls have to link into the WordPress page rather than out
- * to this origin, which is what SC_SCHEDULE_PATH is for — and now that a week
+ * to this origin, which is what SC_SCHEDULE_PATH is for - and now that a week
  * is a path rather than a parameter, the link has to be spelled the way
  * WordPress spells a page address, trailing slash and all, or the rewrite rule
  * on the far end never fires.
@@ -1120,7 +1120,7 @@ describe("the WordPress mount", () => {
       "the page's own path, a week segment, and the slash WordPress wants back",
     );
     // `?embed=1` is only meaningful against this origin, and `embed` is a
-    // reserved WordPress query var — so once the links point at the site, it
+    // reserved WordPress query var - so once the links point at the site, it
     // is gone. That is fragmentLinkQuery()'s job, and it must survive the move
     // of the week into the path.
     assert.ok(!hrefs.some((href) => href.includes("?")));
@@ -1131,7 +1131,7 @@ describe("the WordPress mount", () => {
    *
    * Embedded, every address in the fragment belongs to WordPress, and this one
    * has its own env var because the pair pages are a different WordPress page
-   * from the team hubs — the same split the team hub and the pair page itself
+   * from the team hubs - the same split the team hub and the pair page itself
    * already read. A fragment that fell back to this origin's /nfl/ would send
    * a reader on statchasers.com to a URL on the API host.
    */
@@ -1167,7 +1167,7 @@ describe("the WordPress mount", () => {
   });
 
   test("the plugin still asks for a week the way it always has", async () => {
-    // The shortcode passes ?week= to the fragment — it is an argument to a
+    // The shortcode passes ?week= to the fragment - it is an argument to a
     // render, not an address, and nothing about paths changes that.
     const { doc } = await fragment("/embed/schedule?week=5");
     const active = doc.querySelector(".scs-rail-link.is-active");
@@ -1297,17 +1297,17 @@ describe("the schedule development switcher", () => {
  * The rules that hold the matrix's shape inside a host theme.
  *
  * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
- * only because these are specificity facts — the thing a browser test would
+ * only because these are specificity facts - the thing a browser test would
  * have to re-derive and a reading of the file cannot be trusted to keep.
  *
  * The matrix is 19 columns by 32 rows, so a few pixels of cell padding is
  * multiplied both ways. Measured against a simulated Divi page before the
  * armour existed: 2px of side padding became 24px on the headers and 6px on
- * the cells, and the table went from 726px wide to 1152px — 59% wider, 400px
+ * the cells, and the table went from 726px wide to 1152px - 59% wider, 400px
  * taller, inside a scroller the reader drags half again as far.
  *
  * `.scs-matrix th` is one class and two elements and so is Divi's
- * `.entry-content tr th` — a TIE, settled by whichever stylesheet WordPress
+ * `.entry-content tr th` - a TIE, settled by whichever stylesheet WordPress
  * enqueued last. fpa.css bet a layout on that coin toss and lost it in
  * production, so the `.scs` in front of these is load-bearing.
  */
@@ -1370,7 +1370,7 @@ describe("the schedule stylesheet outranks the host theme", () => {
    * and above `label` it can afford to spell out the matchup link and widen
    * that link's column to fit. Each was measured (see the comments beside
    * them), and a later edit that moved one without the others would not look
-   * broken — it would truncate "Commanders" on some band of widths nobody
+   * broken - it would truncate "Commanders" on some band of widths nobody
    * happens to open. This asserts only the relationship, which is the part that
    * can be checked without a browser; the values themselves come from the
    * sweep.

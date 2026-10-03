@@ -4,15 +4,15 @@
  *
  * Every team's entry in `data/team/coaching_<season>.json` is the evergreen
  * layer: generated per team each offseason and hand-reviewed, per the build
- * spec. The weekly-refresh surface is deliberately small — the play-caller
+ * spec. The weekly-refresh surface is deliberately small - the play-caller
  * ledger line, the current-season tendency column, the current backfield bar
- * and the finishes "pace" row — and the parts of it our own feed carries
+ * and the finishes "pace" row - and the parts of it our own feed carries
  * (pass rate, PROE, pace, red-zone pass rate, the lead back's weighted-opp
  * share) are read live from the usage file rather than stored, so they move
  * with the daily chain. The rest of the ledger is sourced from beat reporting
  * and stays editorial.
  *
- * A team with no entry renders no section — same contract as the usage tab.
+ * A team with no entry renders no section - same contract as the usage tab.
  */
 
 import fs from "node:fs";
@@ -26,6 +26,8 @@ export type ChangeDir = "up" | "down" | "flat";
 export interface TendencyRow {
   label: string;
   sub?: string;
+  /** How the row is counted, opened from a note beside the label. */
+  def?: string;
   prior: string;
   /** Numeric prior, present on feed-backed rows so the delta can be computed. */
   priorNum?: number;
@@ -172,7 +174,7 @@ export type Reliability = "HIGH" | "MEDIUM" | "LOW";
  * or more prior seasons with this team; MEDIUM = one prior season, or a new
  * caller from the same scheme family; LOW = a new play-caller. A LOW rating
  * is the caveat the rest of the team's page must carry wherever it projects
- * from last season's data — see coachingCaveat() in coaching-render.ts.
+ * from last season's data - see coachingCaveat() in coaching-render.ts.
  */
 export function reliabilityRating(c: TeamCoaching): Reliability {
   const prior = c.reliability.priorSeasonsAsCaller;

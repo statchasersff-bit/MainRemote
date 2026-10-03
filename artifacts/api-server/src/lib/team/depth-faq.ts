@@ -3,8 +3,8 @@
  *
  * Third sibling to outlook-faq.ts and stats-faq.ts, on the same rule as both:
  * every answer restates something the tab already printed. The names and the
- * order here are the ones the chart renders — `depthPreview()`'s output, in
- * `depthOrder`, with the slot labels it assigned — so an answer cannot name a
+ * order here are the ones the chart renders - `depthPreview()`'s output, in
+ * `depthOrder`, with the slot labels it assigned - so an answer cannot name a
  * WR2 the chart above it has at WR3.
  *
  * Two things separate it from its siblings.
@@ -24,7 +24,7 @@
  * season ("Who is the Patriots starting running back in 2026?") and answers
  * from hand-written copy; this one asks what the chart says today. The seasoned
  * phrasing there and the present tense here are what keep two questions from
- * reading as the same question — see the note in outlook-faq.ts.
+ * reading as the same question - see the note in outlook-faq.ts.
  */
 
 import type { NflTeam } from "./teams";
@@ -47,7 +47,7 @@ function possessive(nickname: string): string {
   return nickname.endsWith("s") ? `${nickname}'` : `${nickname}'s`;
 }
 
-/** "A", "A and B", "A, B and C" — the Oxford-less form the rest of the page uses. */
+/** "A", "A and B", "A, B and C" - the Oxford-less form the rest of the page uses. */
 function listOf(names: string[]): string {
   if (names.length === 0) return "";
   if (names.length === 1) return names[0] ?? "";
@@ -82,7 +82,7 @@ export function depthFaq(input: {
   /**
    * The fantasy-relevant designated players, as Injury Watch lists them.
    *
-   * Needed because **Sleeper demotes an injured player on the depth chart** —
+   * Needed because **Sleeper demotes an injured player on the depth chart** -
    * see INJURY_RANK_LIMIT in roster.ts, which exists for the same reason. A
    * genuine WR1 on IR drops to WR6 and falls off the four-deep preview
    * entirely, so the chart correctly shows somebody else first and the answer,
@@ -117,10 +117,10 @@ export function depthFaq(input: {
    * Only players the chart does NOT show: someone listed above is visibly there
    * with a badge against his name, and saying it again in prose adds nothing.
    * Injury Watch's list is the source because it is already filtered to players
-   * worth naming — a WR7's hamstring is not why the WR1 slot moved.
+   * worth naming - a WR7's hamstring is not why the WR1 slot moved.
    */
   // Shared with the chart itself, so the prose and the columns name the same
-  // absences — see sidelinedBehind() in roster.ts.
+  // absences - see sidelinedBehind() in roster.ts.
   const missing = (position: SkillPosition, shown: DepthChartEntry[]): DepthChartEntry[] =>
     sidelinedBehind(injuries, position, shown);
 
@@ -132,14 +132,14 @@ export function depthFaq(input: {
       ? `${out[0].name} ${designation(out[0].injuryStatus)}`
       : `${listOf(out.map((entry) => entry.name))} out`;
 
-  /** " with A.J. Brown on injured reserve" — only where it ends the sentence. */
+  /** " with A.J. Brown on injured reserve" - only where it ends the sentence. */
   const sidelinedClause = (position: SkillPosition, shown: DepthChartEntry[]): string => {
     const out = missing(position, shown);
     return out.length ? ` with ${who(out)}` : "";
   };
 
   /**
-   * " A.J. Brown is on injured reserve." — for the answers that carry a second
+   * " A.J. Brown is on injured reserve." - for the answers that carry a second
    * clause of their own. Stacking two "with" phrases on one sentence ("the
    * starting tight end with X out, with Y listed behind") is a sentence nobody
    * finishes.

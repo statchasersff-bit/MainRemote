@@ -7,7 +7,7 @@
  *
  * Two of these suites need no server at all. The scoring formula and the
  * data-mode wording are pure functions, and both make a claim in their own
- * comments that is worth checking rather than trusting — that `scoreRow`
+ * comments that is worth checking rather than trusting - that `scoreRow`
  * reproduces nflverse's own fantasy-point columns, and that the sentence the
  * page prints about the blend matches the weights the ingest actually applies.
  */
@@ -70,7 +70,7 @@ async function get(pathname) {
 function requireData() {
   assert.ok(
     hasData,
-    "no FPA data ingested — run `pnpm --filter @workspace/api-server run ingest-fpa`",
+    "no FPA data ingested - run `pnpm --filter @workspace/api-server run ingest-fpa`",
   );
 }
 
@@ -139,7 +139,7 @@ describe("the scoring formula", () => {
 
 describe("the data-mode wording", () => {
   // lib/fpa/blend.ts is deliberately free of any database import, which is what
-  // lets both halves of this decision — the weight and the sentence — be
+  // lets both halves of this decision - the weight and the sentence - be
   // checked against each other without a Postgres connection.
   let blend;
 
@@ -149,8 +149,8 @@ describe("the data-mode wording", () => {
 
   test("the sentence matches the weights actually applied", async () => {
     // describeDataMode() prints percentages as prose; currentSeasonWeight()
-    // decides the real blend. They are written separately on purpose — one is
-    // copy, one is arithmetic — so this is what stops them drifting apart.
+    // decides the real blend. They are written separately on purpose - one is
+    // copy, one is arithmetic - so this is what stops them drifting apart.
     for (const week of [1, 2, 3, 4]) {
       const { methodology } = blend.describeDataMode(week, 2025, 2026);
       const live = Math.round(blend.currentSeasonWeight(week) * 100);
@@ -255,7 +255,7 @@ describe("fpa routes", () => {
     assert.equal(lines.length, 33, "a header and 32 defenses");
 
     // The first data row is the softest defense, which is also the page's first
-    // row — the file and the screen are built from one query. Read off the name
+    // row - the file and the screen are built from one query. Read off the name
     // line specifically: the team cell also carries the abbreviation above it,
     // and the CSV's first field is the name.
     const doc = new JSDOM(page.body).window.document;
@@ -290,7 +290,7 @@ describe("fpa routes", () => {
     assert.ok(softest && toughest);
     assert.ok(
       softest.fpa > toughest.fpa,
-      `rank 1 allowed ${softest.fpa}, rank ${offCells.length} allowed ${toughest.fpa} — rank 1 must be higher`,
+      `rank 1 allowed ${softest.fpa}, rank ${offCells.length} allowed ${toughest.fpa} - rank 1 must be higher`,
     );
 
     // And the page must say which way round it is, in words.
@@ -314,8 +314,8 @@ describe("fpa routes", () => {
     const doc = new JSDOM(res.body).window.document;
 
     // Real links to real URLs, still. The bundle swaps the table in place so
-    // the address does not move, but a reader with scripting off — and a
-    // crawler — has to be able to reach every combination, and a middle-click
+    // the address does not move, but a reader with scripting off - and a
+    // crawler - has to be able to reach every combination, and a middle-click
     // has to open the one that was asked for.
     const opts = [...doc.querySelectorAll(".scf-opt")];
     assert.equal(opts.length, 5, "three formats and two views");
@@ -414,7 +414,7 @@ describe("the embedded fpa fragment", () => {
     const href = doc.querySelector(".scf-csv").getAttribute("href");
 
     // The CSV is a route on THIS server. Built from the page path it is
-    // mounted at — which SC_FPA_PATH makes a WordPress page path — it came out
+    // mounted at - which SC_FPA_PATH makes a WordPress page path - it came out
     // as "/nfl/fantasy-points-allowed-by-position//download.csv", and a
     // leading "//" is not a path: a browser reads it as protocol-relative and
     // goes looking for a host called download.csv.
@@ -442,7 +442,7 @@ describe("the embedded fpa fragment", () => {
 
     // WordPress owns the document and Rank Math owns its graph. A second
     // ld+json arriving from inside a mounted fragment competes with that graph
-    // rather than joining it — the same reasoning as no canonical and no H1.
+    // rather than joining it - the same reasoning as no canonical and no H1.
     assert.ok(
       !/application\/ld\+json/i.test(res.body),
       "the embed leaves the graph to the host page",
@@ -471,8 +471,8 @@ describe("the embedded fpa fragment", () => {
     assert.equal(doc.querySelectorAll("h1").length, 0, "the host page owns the H1");
 
     // Below it, only the FAQ has headings, and every question is an H3 under
-    // the section's one H2. The tool's own chrome — controls, note, table,
-    // legend — still ships none, so nothing but the FAQ enters the outline.
+    // the section's one H2. The tool's own chrome - controls, note, table,
+    // legend - still ships none, so nothing but the FAQ enters the outline.
     const headings = [...doc.querySelectorAll("h2, h3")];
     assert.ok(headings.length > 0, "the FAQ is in the fragment");
     for (const heading of headings) {
@@ -494,7 +494,7 @@ describe("the embedded fpa fragment", () => {
     const res = await get("/embed/fpa");
     const doc = new JSDOM(`<body>${res.body}</body>`).window.document;
 
-    // The block itself does not fold — the questions are the index, and
+    // The block itself does not fold - the questions are the index, and
     // somebody scanning for the one they arrived with has to see them without
     // opening anything. Each ANSWER folds instead, which is what keeps nineteen
     // answers from stacking up under the table. The question sits in the
@@ -633,14 +633,14 @@ describe("the fpa development switcher", () => {
  * The two rules that decide whether the table fits a phone.
  *
  * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
- * only because both of these are specificity facts — the thing a browser test
+ * only because both of these are specificity facts - the thing a browser test
  * would have to re-derive and a reading of the file cannot be trusted to keep.
  *
  * What went wrong on the live site: Divi styles `.entry-content tr th`, one
  * class and two elements, which is the same weight as `.scf-table thead th`.
  * A tie goes to whichever stylesheet WordPress enqueued last, that stopped
  * being ours, the header cells took Divi's 24px a side, and the table came out
- * 53px wider than the column — far enough that the games column scrolled off
+ * 53px wider than the column - far enough that the games column scrolled off
  * the right of the phone. And separately: the narrow tiers tighten the gutters
  * to 7px, but the theme armour at the foot of the file restates cell padding
  * and lands after them, so a literal there was put straight back to 10px.

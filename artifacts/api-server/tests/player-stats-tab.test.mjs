@@ -1,9 +1,9 @@
 /**
  * The Stats tab, rendered against hand-built states.
  *
- * Like tests/player-overview.test.mjs: the edge states the spec lists —
+ * Like tests/player-overview.test.mjs: the edge states the spec lists -
  * preseason, a one-season rookie, a traded season, a player below the
- * qualifying line — are not reliably on the roster on any given day.
+ * qualifying line - are not reliably on the roster on any given day.
  */
 
 import test, { after, describe } from "node:test";
@@ -125,25 +125,22 @@ describe("stats tab", () => {
     const pressed = [...group.querySelectorAll("button")].map((b) => b.getAttribute("aria-pressed"));
     assert.deepEqual(pressed, ["true", "false"]);
 
-    const byLabel = (card, label) =>
-      [...doc.querySelectorAll(`.scp-st-sgroup`)].find((g) => text(g.querySelector("h3")).startsWith(card))
-        .querySelector(`dl > div:nth-child(${label})`);
-    // Headline figures first (Yards, Comp %, TD, INT), the rest on the small
-    // second line (mak, 2026-09-30).
-    const yards = byLabel("Passing", 1).querySelector("[data-total]");
+    // One light-gray rail of cells, label / figure / muted second line, and
+    // the fantasy line in its own block beside it (mak, 2026-10-03).
+    const cells = [...doc.querySelectorAll(".scp-st-rail > .scp-st-cell")];
+    assert.deepEqual(cells.map((c) => text(c.querySelector("dt"))), ["Pass yards", "Comp %", "Pass TD", "INT", "Rushing"]);
+    const yards = cells[0].querySelector(".scp-st-cv [data-total]");
     assert.equal(yards.textContent, "600");
     assert.equal(yards.dataset.pg, "200.0");
-    const passing = [...doc.querySelectorAll(".scp-st-sgroup")].find((g) => text(g.querySelector("h3")) === "Passing");
-    const cmpAtt = passing.querySelector(".scp-st-minor [data-total]");
+    const cmpAtt = cells[1].querySelector(".scp-st-cs [data-total]");
     assert.equal(cmpAtt.dataset.pg, "20.0/30.0");
-    assert.equal(byLabel("Passing", 2).querySelector("[data-total]"), null, "completion % is a rate");
-    assert.deepEqual(pairs(passing).map((p) => p.split(":")[0]), ["Yards", "Comp %", "TD", "INT"]);
-    const fantasy = doc.querySelector(".scp-st-sgroup.is-fan");
-    assert.deepEqual(pairs(fantasy), ["Points: 49.6", "Pos rank: QB17"]);
-    assert.equal(text(fantasy.querySelector(".scp-st-minor")), "25.6 Best Week 3 @ SEA7.5 Worst Week 2 @ SEA");
-    // One band, not three cards (mak, 2026-09-30).
-    assert.equal(doc.querySelectorAll(".scp-st-strip").length, 1);
-    assert.equal(doc.querySelectorAll(".scp-st-strip > .scp-st-sgroup").length, 3);
+    assert.equal(cells[1].querySelector(".scp-st-cv [data-total]"), null, "completion % is a rate");
+    assert.match(text(cells[4].querySelector(".scp-st-cv")), /^\S+ · \S+ TD$/);
+    const fantasy = doc.querySelector(".scp-st-prodrow > .scp-st-fan");
+    assert.equal(text(fantasy.querySelector("h3")), "Fantasy (PPR)");
+    assert.deepEqual(pairs(fantasy), ["Fantasy points: 49.6", "Position rank: QB17"]);
+    assert.equal(text(fantasy.querySelector(".scp-st-fan-wk")), "25.6 Best Week 3 @ SEA7.5 Worst Week 2 @ SEA");
+    assert.equal(doc.querySelectorAll(".scp-st-rail").length, 1);
   });
 
   test("the toggle, clicked, through the real client bundle", async () => {
@@ -156,12 +153,12 @@ describe("stats tab", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     const doc = dom.window.document;
     const [totals, pg] = doc.querySelectorAll("[data-scp-seg] button");
-    const yards = doc.querySelector(".scp-st-sgroup dl > div:nth-child(1) [data-total]");
+    const yards = doc.querySelector(".scp-st-cell:nth-child(1) .scp-st-cv [data-total]");
     pg.click();
     assert.equal(yards.textContent, "200.0");
     assert.equal(pg.getAttribute("aria-pressed"), "true");
     assert.equal(totals.getAttribute("aria-pressed"), "false");
-    assert.equal(text(doc.querySelector(".scp-st-sgroup dl > div:nth-child(2) dd")), "66.7%", "rates never change");
+    assert.equal(text(doc.querySelector(".scp-st-cell:nth-child(2) .scp-st-cv")), "66.7%", "rates never change");
     totals.click();
     assert.equal(yards.textContent, "600");
     dom.window.close();
@@ -171,7 +168,7 @@ describe("stats tab", () => {
     const doc = render(state());
     assert.equal(doc.querySelector(".scp-st-advcard"), null, "the cards are a table now (mak, 2026-09-30)");
     const table = doc.querySelector("table.scp-st-advt");
-    assert.deepEqual([...table.querySelectorAll("thead th")].map(text), ["Stat", "2026 Thru Wk 3", "2025 13 games"]);
+    assert.deepEqual([...table.querySelectorAll("thead th")].map(text), ["Metric", "2026 Current · thru Wk 3", "2025 Previous · 13 games"]);
     // Six this season, five more from last season: EPA per play is one row.
     // Grouped under tier headings, Efficiency first and set heavier (2026-09-30).
     const tiers = [...table.querySelectorAll("tbody tr.scp-st-tier")].map(text);
@@ -181,31 +178,40 @@ describe("stats tab", () => {
     assert.equal(rows.length, 11);
     assert.ok(rows.find((r) => text(r.querySelector("th")) === "EPA per play").classList.contains("is-key"));
     assert.ok(!rows.find((r) => text(r.querySelector("th")) === "Time to throw").classList.contains("is-key"));
+    // Each season one cell, the value over its percentile (mak, 2026-10-03).
+    const cellsOf = (r) => [...r.querySelectorAll("td")].map((td) => [text(td.querySelector(".scp-st-num")), text(td.querySelector(".scp-st-pb"))]);
     const epa = rows.find((r) => text(r.querySelector("th")) === "EPA per play");
-    assert.deepEqual([...epa.querySelectorAll("td")].map(text), ["+0.10", "56th", "+0.01", "41st"]);
+    assert.deepEqual(cellsOf(epa), [["+0.10", "56th"], ["+0.01", "41st"]]);
+    assert.ok(epa.querySelector("td.is-now .scp-st-bar"), "this season carries the bar");
+    assert.equal(epa.querySelector("td.is-prev .scp-st-bar"), null, "last season is the ordinal alone");
     const ypa = rows.find((r) => text(r.querySelector("th")) === "Yards per attempt");
-    assert.deepEqual([...ypa.querySelectorAll("td")].map(text), ["5.6", "8th", "—", "—"]);
+    assert.deepEqual(cellsOf(ypa), [["5.6", "8th"], ["-", "-"]]);
     assert.ok(ypa.querySelector(".scp-st-pb.is-bad"));
     assert.equal(ypa.querySelector(".scp-st-pb.is-bad").getAttribute("title"), "8th percentile");
-    // The bar under the ordinal, filled to it.
-    assert.equal(ypa.querySelector(".scp-st-bar.is-bad i").getAttribute("style"), "width:8%");
+    assert.equal(ypa.querySelector(".scp-st-pb.is-bad .scp-st-bar i").getAttribute("style"), "width:8%");
+    // 0-24 red, 25-74 navy, 75+ green.
+    assert.ok(epa.querySelector("td.is-now .scp-st-pb.is-mid"));
     // A style reading is grey, and the footnote says what grey means.
     const ttt = rows.find((r) => text(r.querySelector("th")) === "Time to throw");
-    assert.equal(text(ttt.querySelector(".scp-st-pb.is-muted:not(:empty)")), "—");
-    assert.equal(ttt.querySelectorAll(".scp-st-pb.is-muted")[1].textContent, "76th");
+    assert.equal(text(ttt.querySelector("td.is-now .scp-st-pb.is-muted")), "-");
+    assert.equal(text(ttt.querySelector("td.is-prev .scp-st-pb.is-muted")), "76th");
     assert.equal(
       text(doc.querySelector(".scp-st-foot-note")),
       "Percentiles: 2026 through Week 3 among 36 qualified QBs · 2025 (13 games, weeks 1–17) among 41. Grey bars describe style, not quality.",
     );
     assert.equal(doc.querySelector(".scp-st-src"), null, "mak removed the sources line, 2026-09-30");
-    // The read: one profile sentence, then the fantasy line (2026-09-30).
-    const read = [...doc.querySelectorAll(".scp-st-read p")].map(text);
-    assert.equal(read.length, 2);
-    assert.match(read[0], /^Profile: Brissett .+\.$/);
-    assert.match(read[1], /^For fantasy: his floor is his volume, /);
-    // The lede is style only now: the percentiles are the table's and the footer's.
-    const lede = text(doc.querySelector("#scp-st-adv-h + .scp-ox-lede"));
-    assert.doesNotMatch(lede, /percentile|tradeoff/);
+    // The SC Analysis module: the profile, then the fantasy impact.
+    const read = doc.querySelector(".scp-st-read.scp-st-sca");
+    assert.deepEqual([...read.querySelectorAll("h3")].map(text), ["Passing profile", "Fantasy impact"]);
+    const paras = [...read.querySelectorAll("p")].map(text);
+    assert.match(paras[0], /^Brissett .+\.$/);
+    assert.match(paras[1], /^His floor is his volume: /);
+    // The header: eyebrow H2, the question, a one-line read, profile tags.
+    assert.equal(text(doc.querySelector("#scp-st-adv-h + .scp-st-dek")), "How Brissett is creating his production");
+    assert.match(text(doc.querySelector(".scp-st-sum")), /volume · \S+ efficiency$|efficiency$/);
+    const tags = [...doc.querySelectorAll(".scp-st-tags li")];
+    assert.ok(tags.length <= 3);
+    for (const t of tags) assert.match(text(t.querySelector("span")), /^\d+(st|nd|rd|th) pctl · /);
   });
 
   test("below the qualifying line: no ranks, and the sub-line says why", () => {
@@ -261,7 +267,7 @@ describe("stats tab", () => {
     assert.equal(text(doc.querySelector("#scp-st-prod-h")), "Jacoby Brissett 2025 Stats");
     assert.match(text(doc.querySelector(".scp-ox-lede .scp-st-kicker")), /^2025 final/);
     assert.ok(doc.querySelector("[data-scp-seg]"));
-    assert.deepEqual([...doc.querySelectorAll(".scp-st-advt thead th")].map(text), ["Stat", "2025 13 games"]);
+    assert.deepEqual([...doc.querySelectorAll(".scp-st-advt thead th")].map(text), ["Metric", "2025 13 games"]);
     assert.equal(doc.querySelector(".scp-st-col.is-now"), null);
     assert.equal(doc.querySelector(".scp-st-table tr.is-cur"), null);
   });
@@ -326,9 +332,9 @@ describe("stats tab", () => {
     assert.equal(lede.querySelector("a").getAttribute("href"), "/nfl/players/trey-mcbride/");
     assert.equal(lede.querySelector("b"), null, "HTML prints as text");
     assert.match(text(lede), /<b>no HTML<\/b>/);
-    // Not given: the generated lede stays.
-    assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-ox-lede")), /^Brissett /);
-    assert.equal(text(doc.querySelector(".scp-st-read")), "What it means for fantasy: A volume passer.");
+    // Not given: the generated summary line stays.
+    assert.match(text(doc.querySelector(".scp-st-sum")), /efficiency$/);
+    assert.equal(text(doc.querySelector(".scp-st-read")), "SC AnalysisFantasy impactA volume passer.");
     const paras = [...doc.querySelectorAll(".scp-ox-prose p")].map(text);
     assert.deepEqual(paras.slice(0, 2), ["First.", "Second."]);
     assert.equal(paras.length, 3, "blank paragraphs dropped, Redraft Command paragraph kept");
@@ -360,7 +366,7 @@ describe("stats tab", () => {
     const [cur] = state().logCareer;
     const doc = render(state({ logCareer: [cur], statsAdvanced: { current: CURRENT, last: null }, college: COLLEGE }));
     const table = doc.querySelector("table.scp-st-advt");
-    assert.deepEqual([...table.querySelectorAll("thead th")].map(text), ["Stat", "2026 Thru Wk 3", "College NC State 2025"]);
+    assert.deepEqual([...table.querySelectorAll("thead th")].map(text), ["Metric", "2026 Current · thru Wk 3", "College NC State 2025"]);
     assert.match(text(doc.querySelector(".scp-st-foot-note")), /College: ranked among 88 college passers with 150\+ attempts\./);
     const rows = [...table.querySelectorAll("tbody tr")].map((r) => text(r.querySelector("th")));
     for (const label of ["Completion %", "Passing TDs", "Interceptions", "Rushing yards", "EPA per play (PPA)"]) {
@@ -382,7 +388,7 @@ describe("stats tab", () => {
     const doc = render(state({ logCareer: [], statsAdvanced: { current: null, last: null }, college: COLLEGE }));
     const heads = [...doc.querySelectorAll("section h2")].map(text);
     assert.deepEqual(heads, ["Advanced Passing Stats", "Jacoby Brissett College Stats by Season"]);
-    assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-ox-lede")), /^Brissett arrives from NC State\./);
+    assert.match(text(doc.querySelector(".scp-st-sum")), /^Brissett arrives from NC State\./);
     const table = doc.querySelector(".scp-st-table");
     assert.equal(text(table.querySelector("caption")), "College stats, from CollegeFootballData.com.");
     const rows = [...table.querySelectorAll("tbody tr")].map((r) => [...r.children].slice(0, 3).map(text));

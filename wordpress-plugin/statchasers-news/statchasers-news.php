@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them — the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
  * Version:           1.10.20
  * Requires at least: 6.3
  * Requires PHP:      7.4
@@ -18,7 +18,7 @@
  *
  * This plugin renders the same tool state on the server and prints it into the
  * page body, then enqueues the compiled JS/CSS so the client can enhance what
- * is already there. Same content for readers and crawlers — no bot-only markup,
+ * is already there. Same content for readers and crawlers - no bot-only markup,
  * no hidden keyword text, nothing gated behind a click.
  *
  * @package StatChasers\News
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The plugin's own version: the Version header above, repeated.
  *
  * It is the enqueue `ver` whenever /embed/assets.json cannot be read, so it
- * has to change when the plugin does — it sat at 1.7.0 through every release
+ * has to change when the plugin does - it sat at 1.7.0 through every release
  * since, which pinned the fallback ver= to one string for good and made a
  * browser's cached CSS and JS outlive every upgrade that happened during an
  * outage. scripts/build-zip.sh refuses to build when this and the header
@@ -50,7 +50,7 @@ const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
 
 // The other tools' shortcodes. Required after the constants above and
 // before any hook registration, because they reuse this file's origin,
-// asset-version and canonical helpers — all of which are function declarations
+// asset-version and canonical helpers - all of which are function declarations
 // and so are available regardless of order, but the constants are not.
 //
 // The team file must come FIRST. The player, FPA, rankings, schedule and
@@ -80,7 +80,7 @@ const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 
 /**
  * How long the last good render is kept as a fallback. If the API is slow or
- * down at render time we serve this rather than an empty page — a stale but
+ * down at render time we serve this rather than an empty page - a stale but
  * real list beats a blank container.
  */
 const STATCHASERS_NEWS_BACKUP_TTL = DAY_IN_SECONDS;
@@ -155,7 +155,7 @@ function statchasers_news_args( array $atts ): array {
 		// that actually exist, or you'll generate internal links to 404s.
 		'player_url'   => sanitize_text_field( (string) $atts['player_url'] ),
 		'team_url'     => sanitize_text_field( (string) $atts['team_url'] ),
-		// "Label|/url; Label|/url" — crawlable links to related tools.
+		// "Label|/url; Label|/url" - crawlable links to related tools.
 		'related'      => sanitize_text_field( (string) $atts['related'] ),
 		// Endpoint for real-user Core Web Vitals reports. Empty = monitoring
 		// off and the vitals bundle is never even downloaded.
@@ -167,7 +167,7 @@ function statchasers_news_args( array $atts ): array {
  * What a failed fetch returns: the last good render instead of a hole in the
  * page. Either way the outcome is held under the fresh key for a minute, so
  * while the origin is down each view does not retry it and wait out the
- * timeout — once a minute is enough to notice it is back.
+ * timeout - once a minute is enough to notice it is back.
  *
  * @return array{html:string,version:string}|null
  */
@@ -287,7 +287,7 @@ function statchasers_news_asset_version(): string {
 		// sentinel for "I could not read my own version.json", not a version.
 		// Taking it at face value would pin every browser's copy of the CSS and
 		// JS to the literal string 0 forever. Falling back to the constant below
-		// is the better of the two wrong answers — it at least changes when this
+		// is the better of the two wrong answers - it at least changes when this
 		// file does. If the enqueued ver= is stuck at STATCHASERS_NEWS_VERSION,
 		// the deployment is not serving a built version.json and that is where
 		// to look; nothing here can fix it.
@@ -306,7 +306,7 @@ function statchasers_news_asset_version(): string {
 /**
  * Register and enqueue the tool's compiled bundles.
  *
- * Conditional by design — these only load on pages that actually render the
+ * Conditional by design - these only load on pages that actually render the
  * tool. The script is deferred and printed in the footer so it never blocks
  * rendering of the server-rendered markup it enhances.
  */
@@ -349,8 +349,8 @@ function statchasers_news_enqueue_assets(): void {
  *
  * Used to enqueue the stylesheet during wp_enqueue_scripts (i.e. in <head>,
  * before paint) rather than during the_content, which would leave the tool
- * briefly unstyled. Shortcodes reached some other way — a widget, a template
- * part — still get their assets from the shortcode callback itself.
+ * briefly unstyled. Shortcodes reached some other way - a widget, a template
+ * part - still get their assets from the shortcode callback itself.
  */
 function statchasers_news_post_has_shortcode(): bool {
 	if ( ! is_singular() ) {
@@ -386,7 +386,7 @@ add_action(
  *     The tool must never add a second one, and must never make the canonical
  *     depend on tool state.
  *   - emit an `<h1>`, or touch <title>, og:title or the meta description. The
- *     page owns those. The tool contributes an `<h2>` — see `heading_text` if
+ *     page owns those. The tool contributes an `<h2>` - see `heading_text` if
  *     you need to word it to match the page's H1.
  *   - write anything to the URL. Pagination is DOM-only; there is no
  *     history.pushState and no `?page=`/`?filter=` state, so the tool cannot
@@ -408,7 +408,7 @@ function statchasers_news_shortcode( $atts = array() ): string {
 	$args = statchasers_news_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_news_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_news_enqueue_assets();
 
 	if ( null === $data ) {
@@ -428,7 +428,7 @@ function statchasers_news_shortcode( $atts = array() ): string {
 	 * Deliberately not escaped: this is first-party markup from the same origin
 	 * the page already loads its executable bundle from, and escaping it would
 	 * print tags as text. Sites that want belt-and-braces sanitising can run
-	 * wp_kses() here — note the fragment includes a <noscript><style> block.
+	 * wp_kses() here - note the fragment includes a <noscript><style> block.
 	 *
 	 * @param string $html Rendered fragment.
 	 * @param array  $args Render arguments.
@@ -447,22 +447,22 @@ add_shortcode( STATCHASERS_NEWS_SHORTCODE, 'statchasers_news_shortcode' );
  *
  * It used to add a SoftwareApplication / WebApplication node for the tool on
  * every news and team page. Search Console held that type to the software-app
- * rich result's rules — offers.price plus an aggregateRating or review — and
+ * rich result's rules - offers.price plus an aggregateRating or review - and
  * flagged every URL carrying it, the team Schedule pages included. A news feed
  * and a team hub are pages people read, not applications, and the only rating
  * we could give is an invented one. So the node is gone: with Rank Math present
  * the page's WebPage + BreadcrumbList are Rank Math's and this adds nothing of
  * its own, and without it the fallback below prints a lone WebPage.
  *
- * A team's Schedule page adds an ItemList of SportsEvents — its games — on the
+ * A team's Schedule page adds an ItemList of SportsEvents - its games - on the
  * same terms as the FAQ below: statchasers_team_rank_math_schedule().
  *
  * The player and team mounts add one more, on the same terms: an FAQPage built
  * from the questions their fragment is actually rendering, injected into the
  * same graph (statchasers_player_rank_math_schema(), and the team equivalent).
- * It describes visible text word for word — the fragment hands the questions
+ * It describes visible text word for word - the fragment hands the questions
  * over as an inert JSON island precisely so the node cannot drift from what the
- * reader sees — and the mount that has no FAQ on it contributes no node.
+ * reader sees - and the mount that has no FAQ on it contributes no node.
  *
  * Deliberately NOT emitted: Article, NewsArticle, ItemList, Dataset, Product,
  * Review, aggregateRating. Some of those would be easy to generate from the
@@ -521,7 +521,7 @@ function statchasers_news_schema_description(): string {
 	}
 
 	if ( '' === $description ) {
-		// Last resort only — reached when the page has neither a Rank Math
+		// Last resort only - reached when the page has neither a Rank Math
 		// description nor an excerpt. Worded for whichever tool is mounted,
 		// because describing a team hub as a news feed is worse than no node.
 		$description = statchasers_team_post_has_shortcode()
@@ -574,7 +574,7 @@ function statchasers_news_schema_page_id( array $data ): string {
  * Is some other plugin already publishing a schema graph we've hooked into?
  *
  * Rank Math is handled above. If it's absent we fall back to printing our
- * single node ourselves — still just the one node, never a competing graph of
+ * single node ourselves - still just the one node, never a competing graph of
  * WebPage/Breadcrumb duplicates.
  */
 function statchasers_news_graph_provider_present(): bool {
@@ -595,7 +595,7 @@ function statchasers_news_graph_provider_present(): bool {
 /**
  * Fallback JSON-LD for sites with no schema-graph plugin.
  *
- * Prints ONLY a WebPage node. It does not add BreadcrumbList or Organization —
+ * Prints ONLY a WebPage node. It does not add BreadcrumbList or Organization -
  * if the site has no SEO plugin, that's a site-wide decision to make
  * deliberately, not something this tool should improvise.
  */
@@ -618,7 +618,7 @@ add_action( 'wp_head', 'statchasers_news_print_fallback_schema', 20 );
  * Stop wpautop wrapping the shortcode in a <p>.
  *
  * On its own line the shortcode becomes <p>[statchasers_news]</p>, and once
- * expanded that is a <p> containing a <div> — invalid, and browsers close the
+ * expanded that is a <p> containing a <div> - invalid, and browsers close the
  * paragraph early, which breaks the layout. Registered at priority 10 so it
  * runs after core's wpautop (same priority, registered earlier) and before
  * core's do_shortcode at priority 11.
@@ -671,7 +671,7 @@ add_filter( 'wp_resource_hints', 'statchasers_news_resource_hints', 10, 2 );
  *
  * Deletes the fresh copies only. The outage backups every tool keeps beside
  * them survive, so a flush followed by an API hiccup still serves yesterday's
- * render rather than an empty box — see statchasers_flush_transients(). This
+ * render rather than an empty box - see statchasers_flush_transients(). This
  * is what "Clear cached renders" and the team build both call.
  *
  * @param bool $all Also delete the backups. statchasers_news_flush_all() is
@@ -708,8 +708,8 @@ function statchasers_news_flush( bool $all = false ): void {
  * Everything the plugin cached, backups included. The deactivation cleanup.
  *
  * Its own function rather than statchasers_news_flush( true ) hooked directly,
- * because WordPress calls a deactivation callback WITH an argument — whether
- * the deactivation is network-wide — and that boolean would land in $all and
+ * because WordPress calls a deactivation callback WITH an argument - whether
+ * the deactivation is network-wide - and that boolean would land in $all and
  * make an ordinary deactivation keep its backups.
  */
 function statchasers_news_flush_all(): void {
@@ -731,7 +731,7 @@ register_deactivation_hook(
  *
  * Not flushed here. Activation runs before `init`, so the rewrite rules the
  * team, player and matchup files add have not been registered yet and flushing
- * now would write a rule table without them — the exact failure the manual
+ * now would write a rule table without them - the exact failure the manual
  * "Settings > Permalinks > Save" step used to work around. The flag is read on
  * the next `init`, once every rule is in place.
  *

@@ -22,7 +22,7 @@ $players->ID = 501;
 $GLOBALS['pages_by_path'] = array( 'nfl' => $nfl, 'nfl/players' => $players );
 
 // Published: Allen and McBride. Dobbs was indexed by the API on 2026-09-24 and
-// has no page yet — the recap links a crawl found 404ing.
+// has no page yet - the recap links a crawl found 404ing.
 $GLOBALS['wpdb'] = new class {
 	public $posts = 'wp_posts';
 	public $asked = '';

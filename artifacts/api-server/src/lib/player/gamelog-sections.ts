@@ -1,23 +1,23 @@
 /**
- * "Where His Weeks Finished" and "Game-by-Game Breakdown" — the two Game Log
+ * "Where His Weeks Finished" and "Game-by-Game Breakdown" - the two Game Log
  * sections of mak's spec of 2026-10-01, directly after the week-by-week table.
  *
  * Both are generated entirely from game data; no API key, no model call. The
  * ladder shows every weekly finish as a pin on a positional scale with the
- * tier-1 and tier-2 ranges shaded — the spread of outcomes a points-per-game
+ * tier-1 and tier-2 ranges shaded - the spread of outcomes a points-per-game
  * average hides. The breakdown gives one card per played game, most recent
  * first: score, a rule-picked headline, the stat line, a one-to-three-sentence
  * note, and the fantasy points with the weekly finish.
  *
  * WHERE THE EXTRA FACTS COME FROM. The Sleeper log carries the stat line and
- * the weekly rank; everything else a card states — the date, home or away, the
+ * the weekly rank; everything else a card states - the date, home or away, the
  * closing line, trailing by ten in the second half, who the targets went to,
- * fumbles lost — is read from the stored ESPN box scores the matchup pages are
+ * fumbles lost - is read from the stored ESPN box scores the matchup pages are
  * built on (data/matchup/boxscores/<season>.json). Stored data only, per the
  * store-verified-data posture: nothing here fetches. A played week whose box
  * score is not stored yet is left out of both sections rather than rendered
- * with an invented "vs" — the spec is explicit that home/away is never
- * defaulted — and it joins them when the store catches up. A season with no
+ * with an invented "vs" - the spec is explicit that home/away is never
+ * defaulted - and it joins them when the store catches up. A season with no
  * stored box scores at all (anything before 2021) renders neither section.
  *
  * VALIDATION. Every number in a headline or note is one of the game's stat
@@ -27,7 +27,7 @@
  * fumble-unknown case (a box score with no player block) silences the
  * "clean, mistake-free" sentence instead of guessing.
  *
- * The copy generators are exported and pure — the test suite drives them with
+ * The copy generators are exported and pure - the test suite drives them with
  * the spec's Part 6 fixtures (Jacoby Brissett, 2026 through Week 3) and
  * asserts the expected output word for word.
  */
@@ -149,7 +149,7 @@ export interface StorySeason {
   ppg: number;
   /** Positional rank for the season; null drops the lede's middle clause. */
   seasonRank: number | null;
-  /** QB attempts per game — the volume-outlier baseline. */
+  /** QB attempts per game - the volume-outlier baseline. */
   avgAtt: number;
   /** Season efficiency: QB Y/A, RB yards per carry, WR/TE yards per target. */
   seasonEff: number | null;
@@ -159,7 +159,7 @@ export interface StorySeason {
   updatedWeek: number;
   /** The latest played game's kickoff, for the past-season byline date. */
   updatedDateMs: number | null;
-  /** True when any card carries analyst copy — it changes the byline. */
+  /** True when any card carries analyst copy - it changes the byline. */
   hasOverrides: boolean;
   /** Distinguishes the archive copy's ids from the active season's. */
   idSuffix: string;
@@ -169,14 +169,14 @@ export interface StorySeason {
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
-/** Counts under ten in words, numerals from there — the spec's number rule. */
+/** Counts under ten in words, numerals from there - the spec's number rule. */
 const word = (n: number): string => WORDS[n] ?? String(n);
 const capWord = (n: number): string => {
   const w = word(n);
   return w.charAt(0).toUpperCase() + w.slice(1);
 };
 
-/** "a, b and c" — no Oxford comma, per every template in the spec. */
+/** "a, b and c" - no Oxford comma, per every template in the spec. */
 const joinAnd = (parts: string[]): string =>
   parts.length <= 1 ? (parts[0] ?? "") : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 
@@ -219,7 +219,7 @@ export function pinX(rank: number, scale: LadderScale): number {
 }
 
 /**
- * Band edges sit at half-ranks — the "1" band ends at rank t1 + 0.5 — so a
+ * Band edges sit at half-ranks - the "1" band ends at rank t1 + 0.5 - so a
  * rank-t1 pin sits inside the band rather than on its edge.
  *
  * The spec's QB worked example says 35.5% here, but that is 11/31: the pin
@@ -443,7 +443,7 @@ export function renderLadderSection(games: StoryGame[], season: StorySeason): st
 
 /* ------------------------------------------------------------- stat lines */
 
-/** "4 carries" / "1 carry" — the one noun the spec inflects by count. */
+/** "4 carries" / "1 carry" - the one noun the spec inflects by count. */
 const carries = (n: number): string => `${n} ${n === 1 ? "carry" : "carries"}`;
 
 /** The card's stat line, in the spec's format for the position. */
@@ -548,7 +548,7 @@ export function noteFor(
   const s = game.stats;
   const sentences: string[] = [];
 
-  // 1. Volume outlier — defined for the quarterback's attempt count.
+  // 1. Volume outlier - defined for the quarterback's attempt count.
   let usedVolume = false;
   if (pos === "QB" && season.avgAtt > 0 && s.att >= 1.25 * season.avgAtt) {
     usedVolume = true;
@@ -598,8 +598,8 @@ export function noteFor(
     } else if (pos === "QB" && g1 >= s1 + 1.0) {
       sentences.push(`At ${one(g1)} yards per attempt, he pushed the ball downfield.`);
     }
-    // The in-between readings are quarterback sentences — "underneath" and
-    // "downfield" describe throws — so the other positions skip them.
+    // The in-between readings are quarterback sentences - "underneath" and
+    // "downfield" describe throws - so the other positions skip them.
   }
 
   // 4. A bust that still found the end zone.
@@ -648,7 +648,7 @@ export function noteFor(
 
 /**
  * Section B. One card per played game, most recent first, with the generated
- * headline and note — or the analyst's, where an override is stored.
+ * headline and note - or the analyst's, where an override is stored.
  */
 export function renderBreakdownSection(games: StoryGame[], season: StorySeason): string {
   const scale = SCALES[season.pos];
@@ -764,7 +764,7 @@ interface WeekContext {
  * Trailed by ten or more at any point in the second half. The score only
  * moves on scoring plays, so walking them in order and checking the deficit
  * entering the third quarter and after every second-half score IS "at any
- * point", exactly — no play-by-play needed beyond the plays that scored.
+ * point", exactly - no play-by-play needed beyond the plays that scored.
  */
 export function trailedBy10In2h(plays: ScoringPlay[], code: string): boolean {
   let mine = 0;
@@ -818,8 +818,8 @@ function weekContext(
     : sideOf(home.abbr, home.team)
       ? "home"
       : null;
-  // A game the player's club is not in — a mid-season trade whose log row
-  // still carries the old code — is no game to write a card about.
+  // A game the player's club is not in - a mid-season trade whose log row
+  // still carries the old code - is no game to write a card about.
   if (homeAway === null) return null;
   const mine = homeAway === "away" ? away : home;
   const theirs = homeAway === "away" ? home : away;

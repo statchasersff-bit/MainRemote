@@ -20,7 +20,7 @@ export interface RawNewsItem {
   playerName?: string;
   image?: string;
   /**
-   * Who reported the story — "ESPN.com", "Boston Globe" — as distinct from who
+   * Who reported the story - "ESPN.com", "Boston Globe" - as distinct from who
    * relayed it to us, which is the provider label passed to storeItems().
    *
    * Optional because the Dynasty Command feed does not carry it. Every link in
@@ -32,7 +32,7 @@ export interface RawNewsItem {
   source?: string;
   /**
    * The club this story belongs to, as our lowercase code. Set only by a
-   * provider that knows it — see the schema's team_abbr, and lib/club-news.ts.
+   * provider that knows it - see the schema's team_abbr, and lib/club-news.ts.
    */
   teamAbbr?: string;
   /**
@@ -40,7 +40,7 @@ export interface RawNewsItem {
    *
    * The club feeds carry a standfirst written by the club; the wire carries
    * nothing, and its rows are filled in later by backfillSummaries(). Applied
-   * on insert only — see storeItems, which must not let an ingest overwrite a
+   * on insert only - see storeItems, which must not let an ingest overwrite a
    * generated summary on every pass.
    */
   summary?: string;
@@ -69,7 +69,7 @@ export interface RawNewsItem {
  * A stable content fingerprint for an item. We dedupe on this rather than the
  * upstream id: the feed has historically changed both its id scheme and its
  * pubDate formatting, and the old fallback id (a hash of title|link|pubDate)
- * produced a fresh row for the same article every time that string changed —
+ * produced a fresh row for the same article every time that string changed -
  * which is how the backlog ended up with each story stored twice.
  */
 export function newsDedupeKey(item: {
@@ -78,8 +78,8 @@ export function newsDedupeKey(item: {
   /**
    * Namespace the fingerprint belongs to, when a title is only unique inside
    * one. The club feeds need it and the player wire does not: 32 clubs publish
-   * to the same archive and a generic headline — "Week 1 Inactives", "Practice
-   * Report" — is not one story that four teams filed, it is four stories that
+   * to the same archive and a generic headline - "Week 1 Inactives", "Practice
+   * Report" - is not one story that four teams filed, it is four stories that
    * happen to share a name, and an unscoped fingerprint would keep whichever
    * arrived last and silently drop the rest from three team pages.
    *

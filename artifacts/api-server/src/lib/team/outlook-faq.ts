@@ -2,25 +2,25 @@
  * The questions a team's draft take gets asked, answered from the take itself.
  *
  * Derived, not written. Every other block on the Outlook tab is generated from
- * something — a rank, a snap count, a designation — and outlook.ts is the one
+ * something - a rank, a snap count, a designation - and outlook.ts is the one
  * exception, a hand-written opinion kept in source. This module exists so that
  * the exception stays exactly one file: an outlook written for a team is the
  * only thing anybody has to author, and the FAQ under it follows. Thirty-two
  * hand-written FAQs would be thirty-two more chances for the answer to disagree
  * with the card two inches above it, and a contradiction is worse here than
- * anywhere else on the page — this is the block a search engine quotes without
+ * anywhere else on the page - this is the block a search engine quotes without
  * the card beside it.
  *
  * So the rule is the one player/game-log-faq.ts runs on, and it has no
  * exceptions: every answer restates something the outlook already printed. The
- * tier, the thesis, the bottom line. Nothing is inferred from them — an answer
+ * tier, the thesis, the bottom line. Nothing is inferred from them - an answer
  * saying who leads the team in targets would be a new claim, made in the voice
  * of the section that is supposed to be quoting.
  *
  * The questions are the searched forms rather than the section's own language:
  * "Who is the Patriots WR2", "Is X worth drafting". That is the whole reason a
  * block like this exists, and it is why the generated text says "offense" while
- * the hand-written notes above it say "offence" — the query is spelled the
+ * the hand-written notes above it say "offence" - the query is spelled the
  * American way and the FAQ is answering the query.
  *
  * Entries are skipped rather than padded. A team whose outlook names one
@@ -66,7 +66,7 @@ const VOWELS = new Set(["a", "e", "i", "o", "u"]);
  * Letters whose NAME opens on a vowel: "an RB2", "an FLEX", "a WR3", "a TE1".
  *
  * Needed because a tier is as likely to start with an initialism as with a
- * word, and the two take opposite articles from the same letter — "a receiver"
+ * word, and the two take opposite articles from the same letter - "a receiver"
  * but "an RB2".
  */
 const VOWEL_INITIALS = new Set([
@@ -77,7 +77,7 @@ const VOWEL_INITIALS = new Set([
  * A tier as it reads mid-sentence: "an elite QB1", "an RB2 / FLEX".
  *
  * The card prints the tier as a label, capitalised and standing alone. A
- * sentence needs it lowercased and behind an article — but only when it is a
+ * sentence needs it lowercased and behind an article - but only when it is a
  * word. "RB2 / FLEX" is a position code and lowercasing it produces "rB2",
  * so the capitals survive whenever the first token carries none of its own.
  *
@@ -88,7 +88,7 @@ const VOWEL_INITIALS = new Set([
  * free of one so a team can be described in its own terms.
  *
  * Nothing may be appended after a tier by a caller. A tier is a written phrase
- * and some of them end in a clause — "Top-five QB1, health permitting" — so a
+ * and some of them end in a clause - "Top-five QB1, health permitting" - so a
  * trailing " for 2026" lands inside the qualifier instead of after it and the
  * sentence comes apart. Every season, team and "behind X" qualifier in this
  * module is therefore in FRONT of the tier, which is also why several of these
@@ -153,7 +153,7 @@ export function outlookFaq(team: NflTeam, outlook: TeamOutlook): OutlookFaq[] {
   const faq: OutlookFaq[] = [];
 
   // The core band if there is one, and the whole list if the outlook was
-  // written as a single group — "the best two players" is a question every
+  // written as a single group - "the best two players" is a question every
   // team can answer, and the band labels are per-team by design.
   const core = outlook.groups[0]?.players ?? [];
   const headline = (core.length >= 2 ? core : players).slice(0, 2);

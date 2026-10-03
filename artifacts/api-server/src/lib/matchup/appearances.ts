@@ -4,8 +4,8 @@
  *
  * Lifted out of leaders.ts when three more blocks came to need the same join.
  * The four leader cards, the player stat tables, the usage table and the
- * takeaways are all the same question asked at different widths — "who played
- * in this game and what did they do" — and each of them computing its own pass
+ * takeaways are all the same question asked at different widths - "who played
+ * in this game and what did they do" - and each of them computing its own pass
  * over a season of logs would be three extra passes for one answer.
  *
  * Nothing here fetches. `loadGameLogs(season)` is the memoised read the game
@@ -170,7 +170,7 @@ export function appearances(meeting: Meeting): Appearance[] {
 
 /**
  * Where one week's PPR total finished among the league's players at that
- * position — the "WR8" a fantasy reader converts every score into.
+ * position - the "WR8" a fantasy reader converts every score into.
  *
  * Computed from the same season file the appearances came out of, once per
  * season and week and then held: it is a pass over every logged player, and

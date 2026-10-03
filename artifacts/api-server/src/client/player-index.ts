@@ -9,7 +9,7 @@
  * It adds three things:
  *
  *   1. the position chips, which the server ships hidden for the reason
- *      renderPlayerSearch() ships its box hidden — a control with no script
+ *      renderPlayerSearch() ships its box hidden - a control with no script
  *      behind it is a promise the page cannot keep. Revealed here, and from
  *      here on they filter what is already in the document: no request, no
  *      re-render, no URL change.
@@ -21,7 +21,7 @@
  *   3. portraits that take themselves out of a row rather than leaving a
  *      broken one, which is cdnImage()'s job in the search panel. Here the
  *      images arrive in the HTML instead of being built, so the same rule is
- *      applied to them after the fact — including to the ones that had already
+ *      applied to them after the fact - including to the ones that had already
  *      failed before this file ran.
  *
  * The search box above the chips is not this file's: it is the same widget the
@@ -32,14 +32,14 @@
  *
  * The two filters compose, and neither touches the URL: a club and a position
  * are a view of what is already here, not an address. Which is also why a
- * reader cannot arrive on one — nothing here is a page worth linking to that
+ * reader cannot arrive on one - nothing here is a page worth linking to that
  * /nfl/players/ and the club's own hub do not already answer.
  */
 
 /** A club card, with its own counts to keep in step with what it is showing. */
 interface Club {
   root: HTMLElement;
-  /** "KC" — what a filter pick names this card by. "FA" for the free agents. */
+  /** "KC" - what a filter pick names this card by. "FA" for the free agents. */
   code: string;
   /** "Kansas City Chiefs", read off the card rather than passed in with the
    * pick: the heading is already the page's own spelling of the club's name,
@@ -62,7 +62,7 @@ interface Club {
  * and the second is worse than the plain well underneath.
  */
 function dropBrokenImages(root: HTMLElement): void {
-  // `error` does not bubble, so this listens in the capture phase — one
+  // `error` does not bubble, so this listens in the capture phase - one
   // listener for six hundred portraits rather than six hundred listeners.
   root.addEventListener(
     "error",
@@ -127,7 +127,7 @@ export function wirePlayerDirectory(root: HTMLElement): void {
     let shown = 0;
 
     for (const entry of clubs) {
-      // A club the filter excludes is off the page rather than an empty card —
+      // A club the filter excludes is off the page rather than an empty card -
       // the same rule the position filter already applies to a club it empties.
       if (!inScope(entry)) {
         entry.root.hidden = true;
@@ -142,11 +142,11 @@ export function wirePlayerDirectory(root: HTMLElement): void {
         item.hidden = !match;
         if (!match) continue;
         visible += 1;
-        // The same rule the server counted by — directoryBand()'s one band for
+        // The same rule the server counted by - directoryBand()'s one band for
         // "nothing to show", read off the row rather than recomputed here.
         if (item.dataset["band"] !== "idle") scoring += 1;
       }
-      // A club with nobody left is not an empty card, it is not on the page —
+      // A club with nobody left is not an empty card, it is not on the page -
       // thirty-two headings over nothing is worse than the filter itself.
       entry.root.hidden = visible === 0;
       if (entry.scoring) entry.scoring.textContent = String(scoring);
@@ -209,8 +209,8 @@ export function wirePlayerDirectory(root: HTMLElement): void {
    */
   const setClub = (code: string | null): void => {
     const card = code === null ? null : clubs.find((entry) => entry.code === code);
-    // A code no card answers to — a search island cached from a roster newer
-    // than the page around it — leaves the view alone rather than emptying it.
+    // A code no card answers to - a search island cached from a roster newer
+    // than the page around it - leaves the view alone rather than emptying it.
     if (code !== null && !card) return;
 
     club = code;
@@ -264,6 +264,6 @@ export function wirePlayerDirectory(root: HTMLElement): void {
   }
 
   // Last, so a reader never sees a control that is not wired yet. The pill
-  // stays hidden either way — it has its own `hidden`, and no club is on.
+  // stays hidden either way - it has its own `hidden`, and no club is on.
   if (filters && chips.length > 0) filters.hidden = false;
 }

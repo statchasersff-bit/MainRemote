@@ -5,7 +5,7 @@
  * `const SEASONS = [2023, 2024, 2025]`, which is a list that is wrong every
  * September and silently so: the builders keep succeeding, the server keeps
  * serving, and every player page shows last season's game log as though it were
- * this one. That is the failure this module exists to remove — the year is
+ * this one. That is the failure this module exists to remove - the year is
  * derived from the calendar, not typed into two files.
  *
  * Overridable with SC_SEASON for a backfill or a test, and every script takes
@@ -30,8 +30,8 @@ export function currentSeason(now = new Date()) {
 /**
  * The first season this app carries data for.
  *
- * 2009, which is where `player_production.json` starts. It was 2023 — where
- * the game logs happened to start — and that gap was visible on the page: the
+ * 2009, which is where `player_production.json` starts. It was 2023 - where
+ * the game logs happened to start - and that gap was visible on the page: the
  * Stats tab's career table counted eleven seasons off production while the
  * weekly rates beneath it counted four off the logs, and called both "career".
  * The logs were backfilled to meet production, and this is the line that says

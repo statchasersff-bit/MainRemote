@@ -16,7 +16,7 @@
  *
  *   - fantasy points allowed, from the same `fpaSnapshots` table the /fpa tool
  *     reads. Using it rather than deriving a second opponent-strength number
- *     here is the whole point — one matchup methodology per site, so a rank on
+ *     here is the whole point - one matchup methodology per site, so a rank on
  *     this card and a rank on that page cannot disagree.
  *
  * Bye weeks need no handling. A bye is a week with no game, so it is simply not
@@ -62,7 +62,7 @@ export interface UpcomingGame {
   week: number;
   homeAway: "home" | "away";
   opponent: NflTeam | null;
-  /** The opponent's short code — the card's focal point. */
+  /** The opponent's short code - the card's focal point. */
   opponentCode: string;
   opponentName: string;
   kickoffMs: number | null;
@@ -86,7 +86,7 @@ interface CacheEntry {
  * The points-allowed table, memoised per scoring format.
  *
  * `getFpaTable` runs a query per call, and this is now on the path of every
- * player page — several hundred of them, three formats each. The numbers move
+ * player page - several hundred of them, three formats each. The numbers move
  * once a week at most, so a ten-minute window costs nothing in freshness and
  * takes the query off the request path entirely.
  *
@@ -138,7 +138,7 @@ export interface UpcomingInput {
  * Deliberately NOT lib/team/schedule.ts's `upcomingGames()`, which falls back
  * to the tail of the schedule once a season is over so the team hub's card
  * strip never empties. Here that fallback would print finished games under a
- * heading that says "upcoming" — so an over season returns nothing, and the
+ * heading that says "upcoming" - so an over season returns nothing, and the
  * section drops out of the page rather than lying about it.
  */
 export function buildUpcoming(input: UpcomingInput): UpcomingGame[] {
@@ -193,8 +193,8 @@ export function buildUpcoming(input: UpcomingInput): UpcomingGame[] {
 /**
  * A fingerprint of the block, for the render cache.
  *
- * The fixtures and their ranks both move — one when a game finishes, the other
- * when the ingest runs — and neither is covered by the data-file stamp the rest
+ * The fixtures and their ranks both move - one when a game finishes, the other
+ * when the ingest runs - and neither is covered by the data-file stamp the rest
  * of this page keys on.
  */
 export function upcomingStamp(games: UpcomingGame[]): string {

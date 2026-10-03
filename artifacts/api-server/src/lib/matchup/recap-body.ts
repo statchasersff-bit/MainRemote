@@ -6,8 +6,8 @@
  * The hero owns the page's one H1, so every section here starts at H2.
  *
  * Pure: a RecapBodyInput in, HTML out, and every figure derived from it. The
- * series record is counted from the series' own scores each time — never
- * carried as a number beside them — so the record, the tiles, the meetings
+ * series record is counted from the series' own scores each time - never
+ * carried as a number beside them - so the record, the tiles, the meetings
  * list, the FAQ and the FAQ's JSON-LD cannot disagree with each other: change
  * one score and all five move together. Away and home, and each side's score,
  * are read from the explicit fields of each game, never from list order.
@@ -244,7 +244,7 @@ function section(id: string, heading: string, body: string, extraClass = ""): st
   );
 }
 
-/** Each club's text and fill colour on this page, told apart — see pairColors(). */
+/** Each club's text and fill colour on this page, told apart - see pairColors(). */
 function colorsOf(input: RecapBodyInput, abbr: string): { ink: string; fill: string } {
   const colors = pairColors(input.game.away.abbr, input.game.home.abbr);
   return abbr === input.game.home.abbr ? colors.home : colors.away;
@@ -600,8 +600,8 @@ export function renderWhyWon(input: RecapBodyInput): string {
       label: row.label,
       away: row.away,
       home: row.home,
-      awayText: row.away === null ? "—" : row.format(row.away),
-      homeText: row.home === null ? "—" : row.format(row.home),
+      awayText: row.away === null ? "-" : row.format(row.away),
+      homeText: row.home === null ? "-" : row.format(row.home),
       better: row.better,
     })),
   });
@@ -743,7 +743,7 @@ export function renderHeadToHead(input: RecapBodyInput): string {
   const record = seriesRecord(input);
   const n = series.games.length;
 
-  // All-time first — the intro and four tiles — then the recent series under
+  // All-time first - the intro and four tiles - then the recent series under
   // its own "Since" heading.
   const [awaySide, homeSide] = rivalryTeams(input);
   const top =

@@ -4,8 +4,8 @@
  * The polling queue asks 37 questions every five minutes and is told "nothing
  * new" almost every time. A filter rule inverts that: the provider watches the
  * accounts and POSTs only when one of them actually posts. Fewer moving parts
- * on our side, lower latency, and — with a provider that bills per matched
- * tweet rather than per request — an order of magnitude cheaper, because we
+ * on our side, lower latency, and - with a provider that bills per matched
+ * tweet rather than per request - an order of magnitude cheaper, because we
  * stop paying for the silence.
  *
  * Nothing downstream changes. A webhook delivery goes through the same
@@ -31,13 +31,13 @@ export interface BuildRulesOptions {
   /** Provider's limit. Overridable because it is theirs to change, not ours. */
   maxLength?: number;
   /**
-   * Appended to every rule — e.g. "-filter:retweets".
+   * Appended to every rule - e.g. "-filter:retweets".
    *
    * Worth using when no monitored account wants reposts: a tweet excluded at
    * the provider is a tweet that is never matched, never delivered and never
    * billed, whereas one excluded by shouldKeep() has already been paid for.
    * It is not applied automatically, because the rules are global and the
-   * repost toggle is per account — inferring one from the other would silently
+   * repost toggle is per account - inferring one from the other would silently
    * override an account someone deliberately switched reposts on for.
    */
   suffix?: string;
@@ -51,7 +51,7 @@ export interface BuildRulesOptions {
  * register, pay attention to, and eventually clean up by hand.
  *
  * A handle too long to fit in an empty rule is dropped rather than silently
- * truncated into a `from:` term for somebody else — at 255 characters that
+ * truncated into a `from:` term for somebody else - at 255 characters that
  * cannot happen with a real handle (X caps them at 15), but a truncated rule
  * would be the kind of failure that looks like a quiet account.
  */

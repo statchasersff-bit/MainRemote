@@ -19,7 +19,7 @@ import type { XPostProvider } from "./types";
 
 let cached: { key: string; provider: XPostProvider } | null = null;
 
-/** Replace the provider — the seam the tests inject a fixture through. */
+/** Replace the provider - the seam the tests inject a fixture through. */
 export function setXProvider(provider: XPostProvider | null): void {
   cached = provider ? { key: `override:${provider.name}`, provider } : null;
 }
@@ -47,7 +47,7 @@ export function getXProvider(): XPostProvider | null {
     case "official":
       if (!token) {
         logger.error(
-          "[X INGEST] X_PROVIDER=official but X_API_BEARER_TOKEN is not set — X ingestion is idle",
+          "[X INGEST] X_PROVIDER=official but X_API_BEARER_TOKEN is not set - X ingestion is idle",
         );
         return null;
       }
@@ -56,7 +56,7 @@ export function getXProvider(): XPostProvider | null {
     case "public":
       provider = new PublicXProvider();
       break;
-    // Any commercial JSON API that serves X posts — see rest-provider.ts. This
+    // Any commercial JSON API that serves X posts - see rest-provider.ts. This
     // is the route that actually keeps up with 37 reporters at a price that is
     // not the official API's.
     case "api":
@@ -67,7 +67,7 @@ export function getXProvider(): XPostProvider | null {
       break;
     }
     default:
-      logger.error({ provider: name }, "[X INGEST] unknown X_PROVIDER — X ingestion is idle");
+      logger.error({ provider: name }, "[X INGEST] unknown X_PROVIDER - X ingestion is idle");
       return null;
   }
 

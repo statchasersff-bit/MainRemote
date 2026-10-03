@@ -1,4 +1,4 @@
-/* StatChasers Depth Charts — front-end renderer.
+/* StatChasers Depth Charts - front-end renderer.
    Reads the locally cached JSON (data-endpoint) and renders the depth-chart UI:
    Fantasy / Offense / Defense / Special Teams tabs, search, team + position
    filters, and a responsive grid that packs more teams per row as columns shrink.
@@ -120,7 +120,7 @@
 	// Image props with the opt-outs the common lazy-load plugins honour. These
 	// images are created after page load, and several optimizers still swap their
 	// src for a placeholder that never resolves inside a popover that was never
-	// "scrolled into view" — leaving an empty box where the logo should be.
+	// "scrolled into view" - leaving an empty box where the logo should be.
 	// "eager" is deliberate for the small dropdown imagery.
 	function imgProps(props) {
 		var out = { "data-no-lazy": "1", "data-skip-lazy": "1", decoding: "async" };
@@ -156,7 +156,7 @@
 
 	// A select that can show imagery. Native <option> elements render as OS
 	// widgets and cannot contain an <img> or per-option colour, so the team and
-	// position filters use this instead — same behaviour as a <select> (value,
+	// position filters use this instead - same behaviour as a <select> (value,
 	// change event, keyboard), but each row can carry a team logo or a coloured
 	// position code, matching the rows in the search dropdown.
 	function customSelect(config) {
@@ -400,7 +400,7 @@
 	function positionColumn(label, players, short) {
 		var body;
 		if (!players.length) {
-			body = el("div", { class: "scdc-col-body" }, [el("div", { class: "scdc-col-empty", text: "—" })]);
+			body = el("div", { class: "scdc-col-body" }, [el("div", { class: "scdc-col-empty", text: "-" })]);
 		} else {
 			body = el("div", { class: "scdc-col-body" }, players.map(playerRow));
 		}
@@ -424,8 +424,8 @@
 	// Watches a card's horizontally-scrollable column strip and toggles --sc-fit
 	// on it: 1 while everything fits, 0.8 once the columns overflow and would
 	// otherwise need horizontal scrolling (shrinking column widths + padding
-	// ~20%). Hysteresis on the restore side keeps the shrink — which itself
-	// reduces scrollWidth — from oscillating the state.
+	// ~20%). Hysteresis on the restore side keeps the shrink - which itself
+	// reduces scrollWidth - from oscillating the state.
 	function attachFit(colsEl, innerEl) {
 		if (typeof ResizeObserver === "undefined") return;
 		var fit = 1;
@@ -543,7 +543,7 @@
 			return columns
 				.map(function (col) {
 					// Each track's min is scaled by --sc-fit (set per card by
-					// attachFit): 1 normally, 0.8 when the columns overflow — shrinking
+					// attachFit): 1 normally, 0.8 when the columns overflow - shrinking
 					// columns (and their padding) up to 20% to pack more onto the screen.
 					return (
 						"minmax(calc(clamp(" +
@@ -862,7 +862,7 @@
 		);
 		teamSelect.setValue("ALL");
 
-		// Export — secondary action, softened so it doesn't compete with the
+		// Export - secondary action, softened so it doesn't compete with the
 		// view switch. Exports exactly what's on screen (visible teams ×
 		// displayed columns) as an Excel-friendly CSV.
 		var downloadBtn = el("button", { type: "button", class: "scdc-download" });
@@ -1110,7 +1110,7 @@
 
 		// ---- Page chrome (H1 / intro / summary / document metadata) ----------
 		// The initial HTML already carries the correct, server-generated values for
-		// the requested URL — this only keeps them true when a visitor switches
+		// the requested URL - this only keeps them true when a visitor switches
 		// teams in-page, so the displayed team, URL, H1 and title never disagree.
 		var pageEl = root.parentNode || document.body;
 		var initialDocTitle = document.title;
@@ -1245,7 +1245,7 @@
 
 		function setMetaContent(selector, attribute, value) {
 			var node = document.querySelector(selector);
-			// Only ever updates tags the server already emitted — no SEO tag is
+			// Only ever updates tags the server already emitted - no SEO tag is
 			// created client-side.
 			if (node) node.setAttribute(attribute, value);
 		}
@@ -1253,7 +1253,7 @@
 		var chromeInitialized = false;
 
 		function syncSeoChrome() {
-			// The first pass is the server's own render — leave the initial HTML
+			// The first pass is the server's own render - leave the initial HTML
 			// (H1, intro, summary, title, canonical) exactly as it was delivered.
 			if (!chromeInitialized) {
 				chromeInitialized = true;
@@ -1335,7 +1335,7 @@
 
 		// ---- Initialize from the server-resolved route ----
 		// PHP validated {view}/{team}/{position} before the page was sent, so the
-		// first (and only) render is already the right team — no "all teams first,
+		// first (and only) render is already the right team - no "all teams first,
 		// then switch" flash. The path is re-parsed purely as a fallback.
 		var pathSlugs = parsePath();
 		var initialSlugs = ctx.initialSlugs.view ? ctx.initialSlugs : pathSlugs;

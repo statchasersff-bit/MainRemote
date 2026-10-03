@@ -108,7 +108,7 @@ describe("edge cases", () => {
   test("a side that has never won", () => {
     const s = r.allTimeSummary(input([game(2010, "ARI", "LAR", 10, 20, false, "/nfl/x/2010-week-1/")]), "ARI", "LAR");
     const t = tiles(s);
-    assert.deepEqual(t[2], { label: "Largest Cardinals win", number: "—", caption: "No wins yet", link: null, none: true });
+    assert.deepEqual(t[2], { label: "Largest Cardinals win", number: "-", caption: "No wins yet", link: null, none: true });
     assert.equal(t[3].link, "/nfl/x/2010-week-1/", "a win with a recap page links to it");
   });
 

@@ -12,14 +12,14 @@ php render-url.php /nfl/nfl-depth-charts/fantasy/houston-texans/ body   # full m
 php h1-test.php                                             # H1 across layouts
 ```
 
-- `wp-stubs.php` — minimal shims (hooks, escaping, options, permalinks). The
+- `wp-stubs.php` - minimal shims (hooks, escaping, options, permalinks). The
   simulated site is `https://statchasers.com`, the tool page is
   `/nfl/nfl-depth-charts/` (ID 42) under an `/nfl/` parent (ID 7).
-- `render-url.php` — simulates the rewrite rules, runs the request lifecycle
+- `render-url.php` - simulates the rewrite rules, runs the request lifecycle
   (`parse_request` → `wp` → `template_redirect`), then prints the status, route,
   head tags (Rank Math filters applied to deliberately *generic* input values),
   breadcrumbs, schema, H1s and the server-rendered markup.
-- `fixtures/statchasers/depth-charts.json` — three teams of sample cached data so
+- `fixtures/statchasers/depth-charts.json` - three teams of sample cached data so
   the "at a glance" summary has something real to render.
 
 This is a harness, not the live site: it proves the plugin's own logic. After

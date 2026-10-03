@@ -9,7 +9,7 @@
  * at halftime" (the quarters say so) and never "scored on its opening drive"
  * (nothing here knows about drives).
  *
- * What only a person knows — a quarterback's first playoff win — comes from
+ * What only a person knows - a quarterback's first playoff win - comes from
  * RECAP_NOTES in recap-notes.ts, written by hand per game and printed as given.
  *
  * Pure: a RecapInput in, a Recap out. The page assembles the input in
@@ -126,7 +126,7 @@ function roundOnly(label: string): string {
   return label.replace(/^(AFC|NFC)\s+/, "");
 }
 
-/** "Rams'" and "Cardinals'", "Chiefs'" — every NFL nickname is a plural. */
+/** "Rams'" and "Cardinals'", "Chiefs'" - every NFL nickname is a plural. */
 function possessive(nickname: string): string {
   return nickname.endsWith("s") ? `${nickname}'` : `${nickname}'s`;
 }
@@ -213,8 +213,8 @@ function destination(game: ScoreboardGame): string {
 
 /**
  * The dek: how the game turned, in one sentence, then the yardage. The two
- * facts the story used to state twice — the halftime score and the second
- * half — are said once, here (mak, 2026-09-30):
+ * facts the story used to state twice - the halftime score and the second
+ * half - are said once, here (mak, 2026-09-30):
  *
  *   "Seattle erased a 7–0 halftime deficit, outscoring New England 13–3 after
  *    the break to win 13–10. The Seahawks finished with a narrow 285–277 edge

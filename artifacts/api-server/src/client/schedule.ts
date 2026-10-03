@@ -1,7 +1,7 @@
 /**
  * NFL schedule enhancement bundle.
  *
- * The board is complete before this runs — every matchup, date, kickoff, TV
+ * The board is complete before this runs - every matchup, date, kickoff, TV
  * mark, bye, division game and posted line is in the HTML the server sent, and
  * the view, week, team and filter controls are ordinary links and an ordinary
  * form that all work with scripting disabled. Nothing here fetches anything and
@@ -10,7 +10,7 @@
  * It adds three things the server cannot:
  *
  *   1. **Kickoffs in the reader's own time zone.** The server labels them ET
- *      because that is the only honest thing it can do — it has no idea where
+ *      because that is the only honest thing it can do - it has no idea where
  *      the reader is, and rendering its own local time would be wrong for
  *      almost everyone, silently. The browser does know, so it relabels. Only
  *      cells carrying `data-kickoff` are touched, and the renderer only puts it
@@ -62,7 +62,7 @@ function localizeKickoffs(root: HTMLElement): void {
     const ms = Number(cell.getAttribute("data-kickoff"));
     if (!Number.isFinite(ms)) continue;
     const text = format.format(new Date(ms));
-    // The dot is a sibling element, so only the text node is replaced — the
+    // The dot is a sibling element, so only the text node is replaced - the
     // live indicator, where there is one, stays put.
     const node = Array.from(cell.childNodes).find(
       (child) => child.nodeType === Node.TEXT_NODE,

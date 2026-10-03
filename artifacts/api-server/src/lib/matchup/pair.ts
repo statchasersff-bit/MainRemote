@@ -5,7 +5,7 @@
  * "Eagles vs Patriots" are the same query, and two pages answering it compete
  * with each other. So every place in the app that turns two teams into a URL
  * comes through canonicalizeMatchupPair(), which puts them in one fixed order
- * — the teams' canonical slugs, alphabetically — and the URL is built from
+ * - the teams' canonical slugs, alphabetically - and the URL is built from
  * that and nothing else. Which team's hub the reader came from cannot reach
  * the URL.
  *
@@ -22,7 +22,7 @@ export interface MatchupPair {
   a: NflTeam;
   /** Alphabetically second by slug. */
   b: NflTeam;
-  /** `<a.slug>-vs-<b.slug>` — the URL segment. */
+  /** `<a.slug>-vs-<b.slug>` - the URL segment. */
   slug: string;
 }
 
@@ -33,8 +33,8 @@ const SEPARATOR = "-vs-";
  * How long a finished meeting keeps the pair's own address to itself.
  *
  * Two weeks: long enough that a result is still the thing a reader arriving at
- * the pair's address is asking about, and short enough that the takeaways —
- * which are advice for the coming week — come off the page while they are still
+ * the pair's address is asking about, and short enough that the takeaways -
+ * which are advice for the coming week - come off the page while they are still
  * true. A Sunday game therefore keeps the recap layout through the Sunday after
  * it, and lets go on the second Monday.
  *
@@ -42,8 +42,8 @@ const SEPARATOR = "-vs-";
  * the rule that decides WHICH address a finished game has: inside the window
  * the recap is the pair's page and the dated URL 301s up to it, outside it the
  * dated URL is the page. matchup-data.ts applies it when it decides what to
- * lead with, and anything building a link to a past meeting — the schedule
- * board's row links, for one — has to ask the same question or it generates
+ * lead with, and anything building a link to a past meeting - the schedule
+ * board's row links, for one - has to ask the same question or it generates
  * redirects.
  */
 export const RECENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
@@ -65,7 +65,7 @@ export function isUpcomingFixture(isFinal: boolean, kickoffMs: number | null, no
  * Does this finished meeting have a dated address of its own yet?
  *
  * False while it is still what the pair's page leads with, and false for
- * anything that is not a finished game with a kickoff behind it — there is no
+ * anything that is not a finished game with a kickoff behind it - there is no
  * recap of a fixture, so there is no dated page for one either.
  *
  * `rematchAhead` is whether the two clubs still have an upcoming meeting this
@@ -85,8 +85,8 @@ export function meetingHasOwnAddress(
 /**
  * Resolve any two team names to their one pair, or null.
  *
- * Accepts whatever normalizeTeamName() accepts — slugs, abbreviations,
- * nicknames, retired codes — and refuses a team against itself and anything it
+ * Accepts whatever normalizeTeamName() accepts - slugs, abbreviations,
+ * nicknames, retired codes - and refuses a team against itself and anything it
  * cannot resolve. There is no partial answer: either both teams are real and
  * different, or there is no pair.
  */
@@ -138,7 +138,7 @@ export function parseMatchupSlug(segment: string): ParsedMatchupSlug | null {
  * One meeting, addressed by the season and week it was played.
  *
  * The pair's own address leads with whatever game is current; this is how a
- * reader — or a search result — asks for a specific one instead. See
+ * reader - or a search result - asks for a specific one instead. See
  * gameSegment() for the spelling.
  */
 export interface MatchupGameRef {
@@ -149,8 +149,8 @@ export interface MatchupGameRef {
    *
    * Not optional, because a week number alone stopped identifying a game the
    * moment the postseason entered the history: ESPN numbers the postseason from
-   * 1 again, so a pair that met in Week 5 and again in the Super Bowl — which
-   * is postseason week 5 — has two games that a `{season, week}` would match
+   * 1 again, so a pair that met in Week 5 and again in the Super Bowl - which
+   * is postseason week 5 - has two games that a `{season, week}` would match
    * equally well. Defaulted nowhere: a caller that does not know which half it
    * means has a bug rather than a reasonable fallback.
    */
@@ -160,8 +160,8 @@ export interface MatchupGameRef {
 /**
  * The postseason rounds, as they are spelled in an address.
  *
- * Named rather than numbered — `/2025-super-bowl/` rather than
- * `/2025-post-week-5/` — because the name is what a reader types and what a
+ * Named rather than numbered - `/2025-super-bowl/` rather than
+ * `/2025-post-week-5/` - because the name is what a reader types and what a
  * search engine matches, and because "post week 5" is not a thing anybody calls
  * the Super Bowl. The numbers are ESPN's week numbers within its postseason.
  */
@@ -193,7 +193,7 @@ export function gameSegment(ref: MatchupGameRef): string {
  *
  * Deliberately strict, and a 404 rather than a 301 for anything near it:
  * `2026-week-01`, `2026-WEEK-1` and `2026-wk-1` are spellings nothing on this
- * site generates, so they are not addresses that lost their page — they are
+ * site generates, so they are not addresses that lost their page - they are
  * addresses that never existed. The pair slug redirects every alternate
  * spelling because readers really do type "eagles vs patriots"; nobody types a
  * week number three ways.

@@ -12,14 +12,14 @@
 // Two public sources, split at 1999 and never overlapping:
 //
 // - FiveThirtyEight's NFL Elo games (1920–2020), which codes each franchise
-//   the same through every move — the Chicago/St. Louis/Phoenix Cardinals are
+//   the same through every move - the Chicago/St. Louis/Phoenix Cardinals are
 //   all ARI, the Cleveland/St. Louis Rams all LAR. Used for seasons before 1999.
 // - nflverse's games.csv (1999 on), whose codes follow the city (STL, SD, OAK),
 //   mapped here to the franchise.
 //
 // Only complete seasons are written (`--through`, default the season before
 // the current one). The page adds the season in progress from its own
-// schedule data, so this needs running once a year — see docs/SEASON-ROLLOVER.md.
+// schedule data, so this needs running once a year - see docs/SEASON-ROLLOVER.md.
 //
 // Dropped on purpose: the AAFC seasons (1946–49) of the Browns and 49ers,
 // which the NFL does not count in head-to-head records.

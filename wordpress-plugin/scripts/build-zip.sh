@@ -9,7 +9,7 @@
 # thing nobody notices going stale: it is built by hand, it looks fine in the
 # directory listing, and a file added to the plugin since the last build simply
 # is not in it. That is how a deployment ends up missing half its shortcodes.
-# So this script does not take a file list — it takes the directory, every time.
+# So this script does not take a file list - it takes the directory, every time.
 #
 # Three checks before it writes anything, because a broken plugin zip takes a
 # site down on activation and the feedback loop is an FTP client:
@@ -50,14 +50,14 @@ if [ -n "$PHP" ]; then
 	done
 	say "parse    ok ($(ls "$plugin"/*.php | wc -l | tr -d ' ') files)"
 else
-	say "parse    SKIPPED — no php binary found"
+	say "parse    SKIPPED - no php binary found"
 fi
 
 # ------------------------------------------------------------------ 1b. load
 
 # Parsing is not loading. tests/smoke.php stubs the WordPress API, includes
 # every file in the order the loader does, and calls the functions whose output
-# is a string somebody reads — which is what catches a function declared twice,
+# is a string somebody reads - which is what catches a function declared twice,
 # a constant used before its file is required, or a heading that has quietly
 # stopped agreeing with the API's.
 if [ -n "$PHP" ] && [ -f "$here/tests/smoke.php" ]; then
@@ -99,7 +99,7 @@ say "loader   ok"
 mkdir -p "$dist"
 rm -f "$out"
 
-# Zipped from the parent so the archive holds "statchasers-news/..." — WordPress
+# Zipped from the parent so the archive holds "statchasers-news/..." - WordPress
 # installs the top-level directory it finds, and a flat zip installs as a plugin
 # directory named after the zip instead.
 ( cd "$here" && zip -rq "$out" statchasers-news -x '*.DS_Store' '*/.*' )

@@ -6,8 +6,8 @@
  * and nothing is invented to fill a gap. What differs is where the work is.
  *
  * A team page is slow because it waits on four strangers' servers. A player
- * page waits on nobody — every number below is arithmetic over JSON already in
- * memory — but the arithmetic is genuinely large: a weekly positional rank is a
+ * page waits on nobody - every number below is arithmetic over JSON already in
+ * memory - but the arithmetic is genuinely large: a weekly positional rank is a
  * statement about every player in the league that week, so the first profile
  * rendered for a season builds the whole league's rank table. Those tables are
  * cached per (season, format) in `ranks.ts`, which is what keeps the second
@@ -164,7 +164,7 @@ const TEAM_NEWS_LIMIT = 8;
  * One season's counting stats, as the production snapshot files them.
  *
  * Carried through rather than dropped because this file reaches back further
- * than the game logs do — ten seasons against four — and it is the only place a
+ * than the game logs do - ten seasons against four - and it is the only place a
  * career passing or receiving line exists at all. Every field is optional in
  * spirit: a quarterback's row has no targets and a receiver's no attempts.
  */
@@ -217,7 +217,7 @@ export interface InjuryProfile {
   /**
    * Games the player missed in the season the page is showing.
    *
-   * Counted off the game log, which is padded to the TEAM's own schedule — so
+   * Counted off the game log, which is padded to the TEAM's own schedule - so
    * a week the team has not played yet is not counted as a game missed. Null
    * when there is no log to count from.
    */
@@ -232,7 +232,7 @@ export interface InjuryProfile {
  *
  * Ported from the standalone app's RankNeighborsRail: the players ranked
  * closest to this one, with this one among them in true rank order. It is the
- * question a positional rank immediately raises — QB16 of whom? — answered by
+ * question a positional rank immediately raises - QB16 of whom? - answered by
  * the three names either side rather than by a link to a full table.
  */
 export interface PositionPeer {
@@ -245,7 +245,7 @@ export interface PositionPeer {
   headshot: string | null;
   /** Their place in the position's table for this season. */
   rank: number;
-  /** The figure that table is ordered by — points per game, or points. */
+  /** The figure that table is ordered by - points per game, or points. */
   value: number;
   /** True for the player whose page this is. */
   isCurrent: boolean;
@@ -282,7 +282,7 @@ export interface PlayerPageData {
   player: Player;
   /** The canonical team row for the player's CURRENT team, when known. */
   team: NflTeam | null;
-  /** The team they actually played for in `season` — used for recap copy. */
+  /** The team they actually played for in `season` - used for recap copy. */
   seasonTeam: NflTeam | null;
   format: ScoringFormat;
 
@@ -292,7 +292,7 @@ export interface PlayerPageData {
   /**
    * Their positional finish that season, by points per game.
    *
-   * Null until they have played four games — see positionalFinish(), where the
+   * Null until they have played four games - see positionalFinish(), where the
    * minimum is the whole point. `seasonRankTotal` is the same field measured by
    * points scored rather than by rate, and it carries no minimum because it
    * cannot be gamed by a short sample: a player who has scored more than every
@@ -305,7 +305,7 @@ export interface PlayerPageData {
   /**
    * The players ranked either side of them at their position this season.
    *
-   * Null when there is no table to slice — no position, no game log, or nobody
+   * Null when there is no table to slice - no position, no game log, or nobody
    * within reach who has a page of their own. See positionalFinish().
    */
   peers: PositionPeers | null;
@@ -314,7 +314,7 @@ export interface PlayerPageData {
   /**
    * How widely Sleeper's leagues roster them, as of the ingested week.
    *
-   * Null for anyone Sleeper has no reading for, which is most of the league —
+   * Null for anyone Sleeper has no reading for, which is most of the league -
    * the research document is 673 players deep, so a page for a third-string
    * tight end has no ownership figure rather than a zero.
    */
@@ -334,8 +334,8 @@ export interface PlayerPageData {
    *
    * `logSeason` is `season` unless the reader pinned another one, in which case
    * `seasonLog` is that season's weeks and `gameLog` is still the active
-   * season's. Everything else on the page — the outlook, the injury history,
-   * the benchmarks — stays on `season`, because the tab is what was re-scoped
+   * season's. Everything else on the page - the outlook, the injury history,
+   * the benchmarks - stays on `season`, because the tab is what was re-scoped
    * and not the profile.
    */
   logSeason: number;
@@ -344,7 +344,7 @@ export interface PlayerPageData {
   /**
    * The next few fixtures, with each opponent's difficulty at this position.
    *
-   * Schedule and matchup context only — never statistics. It sits under the
+   * Schedule and matchup context only - never statistics. It sits under the
    * completed game log and is kept rigorously apart from it: see
    * lib/player/upcoming.ts on why a fixture must not become a table row with
    * dashes in its stat columns.
@@ -363,7 +363,7 @@ export interface PlayerPageData {
    * The Overview's lower sections: see lib/player/overview.ts.
    *
    * `schedule` is the club's regular season, played and not, which is where
-   * home and away and each result come from — the game logs carry neither.
+   * home and away and each result come from - the game logs carry neither.
    * `upcomingStrip` is `upcoming` seven deep, for the season strip.
    */
   schedule: ScheduleGame[];
@@ -372,7 +372,7 @@ export interface PlayerPageData {
   teammates: Teammate[];
   depth: DepthRole | null;
   seasonClubs: Record<number, string[]>;
-  /** "Week 3", "Preseason baseline" — what the matchup ranks are measured over. */
+  /** "Week 3", "Preseason baseline" - what the matchup ranks are measured over. */
   upcomingMatchupMode: string | null;
   /** Fingerprint of the fixtures and their ranks, for the render cache. */
   upcomingStamp: string;
@@ -393,7 +393,7 @@ export interface PlayerPageData {
    * The player's own efficiency rates, in the same order the benchmarks rank
    * them. Carried separately because `PlayerBenchmarks` holds the position's
    * distribution and the player's percentile within it, but not the value the
-   * percentile describes — and a bar with no number beside it is exactly the
+   * percentile describes - and a bar with no number beside it is exactly the
    * chart this page is not allowed to draw.
    */
   rates: EfficiencyRates | null;
@@ -404,7 +404,7 @@ export interface PlayerPageData {
    * The Bio tab: identity facts, career timeline, draft, story and questions.
    *
    * Derived in lib/player/bio.ts from players.json, draft.json and
-   * bio_facts.json — never from anything fantasy. Bio is the one tab on this
+   * bio_facts.json - never from anything fantasy. Bio is the one tab on this
    * page that answers "who is he?" rather than a lineup question, and keeping
    * its inputs disjoint from the rest is what keeps it that way.
    */
@@ -426,7 +426,7 @@ export interface PlayerPageData {
 
   /**
    * The Stats tab's aggregates: the career table, its totals, the records and
-   * the questions they answer. See lib/player/stats-profile.ts — Stats is
+   * the questions they answer. See lib/player/stats-profile.ts - Stats is
    * totals, Game Log is games, and this is the totals side.
    */
   statsProfile: StatsProfile;
@@ -449,8 +449,8 @@ export interface PlayerPageData {
   /**
    * The player's team's own reporting, minus anything already listed above.
    *
-   * Their team's news is the context their own news sits in — a running back's
-   * week is partly the story of who else is hurt — and it is the section the
+   * Their team's news is the context their own news sits in - a running back's
+   * week is partly the story of who else is hurt - and it is the section the
    * standalone app's News tab was mostly made of.
    */
   teamNews: NewsItem[];
@@ -468,14 +468,14 @@ export interface PlayerPageData {
    * Null when the player carries none, and that is the ONLY thing null means
    * here: it is not a clean bill of health, because this snapshot can only
    * report what a club has filed. The renderer omits the card rather than
-   * printing "Healthy" — see the note on it.
+   * printing "Healthy" - see the note on it.
    */
   designation: RosterPlayer | null;
 
   /** Epoch ms the roster snapshot was pulled. 0 when there is none. */
   rosterFetchedAt: number;
 
-  /** Changes whenever any input changes — used as the render cache key. */
+  /** Changes whenever any input changes - used as the render cache key. */
   version: string;
 }
 
@@ -560,7 +560,7 @@ async function teamNewsFor(
  * The player's current injury designation, or null.
  *
  * Matched on the Sleeper id, which both sides are keyed by, rather than on the
- * name — two players share a name often enough that a name match would
+ * name - two players share a name often enough that a name match would
  * eventually put somebody else's hamstring on this page.
  *
  * The roster only indexes skill positions, so a lineman resolves to null. That
@@ -641,7 +641,7 @@ function productionSeasons(
  * How far either side of the player the peers rail reaches.
  *
  * Three, as the app this page was ported from used: with the player himself
- * that is seven cards, which is a neighbourhood — near enough that every name
+ * that is seven cards, which is a neighbourhood - near enough that every name
  * on it is a player he is genuinely being compared with, and short enough to
  * read without scrolling on a laptop.
  */
@@ -655,7 +655,7 @@ const PEER_RADIUS = 3;
  * player with no PAGE cannot be a card: the dictionary is four thousand names
  * deep and the site publishes a profile for about six hundred of them, so a
  * straight slice would produce cards linking at URLs that 404. Skipping one
- * keeps its rank with the table — the cards then read QB14, QB16, QB17 with
+ * keeps its rank with the table - the cards then read QB14, QB16, QB17 with
  * QB15 missing, which is the honest rendering of "the nearest players who have
  * a page" rather than a renumbered list that claims QB15 is somebody else.
  */
@@ -665,8 +665,8 @@ function neighbourhood(
   playerById: Map<string, Player>,
   indexed: Set<string>,
 ): Array<{ id: string; rank: number; value: number }> {
-  // Up to twice the radius each way, so a side that runs out — QB1 has nobody
-  // above him — can be made up from the other and the rail stays seven cards.
+  // Up to twice the radius each way, so a side that runs out - QB1 has nobody
+  // above him - can be made up from the other and the rail stays seven cards.
   const side = (step: number): Array<{ id: string; rank: number; value: number }> => {
     const out: Array<{ id: string; rank: number; value: number }> = [];
     for (let i = index + step; i >= 0 && i < table.length && out.length < PEER_RADIUS * 2; i += step) {
@@ -688,7 +688,7 @@ function neighbourhood(
 }
 
 /**
- * Their positional finish for one season, measured both ways — and the players
+ * Their positional finish for one season, measured both ways - and the players
  * ranked either side of them.
  *
  * By points per game, and by points scored. The four-game minimum on the rate
@@ -696,7 +696,7 @@ function neighbourhood(
  * caught two touchdowns in his only appearance finishes as the WR1 for the
  * season, which is arithmetically true and a lie about football.
  *
- * The total carries no minimum, because it cannot be told that lie — a player
+ * The total carries no minimum, because it cannot be told that lie - a player
  * ranks where his points put him, and one big afternoon is one big afternoon
  * rather than a season-long rate. That is what makes it the rank a page can
  * show in September, when nobody has four games yet and the rate rank is null
@@ -716,7 +716,7 @@ function positionalFinish(
   season: number,
   format: ScoringFormat,
   allPlayers: Player[],
-  // The peers belong to the CURRENT season only — the rail is a reading of
+  // The peers belong to the CURRENT season only - the rail is a reading of
   // where the player stands now, and the career table's caller wants the one
   // number. Built on request rather than always, so eleven seasons of career
   // rows do not each assemble a neighbourhood that is then thrown away.
@@ -748,7 +748,7 @@ function positionalFinish(
   const ppgIndex = ppgs.findIndex((row) => row.id === player.id);
   const totalIndex = totals.findIndex((row) => row.id === player.id);
 
-  // The rate table when he is in it, the points table until he is — the same
+  // The rate table when he is in it, the points table until he is - the same
   // order of preference the header's rank cell states.
   const measure: "ppg" | "total" = ppgIndex >= 0 ? "ppg" : "total";
   const table = measure === "ppg" ? ppgs : totals;
@@ -759,8 +759,8 @@ function positionalFinish(
     const indexed = new Set(loadIndexedSlugs());
     const around = neighbourhood(table, index, playerById, indexed);
     // One card is not a neighbourhood. A player nobody else at his position is
-    // near — the last name in the table, or one whose neighbours all lack a
-    // page — gets no rail rather than a rail of himself.
+    // near - the last name in the table, or one whose neighbours all lack a
+    // page - gets no rail rather than a rail of himself.
     if (around.length > 0) {
       const rows: PositionPeer[] = around.map((row) => {
         const peer = playerById.get(row.id);
@@ -817,7 +817,7 @@ function rosterPctFor(playerId: string): PlayerPageData["rosterPct"] {
  * The efficiency rates this player is benchmarked on.
  *
  * A quarterback's "targets" are attempts and his "catches" are completions, so
- * one set of three rates covers both cases — see benchmarks.ts.
+ * one set of three rates covers both cases - see benchmarks.ts.
  */
 function efficiencyRates(
   played: GameLogEntry[],
@@ -936,7 +936,7 @@ function buildInjuryProfile(
   const summary = summarizeInjuries(history);
 
   // Absences in the season on the page. "out" and not "bye", off a log that
-  // stops at the team's last played game — so this counts games that happened
+  // stops at the team's last played game - so this counts games that happened
   // without him, never games that have not kicked off.
   const seasonMissed =
     gameLog.length > 0
@@ -1014,7 +1014,7 @@ export async function getPlayerPageData(
    *
    * Extracted because it is now called twice. The Game Log tab can be pinned to
    * a season other than the active one, and a reader asking for 2023 has to get
-   * 2023's weekly ranks and 2023's opponent ranks with it — the alternative,
+   * 2023's weekly ranks and 2023's opponent ranks with it - the alternative,
    * re-labelling the active season's log, is the kind of bug that produces a
    * page that is wrong rather than empty.
    */
@@ -1058,7 +1058,7 @@ export async function getPlayerPageData(
 
   // Every season this player actually appeared in, newest first. The Game Log's
   // season selector is built from it, so a season nobody played is never
-  // offered — an empty table behind a chip is worse than no chip.
+  // offered - an empty table behind a chip is worse than no chip.
   const logSeasons: number[] = [];
 
   for (const candidate of seasons) {
@@ -1359,7 +1359,7 @@ export function playerDataVersion(
     // requests for the same player in the same format render different tables.
     data.logSeason,
     // The fixtures and their matchup ranks. Neither is a data file, so neither
-    // is covered by dataStamp() — a finished game and a fresh FPA ingest both
+    // is covered by dataStamp() - a finished game and a fresh FPA ingest both
     // have to invalidate this page and nothing else would notice.
     data.upcomingStamp,
     // The header's week line reads both: a bye is only "next" until the league
@@ -1394,12 +1394,12 @@ export function playerDataVersion(
  * of three copies.
  *
  * **Team defences are excluded.** They are in the indexed list because the news
- * tool ranks them, but nothing a player page renders applies to one — no game
+ * tool ranks them, but nothing a player page renders applies to one - no game
  * log, no efficiency percentiles, no injury history, no bio. A defence's page
  * already exists and it is the team hub.
  */
 export interface IndexedPlayer {
-  /** Sleeper's id — what its headshot CDN is keyed by. */
+  /** Sleeper's id - what its headshot CDN is keyed by. */
   id: string;
   slug: string;
   name: string;
@@ -1432,7 +1432,7 @@ export function indexedPlayers(): IndexedPlayer[] {
 export interface DirectoryPlayer extends IndexedPlayer {
   /**
    * Where he stands in his position this season, or null when he has not
-   * taken part in a game — a rookie yet to debut, a player on IR since
+   * taken part in a game - a rookie yet to debut, a player on IR since
    * August. The row then carries his name, his position and his club and no
    * number at all, which is what we know about him.
    */
@@ -1454,7 +1454,7 @@ export interface PlayerDirectory {
  * The index used to be a list of names, and a list of six hundred names is a
  * sitemap rather than a page: it sorts nobody, compares nobody and answers no
  * question a reader arrived with. This is the same roster with the one fact
- * that makes it a directory — where each player stands at his position right
+ * that makes it a directory - where each player stands at his position right
  * now, measured exactly as his own profile measures it.
  *
  * The season is the newest one with a game logged in it, so this rolls over on
@@ -1506,7 +1506,7 @@ export interface PlayerSearchIndex {
    * Beside the rows rather than inside them: the nickname and the logo URL are
    * the same eighty bytes for every Bengal on the list, and there are 32 clubs
    * against ~575 players. `id` is Sleeper's, which is what both CDNs are keyed
-   * by — the player's portrait and the club's mark.
+   * by - the player's portrait and the club's mark.
    *
    * All 32 rather than only the clubs with an indexed player on them, because
    * `clubs` below is a list of destinations rather than a lookup for the rows,
@@ -1543,7 +1543,7 @@ export interface PlayerSearchIndex {
  * cheaper half of that trade.
  *
  * Cached against dataStamp(), which covers both the dictionary and the indexed
- * slug list — so a rebuilt roster produces a new array here AND a new page
+ * slug list - so a rebuilt roster produces a new array here AND a new page
  * version, and the two cannot disagree.
  */
 let searchIndexCache: { stamp: string; index: PlayerSearchIndex } | null = null;

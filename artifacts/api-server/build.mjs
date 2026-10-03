@@ -127,7 +127,7 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
  *
  * The client used to be a hand-written public/app.js served as-is. It's now
  * compiled from src/client/main.ts so it can share src/lib/render.ts with the
- * server — that shared module is what lets the server-rendered HTML and any
+ * server - that shared module is what lets the server-rendered HTML and any
  * client re-render come out identical. It also gives WordPress a real compiled
  * bundle to hand to wp_enqueue_script().
  */

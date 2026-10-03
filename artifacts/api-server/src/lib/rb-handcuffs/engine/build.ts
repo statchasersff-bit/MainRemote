@@ -16,7 +16,7 @@
  * What is new is the point of running it here: the pairings come from this
  * week's depth chart rather than a snapshot; the starter's CURRENT injury
  * status and age feed Path to Opportunity (the model always had a slot for the
- * status — a fresh one is a 15% overlay on the durability history — and the
+ * status - a fresh one is a 15% overlay on the durability history - and the
  * app never filled it); and the stats basis is the current season, with
  * Player Quality read off each back's last six games played (week 18
  * excluded), reaching back into the previous season, because two weeks of a
@@ -116,7 +116,7 @@ export interface EngineInputs {
   previous?: Map<string, MergedRBData> | null;
   /**
    * Where Player Quality is read from, for the backup and the starter alike.
-   * In season this is each back's last six games (see lastGames) — talent
+   * In season this is each back's last six games (see lastGames) - talent
    * carries over, role does not. Absent → `stats`,
    * as the app had it.
    */
@@ -449,7 +449,7 @@ function rankAndFinish(scored: Scored[], curation: Curation, weights: HandcuffWe
     p.playerQualityCategoryPoolSize = qualityPool.length;
   }
 
-  // Path drivers, ranked across the backups that show them — the same
+  // Path drivers, ranked across the backups that show them - the same
   // predicates the card uses to hide a driver, so the "of N" matches.
   const pathSpecs: Array<{ key: string; value: (p: Scored) => number | null }> = [
     {
@@ -505,7 +505,7 @@ function rankAndFinish(scored: Scored[], curation: Curation, weights: HandcuffWe
     });
   }
 
-  // The badge, from the raw ranks — before the percentile step below.
+  // The badge, from the raw ranks - before the percentile step below.
   for (const p of scored) {
     const c = curatedFor(curation, p.playerName);
     const forced = samePairing(c, p.starterName) ? c?.handcuffType : undefined;

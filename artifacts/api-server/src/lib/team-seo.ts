@@ -8,7 +8,7 @@
  * These pages are not meant to rank on this origin. The public URL is
  * `https://statchasers.com/nfl/teams/<slug>/`, and WordPress owns the title,
  * description, canonical and schema there. What this server serves is the
- * embedded tool, so it ships `noindex, indexifembedded` — out of the index as a
+ * embedded tool, so it ships `noindex, indexifembedded` - out of the index as a
  * standalone result, still usable by Google as part of the page that embeds it.
  * The canonical stays self-referencing, because pointing a noindex page's
  * canonical somewhere else is a contradictory signal.
@@ -39,9 +39,9 @@ const SITE_NAME = "StatChasers";
  *
  * MIRRORED IN PHP. statchasers_team_section_meta() in the WordPress plugin
  * builds the same strings for Rank Math, because on statchasers.com Rank Math
- * owns the title and this origin is noindex. The two must say the same thing —
+ * owns the title and this origin is noindex. The two must say the same thing -
  * a reader who lands on the API page and a reader who lands on the WordPress
- * page are on the same page — so changing one means changing the other.
+ * page are on the same page - so changing one means changing the other.
  *
  * Returns null for a section with no written metadata; the caller falls back to
  * the hub's.

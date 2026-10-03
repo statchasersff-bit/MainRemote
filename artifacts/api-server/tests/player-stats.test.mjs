@@ -3,7 +3,7 @@
  *
  * Two halves, like the other tools' suites. The served HTML is asserted with
  * no JavaScript run, because the point of the port is that the table arrives
- * complete — the standalone app it replaced was an empty iframe to anything
+ * complete - the standalone app it replaced was an empty iframe to anything
  * that did not execute a React bundle. Then the real bundle is run against
  * that HTML in jsdom, because sorting, the filter bar, the section pills and
  * the season switch are the standalone app's behaviour and have to survive
@@ -173,7 +173,7 @@ describe("the data module", () => {
             `${pos} ${season} ${row.name}: ${grade}`,
           );
         }
-        // Sorted by the overall grade, best first — the opening sort.
+        // Sorted by the overall grade, best first - the opening sort.
         const grades = table.rows.map((r) => r.values[table.overallKey]);
         assert.deepEqual(grades, [...grades].sort((a, b) => b - a));
       }

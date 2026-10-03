@@ -4,7 +4,7 @@
  *
  * Read from the same place the tab's existing driver cards read
  * (outlook-drivers.ts): last season's advanced line on every player's outlook
- * record. A player is in the field — and is ranked — only with six or more
+ * record. A player is in the field - and is ranked - only with six or more
  * games, the same threshold, so "5th of 41" here and "5th of 41" in the old
  * cards are the same count.
  *

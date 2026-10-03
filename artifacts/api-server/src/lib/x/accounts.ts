@@ -2,7 +2,7 @@
  * The monitored-account list: seeding it, reading it, and claiming from it.
  *
  * The list of reporters lives in the database, not in this file. What lives
- * here is the SEED — the set of handles a brand-new database starts with — and
+ * here is the SEED - the set of handles a brand-new database starts with - and
  * it is applied with onConflictDoNothing, so it is only ever additive. A row
  * the operator disabled stays disabled, a priority they changed stays changed,
  * and a reporter they removed does not come back on the next restart.
@@ -19,7 +19,7 @@ import { normalizeHandle } from "./types";
 
 // Re-exported so "the handle rule" has one import site for callers that already
 // talk to this module. It lives in ./types because the pure half of the feature
-// needs it too — see normalizeHandle there.
+// needs it too - see normalizeHandle there.
 export { normalizeHandle };
 
 /** Handles to start from. Display names are left for the provider to fill in. */
@@ -75,7 +75,7 @@ export interface SeedAccount {
 /**
  * The seed list, in the order it is inserted.
  *
- * `category` says what kind of reporter this is, not what a post is about —
+ * `category` says what kind of reporter this is, not what a post is about -
  * the news category is derived per post (lib/news-category.ts). Only the
  * national insiders are labelled, because that is the one claim about these
  * accounts that can be made without guessing someone's beat.
@@ -128,7 +128,7 @@ export async function enabledAccountCount(): Promise<number> {
   return Number(row?.n ?? 0);
 }
 
-/** Every account, enabled first then alphabetical — the admin list's order. */
+/** Every account, enabled first then alphabetical - the admin list's order. */
 export async function listAccounts(): Promise<XMonitoredAccountRow[]> {
   return db
     .select()
@@ -151,7 +151,7 @@ export async function getAccount(
  * How long this account's next check should wait, including its backoff.
  *
  * Pure, so the schedule can be reasoned about and tested without a clock or a
- * database — the same treatment shouldRefresh() and evaluateIngestHealth() get
+ * database - the same treatment shouldRefresh() and evaluateIngestHealth() get
  * in routes/news.ts, and for the same reason: this is the arithmetic that
  * decides how much traffic we send someone else.
  */
@@ -173,7 +173,7 @@ export function dueAfterMs(args: {
  *
  * The claim is the write. Each account is moved to `last_checked_at = now()`
  * by an UPDATE whose WHERE clause still contains the due test, so if two
- * processes — two instances, or a restart overlapping the tick it interrupted —
+ * processes - two instances, or a restart overlapping the tick it interrupted -
  * try to claim the same account, exactly one UPDATE matches a row and the other
  * matches nothing. There is no lock to leak and no in-memory set to lose on a
  * restart, which is what makes "the same post processed by two jobs" impossible
@@ -192,7 +192,7 @@ export async function claimDueAccounts(
 
   // Candidates first, then a conditional UPDATE each. Two round trips per
   // account rather than one CTE, because the due window depends on the row's
-  // own priority and failure count — arithmetic that belongs in dueAfterMs()
+  // own priority and failure count - arithmetic that belongs in dueAfterMs()
   // where it can be tested, not spelled twice in SQL.
   const candidates = await db
     .select()

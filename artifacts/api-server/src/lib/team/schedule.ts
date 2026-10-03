@@ -4,7 +4,7 @@
  * There was no schedule data in this project before the team pages: the news
  * archive knows about headlines and Sleeper knows about rosters, and neither
  * knows who anybody plays in Week 4. So this is a genuinely new upstream, and
- * it is treated like one — cached hard, timed out, and allowed to fail without
+ * it is treated like one - cached hard, timed out, and allowed to fail without
  * taking the page with it. A team whose schedule cannot be loaded renders the
  * "temporarily unavailable" state; it never renders a made-up fixture.
  *
@@ -28,13 +28,13 @@ export type SeasonType = keyof typeof SEASON_TYPE;
 /**
  * What ESPN calls each postseason week, when it does not say.
  *
- * It normally does — `week.text` comes back as "Super Bowl", "Wild Card" and so
- * on — and that is what is used. This is the fallback for a response that omits
+ * It normally does - `week.text` comes back as "Super Bowl", "Wild Card" and so
+ * on - and that is what is used. This is the fallback for a response that omits
  * it, so a postseason game never prints as a bare "Week 5", which in the
  * postseason means nothing to anybody.
  *
  * Week 4 is the Pro Bowl. It is not a meeting between two teams in any sense
- * this page means and is dropped rather than labelled — see parse().
+ * this page means and is dropped rather than labelled - see parse().
  */
 const POSTSEASON_WEEKS: Record<number, string> = {
   1: "Wild Card",
@@ -58,13 +58,13 @@ export interface ScheduleGame {
    * identifies a game by week alone has to carry this as well.
    */
   seasonType: SeasonType;
-  /** "Week 4", or "Super Bowl" — what to print where a week number would go. */
+  /** "Week 4", or "Super Bowl" - what to print where a week number would go. */
   weekLabel: string;
   /**
    * ESPN's own id for this game, which is what the box score is keyed by.
    *
    * Null whenever the response does not carry one. It is the only handle we
-   * have on `summary?event=`, so a game without it simply has no box score —
+   * have on `summary?event=`, so a game without it simply has no box score -
    * see lib/matchup/boxscore.ts, which is built to render nothing in that case.
    */
   espnEventId: string | null;
@@ -166,7 +166,7 @@ function networkOf(
  * The one gap in the week numbers, or null.
  *
  * Null rather than a guess whenever the data does not support exactly one
- * answer — a short response (an unpublished schedule, a partial fetch) would
+ * answer - a short response (an unpublished schedule, a partial fetch) would
  * otherwise produce several "missing" weeks and we would print one of them as
  * the bye.
  */
@@ -265,8 +265,8 @@ function parse(
   return {
     season,
     games,
-    // A bye is a regular-season fact. The postseason has gaps by construction —
-    // a team that lost in the Wild Card round has four of five weeks missing —
+    // A bye is a regular-season fact. The postseason has gaps by construction -
+    // a team that lost in the Wild Card round has four of five weeks missing -
     // and putting that through deriveByeWeek() would be asking a question the
     // data cannot answer.
     byeWeek:
@@ -277,7 +277,7 @@ function parse(
   };
 }
 
-/** Cache key is `espnId:season` — one entry per team per season, nothing global. */
+/** Cache key is `espnId:season` - one entry per team per season, nothing global. */
 /** ESPN's numeric id back to our team, so the loader can parse without a closure. */
 const TEAM_BY_ESPN_ID = new Map<string, NflTeam>(
   TEAMS.map((team) => [team.espnId, team]),
@@ -305,13 +305,13 @@ const cache = createKeyedCache<TeamSchedule>({
     if (!team) throw new Error(`Unknown ESPN team id ${espnId}`);
     const parsed = parse(team, season, payload, seasonType);
     if (seasonType === "regular" && parsed.games.length === 0) {
-      // A 200 with no games is a failure, not an empty season — the same rule
+      // A 200 with no games is a failure, not an empty season - the same rule
       // the news ingest applies to an empty feed. Throwing keeps the last good
       // schedule in the cache rather than replacing it with nothing.
       //
       // Only for the REGULAR season. Twenty of the thirty-two teams have no
       // postseason in any given year, and for them an empty response is the
-      // correct answer rather than a failed fetch — throwing there would retry
+      // correct answer rather than a failed fetch - throwing there would retry
       // a working upstream on every request for two thirds of the league.
       throw new Error(`ESPN returned no ${season} games for ${team.code}`);
     }
@@ -347,7 +347,7 @@ export async function getTeamPostseason(
 /**
  * The next few games, from the perspective of `now`.
  *
- * "Next" means not yet final — a game in progress is still the next thing a
+ * "Next" means not yet final - a game in progress is still the next thing a
  * reader cares about, and a Sunday-evening visitor should not be shown Week 5
  * while Week 4 is still being played.
  */

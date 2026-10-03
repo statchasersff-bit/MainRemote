@@ -1,16 +1,16 @@
 /**
  * The boundary between "where X posts come from" and everything else.
  *
- * Nothing downstream of this file — not the poller, not the normaliser, not the
- * news store, not the feed — knows how a post was obtained. That is the whole
+ * Nothing downstream of this file - not the poller, not the normaliser, not the
+ * news store, not the feed - knows how a post was obtained. That is the whole
  * point: the first ingestion route is a public, unauthenticated one, and the
  * likely second is the paid official API. Swapping them must be a provider
  * swap and a config change, not a rewrite of the news tool.
  *
  * So a provider's job is deliberately tiny: given a handle and a watermark,
- * return posts in this shape. Everything else — which accounts, how often,
+ * return posts in this shape. Everything else - which accounts, how often,
  * which kinds of post to keep, what the text means, how it is stored and
- * rendered — happens on this side of the interface and is written once.
+ * rendered - happens on this side of the interface and is written once.
  */
 
 /** One post, normalised. The only shape the rest of the app ever sees. */
@@ -46,7 +46,7 @@ export interface FetchOptions {
    * Return only posts newer than this id, when the provider can express that.
    *
    * Advisory. A provider that cannot filter server-side may return more, and
-   * the caller filters again — the watermark is an optimisation, and post-id
+   * the caller filters again - the watermark is an optimisation, and post-id
    * deduplication is what actually guarantees no double storage.
    */
   sinceId?: string | null;
@@ -58,7 +58,7 @@ export interface FetchOptions {
  * A source of public X posts.
  *
  * Implementations must only read content that is publicly available, and must
- * fail by throwing a plain Error with a human-readable reason — the poller
+ * fail by throwing a plain Error with a human-readable reason - the poller
  * records it against the account, backs off, and carries on with the others.
  */
 export interface XPostProvider {
@@ -75,7 +75,7 @@ export interface XPostProvider {
  * The stored form of a handle: lowercase, no leading @.
  *
  * Here rather than beside the account table, because both halves of the feature
- * need it and only one of them has a database — the admin route normalising
+ * need it and only one of them has a database - the admin route normalising
  * what an operator typed, and the post shaper normalising what a provider
  * returned, must agree exactly or the same reporter ends up as two rows.
  */
@@ -93,7 +93,7 @@ export function postUrl(username: string, externalId: string): string {
  *
  * Post ids are 64-bit snowflakes; Number() loses precision above 2^53, which is
  * every id minted since 2015. So "is this newer than the watermark" is a
- * length-then-lexicographic comparison on the digits instead — exact, and it
+ * length-then-lexicographic comparison on the digits instead - exact, and it
  * needs no BigInt support from whatever runs it.
  */
 export function isNewerId(id: string, thanId: string | null | undefined): boolean {

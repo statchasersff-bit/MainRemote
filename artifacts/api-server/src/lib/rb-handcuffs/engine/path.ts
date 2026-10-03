@@ -1,5 +1,5 @@
 /**
- * Path to Opportunity — how likely the BACKUP is to gain meaningful touches.
+ * Path to Opportunity - how likely the BACKUP is to gain meaningful touches.
  *
  * Higher score = better path for the backup. The score estimates opportunity
  * risk created by the STARTER (aging, durability concerns, heavy workload,
@@ -14,7 +14,7 @@
  *   20% Starter Quality Vulnerability
  *
  * This model is built fresh from available data. It does NOT use, fall back to,
- * or reintroduce the deleted `injuryRiskStarter` field — Starter Durability
+ * or reintroduce the deleted `injuryRiskStarter` field - Starter Durability
  * History Risk is computed directly from games-missed / workload / age inputs.
  *
  * Backup Player Quality is intentionally NOT part of this score; it is handled
@@ -91,7 +91,7 @@ function currentStatusRisk(status?: string | null): number | null {
 }
 
 // ---------------------------------------------------------------------------
-// Usage Score (shared by starter and backup) — 0–100 per side
+// Usage Score (shared by starter and backup) - 0–100 per side
 // ---------------------------------------------------------------------------
 
 export interface UsageInput {
@@ -155,14 +155,14 @@ export interface PathToOpportunityInput {
   // --- Durability (missed games by period) ---
   // Blended 2025 30% / 2024 20% / all other years 50%. Absent periods drop out
   // and the remaining weights renormalize over whatever is present.
-  /** Games played in the most-recent season (2025) — weighted 30%. */
+  /** Games played in the most-recent season (2025) - weighted 30%. */
   starterGamesPlayed?: number | null;
   /** Games possible in 2025 (default 17 for a completed regular season). */
   starterGamesPossible?: number | null;
-  /** Prior season (2024) games played — weighted 20% when present. */
+  /** Prior season (2024) games played - weighted 20% when present. */
   starterGamesPlayedPrev?: number | null;
   starterGamesPossiblePrev?: number | null;
-  // --- Durability (all other years: career excluding 2025 + 2024) — weighted 50% ---
+  // --- Durability (all other years: career excluding 2025 + 2024) - weighted 50% ---
   /** Games missed across every season OTHER than 2025 and 2024. */
   priorGamesMissed?: number | null;
   /** Games possible across those same other seasons. */
@@ -233,7 +233,7 @@ export function pathToOpportunityBucket(v: number): PathToOpportunityBucket {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Starter Durability History Risk — 25%
+// 1. Starter Durability History Risk - 25%
 // ---------------------------------------------------------------------------
 
 interface DurabilityResult {
@@ -255,7 +255,7 @@ function missedPct(played: number | null | undefined, possible: number | null | 
 function computeDurabilityHistoryRisk(input: PathToOpportunityInput): DurabilityResult {
   const flags: string[] = [];
 
-  // Manual override — replaces the computed history score verbatim and counts as
+  // Manual override - replaces the computed history score verbatim and counts as
   // real signal (high confidence, no "missing history" fallback).
   const ovr = input.starterDurabilityHistoryRiskOverride;
   if (ovr != null && Number.isFinite(ovr)) {
@@ -302,7 +302,7 @@ function computeDurabilityHistoryRisk(input: PathToOpportunityInput): Durability
     ] as Array<{ risk: number | null; weight: number }>
   ).filter((p): p is { risk: number; weight: number } => p.risk != null);
 
-  // Current injury/status risk — only honored when fresh.
+  // Current injury/status risk - only honored when fresh.
   let statusRisk: number | null = null;
   const rawStatusRisk = currentStatusRisk(input.currentStatus);
   if (rawStatusRisk != null) {
@@ -408,7 +408,7 @@ export function computePathToOpportunity(input: PathToOpportunityInput): PathToO
     backupUsageRatioScore = shareScore(backupUsageShare);
     usageConfidence = 75;
   } else if (backupUsageShare != null) {
-    // Only the backup side has usage data — treat the starter as a full bellcow so
+    // Only the backup side has usage data - treat the starter as a full bellcow so
     // the backup's share isn't overstated, but flag the reduced confidence.
     backupUsageRatioScore = shareScore(backupUsageShare);
     usageConfidence = 45;

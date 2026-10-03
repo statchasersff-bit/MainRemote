@@ -3,9 +3,9 @@
  *
  * The store moved from a file in `data/` to Postgres because a GCE deployment
  * rebuilds its filesystem on every publish, so the file was never a store of
- * record. This carries the rows that file had accumulated — including each
+ * record. This carries the rows that file had accumulated - including each
  * item's original firstSeenAt and any generated summary, neither of which can
- * be recovered from the upstream feed — into the new home.
+ * be recovered from the upstream feed - into the new home.
  *
  * Idempotent: rows already present (matched on the content fingerprint) are
  * left exactly as they are, so running it twice imports nothing the second

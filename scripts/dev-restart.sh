@@ -19,7 +19,7 @@ ENTRY="$APP/dist/index.mjs"
 LOG="${DEV_RESTART_LOG:-$APP/dev-server.log}"
 
 # One restart at a time. build.mjs starts by removing dist/ wholesale, so two
-# overlapping runs let one delete the bundle the other is about to launch —
+# overlapping runs let one delete the bundle the other is about to launch -
 # MODULE_NOT_FOUND, and a preview left with nothing on the port. A per-edit
 # hook fires in exactly that bursty pattern, so the lock is not optional.
 #
@@ -52,7 +52,7 @@ if [ -n "$pids" ]; then
 fi
 
 # NODE_ENV=development is what arms the preview switcher, live reload and the
-# no-store responses the team routes need — without it the preview is a
+# no-store responses the team routes need - without it the preview is a
 # production build and edits stop showing up at all.
 cd "$APP"
 setsid env NODE_ENV=development PORT="$PORT" \

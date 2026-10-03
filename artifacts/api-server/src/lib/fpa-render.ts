@@ -1,8 +1,8 @@
 /**
  * Markup for Fantasy Points Allowed.
  *
- * Server-only, like team-render.ts and player-render.ts. The whole table — all
- * 32 defenses, every rank, both views — is in the response, and client/fpa.ts
+ * Server-only, like team-render.ts and player-render.ts. The whole table - all
+ * 32 defenses, every rank, both views - is in the response, and client/fpa.ts
  * only adds column sorting on top of it.
  *
  * The rules are the other tools':
@@ -16,18 +16,18 @@
  *
  * 3. **The number says what it is a mix of.** Early in a season the figure is
  *    mostly last season's, and a rank presented without that caveat is the page
- *    lying by omission. The data-mode line is therefore not a footnote — it sits
+ *    lying by omission. The data-mode line is therefore not a footnote - it sits
  *    above the table, before anything it qualifies.
  *
  * A note on colour. Rank 1 is the softest defense and rank 32 the toughest,
- * with league average in the middle — that is a DIVERGING scale, not an ordinal
+ * with league average in the middle - that is a DIVERGING scale, not an ordinal
  * one, so it takes two hues either side of a neutral rather than one ramp.
  * Green is the exploitable pole and red the one to avoid, and only the top and
- * bottom twelve are tinted at all — the eight ranks around the median stay white.
+ * bottom twelve are tinted at all - the eight ranks around the median stay white.
  * Red-green is the pair colour blindness erases, so the arms are NOT symmetric:
  * red runs 0.080 darker than its green mirror, which is what keeps the mirrored
  * pairs at ΔE 15.6 under protanopia and 7.5 under deuteranopia rather than ~1.
- * 7.5 is the floor band, legal only because there is a second encoding — every
+ * 7.5 is the floor band, legal only because there is a second encoding - every
  * tinted cell prints its rank, and the rows arrive sorted by it. See fpa.css for
  * the full derivation.
  */
@@ -48,7 +48,7 @@ export interface FpaRenderOptions {
    * Where the CSV lives. Defaults to this app's own /fpa.
    *
    * Deliberately NOT `basePath`. That one is a WordPress page path once
-   * SC_FPA_PATH is set, and the CSV is not a WordPress page — it is a route on
+   * SC_FPA_PATH is set, and the CSV is not a WordPress page - it is a route on
    * this server. Building it from `basePath` produced
    * `/nfl/fantasy-points-allowed-by-position//download.csv`, which is not a
    * path on the site at all: a browser reads a leading `//` as
@@ -65,7 +65,7 @@ export interface FpaRenderOptions {
   /**
    * Where the bundle fetches the other five combinations from.
    *
-   * The controls are real links and stay real links — but a click on one
+   * The controls are real links and stay real links - but a click on one
    * should not change the address of the page a reader is on, so the bundle
    * intercepts it and swaps the table in place instead. To do that it needs
    * an address for the fragment, and it cannot derive one: embedded, this
@@ -81,7 +81,7 @@ export interface FpaRenderOptions {
   now?: number;
 }
 
-const DASH = "—";
+const DASH = "-";
 
 const FORMAT_LABELS: Record<ScoringFormat, string> = {
   standard: "Standard",
@@ -101,7 +101,7 @@ const FORMAT_ABBR: Partial<Record<ScoringFormat, string>> = {
 
 /*
  * The controls name the two things by the names the rest of the page uses for
- * them — FPA and aFPA — rather than describing them. "Raw" and "Adjusted"
+ * them - FPA and aFPA - rather than describing them. "Raw" and "Adjusted"
  * describe a treatment; the page, the FAQ and the column headers all talk about
  * FPA and aFPA, and a reader who has met those two acronyms should find them on
  * the switch that produces them.
@@ -141,7 +141,7 @@ export type MatchupTier = "soft-2" | "soft-1" | "mid" | "tough-1" | "tough-2";
  *
  * Sixes at the ends, and the middle left blank: 1–6, 7–12, then eight ranks
  * of nothing, then 21–26 and 27–32. Symmetric about the league median, and
- * the shape is the point — a defense two places either side of average is not
+ * the shape is the point - a defense two places either side of average is not
  * a matchup, so tinting it spends the reader's attention on noise. Only the
  * twelve that are genuinely exploitable and the twelve that are genuinely
  * hard get a colour.
@@ -182,7 +182,7 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
 
   /*
    * An option's text, with its narrow-screen stand-in beside it when it has
-   * one. Both are in the markup and CSS shows one — but with display:none, not
+   * one. Both are in the markup and CSS shows one - but with display:none, not
    * clipping, so the hidden one leaves the accessibility tree too and a screen
    * reader never reads "Standard Std".
    */
@@ -295,7 +295,7 @@ function renderCell(entry: { fpa: number; rank: number }): string {
     `<td class="scf-cell" data-tier="${tier}" data-sort="${entry.fpa}">` +
     `<span class="scf-fpa">${escapeHtml(num(entry.fpa))}</span>` +
     `<span class="scf-rank" title="${escapeHtml(
-      `${ordinal(entry.rank)} most points allowed — ${TIER_LABEL[tier]}`,
+      `${ordinal(entry.rank)} most points allowed - ${TIER_LABEL[tier]}`,
     )}">${entry.rank}</span>` +
     `</td>`
   );
@@ -306,8 +306,8 @@ function renderRow(row: FpaRow, options: FpaRenderOptions): string {
   const query = options.linkQuery ?? "";
 
   // Crest, then the abbreviation with the full name under it. The abbreviation
-  // is what a reader scanning 32 rows actually matches on — it is how the team
-  // is written everywhere else in fantasy — and the full name below it is there
+  // is what a reader scanning 32 rows actually matches on - it is how the team
+  // is written everywhere else in fantasy - and the full name below it is there
   // for anyone who does not know the three letters cold.
   const identity =
     `<span class="scf-team-id">` +
@@ -348,14 +348,14 @@ function renderTable(data: FpaTableData, options: FpaRenderOptions): string {
         )}">${p}</th>`,
     ).join("") +
     `<th scope="col" data-sort-type="number" title="${escapeHtml(
-      "The four positions summed — the whole fantasy offense",
+      "The four positions summed - the whole fantasy offense",
     )}">OFF</th>` +
     // Named for the season rather than "Games Played". Early in a season the
     // figure is mostly LAST season's, so a bare "Games Played: 1" beside it
     // reads as the sample the number came from, which it is not.
     `<th scope="col" class="scf-th-games" data-sort-type="number" title="${escapeHtml(
       `${data.season} games played. Early in the season the figures are still ` +
-        `mostly the prior season's — see the note above.`,
+        `mostly the prior season's - see the note above.`,
     )}">${escapeHtml(String(data.season))} G</th>` +
     `</tr>`;
 
@@ -396,7 +396,7 @@ function renderLegend(): string {
  * The FAQ.
  *
  * Reference copy, and the one part of this page written for search rather than
- * for the reader already looking at the table — which is why it is the only
+ * for the reader already looking at the table - which is why it is the only
  * part with headings. Everything else here deliberately ships none, because the
  * WordPress page owns the H1 and a fragment that invents its own outline fights
  * it. An FAQ is the exception: the question IS the structure, and a <p> in bold
@@ -587,8 +587,8 @@ const FAQ: readonly (readonly [string, readonly string[]])[] = [
 
 function renderFaq(): string {
   // One fold per question, not one around the lot. The questions are the index
-  // — somebody scanning for the one they arrived with has to see them without
-  // opening anything — while nineteen ANSWERS below the table is the wall this
+  // - somebody scanning for the one they arrived with has to see them without
+  // opening anything - while nineteen ANSWERS below the table is the wall this
   // fold exists to prevent. So the questions show and the answers are shut.
   // Indexed either way: a crawler reads the DOM, not the open state.
   const items = FAQ.map(
@@ -622,7 +622,7 @@ function renderFaq(): string {
  * first: standalone this page owns its document and emits the node itself;
  * embedded, WordPress owns the document and Rank Math owns its graph, so a
  * second `<script type="application/ld+json">` arriving from inside a mounted
- * fragment competes with that graph instead of joining it — the same reasoning
+ * fragment competes with that graph instead of joining it - the same reasoning
  * as the embed mount adding no canonical and no H1. The island is the same
  * questions as data, and statchasers-fpa.php lifts them into the one <script>
  * the host page already prints, then strips the island.
@@ -634,10 +634,10 @@ function renderFaq(): string {
  * The two-paragraph answers join with a space rather than shipping an array.
  * `acceptedAnswer.text` is one string, every paragraph here is a complete
  * sentence, and a rule followed by its qualification reads as one answer when
- * the break is taken out — which is the whole of what a crawler gets.
+ * the break is taken out - which is the whole of what a crawler gets.
  *
  * The standalone page ships `noindex, indexifembedded`, so this node is not
- * what ranks — the WordPress copy is. It is emitted anyway because a page that
+ * what ranks - the WordPress copy is. It is emitted anyway because a page that
  * describes itself only when embedded is a page whose structured data nobody
  * can check without WordPress in front of it.
  */
@@ -703,7 +703,7 @@ export function renderFpaPage(
  * The page when nothing has been ingested.
  *
  * An honest empty state rather than a table of zeroes, and it says what to run
- * — because the only person who ever sees this is whoever is setting the tool
+ * - because the only person who ever sees this is whoever is setting the tool
  * up. Readers never reach it: the shortcode renders nothing at all in that case
  * and leaves the host page intact.
  */

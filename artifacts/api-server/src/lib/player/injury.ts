@@ -235,7 +235,7 @@ export function computeRiskBreakdown(history: PlayerInjuryHistory): RiskRow[] {
   return rows;
 }
 
-/** The most recent logged injury — the one a status block leads with. */
+/** The most recent logged injury - the one a status block leads with. */
 export function latestInjury(nfl: NflInjuryEntry[]): NflInjuryEntry | null {
   let best: NflInjuryEntry | null = null;
   for (const entry of nfl) {
@@ -254,7 +254,7 @@ export function latestInjury(nfl: NflInjuryEntry[]): NflInjuryEntry | null {
  * "Week 17", or "Preseason" for the week-0 entries.
  *
  * Week 0 is how the record files a preseason injury, and it was previously
- * rendered as nothing at all — the entry lost the one piece of timing it had.
+ * rendered as nothing at all - the entry lost the one piece of timing it had.
  */
 export function injuryWhen(entry: NflInjuryEntry): string {
   if (entry.week === undefined || entry.week === null) return "";
@@ -289,7 +289,7 @@ function injuryName(entry: NflInjuryEntry): string {
   // Word by word: an initialism keeps its capitals and a proper noun keeps its
   // one, everything else is lowercased for the middle of a sentence. Applying
   // toLowerCase() to the whole string turns "PCL Sprain" into "pcl sprain", and
-  // leaving it alone turns it into "the 2022 PCL Sprain caused..." — a database
+  // leaving it alone turns it into "the 2022 PCL Sprain caused..." - a database
   // row in the middle of a paragraph.
   const name = type
     .split(/\s+/)
@@ -302,13 +302,13 @@ function injuryName(entry: NflInjuryEntry): string {
   return INJURY_NOUNS.test(type) ? name : `${name} injury`;
 }
 
-/** "8 games", "1 game" — the unit this whole tab is counted in. */
+/** "8 games", "1 game" - the unit this whole tab is counted in. */
 function games(n: number): string {
   return `${n} game${n === 1 ? "" : "s"}`;
 }
 
 /**
- * "a", or "an" — by how the next word is SAID, not how it is spelled.
+ * "a", or "an" - by how the next word is SAID, not how it is spelled.
  *
  * "an MCL sprain" is right and "a MCL sprain" is wrong, because the letter M is
  * pronounced "em". The second test covers the initialisms this record actually
@@ -367,7 +367,7 @@ function listWords(items: string[]): string {
  * The questions people actually type, answered from the record.
  *
  * Five to seven, and every one of them literal: this tab already carries the
- * deep history — the timeline, the body map, the risk rows — and the job here
+ * deep history - the timeline, the body map, the risk rows - and the job here
  * is to answer the sentence somebody typed into Google, in the first line,
  * using facts that are already on the page.
  *
@@ -378,14 +378,14 @@ function listWords(items: string[]): string {
  *    designation is a status the league report assigns, not a ruling on Sunday,
  *    and no amount of history tells you whether somebody suits up. So the
  *    answer states the designation, states when he last played, and points at
- *    the status block — which is where the freshest fact lives. That is rule 3
+ *    the status block - which is where the freshest fact lives. That is rule 3
  *    in player-render.ts applied where it is most tempting to break.
  *
  * 2. **A question with no record behind it is not asked.** A player with no
  *    logged injuries gets the first two questions and nothing else, rather than
  *    five answers saying "no data".
  *
- * Written without pronouns, using the surname after the first mention — partly
+ * Written without pronouns, using the surname after the first mention - partly
  * because it reads like a sports desk rather than a mail merge, and partly
  * because the record this is generated from does not carry anybody's pronouns.
  */
@@ -581,7 +581,7 @@ export function injuryFaq(input: {
  *
  * Says what cost time AND what did not, because the second half is the part
  * that stops a long list of report appearances reading as a long list of
- * absences. Empty when there is nothing worth saying — never a filler line.
+ * absences. Empty when there is nothing worth saying - never a filler line.
  */
 export function buildTimelineInsight(nfl: NflInjuryEntry[]): string {
   const joinAnd = (parts: string[]) =>
@@ -640,7 +640,7 @@ export interface InjurySeasonRow {
   gamesMissed: number;
 }
 
-/** The history grouped by season, newest first — the timeline's rows. */
+/** The history grouped by season, newest first - the timeline's rows. */
 export function injuriesBySeason(nfl: NflInjuryEntry[]): InjurySeasonRow[] {
   const bySeason = new Map<number, NflInjuryEntry[]>();
   for (const entry of nfl) {
@@ -663,7 +663,7 @@ export interface RegionTally {
   gamesMissed: number;
 }
 
-/** Injuries tallied by body region, worst first — the body-map's data. */
+/** Injuries tallied by body region, worst first - the body-map's data. */
 export function regionTallies(nfl: NflInjuryEntry[]): RegionTally[] {
   const byRegion = new Map<string, RegionTally>();
   for (const entry of nfl) {

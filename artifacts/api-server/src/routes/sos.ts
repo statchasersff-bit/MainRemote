@@ -1,11 +1,11 @@
 /**
  * The fantasy strength-of-schedule routes.
  *
- *   GET /strength-of-schedule                         — the board (Team SOS, RB, PPR)
+ *   GET /strength-of-schedule                         - the board (Team SOS, RB, PPR)
  *   GET /strength-of-schedule?tab=player&pos=wr&scoring=half-ppr
- *   GET /strength-of-schedule?embed=1                 — the same page, stripped for embedding
- *   GET /sos/download.csv?tab&pos&scoring             — the view on screen, as CSV
- *   GET /embed/sos?tab&pos&scoring                    — the bare fragment, for the WordPress mount
+ *   GET /strength-of-schedule?embed=1                 - the same page, stripped for embedding
+ *   GET /sos/download.csv?tab&pos&scoring             - the view on screen, as CSV
+ *   GET /embed/sos?tab&pos&scoring                    - the bare fragment, for the WordPress mount
  *
  * Mirrors routes/fpa.ts, including the posture that matters: every page route
  * ships `noindex, indexifembedded`, so this origin does not compete with
@@ -141,7 +141,7 @@ router.get(SOS_CSV_PATH, (req, res) => {
 });
 
 /**
- * The bare fragment, for the WordPress plugin to print into a page — and for
+ * The bare fragment, for the WordPress plugin to print into a page - and for
  * the bundle to fetch another view from.
  *
  * Always rendered in embedded mode: the host page supplies the H1. No data

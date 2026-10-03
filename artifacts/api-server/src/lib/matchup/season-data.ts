@@ -120,7 +120,7 @@ export interface SeasonToDate {
 }
 
 /**
- * Each of the two clubs' regular season, through the latest stored week — the
+ * Each of the two clubs' regular season, through the latest stored week - the
  * season as it stands, not as it stood before this game. Null when neither
  * club has a stored game.
  */

@@ -2,8 +2,8 @@
  * The Bio tab's facts, timeline, prose and questions.
  *
  * Bio answers "who is he?" and nothing else. Every other tab on this page
- * answers a fantasy question — what are his numbers, what did he do each game,
- * what should I expect, is he hurt — and the single most valuable property of
+ * answers a fantasy question - what are his numbers, what did he do each game,
+ * what should I expect, is he hurt - and the single most valuable property of
  * this one is that it does NOT. A page that mixes "6 feet 4 inches" with
  * "TD-dependent, volume-driven ceiling" is topically two pages, and it ranks
  * for neither set of queries as well as either would alone.
@@ -13,7 +13,7 @@
  * no injury risk. If a number here would help somebody set a lineup, it is in
  * the wrong file.
  *
- * Everything is derived — from players.json, draft.json and bio_facts.json —
+ * Everything is derived - from players.json, draft.json and bio_facts.json -
  * rather than written, so it stays true as a player is traded, ages a year or
  * starts a season without anybody rewriting a paragraph. The one thing that
  * cannot be derived is what is simply not in the data, and rule 1 applies with
@@ -57,7 +57,7 @@ export interface CareerStint {
   detail: string | null;
   /**
    * How many seasons the stint ran. The rendered years are a range and a range
-   * is not a count — "2017–20" is four seasons and a reader should not have to
+   * is not a count - "2017–20" is four seasons and a reader should not have to
    * do the subtraction.
    */
   seasons: number;
@@ -202,7 +202,7 @@ function ordinal(n: number): string {
  *
  * Repeating "Jacoby Brissett" six times in one paragraph is how a generated
  * bio announces that nobody wrote it. A surname is what a sports desk would
- * use — and what a reader expects — so the generated prose says the full name
+ * use - and what a reader expects - so the generated prose says the full name
  * once and the surname after.
  *
  * Generational suffixes are dropped first: the last token of "Odell Beckham
@@ -221,7 +221,7 @@ export function surname(fullName: string): string {
   return parts[parts.length - 1] ?? fullName;
 }
 
-/** "the A, B and C" — an Oxford-free list, which is how a sentence reads it. */
+/** "the A, B and C" - an Oxford-free list, which is how a sentence reads it. */
 function listWords(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0] as string;
@@ -269,8 +269,8 @@ export function careerStints(
   const groups: { team: string; from: number; to: number }[] = [];
   for (const row of rows) {
     const last = groups[groups.length - 1];
-    // Only CONSECUTIVE seasons merge. A gap year — injured, out of the league,
-    // on a practice squad — ends the stint, because "2019–23" over a season he
+    // Only CONSECUTIVE seasons merge. A gap year - injured, out of the league,
+    // on a practice squad - ends the stint, because "2019–23" over a season he
     // spent somewhere else is a claim the data does not make.
     if (last && last.team === row.team && row.season === last.to + 1) {
       last.to = row.season;
@@ -290,7 +290,7 @@ export function careerStints(
     /*
      * When a stint is still running.
      *
-     * The obvious test — does it reach the current season — is wrong for four
+     * The obvious test - does it reach the current season - is wrong for four
      * months of every year: this file is built from stat lines, so between
      * February and a player's first snap of September his newest stint ends
      * last season and the timeline reads as though he had left the league.
@@ -410,7 +410,7 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
     : null;
   if (identity) narrative.push(identity);
 
-  // Born, schooled and drafted, in that order — the shape of every bio ever
+  // Born, schooled and drafted, in that order - the shape of every bio ever
   // written, and the order the questions get asked in.
   const origin: string[] = [];
   if (highSchool) origin.push(`attended ${highSchool}`);

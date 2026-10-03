@@ -16,7 +16,7 @@
  *
  * Second, **nothing is re-read per request**. These files total ~13MB and never
  * change while a process is alive (they are committed, not written at runtime),
- * so each is parsed at most once and held. `players.json` is the exception —
+ * so each is parsed at most once and held. `players.json` is the exception -
  * it is re-stat'd on an interval so a rebuilt file is picked up without a
  * restart, which is what the build scripts expect during development.
  *
@@ -173,7 +173,7 @@ export function getPlayerBySlug(slug: string): Player | null {
  *
  * A slug can change: two players share a name and the better claim to the bare
  * form moves, or a source corrects a spelling. The page is the same page, so
- * the old address has to keep working — as a 301, not as a second copy.
+ * the old address has to keep working - as a 301, not as a second copy.
  *
  * The ledger is the build's output and this is the only thing that reads it at
  * runtime. A deployment without the file simply has no aliases, which is the
@@ -226,7 +226,7 @@ function slugIndex(): NonNullable<typeof slugIndexes> {
 /**
  * The current slug for an address that has moved, or null.
  *
- * Null for a slug that is current, and for one that never existed — the caller
+ * Null for a slug that is current, and for one that never existed - the caller
  * cannot tell those apart and does not need to; both mean "do not redirect".
  */
 export function resolveSlugAlias(slug: string): string | null {
@@ -259,7 +259,7 @@ let slugsByName: Map<string, string> | null = null;
 function buildSlugsByName(): Map<string, string> {
   // Only the INDEXED players. The dictionary carries ~4,000 names and the site
   // publishes a profile for ~600 of them, so matching against the whole
-  // dictionary would hand out links to pages that do not exist — which is the
+  // dictionary would hand out links to pages that do not exist - which is the
   // failure the caller in team/links.ts exists to avoid.
   const indexed = new Set(loadIndexedSlugs());
   const byName = new Map<string, string>();
@@ -512,8 +512,8 @@ let stamp: string | null = null;
  * A fingerprint of the data on disk, for the render cache key.
  *
  * Built from each file's size and mtime rather than its contents: hashing 13MB
- * on every cold render would cost more than the render. Computed once — these
- * files do not change under a running process in production — except that
+ * on every cold render would cost more than the render. Computed once - these
+ * files do not change under a running process in production - except that
  * `players.json` is included by way of its live mtime, so the development loop
  * of "rebuild the data, reload the page" works.
  */
@@ -523,8 +523,8 @@ export function dataStamp(): string {
   for (const file of [
     PLAYERS_FILE,
     // The slug list itself, not only the dictionary behind it. A player added
-    // to the index gains a page, and — since every page inlines the roster for
-    // its search bar — has to appear in the search on every OTHER page too.
+    // to the index gains a page, and - since every page inlines the roster for
+    // its search bar - has to appear in the search on every OTHER page too.
     // Without this line that is a rebuild the render cache cannot see.
     INDEXED_FILE,
     GAME_SCORES_FILE,
@@ -568,7 +568,7 @@ export function resetPlayerData(): void {
   for (const reset of lazyResets) reset();
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

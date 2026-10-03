@@ -1,7 +1,7 @@
 /**
  * Metadata for the two rankings pages: the redraft board at /rankings and the
  * rest-of-season board at /rest-of-season-rankings. The redraft page reads as
- * it did before the rest-of-season board existed — one address, one title —
+ * it did before the rest-of-season board existed - one address, one title -
  * and everything below about positions applies to the rest-of-season board.
  *
  * Same posture as the other four tools: everything is in the initial HTML,
@@ -38,7 +38,7 @@ const SITE_NAME = "StatChasers";
 /**
  * The page's heading for a board: the title's phrase without the site name or
  * the plural gloss. One function, because three things must say it identically
- * — the WordPress page's H1 (from the fragment's `scr-page-data` island), each
+ * - the WordPress page's H1 (from the fragment's `scr-page-data` island), each
  * position tab (`data-scr-heading`, which the bundle swaps into that H1 when a
  * tab switches boards in place) and the title below.
  */

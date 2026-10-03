@@ -4,7 +4,7 @@
  *
  * Same posture as the other tools. The API serves /strength-of-schedule with
  * `noindex, indexifembedded`, so the board is invisible to search until
- * something embeds it — this file is that something.
+ * something embeds it - this file is that something.
  *
  * ## What this replaces
  *
@@ -23,14 +23,14 @@
  * Migrating: on /nfl/fantasy-football-strength-of-schedule/, replace
  * [statchasers_sos] with [statchasers_strength_of_schedule], then deactivate
  * and delete the old "StatChasers Strength of Schedule" plugin. The tags do not
- * collide, so the two can coexist while the swap is made — but the old plugin
+ * collide, so the two can coexist while the swap is made - but the old plugin
  * sets its own title, description, canonical and schema on the page it mounts
  * on, and those filters fight the ones below, so do not leave both on one page.
  *
  * ## Addresses
  *
  * One page. The view (Team or Player SOS, the position, the scoring format) is
- * reflected in the page's own query string — `?tab=player&pos=wr&scoring=ppr` —
+ * reflected in the page's own query string - `?tab=player&pos=wr&scoring=ppr` -
  * so a view can be shared, and this file reads those three to print the right
  * board with scripting off. They are NOT registered query vars, and they are
  * read only on the page that mounts the shortcode. The canonical is always the
@@ -183,7 +183,7 @@ function statchasers_sos_fetch( array $args ): ?array {
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
 	// A 404 means the API has nothing to build the board from (no FPA table
-	// yet) — a real state, not a transient error. Cached as a failure for a
+	// yet) - a real state, not a transient error. Cached as a failure for a
 	// minute so a deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = get_transient( $backup_key );
@@ -375,7 +375,7 @@ add_filter( 'body_class', 'statchasers_sos_full_width_body_class', PHP_INT_MAX )
  *
  * Takes `tab`, `pos` and `scoring` as the page's default view; the query string
  * outranks them. Prints the page heading itself in tool mode, and nothing else
- * of the page's — its title, description and canonical come from the filters
+ * of the page's - its title, description and canonical come from the filters
  * below.
  *
  * @param array<string,mixed>|string $atts Shortcode attributes.
@@ -394,7 +394,7 @@ function statchasers_sos_shortcode( $atts = array() ): string {
 	$args = statchasers_sos_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_sos_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_sos_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -448,7 +448,7 @@ function statchasers_sos_request_data(): ?array {
 }
 
 /**
- * The page's title, H1 and description, as the API wrote them — every view
+ * The page's title, H1 and description, as the API wrote them - every view
  * carries the same three, so which view was fetched does not matter.
  *
  * @return array{title?:string,h1?:string,description?:string}
@@ -577,7 +577,7 @@ add_filter(
 );
 
 // The approved title already names the site's subject and season in full, so
-// it is used as it is — no " | StatChasers" suffix, which would push it past
+// it is used as it is - no " | StatChasers" suffix, which would push it past
 // what a results page shows.
 add_filter(
 	'rank_math/frontend/title',

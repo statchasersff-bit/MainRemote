@@ -49,12 +49,12 @@ let client;
  *
  * The poller claims whatever is due across the whole table, so a run against a
  * database that already holds the 37 real reporters would point the fixture
- * timeline at their rows and leave a fixture watermark on each — which would
+ * timeline at their rows and leave a fixture watermark on each - which would
  * then silently suppress their real posts forever. Parking them is what makes
  * that impossible rather than merely unlikely.
  */
 let parked = [];
-/** Timeline requests received, by handle — the throttle and claim evidence. */
+/** Timeline requests received, by handle - the throttle and claim evidence. */
 let hits = {};
 
 function tweet(overrides) {
@@ -109,7 +109,7 @@ const POSTS = [
   }),
   tweet({
     id_str: ID.quote,
-    full_text: "Confirmed — he passed his physical this morning and will practice.",
+    full_text: "Confirmed - he passed his physical this morning and will practice.",
     quoted_tweet: {
       id_str: "9800000000000000001",
       full_text: "Is the deal done?",
@@ -153,13 +153,13 @@ before(async () => {
     }
     if (handle === LIMITED) {
       // What the public endpoint actually does when this IP has spent its
-      // budget — observed, not imagined.
+      // budget - observed, not imagined.
       res.writeHead(429, { "Content-Type": "text/html" });
       res.end("Rate limit exceeded");
       return;
     }
     if (handle === MALFORMED) {
-      // A 200 whose shape is not what we parse — the failure mode that would
+      // A 200 whose shape is not what we parse - the failure mode that would
       // otherwise look like "the reporter went quiet".
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end("<html><body>{definitely not the document we expect</body></html>");
@@ -251,7 +251,7 @@ describe("a sweep", () => {
     const result = await sweep();
 
     assert.equal(result.ok, true);
-    // Every enabled account was due (X_POLL_INTERVAL_MS=0) and claimed — and
+    // Every enabled account was due (X_POLL_INTERVAL_MS=0) and claimed - and
     // the only enabled accounts are this file's own, because before() parked
     // the rest.
     assert.equal(result.checked, 4, JSON.stringify(result.accounts));
@@ -264,7 +264,7 @@ describe("a sweep", () => {
     const ids = rows.map((row) => row.id).sort();
 
     // The original and the quote-with-text are news. The reply, the repost and
-    // the post older than the cutoff are not — none by accident, each by a
+    // the post older than the cutoff are not - none by accident, each by a
     // different rule.
     assert.deepEqual(ids, [`x-${ID.original}`, `x-${ID.quote}`]);
   });
@@ -351,8 +351,8 @@ describe("the same post, seen again", () => {
   test("two sweeps at once cannot both process the same account", async () => {
     // The overlap guard, from outside: whichever request arrives second is told
     // a sweep is already running rather than being allowed to claim alongside
-    // it. Below this, the database is the backstop — the claim is a conditional
-    // UPDATE and x_posts.post_id is a primary key — but this is the layer that
+    // it. Below this, the database is the backstop - the claim is a conditional
+    // UPDATE and x_posts.post_id is a primary key - but this is the layer that
     // stops the work from being started twice in the first place.
     const [a, b] = await Promise.all([
       fetch(`${server.origin}/api/x/ingest`, { method: "POST", headers: AUTH }),
@@ -584,7 +584,7 @@ describe("posts pushed in from elsewhere", () => {
   });
 
   test("the author's own toggles apply to a pushed post too", async () => {
-    // The fixture account leaves replies off, so this is dropped — the push
+    // The fixture account leaves replies off, so this is dropped - the push
     // route is not a way around an account's configuration.
     const { body } = await push({
       posts: [
@@ -637,7 +637,7 @@ describe("posts pushed in from elsewhere", () => {
 
   test("a push does not move the poller's watermark", async () => {
     // A push says what one collector saw. Advancing last_seen_post_id past it
-    // would tell the poller to skip a range it may cover differently — and the
+    // would tell the poller to skip a range it may cover differently - and the
     // pushed ids are far higher than anything real.
     const { rows } = await client.query(
       "SELECT last_seen_post_id FROM x_monitored_accounts WHERE username = $1",
@@ -764,7 +764,7 @@ describe("real-time delivery by webhook", () => {
 
   test("the account's toggles apply to delivered posts too", async () => {
     // Replies are off for this account, and a webhook is not a way around that
-    // — the rule matched and we were billed, but it is still not news.
+    // - the rule matched and we were billed, but it is still not news.
     const { body } = await deliver(
       delivery([
         tweetFor("9930000000000000005", {
@@ -845,7 +845,7 @@ describe("being rate limited", () => {
       JSON.stringify(first.accounts),
     );
 
-    // The next sweep does no work at all — and, importantly, claims nothing, so
+    // The next sweep does no work at all - and, importantly, claims nothing, so
     // no account burns its due time on a tick that was never going to run.
     const second = await sweep();
     assert.equal(second.checked, 0);

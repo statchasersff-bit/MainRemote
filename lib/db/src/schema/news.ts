@@ -9,8 +9,8 @@ import {
 /**
  * The news archive.
  *
- * Rows arrive on a timer from two providers — Dynasty Command's player wire and
- * the 32 clubs' own RSS feeds — and are never deleted. This is the store of
+ * Rows arrive on a timer from two providers - Dynasty Command's player wire and
+ * the 32 clubs' own RSS feeds - and are never deleted. This is the store of
  * record for what the tool renders, and the reason it can show a back catalogue
  * neither source still carries: the wire returns only its latest ~25 items, and
  * a club feed only its latest 5 to 100.
@@ -21,7 +21,7 @@ export const newsItems = pgTable(
     id: text("id").primaryKey(),
 
     /**
-     * Content fingerprint (normalised title) — what an ingest dedupes on, NOT
+     * Content fingerprint (normalised title) - what an ingest dedupes on, NOT
      * the upstream id. The feed has changed both its id scheme and its pubDate
      * formatting before, and keying on either stored the same story twice. The
      * unique index below is what makes that impossible rather than merely
@@ -46,7 +46,7 @@ export const newsItems = pgTable(
     /**
      * The club this story belongs to, as our lowercase code ("ne"), or null.
      *
-     * Only set by a provider that KNOWS the team rather than infers it — which
+     * Only set by a provider that KNOWS the team rather than infers it - which
      * today means the club feeds, where the team is the feed we fetched. The
      * player wire leaves it null and its rows are still resolved at read time
      * from the headshot and then the player's name (lib/news-query.ts).
@@ -65,7 +65,7 @@ export const newsItems = pgTable(
      *
      * Nullable and without a default, on purpose. Every row stored before lanes
      * were recorded is legacy and says so by being null, rather than being
-     * back-dated into a claim nobody checked — and no read depends on it being
+     * back-dated into a claim nobody checked - and no read depends on it being
      * filled in. listNews() still separates wire from club exactly the way it
      * always did (team_abbr), and only consults this column to pull the X lane
      * into the main feed. See lib/news-query.ts.

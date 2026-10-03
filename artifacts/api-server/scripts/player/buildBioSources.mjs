@@ -124,11 +124,25 @@ const log = (msg) => console.log(`[bio-sources] ${msg}`);
 
 /* ------------------------------------------------------------------ csv */
 
-function parseCsv(text) {
-  const rows = [];
+// A generator, one row object at a time: the weekly roster and snap count
+// files run to 16MB each, and materialising every row of every season as an
+// object took this script to 1.5GB RSS - enough to OOM the production VM,
+// which runs it from the daily chain beside the server (outage 2026-10-03).
+// The few callers that need the rows twice spread it into an array.
+function* parseCsv(text) {
+  let header = null;
   let row = [];
   let field = "";
   let quoted = false;
+  const emit = () => {
+    row.push(field);
+    const done = row;
+    row = [];
+    field = "";
+    if (!header) header = done;
+    else if (done.length > 1) return Object.fromEntries(header.map((h, i) => [h, done[i] === "NA" ? "" : (done[i] ?? "")]));
+    return null;
+  };
   for (let i = 0; i < text.length; i += 1) {
     const c = text[i];
     if (quoted) {
@@ -144,20 +158,14 @@ function parseCsv(text) {
       field = "";
     } else if (c === "\n" || c === "\r") {
       if (c === "\r" && text[i + 1] === "\n") i += 1;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
+      const r = emit();
+      if (r) yield r;
     } else field += c;
   }
   if (field !== "" || row.length) {
-    row.push(field);
-    rows.push(row);
+    const r = emit();
+    if (r) yield r;
   }
-  const [header, ...body] = rows;
-  return body
-    .filter((r) => r.length > 1)
-    .map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] === "NA" ? "" : (r[i] ?? "")])));
 }
 
 /* -------------------------------------------------------------- sources */
@@ -302,7 +310,7 @@ async function main() {
   }
 
   /* ---- stage 1: bulk structured files ---- */
-  const nflPlayers = new Map((await fetchCsv("nflverse-players", URLS.players)).map((r) => [r.gsis_id, r]));
+  const nflPlayers = new Map([...(await fetchCsv("nflverse-players", URLS.players))].map((r) => [r.gsis_id, r]));
   const draftByGsis = new Map();
   const draftByPfr = new Map();
   for (const r of await fetchCsv("nflverse-draft", URLS.draft)) {
@@ -389,7 +397,7 @@ async function main() {
     }
   }
 
-  const tradeRows = await fetchCsv("nflverse-trades", URLS.trades);
+  const tradeRows = [...(await fetchCsv("nflverse-trades", URLS.trades))];
   const tradesById = new Map();
   for (const r of tradeRows) {
     const list = tradesById.get(r.trade_id) ?? [];

@@ -2,7 +2,7 @@
  * The handcuff score, recomputed from the scoring weights.
  *
  * Shared by the server, which renders the table at the default weights, and by
- * client/rb-handcuffs.ts, which re-ranks it when a reader changes them — so the
+ * client/rb-handcuffs.ts, which re-ranks it when a reader changes them - so the
  * two produce identical numbers by construction rather than by keeping two
  * copies in step. Nothing here may import a Node module: esbuild inlines this
  * file into the browser bundle.
@@ -90,7 +90,7 @@ export function blendHandcuffScore(
  * recomputeRankings():
  *
  *   1. a raw blend per player from the weight-independent inputs;
- *   2. the raw blend as a percentile of the pool — the displayed score;
+ *   2. the raw blend as a percentile of the pool - the displayed score;
  *   3. except for a pinned player, whose score is re-blended from the pillar
  *      percentiles the table displays.
  *
@@ -133,7 +133,7 @@ export function recomputeScores(
 
 /**
  * The order the table ranks in: score, best first. A stable sort, so players
- * on the same score keep the order they came in — which for the server is the
+ * on the same score keep the order they came in - which for the server is the
  * snapshot's, and for the bundle is the order it read the rows in.
  */
 export function rankOrder(scores: readonly number[]): number[] {

@@ -11,7 +11,7 @@
  * history, bio and news all come from separate sources and any of them can be
  * absent for a given player; the page is designed to drop those tabs rather
  * than render them empty. So the assertions cover what the page owes
- * regardless — identity, navigation, the honesty rules — plus the rule that a
+ * regardless - identity, navigation, the honesty rules - plus the rule that a
  * section which has no data must be ABSENT rather than full of placeholders.
  *
  * The fixture player is chosen at runtime from /embed/players.json rather than
@@ -71,7 +71,7 @@ before(async () => {
   const body = await res.json();
   roster = body.players ?? [];
 
-  // The first player whose page renders a game log — the tests below assert on
+  // The first player whose page renders a game log - the tests below assert on
   // numbers, and a player with no recorded football has none to assert on.
   for (const player of roster.slice(0, 40)) {
     const page = await fetch(`${server.origin}/player/${player.slug}`);
@@ -143,8 +143,8 @@ async function hydrated(pathname) {
     virtualConsole,
   });
   windows.push(jsdom.window);
-  // jsdom ships no fetch, and the bundle's state swap — the scoring toggle and
-  // the season chips — is the one behaviour that needs one. Bridged to Node's,
+  // jsdom ships no fetch, and the bundle's state swap - the scoring toggle and
+  // the season chips - is the one behaviour that needs one. Bridged to Node's,
   // against the same test server the page was loaded from, so a click here goes
   // through the real route and comes back as real HTML.
   jsdom.window.fetch = async (input, init) => {
@@ -207,7 +207,7 @@ describe("player page content", () => {
     const { doc } = await dom(`/player/${fixture.slug}`);
     const text = doc.body.textContent;
 
-    // Every panel is in the first response — the tabs hide them with CSS, they
+    // Every panel is in the first response - the tabs hide them with CSS, they
     // are not fetched. This is the whole reason the page exists.
     const panels = doc.querySelectorAll("[data-scp-panel]");
     assert.ok(panels.length >= 2, "at least two panels shipped");
@@ -269,11 +269,11 @@ describe("player page content", () => {
       cell.querySelector("dd").textContent.trim(),
     ]);
     assert.match(ppg[0], /^(PPR|HALF|STD) PPG$/);
-    assert.match(ppg[1], /^(\d+\.\d|—)$/);
+    assert.match(ppg[1], /^(\d+\.\d| - )$/);
     assert.equal(rank[0], "Pos rank");
-    assert.match(rank[1], /^([A-Z]+\d+|—)$/, "a rank is a position and a place");
+    assert.match(rank[1], /^([A-Z]+\d+| - )$/, "a rank is a position and a place");
     assert.equal(owned[0], "Rostered");
-    assert.match(owned[1], /^(<1|\d+)%$|^—$/, "ownership is a whole percentage");
+    assert.match(owned[1], /^(<1|\d+)%$|^ - $/, "ownership is a whole percentage");
   });
 
   test("the strip's buttons say where they go and tag the tab", async () => {
@@ -309,7 +309,7 @@ describe("player page content", () => {
   test("the tables a reader scrolls carry the filled header row", async () => {
     // The fill is what makes a sticky column row read as the table's edge
     // rather than as another row, so it belongs on the three tables with a
-    // body long enough to slide under it — and on no others.
+    // body long enough to slide under it - and on no others.
     const { doc } = await dom(`/player/${fixture.slug}`);
 
     for (const selector of [
@@ -419,7 +419,7 @@ describe("player page content", () => {
     // that prints "Healthy" as a STATUS for a player with no injury record is
     // asserting something nobody checked.
     //
-    // Scoped to the page's own furniture — the hero flag and the injury panel —
+    // Scoped to the page's own furniture - the hero flag and the injury panel -
     // rather than to the whole body, because the generated prose uses the word
     // in its ordinary sense ("a healthy pecking order") and banning the word
     // outright would be a test about vocabulary rather than about claims.
@@ -437,7 +437,7 @@ describe("player page content", () => {
       }
 
       // The News tab's report card is rendered only when a designation exists,
-      // so its mere presence is a claim — and it must never be the claim that
+      // so its mere presence is a claim - and it must never be the claim that
       // nothing is wrong.
       const report = doc.querySelector(".scp-report");
       if (report) {
@@ -500,9 +500,9 @@ describe("player page content", () => {
     }
 
     // The stacked bar labels every tier in its legend, so identity never rests
-    // on colour alone. The legend may name MORE tiers than the bar draws — a
+    // on colour alone. The legend may name MORE tiers than the bar draws - a
     // tier he never reached is a reading worth printing and has no width to
-    // give it a segment — but never fewer, which is the direction that would
+    // give it a segment - but never fewer, which is the direction that would
     // leave a colour unexplained.
     const stack = doc.querySelector(".scp-stack");
     if (stack) {
@@ -539,8 +539,8 @@ describe("the game log's season", () => {
    * Pages showing the current season, with their weekly rows.
    *
    * The page picks the newest season a player actually played in, so mid-season
-   * some players are on the current year and some — injured, inactive, not yet
-   * on a roster — are still on the last one. Both are correct, and this only
+   * some players are on the current year and some - injured, inactive, not yet
+   * on a roster - are still on the last one. Both are correct, and this only
    * looks at the first group.
    */
   async function currentSeasonPages(limit = 25) {
@@ -553,7 +553,7 @@ describe("the game log's season", () => {
       const doc = new JSDOM(res.body).window.document;
       const root = doc.querySelector("[data-scp-root]");
       const season = Number(root?.getAttribute("data-season"));
-      // March is the league-year boundary — see seasonYear() in lib/seo.ts.
+      // March is the league-year boundary - see seasonYear() in lib/seo.ts.
       const current = new Date().getUTCMonth() >= 2 ? year : year - 1;
       if (season !== current) continue;
 
@@ -582,7 +582,7 @@ describe("the game log's season", () => {
       assert.ok(week >= 1 && week <= full, `a log runs to week ${week}`);
     }
 
-    // If a log IS padded to the full season, the season had better be over —
+    // If a log IS padded to the full season, the season had better be over -
     // which means somebody among sixty players played the last week of it.
     // Deliberately not asserting that every page agrees: the padding is per
     // TEAM, because the league does not play a week at once. On a Friday in
@@ -663,8 +663,8 @@ describe("the game log's season", () => {
   });
 
   test("a kicker's attempts count as having played", async () => {
-    // hasParticipation() is position-aware — a kicker's participation is his
-    // attempts, not targets and carries — and the game log used to call it with
+    // hasParticipation() is position-aware - a kicker's participation is his
+    // attempts, not targets and carries - and the game log used to call it with
     // a null position. Every kicker's log therefore read "Did not play" for
     // every game he kicked in.
     let checked = 0;
@@ -871,7 +871,7 @@ describe("the game log tab", () => {
   test("All opens the career table, and a year replaces it", async () => {
     // What the All chip is FOR. The reader is standing in front of eleven
     // years being asked to pick one; this is the screen that says which is
-    // worth opening. Exactly one block sits under the selector either way —
+    // worth opening. Exactly one block sits under the selector either way -
     // All's career table, or the pinned season's log, never both.
     const { doc } = await dom(`/player/${fixture.slug}`);
     const nav = doc.querySelector("#game-log .scp-seasonnav");
@@ -949,7 +949,7 @@ describe("the game log tab", () => {
     }
   });
 
-  /** The Game Log tab's own blocks — never the pinned archive season's. */
+  /** The Game Log tab's own blocks - never the pinned archive season's. */
   function currentSeasonBlock(doc) {
     const own = (selector) =>
       [...doc.querySelectorAll(`#game-log ${selector}`)].find(
@@ -1068,7 +1068,7 @@ describe("the game log tab", () => {
   test("the intro restates the table and nothing else", async () => {
     // It opens the tab now, where the season's caption used to be. Leading with
     // prose only works if the prose is the same generated restatement it always
-    // was — an opening paragraph is exactly where a claim nobody measured would
+    // was - an opening paragraph is exactly where a claim nobody measured would
     // get written.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const intro = doc.querySelector("#game-log .scp-logintro");
@@ -1163,7 +1163,7 @@ describe("the game log tab", () => {
         for (const word of ["will ", "expect", "projected", "should ", "on pace"]) {
           assert.ok(
             !a.toLowerCase().includes(word),
-            `${player.slug}: an answer predicts — "${word.trim()}"`,
+            `${player.slug}: an answer predicts - "${word.trim()}"`,
           );
         }
       }
@@ -1174,7 +1174,7 @@ describe("the game log tab", () => {
   });
 
   test("the FAQ answers the season the tab is showing, not the pinned one", async () => {
-    // The FAQ is the page's, and the page is the current season — pinning an
+    // The FAQ is the page's, and the page is the current season - pinning an
     // archive year adds a block, it does not re-scope what the page is about.
     // Answering a live season in the past tense, or a filed one in the present
     // continuous, is the single wrong thing this FAQ could say; keeping it on
@@ -1196,7 +1196,7 @@ describe("the game log tab", () => {
 
     // It is still the current season's FAQ, which is the thing that would
     // quietly stop being true if the pinned year ever leaked into it. (The
-    // archive question names other years on purpose — that is its job — so the
+    // archive question names other years on purpose - that is its job - so the
     // check is that the CURRENT one is answered, not that no other appears.)
     assert.ok(
       pinned.some(({ question, answer }) =>
@@ -1209,7 +1209,7 @@ describe("the game log tab", () => {
   test("the archive question names seasons the selector actually offers", async () => {
     // "You can also view 2019" is a promise the season chips have to keep.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    // Years only — All is a view of the whole career, not a season the FAQ
+    // Years only - All is a view of the whole career, not a season the FAQ
     // could name.
     const offered = [
       ...doc.querySelectorAll('#game-log .scp-season-opt:not([data-season="all"])'),
@@ -1290,7 +1290,7 @@ describe("the game log tab", () => {
     assert.match(note.textContent, /1st allows the most, 32nd the fewest/);
 
     // Embedded, it has to leave this origin's default and point at wherever
-    // the FPA page is mounted — a link back to /fpa from a WordPress page
+    // the FPA page is mounted - a link back to /fpa from a WordPress page
     // would drop the reader onto the bare tool.
     const frag = await get(`/embed/player/${fixture.slug}?section=game-log`);
     assert.match(frag.body, /class="scp-caption-link" href="\/fpa\?embed=1"/);
@@ -1342,7 +1342,7 @@ describe("the game log tab", () => {
     const cards = [...doc.querySelectorAll("#game-log .scp-next")];
     if (cards.length === 0) return;
 
-    assert.ok(cards.length <= 4, `${cards.length} fixtures — at most four`);
+    assert.ok(cards.length <= 4, `${cards.length} fixtures - at most four`);
 
     const weeks = [];
     for (const card of cards) {
@@ -1371,7 +1371,7 @@ describe("the game log tab", () => {
       );
     }
 
-    // Ascending, and no week repeated — a bye is absent rather than rendered.
+    // Ascending, and no week repeated - a bye is absent rather than rendered.
     for (let i = 1; i < weeks.length; i += 1) {
       assert.ok(weeks[i] > weeks[i - 1], `weeks run ${weeks[i - 1]} then ${weeks[i]}`);
     }
@@ -1439,7 +1439,7 @@ describe("the game log tab", () => {
 
   test("the scoring format reaches the matchup ranks", async () => {
     // The ranks come from a format-specific table, so the note has to name the
-    // format the page is actually in — otherwise a reader on Standard is shown
+    // format the page is actually in - otherwise a reader on Standard is shown
     // PPR ranks under a PPR sentence.
     for (const [query, label] of [["", "PPR"], ["?format=standard", "Standard"]]) {
       const { doc } = await dom(`/player/${fixture.slug}/game-log/${query}`);
@@ -1455,7 +1455,7 @@ describe("the game log tab", () => {
   test("the tab leads with games; totals only under the All chip", async () => {
     // Stats is totals, Game Log is games, and the tab still OPENS on games.
     // The career table is allowed back only as the All selection, under the
-    // season selector at the foot — an index to the eleven logs, not a second
+    // season selector at the foot - an index to the eleven logs, not a second
     // copy of the Stats tab standing in front of this week's numbers.
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
     const career = doc.querySelector("#game-log .scp-table--career");
@@ -1488,7 +1488,7 @@ describe("the outlook tab", () => {
    * The categories the driver strip is allowed to use, per position.
    *
    * The whole point of that strip is that it is NOT the same four cards on
-   * every player — see lib/player/outlook-drivers.ts. Pinning the sets here is
+   * every player - see lib/player/outlook-drivers.ts. Pinning the sets here is
    * what stops it quietly collapsing back into one generic set, which is the
    * exact failure it was built to avoid.
    */
@@ -1538,7 +1538,7 @@ describe("the outlook tab", () => {
   test("an unwritten decision layer is absent, not an empty label", async () => {
     // Every block below is authored into fantasy_outlook_2026.json and none of
     // it can be derived. A record without those fields must produce a SHORTER
-    // tab — never a labelled hole, a dash, or a chip with nothing in it.
+    // tab - never a labelled hole, a dash, or a chip with nothing in it.
     const found = await withOutlook();
     assert.ok(found.size > 0);
 
@@ -1620,7 +1620,7 @@ describe("the injury tab", () => {
   });
 
   test("the history prints every injury as real text", async () => {
-    // The point of the timeline is long-tail search — somebody looking for one
+    // The point of the timeline is long-tail search - somebody looking for one
     // specific injury is looking for the words in that paragraph. Text behind
     // an interaction answers nobody.
     const found = await withInjury();
@@ -1665,7 +1665,7 @@ describe("the injury tab", () => {
         if (/preseason/i.test(text)) seen += 1;
       }
     }
-    // Not asserting that any player HAS one — only that none renders as Week 0.
+    // Not asserting that any player HAS one - only that none renders as Week 0.
     assert.ok(seen >= 0);
   });
 
@@ -1691,7 +1691,7 @@ describe("the injury tab", () => {
         for (const forbidden of ["expected to play", "should play", "will play", "likely to"]) {
           assert.ok(
             !a.toLowerCase().includes(forbidden),
-            `${player.slug}: an answer predicts — "${forbidden}"`,
+            `${player.slug}: an answer predicts - "${forbidden}"`,
           );
         }
       }
@@ -1719,7 +1719,7 @@ describe("the injury tab", () => {
       assert.equal(questions[1], `Is ${player.name} playing this week?`);
       assert.ok(
         questions.length >= 2 && questions.length <= 15,
-        `${player.slug}: ${questions.length} questions — the ceiling is 15`,
+        `${player.slug}: ${questions.length} questions - the ceiling is 15`,
       );
       // State-aware (2026-09-30): the injured-only questions only when he is.
       const designated = Boolean(doc.querySelector("#injury .scp-in-main:not(.is-good)"));
@@ -2194,8 +2194,8 @@ describe("the bio tab", () => {
 /**
  * The search above the header.
  *
- * It is the one control on the page that does not work without the bundle —
- * see renderPlayerSearch() — so what the server owes it is narrow and exact:
+ * It is the one control on the page that does not work without the bundle -
+ * see renderPlayerSearch() - so what the server owes it is narrow and exact:
  * the box, SHIPPED HIDDEN so a reader without the script never meets a field
  * that swallows typing; the whole roster beside it, because a fragment printed
  * into a WordPress page cannot fetch one from this origin without CORS and an
@@ -2249,7 +2249,7 @@ describe("the player search", () => {
     assert.equal(
       island.getAttribute("type"),
       "application/json",
-      "inert data, not a script — the page loads exactly one bundle",
+      "inert data, not a script - the page loads exactly one bundle",
     );
 
     const { rows, teams } = JSON.parse(island.textContent);
@@ -2270,7 +2270,7 @@ describe("the player search", () => {
       // Sleeper's id, which is what the portrait CDN is keyed by. Without it
       // the dropdown draws eight empty wells.
       assert.match(id, /^\w+$/, `every row carries an id: ${row}`);
-      // The club is named once in `teams` and referenced from the row — a code
+      // The club is named once in `teams` and referenced from the row - a code
       // with no entry there is a result with no badge and no club.
       if (team) assert.ok(teams[team], `${team} is described once, beside the rows`);
       slugs.add(slug);
@@ -2367,7 +2367,7 @@ describe("the player search", () => {
       assert.equal(widget.getAttribute("data-scp-query"), "");
 
       // The peers rail is the page's other way out, and it is built from the
-      // same prefix — a card pointing back at the bare tool would take the
+      // same prefix - a card pointing back at the bare tool would take the
       // reader off statchasers.com mid-visit.
       const peers = [...doc.querySelectorAll("a.scp-peer")].map((a) =>
         a.getAttribute("href"),
@@ -2404,7 +2404,7 @@ describe("the player search", () => {
       }));
     };
 
-    // A nickname finds the club, and only the club — no player is a Raven.
+    // A nickname finds the club, and only the club - no player is a Raven.
     // On THIS page the club row is a button, not a link: the index is the
     // roster, so picking a club filters it rather than leaving for the hub.
     // The profile's own box still links out; that is asserted below.
@@ -2424,7 +2424,7 @@ describe("the player search", () => {
     );
 
     // A player's name still finds the player. "jackson" also opens
-    // "Jacksonville", so the club leads — the string is genuinely ambiguous
+    // "Jacksonville", so the club leads - the string is genuinely ambiguous
     // and both answers are on screen together. What must not happen is the
     // players being pushed off the list to make room for the club.
     const jackson = type("jackson");
@@ -2482,7 +2482,7 @@ describe("the player search", () => {
  *
  * Ported from the standalone app's RankNeighborsRail, which fetched
  * /api/players/:slug/related from the browser. Here it is arithmetic over logs
- * already in memory, so it ships in the HTML — which is what these assert,
+ * already in memory, so it ships in the HTML - which is what these assert,
  * along with the property that makes the block trustworthy: the rank on the
  * reader's own card is the rank the header printed. A rail built on a
  * different measure from the header's would put two different answers to
@@ -2533,7 +2533,7 @@ describe("the positional peers rail", () => {
     const rankCell = cells.find(
       (cell) =>
         /pos rank/i.test(cell.querySelector("dt").textContent) &&
-        cell.querySelector("dd").textContent.trim() !== "\u2014",
+        cell.querySelector("dd").textContent.trim() !== "-",
     );
     const current = doc.querySelector(".scp-peer.is-current .scp-peer-rank");
     assert.ok(current, "the reader's card carries its rank");
@@ -2557,7 +2557,7 @@ describe("the positional peers rail", () => {
     assert.ok(hrefs.length > 0);
 
     // The dictionary is thousands of names deep and only the indexed players
-    // have a page, so the neighbourhood skips the ones that do not — the whole
+    // have a page, so the neighbourhood skips the ones that do not - the whole
     // reason it is walked outwards rather than sliced.
     for (const href of hrefs) {
       const res = await get(href);
@@ -2645,7 +2645,7 @@ describe("the embedded fragment", () => {
     assert.ok(!/<link\b/i.test(res.body), "fragment must not carry a stylesheet");
     assert.ok(res.body.includes("data-scp-root"));
 
-    // The fragment may carry INERT data — the FAQ's Q&A, which the WordPress
+    // The fragment may carry INERT data - the FAQ's Q&A, which the WordPress
     // plugin lifts into Rank Math's schema graph. What it must never carry is
     // anything that runs: the host page loads the bundle through
     // wp_enqueue_script(), and a fragment that brought its own would load it
@@ -2719,7 +2719,7 @@ describe("the embedded fragment", () => {
   test("one FAQPage for the document, however many tabs carry questions", async () => {
     // The profile mounts every tab at once, and each of four of them carries an
     // FAQ. Emitted per block that was four FAQPage nodes in one document, which
-    // is the case a crawler drops outright rather than merging — so the node is
+    // is the case a crawler drops outright rather than merging - so the node is
     // built once, from the sections that actually shipped.
     const res = await get(`/player/${fixture.slug}`);
     assert.equal(res.status, 200);
@@ -2731,7 +2731,7 @@ describe("the embedded fragment", () => {
     assert.equal(nodes.length, 1, "exactly one FAQPage on the profile");
 
     // Every FAQ on the page, the Overview's <details> included, in document
-    // order — and each question once, as the node lists it. The Stats,
+    // order - and each question once, as the node lists it. The Stats,
     // Outlook and Injury tabs' spec questions are all in it since mak
     // approved that on 2026-09-30.
     const seen = new Set();
@@ -2772,7 +2772,7 @@ describe("the embedded fragment", () => {
   test("a section page describes its own questions and no others", async () => {
     // A section-scoped URL renders every section and then shows one. If the
     // node were built from everything rendered rather than from what shipped,
-    // the Bio page would claim the game log's questions — present in the schema,
+    // the Bio page would claim the game log's questions - present in the schema,
     // nowhere on the page.
     const res = await get(`/player/${fixture.slug}/bio/`);
     assert.equal(res.status, 200);
@@ -2795,7 +2795,7 @@ describe("the embedded fragment", () => {
 
   test("the FAQ ships as data for the host's schema graph, not as a second graph", async () => {
     // Embedded, WordPress owns the document's schema, so the API prints no
-    // FAQPage — it hands the questions over as JSON and statchasers-player.php
+    // FAQPage - it hands the questions over as JSON and statchasers-player.php
     // appends them to the graph Rank Math already emits. If this island ever
     // stops matching the rendered Q&A, the page's structured data starts
     // describing something the reader cannot see, which is the one thing
@@ -2845,7 +2845,7 @@ describe("the embedded fragment", () => {
    * emptied its own title, so the fragment carries the page's only H1. Every
    * indexable address gets one naming the player AND what that address is for.
    * On the profile that H1 used to be the opening panel's "2026 Fantasy
-   * Snapshot" — the same words on every profile, naming nobody. An SEO audit
+   * Snapshot" - the same words on every profile, naming nobody. An SEO audit
    * of /nfl/players/josh-allen/ found it.
    */
   const h1Of = (body) => {
@@ -2956,7 +2956,7 @@ describe("the embedded fragment", () => {
 describe("the development switcher", () => {
   /**
    * The preview switcher and the /preview/* harness are development-only, and
-   * every other suite here runs with NODE_ENV=test — which is the right default
+   * every other suite here runs with NODE_ENV=test - which is the right default
    * and also means nothing ever exercised them switched ON. So this suite
    * starts its own server in development mode.
    *
@@ -3014,7 +3014,7 @@ describe("the development switcher", () => {
       .filter((href) => href.includes("player"));
     assert.ok(hrefs.length >= 4, "page, embed, shortcode and raw at least");
 
-    // Every link in the bar must actually go somewhere — the bug this suite
+    // Every link in the bar must actually go somewhere - the bug this suite
     // exists for was a dead end, and a 404 behind a switcher button is the same
     // dead end wearing a button.
     for (const href of new Set(hrefs)) {
@@ -3122,8 +3122,8 @@ describe("caching", () => {
  * address a different PAGE rather than the profile wearing a second URL. Same
  * contract as the team hubs.
  *
- * Which sections a given player has is not fixed — injury, news and bio all
- * depend on data that can be absent — so the list under test is read from the
+ * Which sections a given player has is not fixed - injury, news and bio all
+ * depend on data that can be absent - so the list under test is read from the
  * fixture's own strip rather than written down here.
  */
 describe("player section URLs", () => {
@@ -3131,7 +3131,7 @@ describe("player section URLs", () => {
    * The heading each section prints for itself.
    *
    * NOT the H1 any more. The hero is the player's name on every one of these
-   * addresses — it stopped taking the section's phrase under the name, because
+   * addresses - it stopped taking the section's phrase under the name, because
    * a header that rewrites itself on a tab click reads as a different page. The
    * phrase is the section's own H2, which is where it was always going to end
    * up once the hero refused it, and the document title is what names the
@@ -3148,8 +3148,8 @@ describe("player section URLs", () => {
 
   /*
    * Every tab id in the strip, and the ones that are pages of their own. The
-   * Overview is the profile — its tab links to the profile and `/overview/`
-   * 301s there — so it has no section page to assert about.
+   * Overview is the profile - its tab links to the profile and `/overview/`
+   * 301s there - so it has no section page to assert about.
    */
   let sections;
   let pages;
@@ -3203,7 +3203,7 @@ describe("player section URLs", () => {
   });
 
   test("the head names the section, once, at its pretty address", async () => {
-    // Every URL-bearing tag is the pretty self-reference — never the profile,
+    // Every URL-bearing tag is the pretty self-reference - never the profile,
     // never the ?section= spelling. The Rank Math filters on the WordPress side
     // owe the same things; this is the origin's half.
     for (const id of pages) {
@@ -3218,8 +3218,8 @@ describe("player section URLs", () => {
       assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
       assert.ok(!canonical.includes("?section="), "no query-string canonical");
       // `head > title`, not `title`: a <title> inside an <svg> is that
-      // graphic's accessible name and belongs there — the sparkline gives one
-      // to every dot it draws — and only a second title in the HEAD would
+      // graphic's accessible name and belongs there - the sparkline gives one
+      // to every dot it draws - and only a second title in the HEAD would
       // compete with this one. The embed test above draws the same line.
       one("head > title");
       one('meta[name="description"]');
@@ -3265,7 +3265,7 @@ describe("player section URLs", () => {
 
   test("the strip on a section page is links, not tabs", async () => {
     // Six of the seven hrefs load a different page, so the bundle must decline
-    // the takeover here — a tablist whose tabs navigate is a promise the roles
+    // the takeover here - a tablist whose tabs navigate is a promise the roles
     // cannot keep. wireTabs() declines by finding fewer than two panels.
     const { doc, errors } = await hydrated(at(pages[0]));
     assert.deepEqual(errors, [], "the bundle ran without throwing");
@@ -3280,7 +3280,7 @@ describe("player section URLs", () => {
   /**
    * The whole point of the tab strip being addresses.
    *
-   * Without JavaScript a tab is a link and loads the section page — which the
+   * Without JavaScript a tab is a link and loads the section page - which the
    * tests above cover. With it, the panel switches in place and the URL still
    * becomes the section's own, so what the reader is looking at and what the
    * address bar says cannot disagree. This asserts the things that have to move
@@ -3349,7 +3349,7 @@ describe("player section URLs", () => {
 
   test("a section that is not one of ours is a 404, not a copy of the profile", async () => {
     // Any path segment resolving to the profile is an unbounded supply of
-    // indexable duplicates — a whole roster of them, multiplied out.
+    // indexable duplicates - a whole roster of them, multiplied out.
     for (const id of ["not-a-real-section", "Stats", "GAME-LOG", "stats.html"]) {
       const res = await get(`/player/${fixture.slug}/${id}/`);
       assert.equal(res.status, 404, `${id}`);
@@ -3416,7 +3416,7 @@ describe("player section URLs", () => {
   });
 
   test("an unrecognised ?section= still falls through to the profile", async () => {
-    // Defensive: a stale link is worth a full page, not a 404 — the pretty
+    // Defensive: a stale link is worth a full page, not a 404 - the pretty
     // route is where a bad section is refused.
     for (const query of ["?section=bogus", "?section=", ""]) {
       const { doc } = await dom(`/player/${fixture.slug}${query}`);
@@ -3432,7 +3432,7 @@ describe("player section URLs", () => {
   });
 
   test("the WordPress fragment still scopes with ?section=", async () => {
-    // The plugin fetches it that way — see statchasers_player_fetch(). The
+    // The plugin fetches it that way - see statchasers_player_fetch(). The
     // pretty address is for readers and crawlers; this one is an internal call.
     const scoped = await get(`/embed/player/${fixture.slug}?section=game-log`);
     assert.equal(scoped.status, 200);
@@ -3475,7 +3475,7 @@ describe("player section URLs", () => {
  * The page is a list of six hundred names, so the only thing worth asserting
  * about it is the thing that makes it readable: the rank bands. Every row
  * carries the band its standing puts it in, the club header counts by the same
- * rule, and both survive a position filter — because the header and the list
+ * rule, and both survive a position filter - because the header and the list
  * disagreeing is the one failure a reader would believe rather than notice.
  */
 /**
@@ -3483,13 +3483,13 @@ describe("player section URLs", () => {
  *
  * `?log=2024` is still a real URL: the server renders it, the season chips
  * still link to it, and with scripting off following one is how the selection
- * changes — the tests above cover that side. What these cover is the side a
+ * changes - the tests above cover that side. What these cover is the side a
  * reader sees. One player is one page with one address, and pressing a control
  * on the page they are already on must not leave them holding a different one.
  *
  * These used to be driven through the scoring toggle, which was the first and
- * loudest member of this family. It is gone from the control bar, so the season chips — same wiring, same
- * pageUrl(), same swap — are what exercises it.
+ * loudest member of this family. It is gone from the control bar, so the season chips - same wiring, same
+ * pageUrl(), same swap - are what exercises it.
  */
 describe("a state swap", () => {
   /** Wait for the swapped-in render, which is a real request to the server. */
@@ -3555,7 +3555,7 @@ describe("a state swap", () => {
     year.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
     assert.ok(await settled(pinned, want), `${want} pinned`);
 
-    // All is the resting state, so its chip is the bare address — the one the
+    // All is the resting state, so its chip is the bare address - the one the
     // reader is standing on. Following it must still swap rather than navigate.
     pick("all").dispatchEvent(
       new window.MouseEvent("click", { bubbles: true, cancelable: true }),
@@ -3619,15 +3619,15 @@ describe("the player index", () => {
     const { doc } = await dom("/player");
     assert.equal(doc.querySelectorAll(".scp-phead").length, 0);
     assert.equal(doc.querySelectorAll("h1").length, 0);
-    // The title tag still names the page — the heading went, not the page.
+    // The title tag still names the page - the heading went, not the page.
     assert.equal(doc.title, "NFL Player Pages | StatChasers");
     assert.ok(doc.querySelector("[data-scp-dir]"), "the directory still opens it");
   });
 
   test("the standalone page ships the bundle its controls need", async () => {
     // The search box and the position chips are both sent hidden for a client
-    // to reveal. This page had no client: they were on screen — a `display` of
-    // their own beats the `hidden` attribute — and wired to nothing.
+    // to reveal. This page had no client: they were on screen - a `display` of
+    // their own beats the `hidden` attribute - and wired to nothing.
     const { doc } = await dom("/player");
     const src = [...doc.querySelectorAll("script[src]")].map((s) => s.getAttribute("src"));
     assert.ok(
@@ -3671,7 +3671,7 @@ describe("the player index", () => {
 
   test("a kicker is banded against the kickers, not against the receivers", async () => {
     // There are 32 kickers and one starts per club, so the scale is the
-    // quarterback's and not the receivers' — which is cut for a pool 36 deep
+    // quarterback's and not the receivers' - which is cut for a pool 36 deep
     // and used to read the top twelve of THIRTY-TWO as elite, spend the rest
     // of itself on the top two thirds, and grade the worst kicker alive
     // "Flex". The bottom two bands were unreachable. This pins the cuts.
@@ -3687,7 +3687,7 @@ describe("the player index", () => {
     const seen = new Set();
     for (const row of doc.querySelectorAll('.scp-dir-item[data-pos="K"]')) {
       const pill = row.querySelector(".scp-dir-rank");
-      // No rank, or a rank with no points behind it, is the idle band — which
+      // No rank, or a rank with no points behind it, is the idle band - which
       // is about production, not about the pool, and is asserted above.
       if (!pill || row.dataset.band === "idle") continue;
       const rank = Number(pill.textContent.replace(/\D/g, ""));
@@ -3941,8 +3941,8 @@ describe("the player index", () => {
  * A profile whose address changed still answers at the old one.
  *
  * Slugs move. Two players share a name and the claim on the bare form changes
- * hands — the Kansas City running back publishes at `kenneth-walker` now, and
- * did not before — or a source corrects a spelling. The page is the same page,
+ * hands - the Kansas City running back publishes at `kenneth-walker` now, and
+ * did not before - or a source corrects a spelling. The page is the same page,
  * so the old URL owes a 301 rather than a 404: it is indexed under that
  * address and the links to it are in other people's posts.
  *
@@ -3996,8 +3996,8 @@ describe("a slug that has moved", () => {
   test("the embed resolves the old slug rather than redirecting it", async (t) => {
     if (!moved) return t.skip("no slug in this roster has moved");
 
-    // Nobody types this address and nothing indexes it — it is the fetch a
-    // WordPress page makes for its own body — so a 301 would only cost that
+    // Nobody types this address and nothing indexes it - it is the fetch a
+    // WordPress page makes for its own body - so a 301 would only cost that
     // page a round trip.
     const res = await rawGet(`/embed/player/${moved.previousSlugs[0]}`);
     assert.equal(res.status, 200);

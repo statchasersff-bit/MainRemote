@@ -3,8 +3,8 @@
  *
  * This is the step that lets an X post join the rest of the archive rather than
  * sit beside it. Everything it resolves against is the index the news tool
- * already maintains — the Sleeper player dictionary behind the headshots, the
- * team map behind the card colours — so a post tagged here lands on the same
+ * already maintains - the Sleeper player dictionary behind the headshots, the
+ * team map behind the card colours - so a post tagged here lands on the same
  * player, the same team code and the same team page as a wire story about the
  * same person, with no second source of truth about who plays where.
  *
@@ -34,7 +34,7 @@ function foldName(value: string): string {
  * Built from TEAM_NAMES rather than hand-listed, so the 32 entries cannot drift
  * from the ones the cards and the team pages use. The nickname is the last word
  * of the full name ("Eagles"), with the handful of two-word nicknames spelled
- * out below — and every code ("sf", "kc") is matched too, because that is how
+ * out below - and every code ("sf", "kc") is matched too, because that is how
  * half of these posts are actually written.
  */
 function buildTeamPatterns(): Array<{ team: string; pattern: RegExp }> {
@@ -66,7 +66,7 @@ function buildTeamPatterns(): Array<{ team: string; pattern: RegExp }> {
    * "Detroit is dealing a pick to the Rams" is how these posts are actually
    * written, so the city has to count. "New York" and "Los Angeles" do not:
    * each is two clubs, and resolving one of them to a single team would be
-   * inventing a fact — the same call the roster index makes about a name shared
+   * inventing a fact - the same call the roster index makes about a name shared
    * by two players. Derived by counting rather than hand-listed, so an expansion
    * or a relocation cannot leave a stale exception behind.
    */
@@ -158,7 +158,7 @@ export function findPlayer(text: string): NamedPlayer | null {
  * Only returns a team when exactly one is named. A post that mentions two clubs
  * is usually about a transaction between them ("Detroit is dealing Stafford to
  * the Rams"), and picking one of the two would file it under a team page where
- * it does not belong — the same call the roster index makes about an ambiguous
+ * it does not belong - the same call the roster index makes about an ambiguous
  * player name, for the same reason.
  */
 export function findTeam(text: string): string | null {
@@ -188,7 +188,7 @@ export interface DetectedEntities {
  * sentence is a guess about what the sentence is about. When a post says
  * "49ers RB Christian McCaffrey", both agree. When it says "the Jets are
  * signing Christian McCaffrey", the roster is one transaction behind and the
- * text is right — but this cannot know which of those it is looking at, and
+ * text is right - but this cannot know which of those it is looking at, and
  * preferring the roster keeps the card consistent with the player's page.
  */
 export function detectEntities(...parts: Array<string | null | undefined>): DetectedEntities {

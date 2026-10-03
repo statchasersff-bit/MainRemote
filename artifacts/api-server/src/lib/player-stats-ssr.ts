@@ -10,7 +10,7 @@
  * The fragment is cached per (position, season, options) on the data file's
  * mtime, so replacing `data/player-stats/wr_2025.json` invalidates every
  * rendering of it and nothing else does. The cache is here because a render is
- * ten thousand cells of string concatenation on a request path — the widest
+ * ten thousand cells of string concatenation on a request path - the widest
  * table, three seasons of receivers, is 319 rows by fifty columns.
  */
 
@@ -33,7 +33,7 @@ import { LruCache } from "./lru";
 
 export interface StatsSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when there is no file for this position and season. */
   table: StatsTable | null;
@@ -64,7 +64,7 @@ function optionKey(
   ]);
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

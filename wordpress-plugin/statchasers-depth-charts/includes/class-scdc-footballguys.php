@@ -1,6 +1,6 @@
 <?php
 /**
- * Footballguys fetcher — overrides the Offense / Defense / Special-Teams columns.
+ * Footballguys fetcher - overrides the Offense / Defense / Special-Teams columns.
  *
  * Footballguys publishes every team's depth chart on a single page (`?type=all`),
  * so this fetches once and parses all 32 teams. Folded into the same canonical

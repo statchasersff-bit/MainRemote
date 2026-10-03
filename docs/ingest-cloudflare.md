@@ -27,8 +27,8 @@ Three things are worth knowing before changing anything:
 - **The feed URL is not wrong.** This is not a misconfigured environment variable.
   `/api/status` reports the host it actually resolved.
 - **It is scored on egress IP reputation, not on the request.** The workspace and
-  the deployment send byte-identical calls — same code, same headers, same
-  `User-Agent` — and only the deployment is challenged. That is why it works when
+  the deployment send byte-identical calls - same code, same headers, same
+  `User-Agent` - and only the deployment is challenged. That is why it works when
   you run it locally and fails once published, which looks contradictory until
   you read the response body.
 - **Bot Fight Mode cannot be bypassed by a WAF rule.** On the Free plan it is
@@ -56,8 +56,8 @@ Every Replit deployment stays reachable on its own `*.replit.app` hostname even
 when a custom domain is attached. That hostname is **not proxied through
 Cloudflare**, so Bot Fight Mode never sees the request.
 
-The ingest therefore calls the API's Replit address — **`dynasty-command.replit.app`**,
-the URL `DYNASTY_NEWS_API_URL` pointed at before `ba4cbad` (2026-08-11) — and
+The ingest therefore calls the API's Replit address - **`dynasty-command.replit.app`**,
+the URL `DYNASTY_NEWS_API_URL` pointed at before `ba4cbad` (2026-08-11) - and
 authenticates itself with a scoped key.
 
 ### What the gate on that address is
@@ -67,7 +67,7 @@ Dynasty Command refuses anything that did not arrive through Cloudflare.
 request it forwards to the origin; the app compares that header against
 `EDGE_SECRET` with a timing-safe compare, and refuses when it does not match.
 Calling the `.replit.app` address directly therefore returned
-`403 {"error":"forbidden"}` — a missing header, not a wrong host.
+`403 {"error":"forbidden"}` - a missing header, not a wrong host.
 
 Implementation: `server/originLock.ts`, middleware `requireEdgeSecret`, mounted
 globally at `server/index.ts:306`. `/api/health` is exempt on purpose, because
@@ -79,7 +79,7 @@ Replit's platform liveness probes hit the `.replit.app` host directly.
 > (`/api/v1/does-not-exist`) answer *forbidden* rather than *not found*: that
 > correctly showed the gate runs before routing, but the mechanism behind it was
 > guessed and the guess was wrong. Setting a `Host` header would not have helped,
-> and the patch that sketch implied — opening all of `/api` to a key holder —
+> and the patch that sketch implied - opening all of `/api` to a key holder -
 > would have exposed portfolio data, admin endpoints and valuation models. What
 > shipped is deliberately much narrower.
 
@@ -103,7 +103,7 @@ so a leak from this side exposes aggregated public NFL headlines and nothing els
 
 - Any path outside `/api/news` 403s even with a valid key. `/api/newsletter` is
   **not** covered by the `/api/news` prefix.
-- Writes are refused — `POST`/`PUT`/`PATCH`/`DELETE` 403 with a valid key.
+- Writes are refused - `POST`/`PUT`/`PATCH`/`DELETE` 403 with a valid key.
 - Need something outside `/api/news`? **Name the endpoint and ask.** Do not assume
   the key reaches it, and do not work around a refusal.
 - **Do not ask for `EDGE_SECRET`.** It would work, and it would hand this
@@ -132,7 +132,7 @@ the direct route ever breaks, behaviour degrades to the old path rather than goi
 dark. `.replit`'s `[userenv.shared]` carries the same value but configures the
 workspace only.
 
-> **Replit gotcha — this cost most of an hour.** A newly added secret is **not**
+> **Replit gotcha - this cost most of an hour.** A newly added secret is **not**
 > picked up by a publish; the process keeps the environment it booted with. It
 > needs a full **Stop → Start**. Also reload the secrets pane and confirm the value
 > is still listed before concluding anything: one silently failed to save and
@@ -142,7 +142,7 @@ workspace only.
 
 If the API ever 301s its `*.replit.app` hostname to the canonical domain, Node's
 `fetch` follows it by default, the request lands back on Cloudflare, and it fails
-looking **exactly** like the original bug — same challenge page, same error string.
+looking **exactly** like the original bug - same challenge page, same error string.
 Check with:
 
 ```bash
@@ -175,7 +175,7 @@ incident and should have been trusted sooner.
 
 **Dynasty Command's request log cannot help you.** The origin lock is mounted at
 `server/index.ts:306` and the request logger at `server/index.ts:415`, so a refused
-request is answered and dropped 109 lines before the logger ever sees it — a 403
+request is answered and dropped 109 lines before the logger ever sees it - a 403
 from that gate leaves **no log line at all**. During this incident that log showed
 a clean run of `GET /api/news/nfl 200` every ten minutes, which looked exactly like
 this archiver succeeding. It was the Dynasty site's own news ticker, coming through
@@ -194,10 +194,10 @@ debugging on this side will help until it reads `ON`.
 |---|---|
 | `lastError` contains `Just a moment...` | Went through Cloudflare. The direct URL is not being used, or the list fell back to it. |
 | `lastError` contains `{"error":"forbidden"}` | Reached the app; the gate refused. Key missing or mismatched, or a path outside `/api/news`. |
-| `lastError` contains `This app isn't live yet` | Replit's placeholder — the Dynasty deployment is down or restarting. Not a code or key problem. |
+| `lastError` contains `This app isn't live yet` | Replit's placeholder - the Dynasty deployment is down or restarting. Not a code or key problem. |
 | `lastSource` is `api.statchasers.com` | Direct route refused, fallback carried it. News flows, but the exception is broken. |
 | `feedKeyConfigured: false` | `DYNASTY_NEWS_API_KEY` never reached the news deployment. New secrets need Stop → Start. |
-| `feedHosts` still only `api.statchasers.com` | Value set on the workspace, not the deployment — or not restarted. |
+| `feedHosts` still only `api.statchasers.com` | Value set on the workspace, not the deployment - or not restarted. |
 | `lastError: null` but the page looks stale | Not this problem. Staleness is bounded to 60s by `FRESHNESS_MAX_AGE_MS`; compare `archive.newestContentAt` against the feed. |
 
 ---
@@ -213,14 +213,14 @@ so the problem disappears structurally rather than being routed around.
 
 `POST /api/ingest` accepts `{"items":[...]}` today, and `scripts/ingest.mjs`
 drives it (set `FEED_URL` to switch it into push mode). It needs `INGEST_SECRET`
-set on the deployment — push writes caller-supplied content straight into the
+set on the deployment - push writes caller-supplied content straight into the
 archive, so it is refused without one. `/api/status` reports
 `pushModeAvailable`.
 
 Structurally the soundest option, and the only one that survives any future
 change to Cloudflare's scoring or Replit's hostnames.
 
-### Super Bot Fight Mode (Pro) — rejected, kept for the record
+### Super Bot Fight Mode (Pro) - rejected, kept for the record
 
 **Do not pursue this.** Punching a bot-management hole in the edge for this caller
 is strictly worse than routing one authenticated caller around it, and the API
@@ -256,7 +256,7 @@ Not IP-allowlisted because Replit's egress addresses are not guaranteed stable.
 Nothing is stranded by an outage of this kind as long as it is caught within the
 upstream window: the feed carries roughly its latest 25 items (about a day), and
 a single successful ingest backfills everything inside that window. Stories older
-than the window are gone for good — upstream does not serve them and this archive
+than the window are gone for good - upstream does not serve them and this archive
 is the only store of record.
 
 That window is why the monitoring matters more than another fallback. See
@@ -267,9 +267,9 @@ treated as a failure rather than a successful no-op.
 
 ## Related
 
-- `replit.md` → *Architecture decisions* — why `/api/status` exists, and why the
+- `replit.md` → *Architecture decisions* - why `/api/status` exists, and why the
   freshness snapshot expires on a timer as well as on invalidation. That second
   fix is what stops an outage like this from freezing the page *permanently*
   rather than merely making it stale.
-- `artifacts/api-server/src/routes/news.ts` — the ingest, the outgoing headers,
+- `artifacts/api-server/src/routes/news.ts` - the ingest, the outgoing headers,
   and the status endpoint.

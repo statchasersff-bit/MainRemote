@@ -105,8 +105,8 @@ const windows = [];
  *
  * Everything else in this file asserts on the HTML as sent, which is what a
  * crawler reads. The tab strip is the one place where the scripted behaviour is
- * different in kind rather than in polish — it switches the panel, rewrites the
- * heading above the fragment and puts a different URL in the address bar — and
+ * different in kind rather than in polish - it switches the panel, rewrites the
+ * heading above the fragment and puts a different URL in the address bar - and
  * none of that is visible in the served markup.
  */
 async function hydrated(pathname) {
@@ -141,7 +141,7 @@ async function dom(pathname) {
 }
 
 /**
- * A tab's questions live in its tail, which renders after the tools block — NOT
+ * A tab's questions live in its tail, which renders after the tools block - NOT
  * inside the panel. Scoping to "#outlook" finds nothing.
  */
 const tailOf = (id) => `[data-sct-faq-for="${id}"]`;
@@ -215,13 +215,22 @@ describe("team routes", () => {
     assert.match(root.body, /statchasers-news/);
     assert.equal((await get("/nonsense")).status, 404);
   });
+
+  test("the standing breaks ties instead of sharing a place", async () => {
+    // Recorded 2026-10-03: the Jets and Patriots are both 1-2, and ESPN's team
+    // document calls them both "2nd in AFC East". The tiebreakers put the Jets
+    // ahead.
+    const ne = await get("/team/new-england-patriots");
+    assert.match(ne.body, /3rd in AFC East/);
+    assert.doesNotMatch(ne.body, /2nd in AFC East/);
+  });
 });
 
 describe("crawlable HTML (no JavaScript executed)", () => {
   test("the page ships its content, not a shell", async () => {
     const { doc } = await dom("/team/new-england-patriots");
-    // Section navigation is real anchors to real ADDRESSES — the section
-    // pages — each naming the panel it switches to without a load.
+    // Section navigation is real anchors to real ADDRESSES - the section
+    // pages - each naming the panel it switches to without a load.
     const navLinks = [...doc.querySelectorAll(".sct-nav-link")];
     assert.ok(navLinks.length >= 2, "section nav rendered");
     for (const link of navLinks) {
@@ -230,7 +239,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
       assert.equal(
         link.getAttribute("href"),
         // The Outlook is the hub, so its tab links to the hub. Coaching is
-        // hub-only — its public URL waits on approval — so its tab is the
+        // hub-only - its public URL waits on approval - so its tab is the
         // hub's address plus the panel hash (see team-render.ts).
         id === "outlook"
           ? "/team/new-england-patriots/"
@@ -265,7 +274,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.match(canonical.getAttribute("href"), /\/team\/new-england-patriots$/);
     assert.match(doc.title, /New England Patriots/);
     assert.ok(doc.querySelector('meta[name="description"]').content.length > 50);
-    // Out of the index on this origin, still usable when embedded — the same
+    // Out of the index on this origin, still usable when embedded - the same
     // posture as the news tool.
     assert.match(headers.get("x-robots-tag"), /noindex, indexifembedded/);
   });
@@ -351,14 +360,14 @@ describe("embedded mode", () => {
     // the name gives "a-j-brown" and a 404.
     const brown = byName.get("A.J. Brown");
     assert.ok(brown, "A.J. Brown is on the Patriots page and linked");
-    // The profile itself — not the retired /nfl/players/outlook/<slug>/
+    // The profile itself - not the retired /nfl/players/outlook/<slug>/
     // layout, whose stale pages these links kept alive.
     assert.match(brown, /\/nfl\/players\/aj-brown\/$/);
 
     for (const href of byName.values()) {
       assert.match(href, /^https?:\/\//, "absolute, for the WordPress mount");
       // A slug the dictionary supplied, never a name pushed through a slugifier
-      // — the giveaway is the single letters a dotted initial leaves behind.
+      // - the giveaway is the single letters a dotted initial leaves behind.
       const slug = href.split("/nfl/players/")[1]?.replace(/\/$/, "") ?? "";
       assert.ok(slug, `no slug in ${href}`);
       assert.ok(
@@ -426,7 +435,7 @@ describe("embedded mode", () => {
     }
     assert.ok(shape, "the schedule rendered rows, so the rail rendered");
 
-    // Every figure in the rail is arithmetic on the table beside it — that is
+    // Every figure in the rail is arithmetic on the table beside it - that is
     // the whole claim the cards make, and the one a future change to either
     // side could break silently.
     const figures = new Map(
@@ -462,7 +471,7 @@ describe("embedded mode", () => {
         : "TBD",
     );
 
-    // The rows carry no DIV pill any more — the slate card IS where the table
+    // The rows carry no DIV pill any more - the slate card IS where the table
     // says which games are divisional, so what is checkable is that it agrees
     // with the table about them: every meeting it lists is a week the table
     // prints, the Division figure is that many, and the home/away split adds
@@ -538,7 +547,7 @@ describe("embedded mode", () => {
     // Every week an answer names is a week the table prints. That is the whole
     // point of deriving these from the fixtures rather than writing them: an
     // answer cannot put a game in a week the schedule above does not. The bye
-    // row counts — it is a week in the table with no fixture against it.
+    // row counts - it is a week in the table with no fixture against it.
     const weeks = new Set(
       [...doc.querySelectorAll("#schedule .sct-srow-week")].map((n) =>
         n.textContent.trim().replace(/^W/, ""),
@@ -567,7 +576,7 @@ describe("embedded mode", () => {
       );
     }
 
-    // "Next" is the next UNPLAYED game — see the note at the top of
+    // "Next" is the next UNPLAYED game - see the note at the top of
     // lib/team/schedule-faq.ts. Once the season is over the cards fall back to
     // its tail and the question is not asked at all, which is why this pairs
     // the card with the answer rather than asserting the answer exists.
@@ -598,7 +607,7 @@ describe("embedded mode", () => {
     assert.ok(labels.length > 0, "the tab strip rendered");
     assert.ok(!labels.includes("Matchups"), `Matchups still a tab: ${labels}`);
     assert.equal(doc.querySelector("#matchups"), null, "and no panel for it");
-    // Still a section, though — dropping it from the strip must not take the
+    // Still a section, though - dropping it from the strip must not take the
     // public page with it. (matchup.test.mjs covers what that page contains.)
     const page = await get("/team/new-england-patriots/matchups/");
     assert.equal(page.status, 200, "the section page still renders");
@@ -697,7 +706,7 @@ describe("embedded mode", () => {
       );
     }
 
-    // Every name in an answer is a name the chart itself rendered — this is the
+    // Every name in an answer is a name the chart itself rendered - this is the
     // one thing deriving the FAQ is supposed to guarantee.
     const charted = new Set(
       [...doc.querySelectorAll("#depth-chart .sct-depth-name-long, #depth-chart .sct-depth-name")]
@@ -752,8 +761,8 @@ describe("embedded mode", () => {
 /**
  * The FAQs on the Outlook and Stats tabs.
  *
- * Every answer is built from what the tab already rendered — the outlook cards
- * (lib/team/outlook-faq.ts) and the stat ladders (lib/team/stats-faq.ts) — so
+ * Every answer is built from what the tab already rendered - the outlook cards
+ * (lib/team/outlook-faq.ts) and the stat ladders (lib/team/stats-faq.ts) - so
  * what these assert is the three things derivation cannot guarantee on its own:
  * that the blocks reach the page, that the structured data agrees with the
  * visible text, and that there is exactly one FAQPage for the whole document
@@ -820,7 +829,7 @@ describe("tab FAQs", () => {
     // inside their panel, but they are still a tab's questions, not a shared
     // FAQ: each tail carries exactly one block, and the tail names the panel it
     // belongs to. Both take an <h2> and put their questions at <h3>, because
-    // the tool list they follow is an <h2> — a deeper heading would file them
+    // the tool list they follow is an <h2> - a deeper heading would file them
     // in the outline under the tool list, which is neither where they are nor
     // what they are about.
     for (const id of ["outlook", "stats", "depth-chart", "schedule"]) {
@@ -854,7 +863,7 @@ describe("tab FAQs", () => {
   });
 
   test("the answers fold, one per question, and the questions all show", async () => {
-    // The block itself does not fold — the questions are the index, so a reader
+    // The block itself does not fold - the questions are the index, so a reader
     // scanning for the one they arrived with sees all of them without opening
     // anything. Each question is its own <details> with no `open`, and the
     // question sits in the <summary>: it is the thing a reader clicks, and it
@@ -936,7 +945,7 @@ describe("tab FAQs", () => {
 
   test("embedded, the questions ship as data for the host to place", async () => {
     // Rank Math owns the graph on statchasers.com, so the fragment must not
-    // inject a second <script type="application/ld+json"> — one graph competes
+    // inject a second <script type="application/ld+json"> - one graph competes
     // with the other rather than adding to it.
     //
     // It does NOT follow that the questions should be withheld. The indexed URL
@@ -951,7 +960,7 @@ describe("tab FAQs", () => {
         !/FAQPage/.test(res.body),
         `${path} must not emit FAQPage markup of its own`,
       );
-      // The visible questions still ship — it is only the node that is deferred.
+      // The visible questions still ship - it is only the node that is deferred.
       assert.match(res.body, /sct-faq-q/, `${path} should still render the FAQ`);
 
       const island = res.body.match(
@@ -1035,8 +1044,8 @@ describe("honest empty states", () => {
 describe("caching", () => {
   test("repeat requests revalidate to 304", async () => {
     // Warm the page first. The ETag fingerprints every provider's fetch stamp,
-    // so the FIRST request for a team — the one that populates those providers
-    // — legitimately produces a different validator from the one after it. The
+    // so the FIRST request for a team - the one that populates those providers
+    // - legitimately produces a different validator from the one after it. The
     // assertion here is about a warm page, which is every request but the first.
     await rawGet("/team/new-england-patriots");
 
@@ -1060,7 +1069,7 @@ describe("mobile layout", () => {
    * `.sct-hero` used to carry `overflow: hidden` for the aura and the
    * watermark. An absolutely positioned panel inside an overflow-hidden
    * ancestor is cut off at that ancestor's edge, and this panel opens BELOW its
-   * summary — so most of it was thrown away, and nearly all of it on a phone
+   * summary - so most of it was thrown away, and nearly all of it on a phone
    * where the hero is short. The fix moves the clip onto an inner decoration
    * layer. Both halves of that are asserted here because either one alone
    * silently restores the bug: the wrapper with no clip lets the decorations
@@ -1087,7 +1096,7 @@ describe("mobile layout", () => {
     const hero = css.body.slice(heroAt, css.body.indexOf("}", heroAt));
     assert.ok(
       !/overflow:\s*hidden/.test(hero),
-      ".sct-hero must not clip — that clips the open team switcher with it",
+      ".sct-hero must not clip - that clips the open team switcher with it",
     );
     assert.ok(
       /\.sct-hero-decor\s*\{[^}]*overflow:\s*hidden/.test(css.body),
@@ -1099,8 +1108,8 @@ describe("mobile layout", () => {
    * The watermark, in the stacked hero, is bottom-right and bigger.
    *
    * Centred on the right edge is a desktop arrangement: there, half of an
-   * 1100px hero is empty. Stacked there is no empty half — the chips and the
-   * switcher are opaque cards filling the width — so a 240px mark centred
+   * 1100px hero is empty. Stacked there is no empty half - the chips and the
+   * switcher are opaque cards filling the width - so a 240px mark centred
    * behind them showed in the gaps between cards and nowhere else, which is
    * what mak reported as too small to see. The corner under the switcher is
    * the one part of this hero that is reliably not a card.
@@ -1108,7 +1117,7 @@ describe("mobile layout", () => {
    * The transform is the trap and the reason this is pinned: the desktop rule
    * centres with `translateY(-50%)`, which pairs with `top: 50%`. Left in
    * place alongside `bottom`, it lifts the mark by half its own height and
-   * puts it back behind the cards — a change that looks like nothing in the
+   * puts it back behind the cards - a change that looks like nothing in the
    * diff and undoes the whole rule.
    */
   test("the stacked hero hangs its watermark in the corner", async () => {
@@ -1133,7 +1142,7 @@ describe("mobile layout", () => {
     assert.match(
       stacked,
       /transform:\s*none/,
-      "with the centring transform cancelled — see this test's note",
+      "with the centring transform cancelled - see this test's note",
     );
 
     const size = (block) => Number(block.match(/width:\s*(\d+)px/)[1]);
@@ -1148,7 +1157,7 @@ describe("mobile layout", () => {
     );
 
     // And below 450px it is gone. A 300px mark in a 358px hero is not a
-    // watermark, it is a picture the content is printed over — there is no
+    // watermark, it is a picture the content is printed over - there is no
     // part of the card it is not behind, so what shows is whatever the gaps
     // between the chips expose. The crest beside the name still carries the
     // club at that width.
@@ -1179,7 +1188,7 @@ describe("mobile layout", () => {
    * switcher is a pill as wide as the club's name, so at 900 "Philadelphia
    * Eagles" still had room to spare while "Washington Commanders" had been
    * wrapping to two lines for fifty pixels. The row is a flex line now, and
-   * what makes it break is the name's own width — which is only true while the
+   * what makes it break is the name's own width - which is only true while the
    * name cannot wrap and the block holding it keeps its automatic minimum.
    * Both halves are asserted because either alone puts the old behaviour back:
    * a wrapping name shrinks to nothing and the switcher never moves, and
@@ -1210,7 +1219,7 @@ describe("mobile layout", () => {
     const text = css.body.slice(textAt, css.body.indexOf("}", textAt));
     assert.ok(
       !/min-width:\s*0/.test(text),
-      ".sct-hero-text keeps its automatic minimum — that is the breakpoint",
+      ".sct-hero-text keeps its automatic minimum - that is the breakpoint",
     );
 
     assert.ok(
@@ -1224,7 +1233,7 @@ describe("mobile layout", () => {
     const title = css.body.slice(titleAt, css.body.indexOf("}", titleAt));
     assert.ok(
       !/white-space/.test(title),
-      ".sct-title itself must not be armed with it — the matchup heading wraps",
+      ".sct-title itself must not be armed with it - the matchup heading wraps",
     );
 
     // And no width may put the switcher back on a row of its own above the
@@ -1243,7 +1252,7 @@ describe("mobile layout", () => {
   /**
    * The crest and the name stay on one row, at every width.
    *
-   * The phone hero used to stack them — a 72px disc, then the eyebrow, then
+   * The phone hero used to stack them - a 72px disc, then the eyebrow, then
    * the name, then the standfirst, four things down the screen where the first
    * says the least and the hero ran to about 400px before a reader reached the
    * chips. mak asked for the mark and the name back on one line, which is also
@@ -1251,7 +1260,7 @@ describe("mobile layout", () => {
    *
    * Only the top row pairs up. The chips and the switcher keep full rows of
    * their own underneath, both being wider than what a 360px screen has left
-   * once the crest has taken its 64 — so this asserts the areas, not just that
+   * once the crest has taken its 64 - so this asserts the areas, not just that
    * the grid has two columns.
    */
   test("the phone hero keeps the crest beside the name", async () => {
@@ -1280,7 +1289,7 @@ describe("mobile layout", () => {
       "crest beside the name, then the chips, then the switcher",
     );
 
-    // The name has to be allowed to wrap beside it — the desktop nowrap is
+    // The name has to be allowed to wrap beside it - the desktop nowrap is
     // what makes the flex row break on the name's length, and inside a column
     // that is now 64px narrower it would set the hero's width instead.
     assert.match(
@@ -1312,7 +1321,7 @@ describe("mobile layout", () => {
    * the width where it stops fitting on one line is a different width for all
    * 32: measured at 470px for Washington and 360px for Buffalo. A media query
    * would take it off a third of the league while it still fits, which is the
-   * same argument the chips ladder makes, so the bundle measures it — and what
+   * same argument the chips ladder makes, so the bundle measures it - and what
    * it measures is a Range over the contents, because getClientRects() on a
    * block <p> returns one rect whatever is inside it.
    *
@@ -1344,7 +1353,7 @@ describe("mobile layout", () => {
       "the stylesheet hides the dropped state, and only that state",
     );
     // The hook alone must not hide anything, or the line would be off for
-    // every reader with JavaScript disabled — which is the one case where
+    // every reader with JavaScript disabled - which is the one case where
     // nothing can ever measure it and the full line is what ships.
     assert.ok(
       !/\.sct-subtitle\[data-sct-lead\] \{[^}]*display:\s*none/.test(css),
@@ -1383,7 +1392,7 @@ describe("mobile layout", () => {
    *
    * Under both rungs there is a third, and it is not a spelling: the Bye chip
    * leaves the row. "W11" is the shortest true form of the fact, so a row that
-   * still will not fit it has only the two endings — the chip alone on a
+   * still will not fit it has only the two endings - the chip alone on a
    * second line, which is what mak asked to stop seeing, or no chip. The bye
    * is the one fact in this row the hub states in full a tab away, on the
    * Schedule tab, which is what makes it the affordable one.
@@ -1404,7 +1413,7 @@ describe("mobile layout", () => {
 
     // Rung, and how the short form relates to the full one.
     const ladder = [
-      // ESPN also sends bare places ("1st"), which have nothing to shorten —
+      // ESPN also sends bare places ("1st"), which have nothing to shorten -
       // hence a standing chip with no swap at all is allowed.
       { label: "Standing", spend: "short", optional: true },
       { label: "Bye", spend: "tight", optional: false },
@@ -1473,7 +1482,7 @@ describe("mobile layout", () => {
    *
    * Two halves, and the reason there are two is that the row is two different
    * layouts. Above 720px it is a flex row the bundle measures, so the chip
-   * goes only when it would actually have wrapped — which is a different width
+   * goes only when it would actually have wrapped - which is a different width
    * for all 32 clubs, the coach's name being the widest thing in the row. At
    * 720px and under the row is a two-column grid where the fifth chip is
    * ALWAYS on a row of its own with an empty cell beside it, so no measuring
@@ -1520,8 +1529,8 @@ describe("mobile layout", () => {
   });
 
   /**
-   * Anchor targets. `scroll-padding-top` on .sct does nothing — scroll padding
-   * applies to the scroll container and .sct is not one — so every section the
+   * Anchor targets. `scroll-padding-top` on .sct does nothing - scroll padding
+   * applies to the scroll container and .sct is not one - so every section the
    * nav links to needs its own `scroll-margin-top`, or each link lands its
    * heading underneath the sticky bar. Worst on a phone, where the bar is a
    * larger share of the screen.
@@ -1553,7 +1562,7 @@ describe("mobile layout", () => {
 
     // The query is only answerable if something declares itself the container.
     // Without this the rule never fires at any width and the long name just
-    // stays, ellipsed — which is the failure it exists to prevent.
+    // stays, ellipsed - which is the failure it exists to prevent.
     assert.match(
       css.body,
       /\.sct-sboard\s*\{[^}]*container-type:\s*inline-size/,
@@ -1597,7 +1606,7 @@ describe("preview switcher", () => {
    * it exist at all: the news page's markup IS the WordPress fragment, so a
    * switcher inside the renderer would ship to statchasers.com.
    *
-   * The whole arrangement rests on one guard — NODE_ENV — and this suite runs
+   * The whole arrangement rests on one guard - NODE_ENV - and this suite runs
    * with NODE_ENV=test, so every response here is a response the bar must not
    * be in. That makes this the cheap check that the guard is still wired: if
    * someone injects the bar unconditionally, or moves it into a renderer, one
@@ -1628,8 +1637,8 @@ describe("preview switcher", () => {
 
 describe("shortcode preview harness", () => {
   /**
-   * /preview/* assembles a fragment the way WordPress assembles it — the
-   * plugin's stylesheet and bundle, inside a host page — because the fragment
+   * /preview/* assembles a fragment the way WordPress assembles it - the
+   * plugin's stylesheet and bundle, inside a host page - because the fragment
    * endpoints deliberately ship neither, and a bare fragment in a browser is an
    * unstyled wall of markup you cannot judge anything by.
    *
@@ -1663,10 +1672,10 @@ describe("shortcode preview harness", () => {
    *
    * Two inert payloads are allowed through, neither of which carries code:
    *
-   *   an FAQ's questions — `scp-faq-data` on the player mount, `sct-faq-data`
-   *   on the team hub, `scf-faq-data` on the FPA table — which the plugin that
+   *   an FAQ's questions - `scp-faq-data` on the player mount, `sct-faq-data`
+   *   on the team hub, `scf-faq-data` on the FPA table - which the plugin that
    *   owns that mount lifts into Rank Math's graph and strips before any of the
-   *   markup is printed, so it never reaches the rendered page at all — and on
+   *   markup is printed, so it never reaches the rendered page at all - and on
    *   the same terms, the team Schedule page's games, `sct-schedule-data`;
    *
    *   the player search's roster, `data-scp-roster`, which does reach the page
@@ -1707,7 +1716,7 @@ describe("the preview switcher never leaves the pane", () => {
    * /embed/ssr.html, and because the bar is deliberately never injected into a
    * fragment, that link had to carry target="_blank" or it would strand you in
    * bare markup with no way back. A new tab is the wrong answer in a preview
-   * pane — the whole point is to alternate between views in one frame — so Raw
+   * pane - the whole point is to alternate between views in one frame - so Raw
    * now points at /preview/raw/*, which shows the same bytes as source on an
    * ordinary page that does carry the bar.
    *
@@ -1722,7 +1731,7 @@ describe("the preview switcher never leaves the pane", () => {
     assert.equal(endpoint.status, 200);
     assert.match(endpoint.body, /data-sct-root/);
 
-    // And it is bare — which is exactly why it cannot carry the bar, and why
+    // And it is bare - which is exactly why it cannot carry the bar, and why
     // the source view has to exist at all. The FAQ data island is not an asset
     // and not the bar: it carries no code, and the plugin strips it before the
     // markup is printed. Same exemption, and same exactness, as the asset guard
@@ -1747,7 +1756,7 @@ describe("the preview switcher never leaves the pane", () => {
  * asks for the chrome-less render. Once SC_TEAM_PATH_PREFIX points the switcher
  * at statchasers.com the query is actively harmful: `embed` is a reserved
  * WordPress public query var, so /nfl/teams/<slug>/?embed=1 serves WordPress's
- * oEmbed template instead of the page — 31 of them per team page, each a
+ * oEmbed template instead of the page - 31 of them per team page, each a
  * crawlable variant of a URL that already exists clean.
  *
  * Booted separately from the suite above because the behaviour IS the
@@ -1780,7 +1789,7 @@ describe("the WordPress fragment's team switcher", () => {
       );
       assert.ok(
         !href.includes("embed="),
-        `an off-origin switcher link must not carry embed= (${href}) — ` +
+        `an off-origin switcher link must not carry embed= (${href}) - ` +
           `WordPress serves its oEmbed template for that URL`,
       );
     }
@@ -1809,7 +1818,7 @@ describe("the WordPress fragment's team switcher", () => {
 /**
  * The index of all 32, and the fragment the container page mounts.
  *
- * /nfl/teams/ used to be a stub list the plugin wrote into the page once —
+ * /nfl/teams/ used to be a stub list the plugin wrote into the page once -
  * eight <h2>s and 32 bullets in the theme's own styling, standing in front of
  * 32 hubs that look nothing like it. It has a mount now, and these are what
  * that mount owes: the switcher's grid, all 32 crests, links that leave this
@@ -1910,13 +1919,13 @@ describe("the team index", () => {
   test("the standalone page opens on the index, with no hero of its own", async () => {
     // It used to carry one: an eyebrow, an H1 and a subtitle over the grid.
     // Both mounts now sit under the heading their host page supplies, which is
-    // the division of labour every other fragment here already followed — and
+    // the division of labour every other fragment here already followed - and
     // the reason this asserts rather than merely no longer testing the hero is
     // that the markup is easy to put back by habit.
     const { doc } = await dom("/team");
     assert.equal(doc.querySelectorAll(".sct-hero").length, 0);
     assert.equal(doc.querySelectorAll("h1").length, 0);
-    // The title tag still names the page — the heading went, not the page.
+    // The title tag still names the page - the heading went, not the page.
     assert.equal(doc.title, "NFL Team Hubs | StatChasers");
     assert.ok(doc.querySelector(".sct-section"), "the grid still opens it");
   });
@@ -1938,8 +1947,8 @@ describe("the team index", () => {
  *
  * The hub is printed into a WordPress page whose theme this server has never
  * seen, and the cascade there is not the cascade in the standalone preview.
- * These assert the two rules that failed in production — a palette published
- * on `:root`, and typography left to inheritance — against the stylesheet as
+ * These assert the two rules that failed in production - a palette published
+ * on `:root`, and typography left to inheritance - against the stylesheet as
  * served, because that is what the plugin enqueues.
  *
  * Read from the CSS text rather than by rendering: jsdom does not resolve the
@@ -1959,7 +1968,7 @@ describe("team.css survives a host theme", () => {
 
     // `:root` is <html>. Every element between it and .sct outranks it for an
     // inherited custom property, so a host that defines any --sc-* name of its
-    // own repaints the hub with no contest — statchasers.com defines --sc-navy
+    // own repaints the hub with no contest - statchasers.com defines --sc-navy
     // as #0b3a7a, and the published hero, every h2, the active tab and every
     // solid button drew in it. Declaring on the fragment root instead is what
     // makes the tokens unreachable from above. It also stops the reverse leak:
@@ -2001,7 +2010,7 @@ describe("team.css survives a host theme", () => {
   });
 
   /*
-   * Every heading class the renderer prints, armed — checked against the
+   * Every heading class the renderer prints, armed - checked against the
    * RENDERER rather than against a list written out here, because a list
    * written out here is a list that goes stale. Divi's typography panel emits
    * `#left-area h3 { font-size: 38px }`, an id, so a class in this file loses
@@ -2009,8 +2018,8 @@ describe("team.css survives a host theme", () => {
    * whose questions rendered at 38px and read as section headings.
    *
    * The size is what is asserted. Colour is armed alongside it on most of
-   * these but not all — .sct-band-label and friends take a colour the theme
-   * cannot reach — whereas font-size is the one Divi always sets.
+   * these but not all - .sct-band-label and friends take a colour the theme
+   * cannot reach - whereas font-size is the one Divi always sets.
    */
   test("every heading class the hub prints is armoured", async () => {
     const sheet = await css();
@@ -2032,8 +2041,8 @@ describe("team.css survives a host theme", () => {
     assert.ok(classes.size >= 8, `found only ${classes.size} heading classes`);
 
     const unarmed = [...classes].filter((cls) => {
-      // Anchored to the start of a line so that a DESCENDANT rule — ".sct-hero-text
-      // .sct-title", which sets one property and arms nothing — cannot be read
+      // Anchored to the start of a line so that a DESCENDANT rule - ".sct-hero-text
+      // .sct-title", which sets one property and arms nothing - cannot be read
       // as the class's own rule and fail a class that is in fact armoured.
       const rule = sheet.match(
         new RegExp(`(?:^|\\n)\\.${cls} \\{[^}]*\\}`),
@@ -2050,8 +2059,8 @@ describe("team.css survives a host theme", () => {
 
   /*
    * The host column rules used to live in team.css and this test read them
-   * from the served sheet. They were moved into the plugin — one copy for all
-   * five tools, in `statchasers_team_full_width_css()` — and the assertion was
+   * from the served sheet. They were moved into the plugin - one copy for all
+   * five tools, in `statchasers_team_full_width_css()` - and the assertion was
    * left pointing at the stylesheet, where a comment ABOUT the rules still
    * quotes them. The regex matched that prose, the test went on passing on a
    * file that no longer carried the rules, and then failed on a comment edit.
@@ -2093,7 +2102,7 @@ describe("team.css survives a host theme", () => {
 
     // Taking the sidebar's share back must not mean taking the window. Divi
     // widens the content container on any page that has been through the Divi
-    // Builder, so `width: 100%` there meant the whole screen — which is how
+    // Builder, so `width: 100%` there meant the whole screen - which is how
     // the hubs came out ~700px wider than the player pages carrying this same
     // stylesheet. The cap is the site's own content width, read from the theme.
     assert.match(
@@ -2124,7 +2133,7 @@ describe("team.css survives a host theme", () => {
   /*
    * The hub and the player pages have to come out the same width on the same
    * site, and the only way to guarantee that is for neither to carry a width
-   * of its own once embedded — the host column decides, and the plugin holds
+   * of its own once embedded - the host column decides, and the plugin holds
    * that column to the site's content width for both.
    *
    * This asserts the two stylesheets AGREE rather than asserting a number.
@@ -2166,7 +2175,7 @@ describe("team.css survives a host theme", () => {
     const sheet = await css();
 
     // Same bar as .sct-h2::after. The token is out of reach outside .sct, so
-    // the colour is written out — keep it equal to --sc-gold.
+    // the colour is written out - keep it equal to --sc-gold.
     const gold = sheet.match(/--sc-gold:\s*(#[0-9a-f]{6})/i);
     assert.ok(gold, "--sc-gold is defined");
     assert.match(
@@ -2188,7 +2197,7 @@ describe("team.css survives a host theme", () => {
     const sheet = await css();
 
     // A find-and-replace once turned 24px into 2.4px here, and 16px into 1.6px
-    // on the phone breakpoint — a gutter that is not there.
+    // on the phone breakpoint - a gutter that is not there.
     assert.match(sheet, /--sct-gutter:\s*24px/, "desktop gutter is 24px");
     assert.doesNotMatch(
       sheet,
@@ -2212,7 +2221,7 @@ describe("the Stats heading", () => {
   /*
    * The heading names the season its NUMBERS describe, not the season the page
    * asked for. getTeamSnapshot() falls back a year while ESPN has nothing for
-   * the current one, which through Week 1 is every team — and a heading reading
+   * the current one, which through Week 1 is every team - and a heading reading
    * "Bills Team Stats 2026" over a block of 2025 figures is worse than the
    * generic "Team Snapshot" it replaced.
    *
@@ -2245,7 +2254,7 @@ describe("the Stats heading", () => {
    * fallback window `snapshot.season` and `state.season` are the same number,
    * so a page rendered from the wrong one is indistinguishable from a page
    * rendered from the right one. It starts biting exactly when it matters and
-   * not one day earlier — which is no use to whoever makes the change.
+   * not one day earlier - which is no use to whoever makes the change.
    *
    * Nothing here stubs ESPN, so there is no way to render the fallback on
    * demand. This is the next best thing: the one line the bug would live on.
@@ -2268,7 +2277,7 @@ describe("the Stats heading", () => {
   /*
    * `?h1=1` promotes the panel's opening heading to the page's <h1>. It also
    * has to be part of the fragment cache key, or the first request for a slug
-   * decides the answer for every later one — and both directions are wrong:
+   * decides the answer for every later one - and both directions are wrong:
    *
    *   - plain first: a host running "let the tool supply the heading" gets the
    *     un-promoted render. That mode ALSO empties the theme's page title, so
@@ -2307,7 +2316,7 @@ describe("the Stats heading", () => {
    * Every address its own H1, in the words of what the address is for.
    *
    * The hub used to promote its opening panel's heading, "2026 Fantasy
-   * Outlook" — no team in it, the same on all 32 hubs, and word for word the
+   * Outlook" - no team in it, the same on all 32 hubs, and word for word the
    * H1 of `/outlook/`, which served the same page. The Outlook is the hub now,
    * and its H1 names the club and the intent.
    */
@@ -2356,7 +2365,7 @@ describe("the Stats heading", () => {
 
 describe("team section URLs", () => {
   /**
-   * The heading each section prints for itself — NOT the H1.
+   * The heading each section prints for itself - NOT the H1.
    *
    * The hero is the club's name on every one of these addresses. It used to
    * take the page's subject instead ("New England Patriots Depth Chart 2026"),
@@ -2395,7 +2404,7 @@ describe("team section URLs", () => {
   });
 
   test("the head names the section, once, at its pretty address", async () => {
-    // One of each, and every URL-bearing tag is the pretty self-reference —
+    // One of each, and every URL-bearing tag is the pretty self-reference -
     // never the hub, never the ?section= spelling. The Rank Math filters on the
     // WordPress side owe the same four things; this is the origin's half.
     for (const [id] of SECTIONS) {
@@ -2422,7 +2431,7 @@ describe("team section URLs", () => {
    * The two public sections that draw no questions: `matchups` is a list of
    * fixtures and `news` is an archive, and neither has anything an FAQ would
    * restate. They are still addresses, so they owe everything an address owes
-   * — one panel, one H1, one self-referencing canonical — which is what the
+   * - one panel, one H1, one self-referencing canonical - which is what the
    * FAQ-bearing list above cannot assert for them.
    */
   test("the FAQ-less sections are still pages of their own", async () => {
@@ -2484,7 +2493,7 @@ describe("team section URLs", () => {
   /**
    * The whole point of the tab strip being addresses.
    *
-   * Without JavaScript a tab is a link and loads the section page — which the
+   * Without JavaScript a tab is a link and loads the section page - which the
    * tests above cover. With it, the panel switches in place and the URL still
    * becomes the section's own, so what the reader is looking at and what the
    * address bar says cannot disagree. This asserts the three things that have
@@ -2519,7 +2528,7 @@ describe("team section URLs", () => {
     assert.equal(
       heading.textContent.trim(),
       landed,
-      "the H1 did not follow — the hero is the club on every tab",
+      "the H1 did not follow - the hero is the club on every tab",
     );
 
     // Nothing loaded: the other four panels are still in the document, which is
@@ -2538,7 +2547,7 @@ describe("team section URLs", () => {
     // The mirror of what this used to assert. While the hero carried the
     // section's phrase, these three dropped their own heading so it was not
     // printed twice; the hero is the club's name now, so the section's heading
-    // is back — and it is still the only one.
+    // is back - and it is still the only one.
     for (const id of ["schedule", "depth-chart", "matchups"]) {
       const { doc } = await dom(at(id));
       const h1 = doc.querySelector("h1").textContent.trim();
@@ -2564,7 +2573,7 @@ describe("team section URLs", () => {
         .filter((json) => json["@type"] === "FAQPage");
 
     // All four public sections draw questions now, so the thing each page owes
-    // is that its FAQPage is ITS list — the hub's four lists on a Schedule page
+    // is that its FAQPage is ITS list - the hub's four lists on a Schedule page
     // is structured data describing a page the reader is not on.
     for (const [id] of SECTIONS) {
       const { doc } = await dom(at(id));
@@ -2637,7 +2646,7 @@ describe("team section URLs", () => {
   });
 
   test("an unrecognised ?section= still falls through to the hub", async () => {
-    // Defensive: a stale link is worth a full page, not a 404 — the pretty
+    // Defensive: a stale link is worth a full page, not a 404 - the pretty
     // route is where a bad section is refused.
     for (const query of ["?section=bogus", "?section=", ""]) {
       const { doc } = await dom(`/team/new-england-patriots${query}`);
@@ -2650,7 +2659,7 @@ describe("team section URLs", () => {
     const scoped = await get("/embed/team/ne?section=depth-chart");
     assert.equal(scoped.status, 200);
     assert.match(scoped.body, /data-section="depth-chart"/);
-    // The strip is here too, and its links are the public section addresses —
+    // The strip is here too, and its links are the public section addresses -
     // which on a WordPress mount are statchasers.com's, not this origin's.
     assert.match(scoped.body, /sct-nav-link/, "the scoped fragment carries the strip");
     assert.ok(!/<h1\b/i.test(scoped.body), "the fragment never carries an H1");
@@ -2676,7 +2685,7 @@ describe("team section URLs", () => {
    * The plugin used to hang a SoftwareApplication node on every team URL, and
    * Search Console flagged each one for the software-app rich result's missing
    * rating. What replaced it is an ItemList of SportsEvents, carried as an inert
-   * island the plugin grafts into Rank Math's graph — and only on the Schedule
+   * island the plugin grafts into Rank Math's graph - and only on the Schedule
    * page, because on the hub it would describe one tab of five.
    */
   test("the Schedule fragment carries its games as an ItemList of SportsEvents", async (t) => {

@@ -4,13 +4,13 @@
  * Who is on it follows fixed rules, so the same code picks a fair four for
  * every game. Kickers are never picked, nobody is picked twice, and every
  * fantasy comparison is in PPR, computed by fantasyPoints() from the line
- * printed on the card — never read from a stored total.
+ * printed on the card - never read from a stored total.
  *
- *   1. Passing leader — most passing yards.
- *   2. Top fantasy scorer — most PPR points among non-quarterbacks.
- *   3. {Loser} leader — most PPR points on the losing side (the away side on a
+ *   1. Passing leader - most passing yards.
+ *   2. Top fantasy scorer - most PPR points among non-quarterbacks.
+ *   3. {Loser} leader - most PPR points on the losing side (the away side on a
  *      tie), the next one down when that player is already on the strip.
- *   4. Defensive playmaker — a defensive touchdown, then interceptions, then
+ *   4. Defensive playmaker - a defensive touchdown, then interceptions, then
  *      sacks, then tackles.
  *
  * Pure: the game, its players and a link resolver in, HTML out.

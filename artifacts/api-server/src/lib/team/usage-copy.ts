@@ -1,14 +1,14 @@
 /**
  * The Usage tab's words.
  *
- * Every sentence here is written from the numbers, by rule — there is no model
+ * Every sentence here is written from the numbers, by rule - there is no model
  * call and no per-team text file, so all 32 clubs re-write themselves each
  * week when the data does. The spec's editorial rule is the constraint on each
  * template: a line has to state a MECHANISM ("Johnson owns third downs, so
  * Cook's catches are capped"), not restate the number beside it. Where the data
  * cannot support a mechanism, the line says less rather than inventing one.
  *
- * Plain strings out; the renderer escapes them. `**…**` is not markup here —
+ * Plain strings out; the renderer escapes them. `**…**` is not markup here -
  * notes that open with a bold thesis return it as a separate field.
  */
 
@@ -44,6 +44,13 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+/** "a" or "an" before a number as it is read aloud: an 8, an 11, an 18, an 80. */
+function art(n: number | string | null, cap = false): string {
+  const t = String(n);
+  const an = /^8/.test(t) || /^1[18](\D|$)/.test(t);
+  return cap ? (an ? "An" : "A") : an ? "an" : "a";
+}
+
 const POS_PLURAL: Record<string, string> = { QB: "QBs", RB: "RBs", WR: "WRs", TE: "TEs" };
 
 /* ------------------------------------------------------------ environment */
@@ -58,12 +65,6 @@ export interface EnvCard {
 
 export function environmentCards(view: UsageView): EnvCard[] {
   const { env } = view.team;
-  const rb1 = view.rbs[0];
-  const qb = view.qb;
-  const receivers = view.rows
-    .filter((r) => r.player.pos === "WR" || r.player.pos === "TE")
-    .map((r) => r.player);
-  const [wr1, wr2] = receivers;
   const cards: EnvCard[] = [];
   const good = (rank: number | null) => rank != null && rank <= 12;
 
@@ -71,10 +72,14 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const v = env.proe.value;
     const note =
       v >= 3
-        ? `Throws more than game situations call for${wr1 ? ` — the volume ${list([wr1, wr2].filter(Boolean).map((p) => surname(p!.name)))} live on` : ""}`
+        ? `Throws more than game situations call for - more pass attempts to share among the pass-catchers`
         : v <= -3
-          ? `Runs more than game situations call for — a cap on the pass-catchers' volume${rb1 ? ` and a floor under ${surname(rb1.name)}` : ""}`
-          : `Throws about as much as situations call for — the target tree, not the play-calling, decides who eats`;
+          ? `Runs more than game situations call for - fewer pass attempts to share among the pass-catchers`
+          : v <= -1
+            ? `Slightly run-leaning relative to situation - target concentration matters more than raw pass volume here`
+            : v >= 1
+              ? `Slightly pass-leaning relative to situation - the target tree, not the play-calling, decides who eats`
+              : `Throws about as much as situations call for - the target tree, not the play-calling, decides who eats`;
     cards.push({ label: "Pass rate over expected", value: `${signed(v)}%`, rank: ordinal(env.proe.rank), good: good(env.proe.rank), note });
   }
 
@@ -85,18 +90,15 @@ export function environmentCards(view: UsageView): EnvCard[] {
     let note: string;
     if (rank <= 10) {
       note = ez && ez.ezTargets > 0
-        ? `Throws inside the 20 — ${surname(ez.name)}'s ${ez.ezTargets} end-zone target${ez.ezTargets === 1 ? "" : "s"} lead the team`
-        : `Throws inside the 20 — red-zone targets are live for the whole tree`;
+        ? `Throws inside the 20 - ${surname(ez.name)}'s ${ez.ezTargets} end-zone target${ez.ezTargets === 1 ? "" : "s"} lead the team`
+        : `Throws inside the 20 - red-zone targets are live for the whole tree`;
     } else if (rank >= 23) {
-      note =
-        qb && rb1 && qb.gzCarries >= 2 && qb.gzCarries >= rb1.gzCarries
-          ? `Run-first inside the 20 — ${surname(qb.name)}'s legs cap the receivers' TDs`
-          : rb1
-            ? `Run-first inside the 20 — ${surname(rb1.name)}'s ${rb1.gzCarries} green-zone carries eat the receivers' TDs`
-            : `Run-first inside the 20 — the receivers' TD odds shrink`;
+      // A team rate supports a team conclusion: fewer red-zone targets to go
+      // around. Who runs it in, and what that does to whom, is not in it.
+      note = `Run-heavy inside the 20 - passing on ${env.rzPassRate.value.toFixed(0)}% of red-zone plays limits the red-zone targets available to the receivers`;
     } else {
       note = rzLeader
-        ? `Balanced inside the 20 — ${surname(rzLeader.name)} leads the team with ${rzLeader.rzTouches} red-zone touches`
+        ? `Balanced inside the 20 - ${surname(rzLeader.name)} leads the team with ${rzLeader.rzTouches} red-zone opportunities`
         : `Balanced inside the 20`;
     }
     cards.push({ label: "Red-zone pass rate", value: `${env.rzPassRate.value.toFixed(0)}%`, rank: ordinal(rank), good: good(rank), note });
@@ -106,9 +108,9 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const rank = env.pace.rank;
     const note =
       rank <= 10
-        ? "Seconds per play in neutral situations — a fast offense means more snaps for every starter"
+        ? "Seconds per play in neutral situations - faster neutral pace creates more potential play volume when drives are sustained"
         : rank >= 23
-          ? "Seconds per play in neutral situations — a slow offense shrinks the pie"
+          ? "Seconds per play in neutral situations - slower neutral pace caps the potential play volume"
           : "Seconds per play in neutral situations";
     cards.push({ label: "Neutral pace", value: `${env.pace.value.toFixed(1)}s`, rank: `${ordinal(rank)} fastest`, good: good(rank), note });
   }
@@ -119,18 +121,22 @@ export function environmentCards(view: UsageView): EnvCard[] {
     const rank = env.playsPerGame.rank;
     const note =
       rank <= 10
-        ? "Offensive plays a game — extra volume lifts every starter's floor"
+        ? "Dropbacks and runs a game, kneels and spikes excluded - more plays to share among the starters"
         : rank >= 23
-          ? "Offensive plays a game — fewer snaps to go around, so shares matter more"
-          : "Offensive plays a game — league-average volume, so shares decide it";
-    cards.push({ label: "Plays per game", value: env.playsPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
+          ? "Dropbacks and runs a game, kneels and spikes excluded - fewer plays to go around, so shares matter more"
+          : "Dropbacks and runs a game, kneels and spikes excluded - league-average volume, so shares decide it";
+    cards.push({ label: "Qualifying plays / game", value: env.playsPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
   }
 
   if (env.xfpPerGame.value != null && env.xfpPerGame.rank != null) {
     const rank = env.xfpPerGame.rank;
     const note =
-      "Total expected fantasy points this offense creates" +
-      (rank <= 8 ? " — a rising tide for every starter" : rank >= 25 ? " — a thin pie, so only the top shares pay" : "");
+      "Combined expected fantasy production generated by the offense" +
+      (rank <= 8
+        ? " - high overall opportunity value gives more than one starter room to pay off"
+        : rank >= 25
+          ? " - low overall opportunity value puts more pressure on players to command large individual shares"
+          : "");
     cards.push({ label: "Team xFP / game", value: env.xfpPerGame.value.toFixed(1), rank: ordinal(rank), good: good(rank), note });
   }
 
@@ -152,18 +158,18 @@ export function backfieldChips(view: UsageView): StatChip[] {
   if (rb1.woppPerGame != null) {
     chips.push({
       value: rb1.woppPerGame.toFixed(1),
-      caption: `${surname(rb1.name)} weighted opps/game${rank ? ` — RB${rank} in the NFL` : ""}`,
+      caption: `${surname(rb1.name)} weighted opps / active game${rank ? ` - RB${rank} in the NFL` : ""}`,
     });
   }
-  chips.push({ value: String(rb1.hvt), caption: `${surname(rb1.name)} high-value touches (in-10 carries + targets)` });
+  chips.push({ value: String(rb1.hvt), caption: `${surname(rb1.name)} high-value touches (in-10 carries + receptions), season` });
   if (rb2 && rb2.woppPerGame != null) {
-    chips.push({ value: rb2.woppPerGame.toFixed(1), caption: `${surname(rb2.name)} weighted opps/game` });
+    chips.push({ value: rb2.woppPerGame.toFixed(1), caption: `${surname(rb2.name)} weighted opps / active game` });
   }
   if (rb1.woppPerGame != null && rb1.lastSeasonWoppPerGame != null) {
     const d = rb1.woppPerGame - rb1.lastSeasonWoppPerGame;
     const read =
       d >= 1.5 ? "role grew, not just efficiency" : d <= -1.5 ? "a smaller role than last season" : "the same role as last season";
-    chips.push({ value: signed(d), caption: `${surname(rb1.name)} wOpp/g vs. last season — ${read}` });
+    chips.push({ value: signed(d), caption: `${surname(rb1.name)} wOpp per active game vs. last season - ${read}` });
   }
   return chips;
 }
@@ -202,38 +208,52 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
   if (passingOwner && passingOwner !== rb1 && (ownerShare(passingOwner) ?? 0) >= 40) {
     const who = surname(passingOwner.name);
     const where = thirdSample
-      ? `${ownerShare(passingOwner)}% of the backs' third-down work`
+      ? `${ownerShare(passingOwner)}% of the backs' third-down carries + targets`
       : `${ownerShare(passingOwner)}% of the backfield's targets`;
     const tm = twoMin(passingOwner);
     out.push({
       lead: `Why ${surname(rb1.name)}'s reception count stays capped:`,
       body:
-        `${passingOwner.name} owns ${where}${tm != null && tm >= 40 ? ` and ${tm}% of two-minute work` : ""}. ` +
-        `${surname(rb1.name)}'s ${catchPace}-catch pace isn't a talent question — the passing-down role belongs to ${who}. ` +
-        `Green flag for his rushing floor, hard ceiling on his PPR upside.`,
+        `${passingOwner.name} has ${where}${tm != null && tm >= 40 ? ` and ${tm}% of the two-minute carries + targets` : ""}. ` +
+        `${surname(rb1.name)}'s current receiving role is the smaller one: ${rb1.receptions} catch${rb1.receptions === 1 ? "" : "es"} through ${g} game${g === 1 ? "" : "s"} is ${art(catchPace)} ${catchPace}-catch pace. ` +
+        `While ${who} holds most of the passing-down work, ${surname(rb1.name)}'s receptions have to come on other downs.`,
     });
   } else {
     const share = ownerShare(rb1);
     const trailing = totals.trailing >= 6 ? situationShare(view, rb1, "trailing") : null;
+    // His share of the room's carries + targets in every situation, to judge
+    // whether the trailing split is holding up or shrinking.
+    const roomWork = view.rbs.reduce((s, p) => s + p.carries + p.targets, 0);
+    const overall = roomWork ? Math.round((100 * (rb1.carries + rb1.targets)) / roomWork) : null;
+    const games = rb1.games;
     out.push({
-      lead: `Why ${surname(rb1.name)}'s floor holds in PPR:`,
+      lead: `${surname(rb1.name)}'s receiving role:`,
       body:
-        `He keeps ${share != null ? `${share}% of ` : ""}${thirdSample ? "the backs' third-down work" : "the backfield's targets"} as well as the early downs, so his catches don't depend on game script — a ${catchPace}-catch pace. ` +
+        (thirdSample
+          ? `His third-down involvement (${share != null ? `${share}% of ` : ""}the backs' third-down carries + targets) gives him a receiving path even when rushing volume falls`
+          : `His ${share != null ? `${share}% ` : ""}share of the backfield's targets gives him a receiving path even when rushing volume falls`) +
+        `; ${rb1.receptions} catch${rb1.receptions === 1 ? "" : "es"} through ${games} game${games === 1 ? "" : "s"} is ${art(catchPace)} ${catchPace}-catch pace. ` +
         (trailing != null
-          ? `Trailing by 7+, he still gets ${trailing}% of the backs' work — no one takes the hurry-up snaps from him.`
-          : `No one on this depth chart takes the hurry-up snaps from him.`),
+          ? // Opportunity, not snaps: the split counts carries + targets, and
+            // participation data (who was on the field) arrives after the season.
+            overall == null || trailing >= overall * 0.75
+            ? `Trailing by 7+, ${surname(rb1.name)} still receives ${trailing}% of the RB room's carries + targets, so his opportunity has not disappeared in negative game scripts.`
+            : `Trailing by 7+, his share of the RB room's carries + targets drops to ${trailing}% (${overall}% overall), so negative game scripts cut into his work.`
+          : ""),
     });
   }
 
   // The handcuff: RB1's work redistributed in proportion to who takes the
-  // valuable (early-down and red-zone) snaps behind him.
+  // valuable (early-down and red-zone) carries + targets behind him.
   if (rb2 && (rb2.woppShare ?? 0) >= 5 && rb1.woppPerGame != null && rb2.woppPerGame != null) {
     const valuable = (p: UsagePlayer) => p.situation.early + p.situation.rz;
     const behind = others.reduce((s, p) => s + valuable(p), 0);
     const weight = behind ? valuable(rb2) / behind : 1 / Math.max(1, others.length);
     const projected = rb2.woppPerGame + rb1.woppPerGame * weight;
-    const roomPerGame = view.rbs.reduce((s, p) => s + (p.woppPerGame ?? 0), 0);
-    const projShare = roomPerGame ? Math.round((100 * projected) / roomPerGame) : null;
+    // The share is over season totals, like the bar above: summing per-game
+    // rates would overweight a back who missed games.
+    const room = view.rbs.reduce((s, p) => s + p.wopp, 0);
+    const projShare = room ? Math.round((100 * (rb2.wopp + rb1.wopp * weight)) / room) : null;
     const rank = rbRankFor(view.doc.rbWoppPool, projected);
     const grade =
       rank <= 12 ? "a top-12 weekly RB by volume" : rank <= 24 ? "an RB2 by volume" : "flex volume at best";
@@ -243,21 +263,32 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
       rb3 && passingOwner === rb3
         ? `while ${surname(rb3.name)} keeps passing downs`
         : "";
+    // A role is only claimed on a sample that can carry it: the room's
+    // red-zone split is often two or three plays in September.
     const roles = [
-      rb2Early != null && rb2Early >= 15 ? "early-down" : null,
-      rb2Rz != null && rb2Rz >= 15 ? "red-zone" : null,
+      totals.early >= 10 && rb2Early != null && rb2Early >= 15 ? "early-down" : null,
+      totals.rz >= 8 && rb2Rz != null && rb2Rz >= 15 ? "red-zone" : null,
     ].filter(Boolean) as string[];
+    // Who inherits what: RB1's work goes to the backs behind him in
+    // proportion to their early-down + red-zone work.
+    const heirs = others
+      .map((p) => ({ p, w: behind ? valuable(p) / behind : 1 / Math.max(1, others.length) }))
+      .filter((h) => Math.round(100 * h.w) > 0);
+    const split =
+      heirs.length > 1
+        ? ` (${heirs.map((h) => `${surname(h.p.name)} ${Math.round(100 * h.w)}%`).join(", ")}, by their shares of the early-down and red-zone carries + targets behind him)`
+        : "";
     out.push({
       lead: `The ${surname(rb2.name)} math if ${surname(rb1.name)} misses time:`,
       body:
         (roles.length
-          ? `${surname(rb2.name)} backs up the ${list(roles)} role${roles.length > 1 ? "s" : ""} (the valuable ones)${backs ? ` ${backs}` : ""}. `
+          ? `${surname(rb2.name)} backs up the ${list(roles)} role${roles.length > 1 ? "s (the valuable ones)" : " (the valuable one)"}${backs ? ` ${backs}` : ""}. `
           : `${surname(rb2.name)} is next in line by weighted opportunities${backs ? `, ${backs}` : ""}. `) +
-        `A ${surname(rb1.name)} absence projects ${surname(rb2.name)} to ~${projShare}% of weighted opportunities — about ${projected.toFixed(1)} a game, ${grade}` +
+        `Our contingency model reallocates ${surname(rb1.name)}'s carries + targets to the backs behind him${split}, projecting ${surname(rb2.name)} for ~${projShare}% of backfield weighted opportunities (~${projected.toFixed(1)} per active game) if ${surname(rb1.name)} is inactive - ${grade}` +
         (grade.startsWith("a top") || grade.startsWith("an RB2")
           ? view.rows.some((r) => r.player === rb2 && r.tier === "stash")
-            ? ` — and why he's a STASH, not a cut.`
-            : ` — worth a bench spot in deeper leagues.`
+            ? ` - and why he's a STASH, not a cut.`
+            : ` - worth a bench spot in deeper leagues.`
           : `.`),
     });
   } else {
@@ -279,14 +310,6 @@ export const GAP_LABEL: Record<RunGap, string> = {
   RE: "Right end",
 };
 
-const GAP_PHRASE: Record<RunGap, string> = {
-  LE: "off left end",
-  LT: "behind left tackle",
-  MID: "up the middle",
-  RT: "behind right tackle",
-  RE: "off right end",
-};
-
 export function bestGap(view: UsageView): RunGap | null {
   const runs = view.team.runs;
   const total = Object.values(runs).reduce((s, r) => s + r.att, 0);
@@ -300,48 +323,48 @@ export function bestGap(view: UsageView): RunGap | null {
   return best;
 }
 
+/**
+ * Run direction, described and never explained: the split says where the runs
+ * went, not what the play-caller wanted (fronts, audibles and game state all
+ * move it). No "engine", no "plan". Gap YPC is noisy, so the attempt count
+ * rides along with it.
+ */
 export function runNote(view: UsageView): string {
   const runs = view.team.runs;
   const best = bestGap(view);
   if (!best) return "";
   const total = Object.values(runs).reduce((s, r) => s + r.att, 0);
+  const pctOf = (n: number) => Math.round((100 * n) / total);
   const rb1 = view.rbs[0];
-  const mid = runs.MID;
+  const left = runs.LT.att + runs.LE.att;
+  const right = runs.RT.att + runs.RE.att;
+  const inside = pctOf(runs.MID.att);
 
-  if (best === "MID") {
-    return (
-      `The interior is the run game's engine: ${mid.ypc!.toFixed(1)} yards per carry up the middle on ${mid.att} attempts, ` +
-      `${Math.round((100 * mid.att) / total)}% of all designed runs. The edges are a change-up, not the plan — ` +
-      `when an interior lineman sits out practice, that's a usage note, not just an injury note.`
-    );
-  }
-
-  const side = best === "LE" || best === "LT" ? "left" : "right";
-  const [a, b]: RunGap[] = side === "left" ? ["LT", "LE"] : ["RT", "RE"];
-  const sideAtt = runs[a].att + runs[b].att;
-  const partner = best === a ? b : a;
-  // The other gap on that side only joins the claim when it pulls its weight
-  // too: at least what the interior gains. "4.6 behind right tackle and 1.0 off
-  // right end" is not an engine.
-  const partnerYpc = runs[partner].ypc;
-  const partnerLine =
-    runs[partner].att >= 3 && partnerYpc != null && partnerYpc >= (mid.ypc ?? 0)
-      ? ` and ${partnerYpc.toFixed(1)} ${GAP_PHRASE[partner]}`
-      : "";
+  const spread = `${inside}% of designed runs have gone up the middle, ${pctOf(left)}% to the left (tackle + end) and ${pctOf(right)}% to the right.`;
+  // A concentration claim needs a team sample worth the word.
+  const lean =
+    total < 20
+      ? ""
+      : inside >= 55
+        ? " The run game has been concentrated inside so far."
+        : pctOf(left) >= 40
+          ? " The run game has leaned left so far."
+          : pctOf(right) >= 40
+            ? " The run game has leaned right so far."
+            : "";
+  const r = runs[best];
+  const efficiency =
+    ` ${GAP_LABEL[best].replace(" ", "-")} runs have produced the highest YPC so far: ${r.ypc!.toFixed(1)} on ${r.att} attempts` +
+    (r.att < 20 ? ", a small sample" : "") +
+    ".";
+  const side = best === "LE" || best === "LT" ? "left" : best === "MID" ? null : "right";
   const longest = rb1?.longestRuns ?? [];
-  const onSide = longest.filter(([, gap]) => gap === a || gap === b).length;
+  const onSide = side ? longest.filter(([, gap]) => (side === "left" ? gap === "LT" || gap === "LE" : gap === "RT" || gap === "RE")).length : 0;
   const longestLine =
-    rb1 && longest.length >= 3 && onSide >= 2
-      ? `, and ${onSide === 3 ? "all three" : "two"} of ${surname(rb1.name)}'s three longest runs came off the ${side} side`
+    side && rb1 && longest.length >= 3 && onSide >= 2
+      ? ` ${onSide === 3 ? "All three" : "Two"} of ${surname(rb1.name)}'s three longest runs came off the ${side} side.`
       : "";
-  return (
-    `The ${side} side is the run game's engine: ${runs[best].ypc!.toFixed(1)} yards per carry ${GAP_PHRASE[best]}${partnerLine} — ` +
-    `${Math.round((100 * sideAtt) / total)}% of all designed runs go that way${longestLine}. ` +
-    (mid.att > 0 && mid.ypc != null
-      ? `Interior volume (${mid.att} attempts) does the clock work at ${mid.ypc.toFixed(1)}; the ${side} edge does the damage. `
-      : "") +
-    `When the line's ${side} side sits out practice, that's a usage note, not just an injury note.`
-  );
+  return spread + lean + efficiency + longestLine;
 }
 
 /* ------------------------------------------------------------ pass map */
@@ -372,36 +395,54 @@ export function zoneOwner(view: UsageView, zone: Zone): string | null {
   return surname(top.name);
 }
 
-export function passNote(view: UsageView, qbName: string): string {
+export function passNote(view: UsageView, qbName: string, nickname: string): string {
   const zones = view.team.zones;
   const best = bestZone(view);
   if (!best) return "";
-  const z = zones[best]!;
-  const owner = zoneOwner(view, best);
   const deepAtt = (["DL", "DM", "DR"] as Zone[]).reduce((s, k) => s + (zones[k]?.att ?? 0), 0);
   const allAtt = (Object.values(zones) as Array<{ att: number }>).reduce((s, v) => s + v.att, 0);
   const shortShare = allAtt ? Math.round((100 * (allAtt - deepAtt)) / allAtt) : null;
+  // "Most explosive" only when a deep zone actually out-gains every short one.
+  const shortTop = Math.max(0, ...(["SL", "SM", "SR"] as Zone[]).map((k) => zones[k]?.ypa ?? 0));
   const deepBest = (["DL", "DM", "DR"] as Zone[])
-    .filter((k) => (zones[k]?.att ?? 0) >= 2 && zones[k]?.ypa != null)
+    .filter((k) => (zones[k]?.att ?? 0) >= 2 && zones[k]?.ypa != null && zones[k]!.ypa! > shortTop)
     .sort((a, b) => zones[b]!.ypa! - zones[a]!.ypa!)[0];
 
   const deepShare = allAtt ? Math.round((100 * deepAtt) / allAtt) : 0;
-  // A deep-only receiver on a short-passing team: the mapped version of his problem.
+  // A deep-only receiver on a short-passing team: the mapped version of his
+  // problem. Judged on his own deep-target rate (20+ air yards), not his aDOT:
+  // an 18-yard average can hide zero deep targets or a mix of screens and bombs.
+  const deepRate = (p: UsagePlayer) => (p.targets && p.deepTargets != null ? Math.round((100 * p.deepTargets) / p.targets) : null);
   const decoy = view.rows
     .map((r) => r.player)
-    .filter((p) => (p.pos === "WR" || p.pos === "TE") && (p.adot ?? 0) >= 13 && (p.targetShare ?? 100) < 15)
-    .sort((a, b) => (b.adot ?? 0) - (a.adot ?? 0))[0];
+    .filter(
+      (p) =>
+        (p.pos === "WR" || p.pos === "TE") &&
+        (p.targetShare ?? 100) < 15 &&
+        (p.deepTargets ?? 0) >= 2 &&
+        (deepRate(p) ?? 0) >= 2 * deepShare,
+    )
+    .sort((a, b) => (deepRate(b) ?? 0) - (deepRate(a) ?? 0))[0];
 
+  // The lead is the best sub-20-yard zone on a real sample, stated as exactly
+  // that: a September zone is ten throws, not an "engine".
+  const shortBest = (["SL", "SM", "SR"] as Zone[])
+    .filter((k) => (zones[k]?.att ?? 0) >= 5 && zones[k]?.ypa != null)
+    .sort((a, b) => zones[b]!.ypa! - zones[a]!.ypa!)[0];
+  const shortOwner = shortBest ? zoneOwner(view, shortBest) : null;
   return (
-    `The ${ZONE_LABEL[best].toLowerCase()} is the efficiency engine (${z.ypa} YPA)` +
-    (owner ? ` — and it's ${owner}'s territory` : "") +
-    `. ${qbName} keeps ${shortShare}% of his throws under 20 air yards` +
+    (shortBest
+      ? `The ${ZONE_LABEL[shortBest].toLowerCase()} has been the ${nickname}' most efficient sub-20-yard area at ${zones[shortBest]!.ypa!.toFixed(1)} YPA on ${zones[shortBest]!.att} attempts` +
+        (shortOwner ? `, ${shortOwner}'s territory` : "") +
+        `. `
+      : "") +
+    `${qbName} keeps ${shortShare}% of his throws under 20 air yards` +
     (deepBest
-      ? `, with the ${ZONE_LABEL[deepBest].toLowerCase()} his most explosive zone (${zones[deepBest]!.ypa} YPA on ${zones[deepBest]!.att} attempt${zones[deepBest]!.att === 1 ? "" : "s"})`
+      ? `, with the ${ZONE_LABEL[deepBest].toLowerCase()} his most explosive zone (${zones[deepBest]!.ypa!.toFixed(1)} YPA on ${zones[deepBest]!.att} attempt${zones[deepBest]!.att === 1 ? "" : "s"})`
       : "") +
     `. ` +
     (decoy && best.startsWith("S")
-      ? `${surname(decoy.name)}'s fantasy problem, mapped: a ${decoy.adot}-yard aDOT puts him in the ${deepShare}% deep slice of this chart while the ${ZONE_LABEL[best].toLowerCase()} feasts. `
+      ? `${surname(decoy.name)}'s fantasy problem, mapped: ${decoy.deepTargets} of his ${decoy.targets} targets (${deepRate(decoy)}%) have come 20+ yards downfield, the slice that is only ${deepShare}% of ${qbName}'s throws. `
       : "") +
     `Gold = highest-YPA high-volume zone.`
   );
@@ -430,7 +471,7 @@ export function rankLine(p: UsagePlayer): string {
   const rank = p.leagueRank.rank;
   if (!rank) return "";
   if (p.pos === "WR" || p.pos === "TE") return `${p.pos}${rank} in target share, NFL`;
-  if (p.pos === "RB") return `RB${rank} in weighted opps/game, NFL`;
+  if (p.pos === "RB") return `RB${rank} in weighted opps per active game, NFL`;
   return `QB${rank} in xFP/game, NFL`;
 }
 
@@ -443,7 +484,7 @@ export function woprCaption(p: UsagePlayer): string {
     return "below startable";
   }
   if (w >= 0.6) return "elite";
-  if (w >= 0.45) return "strong — elite at 0.60";
+  if (w >= 0.45) return "strong - elite at 0.60";
   if (w >= 0.3) return "flex range";
   return "below startable";
 }
@@ -467,29 +508,42 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
         : Math.abs(fpoe) < 1.5
         ? ` Production is running ${signed(fpoe)} ${fpoe > 0 ? "over" : "against"} expected, so this is volume, not a hot streak.`
         : fpoe >= 1.5
-          ? ` He's scoring ${signed(fpoe)} points a game over expected — some of that is efficiency that regresses, but the ${p.xfpPerGame} xFP floor holds.`
-          : ` He's ${signed(fpoe)} a game against expected: the volume is there and the box score hasn't caught up — a buy signal, not a warning.`;
+          ? ` He's scoring ${signed(fpoe)} points a game over expected - efficiency that may not repeat; his ${p.xfpPerGame} xFP a game is the opportunity underneath it.`
+          : ` Production is running ${Math.abs(fpoe).toFixed(1)} points a game below the value of his opportunities - a potential regression signal if the role holds.`;
 
   if (p.pos === "QB") {
     const rushing = p.gzCarries >= 3 || (p.designedRunRate ?? 0) >= 8;
-    const in10 = view.team.env.in10PassRate.value;
+    const rushYards = p.rushYards ?? 0;
+    const gp = Math.max(1, p.games);
+    const xfpRank = p.leagueRank.rank ? ` (QB${p.leagueRank.rank} in expected points)` : "";
     if (rushing) {
+      // His own carries only: the team's inside-the-10 pass rate counts every
+      // runner, so it says nothing about how often HE keeps it.
       return {
         thesis: p.gzCarries >= 3 ? "The goal-line QB." : "The rushing floor.",
         body:
-          ` ${p.gzCarries} green-zone carr${p.gzCarries === 1 ? "y" : "ies"} in ${p.games} game${p.games === 1 ? "" : "s"} and a ${p.designedRunRate}% designed-run rate` +
-          (in10 != null ? ` — with a ${in10}% pass rate inside the 10, the most valuable real estate in fantasy goes to his legs as often as his arm` : "") +
-          `.` +
-          (p.xfpPerGame != null && p.leagueRank.rank ? ` His xFP alone (QB${p.leagueRank.rank} league-wide) justifies the price before any efficiency.` : "") +
-          ` ${tail}`,
+          ` ${p.gzCarries} carr${p.gzCarries === 1 ? "y" : "ies"} inside the 10, ${art(p.designedRunRate)} ${p.designedRunRate}% designed-run rate and ${rushYards} rushing yards through ${gp} game${gp === 1 ? "" : "s"}` +
+          (p.gzCarries >= 3
+            ? `: his rushing role adds goal-line touchdown equity on top of the passing${xfpRank}.`
+            : `: designed runs add a rushing floor beyond scrambles${xfpRank}.`) +
+          `${fpoeLine} ${tail}`,
+      };
+    }
+    // A low designed-run rate is not a pocket passer: scrambles still add
+    // rushing yards, so the copy only says "through the air" for the TDs.
+    const inside = `${p.gzCarries} carr${p.gzCarries === 1 ? "y" : "ies"} inside the 10`;
+    if (rushYards / gp >= 15 || (p.scrambleRate ?? 0) >= 6) {
+      return {
+        thesis: "Limited designed runs, real scramble yards.",
+        body:
+          ` ${surname(p.name)}'s designed rushing role is limited, but scrambling still adds meaningful floor: ${rushYards} rushing yards through ${gp} game${gp === 1 ? "" : "s"}.` +
+          ` With ${p.gzCarries ? `only ${inside}` : "no carries inside the 10"}, however, most of his touchdown equity still comes through the passing game${xfpRank}.${fpoeLine} ${tail}`,
       };
     }
     return {
       thesis: "A pocket passer's profile.",
       body:
-        ` ${p.gzCarries} green-zone carr${p.gzCarries === 1 ? "y" : "ies"} and a ${p.scrambleRate ?? 0}% scramble rate: his points have to come through the air, so his weekly range follows the pass volume` +
-        (p.leagueRank.rank ? ` (QB${p.leagueRank.rank} in expected points)` : "") +
-        `.${fpoeLine} ${tail}`,
+        ` ${rushYards} rushing yards through ${gp} game${gp === 1 ? "" : "s"} and ${inside}: his points come mostly through the air, so his weekly range follows the pass volume${xfpRank}.${fpoeLine} ${tail}`,
     };
   }
 
@@ -499,14 +553,14 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
       return {
         thesis: "Contingent value, quantified.",
         body:
-          ` The ${p.touchShare ?? 0}% touch share is standalone-flex-in-a-pinch at best; the real number is what it becomes if ${surname(rb1.name)} misses time — see The Backfield Split above. ${tail}`,
+          ` The ${p.touchShare ?? 0}% touch share is standalone-flex-in-a-pinch at best; the real number is what it becomes if ${surname(rb1.name)} misses time - see The Backfield Split above. ${tail}`,
       };
     }
     if ((p.woppShare ?? 0) >= 65) {
       return {
         thesis: "The locked-in workhorse.",
         body:
-          ` A ${p.rzOppShare ?? 0}% share of the backs' red-zone work is the RB stat that tracks fantasy points best, and ${p.gzCarries} green-zone carr${p.gzCarries === 1 ? "y" : "ies"} put him at the goal line.` +
+          ` ${p.woppShare ?? 0}% of the backfield's weighted opportunities, ${p.rzOppShare ?? 0}% of the backs' red-zone carries + targets and ${p.gzCarries} carr${p.gzCarries === 1 ? "y" : "ies"} inside the 10.` +
           fpoeLine +
           ` ${tail}`,
       };
@@ -514,7 +568,7 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
     return {
       thesis: "A shared backfield.",
       body:
-        ` ${p.woppShare ?? 0}% of the weighted opportunities means another back takes a real cut every week, so his floor rises and falls with game script.` +
+        ` ${p.woppShare ?? 0}% of the weighted opportunities means another back takes a real cut every week, so his weekly volume depends on how that split breaks.` +
         fpoeLine +
         ` ${tail}`,
     };
@@ -525,13 +579,13 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
   const ts = p.targetShare ?? 0;
   const adot = p.adot ?? 0;
   const fr = p.firstReadShare;
-  const frLine = fr != null ? `a ${fr}% first-read share` : "";
+  const frLine = fr != null ? `${art(fr)} ${fr}% first-read share` : "";
 
   if (ays >= 30 && ts >= 20) {
     return {
       thesis: "The alpha profile, fully formed.",
       body:
-        ` A ${ays}% air-yards share clears the 30% alpha threshold${frLine ? `, ${frLine} says the offense is designed through him` : ""}, and a ${adot}-yard aDOT ${adot >= 8 && adot <= 13 ? "sits in the sweet spot — deep enough for ceiling, not so deep it gets volatile" : adot > 13 ? "keeps his ceiling high and his floor jumpy" : "keeps him on the move-the-chains throws"}.` +
+        ` ${art(ays, true)} ${ays}% air-yards share is an alpha-level share of downfield opportunity${frLine ? `, ${frLine} shows he's regularly the first option` : ""}, and his targets have averaged ${adot} air yards.` +
         fpoeLine +
         ` ${tail}`,
     };
@@ -542,27 +596,31 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
       thesis: "The role is arriving before the box score does.",
       body:
         ` His target share has run ${trail} over the last ${row.ts.trail.length} games` +
-        (fr != null && fr >= 20 ? `, with ${frLine} saying the plays are being designed for him` : "") +
-        `. Volume that is growing this fast gets repriced the week it scores.` +
+        (fr != null && fr >= 20 ? `, with ${frLine} showing he's increasingly being featured as the first option` : "") +
+        `. If the usage holds, his season totals understate his current role.` +
         fpoeLine +
         ` ${tail}`,
     };
   }
   if (adot >= 13 && ts < 15) {
     return {
-      thesis: "The deep-decoy profile.",
+      thesis: "Deep on average, small share.",
       body:
-        ` A ${adot}-yard aDOT sits past the depth where weekly production turns boom/bust, and a ${ts}% target share says he isn't earning volume when he's out there` +
-        (fr != null && fr < 12 ? `; a ${fr}% first-read share means the plays are rarely designed for him` : "") +
-        `. Best-ball ceiling, seasonal-league headache. ${tail}`,
+        // aDOT is an average and target share is a share of team targets: the
+        // depth mix comes from his own deep-target count, and nothing here says
+        // when he is on the field (that needs route data).
+        ` His targets have come far downfield on average (${adot}-yard aDOT), but he has only ${ts}% of team targets` +
+        (p.deepTargets != null && p.targets ? `; ${p.deepTargets} of his ${p.targets} were 20+ yards downfield` : "") +
+        (fr != null && fr < 12 ? `, and ${art(fr)} ${fr}% first-read share means he's rarely the first option` : "") +
+        `. The low target share limits the value of that downfield role. ${tail}`,
     };
   }
   if (adot > 0 && adot <= 7 && ays < 20) {
     return {
-      thesis: `The ceiling problem in two numbers: a ${ays}% air-yards share and a ${adot} aDOT.`,
+      thesis: `The ceiling problem in two numbers: ${art(ays)} ${ays}% air-yards share and ${art(adot)} ${adot} aDOT.`,
       body:
-        ` His targets travel nowhere, so even a healthy target share converts to modest yardage` +
-        (row.ts.direction === "down" && row.ts.confirmed ? ` — and the share itself is the one drifting down` : "") +
+        ` ${adot < 6 ? "His targets are concentrated close to the line of scrimmage on average" : `He is being used primarily in the short area, with ${art(adot)} ${adot}-yard aDOT`}, so his yardage leans on what he gains after the catch` +
+        (row.ts.direction === "down" && row.ts.confirmed ? ` - and the share itself is the one drifting down` : "") +
         `.` +
         fpoeLine +
         ` ${tail}`,
@@ -572,17 +630,16 @@ export function profileNote(row: UsageRow, view: UsageView): ProfileNote {
     return {
       thesis: "Not enough of the pie.",
       body:
-        ` A ${ts}% target share is under the line where weekly fantasy value lives` +
-        (frLine ? `, and ${frLine} says he's rarely the design` : "") +
-        `. He needs an injury above him or a role change, not a better matchup. ${tail}`,
+        ` ${art(ts, true)} ${ts}% target share is a small slice of the team's targets` +
+        (frLine ? `, and ${frLine} says he's rarely the first option` : "") +
+        `. A role expansion or an injury to one of the team's higher-volume target earners is the clearest path to more targets. ${tail}`,
     };
   }
   return {
     thesis: ts >= 20 ? "Volume you can set in the lineup." : "A starter's share without the alpha tag.",
     body:
-      ` A ${ts}% target share and ${p.xfpPerGame ?? 0} expected points a game` +
-      (frLine ? `, with ${frLine}` : "") +
-      (ays ? `; a ${ays}% air-yards share decides how much of that turns into yards` : "") +
+      ` ${art(ts, true)} ${ts}% target share and ${p.xfpPerGame ?? 0} expected points a game` +
+      (frLine && ays ? `, with ${frLine} and ${art(ays)} ${ays}% air-yards share` : frLine ? `, with ${frLine}` : ays ? `, with ${art(ays)} ${ays}% air-yards share` : "") +
       `.` +
       fpoeLine +
       ` ${tail}`,
@@ -608,7 +665,7 @@ export function signalCopy(signal: Signal): SignalCopy {
     if (signal.reason === "points") {
       return {
         label: "Buy low",
-        body: `The volume is there and the points aren't — yet. ${p.xfpPerGame} expected points a game against ${p.fpPerGame} actual is the gap that closes on its own. Trade for him before it does.`,
+        body: `The volume is there and the points aren't - yet. ${p.xfpPerGame} expected points a game against ${p.fpPerGame} actual is a gap worth investigating - if the role holds, it's a potential regression signal. Check why before you trade for him.`,
         proof: [
           { value: `${p.xfpPerGame}`, caption: "xFP per game" },
           { value: signed(p.fpoePerGame ?? 0), caption: "points vs. expected per game" },
@@ -621,7 +678,7 @@ export function signalCopy(signal: Signal): SignalCopy {
     if (proof.length < 2 && p.xfpPerGame != null) proof.push({ value: `${p.xfpPerGame}`, caption: "xFP per game" });
     return {
       label: "Buy low",
-      body: "The role is arriving before the box score does. Trade for him this week — not after the two-touchdown game makes it obvious to your league.",
+      body: "The role is arriving before the box score does. Trade for him this week - not after the two-touchdown game makes it obvious to your league.",
       proof: proof.slice(0, 2),
     };
   }
@@ -647,7 +704,7 @@ export function signalCopy(signal: Signal): SignalCopy {
       proof: [
         { value: signed(row.ts.delta ?? 0), caption: `target share pts since ${base}` },
         ...(last != null
-          ? [{ value: `${last.toFixed(1)}%`, caption: `W${lastWeek} share${seasonLow ? " — season low" : ""}` }]
+          ? [{ value: `${last.toFixed(1)}%`, caption: `W${lastWeek} share${seasonLow ? " - season low" : ""}` }]
           : []),
       ],
     };
@@ -659,10 +716,10 @@ export function signalCopy(signal: Signal): SignalCopy {
     .reduce((s, w) => s + (w.rz ?? 0), 0);
   return {
     label: "Watch",
-    body: `Under ${Math.ceil((p.targetShare ?? 0) / 5) * 5 || 5}% target share on ${snapWord} snap count. One more quiet week and he's droppable in 12-team leagues; an injury above him is the fastest path back.`,
+    body: `Under ${Math.ceil((p.targetShare ?? 0) / 5) * 5 || 5}% target share on ${snapWord} snap count. One more quiet week and he's droppable in 12-team leagues. A role expansion - or an injury to one of the team's higher-volume target earners - is the clearest path back to consistent targets.`,
     proof: [
       ...(last != null ? [{ value: `${last.toFixed(1)}%`, caption: `W${lastWeek} target share` }] : []),
-      { value: String(rzSince), caption: `RZ touches since ${base}` },
+      { value: String(rzSince), caption: `RZ opportunities since ${base}` },
     ],
   };
 }
@@ -685,7 +742,7 @@ export function targetShareFaq(view: UsageView, teamName: string): { question: s
   return {
     question: `Who leads the ${teamName} in target share?`,
     answer:
-      `${lead.player.name} leads the ${teamName} with a ${lead.player.targetShare!.toFixed(1)}% target share through Week ${view.throughWeek}${trendLine}.` +
+      `${lead.player.name} leads the ${teamName} with ${art(lead.player.targetShare!.toFixed(1))} ${lead.player.targetShare!.toFixed(1)}% target share through Week ${view.throughWeek}${trendLine}.` +
       (second ? ` ${second.player.name} is second at ${second.player.targetShare!.toFixed(1)}%.` : ""),
   };
 }

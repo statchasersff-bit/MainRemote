@@ -2,7 +2,7 @@
 /**
  * NFL matchup pages: /nfl/<team-a>-vs-<team-b>/.
  *
- * One evergreen page per pair of teams — 496 of them — with no post behind any
+ * One evergreen page per pair of teams - 496 of them - with no post behind any
  * of them. A rewrite rule sends every pair URL to ONE holder page carrying the
  * shortcode, with the pair in a query var; the shortcode fetches that pair's
  * fragment from the API and the filters below give the page its own title,
@@ -46,7 +46,7 @@ const STATCHASERS_MATCHUP_ROUNDS = array(
 
 /**
  * The SHAPE of a game segment, for the rewrite rule: every spelling
- * gameSegment() in pair.ts can produce — `2026-week-1`, `2025-super-bowl`, and
+ * gameSegment() in pair.ts can produce - `2026-week-1`, `2025-super-bowl`, and
  * `2025-postseason-week-4` for a round the API has no name for.
  *
  * Only the shape. The rewrite cannot say "a week no higher than 25" or "a
@@ -54,8 +54,8 @@ const STATCHASERS_MATCHUP_ROUNDS = array(
  * statchasers_matchup_game() is the validator, and it decides at request time
  * exactly as the pair's own validity is decided. What this must never do is
  * be NARROWER than the API, which is what it was: the rule knew only the
- * regular-season spelling, so every postseason link the API printed — and it
- * prints them on every pair that has met in January — was a WordPress 404
+ * regular-season spelling, so every postseason link the API printed - and it
+ * prints them on every pair that has met in January - was a WordPress 404
  * before the validator was ever asked.
  */
 const STATCHASERS_MATCHUP_GAME_SHAPE = '\d{4}-(?:week-\d{1,2}|postseason-week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl)';
@@ -134,7 +134,7 @@ add_action(
 			'top'
 		);
 		// One address per meeting, beneath the pair: /nfl/<a>-vs-<b>/2026-week-1/.
-		// Same holder page and the same one validation path — the extra segment
+		// Same holder page and the same one validation path - the extra segment
 		// only names which game, and whether that game exists is a question only
 		// the API can answer, so it is asked at request time like the pair is.
 		//
@@ -153,7 +153,7 @@ add_action(
 		);
 
 		// A changed rule is dead until the rule table is rebuilt, and an
-		// upgrade does not run the activation hook that asks for that — so the
+		// upgrade does not run the activation hook that asks for that - so the
 		// postseason addresses would have gone on 404ing on every site that
 		// updated rather than installed. Same remedy as the rankings file: the
 		// rule's own signature is remembered, and a change to it asks for the
@@ -186,7 +186,7 @@ function statchasers_matchup_current(): ?array {
  * MIRRORS parseGameSegment() in the API's src/lib/matchup/pair.ts, including
  * its strictness: a leading zero, a capital letter or a different spelling of
  * "week" is not this address and is not redirected to it. The order matters
- * the same way it does there — `postseason-week-N` is tried before the named
+ * the same way it does there - `postseason-week-N` is tried before the named
  * rounds, because the round pattern's `[a-z-]+` would otherwise swallow it and
  * then fail to find it in the table.
  *
@@ -220,7 +220,7 @@ function statchasers_matchup_parse_game( string $raw ): ?array {
 
 	$season = (int) $match[1];
 	// The bounds keep a parsed-but-impossible ref from reaching the API, not
-	// express a real limit — the same two numbers pair.ts uses.
+	// express a real limit - the same two numbers pair.ts uses.
 	if ( $season < 1920 || $season > 2200 || $week > 25 ) {
 		return null;
 	}
@@ -263,7 +263,7 @@ function statchasers_matchup_url( string $slug, string $game = '' ): string {
 }
 
 /**
- * The reversed spelling is a 301, and a segment that is not a pair is a 404 —
+ * The reversed spelling is a 301, and a segment that is not a pair is a 404 -
  * before anything renders, so neither is ever an indexable copy of the holder.
  */
 add_action(
@@ -295,7 +295,7 @@ add_action(
 		// the shortcode is about to reuse from the same transient.
 		$game = statchasers_matchup_game();
 		if ( '' === $game ) {
-			// A segment that got past the rewrite but not the validator — a
+			// A segment that got past the rewrite but not the validator - a
 			// leading zero, a week past the end of a season. Never a page.
 			if ( '' !== trim( (string) get_query_var( 'sc_matchup_game' ) ) ) {
 				global $wp_query;
@@ -544,7 +544,7 @@ function statchasers_matchup_strip_event_data( string $html ): string {
  *
  * This matters more here than anywhere else in the plugin. One holder page
  * serves 496 addresses, so without a filter rewriting the title, 496 URLs
- * share a single H1 — the holder's — and none of them says which game it is.
+ * share a single H1 - the holder's - and none of them says which game it is.
  */
 function statchasers_matchup_heading(): string {
 	$pair = statchasers_matchup_current();
@@ -620,7 +620,7 @@ add_filter(
 /**
  * The <h1> the shortcode prints itself. Off unless the probe says to.
  *
- * Same contract as the team and player versions — see statchasers-h1.php for
+ * Same contract as the team and player versions - see statchasers-h1.php for
  * how that question is answered, and why it is answered by measurement rather
  * than by a guess about the template.
  */
@@ -843,7 +843,7 @@ function statchasers_matchup_request_meta(): ?array {
 	$game = statchasers_matchup_game();
 	$data = statchasers_matchup_fetch( $pair['slug'], $game );
 
-	// A game address that got this far is an archived one — the missing and the
+	// A game address that got this far is an archived one - the missing and the
 	// still-current cases both left through template_redirect above.
 	$meta = '' !== $game
 		? statchasers_matchup_game_meta(
@@ -876,7 +876,7 @@ function statchasers_matchup_request_meta(): ?array {
 }
 
 /**
- * This request's share image — absolute URL, size and alt — or null.
+ * This request's share image - absolute URL, size and alt - or null.
  *
  * The API draws one per completed game at /og/<away>-vs-<home>-<season>-<round>.png
  * and names it in X-Matchup-Image. The path is served publicly from the API
@@ -1071,7 +1071,7 @@ add_action( 'wp_head', 'statchasers_matchup_print_fallback_schema', 20 );
 function statchasers_matchup_canonical(): string {
 	$pair = statchasers_matchup_current();
 	// A dated page is its own canonical. It is not a variant of the pair's page
-	// — it is the only address that game has, once the pair has let it go.
+	// - it is the only address that game has, once the pair has let it go.
 	return null === $pair
 		? ''
 		: statchasers_matchup_url( $pair['slug'], statchasers_matchup_game() );
@@ -1175,7 +1175,7 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
  * The breadcrumb trail for a pair URL, or for one meeting under it.
  *
  * Rank Math builds the trail from the page the rewrite resolved to, which is
- * the holder — so every one of the 496 pairs, and every dated game, carried a
+ * the holder - so every one of the 496 pairs, and every dated game, carried a
  * BreadcrumbList ending at /nfl/matchup/: a noindex template, named as the
  * page's parent, in a trail that is meant to say where the page sits. The
  * holder's crumb is taken out, and the pair is appended in its place, then the
@@ -1268,7 +1268,7 @@ add_filter(
 
 /**
  * The page the holder hangs off: whatever STATCHASERS_MATCHUP_HOLDER's own
- * parent path is, which is `nfl` — a SIBLING of the hubs' `nfl/teams`.
+ * parent path is, which is `nfl` - a SIBLING of the hubs' `nfl/teams`.
  *
  * @param bool $create Whether to create missing segments.
  */
@@ -1284,7 +1284,7 @@ function statchasers_matchup_container( bool $create = false ): int {
  * A holder page that exists but sits at the wrong address, or 0.
  *
  * The bug this repairs: this function's caller used to resolve its parent with
- * statchasers_team_container(), which is the HUBS' container — `nfl/teams` —
+ * statchasers_team_container(), which is the HUBS' container - `nfl/teams` -
  * so the page it built landed at `/nfl/teams/matchup/` while every other line
  * in this file addresses it as `nfl/matchup`. Nothing complained, and the two
  * halves failed in opposite directions:
@@ -1295,11 +1295,11 @@ function statchasers_matchup_container( bool $create = false ): int {
  *     page it made last time, and returned "Done" without creating anything.
  *     Pressing the button again did nothing, forever.
  *   - Every pair URL rewrote to `pagename=nfl/matchup`, which resolves to no
- *     page, so WordPress 404'd it — and then, because WP_Query reduces an
+ *     page, so WordPress 404'd it - and then, because WP_Query reduces an
  *     unresolved `pagename` to its last segment as `name`, redirect_canonical's
  *     404 guess matched the stray page by slug and sent the reader to
  *     `/nfl/teams/matchup/`. Which is the holder, at its own address, with no
- *     pair in the query — so it printed the "this page is the holder" notice.
+ *     pair in the query - so it printed the "this page is the holder" notice.
  *     That is the whole of the "View matchup goes nowhere" report.
  *
  * Scoped to the hubs' container rather than "any page called matchup", because
@@ -1325,7 +1325,7 @@ function statchasers_matchup_stray_holder(): int {
 }
 
 /**
- * Create the holder page under the /nfl/ container, once — or move one that an
+ * Create the holder page under the /nfl/ container, once - or move one that an
  * earlier version of this file built in the wrong place. Called from the Tools
  * screen. Noindex by its own stored robots value: nothing should ever rank at
  * /nfl/matchup/ itself.
@@ -1391,8 +1391,8 @@ function statchasers_matchup_build_holder( string &$error ): int {
 /**
  * Rebuild the rewrite rules after the holder moves.
  *
- * The rules themselves do not change — they name the holder by path, and the
- * path is a constant — but what they resolve TO only exists once the page is
+ * The rules themselves do not change - they name the holder by path, and the
+ * path is a constant - but what they resolve TO only exists once the page is
  * where the path says. Flushing here means the pair URLs work on the redirect
  * back to the Tools screen rather than on the next plugin activation, which is
  * what "the permalink flush happens on activation" quietly cost.
@@ -1450,7 +1450,7 @@ add_action(
 		$stray = statchasers_matchup_stray_holder();
 
 		printf(
-			'<div class="notice notice-warning"><p><strong>StatChasers:</strong> the matchup holder page is %1$s, so every <code>/%2$s/&lt;team&gt;-vs-&lt;team&gt;/</code> URL — and every &ldquo;View matchup&rdquo; link on the 32 team hubs — fails to resolve. <a href="%3$s">%4$s</a>.</p></div>',
+			'<div class="notice notice-warning"><p><strong>StatChasers:</strong> the matchup holder page is %1$s, so every <code>/%2$s/&lt;team&gt;-vs-&lt;team&gt;/</code> URL - and every &ldquo;View matchup&rdquo; link on the 32 team hubs - fails to resolve. <a href="%3$s">%4$s</a>.</p></div>',
 			$stray ? 'at the wrong address' : 'missing',
 			esc_html( STATCHASERS_MATCHUP_BASE ),
 			esc_url( add_query_arg( 'page', STATCHASERS_TEAM_PAGES_SCREEN, admin_url( 'tools.php' ) ) ),
@@ -1477,7 +1477,7 @@ function statchasers_matchup_panel(): void {
 	$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
 	echo '<h2>Matchup pages</h2>';
 	printf(
-		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> — 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs are live as soon as the holder exists at that exact path — the button below also rebuilds the permalinks, so there is nothing to do afterwards.</p>',
+		'<p>Every pair of teams has one page at <code>/%s/&lt;team&gt;-vs-&lt;team&gt;/</code> - 496 addresses served by one holder page at <code>/%s/</code>, which is noindex itself. The pair URLs are live as soon as the holder exists at that exact path - the button below also rebuilds the permalinks, so there is nothing to do afterwards.</p>',
 		esc_html( STATCHASERS_MATCHUP_BASE ),
 		esc_html( STATCHASERS_MATCHUP_HOLDER )
 	);
@@ -1491,7 +1491,7 @@ function statchasers_matchup_panel(): void {
 	}
 
 	// The wrong-address case gets its own words. Told only "the holder does not
-	// exist", the obvious move is to press Create — which is exactly what an
+	// exist", the obvious move is to press Create - which is exactly what an
 	// earlier version of this plugin let you do over and over while the page
 	// sat one level too deep and every pair URL bounced to it. See
 	// statchasers_matchup_stray_holder().

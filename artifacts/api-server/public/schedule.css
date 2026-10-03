@@ -1,5 +1,5 @@
 /*
- * StatChasers — NFL Schedule
+ * StatChasers - NFL Schedule
  *
  * This stylesheet reproduces the standalone `statchasers-nfl-schedule` repo's
  * visual design on the server-rendered markup in src/lib/schedule-render.ts.
@@ -17,15 +17,15 @@
  * What did NOT come across is structure, because the markup is server-rendered
  * and has to stay that way:
  *
- *   - The board is still a grid and the grid is still the reading order —
- *     When / Matchup / TV — at every width.
+ *   - The board is still a grid and the grid is still the reading order -
+ *     When / Matchup / TV - at every width.
  *   - Home and away are never carried by position alone. Every row says "at" in
  *     text. See schedule-render.ts.
  *   - The source's third view, the team lens, is not here: it moved to the team
  *     hub's Schedule tab, and team.css dresses it.
  *
  * The theme is light by default and opts into dark with a class, exactly as the
- * source does — never `prefers-color-scheme`, because this mounts inside a
+ * source does - never `prefers-color-scheme`, because this mounts inside a
  * WordPress theme that has its own opinion and a tool that went dark on its own
  * would be the only dark thing on the page.
  */
@@ -174,8 +174,8 @@ body.scs-page.is-embed {
 
 /* Host padding on bare elements, zeroed with enough weight to mean it.
  *
- * Divi styles elements rather than classes — `p { padding-bottom: 1em }`, and
- * the same gesture on headings and lists — and this file's instrument on those
+ * Divi styles elements rather than classes - `p { padding-bottom: 1em }`, and
+ * the same gesture on headings and lists - and this file's instrument on those
  * elements is margin: it sets padding on a handful of components and nowhere
  * else. So on the published site every paragraph grew a gap beneath it that no
  * rule in here asked for, and in the preview, where there is no theme, none of
@@ -185,7 +185,7 @@ body.scs-page.is-embed {
  * there was nothing between the theme and every <p> in the tool.
  *
  * `:where()` on the element list so the whole selector weighs `.scs` and no
- * more. That is one class — heavier than the bare `p` it has to beat, level
+ * more. That is one class - heavier than the bare `p` it has to beat, level
  * with the single-class component rules in this file that set padding on
  * purpose, and above all of them in the file, so those win on source order and
  * keep their spacing. Moving this below them would invert that and flatten
@@ -202,7 +202,7 @@ body.scs-page.is-embed {
   max-width: none;
   /* Clearance from whatever the host prints next. 30px read as the tool
      finishing and the footer starting in the same breath; 50 is the gap that
-     says they are two things. Bottom only — the top gap is the one between the
+     says they are two things. Bottom only - the top gap is the one between the
      page's heading and the hero, and it is already right. */
   padding-bottom: 50px;
 }
@@ -229,7 +229,7 @@ body.scs-page.is-embed {
 /* ------------------------------------------------------------------ head */
 
 /*
- * The source app has no title — it is mounted under a WordPress page heading.
+ * The source app has no title - it is mounted under a WordPress page heading.
  * This one needs an h1 for the standalone page and for search, so it borrows
  * the display face and the tight tracking the source uses on its view titles.
  */
@@ -264,10 +264,10 @@ body.scs-page.is-embed {
  *
  * It is `scs-controlbar`, not `scs-bar`: while the two shared a name this strip
  * picked up a card meter's three-column grid and its near-white fill. The meter
- * has since gone with the team lens, but the name stays split — a strip and a
+ * has since gone with the team lens, but the name stays split - a strip and a
  * row inside a card are not one component, whatever is left of either.
  *
- * The tabs carry their own 2px underline and it sits well clear of the strip's hairline —
+ * The tabs carry their own 2px underline and it sits well clear of the strip's hairline -
  * there is 16px of padding between them, which is what keeps the gold mark
  * reading as "this tab" rather than as a thickening of the rule.
  */
@@ -406,7 +406,7 @@ body.scs-page.is-embed {
  *
  * It had a heading and two sentences of page copy above this line, which the
  * page's own <h1> and standfirst now say once instead of twice. What is left is
- * a single short line, which is what `.scs-viewhead`'s flex row was built for —
+ * a single short line, which is what `.scs-viewhead`'s flex row was built for -
  * so the stacked-lede wrapper it needed went with the copy.
  */
 .scs-viewhead > .scs-view-note {
@@ -443,14 +443,14 @@ body.scs-page.is-embed {
   /*
    * Positioned so the visually-hidden label inside it has somewhere to be.
    *
-   * Each rail link carries a `.scs-visually-hidden` span — `position: absolute`
-   * with the 1px/clip treatment — that names the week for a screen reader. With
+   * Each rail link carries a `.scs-visually-hidden` span - `position: absolute`
+   * with the 1px/clip treatment - that names the week for a screen reader. With
    * nothing positioned between it and the document, "absolute" meant absolute
    * against the initial containing block, and its static position is measured
    * along the rail's SCROLLED content: on a phone that put a 1px span at
    * x = 516 in a 485px viewport.
    *
-   * A clipped 1px span is invisible, so nothing looked wrong at that spot —
+   * A clipped 1px span is invisible, so nothing looked wrong at that spot -
    * but the document was 31px wider than the screen, the page scrolled
    * sideways, and percentage widths resolved against the wider box. The rail
    * scrolls, so containing it here keeps it inside the part that clips.
@@ -490,7 +490,7 @@ body.scs-page.is-embed {
 /*
  * The source runs two different side columns: 175px beside the weekly board,
  * where every card is one short claim, and 300px beside the team lens, where
- * they are lists and tables. Only the first is here — the lens moved to the
+ * they are lists and tables. Only the first is here - the lens moved to the
  * team hub, and team.css carries its 300px rail.
  */
 .scs-layout {
@@ -512,7 +512,7 @@ body.scs-page.is-embed {
 }
 
 /*
- * The weekly board puts its head row — the heading and the week rail — inside
+ * The weekly board puts its head row - the heading and the week rail - inside
  * the main column, as the source does. That is what keeps the rail inside the
  * table's right edge and starts the first side card level with the heading
  * beside it. The 24px the head row used to hold above itself moves to the grid,
@@ -575,7 +575,7 @@ body.scs-page.is-embed {
 }
 
 /* TV is the third of four, and its heading is centred over the marks, which
-   are centred in the column below it (mak's call, 2026-09-22 — the source
+   are centred in the column below it (mak's call, 2026-09-22 - the source
    ranges both right). `:nth-child` because the fourth cell is the empty
    heading over the row's link and wants no alignment at all. */
 .scs-board-head span:nth-child(3) {
@@ -636,7 +636,7 @@ body.scs-page.is-embed {
  * Live is the one state the board says in colour, and the colour is the gold.
  *
  * A red dot on a schedule reads as an error; the only thing this tool ever has
- * to announce is "this one is happening now". It is never the only signal — the
+ * to announce is "this one is happening now". It is never the only signal - the
  * status text says LIVE or the quarter, the dot pulses, and the row carries
  * data-status="live" for anything reading the markup. The source tints nothing
  * behind the row, and neither does this.
@@ -860,7 +860,7 @@ a.scs-game-name:focus-visible {
 
 /*
  * The marks sit on ONE row with a hairline between them, as they do in the
- * source. A simulcast is "ESPN / ABC" — a 4:1 wordmark next to a roundel — and
+ * source. A simulcast is "ESPN / ABC" - a 4:1 wordmark next to a roundel - and
  * the divider is what stops the pair reading as one wide smear.
  */
 .scs-tv {
@@ -915,8 +915,8 @@ a.scs-game-name:focus-visible {
 }
 
 /*
- * The artwork is full colour with dark elements in it — the ABC circle, "FOX
- * SPORTS", the NBC wordmark — which all but vanish on the dark card. A light
+ * The artwork is full colour with dark elements in it - the ABC circle, "FOX
+ * SPORTS", the NBC wordmark - which all but vanish on the dark card. A light
  * chip keeps the column readable there; the light theme needs nothing.
  */
 .scs-dark .scs-net-mark {
@@ -1048,7 +1048,7 @@ a.scs-game-name:focus-visible {
   margin-top: 6px;
 }
 
-/* Square, with the crest tucked into the left edge — the source's bye chip. */
+/* Square, with the crest tucked into the left edge - the source's bye chip. */
 .scs-bye {
   display: inline-flex;
   align-items: center;
@@ -1261,8 +1261,8 @@ a.scs-game-name:focus-visible {
 /*
  * The week's questions, in the team hub's dress.
  *
- * This is the same object as the hub's "Common questions" block — the markup is
- * the hub's markup under a different prefix — so it is built from the hub's
+ * This is the same object as the hub's "Common questions" block - the markup is
+ * the hub's markup under a different prefix - so it is built from the hub's
  * measurements rather than invented here: the gold-barred heading, the
  * hairline-separated rows with no card around them, the 8px chevron rotating on
  * open, the 72ch answer column indented to the question's text. A reader who
@@ -1278,7 +1278,7 @@ a.scs-game-name:focus-visible {
  *     hardcoded navy heading would vanish on the dark card.
  *   - The heading keeps Space Grotesk and the display face's tracking, like
  *     every other title on this page. The hub's h2 is house sans at 900, a
- *     weight this sheet does not load — so the size, the bar and the hierarchy
+ *     weight this sheet does not load - so the size, the bar and the hierarchy
  *     are the hub's, and the typeface is the page's.
  *
  * The rem sizes below are deliberate in an otherwise px sheet: they are the
@@ -1290,7 +1290,7 @@ a.scs-game-name:focus-visible {
   margin: 40px 0 0;
 }
 
-/* Still an <h2>, and still not a click target — the block does not fold, the
+/* Still an <h2>, and still not a click target - the block does not fold, the
    questions do. The gold bar marks the heading rather than underlining it. */
 .scs-faq-title {
   position: relative;
@@ -1437,7 +1437,7 @@ a.scs-game-name:focus-visible {
  *
  * Both numbers are +134px on the source's, and both were measured rather than
  * reasoned. The fourth column costs the matchup 2em and a 12px gap, and the
- * arithmetic says that is 44px at 16px type — but the row does not shrink
+ * arithmetic says that is 44px at 16px type - but the row does not shrink
  * linearly, because two 32px crests and the "at" between them do not scale with
  * the font at all. Set at +44 the band still truncated "Commanders" on a 679px
  * board, and set at +74 on a 649px one.
@@ -1522,7 +1522,7 @@ a.scs-game-name:focus-visible {
    * link) and the TV has to climb above the teams.
    *
    * Shrinking the columns instead was the first attempt and it failed the only
-   * test that matters here — at 360px the matchup had 90px to say who was
+   * test that matters here - at 360px the matchup had 90px to say who was
    * playing, which is not enough for two nicknames, two codes and two scores.
    */
   .scs-board-head {
@@ -1543,7 +1543,7 @@ a.scs-game-name:focus-visible {
     grid-area: when;
   }
 
-  /* Everything in the matchup is sized in em — crests, codes, "at", scores —
+  /* Everything in the matchup is sized in em - crests, codes, "at", scores -
      so one font-size takes the whole block up a step together. */
   .scs-game-teams {
     grid-area: teams;
@@ -1587,7 +1587,7 @@ a.scs-game-name:focus-visible {
 /*
  * The source fades the board in, and the side column a beat behind it. Kept
  * because it is part of how the tool feels; suppressed for anyone who asked for
- * less motion, and it never gates content — the markup is already in the
+ * less motion, and it never gates content - the markup is already in the
  * response, so a reader who blocks animation sees everything immediately.
  */
 .scs-main {
@@ -1622,7 +1622,7 @@ a.scs-game-name:focus-visible {
  * only two armed with `!important`.
  *
  * MIRRORS the block of the same name in team.css, which was written after the
- * published team hub hit both of these and this file was left without them —
+ * published team hub hit both of these and this file was left without them -
  * the fix went in where the bug was seen rather than everywhere it applied.
  * The symptoms here were the same two: every heading in the tool rendered in
  * the theme's display serif, and the section tab strip read "Overview • Stats
@@ -1666,7 +1666,7 @@ a.scs-game-name:focus-visible {
 /*                                                                         */
 /* Every declaration below RESTATES one already made above, at a           */
 /* specificity a host theme cannot reach. Nothing here is a new design     */
-/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* decision - if a value in this block disagrees with the rule it mirrors, */
 /* this block is the one that is wrong.                                    */
 /*                                                                         */
 /* Standalone this file is the only stylesheet and none of it does         */
@@ -1682,7 +1682,7 @@ a.scs-game-name:focus-visible {
 /* structural reason: it is 19 columns by 32 rows, so a few pixels of cell  */
 /* padding is multiplied by 19 across and by 32 down. Measured against a    */
 /* simulated Divi page, 2px of side padding became 24px on the headers and  */
-/* 6px on the cells, and the table went from 726px wide to 1152px — 59%     */
+/* 6px on the cells, and the table went from 726px wide to 1152px - 59%     */
 /* wider, and 400px taller, inside a scroller the reader now has to drag    */
 /* half again as far. Nothing about that reads as a theme bug; it reads as  */
 /* a grid that was drawn too big.                                          */
@@ -1700,8 +1700,8 @@ a.scs-game-name:focus-visible {
 /* The matrix's frame. One class loses to `.entry-content table`, which brings
    an outer border and 15px of margin; the grid is drawn per cell.
 
-   Divi's real selector is `.entry-content table:not(.variations)` — (0,2,1),
-   because `:not()` counts its argument — and it beat the `.scs .scs-matrix`
+   Divi's real selector is `.entry-content table:not(.variations)` - (0,2,1),
+   because `:not()` counts its argument - and it beat the `.scs .scs-matrix`
    this used to be: measured 2026-09-29, the frame and the margin were both
    still arriving. The repeated `:not()` keeps this one class ahead. */
 .scs table.scs-matrix:not(.variations) {
@@ -1709,7 +1709,7 @@ a.scs-game-name:focus-visible {
   border: 0;
 }
 
-/* Every cell in the grid — the tie described above. `border-top` is the other
+/* Every cell in the grid - the tie described above. `border-top` is the other
    shape: this grid is drawn with bottom and left lines only, so nothing above
    declares that side at all and the theme's is simply adopted, on every one of
    the 600-odd cells. */
@@ -1741,7 +1741,7 @@ a.scs-game-name:focus-visible {
   font-weight: 700;
 }
 
-/* Every link in the grid is a whole cell, coloured by the cell it fills — the
+/* Every link in the grid is a whole cell, coloured by the cell it fills - the
    week header's muted grey, the team's ink, the tinted home/away wash. A theme
    repainting them one blue erases all three distinctions at once. */
 .scs .scs-matrix a {
@@ -1760,7 +1760,7 @@ a.scs-game-name:focus-visible {
 
 /* And the row's matchup link. `.scs-go` is one class against Divi's
    `.entry-content a`, which is a class and an element, so the theme wins
-   outright and every row ends in a #2ea3f2 "MATCHUP ›" — the loudest thing on
+   outright and every row ends in a #2ea3f2 "MATCHUP ›" - the loudest thing on
    a board whose own accent is the gold. Restates the rule above it. */
 .scs .scs-go {
   color: hsl(var(--scs-muted-foreground));

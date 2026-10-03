@@ -2,8 +2,8 @@
 /**
  * One-click creation of the 32 team hub pages.
  *
- * The hubs only become indexable when a WordPress page embeds them — the API
- * serves them `noindex, indexifembedded` at its own URL — so the 32 pages are
+ * The hubs only become indexable when a WordPress page embeds them - the API
+ * serves them `noindex, indexifembedded` at its own URL - so the 32 pages are
  * not a nicety, they are the thing that makes any of this rank. Building them
  * by hand is 32 pages × (title, slug, parent, shortcode, three Rank Math
  * fields), and the slug is load-bearing: it is what selects the team.
@@ -36,8 +36,8 @@ const STATCHASERS_TEAM_PAGES_SCREEN = 'statchasers-team-pages';
 /**
  * The 32 teams: slug => [ name, abbr, division ].
  *
- * Mirrors src/lib/team/teams.ts on the API side. The slug is the shared key —
- * it is this page's URL segment AND the team the API renders — so the two lists
+ * Mirrors src/lib/team/teams.ts on the API side. The slug is the shared key -
+ * it is this page's URL segment AND the team the API renders - so the two lists
  * cannot drift without a page rendering the wrong team or nothing at all.
  *
  * @return array<string,array{0:string,1:string,2:string}>
@@ -119,14 +119,14 @@ function statchasers_team_container( bool $create = false ): int {
  * The page at an arbitrary path, creating the hierarchy if asked.
  *
  * Resolves one path segment at a time rather than with get_page_by_path(), so
- * a partially built hierarchy — /nfl/ exists but /nfl/teams/ does not — is
+ * a partially built hierarchy - /nfl/ exists but /nfl/teams/ does not - is
  * completed rather than rejected.
  *
  * Taking the path as an argument rather than reading STATCHASERS_TEAM_PATH is
  * what stops the one caller that is NOT under the hubs from landing there
  * anyway: the matchup holder lives at `nfl/matchup`, a sibling of `nfl/teams`,
  * and building it through the hubs' own container silently put it at
- * `nfl/teams/matchup` — a page every pair URL then failed to resolve to. See
+ * `nfl/teams/matchup` - a page every pair URL then failed to resolve to. See
  * statchasers_matchup_build_holder().
  *
  * @param string $path   Slash-separated page path, no leading or trailing slash.
@@ -183,8 +183,8 @@ function statchasers_team_path_container( string $path, bool $create = false ): 
  * Cached, because the admin notice below asks on every screen in wp-admin and
  * the answer costs 33 queries. Ten minutes is short enough that a page deleted
  * by hand shows up as missing while you are still looking for it, and the two
- * things that change the answer deliberately — building the pages, saving a
- * page — clear it outright.
+ * things that change the answer deliberately - building the pages, saving a
+ * page - clear it outright.
  *
  * @param bool $fresh Skip the cache.
  * @return array{container:int,present:array<string,int>,missing:array<string,array>}
@@ -305,7 +305,7 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 		}
 
 		// Rank Math. The plugin emits no title/description/robots of its own by
-		// design, so these three are the page's only ones — and the robots value
+		// design, so these three are the page's only ones - and the robots value
 		// is the difference between a hub that ranks and 32 that quietly don't.
 		//
 		// The strings come from statchasers_team_section_meta() with no section,
@@ -315,7 +315,7 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 		//
 		// STORED, unlike the section URLs': this is a real page an editor may
 		// rewrite, and fill_meta only ever fills an empty field. A team page
-		// created before this wording existed therefore keeps its old title —
+		// created before this wording existed therefore keeps its old title -
 		// see the note in README.md on updating the 32 that already exist.
 		$root = statchasers_team_section_meta( $slug, '' );
 
@@ -354,7 +354,7 @@ function statchasers_team_build_pages( bool $with_images = false ): array {
 /**
  * Sideload a team crest as the page's featured image.
  *
- * Skipped when one is already set — which is what makes a run that timed out
+ * Skipped when one is already set - which is what makes a run that timed out
  * safe to repeat, rather than putting another 32 copies in the media library.
  *
  * @param int    $id   Post ID.
@@ -427,7 +427,7 @@ const STATCHASERS_TEAM_INDEX_LEAD = 'Every NFL team hub: player news, injury des
  * them and is NOT how a page survives a visit to a block editor. WonderBlocks,
  * Gutenberg and Divi all happily rewrite `/nfl/teams/buffalo-bills/` to the
  * absolute `https://example.com/nfl/teams/buffalo-bills/` on save, and the
- * count silently became zero — so the container that most needed rebuilding
+ * count silently became zero - so the container that most needed rebuilding
  * reported as somebody's own page and was left alone, which is exactly the
  * state the rebuild button was added to get out of.
  *
@@ -486,7 +486,7 @@ function statchasers_index_is_builder_tag( string $tag ): bool {
 /**
  * Does this body carry a shortcode somebody put there?
  *
- * The old test was `strpos( $content, '[' )`, which is any bracket at all —
+ * The old test was `strpos( $content, '[' )`, which is any bracket at all -
  * including one in prose. This asks the question that was meant, and excludes
  * a builder's own scaffolding from the answer: those tags say how the page is
  * stored, not what an editor chose to put on it.
@@ -531,7 +531,7 @@ function statchasers_team_index_is_stub( string $content ): bool {
  *
  * A parent page with no content is a thin page that still sits in the sitemap.
  * The mount is [statchasers_team_index], which prints the same grid the hubs'
- * own team switcher uses — so the page that lists 32 hubs is drawn by the tool
+ * own team switcher uses - so the page that lists 32 hubs is drawn by the tool
  * that draws the hubs, rather than by the theme's <ul> styling.
  *
  * Written when the page is empty, and over the stub the old version of this
@@ -646,7 +646,7 @@ function statchasers_index_containers(): array {
  * Why a container was not recognised.
  *
  * "Your own content" is the right answer for a page somebody wrote, and a
- * useless one for a page that IS the stub but fails a test — which is how the
+ * useless one for a page that IS the stub but fails a test - which is how the
  * published /nfl/teams/ sat untouched through two releases. Recognition is
  * three questions; this prints the answers so the screen can never again say
  * "left alone" without saying what it looked at.
@@ -685,7 +685,7 @@ function statchasers_index_explain( string $content, string $path, string $lead 
  * `statchasers_team_write_index()` and `statchasers_player_write_index()` run
  * at the end of a page build, and the build button is only rendered while pages
  * are missing. On a site where all 32 hubs already exist the screen said "All
- * 32 pages exist. Nothing to do." and there was no way left to press it — so a
+ * 32 pages exist. Nothing to do." and there was no way left to press it - so a
  * container still carrying the old 32-link stub stayed that way, the theme
  * printed the wall of links in its own list styling, and the plugin appended
  * the real grid underneath it. Two indexes on one page, and no button.
@@ -725,7 +725,7 @@ function statchasers_index_panel(): void {
 		if ( 'stub' === $state && (int) $row['id'] > 0
 			&& statchasers_index_is_builder_content( (string) get_post_field( 'post_content', (int) $row['id'] ) )
 		) {
-			$note .= ' <strong>The page builder layout around it is removed with it</strong> — ' .
+			$note .= ' <strong>The page builder layout around it is removed with it</strong> - ' .
 				'it is the generated list in a wrapper, and the wrapper is why the grid ' .
 				'was printing below everything else on the page.';
 		}
@@ -840,7 +840,7 @@ add_action(
  * Handle the build button.
  *
  * On admin_init rather than inside the screen callback so the redirect happens
- * before any output — a POST that re-renders in place is one refresh away from
+ * before any output - a POST that re-renders in place is one refresh away from
  * running twice, and while this is idempotent, "did that work?" should not need
  * to be answered by reading the page count.
  */
@@ -919,8 +919,8 @@ add_action(
  * Every fragment is held in a transient for five minutes and the asset version
  * for fifteen, so a deployment of the API is invisible on the site for up to a
  * quarter of an hour after it lands. `statchasers_news_flush()` has always
- * emptied both, but the only ways to call it were WP-CLI — which shared
- * hosting often does not have — and deactivating the plugin, which is a
+ * emptied both, but the only ways to call it were WP-CLI - which shared
+ * hosting often does not have - and deactivating the plugin, which is a
  * strange thing to have to do to see a deploy.
  */
 add_action(
@@ -961,7 +961,7 @@ function statchasers_flush_panel(): void {
 	echo '<p>Rendered fragments are cached for five minutes and the CSS/JS version for fifteen, ' .
 		'so a new build of the API takes up to a quarter of an hour to show. This empties both now. ' .
 		'The last good copy of each render is kept, so the pages still fill if the API is down. ' .
-		'It does not touch your page cache — clear that too.</p>';
+		'It does not touch your page cache - clear that too.</p>';
 
 	echo '<form method="post">';
 	wp_nonce_field( 'statchasers_flush' );
@@ -1009,7 +1009,7 @@ function statchasers_team_pages_screen(): void {
 
 	printf(
 		'<p>The hubs live at <code>/%s/&lt;team&gt;/</code>. Each page carries the ' .
-		'<code>[%s]</code> shortcode and nothing else — the team is selected by the page slug.</p>',
+		'<code>[%s]</code> shortcode and nothing else - the team is selected by the page slug.</p>',
 		esc_html( STATCHASERS_TEAM_PATH ),
 		esc_html( STATCHASERS_TEAM_SHORTCODE )
 	);
@@ -1019,7 +1019,7 @@ function statchasers_team_pages_screen(): void {
 		count( $status['present'] ),
 		$status['container']
 			? '<code>/' . esc_html( STATCHASERS_TEAM_PATH ) . '/</code> (post ' . (int) $status['container'] . ')'
-			: '<em>not created yet — the button below will make it</em>'
+			: '<em>not created yet - the button below will make it</em>'
 	);
 
 	if ( $missing > 0 ) {
@@ -1027,7 +1027,7 @@ function statchasers_team_pages_screen(): void {
 		wp_nonce_field( 'statchasers_team_build' );
 		echo '<p><label><input type="checkbox" name="with_images" value="1" /> ' .
 			'Also import the 32 team crests as featured images ' .
-			'<span class="description">(32 downloads — slower, and safe to re-run if it times out)</span>' .
+			'<span class="description">(32 downloads - slower, and safe to re-run if it times out)</span>' .
 			'</label></p>';
 		printf(
 			'<p><button type="submit" name="statchasers_team_build" value="1" class="button button-primary button-hero">Create %d missing page%s</button></p>',
@@ -1078,7 +1078,7 @@ function statchasers_team_pages_screen(): void {
  * Sections a team URL can be scoped to.
  *
  * Mirrors SECTIONS in the API's src/routes/team.ts and the tab ids in
- * src/lib/team-render.ts — keep the three lists together. A rewrite rule
+ * src/lib/team-render.ts - keep the three lists together. A rewrite rule
  * pointing at a section the API will not scope to serves the hub under a URL
  * that promised one panel, which is duplicate content wearing a second address.
  *
@@ -1177,7 +1177,7 @@ add_action(
  *
  * The hub opens on the Outlook, so the two addresses were one page, each
  * self-canonical. The hub keeps it, the Outlook tab links there (the API
- * renders the strip), and the old address — indexed — redirects instead of
+ * renders the strip), and the old address - indexed - redirects instead of
  * 404ing, which is why 'outlook' stays in STATCHASERS_TEAM_SECTIONS and so in
  * the rewrite. The twin of statchasers_player_overview_redirect().
  */
@@ -1212,7 +1212,7 @@ add_action( 'template_redirect', 'statchasers_team_outlook_redirect', 9 );
 /**
  * The team this request is on, or '' when it is not a team page.
  *
- * The page slug is the team, exactly as it is for the shortcode — one key, so
+ * The page slug is the team, exactly as it is for the shortcode - one key, so
  * the URL, the render and the metadata cannot disagree about which team they
  * are describing.
  */
@@ -1231,7 +1231,7 @@ function statchasers_team_current_slug(): string {
  *
  * MIRRORS sectionMeta() in the API's src/lib/team-seo.ts. The API origin is
  * noindex and Rank Math owns the indexed title, so these are the strings that
- * actually rank — but a reader can reach either, and the two must say the same
+ * actually rank - but a reader can reach either, and the two must say the same
  * thing. Changing one means changing the other.
  *
  * Generated rather than stored: 32 teams x 6 URLs is 192 title/description
@@ -1251,7 +1251,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 
 	$name   = $row[0];
 	$season = STATCHASERS_TEAM_SEASON;
-	// "Patriots" from "New England Patriots" — the form a sentence wants.
+	// "Patriots" from "New England Patriots" - the form a sentence wants.
 	$nick = substr( strrchr( ' ' . $name, ' ' ), 1 );
 
 	switch ( $section ) {
@@ -1348,7 +1348,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
  * MIRRORS teamSectionHeading() in the API's src/lib/team-render.ts, whose own
  * comment names this side as the owner: the fragment steps its hero down to
  * <h2> when embedded, "where WordPress supplies the H1". This is that H1, and
- * until it existed there was none — the page inherited whatever the stored
+ * until it existed there was none - the page inherited whatever the stored
  * post_title said, on the hub and on all six section addresses alike.
  *
  * The phrase alone, where statchasers_team_section_meta()'s title adds the
@@ -1399,7 +1399,7 @@ function statchasers_team_heading( string $slug, string $section ): string {
  *
  * WHY NOT the stored post_title: it is one string and this needs five per team,
  * chosen per request. The stored title stays "<Team> Team Page", which is what
- * the admin list and any nav menu want — a menu item is its own post and its
+ * the admin list and any nav menu want - a menu item is its own post and its
  * own id, so the guard below leaves it spelled that way.
  *
  * `in_the_loop()` is NOT part of the guard. Divi's Theme Builder renders the
@@ -1456,7 +1456,7 @@ add_filter(
  *
  * Deliberately scoped to section URLs only. The 32 hub pages have stored Rank
  * Math fields that an editor may have rewritten, and this plugin's standing
- * promise is that it never overwrites them — so the hub is left alone and only
+ * promise is that it never overwrites them - so the hub is left alone and only
  * the virtual addresses, which have no row to store anything in, are generated.
  *
  * @return array{title:string,description:string,section:string}|null
@@ -1505,7 +1505,7 @@ function statchasers_team_section_canonical(): string {
 /**
  * Rank Math owns the title, description, canonical and robots on this site, so
  * a section URL has to say its piece through Rank Math's own filters rather
- * than by printing tags of its own — two canonicals is worse than a wrong one.
+ * than by printing tags of its own - two canonicals is worse than a wrong one.
  *
  * NOT VERIFIED against the installed Rank Math build. These four filter names
  * are the documented ones; each callback returns the value it was handed when
@@ -1539,7 +1539,7 @@ add_filter(
 
 /**
  * og:url on a section page is the section, not the hub. Scoped exactly as the
- * canonical is — the callback hands back what it was given everywhere else, so
+ * canonical is - the callback hands back what it was given everywhere else, so
  * ordinary pages' OpenGraph output is untouched.
  */
 add_filter(
@@ -1570,7 +1570,7 @@ add_filter(
  * Title and canonical without Rank Math.
  *
  * Core prints the canonical from the post's permalink, which on a section URL
- * is the hub — five addresses all canonicalising to one, which is the split
+ * is the hub - five addresses all canonicalising to one, which is the split
  * buying nothing. Rank Math short-circuits both of these when it is active.
  */
 add_filter(
@@ -1643,14 +1643,14 @@ function statchasers_team_sitemap_entry( string $loc, string $lastmod ): string 
  * The section URLs, appended to Rank Math's page sitemap.
  *
  * The hub pages are real posts and Rank Math lists them itself. The section
- * URLs have no post, so they have to be added — and only while the rewrite is
+ * URLs have no post, so they have to be added - and only while the rewrite is
  * live, or the sitemap would advertise 128 addresses that 404. Same switch as
  * the rewrite, so the two cannot disagree.
  *
  * Built from the pages that actually exist: a team whose hub has not been
  * created has no section URLs either, because they resolve THROUGH the hub.
- * And only from pages that ARE hubs — carrying [statchasers_team], the same
- * test statchasers_team_post_has_shortcode() applies — so a page someone made
+ * And only from pages that ARE hubs - carrying [statchasers_team], the same
+ * test statchasers_team_post_has_shortcode() applies - so a page someone made
  * at a team's slug for another purpose does not have five section addresses
  * advertised beneath it.
  *
@@ -1711,13 +1711,13 @@ add_filter(
  *
  *   - the old one, "<season> <team> Fantasy Football Hub | StatChasers";
  *   - the current one, "<team> <season>: Record, Schedule, Stats & Fantasy
- *     Football | StatChasers" — statchasers_team_section_meta() with no
+ *     Football | StatChasers" - statchasers_team_section_meta() with no
  *     section, which is what the builder has written since.
  *
  * The second is what makes the season rollover a button press. Recognising
  * only the old wording meant every hub built with the current one read as
- * CUSTOM the moment STATCHASERS_TEAM_SEASON moved on — "New England Patriots
- * 2026: Record, …" is not the 2027 title, and nothing said it was ours — so
+ * CUSTOM the moment STATCHASERS_TEAM_SEASON moved on - "New England Patriots
+ * 2026: Record, …" is not the 2027 title, and nothing said it was ours - so
  * the retitle left all 32 on last season's year. Anything else that is not
  * empty was typed by a person and is theirs.
  *
@@ -1740,7 +1740,7 @@ function statchasers_team_title_is_generated( string $title, string $name ): boo
  * Which hub pages the retitle would touch, and which it would leave alone.
  *
  * The dry run: read on the Tools screen so the count is on the button before
- * anything is written. Descriptions are not migrated — the generated wording
+ * anything is written. Descriptions are not migrated - the generated wording
  * did not change, so there is nothing to move them to.
  *
  * @return array{eligible:array<int,string>,custom:array<int,string>,missing:int}

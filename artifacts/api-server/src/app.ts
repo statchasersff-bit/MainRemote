@@ -92,7 +92,7 @@ app.use("/api", router);
 app.use(embedRouter);
 
 // NFL Team Hub: /team, /team/:slug and the /embed/team/:slug fragment. Mounted
-// here for the same reason as the embed router — the 404 at the bottom of this
+// here for the same reason as the embed router - the 404 at the bottom of this
 // file is deliberate and catches everything that gets past the routes above.
 // It changes nothing about "/", which is still the news tool and nothing else.
 app.use(teamRouter);
@@ -101,7 +101,7 @@ app.use(teamRouter);
 app.use(matchupRouter);
 
 // NFL Player Pages: /player, /player/:slug and the /embed/player/:slug
-// fragment. Mounted alongside the team router for the same reason — the 404 at
+// fragment. Mounted alongside the team router for the same reason - the 404 at
 // the bottom of this file is deliberate and catches everything the routes above
 // do not claim. It changes nothing about "/", which is still the news tool.
 app.use(playerRouter);
@@ -134,12 +134,12 @@ app.use(rbHandcuffsRouter);
 // /embed/sos fragment. Mounted alongside the other tools, for the same reason.
 app.use(sosRouter);
 
-// Shortcode preview harness (/preview/*). Development only — the router's own
+// Shortcode preview harness (/preview/*). Development only - the router's own
 // first middleware 404s the whole thing outside development.
 app.use(previewRouter);
 
 // The X integration's API (/api/x/...) and its admin page (/admin/x). Mounted
-// here for the same reason as the routers above — the 404 at the bottom of this
+// here for the same reason as the routers above - the 404 at the bottom of this
 // file catches everything that gets past them. Mounting it costs nothing when
 // the integration is switched off: the routes exist, the poller does not run,
 // and /api/x/status says so.
@@ -163,7 +163,7 @@ async function sendIndexHtml(req: Request, res: Response) {
   try {
     // Validators derived from the content itself, so a repeat visit revalidates
     // to a 304 instead of re-downloading ~95KB. contentVersion() changes only
-    // when the news does — see lib/freshness.ts. The load has to complete before
+    // when the news does - see lib/freshness.ts. The load has to complete before
     // the ETag is read, or a cold server would answer with a version string that
     // does not describe what it is about to send.
     const { changedAtMs } = await ensureFreshness();
@@ -172,7 +172,7 @@ async function sendIndexHtml(req: Request, res: Response) {
     // tracks the NEWS, and the dev switcher is injected downstream of the
     // renderer, so the two are independent. A browser holding a copy of this
     // page from before the bar existed revalidates, gets a 304 (the news has
-    // not changed since), and re-renders its bar-less copy — with no amount of
+    // not changed since), and re-renders its bar-less copy - with no amount of
     // reloading able to fix it, because a reload is exactly what produces the
     // 304. That is not hypothetical: it is what hid the switcher. Production
     // keeps the validators; there they are worth ~95KB a repeat visit.
@@ -187,7 +187,7 @@ async function sendIndexHtml(req: Request, res: Response) {
       }
     }
 
-    // Canonical is built from the path alone — see lib/request.ts. Tool state
+    // Canonical is built from the path alone - see lib/request.ts. Tool state
     // in the query string must never produce a different canonical.
     // Entity/related links come from the environment and are empty unless the
     // operator has configured pages that actually exist (see lib/links.ts).
@@ -205,7 +205,7 @@ async function sendIndexHtml(req: Request, res: Response) {
     }
     res
       // The rendered list changes as news is ingested, so let shared caches
-      // hold it only briefly and revalidate. Never in development — see above.
+      // hold it only briefly and revalidate. Never in development - see above.
       .set(
         "Cache-Control",
         devBarEnabled() ? "no-store" : "public, max-age=60",
@@ -229,7 +229,7 @@ app.get(["/", "/index.html"], (req, res) => {
 /**
  * The files build.mjs hashes into the asset version. WordPress enqueues each
  * with `?ver=<that hash>`, so a URL carrying the current hash names exactly
- * this build's bytes and can be cached for good — without it every page view
+ * this build's bytes and can be cached for good - without it every page view
  * on statchasers.com revalidated 200KB+ stylesheets against this origin.
  * Anything else (a stale or fallback ver, or a file the hash does not cover)
  * keeps express.static's default, because a year-long copy of the wrong bytes
@@ -272,7 +272,7 @@ app.use(
 );
 
 /**
- * Anything else is a 404 — deliberately.
+ * Anything else is a 404 - deliberately.
  *
  * This used to fall back to index.html, which meant every URL on the host
  * returned a byte-identical 200: /anything, /nfl/foo, /?position=RB&scoring=ppr

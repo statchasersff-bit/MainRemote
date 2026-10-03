@@ -5,7 +5,7 @@
  * /embed/team/:slug, /embed/player/:slug, /embed/fpa, /embed/rankings and
  * /embed/schedule return bare markup
  * with no stylesheet and no script, because on a real page WordPress enqueues those
- * separately. Opening any of them in a browser shows a wall of unstyled HTML — which makes the one
+ * separately. Opening any of them in a browser shows a wall of unstyled HTML - which makes the one
  * question you actually want to answer while working ("what does this shortcode
  * look like on a page?") the one question the app could not answer.
  *
@@ -21,8 +21,8 @@
  *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
  *   [statchasers_strength_of_schedule] -> /preview/sos
  *
- * The fragment is the SAME markup the plugin fetches — it comes from the same
- * renderer the /embed endpoints use, not a second code path — wrapped in a mock
+ * The fragment is the SAME markup the plugin fetches - it comes from the same
+ * renderer the /embed endpoints use, not a second code path - wrapped in a mock
  * host page carrying the stylesheet and bundle the plugin registers
  * (statchasers-news.php: wp_register_style '/styles.css',
  * wp_register_script '/dist/statchasers-news.js'). What differs from the live
@@ -73,7 +73,7 @@ const router: IRouter = Router();
  *
  * Scoped to the path, NOT bare. A bare `router.use(guard)` runs for every
  * request that passes through the router, and this router is mounted with
- * `app.use(previewRouter)` — so outside development it 404d the entire app,
+ * `app.use(previewRouter)` - so outside development it 404d the entire app,
  * including "/". The test suite runs with NODE_ENV=test and caught it.
  */
 router.use("/preview", (_req, res, next) => {
@@ -103,8 +103,8 @@ interface HostPageOptions {
  * Its job is to supply the three things a host page supplies and the fragment
  * assumes: an H1 (which is why embed mode demotes the tool's own heading to an
  * h2), a bounded content column, and a page background the fragment sits on. It
- * is drawn as an obvious mock — banner at the top, no attempt at the real
- * theme — because a convincing imitation would invite conclusions about
+ * is drawn as an obvious mock - banner at the top, no attempt at the real
+ * theme - because a convincing imitation would invite conclusions about
  * spacing and type that only the real theme can settle.
  */
 function hostPage(options: HostPageOptions): string {
@@ -119,7 +119,7 @@ function hostPage(options: HostPageOptions): string {
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
     `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` +
     `<meta name="robots" content="noindex" />` +
-    `<title>${escapeHtml(options.title)} — shortcode preview</title>` +
+    `<title>${escapeHtml(options.title)} - shortcode preview</title>` +
     `<link rel="preconnect" href="https://fonts.googleapis.com" />` +
     `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />` +
     `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />` +
@@ -147,7 +147,7 @@ function hostPage(options: HostPageOptions): string {
     `.hp-foot{padding:0 16px 40px}}` +
     `</style></head>` +
     `<body class="hostpage">` +
-    `<p class="hp-note">Mock host page &mdash; this is <b>${escapeHtml(options.shortcode)}</b> ` +
+    `<p class="hp-note">Mock host page - this is <b>${escapeHtml(options.shortcode)}</b> ` +
     `rendered with the stylesheet and bundle the WordPress plugin enqueues. ` +
     `The chrome around it is a stand-in, not the real theme.</p>` +
     `<header class="hp-head">` +
@@ -157,7 +157,7 @@ function hostPage(options: HostPageOptions): string {
     `Everything below the line is the shortcode's own output.</p>` +
     `</header>` +
     `<main class="hp-main"><div class="hp-slot">${options.fragment}</div></main>` +
-    `<p class="hp-foot">&copy; StatChasers &mdash; mock footer.</p>` +
+    `<p class="hp-foot">&copy; StatChasers - mock footer.</p>` +
     scripts +
     `</body></html>`
   );
@@ -177,7 +177,7 @@ function send(req: Request, res: Response, html: string): void {
  * The literal fragment, shown as source.
  *
  * The bytes are the same ones /embed/ssr.html and /embed/team/:slug return, and
- * those endpoints stay bare — the plugin fetches markup, not a document, and
+ * those endpoints stay bare - the plugin fetches markup, not a document, and
  * anything injected into them would be printed into a statchasers.com page.
  * That is also why the dev bar is never injected there, which used to mean the
  * Raw view had to open in a new tab or you would be stranded in a fragment with
@@ -193,7 +193,7 @@ function sourcePage(title: string, endpoint: string, fragment: string): string {
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />` +
     `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` +
     `<meta name="robots" content="noindex" />` +
-    `<title>${escapeHtml(title)} — raw fragment</title>` +
+    `<title>${escapeHtml(title)} - raw fragment</title>` +
     `<style>` +
     `body{margin:0;background:#0b1220;color:#cbd5e1;` +
     `font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}` +
@@ -207,7 +207,7 @@ function sourcePage(title: string, endpoint: string, fragment: string): string {
     `<div class="rw-head">` +
     `<p class="rw-h1">${escapeHtml(title)}</p>` +
     `<p class="rw-meta">The exact response body of <b>${escapeHtml(endpoint)}</b>` +
-    ` &mdash; ${bytes.toLocaleString("en-US")} bytes, no stylesheet, no script.` +
+    ` - ${bytes.toLocaleString("en-US")} bytes, no stylesheet, no script.` +
     ` This is what the WordPress plugin fetches and prints.</p>` +
     `</div>` +
     `<pre class="rw-src">${escapeHtml(fragment)}</pre>` +
@@ -352,7 +352,7 @@ router.get("/preview/fpa", (req, res) => {
 
 /**
  * [statchasers_rankings] as it renders on a page, and on each position's
- * address beneath it — the tabs link `/preview/rankings/rb`, as they link
+ * address beneath it - the tabs link `/preview/rankings/rb`, as they link
  * `/fantasy-football/rest-of-season-rankings/rb/` on the real page.
  */
 const RANKINGS_PREVIEW_PATHS = ["/preview/rankings", "/preview/rankings/:pos"];
@@ -396,7 +396,7 @@ router.get(RANKINGS_PREVIEW_PATHS, (req, res, next) => {
  * [statchasers_schedule] as it renders on a page.
  *
  * The board carries four pieces of state in its query string, so the harness
- * reads the same four the real route reads — a preview that could only ever
+ * reads the same four the real route reads - a preview that could only ever
  * show Week 1 of the weekly view would not answer the question it exists for.
  */
 router.get("/preview/schedule", (req, res) => {
@@ -535,7 +535,7 @@ router.get("/preview/raw/fpa", (req, res) => {
 
 /**
  * [statchasers_player_stats] as it renders on a page, at /preview/player-stats
- * for the quarterbacks and /preview/player-stats/rb (wr, te) for the rest —
+ * for the quarterbacks and /preview/player-stats/rb (wr, te) for the rest -
  * the same shape as the WordPress addresses, so the table's own position links
  * stay inside the harness.
  */

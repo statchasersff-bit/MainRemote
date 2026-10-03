@@ -7,8 +7,8 @@
  * built from the *already cached* depth-chart JSON, breadcrumbs, and the
  * crawlable all-32-teams link grid.
  *
- * The summary re-uses the same cache file the tool renders from — no extra HTTP
- * calls, no second data pipeline — and is memoized in a transient keyed by team
+ * The summary re-uses the same cache file the tool renders from - no extra HTTP
+ * calls, no second data pipeline - and is memoized in a transient keyed by team
  * + last-refresh timestamp, so a refresh invalidates it automatically and stale
  * player names are never pinned in PHP.
  */
@@ -254,7 +254,7 @@ class SCDC_Team_Content {
 	}
 
 	/**
-	 * Crawlable links to all 32 team routes. Real anchors with real hrefs — the
+	 * Crawlable links to all 32 team routes. Real anchors with real hrefs - the
 	 * SPA intercepts the clicks, but Googlebot (and a middle-click) sees URLs.
 	 *
 	 * @param string $current_slug Slug of the team currently being viewed, if any.

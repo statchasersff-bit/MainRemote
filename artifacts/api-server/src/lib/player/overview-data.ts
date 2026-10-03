@@ -7,7 +7,7 @@
  * outlook card print, and the club a player was with in each season.
  *
  * The meters are NOT lib/player/benchmarks.ts. Those four readings are the
- * receiving line for every position — yards per catch for a running back —
+ * receiving line for every position - yards per catch for a running back -
  * which is the right frame for the Stats tab's efficiency rows and the wrong
  * one for a meter labelled "yards per carry". These are per position, and
  * where a metric the spec names needs data the logs do not carry (routes, yards
@@ -38,7 +38,7 @@ export interface OverviewMeters {
   /** The volume a player needs to be ranked, and what it is counted in. */
   threshold: number;
   unit: string;
-  /** How many players qualified — the population the percentiles are out of. */
+  /** How many players qualified - the population the percentiles are out of. */
   qualified: number;
   /** Null when the player is below the threshold: the section is hidden. */
   meters: OverviewMeter[] | null;
@@ -79,7 +79,7 @@ const dec = (digits: number) => (v: number): string => v.toFixed(digits);
  * The four meters per position, and the volume that qualifies a player.
  *
  * `perWeek` is scaled by the weeks the league has logged, so the bar is the
- * same share of a season in Week 3 as in Week 17 — a flat 30 targets would
+ * same share of a season in Week 3 as in Week 17 - a flat 30 targets would
  * rank six receivers in September and every one of them in December.
  */
 const METERS: Record<string, { unit: string; perWeek: number; volume: (t: Totals) => number; defs: MetricDef[] }> = {
@@ -274,7 +274,7 @@ export function overviewTeammates(
 /* ------------------------------------------------------------- depth chart */
 
 export interface DepthRole {
-  /** "QB", "WR" — the fantasy position the chart files him under. */
+  /** "QB", "WR" - the fantasy position the chart files him under. */
   position: string;
   /** 1 for the starter. */
   order: number;
@@ -314,7 +314,7 @@ export function depthRole(player: Player, team: NflTeam | null): DepthRole | nul
  * The clubs he played for in each season, in the order he played for them.
  *
  * Read off the weekly logs rather than the dictionary, which only knows where
- * he is now — so a mid-season trade prints as "ARI/NYJ" on its season row.
+ * he is now - so a mid-season trade prints as "ARI/NYJ" on its season row.
  */
 export function seasonClubs(playerId: string, seasons: number[]): Record<number, string[]> {
   const out: Record<number, string[]> = {};

@@ -6,9 +6,9 @@
  * mounted in an iframe at /nfl/nfl-player-stats/. It fetched one JSON table per
  * (position, season) in the browser and drew a sortable, grouped table from it,
  * with the StatChasers composite grades computed client-side and appended as
- * the last column group. Everything that decides WHAT the table says — the
+ * the last column group. Everything that decides WHAT the table says - the
  * column groups, the header labels, the tooltips, the default qualifiers, the
- * grade engines and their weights, the leader cards — is that app's and is
+ * grade engines and their weights, the leader cards - is that app's and is
  * reproduced here unchanged. What is new is where it runs: on the server, so
  * `[statchasers_player_stats]` prints a finished table into the page the way
  * the other tools do.
@@ -18,7 +18,7 @@
  * `<pos>_<season>.json`. They are NOT the same bytes as
  * `data/player/advanced_stats/`, which the player pages read: that copy is an
  * earlier cut of the same pipeline, with different default-visible flags and no
- * `airYardsPerAttempt` for quarterbacks — and the grade engine weights that
+ * `airYardsPerAttempt` for quarterbacks - and the grade engine weights that
  * column. The player pages were built against theirs, so each tool keeps the
  * files it was built against rather than one of them silently changing.
  *
@@ -28,7 +28,7 @@
  *     (every row carries one) to this app's own player pages, instead of
  *     slugifying the display name into a statchasers.com URL. A player with no
  *     page keeps his row and loses his link, which is rule 1 of every renderer
- *     here — the standalone app linked every name, page or no page;
+ *     here - the standalone app linked every name, page or no page;
  *   - **headshots** on the leader cards come straight from the row's Sleeper
  *     id, rather than from the 14 MB Sleeper dictionary the standalone app
  *     downloaded into localStorage to look the id up by name.
@@ -137,7 +137,7 @@ export interface LeaderCard {
   key: string;
   total: LeaderFigure;
   /**
-   * The same category led per game — shown while the Per Game switch is on,
+   * The same category led per game - shown while the Per Game switch is on,
    * and often a different player. Null for a figure that is already a rate.
    */
   perGame: LeaderFigure | null;
@@ -173,21 +173,21 @@ export interface StatsTable {
   lsTooltip: string;
   /** Short qualifier phrase for the footer. */
   lsFooter: string;
-  /** Fingerprint of the file this was built from — the response ETag. */
+  /** Fingerprint of the file this was built from - the response ETag. */
   version: string;
 }
 
 /* --------------------------------------------------------- column grouping */
 
 /*
- * Grouped column headers — a banner row spanning related columns — keyed by
+ * Grouped column headers - a banner row spanning related columns - keyed by
  * position. Keys must match the JSON columns and appear in display order so
  * each group stays contiguous; a key the feed does not carry is skipped. QB
  * and RB started as the standalone app's ADVANCED_GROUPS; WR/TE diverge on
- * purpose — FPTS and AY/Rec moved into the receiving group.
+ * purpose - FPTS and AY/Rec moved into the receiving group.
  *
  * The labels are the SEO brief's (2026-09-23): each group is named for what
- * people search for — "Receiving Stats", "Rushing Stats", "Passing Stats" —
+ * people search for - "Receiving Stats", "Rushing Stats", "Passing Stats" -
  * rather than for an abstraction like "Production". They are crawlable page
  * content, printed in the table's banner row and on the section pills.
  */
@@ -336,12 +336,12 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   games: "Games played.",
   fantasyPoints: "Total fantasy points scored.",
   totalYards: "Total yards from scrimmage (rushing + receiving).",
-  snapPct: "Snap share — share of the team’s offensive snaps played.",
+  snapPct: "Snap share - share of the team’s offensive snaps played.",
 
   // Passing volume
   attempts: "Pass attempts.",
   completions: "Completed passes.",
-  completionPct: "Completion percentage — completions ÷ attempts.",
+  completionPct: "Completion percentage - completions ÷ attempts.",
   passingYards: "Total passing yards.",
   passingTouchdowns: "Passing touchdowns.",
   interceptions: "Interceptions thrown.",
@@ -349,28 +349,28 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   redZoneAttempts: "Pass attempts inside the opponent’s 20-yard line.",
 
   // Air yards / aggressiveness
-  airYards: "Air yards — total distance the ball traveled in the air on all attempts, measured to the target (completed or not).",
-  completedAirYards: "Completed air yards — air yards on completed passes only.",
-  completedAirYardsPerCompletion: "Average completed air yards per completion — how far downfield completions travel before the catch.",
-  airYardsPerAttempt: "Air yards per attempt — average depth of target. Higher = more aggressive downfield passing.",
-  deepAttemptPct: "Deep-attempt rate — share of pass attempts thrown 20+ yards downfield.",
+  airYards: "Air yards - total distance the ball traveled in the air on all attempts, measured to the target (completed or not).",
+  completedAirYards: "Completed air yards - air yards on completed passes only.",
+  completedAirYardsPerCompletion: "Average completed air yards per completion - how far downfield completions travel before the catch.",
+  airYardsPerAttempt: "Air yards per attempt - average depth of target. Higher = more aggressive downfield passing.",
+  deepAttemptPct: "Deep-attempt rate - share of pass attempts thrown 20+ yards downfield.",
 
   // Rushing (QB)
   rushAttempts: "Rushing attempts.",
   rushYards: "Rushing yards.",
   rushTouchdowns: "Rushing touchdowns.",
-  scrambleRate: "Scramble rate — share of dropbacks that became scrambles.",
+  scrambleRate: "Scramble rate - share of dropbacks that became scrambles.",
   yardsPerScramble: "Average yards gained per scramble.",
 
   // Accuracy
-  onTargetPct: "On-target rate — share of throws placed on target (excludes spikes, throwaways, batted, and hit-as-thrown).",
-  poorThrows: "Poor throws — count of inaccurately placed throws (excludes spikes/throwaways).",
-  badThrowPct: "Bad-throw rate — share of throws graded as inaccurate.",
+  onTargetPct: "On-target rate - share of throws placed on target (excludes spikes, throwaways, batted, and hit-as-thrown).",
+  poorThrows: "Poor throws - count of inaccurately placed throws (excludes spikes/throwaways).",
+  badThrowPct: "Bad-throw rate - share of throws graded as inaccurate.",
 
   // Efficiency
-  epaPerPlay: "Expected Points Added per play — average value added over expectation on each play (dropback for QBs, rush/target for skill players).",
-  successRate: "Success rate — share of plays that produced positive EPA.",
-  cpoe: "Completion Percentage Over Expected — actual vs. expected completion rate given throw difficulty; isolates accuracy from scheme.",
+  epaPerPlay: "Expected Points Added per play - average value added over expectation on each play (dropback for QBs, rush/target for skill players).",
+  successRate: "Success rate - share of plays that produced positive EPA.",
+  cpoe: "Completion Percentage Over Expected - actual vs. expected completion rate given throw difficulty; isolates accuracy from scheme.",
 
   // Explosive pass plays
   passes10Plus: "Completed passes gaining 10+ yards.",
@@ -383,15 +383,15 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   // Pressure & pocket
   pocketTime: "Average seconds in the pocket before throwing, scrambling, or being sacked.",
   timeToThrow: "Average seconds from snap to release.",
-  throwaways: "Throwaways — intentional incompletions thrown to avoid a sack.",
+  throwaways: "Throwaways - intentional incompletions thrown to avoid a sack.",
   battedPasses: "Passes batted down at the line of scrimmage.",
   hurries: "Times hurried by the pass rush.",
   blitzes: "Times the QB faced a blitz (5+ pass rushers).",
-  knockdowns: "Knockdowns — times hit by a defender just after releasing the throw.",
+  knockdowns: "Knockdowns - times hit by a defender just after releasing the throw.",
   sacks: "Times sacked.",
   sackYardsLost: "Yards lost on sacks.",
   fumbles: "Fumbles.",
-  pressurePct: "Pressure rate — share of dropbacks under pressure (hurried, hit, or sacked).",
+  pressurePct: "Pressure rate - share of dropbacks under pressure (hurried, hit, or sacked).",
 
   // Receiving (WR/TE)
   receptions: "Receptions (catches).",
@@ -400,26 +400,26 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   receivingTouchdowns: "Receiving touchdowns.",
   yardsPerReception: "Yards per reception.",
   longestReception: "Longest reception (yards).",
-  catchPct: "Catch rate — receptions ÷ targets.",
-  catchableTargets: "Catchable targets — targets graded as catchable.",
+  catchPct: "Catch rate - receptions ÷ targets.",
+  catchableTargets: "Catchable targets - targets graded as catchable.",
   drops: "Dropped catchable passes.",
   passesDropped: "Dropped catchable passes.",
-  dropPct: "Drop rate — drops ÷ catchable targets.",
+  dropPct: "Drop rate - drops ÷ catchable targets.",
   routes: "Routes run.",
-  routePct: "Route participation — share of team pass plays on which the player ran a route.",
-  targetSharePct: "Target share — share of the team’s targets.",
-  airYardsSharePct: "Air-yards share — share of the team’s air yards.",
-  airYardsPerTarget: "Air yards per target — average depth of target.",
+  routePct: "Route participation - share of team pass plays on which the player ran a route.",
+  targetSharePct: "Target share - share of the team’s targets.",
+  airYardsSharePct: "Air-yards share - share of the team’s air yards.",
+  airYardsPerTarget: "Air yards per target - average depth of target.",
   airYardsPerReception: "Air yards per reception.",
-  wopr: "Weighted Opportunity Rating — blends target share and air-yards share into one usage metric.",
-  targetsPerRouteRun: "Targets per route run — how often a route earns a target.",
-  yardsPerRouteRun: "Yards per route run — receiving yards ÷ routes run; a premier efficiency metric.",
+  wopr: "Weighted Opportunity Rating - blends target share and air-yards share into one usage metric.",
+  targetsPerRouteRun: "Targets per route run - how often a route earns a target.",
+  yardsPerRouteRun: "Yards per route run - receiving yards ÷ routes run; a premier efficiency metric.",
   yardsAfterCatchPerReception: "Yards after the catch, per reception.",
   yardsBeforeCatchPerReception: "Yards before the catch, per reception (air yards on completions).",
   yardsAfterContactPerReception: "Yards after contact, per reception.",
   brokenTackles: "Broken / avoided tackles.",
-  avoidedTackleRate: "Avoided-tackle rate — share of catches with a broken or avoided tackle.",
-  contestedCatchRate: "Contested-catch rate — catch rate on contested targets.",
+  avoidedTackleRate: "Avoided-tackle rate - share of catches with a broken or avoided tackle.",
+  contestedCatchRate: "Contested-catch rate - catch rate on contested targets.",
   redZoneTargets: "Targets inside the opponent’s 20-yard line.",
   endZoneTargets: "Targets thrown into the end zone.",
   interceptionsWhenTargeted: "Interceptions thrown on passes targeting this player.",
@@ -430,9 +430,9 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   receptions50Plus: "Receptions gaining 50+ yards.",
 
   // Rushing usage & opportunity (RB)
-  redZoneOpportunities: "Red-zone opportunities — carries plus targets inside the opponent’s 20-yard line.",
-  goalLineCarries: "Goal-line carries — rush attempts inside the opponent’s 5-yard line.",
-  yardsPerCarry: "Yards per carry — rushing yards ÷ rush attempts.",
+  redZoneOpportunities: "Red-zone opportunities - carries plus targets inside the opponent’s 20-yard line.",
+  goalLineCarries: "Goal-line carries - rush attempts inside the opponent’s 5-yard line.",
+  yardsPerCarry: "Yards per carry - rushing yards ÷ rush attempts.",
   receivingYardsAfterCatch: "Receiving yards after the catch (season total).",
 
   // Explosive runs (RB)
@@ -441,16 +441,16 @@ const COLUMN_TOOLTIPS: Record<string, string> = {
   rushes30Plus: "Rushes gaining 30+ yards.",
   rushes40Plus: "Rushes gaining 40+ yards.",
   rushes50Plus: "Rushes gaining 50+ yards.",
-  explosiveRunPct: "Explosive-run rate — share of carries gaining 10+ yards.",
-  breakawayRunPct: "Breakaway rate — share of rushing yards gained on runs of 15+ yards.",
+  explosiveRunPct: "Explosive-run rate - share of carries gaining 10+ yards.",
+  breakawayRunPct: "Breakaway rate - share of rushing yards gained on runs of 15+ yards.",
   longestRush: "Longest rush (yards).",
   longestRushTouchdown: "Longest rushing touchdown (yards).",
 
   // Contact & tackle-breaking (RB)
-  rushAttemptsPerBrokenTackle: "Rush attempts per broken tackle — carries needed per broken/avoided tackle (lower = more elusive).",
-  yardsBeforeContactPerAttempt: "Yards before contact per attempt — open space created before first contact.",
-  yardsAfterContactPerAttempt: "Yards after contact per attempt — yards earned after first contact (power & balance).",
-  tackleEludedRate: "Tackles-eluded rate — share of touches with a broken or avoided tackle.",
+  rushAttemptsPerBrokenTackle: "Rush attempts per broken tackle - carries needed per broken/avoided tackle (lower = more elusive).",
+  yardsBeforeContactPerAttempt: "Yards before contact per attempt - open space created before first contact.",
+  yardsAfterContactPerAttempt: "Yards after contact per attempt - yards earned after first contact (power & balance).",
+  tackleEludedRate: "Tackles-eluded rate - share of touches with a broken or avoided tackle.",
 
   // Negative plays (RB)
   tacklesForLoss: "Times tackled behind the line of scrimmage.",
@@ -514,7 +514,7 @@ const receiverAirYards = (row: Record<string, unknown>): number | null => {
 };
 
 /**
- * The stat leaders over each position's table — the SEO brief's "NFL stats
+ * The stat leaders over each position's table - the SEO brief's "NFL stats
  * leaders" (2026-09-23), which replaced a card per grade. Plain stats people
  * search for, each with its figure.
  */
@@ -592,7 +592,7 @@ const SCORE_SYSTEMS: Record<StatsPosition, ScoreSystem> = {
     compute: computeQbCompositeScores as unknown as ScoreSystem["compute"],
     isQualified: isQualifiedQb,
     lsTooltip: (q) =>
-      `Limited sample — under qualifier (${q(5)}+ games, ${q(100)}+ attempts); graded against the qualified QB pool.`,
+      `Limited sample - under qualifier (${q(5)}+ games, ${q(100)}+ attempts); graded against the qualified QB pool.`,
     lsFooter: (q) => `limited sample (under ${q(5)} G / ${q(100)} Att)`,
   },
   RB: {
@@ -602,7 +602,7 @@ const SCORE_SYSTEMS: Record<StatsPosition, ScoreSystem> = {
     compute: computeRbCompositeScores as unknown as ScoreSystem["compute"],
     isQualified: isQualifiedRb,
     lsTooltip: (q) =>
-      `Limited sample — under qualifier (${q(50)}+ rush att or ${q(25)}+ targets); graded against the qualified RB pool.`,
+      `Limited sample - under qualifier (${q(50)}+ rush att or ${q(25)}+ targets); graded against the qualified RB pool.`,
     lsFooter: (q) => `limited sample (under ${q(50)} Rush Att / ${q(25)} Tgt)`,
   },
   WR: {
@@ -613,7 +613,7 @@ const SCORE_SYSTEMS: Record<StatsPosition, ScoreSystem> = {
     compute: computeWrCompositeScores as unknown as ScoreSystem["compute"],
     isQualified: isQualifiedWr,
     lsTooltip: (q) =>
-      `Limited sample — under qualifier (${q(40)}+ targets or ${q(150)}+ routes); graded against the qualified WR pool.`,
+      `Limited sample - under qualifier (${q(40)}+ targets or ${q(150)}+ routes); graded against the qualified WR pool.`,
     lsFooter: (q) => `limited sample (under ${q(40)} Tgt / ${q(150)} Routes)`,
   },
   TE: {
@@ -624,7 +624,7 @@ const SCORE_SYSTEMS: Record<StatsPosition, ScoreSystem> = {
     compute: computeTeCompositeScores as unknown as ScoreSystem["compute"],
     isQualified: isQualifiedTe,
     lsTooltip: (q) =>
-      `Limited sample — under qualifier (${q(25)}+ targets or ${q(100)}+ routes); graded against the qualified TE pool.`,
+      `Limited sample - under qualifier (${q(25)}+ targets or ${q(100)}+ routes); graded against the qualified TE pool.`,
     lsFooter: (q) => `limited sample (under ${q(25)} Tgt / ${q(100)} Routes)`,
   },
 };
@@ -634,7 +634,7 @@ const SCORE_SYSTEMS: Record<StatsPosition, ScoreSystem> = {
 /**
  * The thresholds the filter bar opens on for a position.
  *
- * The multi-season table tightens them — more games, more volume — so a
+ * The multi-season table tightens them - more games, more volume - so a
  * three-year leaderboard is not headed by small samples. Verbatim from the
  * standalone app's getDefaultFilters().
  *
@@ -665,7 +665,7 @@ export function defaultThresholds(
  *
  * MIRRORS `passes()` in client/player-stats.ts, which runs the same test
  * against the filter bar's live values. Snap share is only tested where the
- * row has one — the multi-season files leave it null for some players, and a
+ * row has one - the multi-season files leave it null for some players, and a
  * missing figure is not a failing one.
  */
 export function passesThresholds(
@@ -713,7 +713,7 @@ let inProgressCache = new Set<number>();
 let allSpanCache: [number, number] | null = null;
 
 /**
- * The seasons on disk, single seasons oldest first and then "all" — the order
+ * The seasons on disk, single seasons oldest first and then "all" - the order
  * the season control prints them in.
  *
  * Discovered from the QB files, since every position is published together.
@@ -979,14 +979,14 @@ export function getStatsTable(
   });
 
   // Leader cards are the season's stat leaders under the DEFAULT thresholds
-  // plus the grade qualifier — not the live filters — so a backup with three
+  // plus the grade qualifier - not the live filters - so a backup with three
   // great snaps never headlines a share. Found in feed order, before the sort
   // below, which is how the standalone app broke ties.
   const eligible = rows.filter((row) => row.shownByDefault && row.qualified);
   const pool = eligible.length > 0 ? eligible : rows;
   // The per-game leaders come from the same pool, less anyone who has played
-  // under three quarters of the most games in it — 2 of 2 in week 2, 13 of
-  // 17 at the end — so one big game does not lead a per-game category.
+  // under three quarters of the most games in it - 2 of 2 in week 2, 13 of
+  // 17 at the end - so one big game does not lead a per-game category.
   const mostGames = Math.max(0, ...pool.map((row) => num(row.values["games"]) ?? 0));
   const gamesFloor = Math.ceil(mostGames * 0.75);
   const perGamePool = pool.filter((row) => (num(row.values["games"]) ?? 0) >= gamesFloor);

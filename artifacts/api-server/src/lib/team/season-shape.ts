@@ -6,19 +6,19 @@
  * about the eighteen weeks together: how the home games are spread, where the
  * bye falls, how many times the division comes round, which conference the
  * out-of-division opponents come from. Those are all arithmetic on rows the
- * table already prints — this module does the arithmetic once so the renderer
+ * table already prints - this module does the arithmetic once so the renderer
  * can draw it and schedule-faq.ts can keep quoting the same numbers.
  *
  * Ported from the standalone NFL schedule tool's team lens, whose four sidebar
  * cards were exactly these four readings. The numbers and the thresholds are
  * the same; what could not come across is the data shape. That tool holds a
- * whole league — a game carries `home` and `away` teams and is filtered down to
+ * whole league - a game carries `home` and `away` teams and is filtered down to
  * one club. The team hub holds one club's schedule, where a game carries
  * `homeAway` and an `opponent`, so the counting is rewritten against that
  * rather than the league rows being reconstructed from it.
  *
- * This is now the only copy. The lens has been removed from the schedule tool —
- * its `teamSeasonStats` went with it — because the two would otherwise be two
+ * This is now the only copy. The lens has been removed from the schedule tool -
+ * its `teamSeasonStats` went with it - because the two would otherwise be two
  * sets of arithmetic answering one question.
  *
  * ## What it refuses to do
@@ -47,7 +47,7 @@ export interface WeekMark {
   week: number;
   kind: WeekKind;
   opponent: NflTeam | null;
-  /** "vs NE", "at MIA", "Bye", "No game" — the cell's own label. */
+  /** "vs NE", "at MIA", "Bye", "No game" - the cell's own label. */
   label: string;
 }
 
@@ -103,8 +103,8 @@ export interface SeasonShape {
  * Thirds of the season, which is how a schedule is actually talked about.
  *
  * Derived from the last week the fixtures reach rather than fixed at 6/6/6, so
- * a season the league lengthens again — or one ESPN has only published part of
- * — still splits into three comparable runs instead of into two runs and a
+ * a season the league lengthens again - or one ESPN has only published part of
+ * - still splits into three comparable runs instead of into two runs and a
  * stub. At eighteen weeks this is exactly the 1–6 / 7–12 / 13–18 the standalone
  * tool hard-codes.
  */
@@ -173,7 +173,7 @@ function takeawayFor(scheduled: WeekMark[], team: NflTeam): SeasonTakeaway {
   };
 }
 
-/** "vs NE", "at MIA" — the form the table's own rows use. */
+/** "vs NE", "at MIA" - the form the table's own rows use. */
 function markLabel(game: ScheduleGame): string {
   const side = game.homeAway === "home" ? "vs" : "at";
   return `${side} ${game.opponent?.code ?? game.opponentName}`;

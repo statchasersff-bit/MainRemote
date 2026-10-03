@@ -9,7 +9,7 @@
  *     the WordPress plugin to inline into the parent page.
  *
  * Either way the HTML that leaves this server already contains every headline,
- * player name, timestamp, summary and link — plus the final title, canonical
+ * player name, timestamp, summary and link - plus the final title, canonical
  * and social metadata. Nothing important waits on a fetch, nothing waits on a
  * click, and nothing is patched up afterwards by JavaScript.
  */
@@ -47,7 +47,7 @@ export interface SsrOptions {
  * Rendered-fragment cache.
  *
  * Rendering 250 cards means a database round trip plus a few hundred kilobytes of
- * string building. Doing that per request wastes TTFB — which is LCP's floor —
+ * string building. Doing that per request wastes TTFB - which is LCP's floor -
  * for output that only changes when the news does. Entries are keyed by the
  * render options *and* the content version, and dropped outright when an
  * ingest changes data, so this is an exact cache rather than a timed one: no
@@ -75,7 +75,7 @@ function cacheKey(options: SsrOptions, limit: number): string {
     options.relatedHeading ?? "",
     options.relatedLinks ?? [],
     // Both of these are rendered into the root element's attributes, so they
-    // must key the cache — otherwise a request that enables monitoring gets
+    // must key the cache - otherwise a request that enables monitoring gets
     // served an earlier fragment that has it switched off.
     options.vitalsEndpoint ?? "",
     options.pageUrl ?? "",
@@ -126,7 +126,7 @@ export async function renderNewsFragment(
     ...(options.apiBase ? { apiBase: options.apiBase } : {}),
   });
 
-  // Simple FIFO eviction — entries are all equivalent in cost and the map only
+  // Simple FIFO eviction - entries are all equivalent in cost and the map only
   // grows when a host asks for an unusual option combination.
   if (renderCache.size >= RENDER_CACHE_MAX) {
     const oldest = renderCache.keys().next();
@@ -154,7 +154,7 @@ function readTemplate(publicDir: string): string {
 }
 
 export interface RenderAppPageOptions extends SsrOptions {
-  /** Canonical URL for this response — query string already stripped. */
+  /** Canonical URL for this response - query string already stripped. */
   canonical: string;
   /** Injected for testability. */
   now?: Date;
@@ -171,7 +171,7 @@ export async function renderAppPage(
   try {
     fragment = await renderNewsFragment({
       ...options,
-      // No heading of any kind on this page. It is never read on its own —
+      // No heading of any kind on this page. It is never read on its own -
       // it is consumed inside a StatChasers page (the WordPress mount, or the
       // legacy iframe), and that page already prints its own header directly
       // above the tool. A heading here would restate it. The <title> and

@@ -8,13 +8,13 @@
  * These pages are not meant to rank on this origin. The public URL is
  * `https://statchasers.com/nfl/players/<slug>/`, and WordPress owns the title,
  * description, canonical and schema there. What this server serves is the
- * embedded tool, so it ships `noindex, indexifembedded` — out of the index as a
+ * embedded tool, so it ships `noindex, indexifembedded` - out of the index as a
  * standalone result, still usable by Google as part of the page that embeds it.
  *
  * The canonical stays self-referencing and always points at the PPR URL. The
  * scoring format is the one piece of genuine state these pages carry in a query
  * string, and three formats of the same profile are three renderings of one
- * page, not three pages — so `?format=half` canonicalises to the bare slug.
+ * page, not three pages - so `?format=half` canonicalises to the bare slug.
  */
 
 import { escapeHtml } from "./render";
@@ -38,8 +38,8 @@ const SITE_NAME = "StatChasers";
  *
  * A section URL exists to answer one kind of query, so it gets a title written
  * for that query rather than the profile's generic one. The injury entry is
- * deliberately built to carry both intents — the current status and the
- * history — because they are the same page and splitting them would put two
+ * deliberately built to carry both intents - the current status and the
+ * history - because they are the same page and splitting them would put two
  * thin pages where one good one belongs.
  *
  * Returns null for a section with no written metadata; the caller falls back to
@@ -76,8 +76,8 @@ function sectionMeta(
 
   if (section === "bio") {
     // Deliberately no fantasy words in either string. Bio is the one section
-    // whose queries are biographical — age, height, college, draft, where he
-    // is from — and a title promising fantasy analysis would be competing for
+    // whose queries are biographical - age, height, college, draft, where he
+    // is from - and a title promising fantasy analysis would be competing for
     // the wrong ones while the profile page competes for the right ones.
     // The Bio spec's title and description (2.11, approved by mak
     // 2026-09-30), from the sourced fact store when the player has a record.
@@ -150,7 +150,7 @@ export function playerPageMeta(
   const scoped = section ? sectionMeta(data, section) : null;
 
   // The description names what is actually on the page and the season it
-  // describes. No superlatives, and no claim about next season — see rule 3 in
+  // describes. No superlatives, and no claim about next season - see rule 3 in
   // player-render.ts.
   const description =
     scoped?.description ??

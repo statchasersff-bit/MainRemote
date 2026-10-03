@@ -13,7 +13,7 @@
  * WHICH LEAGUES. The endpoint takes `league_type`, and it publishes exactly two
  * cuts: the default, which is 673 players deep, and `league_type=2`, which is
  * 1662 deep and is the dynasty one. There is no parameter for how many
- * quarterbacks a league starts — `qb_count`, `superflex` and every league_type
+ * quarterbacks a league starts - `qb_count`, `superflex` and every league_type
  * but 2 come back byte-identical to the default. So the default is what this
  * builder reads, and it is the closest thing Sleeper publishes to a 1QB
  * number: in week 2 of 2026 it had Jacoby Brissett at 11.8% where the dynasty
@@ -21,7 +21,7 @@
  * ownership a superflex league inflates. The page says "Sleeper redraft" over
  * the figure rather than "1QB", because that is the claim this source supports.
  *
- * ONE WEEK, the current one. This is a reading of now, not a season total —
+ * ONE WEEK, the current one. This is a reading of now, not a season total -
  * rerun it as often as the number should move, which in season is weekly and
  * in practice is whenever the rest of the data is rebuilt.
  *
@@ -84,7 +84,7 @@ function clean(doc) {
   for (const [id, row] of Object.entries(doc)) {
     const owned = Number(row?.owned);
     const started = Number(row?.started);
-    // A row without an ownership figure is not a zero — it is a row that says
+    // A row without an ownership figure is not a zero - it is a row that says
     // nothing, and writing 0 for it would put "0% rostered" on a page about a
     // player Sleeper simply has no reading for.
     if (!Number.isFinite(owned)) {

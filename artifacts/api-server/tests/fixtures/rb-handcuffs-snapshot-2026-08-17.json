@@ -1342,7 +1342,7 @@
         "High-scoring offense creates consistent opportunity"
       ],
       "riskFlags": [
-        "Starter is excelling — low bench risk"
+        "Starter is excelling - low bench risk"
       ],
       "committeeRisk": false,
       "handcuffType": "Premium Handcuff",
@@ -3234,7 +3234,7 @@
         "Top-tier offensive line"
       ],
       "riskFlags": [
-        "Starter is excelling — low bench risk"
+        "Starter is excelling - low bench risk"
       ],
       "committeeRisk": false,
       "handcuffType": "Talent Stash",
@@ -3655,7 +3655,7 @@
       "topReasons": [
         "Starter has heavy workload",
         "Would inherit a high-touch backfield if the starter misses time",
-        "Depth chart disagreement detected — review manually"
+        "Depth chart disagreement detected - review manually"
       ],
       "riskFlags": [
         "Depth chart disagreement"
@@ -4496,7 +4496,7 @@
         "Would inherit a high-touch backfield if the starter misses time"
       ],
       "riskFlags": [
-        "Starter is excelling — low bench risk"
+        "Starter is excelling - low bench risk"
       ],
       "committeeRisk": false,
       "handcuffType": "Talent Stash",
@@ -8694,7 +8694,7 @@
         "Top-tier offensive line"
       ],
       "riskFlags": [
-        "Starter is excelling — low bench risk"
+        "Starter is excelling - low bench risk"
       ],
       "committeeRisk": false,
       "handcuffType": "",

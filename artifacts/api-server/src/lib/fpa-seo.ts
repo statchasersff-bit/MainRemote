@@ -9,7 +9,7 @@
  *
  * The canonical always points at the bare path. Scoring format and raw/adjusted
  * are the two pieces of state this page carries in a query string, and six
- * renderings of one table are one page — exactly the reasoning the player
+ * renderings of one table are one page - exactly the reasoning the player
  * pages' format toggle gets.
  */
 

@@ -2,7 +2,7 @@
  * Detects the outage the platform does not: inbound dead, process fine.
  *
  * Twice now (2026-10-01, 2026-10-02) the deployment stopped answering inbound
- * requests while the process itself kept working — the 10-02 VM ran its 13:00
+ * requests while the process itself kept working - the 10-02 VM ran its 13:00
  * UTC corrections refresh, nflverse downloads and database writes included,
  * four hours into an outage that began around 09:00. Replit's proxy had lost
  * the route to the VM; nothing inside the app failed, so nothing inside the
@@ -13,21 +13,21 @@
  * /api/healthz twice:
  *
  *   - through the public origin (SC_SELF_URL, default the deployment's
- *     *.replit.app address) — the path readers and the WordPress plugin take.
+ *     *.replit.app address) - the path readers and the WordPress plugin take.
  *     During the 10-02 outage this exact probe failed from the workspace, so
  *     it is known to exercise the broken route;
- *   - through 127.0.0.1 — the app itself, no proxy involved.
+ *   - through 127.0.0.1 - the app itself, no proxy involved.
  *
  * Local up + public down, three probes running (~15 minutes), is the
- * signature of both outages, and the response is to say so loudly on stderr —
+ * signature of both outages, and the response is to say so loudly on stderr -
  * the only stream the deployment's Logs pane shows (see refreshNote in
- * live-refresh.ts) — and exit, so the supervisor restarts the process. A
+ * live-refresh.ts) - and exit, so the supervisor restarts the process. A
  * restart may or may not re-establish the proxy route (both incidents were
  * cured by a full republish), but it is the strongest self-help available
  * from inside the VM, and a repeating [watchdog] exit line in the pane turns
  * a silent outage into a labelled, timestamped one.
  *
- * Local down too is not the proxy's fault — the app is wedged — and exiting
+ * Local down too is not the proxy's fault - the app is wedged - and exiting
  * for a restart is then simply correct.
  *
  * Deliberately quiet while healthy: one line at startup, then lines only when
@@ -117,7 +117,7 @@ export async function watchdogTick(
   state.publicFailures += 1;
   deps.note(
     `public route FAILED (${state.publicFailures}/${EXIT_AFTER_FAILURES}): ${publicUrl} ${viaProxy}; localhost ${
-      viaLocal === "ok" ? "ok — inbound-only failure, the proxy has lost this VM" : `also failing (${viaLocal}) — the app is wedged`
+      viaLocal === "ok" ? "ok - inbound-only failure, the proxy has lost this VM" : `also failing (${viaLocal}) - the app is wedged`
     }`,
   );
 
@@ -127,7 +127,7 @@ export async function watchdogTick(
     return;
   }
   deps.note(
-    `exiting for a supervisor restart: inbound unreachable for ${EXIT_AFTER_FAILURES} consecutive probes (~${Math.round((EXIT_AFTER_FAILURES * PROBE_INTERVAL_MS) / 60000)} minutes). If this line repeats, the restart did not heal the route — republish the deployment.`,
+    `exiting for a supervisor restart: inbound unreachable for ${EXIT_AFTER_FAILURES} consecutive probes (~${Math.round((EXIT_AFTER_FAILURES * PROBE_INTERVAL_MS) / 60000)} minutes). If this line repeats, the restart did not heal the route - republish the deployment.`,
   );
   deps.exit(1);
 }

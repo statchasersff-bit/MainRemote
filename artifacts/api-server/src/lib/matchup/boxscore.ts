@@ -4,8 +4,8 @@
  * This is what turns a matchup page from "10–13" into a game page: the
  * quarter-by-quarter line, and the handful of team figures that say how the
  * result happened rather than what it was. Neither is derivable from anything
- * the app already holds — the schedule carries a final score and nothing else,
- * and the Sleeper logs are per player — so this is a genuinely new upstream and
+ * the app already holds - the schedule carries a final score and nothing else,
+ * and the Sleeper logs are per player - so this is a genuinely new upstream and
  * it is treated like the other one.
  *
  * Treated like one means: keyed on ESPN's own event id, cached hard because a
@@ -118,7 +118,7 @@ export interface GameOdds {
 
 export interface GameBoxscore {
   eventId: string;
-  /** How many periods the line covers — 4, or 5 when the game went to overtime. */
+  /** How many periods the line covers - 4, or 5 when the game went to overtime. */
   periodCount: number;
   /** Away first, home second, the order every scoreboard reads in. */
   lines: BoxscoreLine[];
@@ -239,8 +239,8 @@ function clockSeconds(raw: string | undefined): number | null {
 function statsOf(entries: EspnStatistic[] | undefined): BoxTeamStats {
   const by = new Map<string, string>();
   for (const entry of entries ?? []) {
-    // First value wins: ESPN sends `interceptions` twice in a team's list —
-    // once for the pass defense and once inside the turnover breakdown — and
+    // First value wins: ESPN sends `interceptions` twice in a team's list -
+    // once for the pass defense and once inside the turnover breakdown - and
     // the later one would overwrite a field the earlier one got right.
     if (entry.name && entry.displayValue && !by.has(entry.name)) {
       by.set(entry.name, entry.displayValue);
@@ -532,7 +532,7 @@ const cache = createKeyedCache<GameBoxscore>({
  * what was checked: ESPN refuses this host at times, and without these a
  * refused request is a recap missing its box score, scoring plays, drives and
  * win probability until the backoff lets the next one through. ESPN is asked
- * only for a game not stored yet — one that finished since the last build.
+ * only for a game not stored yet - one that finished since the last build.
  *
  * Reloaded when a file's mtime changes, so the builder's run after each game
  * window is picked up without a restart.

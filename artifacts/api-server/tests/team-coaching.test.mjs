@@ -67,7 +67,7 @@ describe("placement", () => {
 
   // Since the 2026-10-01 all-32 build every club has an entry, so there is no
   // real club left to prove the no-entry contract with (a club missing from
-  // the file still renders no panel — renderCoachingSection returns empty for
+  // the file still renders no panel - renderCoachingSection returns empty for
   // null). What the page must show now is the opposite: every generated club
   // gets the panel and the tab.
   test("a generated club renders the panel and the tab", async () => {
@@ -112,7 +112,7 @@ describe("the components, in order", () => {
     const { doc } = await page("/team/buffalo-bills/");
     const intro = doc.querySelector(".sct-co-intro").textContent;
     assert.match(intro, /^Play-calling tendencies carry over from season to season/);
-    assert.match(intro, /Joe Brady called this offense last season too — his third year on its call sheet/);
+    assert.match(intro, /Joe Brady called this offense last season too - his third year on its call sheet/);
   });
 });
 
@@ -129,7 +129,7 @@ describe("the coach card", () => {
     assert.equal(card.querySelector(".sct-co-rating").textContent, "HIGH");
     assert.ok(card.querySelector(".sct-co-rating.is-high"));
     assert.ok(card.querySelector(".sct-co-relbar"));
-    assert.match(card.querySelector(".sct-co-ledger-val").textContent, /^Brady — 3 of 3 games in 2026/);
+    assert.match(card.querySelector(".sct-co-ledger-val").textContent, /^Brady - 3 of 3 games in 2026/);
   });
 });
 
@@ -181,7 +181,7 @@ describe("staff, dossier and finishes", () => {
     const finishes = [...doc.querySelectorAll("table.sct-co-finishes tbody tr")];
     assert.equal(finishes.length, coaching.teams.buf.finishes.rows.length);
     assert.ok(finishes[finishes.length - 1].classList.contains("is-current"));
-    assert.match(finishes[finishes.length - 1].textContent, /pace through Week 3/);
+    assert.match(finishes[finishes.length - 1].textContent, /pace through Week \d+/);
     assert.ok(doc.querySelectorAll(".sct-co-finish.is-good").length >= 6);
     assert.ok(doc.querySelectorAll(".sct-co-finish.is-bad").length >= 4);
   });
@@ -224,7 +224,7 @@ describe("panels", () => {
     assert.match(scoreState.textContent, new RegExp(coaching.teams.buf.scoreState.rows[0].result.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     assert.match(
       doc.querySelector(".sct-co-bottom").textContent,
-      /^The fantasy bottom line: third season of the same play-caller/,
+      /^The fantasy bottom line: Brady called this offense in \d{4} too/,
     );
   });
 });
@@ -254,5 +254,18 @@ describe("reliability caveat", () => {
   test("a HIGH club's Outlook carries no new-play-caller caveat", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     assert.equal(doc.querySelector(".sct-co-caveat"), null);
+  });
+});
+
+describe("post-refresh check", () => {
+  test("the committed coaching data passes the daily team page check", async () => {
+    // Offline: the data files alone, against the rules the 2026-10-03 audit
+    // set (no overclaims, one period per dossier line, broken tenures not
+    // read as unbroken). The network half runs in the daily chain.
+    const { spawnSync } = await import("node:child_process");
+    const run = spawnSync(process.execPath, [path.join(APP_DIR, "scripts", "team", "checkTeamPages.mjs"), String(coaching.season), "--offline"], {
+      encoding: "utf8",
+    });
+    assert.equal(run.status, 0, run.stdout + run.stderr);
   });
 });

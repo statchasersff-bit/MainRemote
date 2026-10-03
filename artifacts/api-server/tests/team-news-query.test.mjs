@@ -1,8 +1,8 @@
 /**
  * Which wire stories land on a team's News section.
  *
- * Team is derived per row — from the headshot's player, then from the player's
- * name — against the current Sleeper map, so it could not be a WHERE clause and
+ * Team is derived per row - from the headshot's player, then from the player's
+ * name - against the current Sleeper map, so it could not be a WHERE clause and
  * every render used to read up to 4,000 wire rows and filter them in JS. The
  * filter is in SQL now (lib/news-query.ts, wireCandidatesFor), as a superset
  * the JS still narrows. These are the three ways a story belongs to a team, and
@@ -77,7 +77,7 @@ after(async () => {
 });
 
 describe("a team's news section", () => {
-  test("carries its players' stories by headshot, by name, and by accented name — and no one else's", async () => {
+  test("carries its players' stories by headshot, by name, and by accented name - and no one else's", async () => {
     const hub = await fetch(`${server.origin}/team/${TEAM}`, { redirect: "manual" });
     const slug = hub.headers.get("location").replace(/^.*\/team\//, "").replace(/\/.*$/, "");
     const html = await (await fetch(`${server.origin}/embed/team/${slug}?section=news`)).text();

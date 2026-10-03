@@ -11,7 +11,7 @@
  *
  *   - `player_production.json` reaches back ten seasons and carries the real
  *     counting line for each. It is the spine of the career table, and it is
- *     the ONLY place a career passing or receiving total exists — the game logs
+ *     the ONLY place a career passing or receiving total exists - the game logs
  *     start in 2023.
  *   - The game logs cover the current season, which production does not have
  *     until the year is filed. So the current year is aggregated off the log
@@ -129,7 +129,7 @@ export function careerStatRows(
  * How many games a season offered. Seventeen from 2021, sixteen before it.
  *
  * Exported because availability is computed in two places off two different
- * shapes — the career rows here and the game-log tiers in player-data.ts — and
+ * shapes - the career rows here and the game-log tiers in player-data.ts - and
  * a league rule written down twice is a league rule that will be updated once.
  */
 export function seasonGames(season: number): number {
@@ -140,7 +140,7 @@ export interface CareerAvailability {
   played: number;
   possible: number;
   pct: number;
-  /** Completed seasons only — see below. */
+  /** Completed seasons only - see below. */
   seasons: number;
 }
 
@@ -212,7 +212,7 @@ export function careerTotals(rows: CareerStatRow[]): CareerTotalsRow {
  * The NFL passer rating.
  *
  * The real formula, with all four components clamped to [0, 2.375] as the
- * league defines them — not an approximation. Null below one attempt, where it
+ * league defines them - not an approximation. Null below one attempt, where it
  * is undefined rather than zero.
  */
 export function passerRating(totals: ProductionTotals): number | null {
@@ -236,7 +236,7 @@ export interface CareerHigh {
  * The records, straight off the table above them.
  *
  * Position-aware, because "most passing touchdowns" is not a fact about a wide
- * receiver. A record with no seasons behind it is not rendered — there is no
+ * receiver. A record with no seasons behind it is not rendered - there is no
  * "0 yards, never" row.
  */
 export function careerHighs(
@@ -355,7 +355,7 @@ export interface StatsFaq {
  * The questions people type, answered from the totals above them.
  *
  * Every answer restates a number already rendered on the page. Nothing here
- * forecasts a game that has not been played — see rule 3 in player-render.ts.
+ * forecasts a game that has not been played - see rule 3 in player-render.ts.
  */
 export function statsFaq(input: {
   name: string;
@@ -396,7 +396,7 @@ export function statsFaq(input: {
         `${name} has ${num(scrimmage)} career yards from scrimmage across ` +
         `${totals.seasons} season${totals.seasons === 1 ? "" : "s"}` +
         (totals.totals.recYd > 0 && totals.totals.rushYd > 0
-          ? ` — ${num(totals.totals.recYd)} receiving and ${num(totals.totals.rushYd)} rushing.`
+          ? ` - ${num(totals.totals.recYd)} receiving and ${num(totals.totals.rushYd)} rushing.`
           : "."),
     });
     const tds = totals.totals.recTd + totals.totals.rushTd;

@@ -4,7 +4,7 @@
  *
  * THE BUG THIS FIXES. Three modules resolved their data as
  * `path.resolve(process.cwd(), "data", …)`, which is correct in development and
- * in the test harness — both start the process from the package directory — and
+ * in the test harness - both start the process from the package directory - and
  * wrong on the deployment, where the process starts somewhere else. The
  * symptom was not an error: `readJson()` falls back to `{}` for a file it
  * cannot read, so the player index came back as an empty list, `/player/<slug>`
@@ -12,15 +12,15 @@
  * rankings board rendered zero rows. Everything looked healthy and served
  * nothing.
  *
- * It was invisible for a second reason. The other two files reached this way —
- * `data/team-roster.json` and `data/player-teams.json` — are caches the app
+ * It was invisible for a second reason. The other two files reached this way -
+ * `data/team-roster.json` and `data/player-teams.json` - are caches the app
  * refetches and rewrites when they are missing, so on the deployment they were
  * silently being rebuilt from Sleeper on every boot and the team pages looked
  * fine. Only the two directories of static, build-time data had no such
  * fallback, and those are exactly the two things that were empty.
  *
  * WHY __dirname AND NOT cwd. `public/` has always been resolved from
- * `__dirname` — see the routers — and `public/` has always worked on the
+ * `__dirname` - see the routers - and `public/` has always worked on the
  * deployment. That is the whole diagnosis: two directories that sit side by
  * side in the package, one found and one not, differing only in how the path
  * was built. This resolves `data/` the same way `public/` is resolved.
@@ -40,7 +40,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
  * The first candidate that is a directory, or the first candidate outright.
  *
  * Falling back to the first rather than throwing is deliberate: a missing data
- * directory is already handled downstream — every reader has a default — and a
+ * directory is already handled downstream - every reader has a default - and a
  * module that throws while being imported takes the whole server down instead
  * of degrading one tool. `dataDirStatus()` is how the absence is reported.
  */
@@ -59,8 +59,8 @@ function firstDirectory(candidates: string[]): string {
  * The package's `data/` directory.
  *
  * Bundled, every module below src/ is inlined into `dist/index.mjs`, so `HERE`
- * is `<package>/dist` and the first candidate is the answer. Unbundled — a test
- * importing a single module, a script run with a loader — `HERE` is
+ * is `<package>/dist` and the first candidate is the answer. Unbundled - a test
+ * importing a single module, a script run with a loader - `HERE` is
  * `<package>/src/lib` and the second is.
  */
 export const DATA_ROOT = firstDirectory([

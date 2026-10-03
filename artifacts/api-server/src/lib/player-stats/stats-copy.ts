@@ -6,7 +6,7 @@
  *
  *   1. NFL player stats
  *   2. fantasy football stats
- *   3. the position's own stats — passing, rushing, receiving
+ *   3. the position's own stats - passing, rushing, receiving
  *   4. advanced NFL stats
  *
  * "Advanced" is why the page is better, not what it is called. The table was
@@ -71,8 +71,8 @@ export interface StatsPageCopy {
 /**
  * The title, H1 and description of one address.
  *
- * The bare address is the master page — NFL player stats across every
- * position — though it opens on the quarterback table. Each other position is
+ * The bare address is the master page - NFL player stats across every
+ * position - though it opens on the quarterback table. Each other position is
  * its own address and page, titled for that position. The season is the one
  * the address opens on, never a season a reader switched to.
  */

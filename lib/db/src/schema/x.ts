@@ -14,7 +14,7 @@ import {
  * The X (Twitter) reporters this tool watches.
  *
  * A table rather than a constant, because the operator has to be able to add,
- * disable or re-prioritise a reporter without a deploy — the admin surface at
+ * disable or re-prioritise a reporter without a deploy - the admin surface at
  * /admin/x writes here and the poller reads here, and nothing in between needs
  * to know the list. The seed list in the api-server's lib/x/accounts.ts only
  * fills in rows that do not exist yet; it never overwrites a row the operator
@@ -45,7 +45,7 @@ export const xMonitoredAccounts = pgTable(
     /** Lowercase club code when a reporter covers one team, else null. */
     teamAbbr: text("team_abbr"),
 
-    /** "high" | "normal" | "low" — see POLL_INTERVALS in lib/x/config.ts. */
+    /** "high" | "normal" | "low" - see POLL_INTERVALS in lib/x/config.ts. */
     priority: text("priority").notNull().default("normal"),
 
     /**
@@ -53,7 +53,7 @@ export const xMonitoredAccounts = pgTable(
      *
      * Per-account rather than global because the answer genuinely differs: a
      * national insider breaks news in reply threads, a beat writer's replies
-     * are conversation. Defaults match the product default — original posts and
+     * are conversation. Defaults match the product default - original posts and
      * quote posts with their own text, nothing else.
      */
     includeOriginals: boolean("include_originals").notNull().default(true),
@@ -64,7 +64,7 @@ export const xMonitoredAccounts = pgTable(
     /**
      * The polling claim.
      *
-     * Moved by an atomic conditional UPDATE before the fetch, not after it —
+     * Moved by an atomic conditional UPDATE before the fetch, not after it -
      * that write IS the lock. Two workers, or the same worker re-entered after
      * a restart, cannot both claim an account, because only one of them can win
      * the `last_checked_at < cutoff` predicate. See claimDueAccounts().
@@ -76,7 +76,7 @@ export const xMonitoredAccounts = pgTable(
      * Newest post id we have already handled for this account.
      *
      * The watermark the provider is asked to fetch since. It is a floor, not
-     * the dedupe mechanism — x_posts.post_id is that — so losing it costs a
+     * the dedupe mechanism - x_posts.post_id is that - so losing it costs a
      * little redundant work and never a duplicate row.
      */
     lastSeenPostId: text("last_seen_post_id"),
@@ -108,8 +108,8 @@ export type InsertXMonitoredAccount = typeof xMonitoredAccounts.$inferInsert;
  * The source record for one X post.
  *
  * Deliberately separate from news_items rather than a dozen more nullable
- * columns on it. news_items is the feed's projection — a headline, a time, a
- * player, a link — and every consumer of it (the renderer, the team pages, the
+ * columns on it. news_items is the feed's projection - a headline, a time, a
+ * player, a link - and every consumer of it (the renderer, the team pages, the
  * WordPress fragment) reads all of those. Reply/repost/quote flags, quoted-post
  * text and media lists are true of an X post and of nothing else in the
  * archive, and putting them on the shared table would make every other
@@ -117,7 +117,7 @@ export type InsertXMonitoredAccount = typeof xMonitoredAccounts.$inferInsert;
  *
  * The association runs the other way instead: newsItemId points at the row this
  * post produced in the normal feed. One post, one news item, and the post id is
- * the primary key — so a post cannot be stored twice however many jobs see it.
+ * the primary key - so a post cannot be stored twice however many jobs see it.
  */
 export const xPosts = pgTable(
   "x_posts",
@@ -127,7 +127,7 @@ export const xPosts = pgTable(
 
     /** Lowercase handle, matching x_monitored_accounts.username. */
     authorUsername: text("author_username").notNull(),
-    /** "Adam Schefter" — as the source gave it, when it gave one. */
+    /** "Adam Schefter" - as the source gave it, when it gave one. */
     authorName: text("author_name"),
 
     text: text("text").notNull(),
@@ -150,7 +150,7 @@ export const xPosts = pgTable(
     /** Media URLs as a JSON array of strings. Empty array when there are none. */
     media: jsonb("media").$type<string[]>(),
 
-    /** What the shared pipeline made of the text — stored for auditing. */
+    /** What the shared pipeline made of the text - stored for auditing. */
     playerName: text("player_name"),
     teamAbbr: text("team_abbr"),
     category: text("category"),

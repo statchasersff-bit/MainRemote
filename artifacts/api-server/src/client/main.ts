@@ -5,7 +5,7 @@
  * fully rendered from the server (see lib/ssr.ts) with every item already in
  * the DOM; this script only:
  *
- *   - turns the complete list into a paged view (show/hide — never fetch),
+ *   - turns the complete list into a paged view (show/hide - never fetch),
  *   - upgrades absolute timestamps to relative "3 hours ago" labels,
  *   - swaps broken headshots for the initial badge,
  *   - refreshes in the background using the same shared renderer,
@@ -106,7 +106,7 @@ class NewsWidget {
    */
   private pages: HTMLElement[][] = [];
 
-  /** Every card in the list, in document order — the set the filters run over. */
+  /** Every card in the list, in document order - the set the filters run over. */
   private allItems: HTMLElement[] = [];
 
   /**
@@ -146,7 +146,7 @@ class NewsWidget {
       return false;
     }
     // Choosing a reporter implies their lane, so it does not also need the
-    // source menu set to X — and the two cannot contradict each other, because
+    // source menu set to X - and the two cannot contradict each other, because
     // every card with a handle is an X card.
     if (this.accountFilter && item.dataset["handle"] !== this.accountFilter) {
       return false;
@@ -181,7 +181,7 @@ class NewsWidget {
    * Re-run the filters and repaint.
    *
    * @param resetPage Send the reader back to page 1. True when they changed a
-   *   filter — the page they were on no longer means anything. False for a
+   *   filter - the page they were on no longer means anything. False for a
    *   background refresh, which must not yank someone off page 3 every two
    *   minutes just because a new item arrived.
    */
@@ -215,7 +215,7 @@ class NewsWidget {
 
     const status = this.root.querySelector<HTMLElement>(".sc-filter-status");
     if (status) {
-      // Silent until the reader actually filters — a permanent "122 of 122" is
+      // Silent until the reader actually filters - a permanent "122 of 122" is
       // noise, and it would make the live region announce on every render.
       status.textContent = filtering
         ? `${count} of ${this.allItems.length} updates`
@@ -232,7 +232,7 @@ class NewsWidget {
 
     const pager = this.pager;
     // Server ships the pager hidden so a no-JS visitor isn't stranded behind a
-    // dead button. Now that we're running, pagination is real — but only while
+    // dead button. Now that we're running, pagination is real - but only while
     // there is more than one page left to move between.
     if (pager) pager.hidden = this.pages.length <= 1;
   }
@@ -240,7 +240,7 @@ class NewsWidget {
   /**
    * Bind the toolbar. Called once from init(), not from enhance(): a refresh
    * replaces only the list and pager, so the controls (and whatever the reader
-   * has typed or chosen in them) outlive it — re-binding per render would stack
+   * has typed or chosen in them) outlive it - re-binding per render would stack
    * duplicate listeners on the same controls.
    */
   private wireFilters(): void {
@@ -258,7 +258,7 @@ class NewsWidget {
     });
 
     // One delegated handler for all three <select>s, so a menu rebuilt after a
-    // refresh does not need re-binding — the same reason the pager's click
+    // refresh does not need re-binding - the same reason the pager's click
     // handler lives on the root.
     filters.addEventListener("change", (event) => {
       const target = event.target as HTMLSelectElement | null;
@@ -379,7 +379,7 @@ class NewsWidget {
    * Keep the menu honest after a refresh brought different teams into the feed.
    *
    * Rebuilt only when the set actually changed, and never while the menu is
-   * open — replacing the rows under an open menu would move what the reader is
+   * open - replacing the rows under an open menu would move what the reader is
    * pointing at and drop keyboard focus. The toggle listener in wireFilters
    * runs this again as soon as it closes.
    */
@@ -407,7 +407,7 @@ class NewsWidget {
     if (!present.includes(this.teamFilter)) this.teamFilter = "";
 
     // Same renderer the server used, so the rebuilt rows are byte-identical to
-    // the ones they replace — including the sort.
+    // the ones they replace - including the sort.
     list.innerHTML = renderTeamOptions(sortTeamCodes(present), this.teamFilter);
     this.paintTeamChoice();
   }
@@ -426,7 +426,7 @@ class NewsWidget {
    * the current choice has dropped out of the feed entirely, fall back to "all"
    * rather than leave a selection that can only show an empty list.
    *
-   * The source menu is fixed (All/News/X) and never needs rebuilding — but it
+   * The source menu is fixed (All/News/X) and never needs rebuilding - but it
    * does need resetting when the last X card leaves the feed, which is the one
    * case where "X" stops being a choice that can match anything.
    */
@@ -498,7 +498,7 @@ class NewsWidget {
    *
    * Reconstructed from the DOM rather than kept as a parallel array of the last
    * payload, because the list can also have come from the server with no fetch
-   * behind it — the markup is the one representation that always exists. Only
+   * behind it - the markup is the one representation that always exists. Only
    * the fields the menus read are filled in.
    */
   private items(): NewsItem[] {
@@ -553,7 +553,7 @@ class NewsWidget {
       if (!btn || btn.disabled || !this.root.contains(btn)) return;
       const delta = btn.dataset["dir"] === "next" ? 1 : -1;
       this.goToPage(this.currentPage + delta);
-      // Cosmetic, and not universally available — never let it break paging.
+      // Cosmetic, and not universally available - never let it break paging.
       this.list?.scrollIntoView?.({ behavior: "smooth", block: "start" });
     });
   }
@@ -572,15 +572,15 @@ class NewsWidget {
     this.syncTeamMenu();
     this.syncItemMenus();
     // Re-applies whatever the reader has filtered to, so a background refresh
-    // cannot quietly widen the list back out — and keeps them on their page.
+    // cannot quietly widen the list back out - and keeps them on their page.
     this.applyFilters(false);
   }
 
   /**
    * Show one page.
    *
-   * Only the outgoing and incoming pages are touched — a handful of style
-   * writes — rather than every item in the archive. Keeping the interaction's
+   * Only the outgoing and incoming pages are touched - a handful of style
+   * writes - rather than every item in the archive. Keeping the interaction's
    * work proportional to what actually changed is what keeps INP low as the
    * archive grows.
    */
@@ -593,7 +593,7 @@ class NewsWidget {
 
     // SHOW must write a real value, never "". Assigning the empty string
     // REMOVES the inline declaration, which hands the element back to the
-    // stylesheet — and the stylesheet says
+    // stylesheet - and the stylesheet says
     // `.news-list[data-paged] .sc-card-item:not([data-page="0"]) { display: none }`.
     // Clearing the inline style on any page but the first therefore hides the
     // page it was meant to reveal. SHOW matches `.sc-card-item`'s own rule.
@@ -654,7 +654,7 @@ class NewsWidget {
       if (img.dataset["scFallbackWired"]) continue;
       img.dataset["scFallbackWired"] = "1";
       // Same badge the server renders for a player who has no headshot at all
-      // (see renderCard) — the StatChasers mark, painted by styles.css. A photo
+      // (see renderCard) - the StatChasers mark, painted by styles.css. A photo
       // that 404s and a photo that never existed should not look different.
       const swap = (): void => {
         const span = document.createElement("span");
@@ -682,7 +682,7 @@ class NewsWidget {
       const items = data.items ?? [];
       if (items.length === 0) return;
 
-      // Rebuilding the list means parsing and laying out every card — easily
+      // Rebuilding the list means parsing and laying out every card - easily
       // the longest task this script can run, and it fires every two minutes
       // whether or not anything changed. Most polls return identical data, so
       // compare a cheap signature first and do nothing when it matches. This
@@ -705,7 +705,7 @@ class NewsWidget {
         existing.remove();
         pager?.remove();
       } else {
-        // No server-rendered list to replace (SSR unavailable) — build it.
+        // No server-rendered list to replace (SSR unavailable) - build it.
         // Anchor below the toolbar when there is one, so the controls stay
         // above the cards they filter.
         const anchor =
@@ -743,7 +743,7 @@ class NewsWidget {
    *
    * Only ever called in response to the parent confirming it has applied a
    * height (see embed.js): at that point the frame is exactly as tall as this
-   * document, so an inner scrollbar can only scroll nothing — it is the nested
+   * document, so an inner scrollbar can only scroll nothing - it is the nested
    * scroll area readers get stuck in, not a way to reach anything. Until that
    * confirmation arrives the document stays scrollable, so a frame left at its
    * placeholder height because the parent script never ran still gives access
@@ -764,7 +764,7 @@ class NewsWidget {
     // Measure the wrapper's BOTTOM EDGE in document coordinates, not its
     // height: anything rendered above `.page` shifts the content down without
     // making the wrapper any taller, and a height-only measurement then
-    // under-reports by exactly that offset — enough for the frame to keep a
+    // under-reports by exactly that offset - enough for the frame to keep a
     // scrollbar. `.page` carries `display: flow-root` (styles.css) so
     // descendant margins stay inside that box instead of collapsing through it
     // and adding height the wrapper never accounts for.
@@ -817,7 +817,7 @@ function boot(): void {
 }
 
 /**
- * Pull in the Core Web Vitals bundle — but only if this site asked for it.
+ * Pull in the Core Web Vitals bundle - but only if this site asked for it.
  *
  * A separate `async` script rather than part of this bundle: monitoring is
  * optional, so sites that haven't configured an endpoint should never pay to

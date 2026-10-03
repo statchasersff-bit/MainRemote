@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>X Sources — StatChasers News</title>
+    <title>X Sources - StatChasers News</title>
     <style>
       /* Deliberately self-contained. This page is an operator tool, not part of
          the embeddable product, so it must not pull in the tool's stylesheet
@@ -83,7 +83,7 @@
       <h1>X Sources</h1>
       <p class="sub">
         Reporters whose public posts are pulled into the news feed. Changes take
-        effect on the next poll — no deploy needed.
+        effect on the next poll - no deploy needed.
       </p>
 
       <div class="status" id="status">Loading…</div>
@@ -133,7 +133,7 @@
       </table>
 
       <p class="note">
-        Originals / Replies / Reposts / Quotes are per account — click to
+        Originals / Replies / Reposts / Quotes are per account - click to
         toggle. Disabling an account stops polling it but keeps everything it
         has already contributed to the feed.
       </p>
@@ -141,7 +141,7 @@
 
     <script>
       // The same shared secret the ingest endpoints use (INGEST_SECRET). Asked
-      // for once and kept in sessionStorage — this page has no login because
+      // for once and kept in sessionStorage - this page has no login because
       // the app has no accounts, and inventing one for a settings page would be
       // a larger change to the product than the feature it configures.
       const KEY = "sc-ingest-secret";
@@ -165,7 +165,7 @@
           // A wrong secret must not be sticky, or the page is unusable until
           // the tab is closed.
           sessionStorage.removeItem(KEY);
-          throw new Error("unauthorized — check INGEST_SECRET");
+          throw new Error("unauthorized - check INGEST_SECRET");
         }
         if (!res.ok || body.ok === false) {
           throw new Error(body.error || `HTTP ${res.status}`);
@@ -361,7 +361,7 @@
             `<p class="muted">${body.accounts} enabled account(s) → ${body.rules.length} rule(s)` +
             (body.webhookConfigured
               ? ""
-              : ` · <strong style="color:#a11">no X_WEBHOOK_SECRET set — deliveries will be refused</strong>`) +
+              : ` · <strong style="color:#a11">no X_WEBHOOK_SECRET set - deliveries will be refused</strong>`) +
             `</p>` +
             body.rules
               .map(

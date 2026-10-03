@@ -1,7 +1,7 @@
 /**
  * Fantasy Points Allowed enhancement bundle.
  *
- * The table is complete before this runs — all 32 defenses, every figure, every
+ * The table is complete before this runs - all 32 defenses, every figure, every
  * rank and the tints are in the HTML the server sent, sorted softest-first, and
  * the format and view controls are ordinary links that work with scripting
  * disabled.
@@ -9,11 +9,11 @@
  * It adds two things the server cannot:
  *
  * 1. **Sorting by any column without a round trip.** Worth a bundle because it
- *    is the table's primary verb — "who is softest against tight ends" is a
+ *    is the table's primary verb - "who is softest against tight ends" is a
  *    click, not a page load.
  *
  * 2. **Changing scoring format or view without changing the URL.** The six
- *    combinations are one page — the canonical has always said so — so the
+ *    combinations are one page - the canonical has always said so - so the
  *    address a reader is on should not move when they switch between them.
  *    The controls stay real links, and this intercepts the click, fetches the
  *    fragment for that combination and swaps it in. Nothing is written to
@@ -21,7 +21,7 @@
  *
  * The second is progressive enhancement in the strict sense: with scripting
  * off, or before this file arrives, every control is a link to a URL that
- * serves the same table — so the only thing lost is the address staying put.
+ * serves the same table - so the only thing lost is the address staying put.
  */
 
 import { wireFrameHeight } from "./enhance";
@@ -124,7 +124,7 @@ function selection(
 /**
  * Fetch one combination and put it on screen.
  *
- * Whatever the server sends is what is rendered — the numbers, the ranks, the
+ * Whatever the server sends is what is rendered - the numbers, the ranks, the
  * tints, the caption, the CSV href and the note above the table that says what
  * the figures are currently a mix of. None of it is recomputed here. That note
  * is the reason this is a fetch rather than six tables inlined into the page:
@@ -180,7 +180,7 @@ async function swapTo(root: HTMLElement, format: string, view: string): Promise<
  * The controls, without the navigation.
  *
  * Delegated from the root rather than bound to each link, because the links
- * are among the elements a swap replaces — a listener per link would be a
+ * are among the elements a swap replaces - a listener per link would be a
  * listener on a detached node one click later.
  *
  * Modified clicks are left alone. Ctrl/cmd-click, middle-click and "open in
@@ -212,7 +212,7 @@ function wireControls(root: HTMLElement): void {
     const format = picked.format ?? root.dataset["format"] ?? "half";
     const view = picked.view ?? root.dataset["view"] ?? "raw";
     if (format === root.dataset["format"] && view === root.dataset["view"]) {
-      // Already on it. Still ours to swallow — following the link would
+      // Already on it. Still ours to swallow - following the link would
       // reload the page to arrive where it already is.
       event.preventDefault();
       return;
@@ -231,7 +231,7 @@ function wireControls(root: HTMLElement): void {
           return;
         }
         // The control that was clicked has been replaced by its fresh copy,
-        // so focus would otherwise land back on <body> — which is a keyboard
+        // so focus would otherwise land back on <body> - which is a keyboard
         // reader losing their place in the middle of the controls.
         root
           .querySelector<HTMLElement>(

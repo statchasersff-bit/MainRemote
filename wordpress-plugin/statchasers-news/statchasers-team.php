@@ -3,7 +3,7 @@
  * The team hub shortcode: [statchasers_team]
  *
  * Same posture as the news shortcode in the main plugin file, and for the same
- * reason — the team hubs are the whole point of this half. The API serves them
+ * reason - the team hubs are the whole point of this half. The API serves them
  * at their own URL marked `noindex, indexifembedded`, which means they are
  * invisible to search until something embeds them. This file is that something.
  * Without it the pages exist and rank nowhere.
@@ -14,7 +14,7 @@
  *      JSON that `/embed/ssr` returns. So the fetch below reads the body
  *      directly and takes its version from the ETag the route already sets.
  *   2. It takes no render arguments. Everything the news shortcode passes as
- *      query parameters — heading, page size, link templates — is either fixed
+ *      query parameters - heading, page size, link templates - is either fixed
  *      for a team page or configured server-side by environment variable.
  *
  * Everything else is shared with the news file: the origin, the asset version,
@@ -34,7 +34,7 @@ const STATCHASERS_TEAM_SHORTCODE = 'statchasers_team';
  * The index mount: [statchasers_team_index]
  *
  * The container page at /nfl/teams/ needs its own shortcode because it is the
- * one page in this hierarchy whose slug is not a team slug — [statchasers_team]
+ * one page in this hierarchy whose slug is not a team slug - [statchasers_team]
  * there asks the API for a team called "teams" and gets nothing.
  */
 const STATCHASERS_TEAM_INDEX_SHORTCODE = 'statchasers_team_index';
@@ -60,7 +60,7 @@ const STATCHASERS_TEAM_TIMEOUT = 8;
  * Which team to render.
  *
  * Defaults to the post slug, because the WordPress pages are at
- * /nfl/teams/<slug>/ and the API's slugs are the same strings — so 32 pages can
+ * /nfl/teams/<slug>/ and the API's slugs are the same strings - so 32 pages can
  * carry one identical shortcode with no attribute at all. `slug="..."` is there
  * for the pages where that isn't true.
  *
@@ -85,7 +85,7 @@ function statchasers_team_slug( array $atts ): string {
 
 	// The slug goes into a URL path, so it is constrained to what the API's own
 	// slugs look like rather than merely escaped. A value that isn't a plausible
-	// team slug is treated as absent — better a missing section than a request
+	// team slug is treated as absent - better a missing section than a request
 	// built from arbitrary post content.
 	return preg_match( '/^[a-z0-9-]{2,40}$/', $slug ) ? $slug : '';
 }
@@ -103,12 +103,12 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 		return null;
 	}
 
-	// The section is part of the identity of what comes back — one panel or
-	// five, a different heading — so it is part of the cache key. Left out, the
+	// The section is part of the identity of what comes back - one panel or
+	// five, a different heading - so it is part of the cache key. Left out, the
 	// first request to any section address would serve its markup to the hub
 	// and to every other section on that team for the rest of the TTL.
 	// The heading mode joins it for the same reason: it changes the markup the
-	// API returns — the panel's opening <h2> comes back as the page's <h1> —
+	// API returns - the panel's opening <h2> comes back as the page's <h1> -
 	// and a fragment cached under one mode must not be served under the other.
 	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
 		&& statchasers_h1_tool_supplies_heading();
@@ -164,7 +164,7 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 		'html'    => $body,
 		// The route sets a weak ETag over the same fingerprint it caches the
 		// render under, so it identifies this exact fragment. Only used for
-		// cache bookkeeping — the enqueue version comes from assets.json.
+		// cache bookkeeping - the enqueue version comes from assets.json.
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 	);
 
@@ -236,13 +236,13 @@ function statchasers_team_index_fetch(): ?array {
 /**
  * The shortcode: prints the index of all 32 hubs into the container page.
  *
- * Same omissions as the hub shortcode — no canonical, no title, no H1. The
+ * Same omissions as the hub shortcode - no canonical, no title, no H1. The
  * page owns those; this prints the grid beneath them.
  *
  * Before this existed the container page was whatever the builder wrote into it
  * once: a stub list of 32 links in the theme's own styling, standing in front of
  * 32 pages that look nothing like it. That stub was never meant to be the
- * finished page — it was there so the parent was not a thin page in the sitemap.
+ * finished page - it was there so the parent was not a thin page in the sitemap.
  *
  * @return string HTML.
  */
@@ -258,7 +258,7 @@ function statchasers_team_index_shortcode(): string {
 
 	$data = statchasers_team_index_fetch();
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_team_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -331,7 +331,7 @@ function statchasers_team_enqueue_assets(): void {
 	}
 
 	// Rides on the handle above, so it is scoped to hub pages by the same
-	// condition that loads the stylesheet at all — no body class, no filter
+	// condition that loads the stylesheet at all - no body class, no filter
 	// priority, no theme internals in the way. See the divi layout section.
 	if ( statchasers_team_wants_full_width() ) {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_team_full_width_css() );
@@ -339,7 +339,7 @@ function statchasers_team_enqueue_assets(): void {
 
 	// Both unconditional where the block above is not. A tool printing through
 	// the site's header, and a phone reading it through a 43px margin on each
-	// side, are wrong on every page that mounts a tool — whether or not that
+	// side, are wrong on every page that mounts a tool - whether or not that
 	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_TEAM_HANDLE, statchasers_tool_header_layer_css() );
@@ -352,7 +352,7 @@ function statchasers_team_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(). Divi swaps the global post
  * while it renders a Theme Builder layout, so during that render get_post() is
- * the LAYOUT — whose content has no shortcode in it — and the page would answer
+ * the LAYOUT - whose content has no shortcode in it - and the page would answer
  * "no" to a question about itself. The queried object is the page either way.
  *
  * Memoised because the layout hooks below ask on every post-meta read, which on
@@ -388,7 +388,7 @@ function statchasers_team_post_has_shortcode(): bool {
  * That one means "this page is a team hub", and half the plugin reads it that
  * way: it decides whether to build an FAQ node from the page's slug, and which
  * of two descriptions to fall back to. An index page is neither of those
- * things — it has no team, so a hub's FAQ would be built from a slug that
+ * things - it has no team, so a hub's FAQ would be built from a slug that
  * names no team, and a hub's description would be a sentence about a depth
  * chart on a page that has none.
  *
@@ -424,7 +424,7 @@ function statchasers_team_post_has_index_shortcode(): bool {
  * The one page in this hierarchy whose slug is not a team slug, and the one
  * page the builder cannot be relied on to mount. statchasers_team_write_index()
  * writes the index shortcode into a container that is empty or still carrying
- * the old stub, and treats anything else as the editor's own work — which is
+ * the old stub, and treats anything else as the editor's own work - which is
  * the right promise everywhere except here, because a container somebody built
  * in Divi before the shortcode existed IS "anything else". It has a heading and
  * a paragraph in it, so the build steps over it, and the page ships with copy
@@ -476,13 +476,13 @@ function statchasers_team_is_container_page(): bool {
  * Every other page in this plugin is mounted by a shortcode somebody placed,
  * and that is the right default: an editor decides where a tool goes. The
  * container is the exception, because it is not a page an editor chose to put a
- * tool on — it is the parent WordPress needs to exist so that /nfl/teams/<slug>/
+ * tool on - it is the parent WordPress needs to exist so that /nfl/teams/<slug>/
  * resolves at all, and a parent with no grid on it is a thin page standing in
  * front of 32 good ones.
  *
  * Three ways it declines, in order:
  *
- *   1. The content already renders the index — the shortcode is in the page, or
+ *   1. The content already renders the index - the shortcode is in the page, or
  *      in a Divi module in the page, and has already expanded by the time this
  *      filter runs at priority 20. Nothing to add.
  *   2. The page's own content carries the shortcode but it produced nothing.
@@ -565,7 +565,7 @@ add_action(
 			! statchasers_team_post_has_shortcode()
 			&& ! statchasers_team_post_has_index_shortcode()
 			// The container mounts itself (statchasers_team_auto_index), and
-			// it does it at the_content — far too late to enqueue a stylesheet
+			// it does it at the_content - far too late to enqueue a stylesheet
 			// into the head. Asked here so the grid arrives styled.
 			&& ! statchasers_team_is_container_page()
 		) {
@@ -581,7 +581,7 @@ add_action(
  * Is the active theme Divi (or Extra, or a child of either)?
  *
  * Three checks OR'd together rather than one, because the cost of guessing
- * wrong is that the whole section below silently does nothing — which is
+ * wrong is that the whole section below silently does nothing - which is
  * exactly what a single `function_exists( 'et_get_option' )` gate bought on the
  * first attempt at this fix.
  */
@@ -608,7 +608,7 @@ function statchasers_team_is_divi(): bool {
  * Keyed on "this page mounts the shortcode" rather than on the slug, because
  * that is the actual condition. The companion Divi plugin answers the same
  * question from its table of 32 team slugs, which is right for the pages the
- * WP-CLI script creates and wrong for every hub mounted anywhere else — a
+ * WP-CLI script creates and wrong for every hub mounted anywhere else - a
  * staging page, a page whose slug was auto-generated, a hub embedded partway
  * down a longer article. Those are exactly the pages where the empty column
  * turns up, and they are the reason this lives here as well.
@@ -623,7 +623,7 @@ function statchasers_team_wants_full_width(): bool {
 	/**
 	 * Filters whether a page mounting the hub takes the whole content column.
 	 *
-	 * Return false to keep the theme's own layout — for a page that really does
+	 * Return false to keep the theme's own layout - for a page that really does
 	 * have a populated sidebar and wants to keep it.
 	 *
 	 * @param bool $full_width Whether to take the whole column.
@@ -634,8 +634,8 @@ function statchasers_team_wants_full_width(): bool {
 /**
  * Keep the site's own header above the tool.
  *
- * Every tool has sticky furniture — the hub's section nav, the profile's tab
- * bar, the sticky `thead` on the FPA, schedule and rankings tables — and each
+ * Every tool has sticky furniture - the hub's section nav, the profile's tab
+ * bar, the sticky `thead` on the FPA, schedule and rankings tables - and each
  * carries a small z-index so it sits above the rows scrolling under it. Those
  * numbers are only ever meant to be read against the tool's own children. On
  * the published site they end up being read against the theme, and the tool
@@ -646,16 +646,16 @@ function statchasers_team_wants_full_width(): bool {
  * Theme Builder header that 99999 is on the menu module, INSIDE
  * `.et-l--header`, and a wrapper with a z-index of its own is a stacking
  * context the 99999 cannot climb out of. So the header's real height in the
- * root stacking context is the wrapper's — 1, or 2, or nothing at all — and a
+ * root stacking context is the wrapper's - 1, or 2, or nothing at all - and a
  * tab bar at 20 clears it. The `/nfl/teams/` grid is the page that looks fine,
  * and it is the one page with nothing sticky on it.
  *
  * z-index and nothing else, deliberately. The obvious companion is
  * `position: relative`, and it is wrong here: a Theme Builder header may be
  * `sticky`, and forcing it to `relative` would unstick the site's navigation
- * to fix a stacking bug. Every shape this has to cover already has a position —
+ * to fix a stacking bug. Every shape this has to cover already has a position -
  * Divi's own `#main-header` is fixed or absolute, and a Theme Builder wrapper
- * is relative or sticky — so z-index alone lands. Verified against four of
+ * is relative or sticky - so z-index alone lands. Verified against four of
  * them: Divi's own header, a Theme Builder wrapper with a z-index, one with
  * none, and no wrapper at all.
  *
@@ -673,7 +673,7 @@ function statchasers_tool_header_layer_css(): string {
  *
  * `statchasers_team_full_width_css()` only speaks inside `min-width: 981px`,
  * because above that the problem is the empty sidebar column. Below it Divi
- * collapses the columns by itself and the layout looks fine — but the gutter
+ * collapses the columns by itself and the layout looks fine - but the gutter
  * does not come from the columns. It comes from
  *
  *     .container { width: 80%; max-width: 1080px; margin: auto }
@@ -686,13 +686,13 @@ function statchasers_tool_header_layer_css(): string {
  *
  * So: the content column takes the screen, and the gutter becomes the few
  * pixels that stop text touching glass. `max()` rather than a flat 4px so a
- * phone held sideways still clears its notch — on a device with no inset the
+ * phone held sideways still clears its notch - on a device with no inset the
  * `env()` is 0 and the 4px wins, which is every phone held upright.
  *
  * Scoped to `#main-content` so the header and footer keep the site's own
  * `.container`, and `!important` because
  * `.et_pb_pagebuilder_layout #main-content .container` outweighs this
- * selector on any page that has been through the Divi Builder — the same
+ * selector on any page that has been through the Divi Builder - the same
  * asymmetry that gave the team hubs and the player pages two different widths
  * from one rule. See the long note in statchasers-team.php.
  *
@@ -707,7 +707,7 @@ function statchasers_tool_header_layer_css(): string {
  * whole point of this rule.** The first version padded `.container`, which
  * fixed the player pages and did nothing at all to the team hubs: the hubs
  * still ran edge to edge on a phone after it shipped. The reason is not
- * specificity and not enqueueing — it is that on those pages there IS no
+ * specificity and not enqueueing - it is that on those pages there IS no
  * `.container`. Divi's `page.php` prints the `.container` / `#content-area` /
  * `#left-area` wrappers only when the page builder is NOT used:
  *
@@ -721,7 +721,7 @@ function statchasers_tool_header_layer_css(): string {
  * `#main-content > .et-l--body`.
  *
  * `#main-content` is the one wrapper all three shapes print, so the gutter
- * goes there and `.container` is explicitly zeroed — one gutter, stated once,
+ * goes there and `.container` is explicitly zeroed - one gutter, stated once,
  * with nothing to double up when both elements happen to exist. Measured at
  * 500px on the real embed fragment under both shapes: builder 0px → 4px,
  * plain 4px → 4px, desktop unchanged in both.
@@ -748,7 +748,7 @@ function statchasers_tool_mobile_gutter_css(): string {
 			// wider than the screen is not merely a stray scrollbar: every
 			// percentage width on the page then resolves against the wider box,
 			// and `@container` answers "desktop" on a phone. Divi's own reset
-			// makes this a no-op, which is exactly why it must be stated —
+			// makes this a no-op, which is exactly why it must be stated -
 			// nothing here should depend on a theme's reset still being there.
 			'#main-content{box-sizing:border-box!important;' .
 				'padding-left:max(4px,env(safe-area-inset-left,0px))!important;' .
@@ -758,7 +758,7 @@ function statchasers_tool_mobile_gutter_css(): string {
 			// is in no media query; the zeroed padding because the gutter now
 			// lives one element up, and two 4px gutters on the pages that have
 			// both elements would read as 8px on the player pages and 4px on
-			// the hubs — the same tool, two widths, which is the bug this file
+			// the hubs - the same tool, two widths, which is the bug this file
 			// keeps being written to stop.
 			'#main-content .container{box-sizing:border-box!important;' .
 				'width:100%!important;max-width:100%!important;' .
@@ -768,7 +768,7 @@ function statchasers_tool_mobile_gutter_css(): string {
 			'#left-area{padding-left:0!important;padding-right:0!important}',
 			// A shortcode dropped into a Divi Code or Text module sits inside
 			// `.et_pb_row`, and Divi's `.et_pb_row { width: 80% }` holds at
-			// every width, like `.container`'s — on a 390px phone that is 39px
+			// every width, like `.container`'s - on a 390px phone that is 39px
 			// of margin each side, the bug this function exists for, one
 			// wrapper further in. Only the row that holds a tool is widened;
 			// the rest of the page keeps its layout. Measured in the Divi sim,
@@ -784,7 +784,7 @@ function statchasers_tool_mobile_gutter_css(): string {
  * The width itself, as CSS.
  *
  * This is the belt to the two filters' braces, and it is here because the
- * filters are not enough on their own — not as a matter of taste, but because
+ * filters are not enough on their own - not as a matter of taste, but because
  * of what Divi's stylesheet actually says:
  *
  *     @media (min-width: 981px) { #left-area { width: 79.125% } }
@@ -798,7 +798,7 @@ function statchasers_tool_mobile_gutter_css(): string {
  * class later than you hooked. This stylesheet cannot be.
  *
  * Enqueued against STATCHASERS_TEAM_HANDLE, which is proven to load on hub
- * pages — it is how the hub is styled at all — so it needs no scoping of its
+ * pages - it is how the hub is styled at all - so it needs no scoping of its
  * own beyond that.
  *
  * @return string
@@ -814,13 +814,13 @@ function statchasers_team_full_width_css(): string {
 			//
 			// `width: 100%` takes the sidebar's share back. The max-width is
 			// what stops that from meaning "the whole window", and it is not
-			// paranoia — it is the fix for the team hubs rendering at ~1800px
+			// paranoia - it is the fix for the team hubs rendering at ~1800px
 			// beside player pages sitting in the site's ordinary column.
 			//
 			// Why one page type and not the other, when both get this exact
 			// stylesheet: Divi widens the content CONTAINER on any page that
 			// has been opened in the Divi Builder, so that a full-width SECTION
-			// can bleed to the window —
+			// can bleed to the window -
 			//
 			//     .et_pb_pagebuilder_layout #main-content .container
 			//         { width: 100%; max-width: 100% }
@@ -829,7 +829,7 @@ function statchasers_team_full_width_css(): string {
 			// shortcode into the same column as a paragraph would be. So on a
 			// hub page that had been through the builder, `#left-area` at 100%
 			// meant 100% of the window, and on a player page that had not, it
-			// meant 100% of the content column — same rule, same file, two
+			// meant 100% of the content column - same rule, same file, two
 			// widths, and nothing in either stylesheet to blame.
 			//
 			// Capping `#left-area` rather than un-widening `.container` because
@@ -857,7 +857,7 @@ function statchasers_team_full_width_css(): string {
 			// The generated hero (statchasers_page_heading_html()) is printed
 			// just before the tool, outside its root, so it takes the same cap
 			// or the page's H1 starts at the window's edge while the tool beneath
-			// it sits centred — measured on a builder page at 1780px, H1 at 0px
+			// it sits centred - measured on a builder page at 1780px, H1 at 0px
 			// and the table at 343px. Both are block siblings in one column, so
 			// the same cap and auto margins put their left edges together.
 			'#main-content ' . statchasers_tool_root_selector() . ',#main-content .sc-lo-hero--generated{max-width:' . statchasers_team_content_width() . '!important;' .
@@ -877,7 +877,7 @@ function statchasers_team_full_width_css(): string {
  * Each tool prints one root with its own short class and `is-embed` when it is
  * mounted on a WordPress page. The host rules above size that root, so a tool
  * added to the plugin and left off this list renders at whatever width its
- * page shape happens to give it — which is how the first four tools each
+ * page shape happens to give it - which is how the first four tools each
  * shipped with a width bug of their own.
  *
  * @return string
@@ -892,7 +892,7 @@ function statchasers_tool_root_selector(): string {
  * Asked of the theme rather than written down here, because "as wide as the
  * rest of the site" is the actual requirement and any number in this file is a
  * guess at it. Divi keeps it in the Customizer under Website Content Width and
- * publishes it through `et_get_option( 'content_width' )` — the same value it
+ * publishes it through `et_get_option( 'content_width' )` - the same value it
  * uses for its own `.container` and `.et_pb_row` rules, so a tool capped here
  * lines up with every hand-built row on the site by construction.
  *
@@ -973,7 +973,7 @@ add_filter( 'get_post_metadata', 'statchasers_team_force_full_width_meta', 10, 3
 /**
  * The body class that goes with it.
  *
- * `et_full_width_page` is the one that carries weight — see the note on the CSS
+ * `et_full_width_page` is the one that carries weight - see the note on the CSS
  * above. Dropping `et_right_sidebar` is tidiness rather than the fix.
  *
  * @param string[] $classes Existing classes.
@@ -1005,11 +1005,11 @@ add_filter( 'body_class', 'statchasers_team_full_width_body_class', PHP_INT_MAX 
 /**
  * The shortcode: prints the server-rendered team hub into the page.
  *
- * Same deliberate omissions as the news shortcode — no canonical, no title or
+ * Same deliberate omissions as the news shortcode - no canonical, no title or
  * meta description, nothing written to the URL. The page owns all of it,
  * including the H1: statchasers_team_heading() supplies that through the_title,
  * so it is the theme that prints it and there is exactly one. The exception is
- * a template that prints no title at all — see
+ * a template that prints no title at all - see
  * `statchasers_team_shortcode_h1` below. The fragment's own tab strip is `:target`-based, so the only URL state it
  * can produce is a hash, which is not a separate URL to a crawler.
  *
@@ -1038,21 +1038,21 @@ function statchasers_team_shortcode( $atts = array() ): string {
 
 	if ( '' === $slug ) {
 		if ( current_user_can( 'manage_options' ) ) {
-			return '<p><strong>StatChasers Team:</strong> no team slug. This page\'s slug is not a team slug, so set one explicitly — <code>[statchasers_team slug="philadelphia-eagles"]</code>.</p>';
+			return '<p><strong>StatChasers Team:</strong> no team slug. This page\'s slug is not a team slug, so set one explicitly - <code>[statchasers_team slug="philadelphia-eagles"]</code>.</p>';
 		}
 		return '';
 	}
 
 	$data = statchasers_team_fetch( $slug, $section );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_team_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		// Unlike the news tool there is no client-side render to fall back to:
 		// the team bundle only enhances markup that is already there. An empty
-		// string is the honest answer, and it leaves the rest of the page — the
-		// H1, the copy, the internal links — intact.
+		// string is the honest answer, and it leaves the rest of the page - the
+		// H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return sprintf(
 				'<p><strong>StatChasers Team:</strong> the API returned nothing for <code>%s</code>. Check the slug and that the deployment is up.</p>',
@@ -1089,8 +1089,8 @@ add_shortcode( STATCHASERS_TEAM_SHORTCODE, 'statchasers_team_shortcode' );
  * On a normal template the theme prints the page title as the H1 and
  * statchasers_team_heading() has already rewritten it to the section-aware
  * phrase, so printing one here would give the page two. Turn this on for a
- * template that prints no title at all — a Divi full-width or Theme Builder
- * layout with no Post Title module is the case that happens — where the
+ * template that prints no title at all - a Divi full-width or Theme Builder
+ * layout with no Post Title module is the case that happens - where the
  * the_title filter has nothing to rewrite and the page would otherwise have no
  * H1 at all, only the fragment's hero <h2>:
  *
@@ -1102,8 +1102,8 @@ add_shortcode( STATCHASERS_TEAM_SHORTCODE, 'statchasers_team_shortcode' );
  *     curl -s https://statchasers.com/nfl/teams/new-england-patriots/ \
  *       | grep -o '<h1[^>]*>[^<]*'
  *
- * The markup is the site's own hero block — see statchasers_page_heading_html()
- * — so a generated heading and a hand-written one are the same component. The
+ * The markup is the site's own hero block - see statchasers_page_heading_html()
+ * - so a generated heading and a hand-written one are the same component. The
  * lead sentence is the description this URL already carries in Rank Math,
  * which is written per team and per section and so never says something the
  * page below it does not hold.
@@ -1118,7 +1118,7 @@ function statchasers_team_shortcode_heading( string $slug, string $section ): st
 	}
 
 	// Declared in statchasers-team-pages.php, which is required after this file
-	// — fine at call time, but guarded because a site that loads the shortcode
+	// - fine at call time, but guarded because a site that loads the shortcode
 	// alone should degrade to no heading rather than fatal.
 	if ( ! function_exists( 'statchasers_team_heading' ) ) {
 		return '';
@@ -1140,7 +1140,7 @@ function statchasers_team_shortcode_heading( string $slug, string $section ): st
  * The questions this request's team fragment is carrying.
  *
  * The team hub is one mount with a `:target` tab strip, so a single fetch
- * carries every tab's questions — the Outlook FAQ and the Stats FAQ both — and
+ * carries every tab's questions - the Outlook FAQ and the Stats FAQ both - and
  * this produces one node for the page rather than one per tab.
  *
  * Reads the cached fetch the shortcode is about to hit rather than costing a
@@ -1195,7 +1195,7 @@ function statchasers_team_page_html(): string {
 	}
 
 	// Scoped to the same section the shortcode will print, or the questions in
-	// Rank Math's graph describe a page this reader is not on — the Schedule
+	// Rank Math's graph describe a page this reader is not on - the Schedule
 	// URL carrying the Stats tab's eight questions.
 	$data = statchasers_team_fetch( $slug, statchasers_team_section_from_url() );
 
@@ -1334,8 +1334,8 @@ add_filter( 'rank_math/json_ld', 'statchasers_team_rank_math_schema', 20 );
  *
  * It takes the place of the SoftwareApplication node the team pages used to
  * carry (see the structured-data comment in statchasers-news.php). The API
- * builds the list — team/schedule-schema.ts, which keeps only the games with a
- * kickoff and a venue — and ships it only on the Schedule section, as an inert
+ * builds the list - team/schedule-schema.ts, which keeps only the games with a
+ * kickoff and a venue - and ships it only on the Schedule section, as an inert
  * island this lifts out. Checked for shape rather than trusted, like the FAQ
  * islands: a malformed one drops the node rather than printing a broken one.
  *

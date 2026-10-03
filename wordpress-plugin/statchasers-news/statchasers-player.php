@@ -4,14 +4,14 @@
  *
  * Same posture as the team hub in statchasers-team.php, and for the same
  * reason. The API serves every player route with `noindex, indexifembedded`,
- * which means those pages are invisible to search until something embeds them —
+ * which means those pages are invisible to search until something embeds them -
  * `indexifembedded` with no embed is just `noindex`. This file is the embed.
  * Without it the content exists and ranks nowhere.
  *
  * What differs from the team mount:
  *
  *   1. There are several hundred of these rather than 32, so the cache TTL is
- *      the same but the volume is not. That is fine — a player fragment is
+ *      the same but the volume is not. That is fine - a player fragment is
  *      cheap to render (the API assembles it from local JSON, with no upstream
  *      in the request path) and each is cached under its own key.
  *   2. It takes a `format` attribute. Scoring format genuinely changes every
@@ -39,14 +39,14 @@ const STATCHASERS_PLAYER_SHORTCODE = 'statchasers_player';
  * The index mount: [statchasers_player_index]
  *
  * The container page at /nfl/players/ needs its own shortcode because it is the
- * one page in this hierarchy whose slug is not a player slug — the profile
+ * one page in this hierarchy whose slug is not a player slug - the profile
  * shortcode there asks the API for a player called "players" and gets nothing.
  */
 const STATCHASERS_PLAYER_INDEX_SHORTCODE = 'statchasers_player_index';
 
 /**
  * Sections a URL can be scoped to. Mirrors SECTIONS in the API's
- * src/routes/player.ts — keep the two lists together.
+ * src/routes/player.ts - keep the two lists together.
  */
 const STATCHASERS_PLAYER_SECTIONS = array(
 	'overview',
@@ -69,7 +69,7 @@ const STATCHASERS_PLAYER_BACKUP_TTL = DAY_IN_SECONDS;
  * Seconds to wait on the API before giving up.
  *
  * Shorter than the team hub's eight. A team page waits on ESPN for a schedule,
- * a record and two statistics documents; a player page waits on nothing —
+ * a record and two statistics documents; a player page waits on nothing -
  * every number in it is arithmetic over JSON the API already holds in memory.
  * Six seconds is generous for that and still well inside what a page render can
  * absorb.
@@ -83,12 +83,12 @@ const STATCHASERS_PLAYER_FORMATS = array( 'standard', 'half', 'ppr' );
  * Which player to render, and in which scoring format.
  *
  * The slug defaults to the post slug, because the WordPress pages are at
- * /nfl/players/<slug>/ and the API's slugs are the same strings — so several
+ * /nfl/players/<slug>/ and the API's slugs are the same strings - so several
  * hundred pages can carry one identical shortcode with no attribute at all.
  * `slug="..."` is there for the pages where that isn't true.
  *
  * `section` scopes the mount to ONE part of the profile, for the per-section
- * URLs — `/fantasy-football/players/<slug>/injury/` mounts
+ * URLs - `/fantasy-football/players/<slug>/injury/` mounts
  * `[statchasers_player section="injury"]`. The API then renders that panel as
  * the whole page, with its own heading, and no tab strip. Without it the mount
  * is the full profile exactly as before.
@@ -118,7 +118,7 @@ function statchasers_player_args( array $atts ): array {
 
 	// The slug goes into a URL path, so it is constrained to what the API's own
 	// slugs look like rather than merely escaped. A value that isn't a plausible
-	// player slug is treated as absent — better a missing section than a request
+	// player slug is treated as absent - better a missing section than a request
 	// built from arbitrary post content.
 	if ( ! preg_match( '/^[a-z0-9][a-z0-9-]{1,63}$/', $slug ) ) {
 		$slug = '';
@@ -127,7 +127,7 @@ function statchasers_player_args( array $atts ): array {
 	$format = strtolower( trim( (string) $atts['format'] ) );
 	if ( '' === $format ) {
 		// No attribute: take it from the URL. The profile's own scoring toggle is
-		// gone — the control bar carries the start/sit button now — but
+		// gone - the control bar carries the start/sit button now - but
 		// `?format=half` is still a real address the API renders, and a reader
 		// holding one of those links has to get the numbers it names rather than
 		// a page that quietly ignores them.
@@ -137,7 +137,7 @@ function statchasers_player_args( array $atts ): array {
 		$format = 'ppr';
 	}
 
-	// Which season the Game Log tab is pinned to, from the URL only — there is
+	// Which season the Game Log tab is pinned to, from the URL only - there is
 	// no attribute for it, because it is a reader's choice on the page rather
 	// than something an editor sets when placing the shortcode. Constrained to a
 	// plausible NFL season; the API drops anything this player did not play.
@@ -148,7 +148,7 @@ function statchasers_player_args( array $atts ): array {
 	// Which season the Advanced section shows, the same way and for the same
 	// reason: the API prints `?adv=<season>` chips on that section as real
 	// links, and a page that dropped the parameter answered every chip with the
-	// latest season — a link that did nothing. Same range as `log`; the API
+	// latest season - a link that did nothing. Same range as `log`; the API
 	// narrows it again to the seasons that have a table.
 	$adv  = statchasers_player_query_value( 'adv' );
 	$year = (int) $adv;
@@ -187,7 +187,7 @@ function statchasers_player_args( array $atts ): array {
  * One lowercased query parameter, or ''.
  *
  * Everything read through here is validated against a closed list or a numeric
- * range by its caller before it reaches a URL or a cache key — these values
+ * range by its caller before it reaches a URL or a cache key - these values
  * come from the address bar, so "sanitised" is the floor and not the bar.
  */
 function statchasers_player_query_value( string $key ): string {
@@ -230,12 +230,12 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 	// The Game Log's season is in the key for the same reason the section is: it
 	// changes the table, and two readers on two seasons must not share a render.
 	// The Advanced season likewise, tagged so `log=2024` and `adv=2024` cannot
-	// hash to the same key — and appended only when set, so the key of every
+	// hash to the same key - and appended only when set, so the key of every
 	// render without it is the key it had before, and the backups filed under
 	// those keys still answer during an outage the day this ships.
 	// The heading mode is in the key for the same reason the section is: it
-	// changes the markup the API returns — one panel's <h2> comes back as the
-	// page's <h1> — and a fragment cached under one mode must not be served
+	// changes the markup the API returns - one panel's <h2> comes back as the
+	// page's <h1> - and a fragment cached under one mode must not be served
 	// under the other.
 	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
 		&& statchasers_h1_tool_supplies_heading();
@@ -300,7 +300,7 @@ function statchasers_player_fetch( string $slug, string $format, string $section
 		'html'    => $body,
 		// The route sets a weak ETag over the same fingerprint it caches the
 		// render under, so it identifies this exact fragment. Only used for
-		// cache bookkeeping — the enqueue version comes from assets.json.
+		// cache bookkeeping - the enqueue version comes from assets.json.
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 	);
 
@@ -372,13 +372,13 @@ function statchasers_player_index_fetch(): ?array {
 /**
  * The shortcode: prints the index of every profile into the container page.
  *
- * Same omissions as the profile shortcode — no canonical, no title, no H1. The
+ * Same omissions as the profile shortcode - no canonical, no title, no H1. The
  * page owns those; this prints the roster beneath them.
  *
  * Before this existed the container page was whatever the builder had written
  * into it once: a stub list of six hundred links in the theme's own styling,
  * standing in front of the profiles it points at. That stub was never meant to
- * be the finished page — it was there so the parent was not a thin page in the
+ * be the finished page - it was there so the parent was not a thin page in the
  * sitemap.
  *
  * @return string HTML.
@@ -395,7 +395,7 @@ function statchasers_player_index_shortcode(): string {
 
 	$data = statchasers_player_index_fetch();
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_player_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -423,7 +423,7 @@ add_shortcode( STATCHASERS_PLAYER_INDEX_SHORTCODE, 'statchasers_player_index_sho
  * the reads' prose moved to the tool's Inter.)
  *
  * The header is set in its own face rather than the tool's Inter (see
- * .scp-phead in player.css) — its name and big numbers use condensed widths,
+ * .scp-phead in player.css) - its name and big numbers use condensed widths,
  * which is why the `wdth` axis is requested. Return '' from the filter to serve
  * it yourself or not at all; the stack falls back to Helvetica Neue and Arial.
  */
@@ -490,7 +490,7 @@ function statchasers_player_enqueue_assets(): void {
 
 	// Both unconditional where the block above is not. A tool printing through
 	// the site's header, and a phone reading it through a 43px margin on each
-	// side, are wrong on every page that mounts a tool — whether or not that
+	// side, are wrong on every page that mounts a tool - whether or not that
 	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_PLAYER_HANDLE, statchasers_tool_header_layer_css() );
@@ -503,8 +503,8 @@ function statchasers_player_enqueue_assets(): void {
  *
  * Reads get_queried_object() rather than get_post(), for the reason given at
  * length in statchasers-team.php: Divi swaps the global post while it renders a
- * Theme Builder layout, so during that render get_post() is the LAYOUT — whose
- * content has no shortcode in it — and the page would answer "no" to a question
+ * Theme Builder layout, so during that render get_post() is the LAYOUT - whose
+ * content has no shortcode in it - and the page would answer "no" to a question
  * about itself.
  *
  * Memoised because the layout hooks ask on every post-meta read, which on a
@@ -574,7 +574,7 @@ function statchasers_player_post_has_index_shortcode(): bool {
  * The one page in this hierarchy whose slug is not a player slug, and the one
  * page the builder cannot be relied on to mount. statchasers_player_write_index()
  * writes the index shortcode into a container that is empty or still carrying
- * the old stub, and treats anything else as the editor's own work — which is
+ * the old stub, and treats anything else as the editor's own work - which is
  * the right promise everywhere except here, because a container somebody built
  * in Divi before the shortcode existed IS "anything else". It has a heading and
  * a paragraph in it, so the build steps over it, and the page ships with copy
@@ -621,13 +621,13 @@ function statchasers_player_is_container_page(): bool {
  * Every other page in this plugin is mounted by a shortcode somebody placed,
  * and that is the right default: an editor decides where a tool goes. The
  * container is the exception, because it is not a page an editor chose to put a
- * tool on — it is the parent WordPress needs to exist so that /nfl/players/<slug>/
+ * tool on - it is the parent WordPress needs to exist so that /nfl/players/<slug>/
  * resolves at all, and a parent with no roster on it is a thin page standing in
  * front of six hundred good ones.
  *
  * Three ways it declines, in order:
  *
- *   1. The content already renders the index — the shortcode is in the page, or
+ *   1. The content already renders the index - the shortcode is in the page, or
  *      in a Divi module in the page, and has already expanded by the time this
  *      filter runs at priority 20. Nothing to add.
  *   2. The page's own content carries the shortcode but it produced nothing.
@@ -710,7 +710,7 @@ add_action(
 			! statchasers_player_post_has_shortcode()
 			&& ! statchasers_player_post_has_index_shortcode()
 			// The container mounts itself (statchasers_player_auto_index), and
-			// it does it at the_content — far too late to enqueue a stylesheet
+			// it does it at the_content - far too late to enqueue a stylesheet
 			// into the head. Asked here so the roster arrives styled.
 			&& ! statchasers_player_is_container_page()
 		) {
@@ -725,7 +725,7 @@ add_action(
 /**
  * Does this page want Divi's full-width column?
  *
- * Exactly the team hub's problem and exactly its answer — see the long note on
+ * Exactly the team hub's problem and exactly its answer - see the long note on
  * `statchasers_team_wants_full_width()`. Divi gives `#left-area` 79.125% of the
  * row above 980px and reserves the rest for a sidebar that these pages do not
  * have, so without this the profile renders in three quarters of the page with
@@ -743,7 +743,7 @@ function statchasers_player_wants_full_width(): bool {
 	/**
 	 * Filters whether a page mounting a player profile takes the whole column.
 	 *
-	 * Return false to keep the theme's own layout — for a page that really does
+	 * Return false to keep the theme's own layout - for a page that really does
 	 * have a populated sidebar and wants to keep it.
 	 *
 	 * @param bool $full_width Whether to take the whole column.
@@ -788,7 +788,7 @@ add_filter( 'get_post_metadata', 'statchasers_player_force_full_width_meta', 10,
 /**
  * The body class that goes with it.
  *
- * `et_full_width_page` is the one that carries weight — see the note on the CSS
+ * `et_full_width_page` is the one that carries weight - see the note on the CSS
  * in statchasers-team.php. Guarded rather than appended, because the team
  * filter may have added the same class already.
  *
@@ -810,13 +810,13 @@ function statchasers_player_full_width_body_class( array $classes ): array {
 
 	return $classes;
 }
-// Last, not merely late — same reasoning as the team filter.
+// Last, not merely late - same reasoning as the team filter.
 add_filter( 'body_class', 'statchasers_player_full_width_body_class', PHP_INT_MAX );
 
 /**
  * The shortcode: prints the server-rendered player profile into the page.
  *
- * Same deliberate omissions as the news and team shortcodes — no canonical, no
+ * Same deliberate omissions as the news and team shortcodes - no canonical, no
  * <h1>, no title or meta description, nothing written to the URL. The page owns
  * all of it. The fragment's tab strip is `:target`-based, so the only URL state
  * it can produce is a hash, which is not a separate URL to a crawler.
@@ -838,7 +838,7 @@ function statchasers_player_shortcode( $atts = array() ): string {
 
 	if ( '' === $args['slug'] ) {
 		if ( current_user_can( 'manage_options' ) ) {
-			return '<p><strong>StatChasers Player:</strong> no player slug. This page\'s slug is not a player slug, so set one explicitly — <code>[statchasers_player slug="kyler-murray"]</code>.</p>';
+			return '<p><strong>StatChasers Player:</strong> no player slug. This page\'s slug is not a player slug, so set one explicitly - <code>[statchasers_player slug="kyler-murray"]</code>.</p>';
 		}
 		return '';
 	}
@@ -851,14 +851,14 @@ function statchasers_player_shortcode( $atts = array() ): string {
 		$args['adv']
 	);
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_player_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		// Unlike the news tool there is no client-side render to fall back to:
 		// the player bundle only enhances markup that is already there. An empty
-		// string is the honest answer, and it leaves the rest of the page — the
-		// H1, the copy, the internal links — intact.
+		// string is the honest answer, and it leaves the rest of the page - the
+		// H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return sprintf(
 				'<p><strong>StatChasers Player:</strong> the API returned nothing for <code>%s</code>. Check the slug and that the deployment is up.</p>',
@@ -904,7 +904,7 @@ add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
  * This matters more since the per-section URLs below: /nfl/players/<slug>/game-log/
  * mounts ONE section, so the page carries one FAQ about one subject, which is
  * the shape an FAQPage is supposed to describe. On the unsectioned profile every
- * section's questions merge into a single node — still one FAQPage, because
+ * section's questions merge into a single node - still one FAQPage, because
  * four of them on one URL is four candidates for the same page and Google picks
  * one of them for you.
  */
@@ -914,7 +914,7 @@ add_shortcode( STATCHASERS_PLAYER_SHORTCODE, 'statchasers_player_shortcode' );
  *
  * Resolved and fetched here rather than handed over by the shortcode, because
  * Rank Math prints its graph in wp_head and the shortcode does not run until
- * the_content — by then the <head> is long gone. The fetch is transient-cached
+ * the_content - by then the <head> is long gone. The fetch is transient-cached
  * on exactly the arguments the shortcode will use, so this warms the cache the
  * shortcode then hits rather than costing a second request.
  *
@@ -957,7 +957,7 @@ function statchasers_player_page_html(): string {
 	// The slug comes off the QUERIED object rather than being left to
 	// statchasers_player_args()'s get_post() fallback, for the reason given on
 	// statchasers_player_post_has_shortcode(): the global post is not reliably
-	// this page. Everything else — section, format, season — is read from the
+	// this page. Everything else - section, format, season - is read from the
 	// URL, which is where a reader's choices live.
 	//
 	// An editor who hard-coded slug="..." on a page with a different slug gets
@@ -1170,9 +1170,9 @@ function statchasers_player_strip_faq_data( string $html ): string {
 /**
  * Per-section player URLs, e.g. /nfl/players/jacoby-brissett/injury/.
  *
- * ON BY DEFAULT. It was off while the rule was new — rewrite rules are
+ * ON BY DEFAULT. It was off while the rule was new - rewrite rules are
  * site-wide and a wrong one takes out URLs that have nothing to do with this
- * plugin — and the rule has since been anchored to the player base and the
+ * plugin - and the rule has since been anchored to the player base and the
  * seven section ids, so it cannot match anything else. Turn it off with:
  *
  *     add_filter( 'statchasers_player_section_urls', '__return_false' );
@@ -1189,7 +1189,7 @@ function statchasers_player_strip_faq_data( string $html ): string {
  *
  *     add_filter( 'statchasers_player_url_base', fn() => 'fantasy-football/players' );
  *
- * and set up 301s from the old base before you do — the old URLs are indexed.
+ * and set up 301s from the old base before you do - the old URLs are indexed.
  */
 function statchasers_player_section_urls_enabled(): bool {
 	return (bool) apply_filters( 'statchasers_player_section_urls', true );
@@ -1246,7 +1246,7 @@ function statchasers_player_section_from_url(): string {
  *
  * The profile opens on the Overview, so the two addresses were one page, each
  * self-canonical. The profile keeps it, the Overview tab links there (the API
- * renders the strip), and the old address — indexed — redirects instead of
+ * renders the strip), and the old address - indexed - redirects instead of
  * 404ing, which is why 'overview' stays in STATCHASERS_PLAYER_SECTIONS and so in
  * the rewrite. The reader's query rides along: ?format=half is a set of numbers.
  */
@@ -1277,7 +1277,7 @@ add_action( 'template_redirect', 'statchasers_player_overview_redirect', 9 );
 /**
  * The season the Game Log is showing, read off the fragment the page will print.
  *
- * The title needs the year — "Game Log 2026" is the phrase people type — and
+ * The title needs the year - "Game Log 2026" is the phrase people type - and
  * only the API knows which year that is: the newest season this player actually
  * appeared in, or the one `?log=` pinned. Guessing it from the calendar is wrong
  * for exactly the players whose season ended early, which is the group whose
@@ -1288,7 +1288,7 @@ add_action( 'template_redirect', 'statchasers_player_overview_redirect', 9 );
  * going to happen anyway rather than a second one.
  *
  * Returns '' when the fragment says nothing, and the title then carries no year
- * — better than carrying a wrong one.
+ * - better than carrying a wrong one.
  *
  * @param array{slug:string,format:string,section:string,log:string,adv:string} $args Mount arguments.
  */
@@ -1343,10 +1343,10 @@ add_filter(
 
 		$title = $parts['title'] . ' ' . $phrases[ $section ];
 
-		// "Jacoby Brissett Game Log 2026: Fantasy Points & Stats by Week" — the
+		// "Jacoby Brissett Game Log 2026: Fantasy Points & Stats by Week" - the
 		// season, then what the page actually holds. Only the game log takes the
 		// suffix; the other sections read as themselves.
-		// "Jacoby Brissett Bio: Age, Height, College, Draft & Career" — the
+		// "Jacoby Brissett Bio: Age, Height, College, Draft & Career" - the
 		// biographical cluster named outright. Bio is the one section whose
 		// queries are not fantasy queries, and its title says so.
 		if ( 'bio' === $section ) {
@@ -1381,7 +1381,7 @@ function statchasers_player_flush( bool $all = false ): void {
 	delete_transient( 'sc_player_roster' );
 	delete_transient( 'sc_player_roster_fail' );
 
-	// And the two backups beside those — the profile index and the roster —
+	// And the two backups beside those - the profile index and the roster -
 	// only on the way out, for the same reason the render backups stay.
 	if ( $all ) {
 		delete_transient( 'sc_player_roster_bak' );
@@ -1611,8 +1611,8 @@ add_filter(
 /**
  * The section as the last breadcrumb.
  *
- * Rank Math's trail on a section URL ends at the profile — the page the rewrite
- * resolves to — so its BreadcrumbList says a Stats page is the profile. The
+ * Rank Math's trail on a section URL ends at the profile - the page the rewrite
+ * resolves to - so its BreadcrumbList says a Stats page is the profile. The
  * section is appended, at its canonical URL.
  *
  * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
@@ -1648,10 +1648,10 @@ add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_breadcrum
  * addresses that 404.
  *
  * Only under a page that mounts a profile. The container's children are not
- * all profiles — an editor can park any page there — and a child without the
+ * all profiles - an editor can park any page there - and a child without the
  * shortcode serves none of the six sections: statchasers_player_indexed_
  * section() answers '' on it, so the sitemap was listing six addresses per
- * such page that are that page's own content again, canonical to the page —
+ * such page that are that page's own content again, canonical to the page -
  * URLs a crawler is told to index and then told are not the page.
  *
  * @param string $content Entries Rank Math has already built.

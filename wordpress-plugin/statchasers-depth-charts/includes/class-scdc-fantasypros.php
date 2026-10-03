@@ -1,6 +1,6 @@
 <?php
 /**
- * FantasyPros fetcher — fills the Fantasy tab's dedicated FAN_* columns.
+ * FantasyPros fetcher - fills the Fantasy tab's dedicated FAN_* columns.
  *
  * FantasyPros publishes the five fantasy positions ordered by Expert Consensus
  * Ranking. They go into FAN_QB / FAN_RB / FAN_WR / FAN_TE / FAN_K, kept separate

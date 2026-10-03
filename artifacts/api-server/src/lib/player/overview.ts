@@ -38,7 +38,7 @@ import {
   teamInk,
 } from "./header";
 
-const DASH = "—";
+const DASH = "-";
 
 /**
  * A pause between a strip cell's parts, for the ear only: read aloud a cell is
@@ -215,7 +215,7 @@ function season(data: PlayerPageData): Season {
   past.sort((x, y) => x.week - y.week);
   future.sort((x, y) => x.week - y.week);
 
-  // Seven cells: up to three played, the rest upcoming — more of either when
+  // Seven cells: up to three played, the rest upcoming - more of either when
   // the other runs short.
   const pastN = Math.min(past.length, Math.max(3, 7 - future.length));
   const futureN = Math.min(future.length, 7 - pastN);

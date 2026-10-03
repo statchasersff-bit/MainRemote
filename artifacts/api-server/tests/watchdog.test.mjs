@@ -1,7 +1,7 @@
 /**
  * The inbound-route watchdog (src/lib/watchdog.ts).
  *
- * Drives watchdogTick with injected probes — no timers, no network — through
+ * Drives watchdogTick with injected probes - no timers, no network - through
  * the three stories that matter: the proxy losing the VM while localhost
  * still answers (the 10-01/10-02 outage signature, three strikes then exit),
  * a blip that recovers before the third strike, and the restart kill-switch.
@@ -80,7 +80,7 @@ describe("watchdogTick", () => {
     const state = { publicFailures: 2 };
     await watchdogTick(state, 8080, deps);
     assert.deepEqual(calls.exits, [1]);
-    assert.match(calls.notes[0], /also failing \(fetch failed\) — the app is wedged/);
+    assert.match(calls.notes[0], /also failing \(fetch failed\) - the app is wedged/);
   });
 
   test("a recovery resets the count and says so once", async () => {

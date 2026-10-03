@@ -74,7 +74,7 @@ class SCDC_Admin {
 		$status_label = array(
 			'never'   => __( 'Never refreshed', 'statchasers-depth-charts' ),
 			'success' => __( 'Success', 'statchasers-depth-charts' ),
-			'partial' => __( 'Partial — some teams failed', 'statchasers-depth-charts' ),
+			'partial' => __( 'Partial - some teams failed', 'statchasers-depth-charts' ),
 			'error'   => __( 'Error', 'statchasers-depth-charts' ),
 		);
 		$status      = isset( $meta['status'] ) ? $meta['status'] : 'never';
@@ -101,7 +101,7 @@ class SCDC_Admin {
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Last refreshed', 'statchasers-depth-charts' ); ?></th>
-						<td><?php echo $last_human ? esc_html( $last_human ) : esc_html__( '—', 'statchasers-depth-charts' ); ?></td>
+						<td><?php echo $last_human ? esc_html( $last_human ) : esc_html__( '-', 'statchasers-depth-charts' ); ?></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Next automatic refresh', 'statchasers-depth-charts' ); ?></th>

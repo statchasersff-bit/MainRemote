@@ -19,18 +19,18 @@
  * This one is eighteen: `/schedule/week-3` is a different slate of games from
  * `/schedule/week-4`, with its own title, description and canonical (see
  * schedule-seo.ts). So the questions are per week, they name the week, and they
- * are the one part of this tool whose text is different at every address —
+ * are the one part of this tool whose text is different at every address -
  * which is the whole point of the week having an address.
  *
  * The matrix is the other half of that argument, and it took a while to see it.
- * Nobody asks a 32-by-18 grid a question about a game — but they do ask where
+ * Nobody asks a 32-by-18 grid a question about a game - but they do ask where
  * the whole schedule is, what the board they are looking at is called, and what
  * the @ in front of an opponent code means. Those are questions about the grid
  * rather than about a fixture, they are the same on every rendering of it, and
  * they belong to the one address the matrix has. See `matrixFaq()` at the
  * bottom of this file.
  *
- * A team's season is not asked in either set — that is answered at length on
+ * A team's season is not asked in either set - that is answered at length on
  * the team's own hub page by team/schedule-faq.ts, which is also where this
  * tool's team lens went. The grid's row headings link there.
  *
@@ -42,8 +42,8 @@
  *    dates its games carry, so a week whose kickoffs the league has not
  *    published says so rather than inventing the usual Thursday-to-Monday.
  * 2. **A question with no answer is not asked.** No Saturday games, no
- *    Saturday question. No network anywhere on the slate — which is the normal
- *    state when ESPN is refusing this host, see schedule-data.ts — no claim
+ *    Saturday question. No network anywhere on the slate - which is the normal
+ *    state when ESPN is refusing this host, see schedule-data.ts - no claim
  *    about where to watch. A Sunday night doubleheader is not one Sunday Night
  *    Football game, so it is not described as one.
  * 3. **Home and away are stated in words.** Rule 4 in schedule-render.ts: "ATL
@@ -53,7 +53,7 @@
  * ## The whole week, not the filtered week
  *
  * These are built from every game in the week, never from the division or
- * international filter's subset — the same call the sidebar cards make. A
+ * international filter's subset - the same call the sidebar cards make. A
  * filter is a way of looking at one week, it does not change the canonical, and
  * a FAQPage node that loses eleven games because somebody arrived on a filtered
  * link would describe a page that does not exist.
@@ -96,7 +96,7 @@ const NIGHT_HOUR = 19;
 
 /* ------------------------------------------------------------------ words */
 
-/** "A", "A and B", "A, B and C" — the Oxford-less form the rest of the site uses. */
+/** "A", "A and B", "A, B and C" - the Oxford-less form the rest of the site uses. */
 function listOf(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0] ?? "";
@@ -115,7 +115,7 @@ function teamPhrase(team: NflTeam | null, code: string): string {
 /**
  * One fixture as a clause: "the Atlanta Falcons play at the Green Bay Packers".
  *
- * Never "Falcons-Packers", and never the bare order the row draws them in —
+ * Never "Falcons-Packers", and never the bare order the row draws them in -
  * rule 4 in schedule-render.ts. A neutral-site game has no host to play at, so
  * it is written as a meeting and the venue carries the rest; that is the same
  * distinction the board draws when it flags a game international.
@@ -132,7 +132,7 @@ function matchupClause(game: ScheduleGame): string {
  * For the sentences that name the broadcast first ("The Thursday Night Football
  * game in Week 3 is ..."), where a clause would not fit. The word "at" is still
  * doing the work, and a neutral-site game takes "vs" because neither club is
- * hosting — the same two words the team hub's schedule table prints in its own
+ * hosting - the same two words the team hub's schedule table prints in its own
  * column.
  */
 function matchupNoun(game: ScheduleGame): string {
@@ -153,7 +153,7 @@ function venuePhrase(game: ScheduleGame): string {
  *
  * Three states, the same three the board prints: a dated game with a kickoff, a
  * dated game the league has not given a window yet, and a fixture with no date
- * at all. Nothing is filled in — a sentence claiming 1:00 PM for a game nobody
+ * at all. Nothing is filled in - a sentence claiming 1:00 PM for a game nobody
  * has scheduled is exactly the error this tool exists not to make.
  */
 function whenPhrase(game: ScheduleGame): string {
@@ -239,7 +239,7 @@ function groupHoliday(games: ScheduleGame[]): string | null {
   return games.every((game) => game.holiday === first) ? first : null;
 }
 
-/** "Thanksgiving", "Christmas" — the feed's shout-case, as a sentence sets it. */
+/** "Thanksgiving", "Christmas" - the feed's shout-case, as a sentence sets it. */
 function holidayName(holiday: string): string {
   return holiday
     .toLowerCase()
@@ -249,7 +249,7 @@ function holidayName(holiday: string): string {
 }
 
 /**
- * The night games in a group — the ones a broadcast is named after.
+ * The night games in a group - the ones a broadcast is named after.
  *
  * A window, not a network: "Sunday Night Football" is a 8:20 kickoff whoever is
  * carrying it, and deriving it from the network would lose it on every week
@@ -269,7 +269,7 @@ function nightGames(games: ScheduleGame[]): ScheduleGame[] {
  * Denver Broncos, on Sunday, September 27 at 8:20 PM ET on NBC."
  *
  * The date is spelled out even though the question already names the day,
- * because a question in a FAQPage node is read on its own — a crawler quoting
+ * because a question in a FAQPage node is read on its own - a crawler quoting
  * "the Rams at the Broncos" with no date attached has quoted nothing useful.
  */
 function broadcastSentence(
@@ -295,7 +295,7 @@ export function scheduleFaq(input: {
   week: number;
 }): ScheduleFaq[] {
   const { schedule, week } = input;
-  // The whole week, never the filtered subset — see the note at the top.
+  // The whole week, never the filtered subset - see the note at the top.
   const games = weekGames(schedule, week, "all");
 
   // A week with no published games answers no questions about one. The board
@@ -313,8 +313,8 @@ export function scheduleFaq(input: {
    * A schedule outlives its season: week 3 is still an address in February, and
    * "Week 3 runs from Thursday through Monday" about a week played five months
    * ago is the same false statement team/schedule-faq.ts splits its verbs to
-   * avoid. The signal is the rows themselves — a week every game of which is
-   * final is a week that has been played — rather than the calendar, so a
+   * avoid. The signal is the rows themselves - a week every game of which is
+   * final is a week that has been played - rather than the calendar, so a
    * postponed game keeps the week in the present tense until it is actually
    * played.
    */
@@ -475,7 +475,7 @@ export function scheduleFaq(input: {
   /*
    * Only when every team in the week resolved.
    *
-   * A bye is not a row in the feed — it is the absence of one — so it is only
+   * A bye is not a row in the feed - it is the absence of one - so it is only
    * as trustworthy as the week's slate. A game whose teams this server cannot
    * name is a game that cannot rule its two clubs out of the bye list, and a
    * FAQ that puts a playing team on bye is the answer here most likely to cost
@@ -582,7 +582,7 @@ export function matrixFaqHeading(season: number): string {
  * That null is the guard the whole set leans on. A half-loaded feed would
  * otherwise answer "the 2026 NFL regular season has 134 games", which is a
  * false claim about the season rather than an honest description of a partial
- * board — and unlike a missing kickoff time, nothing on screen contradicts it.
+ * board - and unlike a missing kickoff time, nothing on screen contradicts it.
  * When the rows disagree the count questions are simply not asked.
  */
 interface MatrixFacts {
@@ -643,7 +643,7 @@ function matrixFacts(schedule: ScheduleSeason): MatrixFacts {
  *
  * Every answer describes the table directly above it: the rows are teams, the
  * columns are weeks, a cell is an opponent, an @ is a road game and an empty
- * week is a bye. Nothing here is about a fixture, a kickoff time or a network —
+ * week is a bye. Nothing here is about a fixture, a kickoff time or a network -
  * the matrix prints none of those, so the matrix does not answer for them, and
  * a reader who wants them is pointed at the week's own board, which is one
  * click away through any column heading.
@@ -662,7 +662,7 @@ function matrixFacts(schedule: ScheduleSeason): MatrixFacts {
  * schedule at once" and "...every matchup" are four search queries and one
  * question. They were drafted as four entries and are deliberately one: four
  * answers restating the board's shape in four ways is the thin-content pattern
- * a FAQPage gets discounted for, and the phrases still land — in the section
+ * a FAQPage gets discounted for, and the phrases still land - in the section
  * heading and lede above the grid, and in the title and description this view
  * carries (schedule-seo.ts), which is where they belong.
  *
@@ -683,8 +683,8 @@ export function matrixFaq(input: { schedule: ScheduleSeason }): ScheduleFaq[] {
   const v = {
     has: facts.played ? "had" : "has",
     runs: facts.played ? "ran" : "runs",
-    // Every subject that takes it here is singular — "each team", "each of the
-    // 32 teams" — so the present tense is "plays", not the week set's "play".
+    // Every subject that takes it here is singular - "each team", "each of the
+    // 32 teams" - so the present tense is "plays", not the week set's "play".
     plays: facts.played ? "played" : "plays",
   };
 
@@ -697,7 +697,7 @@ export function matrixFaq(input: { schedule: ScheduleSeason }): ScheduleFaq[] {
       `regular-season schedule for all ${teams} NFL teams in one view. Teams run ` +
       `down the left edge and Weeks 1 through ${weeks} run across the top, so one ` +
       `row is a team's whole season and one column is a whole week of the league ` +
-      `— which is what lets you compare opponents, road games and bye weeks ` +
+      ` - which is what lets you compare opponents, road games and bye weeks ` +
       `across the league rather than one team at a time.`,
   });
 
@@ -706,14 +706,14 @@ export function matrixFaq(input: { schedule: ScheduleSeason }): ScheduleFaq[] {
     answer:
       `An NFL schedule grid is one table holding every team's season at once. ` +
       `Each row is a team, each column is a week of the regular season, and each ` +
-      `cell is that team's opponent in that week — which is what lets you read ` +
+      `cell is that team's opponent in that week - which is what lets you read ` +
       `the whole league without opening ${teams} separate team pages.`,
   });
 
   faq.push({
     question: `Is there an NFL schedule by team and week?`,
     answer:
-      `Yes — the grid above is arranged by both. Teams are down the side and ` +
+      `Yes - the grid above is arranged by both. Teams are down the side and ` +
       `weeks are across the top, so a team's opponents read across its row and a ` +
       `week's matchups read down its column. Choosing a week number in the header ` +
       `opens that week's full board, with dates, kickoff times in ET and TV.`,

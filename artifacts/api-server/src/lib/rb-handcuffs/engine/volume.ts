@@ -1,18 +1,18 @@
 /**
- * RB Backfield Volume Score — drives "Backfield Opportunity" (a.k.a. "Starter
+ * RB Backfield Volume Score - drives "Backfield Opportunity" (a.k.a. "Starter
  * Role Value").
  *
- * What it measures: the total RB opportunity an offense generated in 2025 — the
+ * What it measures: the total RB opportunity an offense generated in 2025 - the
  * combined per-game workload of the team's two highest-usage RBs that season
  * (the 2025 starter + top backup by total touches, identified in
- * rb-data-service.getTeamBackfields, NOT the current depth chart) — ranked as a
+ * rb-data-service.getTeamBackfields, NOT the current depth chart) - ranked as a
  * percentile against every other team's backfield in the 2025 pool.
  *
  * Method (per the product spec):
  *   1. Combine starter + backup PER-GAME stats (sum) into one backfield value
  *      for each of six workload/opportunity metrics. Snap% is summed uncapped
  *      (it is a rate, so "per game" = the season value itself).
- *   2. Percentile-rank — never raw values. Each metric is ranked against the
+ *   2. Percentile-rank - never raw values. Each metric is ranked against the
  *      distribution of qualified backfields, so a score is always relative to
  *      the season, never an absolute number.
  *   3. Qualified backfields set the curve: combined rushAttempts >= 50 OR
@@ -26,7 +26,7 @@
  *      and committee/receiving-only rooms land lower).
  *
  * This is a BACKFIELD-level (team's 2025 top-2 RBs) score, so it is computed in
- * routes.ts over the per-team backfields — not per individual RB record.
+ * routes.ts over the per-team backfields - not per individual RB record.
  */
 
 import type { MergedRBData } from "./stats";
@@ -84,7 +84,7 @@ function perGame(r: MergedRBData | null) {
   const g = r.games > 0 ? r.games : 1;
   return {
     rushAttempts: r.rush_att_per_gm, // already per-game
-    snapPct: r.snap_pct, // a rate — "per game" is the value itself
+    snapPct: r.snap_pct, // a rate - "per game" is the value itself
     targets: r.targets_per_gm, // already per-game
     redZone: r.rz_touches != null ? r.rz_touches / g : null, // total -> per-game
     goalLine: r.goal_line_att != null ? r.goal_line_att / g : null, // total -> per-game
@@ -121,7 +121,7 @@ function isQualified(m: BackfieldMetrics): boolean {
  */
 function meanRankPercentile(sortedAsc: number[], value: number): number {
   const n = sortedAsc.length;
-  if (n === 0) return 50; // no curve to rank against — neutral
+  if (n === 0) return 50; // no curve to rank against - neutral
   let countLess = 0;
   let countLessEqual = 0;
   for (const v of sortedAsc) {

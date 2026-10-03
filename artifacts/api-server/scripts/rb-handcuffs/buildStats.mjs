@@ -10,18 +10,18 @@
  * refresh.mjs.
  *
  * Where each figure comes from:
- *   - nflverse `stats_player` — carries, yards, TDs, targets, receptions,
+ *   - nflverse `stats_player` - carries, yards, TDs, targets, receptions,
  *     receiving YAC, target share, EPA, fumbles, fantasy points;
- *   - nflverse `pfr_advstats` (rushing) — broken tackles, yards
+ *   - nflverse `pfr_advstats` (rushing) - broken tackles, yards
  *     before and after contact;
- *   - nflverse `snap_counts` — offensive snap share;
- *   - nflverse play-by-play — red-zone and goal-line work, 10+/15+/20+/30+
+ *   - nflverse `snap_counts` - offensive snap share;
+ *   - nflverse play-by-play - red-zone and goal-line work, 10+/15+/20+/30+
  *     runs, the longest run and TD run, negative runs, and team games played.
  *
  * Not available in season: **routes**. nflverse publishes participation data,
  * where routes come from, only after the season, and nothing else free carries
- * them. They are written as null and the model drops them — see engine/
- * player-quality.ts — so yards per route run and the route share of usage sit
+ * them. They are written as null and the model drops them - see engine/
+ * player-quality.ts - so yards per route run and the route share of usage sit
  * out until a routes source exists.
  *
  * It also writes `rb_games_<season>.json`, each back's line game by game,
@@ -177,7 +177,7 @@ export async function buildSeason(season) {
     if (r.position !== "RB") continue;
     const p = get(r.player_id);
     const week = Number(r.week);
-    // A game is a week with a stat line — the reference file's count.
+    // A game is a week with a stat line - the reference file's count.
     p.weeks.add(week);
     p.teams.add(team(r.team));
     p.name = r.player_display_name || r.player_name;
@@ -211,7 +211,7 @@ export async function buildSeason(season) {
   }
 
   // Snap share, from snap_counts (pfr ids): the mean of each game's offensive
-  // share, over every game he took a snap in — special teams included, as the
+  // share, over every game he took a snap in - special teams included, as the
   // reference file counts it.
   for await (const r of rows(`${NFLVERSE}/snap_counts/snap_counts_${season}.csv`)) {
     if (!regular(r)) continue;
@@ -339,7 +339,7 @@ export async function buildSeason(season) {
       yardsAfterContactPerAttempt: p.pfrCarries ? round(p.yac / p.pfrCarries, 2) : null,
       yardsBeforeContactPerAttempt: p.pfrCarries ? round(p.ybc / p.pfrCarries, 2) : null,
       receivingYardsAfterCatch: p.recYac,
-      // Rushing broken tackles over touches — the reference file's rate.
+      // Rushing broken tackles over touches - the reference file's rate.
       tackleEludedRate: touches > 0 ? round((brokenTackles / touches) * 100, 1) : null,
       fumbles: p.fumbles,
       rushAttForNegativeYards: p.negative ?? 0,

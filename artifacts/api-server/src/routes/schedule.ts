@@ -1,15 +1,15 @@
 /**
  * The NFL schedule routes.
  *
- *   GET /schedule                  — the standalone page: the season matrix
- *   GET /schedule/week-2           — one week of the board, its own address
- *   GET /schedule?embed=1          — the same page, stripped for embedding
- *   GET /schedule/download.csv     — what is on screen, as CSV
- *   GET /schedule/schedule.ics     — the same games as a calendar file
- *   GET /embed/schedule            — the bare fragment, for the WordPress mount
+ *   GET /schedule                  - the standalone page: the season matrix
+ *   GET /schedule/week-2           - one week of the board, its own address
+ *   GET /schedule?embed=1          - the same page, stripped for embedding
+ *   GET /schedule/download.csv     - what is on screen, as CSV
+ *   GET /schedule/schedule.ics     - the same games as a calendar file
+ *   GET /embed/schedule            - the bare fragment, for the WordPress mount
  *
  * The path says which view this is, and it is the only thing that does. The
- * bare path is the season matrix — the whole season, the same board in December
+ * bare path is the season matrix - the whole season, the same board in December
  * as in July, and the view that answers "when do they play" without first
  * asking which week. A week is a different slate of games, so it gets an
  * address: `/schedule/week-7`.
@@ -22,7 +22,7 @@
  *
  * Mirrors routes/fpa.ts and routes/rankings.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does
- * not compete with statchasers.com — and by the same token the page is
+ * not compete with statchasers.com - and by the same token the page is
  * invisible to search until `[statchasers_schedule]` embeds it.
  */
 
@@ -76,7 +76,7 @@ function seasonFrom(req: Request): number {
   const current = scheduleSeason();
   // A season is honoured only when it can have a schedule: nflverse starts in
   // 1999 and has nothing past the one being played. Anything else falls
-  // through to the current season rather than querying for it — a future
+  // through to the current season rather than querying for it - a future
   // season has no rows, and each one asked for re-downloaded the whole
   // games.csv once a minute to find that out again.
   return Number.isFinite(asked) && asked >= 1999 && asked <= current
@@ -95,8 +95,8 @@ function state(req: Request): ScheduleQueryState {
   return {
     view: parseScheduleView(String(req.query["view"] ?? "")),
     week: parseWeek(String(req.query["week"] ?? "")),
-    // Anything that plausibly names a team resolves — "ne", "NE", "patriots",
-    // "new-england-patriots" — through the one canonical table.
+    // Anything that plausibly names a team resolves - "ne", "NE", "patriots",
+    // "new-england-patriots" - through the one canonical table.
     team: normalizeTeamName(String(req.query["team"] ?? "")),
     filter: parseGameFilter(String(req.query["filter"] ?? "")),
   };
@@ -106,7 +106,7 @@ function state(req: Request): ScheduleQueryState {
  * Only `embed`, and only as the canonical `?embed=1`.
  *
  * Echoing the whole query into every outgoing link would let any parameter
- * anyone appends mint another crawlable URL — the duplicate URL space the
+ * anyone appends mint another crawlable URL - the duplicate URL space the
  * canonical work exists to prevent. View, week, team and filter are page state
  * and are composed deliberately by the renderer, not copied wholesale.
  */
@@ -138,12 +138,12 @@ function noStoreHtml(res: Response, status: number, html: string): void {
  * The query the destination of a redirect understands, and nothing else.
  *
  * Echoing `req.query` wholesale into a redirect would let anything anyone
- * appends survive into another address — the duplicate URL space the canonical
+ * appends survive into another address - the duplicate URL space the canonical
  * work exists to prevent. `view` is never carried, because the path being
  * redirected TO already says which view it is; `filter` is carried only to the
  * weekly board, because the matrix ignores it and `/schedule?filter=division`
  * would be a second address for the grid. `?filter=all` is dropped for the
- * same reason — it is the bare path with extra words. `team` is not carried at
+ * same reason - it is the bare path with extra words. `team` is not carried at
  * all: the page has no team state since the lens moved, and the exports read it
  * from the request themselves.
  */
@@ -182,7 +182,7 @@ function weekUrl(req: Request, week: number): string {
  *
  * Read from the raw query rather than from `parseScheduleView`, because by the
  * time that has run an absent `?view=` and an explicit `?view=matrix` look
- * identical — and they are not: one is the address, the other is a spelling of
+ * identical - and they are not: one is the address, the other is a spelling of
  * it to redirect away.
  */
 function askedView(req: Request): ScheduleView | null {
@@ -201,8 +201,8 @@ function withQuery(path: string, params: URLSearchParams): string {
 /**
  * The canonical for this rendering: its own path, and nothing else.
  *
- * Every rendering now has exactly one address — the matrix at `/schedule`, a
- * week at `/schedule/week-3` — so there is nothing left to point anywhere but
+ * Every rendering now has exactly one address - the matrix at `/schedule`, a
+ * week at `/schedule/week-3` - so there is nothing left to point anywhere but
  * at itself. The query string is discarded exactly as it was before: no view,
  * team, filter or season can mint a second one.
  *
@@ -218,7 +218,7 @@ function scheduleCanonical(req: Request): string {
 /**
  * The standalone page.
  *
- * `week` comes from the path or not at all — see the two routes above — and it
+ * `week` comes from the path or not at all - see the two routes above - and it
  * is also what says which view this is: a week is the weekly board, no week is
  * the season matrix. Reading the view from the path rather than from `?view=`
  * is what keeps the two views from each having two addresses.
@@ -297,7 +297,7 @@ function sendSchedulePage(
  * Where a team lens link goes now.
  *
  * `?view=team&team=ne` was this tool's third view until the team hub's Schedule
- * tab took it over — the same table and the same four cards, on the page that
+ * tab took it over - the same table and the same four cards, on the page that
  * is already about that team. The view is gone, so `parseScheduleView` reads
  * "team" as the week board, and without this every one of those links would
  * quietly land on Week 3 instead of on the season it asked for.
@@ -305,8 +305,8 @@ function sendSchedulePage(
  * The raw query is read rather than the parsed view for exactly that reason:
  * by the time the state is parsed, "team" no longer exists to test for.
  *
- * A team that does not resolve — "?view=team" alone, or a name this table does
- * not know — has no page to be sent to, so it falls back to the bare path: the
+ * A team that does not resolve - "?view=team" alone, or a name this table does
+ * not know - has no page to be sent to, so it falls back to the bare path: the
  * season grid, which is the one view that can stand in for a lens on any team.
  */
 function movedLens(req: Request): string | null {
@@ -330,7 +330,7 @@ router.get("/schedule", (req, res) => {
   // having two spellings.
   //
   // The view is settled first, because `?view=matrix&week=5` is a request for
-  // the grid with a week attached and the grid has no week — the parameter
+  // the grid with a week attached and the grid has no week - the parameter
   // goes with the view it belongs to rather than deciding the address.
   const view = askedView(req);
   if (view === "matrix") {
@@ -348,7 +348,7 @@ router.get("/schedule", (req, res) => {
   }
 
   // `?view=week` with no week named means the week the season is on, which is
-  // an address — resolve it and send the reader there, rather than rendering
+  // an address - resolve it and send the reader there, rather than rendering
   // the board at a URL that does not say which week it is showing.
   if (view === "week") {
     void (async () => {
@@ -411,7 +411,7 @@ router.get("/schedule/week-:week", (req, res, next) => {
  * The games on screen, as a file.
  *
  * Both exports are built from the same `getSchedule` the page renders, so the
- * file and the screen can never disagree — the standalone app generated its CSV
+ * file and the screen can never disagree - the standalone app generated its CSV
  * from a second formatter in the browser, which is how they drift. A team
  * export is that team's season, a week export is that week; asking for neither
  * gets the whole slate.
@@ -499,7 +499,7 @@ router.get("/schedule/schedule.ics", (req, res) => {
  *
  * Always rendered in embedded mode: the host page supplies the H1 and the page
  * chrome. An unavailable feed answers 503 rather than an empty shell, so the
- * shortcode leaves the host page intact — and so the plugin can tell "down
+ * shortcode leaves the host page intact - and so the plugin can tell "down
  * right now" from "nothing to show", which it caches very differently.
  *
  * The export links are the one thing that cannot point at `basePath` here.
@@ -523,7 +523,7 @@ router.get("/embed/schedule", (req, res) => {
 
     try {
       // The fragment has no path to read the view off, so the shortcode names
-      // it — and a caller that named a week and no view has named the weekly
+      // it - and a caller that named a week and no view has named the weekly
       // board, because a week is not something the grid can show. The plugin
       // always sends both; this is what keeps a hand-built `?week=5` honest.
       const view: ScheduleView =
@@ -536,7 +536,7 @@ router.get("/embed/schedule", (req, res) => {
         matchupPathPrefix: matchupPrefix,
         downloadBase,
         linkQuery: fragmentLinkQuery(teamPrefix),
-        // `?h1=1` — the host has emptied its own page title, so this
+        // `?h1=1` - the host has emptied its own page title, so this
         // fragment's heading becomes the page's <h1>. Same contract as
         // routes/team.ts and routes/player.ts.
         ownHeading: String(req.query["h1"] ?? "").trim() === "1",

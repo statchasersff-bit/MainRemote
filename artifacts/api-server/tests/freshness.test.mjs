@@ -4,7 +4,7 @@
  *
  * This is the production failure. `invalidateFreshness()` / `invalidateRenderCache()`
  * only fire from an ingest *in this process* that *succeeded* and *changed*
- * something — so when the deployment's ingest failed every time (its environment
+ * something - so when the deployment's ingest failed every time (its environment
  * was missing the feed URL; `.replit`'s `[userenv.shared]` configures the
  * workspace, not the deployment), nothing ever invalidated. The ETag never moved,
  * the rendered fragment never dropped, and the page served byte-identical HTML
@@ -14,8 +14,8 @@
  * The same hole applies whenever anything else writes: the scheduled deployment
  * POSTing /api/ingest to a different instance, a second instance, a manual import.
  *
- * So the server is started here exactly as broken as production was — the helper
- * already sets DYNASTY_NEWS_API_URL to "", which makes every ingest throw — and
+ * So the server is started here exactly as broken as production was - the helper
+ * already sets DYNASTY_NEWS_API_URL to "", which makes every ingest throw - and
  * then a row is written to the archive from *outside* the server process. The
  * page must still pick it up.
  */

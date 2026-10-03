@@ -220,7 +220,7 @@ function main() {
    * The depth chart is how a player gets onto this list, not how he keeps his
    * place on it. Ourlads is a weekly chart: a starter on IR, ruled out for the
    * week or bumped to QB3 drops off it, and replacing the list with it every
-   * run took ~135 players who already have a WordPress page off the index —
+   * run took ~135 players who already have a WordPress page off the index -
    * out of players.json, out of the directory, unlinked everywhere a name
    * resolves. The page stayed up and nothing pointed at it.
    *

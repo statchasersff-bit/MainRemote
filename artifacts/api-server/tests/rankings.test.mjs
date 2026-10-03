@@ -8,7 +8,7 @@
  * JavaScript, because the whole point of this rewrite is that the boards arrive
  * complete. The standalone app this replaced shipped a container and filled it
  * from React state, so the assertion that actually matters here is the boring
- * one — that a response nobody ran a bundle against contains 230 player names.
+ * one - that a response nobody ran a bundle against contains 230 player names.
  *
  * Two suites need no server. The tier rules and the CSV parser are pure
  * functions, and both make a claim worth checking rather than trusting: that
@@ -99,7 +99,7 @@ describe("tier rules", () => {
   });
 
   test("a rank past the last rule keeps the last tier", () => {
-    // The boards are sliced to POSITION_LIMITS, so this is defensive — but the
+    // The boards are sliced to POSITION_LIMITS, so this is defensive - but the
     // alternative to a defined answer here is `undefined` reaching the markup.
     assert.equal(mod.getTier("QB", 999), 6);
     assert.equal(mod.getTier("WR", 999), 7);
@@ -290,7 +290,7 @@ describe("the rankings page", () => {
   });
 
   /*
-   * /rankings is the redraft board — its own file, its own page — and reads
+   * /rankings is the redraft board - its own file, its own page - and reads
    * exactly as it did before the rest-of-season board was split off: one
    * address, in-page tabs, the redraft title.
    */
@@ -344,7 +344,7 @@ describe("the rankings page", () => {
     );
     for (const link of links) {
       // role="tab" promises arrow keys. The server cannot keep that promise,
-      // so it does not make it — client/rankings.ts adds the roles when it
+      // so it does not make it - client/rankings.ts adds the roles when it
       // adds the behaviour.
       assert.equal(link.getAttribute("role"), null);
     }
@@ -391,7 +391,7 @@ describe("the rankings page", () => {
       const cta = row.querySelector("a.scr-cta");
 
       if (!name) {
-        // Rule 1: no page, no button — and the cell is still there, so the
+        // Rule 1: no page, no button - and the cell is still there, so the
         // column does not close up under the rows it has nothing for.
         assert.equal(cta, null, "an unlinked player gets no button");
         assert.ok(row.querySelector(".scr-cta-cell.is-empty"));
@@ -448,7 +448,7 @@ describe("the rankings page", () => {
       "#scr-panel-all .scr-all-table caption",
     ).textContent;
     // The shape of the table invites "QB7 and RB7 go at the same pick". The
-    // caption is the only thing standing between a reader and that reading —
+    // caption is the only thing standing between a reader and that reading -
     // it is screen-reader-only now, but it is still there to be read.
     assert.match(caption, /positional rank/i);
     assert.match(caption, /not a claim/i);
@@ -464,7 +464,7 @@ describe("the rankings page", () => {
     for (const item of items) {
       const question = item.querySelector(".scr-faq-q");
       const answer = item.querySelector(".scr-faq-a");
-      // Shut by default — the questions are the index — but never withheld.
+      // Shut by default - the questions are the index - but never withheld.
       // The answer is in the DOM whether or not the fold is open, which is the
       // same claim the panels make about the four boards nobody clicked.
       assert.equal(item.hasAttribute("open"), false);
@@ -529,7 +529,7 @@ describe("the rankings page", () => {
     }
   });
   /*
-   * The boards are ranked lists, and the structured data says so — never a
+   * The boards are ranked lists, and the structured data says so - never a
    * SoftwareApplication, which Search Console held to the software-app rich
    * result's rules (a rating we do not have) and flagged on every page.
    */
@@ -629,7 +629,7 @@ describe("the embed fragment", () => {
 
     // WordPress owns the document and Rank Math owns its graph. A second
     // ld+json arriving from inside a mounted fragment competes with that graph
-    // rather than joining it — the same reasoning as no canonical and no H1.
+    // rather than joining it - the same reasoning as no canonical and no H1.
     assert.doesNotMatch(html, /application\/ld\+json/i);
 
     const island = html.match(
@@ -669,7 +669,7 @@ describe("the embed fragment", () => {
   test("404s rather than printing a hole in the host page", async () => {
     // A season with no file is the state a fresh deployment is in. The
     // shortcode turns this 404 into "render nothing", which leaves the page's
-    // own H1 and copy intact — an empty shell would not.
+    // own H1 and copy intact - an empty shell would not.
     const res = await fetch(`${server.origin}/embed/rankings?season=1999`);
     assert.equal(res.status, 404);
   });
@@ -767,7 +767,7 @@ describe("the CSV export", () => {
  * The rules that hold the boards' shape inside a host theme.
  *
  * Asserted on the stylesheet's TEXT, which this suite does nowhere else, and
- * only because these are specificity facts — the thing a browser test would
+ * only because these are specificity facts - the thing a browser test would
  * have to re-derive and a reading of the file cannot be trusted to keep.
  *
  * Measured against a simulated Divi page before the armour existed: the All
@@ -775,7 +775,7 @@ describe("the CSV export", () => {
  * five rows off a phone screen, and every name turned Divi's link blue.
  *
  * `.scr-all-table thead th` is one class and two elements and so is Divi's
- * `.entry-content tr th` — a TIE, settled by whichever stylesheet WordPress
+ * `.entry-content tr th` - a TIE, settled by whichever stylesheet WordPress
  * enqueued last. fpa.css bet a layout on that coin toss and lost it in
  * production, so the `.scr` in front of these is load-bearing.
  */

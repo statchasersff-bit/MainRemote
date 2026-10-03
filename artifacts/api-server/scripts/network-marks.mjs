@@ -4,8 +4,8 @@
  *
  *   node scripts/network-marks.mjs
  *
- * The vendored files are already flat — one <svg> with a <title> and a run of
- * <path fill="#rrggbb">, no transforms, no groups, no <style> — because the
+ * The vendored files are already flat - one <svg> with a <title> and a run of
+ * <path fill="#rrggbb">, no transforms, no groups, no <style> - because the
  * crop below has to measure path data in the file's own coordinate space and a
  * transform it did not apply would silently move the artwork out from under the
  * box it computed. public/networks/SOURCES.md says where each file came from
@@ -46,7 +46,7 @@ function bbox(d, hit) {
   }
 }
 
-/** Every <path> in document order — the order the colours have to be painted in. */
+/** Every <path> in document order - the order the colours have to be painted in. */
 function paths(svg) {
   return [...svg.matchAll(/<path\b([^>]*)\/?>/g)].map((m) => {
     const attr = (name) => m[1].match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? null;

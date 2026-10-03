@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = SC_DATA_DIR;
 
 // Derived, not typed: a hardcoded list is wrong every September and fails
-// silently — the build succeeds and every page shows last season. Name seasons
+// silently - the build succeeds and every page shows last season. Name seasons
 // on the command line to rebuild one year: `node buildGameLogs.js 2026`.
 const SEASONS = seasonsFromArgs();
 const REGULAR_WEEKS = 18;
@@ -32,7 +32,7 @@ function sleep(ms) {
 /*
  * The week is ASKED FOR, not computed from a date.
  *
- * This used to hold SEASON_STARTS — week 1's Thursday per season — and count a
+ * This used to hold SEASON_STARTS - week 1's Thursday per season - and count a
  * Tuesday-to-Tuesday window off it, because the scoreboard was queried as
  * `dates=<from>-<to>`. Two things were wrong with that. ESPN now answers that
  * form with `400 Failed to get events endpoint.` for every week of every
@@ -40,7 +40,7 @@ function sleep(ms) {
  * exactly the kind of hand-maintained constant the seasons list above was
  * rewritten to stop being: a season absent from the map threw, and a season
  * present with the wrong Thursday filed the wrong week's games under the right
- * week's key — silently, because the fetch succeeds.
+ * week's key - silently, because the fetch succeeds.
  *
  * `dates=<season>&seasontype=2&week=<n>` asks ESPN which games are in week n
  * and needs no calendar of our own. seasontype 2 is the regular season.
@@ -75,7 +75,7 @@ async function fetchWeekScores(season, week) {
 async function main() {
   // Read the existing file and write back into it, rather than starting empty.
   // These scores are committed data covering every season the app carries, and
-  // this script can now be pointed at ONE of them — a fresh object would mean
+  // this script can now be pointed at ONE of them - a fresh object would mean
   // `node buildGameScores.js 2026` silently deleted three finished seasons.
   const outFile = path.resolve(DATA_DIR, 'game_scores.json');
   const allScores = fs.existsSync(outFile)

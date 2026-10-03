@@ -6,12 +6,12 @@
  *
  * Two layers, deliberately separate:
  *
- *   - data/team/coaching_staff_<season>.json — the researched, hand-editable
+ *   - data/team/coaching_staff_<season>.json - the researched, hand-editable
  *     layer: who the play-caller is, his career calling stops, the staff
  *     names, the scheme notes. Titles are not play-callers, so this file is
  *     curated from reporting and reviewed by hand; the builder never invents
  *     a name or a stop.
- *   - everything numeric — computed here from nflverse play-by-play, FTN
+ *   - everything numeric - computed here from nflverse play-by-play, FTN
  *     charting, player weekly stats and the games file. No tendency number
  *     on the tab is typed in by hand, so the coaching page and the usage
  *     page can never disagree about the same stat.
@@ -155,6 +155,8 @@ const ordinal = (n) => {
   return `${n}${suffix}`;
 };
 const ORDINAL_WORDS = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+const ORDINAL_COUNT_WORDS = { 2: "two", 3: "three", 4: "four", 5: "five" };
+const cap = (t) => t[0].toUpperCase() + t.slice(1);
 const ordWord = (n) => ORDINAL_WORDS[n] ?? ordinal(n);
 const signed = (v, places = 1) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(places).replace(/\.0$/, "")}`;
 const SUFFIXES = new Set(["Jr.", "Jr", "Sr.", "Sr", "II", "III", "IV", "V"]);
@@ -191,6 +193,7 @@ async function seasonTendencies(season) {
   const acc = (c) =>
     ensure(teams, c, () => ({
       games: new Set(),
+      lastWeek: 0,
       plays: 0,
       passPlays: 0,
       earlyPlays: 0,
@@ -235,12 +238,14 @@ async function seasonTendencies(season) {
     if (!c) continue;
     const t = acc(c);
     t.games.add(r.game_id);
+    const wk = num(r.week);
+    if (wk != null && wk > t.lastWeek) t.lastWeek = wk;
     const yl = num(r.yardline_100);
     const down = num(r.down);
     const togo = num(r.ydstogo);
 
     // 4th-and-short aggressiveness, opponent territory: the denominator is
-    // every 4th-down snap there — punts and kicks included, or a team that
+    // every 4th-down snap there - punts and kicks included, or a team that
     // never goes would rate 100%.
     if (down === 4 && togo != null && togo <= 2 && yl != null && yl <= 50) {
       if (playType === "pass" || playType === "run" || playType === "punt" || playType === "field_goal") {
@@ -263,7 +268,7 @@ async function seasonTendencies(season) {
     const diff = num(r.score_differential);
 
     // Pace: seconds between consecutive snaps of one drive, neutral game
-    // state — the usage builder's definition, verbatim.
+    // state - the usage builder's definition, verbatim.
     const neutral = wp != null && wp >= 0.2 && wp <= 0.8 && halfSecs != null && halfSecs > 120;
     if (
       last &&
@@ -327,6 +332,7 @@ async function seasonTendencies(season) {
     for (const k of Object.keys(tot)) tot[k] += t[k];
     out[c] = {
       games: t.games.size,
+      lastWeek: t.lastWeek || null,
       playsPerGame: round(t.plays / Math.max(1, t.games.size), 1),
       passRate: round(pct(t.passPlays, t.plays), 1),
       earlyDownPassRate: round(pct(t.earlyPass, t.earlyPlays), 1),
@@ -337,6 +343,7 @@ async function seasonTendencies(season) {
       paRate: t.ftnPlays ? round(pct(t.paDropbacks, Math.min(t.dropbacks, t.ftnPlays)), 1) : null,
       motionRate: t.ftnPlays ? round(pct(t.motionPlays, t.ftnPlays), 1) : null,
       rzPassRate: round(pct(t.rzPass, t.rzPass + t.rzRush), 0),
+      rzPlays: t.rzPass + t.rzRush,
       fourthGoRate: t.fourthShortAll >= 3 ? round(pct(t.fourthShortGo, t.fourthShortAll), 0) : null,
       fourthShortAll: t.fourthShortAll,
       states: {
@@ -345,6 +352,7 @@ async function seasonTendencies(season) {
         trail: { passRate: round(pct(t.states.trail[0], t.states.trail[1]), 0), plays: t.states.trail[1] },
       },
       defEpaPlay: round(t.defPlays ? t.defEpaSum / t.defPlays : null, 2),
+      defEpaRaw: t.defPlays ? t.defEpaSum / t.defPlays : null,
     };
   }
   const league = {
@@ -370,8 +378,8 @@ async function seasonTendencies(season) {
  * (carries + 2×targets, the house weighting), and each position's top PPR
  * scorer with his league-wide positional finish.
  *
- * With a `window` ({from, to} weeks, inclusive), everything — including the
- * league-wide positional ranks — is computed over that span only, so a
+ * With a `window` ({from, to} weeks, inclusive), everything - including the
+ * league-wide positional ranks - is computed over that span only, so a
  * partial calling stop compares its weeks against the same weeks league-wide.
  */
 async function seasonPlayers(season, window = null) {
@@ -531,67 +539,95 @@ async function loadScoring() {
 
 /* ----------------------------------------------------------- composition */
 
+// `def` is the row's methodology note, opened from the table. It has to say
+// what the code above counts, denominators included, because a rate that is
+// right can still look wrong next to a site that counts differently.
 const METRics_SPEC = [
-  { key: "passRate", label: "Pass rate (all downs)", unit: "%", feed: "passRate", places: 1 },
-  { key: "proe", label: "Pass rate over expected", sub: "situation-adjusted", unit: "%", feed: "proe", signed: true, places: 1 },
-  { key: "pace", label: "Neutral pace", sub: "sec/play, neutral game state", unit: "s", feed: "pace", invert: true, places: 1 },
-  { key: "earlyDownPassRate", label: "Early-down pass rate", sub: "1st & 2nd down", unit: "%", places: 1 },
-  { key: "noHuddleRate", label: "No-huddle rate", unit: "%", places: 1 },
-  { key: "paRate", label: "Play-action rate", sub: "share of dropbacks, FTN charting", unit: "%", places: 1 },
-  { key: "motionRate", label: "Motion at snap", sub: "FTN charting", unit: "%", places: 1 },
-  { key: "shotgunRate", label: "Shotgun rate", unit: "%", places: 1 },
-  { key: "rzPassRate", label: "Red-zone pass rate", feed: "rzPassRate", unit: "%", places: 0 },
-  { key: "fourthGoRate", label: "4th-down go rate", sub: "opponent territory, 2 yds or less", unit: "%", places: 0 },
+  { key: "passRate", label: "Pass rate (all downs)", unit: "%", feed: "passRate", places: 1,
+    def: "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here." },
+  { key: "proe", label: "Pass rate over expected", sub: "situation-adjusted", unit: "%", feed: "proe", signed: true, places: 1,
+    def: "The average of nflverse's pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts." },
+  { key: "pace", label: "Neutral pace", sub: "sec/play, neutral game state", unit: "s", feed: "pace", invert: true, places: 1,
+    def: "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster." },
+  { key: "earlyDownPassRate", label: "Early-down pass rate", sub: "1st & 2nd down", unit: "%", places: 1,
+    def: "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes." },
+  { key: "noHuddleRate", label: "No-huddle rate", unit: "%", places: 1,
+    def: "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate." },
+  { key: "paRate", label: "Play-action rate", sub: "share of dropbacks, FTN charting", unit: "%", places: 1,
+    def: "Share of dropbacks that FTN charting marks as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it." },
+  { key: "motionRate", label: "Pre-snap motion", sub: "before or at the snap, FTN charting", unit: "%", places: 1,
+    def: "Share of FTN-charted snaps with motion before or at the snap, as FTN defines it. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is." },
+  { key: "shotgunRate", label: "Shotgun rate", unit: "%", places: 1,
+    def: "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun." },
+  { key: "rzPassRate", label: "Red-zone pass rate", feed: "rzPassRate", unit: "%", places: 0,
+    def: "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season." },
+  { key: "fourthGoRate", label: "4th-down go rate", sub: "opponent territory, 2 yds or less", unit: "%", places: 0,
+    def: "Share of 4th-and-2-or-less snaps in opponent territory (midfield included) where the offense ran a play instead of punting or attempting a field goal. Snaps wiped out by penalty are removed. Shown as - until a team has had three such snaps." },
 ];
 
 const fmt = (spec, v) => {
-  if (v == null) return "—";
+  if (v == null) return "-";
   const n = spec.places === 0 ? Math.round(v) : round(v, spec.places ?? 1);
   if (spec.unit === "s") return `${n}s`;
   return spec.signed ? `${signed(n, 1)}%` : `${n}%`;
 };
 
-/** The fantasy read for each tendency, by direction — the shift-card library. */
+/** The fantasy read for each tendency, by direction - the shift-card library. */
 const SHIFT_COPY = {
   passRate: {
-    up: ["More dropbacks.", (a, b) => `Pass rate rose from ${a} to ${b}. More pass attempts means more target volume for the receivers and backs who catch it — the simplest kind of fantasy raise.`],
-    down: ["The run game grew.", (a, b) => `Pass rate fell from ${a} to ${b}. Carries are up at the expense of targets — the backfield's floor rises while the pass-catchers' ceilings compress.`],
+    up: ["More dropbacks.", (a, b) => `Pass rate rose from ${a} to ${b}. More pass attempts means more target volume for the receivers and backs who catch it - the simplest kind of fantasy raise.`],
+    down: ["The run game grew.", (a, b) => `Pass rate fell from ${a} to ${b}. Carries are up at the expense of targets - the backfield's floor rises while the pass-catchers' ceilings compress.`],
   },
   proe: {
-    up: ["More aggressive than the situation asks.", (a, b) => `Pass rate over expected moved from ${a} to ${b} — adjusted for down, distance and score, this staff is choosing the pass more than a year ago. That intent survives game script better than raw pass rate.`],
-    down: ["Leaning run on purpose.", (a, b) => `Pass rate over expected moved from ${a} to ${b} — adjusted for situation, this staff now picks the run more often than expectation. Treat the backfield's volume as scheme, not script.`],
+    up: ["A pass lean has emerged.", (a, b, x) => `The ${x.team}' pass rate over expected is ${b} ${x.span} after finishing ${x.priorSeason} at ${a}. Because PROE adjusts for situation, the ${x.early ? "early " : ""}shift suggests a more intentional pass preference rather than game script alone.${x.early ? ` A ${x.games}-game sample is still too small to call it a permanent philosophical change.` : ""}`],
+    down: ["A run lean has emerged.", (a, b, x) => `The ${x.team}' pass rate over expected is ${b} ${x.span} after finishing ${x.priorSeason} at ${a}. Because PROE adjusts for situation, the ${x.early ? "early " : ""}shift suggests a more intentional run preference rather than game script alone.${x.early ? ` A ${x.games}-game sample is still too small to call it a permanent philosophical change.` : ""}`],
   },
   pace: {
-    up: ["The offense sped up.", (a, b) => `Neutral pace quickened from ${a} to ${b} per snap. Faster pace compounds into extra plays per game — raw opportunity for every skill player, the quietest fantasy upgrade a staff can hand out.`],
+    up: ["The offense sped up.", (a, b) => `Neutral pace quickened from ${a} to ${b} per snap. Faster pace compounds into extra plays per game - raw opportunity for every skill player, the quietest fantasy upgrade a staff can hand out.`],
     down: ["The offense slowed down.", (a, b) => `Neutral pace slowed from ${a} to ${b} per snap. Fewer snaps per game trims every player's raw opportunity, and it shows up first in the WR3/TE2 tier.`],
   },
   earlyDownPassRate: {
-    up: ["Passing on the downs that are a choice.", (a, b) => `Early-down pass rate climbed from ${a} to ${b}. First and second down are where a play-caller shows intent — this is a real lean toward the pass game, not late-down necessity.`],
+    up: ["Passing on the downs that are a choice.", (a, b) => `Early-down pass rate climbed from ${a} to ${b}. First and second down are where a play-caller shows intent - this is a real lean toward the pass game, not late-down necessity.`],
     down: ["Running on the downs that are a choice.", (a, b) => `Early-down pass rate fell from ${a} to ${b}. First and second down are where intent shows, and this staff is choosing the ground game with them.`],
   },
   noHuddleRate: {
-    up: ["Tempo is now a weapon.", (a, b) => `No-huddle rate rose from ${a} to ${b}. Tempo pins defensive personnel on the field and adds snaps — more raw opportunity across the board.`],
-    down: ["The huddle is back.", (a, b) => `No-huddle rate fell from ${a} to ${b}. A more deliberate operation usually means fewer total snaps — a quiet tax on everyone's volume.`],
+    up: ["Tempo is now a weapon.", (a, b) => `No-huddle rate rose from ${a} to ${b}. Tempo pins defensive personnel on the field and adds snaps - more raw opportunity across the board.`],
+    down: ["The huddle is back.", (a, b) => `No-huddle rate fell from ${a} to ${b}. A more deliberate operation usually means fewer total snaps - a quiet tax on everyone's volume.`],
   },
   paRate: {
-    up: ["More play-action.", (a, b) => `Play-action rate rose from ${a} to ${b} of dropbacks. Play-action throws travel farther and produce more yards per attempt league-wide — a boost to downfield receiver efficiency.`],
-    down: ["Less play-action.", (a, b) => `Play-action rate fell from ${a} to ${b} of dropbacks — fewer of the scheme's easiest explosive throws, a quiet drag on downfield receiver efficiency.`],
+    up: ["More play-action.", (a, b) => `Play-action rate rose from ${a} to ${b} of dropbacks. Play-action throws travel farther and produce more yards per attempt league-wide - a boost to downfield receiver efficiency.`],
+    down: ["Less play-action.", (a, b) => `Play-action rate fell from ${a} to ${b} of dropbacks - fewer of the scheme's easiest explosive throws, a quiet drag on downfield receiver efficiency.`],
   },
   motionRate: {
-    up: ["More motion at the snap.", (a, b) => `Motion at the snap rose from ${a} to ${b} of charted plays. Motion buys free releases and defined reads — it tends to concentrate targets on the players the scheme is built around.`],
-    down: ["Less motion at the snap.", (a, b) => `Motion at the snap fell from ${a} to ${b} of charted plays — a more static presentation that asks receivers to win one-on-one more often.`],
+    up: ["More pre-snap motion.", (a, b, x) => `Motion before the snap has risen from ${a} to ${b} of charted plays, indicating a more motion-heavy presentation than the ${x.team} used in ${x.priorSeason}.`],
+    down: ["Less pre-snap motion.", (a, b, x) => `Motion before the snap has fallen from ${a} to ${b} of charted plays, indicating a less motion-heavy presentation than the ${x.team} used in ${x.priorSeason}.`],
   },
   shotgunRate: {
-    up: ["More shotgun.", (a, b) => `Shotgun rate rose from ${a} to ${b} — a more spread, dropback-first identity, which usually travels with more targets for backs and slots.`],
-    down: ["More under center.", (a, b) => `Shotgun rate fell from ${a} to ${b} — more under-center snaps, which usually travels with a heavier run game and play-action rather than quick game.`],
+    up: ["More shotgun.", (a, b) => `Shotgun rate rose from ${a} to ${b} - a more spread, dropback-first identity, which usually travels with more targets for backs and slots.`],
+    down: ["More under center.", (a, b) => `Shotgun rate fell from ${a} to ${b} - more under-center snaps, which usually travels with a heavier run game and play-action rather than quick game.`],
   },
   rzPassRate: {
-    up: ["The red zone opened up.", (a, b) => `Red-zone pass rate rose from ${a} to ${b}. More of this team's touchdowns will arrive through the air — receiver TD equity up, goal-line back TD equity down.`],
-    down: ["The red zone runs through the ground game.", (a, b) => `Red-zone pass rate fell from ${a} to ${b}. Touchdown equity is shifting toward the backfield — the scoring stat that moves fantasy weeks.`],
+    // A play-selection rate, not a touchdown forecast: through a few games it
+    // is a handful of drives, so it says what has happened and what would
+    // follow if it holds.
+    up: [
+      "Pass-heavy in the red zone so far.",
+      (a, b, x) => `The ${x.team} have called passes on ${b} of red-zone plays ${x.span}, up from ${a} in ${x.priorSeason}. If that holds, it would raise receiving touchdown opportunity and cut goal-line rushing opportunity.${x.smallSample}`,
+    ],
+    down: [
+      "Run-heavy in the red zone so far.",
+      (a, b, x) => `The ${x.team} have called passes on ${b} of red-zone plays ${x.span}, down from ${a} in ${x.priorSeason}. If that holds, it would shift touchdown opportunity toward the backfield and away from the pass-catchers.${x.smallSample}`,
+    ],
   },
   fourthGoRate: {
-    up: ["Drives stay alive.", (a, b) => `The go rate on short 4th downs jumped from ${a} to ${b}. Extended drives convert field-goal range into red-zone trips — touchdowns instead of three points.`],
-    down: ["Fourth downs get kicked.", (a, b) => `The go rate on short 4th downs fell from ${a} to ${b}. Drives that stall now end in kicks — fewer extra possessions-worth of touchdown equity.`],
+    up: [
+      "Going for it more so far.",
+      (a, b, x) => `The ${x.team} have gone for it on ${b} of short 4th downs in opponent territory ${x.span}, up from ${a} in ${x.priorSeason}. If that holds, more drives would continue past field-goal range.${x.fourthSample}`,
+    ],
+    down: [
+      "Kicking more so far.",
+      (a, b, x) => `The ${x.team} have gone for it on ${b} of short 4th downs in opponent territory ${x.span}, down from ${a} in ${x.priorSeason}. If that holds, more of those drives would end in a punt or field-goal try.${x.fourthSample}`,
+    ],
   },
 };
 
@@ -624,7 +660,7 @@ function finishTone(pos, rank) {
   return "plain";
 }
 
-/** Build one generated club entry. Numbers in, prose out — no free facts. */
+/** Build one generated club entry. Numbers in, prose out - no free facts. */
 function composeEntry({
   abbr, staff, cur, prior, league, priorLeague, players, scoring, season, throughWeek, playersBySeason, playersPartial,
 }) {
@@ -636,6 +672,22 @@ function composeEntry({
   const priorSeasons = staff.priorSeasonsAsCaller ?? 0;
   const newCaller = priorSeasons === 0;
   const seasonsWord = `${ordWord(priorSeasons + 1)} season`;
+  // A caller who left this club and came back (McDaniels: 2005-08, 2012-21,
+  // 2025-) has a count but not a run. "16th season calling this offense" reads
+  // as 16 unbroken years, so a broken tenure counts seasons "with play-calling
+  // responsibility" instead and never says "straight" or "same system".
+  const seasonsHere = [...new Set(
+    (staff.callingStops ?? [])
+      .filter((s) => !s.college && club(s.team) === abbr)
+      .flatMap((s) => s.seasons ?? []),
+  )].sort((a, b) => a - b);
+  const stints = seasonsHere.filter((y, i) => i === 0 || y !== seasonsHere[i - 1] + 1).length;
+  const brokenTenure = !newCaller && stints > 1;
+  // Seasons in the run that ends now: 2 for McDaniels (2025-26).
+  let currentRun = 0;
+  for (let y = season; seasonsHere.includes(y); y--) currentRun++;
+  const tenureWord = `${ordWord(priorSeasons + 1)} ${nickname} season with play-calling responsibility`;
+  const stintsWord = `${ORDINAL_COUNT_WORDS[stints] ?? stints} stints`;
 
   /* -- tendencies table -------------------------------------------------- */
   const rows = [];
@@ -645,7 +697,7 @@ function composeEntry({
     if (curV == null && priorV == null) continue;
     const avg = league[spec.key];
     let dir = "flat";
-    let text = curV == null || priorV == null ? "—" : "steady";
+    let text = curV == null || priorV == null ? "-" : "steady";
     if (curV != null && priorV != null) {
       const delta = curV - priorV;
       const flat = spec.key === "pace" ? Math.abs(delta) < 0.3 : Math.abs(delta) < 0.5;
@@ -655,17 +707,18 @@ function composeEntry({
       } else {
         dir = flat ? "flat" : delta > 0 ? "up" : "down";
         const rank = cur.ranks?.[spec.key];
-        const tail = !flat && rank != null && rank <= 8 ? ` — ${ordinal(rank)} in NFL` : "";
+        const tail = !flat && rank != null && rank <= 8 ? ` - ${ordinal(rank)} in NFL` : "";
         text = flat ? "steady" : `${signed(delta, Number.isInteger(round(delta, 1)) ? 0 : 1)}${tail}`;
       }
     }
     const row = {
       label: spec.label,
       ...(spec.sub ? { sub: spec.sub } : {}),
+      ...(spec.def ? { def: spec.def } : {}),
       prior: fmt(spec, priorV),
       current: fmt(spec, curV),
       change: { dir, text },
-      nflAvg: avg == null ? "—" : spec.signed ? "0%" : fmt({ ...spec, places: 0 }, avg),
+      nflAvg: avg == null ? "-" : spec.signed ? "0%" : fmt({ ...spec, places: 0 }, avg),
     };
     if (spec.feed && priorV != null) {
       row.priorNum = priorV;
@@ -700,6 +753,18 @@ function composeEntry({
     rzPassRate: "red-zone pass %",
     fourthGoRate: "4th-down go",
   };
+  const rzPlays = cur.rzPlays ?? 0;
+  const shiftContext = {
+    team: nickname,
+    span: `through ${cur.games} game${cur.games === 1 ? "" : "s"}`,
+    priorSeason: season - 1,
+    games: cur.games,
+    early: cur.games <= 6,
+    fourthSample: (cur.fourthShortAll ?? 0) < 15
+      ? ` The sample is still small: ${cur.fourthShortAll} such snap${cur.fourthShortAll === 1 ? "" : "s"}.`
+      : "",
+    smallSample: rzPlays < 40 ? ` The sample is still small: ${rzPlays} red-zone play${rzPlays === 1 ? "" : "s"}.` : "",
+  };
   let shifts = moves.slice(0, 3).map(({ spec, curV, priorV, delta }) => {
     const dirKey = spec.invert ? (delta < 0 ? "up" : "down") : delta > 0 ? "up" : "down";
     const [heading, body] = SHIFT_COPY[spec.key][dirKey];
@@ -707,7 +772,7 @@ function composeEntry({
       stat: fmt(spec, curV).replace("%", ""),
       unit: SHIFT_UNITS[spec.key],
       heading,
-      body: body(fmt(spec, priorV), fmt(spec, curV)),
+      body: body(fmt(spec, priorV), fmt(spec, curV), shiftContext),
     };
   });
   if (shifts.length === 0) {
@@ -718,7 +783,7 @@ function composeEntry({
         stat: fmt({ unit: "%", places: 1 }, cur.passRate).replace("%", ""),
         unit: "pass %",
         heading: "The profile is holding steady.",
-        body: `No tendency has moved more than two points from last season — through Week ${throughWeek} this offense is running the same shape it ran a year ago${leans.length ? `, still defined by ${describeLean(leans[0])}` : ""}.`,
+        body: `No tendency has moved more than two points from last season - through Week ${throughWeek} this offense is running the same shape it ran a year ago${leans.length ? `, still defined by ${describeLean(leans[0])}` : ""}.`,
       },
     ];
   }
@@ -728,59 +793,69 @@ function composeEntry({
   // The scheme note is the card's sub line; the body picks up after it.
   const dcBody =
     `Through Week ${throughWeek} the defense allows ${cur.defEpaPlay} EPA per play` +
-    `${defRank ? ` (${ordinal(defRank)} in the NFL${defRank <= 10 ? ", a top-ten unit" : defRank >= 23 ? ", bottom-ten" : ""})` : ""}. ` +
+    `${defRank ? ` (${ordinal(defRank)} of 32, ranked on pass and run snaps in nflverse play-by-play)` : ""}. ` +
+    // What a defense does to game script is a tendency, not a result: the
+    // offense still has to score for a lead to happen.
     (defRank != null && defRank >= 23
-      ? `A defense this leaky adds possessions and passing-down snaps for its own offense — game-script fuel for the pass catchers.`
+      ? `Weaker defensive efficiency can push more games into trailing scripts, which would generally support passing volume. The ${nickname} offense still determines whether those scripts materialize.`
       : defRank != null && defRank <= 10
-        ? `A defense this stout tilts game script toward leads — more second-half carries, fewer desperation targets.`
-        : `A middle-of-the-pack unit so far — game script here is week-to-week, so check the spread before leaning on it.`);
+        ? `Stronger defensive efficiency can help create more neutral or positive game scripts, which would generally support rushing volume. The ${nickname} offense still determines whether those scripts materialize.`
+        : `A middle-of-the-pack unit so far - game script here is week-to-week, so check the spread before leaning on it.`);
 
   const ocCard = staff.ocIsCaller
     ? {
         name: staff.oc ?? caller,
-        sub: "Primary play-caller — see the card above",
+        sub: "Primary play-caller - see the card above",
         hasCalledPlays: true,
         body: `The call sheet runs through the coordinator here: ${caller} has the play-calling duties${isHC ? "" : ` while head coach ${staff.hc} runs the game`}. The profile on this page is his.`,
       }
     : {
-        name: staff.oc ?? "—",
+        name: staff.oc ?? "-",
         sub: staff.ocNote ?? "Does not call plays",
         hasCalledPlays: Boolean(staff.ocHasCalledPlaysBefore),
         body: staff.ocHasCalledPlaysBefore
-          ? `A coordinator who has run his own offense before — which makes him the delegation scenario: if ${callerLast} ever hands off play-calling mid-season, the predictive baseline on this page changes with it. Watch the ledger above.`
+          ? `A coordinator who has run his own offense before - which makes him the delegation scenario: if ${callerLast} ever hands off play-calling mid-season, the predictive baseline on this page changes with it. Watch the ledger above.`
           : `Has not been a primary NFL play-caller, so there is no competing track record to muddy the read: the tendencies on this page are ${callerLast}'s.`,
       };
 
   const continuity = {
-    stat: newCaller ? "New install" : `Year ${priorSeasons + 1}`,
+    stat: newCaller ? "New install" : brokenTenure ? `Year ${currentRun}` : `Year ${priorSeasons + 1}`,
     sub: newCaller
       ? `${callerLast}'s first season calling the ${nickname} offense`
-      : `${callerLast}'s ${ordWord(priorSeasons + 1)} season calling the ${nickname} offense`,
+      : brokenTenure
+        ? `${cap(ordWord(currentRun))} year of the current ${callerLast} installation; ${ordWord(priorSeasons + 1)} ${nickname} play-calling season overall`
+        : `${callerLast}'s ${ordWord(priorSeasons + 1)} season calling the ${nickname} offense`,
     body: newCaller
       ? `First-year installs carry the highest tendency risk in football: terminology, staff and quarterback relationships are all new at once. Weight what this staff is doing now over anything carried forward from ${season - 1}.`
-      : `A continuing install: same caller, same system, ${ordWord(priorSeasons + 1)} year. That makes the ${season - 1} column of the table above a legitimate baseline rather than another team's data.`,
+      : brokenTenure
+        ? `A returning install: the same caller as ${season - 1}, back for a ${ordWord(stints)} stint here. That makes the ${season - 1} column of the table above a legitimate baseline rather than another team's data.`
+        : `A continuing install: same caller, same system, ${ordWord(priorSeasons + 1)} year. That makes the ${season - 1} column of the table above a legitimate baseline rather than another team's data.`,
   };
 
   /* -- reliability -------------------------------------------------------- */
   const sameFamily = Boolean(staff.sameSchemeFamily);
   const explanation = newCaller
     ? sameFamily
-      ? `New play-caller, but from the same scheme family as ${staff.prev2025Caller ?? "the previous staff"} — some carryover is real, but treat ${season - 1} numbers as context, not baseline.`
-      : `New play-caller${staff.prev2025Caller ? ` (${staff.prev2025Caller} called plays here in ${season - 1})` : ""}. Last season's tendencies describe a different coach's offense — project from this season's sample, small as it is.`
-    : `Same play-caller as last season — his ${seasonsWord} calling this offense. Last year's tendencies are a valid baseline for projecting it.`;
+      ? `New play-caller, but from the same scheme family as ${staff.prev2025Caller ?? "the previous staff"} - some carryover is real, but treat ${season - 1} numbers as context, not baseline.`
+      : `New play-caller${staff.prev2025Caller ? ` (${staff.prev2025Caller} called plays here in ${season - 1})` : ""}. Last season's tendencies describe a different coach's offense - project from this season's sample, small as it is.`
+    : brokenTenure
+      ? `Same play-caller as last season. ${callerLast} is in his ${ordWord(currentRun)} consecutive season of his current ${nickname} stint and his ${tenureWord} overall. The ${season - 1} offense is therefore a strong stylistic baseline, while personnel and game-state changes still matter.`
+      : `Same play-caller as last season - his ${seasonsWord} calling this offense. Last year's tendencies are a valid baseline for projecting it.`;
   const gamesPlayed = scoring.get(`${abbr}|${season}`)?.games ?? cur.games;
   // priorSeasonsNote overrides the generic fragment when the count needs
   // qualifying (e.g. "2 full prior seasons as caller here + partial 2023").
   const ledger = staff.inSeasonChange2026
     ? staff.inSeasonChange2026
-    : `${callerLast} — ${gamesPlayed} of ${gamesPlayed} games in ${season} · ${
+    : `${callerLast} - ${gamesPlayed} of ${gamesPlayed} games in ${season} · ${
         staff.priorSeasonsNote ??
         (priorSeasons > 0 ? `${priorSeasons} prior season${priorSeasons === 1 ? "" : "s"} as caller here` : "first season")
       }`;
 
   const introAnswer = newCaller
-    ? `For the ${nickname} the answer is: new fingerprints. ${caller} is calling this offense for the first time in ${season}${sameFamily ? ", though from the same scheme family as his predecessor" : ""} — so the ${season} sample, not last year's, is the signal.`
-    : `For the ${nickname} the answer is stable: ${caller} called this offense last season too — his ${ordWord(priorSeasons + 1)} year on its call sheet — so last year's tendencies still mean something.`;
+    ? `For the ${nickname} the answer is: new fingerprints. ${caller} is calling this offense for the first time in ${season}${sameFamily ? ", though from the same scheme family as his predecessor" : ""} - so the ${season} sample, not last year's, is the signal.`
+    : brokenTenure
+      ? `For the ${nickname} the answer is stable: ${caller} called this offense last season too - his ${tenureWord}, across ${stintsWord} - so last year's tendencies still mean something.`
+      : `For the ${nickname} the answer is stable: ${caller} called this offense last season too - his ${ordWord(priorSeasons + 1)} year on its call sheet - so last year's tendencies still mean something.`;
 
   /* -- career path / dossier / finishes ----------------------------------- */
   const stops = (staff.callingStops ?? []).filter((s) => !s.college);
@@ -818,6 +893,11 @@ function composeEntry({
     const totalGames = ppgs.reduce((a, b) => a + (b.games ?? 0), 0);
     const totalPts = ppgs.reduce((a, b) => a + (b.pts ?? (b.ppg ?? 0) * (b.games ?? 0)), 0);
     const ppg = totalGames ? round(totalPts / totalGames, 1) : null;
+    // The current stop's figure is this season alone, so it sits on the same
+    // line as this season's rank: a 2025-26 pool beside a 2026-only rank is two
+    // periods on one line, and every other current number reads "through Week N".
+    const now = isCurrent ? scoring.get(`${c}|${season}`) : null;
+    const multiSeason = seasonsHere.length > 1;
     const bestRank = ppgs.length ? Math.min(...ppgs.map((p) => p.rank ?? 32)) : null;
     // Fingerprint prose from whatever layers exist for those seasons.
     const splitYears = seasonsHere.filter((yr) => layerFor(stop, yr));
@@ -844,13 +924,15 @@ function composeEntry({
         fingerprint = `${parts.join("; ")}.`;
       }
     }
-    fingerprint ??= `scoring data only for this stop — it predates our target-tracking window (2016).`;
+    fingerprint ??= `scoring data only for this stop - it predates our target-tracking window (2016).`;
     dossier.push({
       stop: `${stopName(stop)} · ${stop.role}`,
       years: stop.years,
-      scoring: ppg != null ? `${ppg} ${isCurrent ? "ppg" : "ppg"}` : "—",
+      scoring: isCurrent
+        ? now?.ppg != null ? `${now.ppg.toFixed(1)} ppg` : "-"
+        : ppg != null ? `${ppg} ppg` : "-",
       scoringContext: isCurrent
-        ? `through Week ${throughWeek}${scoring.get(`${c}|${season}`)?.rank ? `, ${ordinal(scoring.get(`${c}|${season}`).rank)} in NFL` : ""}`
+        ? `${multiSeason ? `${season} ` : ""}through Week ${throughWeek}${now?.rank ? `, ${ordinal(now.rank)} in NFL` : ""}`
         : bestRank != null
           ? win
             ? `${ordinal(bestRank)} in NFL over ${windowLabel(win)}`
@@ -879,9 +961,9 @@ function composeEntry({
     const w = stopWindow(stop);
     const cells = ["QB", "RB", "WR", "TE"].map((pos) => {
       const t = p?.top?.[pos];
-      if (!t || t.rank == null) return { text: "—", tone: "plain" };
+      if (!t || t.rank == null) return { text: "-", tone: "plain" };
       return {
-        text: `${pos}${t.rank}${t.rank <= 24 ? ` · ${lastName(t.name)}` : ""}`,
+        text: `${pos}${t.rank} · ${lastName(t.name)}`,
         tone: finishTone(pos, t.rank),
       };
     });
@@ -895,9 +977,9 @@ function composeEntry({
       current: true,
       cells: ["QB", "RB", "WR", "TE"].map((pos) => {
         const t = p?.top?.[pos];
-        if (!t || t.rank == null) return { text: "—", tone: "plain" };
+        if (!t || t.rank == null) return { text: "-", tone: "plain" };
         return {
-          text: `${pos}${t.rank}${t.rank <= 24 ? ` · ${lastName(t.name)}` : ""}`,
+          text: `${pos}${t.rank} · ${lastName(t.name)}`,
           tone: finishTone(pos, t.rank),
         };
       }),
@@ -909,7 +991,7 @@ function composeEntry({
     : "";
   const finishesNote = newCaller
     ? `${callerLast} has ${finishRows.length - 1 ? `${finishRows.length - 1} prior play-calling season${finishRows.length - 1 === 1 ? "" : "s"} in this table` : "no prior NFL play-calling seasons"}, so read the history as background and the ${season} pace row as the live read. Positional finishes are season-long PPR ranks from nflverse scoring data.${windowNote}`
-    : `Positional finishes are season-long PPR ranks from nflverse scoring data.${windowNote} ${goodCount >= 4 ? `${callerLast}'s offenses have put up repeated top-ten positional seasons — the system has paid fantasy investors before.` : `Top-ten positional seasons have been scarce under ${callerLast} — price this offense on volume and matchup, not system history.`}`;
+    : `Positional finishes are season-long PPR ranks from nflverse scoring data.${windowNote} ${goodCount >= 4 ? `${callerLast}'s offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before.` : `Top-ten positional seasons have been scarce under ${callerLast} - price this offense on volume and matchup, not system history.`}`;
 
   /* -- distribution ------------------------------------------------------- */
   const distSeasons = finishSeasons.map((f) => ({ yr: f.yr, c: club(f.stop.team) ?? f.stop.team.toLowerCase(), stop: f.stop }));
@@ -940,11 +1022,13 @@ function composeEntry({
   const distSub =
     agg.n > 1
       ? `Target split by position across ${callerLast}'s play-calling seasons since 2016, vs. league average.`
-      : `Target split by position this season — ${callerLast} has no earlier NFL play-calling seasons to average in.`;
+      : `Target split by position this season - ${callerLast} has no earlier NFL play-calling seasons to average in.`;
   const distNote =
     distLean && Math.abs(distLean.d) >= 3
-      ? `The lean: ${distLean.label.toLowerCase()} run ${Math.abs(distLean.d)} points ${distLean.d > 0 ? "above" : "below"} league average under ${callerLast} (${distLean.pct}% vs ${distLean.nfl}%). Position splits this stable are scheme, and scheme is what carries week to week.`
-      : `No position runs more than a few points from league average under ${callerLast} — the target tree follows the talent here, so depth-chart changes move this split more than scheme does.`;
+      // A split is scheme and roster together, so it is a tendency to watch,
+      // not proof of what the scheme will do with this roster.
+      ? `${agg.n > 1 ? `Across his play-calling seasons since 2016, ${callerLast}'s offenses have` : `This season ${callerLast}'s offense has`} directed a ${distLean.d > 0 ? "larger" : "smaller"} share of targets to ${distLean.label.toLowerCase()} than the league baseline (${distLean.pct}% vs ${distLean.nfl}%). That ${agg.n > 1 ? "historical " : ""}tendency is worth monitoring alongside the current roster and weekly usage.`
+      : `No position runs more than a few points from league average under ${callerLast} - the target tree follows the talent here, so depth-chart changes move this split more than scheme does.`;
 
   /* -- backfield ---------------------------------------------------------- */
   const bfSeasons = finishSeasons.slice(-5).map((f) => ({
@@ -985,55 +1069,95 @@ function composeEntry({
         ? "spreading"
         : "mixed";
   const bfNote =
-    `${hadStar ? "Starred seasons were a previous staff's — context, not this caller's record. " : ""}` +
+    `${hadStar ? "Starred seasons were a previous staff's - context, not this caller's record. " : ""}` +
     (bfTrend === "concentrating"
-      ? `The trend is concentration: the lead back's share of backfield weighted opportunities (carries + 2×targets) has held or grown season over season. A clear RB1 role is the safest volume in fantasy — this backfield has one.`
+      ? `The trend is concentration: the lead back's share of backfield weighted opportunities (carries + 2×targets) has held or grown season over season. A clear RB1 role is the safest volume in fantasy - this backfield has one.`
       : bfTrend === "spreading"
-        ? `The trend is a spread: the lead back's share of backfield weighted opportunities (carries + 2×targets) has drifted down. Committee risk is real here — price the backs on efficiency, not assumed volume.`
+        ? `The trend is a spread: the lead back's share of backfield weighted opportunities (carries + 2×targets) has drifted down. Committee risk is real here - price the backs on efficiency, not assumed volume.`
         : `No clean trend: the lead back's share of backfield weighted opportunities (carries + 2×targets) has moved around season to season. Treat the current split as the read and revisit it weekly.`);
 
   /* -- score state -------------------------------------------------------- */
   const st = cur.states;
   const scoreRows = [
-    { label: "Leading by 7+", share: st.lead.passRate ?? 0, result: `${st.lead.passRate ?? "—"}% pass · ${st.lead.plays} plays` },
-    { label: "Within 7", share: st.close.passRate ?? 0, result: `${st.close.passRate ?? "—"}% pass · ${st.close.plays} plays` },
-    { label: "Trailing by 7+", share: st.trail.passRate ?? 0, result: `${st.trail.passRate ?? "—"}% pass · ${st.trail.plays} plays` },
+    { label: "Leading by 7+", share: st.lead.passRate ?? 0, result: `${st.lead.passRate ?? "-"}% pass · ${st.lead.plays} plays` },
+    { label: "Within 7", share: st.close.passRate ?? 0, result: `${st.close.passRate ?? "-"}% pass · ${st.close.plays} plays` },
+    { label: "Trailing by 7+", share: st.trail.passRate ?? 0, result: `${st.trail.passRate ?? "-"}% pass · ${st.trail.plays} plays` },
   ];
   const swing =
     st.trail.passRate != null && st.lead.passRate != null ? Math.round(st.trail.passRate - st.lead.passRate) : null;
   const thinState = Math.min(st.lead.plays, st.trail.plays) < 25;
+  // Graded by the size of the gap, and it says what the rates are rather than
+  // what a fantasy roster should do about them.
+  const swingSize = swing == null ? null : Math.abs(swing) < 3 ? "flat" : Math.abs(swing) < 10 ? "A modest" : "A clear";
+  const smallBuckets = thinState || cur.games <= 6;
   const scoreNote =
-    `${swing != null ? `A ${Math.abs(swing)}-point pass-rate swing between leading and trailing. ` : ""}` +
-    `Ahead, the backfield eats; behind, the targets spike — check the spread before you set a flex. ` +
-    `${thinState ? `Through Week ${throughWeek} some of these buckets are thin (play counts shown), so treat the splits as early reads.` : `Play counts are shown so you can weigh each bucket's sample.`}`;
+    swing == null
+      ? `Play counts are shown so you can weigh each bucket's sample.`
+      : swingSize === "flat"
+        ? `Little change by score: the ${nickname} have passed on ${st.trail.passRate}% of plays while trailing by 7+ and ${st.lead.passRate}% while leading by 7+.` +
+          `${smallBuckets ? ` Each bucket remains a small early-season sample.` : ` Play counts are shown so you can weigh each bucket's sample.`}`
+        : `${swingSize} pass-rate ${swing > 0 ? "increase" : "drop"} when trailing. The ${nickname} have passed on ${st.trail.passRate}% of plays while trailing by 7+, compared with ${st.lead.passRate}% while leading by 7+.` +
+          ` The ${Math.abs(swing)}-point difference is worth monitoring${smallBuckets ? `, but each bucket remains a small early-season sample.` : `; play counts are shown so you can weigh each bucket's sample.`}`;
 
   /* -- bottom line + FAQ --------------------------------------------------- */
   const leans = leagueLean(cur, league).slice(0, 2);
+  // What this page can support: whose tendencies these are, what has moved
+  // since last season, the caller's history, and how big the sample is. No
+  // league-wide claim (e.g. "one of the more projectable offenses") that
+  // nothing on the page measures.
+  const MOVE_WORDS = {
+    passRate: ["pass-heavier", "run-heavier"],
+    proe: ["more pass-leaning by PROE", "more run-leaning by PROE"],
+    pace: ["faster-paced", "slower-paced"],
+    earlyDownPassRate: ["pass-heavier on early downs", "run-heavier on early downs"],
+    noHuddleRate: ["more up-tempo", "less up-tempo"],
+    paRate: ["heavier on play-action", "lighter on play-action"],
+    motionRate: ["more motion-heavy", "less motion-heavy"],
+    shotgunRate: ["more shotgun-based", "more under-center"],
+    rzPassRate: ["more pass-heavy in the red zone", "more run-heavy in the red zone"],
+    fourthGoRate: ["more aggressive on short 4th downs", "less aggressive on short 4th downs"],
+  };
+  const moveWords = moves
+    .slice(0, 3)
+    .map(({ spec, delta }) => MOVE_WORDS[spec.key][(spec.invert ? delta < 0 : delta > 0) ? 0 : 1]);
+  const listed =
+    moveWords.length <= 1 ? moveWords.join("") : `${moveWords.slice(0, -1).join(", ")} and ${moveWords.at(-1)}`;
+  const span = `${cur.games} game${cur.games === 1 ? "" : "s"}`;
+  const early = cur.games <= 6;
   const bottomLine =
     `The fantasy bottom line: ${
       newCaller
-        ? `a new play-caller means ${season - 1} data is context at best — what you can bank on is what ${callerLast} is showing now: `
-        : `${seasonsWord} of the same play-caller makes this one of the more projectable offenses in the league: `
+        ? `${caller} is new to the ${nickname} call sheet in ${season}, so ${season - 1} tendencies describe a different coach's offense.`
+        : brokenTenure
+          ? `${callerLast} is in his ${ordWord(currentRun)} consecutive season of his current ${nickname} stint, giving ${season - 1} tendencies more predictive value than they would have after a play-caller change.`
+          : `${callerLast} called this offense in ${season - 1} too, giving those tendencies more predictive value than they would have after a play-caller change.`
     }` +
-    `${leans.map(describeLean).join(", and ")}.` +
-    ` ${
-      distLean && Math.abs(distLean.d) >= 3
-        ? `The target tree leans ${distLean.label.toLowerCase().replace("wide receivers", "WR").replace("tight ends", "TE").replace("running backs", "RB")}, `
-        : `The target tree is league-shaped, `
-    }and the lead back holds ${curShare ?? "—"}% of the backfield's weighted opportunities. Every number on this page is computed from nflverse play-by-play and FTN charting — when it changes, the page changes.`;
+    (moveWords.length
+      ? ` Through ${span}, the ${nickname} have been ${listed} than ${newCaller ? `under the ${season - 1} staff` : `in ${season - 1}`}.`
+      : ` Through ${span}, no tendency has moved more than two points from ${season - 1}.`) +
+    (distLean && Math.abs(distLean.d) >= 3
+      ? agg.n > 1
+        ? ` Historically, ${callerLast}'s offenses have also directed ${distLean.d > 0 ? "an above" : "a below"}-average share of targets to ${distLean.label.toLowerCase()}.`
+        : ` This season the offense has directed ${distLean.d > 0 ? "an above" : "a below"}-average share of targets to ${distLean.label.toLowerCase()}.`
+      : "") +
+    (early
+      ? ` Those are useful early signals, but the ${season} sample remains only ${span}; current personnel usage should carry more weight than assuming every early tendency is permanent.`
+      : ` Current personnel usage should still carry weight alongside these tendencies.`);
 
   const faqQuestion = `How does ${caller}'s play-calling affect ${nickname} fantasy players?`;
   const faqAnswer =
     `${
       newCaller
         ? `${caller} is a first-year play-caller for the ${nickname}, so last season's tendencies carry little predictive weight.`
-        : `${caller} is calling the ${nickname} offense for the ${ordWord(priorSeasons + 1)} straight season, so last year's tendencies remain predictive.`
+        : brokenTenure
+          ? `${caller} called the ${nickname} offense last season too, and ${season} is his ${tenureWord}, so last year's tendencies remain predictive.`
+          : `${caller} is calling the ${nickname} offense for the ${ordWord(priorSeasons + 1)} straight season, so last year's tendencies remain predictive.`
     } Through Week ${throughWeek} ${season}, the offense shows ${leans.map(describeLean).join(" and ")}. ` +
-    `The lead back handles ${curShare ?? "—"}% of backfield weighted opportunities${
+    `The lead back handles ${curShare ?? "-"}% of backfield weighted opportunities${
       distLean && Math.abs(distLean.d) >= 3
         ? `, and the target split leans toward ${distLean.label.toLowerCase()} (${distLean.pct}% vs a ${distLean.nfl}% league average)`
         : ""
-    }. All numbers are derived from nflverse play-by-play data.`;
+    }. The play-calling and tendency metrics on this page are computed from nflverse play-by-play and FTN charting data. Coaching roles, history and staff information are sourced separately from team and league reporting.`;
 
   return {
     // Sign-off lives in the staff research file: set "verified": true on a
@@ -1042,7 +1166,9 @@ function composeEntry({
     verified: staff.verified === true,
     playCaller: {
       name: caller,
-      kicker: `${pc.title} · ${newCaller ? "First" : ordWord(priorSeasons + 1)[0].toUpperCase() + ordWord(priorSeasons + 1).slice(1)} season as caller here · Primary play-caller`,
+      kicker: brokenTenure
+        ? [pc.title, staff.titleSeasonsNote, tenureWord[0].toUpperCase() + tenureWord.slice(1)].filter(Boolean).join(" · ")
+        : `${pc.title} · ${newCaller ? "First" : ordWord(priorSeasons + 1)[0].toUpperCase() + ordWord(priorSeasons + 1).slice(1)} season as caller here · Primary play-caller`,
       tree: staff.tree ?? null,
       subline: pc.note ?? (isHC ? "The head coach keeps the call sheet." : "Play-calling runs through the coordinator."),
       careerPath: staff.careerPath ?? [],
@@ -1063,8 +1189,8 @@ function composeEntry({
     staff: {
       oc: ocCard,
       dc: {
-        name: staff.dc ?? "—",
-        sub: staff.dcSchemeNote ?? "—",
+        name: staff.dc ?? "-",
+        sub: staff.dcSchemeNote ?? "-",
         body: dcBody,
       },
       continuity,
@@ -1075,11 +1201,11 @@ function composeEntry({
           {
             stop: `${NICKNAMES[abbr]} · ${pc.title}`,
             years: String(season),
-            scoring: scoring.get(`${abbr}|${season}`)?.ppg != null ? `${scoring.get(`${abbr}|${season}`).ppg} ppg` : "—",
+            scoring: scoring.get(`${abbr}|${season}`)?.ppg != null ? `${scoring.get(`${abbr}|${season}`).ppg} ppg` : "-",
             scoringContext: `through Week ${throughWeek}`,
             current: true,
             thesis: "The first stop:",
-            fingerprint: `${caller}'s first NFL play-calling job — there is no earlier stop to compare against, which is exactly why the reliability meter above reads the way it does.`,
+            fingerprint: `${caller}'s first NFL play-calling job - there is no earlier stop to compare against, which is exactly why the reliability meter above reads the way it does.`,
           },
         ],
     finishes: {
@@ -1133,9 +1259,11 @@ async function build(season, force) {
       const values = Object.values(cur.teams).map((t) => t[key]);
       ranks[key] = rankOf(values, cur.teams[c][key], Boolean(spec.invert));
     }
+    // Ranked on the unrounded value: at two places several defenses share a
+    // figure, and a tie takes the better rank.
     ranks.defEpaPlay = rankOf(
-      Object.values(cur.teams).map((t) => t.defEpaPlay),
-      cur.teams[c].defEpaPlay,
+      Object.values(cur.teams).map((t) => t.defEpaRaw),
+      cur.teams[c].defEpaRaw,
       true,
     );
     cur.teams[c].ranks = ranks;
@@ -1165,7 +1293,7 @@ async function build(season, force) {
     for (const stop of staff.callingStops ?? []) {
       if (stop.college || (stop.fromWeek == null && stop.toWeek == null)) continue;
       if ((stop.seasons ?? []).length !== 1) {
-        console.warn(`  partial stop ${stop.team} ${stop.years}: fromWeek/toWeek needs exactly one season — ignored`);
+        console.warn(`  partial stop ${stop.team} ${stop.years}: fromWeek/toWeek needs exactly one season - ignored`);
         continue;
       }
       const yr = stop.seasons[0];
@@ -1195,16 +1323,16 @@ async function build(season, force) {
   let generated = 0;
   for (const abbr of CLUBS) {
     // A hand-written entry (the Bills reference) is never regenerated by
-    // --force all — only by naming the club explicitly.
+    // --force all - only by naming the club explicitly.
     if (teams[abbr]?.handWritten && !force.has(abbr)) continue;
     if (teams[abbr] && !force.has(abbr) && !force.has("all")) continue;
     const staff = staffDoc.teams[abbr];
     if (!staff) {
-      console.warn(`  ${abbr}: no staff research entry — skipped`);
+      console.warn(`  ${abbr}: no staff research entry - skipped`);
       continue;
     }
     if (!cur.teams[abbr]) {
-      console.warn(`  ${abbr}: no ${season} play-by-play — skipped`);
+      console.warn(`  ${abbr}: no ${season} play-by-play - skipped`);
       continue;
     }
     teams[abbr] = composeEntry({
@@ -1217,7 +1345,10 @@ async function build(season, force) {
       players,
       scoring,
       season,
-      throughWeek,
+      // This club's last played week, not the league's: on a Saturday after a
+      // Thursday game the league is "through Week 4" while a Sunday team has
+      // played three, and its page must not claim a week it has not played.
+      throughWeek: cur.teams[abbr].lastWeek ?? throughWeek,
       playersBySeason,
       playersPartial,
     });
@@ -1232,7 +1363,7 @@ async function build(season, force) {
       "FTN Data charting via nflverse, CC-BY-SA 4.0 (play action, motion)",
       "nflverse player weekly stats (target splits, backfield shares, PPR finishes)",
       "nflverse games file (points per game)",
-      "curated staff research — coaching_staff file (names, play-caller, career stops)",
+      "curated staff research - coaching_staff file (names, play-caller, career stops)",
     ],
     teams,
   };

@@ -5,13 +5,13 @@
  * The problem it solves: the preview opens at "/", which is the news tool, and
  * the news tool deliberately links nowhere. It is the fragment printed into a
  * statchasers.com page, so anything navigational added to its markup would
- * appear on the live site — which is exactly why this bar is NOT part of any
+ * appear on the live site - which is exactly why this bar is NOT part of any
  * renderer. It is injected into the finished HTML on the way out, in
  * development only, the same way lib/livereload.ts injects its snippet.
  *
  * Consequences of that placement, all deliberate:
  *   - `renderFragment` and `renderTeamPage` are untouched, so /embed/ssr and
- *     /embed/team/:slug can never carry it — which is also why the FRAGMENT
+ *     /embed/team/:slug can never carry it - which is also why the FRAGMENT
  *     links below open in a new tab: the bar cannot ride along to a view whose
  *     whole point is that it is bare;
  *   - it cannot exist in a production response, because the guard is the same
@@ -21,7 +21,7 @@
  *     a page footer, and a switcher nobody finds is not a switcher. The height
  *     it takes is measured and pushed onto the body by the script rather than
  *     hard-coded, and the iframe height measurement in both client bundles
- *     already accounts for content above the tool (see wireFrameHeight — it
+ *     already accounts for content above the tool (see wireFrameHeight - it
  *     measures the root's bottom in document coordinates for that reason).
  *     It has no hide control: a switcher that can be dismissed by one stray
  *     click, persistently, is a switcher that gets reported as missing.
@@ -48,16 +48,16 @@ export interface DevBarContext {
 /**
  * How a given piece of markup is being mounted.
  *
- *   page      — the standalone tool, with this app's own shell around it
- *   embed     — the same markup stripped for a host page (`?embed=1`)
- *   shortcode — the fragment assembled the way WordPress assembles it: the
+ *   page      - the standalone tool, with this app's own shell around it
+ *   embed     - the same markup stripped for a host page (`?embed=1`)
+ *   shortcode - the fragment assembled the way WordPress assembles it: the
  *               plugin's stylesheet and bundle, inside a host page. This is
  *               what the shortcode LOOKS like, and it is the one to switch
  *               between when comparing the two tools as published
- *   fragment  — the bare bytes the plugin fetches, unstyled
+ *   fragment  - the bare bytes the plugin fetches, unstyled
  *
  * The mount travels with the tool switch, so picking "Shortcode" and then
- * flipping News/Team Hub alternates between the two shortcode pages — which is
+ * flipping News/Team Hub alternates between the two shortcode pages - which is
  * the thing this bar is really for.
  */
 type Mount = "page" | "embed" | "shortcode" | "fragment";
@@ -82,7 +82,7 @@ const TOOLS: Tool[] = [
     shortcode: "statchasers_news",
     // The news page has no embedded variant: `/` renders one way and the
     // stripped markup is only ever reached through /embed/ssr. Saying so here
-    // is what stops the bar offering an Embed button that does nothing —
+    // is what stops the bar offering an Embed button that does nothing -
     // which is what it used to do.
     hasEmbedMode: false,
     active: (path) =>
@@ -113,7 +113,7 @@ const TOOLS: Tool[] = [
     hasEmbedMode: true,
     // Ordered after the two /team tests above only for readability. The
     // advanced stats tool's paths also start "/player", so they are excluded
-    // here by name — `toolFor` takes the first entry that answers.
+    // here by name - `toolFor` takes the first entry that answers.
     active: (path) =>
       !/^\/(?:preview\/(?:raw\/)?)?player-stats(?:\/|$)/.test(path) &&
       (path.startsWith("/player") ||
@@ -201,7 +201,7 @@ const PLAYER_PATH = /^\/(?:preview\/(?:raw\/)?)?player\/([a-z0-9-]+)\/?$/i;
  *
  * Read from the indexed list rather than hard-coded. A pinned slug is a name
  * that retires, gets traded out of the index, or is simply spelled differently
- * next season — and the failure mode is a switcher button that 404s, which is
+ * next season - and the failure mode is a switcher button that 404s, which is
  * exactly the thing this bar exists to prevent.
  */
 function defaultPlayerSlug(): string {
@@ -212,7 +212,7 @@ function defaultPlayerSlug(): string {
  * The team currently on screen, read back out of the path.
  *
  * Derived rather than passed in so the route handlers keep their two-field
- * context — the bar is a development detail and should not be a parameter every
+ * context - the bar is a development detail and should not be a parameter every
  * caller has to remember to thread through correctly.
  */
 function currentTeam(path: string): NflTeam | null {
@@ -259,7 +259,7 @@ function escapeAttr(value: string): string {
 /* ------------------------------------------------------------------ links */
 
 /**
- * Whatever the current view is *about* — a team, a player, or neither.
+ * Whatever the current view is *about* - a team, a player, or neither.
  *
  * Carried as one object rather than as two parameters threaded through every
  * function below, because a third tool made the two-parameter version a
@@ -283,7 +283,7 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
 
   if (tool.key === "player") {
     const slug = subject.player?.slug ?? defaultPlayerSlug();
-    // No indexed players at all — a deployment with no data files. Send the
+    // No indexed players at all - a deployment with no data files. Send the
     // button at the index, which says so honestly, rather than at /player/.
     if (!slug) return "/player";
     if (mount === "fragment") return `/preview/raw/player/${slug}`;
@@ -292,7 +292,7 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
   }
 
   if (tool.key === "fpa") {
-    // One table, no subject — the only state is format and view, and those are
+    // One table, no subject - the only state is format and view, and those are
     // the table's own controls rather than something the bar picks.
     if (mount === "fragment") return "/preview/raw/fpa";
     if (mount === "shortcode") return "/preview/fpa";
@@ -300,7 +300,7 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
   }
 
   if (tool.key === "rankings") {
-    // Five boards, no subject — which panel is open is the strip's business,
+    // Five boards, no subject - which panel is open is the strip's business,
     // not the bar's, so the bar always offers the All board.
     if (mount === "fragment") return "/preview/raw/rankings";
     if (mount === "shortcode") return "/preview/rankings";
@@ -310,7 +310,7 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
   }
 
   if (tool.key === "schedule") {
-    // One board, no subject — view, week, team and filter are the board's own
+    // One board, no subject - view, week, team and filter are the board's own
     // controls, and which of them is set is not the bar's business.
     if (mount === "fragment") return "/preview/raw/schedule";
     if (mount === "shortcode") return "/preview/schedule";
@@ -326,7 +326,7 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
   }
 
   if (tool.key === "handcuffs") {
-    // One board, no subject — the weights, the sort and the open rows are the
+    // One board, no subject - the weights, the sort and the open rows are the
     // board's own controls.
     if (mount === "fragment") return "/preview/raw/rb-handcuffs";
     if (mount === "shortcode") return "/preview/rb-handcuffs";
@@ -356,8 +356,8 @@ function shortcodeText(tool: Tool, subject: Subject): string {
   }
   if (tool.key === "player") {
     // Spelled with the slug, which is what the plugin actually accepts. On a
-    // real page the attribute is usually absent — it defaults to the post slug
-    // — but the preview has no post to default from.
+    // real page the attribute is usually absent - it defaults to the post slug
+    // - but the preview has no post to default from.
     const slug = subject.player?.slug ?? defaultPlayerSlug();
     return slug ? `[${tool.shortcode} slug="${slug}"]` : `[${tool.shortcode}]`;
   }
@@ -424,7 +424,7 @@ function teamPicker(context: DevBarContext, subject: Subject): string {
 /**
  * The player picker, grouped by team.
  *
- * Rendered only while the player tool is the active one, like the team picker —
+ * Rendered only while the player tool is the active one, like the team picker -
  * which matters more here: this is six hundred options, and injecting it into
  * every page in development would put ~40KB of `<select>` on the news tool for
  * no reason.
@@ -494,12 +494,12 @@ function mountButtons(context: DevBarContext, subject: Subject): string {
 
   add("page", "Page", "The standalone tool, with this app's own shell around it");
   if (tool.hasEmbedMode) {
-    add("embed", "Embed", "?embed=1 — the markup stripped for a host page");
+    add("embed", "Embed", "?embed=1 - the markup stripped for a host page");
   }
   add(
     "shortcode",
     "Shortcode",
-    `${shortcodeText(tool, subject)} as it renders on a page — the plugin's ` +
+    `${shortcodeText(tool, subject)} as it renders on a page - the plugin's ` +
       "stylesheet and bundle, inside a host page that supplies the H1",
   );
   add(
@@ -528,7 +528,7 @@ function css(): string {
    localStorage. That is a trap on a bar whose entire job is to be found: one
    accidental click hid every control, and the flag persisted across reloads and
    navigations, so it stayed hidden with no obvious way back. There is nothing to
-   collapse away from anyway — the bar is padded out of the content's way rather
+   collapse away from anyway - the bar is padded out of the content's way rather
    than sitting on top of it. */
 .scdev-tag{flex:0 0 auto;padding:4px 8px;border-radius:4px;
  background:#d4af37;color:#0b1220;font-weight:800;letter-spacing:.08em}
@@ -559,7 +559,7 @@ function css(): string {
 body{padding-top:44px}
 @media (max-width:860px){.scdev-label{display:none}.scdev-code{display:none}}
 /* Roughly the Replit preview pane. Every control still fits, but only if the
-   labels shrink to the words that distinguish them — at full length the bar
+   labels shrink to the words that distinguish them - at full length the bar
    wraps to four rows. */
 @media (max-width:720px){.scdev{gap:8px;padding:6px 9px;align-items:flex-start}
 
@@ -587,14 +587,14 @@ body{padding-top:44px}
  *
  * The bar is `position: fixed` rather than in flow, and deliberately: a sticky
  * (in-flow) bar takes the BODY width, and its own nowrap contents then stretch
- * the body past the viewport — the bar runs off the right edge instead of
+ * the body past the viewport - the bar runs off the right edge instead of
  * wrapping, taking half its controls with it. That happened. Fixed is measured
  * against the viewport and is immune. The cost is that it no longer occupies
  * flow, so `offset` pads the body by its height.
  *
  * It also sets `--sct-nav-offset`. The team hub's section nav is itself sticky,
  * and it would otherwise park at top:0 underneath this bar. The hub already
- * exposes that property for exactly this case — "a host page with its own
+ * exposes that property for exactly this case - "a host page with its own
  * sticky header sets this to that header's height".
  *
  * Both are measured rather than hard-coded because the bar wraps to two or
@@ -617,7 +617,7 @@ addEventListener('resize',offset);offset();})();`;
  * Inject the bar before </body>.
  *
  * Returns the HTML unchanged outside development, so callers do not have to
- * guard — but they generally do anyway, to skip the string work entirely.
+ * guard - but they generally do anyway, to skip the string work entirely.
  */
 export function injectDevBar(html: string, context: DevBarContext): string {
   if (!devBarEnabled()) return html;
@@ -665,8 +665,8 @@ export function injectDevBar(html: string, context: DevBarContext): string {
     const at = open.index + open[0].length;
     return html.slice(0, at) + block + html.slice(at);
   }
-  // A fragment with no <body> of its own should never reach here — the fragment
-  // routes do not call this — but appending beats losing the bar silently.
+  // A fragment with no <body> of its own should never reach here - the fragment
+  // routes do not call this - but appending beats losing the bar silently.
   return html.includes("</body>")
     ? html.replace("</body>", `${block}</body>`)
     : html + block;
