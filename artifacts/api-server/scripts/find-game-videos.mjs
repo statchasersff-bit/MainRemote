@@ -13,7 +13,7 @@
 //   - the title names no other week or playoff round than this game's;
 //   - a year in the title, if there is one, is the season;
 //   - the watch page says it is public and embeddable, and was uploaded
-//     within three days of kickoff — which is what ties a title with no week
+//     within three days of kickoff - which is what ties a title with no week
 //     in it to this game.
 //
 // A game with no match is left out, and its page simply has no video. Games
@@ -26,8 +26,8 @@
 // each game window). The server cannot rewrite its own source, so new finds go
 // to data/matchup/game-videos-live.json, which the server reads beside
 // game-videos.ts, and misses to game-videos-live-misses.json; both files are
-// gitignored. A miss is retried while its game is under four days old — the
-// upload window below closes at three — and is final after that.
+// gitignored. A miss is retried while its game is under four days old - the
+// upload window below closes at three - and is final after that.
 
 import fs from "node:fs";
 import path from "node:path";

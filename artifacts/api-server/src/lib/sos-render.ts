@@ -1,9 +1,9 @@
 /**
  * Markup for the fantasy strength-of-schedule board.
  *
- * Server-only, like fpa-render.ts. The whole board for one view — the four
+ * Server-only, like fpa-render.ts. The whole board for one view - the four
  * insight cards, the legend, all 32 teams (or every listed player) and every
- * week — is in the response; client/sos.ts adds sorting, the card jumps, the
+ * week - is in the response; client/sos.ts adds sorting, the card jumps, the
  * compact names and in-place view switching on top of it.
  *
  * The layout is the standalone app's (Strength-of-Schedule-SOS,
@@ -55,7 +55,7 @@ export const SOS_H1 = "Fantasy Football Strength of Schedule";
 
 /**
  * The page's words. mak approved the source's title, H1 and description on
- * 2026-09-30 — those three and nothing else (no schema, no FAQ).
+ * 2026-09-30 - those three and nothing else (no schema, no FAQ).
  */
 export function sosPageCopy(season: number): { title: string; h1: string; description: string } {
   return {
@@ -224,7 +224,7 @@ function renderReadLine(): string {
     `<div class="scsos-read">` +
     `<p class="scsos-read-text">` +
     `<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>` +
-    `<span><strong>How to read this board</strong> — Higher aFPA = easier matchup · ` +
+    `<span><strong>How to read this board</strong> - Higher aFPA = easier matchup · ` +
     `<strong>vs</strong> = home · <strong>@</strong> = away</span></p>` +
     (fpa ? `<a class="scsos-afpa-link" href="${escapeHtml(fpa)}">How aFPA works →</a>` : "") +
     `</div>`
@@ -262,7 +262,7 @@ function renderLegend(): string {
  * The baseline badge. The source hard-coded "Preseason Baseline Active"; the
  * figures here move with the season, so the badge says which phase of the FPA
  * blend (fpa/blend.ts) is on, and the popover carries the FPA table's own
- * sentence about the mix — the same words the FPA page prints.
+ * sentence about the mix - the same words the FPA page prints.
  */
 function renderBaseline(board: SosBoard): string {
   const prior = board.season - 1;
@@ -347,7 +347,7 @@ interface Column {
 
 const RANK_COLUMNS: Column[] = [
   { key: "ovr", label: "OVR", title: "Overall schedule rank, Weeks 1-17. 1 = easiest schedule, 32 = hardest, by average opponent adjusted points allowed vs this position." },
-  { key: "ros", label: "ROS", title: "Rest-of-season schedule rank — remaining games through Week 17. 1 = easiest remaining schedule." },
+  { key: "ros", label: "ROS", title: "Rest-of-season schedule rank - remaining games through Week 17. 1 = easiest remaining schedule." },
   { key: "playoff", label: "Play Off", title: "Fantasy playoff schedule rank, Weeks 15-17. 1 = easiest playoff slate.", cls: "is-playoff" },
 ];
 
@@ -519,7 +519,7 @@ function csvCell(cell: SosCell): string {
 }
 
 /**
- * The board as CSV — the source's columns (its header named 18 weeks over 17
+ * The board as CSV - the source's columns (its header named 18 weeks over 17
  * cells; this names the 17 it has), plus the two playoff spans. A weekly cell
  * is "@DEN (9)": the opponent and that defense's rank, 1 = toughest.
  */

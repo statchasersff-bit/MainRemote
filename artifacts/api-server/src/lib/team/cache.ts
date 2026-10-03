@@ -4,8 +4,8 @@
  *
  * The shape of the problem: a team page needs four upstream documents, each of
  * which is per-team, slow-moving, and served by somebody else. Fetching them on
- * every request would put a stranger's latency in front of our TTFB — which is
- * the floor under LCP — and fetching them once and never again would let a
+ * every request would put a stranger's latency in front of our TTFB - which is
+ * the floor under LCP - and fetching them once and never again would let a
  * schedule go stale for the life of the process.
  *
  * So: a cold key is awaited (bounded by a timeout, because a hanging upstream
@@ -45,7 +45,7 @@ export interface KeyedCacheOptions<T> {
   timeoutMs?: number;
   /**
    * How long a failure suppresses further attempts for that key. Without it a
-   * down upstream gets one request per page view — the classic way a partial
+   * down upstream gets one request per page view - the classic way a partial
    * outage becomes a full one.
    */
   errorBackoffMs?: number;
@@ -140,7 +140,7 @@ export function createKeyedCache<T>(
 
     if (entry.value !== null) {
       // Stale but usable: hand back what we have and refresh behind the
-      // response. void, not await — this is the whole point of the cache.
+      // response. void, not await - this is the whole point of the cache.
       // Not while a refresh of it has just failed, though: the backoff applies
       // to a stale value too, or a down upstream got one attempt per request
       // for as long as it stayed down.
@@ -165,7 +165,7 @@ export function createKeyedCache<T>(
  * see. The news ingest's own UA is separate and stays separate.
  *
  * The bare hostname is deliberate. The conventional `(+https://example.com)`
- * form — which the ingest uses, and which the first version of this file used —
+ * form - which the ingest uses, and which the first version of this file used -
  * is rejected outright by ESPN's edge with a 403 on every request, apparently
  * for containing a URL scheme. `(+statchasers.com)` passes and still says who
  * is calling. Do not "fix" this back to a full URL without re-testing.

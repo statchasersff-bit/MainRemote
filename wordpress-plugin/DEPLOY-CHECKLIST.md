@@ -3,7 +3,7 @@
 The automated suite (`pnpm --filter @workspace/api-server test`) proves the tool
 serves crawlable content and still works interactively. It cannot prove how
 Google actually treats the live page. These steps close that gap and need
-someone with access to the live site and Search Console — they can't be done
+someone with access to the live site and Search Console - they can't be done
 from the build.
 
 ## 0. API server secrets
@@ -25,7 +25,7 @@ Search Console → **URL Inspection** → paste the live tool page URL →
 In the rendered HTML, confirm you can find:
 
 - [ ] the `<h1>`
-- [ ] several real headlines and player names — **not just the H1 and intro
+- [ ] several real headlines and player names - **not just the H1 and intro
       paragraph**. If only the heading and surrounding copy are there, the tool
       is rendering client-side again and the SSR path has regressed.
 - [ ] items from beyond the first page (search for a headline you know is on
@@ -45,13 +45,13 @@ building all 32:
       Search for `Season History`, a depth-chart player name, and an opponent
       from the schedule. All five panels ship on the first response; if only one
       is there, the `:target` tab CSS or the fragment has regressed.
-- [ ] the page's own robots directive is **indexable** — the fragment carries no
+- [ ] the page's own robots directive is **indexable** - the fragment carries no
       robots meta, so what Rank Math emits is what applies. A team page that
       inherited `noindex` from a template is the one failure mode that makes all
       of this pointless.
 - [ ] the team switcher's 32 links point at `/nfl/teams/<slug>/` with **no
       `?embed=1`**. If they carry it, `SC_TEAM_PATH_PREFIX` is unset on the API
-      deployment — and because `embed` is a reserved WordPress query var, every
+      deployment - and because `embed` is a reserved WordPress query var, every
       one of those links serves the oEmbed template instead of the page.
 - [ ] the fragment is present for a **logged-out** visitor. The admin-only
       diagnostics ("no team slug", "the API returned nothing") render as an
@@ -60,14 +60,14 @@ building all 32:
 
 ### Page headings
 
-The plugin measures this itself now — **Tools → StatChasers Pages → Page
-headings** — and the panel says what it found. Confirm the measurement matches
+The plugin measures this itself now - **Tools → StatChasers Pages → Page
+headings** - and the panel says what it found. Confirm the measurement matches
 the page:
 
 - [ ] the panel reports either "the theme prints the page heading as the H1" or
       "the theme prints no H1, so the shortcodes print the heading themselves".
       A warning about an H1 that is not the page's heading is a theme printing
-      the site name in one, and it is fixed in the theme — the plugin will not
+      the site name in one, and it is fixed in the theme - the plugin will not
       add a second.
 - [ ] on a published team page, `curl -s <url> | grep -o '<h1[^>]*>[^<]*'`
       returns **exactly one**, and it names the team.
@@ -80,7 +80,7 @@ the page:
       rather than showing the old verdict.
 - [ ] **if the mode is Replace**, the page has exactly one H1 and it is the
       hero's. `curl -s <url> | grep -c '<h1'` counts **elements**, so it returns
-      2 while the emptied husk is still in the markup — that is expected, and
+      2 while the emptied husk is still in the markup - that is expected, and
       what matters is that only one of them has text in it and that the husk is
       hidden. If the husk is visible, the theme pads its title with whitespace
       and `:empty` cannot match it; add `h1.entry-title{display:none}` scoped to
@@ -88,14 +88,14 @@ the page:
 - [ ] **if the plugin is printing the heading**, the hero CSS is site-wide
       (Divi → Theme Options → Custom CSS), not inline in one page's Code
       module. Generated headings carry the `sc-lo-hero` classes; with the CSS
-      still inline they render as unstyled text — correct markup, no gold rule.
+      still inline they render as unstyled text - correct markup, no gold rule.
       Compare a generated heading against a hand-written one side by side.
 
 ### Section URLs
 
 On by default since 1.7.0, with the flush done on activation. Take one team end
-to end — `/nfl/teams/new-england-patriots/` and its `/stats/`, `/schedule/`,
-`/depth-chart/`, `/matchups/` and `/news/` — and on **every one of the six**
+to end - `/nfl/teams/new-england-patriots/` and its `/stats/`, `/schedule/`,
+`/depth-chart/`, `/matchups/` and `/news/` - and on **every one of the six**
 confirm:
 
 - [ ] HTTP **200**.
@@ -106,7 +106,7 @@ confirm:
 - [ ] `<title>` matches the H1's phrase and differs across the five.
 - [ ] the meta description is present, unique to the page, and there is one.
 - [ ] `<link rel="canonical">` is the page's own **pretty** path with a trailing
-      slash — never the hub on a section page, never `?section=` anywhere. One
+      slash - never the hub on a section page, never `?section=` anywhere. One
       canonical, not two: a second one means the plugin's filter and the theme
       are both printing.
 - [ ] `og:url` equals the canonical.
@@ -116,7 +116,7 @@ confirm:
       content from the other panels. All five panels means `sc_section` is not
       reaching the shortcode and the URL is the hub wearing a second address.
 - [ ] at most one `FAQPage` node in the page, and it holds only that page's
-      questions. The Schedule page has none — that is correct, not a gap.
+      questions. The Schedule page has none - that is correct, not a gap.
 - [ ] `/outlook/` is a **301** to the hub (the hub opens on the Outlook), and
       the Outlook tab links to the hub. Same for a player's `/overview/`,
       which 301s to the profile. Neither is in the sitemap.
@@ -129,7 +129,7 @@ confirm:
       other five sections) exactly once; `page-sitemap2.xml` does not repeat
       it. No `/overview/` and no `/nfl/players/outlook/<player>/` anywhere.
 - [ ] From a machine the site answers (not Replit):
-      `cd artifacts/api-server && node scripts/seo-verify.mjs` — every line
+      `cd artifacts/api-server && node scripts/seo-verify.mjs` - every line
       PASS.
 - [ ] Retired player addresses are **301s**: `/nfl/players/outlook/josh-allen/`
       → `/nfl/players/josh-allen/outlook/`, and
@@ -138,7 +138,7 @@ confirm:
       `/nfl/players/outlook/…`.
 - [ ] the URL is in the **page sitemap**. If the six section URLs are absent,
       the `rank_math/sitemap/page_content` filter name is the first thing to
-      check — it is the one Rank Math hook not confirmed against a live build.
+      check - it is the one Rank Math hook not confirmed against a live build.
 
 Then the edges:
 
@@ -155,16 +155,16 @@ Once all of that holds on one team, submit the page sitemap in Search Console.
 
 ### Player pages
 
-After a build finishes — **Tools → StatChasers Pages → Player pages** — on one
+After a build finishes - **Tools → StatChasers Pages → Player pages** - on one
 profile, say `/nfl/players/kyler-murray/`:
 
 - [ ] HTTP **200**, and the count on the panel matches what the API lists.
       A build that stopped early leaves the rest 404ing, and the panel says
       "Continue from N" rather than "every profile has a page".
-- [ ] exactly one H1, and it is the player's name — **not** `Kyler Murray (QB)`.
+- [ ] exactly one H1, and it is the player's name - **not** `Kyler Murray (QB)`.
       The position is in the stored title so six hundred rows are legible in the
       admin list; the heading filter takes it back off.
-- [ ] a section URL — `/nfl/players/kyler-murray/game-log/` — is 200, shows that
+- [ ] a section URL - `/nfl/players/kyler-murray/game-log/` - is 200, shows that
       panel only, and its H1 names the section (`… Game Log 2026`). The six
       addresses sharing one heading is what that filter exists to prevent.
 - [ ] robots is `index, follow`, the canonical is the page's own pretty path,
@@ -181,12 +181,12 @@ profile, say `/nfl/players/kyler-murray/`:
       a difference is the host column, not the tool: Divi widens the content
       container on a page that has been through the Divi Builder, which is what
       `statchasers_team_content_width()` caps. If they match each other but not
-      the rest of the site, that number is wrong — filter
+      the rest of the site, that number is wrong - filter
       `statchasers_content_width`.
 
 ### Matchup pages
 
-Only once the holder page exists **at `/nfl/matchup/`** — **Tools → StatChasers
+Only once the holder page exists **at `/nfl/matchup/`** - **Tools → StatChasers
 Pages → Matchup pages** creates it there, or moves one an older release built at
 `/nfl/teams/matchup/`, and rebuilds the permalinks. The pair URLs are live from
 that point. Check the path, not just that a holder exists: a holder one level
@@ -208,7 +208,7 @@ URL to it, which reads as "View matchup goes to a blank page". Then on
       `/nfl/new-england-patriots-vs-new-england-patriots/` are **404**, not the
       holder, not a hub.
 - [ ] the block under the hero matches the state. An upcoming pair leads with
-      **Where to Watch** (date, kickoff, TV, venue — no "check local listings")
+      **Where to Watch** (date, kickoff, TV, venue - no "check local listings")
       and carries no "Up Next" card: the hero already names the fixture, and the
       card was the same four facts a second time,
       Final with the score, or Last Meeting. Nothing from a different state.
@@ -216,7 +216,7 @@ URL to it, which reads as "View matchup goes to a blank page". Then on
 - [ ] the page sitemap lists the pair URLs (496 entries).
 - [ ] with the flag **off**: pair URLs 404 and the sitemap lists none.
 
-- [ ] the hub uses the **full content column** — open the page at a desktop
+- [ ] the hub uses the **full content column** - open the page at a desktop
       width above 1100px, not just on a phone. Divi splits the row 79/21 for a
       sidebar unless the layout is full width, and an empty widget area leaves
       that 21% blank. The plugin forces `et_full_width_page` on any page that
@@ -235,19 +235,19 @@ now contains.
 
 - [ ] `SC_FPA_PATH=/nfl/fantasy-points-allowed-by-position/` is set **on the
       deployment**, not only the workspace. Left unset the table's own Scoring
-      and View controls point at the API's own `/fpa`, so a middle-click — or
-      any click before the bundle loads — takes the reader off the site to the
+      and View controls point at the API's own `/fpa`, so a middle-click - or
+      any click before the bundle loads - takes the reader off the site to the
       bare tool.
 - [ ] `SC_TEAM_PATH_PREFIX=/nfl/teams/` is set, or every defence name in the
       table links to the bare tool instead of to its hub.
 - [ ] the ingest has run against the production database:
       `pnpm --filter @workspace/api-server run ingest-fpa`. **Nothing renders
-      until it has.** Confirm with `curl -sI https://<api-origin>/embed/fpa` —
+      until it has.** Confirm with `curl -sI https://<api-origin>/embed/fpa` -
       200 means there is data, 404 means there is not, and the shortcode's
       answer to 404 is to print an empty string and leave the rest of your page
       intact. A reader sees a page with no table; only an administrator sees why.
 
-Then on the live page, reading the **source**, not the screen — the whole point
+Then on the live page, reading the **source**, not the screen - the whole point
 of the port is that the markup is in the page rather than fetched into it:
 
 - [ ] all 32 defence rows are in `view-source:`. The old build shipped an empty
@@ -261,13 +261,13 @@ of the port is that the markup is in the page rather than fetched into it:
 - [ ] exactly **one** `FAQPage` in the page, inside Rank Math's graph rather
       than as a second `ld+json` block. Rich Results Test, same as section 2.
 - [ ] the page's own robots directive is **indexable**. The fragment carries no
-      robots meta — the API serves its copy `noindex, indexifembedded`, so the
+      robots meta - the API serves its copy `noindex, indexifembedded`, so the
       embed is the only thing that makes any of this rank.
 
 Then the controls, which is where this tool differs from the others:
 
 - [ ] click **PPR**: the address bar does **not** change, and the numbers do.
-      Check a WR or RB column — the QB column is identical in all three scoring
+      Check a WR or RB column - the QB column is identical in all three scoring
       formats, because quarterbacks do not catch passes, so a QB cell that
       stays put is correct and proves nothing.
 - [ ] the browser's Back button still leaves the page. Nothing is pushed onto
@@ -279,7 +279,7 @@ Then the controls, which is where this tool differs from the others:
       from statchasers.com to the API, which is new surface: if whatever sits in
       front of that origin challenges or blocks it, the click falls back to
       following the link and the address changes. That fallback is honest, but
-      it is not what was shipped — confirm in a real browser rather than assume.
+      it is not what was shipped - confirm in a real browser rather than assume.
 - [ ] the CSV link downloads the combination currently on screen, not the one
       the page loaded with.
 
@@ -353,29 +353,29 @@ Order matters: the API first, then the plugin, then the pages.
 
 - [ ] No `SoftwareApplication` / `WebApplication` node anywhere. View Source
       and Ctrl+F for `SoftwareApplication`: zero hits. If one turns up, it is
-      not this plugin — look at Rank Math's schema templates for the page.
+      not this plugin - look at Rank Math's schema templates for the page.
 - [ ] On a team Schedule URL (`/nfl/teams/<team>/schedule/`): an `ItemList`
       of `SportsEvent`s, in **one** graph with Rank Math's `WebPage` and
-      `BreadcrumbList` — not a second, separate `ld+json` block.
+      `BreadcrumbList` - not a second, separate `ld+json` block.
 - [ ] On the rest-of-season rankings page: four `ItemList`s (QB, RB, WR, TE)
       in that same graph; on `/rb/`, just the running backs' list.
 - [ ] No errors. Do not "fix" a missing-rating warning by inventing ratings.
 
 ## 3. Check the sitemap
 
-Rank Math generates the sitemap, so this should already be right — but verify
+Rank Math generates the sitemap, so this should already be right - but verify
 rather than assume:
 
 - [ ] The tool page's canonical URL appears in the XML sitemap.
 - [ ] Its `<lastmod>` matches the "Last updated" stamp shown on the page.
 - [ ] Load the page twice a few minutes apart with no new data ingested and
       confirm `<lastmod>` does **not** move. A timestamp that changes on every
-      crawl is worse than none — once Google decides the signal is noise it
+      crawl is worse than none - once Google decides the signal is noise it
       stops using it.
 
 If Rank Math is emitting a `lastmod` based on post-modified date rather than the
 tool's data, either accept it or feed it the real value from
-`GET /api/news` — don't bump the post date on a schedule to fake freshness.
+`GET /api/news` - don't bump the post date on a schedule to fake freshness.
 
 ## 4. Check robots access
 
@@ -398,7 +398,7 @@ launch-day check.
 - [ ] Search Console → Core Web Vitals: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1 at
       p75, on **both** mobile and desktop.
 - [ ] If you configured the `vitals` endpoint, confirm reports are arriving and
-      that `framed` is `false` (it should be, on the plugin mount — `true` means
+      that `framed` is `false` (it should be, on the plugin mount - `true` means
       something is still loading the tool in an iframe, where the parent page's
       own RUM cannot see its CLS or INP).
 - [ ] Watch INP specifically after any change to filtering or sorting. For an
@@ -406,7 +406,7 @@ launch-day check.
 
 ## 6. If you keep the legacy iframe anywhere
 
-- [ ] Instrument the framed app separately — CLS and INP happening inside the
+- [ ] Instrument the framed app separately - CLS and INP happening inside the
       frame count toward the visitor's Core Web Vitals but the parent page's
       measurement script cannot observe them.
 - [ ] Don't add `loading="lazy"` to a frame near the top of the page; it delays

@@ -13,7 +13,7 @@
  *
  * Ported from the standalone FPA app. The one change: its own 37-entry table of
  * team names is gone, because `lib/team/teams.ts` is the only thing in this
- * codebase allowed to carry a team mapping — and it already resolves every
+ * codebase allowed to carry a team mapping - and it already resolves every
  * alias nflverse emits (LA, OAK, SD, STL, WSH).
  */
 
@@ -44,9 +44,9 @@ export const NFLVERSE_RELEASES =
  *
  * `NFLVERSE_BASE_URL` overrides it, for the two situations that come up with
  * every ingest in this app: an egress that upstream refuses (the news feed's
- * whole story — see docs/INGEST-FIX-CHECKLIST.md), which a mirror answers, and
+ * whole story - see docs/INGEST-FIX-CHECKLIST.md), which a mirror answers, and
  * a test that needs the ingest to run without fetching 14MB from GitHub.
- * Unset — the normal case — it is nflverse itself.
+ * Unset - the normal case - it is nflverse itself.
  */
 export function nflverseBaseUrl(): string {
   const override = (process.env["NFLVERSE_BASE_URL"] ?? "").trim();
@@ -169,7 +169,7 @@ export interface ScoredPlayerWeek {
   position: FantasyPosition;
   /** The offense the player belongs to. */
   team: string;
-  /** `opponent_team` — the defense that allowed these points. */
+  /** `opponent_team` - the defense that allowed these points. */
   defenseTeam: string;
   receptions: number;
   points: Record<ScoringFormat, number>;
@@ -229,9 +229,9 @@ const NFLVERSE_TIMEOUT_MS = 120_000;
  *
  * Throws `NflverseSeasonUnavailableError` only when every candidate URL 404s,
  * which is the normal state of a season that has not started. The ingest treats
- * that as "preseason", not as a failure — see fpa/ingest.ts.
+ * that as "preseason", not as a failure - see fpa/ingest.ts.
  *
- * Anything else — a timeout, a 5xx, GitHub's 403 rate limit — is a plain Error.
+ * Anything else - a timeout, a 5xx, GitHub's 403 rate limit - is a plain Error.
  * Reading those as "not published" is what once let one flaky run replace a
  * live in-season table with the baseline.
  */
@@ -253,14 +253,14 @@ export async function fetchScoredWeeklyStats(
       // connection cannot hold an ingest, and its one-at-a-time slot, forever.
       res = await fetch(url, { signal: AbortSignal.timeout(NFLVERSE_TIMEOUT_MS) });
     } catch (err) {
-      logger.warn({ season, tag, err }, "nflverse request failed — trying next tag");
+      logger.warn({ season, tag, err }, "nflverse request failed - trying next tag");
       failures.push(`${tag}: ${err instanceof Error ? err.message : String(err)}`);
       continue;
     }
     if (!res.ok) {
       logger.warn(
         { season, tag, status: res.status },
-        "nflverse release did not return OK — trying next tag",
+        "nflverse release did not return OK - trying next tag",
       );
       failures.push(`${tag}: HTTP ${res.status}`);
       continue;

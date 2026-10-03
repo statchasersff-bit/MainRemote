@@ -9,7 +9,7 @@
  *
  * The fragment is cached per (season, options) on the CSV's mtime, so replacing
  * `data/rankings/redraft-2026.csv` invalidates every rendering and nothing else
- * does. Five panels over one 14 kB file — the cache is here because a render is
+ * does. Five panels over one 14 kB file - the cache is here because a render is
  * 230 rows of string concatenation on a request path, not because the parse is
  * expensive.
  *
@@ -33,7 +33,7 @@ import { LruCache } from "./lru";
 
 export interface RankingsSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when no rankings file exists; the caller decides what to do. */
   data: RankingsData | null;
@@ -60,7 +60,7 @@ function optionKey(season: number | undefined, options: RankingsRenderOptions): 
   ]);
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

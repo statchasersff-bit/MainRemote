@@ -1,7 +1,7 @@
 /**
  * Where the NFL calendar currently is: season, season type, week.
  *
- * From Sleeper's `state` endpoint — the same host the roster already comes
+ * From Sleeper's `state` endpoint - the same host the roster already comes
  * from, so this adds a provider but not a dependency.
  *
  * It exists to keep the page honest about two things:

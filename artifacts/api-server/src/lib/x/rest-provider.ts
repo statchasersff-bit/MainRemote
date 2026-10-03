@@ -3,7 +3,7 @@
  *
  * This is the route to CURRENT posts at a price that is not the official API's.
  * The public embed timeline (public-provider.ts) is free and turned out not to
- * be usable at this volume — measured from this deployment, twelve requests
+ * be usable at this volume - measured from this deployment, twelve requests
  * spaced nine seconds apart were all refused with 429, and the slice it serves
  * is a cached one that can be months behind. The official API (official-provider.ts)
  * is current and authoritative and, on the pay-per-use pricing that replaced the
@@ -11,7 +11,7 @@
  *
  * Between those sits a tier of commercial APIs that resell X data for cents per
  * thousand posts. They differ in host and in the exact shape of their JSON, and
- * they all converge on the same handful of field names — because they are all
+ * they all converge on the same handful of field names - because they are all
  * mirroring X's own tweet object. So rather than a class per vendor, this is one
  * adapter driven by configuration:
  *
@@ -112,7 +112,7 @@ function looksLikeTweet(value: unknown): boolean {
 /**
  * Find the array of posts in a response, wherever the vendor put it.
  *
- * Every one of these APIs wraps its results differently — `{data: [...]}`,
+ * Every one of these APIs wraps its results differently - `{data: [...]}`,
  * `{tweets: [...]}`, `{data: {tweets: [...]}}`, `{results: [...]}`, or a bare
  * array. Configuring the path per vendor would be one more thing to get wrong
  * in an environment variable, so the array is found by looking for one whose
@@ -184,7 +184,7 @@ function mediaFrom(raw: Json): string[] {
  * One vendor's post object to the shape the news tool uses.
  *
  * Exported and tested against three different vendor shapes, because this
- * function is the entire compatibility promise — "switching providers is a
+ * function is the entire compatibility promise - "switching providers is a
  * config change" is only true if it holds.
  */
 export function normalizeApiTweet(
@@ -357,13 +357,13 @@ export class RestXProvider implements XPostProvider {
     const url = process.env["X_API_URL"]?.trim();
     if (!url) {
       logger.error(
-        "[X INGEST] X_PROVIDER=api but X_API_URL is not set — X ingestion is idle",
+        "[X INGEST] X_PROVIDER=api but X_API_URL is not set - X ingestion is idle",
       );
       return null;
     }
     if (!/\{username\}/.test(url)) {
       logger.error(
-        "[X INGEST] X_API_URL must contain the {username} placeholder — X ingestion is idle",
+        "[X INGEST] X_API_URL must contain the {username} placeholder - X ingestion is idle",
       );
       return null;
     }
@@ -381,7 +381,7 @@ export class RestXProvider implements XPostProvider {
       // Not fatal: a self-hosted or allowlisted endpoint may need no key. Said
       // out loud because "401 from the vendor" is otherwise a puzzle.
       logger.warn(
-        "[X INGEST] neither X_API_KEY nor X_API_BEARER_TOKEN is set — calling X_API_URL unauthenticated",
+        "[X INGEST] neither X_API_KEY nor X_API_BEARER_TOKEN is set - calling X_API_URL unauthenticated",
       );
     }
 
@@ -404,14 +404,14 @@ export class RestXProvider implements XPostProvider {
     });
 
     if (!response.ok) {
-      // The body carries the vendor's own explanation — "quota exceeded",
-      // "unknown user" — and a status alone cannot tell those apart.
+      // The body carries the vendor's own explanation - "quota exceeded",
+      // "unknown user" - and a status alone cannot tell those apart.
       const detail = await response
         .text()
         .then((body) => body.trim().replace(/\s+/g, " ").slice(0, 200))
         .catch(() => "");
       throw new Error(
-        `${response.status} ${response.statusText}${detail ? ` — ${detail}` : ""}`,
+        `${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`,
       );
     }
 

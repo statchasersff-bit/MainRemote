@@ -38,7 +38,7 @@ export type Standing = "good" | "mid" | "bad" | "muted";
 
 export interface AdvMetric {
   label: string;
-  /** The figure as printed, or "—". */
+  /** The figure as printed, or "-". */
   value: string;
   /** The line under it: a rank, a percentile or a plain read. */
   read: string;
@@ -253,7 +253,7 @@ function measure(
   pos: string,
 ): { metric: AdvMetric; pct: number | null } {
   const v = def.of(row);
-  if (v === null) return { metric: { key: def.key, label: def.label, value: "—", read: "No data", standing: "muted", pct: null }, pct: null };
+  if (v === null) return { metric: { key: def.key, label: def.label, value: "-", read: "No data", standing: "muted", pct: null }, pct: null };
   const value = def.fmt(v);
   const extra = def.extra?.(row) ?? null;
   if (!qualified) {
@@ -386,7 +386,7 @@ export function collegeCard(profile: CollegeProfile | null | undefined, position
   const metrics: AdvMetric[] = def.list.map((m) => {
     const entry = profile.final?.[m.key];
     if (!entry || typeof entry.value !== "number") {
-      return { key: m.key, label: m.label, value: "—", read: "No data", standing: "muted", pct: null };
+      return { key: m.key, label: m.label, value: "-", read: "No data", standing: "muted", pct: null };
     }
     const value = m.fmt(entry.value);
     if (typeof entry.rank === "number" && typeof entry.of === "number" && typeof entry.pct === "number") {

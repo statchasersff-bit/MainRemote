@@ -100,8 +100,8 @@ const GRAYS = ["#94a3b8", "#cbd5e1", "#e2e8f0"];
  * The segment palette: primary, a tint of it, secondary, a tint of that, the
  * StatChasers gold, then grays for depth.
  *
- * A secondary that cannot carry a segment — white (Colts, Jets), black
- * (Bengals), or near the primary — is swapped for a darkened tint of the
+ * A secondary that cannot carry a segment - white (Colts, Jets), black
+ * (Bengals), or near the primary - is swapped for a darkened tint of the
  * primary's complement in the house palette, so every club still gets four
  * distinguishable data colours.
  */
@@ -172,36 +172,30 @@ function header(view: UsageView): string {
     `<div class="sct-us-head">` +
     `<h2 class="sct-h2">Usage &amp; Opportunity Report</h2>` +
     `<p class="sct-us-fresh"><span class="sct-us-live" aria-hidden="true"></span>` +
-    `Updated through Week ${view.throughWeek} · refreshed every Tuesday</p>` +
+    `Updated through Week ${view.throughWeek} · refreshed daily</p>` +
     `</div>`
   );
 }
 
 /**
- * The intro, as the spec wrote it — with two corrections of fact.
- *
- * The premium-layer sentence lists only what the profiles actually carry. Route
- * share, TPRR and YPRR need route data the league publishes after the season,
- * so they are defined here as coming back then rather than described as if
- * they were on the page. And the target-share cliff is our own 2017–2025
- * measurement (data/team/target_share_cliff.json), not the spec's placeholder.
+ * The intro, in mak's wording (2026-10-03). The cliff paragraph keeps its
+ * numbers live from our own 2017-2025 measurement
+ * (data/team/target_share_cliff.json), and is left out if that file is.
  */
 function intro(): string {
   const cliff = getTargetShareCliff();
-  const cliffLine = cliff
-    ? ` Since ${cliff.seasons.slice(0, 4)}, receivers at a 20%+ target share average ${cliff.above20.ppg} fantasy points per game; the 10–20% group averages ${cliff.from10to20.ppg}. That cliff is why this table exists.`
-    : "";
-  return (
-    `<p class="sct-us-intro">` +
-    e(
-      "Fantasy production follows opportunity, not the other way around — so this report tracks who's on the field and who the ball is going to, before the box score catches up. " +
-        "The essentials: target share (share of team pass attempts), snap share, and red-zone touches. " +
-        "The premium layer, in each player's expandable profile: first-read share (how often the play is designed for him), air-yards share (30%+ is the alpha-receiver threshold), and expected fantasy points (xFP) vs. fantasy points over expected (FPOE) — xFP is stable, repeatable volume; FPOE is efficiency that regresses. " +
-        "Route share (the % of dropbacks a player runs a route on — the stat that matters most for tight ends), targets per route run (TPRR) and yards per route run (YPRR — the best receiver efficiency stat there is) join the profiles when the league's route data is published." +
-        cliffLine,
-    ) +
-    `</p>`
-  );
+  const paras = [
+    "Fantasy production follows opportunity, not the other way around. That is why this report focuses on who is actually on the field and where the ball is going before the box score catches up.",
+    "The essentials are target share, snap share, and red-zone touches. Expand a player profile for deeper usage metrics including first-read share, air-yards share, expected fantasy points (xFP), and fantasy points over expected (FPOE). xFP measures the fantasy value of a player's opportunities, while FPOE shows how far his actual production finished above or below that expectation.",
+    "When route data is available, we also track route share, targets per route run (TPRR), and yards per route run (YPRR). These help separate players who are simply on the field from players who are actually earning opportunities when they run routes.",
+    ...(cliff
+      ? [
+          `Since ${cliff.seasons.slice(0, 4)}, receivers with a 20%+ target share have averaged ${cliff.above20.ppg} fantasy points per game, compared with ${cliff.from10to20.ppg} for receivers between 10–20%. That gap is why this report exists.`,
+        ]
+      : []),
+    "Follow the opportunity before the fantasy points follow it.",
+  ];
+  return `<div class="sct-us-intro">${paras.map((t) => `<p>${e(t)}</p>`).join("")}</div>`;
 }
 
 function environment(view: UsageView): string {
@@ -225,43 +219,33 @@ function environment(view: UsageView): string {
 }
 
 function targetTree(view: UsageView, team: NflTeam): string {
-  const att = view.team.passAttempts;
-  if (!att) return "";
+  const tgt = view.team.targets;
+  if (!tgt) return "";
   const palette = segmentPalette(team);
   const receivers = [...view.all].filter((p) => p.targets > 0).sort((a, b) => b.targets - a.targets);
   const top = receivers.slice(0, 5);
   const next = receivers.slice(5, 8);
   const rest = receivers.slice(8);
-  const share = (n: number) => (100 * n) / att;
+  const share = (n: number) => (100 * n) / tgt;
   const segs: Segment[] = top.map((p, i) => ({
     label: p.name,
     short: surname(p.name),
     share: share(p.targets),
     color: palette[i]!,
-    title: `${p.name} — ${share(p.targets).toFixed(1)}% target share`,
+    title: `${p.name} - ${share(p.targets).toFixed(1)}% target share`,
   }));
   const sum = (ps: UsagePlayer[]) => ps.reduce((s, p) => s + p.targets, 0);
   if (next.length) {
     const names = next.map((p) => surname(p.name)).join("/");
-    segs.push({ label: names, short: names, share: share(sum(next)), color: palette[5]!, title: `${names} — ${share(sum(next)).toFixed(1)}% target share` });
+    segs.push({ label: names, short: names, share: share(sum(next)), color: palette[5]!, title: `${names} - ${share(sum(next)).toFixed(1)}% target share` });
   }
   if (rest.length) {
-    segs.push({ label: "Everyone else", short: "Others", share: share(sum(rest)), color: palette[6]!, title: `Everyone else — ${share(sum(rest)).toFixed(1)}% target share` });
-  }
-  const untargeted = att - view.team.targets;
-  if (untargeted > 0) {
-    segs.push({
-      label: "No target (throwaways, spikes, batted)",
-      short: "None",
-      share: share(untargeted),
-      color: palette[7]!,
-      title: `No intended receiver — ${share(untargeted).toFixed(1)}% of pass attempts`,
-    });
+    segs.push({ label: "Everyone else", short: "Others", share: share(sum(rest)), color: palette[6]!, title: `Everyone else - ${share(sum(rest)).toFixed(1)}% target share` });
   }
   return (
     `<div class="sct-us-card">` +
     h3("The Target Tree") +
-    `<p class="sct-us-sub">${e(`All ${att} ${team.nickname} pass attempts through Week ${view.throughWeek}`)}</p>` +
+    `<p class="sct-us-sub">${e(`All ${tgt} ${team.nickname} targets through Week ${view.throughWeek}`)}</p>` +
     stackedBar(segs, `${team.nickname} target shares: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`) +
     `</div>`
   );
@@ -288,11 +272,11 @@ function backfield(view: UsageView, team: NflTeam): string {
     short: surname(p.name),
     share: (100 * p.wopp) / total,
     color: palette[[0, 2, 4][i]!]!,
-    title: `${p.name} — ${((100 * p.wopp) / total).toFixed(1)}% of weighted opportunities`,
+    title: `${p.name} - ${((100 * p.wopp) / total).toFixed(1)}% of weighted opportunities`,
   }));
   if (others.length) {
     const w = others.reduce((s, p) => s + p.wopp, 0);
-    segs.push({ label: "Other backs", short: "Others", share: (100 * w) / total, color: palette[5]!, title: `Other backs — ${((100 * w) / total).toFixed(1)}%` });
+    segs.push({ label: "Other backs", short: "Others", share: (100 * w) / total, color: palette[5]!, title: `Other backs - ${((100 * w) / total).toFixed(1)}%` });
   }
   const bar = stackedBar(
     segs,
@@ -346,7 +330,7 @@ function backfield(view: UsageView, team: NflTeam): string {
   return (
     `<div class="sct-us-card">` +
     h3("The Backfield Split") +
-    `<p class="sct-us-sub">Who owns which situations — the RB stat that actually predicts the box score.</p>` +
+    `<p class="sct-us-sub">Who gets the backfield's work - weighted opportunities count a target as two carries, a better view of RB opportunity than raw touches alone.</p>` +
     bar +
     grid +
     chipHtml +
@@ -376,7 +360,7 @@ function runDirection(view: UsageView): string {
   const note = runNote(view);
   return (
     `<div class="sct-us-run">` +
-    `<h4 class="sct-us-h4">Run Direction — carries &amp; yards per carry by gap</h4>` +
+    `<h4 class="sct-us-h4">Run Direction - carries &amp; yards per carry by gap</h4>` +
     `<ul class="sct-us-line" aria-hidden="true"><li>LT</li><li>LG</li><li>C</li><li>RG</li><li>RT</li></ul>` +
     `<ul class="sct-us-gaps">${cells}</ul>` +
     `<p class="sct-us-fine">Designed runs only; "Middle" includes runs behind either guard.</p>` +
@@ -390,7 +374,7 @@ const ZONES: Zone[][] = [
   ["SL", "SM", "SR"],
 ];
 
-function passMap(view: UsageView): string {
+function passMap(view: UsageView, team: NflTeam): string {
   const zones = view.team.zones;
   const all = Object.values(zones).reduce((s, z) => s + (z?.att ?? 0), 0);
   if (all < 20) return "";
@@ -414,11 +398,11 @@ function passMap(view: UsageView): string {
       `</li>`
     );
   };
-  const note = passNote(view, qbName);
+  const note = passNote(view, qbName, team.nickname);
   return (
     `<div class="sct-us-card">` +
     h3(`Where ${qbName} Attacks`) +
-    `<p class="sct-us-sub">${e(`Share of pass attempts & yards per attempt by field zone — through Week ${view.throughWeek}`)}</p>` +
+    `<p class="sct-us-sub">${e(`Share of ${qbName}'s ${view.team.passerZoneAttempts ? `${view.team.passerZoneAttempts} mapped ` : ""}pass attempts & yards per attempt by field zone - through Week ${view.throughWeek}`)}</p>` +
     `<div class="sct-us-field">` +
     `<ul class="sct-us-zones">${ZONES[0]!.map(cell).join("")}</ul>` +
     `<p class="sct-us-los"><span>Line of scrimmage · deep = 20+ air yards</span></p>` +
@@ -479,7 +463,7 @@ function woprCell(p: UsagePlayer): string {
   const caption = p.pos === "QB" ? "every dropback" : `touch share ${p.touchShare ?? 0}%`;
   const width = p.pos === "QB" ? 100 : (p.touchShare ?? 0);
   return (
-    `<td class="sct-us-td">${num("—", "is-wopr")}<span class="sct-us-cap">${e(caption)}</span>` +
+    `<td class="sct-us-td">${num("-", "is-wopr")}<span class="sct-us-cap">${e(caption)}</span>` +
     `<span class="sct-us-gauge is-plain" role="img" aria-label="${e(caption)}"><span class="sct-us-gauge-fill" style="width:${width}%"></span></span></td>`
   );
 }
@@ -490,7 +474,7 @@ function rzCell(row: UsageRow): string {
   const rising = row.rz.direction === "up";
   return (
     `<td class="sct-us-td">${num(String(p.rzTouches), "is-mid")}${rising ? `<span class="sct-us-up" aria-label="rising"> ▲</span>` : ""}` +
-    `<span class="sct-us-cap">${e(trail)}${row.leadsRz ? " — leads team" : ""}</span></td>`
+    `<span class="sct-us-cap">${e(trail)}${row.leadsRz ? " - leads team" : ""}</span></td>`
   );
 }
 
@@ -531,7 +515,7 @@ function metricsFor(row: UsageRow, view: UsageView): Metric[] {
       { label: "Red-zone share (RB room)", value: fmt(p.rzOppShare, "%", 0), pct: q.rzOppShare ?? null },
       { label: "Green-zone carries (in-10)", value: String(p.gzCarries), pct: q.gzCarries ?? null },
       { label: "Target share", value: fmt(p.targetShare, "%"), pct: q.targetShare ?? null },
-      { label: "Weighted opps / game", value: fmt(p.woppPerGame), pct: q.woppPerGame ?? null },
+      { label: "Weighted opps / active game", value: fmt(p.woppPerGame), pct: q.woppPerGame ?? null },
       { label: "xFP / game", value: fmt(p.xfpPerGame), pct: q.xfpPerGame ?? null },
       { label: "FPOE / game", value: p.fpoePerGame == null ? null : signed(p.fpoePerGame), pct: q.fpoePerGame ?? null },
       { label: "Yards after contact / att", value: fmt(p.yacPerAtt), pct: q.yacPerAtt ?? null },
@@ -590,7 +574,7 @@ function table(view: UsageView, team: NflTeam): string {
       const rank = rankLine(p);
       const tsCell =
         p.pos === "QB"
-          ? `<td class="sct-us-td">${num("—", "is-mid")}<span class="sct-us-cap">the passer</span></td>`
+          ? `<td class="sct-us-td">${num("-", "is-mid")}<span class="sct-us-cap">the passer</span></td>`
           : shareCell(p.targetShare, row.ts, 1);
       return (
         `<tr class="sct-us-row">` +
@@ -619,7 +603,7 @@ function table(view: UsageView, team: NflTeam): string {
     `<th scope="col" class="sct-us-th">Opportunity (WOPR)</th>` +
     `<th scope="col" class="sct-us-th">Target share</th>` +
     `<th scope="col" class="sct-us-th">Snap share</th>` +
-    `<th scope="col" class="sct-us-th">RZ touches</th>` +
+    `<th scope="col" class="sct-us-th">RZ opportunities</th>` +
     `<th scope="col" class="sct-us-th">Read</th>` +
     `</tr></thead>` +
     `<tbody>${rows}</tbody>` +
@@ -629,13 +613,13 @@ function table(view: UsageView, team: NflTeam): string {
 
 function legend(): string {
   const items: Array<[string, string, string]> = [
-    ["set", "Set & forget", "20%+ target share or locked bell-cow role — start everywhere"],
-    ["starter", "Starter", "17–19% target share or a lead back's full workload — weekly lineup play"],
-    ["flex", "Flex", "15–16% share or a committee lead — matchup-dependent"],
-    ["volatile", "Volatile", "under 15% — deep leagues only"],
+    ["set", "Set & forget", "20%+ target share or locked bell-cow role - start everywhere"],
+    ["starter", "Starter", "17–19% target share or a lead back's full workload - weekly lineup play"],
+    ["flex", "Flex", "15–16% share or a committee lead - matchup-dependent"],
+    ["volatile", "Volatile", "under 15% - deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
     ["", "WOPR", "1.5 × target share + 0.7 × air-yards share"],
-    ["", "+ button", "opens the full advanced profile — first-read share, air-yards share, xFP/FPOE — with percentile bars vs. the league"],
+    ["", "+ button", "opens the full advanced profile - first-read share, air-yards share, xFP/FPOE - with percentile bars vs. the league"],
   ];
   return (
     `<details class="sct-us-key-help">` +
@@ -676,14 +660,10 @@ function signals(view: UsageView): string {
 function closing(view: UsageView): string {
   const riser = view.signals.find((s) => s.kind === "buy")?.row.player;
   return (
-    `<p class="sct-us-close">Usage trends are one of the core inputs behind our player pricing — ` +
+    `<p class="sct-us-close">Usage trends are one of the core inputs behind our player pricing - ` +
     `<a class="sct-textlink" href="${e(REDRAFT_COMMAND_URL)}" target="_top">Redraft Command</a> ` +
     `re-runs every player's value as these shares move, so ${riser ? `a riser like ${e(surname(riser.name))}` : "a riser"} gets repriced before your leaguemates notice.</p>`
   );
-}
-
-function sources(view: UsageView): string {
-  return `<p class="sct-us-source">${e(`Data: ${view.doc.sources.join(" · ")}. Regular season, through Week ${view.throughWeek}.`)}</p>`;
 }
 
 /* ------------------------------------------------------------------ public */
@@ -705,12 +685,11 @@ export function renderUsageSection(view: UsageView | null, team: NflTeam): Usage
     environment(view) +
     targetTree(view, team) +
     backfield(view, team) +
-    passMap(view) +
+    passMap(view, team) +
     table(view, team) +
     legend() +
     signals(view) +
     closing(view) +
-    sources(view) +
     `</div>`;
 
   // In the FAQPage too (mak approved 2026-09-30). The link sits outside

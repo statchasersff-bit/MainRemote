@@ -289,7 +289,7 @@ function buildStyle({ pos, seasons, derived }) {
       howHeWins = 'Functions as a primary read in the passing game, stacking targets and converting volume into consistent weekly production.';
       howHeWinsTags.push('Target earner');
     } else if (deepThreat) {
-      howHeWins = 'Operates as an explosive, downfield option—lower target volume but high leverage looks that can spike weeks.';
+      howHeWins = 'Operates as an explosive, downfield option - lower target volume but high leverage looks that can spike weeks.';
       howHeWinsTags.push('Deep threat');
     } else {
       howHeWins = 'Profiles as a complementary receiver whose fantasy output swings with weekly usage and efficiency.';

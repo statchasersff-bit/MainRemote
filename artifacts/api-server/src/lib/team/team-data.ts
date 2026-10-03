@@ -13,8 +13,8 @@
  * before that, which would be a lie about a season nobody has played), the
  * snapshot names the season it describes, and Injury Watch says nothing at all
  * rather than report a clean bill of health it has not checked. Where this app
- * has no data at all — strength of schedule,
- * fantasy analysis on a news item — the section is either omitted or replaced
+ * has no data at all - strength of schedule,
+ * fantasy analysis on a news item - the section is either omitted or replaced
  * with an honest link into the tool that does have it.
  */
 
@@ -46,8 +46,8 @@ export const TEAM_NEWS_VISIBLE = 10;
  * Stories fetched in total; the remainder ships hidden behind the disclosure.
  *
  * Sized against the reference these pages are matching (thehuddle's team
- * news/injuries pages), which lists a team's whole recent run — order 30-40
- * items across about four months — in one column rather than a handful with a
+ * news/injuries pages), which lists a team's whole recent run - order 30-40
+ * items across about four months - in one column rather than a handful with a
  * link away. Sixty is that with headroom for a team having a loud fortnight,
  * and it costs nothing when the archive holds less: the read is bounded by
  * TEAM_WINDOW_DAYS, and this is only the cap on what comes back.
@@ -59,7 +59,7 @@ export interface TeamPageData {
   state: NflState;
 
   news: NewsItem[];
-  /** Newest story's timestamp — the page's "last updated" for this team. */
+  /** Newest story's timestamp - the page's "last updated" for this team. */
   newsUpdatedAtMs: number | null;
 
   roster: TeamRoster | null;
@@ -86,12 +86,12 @@ export interface TeamPageData {
    *
    * Deliberately one number, and a real one: points allowed per game with its
    * league rank, read from the same league table the Stats tab is built on. It
-   * costs almost nothing to add — that table is already in memory for this
+   * costs almost nothing to add - that table is already in memory for this
    * season, and this is one map lookup against it.
    *
    * `abbreviation` is carried so the renderer can check that the game it picked
-   * is the game this was fetched for. The two run off different clocks — this
-   * one Date.now(), the renderer whatever it was handed — and within four hours
+   * is the game this was fetched for. The two run off different clocks - this
+   * one Date.now(), the renderer whatever it was handed - and within four hours
    * of a kickoff they can disagree about which fixture is next. When they do,
    * the line is dropped rather than printed against the wrong opponent.
    */
@@ -103,7 +103,7 @@ export interface TeamPageData {
     rankLabel: string | null;
   } | null;
 
-  /** Changes whenever any input changes — used as the render cache key. */
+  /** Changes whenever any input changes - used as the render cache key. */
   version: string;
 }
 
@@ -115,8 +115,8 @@ function settled<T>(result: PromiseSettledResult<T | null>): T | null {
  * Does ESPN's win-loss record describe the season this page is labelled with?
  *
  * The calendar cannot answer this. Sleeper flips `season_type` to "regular" and
- * `week` to 1 as soon as the preseason ends — days before anybody plays a
- * regular-season game — so `regularSeasonUnderway` is true for most of the last
+ * `week` to 1 as soon as the preseason ends - days before anybody plays a
+ * regular-season game - so `regularSeasonUnderway` is true for most of the last
  * week of August while ESPN's "total" record is still the PRESEASON record.
  * That is how a Philadelphia hub headed "2026 Season" came to print "Record
  * 0-3" for a season in which the Eagles had not played.
@@ -128,7 +128,7 @@ function settled<T>(result: PromiseSettledResult<T | null>): T | null {
  * from the date at all.
  *
  * The cost is that a team shows no record between kickoff of Week 1 and its own
- * first game — where the true answer is 0-0, which is not worth a line in the
+ * first game - where the true answer is 0-0, which is not worth a line in the
  * hero. That is the right side to be wrong on: this field's whole purpose is to
  * say how the season is going, and before a team has played, it isn't.
  *
@@ -149,7 +149,7 @@ function recordDescribesSeason(
 /**
  * Points allowed per game, and its rank, for whoever this team plays next.
  *
- * Null whenever anything is missing — no schedule, an opponent ESPN named that
+ * Null whenever anything is missing - no schedule, an opponent ESPN named that
  * the canonical table does not know, a season the stats provider is down for.
  * One absent line on a card, never a placeholder.
  */
@@ -228,7 +228,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
  *
  * Built from each provider's own fetch stamp plus the news signature, so a
  * background refresh of any one source produces a new key and the next request
- * re-renders — and nothing else does.
+ * re-renders - and nothing else does.
  */
 export function dataVersion(data: TeamPageData, contentVersion: string): string {
   return [

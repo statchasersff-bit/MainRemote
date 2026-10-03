@@ -10,7 +10,7 @@
  * exactly two kinds of path. The bare one is the season matrix: the whole
  * season in one grid, the same page in December as in July. The other eighteen
  * are the weeks (`/schedule/week-2`), because Week 2 is not a way of looking at
- * the board — it is a different set of games, which is the whole reason it has
+ * the board - it is a different set of games, which is the whole reason it has
  * an address.
  *
  * Nothing else may mint one. Filter and season are ways of looking at a page
@@ -18,9 +18,9 @@
  * toggle gets; `?view=` is not read here at all, because the route redirects it
  * rather than rendering it.
  *
- * The title and description say which of the nineteen pages they are about —
+ * The title and description say which of the nineteen pages they are about -
  * eighteen weeks sharing one title are eighteen pages a search engine has no
- * reason to tell apart — and the wording differs by view, because a snippet
+ * reason to tell apart - and the wording differs by view, because a snippet
  * that says "browse by week" on the season grid is a worse answer than one
  * that does not.
  */

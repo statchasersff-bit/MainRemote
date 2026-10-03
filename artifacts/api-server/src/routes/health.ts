@@ -35,7 +35,7 @@ function inSeason(nowMs: number): boolean {
 }
 
 /**
- * GET /api/data/health — point an uptime monitor here.
+ * GET /api/data/health - point an uptime monitor here.
  *
  * 503 with `reasons` when the data behind the tools has stopped moving, the
  * way /api/ingest/health already does for the news wire alone. Checks what

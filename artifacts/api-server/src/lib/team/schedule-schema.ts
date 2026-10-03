@@ -3,7 +3,7 @@
  *
  * It replaces the SoftwareApplication node the hub used to carry. A schedule is
  * a list of games, not an application, and Search Console held the old node to
- * the software-app rich result's rules — an aggregateRating we do not have and
+ * the software-app rich result's rules - an aggregateRating we do not have and
  * will not invent. This describes what the reader actually sees.
  *
  * The host page's SEO plugin already emits WebPage and BreadcrumbList, so this
@@ -12,7 +12,7 @@
  *
  * A game makes the list only when it has a kickoff and a venue. Google reads a
  * SportsEvent as an Event, and an Event without startDate or location is an
- * error in Search Console — the thing this node exists to stop producing. The
+ * error in Search Console - the thing this node exists to stop producing. The
  * games that miss out are the unscheduled ones, which the table marks TBD.
  */
 
@@ -31,7 +31,7 @@ function teamNode(team: NflTeam | null, fallbackName: string): Node {
 
 /**
  * Kickoff as schema.org wants it. A time ESPN has not confirmed is a
- * placeholder, so only its date is claimed — in Eastern time, the zone the NFL
+ * placeholder, so only its date is claimed - in Eastern time, the zone the NFL
  * schedules in, so a late kickoff does not roll over to the next UTC day.
  */
 function startDate(game: ScheduleGame): string | null {

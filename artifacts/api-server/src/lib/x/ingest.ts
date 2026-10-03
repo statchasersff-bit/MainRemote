@@ -5,13 +5,13 @@
  * step, not a second news system. A post is fetched by a provider, filtered
  * against its account's rules, turned into the same RawNewsItem the Dynasty
  * Command wire and the club feeds produce, and handed to the same storeItems()
- * they are handed to. From that call onwards an X post IS a news item — same
+ * they are handed to. From that call onwards an X post IS a news item - same
  * table, same dedupe, same freshness invalidation, same render cache, same
  * summary backfill, same team resolution, same feed, same team pages.
  *
- * The X-specific facts that have nowhere to live on a news row — reply and
+ * The X-specific facts that have nowhere to live on a news row - reply and
  * repost flags, the quoted post, the media list, what the matcher decided and
- * from what — are written to x_posts alongside, keyed by the post id, which is
+ * from what - are written to x_posts alongside, keyed by the post id, which is
  * also what makes a post impossible to store twice.
  */
 
@@ -113,7 +113,7 @@ async function alreadyStored(ids: string[]): Promise<Set<string>> {
 /**
  * Check one account and store whatever is new.
  *
- * Never throws. Every failure — transport, parse, database — is recorded
+ * Never throws. Every failure - transport, parse, database - is recorded
  * against the account and returned, because one unreachable profile is a fact
  * about that profile and must not stop the other thirty-six, let alone reach
  * the news tool.
@@ -149,11 +149,11 @@ export async function sweepAccount(
     result.error = message;
 
     if (isRateLimited(message)) {
-      // Pauses every account, not just this one — see cooldownUntilMs.
+      // Pauses every account, not just this one - see cooldownUntilMs.
       cooldownUntilMs = Date.now() + rateLimitCooldownMs();
       logger.warn(
         { cooldownMs: rateLimitCooldownMs() },
-        "[X INGEST] rate limited — pausing all polling",
+        "[X INGEST] rate limited - pausing all polling",
       );
     }
 
@@ -173,7 +173,7 @@ export async function sweepAccount(
   // posts the account's rules discard: they have been considered, and
   // re-considering them every five minutes forever is work with a known answer.
   // Turning replies on for an account therefore applies to its future replies,
-  // not its past ones — the honest trade for not re-reading the same timeline.
+  // not its past ones - the honest trade for not re-reading the same timeline.
   const watermark = posts.reduce<string | null>(
     (newest, post) => maxId(newest, post.externalId),
     account.lastSeenPostId,
@@ -201,7 +201,7 @@ export async function sweepAccount(
   return result;
 }
 
-/** Which kinds of post to keep — an account's four toggles, or the defaults. */
+/** Which kinds of post to keep - an account's four toggles, or the defaults. */
 export type IngestRules = Pick<
   XMonitoredAccountRow,
   "includeOriginals" | "includeReplies" | "includeReposts" | "includeQuotes"
@@ -232,7 +232,7 @@ export interface StorePostsResult {
  *
  * The half of the pipeline below the provider: filter by the author's rules and
  * the age cutoff, drop what is already stored, normalise, and write. Both entry
- * points go through here — the poller, and the push route — so a pushed post
+ * points go through here - the poller, and the push route - so a pushed post
  * and a polled post are treated identically in every respect that matters.
  * There is no second path into the archive for X, in the same way the wire's
  * pull and push modes share storeItems().
@@ -252,7 +252,7 @@ export async function ingestPosts(
   };
 
   // The roster index is what turns "Christian McCaffrey" in a sentence into a
-  // player, a team and a headshot, and a post is tagged ONCE, on the way in —
+  // player, a team and a headshot, and a post is tagged ONCE, on the way in -
   // nothing re-reads a stored row. So the index has to be warm HERE, in the
   // function that does the tagging, rather than in the poller: the push route
   // never goes near the poller, and a cold start that accepted a pushed batch
@@ -265,7 +265,7 @@ export async function ingestPosts(
   } catch (err) {
     // Belt and braces: an untagged post is still worth storing, so a roster
     // that cannot be refreshed must not fail the batch.
-    logger.warn({ err }, "[X INGEST] roster refresh failed — posts may be untagged");
+    logger.warn({ err }, "[X INGEST] roster refresh failed - posts may be untagged");
   }
 
   const maxAgeDays = options.maxAgeDays ?? maxPostAgeDays();
@@ -274,7 +274,7 @@ export async function ingestPosts(
   const candidates = posts.filter((post) => {
     if (!post.text.trim()) return false;
     // A cached timeline reaches years back and the archive never deletes a row
-    // — see maxPostAgeDays. A post with no timestamp at all is not old, it is
+    // - see maxPostAgeDays. A post with no timestamp at all is not old, it is
     // unknown, and is kept.
     if (post.createdAtMs !== null && post.createdAtMs < cutoffMs) return false;
     return shouldKeep(post, resolveRules(normalizeHandle(post.authorUsername)));
@@ -290,7 +290,7 @@ export async function ingestPosts(
   const prepared = fresh.map((post) => ({ post, ...toNewsItem(post) }));
 
   // The news half first. If this throws, nothing is written to x_posts either,
-  // and the post is simply picked up again on the next sweep — an absent row is
+  // and the post is simply picked up again on the next sweep - an absent row is
   // recoverable, an x_posts row pointing at a news item that was never created
   // is not, because the post id would then be permanently marked as handled.
   await storeItems(
@@ -323,7 +323,7 @@ export async function ingestPosts(
       })),
     )
     // The post id is the primary key, so this is what makes double storage
-    // impossible rather than unlikely — two jobs, two instances, or a restart
+    // impossible rather than unlikely - two jobs, two instances, or a restart
     // mid-sweep all converge on one row.
     .onConflictDoNothing({ target: xPosts.postId })
     .returning({ postId: xPosts.postId });
@@ -341,7 +341,7 @@ export async function ingestPosts(
  * One tick of the poller: claim what is due, check it, and report.
  *
  * Never throws. The scheduler calls this on a timer and the admin route calls
- * it on demand, and neither has anything useful to do with an exception — a
+ * it on demand, and neither has anything useful to do with an exception - a
  * failure here is a fact about X, not about the news tool.
  */
 export async function runXSweep(limit?: number): Promise<XSweepResult> {

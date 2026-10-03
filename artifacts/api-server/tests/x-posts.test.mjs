@@ -4,7 +4,7 @@
  * Everything here is one of the decisions that actually shapes the feed: which
  * posts are reporting and which are chatter, what a post is about, what kind of
  * news it is, and what a post's identity is. They are pure functions precisely
- * so they can be pinned down like this — the same reason shouldRefresh() and
+ * so they can be pinned down like this - the same reason shouldRefresh() and
  * evaluateIngestHealth() are pure in routes/news.ts.
  *
  * The timeline document below is a trimmed copy of what
@@ -27,7 +27,7 @@ const { categorize } = await importModule("lib/news-category");
 const { isNewerId, maxId } = await importModule("lib/x/types");
 
 // entities reads the roster index that lives inside lib/team/roster, so the two
-// have to come out of one bundle — see importSource.
+// have to come out of one bundle - see importSource.
 const roster = await importSource(`
   export { indexRoster } from "../src/lib/team/roster";
   export { detectEntities, findPlayer, findTeam } from "../src/lib/x/entities";
@@ -121,7 +121,7 @@ const REPOST = {
 
 const QUOTE_WITH_TEXT = {
   id_str: "1900000000000000004",
-  full_text: "Confirmed — the Vikings are signing him to a two-year deal.",
+  full_text: "Confirmed - the Vikings are signing him to a two-year deal.",
   created_at: "Wed Sep 16 18:45:00 +0000 2026",
   user: { screen_name: "AdamSchefter", name: "Adam Schefter" },
   quoted_tweet: {
@@ -221,7 +221,7 @@ describe("which posts count as reporting", () => {
     assert.equal(shouldKeep(post(BARE_QUOTE), DEFAULTS), false);
   });
 
-  test("the account's own settings are what decide — nothing is hard-coded", () => {
+  test("the account's own settings are what decide - nothing is hard-coded", () => {
     assert.equal(shouldKeep(post(REPLY), ALL_ON), true);
     assert.equal(shouldKeep(post(REPOST), ALL_ON), true);
     assert.equal(

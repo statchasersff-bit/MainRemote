@@ -351,7 +351,7 @@ function renderTake(m: Model): string {
 
   // mak's hero rework, 2026-10-01: the sentence that sat under the tier line
   // ("He's QB2 through Week 3, and the reason is efficiency: …") became a
-  // dot-separated meta line — the rank, the rate and the headline stat. The
+  // dot-separated meta line - the rank, the rate and the headline stat. The
   // full reasoning lives one section down, in Our Take; the league-by-league
   // call is the chips beside it, now anchored under a "Best fit" label
   // instead of floating.
@@ -402,7 +402,7 @@ function renderExpect(m: Model): string {
   const panels: string[] = [];
   const arrow = `<span class="scp-ol-arrow" aria-hidden="true">›</span>`;
   if (m.projected) {
-    // Short labels (mak, 2026-10-01): "Preseason", "Through Week n" — the
+    // Short labels (mak, 2026-10-01): "Preseason", "Through Week n" - the
     // panel row reads as a progression, and the long forms made it a caption.
     panels.push(
       `<div class="scp-ol-ex"><div class="scp-ol-when">Preseason</div>` +
@@ -432,8 +432,8 @@ function renderExpect(m: Model): string {
     );
   }
   if (panels.length === 0) return "";
-  // No button here (mak, 2026-10-01): Redraft Command gets one main CTA — the
-  // sidebar card in Our Take — and one quiet one at the foot of upside/risk.
+  // No button here (mak, 2026-10-01): Redraft Command gets one main CTA - the
+  // sidebar card in Our Take - and one quiet one at the foot of upside/risk.
   panels.push(
     `<div class="scp-ol-ex is-ros"><div class="scp-ol-when">Rest of season</div>` +
       `<div class="scp-ol-rk is-text">Live rank</div>` +
@@ -475,7 +475,7 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
   // 1. Performance against expectation.
   if (!m.preseason && m.now) {
     let p = m.projected ? `We projected ${m.last} in the ${m.pos}${m.projected} range this summer. ` : "";
-    p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "—"} at ${one(m.now.ppg)} ${m.scoring} points per game`;
+    p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "-"} at ${one(m.now.ppg)} ${m.scoring} points per game`;
     if (m.prior) {
       p += `, against ${one(m.prior.ppg)} over ${m.prior.gp} games last season${m.prior.rank ? ` (${m.pos}${m.prior.rank})` : ""}.`;
       const diff = m.now.ppg - m.prior.ppg;
@@ -522,7 +522,7 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
   }
   // 4. The schedule ahead. This paragraph used to reopen with the league-fit
   // sentence ("Until something changes, he's a weekly starter in superflex
-  // and 2QB…") — the third statement of the league call on one tab. mak
+  // and 2QB…") - the third statement of the league call on one tab. mak
   // (2026-10-01): the league types are said once, in the hero, so the close
   // keeps only what is new here. With no favorable matchup coming, it is
   // nothing, and the take ends on the role paragraph.
@@ -543,7 +543,7 @@ function renderRead(m: Model, data: PlayerPageData): string {
   const preseasonParas = (record?.body ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
   // No Redraft Command link in the prose (mak, 2026-10-01): the tab carries
-  // exactly two — the sidebar card beside this text, and the quiet line at
+  // exactly two - the sidebar card beside this text, and the quiet line at
   // the foot of upside/risk. The take ends on its own last sentence.
   let prose: string[];
   let byline: string;
@@ -555,8 +555,9 @@ function renderRead(m: Model, data: PlayerPageData): string {
   } else {
     prose = paragraphs(m, data).map((p) => escapeHtml(p));
     if (prose.length === 0) return "";
-    // mak, 2026-09-30: no "Updated automatically after Week n" line.
-    byline = published ? `Preseason outlook originally published <time datetime="${published.iso}">${published.text}</time>.` : "";
+    // mak, 2026-09-30: no "Updated automatically after Week n" line;
+    // 2026-10-02: no "Preseason outlook originally published" line either.
+    byline = "";
     if (preseasonParas.length && published) {
       archive =
         `<details class="scp-ol-prev"><summary>${escapeHtml(`Read our preseason outlook (${published.month})`)}</summary>` +
@@ -729,7 +730,7 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
   const up: string[] = [];
   const risk: string[] = [];
   // The claim is the line you read; the evidence sits under it as subtext
-  // (mak, 2026-10-01). Both halves are the same words as before — what moved
+  // (mak, 2026-10-01). Both halves are the same words as before - what moved
   // is the emphasis, so the list scans as six claims instead of six sentences.
   const b = (label: string, text: string): string =>
     `<span class="scp-ol-claim">${escapeHtml(label.replace(/\.$/, ""))}</span>` +
@@ -783,7 +784,8 @@ function renderTriggers(m: Model, data: PlayerPageData): string {
       : "";
   const noun = { QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[m.pos] ?? m.pos;
   return (
-    open("scp-ol-ur-h", "What could change his value", "The specific things that would move him up or down from here.") +
+    // No lede (mak, 2026-10-02).
+    open("scp-ol-ur-h", "What could change his value", "") +
     `<div class="scp-ol-ur">${card("Upside", up, "up")}${card("Risk", risk, "risk")}</div>` +
     `<div class="scp-ol-cta"><span>${escapeHtml(`Weighing ${m.last} against another ${noun} on your roster?`)}</span>` +
     `<a href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-risk">Compare them in Redraft Command</a></div>` +
@@ -965,14 +967,8 @@ export function outlookTabParts(
     renderTriggers(m, data);
   const faq = renderFaq(m, data, options);
   if (!main && !faq) return null;
-  const ms = m.measures;
-  const noun = ms ? `${{ QB: "quarterback", RB: "running back", WR: "receiver", TE: "tight end" }[ms.position] ?? ms.position}s` : "";
-  const foot =
-    `<footer class="scp-st-foot"><p>${escapeHtml(
-      `This outlook is built from StatChasers data and updated automatically after each game week; the preseason outlook is kept as published.` +
-        (ms ? ` Driver ranks compare the ${ms.field} ${noun} who played at least six games in ${ms.season}.` : "") +
-        ` Fantasy points use ${m.scoring} scoring.`,
-    )}</p></footer>`;
+  // No methodology footer (mak, 2026-10-02).
+  const foot = "";
   const ink = teamInk(data.team);
   const wrap = (html: string): string =>
     html ? `<div class="scp-ox scp-st scp-ol"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";

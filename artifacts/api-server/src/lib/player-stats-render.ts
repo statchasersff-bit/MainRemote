@@ -2,8 +2,8 @@
  * Markup for the NFL advanced player stats table.
  *
  * Server-only, like the other tools' renderers. Every row of the open table is
- * in the response — the players the default filters hide as well, marked
- * `hidden` — and client/player-stats.ts only takes over the controls on top of
+ * in the response - the players the default filters hide as well, marked
+ * `hidden` - and client/player-stats.ts only takes over the controls on top of
  * it: sorting, the filter bar, the section pills and the season switch.
  *
  * That is the substantive change from the standalone app this came from. There
@@ -63,7 +63,7 @@ export interface StatsRenderOptions {
   /**
    * Where the position links point: the QB table's address. The other three
    * are `<basePath>/rb` and so on, with a trailing slash when the base has one
-   * — which is how a WordPress page path is written.
+   * - which is how a WordPress page path is written.
    */
   basePath?: string;
   /** Where a player link points. Defaults to this app's own /player/. */
@@ -73,7 +73,7 @@ export interface StatsRenderOptions {
   /**
    * Carried onto the season and position links. Separate from `linkQuery`
    * because in the WordPress fragment those are statchasers.com addresses,
-   * where `?embed=1` is a reserved query var — while a player link may still
+   * where `?embed=1` is a reserved query var - while a player link may still
    * point back at this origin.
    */
   pageQuery?: string;
@@ -97,7 +97,7 @@ const MONTHS = [
   "August", "September", "October", "November", "December",
 ];
 
-/** "May 24, 2026", in UTC — no locale default, so the render is deterministic. */
+/** "May 24, 2026", in UTC - no locale default, so the render is deterministic. */
 function formatDate(iso: string | null): string | null {
   if (!iso) return null;
   const date = new Date(iso);
@@ -127,8 +127,8 @@ export function formatCell(value: unknown, column: StatsColumn): string | null {
 }
 
 /**
- * The grade's colour band. The bands are the standalone app's — 90 elite,
- * 80 strong, 70 good, 50 average, below that poor — and the number is always
+ * The grade's colour band. The bands are the standalone app's - 90 elite,
+ * 80 strong, 70 good, 50 average, below that poor - and the number is always
  * printed, so the colour is a second reading of it and never the only one.
  */
 function scoreBand(value: number): string {
@@ -139,7 +139,7 @@ function scoreBand(value: number): string {
   return "t0";
 }
 
-/** "D. Maye" — the phone's form of a name. MIRRORS abbreviateName(). */
+/** "D. Maye" - the phone's form of a name. MIRRORS abbreviateName(). */
 function abbreviate(name: string): string {
   const trimmed = name.trim();
   const space = trimmed.indexOf(" ");
@@ -227,7 +227,7 @@ function renderMenu(
 
 /**
  * The position menu, which is also the bar's title: "WR Stats". Real links to
- * real addresses — each position is its own page, as it was in the
+ * real addresses - each position is its own page, as it was in the
  * standalone app's router.
  */
 function renderPositions(table: StatsTable, options: StatsRenderOptions): string {
@@ -288,7 +288,7 @@ function numberInput(
 /**
  * The filters: the snap-share, games and volume floors behind More Filters,
  * and the search box. `hidden` until the bundle wires
- * them — every input here filters rows that are already on the page, and
+ * them - every input here filters rows that are already on the page, and
  * without the bundle it would be a form that does nothing.
  */
 function renderFilters(table: StatsTable): string {
@@ -351,7 +351,7 @@ const VIEWS: Record<StatsPosition, Array<{ label: string; groups: string[] }>> =
 /**
  * The view strip: Overview (every column) first, Advanced (the grades) last.
  * Each button names the group indexes it shows. Buttons, so `hidden` until
- * wired, as above — without the bundle the whole table is on screen anyway.
+ * wired, as above - without the bundle the whole table is on screen anyway.
  */
 function renderSections(table: StatsTable): string {
   const always = table.groups
@@ -385,8 +385,8 @@ function renderSections(table: StatsTable): string {
 }
 
 /**
- * The Totals / Per Game switch. Buttons, not links — per-game figures are
- * worked out in the browser from the totals on the page — so `hidden` until
+ * The Totals / Per Game switch. Buttons, not links - per-game figures are
+ * worked out in the browser from the totals on the page - so `hidden` until
  * the bundle wires them. Outside the blocks a season swap replaces, so the
  * choice carries over to the next season.
  */
@@ -458,8 +458,8 @@ function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, cla
 }
 
 /**
- * One leader: the category, then the season-total leader and — for a
- * counting stat — the per-game leader beside it. The stylesheet shows one
+ * One leader: the category, then the season-total leader and - for a
+ * counting stat - the per-game leader beside it. The stylesheet shows one
  * or the other off the root's `is-per-game` class, which the Per Game
  * switch sets, so switching needs no fetch and a season swap keeps it.
  */
@@ -476,7 +476,7 @@ function renderLeader(card: LeaderCard, options: StatsRenderOptions): string {
 /**
  * The category leaders, one per stat. Chosen under the DEFAULT filters plus
  * the grade qualifier (see stats-data.ts), so they are the season's leaders
- * and do not move when a reader edits the filters — which is why they can be
+ * and do not move when a reader edits the filters - which is why they can be
  * rendered once, here, rather than recomputed in the browser.
  */
 function renderLeaders(table: StatsTable, options: StatsRenderOptions): string {
@@ -523,7 +523,7 @@ function renderLabel(label: string): string {
 }
 
 function renderHead(table: StatsTable): string {
-  // The first banner spans the pinned cells too — #, Player and Team — which
+  // The first banner spans the pinned cells too - #, Player and Team - which
   // is how the standalone app drew it. The bundle recomputes the spans when a
   // group is hidden.
   const banner = table.groups
@@ -584,7 +584,7 @@ function renderHead(table: StatsTable): string {
  *
  * Deliberately bare: a plain number is `<td>354</td>` and nothing else. The
  * widest table is 319 rows by fifty columns, and the classes and data
- * attributes a cell could carry — its group, its sort value — were two thirds
+ * attributes a cell could carry - its group, its sort value - were two thirds
  * of a 1.1 MB page. The bundle reads the group off the header cell above it,
  * and the sort value off the text (commas stripped). Only the cells whose text
  * is NOT their value say otherwise: a dash, a grade's band, a group's edge.
@@ -776,7 +776,7 @@ function renderFaq(items: StatsFaq[], options: StatsRenderOptions): string {
 }
 
 /**
- * The FAQPage node, or the inert island the plugin builds it from — the
+ * The FAQPage node, or the inert island the plugin builds it from - the
  * two-mode arrangement of rankings-render.ts's renderFaqSchema(), for the
  * reason given there: embedded, Rank Math owns the page's graph, and
  * statchasers-player-stats.php lifts these questions into it and strips the
@@ -809,7 +809,7 @@ function renderFaqSchema(items: StatsFaq[], options: StatsRenderOptions): string
 
 /**
  * The address's title, H1, description and hero lead, for the WordPress plugin to print
- * — so the plugin keeps no copy of the words and the season in them is the
+ * - so the plugin keeps no copy of the words and the season in them is the
  * API's. Embedded only; the plugin strips it once read.
  */
 function renderMetaIsland(table: StatsTable, options: StatsRenderOptions): string {

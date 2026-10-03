@@ -1,8 +1,8 @@
 /**
  * A game's scoring plays, as structure rather than sentences.
  *
- * ESPN's summary lists every scoring play with a line of feed text —
- * "Cooper Kupp 7 Yd pass from Matthew Stafford (Matt Gay Kick)" — and a type.
+ * ESPN's summary lists every scoring play with a line of feed text -
+ * "Cooper Kupp 7 Yd pass from Matthew Stafford (Matt Gay Kick)" - and a type.
  * The page never prints that text. It is read here into who scored, how, from
  * how far and what the try after it did, and scoring-summary.ts writes its own
  * sentence from the result. That is what lets the summary say "Beckham Jr."

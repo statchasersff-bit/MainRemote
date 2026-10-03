@@ -18,7 +18,7 @@ import type { PlayerPageData } from "./player-data";
 import { SCORING_SHORT } from "./scoring";
 import type { UpcomingGame } from "./upcoming";
 
-const DASH = "\u2014";
+const DASH = "-";
 
 /** One decimal, the way every figure on the profile is printed. */
 function num(value: number): string {
@@ -76,7 +76,7 @@ export function matchupBand(rank: number): MatchupBand {
  *
  * Four buckets, matching the team hub's `injurySeverity` exactly so the same
  * status is the same colour on both pages. Anything unrecognised is treated as
- * "questionable" rather than dropped — an unfamiliar designation is still a
+ * "questionable" rather than dropped - an unfamiliar designation is still a
  * designation, and guessing it is harmless while hiding it is not.
  */
 export function designationSeverity(status: string | null | undefined): string {
@@ -104,8 +104,8 @@ const NAME_SUFFIXES = new Set(["jr", "sr", "ii", "iii", "iv", "v"]);
  * The split is presentational and the H1 is not: `first` and `last` are
  * rendered as two spans with a real space between them, so the heading's text
  * content is still exactly `player.name` for a crawler, a screen reader and
- * the tests that compare the two. Anything this cannot split cleanly — a
- * single-word name, or a name that would not reassemble to itself — falls back
+ * the tests that compare the two. Anything this cannot split cleanly - a
+ * single-word name, or a name that would not reassemble to itself - falls back
  * to one span, which is the old treatment and never wrong.
  */
 function splitName(name: string): { first: string; last: string } {
@@ -114,7 +114,7 @@ function splitName(name: string): { first: string; last: string } {
 
   const bare = (word: string): string => word.toLowerCase().replace(/\.+$/, "");
   // A suffix takes the name before it along with it, so "Beckham Jr." stays one
-  // surname — but only when there is a given name left over to put above it.
+  // surname - but only when there is a given name left over to put above it.
   const cut =
     parts.length >= 3 && NAME_SUFFIXES.has(bare(parts[parts.length - 1] ?? ""))
       ? parts.length - 2
@@ -251,7 +251,7 @@ const STAT_CATEGORIES: Record<string, string> = {
  * The second line of the header's H1, per tab.
  *
  * The name and this line are one heading, so every tab's address has its own
- * H1 — "Jacoby Brissett / Game log: 2026 weekly stats and fantasy points" —
+ * H1 - "Jacoby Brissett / Game log: 2026 weekly stats and fantasy points" -
  * without the name itself ever changing. The nav links carry the line for
  * each tab (data-scp-kind) and client/player.ts swaps it on a click.
  */
@@ -349,7 +349,7 @@ interface BoardCell {
 /**
  * The navy panel: rate, rank, ownership, with the season they belong to.
  *
- * All three cells always print, with a dash where a figure does not exist —
+ * All three cells always print, with a dash where a figure does not exist -
  * the one place on this page that does, because the panel is a fixed frame a
  * reader learns to read across profiles, and a two-cell panel on one player
  * reads as a layout bug. Never 0.0 for a player who has not played.
@@ -375,7 +375,7 @@ function headerBoard(data: PlayerPageData): { caption: string; cells: BoardCell[
         lead: true,
       },
       { label: "Pos rank", value: played && pos && rank != null ? `${pos}${rank}` : DASH },
-      // Sleeper's redraft pool — see scripts/player/buildRosterPct.mjs.
+      // Sleeper's redraft pool - see scripts/player/buildRosterPct.mjs.
       { label: "Rostered", value: data.rosterPct ? rosteredPct(data.rosterPct.owned) : DASH },
     ],
   };
@@ -462,7 +462,7 @@ export function renderHero(
   const { player, team } = data;
   // The page's H1 on the standalone page. Embedded it is an H2, including when
   // the tool supplies the heading: that H1 is a panel's promoted heading, the
-  // keyword phrase the SEO audit asked for — see promoteHeading().
+  // keyword phrase the SEO audit asked for - see promoteHeading().
   const Heading = options.embed ? "h2" : "h1";
   const prefix = options.playerPathPrefix ?? "/player/";
   const teamPrefix = options.teamPathPrefix ?? "/team/";
@@ -502,7 +502,7 @@ export function renderHero(
   }
   // Only when the year, the round and the pick are all known. draft.json
   // writes the same null row for an undrafted player as for one whose draft
-  // is simply not recorded, so "Undrafted" would be a guess — see bio.ts.
+  // is simply not recorded, so "Undrafted" would be a guess - see bio.ts.
   const draft = data.bioProfile.draft;
   if (draft && draft.year && draft.round && draft.pick) {
     spec.push(["Drafted", `${draft.year} R${draft.round}, #${draft.pick}`]);

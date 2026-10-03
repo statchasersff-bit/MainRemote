@@ -15,7 +15,7 @@
  *     dates and ignores the rest.
  *   - A week read after the fact (the first run, or a missed day) yields only
  *     the final report: "final" is the last practice day's participation.
- *     Earlier days of that week stay unknown and the page shows "—" for them.
+ *     Earlier days of that week stay unknown and the page shows "-" for them.
  *   - A week whose page is not out yet serves the previous week's report under
  *     the new URL. The page's own week selector says which week it is, and a
  *     mismatch is skipped rather than filed under the wrong week.

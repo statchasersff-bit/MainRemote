@@ -124,14 +124,14 @@ export function finishBadge(
    * thirty-six deep and reads the top twelve of it as elite. There are
    * thirty-two kickers, so that branch spent its whole scale on the top two
    * thirds: it called twelve of the thirty-two elite, twelve more strong
-   * starters, and graded the worst kicker in the league "Flex" — a label that
+   * starters, and graded the worst kicker in the league "Flex" - a label that
    * means nothing about a kicker in the first place. The bottom two tiers
    * were unreachable, because no kicker has a rank to reach them with.
    *
    * The cuts are the QB/TE branch's, for the reason they are the QB/TE
    * branch's: one starter per club. The wording is this branch's own, because
    * "Backup range" describes a quarterback holding a clipboard and not a
-   * kicker whose offence does not reach field-goal range — so these say where
+   * kicker whose offence does not reach field-goal range - so these say where
    * a finish landed and leave the role out of it.
    */
   if (pos === "K") {
@@ -389,7 +389,7 @@ export function keyStatSummary(
  * How the game log turns one stat line into one cell.
  *
  * "count" is the stat itself. "ratio" prints two stats over one another as
- * they are written on a box score — 27/37, not 0.73 — and "per" divides them
+ * they are written on a box score - 27/37, not 0.73 - and "per" divides them
  * into a rate. The renderer owns the formatting; this file owns which stats a
  * position's log is actually about.
  */
@@ -411,7 +411,7 @@ export interface LogColumn {
  * One list per position rather than one universal table, because the columns
  * ARE the page: a receiver's log with a PASS TD column in it is a template
  * someone pointed at a player, and a reader can tell. Fantasy points are not in
- * here — the renderer puts them immediately after the result, ahead of every
+ * here - the renderer puts them immediately after the result, ahead of every
  * box-score column, which is the one ordering decision this table makes that
  * the mainstream sites do not.
  *
@@ -487,7 +487,7 @@ export const RECEIVER_RUSH_COLUMNS: LogColumn[] = [
 
 /** One headline rate, ready to print. `pct` values are already 0-100. */
 export interface RateStat {
-  /** The tile's label — abbreviated, because a tile has one line for it. */
+  /** The tile's label - abbreviated, because a tile has one line for it. */
   label: string;
   value: number;
   digits: number;
@@ -498,7 +498,7 @@ export interface RateStat {
    * "240 pass yds/g" is right on a tile and wrong in a sentence, and a
    * generated paragraph that reads like a column header is the tell that
    * nobody wrote it. Absent for rates that do not belong in a list of
-   * averages — a completion percentage is not something a player averaged.
+   * averages - a completion percentage is not something a player averaged.
    */
   prose?: string;
 }
@@ -507,7 +507,7 @@ export interface RateStat {
  * The per-game line that belongs above a game log.
  *
  * Rates rather than totals, because this sits on the tab that answers "what
- * does a week from this player look like" — the totals are the Stats tab's
+ * does a week from this player look like" - the totals are the Stats tab's
  * question and are answered there. Over the games PLAYED, for the reason
  * computeGameLogStats() gives: per-game over weeks on a roster is a number
  * about availability wearing the clothes of a number about production.
@@ -598,7 +598,7 @@ export function perGameRates(
  * The trailing slice of a season, for the "last five games" read.
  *
  * Played games only and in played order, so "last five" means the last five he
- * was on the field for rather than the last five weeks on the calendar — a
+ * was on the field for rather than the last five weeks on the calendar - a
  * player back from a three-week absence has played one game recently, not four.
  */
 export function recentGames(entries: GameLogEntry[], count: number): GameLogEntry[] {
@@ -633,7 +633,7 @@ export interface MomentumMetric {
   pct: boolean;
   /** How much this metric counts toward the role-direction score. */
   weight: number;
-  /** Context only — shown, but not scored as the player's own usage. */
+  /** Context only - shown, but not scored as the player's own usage. */
   context?: boolean;
 }
 

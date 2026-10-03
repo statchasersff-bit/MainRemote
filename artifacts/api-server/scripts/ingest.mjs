@@ -4,14 +4,14 @@
 //
 // Two modes:
 //
-//   pull (default) — POST an empty body; the server fetches the feed itself.
-//   push           — this script fetches the feed and POSTs the items, so the
+//   pull (default) - POST an empty body; the server fetches the feed itself.
+//   push           - this script fetches the feed and POSTs the items, so the
 //                    server never makes an outbound call.
 //
 // Push mode exists because the server cannot always reach the feed: Cloudflare
 // challenges the deployment's egress IP in front of api.statchasers.com, and a
 // server cannot solve a JS challenge. Wherever *this script* can read the feed
-// — a laptop, a CI runner, any host that isn't challenged — it can keep the
+// - a laptop, a CI runner, any host that isn't challenged - it can keep the
 // archive moving regardless.
 //
 // Required env:  INGEST_URL          e.g. https://<deployment>/api/ingest

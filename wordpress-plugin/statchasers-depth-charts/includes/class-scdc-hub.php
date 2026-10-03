@@ -1,6 +1,6 @@
 <?php
 /**
- * [statchasers_nfl_hub] — the /nfl/ hub page.
+ * [statchasers_nfl_hub] - the /nfl/ hub page.
  *
  * Renders a hero, a short explanation, tool cards (with NFL Depth Charts
  * featured), popular depth-chart view links, the latest NFL/fantasy articles,
@@ -73,7 +73,7 @@ class SCDC_Hub {
 		$tools = array(
 			array(
 				'title'    => __( 'NFL Depth Charts', 'statchasers-depth-charts' ),
-				'desc'     => __( 'Live depth charts for all 32 teams — Fantasy, Offense, Defense, and Special Teams views with search and filters.', 'statchasers-depth-charts' ),
+				'desc'     => __( 'Live depth charts for all 32 teams - Fantasy, Offense, Defense, and Special Teams views with search and filters.', 'statchasers-depth-charts' ),
 				'url'      => $dc,
 				'cta'      => __( 'Open Depth Charts', 'statchasers-depth-charts' ),
 				'featured' => true,
@@ -106,11 +106,11 @@ class SCDC_Hub {
 	 */
 	private function popular_views() {
 		$views = array(
-			__( 'Fantasy — All Teams', 'statchasers-depth-charts' )    => 'fantasy/all-teams/',
+			__( 'Fantasy - All Teams', 'statchasers-depth-charts' )    => 'fantasy/all-teams/',
 			__( 'Fantasy RBs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/rb/',
 			__( 'Fantasy WRs', 'statchasers-depth-charts' )            => 'fantasy/all-teams/wr/',
-			__( 'Offense — WRs', 'statchasers-depth-charts' )          => 'offense/all-teams/wr/',
-			__( 'Defense — CBs', 'statchasers-depth-charts' )          => 'defense/all-teams/cb/',
+			__( 'Offense - WRs', 'statchasers-depth-charts' )          => 'offense/all-teams/wr/',
+			__( 'Defense - CBs', 'statchasers-depth-charts' )          => 'defense/all-teams/cb/',
 		);
 		return apply_filters( 'scdc_nfl_popular_views', $views );
 	}
@@ -182,7 +182,7 @@ class SCDC_Hub {
 
 			<section class="scdc-hub-hero">
 				<h1 class="scdc-hub-title"><?php esc_html_e( 'StatChasers NFL', 'statchasers-depth-charts' ); ?></h1>
-				<p class="scdc-hub-tagline"><?php esc_html_e( 'Depth charts, rankings, and fantasy football tools for all 32 teams — updated for the season.', 'statchasers-depth-charts' ); ?></p>
+				<p class="scdc-hub-tagline"><?php esc_html_e( 'Depth charts, rankings, and fantasy football tools for all 32 teams - updated for the season.', 'statchasers-depth-charts' ); ?></p>
 				<a class="scdc-hub-cta" href="<?php echo esc_url( $dc_base ); ?>"><?php esc_html_e( 'Explore NFL Depth Charts', 'statchasers-depth-charts' ); ?></a>
 			</section>
 

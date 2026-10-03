@@ -2,16 +2,16 @@
  * The player search above the header.
  *
  * The server ships the box hidden, the whole roster inlined beside it as a
- * JSON island, and no behaviour at all — see renderPlayerSearch() in
+ * JSON island, and no behaviour at all - see renderPlayerSearch() in
  * lib/player-render.ts for why it is hidden and why the roster is inlined
  * rather than fetched. This file is what turns that markup into a control:
  * it reveals the box, parses the island once (lazily, on the first keystroke
- * rather than at boot — several hundred rows is not free, and most readers
+ * rather than at boot - several hundred rows is not free, and most readers
  * never type), filters it, and builds the results as real links.
  *
  * REAL LINKS, not a click handler that assigns location: a result has to be
  * middle-clickable, open-in-new-tabbable and copyable like every other link on
- * this page, and — inside the legacy iframe mount — has to carry the same
+ * this page, and - inside the legacy iframe mount - has to carry the same
  * `target="_top"` the rest of them do, or the player page opens inside the
  * frame. The combobox roles sit on top of the anchors rather than replacing
  * them.
@@ -21,7 +21,7 @@
  * a club is not somewhere to go: the page below the box is the whole roster
  * grouped by club, so picking the Chiefs means "show me the Chiefs' players".
  * That row is a <button>, which is what a control that changes this page
- * rather than leaving it has to be — an anchor with no address is not
+ * rather than leaving it has to be - an anchor with no address is not
  * middle-clickable or copyable in any useful sense, it is a link that lies.
  * The pick is handed to the directory as a bubbling event; the filtering, the
  * counts and the pill that says a club is on are client/player-index.ts's.
@@ -39,7 +39,7 @@ const LIMIT = 8;
  *
  * Clubs lead the list, because there are 32 of them against ~575 players and a
  * reader who has typed something a club answers has almost certainly asked for
- * the club. The cap is what stops a broad query — a single letter — from
+ * the club. The cap is what stops a broad query - a single letter - from
  * spending the whole panel on hubs and burying the player the reader was
  * actually reaching for.
  *
@@ -70,8 +70,8 @@ interface Searchable {
    * The key with its spaces closed up.
    *
    * searchKey() folds punctuation to a SPACE, so "Ja'Marr" normalises to
-   * "ja marr" and a reader typing "jamarr" — the spelling the slug itself
-   * uses — matches nothing without this. Closing the spaces on both sides
+   * "ja marr" and a reader typing "jamarr" - the spelling the slug itself
+   * uses - matches nothing without this. Closing the spaces on both sides
    * makes the two spellings one string, which is the same trade the name's
    * own slug makes.
    */
@@ -83,14 +83,14 @@ interface TeamEntry extends Searchable {
   kind: "team";
   slug: string;
   /**
-   * "KC" — the club's display code.
+   * "KC" - the club's display code.
    *
    * Carried because it is the name the club card on the index answers to
    * (`data-scp-club` holds this exact string), so it is what a filter pick has
    * to say. The slug addresses the hub; the code addresses the card.
    */
   code: string;
-  /** "Baltimore Ravens" — the city and the nickname, as the row prints it. */
+  /** "Baltimore Ravens" - the city and the nickname, as the row prints it. */
   name: string;
   /** "AFC North", the line under the name. */
   division: string;
@@ -104,7 +104,7 @@ interface Entry extends Searchable {
   name: string;
   position: string;
   team: string;
-  /** Sleeper's id — what the portrait CDN is keyed by. */
+  /** Sleeper's id - what the portrait CDN is keyed by. */
   id: string;
   club: Club | null;
 }
@@ -167,7 +167,7 @@ function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: Team
         name: `${city} ${nickname}`,
         division: division ?? "",
         logo: (code && teams[code]?.logo) || "",
-        // The code is matched as a word of its own, so "gb" finds Green Bay —
+        // The code is matched as a word of its own, so "gb" finds Green Bay -
         // which neither the city nor the nickname starts with. It is not part
         // of the name the row prints, only of the name it answers to.
         ...searchable(`${city} ${nickname} ${code ?? ""}`),
@@ -202,12 +202,12 @@ function cdnImage(src: string, className: string): HTMLImageElement {
  *
  * Three tiers, in the order a reader expects them:
  *
- *   3  the name starts with what was typed — "jaco" or "jamarr c" for Jacoby
+ *   3  the name starts with what was typed - "jaco" or "jamarr c" for Jacoby
  *      and Ja'Marr, punctuation ignored on both sides.
- *   2  every word typed starts a word of the name — "brissett" on its own,
+ *   2  every word typed starts a word of the name - "brissett" on its own,
  *      "j brissett", and "brissett jac" for the same man. Order-free, because
  *      a reader typing two words is naming a person, not dictating a string.
- *   1  it appears anywhere in the name — the fallback that catches a middle
+ *   1  it appears anywhere in the name - the fallback that catches a middle
  *      name, or a half of a hyphenated one nobody thinks of as a word.
  *
  * Both sides are normalised by searchKey, which is what makes "andre" find
@@ -241,8 +241,8 @@ function rank<T extends Searchable>(entries: T[], value: string, limit: number):
     if (scored > 0) hits.push({ entry, rank: scored });
   }
 
-  // A stable sort on a list the server already put in order — alphabetical for
-  // the players, the league's own for the clubs — so equally ranked matches
+  // A stable sort on a list the server already put in order - alphabetical for
+  // the players, the league's own for the clubs - so equally ranked matches
   // stay in it rather than arriving in whatever order the file happens to hold.
   hits.sort((a, b) => b.rank - a.rank);
   return hits.slice(0, limit).map((hit) => hit.entry);
@@ -255,7 +255,7 @@ function rank<T extends Searchable>(entries: T[], value: string, limit: number):
  * two scores are not comparable: a club scores against 31 rivals and a player
  * against 574, so the same tier means something much rarer on the player side.
  * Interleaving them by score would push Lamar Jackson below the Jaguars for
- * "ja" — and a reader who wanted a club got one in the first three rows
+ * "ja" - and a reader who wanted a club got one in the first three rows
  * either way.
  */
 function match(entries: { players: Entry[]; teams: TeamEntry[] }, value: string): Hit[] {
@@ -285,16 +285,16 @@ export function wirePlayerSearch(root: HTMLElement): void {
    *
    * Both halves are required. The attribute is the page saying it is the
    * index; the grid is the thing that would carry the pick out. A button that
-   * dispatches into nothing is worse than the link it replaced — the reader
-   * clicks a club and the page sits there — so if the roster below is missing
+   * dispatches into nothing is worse than the link it replaced - the reader
+   * clicks a club and the page sits there - so if the roster below is missing
    * for any reason, every row goes back to being a destination.
    */
   const clubsFilter =
     "scpClubFilter" in widget.dataset && root.querySelector("[data-scp-dir]") !== null;
 
   // The roles go on now rather than in the server's markup: they promise
-  // behaviour — a list that opens, an option that can be highlighted with the
-  // arrow keys — and until this file runs there is none to deliver.
+  // behaviour - a list that opens, an option that can be highlighted with the
+  // arrow keys - and until this file runs there is none to deliver.
   list.id = id;
   list.setAttribute("role", "listbox");
   list.setAttribute("aria-label", "Player and team results");
@@ -497,7 +497,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
       if (entry.position) {
         const pos = document.createElement("span");
         pos.className = "scp-search-pos";
-        // The stylesheet colours it from here — the site's four position inks,
+        // The stylesheet colours it from here - the site's four position inks,
         // the same ones the depth chart and the matchup tables use. A position
         // without an ink of its own (a kicker) keeps the muted grey around it
         // rather than being given a fifth colour to mean "other".
@@ -581,8 +581,8 @@ export function wirePlayerSearch(root: HTMLElement): void {
         return;
       }
       case "Enter": {
-        // The highlighted player, or — when the reader has typed enough that
-        // only one name is left — that one. Nothing otherwise: this is not a
+        // The highlighted player, or - when the reader has typed enough that
+        // only one name is left - that one. Nothing otherwise: this is not a
         // form, and Enter must never submit the page to itself.
         const target = options[active] ?? (options.length === 1 ? options[0] : null);
         if (!target) return;
@@ -591,7 +591,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
         return;
       }
       case "Escape": {
-        // First press closes the list, second clears the box — so Escape never
+        // First press closes the list, second clears the box - so Escape never
         // throws away what was typed while the reader was still reading it.
         if (!panel.hidden) {
           event.preventDefault();

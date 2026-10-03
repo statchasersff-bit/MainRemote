@@ -25,7 +25,7 @@ import { LruCache } from "./lru";
 
 export interface TeamSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   season: number;
 }
@@ -47,7 +47,7 @@ function optionKey(options: TeamRenderOptions): string {
     options.embed ?? false,
     options.teamPathPrefix ?? "",
     options.linkQuery ?? "",
-    // The section scopes the whole render — one panel instead of five, a
+    // The section scopes the whole render - one panel instead of five, a
     // different heading, no tab strip. Left out of the key, a request for
     // ?section=schedule poisons the cache for the hub at the same slug.
     options.section ?? "",
@@ -56,7 +56,7 @@ function optionKey(options: TeamRenderOptions): string {
     // renders the opening heading as an <h1> and the plain request renders it
     // as an <h2>, so left out of the key WHICHEVER REQUEST ARRIVES FIRST pins
     // the answer for every later one at that slug. A host running "let the tool
-    // supply the heading" — which also empties the theme's own title — then
+    // supply the heading" - which also empties the theme's own title - then
     // serves pages with no <h1> at all, or a plain mount serves two.
     options.ownHeading ?? false,
   ]);
@@ -67,7 +67,7 @@ export async function renderTeamFragment(
   options: TeamRenderOptions = {},
 ): Promise<TeamSsrResult> {
   // Warm the news freshness snapshot before its version is read into the cache
-  // key — the same ordering lib/ssr.ts needs, and for the same reason: a cold
+  // key - the same ordering lib/ssr.ts needs, and for the same reason: a cold
   // first render would otherwise key itself on the empty version and then serve
   // that entry to requests looking at a different one.
   // Best effort: a database that cannot answer costs this page its news, not
@@ -90,7 +90,7 @@ export async function renderTeamFragment(
   return result;
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

@@ -2,7 +2,7 @@
  * The 2025 RB stats and injury history, merged into one record per back.
  *
  * Ported from the standalone app's server/rb-data-service.ts. What decides the
- * numbers is unchanged — the name normalisation, the per-game conversions,
+ * numbers is unchanged - the name normalisation, the per-game conversions,
  * the talent-only strip for a back who changed teams, the "season's starter is
  * the back with the most touches" rule for Backfield Opportunity. What changed
  * is the shape: these are pure functions over already-parsed rows, where the
@@ -264,7 +264,7 @@ function talentOnly(record: MergedRBData): MergedRBData {
 }
 
 /**
- * A back's record for his CURRENT team: exact first, then by name — full when
+ * A back's record for his CURRENT team: exact first, then by name - full when
  * it is the same team under another spelling, talent-only when he moved.
  * MIRRORS lookupRBData().
  */
@@ -285,7 +285,7 @@ export function lookupRBData(
 }
 
 /**
- * A starter's FULL 2025 record, usage intact across a team change — for the
+ * A starter's FULL 2025 record, usage intact across a team change - for the
  * signals that travel with him (durability, workload, age, quality) and never
  * for the pairing signals. MIRRORS lookupRBProfile().
  */
@@ -345,7 +345,7 @@ export const SKIPPED_WEEK = 18;
 /**
  * Each back's last six games as one row, for Player Quality (mak, 2026-09-24):
  * the six most recent games he played, newest season first, reaching back
- * into the previous season when this one has fewer — and never week 18,
+ * into the previous season when this one has fewer - and never week 18,
  * where rested starters and callups make it another game. A game played is a
  * game with a carry or a target, so a week of special teams alone does not
  * use up one of the six.

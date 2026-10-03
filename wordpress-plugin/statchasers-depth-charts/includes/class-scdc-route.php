@@ -12,10 +12,10 @@
  * and the tool's initial state all read from one server-side decision.
  *
  * Route types:
- *   none    — not the depth-chart tool at all.
- *   main    — the general all-teams landing route (/, /fantasy/, /fantasy/all-teams/…).
- *   team    — one of the 32 recognized team routes (/fantasy/houston-texans/…).
- *   invalid — the tool's path with an unrecognized view/team/position segment → 404.
+ *   none    - not the depth-chart tool at all.
+ *   main    - the general all-teams landing route (/, /fantasy/, /fantasy/all-teams/…).
+ *   team    - one of the 32 recognized team routes (/fantasy/houston-texans/…).
+ *   invalid - the tool's path with an unrecognized view/team/position segment → 404.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -78,7 +78,7 @@ class SCDC_Route {
 			'reason'    => 'not-depth-charts',
 		);
 
-		// Before the main query exists there is nothing to detect — and nothing to
+		// Before the main query exists there is nothing to detect - and nothing to
 		// remember either, so this answer is deliberately not memoized.
 		if ( ! did_action( 'wp' ) ) {
 			return $route;

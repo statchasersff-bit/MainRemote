@@ -1,9 +1,9 @@
 /**
- * Rendered-browser tests — the reader's view.
+ * Rendered-browser tests - the reader's view.
  *
  * The companion to seo.test.mjs: that suite proves the content is there without
  * JavaScript, this one proves the interactive version still works once the real
- * compiled bundle runs against that same markup. Both matter — SSR that the
+ * compiled bundle runs against that same markup. Both matter - SSR that the
  * client tears down, or a client that never hydrates, would each pass one suite
  * and fail the other.
  */
@@ -165,14 +165,14 @@ describe("hydration", () => {
     // The other pagination tests read `style.display`, i.e. the INLINE style.
     // That is blind to the failure this test exists for: clearing the inline
     // style hands the card back to the stylesheet, which hides every page but
-    // the first — so a "shown" page renders blank while its inline style looks
+    // the first - so a "shown" page renders blank while its inline style looks
     // perfectly fine. Only a computed style, with styles.css actually loaded,
     // can tell the difference.
     const css = await (await fetch(`${server.origin}/styles.css`)).text();
     const html = (await (await fetch(`${server.origin}/`)).text())
       // The no-JS fallback (`.sc-card-item { display: block !important }`) has to
       // go. A browser with scripting enabled parses <noscript> as inert text, but
-      // jsdom applies the style inside it — which would force every page visible
+      // jsdom applies the style inside it - which would force every page visible
       // and make this test pass no matter what the bundle does. Dropping it
       // reproduces what the reader's browser actually cascades.
       //
@@ -219,7 +219,7 @@ describe("hydration", () => {
       const onPage = [...doc.querySelectorAll(`.sc-card-item[data-page="${page}"]`)];
       assert.ok(
         onPage.every(shown),
-        `page ${page + 1} rendered blank — no card on it is actually visible`,
+        `page ${page + 1} rendered blank - no card on it is actually visible`,
       );
       assert.ok(
         [...doc.querySelectorAll('.sc-card-item[data-page="0"]')].every(
@@ -233,7 +233,7 @@ describe("hydration", () => {
   test("upgrades recent timestamps to relative labels", async () => {
     // Freshen one card's stamp before hydrating. This suite runs against
     // whatever the last ingest stored, and a relative label only applies inside
-    // a 48-hour window — asserting on the stored dates would make the test pass
+    // a 48-hour window - asserting on the stored dates would make the test pass
     // or fail on the age of the data.
     const recent = Date.now() - 3 * 60 * 60 * 1000;
     const page = (await (await fetch(`${server.origin}/`)).text()).replace(
@@ -261,7 +261,7 @@ describe("filters", () => {
     return {
       ...handles,
       filters: doc.querySelector(".sc-filters"),
-      // The team picker is a <details> disclosure, not a <select> — a native
+      // The team picker is a <details> disclosure, not a <select> - a native
       // <option> cannot carry a logo. Its rows are ordinary buttons.
       menu,
       teamRows: () => [...menu.querySelectorAll(".sc-team-option")],
@@ -341,7 +341,7 @@ describe("filters", () => {
       assert.equal(
         logo.getAttribute("alt"),
         "",
-        "the logo is decorative — the team name is beside it",
+        "the logo is decorative - the team name is beside it",
       );
     }
 
@@ -437,7 +437,7 @@ describe("filters", () => {
     assert.equal(
       doc.querySelector(".news-list").style.display,
       "none",
-      "the list reserves a page of height — hide it or it holds a blank gap",
+      "the list reserves a page of height - hide it or it holds a blank gap",
     );
     assert.equal(doc.querySelector(".sc-pager").hidden, true);
   });
@@ -560,7 +560,7 @@ describe("performance characteristics", () => {
     // hard budget. Raise it deliberately if the tool genuinely grows.
     assert.ok(
       main.size < 40_000,
-      `main bundle is ${main.size}B — investigate before raising this budget`,
+      `main bundle is ${main.size}B - investigate before raising this budget`,
     );
   });
 

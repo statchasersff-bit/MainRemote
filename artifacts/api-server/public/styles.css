@@ -30,13 +30,13 @@ body {
      so the host page controls the width. */
   max-width: 100%;
   margin: 0 auto;
-  /* No padding — the widget sits flush to the container edges on all sides. */
+  /* No padding - the widget sits flush to the container edges on all sides. */
   padding: 0;
   /* Establish a block formatting context so descendant margins (the pager's and
      the related-tools block's margin-top, a card's margin-bottom) are contained
      rather than collapsing through this box. With padding: 0 and no border they
      would otherwise escape it, making the wrapper measure shorter than what it
-     actually occupies — which is what the legacy iframe reports as its height,
+     actually occupies - which is what the legacy iframe reports as its height,
      so the frame ends up a few pixels short and shows a scrollbar. flow-root
      rather than overflow: hidden: same containment, without clipping anything
      that intentionally overhangs (focus rings, card shadows). */
@@ -51,7 +51,7 @@ body {
   /* The tokens again, on the fragment's own root.
    *
    * The :root copy above still feeds this document's own chrome (body, .page),
-   * but :root is <html> — the farthest ancestor there is — so on a WordPress
+   * but :root is <html> - the farthest ancestor there is - so on a WordPress
    * page every element between <html> and this one outranks it. A theme that
    * happens to define --gold or --text or --border, all names generic enough
    * that a site plausibly owns them already, silently repaints the tool. The
@@ -61,7 +61,7 @@ body {
    * Redeclaring here puts them ON the element the fragment starts at, where no
    * ancestor can reach them. Not on body: these names are generic, and writing
    * them to the host page's <body> would be this tool overwriting the SITE's
-   * palette — the same collision pointed the other way. */
+   * palette - the same collision pointed the other way. */
   --gold: #d4af37;
   --gold-light: #f0d060;
   --gold-bg: #fdf8e8;
@@ -112,7 +112,7 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Toolbar — the row above the cards holding the filter controls. The filters
+/* Toolbar - the row above the cards holding the filter controls. The filters
    are absent with no items and hidden with no JavaScript, so this row is
    frequently empty and must not reserve space of its own. */
 .sc-toolbar {
@@ -128,7 +128,7 @@ body {
   display: none;
 }
 
-/* Card list — an ordered list, because the feed is genuinely ordered
+/* Card list - an ordered list, because the feed is genuinely ordered
    (newest first). Full-width horizontal cards stacked vertically: each card is
    a single row (photo left, content right), filling the container width. */
 .news-list {
@@ -166,7 +166,7 @@ body {
   color: var(--text-light);
 }
 
-/* News card — horizontal premium player card (photo left, content right) */
+/* News card - horizontal premium player card (photo left, content right) */
 .sc-card {
   position: relative;
   width: 100%;
@@ -197,7 +197,7 @@ body {
     0 6px 14px rgba(15, 39, 71, 0.08);
 }
 
-/* Image area — a small inset square thumbnail on the left, vertically centered
+/* Image area - a small inset square thumbnail on the left, vertically centered
    within the card rather than filling its full height. */
 .sc-card-media {
   position: relative;
@@ -222,7 +222,7 @@ body {
     );
 }
 
-/* Accent strip along the bottom edge of the thumbnail — the player's team
+/* Accent strip along the bottom edge of the thumbnail - the player's team
    secondary color (set per-card via --sc-team-accent), falling back to gold. */
 .sc-card-media::after {
   content: "";
@@ -252,11 +252,11 @@ body {
    set rather than a hole in it.
    Two artwork files ship, named for the surface they belong on. This one is
    always the on-dark (white) mark: both stops of the tile's gradient are
-   colour-mixed toward black, so the square is dark whatever the team colour —
+   colour-mixed toward black, so the square is dark whatever the team colour -
    there is no team for which the navy artwork would read. Its counterpart,
    statchasers-logo-on-light.png, is for any light surface.
    The URL is relative to THIS stylesheet, so it resolves against the tool server
-   in both mounts — including the WordPress one, where the markup lives on
+   in both mounts - including the WordPress one, where the markup lives on
    statchasers.com but the CSS is enqueued from here. A background rather than an
    <img> because the mark is decoration replacing a missing photo, not content
    worth indexing. */
@@ -363,7 +363,7 @@ body {
 
 .sc-card-player {
   /* Above the headline's stretched ::after overlay (z-index 2) so the player
-     and team links inside remain clickable — otherwise the card-wide overlay
+     and team links inside remain clickable - otherwise the card-wide overlay
      would swallow every click and the internal links would be unreachable for
      readers even though crawlers could still follow them. */
   position: relative;
@@ -393,7 +393,7 @@ body {
   border-radius: 3px;
 }
 
-/* Related tools — plain crawlable links, no JS navigation. */
+/* Related tools - plain crawlable links, no JS navigation. */
 .sc-related {
   margin-top: 28px;
   padding-top: 20px;
@@ -491,7 +491,7 @@ body {
 
 @media (max-width: 640px) {
   /* Cards are shorter here, so the reserved height has to match or we'd hold
-     open a gap below the list on mobile. Content itself is NOT reduced —
+     open a gap below the list on mobile. Content itself is NOT reduced -
      mobile shows the same items, headlines, players, teams and links as
      desktop; only the sizing changes. */
   .news-list {
@@ -555,7 +555,7 @@ body {
   }
 }
 
-/* Filters — team dropdown + player search.
+/* Filters - team dropdown + player search.
 
    Ships with the `hidden` attribute (nothing to filter with before the client
    runs) and, like the pager, needs this explicit rule: `display: flex` below
@@ -584,7 +584,7 @@ body {
   flex-direction: column;
   gap: 6px;
   /* The label is part of the control's clickable area, so no `for`/`id` pair is
-     needed to associate them — but the ids stay on the inputs because the
+     needed to associate them - but the ids stay on the inputs because the
      client addresses them directly. */
   min-width: 0;
 }
@@ -600,7 +600,7 @@ body {
 .sc-filter-input,
 .sc-team-trigger {
   /* Themes style bare form controls hard, and this markup is printed straight
-     into a WordPress page — so every visual property is set here rather than
+     into a WordPress page - so every visual property is set here rather than
      inherited. */
   appearance: none;
   padding: 9px 16px;
@@ -628,7 +628,7 @@ body {
   color: var(--text-light);
 }
 
-/* Team picker — a <details> disclosure rather than a <select>, because a
+/* Team picker - a <details> disclosure rather than a <select>, because a
    native <option> cannot show a logo in every browser (and iOS replaces the
    whole control with a system picker). See renderFilters in lib/render.ts. */
 .sc-team-select {
@@ -711,7 +711,7 @@ body {
   z-index: 20;
   top: calc(100% + 6px);
   /* Anchored to the right so the panel opens inside the tool rather than off
-     the edge — the team filter is the rightmost control on the row. */
+     the edge - the team filter is the rightmost control on the row. */
   right: 0;
   /* At least as wide as the trigger, but wide enough for the longest team name
      when the trigger itself is only half a phone screen. */
@@ -858,7 +858,7 @@ body {
 /* X posts in the feed.
 
    Compact by design: this is a news intelligence interface, not a social
-   reader, so an X card is the SAME card as every other one — same size, same
+   reader, so an X card is the SAME card as every other one - same size, same
    grid, same headshot square, same timestamp. The only differences are in the
    label slot that already existed, where the reporter's name and handle replace
    the "Player News" tag, and a hairline down the left edge so the eye can pick
@@ -894,7 +894,7 @@ body {
   white-space: nowrap;
 }
 
-/* On a narrow card the reporter's name wins and the handle steps aside — the
+/* On a narrow card the reporter's name wins and the handle steps aside - the
    name is the attribution that matters, and the X mark already says where it
    came from. */
 @media (max-width: 480px) {
@@ -909,7 +909,7 @@ body {
 
 /* The three <select> filters, matched to the search input and team trigger
    beside them rather than left to whatever the host theme does to a bare
-   control — the same reason .sc-filter-input sets every property itself. */
+   control - the same reason .sc-filter-input sets every property itself. */
 .sc-filter-select {
   appearance: none;
   padding: 9px 30px 9px 16px;

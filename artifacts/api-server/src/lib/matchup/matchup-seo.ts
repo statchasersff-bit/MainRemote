@@ -40,7 +40,7 @@ export function fitMatchupTitle(candidates: string[]): string {
   return candidates[candidates.length - 1];
 }
 
-/** "Cardinals vs Chiefs" — the fallback when the full names leave no room. */
+/** "Cardinals vs Chiefs" - the fallback when the full names leave no room. */
 function nicknames(data: MatchupData): string {
   return `${data.pair.a.nickname} vs ${data.pair.b.nickname}`;
 }
@@ -49,7 +49,7 @@ function nicknames(data: MatchupData): string {
  * "Seahawks won 13-10", or "" when there is no final score.
  *
  * One function so the API's description and the WordPress plugin's cannot
- * disagree about the wording — the plugin receives this string in a header and
+ * disagree about the wording - the plugin receives this string in a header and
  * pastes it in front of the same sentence.
  */
 export function matchupScoreLine(data: MatchupData): string {
@@ -123,6 +123,30 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
         `${b.nickname} in ${data.pinned.seasonType === "post" ? "the " : ""}${label} of ` +
         `${gameSeason}: quarter-by-quarter scoring, every passing, rushing and ` +
         `receiving line, snap counts and fantasy points.`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
+
+  // The upcoming decision page (mak approved the spec's SEO, 2026-10-03).
+  const pv = data.matchupState === "upcoming" ? data.preview : null;
+  if (pv) {
+    const label = `${pv.away.team.nickname} vs ${pv.home.team.nickname}`;
+    const marquee = [...pv.board.away, ...pv.board.home]
+      .filter((r) => r.pos !== "DST" && r.verdict !== "SIT")
+      .sort((x, y) => y.rostered - x.rostered)
+      .slice(0, 4)
+      .map((r) => r.name);
+    const who = marquee.length > 1 ? `${marquee.slice(0, -1).join(", ")} and ${marquee[marquee.length - 1]}` : marquee[0];
+    const long =
+      `${label} ${pv.meeting.weekLabel} ${pv.meeting.season}: start/sit calls${who ? ` for ${who}` : ""}, ` +
+      `odds and implied totals, matchup leverage and injury fallout.`;
+    return {
+      title: `${label} ${pv.meeting.weekLabel} (${pv.meeting.season}): Start/Sit, Fantasy Matchups, Odds & Prediction | ${SITE_NAME}`,
+      description:
+        long.length <= 160
+          ? long
+          : `${label} ${pv.meeting.weekLabel} ${pv.meeting.season}: start/sit calls, odds and implied totals, matchup leverage and injury fallout.`,
       canonical,
       siteName: SITE_NAME,
     };

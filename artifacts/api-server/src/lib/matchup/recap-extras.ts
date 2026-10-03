@@ -5,7 +5,7 @@
  *
  * Each is pure and hides itself when its data is missing. The season facts
  * (records, the game before and after) are read from each club's schedule in
- * playing order — regular season, then postseason — and never stored.
+ * playing order - regular season, then postseason - and never stored.
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
@@ -312,7 +312,7 @@ export function spreadLabel(odds: GameOdds): string {
 /**
  * The Betting tab: how the game finished against the closing lines, the
  * implied team totals, the pair's and each club's record against the lines,
- * each club's next game, and the fine print. Results only — no picks, no
+ * each club's next game, and the fine print. Results only - no picks, no
  * sportsbook links. Empty (and the tab left out) without a closing spread and
  * total, or with the site-wide switch off.
  */
@@ -568,7 +568,7 @@ export function renderExplore(
           (p) =>
             `<li><a class="sct-ex-log" href="${escapeHtml(p.url)}" style="--rb-team:${p.ink}">` +
             `<span class="sct-ex-log-name">${escapeHtml(p.name)}</span>` +
-            `<span class="sct-ex-log-meta">${escapeHtml(`${p.team} · ${p.pos ?? "—"}`)}</span></a></li>`,
+            `<span class="sct-ex-log-meta">${escapeHtml(`${p.team} · ${p.pos ?? "-"}`)}</span></a></li>`,
         )
         .join("") +
       `</ul>`

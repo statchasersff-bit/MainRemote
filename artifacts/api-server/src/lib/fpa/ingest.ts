@@ -78,7 +78,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 /**
  * The display name for a defense.
  *
- * Routed through the canonical team table rather than a local map — the alias
+ * Routed through the canonical team table rather than a local map - the alias
  * handling (LA, OAK, SD, STL, WSH) is already there. An abbreviation it cannot
  * resolve is passed through rather than dropped, so an expansion team shows up
  * as its code instead of vanishing from the table.
@@ -194,7 +194,7 @@ export async function ingestFpa(
     );
   } catch (err) {
     if (err instanceof NflverseSeasonUnavailableError) {
-      logger.info({ currentSeason }, "current season unpublished — baseline only");
+      logger.info({ currentSeason }, "current season unpublished - baseline only");
     } else {
       throw err;
     }
@@ -210,8 +210,8 @@ export async function ingestFpa(
   const dataMode = isPreseason ? "preseason_baseline" : `week_${weekNumber}`;
 
   // Weeks only move forward. A run that would serve fewer weeks than the table
-  // already holds — nflverse briefly publishing a partial file, or a season
-  // that 404s after it has been ingested — is a bad upstream day, not news.
+  // already holds - nflverse briefly publishing a partial file, or a season
+  // that 404s after it has been ingested - is a bad upstream day, not news.
   // Refusing keeps the last good table up; the next scheduled run tries again.
   const [stored] = await db
     .select({ week: max(fpaSnapshots.weekNumber) })

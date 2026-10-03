@@ -1,5 +1,5 @@
 /*
- * StatChasers — Fantasy Strength of Schedule
+ * StatChasers - Fantasy Strength of Schedule
  *
  * A sibling of fpa.css, and a sibling for the same reason: each tool's sheet is
  * enqueued on its own, so a page mounting [statchasers_strength_of_schedule]
@@ -11,9 +11,9 @@
  * FPA table's diverging washes and inks, so a green cell here means what a
  * green cell there means.
  *
- * Theme armour. Divi styles bare elements and ids inside the content column —
+ * Theme armour. Divi styles bare elements and ids inside the content column -
  * `p` padding, `#left-area ul` list padding, `.entry-content table:not(.variations)`
- * frames, `.entry-content tr td` padding, `#left-area table th` ink — so every
+ * frames, `.entry-content tr td` padding, `#left-area table th` ink - so every
  * rule that names a table, a list or a link starts with
  * `:is(.scsos, #scsos-armour)`: `:is()` weighs as its heaviest argument, which
  * is an id, and that outranks all of those without an `!important` each. The
@@ -900,7 +900,7 @@ body.scsos-page {
   font-weight: 800;
 }
 
-/* The five matchup colours, and the bye — on the cells and the legend alike. */
+/* The five matchup colours, and the bye - on the cells and the legend alike. */
 :is(.scsos, #scsos-armour) [data-bucket="smash"] {
   background: var(--scsos-smash-wash);
   color: var(--scsos-smash-ink);

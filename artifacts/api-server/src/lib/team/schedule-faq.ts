@@ -11,7 +11,7 @@
  * plan, and the same question changes tense in the middle of a season. So
  * nothing here is phrased from the calendar: a game is described as played
  * because it carries a result, and as upcoming because it does not. That is the
- * same distinction the table draws in its last column — see gameStatusCell() —
+ * same distinction the table draws in its last column - see gameStatusCell() -
  * and it survives a postponed game, a Thursday night still in progress, and the
  * fortnight in February when the season is over but the page is still up.
  *
@@ -54,12 +54,12 @@ export interface ScheduleFaq {
  */
 const RECENTLY_ENDED_MS = 4 * 60 * 60 * 1000;
 
-/** "the Lions'", "the Rams'" — the apostrophe-only form every current nickname takes. */
+/** "the Lions'", "the Rams'" - the apostrophe-only form every current nickname takes. */
 function possessive(nickname: string): string {
   return nickname.endsWith("s") ? `${nickname}'` : `${nickname}'s`;
 }
 
-/** "A", "A and B", "A, B and C" — the Oxford-less form the rest of the page uses. */
+/** "A", "A and B", "A, B and C" - the Oxford-less form the rest of the page uses. */
 function listOf(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0] ?? "";
@@ -71,7 +71,7 @@ function count(n: number, one: string, many: string): string {
 }
 
 /**
- * "Sunday, September 27" — the long form, in the same timezone the page sets
+ * "Sunday, September 27" - the long form, in the same timezone the page sets
  * every other kickoff in.
  *
  * Its own formatter rather than easternParts(), whose weekday and month are
@@ -91,7 +91,7 @@ const LONG_DATE = new Intl.DateTimeFormat("en-US", {
  * Three states, because ESPN publishes a schedule before it publishes windows:
  * a fixture can have a real kickoff, a placeholder kickoff on the right day
  * (`timeValid` false, which is what a Sunday game with no window looks like),
- * or no date at all. The middle one keeps the date and drops the time — the
+ * or no date at all. The middle one keeps the date and drops the time - the
  * table does exactly this, and a sentence claiming 1:00 PM for a game the
  * league has not scheduled is the one error a reader would act on.
  */
@@ -120,14 +120,14 @@ function opponentPhrase(game: ScheduleGame): string {
  * The venue is preferred over the home/away word wherever ESPN gives one,
  * because "at Allianz Arena" is the answer to the question a reader asking
  * about a home game in Munich actually has. The word is the fallback, not the
- * default — a fixture with no venue yet still has a side.
+ * default - a fixture with no venue yet still has a side.
  */
 function wherePhrase(game: ScheduleGame): string {
   if (game.venue) return `at ${game.venue}`;
   return game.homeAway === "home" ? "at home" : "on the road";
 }
 
-/** "beat", "lost to", "tied" — a result as a sentence states it. */
+/** "beat", "lost to", "tied" - a result as a sentence states it. */
 function resultVerb(outcome: "W" | "L" | "T"): string {
   return outcome === "W" ? "beat" : outcome === "L" ? "lost to" : "tied";
 }
@@ -246,7 +246,7 @@ export function scheduleFaq(input: {
 
   /* --------------------------------------------------------------- bye week */
 
-  // Only when the response supported exactly one answer — deriveByeWeek()
+  // Only when the response supported exactly one answer - deriveByeWeek()
   // returns null rather than guessing, and a guessed bye is the answer in this
   // block most likely to cost somebody a lineup.
   const bye = schedule.byeWeek;
@@ -322,8 +322,8 @@ export function scheduleFaq(input: {
 
   if (rivals.length) {
     // "home and away" only when the schedule actually reads that way. It is the
-    // normal shape of a division slate and it is not guaranteed — a partial
-    // fetch, or a season played with a fixture relocated, breaks it — so the
+    // normal shape of a division slate and it is not guaranteed - a partial
+    // fetch, or a season played with a fixture relocated, breaks it - so the
     // phrase is earned from the rows rather than assumed from the format.
     const homeAndAway = rivals.every((rival) => {
       const meetings = meetingsWith(rival);
@@ -445,7 +445,7 @@ export function scheduleFaq(input: {
           : `The ${nick} finished ${season} at ${record}`) +
         // The latest result, while there is a next one to place it against.
         // "Most recently" about a season that ended in January is a phrase
-        // pointing at nothing — the record above is the whole answer by then.
+        // pointing at nothing - the record above is the whole answer by then.
         (running && result
           ? `, most recently ${resultVerb(result.outcome)} ${opponentPhrase(latest)} ` +
             `${result.teamScore}-${result.opponentScore} in Week ${latest.week}.`

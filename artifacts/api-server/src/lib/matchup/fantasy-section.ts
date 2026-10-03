@@ -104,7 +104,7 @@ function signed(n: number): string {
 }
 
 function pct(share: number | null): string {
-  return share === null ? "—" : `${Math.round(share * 100)}%`;
+  return share === null ? "-" : `${Math.round(share * 100)}%`;
 }
 
 function sum(values: number[]): number {
@@ -311,13 +311,13 @@ function usageLabel(u: Usage): string {
   if (u.row.group === "qb" || (p.pos ?? "").toUpperCase() === "QB") return `${s(p.stats, "passAtt")} att`;
   const car = u.carShare ?? -1;
   const tgt = u.tgtShare ?? -1;
-  if (car < 0 && tgt < 0) return "—";
+  if (car < 0 && tgt < 0) return "-";
   return car > tgt ? `${pct(u.carShare)} car` : `${pct(u.tgtShare)} tgt`;
 }
 
 /**
- * Fantasy points against expected (mak, 2026-09-30): what mattered first —
- * the biggest over- and underperformer and the heaviest expected workload —
+ * Fantasy points against expected (mak, 2026-09-30): what mattered first -
+ * the biggest over- and underperformer and the heaviest expected workload -
  * then a table led by PTS, xFP and the gap between them, with the full usage
  * columns one click down. Every figure carries all three scorings for the
  * section's switch.
@@ -368,14 +368,14 @@ function renderUsage(input: FantasySectionInput, usage: Usage[], rows: Row[], to
       const p = u.row.p;
       return (
         `<tr>` +
-        `<th scope="row" class="sct-fp-player">${nameOf(u)}<span class="sct-fp-sub">${escapeHtml(`${p.team} · ${p.pos ?? "—"}`)}</span></th>` +
+        `<th scope="row" class="sct-fp-player">${nameOf(u)}<span class="sct-fp-sub">${escapeHtml(`${p.team} · ${p.pos ?? "-"}`)}</span></th>` +
         `<td class="sct-fp-pts"${dataAttrs(u.row.pts)}>${u.row.pts.ppr.toFixed(1)}</td>` +
         `<td class="sct-fp-x"${dataAttrs(u.x)}>${u.x.ppr.toFixed(1)}</td>` +
         diffCell(u.over) +
         `<td>${pct(u.snapShare)}</td>` +
         `<td class="sct-fp-use">${escapeHtml(usageLabel(u))}</td>` +
         // Routes: no feed this site reads carries them.
-        d(`<td>—</td>`) +
+        d(`<td>-</td>`) +
         d(`<td>${s(p.stats, "passAtt")}</td>`) +
         d(`<td>${s(p.stats, "rushAtt")}</td>`) +
         d(`<td>${pct(u.carShare)}</td>`) +
@@ -680,7 +680,7 @@ export function verdictPlayers(input: FantasySectionInput): GamePlayer[] {
 /**
  * Fantasy verdicts, stock up / stock down and in-game injuries: the parts of
  * the fantasy section that are about players rather than a table of points.
- * `heading` is the tag each block's title takes — h3 under the section's own
+ * `heading` is the tag each block's title takes - h3 under the section's own
  * h2, or h2 where the blocks stand on their own in the matchup page's Fantasy
  * tab.
  */
@@ -715,7 +715,7 @@ function fantasyNotes(
           const tag = tagOf(u);
           const ss = u.row.ctx?.active ? input.startSitUrl(p.name) : null;
           const meta = (f: Format): string =>
-            `${p.team} · ${p.pos ?? "—"} · ${u.row.pts[f].toFixed(1)} pts on ${u.x[f].toFixed(1)} expected`;
+            `${p.team} · ${p.pos ?? "-"} · ${u.row.pts[f].toFixed(1)} pts on ${u.x[f].toFixed(1)} expected`;
           return (
             `<article class="sct-fp-card" style="--rb-team:${colors[side].ink}">` +
             `<h4 class="sct-fp-card-name">${nameLink(p.name)}` +
@@ -906,7 +906,7 @@ const DECISION_MAX_GAP = 30;
  * game that fantasy managers really do choose between, each linked to its
  * comparison page. A pair is a decision when both are widely rostered, neither
  * is a must-start, and leagues start them at similar rates (Sleeper's rates,
- * the same reading the player pages print) — this game's workload alone put
+ * the same reading the player pages print) - this game's workload alone put
  * Ja'Marr Chase against Tee Higgins. Never every combination, and no player
  * in two pairs. Nothing for a playoff game or once the season is over: there
  * is no next week to decide.
@@ -1030,7 +1030,7 @@ export function renderFantasyMatchups(game: ScoreboardGame, allowed: PointsAllow
   const colors = pairColors(game.away.abbr, game.home.abbr);
   const cell = (side: typeof away, pos: AllowedPosition): string => {
     const t = side?.perGame[pos];
-    return t ? `<td class="sct-fp-pts"${dataAttrs(t)}>${t.ppr.toFixed(1)}</td>` : `<td>—</td>`;
+    return t ? `<td class="sct-fp-pts"${dataAttrs(t)}>${t.ppr.toFixed(1)}</td>` : `<td>-</td>`;
   };
   return (
     `<h3 class="sct-rb-h3" id="matchups">Fantasy matchups</h3>` +

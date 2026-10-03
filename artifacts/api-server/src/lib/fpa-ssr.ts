@@ -8,7 +8,7 @@
  *
  * The fragment is cached per (season, format, view) on a fingerprint of the
  * snapshot rows, so a fresh ingest invalidates every rendering and nothing else
- * does. Six combinations against one small table — the bound is a guard, not a
+ * does. Six combinations against one small table - the bound is a guard, not a
  * working constraint.
  *
  * ## The lazy ingest
@@ -20,12 +20,12 @@
  *   - it runs ONCE. Concurrent requests share the in-flight promise rather than
  *     each starting a 7MB download;
  *   - it does not block the response. The caller gets the honest empty state
- *     immediately and the next request has data — a request that waited would
+ *     immediately and the next request has data - a request that waited would
  *     hang for the length of two CSV parses;
  *   - a failure is remembered for a backoff period, so a broken upstream costs
  *     one attempt a minute rather than one per page view.
  *
- * Scheduled ingest is still the intended path — POST /api/fpa/ingest weekly,
+ * Scheduled ingest is still the intended path - POST /api/fpa/ingest weekly,
  * or scripts/ingest-fpa.mjs against the database you mean to write to. This is
  * the safety net under it, and only that: it fires when the table is EMPTY, so
  * it can seed a cold database and can never refresh a stale one.
@@ -45,7 +45,7 @@ import { LruCache } from "./lru";
 
 export interface FpaSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when nothing is ingested; the caller decides what to do about it. */
   data: FpaTableData | null;
@@ -77,7 +77,7 @@ function kickLazyIngest(): void {
   if (Date.now() - lastSuccessAt < SUCCESS_BACKOFF_MS) return;
 
   kicking = true;
-  logger.warn("No FPA snapshots found — starting a one-time background ingest");
+  logger.warn("No FPA snapshots found - starting a one-time background ingest");
 
   // Imported lazily so the ingest's nflverse code is not on the startup path of
   // a deployment that never needs it. What happens next belongs to
@@ -145,7 +145,7 @@ export async function renderFpaFragment(
   return result;
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

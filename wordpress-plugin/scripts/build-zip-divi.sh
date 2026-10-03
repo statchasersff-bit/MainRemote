@@ -31,7 +31,7 @@ if [ -n "$PHP" ]; then
 	"$PHP" -l "$src" >/dev/null || die "$(basename "$src") does not parse."
 	say "parse    ok"
 else
-	say "parse    SKIPPED — no php binary found"
+	say "parse    SKIPPED - no php binary found"
 fi
 
 version="$(grep -m1 -oE "^ \* Version: +[0-9.]+" "$src" | grep -oE '[0-9.]+$' || true)"

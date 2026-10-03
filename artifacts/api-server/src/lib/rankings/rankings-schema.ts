@@ -3,7 +3,7 @@
  *
  * A board is a ranked list of players, and ItemList is what says so. The host
  * page's SEO plugin already emits WebPage and BreadcrumbList, so this adds only
- * the lists — the plugin grafts them into that graph, the standalone page
+ * the lists - the plugin grafts them into that graph, the standalone page
  * prints them on its own. Nothing here is an application: see schema.ts for
  * why SoftwareApplication is gone.
  *

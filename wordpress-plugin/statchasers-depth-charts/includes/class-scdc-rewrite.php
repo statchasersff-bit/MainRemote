@@ -99,7 +99,7 @@ class SCDC_Rewrite {
 
 	/**
 	 * WordPress's canonical redirect would strip our filter segments and bounce
-	 * nested URLs back to /nfl/nfl-depth-charts/, so it is disabled there — except
+	 * nested URLs back to /nfl/nfl-depth-charts/, so it is disabled there - except
 	 * for the two normalizations we *do* want: a missing trailing slash and an
 	 * uppercase slug both 301 to the route's own clean URL.
 	 *

@@ -4,7 +4,7 @@
  * This deliberately does NOT move on every request, every ingest run, or every
  * render. An ingest that finds nothing new leaves the timestamp alone, so a
  * "Last updated" label and a sitemap `lastmod` derived from it stay honest.
- * Faked freshness — bumping a date because a page was served — is worse than
+ * Faked freshness - bumping a date because a page was served - is worse than
  * no date at all: once the signal is noise, it stops being used.
  *
  * The value is derived from the data itself rather than tracked separately, so
@@ -17,7 +17,7 @@ import { db, newsItems } from "./db";
 export interface Freshness {
   /** Epoch ms of the most recent content change, or null on an empty archive. */
   changedAtMs: number | null;
-  /** Number of items the value was computed over — part of the cache key. */
+  /** Number of items the value was computed over - part of the cache key. */
   count: number;
 }
 
@@ -30,7 +30,7 @@ let loading: Promise<Freshness> | null = null;
 let loadedAtMs = 0;
 /**
  * Bumped by every invalidation. A load that started before one lands must not
- * overwrite `cached` with the value it read *before* the change — otherwise an
+ * overwrite `cached` with the value it read *before* the change - otherwise an
  * ingest that finishes mid-query is silently undone and the snapshot goes back
  * to describing the archive as it was.
  */
@@ -39,14 +39,14 @@ let epoch = 0;
 /**
  * How long a loaded snapshot may be trusted without re-reading the archive.
  *
- * This process is not the only thing that can write to the archive, and — more
- * to the point — it is not guaranteed to notice when it is. `invalidateFreshness()`
+ * This process is not the only thing that can write to the archive, and - more
+ * to the point - it is not guaranteed to notice when it is. `invalidateFreshness()`
  * only fires from an ingest *in this process* that *succeeded* and *changed*
  * something. Every other case leaves the snapshot untouched forever:
  *
  *   - this instance's ingest throws every time (a feed URL missing from the
  *     deployment's environment, an upstream outage, a database error). Nothing
- *     invalidates, so the ETag never moves and the render cache never drops —
+ *     invalidates, so the ETag never moves and the render cache never drops -
  *     the page serves the same HTML indefinitely no matter what is in the
  *     database. This is the failure that kept production frozen: a cache whose
  *     only invalidation path was the very thing that was broken.
@@ -73,9 +73,9 @@ const MAX_AGE_MS = (() => {
  */
 async function compute(): Promise<Freshness> {
   // Everything is reduced to epoch milliseconds in SQL and read back as a
-  // number. Values from an aggregate arrive as strings from the pg driver —
+  // number. Values from an aggregate arrive as strings from the pg driver -
   // count(*) and max() over a bigint both do, and max() over a timestamptz
-  // does NOT come back as a Date the way a plain column selection would — so
+  // does NOT come back as a Date the way a plain column selection would - so
   // converting here rather than trusting the shape keeps one rule instead of
   // three special cases.
   const [row] = await db
@@ -102,7 +102,7 @@ async function compute(): Promise<Freshness> {
 
 /**
  * Load the snapshot if it isn't warm. Await this before anything reads
- * freshness() or contentVersion() for a response — a no-op once loaded.
+ * freshness() or contentVersion() for a response - a no-op once loaded.
  *
  * This exists because the store went async when it moved to Postgres, but the
  * two readers below cannot: they run while an ETag is being assembled and a
@@ -110,7 +110,7 @@ async function compute(): Promise<Freshness> {
  * spread awaits through every caller, the value is loaded once per content
  * version and read synchronously from memory afterwards.
  *
- * "Warm" means loaded *and* younger than MAX_AGE_MS — see that constant for why
+ * "Warm" means loaded *and* younger than MAX_AGE_MS - see that constant for why
  * an invalidation-only snapshot is not enough.
  */
 export async function ensureFreshness(): Promise<Freshness> {
@@ -146,7 +146,7 @@ export function freshness(): Freshness {
 
 /**
  * Bumped by ANY stored-content mutation, including ones that don't move the
- * user-visible date — a backfilled summary changes the rendered cards without
+ * user-visible date - a backfilled summary changes the rendered cards without
  * making the archive newer. Kept separate from `changedAtMs` so cache
  * correctness never has to be traded against date honesty.
  */

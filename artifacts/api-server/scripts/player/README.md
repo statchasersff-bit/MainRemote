@@ -58,7 +58,7 @@ maintenance passes over files that already exist, not part of a cold build.
 `buildRosterPct.mjs` is the one builder here whose output goes stale on its own:
 every other file is a record of seasons that have already happened, and this one
 is how many leagues rostered a player in a given week. It carries the season and
-week it read inside it, so a stale file is stale visibly rather than quietly —
+week it read inside it, so a stale file is stale visibly rather than quietly -
 rerun it whenever the number should have moved, which in season is weekly.
 
 ## Slugs, and why step 1a is not optional
@@ -77,7 +77,7 @@ builder uses to MOVE the existing page rather than publish a second one).
 **`players.json` is not the only file that stores a slug.** `bios.json`,
 `draft.json` and `bio_facts.json` are keyed by one; `fantasy_outlook_2026.json`
 and `depth_charts.json` carry one as a field. Rename a player without running
-`migrateSlugs.js` and none of that follows him — the profile renders with no
+`migrateSlugs.js` and none of that follows him - the profile renders with no
 bio, no draft row, no outlook and no depth-chart slot, which looks exactly like
 a data outage and is much harder to trace back to a URL change.
 
@@ -90,7 +90,7 @@ node scripts/player/buildIndexedPlayers.js
 ```
 
 It is a no-op when nothing moved. A successful run empties the move list, which
-is what makes running it again safe — these renames include swaps and are only
+is what makes running it again safe - these renames include swaps and are only
 correct to apply once. Then press the builder on the WordPress Tools screen,
 which moves the pages and leaves a 301 behind; until that runs, the site still
 serves the old address.
@@ -106,8 +106,8 @@ and high school from Sleeper's player dictionary, plus one row per season the
 player was actually on a roster, which is the career timeline.
 
 It is numbered 7a because it needs `players.json` (for the slugs, which it reads
-rather than recomputes) and nothing else. It runs about twenty requests — one
-per season from 2005 — and takes a minute.
+rather than recomputes) and nothing else. It runs about twenty requests - one
+per season from 2005 - and takes a minute.
 
 Two things worth knowing before changing it:
 
@@ -119,7 +119,7 @@ line before it records a season, and a timeline that starts before a player's
 draft year is the signature of that guard having been removed.
 
 **There is no hometown.** Sleeper's `birth_city` and `birth_state` are null for
-every active player at every position — not sparse, empty — so the Bio tab has
+every active player at every position - not sparse, empty - so the Bio tab has
 no hometown row. If a source for it appears, this is the script that should
 carry it.
 
@@ -130,7 +130,7 @@ everybody and leaves the rest of the file alone.
 
 `buildGameLogs.js` and `buildGameScores.js` used to carry
 `const SEASONS = [2023, 2024, 2025]`. That list is wrong every September and
-wrong *silently* — the build succeeds, the server serves, and every player page
+wrong *silently* - the build succeeds, the server serves, and every player page
 shows last season's game log as though it were this one. Both now derive the
 list from the calendar (`season.mjs`), and both take seasons as arguments:
 
@@ -144,8 +144,8 @@ Naming one season rebuilds one file and leaves the others alone, which matters
 because they are committed: a full rebuild rewrites four megabytes of JSON to
 re-derive numbers that stopped changing when the season ended.
 
-`buildGameScores.js` used to need one more thing per season — `SEASON_STARTS`,
-the Thursday of week 1 — because it asked ESPN for a date range and counted the
+`buildGameScores.js` used to need one more thing per season - `SEASON_STARTS`,
+the Thursday of week 1 - because it asked ESPN for a date range and counted the
 window off that anchor. It no longer does: ESPN now answers `dates=<from>-<to>`
 with `400 Failed to get events endpoint.`, and the week is asked for directly
 (`dates=<season>&seasontype=2&week=<n>`). There is no calendar to maintain and
@@ -153,7 +153,7 @@ nothing to add in September.
 
 It records a game only once ESPN calls it `STATUS_FINAL`. A game still being
 played carries the score as it stands, and a settled "W" printed over a game in
-progress would sit there until somebody rebuilt the file — so an in-season run
+progress would sit there until somebody rebuilt the file - so an in-season run
 leaves the afternoon's unfinished games out and picks them up on the next one.
 
 That script also **merges** into `game_scores.json` rather than replacing it,
@@ -161,7 +161,7 @@ and will not overwrite a season already on disk with an empty fetch. ESPN rate
 limits and blocks, and both of those would otherwise turn three finished seasons
 into nothing.
 
-`advanced_stats/<pos>_<season>.json` is not built here — those tables arrive
+`advanced_stats/<pos>_<season>.json` is not built here - those tables arrive
 from the advanced-stats pipeline and are dropped in whole. The Advanced Stats
 tab reads whatever columns they declare, so a table with new metrics in it
 renders without a code change.
@@ -206,18 +206,18 @@ never a wrong one.
 
 Two validations are worth knowing about, both in `parseModelJson`:
 
-- **The range is dropped whole unless it is ordered** —
+- **The range is dropped whole unless it is ordered** -
   `ceiling.best <= expected.best <= floor.best`, and the same for `worst`. A
   ceiling worse than the floor is not a range, it is a mistake, and drawing it
   would put the marker off the axis.
 - **`verdict.call` must come from a fixed vocabulary** (`VERDICT_CALLS`).
   Free text drifts: three runs produce "Matchup Play", "matchup-dependent" and
   "Use in good matchups" for the same call. `Buy` and `Sell` are deliberately
-  not in the list — this site has no trade-market data behind them.
+  not in the list - this site has no trade-market data behind them.
 
 The four driver cards on the tab are **not** in this file and are not authored.
-They are measured from `keyStats` against the position's own distribution — see
-`src/lib/player/outlook-drivers.ts` — so they stay true without anybody
+They are measured from `keyStats` against the position's own distribution - see
+`src/lib/player/outlook-drivers.ts` - so they stay true without anybody
 rewriting them, and the categories differ by position.
 
 To see what one generation produces before committing to a full run:

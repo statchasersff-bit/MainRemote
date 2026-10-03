@@ -5,7 +5,7 @@
  * A changed rule does nothing until WordPress rebuilds its rule table, and an
  * upgrade by zip does not run the activation hook that asks for that. So each
  * file that adds or changes a rule remembers the rule's signature and raises
- * `statchasers_needs_flush` when it differs — which statchasers-news.php acts
+ * `statchasers_needs_flush` when it differs - which statchasers-news.php acts
  * on at the end of `init`. The schedule's week rule had no such thing, and the
  * matchup game rule changed shape (it learned the postseason) without one, so
  * both would have 404ed on every site that updated rather than installed.

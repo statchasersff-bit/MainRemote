@@ -34,7 +34,7 @@ import { LruCache } from "./lru";
 
 export interface ScheduleSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when the feed is unavailable; the caller decides what to do. */
   data: ScheduleSeason | null;
@@ -54,8 +54,8 @@ function optionKey(season: number, options: ScheduleRenderOptions): string {
     options.week ?? 0,
     options.filter ?? "all",
     options.embed ?? false,
-    // The heading mode changes the markup that comes back — a fragment that
-    // prints the page's <h1> against one that prints none — so a fragment
+    // The heading mode changes the markup that comes back - a fragment that
+    // prints the page's <h1> against one that prints none - so a fragment
     // cached under one must not be served under the other.
     options.ownHeading ?? false,
     options.basePath ?? "",
@@ -81,7 +81,7 @@ export async function renderScheduleFragment(
   }
 
   // The default week is resolved from the data, so two requests a minute apart
-  // that both omit `week` must share a cache entry — which means the key has to
+  // that both omit `week` must share a cache entry - which means the key has to
   // carry the week that was CHOSEN, not the one that was asked for.
   const resolved = resolveState(data, options);
   const key = optionKey(data.season, { ...options, week: resolved.week });
@@ -99,7 +99,7 @@ export async function renderScheduleFragment(
   return result;
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

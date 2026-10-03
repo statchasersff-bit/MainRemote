@@ -1,5 +1,5 @@
 /**
- * POST /api/fpa/ingest — the scheduled refresh.
+ * POST /api/fpa/ingest - the scheduled refresh.
  *
  * This endpoint exists because of a specific failure: the FPA table is written
  * by a script, the script writes to whatever database the process running it is
@@ -8,7 +8,7 @@
  * endpoint runs the ingest inside the deployment instead. What has to hold:
  *
  *   - **the guard.** With INGEST_SECRET set, an unauthenticated POST must not
- *     start an ingest — not merely be answered 401 after starting one.
+ *     start an ingest - not merely be answered 401 after starting one.
  *   - **it actually writes, and the page picks it up.** The point is the served
  *     table moving, not a 200.
  *   - **one at a time.** A run downloads two large CSVs. Two callers arriving
@@ -17,8 +17,8 @@
  *   - **the status endpoint says how old the figures are.** The line whose
  *     absence let a stale table look healthy.
  *
- * nflverse is stubbed through NFLVERSE_BASE_URL — no 14MB of GitHub traffic in
- * a test run — and every write is confined to seasons 1999 and 2000, which the
+ * nflverse is stubbed through NFLVERSE_BASE_URL - no 14MB of GitHub traffic in
+ * a test run - and every write is confined to seasons 1999 and 2000, which the
  * real ingest never touches, and deleted afterwards. The live 2026 rows this
  * suite reads for the status assertions are never written to.
  */
@@ -210,7 +210,7 @@ async function snapshotRowCount() {
   });
 }
 
-describe("POST /api/fpa/ingest — the guard", () => {
+describe("POST /api/fpa/ingest - the guard", () => {
   test("no secret is 401 and starts nothing", async () => {
     const before = stub.hits;
     const res = await ingest({ secret: null, query: TEST_SEASONS });
@@ -229,7 +229,7 @@ describe("POST /api/fpa/ingest — the guard", () => {
   });
 });
 
-describe("POST /api/fpa/ingest — the refresh", () => {
+describe("POST /api/fpa/ingest - the refresh", () => {
   test("writes the season it was asked for, and the page serves it", async () => {
     const res = await ingest({ query: TEST_SEASONS });
     assert.equal(res.status, 200);
@@ -291,7 +291,7 @@ describe("POST /api/fpa/ingest — the refresh", () => {
     );
   });
 
-  test("the ingest is idempotent — a second run replaces, never accumulates", async () => {
+  test("the ingest is idempotent - a second run replaces, never accumulates", async () => {
     const first = await snapshotRowCount();
     const res = await ingest({ query: TEST_SEASONS });
     assert.equal(res.status, 200);
@@ -299,7 +299,7 @@ describe("POST /api/fpa/ingest — the refresh", () => {
   });
 });
 
-describe("GET /api/status — the FPA block", () => {
+describe("GET /api/status - the FPA block", () => {
   test("reports how old the served figures are", async () => {
     const res = await fetch(`${server.origin}/api/status`);
     assert.equal(res.status, 200);
@@ -338,7 +338,7 @@ describe("GET /api/status — the FPA block", () => {
  * baseline-only one. Runs last, because it leaves failures in the process's
  * refresh state that the status block above asserts are absent.
  */
-describe("POST /api/fpa/ingest — a bad upstream day", () => {
+describe("POST /api/fpa/ingest - a bad upstream day", () => {
   async function storedWeek() {
     return withDb(async (client) => {
       const { rows } = await client.query(

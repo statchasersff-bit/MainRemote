@@ -14,7 +14,7 @@ import { mergeNewsLanes } from "./news-merge";
 
 /**
  * The X lane's source_type. Declared here rather than imported from lib/x so
- * the read path does not depend on the ingestion half at all — the feed must
+ * the read path does not depend on the ingestion half at all - the feed must
  * still build, and still read X rows, in a deployment where X ingestion is
  * switched off and nothing in lib/x is ever loaded.
  */
@@ -26,18 +26,18 @@ export const MAX_LIMIT = 250;
 /**
  * How far back a team-filtered read reaches, in days.
  *
- * Expressed as a window rather than a row count. Team is not a column — it is
+ * Expressed as a window rather than a row count. Team is not a column - it is
  * resolved per row from the player behind the headshot (see lib/teams.ts), and
- * only then from the player's name — so it cannot be pushed into the WHERE
+ * only then from the player's name - so it cannot be pushed into the WHERE
  * clause and a team page has to filter in memory. The quantity that bound is
  * therefore "how much archive do we read", and the honest unit for that is
  * time, not rows: a fixed newest-N scan reaches back six months while the
  * archive is thin and five days once the feed is busy, with nothing in the
  * output to say which of the two just happened.
  *
- * Six months so a team page covers a full offseason — the reference this
+ * Six months so a team page covers a full offseason - the reference this
  * matches (thehuddle's team news pages) carries roughly four months of items in
- * one list — and so the section does not empty out over the quiet weeks between
+ * one list - and so the section does not empty out over the quiet weeks between
  * the draft and camp.
  */
 export const TEAM_WINDOW_DAYS = 180;
@@ -47,7 +47,7 @@ export const TEAM_WINDOW_DAYS = 180;
  *
  * A safety valve, not a tuning knob: it stops a busy feed turning every cache
  * miss into a table read. When it binds it is logged rather than silently
- * applied — a window quietly truncated back into a row count is the exact
+ * applied - a window quietly truncated back into a row count is the exact
  * failure this replaces, and the log line is the signal that the derived team
  * has earned a stored, indexed column so the filter can move into SQL.
  */
@@ -59,7 +59,7 @@ export interface ListNewsOptions {
   /**
    * Include the club feeds' rows as well as the player wire's.
    *
-   * Off by default, and that default is the point — see listNews below.
+   * Off by default, and that default is the point - see listNews below.
    */
   includeClubs?: boolean;
 }
@@ -72,8 +72,8 @@ export interface ListNewsOptions {
  * The player wire only, unless asked otherwise. This is the reader behind the
  * news page and GET /api/news, and that surface is a player news tool: cards
  * built around a headshot, a player name, and a filter by player. The club
- * feeds publish roughly ten times the volume — practice reports, previews,
- * ticket promotions, none of them tagged with a player — so including them by
+ * feeds publish roughly ten times the volume - practice reports, previews,
+ * ticket promotions, none of them tagged with a player - so including them by
  * default would not enrich this list, it would replace it, and the first page
  * would stop being about players within a day.
  *
@@ -93,7 +93,7 @@ export async function listNews(
    * on the new source_type column, because that is the rule every row in the
    * archive was written under and the column is null for all of them. Changing
    * the wire/club split to depend on source_type would make this list's
-   * contents contingent on a backfill — and a backfill that has not run yet
+   * contents contingent on a backfill - and a backfill that has not run yet
    * looks exactly like a feed that has silently swallowed the club archive.
    *
    * X is added as its own term instead. Its rows may carry a team (resolved at
@@ -144,12 +144,12 @@ export async function listNews(
  *
  * The stored team wins when there is one. A club row was written by the feed of
  * the team it belongs to, so it is known rather than inferred, and there is
- * nothing for the inference below to add — a club story has no headshot and
+ * nothing for the inference below to add - a club story has no headshot and
  * usually no player name, so running it through them would resolve a first-party
  * fact to null.
  *
- * Everything else is the wire, where team is derived: from the headshot first —
- * that is the existing, unchanged behaviour the news feed relies on — and then,
+ * Everything else is the wire, where team is derived: from the headshot first -
+ * that is the existing, unchanged behaviour the news feed relies on - and then,
  * only when there is no headshot to read, from the player's name against the
  * same Sleeper index. The archive genuinely contains rows with a null image
  * ("Vita Vea: Agrees to one-year extension"), and without the fallback those
@@ -168,7 +168,7 @@ function toNewsItem(row: typeof newsItems.$inferSelect): NewsItem {
     source: row.source,
     sourceType: row.sourceType,
     authorHandle: row.authorHandle,
-    // Derived, never stored — see lib/news-category.ts. Computed over the
+    // Derived, never stored - see lib/news-category.ts. Computed over the
     // title and the summary together because an X row's title is only the
     // post's first line and the rest of it is in the summary.
     category: categorize(row.title, row.summary),
@@ -180,13 +180,13 @@ function toNewsItem(row: typeof newsItems.$inferSelect): NewsItem {
 }
 
 /**
- * The Sleeper id in a row's headshot URL, in SQL — playerIdFromImage().
+ * The Sleeper id in a row's headshot URL, in SQL - playerIdFromImage().
  * Null when there is no headshot or it is not a player thumb.
  */
 const imageId = sql<string | null>`substring(${newsItems.image} from '/players/thumb/([0-9]+)[.]')`;
 
 /**
- * A row's player name folded to Sleeper's search key, in SQL — the same
+ * A row's player name folded to Sleeper's search key, in SQL - the same
  * folding as teamForPlayerName(), for ASCII names. SQL has no portable way to
  * strip accents the way the JS does with NFD, so names that are not plain
  * ASCII are matched by `nonAsciiName` instead and left to the JS to decide.
@@ -197,8 +197,8 @@ const nonAsciiName = sql<boolean>`${newsItems.playerName} ~ '[^ -~]'`;
 /**
  * Which wire rows could resolve to `team`, as a WHERE clause.
  *
- * THIS REPLACED A 4,000-ROW SCAN. Team is derived per row — from the headshot's
- * player, then from the player's name, both against the CURRENT Sleeper map —
+ * THIS REPLACED A 4,000-ROW SCAN. Team is derived per row - from the headshot's
+ * player, then from the player's name, both against the CURRENT Sleeper map -
  * which is why it is not a column: a traded player's older stories follow him
  * to his new team. So the team pages read every wire row in the window and
  * filtered in JS, up to TEAM_SCAN_MAX of them per render.
@@ -208,7 +208,7 @@ const nonAsciiName = sql<boolean>`${newsItems.playerName} ~ '[^ -~]'`;
  * name folds to a player on the team now, and rows whose name is not plain
  * ASCII (the one case the SQL folding cannot match). The JS derivation still
  * runs on what comes back and still has the final word, so the result is the
- * one the scan gave — a superset filtered exactly is the set — at a few dozen
+ * one the scan gave - a superset filtered exactly is the set - at a few dozen
  * rows instead of thousands.
  *
  * With both maps empty (a cold process before its first roster fetch) the
@@ -272,14 +272,14 @@ export interface ListTeamNewsOptions {
 /**
  * The archive, narrowed to one team.
  *
- * This is a view over the SAME pipeline the news tool uses — same table, same
- * ordering, same row-to-item mapping — not a second news implementation.
+ * This is a view over the SAME pipeline the news tool uses - same table, same
+ * ordering, same row-to-item mapping - not a second news implementation.
  *
  * It reads twice, because the archive stores team two different ways and only
  * one of them is a column:
  *
  *   1. The club rows, straight off idx_news_team_abbr_pub_date_ms. An index
- *      seek for exactly this team, exactly this window, already in order — no
+ *      seek for exactly this team, exactly this window, already in order - no
  *      scan and no ceiling, because the database is doing the filtering.
  *   2. The wire rows, where team is derived per row and cannot go in a WHERE
  *      clause, so this is still the windowed scan it always was. Narrowed to
@@ -339,13 +339,13 @@ export async function listNewsForTeam(
   if (derivable.length >= scan) {
     logger.warn(
       { team: wanted, scan, windowDays },
-      "Team news hit the row ceiling before the end of its window — older wire stories are being cut off.",
+      "Team news hit the row ceiling before the end of its window - older wire stories are being cut off.",
     );
   }
 
   // Two lanes, each already newest-first out of SQL. Merged rather than
-  // concatenated — a club story from this morning belongs above a wire story
-  // from last night, not after every club story ever — but merged with a quota
+  // concatenated - a club story from this morning belongs above a wire story
+  // from last night, not after every club story ever - but merged with a quota
   // rather than purely by date, so a loud week at the club cannot push every
   // player note out of the visible ten. See WIRE_QUOTA.
   const clubLane = stored.map(toNewsItem);

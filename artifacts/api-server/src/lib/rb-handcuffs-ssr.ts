@@ -33,7 +33,7 @@ import { LruCache } from "./lru";
 
 export interface HandcuffSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when the board could not be built. */
   board: HandcuffBoard | null;
@@ -55,7 +55,7 @@ function optionKey(options: HandcuffRenderOptions): string {
   ]);
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

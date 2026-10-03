@@ -5,16 +5,16 @@
  * Ported from the standalone RB handcuffs app
  * (statchasersff-bit/Redraft-RB-Handcuff-Rankings), which is retired: this app
  * is now where the board is calculated. The engine in ./engine is that app's
- * server pipeline — Player Quality, Backfield Opportunity, Path to
- * Opportunity, the badges, the reasons — as pure functions. Its inputs are
+ * server pipeline - Player Quality, Backfield Opportunity, Path to
+ * Opportunity, the badges, the reasons - as pure functions. Its inputs are
  * files under `data/rb-handcuffs/`:
  *
- *   - `rb_advanced_stats_2025.json`, `rb_injuries.json` — the 2025 season and
+ *   - `rb_advanced_stats_2025.json`, `rb_injuries.json` - the 2025 season and
  *     the injury history every pillar is scored from. The app's own copies.
- *   - `depth.json` — this week's depth charts (Ourlads) and each back's current
+ *   - `depth.json` - this week's depth charts (Ourlads) and each back's current
  *     age and injury status (Sleeper). Written by
  *     `scripts/rb-handcuffs/refresh.mjs`; the one file that goes stale.
- *   - `curation.json` — the hand-kept part: team ratings, per-player ratings,
+ *   - `curation.json` - the hand-kept part: team ratings, per-player ratings,
  *     scouting notes and manual overrides.
  *
  * The board is computed on first use and again whenever one of those files
@@ -116,7 +116,7 @@ export interface HandcuffBoard {
   statsWeek: number | null;
   /** In rank order at the default weights. */
   players: HandcuffPlayer[];
-  /** Changes when the file does — the fragment's ETag. */
+  /** Changes when the file does - the fragment's ETag. */
   version: string;
 }
 
@@ -319,7 +319,7 @@ function readJson<T>(file: string): T {
 }
 
 /**
- * This week's pairings: each team's RB1 and, behind him, the handcuff — RB2 —
+ * This week's pairings: each team's RB1 and, behind him, the handcuff - RB2 -
  * with any hand correction in curation.json laid over Ourlads.
  */
 export function pairingsFrom(depth: DepthFile, curation: Curation): Pairing[] {
@@ -334,7 +334,7 @@ export function pairingsFrom(depth: DepthFile, curation: Curation): Pairing[] {
 }
 
 /**
- * The board, computed from the files, cached until one of them changes — or
+ * The board, computed from the files, cached until one of them changes - or
  * until the statuses go stale, which changes the answer without a file
  * changing.
  *
@@ -507,7 +507,7 @@ export function whyBullets(p: HandcuffPlayer): Array<{ ok: boolean; text: string
   if (p.playerQualityScore < 40) {
     bullets.push({
       ok: false,
-      text: `Player quality (${p.playerQualityScore}) grades below other handcuffs — less standalone-talent confidence`,
+      text: `Player quality (${p.playerQualityScore}) grades below other handcuffs - less standalone-talent confidence`,
     });
   }
   for (const f of p.riskFlags) bullets.push({ ok: false, text: f });
@@ -538,7 +538,7 @@ export function generateSummary(p: HandcuffPlayer): string {
   const archetype = archetypeLine(p).toLowerCase();
   sentences.push(
     p.starterName
-      ? `${p.playerName} backs up ${p.starterName} in ${p.team} — ${archetype}.`
+      ? `${p.playerName} backs up ${p.starterName} in ${p.team} - ${archetype}.`
       : `${p.playerName} profiles as ${archetype} in ${p.team}.`,
   );
 

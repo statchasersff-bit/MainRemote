@@ -1,7 +1,7 @@
 /**
  * Player page enhancement bundle.
  *
- * The page is complete before this file runs — every stat, every week of the
+ * The page is complete before this file runs - every stat, every week of the
  * game log, every injury and every chart is in the HTML the server sent, and
  * the tab strip works with JavaScript disabled.
  *
@@ -9,7 +9,7 @@
  *   1. tab behaviour for the section bar, from client/enhance.ts;
  *   2. relative timestamps on the news list, likewise;
  *   3. height reporting for the legacy iframe mount, likewise;
- *   4. the player search above the header, from client/player-search.ts —
+ *   4. the player search above the header, from client/player-search.ts -
  *      the one control on the page that does not exist until this file runs,
  *      because a search box with no script behind it swallows typing and
  *      answers nothing;
@@ -24,7 +24,7 @@
  * (6) is the one thing here that fetches, and it is still an enhancement: the
  * controls are real links to real URLs, the server still renders every
  * one of them, and with scripting off they navigate exactly as they always
- * did. What the fetch buys is the reader keeping their place — and the address
+ * did. What the fetch buys is the reader keeping their place - and the address
  * bar keeping the one URL this page is supposed to have.
  *
  * The chart already carries a `<title>` per point, so it is readable with no
@@ -40,7 +40,7 @@ import { wirePlayerSearch } from "./player-search";
 const ROOT_SELECTOR = "[data-scp-root]";
 
 /**
- * The index of every profile — /player, and the fragment the container page at
+ * The index of every profile - /player, and the fragment the container page at
  * /nfl/players/ mounts. A different root from the one above and deliberately
  * so: none of the profile's wiring (tabs, chart, sortable log, header)
  * has anything to do on a page with no player on it.
@@ -128,11 +128,11 @@ function cellValue(cell: HTMLTableCellElement): number | string {
  *
  * Two tables opt in: the weekly game log and the career table on the Stats tab.
  * Both are "one row per period, sorted by that period" and both are read the
- * same way — you arrive in chronological order and re-sort to find the best or
+ * same way - you arrive in chronological order and re-sort to find the best or
  * worst of something.
  *
- * Rows that carry a colspan cell rather than a full set of columns — a week the
- * player did not play — cannot be sorted meaningfully, so they are pushed to
+ * Rows that carry a colspan cell rather than a full set of columns - a week the
+ * player did not play - cannot be sorted meaningfully, so they are pushed to
  * the bottom and kept in their original order rather than interleaved with real
  * results on a value they do not have.
  *
@@ -152,7 +152,7 @@ interface RowGroup {
  * The body's rows, with each detail row absorbed into the row above it.
  *
  * Sorting moves rows with appendChild, and a detail row is only a detail of the
- * row it follows — left to itself it has no sortable cells, sinks to the
+ * row it follows - left to itself it has no sortable cells, sinks to the
  * bottom, and ends up describing a week it is nowhere near. So the pair moves
  * as one thing.
  */
@@ -179,7 +179,7 @@ function wireSortableLog(root: HTMLElement): void {
 
   for (const table of tables) {
     // The LAST header row. The career table puts a column-group row above its
-    // headers, and those cells are not columns — treating them as sort buttons
+    // headers, and those cells are not columns - treating them as sort buttons
     // would map every click to the wrong index.
     const headerRow = table.querySelector<HTMLTableRowElement>("thead tr:last-child");
     const headers = headerRow
@@ -259,7 +259,7 @@ function wireSortableLog(root: HTMLElement): void {
  * way round it has to be: the stylesheet hides them only under
  * `[data-scp-expand="js"]`, so a page whose script never runs keeps every fact
  * visible instead of hiding content behind a button that does nothing. The
- * toggle is built here for the same reason — a control that cannot work should
+ * toggle is built here for the same reason - a control that cannot work should
  * not be in the HTML.
  */
 function wireExpandableLog(root: HTMLElement): void {
@@ -335,7 +335,7 @@ function wireHeader(root: HTMLElement): void {
  * The tab the reader switched to, reflected in the header.
  *
  * The H1's second line names the open tab, and both buttons' analytics tags
- * name it too — `startsit-header-gamelog` — so a click from the Game Log is
+ * name it too - `startsit-header-gamelog` - so a click from the Game Log is
  * not reported as a click from whichever tab the page loaded on. The nav link
  * carries the line; the tag is the button's stem plus the tab.
  */
@@ -354,8 +354,8 @@ function headerTab(root: HTMLElement, link: HTMLAnchorElement, id: string): void
 /**
  * Centre the "You are here" card in the positional peers rail.
  *
- * The rail is complete and readable without this — it simply starts at its
- * best-ranked end, which is a reasonable place to begin reading — but the card
+ * The rail is complete and readable without this - it simply starts at its
+ * best-ranked end, which is a reasonable place to begin reading - but the card
  * the reader is standing on is the anchor the other six are arranged around,
  * and on a phone it starts three cards off the left edge.
  *
@@ -369,7 +369,7 @@ function wirePeerRail(root: HTMLElement): void {
     const current = rail.querySelector<HTMLElement>(".scp-peer.is-current");
     if (!current) continue;
     // A rail that fits has nothing to centre, and every card is already in
-    // view — which is the desktop case.
+    // view - which is the desktop case.
     if (rail.scrollWidth <= rail.clientWidth) continue;
 
     const railBox = rail.getBoundingClientRect();
@@ -386,7 +386,7 @@ function wirePeerRail(root: HTMLElement): void {
  *
  * Two of them now: the game log's season chips and the advanced table's season
  * chips (both .scp-season-opt). They are one family because they are one thing
- * — a link to THIS page rendered from different state — and the server builds
+ * - a link to THIS page rendered from different state - and the server builds
  * them from pageUrl().
  *
  * The scoring toggle used to be the third and the first. It is gone from the
@@ -419,7 +419,7 @@ let swapToken = 0;
  * The trailing slash and the parameter order are the server's business and
  * differ between the link (`/nfl/players/x?format=half`) and the address the
  * reader landed on (`/nfl/players/x/`); neither difference is a different page.
- * The hash is dropped outright — nothing navigates, so there is nothing for
+ * The hash is dropped outright - nothing navigates, so there is nothing for
  * `#game-log` to scroll to that is not already open.
  */
 function stateKey(url: URL): string {
@@ -466,7 +466,7 @@ function controlAt(root: HTMLElement, address: string | null): HTMLAnchorElement
  * Reopen the tab the reader was on.
  *
  * wireTabs settles the fresh root on the tab the URL names, which after a swap
- * is the tab the page LOADED on rather than the one the reader walked to — the
+ * is the tab the page LOADED on rather than the one the reader walked to - the
  * address bar has been left behind on purpose, so it can no longer be asked.
  * Clicking the link goes through wireTabs' own handler, so the heading and the
  * address bar stay in step with the panel exactly as they do for a real click.
@@ -483,8 +483,8 @@ function restoreTab(root: HTMLElement, panelId: string): void {
 /**
  * Fetch this page in another state and put it on screen in place.
  *
- * The response is the whole page — the WordPress mount wraps the fragment in a
- * theme — and all that is taken from it is the profile root, which is the unit
+ * The response is the whole page - the WordPress mount wraps the fragment in a
+ * theme - and all that is taken from it is the profile root, which is the unit
  * the server renders and the unit every behaviour here is wired against.
  *
  * When anything goes wrong the browser is handed the navigation it was about to
@@ -551,13 +551,13 @@ async function swapState(
  * Let the state controls change the page without changing its address.
  *
  * `?format=half` is a real address that the server renders and the canonical
- * points away from — it has to be, or the toggle would not work with scripting
+ * points away from - it has to be, or the toggle would not work with scripting
  * off. What it should not be is the address a reader is left holding after
  * pressing a button on the page they are already on: one page, one URL, and
  * the scoring a reader chose is state, not a different document.
  *
  * Delegated from the root so it keeps working on content this same handler put
- * there, and declined for every click the browser should handle itself —
+ * there, and declined for every click the browser should handle itself -
  * anything with a modifier key, which is how a reader deliberately opens one of
  * these in a new tab.
  */

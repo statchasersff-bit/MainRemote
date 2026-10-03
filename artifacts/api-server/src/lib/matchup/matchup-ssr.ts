@@ -4,7 +4,7 @@
  * Two consumers: the standalone page at /nfl/<a>-vs-<b>/, which fills
  * public/matchup.html, and GET /embed/matchup/<a>-vs-<b>, the bare fragment
  * for the WordPress plugin. Cached per pair and option set on a fingerprint of
- * both teams' data plus the history schedules — an exact cache, not a timed
+ * both teams' data plus the history schedules - an exact cache, not a timed
  * one.
  */
 
@@ -34,7 +34,7 @@ export interface MatchupSsrResult {
   season: number;
   state: string;
   /**
-   * The result in one clause — "Seahawks won 13-10" — or "" when the page has
+   * The result in one clause - "Seahawks won 13-10" - or "" when the page has
    * no final score.
    *
    * Carried out to the plugin as a header for one reason: the description
@@ -45,7 +45,7 @@ export interface MatchupSsrResult {
    */
   scoreLine: string;
   /**
-   * A game address asked for a meeting that is not there — a week these two did
+   * A game address asked for a meeting that is not there - a week these two did
    * not play, or one that never finished. The route turns this into the 404;
    * the render is thrown away.
    */
@@ -103,8 +103,8 @@ export async function renderMatchupFragment(
 }
 
 /**
- * The fragment and the data it was drawn from. The app page needs both — the
- * meta reads the state the fragment decided — and building the data is two
+ * The fragment and the data it was drawn from. The app page needs both - the
+ * meta reads the state the fragment decided - and building the data is two
  * teams' news plus the FPA table, so it is built once and handed over.
  */
 async function renderWithData(
@@ -140,7 +140,7 @@ async function renderWithData(
   return { result, data };
 }
 
-/** The H1 the hero prints — see renderHero() in matchup-render.ts. */
+/** The H1 the hero prints - see renderHero() in matchup-render.ts. */
 function pageHeadingFor(data: MatchupData): string {
   const game = data.pinned ? matchupScoreboardGame(data) : null;
   return game ? scoreboardHeading(game) : `${data.pair.a.fullName} vs ${data.pair.b.fullName}`;

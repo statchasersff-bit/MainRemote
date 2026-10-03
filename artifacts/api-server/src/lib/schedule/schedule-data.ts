@@ -1,5 +1,5 @@
 /**
- * The normalized NFL season slate — one payload every schedule view derives
+ * The normalized NFL season slate - one payload every schedule view derives
  * from.
  *
  * This is the port of the standalone StatChasers NFL Schedule tool's
@@ -22,7 +22,7 @@
  * ESPN is best-effort in the strong sense: a game whose broadcast we cannot
  * learn ships with `network: null` and renders as "TBD", and a scoreboard that
  * refuses us entirely leaves the slate intact. That is not hypothetical on this
- * host — ESPN's *team schedule* endpoint already 403s us (see
+ * host - ESPN's *team schedule* endpoint already 403s us (see
  * lib/team/schedule.ts, which sends a named user-agent for exactly that
  * reason), so the layer that can disappear is kept strictly additive.
  *
@@ -46,7 +46,7 @@ import { ESPN_SITE } from "../team/upstream";
  *
  * `SC_SCHEDULE_CSV_URL` redirects it. That exists for the test suite, which
  * serves a fixture over loopback so the route tests assert on a slate they
- * control rather than on whatever nflverse published this morning — the
+ * control rather than on whatever nflverse published this morning - the
  * alternative is a suite that fails when a Thursday game is flexed.
  */
 const GAMES_CSV_URL =
@@ -108,7 +108,7 @@ export interface ScheduleGame {
 export interface ScheduleSeason {
   season: number;
   games: ScheduleGame[];
-  /** True while any game is in progress — the renderer says so, the cache shortens. */
+  /** True while any game is in progress - the renderer says so, the cache shortens. */
   liveNow: boolean;
   /** When the slate half was last fetched. */
   fetchedAt: number;
@@ -319,13 +319,13 @@ const ESPN_LIVE_TTL_MS = 30 * 1000;
 const ESPN_IDLE_TTL_MS = 15 * 60 * 1000;
 /**
  * After a sweep that reached nothing. ESPN refuses this host for hours at a
- * time, and on the idle clock every expiry repeated the whole 18-week sweep —
+ * time, and on the idle clock every expiry repeated the whole 18-week sweep -
  * about 1,700 doomed requests a day, which is also how a refusal becomes a ban.
  */
 const ESPN_FAILURE_BACKOFF_MS = 60 * 60 * 1000;
 /**
  * A season that is over. Its scores and networks cannot change, so one full
- * sweep a week is plenty — anyone can ask for ?season=2019, and each season
+ * sweep a week is plenty - anyone can ask for ?season=2019, and each season
  * asked for used to cost 18 ESPN calls every six hours.
  */
 const ESPN_PAST_SEASON_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -344,7 +344,7 @@ const espnCache = new Map<number, EspnEntry>();
 /**
  * The refresh running for each season. Requests that arrive while it is out
  * share it: without this, every request between the cache expiring and the
- * sweep landing started its own 18 calls — and during a live game the cache
+ * sweep landing started its own 18 calls - and during a live game the cache
  * expires every 30 seconds.
  */
 const espnInFlight = new Map<number, Promise<Map<string, EspnGame>>>();
@@ -355,7 +355,7 @@ const espnInFlight = new Map<number, Promise<Map<string, EspnGame>>>();
  * `SC_SCHEDULE_ESPN=0` turns it off. Two callers want this. The test suite
  * wants it so a run never waits on a third party, and a deployment whose host
  * ESPN refuses wants it because eighteen doomed requests per cold season are
- * eighteen six-second timeouts spent learning what the operator already knows —
+ * eighteen six-second timeouts spent learning what the operator already knows -
  * and this host is one of those (see lib/team/schedule.ts). Off, the board
  * still renders: TV shows as TBD and scores come from nflverse, which is hours
  * behind but never wrong.
@@ -395,7 +395,7 @@ async function fetchEspnWeek(
   }
 }
 
-/** Weeks holding a game today or yesterday — the only scores that can change. */
+/** Weeks holding a game today or yesterday - the only scores that can change. */
 function activeWeeks(rows: RawGame[], nowMs: number): number[] {
   const today = easternDate(nowMs);
   const yesterday = easternDate(nowMs - 24 * 60 * 60 * 1000);
@@ -409,8 +409,8 @@ function activeWeeks(rows: RawGame[], nowMs: number): number[] {
 /**
  * The live layer for a season, refreshed on its own clock.
  *
- * All 18 weeks on the first load and every few hours — flexed kickoffs and late
- * TV assignments land across the whole season, not just the current week — and
+ * All 18 weeks on the first load and every few hours - flexed kickoffs and late
+ * TV assignments land across the whole season, not just the current week - and
  * in between only the weeks that can actually be in progress.
  */
 async function loadEspn(
@@ -454,7 +454,7 @@ async function refreshEspn(
     if (!reached) {
       logger.warn(
         { season, weeks: weeks.length },
-        "ESPN scoreboard unreachable — schedule ships without TV or live scores",
+        "ESPN scoreboard unreachable - schedule ships without TV or live scores",
       );
     }
   }
@@ -616,14 +616,14 @@ const slateCache = createKeyedCache<RawGame[]>({
   ttlMs: 6 * 60 * 60 * 1000,
   timeoutMs: 20_000,
   // Longer than the shared default of a minute. The failure that lasts is a
-  // season nflverse has not published yet — every March to mid-May — and at a
+  // season nflverse has not published yet - every March to mid-May - and at a
   // minute each request re-downloaded the whole games.csv to learn that again.
   errorBackoffMs: 30 * 60 * 1000,
   load: async (key) => {
     const season = Number(key);
     const games = parseSlate(await gamesCsv(), season);
     if (games.length === 0) {
-      // A 200 with no rows for this season is a failure, not an empty season —
+      // A 200 with no rows for this season is a failure, not an empty season -
       // the same rule the team pages apply to an empty ESPN response. Throwing
       // keeps the last good slate rather than replacing it with nothing.
       throw new Error(`nflverse published no ${season} regular-season games`);
@@ -693,7 +693,7 @@ function normalize(
     international,
     neutralSite,
     // Derived from the canonical team table where both teams resolve, and only
-    // falling back to the feed's own flag where one does not — one source of
+    // falling back to the feed's own flag where one does not - one source of
     // truth for which division a club is in.
     divisional:
       away && home ? away.division === home.division : row.divisional,
@@ -703,7 +703,7 @@ function normalize(
   };
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {
@@ -742,7 +742,7 @@ function fingerprint(season: number, games: ScheduleGame[]): string {
  * The normalized season.
  *
  * Assembled per request rather than cached whole, because the two halves expire
- * on very different clocks — and assembling is a map over 272 rows, which is
+ * on very different clocks - and assembling is a map over 272 rows, which is
  * cheaper than keeping a third cache correct.
  *
  * Returns null when the slate itself is unavailable and nothing is cached. The
@@ -757,7 +757,7 @@ export async function getSchedule(
     // The league year turns over on March 1 (seasonYear), and the new season's
     // schedule is not released until about mid-May. Asked for the season the
     // calendar is on and nflverse has nothing yet, show the one just played
-    // rather than an empty board — its data says which season it is, so every
+    // rather than an empty board - its data says which season it is, so every
     // label follows. Not for a pinned season or an explicit older one.
     if (season === scheduleSeason() && !scheduleSeasonPinned()) {
       return getScheduleExact(season - 1, nowMs);
@@ -805,7 +805,7 @@ async function build(
 /**
  * Which season the tool shows.
  *
- * `SC_SCHEDULE_SEASON` pins it — useful in the weeks either side of a new
+ * `SC_SCHEDULE_SEASON` pins it - useful in the weeks either side of a new
  * league year, when nflverse has published next season's slate and the site
  * still wants to show the one being played. Otherwise it is derived from the
  * date the same way every other tool here derives it (lib/seo.ts).
@@ -843,7 +843,7 @@ export type GameFilter = (typeof GAME_FILTERS)[number];
  * The matrix is what the bare path shows: it is the whole season, it is the
  * same board in December as in July, and it is the view that answers "when do
  * they play" for any team without first asking which week. The weekly board is
- * a week — one slate of games — and a week has an address of its own
+ * a week - one slate of games - and a week has an address of its own
  * (`/schedule/week-7`), so nothing needs `?view=week` to reach it.
  */
 export function parseScheduleView(value: string | undefined): ScheduleView {

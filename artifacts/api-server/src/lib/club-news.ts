@@ -9,7 +9,7 @@
  *     the derived team filter are built on, and it is the only one of the two
  *     that carries injury and practice notes.
  *   - A club reports itself. Signings, roster moves, depth-chart news, previews
- *     — published first-party, minutes after they happen, and tagged with a
+ *     - published first-party, minutes after they happen, and tagged with a
  *     team by construction because the team IS the feed we fetched.
  *
  * That last point is the reason this exists at all. Team is not stored on a
@@ -20,8 +20,8 @@
  * the read becomes an index seek.
  *
  * All 32 clubs run on one NFL platform and answer the same path, so this is one
- * fetch repeated 32 times rather than 32 scrapers. It is RSS, not HTML — a
- * documented, stable, machine-readable format the clubs publish deliberately —
+ * fetch repeated 32 times rather than 32 scrapers. It is RSS, not HTML - a
+ * documented, stable, machine-readable format the clubs publish deliberately -
  * and robots.txt on the club domains disallows only /search/, /_libraries/ and
  * /_mobileview/.
  */
@@ -49,7 +49,7 @@ const FEED_TIMEOUT_MS = 12_000;
  *
  * Deliberately not 32. These are 32 hostnames on shared infrastructure and a
  * simultaneous burst from one IP every ten minutes is the shape of traffic that
- * gets an IP rate-limited — which is exactly the failure the player wire spent
+ * gets an IP rate-limited - which is exactly the failure the player wire spent
  * a week on (docs/ingest-cloudflare.md). Six at a time finishes the sweep in
  * about three seconds and looks like a reader rather than a scraper.
  */
@@ -59,7 +59,7 @@ const FEED_CONCURRENCY = 6;
  * Oldest club item worth storing, in days.
  *
  * The feeds are not uniform archives. Most carry a few weeks; some carry a
- * single stale outlier (Dallas serves one 2018 article); and one — Washington —
+ * single stale outlier (Dallas serves one 2018 article); and one - Washington -
  * is an abandoned feed whose newest item is months old and whose back catalogue
  * is Redskins-era. Without a cutoff, the first ingest would backfill the archive
  * with years-old stories that would then sit in it permanently, because nothing
@@ -76,7 +76,7 @@ const MAX_ITEM_AGE_DAYS = 45;
  *
  * A club feed that stops is indistinguishable from a club that has no news, and
  * both look like a healthy 200 carrying items. Washington's feed is in exactly
- * that state today — it answers 200 with 20 items, the newest from June — so
+ * that state today - it answers 200 with 20 items, the newest from June - so
  * this is a real condition rather than a hypothetical one. Logged rather than
  * thrown: one dead feed is not an ingest failure, it is a fact about one team.
  */
@@ -99,7 +99,7 @@ export interface ClubIngestSummary {
  * The last good read of each club's feed, with the validators it came with.
  *
  * A club publishes a handful of times a day and is swept 48 times, so most
- * sweeps re-download a feed that has not changed — ~1,500 full documents a day
+ * sweeps re-download a feed that has not changed - ~1,500 full documents a day
  * per running instance. Sending the validators back turns those into a 304 with
  * no body. The items are kept so a 304 answers exactly what the 200 did: the
  * sweep's stale-feed check and the store's `lastSeenAt` touch see the same rows
@@ -143,7 +143,7 @@ async function fetchClub(team: NflTeam): Promise<ClubNewsItem[]> {
 
   const items = parseClubFeed(team, await response.text());
 
-  // A 200 carrying no items is a failure, not a quiet success — the same call
+  // A 200 carrying no items is a failure, not a quiet success - the same call
   // the wire's fetch makes, for the same reason. A club feed is never
   // legitimately empty; an empty parse means the document was not what we think
   // it is, and reporting that as "0 new stories" would hide a format change.
@@ -185,7 +185,7 @@ async function pooled<T, R>(
  *
  * Never throws for a single club. One team's site being down, slow, or newly
  * reformatted is a normal Tuesday across 32 independent hosts, and it must not
- * cost the other 31 their ingest — so failures are collected and reported, and
+ * cost the other 31 their ingest - so failures are collected and reported, and
  * the caller decides what an acceptable number of them is.
  */
 export async function fetchClubNews(
@@ -255,7 +255,7 @@ export async function fetchClubNews(
           newest: s.newestMs ? new Date(s.newestMs).toISOString() : null,
         })),
       },
-      "Club feeds answering 200 but carrying nothing recent — the team page will look quiet for a reason that is not the team",
+      "Club feeds answering 200 but carrying nothing recent - the team page will look quiet for a reason that is not the team",
     );
   }
 

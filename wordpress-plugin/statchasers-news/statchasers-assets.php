@@ -4,7 +4,7 @@
  * helpers, and the sweep every tool's cache flush is built on.
  *
  * Its own file because these are the things all the tools need and none of
- * them owns, and because the main plugin file cannot be loaded in isolation —
+ * them owns, and because the main plugin file cannot be loaded in isolation -
  * it defines the origin and flush helpers that a test harness has to stub.
  *
  * @package StatChasers\News
@@ -22,13 +22,13 @@ const STATCHASERS_FONT_HANDLE = 'statchasers-font';
  *
  * Every one of these stylesheets asks for `Inter` first and falls back to the
  * system stack, and until now nothing on a WordPress page ever loaded it. The
- * tool's own standalone pages do — team.html and player.html carry a Google
- * Fonts <link> — so the hub looked right at the API's address and wrong on the
+ * tool's own standalone pages do - team.html and player.html carry a Google
+ * Fonts <link> - so the hub looked right at the API's address and wrong on the
  * site that embeds it, which is the half of the split that matters.
  *
  * The failure was quiet in the worst way: a missing family is not an error, the
  * browser simply walks the stack. On Windows it lands on Segoe UI, and at the
- * 800 and 900 weights these headings use, on Segoe UI Black — a much heavier,
+ * 800 and 900 weights these headings use, on Segoe UI Black - a much heavier,
  * tighter face. Body copy degraded gracefully and the headings did not, so what
  * it looked like was a styling bug in the headings rather than an absent font.
  *
@@ -37,7 +37,7 @@ const STATCHASERS_FONT_HANDLE = 'statchasers-font';
  * de-duplicates it if a theme already registered the same handle.
  *
  * Return '' from the filter for a site that serves Inter itself, or that would
- * rather not call fonts.googleapis.com — the stack falls back as before.
+ * rather not call fonts.googleapis.com - the stack falls back as before.
  */
 function statchasers_font_url(): string {
 	/**
@@ -116,13 +116,13 @@ add_filter( 'rank_math/sitemap/entry', 'statchasers_sitemap_drop_legacy', 10, 2 
 
 /**
  * Delete one tool's cached renders: every `<prefix><hash>` transient and its
- * timeout row — and, only when $all is true, the `<prefix>bak_<hash>` backups
+ * timeout row - and, only when $all is true, the `<prefix>bak_<hash>` backups
  * beside them.
  *
  * Every tool files a render twice: a fresh copy for a few minutes, and a
  * backup for a day or more that is served when the API is slow or down. The
  * flushes used to delete `_transient_<prefix>%`, and a LIKE on the prefix
- * matches the backups too — they share it. So "Clear cached renders", and the
+ * matches the backups too - they share it. So "Clear cached renders", and the
  * team build that calls the same flush, quietly threw away the only thing that
  * keeps a page filled during an outage; one API hiccup in the next few minutes
  * and every tool printed an empty box. A routine flush exists to make the next

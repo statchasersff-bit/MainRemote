@@ -3,7 +3,7 @@
  *
  * The promise this feature makes is "switching where posts come from is a
  * config change". For the commercial APIs that resell X data, that promise
- * lives entirely in one normaliser — so it is tested against the three shapes
+ * lives entirely in one normaliser - so it is tested against the three shapes
  * those vendors actually ship: X's own v1.1 tweet object (which most mirrors
  * copy), X API v2's flatter object with `referenced_tweets`, and the camelCase
  * shape the newer resellers prefer.
@@ -36,10 +36,10 @@ const LEGACY = {
   },
 };
 
-/** Shape B: X API v2 — flat, with referenced_tweets carrying the relationships. */
+/** Shape B: X API v2 - flat, with referenced_tweets carrying the relationships. */
 const V2 = {
   id: "1900000000000000002",
-  text: "Confirmed — he passed his physical.",
+  text: "Confirmed - he passed his physical.",
   created_at: "2026-09-16T18:30:00.000Z",
   lang: "en",
   referenced_tweets: [{ type: "quoted", id: "1899000000000000000" }],
@@ -106,7 +106,7 @@ describe("reading a vendor's post object", () => {
       "x",
     );
     const flagged = normalizeApiTweet({ ...MODERN, isRetweet: true }, "x");
-    // The one that says so nowhere but in the text — several mirrors do this.
+    // The one that says so nowhere but in the text - several mirrors do this.
     const flattened = normalizeApiTweet(
       { id: "9", text: "RT @someone: their words here" },
       "x",
@@ -118,7 +118,7 @@ describe("reading a vendor's post object", () => {
   });
 
   test("a thread-starting post is not a reply", () => {
-    // conversation_id equal to the post's own id means it started the thread —
+    // conversation_id equal to the post's own id means it started the thread -
     // the trap in every vendor that exposes conversationId but not a reply flag.
     const starter = normalizeApiTweet(
       { ...MODERN, isReply: false, conversationId: MODERN.id },

@@ -10,7 +10,7 @@
  *
  * Measured 2026-09-29 by diffing computed styles of each real embed fragment,
  * bare vs under those rules loaded after the tool's stylesheet: FPA, schedule,
- * player, team/matchup and RB handcuffs all lost some of it — player and the
+ * player, team/matchup and RB handcuffs all lost some of it - player and the
  * matchup tables every cell's padding. These tests hold the shape of the fix;
  * the measurement is what proved it (zero differences at 375, 500 and 1200px,
  * in both load orders, and the bare pages unchanged).

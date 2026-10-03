@@ -1,14 +1,14 @@
 /**
  * The RB handcuff rankings routes.
  *
- *   GET /rb-handcuff-rankings                — the board
- *   GET /rb-handcuff-rankings?embed=1        — the same page, stripped for embedding
- *   GET /embed/rb-handcuffs                  — the bare fragment, for the WordPress mount
- *   GET /embed/rb-handcuffs/player/:id       — one player's card, for the drawer
+ *   GET /rb-handcuff-rankings                - the board
+ *   GET /rb-handcuff-rankings?embed=1        - the same page, stripped for embedding
+ *   GET /embed/rb-handcuffs                  - the bare fragment, for the WordPress mount
+ *   GET /embed/rb-handcuffs/player/:id       - one player's card, for the drawer
  *
  * Mirrors routes/player-stats.ts, including the posture that matters: every
  * route ships `noindex, indexifembedded`, so this origin does not compete with
- * statchasers.com — and by the same token the board is invisible to search
+ * statchasers.com - and by the same token the board is invisible to search
  * until `[statchasers_rb_handcuffs]` embeds it.
  *
  * The path is the WordPress page's, `/rb-handcuff-rankings/`, as the rankings
@@ -173,7 +173,7 @@ router.get(FRAGMENT_PATH, (req, res) => {
 
 /**
  * One player's card. Fetched by the bundle, cross-origin from a statchasers.com
- * page (the app's CORS policy is open), when a reader opens it — the card is
+ * page (the app's CORS policy is open), when a reader opens it - the card is
  * most of the board's weight and few readers open more than a handful, which is
  * why the standalone app split it into a lazy chunk.
  *

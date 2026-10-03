@@ -1,7 +1,7 @@
 /**
  * ESPN's game summary cut down to the fields src/lib/matchup/boxscore.ts reads.
  *
- * The full document is about half a megabyte — articles, every play, win
+ * The full document is about half a megabyte - articles, every play, win
  * probability by play, videos. The parser reads a few objects out of it, so the
  * stored copy keeps exactly those and nothing else: roughly 15 KB a game, a
  * season in a few megabytes.
@@ -14,7 +14,7 @@
  *
  * THE CONTRACT. `SHAPE` mirrors the `EspnSummary` interface in boxscore.ts and
  * `EspnScoringPlay` in scoring-plays.ts. A field the parser starts reading has
- * to be added here too, or stored games will parse without it — the builder's
+ * to be added here too, or stored games will parse without it - the builder's
  * `--verify` run and tests/boxscore-store.test.mjs are what catch that.
  */
 

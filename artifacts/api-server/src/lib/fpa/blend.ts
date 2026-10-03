@@ -3,8 +3,8 @@
  *
  * Both halves of one decision live here: `currentSeasonWeight` is the weight
  * the ingest actually applies, and `describeDataMode` is the sentence the page
- * prints about it. They are separate functions — one is arithmetic, one is copy
- * — and they must not drift apart, which is the whole reason they share a file
+ * prints about it. They are separate functions - one is arithmetic, one is copy
+ * - and they must not drift apart, which is the whole reason they share a file
  * and why `tests/fpa.test.mjs` asserts the prose against the weights.
  *
  * Deliberately free of any database or network import. That is not tidiness: it
@@ -52,7 +52,7 @@ export interface DataModeDescription {
  *
  * The percentages are derived from `currentSeasonWeight` rather than retyped,
  * so the prose cannot claim a blend the ingest does not apply. Only the
- * sentences differ per week — early ones carry a sample-size warning that later
+ * sentences differ per week - early ones carry a sample-size warning that later
  * ones have no business carrying.
  */
 export function describeDataMode(
@@ -87,7 +87,7 @@ export function describeDataMode(
   const caution =
     weekNumber <= 2
       ? weekNumber === 1
-        ? " One week is a very small sample — treat the ranks as last season's with a nudge, not as this season's."
+        ? " One week is a very small sample - treat the ranks as last season's with a nudge, not as this season's."
         : " Still a small sample; ranks will move a lot."
       : "";
 

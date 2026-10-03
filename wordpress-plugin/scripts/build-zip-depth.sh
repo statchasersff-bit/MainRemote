@@ -18,7 +18,7 @@
 #
 # Check 3 is the one that matters here for the same reason it does next door: a
 # class file added to includes/ and never added to the require block is absent
-# on a real site, and nothing says why — the shortcode simply renders nothing.
+# on a real site, and nothing says why - the shortcode simply renders nothing.
 
 set -euo pipefail
 
@@ -51,7 +51,7 @@ if [ -n "$PHP" ]; then
 	done < <(find "$plugin" -name '*.php' -type f)
 	say "parse    ok ($count files)"
 else
-	say "parse    SKIPPED — no php binary found"
+	say "parse    SKIPPED - no php binary found"
 fi
 
 # ---------------------------------------------------------------- 2. version
@@ -86,7 +86,7 @@ say "loader   ok"
 mkdir -p "$dist"
 rm -f "$out"
 
-# Zipped from the parent so the archive holds "statchasers-depth-charts/..." —
+# Zipped from the parent so the archive holds "statchasers-depth-charts/..." -
 # WordPress installs the top-level directory it finds, and a flat zip installs
 # as a plugin directory named after the zip instead.
 ( cd "$here" && zip -rq "$out" statchasers-depth-charts -x '*.DS_Store' '*/.*' )

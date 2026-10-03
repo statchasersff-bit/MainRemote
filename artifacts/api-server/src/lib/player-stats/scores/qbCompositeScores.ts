@@ -1,8 +1,8 @@
 /**
  * QB composite-grade engine.
  *
- * Produces five normalized 0-100 grades — Volume, Accuracy, Explosiveness,
- * Mobility, Efficiency — plus a blended Overall QB Grade. Every input stat is
+ * Produces five normalized 0-100 grades - Volume, Accuracy, Explosiveness,
+ * Mobility, Efficiency - plus a blended Overall QB Grade. Every input stat is
  * first converted to a percentile rank across the supplied population (never a
  * raw average), so grades are always relative to the QB pool passed in.
  *
@@ -15,7 +15,7 @@ import { atLeast, clampScore, mix, percentileColumnAgainst, toFiniteNumber as nu
 /**
  * Qualifier for the percentile baseline. Low-volume backups should not define
  * the distribution, so percentiles are ranked against QBs meeting this bar.
- * Scores are still produced for everyone — unqualified QBs are just measured
+ * Scores are still produced for everyone - unqualified QBs are just measured
  * against the qualified curve.
  */
 export function isQualifiedQb(row: Record<string, unknown>, scale = 1): boolean {
@@ -33,7 +33,7 @@ export interface QbCompositeScores {
 
 export type QbScoreKey = keyof QbCompositeScores;
 
-/** Display metadata for each grade — drives column labels, tooltips, radar axes. */
+/** Display metadata for each grade - drives column labels, tooltips, radar axes. */
 export interface QbScoreCategory {
   key: QbScoreKey;
   label: string;
@@ -91,7 +91,7 @@ export const QB_SCORE_KEYS: QbScoreKey[] = QB_SCORE_CATEGORIES.map(c => c.key);
 
 type QbRow = Record<string, unknown>;
 
-// Safe rate helpers — return 0 when the denominator is 0.
+// Safe rate helpers - return 0 when the denominator is 0.
 const tdRate = (r: QbRow) => { const a = num(r.attempts); return a > 0 ? num(r.passingTouchdowns) / a : 0; };
 const yardsPerAttempt = (r: QbRow) => { const a = num(r.attempts); return a > 0 ? num(r.passingYards) / a : 0; };
 const compAirYardsPerCompletion = (r: QbRow) => { const c = num(r.completions); return c > 0 ? num(r.completedAirYards) / c : 0; };
@@ -140,7 +140,7 @@ export function computeQbCompositeScores<T extends QbRow>(rows: T[], opts: Grade
 
     epaPerPlay: pcol(r => num(r.epaPerPlay)),
     successRate: pcol(r => num(r.successRate)),
-    // Rate stats (divide-by-zero safe) — keep Efficiency independent of workload.
+    // Rate stats (divide-by-zero safe) - keep Efficiency independent of workload.
     tdRate: pcol(tdRate),
     yardsPerAttempt: pcol(yardsPerAttempt),
     compAirYardsPerCompletion: pcol(compAirYardsPerCompletion),

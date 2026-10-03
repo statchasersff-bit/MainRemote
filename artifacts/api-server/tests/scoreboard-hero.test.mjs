@@ -2,8 +2,8 @@
  * The scoreboard hero, as a component: one game object in, one <header> out.
  *
  * These drive it with game objects directly rather than through a served page,
- * because the cases that matter most — overtime, a tie, a Super Bowl, a game in
- * progress — are exactly the ones ESPN will not happen to be serving on the day
+ * because the cases that matter most - overtime, a tie, a Super Bowl, a game in
+ * progress - are exactly the ones ESPN will not happen to be serving on the day
  * the suite runs. The served page is covered in matchup.test.mjs.
  *
  * The Wild Card is the real line (ESPN event 401326625). The others are shape

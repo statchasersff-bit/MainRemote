@@ -3,10 +3,10 @@
  * highlights upload, who left the game hurt, who played through something and
  * who came back.
  *
- * No free feed carries in-game exits — ESPN's per-game injuries block is the
- * current report, not who was carted off in the third quarter — and no feed
+ * No free feed carries in-game exits - ESPN's per-game injuries block is the
+ * current report, not who was carted off in the third quarter - and no feed
  * maps a game to the league's own YouTube upload. Both are written here by
- * hand, and a game with no entry simply has no video and no injuries block —
+ * hand, and a game with no entry simply has no video and no injuries block -
  * except that the league's highlights upload for most games is found by
  * scripts/find-game-videos.mjs and kept in game-videos.ts, which an entry
  * here overrides.

@@ -3,8 +3,8 @@
  *
  * Built from the SAME Sleeper player dictionary the news tool already
  * downloads to resolve each headline's team (see lib/teams.ts). That is the
- * point: the dictionary is ~14MB, and pulling it twice — or reaching for a
- * second provider for what is already in it — would be the expensive way to
+ * point: the dictionary is ~14MB, and pulling it twice - or reaching for a
+ * second provider for what is already in it - would be the expensive way to
  * learn things this app has in memory.
  *
  * Everything here is Sleeper's own data, unmodified:
@@ -12,10 +12,10 @@
  *     re-sorted by us, so "RB2" on the page means Sleeper lists him second.
  *   - `injury_status` / `injury_body_part` / `practice_participation` are the
  *     injury designations. A player with no designation is simply absent from
- *     Injury Watch — we never infer a status from a headline.
+ *     Injury Watch - we never infer a status from a headline.
  *   - `search_rank` is Sleeper's league-wide fantasy relevance, used to decide
  *     which designations are worth a row. It has to be, because being injured
- *     is itself what moves a player down the depth chart — see
+ *     is itself what moves a player down the depth chart - see
  *     INJURY_RANK_LIMIT at the foot of this file.
  *
  * Only QB/RB/WR/TE are indexed. The team pages are fantasy pages; a full
@@ -29,7 +29,7 @@ export const SKILL_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
 export type SkillPosition = (typeof SKILL_POSITIONS)[number];
 
 export interface RosterPlayer {
-  /** Sleeper player id — also what the headshot URL is keyed by. */
+  /** Sleeper player id - also what the headshot URL is keyed by. */
   id: string;
   name: string;
   position: SkillPosition;
@@ -104,7 +104,7 @@ export interface SleeperPlayer {
  * tag, and the id the headshot URL is built from.
  *
  * Kept separate from RosterPlayer because this index covers EVERY player with a
- * team, not only the four fantasy positions — an X post about an offensive
+ * team, not only the four fantasy positions - an X post about an offensive
  * lineman or a head coach's quarterback still names a person, and refusing to
  * recognise him because he cannot be started at flex would be the wrong reason.
  */
@@ -148,7 +148,7 @@ function isSkill(position: string | null | undefined): position is SkillPosition
 
 /**
  * A designation that means "not available", as opposed to a game-time question.
- * Used only to decide how a badge is coloured and worded — never to reorder or
+ * Used only to decide how a badge is coloured and worded - never to reorder or
  * remove anyone from the depth chart, which is Sleeper's to state, not ours.
  */
 const OUT_DESIGNATIONS = new Set([
@@ -170,7 +170,7 @@ export function isOutDesignation(status: string | null | undefined): boolean {
  * Designated players at a position who are NOT on the chart shown.
  *
  * The gap this fills: Sleeper demotes an injured player on its depth chart, so
- * a genuine WR1 on IR sits at WR6 and falls off a four-deep preview entirely —
+ * a genuine WR1 on IR sits at WR6 and falls off a four-deep preview entirely -
  * the chart then shows somebody else first with nothing saying why, which reads
  * as a wrong chart to anyone who knows the roster. See INJURY_RANK_LIMIT below,
  * which exists for the same reason.
@@ -180,7 +180,7 @@ export function isOutDesignation(status: string | null | undefined): boolean {
  * WR1 slot and does not belong under the chart.
  *
  * Shared by the chart and its FAQ so the two cannot disagree about who is
- * missing — they are the same claim in two registers.
+ * missing - they are the same claim in two registers.
  */
 export function sidelinedBehind(
   injuries: readonly DepthChartEntry[],
@@ -210,7 +210,7 @@ export function indexRoster(
   // Names seen more than once on different teams are dropped below rather than
   // resolved first-wins. This index is the fallback that attributes a news item
   // with no headshot, and there is no headline in which "which Josh Allen" can
-  // be worked out — attributing one to the wrong team is worse than leaving it
+  // be worked out - attributing one to the wrong team is worse than leaving it
   // unattributed, which is all an ambiguous name costs.
   const nameCandidates = new Map<string, string | null>();
   // Same keys, carrying who the name belongs to. Filled for every player with a
@@ -297,7 +297,7 @@ export function indexRoster(
     }
     // Injury Watch reads top-down, so order it the way a fantasy manager cares:
     // the biggest name first. That is Sleeper's search rank and NOT the depth
-    // chart, because a player is demoted on the depth chart *by* the injury —
+    // chart, because a player is demoted on the depth chart *by* the injury -
     // ordering on depth puts the WR1 who just landed on IR below a healthy-ish
     // WR4, which is backwards. Depth breaks ties among the unranked, then
     // position in lineup order, then the name so the list is stable.
@@ -337,7 +337,7 @@ export function getTeamRoster(team: string): TeamRoster | null {
  * Team for a player name, using the same folding Sleeper's own search index
  * uses ("Ja'Marr Chase" -> "jamarrchase").
  *
- * This is the fallback that attributes a news item whose headshot is missing —
+ * This is the fallback that attributes a news item whose headshot is missing -
  * the archive has rows with a null image, and those would otherwise belong to
  * no team at all and never appear on any team page.
  */
@@ -365,7 +365,7 @@ export function nameKeysForTeam(team: string): string[] {
 /**
  * The player behind a folded name key, or null.
  *
- * The key is the same folding Sleeper's own search index uses — see
+ * The key is the same folding Sleeper's own search index uses - see
  * teamForPlayerName above, whose key() this is deliberately identical to. The
  * caller does the folding because it is matching many candidate substrings
  * against this index and should not pay to re-normalise on every one.
@@ -419,7 +419,7 @@ export function snapshotRosterIndex(): {
 }
 
 export interface DepthChartEntry extends RosterPlayer {
-  /** Display slot, e.g. "RB2" — Sleeper's order, not a ranking of our own. */
+  /** Display slot, e.g. "RB2" - Sleeper's order, not a ranking of our own. */
   slot: string;
 }
 
@@ -452,7 +452,7 @@ export function depthPreview(
  * The handful of players who decide a team's fantasy season: QB1, both backs,
  * the top two receivers and TE1.
  *
- * Taken straight off the depth chart rather than from any ranking — this app
+ * Taken straight off the depth chart rather than from any ranking - this app
  * has no ADP or projection data, and inventing an ordering to look authoritative
  * is exactly the thing not to do. RB2 and WR2 are dropped when the team does not
  * list one.
@@ -492,7 +492,7 @@ const INJURY_DEPTH_LIMIT = 4;
  *
  * This limit is the whole reason Injury Watch works. **Sleeper demotes an
  * injured player on the depth chart**, so a season-ending IR for a genuine WR1
- * lands him at WR6 — and a depth-only gate then hides precisely the injury the
+ * lands him at WR6 - and a depth-only gate then hides precisely the injury the
  * page exists to report, while still printing the WR4 who is questionable.
  * Search rank is the signal the injury does not move: it is where Sleeper ranks
  * him among every player in the league, so a top-300 name on IR is news whether
@@ -500,7 +500,7 @@ const INJURY_DEPTH_LIMIT = 4;
  *
  * 300 is deliberately wider than a startable roster. A designated player that
  * relevant is worth a line even on a deep team, and the row limit below is what
- * keeps the panel short — not a rank tight enough to drop real players.
+ * keeps the panel short - not a rank tight enough to drop real players.
  */
 const INJURY_RANK_LIMIT = 300;
 
@@ -517,7 +517,7 @@ function fantasyRank(player: RosterPlayer): number {
 
 /**
  * Injury Watch rows: designated players who are either near the top of their
- * depth chart or fantasy-relevant league-wide. See INJURY_RANK_LIMIT — the
+ * depth chart or fantasy-relevant league-wide. See INJURY_RANK_LIMIT - the
  * second test is what keeps an IR'd starter on the page after Sleeper has
  * demoted him for being hurt.
  */

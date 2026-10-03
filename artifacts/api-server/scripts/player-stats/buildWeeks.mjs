@@ -1,17 +1,17 @@
 /**
- * Cut the advanced stats tables to weeks 1-17 — the fantasy season.
+ * Cut the advanced stats tables to weeks 1-17 - the fantasy season.
  *
  *   node scripts/player-stats/buildWeeks.mjs [--dir <data dir>] [--cache <dir>]
  *
  * Reads the snapshot in `<data dir>/source/` and writes the tables the site
  * serves to `<data dir>`. Two directories hold such tables:
  * `data/player-stats` (the default; the advanced stats table) and
- * `data/player/advanced_stats` (the player pages' Advanced section — an
+ * `data/player/advanced_stats` (the player pages' Advanced section - an
  * earlier cut of the same pipeline, see stats-data.ts). Run it for both. The snapshot is the file set the
  * standalone app shipped: full regular seasons, weeks 1-18, built by a pipeline
  * that is not in any repo we have. So this does not rebuild a table from
  * scratch. For every figure it computes the same stat twice from nflverse's
- * weekly data — through week 17 and through week 18 — and moves the snapshot's
+ * weekly data - through week 17 and through week 18 - and moves the snapshot's
  * value by the difference:
  *
  *     weeks 1-17 = snapshot + (ours through 17 − ours through 18)
@@ -23,9 +23,9 @@
  * Every definition below was matched against the snapshot, and the match is
  * re-checked on every run, per file and per column: a column is cut only when
  * our through-18 figure agrees with the snapshot for at least MIN_AGREEMENT of
- * the players. The rest — no weekly source at all (on-target %, pocket time,
+ * the players. The rest - no weekly source at all (on-target %, pocket time,
  * batted passes), a different vendor's charting (time to throw, throwaways,
- * catchable targets), or a season the snapshot left blank — keep their
+ * catchable targets), or a season the snapshot left blank - keep their
  * weeks 1-18 values and are listed in the output's `fullSeason`, which the
  * table footnotes.
  *
@@ -171,7 +171,7 @@ class Tally {
   }
 
   /**
-   * A team figure over the player's LAST team in each season, weeks 1..cut —
+   * A team figure over the player's LAST team in each season, weeks 1..cut -
    * the snapshot's denominator for shares, which is why a traded receiver's
    * route share is against the team he finished with.
    */

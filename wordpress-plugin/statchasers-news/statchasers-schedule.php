@@ -4,7 +4,7 @@
  *
  * Same posture as the other five tools. The API serves /schedule with
  * `noindex, indexifembedded`, so the board is invisible to search until
- * something embeds it — this file is that something.
+ * something embeds it - this file is that something.
  *
  * ## What differs from the other shortcodes
  *
@@ -16,16 +16,16 @@
  *    runs hourly at best. This board carries live scores on thirteen Sunday
  *    afternoons a year and is otherwise static for days. A fixed TTL is either
  *    wrong all season or wrong every Sunday, so the plugin reads `max-age` off
- *    the response and uses that — the API already computes it (30s while a game
+ *    the response and uses that - the API already computes it (30s while a game
  *    is being played, 300s otherwise) and it is the side that knows.
  * 2. **There are three attributes that matter.** View, week and filter. The
- *    team lens (`view="team" team="NE"`) is gone — a team's schedule is the
- *    team hub's Schedule tab now — so a mount that still names it gets the
+ *    team lens (`view="team" team="NE"`) is gone - a team's schedule is the
+ *    team hub's Schedule tab now - so a mount that still names it gets the
  *    season grid, the same answer the API gives, and `team` is not sent.
  *
  * ## What the page's own address says
  *
- * The bare page is the season grid — `view` defaults to `matrix` — and a week
+ * The bare page is the season grid - `view` defaults to `matrix` - and a week
  * URL (`/nfl/nfl-schedule/week-7/`) is the weekly board. The rewrite rule below
  * puts the week in a query var, and `statchasers_schedule_args()` lets it
  * override both the week AND the view, so the two addresses cannot disagree
@@ -61,7 +61,7 @@ const STATCHASERS_SCHEDULE_BACKUP_TTL = 7 * DAY_IN_SECONDS;
  * Seconds to wait on the API before giving up.
  *
  * Longer than the FPA table's six. A cold process has to download nflverse's
- * games.csv — the whole of NFL history in one file — before it can answer, and
+ * games.csv - the whole of NFL history in one file - before it can answer, and
  * that is a real first request rather than a hypothetical one. Every request
  * after it is served from the process's own cache.
  */
@@ -82,7 +82,7 @@ const STATCHASERS_SCHEDULE_WEEKS = 18;
  * Where the board lives, without its slashes.
  *
  * This is both the page the rewrite rules point at and the base the week URLs
- * hang off, so it MUST match `SC_SCHEDULE_PATH` on the API — that is what the
+ * hang off, so it MUST match `SC_SCHEDULE_PATH` on the API - that is what the
  * board's own week links are built from, and a mismatch means every link on
  * the page 404s. A site that mounts the shortcode somewhere else changes both.
  */
@@ -132,7 +132,7 @@ add_action(
 		}
 		// One segment, one spelling. The leading zero is excluded HERE rather
 		// than validated later, because "week-02" is not a slow way of asking
-		// for week 2 — it is a second address for it, which is the whole thing
+		// for week 2 - it is a second address for it, which is the whole thing
 		// the path was moved out of the query string to avoid. Mirrors the
 		// strictness of the /schedule/week-:week route in the API.
 		$rule = '^' . $page . '/week-([1-9][0-9]?)/?$';
@@ -143,11 +143,11 @@ add_action(
 		);
 
 		// A new rule is dead until the rule table is rebuilt, and an upgrade
-		// does not run the activation hook that asks for that — which is why
+		// does not run the activation hook that asks for that - which is why
 		// the week URLs used to need a Settings > Permalinks save before they
 		// stopped 404ing. Same self-heal as the rankings file: the rule's own
-		// signature is remembered, and a change to it — a first install of this
-		// version, or a filtered page path — asks for the flush that
+		// signature is remembered, and a change to it - a first install of this
+		// version, or a filtered page path - asks for the flush that
 		// statchasers-news.php performs at the end of this same `init`.
 		$signature = md5( $rule );
 		if ( get_option( 'statchasers_schedule_rules' ) !== $signature ) {
@@ -174,7 +174,7 @@ function statchasers_schedule_request_week(): int {
 	$week = 0;
 	// Only on the page that mounts the schedule. The query var is public, so
 	// without this `?sc_sched_week=7` on any article on the site retitled it
-	// and pointed its canonical at week 7 — the bug rankings and player stats
+	// and pointed its canonical at week 7 - the bug rankings and player stats
 	// already had fixed.
 	if ( ! statchasers_schedule_post_has_shortcode() ) {
 		return $week;
@@ -193,8 +193,8 @@ function statchasers_schedule_request_week(): int {
 /**
  * A week the season does not have is a 404, not the current week.
  *
- * `/nfl/nfl-schedule/week-23/` matches the rewrite — the pattern is the shape,
- * not the truth — and without this it would quietly render whatever week the
+ * `/nfl/nfl-schedule/week-23/` matches the rewrite - the pattern is the shape,
+ * not the truth - and without this it would quietly render whatever week the
  * board opens on, at an address claiming to be week 23. The API answers the
  * same URL with a 404 for the same reason.
  */
@@ -244,7 +244,7 @@ function statchasers_schedule_args( array $atts ): array {
 		$filter = 'all';
 	}
 
-	// Left at 0, the API picks the week the season is actually on — which is
+	// Left at 0, the API picks the week the season is actually on - which is
 	// what a page should normally do. A pinned week is a page that still says
 	// Week 1 in December.
 	$week = (int) $atts['week'];
@@ -255,8 +255,8 @@ function statchasers_schedule_args( array $atts ): array {
 	// A week URL outranks the attribute, because it is an ADDRESS: a page
 	// reached at /week-7/ that rendered week 3 would be a wrong answer at a
 	// right-looking URL, and the board's own week links all point at addresses
-	// now. Where no week URL is in play — any other page mounting the
-	// shortcode — the attribute is untouched.
+	// now. Where no week URL is in play - any other page mounting the
+	// shortcode - the attribute is untouched.
 	//
 	// It outranks the view for the same reason, and this is the pair that makes
 	// the page's two addresses work: the bare page is the season grid, and
@@ -326,7 +326,7 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	// schedule's is the source repo's Space Grotesk title, which is not the
 	// site's hero and read as a second design on the page. In the heading mode
 	// that asks the tool for its H1, this file prints the site's own hero
-	// instead — see statchasers_schedule_shortcode_heading().
+	// instead - see statchasers_schedule_shortcode_heading().
 	$key        = md5( $origin . '|' . wp_json_encode( $args ) );
 	$cache_key  = 'sc_sched_ssr_' . $key;
 	$backup_key = 'sc_sched_ssr_bak_' . $key;
@@ -360,7 +360,7 @@ function statchasers_schedule_fetch( array $args ): ?array {
 
 	// The API answers 503 rather than an empty shell when the upstream feed is
 	// unavailable, precisely so this branch can tell "down right now" from
-	// "nothing to show" — the last good board is far better than a hole in the
+	// "nothing to show" - the last good board is far better than a hole in the
 	// page, because a schedule that is a few hours stale is still almost
 	// entirely correct.
 	if ( 200 !== $code || '' === trim( $body ) ) {
@@ -433,7 +433,7 @@ function statchasers_schedule_enqueue_assets(): void {
 
 	// Both unconditional where the block above is not. A tool printing through
 	// the site's header, and a phone reading it through a 43px margin on each
-	// side, are wrong on every page that mounts a tool — whether or not that
+	// side, are wrong on every page that mounts a tool - whether or not that
 	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_SCHEDULE_HANDLE, statchasers_tool_header_layer_css() );
@@ -552,13 +552,13 @@ add_filter( 'body_class', 'statchasers_schedule_full_width_body_class', PHP_INT_
 /**
  * The shortcode: prints the server-rendered schedule into the page.
  *
- * Same deliberate omissions as the other five — no canonical, no <h1>, no title
+ * Same deliberate omissions as the other five - no canonical, no <h1>, no title
  * or meta description, nothing written to the URL. The page owns all of it, and
  * the board's own week and team controls are ordinary links back to whatever
  * SC_SCHEDULE_PATH names on the API side.
  *
  * The one thing it does read is the week, when the request came in at a week
- * URL: `/nfl/nfl-schedule/week-7/`. That is still the page owning its address —
+ * URL: `/nfl/nfl-schedule/week-7/`. That is still the page owning its address -
  * the rewrite rule above put the week in a query var before the shortcode ran,
  * and the filters below give that address its own title and canonical.
  *
@@ -578,13 +578,13 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	$args = statchasers_schedule_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_schedule_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_schedule_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		// No client-side render to fall back to: the bundle only relabels
 		// kickoffs in markup that is already there. An empty string leaves the
-		// rest of the page — the H1, the copy, the internal links — intact.
+		// rest of the page - the H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return '<p><strong>StatChasers Schedule:</strong> the API returned nothing. Check that the deployment is up and that it can reach the nflverse schedule feed.</p>';
 		}
@@ -624,8 +624,8 @@ add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' 
  *
  * The other half of the heading story. Where the theme prints the page title,
  * the `the_title` filter below makes that title week-aware and this prints
- * nothing; where the theme prints no title at all — a Divi full-width layout, a
- * Theme Builder layout with no Post Title module — this supplies the heading
+ * nothing; where the theme prints no title at all - a Divi full-width layout, a
+ * Theme Builder layout with no Post Title module - this supplies the heading
  * and the standfirst in the site's own hero markup, and the week URLs get one
  * each. See statchasers-h1.php for how that question is answered, and why it is
  * answered by measuring a rendered page rather than by guessing at the
@@ -677,7 +677,7 @@ function statchasers_schedule_week_title(): string {
  * `post_title` rather than `get_the_title()`, and that is not a detail: this
  * file now filters `the_title` to APPEND the week, so a title read through that
  * filter while computing what the filter should return is a title with the week
- * on it already — "2026 NFL Schedule: Week 7: Week 7". Reading the stored
+ * on it already - "2026 NFL Schedule: Week 7: Week 7". Reading the stored
  * string is the version of this that cannot recurse.
  */
 function statchasers_schedule_page_title(): string {
@@ -701,14 +701,14 @@ function statchasers_schedule_week_description(): string {
 /**
  * The heading this request's page should carry.
  *
- * The page's own title on the bare page — the grid is the schedule here, so it
- * needs no qualifier — and that same title with the week appended on a week
+ * The page's own title on the bare page - the grid is the schedule here, so it
+ * needs no qualifier - and that same title with the week appended on a week
  * URL. MIRRORS `scheduleHeading()` in the API's schedule-render.ts, except for
  * the season: the API knows the year because it has the slate, and this side
  * reads it out of the page's title, for the reason given on
  * statchasers_schedule_week_title() above.
  *
- * Never '' — unlike the week title, which returns '' to mean "leave what is
+ * Never '' - unlike the week title, which returns '' to mean "leave what is
  * there alone". This one is asked for a heading to print, so it always answers
  * with one.
  */
@@ -722,7 +722,7 @@ function statchasers_schedule_heading(): string {
  * The sentence under that heading.
  *
  * MIRRORS `scheduleLede()` in schedule-render.ts word for word when the
- * season is known — the shortcode reads it off the fragment. Without it, the
+ * season is known - the shortcode reads it off the fragment. Without it, the
  * week case falls back to the description the week URLs already carry.
  */
 function statchasers_schedule_lead( int $season = 0 ): string {
@@ -760,7 +760,7 @@ function statchasers_schedule_week_canonical(): string {
  * is on. Off a week URL the page keeps its own name.
  *
  * This is the half of the job that needs no configuration: where the theme
- * prints the page title as the H1 — Divi's page.php does — `/week-7/` now says
+ * prints the page title as the H1 - Divi's page.php does - `/week-7/` now says
  * Week 7 at the top of the page as well as in the tab. The other half, for a
  * template that prints no title at all, is
  * statchasers_schedule_shortcode_heading() below.
@@ -816,8 +816,8 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
 /**
  * The week as the last breadcrumb, at its own address.
  *
- * Rank Math's trail on a week URL ends at the schedule page — the page the
- * rewrite resolves to — so the BreadcrumbList on /nfl/nfl-schedule/week-4/
+ * Rank Math's trail on a week URL ends at the schedule page - the page the
+ * rewrite resolves to - so the BreadcrumbList on /nfl/nfl-schedule/week-4/
  * said the page was the season grid, while its title and canonical said Week
  * 4. Same fix as the team and player section crumbs. Scoped exactly as the
  * title and canonical are, through statchasers_schedule_request_week(): only
@@ -845,7 +845,7 @@ add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_schedule_breadcr
  * The attributes the page's own shortcode was written with.
  *
  * The other four tools' FAQ sections fetch with default arguments, because
- * their questions do not vary by attribute — the rankings' five boards are one
+ * their questions do not vary by attribute - the rankings' five boards are one
  * page, and the position attribute only says which panel opens. This tool is
  * the exception: `view` decides WHICH SET of questions the fragment carries,
  * the weekly board's or the season grid's. Fetching with the defaults here
@@ -856,7 +856,7 @@ add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_schedule_breadcr
  * shortcode API's own parser rather than a regular expression of our own.
  * `statchasers_schedule_args()` then resolves them exactly as the shortcode
  * will, including the rule that a week URL overrides both the week and the
- * view — which is what makes `/nfl/nfl-schedule/week-7/` get week 7's
+ * view - which is what makes `/nfl/nfl-schedule/week-7/` get week 7's
  * questions and the bare page get the grid's.
  *
  * The first mount wins. A page with two schedules on it is not a thing that
@@ -901,8 +901,8 @@ function statchasers_schedule_mounted_atts(): array {
 /**
  * The questions this request's schedule fragment is carrying.
  *
- * The fetch is the cached one the shortcode is about to hit — same arguments,
- * same transient key — so this costs no second round trip, and the result is
+ * The fetch is the cached one the shortcode is about to hit - same arguments,
+ * same transient key - so this costs no second round trip, and the result is
  * memoised because the Rank Math filter and the fallback printer both ask.
  *
  * @return array<int,array{q:string,a:string}>
@@ -1108,7 +1108,7 @@ function statchasers_schedule_strip_faq_data( string $html ): string {
  * The eighteen week URLs, appended to Rank Math's page sitemap.
  *
  * The board itself is a real page and Rank Math lists it. The week addresses
- * have no post behind them, so they have to be added — and only while the
+ * have no post behind them, so they have to be added - and only while the
  * rewrite is live and the page actually exists, or the sitemap would advertise
  * eighteen addresses that 404. Same switch as the rewrite, so the two cannot
  * disagree. Same caveat as the team sections: `{$type}_content` is the

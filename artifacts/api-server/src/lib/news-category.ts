@@ -6,8 +6,8 @@
  * is a keyword judgement about a headline, not a fact the provider told us, and
  * a guess written into a column becomes indistinguishable from a fact the
  * moment it is stored. Deriving it also means the rules can be improved in one
- * place and every row in the archive — including the ones ingested before the
- * rule existed — is re-read under the new ones, with no backfill and nothing to
+ * place and every row in the archive - including the ones ingested before the
+ * rule existed - is re-read under the new ones, with no backfill and nothing to
  * migrate.
  *
  * Pure and dependency-free, like lib/render.ts, so the same function can run on
@@ -88,7 +88,7 @@ const RULES: Array<{ category: NewsCategory; pattern: RegExp }> = [
     pattern:
       // `practic\w*`, not `practice`: "Not practicing Wednesday" is the single
       // most common shape the wire files a participation note in, and a bare
-      // `practice` misses every one of them — the \b lands on the "i".
+      // `practice` misses every one of them - the \b lands on the "i".
       /\b(practic\w*|walkthrough|walk-through|training camp|otas?|minicamp|did not participate|dnp\b|full participant|limited participant|on the field|side field|padded|drills?|\breps?\b|session|scrimmage|rest day|spring|7-on-7|11-on-11|takes? part)\b/i,
   },
   {
@@ -100,7 +100,7 @@ const RULES: Array<{ category: NewsCategory; pattern: RegExp }> = [
     // Availability: whether he is playing, not what is wrong with him.
     //
     // This is the largest single thing the wire files and the rules used to
-    // have no home for it — "Won't play in Saturday's preseason game" names no
+    // have no home for it - "Won't play in Saturday's preseason game" names no
     // body part, no transaction and no practice, so it fell through to "other"
     // along with a third of the feed. It is deliberately NOT folded into
     // injury: a rested starter and a hamstring are the same fact to a fantasy
@@ -120,7 +120,7 @@ const RULES: Array<{ category: NewsCategory; pattern: RegExp }> = [
    * A club feed is a newsroom: previews, recaps, film pieces, press-conference
    * transcripts?s and community announcements. None of that vocabulary overlaps
    * with "Dealing with a hamstring", so before these rules existed the whole
-   * lane fell through to "other" — 411 of 600 stored club rows, which on a team
+   * lane fell through to "other" - 411 of 600 stored club rows, which on a team
    * page meant half the cards carried a label that said nothing.
    *
    * They sit BELOW every player rule on purpose. "Colts rule out WR Ashton

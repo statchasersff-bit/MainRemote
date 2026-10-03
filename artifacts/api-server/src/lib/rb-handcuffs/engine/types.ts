@@ -49,7 +49,7 @@ export interface BackfieldVolumeComponents {
 }
 
 // ---------------------------------------------------------------------------
-// Path to Opportunity — how likely the BACKUP is to gain meaningful touches.
+// Path to Opportunity - how likely the BACKUP is to gain meaningful touches.
 // Built fresh from available data (starter durability history, workload, age,
 // backup usage share, starter quality vulnerability). Does NOT use the deleted
 // `injuryRiskStarter` field.

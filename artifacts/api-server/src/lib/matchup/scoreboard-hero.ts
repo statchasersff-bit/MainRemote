@@ -200,7 +200,7 @@ function passing(candidates: string[], against: string): string {
 
 /**
  * A club's colour as TEXT on the page and its cards: the primary when it
- * passes AA there, otherwise the primary darkened until it does. Not the secondary —
+ * passes AA there, otherwise the primary darkened until it does. Not the secondary -
  * for most clubs that is the paler of the two.
  */
 export function teamInk(abbr: string, useSecondary = false): string {
@@ -222,8 +222,8 @@ export function tooClose(a: string, b: string): boolean {
 /**
  * Text and fill colours for both sides of one page, told apart.
  *
- * Several clubs share a primary — the Patriots and the Seahawks are both
- * #002244, and the Raiders, Saints and Steelers the same near-black — and a
+ * Several clubs share a primary - the Patriots and the Seahawks are both
+ * #002244, and the Raiders, Saints and Steelers the same near-black - and a
  * comparison drawn in one colour on both sides has lost what the colour was
  * for. The home side then takes its secondary instead (Seattle's green),
  * made safe for text the same way, and a neutral slate if even that clashes.
@@ -367,7 +367,7 @@ export function scoreboardKickoff(game: ScoreboardGame): KickoffText | null {
  * "Cardinals vs Rams Wild Card 2021: Final Score 34–11, Stats & Recap". The
  * score is written winner first, the way it is said. Before kickoff there is
  * no score to put in it and the score clause goes. The caller fits the first
- * candidate that the length budget allows — see fitMatchupTitle().
+ * candidate that the length budget allows - see fitMatchupTitle().
  */
 export function scoreboardTitleCandidates(game: ScoreboardGame): string[] {
   const lead =
@@ -386,7 +386,7 @@ export function scoreboardTitleCandidates(game: ScoreboardGame): string[] {
   ];
 }
 
-/** "Final: Los Angeles Rams 34, Arizona Cardinals 11." — winner first. */
+/** "Final: Los Angeles Rams 34, Arizona Cardinals 11." - winner first. */
 export function scoreboardSummary(game: ScoreboardGame): string {
   const result = scoreboardResult(game);
   if (!result) {
@@ -468,7 +468,7 @@ function quarterCell(team: ScoreboardTeam, i: number): string {
 /**
  * Scoring by quarter, as a real table: two rows, away first, home second.
  *
- * Absent before kickoff and whenever either side has no line score — there is
+ * Absent before kickoff and whenever either side has no line score - there is
  * no version of this table built from a final score alone.
  */
 function linescore(game: ScoreboardGame, result: ScoreboardResult | null): string {

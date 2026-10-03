@@ -2,7 +2,7 @@
  * The shapes the player pages are built from.
  *
  * Ported from the standalone player-pages app's `shared/playerTypes.ts`. The
- * field names are upstream's — they come straight out of Sleeper's weekly stat
+ * field names are upstream's - they come straight out of Sleeper's weekly stat
  * objects and out of the JSON in `data/player/`, so renaming them here would
  * mean renaming them in every build script too.
  *
@@ -35,7 +35,7 @@ export interface GameLogStats {
   xpm?: number;
   xpa?: number;
   off_snp?: number;
-  /** The team's offensive snaps that week — the denominator for a snap share. */
+  /** The team's offensive snaps that week - the denominator for a snap share. */
   tm_off_snp?: number;
   /** Derived in enrichWithTeamMetrics(), not present in the source data. */
   target_share?: number | null;
@@ -106,9 +106,9 @@ export interface DynastyData extends DynastyFormatValues {
  * drawn from these two numbers rather than from a decimal.
  */
 export interface OutlookBand {
-  /** The good end of the band — the smaller rank. */
+  /** The good end of the band - the smaller rank. */
   best: number;
-  /** The bad end of the band — the larger rank. */
+  /** The bad end of the band - the larger rank. */
   worst: number;
   /** One line on what produces this outcome. */
   note: string;
@@ -129,7 +129,7 @@ export interface OutlookUsage {
   avoidWhen: string;
 }
 
-/** The closing call. `call` is a short chip — "Hold / Stream", "Buy". */
+/** The closing call. `call` is a short chip - "Hold / Stream", "Buy". */
 export interface OutlookVerdict {
   call: string;
   rationale: string;
@@ -153,8 +153,8 @@ export interface OutlookKeyStats {
  * The written 2026 outlook, and the decision layer on top of it.
  *
  * `headline` and `body` are the original two fields and are always present.
- * Everything below them is the Outlook tab's decision layer — the verdict, the
- * projected range, the triggers, the usage — and every one of them is OPTIONAL,
+ * Everything below them is the Outlook tab's decision layer - the verdict, the
+ * projected range, the triggers, the usage - and every one of them is OPTIONAL,
  * because a record generated before those fields existed simply does not carry
  * them and the tab must render what it has rather than a row of empty labels.
  *
@@ -171,8 +171,8 @@ export interface OutlookKeyStats {
 export interface FantasyOutlook2026 {
   /**
    * Identity, as the generator stamped it. Carried so a consumer reading the
-   * file on its own — outlook-drivers.ts builds its position distributions
-   * straight out of it — does not have to join back to players.json first.
+   * file on its own - outlook-drivers.ts builds its position distributions
+   * straight out of it - does not have to join back to players.json first.
    */
   slug?: string;
   name?: string;
@@ -187,7 +187,7 @@ export interface FantasyOutlook2026 {
   quickTake?: string;
   /** "Spot Starter", "Lead Back", "Committee Back". */
   weeklyRole?: string;
-  /** "QB3 / Matchup Play" — the rest-of-season call, in the site's shorthand. */
+  /** "QB3 / Matchup Play" - the rest-of-season call, in the site's shorthand. */
   restOfSeason?: string;
   confidence?: "High" | "Moderate" | "Low";
 
@@ -230,7 +230,7 @@ export interface Player {
  * What Sleeper's leagues have done with a player, for one week.
  *
  * Built by scripts/player/buildRosterPct.mjs from Sleeper's research endpoint,
- * whose default cut is the redraft one — see that script for why there is no
+ * whose default cut is the redraft one - see that script for why there is no
  * 1QB-only cut to read. `started` is absent where the source gave no figure;
  * neither field is ever defaulted to zero, because "nobody rostered him" and
  * "no reading" are different answers and only one of them is knowable.
@@ -289,7 +289,7 @@ export interface CareerProfile {
   volatilityLabel: string;
   seasons: number;
   seasonPpgs: { season: number; ppg: number }[];
-  /** Under eight career games — every rate on the card is noise, and says so. */
+  /** Under eight career games - every rate on the card is noise, and says so. */
   smallSample: boolean;
 }
 
@@ -306,7 +306,7 @@ export interface PlayerBenchmarks {
   qualifiedThreshold: number;
   posAvg: PositionAverages;
   posStdDev: { tdPerTarget: number; fpPerUsage?: number };
-  /** Null when the player is below the volume threshold — see player-data.ts. */
+  /** Null when the player is below the volume threshold - see player-data.ts. */
   percentile: {
     yardsPerCatch: number | null;
     catchPct: number | null;
@@ -349,7 +349,7 @@ export interface DraftRecord {
 }
 
 /**
- * A row of `data/player/bio_facts.json` — the Bio tab's own source.
+ * A row of `data/player/bio_facts.json` - the Bio tab's own source.
  *
  * `teams` is one entry per season the player was actually on a roster for,
  * oldest first, and it is the career timeline. Seasons he was not in the league
@@ -358,7 +358,7 @@ export interface DraftRecord {
  * team and an empty stat line.
  *
  * There is no hometown here. Sleeper's birth_city and birth_state are null for
- * every active player, so the field would be a column of blanks — and rule 1
+ * every active player, so the field would be a column of blanks - and rule 1
  * says a field we do not have is not rendered.
  */
 export interface BioFacts {

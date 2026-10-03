@@ -1,18 +1,18 @@
 /**
  * Team hub enhancement bundle.
  *
- * The page is complete before this file runs — every headline, player, fixture
+ * The page is complete before this file runs - every headline, player, fixture
  * and link is in the HTML the server sent, and the team switcher, the "view
  * more" disclosures and the section tabs all work with JavaScript disabled.
  * Nothing here fetches anything and nothing here renders anything.
  *
  * It adds five things:
- *   1. tab behaviour for the section bar — switching in place instead of
+ *   1. tab behaviour for the section bar - switching in place instead of
  *      navigating to an anchor, plus the ARIA roles and arrow keys that CSS
  *      `:target` cannot supply on its own;
  *   2. outside-click and Escape closing for the team switcher;
  *   3. relative timestamps ("3 hours ago") on stamps the server rendered as
- *      absolute — the server cannot know "now" without breaking its own render
+ *      absolute - the server cannot know "now" without breaking its own render
  *      cache, so the absolute form is what ships and this upgrades it;
  *   4. sortable column headers on the matchup page's stat tables;
    5. height reporting to a parent frame, for the legacy iframe mount.
@@ -25,7 +25,7 @@ const ROOT_SELECTOR = "[data-sct-root]";
 /**
  * Turn the section bar into a tab strip.
  *
- * The panels are already one-at-a-time before this runs — CSS `:target` does
+ * The panels are already one-at-a-time before this runs - CSS `:target` does
  * that, and the page is usable with scripting off. What this adds is the part a
  * selector cannot: switching without navigating (no jump to the anchor, no
  * scroll position lost), the ARIA roles, and arrow-key movement between tabs.
@@ -107,7 +107,7 @@ function wireTabs(root: HTMLElement): void {
    * The HOST's, strictly: the plugin marks its own with these attributes, and
    * the fallback is the first H1 in the document FROM OUTSIDE this root. A tab
    * click rewrites the title of the page the hub is mounted in, since that
-   * title names the address the click just pushed — it does not touch the hero,
+   * title names the address the click just pushed - it does not touch the hero,
    * which says the club's name on every tab and is not a caption for whichever
    * panel is open. On the standalone page the only H1 is the hero's, so there
    * is nothing here to rewrite and nothing is invented: a page that chose not
@@ -140,7 +140,7 @@ function wireTabs(root: HTMLElement): void {
   /**
    * Put the section's own address in the address bar.
    *
-   * The panel switched in place, so nothing loaded — but the reader is now
+   * The panel switched in place, so nothing loaded - but the reader is now
    * looking at the Depth Chart, and the URL should say so. It is the same
    * address the link would have loaded, and the server renders that page
    * standalone, so a reload, a share or a bookmark all land on what is on
@@ -189,14 +189,14 @@ function wireTabs(root: HTMLElement): void {
 
   // State is settled BEFORE the CSS is handed over, so there is no frame where
   // :target has been switched off and .is-active still names the server's guess
-  // — which on a deep link (#depth-chart) would flash the Outlook panel.
+  // - which on a deep link (#depth-chart) would flash the Outlook panel.
   let active = fromHash();
   select(active, false);
   root.dataset["sctTabs"] = "js";
 
   for (const { id, link } of tabs) {
     link.addEventListener("click", (event) => {
-      // Let the browser handle anything that is not a plain left click — a
+      // Let the browser handle anything that is not a plain left click - a
       // middle click or ctrl-click on these links opens the hub at that tab,
       // which is a genuinely useful thing to be able to do.
       if (event.defaultPrevented) return;
@@ -216,7 +216,7 @@ function wireTabs(root: HTMLElement): void {
     });
   }
 
-  // A hash arriving from outside — an in-page link, an edit to the address bar,
+  // A hash arriving from outside - an in-page link, an edit to the address bar,
   // or the back button after some other navigation wrote one.
   window.addEventListener("hashchange", () => {
     const id = fromHash();
@@ -256,7 +256,7 @@ function wireTabs(root: HTMLElement): void {
    * Back and forward through the tabs.
    *
    * Without this the address bar would walk back through the sections while the
-   * page kept showing the last one clicked — the failure that makes people
+   * page kept showing the last one clicked - the failure that makes people
    * distrust a URL that changed without a load. A path that belongs to no tab
    * is the address the reader landed on, which restores the first panel and the
    * heading captured at load.
@@ -521,7 +521,7 @@ function wireSwitcher(root: HTMLElement): void {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || !details.open) return;
     details.open = false;
-    // Focus goes back to the control that opened the panel — otherwise Escape
+    // Focus goes back to the control that opened the panel - otherwise Escape
     // strands keyboard focus inside a panel that is no longer visible.
     if (summary instanceof HTMLElement) summary.focus();
   });
@@ -534,7 +534,7 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 /**
- * @param compact Abbreviated units — "43m ago" rather than "43 min ago".
+ * @param compact Abbreviated units - "43m ago" rather than "43 min ago".
  *   Asked for by `data-ts-compact`, and used where the stamp is a footnote in a
  *   narrow card rather than a line of its own under a headline.
  */
@@ -574,7 +574,7 @@ function wireTimestamps(root: HTMLElement): void {
       if (!Number.isFinite(ts) || ts <= 0) continue;
       const label = relativeLabel(ts, now, stamp.hasAttribute("data-ts-compact"));
       if (!label) continue;
-      // The absolute form moves into the tooltip rather than being discarded —
+      // The absolute form moves into the tooltip rather than being discarded -
       // "3 hours ago" is easier to read, the exact time is still available, and
       // the machine-readable datetime attribute is untouched either way.
       if (!stamp.title) stamp.title = stamp.textContent?.trim() ?? "";
@@ -600,7 +600,7 @@ function wireTimestamps(root: HTMLElement): void {
  * run together. The header declares the type, so a column of digits cannot be
  * mistaken for a number one week and a string the next.
  *
- * An EMPTY `data-sort` is a missing value, not a zero — a player with no passer
+ * An EMPTY `data-sort` is a missing value, not a zero - a player with no passer
  * rating and one with a rating of 0.0 are different things, and only the second
  * belongs at the bottom of the rating column.
  */
@@ -632,7 +632,7 @@ function sortValue(
  * Rows with no value in the column being sorted are held at the bottom in the
  * order the server sent them, in BOTH directions. That is the one place this
  * differs from the FPA table, which has no empty cells to worry about: sorting
- * ascending by a column where half the rows read "—" would otherwise open with
+ * ascending by a column where half the rows read "-" would otherwise open with
  * the players the column knows nothing about.
  */
 function wireSortableTables(root: HTMLElement): void {
@@ -665,7 +665,7 @@ function wireSortableTables(root: HTMLElement): void {
       const sorted = header.getAttribute("data-sort-default");
       header.setAttribute("aria-sort", sorted ?? "none");
 
-      // Numbers open descending — the top of a stat column is what a reader
+      // Numbers open descending - the top of a stat column is what a reader
       // clicking it is after. Names open ascending, which is A to Z.
       let descending = type === "number";
       if (sorted === "descending") descending = false;
@@ -673,7 +673,7 @@ function wireSortableTables(root: HTMLElement): void {
       button.addEventListener("click", () => {
         const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>("tr"));
         // The server's order, to fall back on for rows with nothing to compare
-        // and to break ties with — otherwise a column of equal values
+        // and to break ties with - otherwise a column of equal values
         // reshuffles itself on every click.
         const original = new Map(rows.map((row, at) => [row, at]));
 
@@ -803,7 +803,7 @@ let scoringGroups = 0;
  *
  * The server prints PPR and carries all three on each figure as data-fmt-*
  * (the stat tables) or data-ppr/-half/-std (the leaders strip), so switching
- * is a swap of text already on the page — nothing is fetched or recomputed.
+ * is a swap of text already on the page - nothing is fetched or recomputed.
  * The switch is built here, not sent in the HTML: without this bundle there is
  * nothing for it to switch, and the page reads as PPR.
  *
@@ -909,7 +909,7 @@ function wireScoring(root: HTMLElement): void {
  *
  * The radios are in the server's HTML (recap fantasy-section.ts), and so is
  * every value: each points figure carries data-ppr, data-half and data-std,
- * and this swaps the text in place — the widths are tabular, so nothing moves.
+ * and this swaps the text in place - the widths are tabular, so nothing moves.
  * Then each fantasy table is re-sorted by its rows' data-sort-<format>, the
  * top-scorer marker moves to the new first row, and the +/- cells are
  * recoloured by their new sign. The choice is shared with the matchup page's
@@ -1011,7 +1011,7 @@ function wireHighlights(root: HTMLElement): void {
  * Mirrors the news tool's behaviour (src/client/main.ts) so a page embedded the
  * legacy way resizes instead of scrolling inside its own box. Measures the
  * root's bottom edge in document coordinates rather than its height, because
- * anything rendered above it shifts content down without making it taller —
+ * anything rendered above it shifts content down without making it taller -
  * and a height-only measurement then under-reports by exactly that offset.
  */
 function wireFrameHeight(root: HTMLElement): void {
@@ -1058,15 +1058,15 @@ function wireFrameHeight(root: HTMLElement): void {
  * Shorten the hero's fact chips, a rung at a time, rather than let them wrap.
  *
  * Five chips need between 555px (Washington) and 617px (Minnesota) on one
- * line — the spread is the coach's name, mostly — and under that the Bye chip
+ * line - the spread is the coach's name, mostly - and under that the Bye chip
  * drops to a row of its own with the rest of the line left empty. Two of the
  * chips carry a shorter spelling of themselves for that, and they are spent in
  * the order a reader can most afford:
  *
- *   short — "2nd in AFC East" → "2nd", about 60px. The division it drops is
+ *   short - "2nd in AFC East" → "2nd", about 60px. The division it drops is
  *           the chip two to its left, so nothing leaves the row.
- *   tight — "Week 11" → "W11", about 35px, under a label that reads BYE.
- *   drop  — the Bye chip off the row entirely, which is the whole of it.
+ *   tight - "Week 11" → "W11", about 35px, under a label that reads BYE.
+ *   drop  - the Bye chip off the row entirely, which is the whole of it.
  *
  * The row stops at the first rung that fits, so most widths spend nothing and
  * a narrow one spends only what it has to.
@@ -1074,7 +1074,7 @@ function wireFrameHeight(root: HTMLElement): void {
  * The last rung is a chip rather than a spelling because by then there is no
  * spelling left: "W11" is the shortest true form of the fact, and a row that
  * still does not fit it has only the two endings. One is what this did before
- * — the chip alone on a second line, one short word with an empty line beside
+ * - the chip alone on a second line, one short word with an empty line beside
  * it, which mak asked to stop seeing. The other is no chip, and it is the
  * cheaper of the two here: the bye is the one fact in this row the hub also
  * states in full a tab away, on the Schedule tab's season table and in the
@@ -1082,7 +1082,7 @@ function wireFrameHeight(root: HTMLElement): void {
  * every rung is re-decided from the full forms on each resize.
  *
  * Measured rather than written as breakpoints because the width where five
- * chips stop fitting is a different width for all 32 clubs — the same reason
+ * chips stop fitting is a different width for all 32 clubs - the same reason
  * the switcher beside them wraps on its content (see .sct-hero-head in
  * team.css). A single number would take the division off half the league while
  * it still fits, and leave the other half wrapping before it was spent.
@@ -1090,8 +1090,8 @@ function wireFrameHeight(root: HTMLElement): void {
  * Each rung is decided from the state above it, starting at the full forms: the
  * attribute comes off, the row is measured, and a rung is spent only if it is
  * still wrapping. Measuring in the short form would answer a different
- * question — "does the short form fit", which stays true long after the full
- * one stopped fitting — and the row would never climb back.
+ * question - "does the short form fit", which stays true long after the full
+ * one stopped fitting - and the row would never climb back.
  */
 /**
  * The rungs, in the order they are spent.
@@ -1107,7 +1107,7 @@ function wireFacts(root: HTMLElement): void {
   const chips = Array.from(facts.children) as HTMLElement[];
   if (chips.length < 2) return;
   // The box whose width is the row's available width. It is `flex: 1 0 100%`,
-  // so the swap below cannot change it — which is what makes it safe to watch.
+  // so the swap below cannot change it - which is what makes it safe to watch.
   const column = facts.parentElement;
   if (!column) return;
 
@@ -1165,14 +1165,14 @@ function wireFacts(root: HTMLElement): void {
  *
  * "New England Patriots fantasy football hub" is the club's own name and four
  * words, so where it stops fitting on one line is a different width for all 32
- * — measured: it takes a second line at 470px for Washington and at 360px for
+ * - measured: it takes a second line at 470px for Washington and at 360px for
  * Buffalo. That 110px spread is why this is measured and not a media query,
  * the same argument the chips ladder above makes at greater length.
  *
  * And the second line is what mak asked to stop seeing, which is the right
  * call on the content as well as the layout: the line repeats what the <h1>
  * directly above it and the eyebrow above that have already said between them
- * — the club, and that this is its hub — so the two rows it takes on a phone
+ * - the club, and that this is its hub - so the two rows it takes on a phone
  * are two rows of repetition in the one part of the page with no rows to
  * spare. Dropped, the hero loses nothing a reader did not already have.
  *
@@ -1189,8 +1189,8 @@ function wireFacts(root: HTMLElement): void {
  *     the attribute comes off, the line is measured, and it goes back on only
  *     if it wrapped. Measuring while hidden would answer nothing at all.
  *   - Watched on the hero, not on the column the line sits in. A hidden
- *     standfirst can change the name block's own width — it is a flex item
- *     sized by its content above 720px — and an observer on a box this
+ *     standfirst can change the name block's own width - it is a flex item
+ *     sized by its content above 720px - and an observer on a box this
  *     function can resize is an observer that feeds itself. The hero's width
  *     is the page's to decide.
  */
@@ -1217,7 +1217,7 @@ function wireHeroLead(root: HTMLElement): void {
     // number and not resolvable from here.
     const height = lead.getBoundingClientRect().height;
     const line = Number.parseFloat(getComputedStyle(lead).lineHeight);
-    // No layout to read — no rects, no height, an engine with neither — is
+    // No layout to read - no rects, no height, an engine with neither - is
     // not a wrap. The line stays, which is the state the server shipped.
     if (!height || !Number.isFinite(line) || line <= 0) return false;
     return height > line * 1.5;

@@ -88,7 +88,7 @@ export class OfficialXApiProvider implements XPostProvider {
 
     if (!response.ok) {
       // 429 carries the reset time, which is the one piece of a rate-limit
-      // failure worth having in the log — everything else is guesswork.
+      // failure worth having in the log - everything else is guesswork.
       const reset = response.headers.get("x-rate-limit-reset");
       throw new Error(
         `${response.status} ${response.statusText}` +

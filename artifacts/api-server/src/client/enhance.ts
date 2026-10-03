@@ -17,11 +17,11 @@
  */
 
 export interface TabOptions {
-  /** e.g. "[data-scp-nav]" — the element holding the tab links. */
+  /** e.g. "[data-scp-nav]" - the element holding the tab links. */
   navSelector: string;
-  /** e.g. ".scp-nav-list" — the <ul> that becomes the tablist. */
+  /** e.g. ".scp-nav-list" - the <ul> that becomes the tablist. */
   listSelector: string;
-  /** e.g. ".scp-nav-link" — the links themselves. */
+  /** e.g. ".scp-nav-link" - the links themselves. */
   linkSelector: string;
   /** dataset key set on the root once JS owns the tabs, e.g. "scpTabs". */
   datasetKey: string;
@@ -40,8 +40,8 @@ export interface TabOptions {
   /** The dataset key holding the standfirst for a tab, e.g. "scpLead". */
   leadKey?: string;
   /**
-   * Called whenever a tab is selected, by any route — click, arrow key, Back,
-   * a hash — including the one the page settles on at load. For state inside
+   * Called whenever a tab is selected, by any route - click, arrow key, Back,
+   * a hash - including the one the page settles on at load. For state inside
    * the root that follows the open tab, such as the player header's subtitle.
    */
   onSelect?: (link: HTMLAnchorElement, id: string) => void;
@@ -50,7 +50,7 @@ export interface TabOptions {
 /**
  * Turn a section bar into a tab strip.
  *
- * The panels are already one-at-a-time before this runs — CSS `:target` does
+ * The panels are already one-at-a-time before this runs - CSS `:target` does
  * that, and the page is usable with scripting off. What this adds is the part a
  * selector cannot: switching without navigating (no jump to the anchor, no
  * scroll position lost), the ARIA roles, and arrow-key movement between tabs.
@@ -145,7 +145,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
    * The HOST's, strictly: the plugin marks its own, and the fallback is the
    * document's first H1 FROM OUTSIDE this root. A tab click rewrites the title
    * of the page the fragment is mounted in, because that title names the
-   * address the click just pushed — it does not touch the hero, which says the
+   * address the click just pushed - it does not touch the hero, which says the
    * player's or the team's name on every tab and is not a caption for whichever
    * panel is open. On the standalone page the only H1 is the hero's, so there
    * is nothing here to rewrite and nothing is invented: a page that chose not
@@ -168,7 +168,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
   /*
    * The document title too. A tab click pushes the section's own address, and
    * GA4 records a history change as a page view with whatever document.title
-   * says at that moment — so it is set BEFORE the push, or every tab would be
+   * says at that moment - so it is set BEFORE the push, or every tab would be
    * reported under the title of the tab the reader landed on.
    */
   function setHeading(link: HTMLAnchorElement): void {
@@ -229,7 +229,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
    * A link INTO the page still works: fromHash() honours an arriving hash and
    * every tab link keeps its href, so a middle-click or a copied link opens on
    * the right panel. What this prevents is clicking a tab rewriting the URL of
-   * the page the reader is already on — and a reader who arrived at #injury and
+   * the page the reader is already on - and a reader who arrived at #injury and
    * then clicked Overview looking at the overview under a URL that says injury.
    */
   function clearHash(): void {
@@ -244,7 +244,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
 
   // State is settled BEFORE the CSS is handed over, so there is no frame where
   // :target has been switched off and .is-active still names the server's guess
-  // — which on a deep link would flash the first panel.
+  // - which on a deep link would flash the first panel.
   let active = fromHash();
   const landedId = active;
   select(active, false);
@@ -252,7 +252,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
 
   for (const { id, link } of tabs) {
     link.addEventListener("click", (event) => {
-      // Let the browser handle anything that is not a plain left click — a
+      // Let the browser handle anything that is not a plain left click - a
       // middle click or ctrl-click opens the page at that tab, which is a
       // genuinely useful thing to be able to do.
       if (event.defaultPrevented) return;
@@ -281,14 +281,14 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
    * Back and forward through the tabs.
    *
    * Without it the address bar would walk back through the sections while the
-   * page kept showing the last one clicked — the failure that makes people
+   * page kept showing the last one clicked - the failure that makes people
    * distrust a URL that changed without a load. A path belonging to no tab is
    * the address the reader landed on, which restores the first panel and the
    * heading captured at load.
    */
   if (options.panelKey) {
     window.addEventListener("popstate", () => {
-      // A root the page has replaced — see wireStateSwap in client/player.ts —
+      // A root the page has replaced - see wireStateSwap in client/player.ts -
       // is still wired, and its heading element is the container page's, shared
       // with the root that took its place. Leave the live one to answer.
       if (!root.isConnected) return;
@@ -311,7 +311,7 @@ export function wireTabs(root: HTMLElement, options: TabOptions): void {
     });
   }
 
-  // A hash arriving from outside — an in-page link, an edit to the address bar,
+  // A hash arriving from outside - an in-page link, an edit to the address bar,
   // or the back button after some other navigation wrote one.
   window.addEventListener("hashchange", () => {
     if (!root.isConnected) return;
@@ -410,7 +410,7 @@ export function wireTimestamps(root: HTMLElement): void {
  *
  * Measures the root's bottom edge in document coordinates rather than its
  * height, because anything rendered above it shifts content down without making
- * it taller — and a height-only measurement then under-reports by that offset.
+ * it taller - and a height-only measurement then under-reports by that offset.
  */
 export function wireFrameHeight(root: HTMLElement): void {
   if (window.parent === window) return;

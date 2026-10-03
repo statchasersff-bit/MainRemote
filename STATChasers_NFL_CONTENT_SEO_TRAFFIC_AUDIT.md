@@ -1,4 +1,4 @@
-# StatChasers NFL Content — SEO, Crawl, Request-Volume, Cache & Origin-Load Audit
+# StatChasers NFL Content - SEO, Crawl, Request-Volume, Cache & Origin-Load Audit
 
 Audit date: 2026-09-28. Read-only. No code, data, routes, redirects, metadata or database were changed.
 
@@ -946,7 +946,7 @@ A season-rollover runbook is needed before March 2027. It must cover:
 
 Line numbers are for the files as of this audit.
 
-## P0 — fix immediately
+## P0 - fix immediately
 
 **P0-1. Stop anonymous FPA ingests** (#1)
 - **Where:** `API/lib/fpa-ssr.ts`, `kickLazyIngest()` at `:66-100` and its trigger in `renderFpaFragment()` at `:111-114`; `API/routes/fpa.ts` season parse at `:45-48` (per report); `API/lib/fpa/nflverse.ts:243`.
@@ -980,7 +980,7 @@ Line numbers are for the files as of this audit.
 - **Traffic impact:** removes up to 20 s per player view in an outage, and the 6-hourly stampede.
 - **Implementation risk:** low–medium, because the H1 wording must stay identical.
 
-## P1 — fix next
+## P1 - fix next
 
 **P1-1. Check the version and cache before building page data; add memos** (#4)
 - **Where:** `API/lib/player-ssr.ts` `renderPlayerFragment` `:86-99` and `renderPlayerAppPage` `:166-172`; `API/lib/matchup/matchup-ssr.ts:126-129`; `API/lib/team-ssr.ts:72`.
@@ -1054,7 +1054,7 @@ Line numbers are for the files as of this audit.
 - **Traffic impact:** removes most browser-driven Replit requests and cuts transfer by about 80%.
 - **Implementation risk:** low. `ver` already busts the cache per build.
 
-## P2 — worthwhile
+## P2 - worthwhile
 
 - Add a `max-age` of about 30–60 s to `/api/news`. Throttle refetch on `visibilitychange` (e.g. only if more than 2 minutes since the last one) (`API/client/main.ts:533-535`).
 - Add `If-Modified-Since`/`ETag` to the club RSS fetches (`API/lib/club-news.ts:32-39`). Don't run schedulers in the dev workspace, or point dev at stubs; this also stops the 403 loop against api.statchasers.com.
@@ -1074,7 +1074,7 @@ Line numbers are for the files as of this audit.
 - Normalise the case and trailing slash of app-host canonicals, or 301 them.
 - Verify live: Divi Theme Builder H1 on player and matchup pages; Rank Math sitemap hook output; Bluehost object and page cache; `SC_*_PATH_PREFIX` in production.
 
-## P3 — cleanup
+## P3 - cleanup
 
 - The news flush deletes backups: separate "flush fresh" from "flush all" (`WP/statchasers-news.php:651-673`; team build at `WP/statchasers-team-pages.php:345-348`).
 - The matchup breadcrumb ends at the noindex holder: add a breadcrumb filter.

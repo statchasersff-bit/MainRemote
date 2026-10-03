@@ -5,7 +5,7 @@
  * The play-calling cards read the team box score (dropbacks are pass attempts
  * plus sacks); the possession table, the notes and the drive chart read ESPN's
  * drive chart. A defensive or return touchdown is not a possession for the side
- * that scored it — the drive it ended is counted as the other side's turnover —
+ * that scored it - the drive it ended is counted as the other side's turnover -
  * and the table says so when one happened.
  *
  * Pure: the game, the figures, the drives and the player lines in, HTML out.
@@ -186,7 +186,7 @@ function comparison(input: PossessionsInput, colors: ReturnType<typeof pairColor
     },
   ];
   const cell = (row: Row, side: Side): string =>
-    `<td class="sct-pc-v is-${side}${row.better === side ? " is-better" : ""}">${row[side] === null ? "—" : escapeHtml(row[side]!)}</td>`;
+    `<td class="sct-pc-v is-${side}${row.better === side ? " is-better" : ""}">${row[side] === null ? "-" : escapeHtml(row[side]!)}</td>`;
   return (
     `<table class="sct-pc-compare" style="--pc-away:${colors.away.ink};--pc-home:${colors.home.ink}">` +
     `<caption class="sct-rb-sr">${escapeHtml(`Play calling, ${game.away.short} vs ${game.home.short}`)}</caption>` +
@@ -411,7 +411,7 @@ export function renderPossessions(input: PossessionsInput): string {
         `<td><span class="sct-ss-chip" style="--ss-fill:${fill}">${escapeHtml(d.team)}</span></td>` +
         `<td>${escapeHtml(`${d.quarter <= 4 ? `Q${d.quarter}` : "OT"} ${d.startClock}`)}</td>` +
         `<td>${d.plays}</td><td>${d.yards}</td>` +
-        `<td>${d.durationSeconds === null ? "—" : clock(d.durationSeconds)}</td>` +
+        `<td>${d.durationSeconds === null ? "-" : clock(d.durationSeconds)}</td>` +
         `<td>${escapeHtml(RESULT_TEXT[d.result])}</td>` +
         `</tr>`
       );

@@ -11,8 +11,8 @@
 // espn-summary-trim.mjs), about 18 KB. The regular season and the playoffs are
 // both stored; only games ESPN marks STATUS_FINAL.
 //
-// A game is fetched again while it is recent — within SETTLE_DAYS of kickoff at
-// the time it was saved — because the league's stat corrections land in the
+// A game is fetched again while it is recent - within SETTLE_DAYS of kickoff at
+// the time it was saved - because the league's stat corrections land in the
 // days after a game. After that it is settled and left alone. A fetch that
 // fails keeps the stored copy; nothing on disk is ever dropped.
 //

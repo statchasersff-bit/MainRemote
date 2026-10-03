@@ -1,12 +1,12 @@
 /**
- * The canonical NFL team table — one row per franchise, one place to change.
+ * The canonical NFL team table - one row per franchise, one place to change.
  *
  * Everything about a team that the app needs to know lives here: the id it is
  * keyed by, the URL it lives at, how it is named, which division it plays in,
  * and the ids the upstream providers use for it. Nothing else in the codebase
  * may carry its own team mapping.
  *
- * The canonical id is `abbreviation` — Sleeper's lowercase code ("ne", "was",
+ * The canonical id is `abbreviation` - Sleeper's lowercase code ("ne", "was",
  * "jax"). That is deliberate rather than arbitrary: it is already what the news
  * pipeline resolves each item to (see lib/teams.ts and lib/news-query.ts) and
  * what `TEAM_COLORS`/`TEAM_NAMES` in lib/render.ts are keyed by, so choosing it
@@ -16,7 +16,7 @@
  *
  * Colours are imported from lib/render.ts rather than restated. The news card
  * already tints itself with them, and a second copy here would be a second
- * thing to keep in sync — the failure mode being a team whose page and whose
+ * thing to keep in sync - the failure mode being a team whose page and whose
  * news cards disagree about its own colour.
  */
 
@@ -43,7 +43,7 @@ export interface NflTeam {
   fullName: string;
   conference: Conference;
   divisionName: DivisionName;
-  /** e.g. "AFC East" — the form shown in the hero. */
+  /** e.g. "AFC East" - the form shown in the hero. */
   division: string;
   /** Absolute logo URL (Sleeper's CDN, already used by the news cards). */
   logo: string;
@@ -54,7 +54,7 @@ export interface NflTeam {
   /** ESPN's abbreviation. Differs from ours for Washington (WSH vs WAS). */
   espnAbbr: string;
   /**
-   * The club's own site, e.g. "patriots.com" — the host of its official news
+   * The club's own site, e.g. "patriots.com" - the host of its official news
    * feed at https://www.<siteDomain>/rss/news.
    *
    * Stored rather than derived because it follows no rule: some clubs use the
@@ -185,7 +185,7 @@ for (const team of TEAMS) {
   alias(team.nickname, team);
   alias(`${team.city} ${team.nickname}`, team);
   // City alone is ambiguous for the two New York and two Los Angeles clubs, so
-  // it is only registered when it is unique — `alias` keeps the first writer,
+  // it is only registered when it is unique - `alias` keeps the first writer,
   // which would silently hand "los angeles" to whichever team happened to be
   // earlier in the table. Explicitly skipping is clearer than relying on that.
   if (!["New York", "Los Angeles"].includes(team.city)) alias(team.city, team);
@@ -239,8 +239,8 @@ export function getTeamByAbbreviation(
 }
 
 /**
- * Resolve anything that plausibly names a team — abbreviation, slug, full name,
- * nickname, unambiguous city, ESPN code, or a retired code — to the one team it
+ * Resolve anything that plausibly names a team - abbreviation, slug, full name,
+ * nickname, unambiguous city, ESPN code, or a retired code - to the one team it
  * means. Returns null rather than guessing.
  *
  * This is the single entry point the routes and the shortcode use, so

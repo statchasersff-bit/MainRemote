@@ -25,7 +25,7 @@ export type UsagePos = "QB" | "RB" | "WR" | "TE";
 
 export interface UsageWeek {
   week: number;
-  /** Target share that game, % of team pass attempts. Null = did not play. */
+  /** Target share that game, % of team targets. Null = did not play. */
   ts: number | null;
   /** Offensive snap share that game, %. */
   snap: number | null;
@@ -50,6 +50,10 @@ export interface UsagePlayer {
   wopr: number | null;
   adot: number | null;
   ezTargets: number;
+  /** Box-score rushing yards: carries, scrambles and kneels. */
+  rushYards?: number;
+  /** Targets 20+ air yards downfield (the pass map's deep row). */
+  deepTargets?: number;
   firstReadShare: number | null;
   snapShare: number | null;
   rzTouches: number;
@@ -93,6 +97,8 @@ export interface UsageTeam {
   passAttempts: number;
   targets: number;
   passerId: string | null;
+  /** The passer's charted attempts - the pass map's denominator. */
+  passerZoneAttempts?: number;
   env: Record<
     "proe" | "rzPassRate" | "pace" | "playsPerGame" | "xfpPerGame" | "in10PassRate" | "passRate",
     RankedValue
@@ -174,7 +180,7 @@ export interface UsageRow {
   ts: Trend;
   snap: Trend;
   rz: Trend;
-  /** True for the team's leader in red-zone touches. */
+  /** True for the team's leader in red-zone opportunities. */
   leadsRz: boolean;
 }
 
@@ -318,7 +324,11 @@ export function buildUsageView(
     .slice(0, 5);
   picked.push(...receivers);
 
-  const through = doc.throughWeek;
+  // The team's own last game, not the league's: from Thursday night until the
+  // Monday game is in, the feed's latest week holds two teams, and every other
+  // page would claim a week it has not played (NE 2026-10-03: three games,
+  // labelled "through Week 4"). A bye keeps the last week played.
+  const through = team.games.length ? Math.max(...team.games) : doc.throughWeek;
   const rzLeader = [...here].sort((a, b) => b.rzTouches - a.rzTouches)[0];
 
   const toRow = ({ p, depth }: { p: UsagePlayer; depth: number }): UsageRow => ({

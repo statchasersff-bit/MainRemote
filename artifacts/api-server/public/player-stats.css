@@ -1,16 +1,16 @@
 /*
- * StatChasers — Advanced Player Stats
+ * StatChasers - Advanced Player Stats
  *
  * A sibling of team.css, player.css, fpa.css and rankings.css, and a sibling
  * for the same reason: the stylesheets are enqueued independently, so a page
  * mounting [statchasers_player_stats] must not need another tool's CSS. The
  * brand tokens are restated rather than imported.
  *
- * The TABLE is the standalone NFL-Advanced-Player-Stats app's — a grouped table with a navy banner row
+ * The TABLE is the standalone NFL-Advanced-Player-Stats app's - a grouped table with a navy banner row
  * over a light header row, zebra rows, a pinned player column and a rule at
  * each group's edge. The PAGE around it is open rather than boxed: one
- * command bar between two rules, then sections — leaders, the table, the
- * analysis, the FAQ — each opened by a rule and a small gold label, with
+ * command bar between two rules, then sections - leaders, the table, the
+ * analysis, the FAQ - each opened by a rule and a small gold label, with
  * nothing in a card. The DRESS is the house's: its tokens, its radii, its
  * navy-for-active controls. See the note on ported tools in replit.md.
  *
@@ -49,7 +49,7 @@
      set it: the narrow tier tightens it, and the theme armour at the foot of
      this file restates it at a specificity Divi cannot reach and lands AFTER
      the tier. A literal in both places puts the desktop value back on a phone
-     — the lesson fpa.css learned the expensive way. */
+     - the lesson fpa.css learned the expensive way. */
   --sca-pad-y: 6px;
   --sca-pad-x: 7px;
   /* The banner row's height, which is also where the header row below it
@@ -69,7 +69,7 @@
   /*
    * The grade bands: 90+, 80+, 70+, 50+, below.
    *
-   * The standalone app's scale — two greens, the brand blue, gold, grey — with
+   * The standalone app's scale - two greens, the brand blue, gold, grey - with
    * each ink darkened until it clears 4.5:1 on white and on the zebra stripe.
    * Its gold (#d4af37) was 2.1:1, a number that could not be read without
    * the colour telling you what it said. The number is always printed, so
@@ -153,8 +153,8 @@ body.sca-page {
 /*
  * Four levels, and only four:
  *
- *   H1              large, heavy, navy — the page's one loud line
- *   section label   tiny uppercase gold — "2026 WIDE RECEIVERS"
+ *   H1              large, heavy, navy - the page's one loud line
+ *   section label   tiny uppercase gold - "2026 WIDE RECEIVERS"
  *   section heading navy, a size down from the H1 and lighter
  *   supporting copy muted grey, smaller than body text
  *
@@ -260,7 +260,7 @@ body.sca-page {
   max-width: 80ch;
 }
 
-/* One question, one fold — rankings.css's FAQ, restated for this sheet. */
+/* One question, one fold - rankings.css's FAQ, restated for this sheet. */
 .sca-faq {
   border-top: 1px solid var(--sc-border);
 }
@@ -552,7 +552,7 @@ body.sca-page {
   font-weight: 700;
 }
 
-/* Search takes whatever the row has left — all of it, not a fixed width. */
+/* Search takes whatever the row has left - all of it, not a fixed width. */
 .sca-search {
   margin: 0;
   flex: 1 1 100px;
@@ -713,7 +713,7 @@ body.sca-page {
 /* --------------------------------------------------------------- leaders */
 
 /* Five columns split by hairlines rather than boxed: the category small and
-   quiet, the figure large — the one thing the eye lands on — a line of
+   quiet, the figure large - the one thing the eye lands on - a line of
    context, then who, tucked close beneath. */
 .sca-leader-row {
   display: grid;
@@ -908,7 +908,7 @@ body.sca-page {
 
 /* On a screen with room for it, the table scrolls inside its own box so the
    two header rows and the player column can stay pinned while a reader works
-   through two hundred receivers — sticky only sticks within the scroller it
+   through two hundred receivers - sticky only sticks within the scroller it
    sits in, and a scroller that never scrolls vertically pins nothing. */
 @container sca (min-width: 640px) {
   .sca-scroll {
@@ -1199,7 +1199,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 }
 
 /* A phone: # and Team go, the player column is the only pinned cell, and the
-   name shortens to "J. Allen" with the team beside it — the standalone app's
+   name shortens to "J. Allen" with the team beside it - the standalone app's
    mobile table. */
 @container sca (max-width: 640px) {
   .sca {
@@ -1245,7 +1245,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 /* font-family and list-style are the two properties a theme reaches through
    inheritance. `!important` because a theme that sets fonts from an options
    panel emits it itself; the family is still the token, so a host retunes it
-   by setting --sc-font. Do NOT add spacing here — see fpa.css. */
+   by setting --sc-font. Do NOT add spacing here - see fpa.css. */
 :is(.sca, body.sca-page),
 :is(.sca, body.sca-page) * {
   font-family: var(--sc-font) !important;
@@ -1260,7 +1260,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 /*                                                                         */
 /* Every declaration below RESTATES one already made above, at a           */
 /* specificity a host theme cannot reach. Nothing here is a new design     */
-/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* decision - if a value in this block disagrees with the rule it mirrors, */
 /* this block is the one that is wrong.                                    */
 /*                                                                         */
 /* Divi styles bare elements inside the content area:                      */
@@ -1277,7 +1277,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 /* survive this block.                                                     */
 /* ====================================================================== */
 
-/* Divi's rule is `.entry-content table:not(.variations)` — `:not()` counts
+/* Divi's rule is `.entry-content table:not(.variations)` - `:not()` counts
    its argument, so it is two classes and an element and beat `.sca .sca-table`
    with a 1px frame and 15px of margin. Repeating the `:not()` keeps this one
    class ahead. */
@@ -1313,7 +1313,7 @@ th[aria-sort="ascending"] .sca-sort::after {
    `#left-area table th { color: #666 }`, and an id outranks any number of
    classes: measured 2026-09-24, every column label went grey, the sorted
    column lost its gold and the banner its pale blue. The order below still
-   decides between them — sorted beats score beats plain. */
+   decides between them - sorted beats score beats plain. */
 .sca .sca-table .sca-head th {
   color: var(--sc-muted-strong) !important;
 }
@@ -1385,7 +1385,7 @@ th[aria-sort="ascending"] .sca-sort::after {
 }
 
 /* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
-   on statchasers.com, which only `!important` beats — measured, both section
+   on statchasers.com, which only `!important` beats - measured, both section
    headings rendered at 50px. Size and colour only, as team.css arms its own;
    the h3s ride along because the panel styles every level. */
 .sca .sca-section-title {

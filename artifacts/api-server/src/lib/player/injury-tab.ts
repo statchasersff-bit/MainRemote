@@ -15,7 +15,7 @@
  *   - Practice participation is the league's official report, read from
  *     NFL.com by scripts/player/buildPracticeReports.mjs. Days are only known
  *     from the day that builder first ran; before that a week has its final
- *     report only, and the earlier days print "—" (no entry in our data).
+ *     report only, and the earlier days print "-" (no entry in our data).
  *   - The history records carry no source, so no entry has a source link and
  *     the section says so (the spec's "unsourced isn't published" rule would
  *     empty the timeline; left for mak).
@@ -316,7 +316,7 @@ function gameCell(row: ReportRow | undefined, played: boolean, past: boolean, fi
     const kind = /^q/i.test(gs) ? "lim" : "dnp";
     return { text: gs, kind };
   }
-  if (past) return { text: "—", kind: "none" };
+  if (past) return { text: "-", kind: "none" };
   if (!finalPassed) return { text: "", kind: "soon" };
   return { text: "No status", kind: "clear" };
 }
@@ -543,8 +543,8 @@ const PILL: Record<string, [string, string]> = {
   FULL: ["full", "Full"],
   LIMITED: ["lim", "Limited"],
   DNP: ["dnp", "DNP"],
-  NONE: ["none", "—"],
-  MISSING: ["none", "—"],
+  NONE: ["none", "-"],
+  MISSING: ["none", "-"],
 };
 
 function pill(kind: string, text: string): string {
@@ -580,7 +580,7 @@ function renderPractice(m: Model): string {
       return (
         `<tr${r.current ? ` class="is-cur"` : ""}>` +
         `<th scope="row" class="scp-in-wk"><b>Week ${r.week}</b><small>${escapeHtml(r.where)}</small></th>` +
-        `<td>${escapeHtml(r.injury ?? "—")}</td>` +
+        `<td>${escapeHtml(r.injury ?? "-")}</td>` +
         days +
         `<td>${game}</td></tr>`
       );
@@ -602,7 +602,7 @@ function renderPractice(m: Model): string {
     `<span>${pill("lim", "Limited")} fewer than normal reps</span>` +
     `<span>${pill("dnp", "DNP")} did not practice</span>` +
     `<span>${pill("soon", "Date")} report not out yet</span>` +
-    `<span>${pill("none", "—")} no entry in our data</span>` +
+    `<span>${pill("none", "-")} no entry in our data</span>` +
     `</div></div>`
   );
 }
@@ -663,7 +663,7 @@ function renderGlance(m: Model, data: PlayerPageData): string {
   const top = t.longest;
   tiles.push(
     tile(
-      top ? `${top.games}<small>game${top.games === 1 ? "" : "s"}</small>` : "—",
+      top ? `${top.games}<small>game${top.games === 1 ? "" : "s"}</small>` : "-",
       "Longest absence",
       top ? `${cap(injuryName(top.type))} · ${top.season}` : "No games missed to injury",
     ),

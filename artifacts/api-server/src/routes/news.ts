@@ -96,7 +96,7 @@ const USER_AGENT = "StatChasersNews/1.0 (+https://newsfeed.replit.app)";
  * Header carrying the shared secret that proves this caller to the feed's WAF.
  *
  * Cloudflare sits in front of api.statchasers.com and challenges this
- * deployment — it answers "Just a moment..." (the JS interstitial), which a
+ * deployment - it answers "Just a moment..." (the JS interstitial), which a
  * server cannot solve, so the ingest 403s forever. The block is scored on
  * egress IP reputation, not on anything in the request: the workspace and the
  * deployment send byte-identical calls and only the deployment is challenged.
@@ -119,7 +119,7 @@ const FEED_KEY = process.env["DYNASTY_NEWS_API_KEY"]?.trim() || undefined;
 /**
  * A URL's hostname, for reporting.
  *
- * The host — not the full URL — because that is the whole diagnostic: it says
+ * The host - not the full URL - because that is the whole diagnostic: it says
  * which feed this environment is actually pointed at, which is what
  * distinguishes "the deployment still holds a retired URL" from "the right URL
  * is being refused". `[userenv.shared]` in .replit configures the workspace
@@ -131,7 +131,7 @@ function hostOf(url: string): string {
   try {
     return new URL(url).host;
   } catch {
-    // Set but unparseable — worth surfacing, since a stray quote or newline in
+    // Set but unparseable - worth surfacing, since a stray quote or newline in
     // the deployment's environment lands here and nowhere else.
     return "(not a valid URL)";
   }
@@ -158,25 +158,25 @@ function makeFallbackId(item: {
  * Traffic-triggered refresh.
  *
  * The 10-minute `setInterval` in index.ts only fires while a process is alive,
- * and this deployment does not stay alive between requests — it idles, the timer
+ * and this deployment does not stay alive between requests - it idles, the timer
  * never fires, and the archive stops moving until something cold-starts the
  * instance. Observed in production: an ingest ran at 17:28 and the next one
  * never happened, so the page served hours-old news while upstream had more.
  *
  * So requests drive the refresh as well. Any request may kick an ingest, but at
- * most one per REFRESH_MIN_GAP_MS and never more than one at a time — a busy
+ * most one per REFRESH_MIN_GAP_MS and never more than one at a time - a busy
  * page must not mean an ingest per visitor.
  */
 const REFRESH_MIN_GAP_MS = (() => {
   // Overridable so the throttle can be exercised in a test without waiting ten
-  // minutes. Not meant as production tuning — a smaller value in production just
+  // minutes. Not meant as production tuning - a smaller value in production just
   // means more calls to a feed that changes every few minutes at best.
   const raw = Number(process.env["INGEST_MIN_GAP_MS"]);
   return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
 })();
 
 /**
- * When an ingest is considered *unhealthy* — see GET /api/ingest/health.
+ * When an ingest is considered *unhealthy* - see GET /api/ingest/health.
  *
  * Both thresholds exist because they catch different failures. A failure count
  * catches a feed that is refusing us right now; an age catches the quieter case
@@ -198,7 +198,7 @@ const ALERT_MAX_AGE_MS = (() => {
   return Number.isFinite(raw) && raw > 0 ? raw : 60 * 60 * 1000;
 })();
 
-/** For the age check before the first success — see evaluateIngestHealth(). */
+/** For the age check before the first success - see evaluateIngestHealth(). */
 const PROCESS_STARTED_MS = Date.now();
 
 /** When an ingest last STARTED, whether by timer, by request, or by POST. */
@@ -209,8 +209,8 @@ let ingestInFlight: Promise<unknown> | null = null;
  * Outcome of the most recent ingest, for GET /api/status.
  *
  * A failing ingest used to be a log line and nothing else, which made the one
- * failure mode that matters here — a deployment whose environment is missing
- * DYNASTY_NEWS_API_URL, so every run throws before it fetches anything —
+ * failure mode that matters here - a deployment whose environment is missing
+ * DYNASTY_NEWS_API_URL, so every run throws before it fetches anything -
  * indistinguishable from a healthy server with quiet upstream. `/api/healthz`
  * answered "ok" either way. This is the state that tells the two apart from
  * outside the box.
@@ -221,7 +221,7 @@ interface IngestState {
   lastResult: IngestResult | null;
   lastError: string | null;
   consecutiveFailures: number;
-  /** Which configured route last worked, or "push" — see runIngest(). */
+  /** Which configured route last worked, or "push" - see runIngest(). */
   lastSource: string | null;
 }
 
@@ -243,7 +243,7 @@ export function ingestStatus(): IngestState & {
     ...ingestState,
     feedConfigured: FEED_URLS.length > 0,
     feedHosts: FEED_URLS.map(hostOf),
-    // Whether the WAF bypass secret reached this environment — never its value.
+    // Whether the WAF bypass secret reached this environment - never its value.
     // Without this the only way to tell a missing secret from a wrong WAF rule
     // is to change one and see, which is the loop this endpoint exists to end.
     feedKeyConfigured: Boolean(FEED_KEY),
@@ -276,8 +276,8 @@ export interface IngestHealthVerdict {
  *
  * Before the first success of a process there is no last-success timestamp to
  * measure from, so the age is measured from process start instead. Without that
- * a deployment that has *never* managed an ingest — the exact state production
- * sat in for 17 hours — would look healthy indefinitely on the age check, which
+ * a deployment that has *never* managed an ingest - the exact state production
+ * sat in for 17 hours - would look healthy indefinitely on the age check, which
  * is precisely backwards.
  */
 export function evaluateIngestHealth(args: {
@@ -313,14 +313,14 @@ export function evaluateIngestHealth(args: {
 }
 
 /**
- * Start an ingest if one is due. Returns immediately — the caller is a request
+ * Start an ingest if one is due. Returns immediately - the caller is a request
  * that has already been answered, and must never wait on this.
  */
 /**
  * Whether this process pulls the wire on its own (startup, timer, traffic).
  *
  * Not in the development workspace unless SC_DEV_INGEST=1. The workspace runs
- * the same schedulers as the deployment, so it doubled the upstream traffic —
+ * the same schedulers as the deployment, so it doubled the upstream traffic -
  * and both wire hosts refuse it (403), so every ten minutes it asked
  * dynasty-command and then api.statchasers.com for a refusal. POST /api/ingest
  * still works there, for pushing items by hand. The club sweep's timer (index.ts)
@@ -360,8 +360,8 @@ export interface IngestResult {
 }
 
 /**
- * Run an ingest and record how it went. Every caller — startup, the timer, the
- * traffic hook, POST /api/ingest — goes through here, so `ingestStatus()` always
+ * Run an ingest and record how it went. Every caller - startup, the timer, the
+ * traffic hook, POST /api/ingest - goes through here, so `ingestStatus()` always
  * describes the last real attempt.
  */
 export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
@@ -400,7 +400,7 @@ export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
           lastError: ingestState.lastError,
           feedHosts: FEED_URLS.map(hostOf),
         },
-        "Ingest is unhealthy — the archive has stopped moving",
+        "Ingest is unhealthy - the archive has stopped moving",
       );
     }
 
@@ -411,7 +411,7 @@ export async function runIngest(pushed?: RawNewsItem[]): Promise<IngestResult> {
 /**
  * Fetch the feed, trying each configured route in order.
  *
- * A route failing is expected rather than exceptional — see FEED_URLS — so the
+ * A route failing is expected rather than exceptional - see FEED_URLS - so the
  * loop carries on and only gives up once every route has failed. The thrown
  * error names each one and why it failed, because "which of my three URLs is
  * broken" is otherwise invisible from outside.
@@ -428,7 +428,7 @@ async function fetchFeed(): Promise<{ items: RawNewsItem[]; from: string }> {
       return { items: await fetchFeedFrom(url), from: hostOf(url) };
     } catch (err) {
       failures.push(
-        `${hostOf(url)} — ${err instanceof Error ? err.message : String(err)}`,
+        `${hostOf(url)} - ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -451,14 +451,14 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
       // thing to do when calling our own API and the difference between a WAF
       // rule that can allow this traffic and one that cannot see who it is.
       "User-Agent": USER_AGENT,
-      // Only when configured — see FEED_KEY_HEADER.
+      // Only when configured - see FEED_KEY_HEADER.
       ...(FEED_KEY ? { [FEED_KEY_HEADER]: FEED_KEY } : {}),
     },
     signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
-    // The status alone cannot tell a wrong URL from a blocked one — both are
+    // The status alone cannot tell a wrong URL from a blocked one - both are
     // "403: Forbidden". The body can: the retired feed answers
     // {"error":"forbidden"}, a WAF answers an HTML challenge page. Kept short,
     // and failure to read it must not mask the original error.
@@ -469,7 +469,7 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
 
     throw new Error(
       `Dynasty Command API responded with ${response.status}: ${response.statusText}` +
-        (detail ? ` — ${detail}` : ""),
+        (detail ? ` - ${detail}` : ""),
     );
   }
 
@@ -479,7 +479,7 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
   // A 200 carrying nothing is a failure, not a quiet success.
   //
   // storeItems([]) returns {inserted: 0, updated: 0} perfectly happily, which
-  // would mark the run successful and leave `lastError: null` — so an upstream
+  // would mark the run successful and leave `lastError: null` - so an upstream
   // that starts answering 200 with an empty list would freeze the archive while
   // /api/status went on reporting a healthy ingest. That is the exact shape of
   // failure this whole subsystem keeps getting caught by: the signal says fine
@@ -487,7 +487,7 @@ async function fetchFeedFrom(feedUrl: string): Promise<RawNewsItem[]> {
   //
   // Thrown here rather than in runIngest so it behaves like any other bad route:
   // the loop in fetchFeed() falls through and tries the next URL. The feed is
-  // never legitimately empty — it carries a rolling ~25 items.
+  // never legitimately empty - it carries a rolling ~25 items.
   if (items.length === 0) {
     throw new Error("responded 200 but carried no items");
   }
@@ -514,8 +514,8 @@ const CLUB_MIN_OK = 8;
  * Outcome of the last club sweep, reported alongside the wire's on /api/status.
  *
  * Separate state rather than folded into ingestState. The two providers fail
- * independently and for unrelated reasons — the wire behind a WAF, a club
- * behind its own outage — and one number covering both would say "the ingest is
+ * independently and for unrelated reasons - the wire behind a WAF, a club
+ * behind its own outage - and one number covering both would say "the ingest is
  * fine" while the half of it that carries team pages was dead.
  */
 interface ClubIngestState {
@@ -528,7 +528,7 @@ interface ClubIngestState {
   clubsOk: number | null;
   /** Clubs that could not be read, by code. */
   clubsFailed: string[];
-  /** Clubs answering 200 but carrying nothing recent — see lib/club-news.ts. */
+  /** Clubs answering 200 but carrying nothing recent - see lib/club-news.ts. */
   clubsStale: string[];
 }
 
@@ -566,7 +566,7 @@ export async function runClubIngest(): Promise<IngestResult> {
     if (sweep.ok < CLUB_MIN_OK) {
       throw new Error(
         `only ${sweep.ok} of ${sweep.ok + sweep.failed.length} club feeds answered` +
-          (sweep.failed[0] ? ` — e.g. ${sweep.failed[0].team}: ${sweep.failed[0].error}` : ""),
+          (sweep.failed[0] ? ` - e.g. ${sweep.failed[0].team}: ${sweep.failed[0].error}` : ""),
       );
     }
 
@@ -622,7 +622,7 @@ export const DYNASTY_PROVIDER = "Dynasty Command";
 /**
  * The provider lanes, as written to news_items.source_type.
  *
- * The X lane's name is NOT here — it belongs to lib/x, which owns that
+ * The X lane's name is NOT here - it belongs to lib/x, which owns that
  * provider, and the read path spells it out for itself (see X_LANE in
  * lib/news-query.ts) so the feed never has to import the ingestion half.
  */
@@ -652,7 +652,7 @@ export async function storeItems(
   rawItems: RawNewsItem[],
   provider: string = DYNASTY_PROVIDER,
   /**
-   * Which provider lane these rows belong to — "wire", "club" or "x".
+   * Which provider lane these rows belong to - "wire", "club" or "x".
    *
    * A parameter rather than something inferred from `provider`, because the
    * lane is what the feed's reads are built on (see lib/news-query.ts) and it
@@ -664,8 +664,8 @@ export async function storeItems(
   const now = new Date();
 
   // Dedupe on the content fingerprint (newsDedupeKey), not the raw id. If a row
-  // with the same fingerprint already exists we update it in place — keeping its
-  // original id, summary, and firstSeenAt — so a changed upstream id or pubDate
+  // with the same fingerprint already exists we update it in place - keeping its
+  // original id, summary, and firstSeenAt - so a changed upstream id or pubDate
   // format can never spawn a second copy of the same story.
   //
   // Collapse duplicates *within* the batch first. The old row-at-a-time SQLite
@@ -677,7 +677,7 @@ export async function storeItems(
     const id = item.id?.toString().trim() || makeFallbackId(item);
     // A provider that has a real external id supplies its own key and dedupes
     // on that; everyone else gets the content fingerprint. Scoped by team for
-    // the club feeds, unscoped for the wire — see newsDedupeKey. Two clubs
+    // the club feeds, unscoped for the wire - see newsDedupeKey. Two clubs
     // filing "Practice Report" are two stories.
     const key =
       item.dedupeKey?.toString().trim() ||
@@ -697,7 +697,7 @@ export async function storeItems(
     // that upstream keeps an item's id and edits its title: the new title is a
     // new fingerprint, so the row looks new, and inserting it collides with the
     // id already in the table. That is a primary-key violation, which aborts the
-    // whole transaction — one retitled story and NOTHING ingests. Seen in
+    // whole transaction - one retitled story and NOTHING ingests. Seen in
     // production, where the archive silently stopped moving for hours after
     // upstream reworded a headline.
     //
@@ -774,7 +774,7 @@ export async function storeItems(
       // Attribution upgrades but never downgrades. A row that already names the
       // outlet that broke the story must not be flattened back to a relay's
       // name because a second, less specific provider re-saw the same headline
-      // — and with two providers writing here, that race is routine rather than
+      // - and with two providers writing here, that race is routine rather than
       // hypothetical. So an update carries `source` only when this batch
       // actually knows an outlet; otherwise the stored value stands.
       const attribution = outlet ? { source: outlet } : {};
@@ -812,7 +812,7 @@ export async function storeItems(
           dedupeKey,
           source: outlet ?? provider,
           // Insert only. A club's standfirst is better than a generated
-          // synopsis and is free, so it is worth taking on the way in — but
+          // synopsis and is free, so it is worth taking on the way in - but
           // setting it on update too would overwrite whatever
           // backfillSummaries() produced for the row, on every single ingest,
           // for as long as the item stays in the feed.
@@ -890,7 +890,7 @@ function afterIngest(): Promise<void> {
 }
 
 /**
- * POST /api/ingest — refresh now.
+ * POST /api/ingest - refresh now.
  *
  * Two modes:
  *
@@ -898,7 +898,7 @@ function afterIngest(): Promise<void> {
  *     what the timer and the traffic hook use.
  *   - **Push** (`{"items": [...]}` or a bare array): the caller supplies the
  *     items and the server just stores them. Nothing outbound is involved, so
- *     this works even when the server cannot reach the feed at all — which is
+ *     this works even when the server cannot reach the feed at all - which is
  *     exactly the situation Cloudflare's bot challenge creates. Anything that
  *     *can* read the feed (a laptop, a CI job, the API itself) can drive the
  *     archive with it. See scripts/ingest.mjs, which does both.
@@ -926,7 +926,7 @@ router.post("/ingest", async (req, res) => {
 });
 
 /**
- * POST /api/ingest/clubs — sweep the 32 club feeds now.
+ * POST /api/ingest/clubs - sweep the 32 club feeds now.
  *
  * The club half of POST /api/ingest, kept separate for the reason
  * runClubIngest() is: the two providers run on different cadences and fail for
@@ -934,7 +934,7 @@ router.post("/ingest", async (req, res) => {
  * is blocked" and "one club is down" the same 500.
  *
  * Pull-only. There is no push mode here because there is nothing to push
- * through — a caller with items already has POST /api/ingest, and a second
+ * through - a caller with items already has POST /api/ingest, and a second
  * anonymous way to write arbitrary headlines into the archive is exactly what
  * that endpoint's guard exists to prevent.
  */
@@ -958,13 +958,13 @@ router.post("/ingest/clubs", async (req, res) => {
 });
 
 /**
- * GET /api/status — is this instance actually keeping the archive moving?
+ * GET /api/status - is this instance actually keeping the archive moving?
  *
  * `/api/healthz` answers "ok" as soon as the process is listening, which says
  * nothing about the thing that has actually broken in production twice now: the
  * ingest. This reports whether the feed URL reached this environment at all,
  * when an ingest last ran, whether it succeeded, and what the archive looks like
- * as a result — enough to tell "upstream is quiet" from "this deployment has
+ * as a result - enough to tell "upstream is quiet" from "this deployment has
  * never once managed to fetch the feed" without reading the logs.
  *
  * The same question, asked of every store this deployment serves from: the two
@@ -984,7 +984,7 @@ router.get("/status", (_req, res) => {
 
     // Its own catch, not the one below: the FPA table is a different store with
     // a different failure, and a query against it failing must not turn the
-    // news status — the thing this endpoint was built for — into a 500. Null
+    // news status - the thing this endpoint was built for - into a 500. Null
     // means the read itself failed, which the body says rather than leaving it
     // to look like a season with no rows.
     const fpaSnapshot = await fpaSnapshotState().catch((err: unknown) => {
@@ -1003,7 +1003,7 @@ router.get("/status", (_req, res) => {
         pushModeAvailable: Boolean(process.env["INGEST_SECRET"]),
         // Where the shipped data files resolved to, and whether the two that
         // have no runtime fallback are actually there. A deployment whose
-        // `data/` is missing does not fail — the readers all default — it
+        // `data/` is missing does not fail - the readers all default - it
         // serves an empty player index and a rankings board with no rows, and
         // looks healthy doing it. This is the line that says so out loud.
         data: dataDirStatus(),
@@ -1045,7 +1045,7 @@ router.get("/status", (_req, res) => {
         },
         // Fantasy Points Allowed, which is a weekly ingest with no traffic
         // hook behind it and so the one most able to stop without anyone
-        // noticing — as it did, serving figures two days old while everything
+        // noticing - as it did, serving figures two days old while everything
         // here reported healthy. `snapshotWrittenAt` is the line that matters:
         // it comes from the database, so it survives a redeploy and describes
         // the numbers actually being served rather than this process's
@@ -1093,7 +1093,7 @@ router.get("/status", (_req, res) => {
       });
     } catch (err) {
       // The archive half failed, but the ingest half is the interesting part and
-      // is held in memory — still answer with it rather than a bare 500.
+      // is held in memory - still answer with it rather than a bare 500.
       logger.error({ err }, "Failed to read archive state for /api/status");
       res.status(500).set("Cache-Control", "no-store").json({
         ok: false,
@@ -1107,12 +1107,12 @@ router.get("/status", (_req, res) => {
 });
 
 /**
- * GET /api/ingest/health — the endpoint to point a monitor at.
+ * GET /api/ingest/health - the endpoint to point a monitor at.
  *
  * `/api/status` is for a human reading the whole picture and always answers 200,
  * which is right for diagnosis and useless for alerting: nothing pages on a 200.
  * This answers **503 when the ingest has stopped working**, so any uptime checker
- * — Replit's, UptimeRobot, a curl in cron — turns it into a notification without
+ * - Replit's, UptimeRobot, a curl in cron - turns it into a notification without
  * this app needing to know how to send one.
  *
  * Deliberately NOT folded into `/api/healthz`. That one is the platform's
@@ -1121,7 +1121,7 @@ router.get("/status", (_req, res) => {
  * refusing us.
  *
  * This outage ran for hours before anyone noticed. That gap is the thing this
- * endpoint exists to close — it fires while the page still looks fine, well
+ * endpoint exists to close - it fires while the page still looks fine, well
  * before the archive visibly falls behind.
  */
 router.get("/ingest/health", (_req, res) => {
@@ -1172,7 +1172,7 @@ router.get("/news", (req, res) => {
 
     try {
       // Shared with the server-side renderer so the JSON the browser refreshes
-      // with is the same shape — including the resolved `team` — that SSR used.
+      // with is the same shape - including the resolved `team` - that SSR used.
       const items = await listNews({
         ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
         search,
@@ -1186,7 +1186,7 @@ router.get("/news", (req, res) => {
       res.json({ ok: true, count: items.length, items });
     } catch (err) {
       // The client falls back to the markup already on the page, so a failed
-      // poll costs nothing visible — but it must not be silent in the log.
+      // poll costs nothing visible - but it must not be silent in the log.
       logger.error({ err }, "Failed to list news");
       res.status(500).json({ ok: false, error: "failed to list news" });
     }

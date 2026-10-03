@@ -1,5 +1,5 @@
 /**
- * outlookMerge.js — fold per-player agent outputs into the canonical outlook file.
+ * outlookMerge.js - fold per-player agent outputs into the canonical outlook file.
  *
  * Reads every data/.outlook_parts/<slug>.out.json produced by synthesis agents
  * and merges them into data/player/fantasy_outlook_2026.json (keyed by player

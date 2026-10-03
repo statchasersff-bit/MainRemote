@@ -1,7 +1,7 @@
 /**
  * The biographical facts behind the Bio tab.
  *
- * Bio answers one question — "who is he?" — and the facts that answer it are
+ * Bio answers one question - "who is he?" - and the facts that answer it are
  * scattered across two Sleeper endpoints that no other builder here reads:
  *
  *   1. /v1/players/nfl carries birth date, college and high school. The player
@@ -11,7 +11,7 @@
  *
  *   2. /stats/nfl/<season>?grouping=season carries the TEAM each player was on
  *      that season, one request per season for the whole league. That is the
- *      career timeline, and it is not derivable from anything already on disk —
+ *      career timeline, and it is not derivable from anything already on disk -
  *      the game logs start at 2023 and the production snapshot has no team on
  *      its rows, so a veteran's first decade is simply absent.
  *
@@ -21,7 +21,7 @@
  * the day a source for it does and not before.
  *
  * Written to data/player/bio_facts.json, keyed by the slug players.json already
- * uses — read from that file rather than recomputed, so a slug can never drift
+ * uses - read from that file rather than recomputed, so a slug can never drift
  * between the index and this.
  *
  *   node scripts/player/buildBioFacts.mjs            # 2005 to the current season
@@ -42,8 +42,8 @@ const STATS_BASE = "https://api.sleeper.com/stats/nfl";
 /**
  * How far back the career timeline reaches.
  *
- * 2005 covers every active player's rookie season with room to spare — the
- * longest careers in the league run about twenty years — and a season Sleeper
+ * 2005 covers every active player's rookie season with room to spare - the
+ * longest careers in the league run about twenty years - and a season Sleeper
  * has nothing for costs one request and writes nothing.
  */
 const FIRST_CAREER_SEASON = 2005;
@@ -96,7 +96,7 @@ function text(value) {
 async function main() {
   if (!fs.existsSync(PLAYERS_FILE)) {
     throw new Error(
-      `${PLAYERS_FILE} does not exist — run buildPlayersIndex.js first, because the slugs come from it.`,
+      `${PLAYERS_FILE} does not exist - run buildPlayersIndex.js first, because the slugs come from it.`,
     );
   }
 
@@ -192,7 +192,7 @@ async function main() {
       // and for a season a player was not in the league it returns his CURRENT
       // team with an empty stats object. Taken at face value that puts Jacoby
       // Brissett on Arizona in 2005, thirteen years before Arizona signed him
-      // and eleven before anyone drafted him — a timeline that is confidently
+      // and eleven before anyone drafted him - a timeline that is confidently
       // wrong rather than merely short. A season he was actually on a roster
       // for carries a real stat line; one he was not carries {}.
       const stats = row?.stats;

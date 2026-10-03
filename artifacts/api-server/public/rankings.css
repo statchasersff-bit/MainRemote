@@ -1,5 +1,5 @@
 /*
- * StatChasers — Redraft Rankings
+ * StatChasers - Redraft Rankings
  *
  * The fourth sibling of team.css, player.css and fpa.css, and a sibling for the
  * same reason: the stylesheets are enqueued independently, so a page mounting
@@ -40,7 +40,7 @@
      two rules want to set it and one of them must not win. The narrow tier
      tightens it to 5px/4px; the theme armour at the foot of this file restates
      it at a specificity Divi cannot reach, and lands AFTER the tier. A literal
-     in both places puts the desktop value back on a phone — see the same
+     in both places puts the desktop value back on a phone - see the same
      lesson, learned the expensive way, in fpa.css. */
   --scr-all-pad-y: 6px;
   --scr-all-pad-x: 8px;
@@ -49,20 +49,20 @@
    * The tier scale: NOMINAL, not ordinal.
    *
    * Tier 3 is not "more" than tier 2; it is a different group. So this is seven
-   * distinct hues held at one lightness, not a ramp — a ramp would say the
+   * distinct hues held at one lightness, not a ramp - a ramp would say the
    * tiers are rungs on a scale, and the reason a tiered board exists is that
    * they are bands with cliffs between them.
    *
    * All seven sit at ~95% lightness and low chroma. That is deliberate and it
    * is the accessibility argument: at this lightness every tint keeps
    * --sc-ink's contrast ratio against it above 13:1, so the colour never
-   * carries any of the text's legibility. It is doing one job — telling a
+   * carries any of the text's legibility. It is doing one job - telling a
    * reader which cells belong together as their eye runs down a column.
    *
    * Colour is never the only encoding. Every tinted cell in the All board also
    * prints the row's rank in the leftmost column, and the per-position tables
    * print the tier number in a column of its own, so nothing here is lost to a
-   * colour-blind reader or a monochrome print — the tint is a grouping cue on
+   * colour-blind reader or a monochrome print - the tint is a grouping cue on
    * top of two textual ones, which is the only role a nominal scale of seven
    * hues can safely play.
    */
@@ -108,8 +108,8 @@ body.scr-page.is-embed {
 
 /* Host padding on bare elements, zeroed with enough weight to mean it.
  *
- * Divi styles elements rather than classes — `p { padding-bottom: 1em }`, and
- * the same gesture on headings and lists — and this file's instrument on those
+ * Divi styles elements rather than classes - `p { padding-bottom: 1em }`, and
+ * the same gesture on headings and lists - and this file's instrument on those
  * elements is margin: it sets padding on a handful of components and nowhere
  * else. So on the published site every paragraph grew a gap beneath it that no
  * rule in here asked for, and in the preview, where there is no theme, none of
@@ -119,7 +119,7 @@ body.scr-page.is-embed {
  * there was nothing between the theme and every <p> in the tool.
  *
  * `:where()` on the element list so the whole selector weighs `.scr` and no
- * more. That is one class — heavier than the bare `p` it has to beat, level
+ * more. That is one class - heavier than the bare `p` it has to beat, level
  * with the single-class component rules in this file that set padding on
  * purpose, and above all of them in the file, so those win on source order and
  * keep their spacing. Moving this below them would invert that and flatten
@@ -136,7 +136,7 @@ body.scr-page.is-embed {
   max-width: none;
   /* Clearance from whatever the host prints next. 30px read as the tool
      finishing and the footer starting in the same breath; 50 is the gap that
-     says they are two things. Bottom only — the top gap is the one between the
+     says they are two things. Bottom only - the top gap is the one between the
      page's heading and the hero, and it is already right. */
   padding-bottom: 50px;
 }
@@ -263,12 +263,12 @@ body.scr-page.is-embed {
 /*
  * One panel at a time.
  *
- * Every panel is still in the HTML the server sent — this hides them, it does
+ * Every panel is still in the HTML the server sent - this hides them, it does
  * not withhold them. A crawler reads all five boards from one response.
  *
  * Two mechanisms, in this order, exactly as player.css documents at length:
  *
- *   1. :target — the URL names the open panel, so the strip works with
+ *   1. :target - the URL names the open panel, so the strip works with
  *      scripting disabled and a link to #scr-panel-te opens on tight ends;
  *   2. .is-active, once client/rankings.ts announces itself by setting
  *      data-scr-tabs="js". Pushing a hash through the History API does not
@@ -617,7 +617,7 @@ a.scr-player-link:hover {
 /* The questions sit after the last panel, outside the tab strip's reach: five
    boards are one page, so one FAQ answers for all of them.
 
-   The 40px is a page break rather than a gap between two blocks of the tool —
+   The 40px is a page break rather than a gap between two blocks of the tool -
    what precedes it is a table and what follows it is prose, and they should not
    read as the same thing continued. */
 .scr-faq-block {
@@ -795,7 +795,7 @@ a.scr-player-link:hover {
  * only two armed with `!important`.
  *
  * MIRRORS the block of the same name in team.css, which was written after the
- * published team hub hit both of these and this file was left without them —
+ * published team hub hit both of these and this file was left without them -
  * the fix went in where the bug was seen rather than everywhere it applied.
  * The symptoms here were the same two: every heading in the tool rendered in
  * the theme's display serif, and the section tab strip read "Overview • Stats
@@ -830,7 +830,7 @@ a.scr-player-link:hover {
 /*                                                                         */
 /* Every declaration below RESTATES one already made above, at a           */
 /* specificity a host theme cannot reach. Nothing here is a new design     */
-/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* decision - if a value in this block disagrees with the rule it mirrors, */
 /* this block is the one that is wrong.                                    */
 /*                                                                         */
 /* Standalone this file is the only stylesheet and none of it does         */
@@ -844,8 +844,8 @@ a.scr-player-link:hover {
 /*                                                                         */
 /* Measured against a simulated Divi page rather than guessed at: the      */
 /* All board's rank column went from 28px wide to 62px, every name cell    */
-/* grew, and the board lost five rows off a phone screen — twenty-one      */
-/* names became sixteen — because a one-class rule cannot hold `padding`   */
+/* grew, and the board lost five rows off a phone screen - twenty-one      */
+/* names became sixteen - because a one-class rule cannot hold `padding`   */
 /* against one class and two elements. Every name, every CSV link and      */
 /* every profile button also turned Divi's link blue.                      */
 /*                                                                         */
@@ -867,7 +867,7 @@ a.scr-player-link:hover {
   border: 0;
 }
 
-/* The header bands — the tie described above, on both boards. */
+/* The header bands - the tie described above, on both boards. */
 .scr .scr-all-table thead th,
 .scr .scr-table thead th {
   padding: 8px 10px;
@@ -885,7 +885,7 @@ a.scr-player-link:hover {
   border-top: 1px solid rgba(229, 231, 235, 0.7);
 }
 
-/* The All board's cells, through the token so the narrow tier still lands —
+/* The All board's cells, through the token so the narrow tier still lands -
    see the note on `--scr-all-pad-x`. This is the one that costs rows: five
    names off a phone screen when Divi's 6px replaces 4px across five columns
    and 40 rows. */
@@ -895,15 +895,15 @@ a.scr-player-link:hover {
 }
 
 /* The All board draws its row separators with `.scr-all-row + .scr-all-row`,
-   which already outranks the theme — but that selector cannot match the FIRST
+   which already outranks the theme - but that selector cannot match the FIRST
    row, so Divi's `border-top` lands there unopposed and prints a hairline
    under the header band that this file never asks for. */
 .scr .scr-all-row:first-child > * {
   border-top: 0;
 }
 
-/* Links. Each of these is a brand colour doing a job — the player's name in
-   the tool's ink, the muted CSV and profile controls — and a theme's one link
+/* Links. Each of these is a brand colour doing a job - the player's name in
+   the tool's ink, the muted CSV and profile controls - and a theme's one link
    blue flattens the distinction between all of them. */
 .scr .scr-all-name,
 .scr .scr-player-link {
@@ -920,7 +920,7 @@ a.scr-player-link:hover {
 
    Divi's table rule is `.entry-content table:not(.variations)`, not the
    `.entry-content table` quoted above: `:not()` counts its argument, so it is
-   two classes and an element, and it beat `.scr .scr-table` — both boards
+   two classes and an element, and it beat `.scr .scr-table` - both boards
    picked up Divi's 1px frame and 15px of margin. The selector below repeats
    Divi's own `:not()` to stay one class ahead of it. */
 .scr table.scr-all-table:not(.variations),
@@ -931,7 +931,7 @@ a.scr-player-link:hover {
 
 /* Header and player cells. `.entry-content tr th` sets colour and weight as
    well as the padding restated above, and `#left-area table th` sets colour
-   through an id, which only `!important` beats — the navy header bands'
+   through an id, which only `!important` beats - the navy header bands'
    labels went grey, the tier bands' too, and every player name on the tier
    board went grey and bold. Colour is armed; weight is restated at a
    specificity that wins. */
@@ -985,7 +985,7 @@ a.scr-player-link:hover {
 }
 
 /* Headings: Divi's typography panel sets `#left-area h2 { font-size: 50px }`
-   on statchasers.com — the team hub's section headings rendered at 50px from
+   on statchasers.com - the team hub's section headings rendered at 50px from
    it. Armed on size and colour only, as team.css does; the clamp keeps
    scaling because the value is the same expression. */
 .scr .scr-faq-title {

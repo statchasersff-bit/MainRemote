@@ -2,7 +2,7 @@
  * The questions a team's stat lines get asked, answered from the same rows.
  *
  * Sibling to outlook-faq.ts and built on the same rule: every answer restates
- * something the tab already printed. Here that is literal — the numbers are
+ * something the tab already printed. Here that is literal - the numbers are
  * lifted as the preformatted `value` strings the ladders and tiles render, so
  * an answer cannot round differently from the tile six inches above it, and a
  * change to a metric's format changes both at once or neither.
@@ -20,7 +20,7 @@
  *
  * Second, the denominator is games played, not the league week. A team on bye
  * has played fewer games than the week number, and every figure here is a
- * per-game rate — "through 1 game" is what the average actually divides by, and
+ * per-game rate - "through 1 game" is what the average actually divides by, and
  * it is what the note above the ladders says.
  *
  * Third, a thin sample says so. Three games of ranks are real numbers and a
@@ -59,8 +59,8 @@ function findRow(rows: readonly StatRow[], key: string): StatRow | undefined {
  * No "in the NFL" here. Two ranks in one sentence want it once at the end, and
  * a phrase that carries it cannot be used twice without saying it twice.
  *
- * Returns null rather than a guess when the metric could not be ranked — too
- * few teams reporting it, which is the ordinary state of an early season — and
+ * Returns null rather than a guess when the metric could not be ranked - too
+ * few teams reporting it, which is the ordinary state of an early season - and
  * every caller drops the clause rather than the answer.
  */
 function rankPhrase(
@@ -162,7 +162,7 @@ export function statsFaq(input: {
     const rank = rankPhrase(points);
     // Last season's scoring, when the history table has it. It is the context
     // that makes a one-game average legible, and it is already a row on this
-    // tab — the same number, from the same place.
+    // tab - the same number, from the same place.
     const priorPoints = historyCell(prior, "off-points");
     faq.push({
       question: running
@@ -182,7 +182,7 @@ export function statsFaq(input: {
     const rank = rankPhrase(totalYards);
     const split =
       passYards && rushYards
-        ? ` — ${passYards.value} passing and ${rushYards.value} rushing.`
+        ? ` - ${passYards.value} passing and ${rushYards.value} rushing.`
         : ".";
     faq.push({
       question: running
@@ -199,7 +199,7 @@ export function statsFaq(input: {
   // "Near the bottom of the NFL" is a summary this module is not entitled to
   // write; 32nd and 30th are what the ladders say.
   if (points?.rankLabel || yardsPerPlay?.rankLabel) {
-    // No "in the NFL" in either clause — the question just said it, and twice
+    // No "in the NFL" in either clause - the question just said it, and twice
     // in one sentence is how a generated answer starts sounding generated.
     const parts = [
       points?.rankLabel
@@ -303,7 +303,7 @@ export function statsFaq(input: {
   }
 
   // Last, because it only means anything once the numbers above it have been
-  // read — the same order the tab puts the history table in.
+  // read - the same order the tab puts the history table in.
   if (prior) {
     const nowPoints = historyCell(stats.history[0], "off-points");
     const nowYards = historyCell(stats.history[0], "off-total-yards");

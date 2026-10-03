@@ -12,13 +12,13 @@
  * hundred indexed players, which is more than a shared host will do in one
  * request. So this builder is a loop the browser drives: each POST writes a
  * batch, stores where it got to, and comes back for the next one. Stopping
- * halfway is not a failure state — the cursor is in an option, every write is
+ * halfway is not a failure state - the cursor is in an option, every write is
  * idempotent, and pressing the button again resumes.
  *
  * WHERE THE LIST COMES FROM. The API, at /embed/players.json, exactly as
  * scripts/create-player-pages.sh reads it. There are six hundred of these and
  * the list moves every offseason; a copy pasted into this file would be wrong
- * by the time anybody ran it. The endpoint returns the INDEXED players only —
+ * by the time anybody ran it. The endpoint returns the INDEXED players only -
  * the dictionary holds every player in the league and most have no game log, no
  * advanced row and no bio, so a page each would be several thousand thin pages.
  *
@@ -45,7 +45,7 @@ const STATCHASERS_PLAYER_PATH = 'nfl/players';
  * host and every other host does twenty-three round trips it did not need; pick
  * it for a fast host and a slow one dies halfway through a request. So the
  * batch writes until the roster runs out, the ceiling is reached, or the budget
- * is spent — whichever comes first — and what actually varies is how many pages
+ * is spent - whichever comes first - and what actually varies is how many pages
  * a given host gets through in ten seconds.
  *
  * Ten seconds against a `max_execution_time` that is 30 on most shared hosting,
@@ -146,7 +146,7 @@ function statchasers_player_roster( bool $fresh = false ): array {
 
 		// Addresses this player has published at before. The API only sends one
 		// when it has been dropped by everybody, so a slug here is never a live
-		// page's — see previousSlugsFor() on the other side.
+		// page's - see previousSlugsFor() on the other side.
 		$previous = array();
 		foreach ( (array) ( $player['previousSlugs'] ?? array() ) as $old ) {
 			$old = sanitize_title( (string) $old );
@@ -279,7 +279,7 @@ function statchasers_player_page_status( bool $fresh = false ): array {
 
 	// `have` is the roster's pages only. The container also holds pages for
 	// players who have left the index (kept, never deleted), and counting those
-	// read "659 of 615 pages exist" — more than all, with some still missing.
+	// read "659 of 615 pages exist" - more than all, with some still missing.
 	$roster = statchasers_player_roster();
 	$have   = 0;
 	foreach ( $roster as $row ) {
@@ -301,7 +301,7 @@ function statchasers_player_page_status( bool $fresh = false ): array {
 /**
  * The profile slugs a reader can open: published pages under the container.
  *
- * Not statchasers_player_page_status()'s list, which counts drafts too — right
+ * Not statchasers_player_page_status()'s list, which counts drafts too - right
  * for "does the builder need to write this one", wrong for "will this link
  * 404". Memoised for the request; a page renders a few hundred player links.
  *
@@ -343,18 +343,18 @@ function statchasers_player_published_slugs(): array {
  * the pages at 15:00 UTC (statchasers_player_auto_build), or when somebody
  * presses the builder. Between the two, every recap, hub and ranking linked a
  * new signing to a 404, and a crawl on 2026-09-28 found them. Only this side
- * knows which pages are published, so this side decides — the same rule the
+ * knows which pages are published, so this side decides - the same rule the
  * API follows when a name has no slug at all: print the name, not a guess.
  *
  * What it rewrites: an <a> whose href is this site's /nfl/players/<slug>/ (with
  * or without a section, query or hash) where <slug> has no published page. The
  * anchor becomes a <span> keeping its typographic classes, which is the markup
  * the API prints for an unlinked name. Classes that only mean "this is a link"
- * go, and so does an anchor with no text — the cornerstone card's stretched
+ * go, and so does an anchor with no text - the cornerstone card's stretched
  * hit area, which has nothing left to cover.
  *
  * What it leaves alone: other hosts, the retired /nfl/players/<section>/<slug>/
- * layout (301s, not 404s), and everything when no page is published at all —
+ * layout (301s, not 404s), and everything when no page is published at all -
  * a missing container or a failed query would otherwise strip every player
  * link on the site, and a 404 is the lesser harm than losing them all.
  *
@@ -434,9 +434,9 @@ add_filter(
  * Move a profile page that is published at one of this player's old addresses.
  *
  * WHY MOVING AND NOT CREATING. A slug can change: two players share a name and
- * the claim on the bare form moves — Kenneth Walker's page was at
+ * the claim on the bare form moves - Kenneth Walker's page was at
  * `kenneth-walker-8151` because a retired receiver with the same name had been
- * given `kenneth-walker` first — or a source corrects a spelling. The builder's
+ * given `kenneth-walker` first - or a source corrects a spelling. The builder's
  * only test used to be "is there a page at the current slug", so a rename read
  * as a new player: it published a second page and left the first one up.
  * Two pages, both indexed, both about the same man, each holding half the
@@ -661,14 +661,14 @@ function statchasers_player_page_meta( array $row ): array {
  * Fill the container page, grouped by team.
  *
  * A parent page with no body is a thin page that still sits in the sitemap.
- * Six hundred links in one column is not much better, so they are grouped —
+ * Six hundred links in one column is not much better, so they are grouped -
  * which also makes it a page a reader can use. The grouping is the tool's now:
  * the mount is [statchasers_player_index], which prints the same roster the
  * standalone /player page does, so the page that lists the profiles is drawn by
  * the thing that draws the profiles rather than by the theme's <ul> styling.
  *
  * Written when the page is empty, and over the stub the old version of this
- * function wrote. Anything else there is yours and is left alone — the same
+ * function wrote. Anything else there is yours and is left alone - the same
  * promise every other write here makes.
  */
 /** The intro paragraph above the index. Also the stub's signature; see below. */
@@ -749,7 +749,7 @@ function statchasers_player_write_index( int $container ): void {
  *
  * WHY NOT CORE'S. wp_old_slug_redirect() exists and is already hooked, but it
  * does not reach these URLs. It only runs when the query carries `name`, and it
- * looks the slug up as a POST — these are pages, nested two deep, and the
+ * looks the slug up as a POST - these are pages, nested two deep, and the
  * section addresses (`/nfl/players/<player>/injury/`) are a rewrite of ours
  * that core has never heard of. So the lookup is done here, scoped to the
  * player container, and the section segment is carried across with it.
@@ -896,11 +896,11 @@ function statchasers_player_page_for_slug( string $slug ): int {
  *
  * Two earlier structures are indexed and still crawled:
  *
- * - `/nfl/players/<section>/<slug>/` — the old section-first layout. The
+ * - `/nfl/players/<section>/<slug>/` - the old section-first layout. The
  *   Outlook half was real pages (`/nfl/players/outlook/josh-allen/`) carrying
  *   an older implementation, and the team hubs linked to them until the API's
  *   profile template was corrected. It becomes `/nfl/players/<slug>/<section>/`.
- * - `/fantasy-football/players/<slug>/[<section>/]` — the redraft-era profile.
+ * - `/fantasy-football/players/<slug>/[<section>/]` - the redraft-era profile.
  *   It 404s now; it becomes the profile at the same section.
  *
  * `overview` goes to the profile itself, as `/<slug>/overview/` does. Only a
@@ -995,12 +995,12 @@ add_action( 'template_redirect', 'statchasers_player_legacy_redirect', 8 );
  * type for those three and not for the others.
  *
  * The profile itself (no section) is "Josh Allen Fantasy Football Stats &
- * Analysis" — the player and what the page is for, like the six beside it. It
+ * Analysis" - the player and what the page is for, like the six beside it. It
  * was the bare name, which is the hero's words and says nothing about intent.
  * The Overview has no heading of its own: `/overview/` 301s to the profile.
  *
  * The name comes from the roster when it is cached and from the page's own
- * title when it is not — with the "(QB)" the builder appends taken back off,
+ * title when it is not - with the "(QB)" the builder appends taken back off,
  * since that is a disambiguator for an admin list rather than a heading.
  */
 function statchasers_player_heading( string $slug, string $section ): string {
@@ -1040,7 +1040,7 @@ function statchasers_player_heading( string $slug, string $section ): string {
  *
  * Same filter and the same three guards as the team version: only the main
  * query's own title, only in the loop, and only on a page this plugin's
- * shortcode is actually on — `the_title` is called for menu items, admin lists
+ * shortcode is actually on - `the_title` is called for menu items, admin lists
  * and widgets, and rewriting those would rename the page everywhere it is
  * mentioned rather than heading the one it is.
  *
@@ -1104,7 +1104,7 @@ function statchasers_player_shortcode_heading( string $slug, string $section ): 
  * Both callers need it and both used to find it separately, which is how the
  * lead ended up empty on a site whose roster cache had not warmed yet: the
  * heading had a fallback and the lead did not. The stored title carries the
- * position as a disambiguator for the admin list — "Kyler Murray (QB)" — and
+ * position as a disambiguator for the admin list - "Kyler Murray (QB)" - and
  * that is a label rather than a heading, so it comes back off.
  */
 function statchasers_player_name( string $slug ): string {
@@ -1125,8 +1125,8 @@ function statchasers_player_name( string $slug ): string {
  * The sentence under a profile's heading.
  *
  * The team pages take theirs from statchasers_team_section_meta(), which is
- * already written per section. A profile has no such table — the builder writes
- * one description for the page and nothing for the seven addresses beneath it —
+ * already written per section. A profile has no such table - the builder writes
+ * one description for the page and nothing for the seven addresses beneath it -
  * so the per-section wording is here, and it names what that panel actually
  * holds rather than describing the profile seven times.
  *
@@ -1192,8 +1192,8 @@ add_filter(
  *
  * This is what the loop actually runs on. The POST handler below still works
  * and is what happens with no JavaScript, but a full admin page render between
- * every batch is most of the cost of a build — WordPress boots the admin, the
- * screen re-queries the page status, every other panel on it redraws — for a
+ * every batch is most of the cost of a build - WordPress boots the admin, the
+ * screen re-queries the page status, every other panel on it redraws - for a
  * request whose real work is a few dozen inserts. Against ~575 players that
  * overhead was the build.
  *
@@ -1298,7 +1298,7 @@ add_action(
  * 404ed. This runs the same batches from WP-cron an hour later: the same
  * writes, the same idempotence, the same page moves for renamed players.
  *
- * Nothing happens on a day the roster did not change and every page exists —
+ * Nothing happens on a day the roster did not change and every page exists -
  * one request for the list, one query for the pages. A build too long for one
  * cron run keeps its place in an option and continues a minute later, so a
  * shared host's time limit cannot leave it half done for a day.
@@ -1386,7 +1386,7 @@ function statchasers_player_panel(): void {
 
 	printf(
 		'<p>Profiles live at <code>/%s/&lt;player&gt;/</code>, one page each, carrying the <code>[%s]</code> shortcode and nothing else. ' .
-		'The list is the API\'s indexed players — the ones with a game log and an advanced row behind them, not the whole league.</p>',
+		'The list is the API\'s indexed players - the ones with a game log and an advanced row behind them, not the whole league.</p>',
 		esc_html( STATCHASERS_PLAYER_PATH ),
 		esc_html( STATCHASERS_PLAYER_SHORTCODE )
 	);

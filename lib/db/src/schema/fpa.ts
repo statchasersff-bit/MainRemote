@@ -1,5 +1,5 @@
 /**
- * Fantasy Points Allowed — how many fantasy points each defence gives up to
+ * Fantasy Points Allowed - how many fantasy points each defence gives up to
  * each position, per game.
  *
  * Two tables, and the split is the point of the design:
@@ -8,7 +8,7 @@
  *     (season, week, defence, position, scoring format). It is what the
  *     numbers are DERIVED from, and it is kept so a served figure can be
  *     traced back to the weeks that produced it rather than taken on trust.
- *   - `fantasy_points_allowed_snapshots` is one row per (defence, format) —
+ *   - `fantasy_points_allowed_snapshots` is one row per (defence, format) -
  *     the blended figure the page actually serves. Precomputed because the
  *     blend is a weighted mix of last season and a rolling window of this one,
  *     and recomputing that per request would put a 7MB CSV parse in front of
@@ -90,7 +90,7 @@ export const fpaSnapshots = pgTable(
     offFpaAdj: numeric("off_fpa_adj", { precision: 8, scale: 2 }).notNull(),
 
     gamesPlayed: integer("games_played").notNull(),
-    /** e.g. "preseason_baseline", "week_3" — what the blend was. */
+    /** e.g. "preseason_baseline", "week_3" - what the blend was. */
     dataMode: text("data_mode").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

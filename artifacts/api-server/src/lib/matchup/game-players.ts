@@ -4,7 +4,7 @@
  *
  * Two sources, one shape. ESPN's box score is the first: it covers every game,
  * the postseason included, and it has the defense. The Sleeper logs are the
- * fallback for a regular-season game whose box score has no player block —
+ * fallback for a regular-season game whose box score has no player block -
  * offense only, so a page built from them has no defensive card.
  *
  * Two-point conversions are in neither source's player line; they are counted

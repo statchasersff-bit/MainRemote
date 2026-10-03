@@ -1,7 +1,7 @@
 /**
  * Advanced player stats enhancement bundle.
  *
- * The table is complete before this runs — every player for the open position
+ * The table is complete before this runs - every player for the open position
  * and season, every figure, every grade and the leader cards are in the HTML
  * the server sent, sorted by overall grade, with the players the default
  * filters leave out marked `hidden`. The season and position controls are
@@ -14,19 +14,19 @@
  *    cell, the type is declared by the header, numbers open descending, and a
  *    cell with an empty `data-sort` is a missing figure held at the bottom in
  *    both directions rather than sorted as a zero.
- * 2. **The filters** — search, and behind More Filters the snap share,
- *    minimum games and the position's volume floor — narrowing rows already
+ * 2. **The filters** - search, and behind More Filters the snap share,
+ *    minimum games and the position's volume floor - narrowing rows already
  *    in the table. The menus holding them are <details>, closed here when the
  *    reader clicks elsewhere or presses Escape.
- * 3. **The views** — Overview, Receiving, Advanced and so on — each showing a
+ * 3. **The views** - Overview, Receiving, Advanced and so on - each showing a
  *    set of column groups and hiding the rest.
  * 4. **Switching season without leaving the page.** The season links are
  *    intercepted, the fragment for that season is fetched and swapped in, and
- *    nothing is written to the URL — the season was never part of the address
+ *    nothing is written to the URL - the season was never part of the address
  *    in the standalone app either. Position links are left alone: each
  *    position is its own page.
  * 5. **The Totals / Per Game switch.** Worked out here from the totals on the
- *    page rather than shipped as a second copy of every count — the page is
+ *    page rather than shipped as a second copy of every count - the page is
  *    already the size of fifty columns by three hundred rows.
  */
 
@@ -183,7 +183,7 @@ function sortBy(root: HTMLElement, header: HTMLTableCellElement, descending: boo
  * Turn each header into a sort button.
  *
  * Built here rather than shipped, because a button that cannot sort is a
- * control that does nothing. The header's title — the column's explanation —
+ * control that does nothing. The header's title - the column's explanation -
  * moves onto the button so it stays reachable from the keyboard.
  */
 function wireSorting(root: HTMLElement): void {
@@ -272,8 +272,8 @@ function applyMode(root: HTMLElement): void {
 /**
  * Fix the banner's spans for what is on screen.
  *
- * The first visible group's banner also spans the pinned cells — #, Player,
- * and Team while the Player Info group is showing — and the stylesheet drops
+ * The first visible group's banner also spans the pinned cells - #, Player,
+ * and Team while the Player Info group is showing - and the stylesheet drops
  * # and Team on a narrow table, which a colspan written by the server cannot
  * know about. So the spans are counted off what is actually displayed.
  */
@@ -300,8 +300,8 @@ function fixSpans(root: HTMLElement): void {
 /**
  * Show exactly the groups not in `groups`.
  *
- * The body cells do not say which group they are in — only the header row
- * does — so the column indexes come from the header, and each row's cells at
+ * The body cells do not say which group they are in - only the header row
+ * does - so the column indexes come from the header, and each row's cells at
  * those indexes follow it. Hidden with the `hidden` attribute, which the
  * stylesheet backs with `display: none !important`.
  */
@@ -334,7 +334,7 @@ function setHidden(root: HTMLElement, groups: Set<string>): void {
 }
 
 /**
- * Show the view `root.dataset.view` names, or the first one — Overview —
+ * Show the view `root.dataset.view` names, or the first one - Overview -
  * when it names none this table has. Each view button lists the group
  * indexes it shows; every other group is hidden.
  */
@@ -464,7 +464,7 @@ function enhance(root: HTMLElement): void {
 
 /**
  * Every listener is on the root, delegated, because the elements they serve
- * are among those a season swap replaces — a listener bound to a view would be
+ * are among those a season swap replaces - a listener bound to a view would be
  * a listener on a detached node one click later.
  */
 function wire(root: HTMLElement): void {
@@ -507,7 +507,7 @@ function wire(root: HTMLElement): void {
   });
 
   // A blank number box reads as zero while it is being typed in, and shows it
-  // once the reader moves on — the standalone app's blur behaviour.
+  // once the reader moves on - the standalone app's blur behaviour.
   root.addEventListener("focusout", (event) => {
     const input = event.target as HTMLInputElement | null;
     if (!input || input.type !== "number" || !input.closest("[data-sca-filters]")) return;
@@ -532,8 +532,8 @@ function wire(root: HTMLElement): void {
       const th = sort.closest<HTMLTableCellElement>("th");
       if (!th) return;
       const current = th.getAttribute("aria-sort");
-      // A fresh column opens descending — biggest first, which is what a
-      // reader sorting by "Targets" wants — and a second click flips it.
+      // A fresh column opens descending - biggest first, which is what a
+      // reader sorting by "Targets" wants - and a second click flips it.
       sortBy(root, th, current !== "descending");
       return;
     }

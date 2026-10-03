@@ -1,7 +1,7 @@
 /**
  * The strength-of-schedule board's inputs, read: the FPA table (adjusted
  * view), the season's schedule and the committed Player SOS list. The model
- * itself — ranks, buckets, spans, cards — is sos-model.ts, kept free of the
+ * itself - ranks, buckets, spans, cards - is sos-model.ts, kept free of the
  * database and the network so the tests can load it on its own, as
  * fpa/math.ts is.
  */
@@ -46,7 +46,7 @@ function readPool(): Pool | null {
 
 /**
  * The board for one position and scoring, or null when either input is
- * missing — no FPA ingested yet, or no schedule. Null rather than an empty
+ * missing - no FPA ingested yet, or no schedule. Null rather than an empty
  * grid, for the FPA table's reason: 32 rows of dashes are worse than no board.
  */
 export async function getSosBoard(
@@ -55,7 +55,7 @@ export async function getSosBoard(
 ): Promise<SosBoard | null> {
   // The FPA table's own season (FPA_CURRENT_SEASON), not the schedule's: from
   // March 1 the schedule is next year's while FPA stays on the season just
-  // played until its preseason switch in August — and that full season is the
+  // played until its preseason switch in August - and that full season is the
   // right baseline for next year's slate. See docs/SEASON-ROLLOVER.md.
   const [fpa, schedule] = await Promise.all([
     getFpaTable({ format: SCORING_FORMAT[scoring], view: "adjusted" }),

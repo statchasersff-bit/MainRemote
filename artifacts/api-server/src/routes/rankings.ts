@@ -2,21 +2,21 @@
  * The rankings routes: two boards, each from its own file.
  *
  * The redraft board (data/rankings/redraft-<season>.csv), as it always was:
- *   GET /rankings                             — the standalone page; `?pos=rb` opens a panel
- *   GET /rankings/download.csv                — the boards on screen, as CSV
+ *   GET /rankings                             - the standalone page; `?pos=rb` opens a panel
+ *   GET /rankings/download.csv                - the boards on screen, as CSV
  *
  * The rest-of-season board (data/rankings/ros-<season>.csv):
- *   GET /rest-of-season-rankings              — the standalone page, All board
- *   GET /rest-of-season-rankings/qb|rb|wr|te  — the same page, that board open
- *   GET /rest-of-season-rankings/download.csv — the boards on screen, as CSV
+ *   GET /rest-of-season-rankings              - the standalone page, All board
+ *   GET /rest-of-season-rankings/qb|rb|wr|te  - the same page, that board open
+ *   GET /rest-of-season-rankings/download.csv - the boards on screen, as CSV
  *
  * And for the WordPress mounts:
- *   GET /embed/rankings                       — the redraft board's fragment
- *   GET /embed/rankings?board=ros             — the rest-of-season board's
+ *   GET /embed/rankings                       - the redraft board's fragment
+ *   GET /embed/rankings?board=ros             - the rest-of-season board's
  *
  * Either page takes `?season=` for an older file and `?embed=1` for the legacy
- * iframe. The rest-of-season board's position pages carry all five boards —
- * the tabs switch in place once the bundle is up — so the path only decides
+ * iframe. The rest-of-season board's position pages carry all five boards -
+ * the tabs switch in place once the bundle is up - so the path only decides
  * which one is open, and what the title and canonical say. The redraft board's
  * tabs are in-page anchors, so it is one address.
  *
@@ -27,7 +27,7 @@
  *
  * Mirrors routes/fpa.ts, including the posture that matters: every route ships
  * `noindex, indexifembedded`, so this origin does not compete with
- * statchasers.com — and by the same token the page is invisible to search until
+ * statchasers.com - and by the same token the page is invisible to search until
  * `[statchasers_rankings]` embeds it.
  */
 
@@ -134,7 +134,7 @@ function queryPosition(req: Request): PositionFilter | null {
   return POSITIONS.find((p) => p.toLowerCase() === raw) ?? null;
 }
 
-/** The position a path segment names — `rb`, not `RB` or `all`. */
+/** The position a path segment names - `rb`, not `RB` or `all`. */
 function pathPosition(segment: string): PositionFilter | null {
   return (
     POSITIONS.find((p) => p !== "All" && p.toLowerCase() === segment) ?? null
@@ -276,7 +276,7 @@ router.get(ROS_BASE_PATH, (req, res) => {
  * The boards as CSV.
  *
  * Built from the same `getRankings` the page renders, so the file and the
- * screen can never disagree — and it carries the derived tier and team columns,
+ * screen can never disagree - and it carries the derived tier and team columns,
  * which the source file does not have.
  */
 function sendCsv(req: Request, res: Response, board: RankingsBoard): void {
@@ -312,7 +312,7 @@ router.get(`${ROS_BASE_PATH}/download.csv`, (req, res) => {
 /**
  * One board open: `/rest-of-season-rankings/rb`.
  *
- * Lower case only, and `all` is not a segment — the All board is the bare
+ * Lower case only, and `all` is not a segment - the All board is the bare
  * path. Those spellings redirect rather than render, so each board has exactly
  * one address. Anything else is not a position and falls through to the 404.
  */
@@ -367,7 +367,7 @@ router.get("/embed/rankings", (req, res) => {
       basePath,
       playerPathPrefix: playerPrefix,
       // WordPress has never heard of `/download.csv` under its page, so the
-      // CSV link is given this origin outright — the schedule's exports do
+      // CSV link is given this origin outright - the schedule's exports do
       // the same.
       downloadBase: `${publicOrigin(req)}${RANKINGS_BOARD_PATHS[board]}`,
       linkQuery: fragmentLinkQuery(playerPrefix),

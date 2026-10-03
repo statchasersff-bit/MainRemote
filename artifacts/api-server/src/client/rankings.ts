@@ -1,14 +1,14 @@
 /**
  * Redraft rankings enhancement bundle.
  *
- * The boards are complete before this runs — all five panels, 230 players,
+ * The boards are complete before this runs - all five panels, 230 players,
  * every tier header and every team badge are in the HTML the server sent, and
  * the position strip works with scripting disabled because CSS `:target`
  * switches the panels. Nothing here fetches anything and nothing here renders a
  * row.
  *
  * It adds two things:
- *   1. real tab behaviour for the position strip, from client/enhance.ts — the
+ *   1. real tab behaviour for the position strip, from client/enhance.ts - the
  *      ARIA roles, arrow keys, and switching without a reload. Each tab is the
  *      position's own address (`/rest-of-season-rankings/te`), so choosing
  *      "TE" pushes that address, and Back walks back through the tabs;

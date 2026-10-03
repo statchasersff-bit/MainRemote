@@ -5,7 +5,7 @@
  * Every sentence is written here from the structured play (scoring-plays.ts),
  * never copied from the feed, and every figure is added up here: the running
  * score, the lead changes and the subtitle's counts. The one thing checked
- * against the outside is the result — validateScoringPlays() compares the sum
+ * against the outside is the result - validateScoringPlays() compares the sum
  * of the plays with the hero's final and quarter line, and the page logs what
  * it finds, because a play the feed dropped would otherwise print a running
  * score that ends somewhere the scoreboard above it does not.

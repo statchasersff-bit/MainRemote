@@ -1,11 +1,11 @@
-/* StatChasers Depth Charts — front-end styles.
+/* StatChasers Depth Charts - front-end styles.
    Everything is scoped under .scdc-root and defines its own design tokens so it
    blends onto a white page without inheriting/leaking the host theme's styles. */
 
 .scdc-root {
 	--sc-bg: #f7f9fc;
 	--sc-card: #ffffff;
-	--sc-card-border: #e5eaf2; /* cool gray — team surface border */
+	--sc-card-border: #e5eaf2; /* cool gray - team surface border */
 	--sc-ink: #1f2b45;
 	--sc-muted: #64748b;
 	--sc-faint: #94a3b8; /* quiet rank numerals */
@@ -58,7 +58,7 @@
 	margin-top: 0.5rem; /* ~8px between toolbar / view / note */
 }
 /* Two intentional rows: search + Export together, then the two filters
-   sharing a row — so nothing auto-stacks into a tall column of controls. */
+   sharing a row - so nothing auto-stacks into a tall column of controls. */
 .scdc-controls-row {
 	display: flex;
 	gap: 0.75rem;
@@ -71,14 +71,14 @@
 .scdc-field-pos,
 .scdc-field-team { flex: 1 1 0; }
 
-/* ---- Export button (secondary — soft, gold only on hover) ---- */
+/* ---- Export button (secondary - soft, gold only on hover) ---- */
 .scdc-download {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
 	width: 100%;
-	height: 2.0625rem; /* 33px — 25% shorter than the old 44px */
+	height: 2.0625rem; /* 33px - 25% shorter than the old 44px */
 	padding: 0 1rem;
 	background: #fff;
 	color: var(--sc-navy);
@@ -97,7 +97,7 @@
 .scdc-input,
 .scdc-select {
 	width: 100%;
-	height: 2.0625rem; /* 33px — 25% shorter than the old 44px */
+	height: 2.0625rem; /* 33px - 25% shorter than the old 44px */
 	padding: 0 0.75rem;
 	font-size: 0.85rem; /* 15% smaller than the old 1rem */
 	color: var(--sc-ink);
@@ -283,7 +283,7 @@
 	.scdc-context-mobile { display: block; }
 }
 
-/* ---- Fantasy note (soft informational aside — hugs its content) ---- */
+/* ---- Fantasy note (soft informational aside - hugs its content) ---- */
 .scdc-fantasy-note {
 	display: inline-flex;
 	align-items: center;
@@ -310,7 +310,7 @@
 	gap: 1rem; /* clear-but-compact separation between team surfaces */
 	align-items: start;
 }
-/* One cohesive premium surface per franchise — header + every position group,
+/* One cohesive premium surface per franchise - header + every position group,
    on a subtle cool-gray card with a soft layered shadow. */
 .scdc-team-card {
 	min-width: 0;
@@ -445,7 +445,7 @@
 }
 .scdc-col-empty { padding: 0.0625rem 0.5rem; font-size: 0.75rem; color: var(--sc-faint); }
 
-/* ---- Player rows — directly on the team surface, subtle hover ---- */
+/* ---- Player rows - directly on the team surface, subtle hover ---- */
 .scdc-player {
 	display: flex;
 	align-items: flex-start;
@@ -497,7 +497,7 @@
 	.scdc-tab { font-size: 0.72rem; padding-left: 0.625rem; padding-right: 0.625rem; }
 }
 
-/* Step 1 — a position column squeezed toward its min width: compact the left
+/* Step 1 - a position column squeezed toward its min width: compact the left
    gutter, rank column and text. */
 @container (max-width: 8.75rem) {
 	.scdc-player { padding-left: 1px; }            /* + 4px body padding = 5px gap */
@@ -505,7 +505,7 @@
 	.scdc-name { font-size: 0.7rem; }              /* 20% smaller, rank locked to name */
 }
 
-/* Header labels ("WIDE RECEIVERS") are long — plus the count badge and padding
+/* Header labels ("WIDE RECEIVERS") are long - plus the count badge and padding
    they need ~10rem to fit. Swap them to the compact form ("WR") well before that
    width so the full label is never shown mid-truncation (the old 7rem swap left
    a band where "WIDE RECEIV…" flashed before collapsing to "WR"). Decoupled from
@@ -515,16 +515,16 @@
 	.scdc-colhead-abbr { display: inline; }
 }
 
-/* Step 2 — column at its narrowest (scrolling) width even after the text
+/* Step 2 - column at its narrowest (scrolling) width even after the text
    shrank: switch the name to "first-initial last-name". */
 @container (max-width: 7rem) {
 	.scdc-name-full { display: none; }
 	.scdc-name-abbr { display: block; }
 }
 
-/* Step 3 — column at its narrowest (scrolling) width: drop the depth numbers
+/* Step 3 - column at its narrowest (scrolling) width: drop the depth numbers
    and align the player names directly under the column header text (both land
-   9px in — 1px border + 8px header padding vs 1px border + 4px body padding + 4px). */
+   9px in - 1px border + 8px header padding vs 1px border + 4px body padding + 4px). */
 @container (max-width: 6rem) {
 	.scdc-rank { display: none; }
 	.scdc-move { display: none; }          /* keep every name aligned under the header */
@@ -557,10 +557,10 @@
    redeclared here. Deliberately quiet: the interactive tool stays the focus.
 
    NOTE: everything here uses the scdc-seo-* namespace. The tool's own card
-   internals use scdc-team-* — .scdc-team-summary is already the per-card
+   internals use scdc-team-* - .scdc-team-summary is already the per-card
    "3 QB · 6 RB · …" strip, so reusing that name boxed it in and pushed the
    team name out of line with its logo. Keep the two namespaces apart. */
-/* Width: fill the container up to 1240px, then stop and centre — so the tool
+/* Width: fill the container up to 1240px, then stop and centre - so the tool
    lines up with the rest of the page instead of tracking the viewport as it is
    zoomed out.
 
@@ -638,7 +638,7 @@
 	color: #b6c2d4;
 }
 
-/* Team H1 — only rendered when the theme/Divi has no title to rename. */
+/* Team H1 - only rendered when the theme/Divi has no title to rename. */
 .scdc-seo-h1 {
 	margin: 0 0 8px;
 }
@@ -650,7 +650,7 @@
 	line-height: 1.55;
 }
 
-/* "At a glance" — built server-side from the same cached depth-chart data. */
+/* "At a glance" - built server-side from the same cached depth-chart data. */
 .scdc-seo-summary {
 	/* Belt and braces: this block is prose and must always wrap, whatever
 	   white-space/overflow rule the theme (or a stale stylesheet) hands down. */

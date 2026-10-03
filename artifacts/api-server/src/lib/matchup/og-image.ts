@@ -5,7 +5,7 @@
  *
  * Served at /og/<away-slug>-vs-<home-slug>-<season>-<round-slug>.png. The
  * first request draws it and writes it to data/og/; every later one reads the
- * file, so each game is drawn once — "at publish time", in effect — and a
+ * file, so each game is drawn once - "at publish time", in effect - and a
  * redraw is a matter of deleting the file.
  *
  * shareImageSvg() is pure; renderShareImage() is the only part that touches

@@ -10,7 +10,7 @@
  * all read it.
  *
  * The feed's dates are calendar dates and its times are US Eastern wall clock,
- * always, whatever the venue — see schedule-data.ts. Nothing here converts
+ * always, whatever the venue - see schedule-data.ts. Nothing here converts
  * either; the zone is labelled instead, and the client bundle does the
  * conversion once it can actually ask the browser where the reader is.
  */
@@ -22,7 +22,7 @@ function dateParts(date: string): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-/** "Sun, Sep 24" — the weekly board's date line. */
+/** "Sun, Sep 24" - the weekly board's date line. */
 export function formatGameDate(
   date: string | null,
   weekday: string | null,
@@ -43,7 +43,7 @@ export function formatGameDate(
 }
 
 /**
- * "Sep 24" — a date as a table column rather than as a line of prose.
+ * "Sep 24" - a date as a table column rather than as a line of prose.
  *
  * Written for the team lens's date column, which has since moved to the team
  * hub; team-render.ts's gameShortDate() sets the same pair from its own Eastern
@@ -65,7 +65,7 @@ export function formatShortDate(
 }
 
 /**
- * "Thursday, September 24" — the long form, for prose.
+ * "Thursday, September 24" - the long form, for prose.
  *
  * The board sets its dates short because they are a column; a sentence that
  * says "Thu, Sep 24" is a table somebody typed out. Same parse as the column
@@ -87,7 +87,7 @@ export function formatLongDate(
   });
 }
 
-/** "Thursday" — the weekday a date falls on, from the date itself. */
+/** "Thursday" - the weekday a date falls on, from the date itself. */
 export function weekdayName(
   date: string | null,
   weekday: string | null,
@@ -105,7 +105,7 @@ export function weekdayName(
  * "1:00 PM ET".
  *
  * The zone is labelled rather than converted. Every kickoff in the feed is US
- * Eastern, and the server has no idea what zone the reader is in — rendering it
+ * Eastern, and the server has no idea what zone the reader is in - rendering it
  * as the server's local time would be wrong for almost everyone, and silently.
  * The client bundle converts to the reader's own zone once it can actually ask
  * the browser.

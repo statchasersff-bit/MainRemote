@@ -8,7 +8,7 @@
  *
  * Same posture as the team hub, the player pages and the FPA table. The API
  * serves both boards with `noindex, indexifembedded`, so they are invisible
- * to search until something embeds them — this file is that something.
+ * to search until something embeds them - this file is that something.
  *
  * ## What this replaces
  *
@@ -21,7 +21,7 @@
  * First, the board was only as fresh as the last BUILD. Updating a ranking
  * meant re-running the prerender and redeploying the app, because the HTML
  * WordPress served was a build artefact. Here the rankings are a CSV the API
- * reads per request, cached on its mtime — publishing a new one is a commit,
+ * reads per request, cached on its mtime - publishing a new one is a commit,
  * and the shortcode picks it up within the TTL below.
  *
  * Second, only the fifty rows of the All board and the ACTIVE position panel
@@ -31,13 +31,13 @@
  *
  * Migrating: put `[statchasers_rankings]` on the page and remove the old app's
  * mount (its shortcode, block, or the container div its bundle looked for),
- * then stop deploying that app. Nothing here collides with it — the tag is new,
+ * then stop deploying that app. Nothing here collides with it - the tag is new,
  * because the old one was not a WordPress shortcode to begin with.
  *
  * ## What differs from the other shortcodes
  *
  * There is no slug and no scoring attribute. One set of boards, one page, and
- * the rankings are published in PPR only — so the single piece of state worth
+ * the rankings are published in PPR only - so the single piece of state worth
  * an attribute is which position panel opens first, for a page that wants to be
  * about running backs.
  *
@@ -45,8 +45,8 @@
  *
  * Each position has an address under the rest-of-season page:
  * `/fantasy-football/rest-of-season-rankings/rb/` and so on. One page serves
- * all five — a rewrite rule points the position URL at the page and sets a
- * query var the shortcode reads — and each gets its own title, description and
+ * all five - a rewrite rule points the position URL at the page and sets a
+ * query var the shortcode reads - and each gets its own title, description and
  * canonical. The API builds the tabs from its default of that page's path
  * (SC_ROS_RANKINGS_PATH overrides it), so the two have to name the same page
  * as statchasers_rankings_page_path(). The redraft board's tabs are in-page
@@ -78,7 +78,7 @@ const STATCHASERS_RANKINGS_HANDLE    = 'statchasers-rankings';
  * How long a rendered fragment is reused before we ask the API again.
  *
  * An hour, the longest of the four. The other tools are reading something that
- * moves on its own — news by the minute, FPA by the week. A rankings file moves
+ * moves on its own - news by the minute, FPA by the week. A rankings file moves
  * when somebody publishes one, which is a handful of times a season, so a
  * shorter TTL would buy nothing but round trips. `statchasers_news_flush()`
  * clears this, which is the path an editor who has just published takes.
@@ -91,7 +91,7 @@ const STATCHASERS_RANKINGS_BACKUP_TTL = 30 * DAY_IN_SECONDS;
 /**
  * Seconds to wait on the API before giving up.
  *
- * Generous for what this is — a parse of a 14 kB CSV and 230 rows of string
+ * Generous for what this is - a parse of a 14 kB CSV and 230 rows of string
  * building, both of which are cached server-side on the file's mtime. The only
  * request that does real work is the first one after a deploy.
  */
@@ -137,7 +137,7 @@ function statchasers_rankings_args( array $atts, string $board = '' ): array {
 	}
 
 	// A season is honoured only when it is plausibly one. Left at 0 the API
-	// serves the newest board it has, which is what a page should normally do —
+	// serves the newest board it has, which is what a page should normally do -
 	// a hard-coded season is a page that silently shows last year's rankings
 	// next August.
 	$season = (int) $atts['season'];
@@ -175,7 +175,7 @@ function statchasers_rankings_page_path(): string {
  *
  *     add_filter( 'statchasers_rankings_position_urls', '__return_false' );
  *
- * Off, the page is one address again and the tabs' links 404 — so turn it off
+ * Off, the page is one address again and the tabs' links 404 - so turn it off
  * together with SC_ROS_RANKINGS_PATH, not on its own.
  */
 function statchasers_rankings_position_urls_enabled(): bool {
@@ -186,7 +186,7 @@ function statchasers_rankings_position_urls_enabled(): bool {
  * Where the page used to live, with no leading or trailing slash.
  *
  * WordPress keeps old slugs for posts, not for pages, so a renamed page's old
- * address is a 404 unless something answers it. This does, with a 301 — and
+ * address is a 404 unless something answers it. This does, with a 301 - and
  * only once WordPress has found nothing there, so the redirect cannot shadow a
  * page that still exists. Return '' to switch it off.
  */
@@ -239,8 +239,8 @@ add_action(
 
 		// A new rule is dead until the rule table is rebuilt, and an upgrade
 		// does not run the activation hook that asks for that. So the rule's
-		// own signature is remembered, and a change to it — a first install of
-		// this version, or a filtered page path — asks for the flush that
+		// own signature is remembered, and a change to it - a first install of
+		// this version, or a filtered page path - asks for the flush that
 		// statchasers-news.php performs at the end of this same `init`.
 		$signature = md5( $page );
 		if ( get_option( 'statchasers_rankings_rules' ) !== $signature ) {
@@ -271,7 +271,7 @@ function statchasers_rankings_request_pos(): string {
  * The old address, answered with a 301 to the new one.
  *
  * `/fantasy-football/redraft-rankings/` and anything the old page had beneath
- * it that now means something — `/redraft-rankings/rb/` never existed, but
+ * it that now means something - `/redraft-rankings/rb/` never existed, but
  * costs nothing to send to the right board.
  */
 add_action(
@@ -299,7 +299,7 @@ add_action(
 		exit;
 	},
 	// Before core's redirect_canonical (10), whose 404 guesser would otherwise
-	// send /redraft-rankings/ to any post whose slug merely starts with it —
+	// send /redraft-rankings/ to any post whose slug merely starts with it -
 	// "redraft-rankings-2025", on a fantasy site, is not a far-fetched slug.
 	1
 );
@@ -308,8 +308,8 @@ add_action(
  * The board's title, H1 and description, as the API wrote them.
  *
  * The fragment carries them in an inert `scr-page-data` island
- * (renderMetaIsland() in the API's rankings-render.ts), so the words — and the
- * season in them — live in one place, rankings-seo.ts, the way the player
+ * (renderMetaIsland() in the API's rankings-render.ts), so the words - and the
+ * season in them - live in one place, rankings-seo.ts, the way the player
  * stats page's do. Read from the same cached fetch the shortcode prints, so it
  * costs no second request. Empty on any page that does not mount the board,
  * and against an API older than the island, where the functions below fall
@@ -441,8 +441,8 @@ const STATCHASERS_RANKINGS_POSITION_NAMES = array(
 /**
  * The title on a position URL, or '' when this is not one.
  *
- * The page's stored name — `post_title`, not `get_the_title()`, for the
- * recursion reason statchasers_schedule_page_title() gives — plus the board.
+ * The page's stored name - `post_title`, not `get_the_title()`, for the
+ * recursion reason statchasers_schedule_page_title() gives - plus the board.
  */
 function statchasers_rankings_position_title(): string {
 	$copy = statchasers_rankings_page_copy();
@@ -558,7 +558,7 @@ function statchasers_rankings_fetch( array $args ): ?array {
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
-	// A 404 here means the API has no rankings file — a real state, not a
+	// A 404 here means the API has no rankings file - a real state, not a
 	// transient error, and retrying every page view will not fix it. Cached as a
 	// failure so a deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
@@ -631,7 +631,7 @@ function statchasers_rankings_enqueue_assets(): void {
 
 	// Both unconditional where the block above is not. A tool printing through
 	// the site's header, and a phone reading it through a 43px margin on each
-	// side, are wrong on every page that mounts a tool — whether or not that
+	// side, are wrong on every page that mounts a tool - whether or not that
 	// page also wants the sidebar's share of the row back.
 	if ( statchasers_team_is_divi() ) {
 		wp_add_inline_style( STATCHASERS_RANKINGS_HANDLE, statchasers_tool_header_layer_css() );
@@ -776,7 +776,7 @@ add_filter( 'body_class', 'statchasers_rankings_full_width_body_class', PHP_INT_
 /**
  * The shortcode: prints the server-rendered boards into the page.
  *
- * Same deliberate omissions as the other four — no canonical, no <h1>, no title
+ * Same deliberate omissions as the other four - no canonical, no <h1>, no title
  * or meta description, nothing written to the URL. The page owns all of it, and
  * the board's player links are ordinary links back to this app's own /player/,
  * which is why SC_PLAYER_PATH_PREFIX exists on the API side.
@@ -818,13 +818,13 @@ function statchasers_rankings_render( array $atts, string $board ): string {
 	$args = statchasers_rankings_args( $atts, $board );
 	$data = statchasers_rankings_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_rankings_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
 		// No client-side render to fall back to: the bundle only adds tab
 		// behaviour to markup that is already there. An empty string leaves the
-		// rest of the page — the H1, the copy, the internal links — intact.
+		// rest of the page - the H1, the copy, the internal links - intact.
 		if ( current_user_can( 'manage_options' ) ) {
 			return '<p><strong>StatChasers Rankings:</strong> the API returned nothing. Check that the deployment is up and that it has a <code>data/rankings/' . ( 'ros' === $board ? 'ros' : 'redraft' ) . '-&lt;season&gt;.csv</code> file.</p>';
 		}
@@ -861,7 +861,7 @@ add_shortcode( STATCHASERS_ROS_RANKINGS_SHORTCODE, 'statchasers_ros_rankings_sho
  * The questions this request's rankings fragment is carrying.
  *
  * Simpler than the team hub's equivalent: there is one mount, one fragment and
- * one FAQ, and the questions do not vary by tab — the position changes which
+ * one FAQ, and the questions do not vary by tab - the position changes which
  * panel opens and nothing about what is asked. The fetch is the cached one the shortcode is about to hit, so this
  * costs no second round trip, and the result is memoised because the Rank Math
  * filter and the fallback printer both ask.
@@ -881,7 +881,7 @@ function statchasers_rankings_faq_items(): array {
 /**
  * The unprinted fragment for this request's board, or ''.
  *
- * What the schema nodes read their islands from. The default arguments —
+ * What the schema nodes read their islands from. The default arguments -
  * which on a position URL include its position, so this is the fetch the
  * shortcode is about to make. A page passing a season gets the same questions:
  * they describe the rankings, not the open panel.
@@ -1036,7 +1036,7 @@ add_filter( 'rank_math/json_ld', 'statchasers_rankings_rank_math_schema', 20 );
 /**
  * The boards as ItemLists: one per position the page shows, or none.
  *
- * The API builds them — rankings/rankings-schema.ts — and ships them as an
+ * The API builds them - rankings/rankings-schema.ts - and ships them as an
  * inert island this lifts out: four on the All board, one on a position page.
  * Checked for shape rather than trusted, like the FAQ island: a malformed list
  * is dropped rather than printed.
@@ -1164,7 +1164,7 @@ function statchasers_rankings_strip_faq_data( string $html ): string {
  * The four board URLs, appended to Rank Math's page sitemap.
  *
  * Each board is its own canonical, and an address with no post behind it is
- * one Rank Math cannot list by itself — the player stats table adds its three
+ * one Rank Math cannot list by itself - the player stats table adds its three
  * the same way. Only while the page exists and still mounts the board, and
  * only while the position URLs are on.
  */

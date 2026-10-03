@@ -2,7 +2,7 @@
  * Every StatChasers URL the team pages link to, built in one place.
  *
  * The team hub's job is to send readers into the real tools, so it emits a lot
- * of internal links — and a link built inline in a component is a link nobody
+ * of internal links - and a link built inline in a component is a link nobody
  * can find again when the site's URL structure changes. Components ask for
  * `getTeamDepthChartUrl(team)`; only this file knows what that resolves to.
  *
@@ -13,7 +13,7 @@
  * `PLAYER_STATS` have any evidence behind them (the intended team-page URL the
  * project was specced with, the example already in lib/links.ts, and two URLs
  * given by the site's owner). Check the rest against the live site and correct
- * them with the env vars named beside each one — no code change or redeploy of
+ * them with the env vars named beside each one - no code change or redeploy of
  * this module is needed to fix a wrong path.
  *
  * Setting a template to an empty string switches its link off everywhere
@@ -39,7 +39,7 @@ function template(envKey: string, fallback: string): string {
  * abbreviation, `{team}` the lowercase one, `{player}` a player-name slug.
  */
 const TEMPLATES = {
-  /** The team hub itself — the URL these pages are embedded at. */
+  /** The team hub itself - the URL these pages are embedded at. */
   teamHub: template("SC_TEAM_HUB_URL_TEMPLATE", "/nfl/teams/{slug}/"),
   /** The depth-charts plugin's team route: /<page>/<view>/<team>/, fantasy view. */
   depthChart: template("SC_DEPTH_CHART_URL_TEMPLATE", "/nfl/nfl-depth-charts/fantasy/{slug}/"),
@@ -54,7 +54,7 @@ const TEMPLATES = {
   playerStats: template("SC_PLAYER_STATS_URL", "/nfl/nfl-player-stats/"),
   /**
    * A player's profile. `{player}` is the site's own slug, not one derived
-   * from the name — see getPlayerProfileUrl().
+   * from the name - see getPlayerProfileUrl().
    *
    * It defaulted to `/nfl/players/outlook/{player}/`, a retired layout whose
    * old pages still resolved, so every team hub linked readers and crawlers to
@@ -71,7 +71,7 @@ const TEMPLATES = {
 /**
  * Absolute, or nothing.
  *
- * These pages are read inside statchasers.com — both mounted directly into a
+ * These pages are read inside statchasers.com - both mounted directly into a
  * WordPress page and, where the legacy integration is used, inside an iframe on
  * a different origin. A root-relative "/nfl/..." is correct in the first case
  * and resolves against *this* server in the second, so every link is made
@@ -95,7 +95,7 @@ function fill(tpl: string, values: Record<string, string>): string | null {
       missing = true;
       return "";
     }
-    // Keep "/" out of the encoded output — every value here is a single path
+    // Keep "/" out of the encoded output - every value here is a single path
     // segment or a query value, and encodeURIComponent is the right escape for
     // both.
     return encodeURIComponent(value);
@@ -137,8 +137,8 @@ export function getPlayerStatsUrl(): string | null {
 /**
  * A single player's profile, or null when the site does not publish one.
  *
- * The rule this used to enforce by staying switched off — never link a name to
- * a page that may not exist — is enforced per name instead. The player
+ * The rule this used to enforce by staying switched off - never link a name to
+ * a page that may not exist - is enforced per name instead. The player
  * dictionary carries the site's own slug for every player it indexes, so a name
  * that resolves to one has a profile and a name that does not is left as plain
  * text. That is also the only way to get the slug right: the site spells A.J.
@@ -157,7 +157,7 @@ export function getPlayerProfileUrl(
 
 /**
  * A player's page on statchasers.com, from a slug already resolved against the
- * dictionary — what the rankings rows carry. Null without one.
+ * dictionary - what the rankings rows carry. Null without one.
  */
 export function getPlayerPageUrl(
   slug: string | null | undefined,
@@ -181,7 +181,7 @@ export function getFPAUrl(team?: NflTeam): string | null {
   return fill(TEMPLATES.fpa, team ? teamValues(team) : {});
 }
 
-/** The main player-news page — where "view all news" goes. */
+/** The main player-news page - where "view all news" goes. */
 export function getNewsUrl(): string | null {
   return fill(TEMPLATES.news, {});
 }

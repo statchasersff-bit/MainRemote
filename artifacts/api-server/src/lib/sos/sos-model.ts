@@ -7,8 +7,8 @@
  * model is kept; its data is not. That app computed aFPA itself from a 2025
  * snapshot and shipped the result as static JSON, so its board stayed a June
  * preseason baseline. Here the aFPA is the FPA table's own adjusted figure
- * (fpa/fpa-data.ts) — the same formula, already blended with the current
- * season by fpa/blend.ts — so SOS moves when the FPA page moves, and the two
+ * (fpa/fpa-data.ts) - the same formula, already blended with the current
+ * season by fpa/blend.ts - so SOS moves when the FPA page moves, and the two
  * can never disagree.
  *
  * What the source decided, and this keeps:
@@ -68,7 +68,7 @@ function lower(value: unknown): string {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
-/** One spelling per value — the URL's own — and anything else is the default. */
+/** One spelling per value - the URL's own - and anything else is the default. */
 export function parseSosState(query: {
   tab?: unknown;
   pos?: unknown;
@@ -180,7 +180,7 @@ export interface SosTeamRow extends ScheduleRanks {
   po3: SosSpan | null;
   /** Average opponent aFPA over the remaining weeks; null once none are left. */
   ros: { afpa: number; bucket: Bucket } | null;
-  /** Average opponent aFPA over weeks 1-17 — what the Full-Season cards compare. */
+  /** Average opponent aFPA over weeks 1-17 - what the Full-Season cards compare. */
   fullAfpa: number | null;
 }
 
@@ -232,7 +232,7 @@ export interface SosBoard {
   players: SosPlayerRow[];
   teamCards: SosCard[];
   playerCards: SosCard[];
-  /** Fingerprint of everything above — the render cache key. */
+  /** Fingerprint of everything above - the render cache key. */
   version: string;
 }
 
@@ -441,7 +441,7 @@ function cardsFor<R extends { fullAfpa: number | null; po3: SosSpan | null }>(
   ];
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) h = ((h << 5) + h + value.charCodeAt(i)) | 0;

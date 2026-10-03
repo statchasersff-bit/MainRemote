@@ -3,7 +3,7 @@
  *
  * The two pieces that are specific to a provider watching accounts on our
  * behalf. Everything after a delivery is read is the shared pipeline, which is
- * tested where it lives — so what matters here is that a 37-account watchlist
+ * tested where it lives - so what matters here is that a 37-account watchlist
  * becomes expressions a provider will actually accept, and that a delivery is
  * read without ever throwing at a payload we cannot use.
  */
@@ -18,7 +18,7 @@ const { buildFilterRules, readDelivery, ruleTag, MAX_RULE_LENGTH } =
 
 after(cleanupBundles);
 
-/** The real seeded watchlist — the case the chunker exists for. */
+/** The real seeded watchlist - the case the chunker exists for. */
 const WATCHLIST = [
   "adamschefter", "rapsheet", "tompelissero", "mikegarafolo", "albertbreer",
   "ryanmcfadden", "seifertespn", "colton_pouncy", "hayscarlyon", "nflstroud",
@@ -50,7 +50,7 @@ describe("turning a watchlist into filter rules", () => {
       [...terms].sort(),
       WATCHLIST.map((u) => `from:${u}`).sort(),
     );
-    // A handle in two rules is a post delivered — and billed — twice.
+    // A handle in two rules is a post delivered - and billed - twice.
     assert.equal(new Set(terms).size, terms.length);
   });
 
@@ -159,7 +159,7 @@ describe("reading a delivery", () => {
     assert.match(delivery.rejected[1], /no author handle/);
   });
 
-  test("garbage never throws — an unacknowledgeable delivery is retried forever", () => {
+  test("garbage never throws - an unacknowledgeable delivery is retried forever", () => {
     for (const body of [null, undefined, "", 42, [], { tweets: "not an array" }]) {
       const delivery = readDelivery(body);
       assert.equal(delivery.posts.length, 0);

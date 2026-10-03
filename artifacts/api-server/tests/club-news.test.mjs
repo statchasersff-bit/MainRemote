@@ -160,7 +160,7 @@ describe("the team page merge", () => {
     const merged = mergeNewsLanes(clubLane, wireLane);
 
     // The club is newer throughout, so it keeps taking slots on merit until
-    // there are exactly enough left to pay what the wire is owed — six club,
+    // there are exactly enough left to pay what the wire is owed - six club,
     // then the four reserved. Late rather than spread, so date order survives
     // for as long as the quota permits rather than being broken up front.
     assert.equal(kinds(merged.slice(0, 10)), "ccccccwwww");
@@ -193,7 +193,7 @@ describe("the team page merge", () => {
 
   test("undated items sort last, as they do in SQL", () => {
     // Both lanes arrive newest-first out of SQL, where NULLS LAST puts the
-    // undated item at the end of its own lane — so that is how it is passed.
+    // undated item at the end of its own lane - so that is how it is passed.
     const merged = mergeNewsLanes([club(0, 100), club(1, null)], [wire(0, 50)]);
     assert.equal(kinds(merged), "cwc");
   });

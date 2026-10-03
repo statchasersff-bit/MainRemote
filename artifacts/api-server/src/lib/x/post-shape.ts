@@ -44,7 +44,7 @@ export function dedupeKeyForPost(externalId: string): string {
  *
  * A post is a paragraph and a card wants a headline, so the first sentence (or
  * the first clause that fits) becomes the title and the rest stays in the
- * summary. Trailing links are dropped from the headline only — a t.co URL is
+ * summary. Trailing links are dropped from the headline only - a t.co URL is
  * never the interesting part of the first line, and the card links to the post
  * itself anyway.
  */
@@ -70,7 +70,7 @@ export function postHeadline(text: string): string {
  *
  * A quote post is treated as an original when it says something of its own: a
  * bare "This." over someone else's post is a retweet with extra steps, while
- * "Confirmed — he's active" over an injury report is the news. The line is
+ * "Confirmed - he's active" over an injury report is the news. The line is
  * drawn at whether the quoting text carries any words of substance.
  */
 export function shouldKeep(
@@ -107,8 +107,8 @@ export function toNewsItem(post: XPost): {
   const quotedText = post.quoted?.text ?? null;
   const full = post.text.replace(/\s+/g, " ").trim();
 
-  // The quoted post's words are read for entity and category detection — "this
-  // is about Hurts" is frequently only true of the post being quoted — but they
+  // The quoted post's words are read for entity and category detection - "this
+  // is about Hurts" is frequently only true of the post being quoted - but they
   // are not shown as this post's own text.
   const { player, team } = detectEntities(post.text, quotedText);
   const playerName = player?.name ?? null;
@@ -142,8 +142,8 @@ export function toNewsItem(post: XPost): {
   };
 
   // The card's image slot, in order of what it is worth showing: the player's
-  // headshot when we know who this is about — which makes an X card look like
-  // every other card in the feed rather than a foreign object — then the post's
+  // headshot when we know who this is about - which makes an X card look like
+  // every other card in the feed rather than a foreign object - then the post's
   // own media, then nothing, which renders the same badge a headshot-less wire
   // row already renders.
   const image = player ? headshotUrl(player.id) : (post.media[0] ?? null);

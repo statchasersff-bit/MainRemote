@@ -2,7 +2,7 @@
  * Everything the matchup page renders, for one canonical pair.
  *
  * Built ON the team pages' data rather than beside it: each side is the same
- * TeamPageData the hub renders — record, schedule, stats, snapshot, injuries —
+ * TeamPageData the hub renders - record, schedule, stats, snapshot, injuries -
  * so a number on the matchup page is by construction the number on the team
  * page, and the providers behind them are cached once for both. What this
  * adds is the pair's own facts: the meetings between the two on the current
@@ -23,6 +23,9 @@ import { RECENT_WINDOW_MS, isUpcomingFixture, type MatchupGameRef, type MatchupP
 import { getFpaTable, parseFpaFormat, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { buildGameStats, type GameStats } from "./game-stats";
+import { logger } from "../logger";
+import { getKickoffForecast, getWeekLines } from "./game-lines";
+import { buildPreview, type Preview } from "./preview";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
 
@@ -35,7 +38,7 @@ export interface Meeting {
    * in each, so this is half of a meeting's identity rather than a detail.
    */
   seasonType: ScheduleGame["seasonType"];
-  /** "Week 1", or "Super Bowl" — what to print where a week number would go. */
+  /** "Week 1", or "Super Bowl" - what to print where a week number would go. */
   weekLabel: string;
   /** ESPN's id for the game, which the box score is keyed by. Often null. */
   espnEventId: string | null;
@@ -67,7 +70,7 @@ export interface HeadToHead {
 /**
  * The two defenses' fantasy-points-allowed rows, and what season they describe.
  *
- * Null when the FPA ingest has not run — see getFpaTable(), which returns null
+ * Null when the FPA ingest has not run - see getFpaTable(), which returns null
  * rather than 32 zeroes for exactly that case. A side is null on its own when
  * the table cannot resolve that team, which is the same tolerance the FPA page
  * itself has for an abbreviation it does not know.
@@ -76,7 +79,7 @@ export interface MatchupFpa {
   a: FpaRow | null;
   b: FpaRow | null;
   season: number;
-  /** "Week 3", "Preseason Baseline" — what the numbers are drawn from. */
+  /** "Week 3", "Preseason Baseline" - what the numbers are drawn from. */
   dataMode: string;
   format: string;
 }
@@ -115,7 +118,7 @@ export interface MatchupData {
    */
   winnerPostseason: ScheduleGame[] | null;
   /**
-   * Both clubs' whole seasons — regular season then postseason — for the
+   * Both clubs' whole seasons - regular season then postseason - for the
    * featured final: what the result meant, the game before and after it, and
    * where the winner went next. Null pregame; a side is empty when ESPN would
    * not serve its schedule.
@@ -126,8 +129,8 @@ export interface MatchupData {
   /**
    * The meeting a game address pinned, when the URL asked for one.
    *
-   * When set it REPLACES featured, so every postgame block on the page — hero,
-   * line score, leaders, player stats, takeaways, usage — describes this game
+   * When set it REPLACES featured, so every postgame block on the page - hero,
+   * line score, leaders, player stats, takeaways, usage - describes this game
    * rather than whichever one is current. Null on the pair's own address.
    */
   pinned: Meeting | null;
@@ -149,9 +152,14 @@ export interface MatchupData {
   pinnedIsCurrent: boolean;
   /** Latest fetch stamp across the history schedules, for the cache key. */
   historyFetchedAt: number;
+  /**
+   * The upcoming page's decision layer (lines, The Call, Start/Sit, leverage).
+   * Null on every other state, and when the inputs are not there to build it.
+   */
+  preview: Preview | null;
 }
 
-/** Prior seasons searched for meetings, in both halves of each — see schedule.ts. */
+/** Prior seasons searched for meetings, in both halves of each - see schedule.ts. */
 export const HISTORY_SEASONS = 5;
 
 
@@ -205,8 +213,8 @@ function inPlayingOrder(x: Meeting, y: Meeting): number {
  * Every meeting between the two in one season, across both halves of it.
  *
  * Takes a list of schedules rather than one: a season is a regular-season
- * document and a postseason document, and a pair that met in both — a division
- * rival in Week 3 and again in the Divisional Round — has meetings in each.
+ * document and a postseason document, and a pair that met in both - a division
+ * rival in Week 3 and again in the Divisional Round - has meetings in each.
  * Before this took the postseason, a Super Bowl between the two was simply
  * absent from the record: the page said "2–0" of a pair that had played three
  * times, and the meeting a reader most wanted was the one it did not list.
@@ -231,8 +239,8 @@ function isUpcoming(meeting: Meeting, now: number): boolean {
 /**
  * Which state the page is in, and the meeting it leads with.
  *
- * Upcoming beats recent: with a meeting behind and another ahead — a divisional
- * pair in the back half of the season — the reader wants the one they can
+ * Upcoming beats recent: with a meeting behind and another ahead - a divisional
+ * pair in the back half of the season - the reader wants the one they can
  * still watch. Recent means final within RECENT_WINDOW_MS of kickoff, which is
  * long enough to cover the week after and short enough that a September result
  * is not still "recent" in November.
@@ -327,10 +335,10 @@ export async function getMatchupData(
   const natural = decide(thisSeason, history, now);
 
   // A game address pins its meeting; the pair's own address takes whatever
-  // decide() chose. Only a finished game with a score can be pinned — there is
+  // decide() chose. Only a finished game with a score can be pinned - there is
   // no recap of a fixture, and a week that did not finish is not an address.
   // Matched on the season type as well as the week. Without it a pair that met
-  // in Week 5 and again in the Super Bowl — postseason week 5 — would have two
+  // in Week 5 and again in the Super Bowl - postseason week 5 - would have two
   // meetings answering to one address, and find() would hand back whichever the
   // playing order put first, which is never the one the address named.
   const pinned = game
@@ -391,7 +399,7 @@ export async function getMatchupData(
   const gameStats = isFinal ? buildGameStats(featured, injured) : null;
 
   // What the win led to. One more ESPN document, and only for a playoff final
-  // — the same cached request the history above makes for pair.a.
+  // - the same cached request the history above makes for pair.a.
   const winnerPostseason =
     isFinal && featured.seasonType === "post" && featured.winner
       ? ((await getTeamPostseason(featured.winner, featured.season).catch(() => null))
@@ -410,7 +418,7 @@ export async function getMatchupData(
       ).then(([ga, gb]) => ({ a: ga ?? [], b: gb ?? [] }))
     : null;
 
-  return {
+  const data: MatchupData = {
     pair,
     state,
     matchupState,
@@ -433,7 +441,25 @@ export async function getMatchupData(
     historyFetchedAt: prior
       .flat()
       .reduce((max, schedule) => Math.max(max, schedule?.fetchedAt ?? 0), 0),
+    preview: null,
   };
+
+  // The decision layer, upcoming pair pages only. Lines and the forecast are
+  // each allowed to fail; buildPreview leaves out what they would have fed.
+  if (matchupState === "upcoming" && !game && featured) {
+    const lines = await getWeekLines(state.season, featured.week, featured.seasonType === "post" ? "post" : "regular").catch(() => null);
+    const line = lines?.games.find((g) => g.eventId === featured.espnEventId) ?? null;
+    const forecast =
+      line?.indoor === false
+        ? await getKickoffForecast(featured.venueCity, featured.venueState, featured.kickoffMs).catch(() => null)
+        : null;
+    try {
+      data.preview = buildPreview(data, { lines, forecast, now });
+    } catch (err) {
+      logger.warn({ err, matchup: pair.slug }, "Matchup preview failed");
+    }
+  }
+  return data;
 }
 
 /** Fingerprint of everything rendered, for the fragment cache. */
@@ -456,5 +482,6 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     data.boxscore ? "box" : "",
     data.winnerPostseason ? `post${data.winnerPostseason.length}` : "",
     data.gameStats ? "stats" : "",
+    data.preview ? `pv${data.preview.updatedMs}` : "",
   ].join("|");
 }

@@ -2,7 +2,7 @@
  * The after-game player stats refresh (src/lib/player/live-refresh.ts, refresh-schedule.ts).
  *
  * Two things are pinned here. The game-log builder, which now runs unattended,
- * must never lose a week because one request failed — it rebuilds the whole
+ * must never lose a week because one request failed - it rebuilds the whole
  * season, and it used to write the file without any week Sleeper did not
  * answer. And the scheduling rule: when a refresh is due.
  */

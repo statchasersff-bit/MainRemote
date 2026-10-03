@@ -4,7 +4,7 @@
  *
  * Same posture as the other tools. The API serves /player-stats with
  * `noindex, indexifembedded`, so the tables are invisible to search until
- * something embeds them — this file is that something.
+ * something embeds them - this file is that something.
  *
  * ## What this replaces
  *
@@ -29,7 +29,7 @@
  *
  * Each position is its own address, as it was in the standalone app:
  * /nfl/nfl-player-stats/ is the quarterback table, and /rb/, /wr/ and /te/
- * beneath it are the other three — a rewrite rule below puts the position in a
+ * beneath it are the other three - a rewrite rule below puts the position in a
  * query var, and each of those addresses carries its own title, description
  * and canonical. /qb/ is the bare page, and 301s there, because one table has
  * one address; the standalone app's links to /qb land where they should.
@@ -87,7 +87,7 @@ const STATCHASERS_PLAYER_STATS_NAMES = array(
  *
  * The address the standalone app was mounted at, and the one the team hubs
  * already link to. A site that mounts the shortcode somewhere else changes
- * this — and SC_PLAYER_STATS_PATH on the API, which is where the table's own
+ * this - and SC_PLAYER_STATS_PATH on the API, which is where the table's own
  * position links point.
  */
 function statchasers_player_stats_page_path(): string {
@@ -143,7 +143,7 @@ add_action(
  * updated by uploading a zip, which does not reliably run the activation hook
  * that asks for a flush. Without this, the position addresses would 404 on
  * every site that updated rather than installed. Runs last on `init`, once
- * every file's rules are registered, and at most once an hour — a site whose
+ * every file's rules are registered, and at most once an hour - a site whose
  * table cannot be written does not flush on every request.
  */
 add_action(
@@ -211,7 +211,7 @@ add_action(
 
 /**
  * The season the reader asked for with scripting off: `?season=2024` or
- * `?season=all`. Validated for shape and range only — the API knows which
+ * `?season=all`. Validated for shape and range only - the API knows which
  * seasons it has and falls back to the newest for anything else. The range
  * matters: each value is its own cached copy and its own origin fetch, so an
  * unbounded year would let any crawler fill wp_options one URL at a time.
@@ -236,9 +236,9 @@ function statchasers_player_stats_query_season(): string {
 /**
  * Normalise the shortcode attributes.
  *
- * The position: the address first, because it IS the address — a page reached
+ * The position: the address first, because it IS the address - a page reached
  * at /rb/ that rendered quarterbacks would be a wrong answer at a
- * right-looking URL — then the attribute, then quarterbacks. The season: the
+ * right-looking URL - then the attribute, then quarterbacks. The season: the
  * attribute first, because a page that writes season="2024" has decided what
  * it shows, then the query string, then the API's newest.
  *
@@ -313,7 +313,7 @@ function statchasers_player_stats_fetch( array $args ): ?array {
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
-	// A 404 means the API has no table for this position and season — a real
+	// A 404 means the API has no table for this position and season - a real
 	// state, not a transient error. Cached as a failure for a minute so a
 	// deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
@@ -504,7 +504,7 @@ add_filter( 'body_class', 'statchasers_player_stats_full_width_body_class', PHP_
 /**
  * The shortcode: prints the server-rendered table into the page.
  *
- * Same deliberate omissions as the other tools — no canonical, no <h1>, no
+ * Same deliberate omissions as the other tools - no canonical, no <h1>, no
  * title or meta description, nothing written to the URL. The page owns all of
  * it; the position addresses get theirs from the filters below.
  *
@@ -524,7 +524,7 @@ function statchasers_player_stats_shortcode( $atts = array() ): string {
 	$args = statchasers_player_stats_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_player_stats_fetch( $args );
 
-	// Idempotent — covers widgets/templates that wp_enqueue_scripts missed.
+	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_player_stats_enqueue_assets();
 
 	if ( null === $data || '' === $data['html'] ) {
@@ -592,8 +592,8 @@ function statchasers_player_stats_request_data(): ?array {
  * The address's title, H1, description and hero lead, as the API wrote them.
  *
  * The fragment carries them in an inert island (renderMetaIsland() in the
- * API's player-stats-render.ts), so the words live in one place —
- * stats-copy.ts — and the season in them is the one the API is serving. This
+ * API's player-stats-render.ts), so the words live in one place -
+ * stats-copy.ts - and the season in them is the one the API is serving. This
  * plugin used to keep its own copy of the position titles, less the season,
  * because it had no way to know which season that was.
  *
@@ -687,7 +687,7 @@ function statchasers_player_stats_shortcode_heading(): string {
 	return statchasers_page_heading_html( statchasers_player_stats_h1(), statchasers_player_stats_lead() );
 }
 
-/** The hero's description — the table's intro as one paragraph — or ''. */
+/** The hero's description - the table's intro as one paragraph - or ''. */
 function statchasers_player_stats_lead(): string {
 	$copy = statchasers_player_stats_page_copy();
 	return isset( $copy['lead'] ) ? $copy['lead'] : '';
@@ -897,7 +897,7 @@ function statchasers_player_stats_faq_node( string $webpage_id = '' ) {
 
 /**
  * Append the FAQPage to Rank Math's graph, so what ships is one <script>
- * holding one graph — the posture of every other tool here.
+ * holding one graph - the posture of every other tool here.
  *
  * @param array<string,mixed> $data Rank Math's schema nodes.
  * @return array<string,mixed>
@@ -961,7 +961,7 @@ function statchasers_player_stats_strip_islands( string $html ): string {
  * The three position URLs, appended to Rank Math's page sitemap.
  *
  * The page itself is a real post and Rank Math lists it. The position
- * addresses have no post behind them, so they have to be added — and only
+ * addresses have no post behind them, so they have to be added - and only
  * while the page actually exists. Same caveat as the schedule's week URLs:
  * `{$type}_content` is the documented filter and has not been verified against
  * the installed Rank Math build.

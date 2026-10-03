@@ -19,7 +19,7 @@
 # and prints what it replaced. Re-running without --force is a no-op, so it is
 # safe in a deploy script.
 #
-# The season appears in the SEO title and description only — the hub's own
+# The season appears in the SEO title and description only - the hub's own
 # content rolls over by itself. Bump SEASON each September and re-run with
 # --force to refresh the 32 meta pairs.
 
@@ -34,7 +34,7 @@ SEASON="${SEASON:-2026}"
 # these pages are not.
 PARENT_PATH="${PARENT_PATH:-nfl/teams}"
 
-# `wp` plus whatever your install needs — e.g. WP_ARGS="--path=/var/www/html --allow-root"
+# `wp` plus whatever your install needs - e.g. WP_ARGS="--path=/var/www/html --allow-root"
 WP="${WP_CLI:-wp}"
 WP_ARGS="${WP_ARGS:-}"
 
@@ -52,7 +52,7 @@ for arg in "$@"; do
 	esac
 done
 
-# slug|Full name|abbr|Division — mirrors src/lib/team/teams.ts.
+# slug|Full name|abbr|Division - mirrors src/lib/team/teams.ts.
 TEAMS=(
   "buffalo-bills|Buffalo Bills|buf|AFC East"
   "miami-dolphins|Miami Dolphins|mia|AFC East"
@@ -103,7 +103,7 @@ wpc() {
 	"$WP" $WP_ARGS "$@"
 }
 
-# Reads never mutate anything, so they run even under --dry-run — the plan is
+# Reads never mutate anything, so they run even under --dry-run - the plan is
 # only useful if it is computed against the real site.
 wpq() {
 	# shellcheck disable=SC2086
@@ -158,7 +158,7 @@ set_meta() { # id key value [--format=json]
 # ------------------------------------------------------------------ the parents
 
 say "Season: $SEASON   Parent path: /$PARENT_PATH/"
-[ "$DRY_RUN" -eq 1 ] && say "(dry run — no writes)"
+[ "$DRY_RUN" -eq 1 ] && say "(dry run - no writes)"
 say ""
 
 command -v "$WP" >/dev/null 2>&1 || die "wp-cli not found. Set WP_CLI=/path/to/wp."
@@ -194,7 +194,7 @@ for row in "${TEAMS[@]}"; do
 	IFS='|' read -r slug name abbr division <<< "$row"
 	nick="$(nickname_of "$name")"
 
-	# The page title, which is the <h1> Divi prints above the shortcode — the
+	# The page title, which is the <h1> Divi prints above the shortcode - the
 	# fragment itself steps down to <h2> when embedded so this one stays the
 	# page's heading. Deliberately NOT the same string as rank_math_title below:
 	# that one is the <title> tag and competes in a search result, this one is
@@ -212,7 +212,7 @@ for row in "${TEAMS[@]}"; do
 		case "$content" in
 			*statchasers_team*|*sc_team_hub*) ;;
 			*)
-				warn "$slug (post $id) exists but its content has no [statchasers_team] — nothing on it will be indexable. Add the shortcode, or mount [sc_team_hub] in the Divi template."
+				warn "$slug (post $id) exists but its content has no [statchasers_team] - nothing on it will be indexable. Add the shortcode, or mount [sc_team_hub] in the Divi template."
 				;;
 		esac
 		say "existing $slug  -> $id"
@@ -221,7 +221,7 @@ for row in "${TEAMS[@]}"; do
 	[ "$id" = "DRY" ] && continue
 
 	# Rank Math. The plugin emits no title/description/robots of its own by
-	# design, so these three are the page's only ones — and the robots value is
+	# design, so these three are the page's only ones - and the robots value is
 	# the difference between a hub that ranks and 32 pages that quietly don't.
 	#
 	# The title is the one the plugin's own builder writes (the no-section
@@ -240,7 +240,7 @@ for row in "${TEAMS[@]}"; do
 		wpc media import "https://sleepercdn.com/images/team_logos/nfl/$abbr.png" \
 			--post_id="$id" --featured_image \
 			--title="$name logo" --alt="$name logo" >/dev/null \
-			|| warn "$slug: crest import failed — set the featured image by hand."
+			|| warn "$slug: crest import failed - set the featured image by hand."
 	fi
 done
 
@@ -248,7 +248,7 @@ done
 
 # A parent page with no body is a thin page that still sits in the sitemap. The
 # hub's own switcher already links all 32 from every team page, so this exists
-# for readers arriving from the nav — and to give the section one crawlable
+# for readers arriving from the nav - and to give the section one crawlable
 # entry point.
 if [ "$teams_parent" != "DRY" ] && [ "$teams_parent" != "0" ]; then
 	index_content="$(wpq post get "$teams_parent" --field=post_content)"
@@ -270,7 +270,7 @@ if [ "$teams_parent" != "DRY" ] && [ "$teams_parent" != "0" ]; then
 		say "index    /$PARENT_PATH/ -> wrote 32 links"
 	else
 		say ""
-		say "index    /$PARENT_PATH/ has content already — left alone (--force to rewrite)"
+		say "index    /$PARENT_PATH/ has content already - left alone (--force to rewrite)"
 	fi
 fi
 

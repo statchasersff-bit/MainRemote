@@ -3,7 +3,7 @@
  *
  * Player pages read committed JSON (data/player/game_logs/<season>.json and
  * game_scores.json), and those only moved when somebody ran the builders by
- * hand, committed and republished — so a Thursday night game was not on the
+ * hand, committed and republished - so a Thursday night game was not on the
  * page until the next week's rebuild. This runs the same two builders from the
  * running server, after each window, and drops every cache derived from them.
  *
@@ -13,7 +13,7 @@
  * most recent moment one became due? A moment is due
  *
  *   - four hours after each kickoff that has happened (the game is over and
- *     Sleeper has posted its stats) — Thursday, the Sunday windows, Monday;
+ *     Sleeper has posted its stats) - Thursday, the Sunday windows, Monday;
  *   - at 13:00 UTC on any day within three days of a game, which picks up the
  *     stat corrections that land the morning after and on Tuesday.
  *
@@ -41,18 +41,18 @@
  * At 11:00 UTC (and once per boot, after the game logs), the builders that
  * used to be the manual weekly checklist, in dependency order:
  *
- *   1. new signings and trades — buildPlayersIndex.js (Sleeper), then
+ *   1. new signings and trades - buildPlayersIndex.js (Sleeper), then
  *      migrateSlugs.js if that renamed anybody (it consumes the move list, so it
  *      is safe to chain), buildDepthCharts.js --strict (Ourlads; refuses a chart
  *      with a team missing), buildIndexedPlayers.js. WordPress then publishes
  *      the new players' pages from its own daily cron (plugin 1.10.10);
- *   2. ownership — buildRosterPct.mjs (Sleeper);
- *   3. RB handcuffs — refresh.mjs (Ourlads depth, Sleeper age and injury), then
+ *   2. ownership - buildRosterPct.mjs (Sleeper);
+ *   3. RB handcuffs - refresh.mjs (Ourlads depth, Sleeper age and injury), then
  *      buildStats.mjs (nflverse);
- *   4. the strength-of-schedule Player SOS list — sos/buildPlayerPool.mjs
+ *   4. the strength-of-schedule Player SOS list - sos/buildPlayerPool.mjs
  *      (Sleeper projections for the weeks left; data/sos/player-pool.json),
  *      and the FPA ingest again, for a week nflverse posted late;
- *   5. advanced stats — player-stats/buildSeason.mjs (nflverse), twice: once
+ *   5. advanced stats - player-stats/buildSeason.mjs (nflverse), twice: once
  *      for [statchasers_player_stats] (data/player-stats) and once, with
  *      --dir, for the player pages' Advanced tab (data/player/advanced_stats).
  *      The two directories hold differently shaped tables, so neither is a
@@ -97,7 +97,7 @@ import { dataPath } from "../data-dir";
 const TICK_MS = 10 * 60 * 1000;
 /**
  * When the daily rebuild runs: 7am ET in the DST season (6am once the clocks
- * fall back — still quiet, still after Sleeper's and nflverse's overnight
+ * fall back - still quiet, still after Sleeper's and nflverse's overnight
  * posts). Moved from 14:00 UTC so the rebuild no longer competes with
  * mid-morning reader traffic for the VM's memory; a week nflverse posts later
  * the same day is caught by the FPA backstop and the next morning's run.
@@ -109,11 +109,19 @@ const DAILY_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 const FAILURE_BACKOFF_MS = 30 * 60 * 1000;
 /** Per builder. The game-log build is 18 requests 250ms apart. */
 const BUILDER_TIMEOUT_MS = 5 * 60 * 1000;
+/**
+ * Heap ceiling per builder, in MB. V8 sizes its default from the machine, not
+ * from what the server leaves free, so a builder with a big live set grows
+ * until the kernel OOM-kills the VM (2026-10-03: buildBioSources at 1.5GB
+ * RSS). Capped, it dies alone as a "failed" step. The heaviest builder needs
+ * about 256MB of heap since its CSVs became streamed.
+ */
+const BUILDER_HEAP_MB = 768;
 /** The video scan: a Sunday's games are a few YouTube pages each, 1.2s apart. */
 const VIDEO_SCAN_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
- * The package directory, resolved from this module — the lesson of
+ * The package directory, resolved from this module - the lesson of
  * lib/data-dir.ts. Bundled, HERE is `<package>/dist`; unbundled it is
  * `<package>/src/lib/player`.
  */
@@ -190,7 +198,7 @@ function availableMemMb(): number {
 
 /**
  * A breadcrumb the deployment's Logs pane can see. The app's own logging goes
- * through pino's worker files, which that pane does not show — only stderr
+ * through pino's worker files, which that pane does not show - only stderr
  * reaches it. When the VM is OOM-killed nothing gets to say so, so each
  * refresh step writes a line before and after itself: the step that was
  * running when the log went silent is the one that was killed.
@@ -214,11 +222,11 @@ function runBuilder(
     refreshNote("start", script);
     execFile(
       process.execPath,
-      [path.join(SCRIPTS_DIR, script), ...args],
+      [`--max-old-space-size=${BUILDER_HEAP_MB}`, path.join(SCRIPTS_DIR, script), ...args],
       { timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024 },
       (err, _stdout, stderr) => {
         refreshNote(err ? "failed" : "done", script);
-        if (err) reject(new Error(`${script}: ${err.message}${stderr ? ` — ${stderr.slice(-500)}` : ""}`));
+        if (err) reject(new Error(`${script}: ${err.message}${stderr ? ` - ${stderr.slice(-500)}` : ""}`));
         else resolve();
       },
     );
@@ -377,6 +385,11 @@ export function refreshDailyData(): Promise<void> {
       // feeds. --force all regenerates every non-hand-written entry (the
       // builder preserves entries it did not generate, i.e. the Bills).
       await step("team coaching", "team/buildCoaching.mjs", [season, "--force", "all"]);
+      // Then check what the hubs now say: weeks against the games file, the
+      // standings feed, head coaches against the research file, and the
+      // sentences the 2026-10-03 audit removed. A FAIL here is a page saying
+      // something wrong; docs/WEEKLY-TEAM-CHECKLIST.md says what to do.
+      await step("team page check", "team/checkTeamPages.mjs", [season]);
       await step("advanced stats", "player-stats/buildSeason.mjs", [season]);
       await step("player advanced stats", "player-stats/buildSeason.mjs", [
         season,
@@ -406,7 +419,7 @@ export function refreshDailyData(): Promise<void> {
  * NFL.com shows only the latest report of the week, so each day's
  * participation exists only if the page is read on that day, after the
  * mid-afternoon Eastern release. Three reads a day, UTC: 21:00, 23:30 and
- * 02:30 (5:00, 7:30 and 10:30 PM EDT) — the later two catch a late report,
+ * 02:30 (5:00, 7:30 and 10:30 PM EDT) - the later two catch a late report,
  * and each overwrites that day's entry with what the page says. Its own lock
  * and clock: four small requests, and a failure costs only the grid.
  */

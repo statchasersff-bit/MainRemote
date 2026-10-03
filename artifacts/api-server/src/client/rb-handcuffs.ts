@@ -1,7 +1,7 @@
 /**
  * RB handcuff rankings enhancement bundle.
  *
- * The board is complete before this runs — every backup, his starter, score,
+ * The board is complete before this runs - every backup, his starter, score,
  * tier and type, and under each row the breakdown and the reasons, all in the
  * HTML the server sent at the default weights. The model reference and the
  * badge guide are `<details>` and work with scripting off.
@@ -10,7 +10,7 @@
  *
  * 1. **The weight model.** Three sliders that must total 100%, and a Re-rank
  *    button that rescores the board in place from each row's weight-
- *    independent inputs — with lib/rb-handcuffs/recompute.ts, the module the
+ *    independent inputs - with lib/rb-handcuffs/recompute.ts, the module the
  *    server scored it with, so the default weights give back exactly the
  *    table that was sent.
  * 2. **Sorting** by any column. Rank opens ascending, text A–Z, numbers
@@ -113,7 +113,7 @@ function appliedPct(board: Board, key: WeightKey): number {
 
 /**
  * Repaint the model from the sliders: the percentages, the allocation bar,
- * and the status line under it. MIRRORS AdvancedSettingsInline — the total
+ * and the status line under it. MIRRORS AdvancedSettingsInline - the total
  * must be 100 before anything can be applied, and the button only lights
  * when the draft differs from what the table is showing.
  */
@@ -377,7 +377,7 @@ const COMPARE_METRICS = [
 ] as const;
 
 function trendHtml(trend: string | undefined): string {
-  if (!trend) return `<span class="rbh-muted">—</span>`;
+  if (!trend) return `<span class="rbh-muted">-</span>`;
   const tone =
     trend === "Rising Fast" || trend === "Trending Up"
       ? "good"
@@ -406,7 +406,7 @@ function compareColumn(row: HTMLTableRowElement, winners: Set<string>, only: boo
       `<div class="rbh-cbar${dim ? " is-dim" : ""}">` +
       `<p class="rbh-cbar-head"><span>${esc(m.label)}` +
       (value != null && rank != null ? ` <span class="rbh-cbar-rank">(#${rank}${pool ? `/${pool}` : ""})</span>` : "") +
-      `</span><strong>${value ?? "—"}</strong></p>` +
+      `</span><strong>${value ?? "-"}</strong></p>` +
       `<span class="rbh-bar"><span class="rbh-bar-fill is-${barBand(value)}"` +
       ` style="width:${value == null ? 0 : Math.max(0, Math.min(100, value))}%"></span></span>` +
       `</div>`
@@ -429,11 +429,11 @@ function compareColumn(row: HTMLTableRowElement, winners: Set<string>, only: boo
     `<div class="rbh-ccol-score"><strong>${score}</strong><span>Overall</span></div>` +
     `<div class="rbh-cbars">${bars}</div>` +
     `<dl class="rbh-cstats">` +
-    `<div><dt>Handcuff for</dt><dd>${esc(d["starter"] || "—")}</dd></div>` +
+    `<div><dt>Handcuff for</dt><dd>${esc(d["starter"] || "-")}</dd></div>` +
     `<div><dt>Starter Load</dt><dd>${esc(starterLoadLabel(tpg))}` +
     (tpg != null ? ` <span class="rbh-muted">(${tpg} tpg)</span>` : "") +
     `</dd></div>` +
-    `<div><dt>RB Scoring Env</dt><dd>${offense != null ? esc(offenseLabel(offense)) : "—"}</dd></div>` +
+    `<div><dt>RB Scoring Env</dt><dd>${offense != null ? esc(offenseLabel(offense)) : "-"}</dd></div>` +
     `<div><dt>Role Trend</dt><dd>${trendHtml(d["trend"])}</dd></div>` +
     `</dl>` +
     `</div>`
@@ -445,7 +445,7 @@ function compareColumn(row: HTMLTableRowElement, winners: Set<string>, only: boo
 /**
  * The drawer and the compare view are one kind of thing: a modal layer
  * appended to <body>, so `position: fixed` means the window even when a theme
- * has put a transform on some ancestor of the board — which is how a fixed
+ * has put a transform on some ancestor of the board - which is how a fixed
  * overlay ends up pinned to a column instead of the screen.
  */
 interface Layer {

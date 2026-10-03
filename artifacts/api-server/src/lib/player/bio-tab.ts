@@ -91,8 +91,8 @@ function renderLead(data: PlayerPageData, page: BioPageFacts, panels: string): s
  * One section, two readings of the same career (mak, 2026-10-01, merging the
  * old "Career Timeline" and "Every Stop in His Career"): the timeline shows
  * how LONG each stop was, the list under it says WHAT happened there. The
- * list's stat chips are gone — "17 games, 4,018 pass yds, 27 TD" repeated the
- * figures printed on the block directly above — and the one chip that was not
+ * list's stat chips are gone - "17 games, 4,018 pass yds, 27 TD" repeated the
+ * figures printed on the block directly above - and the one chip that was not
  * a repeat, the best fantasy season, moved up onto the block as a small gold
  * line. College stays the last line of the list, since the timeline starts at
  * the NFL.
@@ -147,7 +147,7 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
       `</figure>`;
   }
 
-  /* The stop list: team, years and the sentences — the numbers are right above. */
+  /* The stop list: team, years and the sentences - the numbers are right above. */
   const cards = [...stops].reverse().map((s) => {
     const tag = s.spell > 1 ? `, ${["", "", "second", "third", "fourth"][s.spell] ?? `${s.spell}th`} stint` : "";
     return (

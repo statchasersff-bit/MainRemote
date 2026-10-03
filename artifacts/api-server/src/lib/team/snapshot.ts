@@ -1,11 +1,11 @@
 /**
- * Team Snapshot — four offensive rates with their NFL rank.
+ * Team Snapshot - four offensive rates with their NFL rank.
  *
  * From ESPN's season statistics document, which carries both the per-game value
  * and the league rank for each stat. The rank matters more than the number: a
  * team averaging 21 points is meaningless until you know that is 9th or 27th,
  * and computing a rank ourselves would mean pulling all 32 teams to render one
- * page — precisely the thing the performance brief rules out.
+ * page - precisely the thing the performance brief rules out.
  *
  * Availability is not assumed. A season nobody has played has no averages, so
  * a season ESPN cannot answer for falls back to the one before it (see
@@ -25,7 +25,7 @@ export interface SnapshotMetric {
    * Matches the `key` of the same metric's offence row on the Stats tab, minus
    * that row's `off-` prefix. The two come from different ESPN documents and
    * neither needs the other to render, but the Stats rows carry last season's
-   * rank and these do not — so the renderer joins on this to put a movement
+   * rank and these do not - so the renderer joins on this to put a movement
    * arrow on the card without a second request. Break the join and the arrow
    * disappears; it does not go wrong.
    */
@@ -66,7 +66,7 @@ interface EspnStatsResponse {
  * The four metrics, in the order they appear on the page.
  *
  * `netYardsPerGame` inside the passing category is ESPN's total-offence figure
- * (it is exactly net passing + rushing), not a passing-only number — which is
+ * (it is exactly net passing + rushing), not a passing-only number - which is
  * why the label says Total.
  */
 const WANTED: Array<{
@@ -175,14 +175,14 @@ const cache = createKeyedCache<TeamSnapshot>({
  * The snapshot for `season`, or for the season before it.
  *
  * The caller asks for `statsSeason`, which lib/team/nfl-state.ts switches to
- * the current year the moment Sleeper reports Week 1 — days before anybody has
+ * the current year the moment Sleeper reports Week 1 - days before anybody has
  * played a regular-season game. ESPN has nothing to average until then and
  * answers 404 for the new season outright, so through the opening week the
  * request for the right season returns nothing and the whole block used to
  * disappear from the Stats tab.
  *
  * Last season is real football. It is fetched instead, and `TeamSnapshot.season`
- * carries which one came back so the card can say so — the same fallback, for
+ * carries which one came back so the card can say so - the same fallback, for
  * the same reason, as lib/team/stats.ts, whose Stats tab must not be showing a
  * season this card has given up on.
  */

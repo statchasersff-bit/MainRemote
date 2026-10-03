@@ -2,8 +2,8 @@
 /**
  * Provisions the real WordPress pages for the NFL section on activation:
  *
- *   /nfl/                 — "NFL" hub page         ([statchasers_nfl_hub])
- *   /nfl/nfl-depth-charts/    — "NFL Depth Charts"     ([statchasers_depth_charts])
+ *   /nfl/                 - "NFL" hub page         ([statchasers_nfl_hub])
+ *   /nfl/nfl-depth-charts/    - "NFL Depth Charts"     ([statchasers_depth_charts])
  *
  * Create-or-reuse: existing pages at those paths are kept as-is (we never
  * overwrite user content); only missing pages are created. The depth-charts

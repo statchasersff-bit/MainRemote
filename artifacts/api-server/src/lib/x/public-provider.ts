@@ -15,7 +15,7 @@
  * partly CURATED slice of a timeline, not a live chronological one. Measured
  * across the monitored list, some accounts come back current to within a day
  * and others return a months-old "greatest hits" set with a pinned post at the
- * top. So this provider is honest but not complete — it is the zero-cost
+ * top. So this provider is honest but not complete - it is the zero-cost
  * starting point, and lib/x/official-provider.ts is the drop-in for when the
  * feed is worth paying for. Neither the poller nor the feed can tell which one
  * produced a post.
@@ -34,7 +34,7 @@ import {
  * Where to read a profile timeline. `{username}` is substituted.
  *
  * Overridable so the operator can point this at another permitted public
- * source — a self-hosted bridge, a mirror — without a deploy or a code change.
+ * source - a self-hosted bridge, a mirror - without a deploy or a code change.
  * The parser below is defensive about shape for the same reason.
  */
 const TIMELINE_URL =
@@ -60,7 +60,7 @@ const USER_AGENT =
 const NEXT_DATA_RE =
   /<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/;
 
-/** Shape of the fields we read. Everything is optional — it is third-party. */
+/** Shape of the fields we read. Everything is optional - it is third-party. */
 interface RawTweet {
   id_str?: string;
   full_text?: string;
@@ -141,7 +141,7 @@ function mediaUrls(tweet: RawTweet): string[] {
  * One raw tweet to the normalised shape, or null when it is not usable.
  *
  * A repost is reported as a repost of the ORIGINAL author's text, with the
- * reposting account as the author — the poller decides whether to keep it, and
+ * reposting account as the author - the poller decides whether to keep it, and
  * it needs both facts to make that call.
  */
 export function normalizeTweet(
@@ -214,7 +214,7 @@ export class PublicXProvider implements XPostProvider {
 
     // A 200 that parses to nothing is a shape change, not a quiet account.
     // Said out loud so it reads as the provider breaking rather than the
-    // reporter having a slow day — the distinction the club sweep learned to
+    // reporter having a slow day - the distinction the club sweep learned to
     // make, for the same reason.
     if (raw.length === 0) {
       throw new Error("responded 200 but carried no timeline entries");
@@ -224,7 +224,7 @@ export class PublicXProvider implements XPostProvider {
     for (const tweet of raw) {
       const post = normalizeTweet(tweet, username);
       if (!post) continue;
-      // Advisory watermark — the caller filters again, and post-id dedup is
+      // Advisory watermark - the caller filters again, and post-id dedup is
       // what actually prevents a second copy.
       if (options.sinceId && !isNewerId(post.externalId, options.sinceId)) {
         continue;
@@ -234,7 +234,7 @@ export class PublicXProvider implements XPostProvider {
 
     // The endpoint does NOT return entries in time order (a pinned post leads,
     // and the rest are ordered by an opaque sort index), so ordering is applied
-    // here. Everything downstream — the watermark, the "newest first" feed —
+    // here. Everything downstream - the watermark, the "newest first" feed -
     // assumes newest-first and would otherwise be reading a shuffled list.
     posts.sort((a, b) => (b.createdAtMs ?? 0) - (a.createdAtMs ?? 0));
 

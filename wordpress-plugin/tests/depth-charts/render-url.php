@@ -59,12 +59,12 @@ if ( $canonical_redirect ) {
 $status = ! empty( $GLOBALS['wp_is_404'] ) ? 404 : 200;
 echo "HTTP status              : {$status}" . ( 404 === $status ? "  (404 template, nocache headers)" : '' ) . "\n";
 echo "Route type               : {$route['type']} ({$route['reason']})\n";
-echo 'Detected team            : ' . ( $team ? $team['name'] . ' [' . $team['abbr'] . ']' : '—' ) . "\n";
+echo 'Detected team            : ' . ( $team ? $team['name'] . ' [' . $team['abbr'] . ']' : '-' ) . "\n";
 echo 'X-SCDC-Route header      : ' . $route['type'] . ( $route['team_slug'] ? ':' . $route['team_slug'] : '' ) . "\n";
 echo "Season                   : " . SCDC_Teams::season() . "\n";
 
 if ( 404 === $status ) {
-	echo "\nNo team SEO is generated for this URL — it is not one of the 32 slugs.\n";
+	echo "\nNo team SEO is generated for this URL - it is not one of the 32 slugs.\n";
 	exit;
 }
 

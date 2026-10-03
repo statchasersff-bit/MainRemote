@@ -1,8 +1,8 @@
 /**
  * The Overview tab's lower sections, rendered against hand-built states.
  *
- * Like tests/player-header.test.mjs: the states the spec lists — preseason, a
- * bye, an injured player, a traded one, one below the percentile threshold —
+ * Like tests/player-header.test.mjs: the states the spec lists - preseason, a
+ * bye, an injured player, a traded one, one below the percentile threshold -
  * are not reliably on the roster on any given day, so they are built here.
  */
 

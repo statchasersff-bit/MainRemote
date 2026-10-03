@@ -106,7 +106,7 @@ export function getRiskFlags(
   if (ctx.workloadIfStarterOut < 40) flags.push("Timeshare if starter out");
   if (ctx.oLine < 35) flags.push("Weak offensive line");
   if (ctx.offenseQuality < 35) flags.push("Poor offense");
-  if (ctx.starterYpc != null && ctx.starterYpc >= 5.0) flags.push("Starter is excelling — low bench risk");
+  if (ctx.starterYpc != null && ctx.starterYpc >= 5.0) flags.push("Starter is excelling - low bench risk");
   if (backupData?.role_trend === "Trending Down" || backupData?.role_trend === "Falling Fast") {
     flags.push("Role trending downward");
   }

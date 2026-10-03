@@ -3,8 +3,8 @@
 // The counterpart to scripts/ingest.mjs, for the X lane. The server's poller
 // (lib/x/*) is one way posts arrive; this is the other, and it exists because
 // acquisition and storage are separate problems. Whatever gathered these posts
-// — a collector of your own, a vendor's export, an enterprise credential, a
-// person with a keyboard — runs wherever it needs to run, and this hands the
+// - a collector of your own, a vendor's export, an enterprise credential, a
+// person with a keyboard - runs wherever it needs to run, and this hands the
 // result to the archive.
 //
 // Everything after the POST is identical to a polled post: deduplicated on the
@@ -19,7 +19,7 @@
 //   ... | node scripts/x-push.mjs -            # or read stdin
 //
 // The input may be a bare array, {posts: [...]}, or any response body the
-// server's tolerant reader can find posts in — X's own v1.1 objects, X API v2
+// server's tolerant reader can find posts in - X's own v1.1 objects, X API v2
 // objects, or the camelCase shape the resellers use. If your collector already
 // holds the JSON, it is very likely postable unchanged.
 //
@@ -65,7 +65,7 @@ function read() {
  *
  * Deliberately shallow: the server does the real (recursive, shape-tolerant)
  * search. This only needs to get an array to chunk, and anything it cannot
- * recognise is posted whole and judged there — the server's answer is the one
+ * recognise is posted whole and judged there - the server's answer is the one
  * that matters, and it reports exactly what it rejected.
  */
 function toArray(data) {
@@ -125,7 +125,7 @@ for (let i = 0; i < posts.length; i += BATCH) {
   }
 }
 
-// "kept" minus "stored" is the posts the archive already had — the number that
+// "kept" minus "stored" is the posts the archive already had - the number that
 // should dominate on a second run, and the quickest confirmation that
 // deduplication is working end to end.
 console.log(

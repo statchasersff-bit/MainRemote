@@ -14,7 +14,7 @@ const VALID_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
  * Sleeper's `position` is the primary football position, which for a two-way
  * player is not necessarily the fantasy one: Travis Hunter is carried as a DB
  * with `fantasy_positions: ['DB','WR']`, and filtering on `position` alone
- * dropped him out of the index entirely — no player page, no link from any
+ * dropped him out of the index entirely - no player page, no link from any
  * ranking or outlook that names him. `fantasy_positions` is the field that
  * answers the question this index is actually asking, so it is the fallback
  * whenever the primary position is not one we carry.
@@ -88,7 +88,7 @@ function buildSlug(fullName) {
  * they published at before.
  *
  * WHY THIS FILE EXISTS. A slug is a URL, and these URLs are the whole point of
- * the player pages — they are what WordPress mounts and what Google indexes.
+ * the player pages - they are what WordPress mounts and what Google indexes.
  * Two things were wrong without a ledger:
  *
  *   1. A name shared by two players was resolved by whoever Sleeper happened to
@@ -119,7 +119,7 @@ function readJsonSafe(file, fallback) {
  * How strong a player's claim on the bare slug is. Lower sorts first.
  *
  * Rostered beats free agent, active beats inactive, and a starter beats a
- * backup — in that order, because that is the order in which they predict who
+ * backup - in that order, because that is the order in which they predict who
  * the person typing the name is looking for. Nobody searches for the 2019
  * practice-squad receiver who shares a name with a starting running back.
  *
@@ -154,7 +154,7 @@ function byClaim(a, b) {
  * thing that freezes an address. `prior` is id -> whatever he last published
  * at, ledger or not, and it is only used to report the moves. The two differ
  * exactly once: on the first run there is no ledger, so nothing is frozen and
- * every base is decided on merit — which is what corrects the assignments the
+ * every base is decided on merit - which is what corrects the assignments the
  * old first-come rule made. Afterwards `held` is populated and the addresses
  * stop moving.
  *
@@ -205,7 +205,7 @@ function assignSlugs(rows, held, prior) {
  * `previous` is the redirect list: the addresses this player used to answer at.
  * It accumulates, because a page indexed two seasons ago is still linked from
  * somewhere. The one thing it must never contain is a slug some OTHER player
- * now publishes at — that would 301 a live page onto a different man — so the
+ * now publishes at - that would 301 a live page onto a different man - so the
  * last pass strips any address that is currently in use.
  */
 function buildLedger(players, prior, previousLedger, moves) {
@@ -251,7 +251,7 @@ async function main() {
   // A move list that has not been spent means the last build renamed somebody
   // and migrateSlugs.js never carried his bio, draft row and outlook across.
   // Rebuilding on top of that would overwrite the list with this run's, and the
-  // only record of what still needs moving would be gone — leaving those
+  // only record of what still needs moving would be gone - leaving those
   // profiles permanently missing half their sections, with nothing on disk to
   // say why. Cheaper to stop.
   if (Array.isArray(previousLedger?.moves) && previousLedger.moves.length) {
@@ -296,7 +296,7 @@ async function main() {
     }
   } else {
     // No ledger yet, so nothing is frozen and every shared name is decided on
-    // merit. The slugs on disk still matter — they are the addresses currently
+    // merit. The slugs on disk still matter - they are the addresses currently
     // indexed, and they seed the first redirect list.
     for (const row of readJsonSafe(outPath, [])) {
       if (row && row.id && row.slug) prior[row.id] = row.slug;
@@ -394,7 +394,7 @@ async function main() {
   console.log(`Wrote the slug ledger to ${ledgerPath}`);
 
   if (moves.length) {
-    console.log(`  ${moves.length} slug change(s) — every old address needs a 301:`);
+    console.log(`  ${moves.length} slug change(s) - every old address needs a 301:`);
     for (const move of moves) {
       console.log(`    ${move.name}: ${move.from} -> ${move.to}`);
     }

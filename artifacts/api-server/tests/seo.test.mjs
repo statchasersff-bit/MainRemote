@@ -1,5 +1,5 @@
 /**
- * SEO regression tests — the crawler's view.
+ * SEO regression tests - the crawler's view.
  *
  * This is the suite that exists to stop a future refactor quietly making the
  * tool invisible to search engines again. It fetches the served HTML and
@@ -7,7 +7,7 @@
  * client-only render, an empty container, a second canonical, or a lazy-loaded
  * first screen, these fail.
  *
- * Run with `pnpm --filter @workspace/api-server test` (requires a build first —
+ * Run with `pnpm --filter @workspace/api-server test` (requires a build first -
  * the test script runs one).
  */
 
@@ -19,7 +19,7 @@ import http from "node:http";
 import { JSDOM } from "jsdom";
 import { startServer, APP_DIR } from "./helpers/server.mjs";
 
-/** A GET with exactly the headers given — no implicit cache directives added. */
+/** A GET with exactly the headers given - no implicit cache directives added. */
 function rawGet(pathname, headers = {}) {
   const url = new URL(pathname, server.origin);
   return new Promise((resolve, reject) => {
@@ -64,7 +64,7 @@ after(async () => {
 });
 
 describe("crawlable HTML (no JavaScript executed)", () => {
-  test("emits no heading of its own — the host page supplies it", () => {
+  test("emits no heading of its own - the host page supplies it", () => {
     // This document is only ever read inside a StatChasers page, which prints
     // its own header above the tool. A heading here would restate it, and in
     // the WordPress mount it would put a second H1 into the composed page.
@@ -173,7 +173,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
     assert.equal(
       articles.length,
       listed,
-      "rendered item count must match the declared total — no client-only items",
+      "rendered item count must match the declared total - no client-only items",
     );
   });
 
@@ -415,7 +415,7 @@ describe("crawlable HTML (no JavaScript executed)", () => {
 
     // Raw HTTP rather than fetch(): per the Fetch spec, setting a conditional
     // header by hand switches the request to "no-store", and undici then sends
-    // Cache-Control: no-cache — which correctly suppresses revalidation and
+    // Cache-Control: no-cache - which correctly suppresses revalidation and
     // would make this assert a false negative. A real cache or crawler sends
     // the conditional header without that, which is what this reproduces.
     const conditional = await rawGet("/", { "If-None-Match": etag });

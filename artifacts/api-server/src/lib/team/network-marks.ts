@@ -5,19 +5,19 @@
  * colours: a schedule column that is part logo and part abbreviation reads as
  * two columns, and the point of the column is that a reader finds "the red one"
  * or "the peacock" without reading at all. Colour is what makes that work, so
- * these are the real marks — the ABC roundel's ink and off-white, NBC's six
- * peacock feathers, ESPN red, the NFL Network shield's navy and red — rather
+ * these are the real marks - the ABC roundel's ink and off-white, NBC's six
+ * peacock feathers, ESPN red, the NFL Network shield's navy and red - rather
  * than one-colour silhouettes tinted to match.
  *
  * The artwork is vendored under public/networks rather than hot-linked, so a
  * schedule row never waits on a CDN, and each mark is cropped from the frame
- * its source drew it in down to its own bounds — a roundel and a wordmark are
+ * its source drew it in down to its own bounds - a roundel and a wordmark are
  * different shapes, and only once they are cropped can they be fitted to a
  * common optical box instead of a common frame. `aspect` is that cropped width
  * over height; the renderer turns it into the <svg>'s intrinsic ratio so CSS
  * can fit every mark into one box by ratio alone.
  *
- * `paths` is in paint order — the NFL shield's white stars are separate shapes
+ * `paths` is in paint order - the NFL shield's white stars are separate shapes
  * laid over its navy field, and reordering them would erase them.
  *
  * public/networks/SOURCES.md records where each file came from. Regenerate this
@@ -27,7 +27,7 @@
 export interface NetworkMarkPath {
   /** A six-digit hex; the mark carries its own colour rather than inheriting. */
   fill: string;
-  /** Set only where the shape needs it — nonzero is SVG's default. */
+  /** Set only where the shape needs it - nonzero is SVG's default. */
   evenOdd?: boolean;
   d: string;
 }
@@ -45,8 +45,8 @@ export interface NetworkMark {
 /**
  * The viewBox for the outer <svg> that draws a mark through <use>.
  *
- * A crop is an offset as well as a size — Netflix's is "5.4 0 13.2 24", and
- * YouTube's starts at x=409.29 — and the offset must appear exactly once.
+ * A crop is an offset as well as a size - Netflix's is "5.4 0 13.2 24", and
+ * YouTube's starts at x=409.29 - and the offset must appear exactly once.
  * The <symbol> already carries it: `<use>` gives the symbol a viewport of
  * 100% × 100%, which resolves against the outer viewBox's SIZE and is placed
  * at the outer user space's ORIGIN, not at the crop's corner. So an outer
@@ -365,8 +365,8 @@ export const NETWORK_MARKS: Record<string, NetworkMark> = {
 /**
  * Which mark belongs to a broadcaster string from ESPN.
  *
- * ESPN sends the local affiliate as often as the network — "FOX59", "NBC 10",
- * "WBZ", "NFL Net", "Prime Video" all appear in one team's season — so this
+ * ESPN sends the local affiliate as often as the network - "FOX59", "NBC 10",
+ * "WBZ", "NFL Net", "Prime Video" all appear in one team's season - so this
  * matches on the network's name appearing anywhere in the string rather than on
  * equality. A call sign that carries no network name ("WBZ") matches nothing
  * and falls back to text, which is the right answer: we know it is a local

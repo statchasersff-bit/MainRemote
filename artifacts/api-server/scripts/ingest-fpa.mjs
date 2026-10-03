@@ -13,7 +13,7 @@
  * news ingest is hung off request traffic because news goes stale in minutes;
  * FPA changes once a week, and putting a 7MB download on a request path to
  * discover that nothing has changed would be a poor trade. The server does keep
- * a one-time lazy fallback for a cold database — see lib/fpa/fpa-ssr.ts.
+ * a one-time lazy fallback for a cold database - see lib/fpa/fpa-ssr.ts.
  */
 
 import path from "node:path";
@@ -52,7 +52,7 @@ try {
     target: "node20",
     // Workspace packages are BUNDLED and node_modules are not. `packages:
     // "external"` would leave @workspace/db to Node, which cannot resolve a
-    // directory import of TypeScript source — the package's entry point is
+    // directory import of TypeScript source - the package's entry point is
     // src/index.ts and it imports ./schema.
     external: ["pg", "pg-native", "pino", "pino-pretty", "thread-stream", "*.node"],
     logLevel: "silent",

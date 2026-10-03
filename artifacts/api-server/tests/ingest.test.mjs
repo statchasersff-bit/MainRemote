@@ -2,13 +2,13 @@
  * Traffic-triggered refresh.
  *
  * The deployment idles between requests, so the in-process 10-minute timer
- * cannot be relied on to keep the archive moving — requests have to drive it
+ * cannot be relied on to keep the archive moving - requests have to drive it
  * too. What matters is that they drive it at a bounded rate: an ingest per
  * visitor would hammer the upstream feed.
  *
  * The feed here is a local stub returning an empty item list. That keeps the
  * test off the real upstream API and, just as importantly, keeps it from
- * writing anything into the shared database — only the number of times the
+ * writing anything into the shared database - only the number of times the
  * server reaches for the feed is under test.
  */
 
@@ -30,8 +30,8 @@ let feedHits = 0;
 let server;
 
 /**
- * What the stub feed serves. Empty for the throttle tests — nothing is written,
- * so those cannot disturb the shared database — and set to a real item only for
+ * What the stub feed serves. Empty for the throttle tests - nothing is written,
+ * so those cannot disturb the shared database - and set to a real item only for
  * the retitle test below, which cleans up after itself.
  */
 let feedItems = [];
@@ -110,7 +110,7 @@ describe("traffic-triggered refresh", () => {
   test("refreshing never delays the response", async () => {
     await new Promise((r) => setTimeout(r, GAP_MS + 50));
 
-    // The stub answers instantly, so this cannot prove much about a slow feed —
+    // The stub answers instantly, so this cannot prove much about a slow feed -
     // what it does prove is that the response is not awaiting the ingest at all,
     // since the refresh is hung off the response's own "finish" event.
     const started = Date.now();
@@ -135,7 +135,7 @@ describe("upstream editing a story it already sent", () => {
   test("a retitled item updates in place instead of failing the batch", async () => {
     // Upstream keeps an item's id and rewords its headline. The fingerprint is
     // derived from the title, so the row stops matching on fingerprint and looks
-    // new — and inserting it collides with the id already stored. That is a
+    // new - and inserting it collides with the id already stored. That is a
     // primary-key violation, and because the batch is one transaction it takes
     // every other item down with it: a single reworded headline stops the
     // archive dead. This is what happened in production.

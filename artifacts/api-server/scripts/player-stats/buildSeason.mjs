@@ -1,5 +1,5 @@
 /**
- * Build a season's advanced stats tables from scratch — the season in progress.
+ * Build a season's advanced stats tables from scratch - the season in progress.
  *
  *   node scripts/player-stats/buildSeason.mjs <season> [--dir <data dir>] [--cache <dir>] [--check]
  *
@@ -13,7 +13,7 @@
  * newest snapshot season's served table, so the table reads the same as the
  * seasons before it. A column with no definition is left blank (printed "-"):
  *
- *   - the snapshot vendor's own charting — on-target %, pocket time, time to
+ *   - the snapshot vendor's own charting - on-target %, pocket time, time to
  *     throw, batted passes (QB), contested-catch rate and yards after contact
  *     per reception (WR/TE, blank in the snapshot too);
  *   - routes, and everything divided by them (route %, TPRR, YPRR), until
@@ -23,7 +23,7 @@
  * Rows, as the snapshot has them: every QB with a pass attempt, every RB with
  * a carry or a target, every WR/TE with a target. Rank is by passing yards
  * (QB), scrimmage yards (RB) or receiving yards (WR/TE), and age is at
- * September 1 of the season — both checked against the 2025 snapshot.
+ * September 1 of the season - both checked against the 2025 snapshot.
  *
  * `--check` builds the newest snapshot season the same way and reports how its
  * rows and figures compare with the served table, instead of writing anything.
@@ -122,7 +122,7 @@ function buildTable(position, season, template, collected) {
     inProgress: lastWeek < LAST_WEEK,
     // Nothing here is on weeks 1-18; the blank columns are simply blank.
     fullSeason: [],
-    // Blank for every player — no source yet — so the grades leave them out.
+    // Blank for every player - no source yet - so the grades leave them out.
     unavailable: keys.filter(
       (k) => !["rank", "playerId", "playerName", "position", "team", "age", "season"].includes(k) && out.every((r) => r[k] == null),
     ),

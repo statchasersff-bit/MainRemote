@@ -1,22 +1,22 @@
 /**
  * The advanced player stats routes.
  *
- *   GET /player-stats                — the quarterback table
- *   GET /player-stats/rb|wr|te       — the other three positions
- *   GET /player-stats/qb             — 301 to /player-stats
- *   GET /player-stats?season=2024    — another season of the same page
- *   GET /player-stats?embed=1        — the same page, stripped for embedding
- *   GET /embed/player-stats          — the bare fragment, for the WordPress mount
+ *   GET /player-stats                - the quarterback table
+ *   GET /player-stats/rb|wr|te       - the other three positions
+ *   GET /player-stats/qb             - 301 to /player-stats
+ *   GET /player-stats?season=2024    - another season of the same page
+ *   GET /player-stats?embed=1        - the same page, stripped for embedding
+ *   GET /embed/player-stats          - the bare fragment, for the WordPress mount
  *
  * Mirrors routes/rankings.ts, including the posture that matters: every route
  * ships `noindex, indexifembedded`, so this origin does not compete with
- * statchasers.com — and by the same token the tables are invisible to search
+ * statchasers.com - and by the same token the tables are invisible to search
  * until `[statchasers_player_stats]` embeds them.
  *
  * **The path says which position this is.** That is the standalone app's own
  * routing (`/nfl/nfl-player-stats/qb|rb|wr|te`), kept because each position is
  * a different table of different players. The quarterback table is the bare
- * path, as it was there — the app normalised a bare address to `/qb` on load —
+ * path, as it was there - the app normalised a bare address to `/qb` on load -
  * and `/qb` answers with a 301 back to it, so one table has one address. A
  * position the tool does not have, or a second spelling of one it does
  * (`/RB`), is a 404 rather than a copy.
@@ -187,7 +187,7 @@ router.get("/player-stats/:pos", (req, res, next) => {
 });
 
 /**
- * The bare fragment, for the WordPress plugin to print into a page — and for
+ * The bare fragment, for the WordPress plugin to print into a page - and for
  * the bundle to fetch another season from.
  *
  * Always rendered in embedded mode: the host page supplies the heading and the

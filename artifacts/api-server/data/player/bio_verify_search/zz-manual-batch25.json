@@ -1,0 +1,27 @@
+{
+ "comment": "Manual additions from mak's batch-25 review (2026-10-02). Same shape as the search pass.",
+ "players": [
+  {
+   "slug": "robert-tonyan",
+   "facts": [],
+   "missing": [
+    {
+     "date": "2025-08-27",
+     "type": "Signed",
+     "team": "KC",
+     "distinct": true,
+     "headline": "Signed to the Kansas City Chiefs' practice squad",
+     "description": "Kansas City's official 2025 transaction page lists Tonyan among the players signed to the practice squad on Aug. 27, 2025, the day before his signing to the active roster.",
+     "confidence": "HIGH",
+     "sources": [
+      {
+       "publisher": "Kansas City Chiefs (official transaction page)",
+       "url": "https://www.chiefs.com/team/transactions/2025",
+       "date": "2025-08-27"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

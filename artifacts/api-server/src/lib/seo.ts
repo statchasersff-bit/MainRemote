@@ -5,7 +5,7 @@
  * changed, or "corrected" by JavaScript after load: a crawler that never runs
  * the bundle still sees the final title, description, canonical and OG tags.
  *
- * The values are also deliberately consistent with each other — the <title>,
+ * The values are also deliberately consistent with each other - the <title>,
  * the visible <h1>, og:title and the tool's own heading are all derived from
  * the same two strings, so a search engine picking any one of those signals
  * arrives at the same wording.
@@ -20,7 +20,7 @@ export interface PageMeta {
   heading: string;
   description: string;
   canonical: string;
-  /** Absolute URL for og:url — the canonical, always. */
+  /** Absolute URL for og:url - the canonical, always. */
   ogUrl: string;
   siteName: string;
   season: number;
@@ -83,7 +83,7 @@ export function renderHeadTags(meta: PageMeta): string {
   return [
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
-    // Placed directly in the HTML rather than injected by script — Google
+    // Placed directly in the HTML rather than injected by script - Google
     // treats an in-HTML canonical as the strong signal, and a JS-applied one
     // is only honoured if the page is rendered.
     `<link rel="canonical" href="${url}" />`,

@@ -5,8 +5,8 @@
 // provider owns the watching half, and it has to be told what to watch. That
 // instruction is a "filter rule": a search expression plus a delivery interval.
 //
-// Registering a rule COSTS MONEY for as long as it exists — providers of this
-// kind bill per matched tweet — and a duplicate rule bills twice for the same
+// Registering a rule COSTS MONEY for as long as it exists - providers of this
+// kind bill per matched tweet - and a duplicate rule bills twice for the same
 // post. So this script prints by default and only writes when told to, and it
 // prints the rule ids it creates so they can be found again.
 //
@@ -100,7 +100,7 @@ for (const rule of rules) {
     if (!response.ok || body.status === "error") {
       // Keep going: one rejected rule should not strand the ones that worked,
       // and the exit code still reports that something went wrong.
-      console.error(`  ${rule.tag}: FAILED — ${body.msg ?? `${response.status} ${response.statusText}`}`);
+      console.error(`  ${rule.tag}: FAILED - ${body.msg ?? `${response.status} ${response.statusText}`}`);
       process.exitCode = 1;
       continue;
     }
@@ -109,7 +109,7 @@ for (const rule of rules) {
     // because it is the one thing that cannot be recomputed from the watchlist.
     console.log(`  ${rule.tag}: rule_id=${body.rule_id ?? "(none returned)"}`);
   } catch (err) {
-    console.error(`  ${rule.tag}: FAILED — ${err.message}`);
+    console.error(`  ${rule.tag}: FAILED - ${err.message}`);
     process.exitCode = 1;
   }
 }
@@ -117,6 +117,6 @@ for (const rule of rules) {
 console.log(
   "\nDone. Set the webhook URL in the provider's dashboard to:\n" +
     `  ${webhookUrl ?? "https://<deployment>/api/x/webhook"}\n` +
-    "Keep the rule ids above — they are what you will need to delete or update\n" +
+    "Keep the rule ids above - they are what you will need to delete or update\n" +
     "these rules later, and every rule bills for as long as it matches.",
 );

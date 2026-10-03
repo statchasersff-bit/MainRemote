@@ -128,7 +128,7 @@ class SCDC_Shortcode {
 	/**
 	 * Add "do not optimize" attributes to this plugin's script tag. WP Rocket
 	 * reads data-no-defer / data-cfasync; Autoptimize skips any tag containing
-	 * data-noptimize (note: no hyphen — distinct from WP Rocket's spelling).
+	 * data-noptimize (note: no hyphen - distinct from WP Rocket's spelling).
 	 *
 	 * @param string $tag    The full <script> HTML tag.
 	 * @param string $handle The script's registered handle.
@@ -201,7 +201,7 @@ class SCDC_Shortcode {
 	 * The rewrite rules put {view}/{team}/{position} in query vars; SCDC_Route
 	 * validates them against the 32-team config. Handing the resolved values to
 	 * the renderer means a direct hit on /fantasy/houston-texans/ starts on
-	 * Houston — it never renders another team first.
+	 * Houston - it never renders another team first.
 	 *
 	 * @return array{base:string,view:string,team:string,position:string,abbr:string}
 	 */
@@ -223,7 +223,7 @@ class SCDC_Shortcode {
 	/**
 	 * Copy templates handed to the front end so SPA navigation can keep the H1,
 	 * intro, title and canonical in step with the displayed team. The server
-	 * already rendered the correct values for *this* URL — these are only for
+	 * already rendered the correct values for *this* URL - these are only for
 	 * in-page team switches.
 	 *
 	 * @return array<string,string>
@@ -279,7 +279,7 @@ class SCDC_Shortcode {
 	 * Maximum width of the tool, as a CSS length ("1080px", "70rem") or "none".
 	 *
 	 * The tool fills whatever box the page builder gives it, which on a
-	 * full-width section is the entire viewport — wider than the neighbouring
+	 * full-width section is the entire viewport - wider than the neighbouring
 	 * modules, and growing further as the page is zoomed out. This caps it at the
 	 * site's content width and centres it. Returning an empty string leaves the
 	 * stylesheet's default (1080px) in place.

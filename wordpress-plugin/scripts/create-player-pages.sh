@@ -10,7 +10,7 @@
 #
 # WHERE THE PLAYER LIST COMES FROM
 #
-# From the API, at /embed/players.json — not from a table in this file. There
+# From the API, at /embed/players.json - not from a table in this file. There
 # are roughly six hundred of these and the list moves every offseason, so a
 # copy pasted in here would be wrong by the time anybody ran it. The deployment
 # is the thing that knows which slugs resolve, so it is the thing asked.
@@ -33,7 +33,7 @@
 # image the profile already renders itself; --with-images turns it on for a
 # site whose template needs one.
 #
-# The season appears in the SEO title and description only — the profile's own
+# The season appears in the SEO title and description only - the profile's own
 # content rolls over by itself. Bump SEASON each September and re-run with
 # --force to refresh the meta.
 
@@ -51,7 +51,7 @@ ORIGIN="${ORIGIN:-}"
 # are not.
 PARENT_PATH="${PARENT_PATH:-nfl/players}"
 
-# `wp` plus whatever your install needs — e.g. WP_ARGS="--path=/var/www/html --allow-root"
+# `wp` plus whatever your install needs - e.g. WP_ARGS="--path=/var/www/html --allow-root"
 WP="${WP_CLI:-wp}"
 WP_ARGS="${WP_ARGS:-}"
 
@@ -87,7 +87,7 @@ wpc() {
 	"$WP" $WP_ARGS "$@"
 }
 
-# Reads never mutate anything, so they run even under --dry-run — the plan is
+# Reads never mutate anything, so they run even under --dry-run - the plan is
 # only useful if it is computed against the real site.
 wpq() {
 	# shellcheck disable=SC2086
@@ -152,7 +152,7 @@ trap 'rm -f "$roster_json"' EXIT
 key_header=()
 [ -n "${SC_EMBED_KEY:-}" ] && key_header=(-H "X-StatChasers-Key: ${SC_EMBED_KEY}")
 curl -fsS --max-time 30 ${key_header[@]+"${key_header[@]}"} "${ORIGIN%/}/embed/players.json" -o "$roster_json" \
-	|| die "could not read ${ORIGIN%/}/embed/players.json — is the deployment up?"
+	|| die "could not read ${ORIGIN%/}/embed/players.json - is the deployment up?"
 
 # Parsed with wp-cli's PHP rather than jq: jq is not installed on every managed
 # host, and `wp` is by definition present here. The output is one pipe-delimited
@@ -178,7 +178,7 @@ foreach ( \$data['players'] as \$p ) {
 total="$(printf '%s\n' "$roster" | grep -c '|' || true)"
 
 say "Season: $SEASON   Parent path: /$PARENT_PATH/   Players: $total"
-[ "$DRY_RUN" -eq 1 ] && say "(dry run — no writes)"
+[ "$DRY_RUN" -eq 1 ] && say "(dry run - no writes)"
 [ "$LIMIT" -gt 0 ] && say "(limited to the first $LIMIT)"
 say ""
 
@@ -213,7 +213,7 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	[ "$LIMIT" -gt 0 ] && [ "$done_n" -ge "$LIMIT" ] && break
 	done_n=$((done_n + 1))
 
-	# The page title, which is the <h1> the theme prints above the shortcode —
+	# The page title, which is the <h1> the theme prints above the shortcode -
 	# the fragment steps down to <h2> when embedded so this stays the page's
 	# heading. Deliberately NOT the same string as rank_math_title: that one is
 	# the <title> tag competing in a search result, this one is read by somebody
@@ -233,7 +233,7 @@ while IFS='|' read -r slug name position team team_name player_id; do
 		case "$content" in
 			*statchasers_player*) ;;
 			*)
-				warn "$slug (post $id) exists but its content has no [statchasers_player] — nothing on it will be indexable."
+				warn "$slug (post $id) exists but its content has no [statchasers_player] - nothing on it will be indexable."
 				;;
 		esac
 		say "existing $slug  -> $id"
@@ -242,7 +242,7 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	[ "$id" = "DRY" ] && continue
 
 	# Rank Math. The plugin emits no title/description/robots of its own by
-	# design, so these three are the page's only ones — and the robots value is
+	# design, so these three are the page's only ones - and the robots value is
 	# the difference between a profile that ranks and one that quietly doesn't.
 	pos_words="$position"
 	case "$position" in
@@ -262,7 +262,7 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	set_meta "$id" rank_math_robots '["index","follow"]' --format=json
 
 	if [ "$WITH_IMAGES" -eq 1 ] && meta_is_empty "$id" _thumbnail_id; then
-		# Sleeper's thumbnail, keyed by SLEEPER'S id — the slug is ours and means
+		# Sleeper's thumbnail, keyed by SLEEPER'S id - the slug is ours and means
 		# nothing to their CDN. Failures are a warning, never fatal: the profile
 		# renders its own headshot regardless of what the featured image holds.
 		if [ -z "$player_id" ]; then
@@ -271,7 +271,7 @@ while IFS='|' read -r slug name position team team_name player_id; do
 			wpc media import "https://sleepercdn.com/content/nfl/players/thumb/$player_id.jpg" \
 				--post_id="$id" --featured_image \
 				--title="$name" --alt="$name" >/dev/null \
-				|| warn "$slug: headshot import failed — set the featured image by hand if the template needs one."
+				|| warn "$slug: headshot import failed - set the featured image by hand if the template needs one."
 		fi
 	fi
 done <<< "$roster"
@@ -305,7 +305,7 @@ if [ "$players_parent" != "DRY" ] && [ "$players_parent" != "0" ]; then
 		say "index    /$PARENT_PATH/ -> wrote $total links"
 	else
 		say ""
-		say "index    /$PARENT_PATH/ has content already — left alone (--force to rewrite)"
+		say "index    /$PARENT_PATH/ has content already - left alone (--force to rewrite)"
 	fi
 fi
 

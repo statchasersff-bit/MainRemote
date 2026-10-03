@@ -5,7 +5,7 @@
  * per-opportunity rates that expected points are built from.
  *
  * The box score is ESPN's and the logs are Sleeper's, so a player is matched
- * across the two by name and team — the same key game-players.ts uses — and a
+ * across the two by name and team - the same key game-players.ts uses - and a
  * name two players on one side share is left unmatched rather than guessed.
  * A playoff game has no log of its own: its snaps are unknown (the page says
  * so) and "the five games before it" are the last five of the regular season.

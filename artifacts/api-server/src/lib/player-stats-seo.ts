@@ -6,7 +6,7 @@
  * because the address that should rank is
  * `https://statchasers.com/nfl/nfl-player-stats/`, not this origin.
  *
- * Each position is its own page with its own canonical — it is a different
+ * Each position is its own page with its own canonical - it is a different
  * table of different players, which is why the standalone app gave it an
  * address. The season is NOT: it is a control, the canonical is built from the
  * path alone, and the title names the newest season whichever one is open.
@@ -30,7 +30,7 @@ export interface StatsPageMeta {
 const SITE_NAME = "StatChasers";
 
 /**
- * The title and description for one position's page — the words in
+ * The title and description for one position's page - the words in
  * stats-copy.ts, which the WordPress plugin reads from the fragment rather
  * than keeping its own copy.
  */

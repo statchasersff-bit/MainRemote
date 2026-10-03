@@ -12,7 +12,7 @@
  *     any outbound call at all, so anything that *can* read the feed can drive
  *     the archive.
  *
- * Also covered here, because both are about the same thing — the archive quietly
+ * Also covered here, because both are about the same thing - the archive quietly
  * stopping while everything reports fine:
  *
  *   - **An empty 200 is a failure.** A feed that answers with no items would
@@ -78,7 +78,7 @@ before(async () => {
   const workingPort = await working.listen();
 
   server = await startServer({
-    // Dead route first, good route second — the production shape.
+    // Dead route first, good route second - the production shape.
     DYNASTY_NEWS_API_URL: [
       `http://127.0.0.1:${blockedPort}/news`,
       `http://127.0.0.1:${workingPort}/news`,
@@ -177,7 +177,7 @@ describe("push mode", () => {
     assert.equal(
       blocked.hits + working.hits,
       feedHitsBefore,
-      "push mode must make no outbound call — that is the entire point",
+      "push mode must make no outbound call - that is the entire point",
     );
 
     const found = await (
@@ -260,7 +260,7 @@ describe("a server with no INGEST_SECRET", () => {
 
 describe("a feed that answers 200 with nothing", () => {
   test("counts as a failure rather than a silent no-op", async () => {
-    // The failure this guards against is not a crash — it is a run that stores
+    // The failure this guards against is not a crash - it is a run that stores
     // nothing, reports success, and leaves the archive frozen behind a healthy
     // /api/status. Both routes empty here, so the whole attempt has to fail.
     working.items = [];
@@ -283,7 +283,7 @@ describe("a feed that answers 200 with nothing", () => {
 
   test("falls through to the next route, like any other bad one", async () => {
     // An empty first route is a broken route, so the list should keep going
-    // rather than give up — same as a challenge or a 404.
+    // rather than give up - same as a challenge or a 404.
     const emptyFirst = stubFeed("ok");
     emptyFirst.items = [];
     const emptyPort = await emptyFirst.listen();
@@ -317,7 +317,7 @@ describe("a feed that answers 200 with nothing", () => {
   });
 });
 
-describe("GET /api/ingest/health — the endpoint a monitor watches", () => {
+describe("GET /api/ingest/health - the endpoint a monitor watches", () => {
   const health = async () => {
     const res = await fetch(`${server.origin}/api/ingest/health`);
     return {
@@ -336,7 +336,7 @@ describe("GET /api/ingest/health — the endpoint a monitor watches", () => {
     assert.deepEqual(h.body.reasons, []);
     assert.equal(h.body.consecutiveFailures, 0);
     // Must not be cacheable, or a monitor ends up polling a stale verdict and
-    // the alert arrives late — or never clears.
+    // the alert arrives late - or never clears.
     assert.match(h.cacheControl, /no-store/);
   });
 
@@ -359,7 +359,7 @@ describe("GET /api/ingest/health — the endpoint a monitor watches", () => {
       working.mode = "ok";
     }
 
-    // A single success clears it — the check reports the state now, not a
+    // A single success clears it - the check reports the state now, not a
     // sticky flag someone has to remember to reset.
     await ingest();
     const good = await health();

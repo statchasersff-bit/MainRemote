@@ -5,7 +5,7 @@ import type { Request } from "express";
  *
  * Behind a proxy (Replit terminates TLS and forwards x-forwarded-*) the raw
  * protocol/host are the internal ones, so prefer the forwarded values. Used for
- * the canonical URL, absolute OG URLs, and the generated embed snippets — all
+ * the canonical URL, absolute OG URLs, and the generated embed snippets - all
  * of which are wrong if they point at the internal host.
  */
 export function publicOrigin(req: Request): string {
@@ -19,7 +19,7 @@ export function publicOrigin(req: Request): string {
   // the header, and it goes into the canonical and og:url: a request carrying
   // `X-Forwarded-Host: evil.example` got `<link rel="canonical"
   // href="http://evil.example/…">` back, which a shared cache would then serve
-  // to everyone. The Host header needs no such check — a request only reaches
+  // to everyone. The Host header needs no such check - a request only reaches
   // this app through a router that matched it.
   const host =
     (forwarded && trustedHost(forwarded) ? forwarded : undefined) ??
@@ -66,8 +66,8 @@ export function canonicalUrl(req: Request): string {
   const override = process.env["PUBLIC_CANONICAL_URL"]?.trim();
   if (override) return override;
 
-  // req.path excludes the query string; normalise so "/index.html" and "/" —
-  // the two ways to reach the app — agree on one canonical.
+  // req.path excludes the query string; normalise so "/index.html" and "/" -
+  // the two ways to reach the app - agree on one canonical.
   // Lower-cased: routing matches /Schedule and /player/Lamar-Jackson too, and
   // each used to name itself as its own canonical.
   const path = req.path === "/index.html" ? "/" : req.path.toLowerCase();

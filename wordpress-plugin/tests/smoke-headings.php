@@ -4,7 +4,7 @@
  * processes of their own.
  *
  * Both tools memoise "does this page mount me", so the page that does not and
- * the page that does cannot be asked about in one process — nor after anything
+ * the page that does cannot be asked about in one process - nor after anything
  * in the main group has asked about a page of its own. smoke.php runs this
  * twice: STATCHASERS_SMOKE_GROUP=leak for an ordinary article, and =headings
  * for a page mounting both tools in the "Let the tool supply the heading" mode.

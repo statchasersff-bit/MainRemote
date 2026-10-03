@@ -23,8 +23,8 @@ let current: LiveReload = NOOP;
 /**
  * The live-reload instance for this process.
  *
- * app.ts is the only caller of setupLiveReload() — it is the one that has the
- * Express instance and the directory to watch — but the team pages are rendered
+ * app.ts is the only caller of setupLiveReload() - it is the one that has the
+ * Express instance and the directory to watch - but the team pages are rendered
  * by a router mounted from there, and importing app.ts back would be a cycle.
  * So the instance is published here instead of threaded through every route.
  *

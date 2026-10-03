@@ -3,7 +3,7 @@
  * What a week URL is, in a process of its own.
  *
  * Split out for the reason smoke-containers.php gives: the week a request names
- * is memoised — deliberately, because a Divi page asks for it many times — so
+ * is memoised - deliberately, because a Divi page asks for it many times - so
  * one process can answer "this is /week-7/" or "this is the bare page" but not
  * both. The main group is the bare page, because that is the common case and
  * everything else there depends on it. This is the week.
@@ -20,7 +20,7 @@ if ( ! function_exists( 'statchasers_schedule_heading' ) ) {
 }
 
 // NOT `$page`: this file runs at global scope, where `$page` IS
-// `$GLOBALS['page']` — the array the harness uses for the request state, which
+// `$GLOBALS['page']` - the array the harness uses for the request state, which
 // the next statement would then assign over the top of.
 $sched_page               = new WP_Post();
 $sched_page->ID           = 7;
@@ -60,7 +60,7 @@ is(
  *
  * `statchasers_schedule_week_title()` needs the page's name, and this plugin
  * now filters `the_title` to append the week to it. Reading the filtered title
- * while computing what the filter should return appends twice — and the second
+ * while computing what the filter should return appends twice - and the second
  * append is invisible on a page nobody reloads, because it only shows once the
  * filter has run over its own output. Asserted by running the filter over the
  * value it just produced.

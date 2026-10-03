@@ -2,7 +2,7 @@
  * Markup for the rest-of-season rankings board.
  *
  * Server-only, like team-render.ts, player-render.ts and fpa-render.ts. Every
- * board — all five panels, 230 players, every tier header — is in the response,
+ * board - all five panels, 230 players, every tier header - is in the response,
  * and client/rankings.ts only takes over the tab strip on top of it.
  *
  * That is the substantive change from the standalone app this came from. There,
@@ -23,8 +23,8 @@
  * And one this board needs specifically:
  *
  * 3. **Rank is positional, and the side-by-side view must not imply otherwise.**
- *    Four columns aligned by rank is a draft-board reading — what am I passing
- *    up at running back to take this receiver — not a claim that QB7 and RB7 go
+ *    Four columns aligned by rank is a draft-board reading - what am I passing
+ *    up at running back to take this receiver - not a claim that QB7 and RB7 go
  *    at the same pick. The caption says which of the two it is, because the
  *    shape of the table invites the wrong one.
  *
@@ -77,7 +77,7 @@ export interface RankingsRenderOptions {
    * Where the CSV link hangs, when that is not `basePath`.
    *
    * On a WordPress mount `basePath` is the page, and WordPress has never heard
-   * of `/download.csv` under it — so the fragment route passes this app's own
+   * of `/download.csv` under it - so the fragment route passes this app's own
    * origin here, the way the schedule's exports do.
    */
   downloadBase?: string;
@@ -147,7 +147,7 @@ function renderUpdated(data: RankingsData): string {
 /**
  * The position tab strip.
  *
- * Each tab is the position's own address — `/rest-of-season-rankings/rb` —
+ * Each tab is the position's own address - `/rest-of-season-rankings/rb` -
  * the way the player pages' section bar links `/injury`. With scripting off a
  * tab is an ordinary link to a page the server renders with that panel open;
  * client's wireTabs() upgrades the strip to a real ARIA tablist that switches
@@ -185,7 +185,7 @@ function renderNav(
       ` href="${escapeHtml(rankingsPositionPath(base, position) + query)}"` +
       ` data-scr-panel-id="${panelId(position)}"` +
       // The board's heading, for the host page's H1 when a tab switches
-      // boards in place — see rankingsHeading().
+      // boards in place - see rankingsHeading().
       ` data-scr-heading="${escapeHtml(rankingsHeading(data.season, position))}"` +
       // And its document title, set before the address is pushed so an
       // analytics page view on the history change carries the board's title.
@@ -206,8 +206,8 @@ function renderNav(
  * The scoring format row.
  *
  * One live option. The rankings are maintained in PPR and there is no separate
- * Standard or Half-PPR file, so those two are printed as what they are —
- * unavailable — rather than as buttons that quietly do nothing, which is what
+ * Standard or Half-PPR file, so those two are printed as what they are -
+ * unavailable - rather than as buttons that quietly do nothing, which is what
  * the standalone app shipped. They are `<span>`s, not disabled links: there is
  * no URL behind them to disable.
  */
@@ -235,7 +235,7 @@ function renderScoring(data: RankingsData): string {
  * SC_RANKINGS_PATH is a WordPress page path and WordPress page paths are
  * conventionally written with a trailing slash, so
  * `/fantasy-football/redraft-rankings/` + `/download.csv` would otherwise give
- * `//download.csv` — which a browser resolves as a protocol-relative URL to the
+ * `//download.csv` - which a browser resolves as a protocol-relative URL to the
  * host `download.csv`, not as a path on this site. Trimming here rather than
  * asking the operator to write the variable a particular way.
  */
@@ -319,7 +319,7 @@ function renderAllCell(
  * Every row is in the markup; the collapse is a `<details>` around the tail,
  * not a slice. The standalone app rendered the first fifty and kept the rest in
  * React state, which meant the other 180 players were not on the page at all
- * until someone clicked — the exact thing this rewrite exists to stop. A
+ * until someone clicked - the exact thing this rewrite exists to stop. A
  * `<details>` gets the same short first screen while leaving every name in the
  * document, and it opens with scripting off.
  */
@@ -334,7 +334,7 @@ function renderAllBoard(
     STAT_POSITIONS.map(
       (pos) =>
         `<th scope="col"><abbr title="${escapeHtml(
-          `${POSITION_NAMES[pos]} — ranked among ${POSITION_PLURALS[pos]}`,
+          `${POSITION_NAMES[pos]} - ranked among ${POSITION_PLURALS[pos]}`,
         )}">${pos}</abbr></th>`,
     ).join("") +
     `</tr>`;
@@ -350,7 +350,7 @@ function renderAllBoard(
 
   const caption =
     `Quarterback, running back, wide receiver and tight end rankings aligned ` +
-    `by positional rank — row 7 is QB7 beside RB7, not a claim that they go at ` +
+    `by positional rank - row 7 is QB7 beside RB7, not a claim that they go at ` +
     `the same pick. ${data.scoring} scoring, ${data.all.length} rows` +
     (data.updatedAt === "" ? "." : `, updated ${data.updatedAt}.`);
 
@@ -413,7 +413,7 @@ function renderTierRow(
  * keyboard or by a screen reader's link list: two links per row, both landing
  * on the same page and the second one labelled generically, is noise in both
  * of those. `tabindex="-1"` and `aria-hidden="true"` leave the row with one
- * announced, focusable link — the name — and give the pointer a bigger one.
+ * announced, focusable link - the name - and give the pointer a bigger one.
  *
  * Rule 1 still holds: a player the dictionary cannot place has no URL, so he
  * gets an empty cell rather than a button that goes nowhere.
@@ -456,9 +456,9 @@ function renderPositionBoard(
   }
 
   // Screen-reader-only, on the same terms as the All board's caption. Depth,
-  // scoring and the updated date are all printed above the panels already — the
+  // scoring and the updated date are all printed above the panels already - the
   // controls carry the format and the date, and the tab strip names the
-  // position — so on screen this bar was the third telling. A table still owes
+  // position - so on screen this bar was the third telling. A table still owes
   // its reader a caption, so it is hidden rather than dropped: the one route
   // into this table that does NOT pass the controls is a screen reader landing
   // on the table itself.
@@ -512,7 +512,7 @@ function renderPositionBoard(
  * Present because the All board's cells are tinted, and a colour scale with no
  * key is decoration. It names each tier in words as well as in colour, and it
  * sits with the All panel because that is the only board where the tint is the
- * only place the tier appears — the position tables print it in a column.
+ * only place the tier appears - the position tables print it in a column.
  */
 function renderLegend(data: RankingsData): string {
   const tiers = new Set<number>();
@@ -546,8 +546,8 @@ function renderLegend(data: RankingsData): string {
 /**
  * The questions, and the FAQPage built from the same list.
  *
- * Outside the panels, not inside one. The five boards are one page — the tab
- * strip swaps a panel, it does not navigate — so questions that belong to any
+ * Outside the panels, not inside one. The five boards are one page - the tab
+ * strip swaps a panel, it does not navigate - so questions that belong to any
  * of them belong to all of them, and a copy per panel would put the same ten
  * questions in the document five times over. It sits after the last panel
  * because that is where a reader who has finished with the board arrives.
@@ -555,7 +555,7 @@ function renderLegend(data: RankingsData): string {
  * Each question is its own <details>, shut by default, exactly as the team hub
  * does it and for the same reason: the questions are the index, so they all
  * show, and the answer opens under the one that was actually asked. The block
- * itself never folds. Open state is a browser concern either way — the answers
+ * itself never folds. Open state is a browser concern either way - the answers
  * are in the DOM regardless, which is what the FAQPage node describes.
  *
  * The <h2> is safe in both modes. The embed drops the H1 because the WordPress
@@ -605,7 +605,7 @@ function renderFaq(data: RankingsData, options: RankingsRenderOptions): string {
  * crawler is a worse job than handing over the array it was built from.
  *
  * Note that the standalone page ships `noindex, indexifembedded`, so this node
- * is not what ranks — the WordPress copy is. It is emitted anyway because a
+ * is not what ranks - the WordPress copy is. It is emitted anyway because a
  * page that describes itself only when embedded is a page whose structured data
  * nobody can check without WordPress in front of it.
  */
@@ -645,7 +645,7 @@ function renderFaqSchema(
 }
 
 /**
- * The boards as ItemLists — see rankings/rankings-schema.ts.
+ * The boards as ItemLists - see rankings/rankings-schema.ts.
  *
  * The same two modes as renderFaqSchema() above: an inert island in an embed,
  * for statchasers-rankings.php to graft into Rank Math's graph and strip, and
@@ -737,7 +737,7 @@ export function renderRankingsPage(
 
 /**
  * The title, H1 and description of the board this fragment opens on, as an
- * inert island the WordPress plugin reads and strips — player-stats-render.ts
+ * inert island the WordPress plugin reads and strips - player-stats-render.ts
  * ships the same thing as `sca-page-data`. Embedded only: standalone, they are
  * already in the page's own <head>.
  */
@@ -758,7 +758,7 @@ function renderMetaIsland(
  * The board when there is no rankings file.
  *
  * An honest empty state rather than five empty tables, and it says what is
- * missing — because the only person who ever sees this is whoever is setting
+ * missing - because the only person who ever sees this is whoever is setting
  * the tool up. Readers never reach it: the shortcode renders nothing at all in
  * that case and leaves the host page intact.
  */

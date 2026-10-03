@@ -46,7 +46,7 @@ import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSe
 import type { GameLogEntry } from "./types";
 import { lastName, teamInk } from "./header";
 
-const DASH = "—";
+const DASH = "-";
 
 /** The scoring as the reference page words it: "full PPR", not the toggle's "PPR". */
 const SCORING_WORDS = { ppr: "full PPR", half: "half-PPR", standard: "standard" } as const;
@@ -62,7 +62,7 @@ function ordinal(n: number): string {
 }
 
 /** A true minus sign, never a hyphen. */
-const signed = (s: string): string => s.replace(/^-/, MINUS);
+const signed = (s: string): string => s.replace(/^-(?=\d)/, MINUS);
 const one = (v: number): string => signed(v.toFixed(1));
 const whole = (v: number): string => signed(Math.round(v).toLocaleString("en-US"));
 const pct1 = (v: number): string => `${v.toFixed(1)}%`;
@@ -268,13 +268,23 @@ interface Stat {
   total: string;
   /** The per-game figure, for a counting stat; rates and ranks have none. */
   pg?: string;
-  small?: string;
-  /** On the group's small second line rather than among its headline figures. */
-  minor?: boolean;
+  /** Printed small after the figure: the "TD" in "25 · 1 TD". */
+  unit?: string;
 }
 
-function counting(label: string, total: number, gp: number): Stat {
-  return { label, total: whole(total), pg: gp ? one(total / gp) : DASH };
+/**
+ * One cell of the stat rail: a small uppercase label, the figure, and a muted
+ * supplementary line. mak (2026-10-03) asked for the floating groups to become
+ * one light-gray rail split by faint vertical separators.
+ */
+interface Cell {
+  label: string;
+  main: Stat[];
+  sub: Stat[];
+}
+
+function counting(label: string, total: number, gp: number, unit?: string): Stat {
+  return { label, total: whole(total), pg: gp ? one(total / gp) : DASH, unit };
 }
 
 function pair(label: string, a: number, b: number, gp: number): Stat {
@@ -285,76 +295,67 @@ function pair(label: string, a: number, b: number, gp: number): Stat {
   };
 }
 
-/**
- * One group of the stat strip: a small eyebrow, then each figure over its
- * label. mak asked (2026-09-30) for the three production cards to become one
- * horizontal band, figures first and labels small underneath, to take the
- * section to half its height. The label stays a <dt> ahead of its <dd> in the
- * markup; the CSS puts it under the figure.
- */
-function renderGroup(title: string, stats: Stat[], fan = false): string {
-  if (stats.length === 0) return "";
-  const value = (s: Stat): string => {
-    const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
-    return `<span${toggle}>${escapeHtml(s.total)}</span>`;
-  };
-  const major = stats.filter((s) => !s.minor);
-  const minor = stats.filter((s) => s.minor);
-  // The headline figures large, the rest on one small line under them (mak,
-  // 2026-09-30: "821 YDS · 66.2 CMP% · 4 TD · 1 INT", then sacks, YPA etc.).
+/** A figure, carrying both of its numbers when the toggle can switch it. */
+function figure(s: Stat): string {
+  const toggle = s.pg !== undefined ? ` data-total="${escapeHtml(s.total)}" data-pg="${escapeHtml(s.pg)}"` : "";
+  return `<span${toggle}>${escapeHtml(s.total)}</span>`;
+}
+
+function renderCell(cell: Cell): string {
+  const main = cell.main
+    .map((s, i) => (i ? `<i class="scp-st-dot"> · </i>` : "") + figure(s) + (s.unit ? ` <small>${escapeHtml(s.unit)}</small>` : ""))
+    .join("");
+  const sub = cell.sub.map((s) => `${figure(s)} ${escapeHtml(s.label)}`).join(" · ");
   return (
-    `<div class="scp-st-sgroup${fan ? " is-fan" : ""}"><h3 class="scp-st-eyebrow">${escapeHtml(title)}</h3><dl>` +
-    major
-      .map(
-        (s) =>
-          `<div><dt>${escapeHtml(s.label)}` +
-          (s.small ? ` <small>${escapeHtml(s.small)}</small>` : "") +
-          `</dt><dd>${value(s)}</dd></div>`,
-      )
-      .join("") +
-    `</dl>` +
-    (minor.length
-      ? `<p class="scp-st-minor">` +
-        minor
-          .map((s) => `<span><b>${value(s)}</b> ${escapeHtml(s.label)}${s.small ? ` <small>${escapeHtml(s.small)}</small>` : ""}</span>`)
-          .join("") +
-        `</p>`
-      : "") +
+    `<div class="scp-st-cell"><dt>${escapeHtml(cell.label)}</dt><dd class="scp-st-cv">${main}</dd>` +
+    (sub ? `<dd class="scp-st-cs">${sub}</dd>` : "") +
     `</div>`
   );
 }
 
-function passingStats(t: Line): Stat[] {
+function passingCells(t: Line): Cell[] {
   const r = rating(t);
   return [
-    counting("Yards", t.passYd, t.gp),
-    { label: "Comp %", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH },
-    counting("TD", t.passTd, t.gp),
-    counting("INT", t.int, t.gp),
-    { ...pair("Comp/Att", t.cmp, t.att, t.gp), minor: true },
-    { label: "Y/A", total: fmtRatio(t.passYd, t.att), minor: true },
-    { label: "Rating", total: r === null ? DASH : r.toFixed(1), minor: true },
+    { label: "Pass yards", main: [counting("Yards", t.passYd, t.gp)], sub: [{ label: "Y/A", total: fmtRatio(t.passYd, t.att) }] },
+    { label: "Comp %", main: [{ label: "Comp %", total: t.att ? pct1((t.cmp / t.att) * 100) : DASH }], sub: [pair("Comp/Att", t.cmp, t.att, t.gp)] },
+    { label: "Pass TD", main: [counting("TD", t.passTd, t.gp)], sub: [{ label: "Rating", total: r === null ? DASH : r.toFixed(1) }] },
+    { label: "INT", main: [counting("INT", t.int, t.gp)], sub: [] },
   ];
 }
 
-function rushingStats(t: Line, full: boolean): Stat[] {
-  // A runner's carries are a headline; a quarterback's or receiver's are not.
-  const out: Stat[] = [
-    counting("Yards", t.rushYd, t.gp),
-    counting("TD", t.rushTd, t.gp),
-    { ...counting(full ? "Carries" : "Att", t.rushAtt, t.gp), minor: !full },
-    { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt), minor: true },
-  ];
-  if (full && t.rushLong !== null) out.push({ label: "Long", total: whole(t.rushLong), minor: true });
-  return out;
+/** A quarterback's or receiver's rushing: one cell, yards and touchdowns together. */
+function rushingCell(t: Line): Cell {
+  return {
+    label: "Rushing",
+    main: [counting("Yards", t.rushYd, t.gp), counting("TD", t.rushTd, t.gp, "TD")],
+    sub: [counting("Att", t.rushAtt, t.gp), { label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }],
+  };
 }
 
-function receivingStats(t: Line, full: boolean): Stat[] {
-  const out: Stat[] = [counting("Rec", t.rec, t.gp), counting("Yards", t.recYd, t.gp), counting("TD", t.recTd, t.gp)];
-  out.push({ ...counting("Targets", t.tgt, t.gp), minor: !full });
-  if (full) out.push({ label: "Y/R", total: fmtRatio(t.recYd, t.rec), minor: true });
-  if (full) out.push({ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH, minor: true });
-  return out;
+function runnerCells(t: Line): Cell[] {
+  return [
+    { label: "Rush yards", main: [counting("Yards", t.rushYd, t.gp)], sub: [counting("Carries", t.rushAtt, t.gp)] },
+    {
+      label: "Yds / carry",
+      main: [{ label: "Y/C", total: fmtRatio(t.rushYd, t.rushAtt) }],
+      sub: t.rushLong !== null ? [{ label: "Long", total: whole(t.rushLong) }] : [],
+    },
+    { label: "Rush TD", main: [counting("TD", t.rushTd, t.gp)], sub: [] },
+    {
+      label: "Receiving",
+      main: [counting("Rec", t.rec, t.gp, "rec"), counting("Yards", t.recYd, t.gp, "yds")],
+      sub: [counting("Targets", t.tgt, t.gp), counting("TD", t.recTd, t.gp)],
+    },
+  ];
+}
+
+function receiverCells(t: Line): Cell[] {
+  return [
+    { label: "Receptions", main: [counting("Rec", t.rec, t.gp)], sub: [counting("Targets", t.tgt, t.gp)] },
+    { label: "Rec yards", main: [counting("Yards", t.recYd, t.gp)], sub: [{ label: "Y/R", total: fmtRatio(t.recYd, t.rec) }] },
+    { label: "Rec TD", main: [counting("TD", t.recTd, t.gp)], sub: [] },
+    { label: "Catch %", main: [{ label: "Catch %", total: t.tgt ? pct1((t.rec / t.tgt) * 100) : DASH }], sub: [] },
+  ];
 }
 
 interface WeekPick {
@@ -422,31 +423,27 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
   if (!row) return "";
   const t = row.line;
   const pos = c.pos;
-  const groups: string[] = [];
+  let cells: Cell[];
+  if (pos === "QB") cells = [...passingCells(t), rushingCell(t)];
+  else if (pos === "RB") cells = runnerCells(t);
+  // Rushing is hidden for a receiver without a carry.
+  else cells = [...receiverCells(t), ...(t.rushAtt > 0 ? [rushingCell(t)] : [])];
 
-  if (pos === "QB") {
-    groups.push(renderGroup("Passing", passingStats(t)));
-    groups.push(renderGroup("Rushing", rushingStats(t, false)));
-  } else if (pos === "RB") {
-    groups.push(renderGroup("Rushing", rushingStats(t, true)));
-    groups.push(renderGroup("Receiving", receivingStats(t, false)));
-  } else {
-    groups.push(renderGroup("Receiving", receivingStats(t, true)));
-    // Hidden for a receiver without a carry.
-    if (t.rushAtt > 0) groups.push(renderGroup("Rushing", rushingStats(t, false)));
-  }
-
+  // The fantasy line is the product, so it does not sit in the rail as one
+  // more stat (mak, 2026-10-03): its own block, a gold rule along the top.
   const bw = bestWorst(data, c, row);
   const rank = row.finish;
-  const fan: Stat[] = [
-    { label: "Points", total: one(t.pts), pg: t.gp ? one(t.pts / t.gp) : DASH },
-    { label: "Pos rank", total: rank ? `${pos}${rank}` : DASH },
-  ];
-  if (bw) {
-    fan.push({ label: "Best", total: one(bw.best.pts), small: bw.best.caption, minor: true });
-    if (row.weeks.length > 1) fan.push({ label: "Worst", total: one(bw.worst.pts), small: bw.worst.caption, minor: true });
-  }
-  groups.push(renderGroup(`Fantasy (${SCORING_SHORT[data.format]})`, fan, true));
+  const week = (pick: WeekPick, label: string): string =>
+    `<span><b>${escapeHtml(one(pick.pts))}</b> ${label} <small>${escapeHtml(pick.caption)}</small></span>`;
+  const fan =
+    `<div class="scp-st-fan"><h3 class="scp-st-fan-tag">${escapeHtml(`Fantasy (${SCORING_SHORT[data.format]})`)}</h3><dl>` +
+    `<div><dt>Fantasy points</dt><dd>${figure({ label: "Points", total: one(t.pts), pg: t.gp ? one(t.pts / t.gp) : DASH })}</dd></div>` +
+    `<div><dt>Position rank</dt><dd>${escapeHtml(rank ? `${pos}${rank}` : DASH)}</dd></div>` +
+    `</dl>` +
+    (bw
+      ? `<p class="scp-st-fan-wk">${week(bw.best, "Best")}${row.weeks.length > 1 ? week(bw.worst, "Worst") : ""}</p>`
+      : "") +
+    `</div>`;
 
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/game-log/${options.linkQuery ?? ""}`;
   return (
@@ -461,7 +458,7 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
         `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
         `</div>`,
     ) +
-    `<div class="scp-st-strip">${groups.join("")}</div>` +
+    `<div class="scp-st-prodrow"><dl class="scp-st-rail">${cells.map(renderCell).join("")}</dl>${fan}</div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">See these stats game by game</a>` +
     `</section>`
   );
@@ -477,17 +474,29 @@ interface AdvColumn {
 }
 
 /**
- * The percentile: the ordinal over a small bar filled to it, tinted by
- * standing (grey for a style reading); the old sentence rides along as its
- * title. mak (2026-09-30) asked for the bar, Next Gen Stats style.
+ * A percentile's tint (mak, 2026-10-03): 0-24 red, 25-74 navy, 75-100 green,
+ * all subdued, and grey for a style reading, which is neither good nor bad.
  */
-function badge(m: AdvMetric | undefined): string {
-  if (!m || m.pctl == null) return `<td class="scp-st-pc"><span class="scp-st-pb is-muted">${DASH}</span></td>`;
+function tint(m: AdvMetric): "good" | "mid" | "bad" | "muted" {
+  if (m.standing === "muted" || m.pctl == null) return "muted";
+  return m.pctl >= 75 ? "good" : m.pctl >= 25 ? "mid" : "bad";
+}
+
+/**
+ * A season's cell: the value, and under it the percentile. The focal season's
+ * percentile is a fixed-width bar with the ordinal beside it, so the number
+ * carries the meaning and the bar supports it; a reference season's is the
+ * ordinal alone. The old sentence rides along as the title.
+ */
+function advCell(m: AdvMetric | undefined, focal: boolean): string {
+  const value = `<span class="scp-st-num">${escapeHtml(signed(m?.value ?? DASH))}</span>`;
+  const cls = `scp-st-v ${focal ? "is-now" : "is-prev"}`;
+  if (!m || m.pctl == null) return `<td class="${cls}">${value}<span class="scp-st-pb is-muted">${DASH}</span></td>`;
   const w = Math.max(3, Math.min(100, m.pctl));
+  const bar = focal ? `<span class="scp-st-bar" aria-hidden="true"><i style="width:${w}%"></i></span>` : "";
   return (
-    `<td class="scp-st-pc"><span class="scp-st-pb is-${m.standing}" title="${escapeHtml(m.read)}">` +
-    `${escapeHtml(ordinal(m.pctl))}</span>` +
-    `<span class="scp-st-bar is-${m.standing}" aria-hidden="true"><i style="width:${w}%"></i></span></td>`
+    `<td class="${cls}">${value}<span class="scp-st-pb is-${tint(m)}" title="${escapeHtml(m.read)}">` +
+    `${bar}<b>${escapeHtml(ordinal(m.pctl))}</b></span></td>`
   );
 }
 
@@ -524,7 +533,8 @@ const tierOf = (key: string): number => {
 
 /**
  * The advanced cards as one table, the seasons side by side (mak, 2026-09-30):
- * Stat | value | percentile, once per season, one row per metric either card
+ * Metric | this season | last season, the percentile under each value (mak,
+ * 2026-10-03), one row per metric either card
  * carries, grouped into tiers with the first (Efficiency) set heavier. A
  * metric neither season has a figure for is dropped. The college column's
  * metrics have no tier and print as one untitled group.
@@ -542,13 +552,12 @@ function renderAdvTable(cols: AdvColumn[]): string {
   const kept = keys.filter(({ key }) => cols.some((col) => { const v = find(col, key)?.value; return v !== undefined && v !== DASH; }));
   if (kept.length === 0) return "";
   const known = kept.some(({ key, label }) => TIERS.some((t) => t.keys.includes(keyOf({ key, label }))));
-  const span = 1 + cols.length * 2;
+  const span = 1 + cols.length;
+  // The first column is this season, the page's subject; the second is
+  // reference (mak, 2026-10-03).
   const row = ({ key, label }: { key: string; label: string }, lead: boolean): string =>
     `<tr${lead ? ` class="is-key"` : ""}><th scope="row">${escapeHtml(label)}</th>` +
-    cols.map((col) => {
-      const m = find(col, key);
-      return `<td class="scp-st-v">${escapeHtml(signed(m?.value ?? DASH))}</td>` + badge(m);
-    }).join("") +
+    cols.map((col, i) => advCell(find(col, key), i === 0)).join("") +
     `</tr>`;
   let rows: string;
   if (!known) {
@@ -565,9 +574,9 @@ function renderAdvTable(cols: AdvColumn[]): string {
   }
   return (
     `<div class="scp-st-advwrap"><table class="scp-st-advt">` +
-    `<thead><tr><th scope="col">Stat</th>` +
-    cols.map((col) =>
-      `<th scope="colgroup" colspan="2">${escapeHtml(col.title)}` +
+    `<thead><tr><th scope="col">Metric</th>` +
+    cols.map((col, i) =>
+      `<th scope="col" class="${i === 0 ? "is-now" : "is-prev"}">${escapeHtml(col.title)}` +
       (col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : "") +
       `</th>`,
     ).join("") +
@@ -575,42 +584,88 @@ function renderAdvTable(cols: AdvColumn[]): string {
   );
 }
 
-const byKey = (card: AdvCard | null | undefined, label: string): AdvMetric | undefined =>
-  card?.metrics.find((m) => m.label === label);
+/**
+ * The profile tags over the advanced table (mak, 2026-10-03): what a metric
+ * says about him when it sits at either end of the league, as
+ * [label when high, label when low, what the percentile measures]. The
+ * percentile is on the metric's own direction, so pressure rate's high end
+ * is a clean pocket. Labels shared by two metrics (deep rate and air yards)
+ * print once, off whichever is more extreme.
+ */
+const TAGS: Record<string, [string, string, string]> = {
+  apg: ["High volume", "Low volume", "attempts per game"],
+  deep: ["Downfield passer", "Short-area passer", "deep-attempt rate"],
+  aya: ["Downfield passer", "Short-area passer", "air yards per attempt"],
+  ttt: ["Holds the ball", "Quick release", "time to throw"],
+  cmp: ["Accurate", "Inaccurate", "completion rate"],
+  ypa: ["Big gains per throw", "Low yards per attempt", "yards per attempt"],
+  epa: ["Efficient", "Inefficient", "EPA per play"],
+  success: ["On schedule", "Off schedule", "success rate"],
+  tdr: ["TD finisher", "Low TD rate", "TD rate"],
+  cpoe: ["Beats expectation", "Below expectation", "CPOE"],
+  press: ["Clean pocket", "Pressured often", "pressure rate"],
+  snap: ["Every-down back", "Part-time role", "snap share"],
+  tgts: ["Target magnet", "Few targets", "target share"],
+  tpg: ["Target magnet", "Few targets", "targets per game"],
+  yaco: ["Gains after contact", "Little after contact", "yards after contact"],
+  ybc: ["Room to run", "Meets defenders early", "yards before contact"],
+  expl: ["Explosive", "Few big plays", "explosive run rate"],
+  bt: ["Tackle breaker", "Rarely breaks tackles", "broken tackles"],
+  rzo: ["Red-zone role", "Little red-zone work", "red-zone opportunities"],
+  rzt: ["Red-zone target", "Few red-zone targets", "red-zone targets"],
+  adot: ["Downfield target", "Short-area target", "depth of target"],
+  yprr: ["Wins on routes", "Little per route", "yards per route run"],
+  route: ["Full-time routes", "Part-time routes", "route participation"],
+  yac: ["YAC threat", "Little after the catch", "YAC per reception"],
+  catch: ["Sure hands", "Low catch rate", "catch rate"],
+  ays: ["Air-yards share", "Few air yards", "air-yards share"],
+};
 
-function advLede(data: PlayerPageData, pos: string, cards: AdvCard[]): string {
-  const last = lastName(data.player.name);
-  // The style sentence reads the full season when there is one.
-  const lastCard = data.statsAdvanced?.last ?? null;
-  let style = "";
-  if (pos === "QB") {
-    const deep = lastCard?.pct["deep"] ?? null;
-    const ttt = lastCard?.pct["ttt"] ?? null;
-    if (deep !== null) {
-      style = deep >= 60
-        ? `${last} pushes the ball downfield more than most ${pos}s`
-        : deep <= 40 ? `${last} works the short and intermediate areas more than most ${pos}s`
-          : `${last} throws downfield at about a league-average rate`;
-      if (ttt !== null && ttt >= 60) style += " and holds the ball longer than most";
-      else if (ttt !== null && ttt <= 40) style += " and gets the ball out quickly";
-    }
-  } else if (pos === "RB") {
-    const snap = byKey(cards[0], "Snap share");
-    const tgt = byKey(cards[0], "Target share");
-    if (snap && tgt && snap.value !== DASH) style = `${last} is on the field for ${snap.value} of snaps and draws ${tgt.value} of his team's targets`;
-  } else {
-    const adot = lastCard ? byKey(lastCard, "Average depth of target") : undefined;
-    const share = byKey(cards[0], "Target share");
-    if (adot && adot.value !== DASH) {
-      const p = lastCard?.pct["adot"] ?? 50;
-      style = `${last} is ${p >= 60 ? "a downfield target" : p <= 40 ? "a short-area target" : "an intermediate target"} (${adot.value} yards per target last season)`;
-    }
-    if (share && share.value !== DASH) style += `${style ? ", with" : `${last} has`} a ${share.value} target share this season`;
-  }
+/** The card the profile reads: this season once it qualifies, else last season. */
+function profileCard(cards: AdvCard[]): AdvCard | null {
+  return cards.find((card) => card.qualified) ?? null;
+}
 
-  // Style only: the percentiles are in the table and the strengths and limits
-  // in the fantasy note under it (mak, 2026-09-30, one line).
-  return style ? escapeHtml(`${style}.`) : "";
+function profileTags(card: AdvCard): string {
+  const seen = new Set<string>();
+  const tags = (card.all ?? card.metrics)
+    .filter((m) => m.pctl != null && TAGS[keyOf(m)] && (m.pctl >= 75 || m.pctl <= 25))
+    .sort((x, y) => Math.abs(y.pctl! - 50) - Math.abs(x.pctl! - 50))
+    .flatMap((m) => {
+      const [hi, lo, what] = TAGS[keyOf(m)]!;
+      const label = m.pctl! >= 75 ? hi : lo;
+      if (seen.has(label)) return [];
+      seen.add(label);
+      return [`<li><b>${escapeHtml(label)}</b><span>${escapeHtml(`${ordinal(m.pctl!)} pctl · ${what}`)}</span></li>`];
+    })
+    .slice(0, 3);
+  return tags.length ? `<ul class="scp-st-tags">${tags.join("")}</ul>` : "";
+}
+
+/**
+ * The one-line summary under the section title: his style, how much of the
+ * ball he gets, and how well he uses it ("Short/intermediate distributor ·
+ * High volume · Average efficiency"), each read off the card's percentiles.
+ */
+function profileLine(pos: string, card: AdvCard): string {
+  const ms = card.all ?? card.metrics;
+  const p = (key: string): number | null => ms.find((m) => keyOf(m) === key)?.pctl ?? null;
+  const mean = (tier: number): number | null => {
+    const xs = ms.filter((m) => m.pctl != null && m.standing !== "muted" && tierOf(keyOf(m)) === tier && TIERS[tier]!.keys.includes(keyOf(m))).map((m) => m.pctl!);
+    return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  };
+  const parts: string[] = [];
+  const deep = p("deep") ?? p("aya");
+  const adot = p("adot");
+  const snap = p("snap");
+  if (pos === "QB" && deep !== null) parts.push(deep >= 65 ? "Downfield attacker" : deep <= 35 ? "Short/intermediate distributor" : "Balanced passer");
+  else if (pos === "RB" && snap !== null) parts.push(snap >= 65 ? "Lead back" : snap <= 35 ? "Committee back" : "Rotational back");
+  else if ((pos === "WR" || pos === "TE") && adot !== null) parts.push(adot >= 65 ? "Downfield target" : adot <= 35 ? "Short-area target" : "Intermediate target");
+  const use = mean(1);
+  if (use !== null) parts.push(use >= 67 ? "High volume" : use <= 33 ? "Low volume" : "Moderate volume");
+  const eff = mean(0);
+  if (eff !== null) parts.push(eff >= 60 ? "Above-average efficiency" : eff <= 40 ? "Below-average efficiency" : "Average efficiency");
+  return parts.join(" · ");
 }
 
 /**
@@ -649,7 +704,9 @@ const PROFILE: Record<string, [string, string]> = {
 /**
  * The read under the table: one profile sentence (his two best marks, then his
  * two worst), and the fantasy line. mak (2026-09-30) asked for less copy with
- * more air than the "What works / What limits him" pair it replaces.
+ * more air than the "What works / What limits him" pair it replaces, and
+ * (2026-10-03) for the two to be one "SC Analysis" module, a component every
+ * player page carries.
  */
 function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string {
   const last = lastName(data.player.name);
@@ -657,11 +714,19 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
   const ranked = byPct(cards.flatMap((x) => (x.qualified ? x.metrics : [])));
   const phrase = (m: AdvMetric, i: 0 | 1): string =>
     PROFILE[keyOf(m)]?.[i] ?? `ranks ${i === 0 ? "high" : "low"} in ${m.label.replace(LC, (w) => w.toLowerCase())}`;
+  // Target share and targets per game say the same thing ("draws a big target
+  // share and draws targets"), as do red-zone opportunities and targets: the
+  // sentence takes one of each pair.
+  const SAME: Record<string, string> = { tpg: "tgts", rzt: "rzo" };
   const pick = (list: AdvMetric[], i: 0 | 1): string[] => {
     const out: string[] = [];
+    const seen = new Set<string>();
     for (const m of list) {
+      const key = keyOf(m);
       const p = phrase(m, i);
-      if (!out.includes(p)) out.push(p);
+      if (seen.has(SAME[key] ?? key) || out.includes(p)) continue;
+      seen.add(SAME[key] ?? key);
+      out.push(p);
       if (out.length === 2) break;
     }
     return out;
@@ -674,7 +739,8 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
     const sentence = good.length
       ? `${last} ${listWords(good)}${bad.length ? `, but ${listWords(bad)}` : ""}.`
       : `${last} ${listWords(bad)}.`;
-    parts.push(`<p><strong>Profile:</strong> ${escapeHtml(sentence)}</p>`);
+    const kind = pos === "QB" ? "Passing" : pos === "RB" ? "Rushing" : "Receiving";
+    parts.push(scaPart(`${kind} profile`, escapeHtml(sentence)));
   }
   if (row && row.line.gp) {
     const t = row.line;
@@ -683,11 +749,23 @@ function fantasyNote(data: PlayerPageData, c: Career, cards: AdvCard[]): string 
         : pos === "RB" ? `${one(t.rushAtt / t.gp)} carries and ${one(t.tgt / t.gp)} targets a game`
           : `${one(t.tgt / t.gp)} targets a game`;
     parts.push(
-      `<p><strong>For fantasy:</strong> ${escapeHtml(`his floor is his volume, ${volume}${row.inProgress ? " this season" : ` in ${row.season}`}; efficiency decides how much of it becomes points.`)}</p>`,
+      scaPart(
+        "Fantasy impact",
+        escapeHtml(`His floor is his volume: ${volume}${row.inProgress ? " this season" : ` in ${row.season}`}. Efficiency decides how much of it becomes points.`),
+      ),
     );
   }
+  return scaModule(parts);
+}
+
+/** One titled paragraph of the SC Analysis module. */
+function scaPart(title: string, html: string): string {
+  return `<h3 class="scp-st-sca-h">${escapeHtml(title)}</h3><p>${html}</p>`;
+}
+
+function scaModule(parts: string[]): string {
   if (parts.length === 0) return "";
-  return `<div class="scp-st-read">${parts.join("")}</div>`;
+  return `<div class="scp-st-read scp-st-sca"><span class="scp-st-sca-tag">SC Analysis</span>${parts.join("")}</div>`;
 }
 
 /**
@@ -717,7 +795,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
 
   if (adv?.current) {
     const cur = adv.current;
-    cols.push({ title: String(cur.season), sub: cur.throughWeek ? `Thru Wk ${cur.throughWeek}` : "Season", card: cur });
+    cols.push({ title: String(cur.season), sub: cur.throughWeek ? `Current · thru Wk ${cur.throughWeek}` : "Current", card: cur });
     used.push(cur);
     notes.push(
       cur.qualified
@@ -735,7 +813,7 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
     );
   } else if (adv?.last) {
     const prev = adv.last;
-    cols.push({ title: String(prev.season), sub: plural(prev.games, "game"), card: prev });
+    cols.push({ title: String(prev.season), sub: `${adv?.current ? "Previous · " : ""}${plural(prev.games, "game")}`, card: prev });
     used.push(prev);
     notes.push(
       prev.qualified
@@ -750,13 +828,22 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
 
   const copy = data.statsCopy;
   const note = own(copy?.adv_fantasy_note)
-    ? `<div class="scp-st-read"><strong>What it means for fantasy:</strong> ${copyHtml(own(copy?.adv_fantasy_note)!)}</div>`
+    ? scaModule([scaPart("Fantasy impact", copyHtml(own(copy?.adv_fantasy_note)!))])
     : fantasyNote(data, c, used);
-  const lede = own(copy?.adv_lede)
+  // A real section header (mak, 2026-10-03): the title as a small eyebrow,
+  // then what the section answers, a one-line read, and the profile tags.
+  const card = college && !adv?.current ? null : profileCard(used);
+  const summary = own(copy?.adv_lede)
     ? copyHtml(own(copy?.adv_lede)!)
-    : college && !adv?.current ? collegeLede(data, college) : advLede(data, pos, used);
+    : college && !adv?.current ? collegeLede(data, college) : card ? escapeHtml(profileLine(pos, card)) : "";
+  const last = lastName(data.player.name);
+  const id = "scp-st-adv-h";
   return (
-    sectionOpen("scp-st-adv-h", `Advanced ${cats} stats`, lede) +
+    `<section class="scp-ox-sec scp-st-advsec" aria-labelledby="${id}">` +
+    `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(titleCase(`Advanced ${cats} stats`))}</h2>` +
+    `<p class="scp-st-dek">${escapeHtml(`How ${last} ${adv?.current ? "is creating" : "created"} his production`)}</p>` +
+    (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
+    (card ? profileTags(card) : "") +
     renderAdvTable(cols) +
     `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${grey}`)}</p>` +
     note +

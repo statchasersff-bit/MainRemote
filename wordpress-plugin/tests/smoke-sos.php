@@ -4,7 +4,7 @@
  *
  * The board memoises "does this page mount me" and the fetch its title filters
  * read, so the page that does and the article that does not cannot be asked
- * about in one process — nor after the main group has asked about a page of
+ * about in one process - nor after the main group has asked about a page of
  * its own. smoke.php runs this twice: STATCHASERS_SMOKE_GROUP=sosleak for an
  * ordinary article carrying the view's query args, and =sos for the page that
  * mounts the board, in the "Let the tool supply the heading" mode.

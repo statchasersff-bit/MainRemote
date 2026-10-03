@@ -1,5 +1,5 @@
 /*
- * StatChasers — Fantasy Points Allowed
+ * StatChasers - Fantasy Points Allowed
  *
  * The third sibling of team.css and player.css, and a sibling for the same
  * reason: the three stylesheets are enqueued independently, so a page mounting
@@ -38,7 +38,7 @@
      so it wants to be scanned in one screenful rather than scrolled: these two
      are what set the row height, and they are here so it stays one decision. */
   --scf-cell-pad-y: 2px;
-  /* The x half, and a token for the same reason the y half is one — but also
+  /* The x half, and a token for the same reason the y half is one - but also
      for a second: the narrow tiers tighten it to 7px, and the theme armour at
      the foot of this file restates cell padding at a specificity Divi cannot
      reach. A literal in both places means the armour lands AFTER the tier and
@@ -56,7 +56,7 @@
    * The matchup scale: DIVERGING, not ordinal.
    *
    * Rank 1 is the softest defense and 32 the toughest, with league average in
-   * the middle — two poles either side of a neutral, so it takes two hues
+   * the middle - two poles either side of a neutral, so it takes two hues
    * rather than one ramp. Green is the exploitable pole and red the one to
    * avoid, which is the convention every fantasy reader already has.
    *
@@ -70,7 +70,7 @@
    * unmistakably ordinary.
    *
    * Green against red is the one pair that red-green colour blindness takes
-   * away, and no choice of hues gets it back — at equal lightness the two arms
+   * away, and no choice of hues gets it back - at equal lightness the two arms
    * simulate to a ΔE of about 1, i.e. the same colour. Three things are doing
    * the work instead:
    *
@@ -80,7 +80,7 @@
    *    entire reason the mirrored pairs hold up: ΔE 15.6 under protanopia and
    *    7.5 under deuteranopia, against roughly 1 if the arms were level. 7.5 is
    *    the 6–8 floor band rather than the ≥8 target, which is legal only with
-   *    a second encoding — hence (2).
+   *    a second encoding - hence (2).
    * 2. **Every cell prints its rank**, in the arm's ink. The tint is a second
    *    reading of a number that is already there, never the only one.
    * 3. **The table arrives sorted by rank**, so position carries the ordering
@@ -137,8 +137,8 @@ body.scf-page {
    * Embedded, the table lives in a WordPress content column that can be 700px
    * wide inside a 1400px window. A viewport media query cannot see that: it
    * would report a wide screen and leave the table overflowing its column. A
-   * container query asks the only question that matters — how much room do I
-   * actually have — and gets the same answer standalone and embedded.
+   * container query asks the only question that matters - how much room do I
+   * actually have - and gets the same answer standalone and embedded.
    */
   container-type: inline-size;
   container-name: scf;
@@ -153,7 +153,7 @@ body.scf-page {
   padding: 0;
   /* Clearance from whatever the host prints next. 30px read as the tool
      finishing and the footer starting in the same breath; 50 is the gap that
-     says they are two things. Bottom only — the top gap is the one between the
+     says they are two things. Bottom only - the top gap is the one between the
      page's heading and the hero, and it is already right. */
   padding-bottom: 50px;
 }
@@ -166,8 +166,8 @@ body.scf-page {
 
 /* Host padding on bare elements, zeroed with enough weight to mean it.
  *
- * Divi styles elements rather than classes — `p { padding-bottom: 1em }`, and
- * the same gesture on headings and lists — and this file's instrument on those
+ * Divi styles elements rather than classes - `p { padding-bottom: 1em }`, and
+ * the same gesture on headings and lists - and this file's instrument on those
  * elements is margin: it sets padding on a handful of components and nowhere
  * else. So on the published site every paragraph grew a gap beneath it that no
  * rule in here asked for, and in the preview, where there is no theme, none of
@@ -177,7 +177,7 @@ body.scf-page {
  * there was nothing between the theme and every <p> in the tool.
  *
  * `:where()` on the element list so the whole selector weighs `.scf` and no
- * more. That is one class — heavier than the bare `p` it has to beat, level
+ * more. That is one class - heavier than the bare `p` it has to beat, level
  * with the single-class component rules in this file that set padding on
  * purpose, and above all of them in the file, so those win on source order and
  * keep their spacing. Moving this below them would invert that and flatten
@@ -207,7 +207,7 @@ body.scf-page {
  * `nowrap` is the whole point: these two are one decision made twice, and a
  * layout that drops View onto its own line reads as two unrelated widgets
  * rather than one control. Below the width that holds both, the option labels
- * shorten instead — see the abbreviations further down.
+ * shorten instead - see the abbreviations further down.
  */
 .scf-control-set {
   display: flex;
@@ -300,7 +300,7 @@ body.scf-page {
  * different FAQ.
  *
  * No rule above the block, and the rules inside it span the block rather than a
- * narrower text column — both are what the hub does, and together they are what
+ * narrower text column - both are what the hub does, and together they are what
  * puts the heading bar and the list on the same left edge as the table.
  */
 .scf-faq {
@@ -309,7 +309,7 @@ body.scf-page {
   margin-top: 77px;
 }
 
-/* Still an <h2>, and still not a click target — the block does not fold, the
+/* Still an <h2>, and still not a click target - the block does not fold, the
    questions do. The gold bar marks the heading rather than underlining it. */
 .scf-faq-title {
   position: relative;
@@ -388,7 +388,7 @@ body.scf-page {
 
 /* 72ch, the measure the hub's answers read at, indented to the question's text
    rather than to the chevron. One of these per question, holding one or two
-   paragraphs — the answers that state a rule and then qualify it break, and a
+   paragraphs - the answers that state a rule and then qualify it break, and a
    qualification welded onto its rule is read as part of it. */
 .scf-faq-a {
   margin: 7px 0 0 20px;
@@ -472,13 +472,13 @@ body.scf-page {
   top: 0;
   z-index: 1;
   /* Deliberately looser than the 2px the data rows wear (--scf-cell-pad-y).
-     The rows are dense on purpose — 32 of them in one screenful — but the
+     The rows are dense on purpose - 32 of them in one screenful - but the
      header is one band, not a row, and matching the body's density made it
      read as a pinstripe rather than as the top of the table. 5px against an
      11px label on 1.12 puts the band at roughly 23px, half again what it was,
      and costs the table a dozen pixels once. */
   padding: 5px var(--scf-cell-pad-x);
-  /* The brand navy — the same one the active control pill wears, so the page
+  /* The brand navy - the same one the active control pill wears, so the page
      carries one blue. It has to be opaque anyway: the header is sticky and the
      rows scroll under it. Rounded like the data cells below, because
      border-spacing makes every cell its own chip either way. */
@@ -494,7 +494,7 @@ body.scf-page {
 
 /* The two headers that are not centred. Each sits over a column that is not
    centred either: the team names run left, the games count runs right. Only the
-   position columns — read as a block, left to right — take the centred label. */
+   position columns - read as a block, left to right - take the centred label. */
 .scf-table thead .scf-th-team {
   text-align: left;
 }
@@ -561,7 +561,7 @@ body.scf-page {
    * Positioned so the rank inside it has somewhere to be.
    *
    * Below 540px the rank digit is taken out of the flow and hidden from sight
-   * — the figure alone is what fits, and the rank is left for screen readers.
+   * - the figure alone is what fits, and the rank is left for screen readers.
    * "Out of the flow" means `position: absolute`, and with nothing positioned
    * between it and the document that resolved against the initial containing
    * block. An absolutely positioned box whose containing block is outside a
@@ -570,7 +570,7 @@ body.scf-page {
    * document coordinates past the right edge of the screen and dragged the
    * page out with them.
    *
-   * Nothing looked wrong where they were — they are clipped to invisibility —
+   * Nothing looked wrong where they were - they are clipped to invisibility -
    * but the page scrolled sideways, and once a document is wider than the
    * viewport every percentage width on it resolves against the wider box. That
    * is the grey band down the side of the tool on a phone.
@@ -599,7 +599,7 @@ body.scf-page {
  *
  * Every cell draws its own right and bottom line, and the last of each is
  * dropped so the table's own border is not doubled up against it. On the navy
- * header the line is a light tint of the navy instead of the page's grey — a
+ * header the line is a light tint of the navy instead of the page's grey - a
  * grey rule on a dark band reads as a gap in the band.
  */
 .scf-table thead th,
@@ -627,7 +627,7 @@ body.scf-page {
   color: var(--sc-ink);
 }
 
-/* The rank, in the arm's ink — the second reading of the tint, and the one
+/* The rank, in the arm's ink - the second reading of the tint, and the one
    that survives a greyscale print. */
 .scf-rank {
   display: inline-block;
@@ -742,8 +742,8 @@ body.scf-page {
  * the abbreviation stay, which is what a reader matches a row on anyway.
  *
  * It is one rule on one selector, so all 32 names go at the same moment. That
- * is the point: names disappearing a row at a time — which is what truncation
- * or a per-cell measurement would do — would read as a rendering fault.
+ * is the point: names disappearing a row at a time - which is what truncation
+ * or a per-cell measurement would do - would read as a rendering fault.
  *
  * Nothing is pinned. Below ~527px the table scrolls sideways and the defense
  * column scrolls away with it; the crest is then what identifies a row mid-scroll.
@@ -759,7 +759,7 @@ body.scf-page {
  * Narrower still: the rank digits go too, leaving the figure alone.
  *
  * Same measurement, one step on. Without the names the table wants ~527px, and
- * without the ranks as well ~377px — so 540px is where the ranks become what
+ * without the ranks as well ~377px - so 540px is where the ranks become what
  * pays. That is the last thing the table can give up: below it there is nothing
  * left to drop and it scrolls sideways instead.
  *
@@ -773,8 +773,8 @@ body.scf-page {
 @container scf (max-width: 540px) {
   .scf-rank {
     position: absolute;
-    /* `min-width: 22px` on the base rule outranks `width: 1px` — a used width
-       is clamped up to its minimum — so this box was 22px wide, not 1px, for
+    /* `min-width: 22px` on the base rule outranks `width: 1px` - a used width
+       is clamped up to its minimum - so this box was 22px wide, not 1px, for
        as long as it has existed. Invisible either way, which is why it went
        unnoticed; 22px of it was not. */
     min-width: 0;
@@ -792,7 +792,7 @@ body.scf-page {
 
      The token rather than `padding-left`/`padding-right`, because the theme
      armour at the foot of this file restates cell padding at a specificity
-     nothing here can reach — a literal would be put back to 10px, and those
+     nothing here can reach - a literal would be put back to 10px, and those
      3px a side across seven columns are exactly the wire. */
   .scf-cell,
   .scf-team,
@@ -812,7 +812,7 @@ body.scf-page {
    * The CSV link goes rather than wrapping.
    *
    * The controls row needs ~471px to hold both filter groups and the link on
-   * one line — down from 621 when the option labels were long — so this is
+   * one line - down from 621 when the option labels were long - so this is
    * where the link would start wrapping, and a lone button on a row of its own
    * reads as a layout accident rather than a choice.
    *
@@ -828,7 +828,7 @@ body.scf-page {
 /*
  * Narrow: the scoring options shorten to Std / Half / PPR.
  *
- * The controls row wants ~372px to hold both groups on one line — the two
+ * The controls row wants ~372px to hold both groups on one line - the two
  * labels above the pills cost no width, but "Standard" and "Half-PPR" do. 400px
  * is that figure on the same ~8% headroom the thresholds below carry, so the
  * swap happens a little before the row would break rather than at the moment it
@@ -855,7 +855,7 @@ body.scf-page {
  * Narrowest: the games column goes, and that is the end of the line.
  *
  * ~335px with it and ~282px without, so 360px is the threshold on the same
- * ~8% headroom the other two carry. It is last on purpose — it is the only
+ * ~8% headroom the other two carry. It is last on purpose - it is the only
  * column here that is not fantasy points allowed, and the one a reader gives up
  * least by losing, because the note above the table already says how much of
  * the season is in the figures.
@@ -894,17 +894,17 @@ body.scf-page {
  *
  * Not a fallback. These used to sit behind
  * `@supports not (container-type: inline-size)`, which meant they reached only
- * browsers that cannot do container queries — i.e. almost nobody, and in
+ * browsers that cannot do container queries - i.e. almost nobody, and in
  * particular not the phone this matters on.
  *
  * The container query is still the better question for the case it was written
  * for: a 700px WordPress column inside a 1400px window, where the viewport says
  * "desktop" and the table has to compact anyway. But it is only half the
  * problem, and the other half is what was reported from the live site. If the
- * host column comes out WIDER than the phone — which it does whenever anything
+ * host column comes out WIDER than the phone - which it does whenever anything
  * on the page has made the document horizontally scrollable, because a
  * percentage width then resolves against a containing block wider than the
- * screen — then `@container scf` is asked about 900px, answers "desktop", and
+ * screen - then `@container scf` is asked about 900px, answers "desktop", and
  * the table keeps its full team names and its rank digits on a 390px screen.
  *
  * So the two are a union, not a primary and a fallback: compact when the
@@ -923,8 +923,8 @@ body.scf-page {
 @media (max-width: 540px) {
   .scf-rank {
     position: absolute;
-    /* `min-width: 22px` on the base rule outranks `width: 1px` — a used width
-       is clamped up to its minimum — so this box was 22px wide, not 1px, for
+    /* `min-width: 22px` on the base rule outranks `width: 1px` - a used width
+       is clamped up to its minimum - so this box was 22px wide, not 1px, for
        as long as it has existed. Invisible either way, which is why it went
        unnoticed; 22px of it was not. */
     min-width: 0;
@@ -997,7 +997,7 @@ body.scf-page {
  * only two armed with `!important`.
  *
  * MIRRORS the block of the same name in team.css, which was written after the
- * published team hub hit both of these and this file was left without them —
+ * published team hub hit both of these and this file was left without them -
  * the fix went in where the bug was seen rather than everywhere it applied.
  * The symptoms here were the same two: every heading in the tool rendered in
  * the theme's display serif, and the section tab strip read "Overview • Stats
@@ -1032,7 +1032,7 @@ body.scf-page {
 /*                                                                         */
 /* Every declaration below RESTATES one already made above, at a           */
 /* specificity a host theme cannot reach. Nothing here is a new design     */
-/* decision — if a value in this block disagrees with the rule it mirrors, */
+/* decision - if a value in this block disagrees with the rule it mirrors, */
 /* this block is the one that is wrong.                                    */
 /*                                                                         */
 /* Standalone this file is the only stylesheet and none of it does         */
@@ -1048,14 +1048,14 @@ body.scf-page {
 /* Which of ours those beat is a specificity question with three answers.  */
 /* `.scf-cell` is one class and loses to one class plus two elements.      */
 /* `.scf-table thead th` TIED, and a tie is settled by which stylesheet    */
-/* WordPress enqueued last — which stopped being ours, and cost the table  */
+/* WordPress enqueued last - which stopped being ours, and cost the table  */
 /* the games column on a phone. Every th rule below now carries a second   */
 /* class for that reason; do not take it off. And `border-top` we never    */
 /* declare at all, so the theme's is simply adopted.                       */
 /*                                                                         */
 /* Two symptoms were reported from the live site and both are here: the    */
 /* column headers went grey (Divi colouring the <button> the sort control  */
-/* is built from — `.scf-sort` sets `color: inherit`, and a theme's        */
+/* is built from - `.scf-sort` sets `color: inherit`, and a theme's        */
 /* `button` rule outranks it) and every row grew (Divi's 6px cell padding  */
 /* replacing our 2px, over 32 rows).                                       */
 /*                                                                         */
@@ -1069,7 +1069,7 @@ body.scf-page {
 
    Divi's real selector is `.entry-content table:not(.variations)`, and
    `:not()` counts its argument: (0,2,1), which beat the `.scf .scf-table`
-   this rule used to be — measured 2026-09-29, the 15px of margin and the
+   this rule used to be - measured 2026-09-29, the 15px of margin and the
    theme's #eee top edge were both still arriving. Repeating the `:not()`
    keeps this one class ahead, as rankings.css does. */
 .scf table.scf-table:not(.variations) {
@@ -1087,7 +1087,7 @@ body.scf-page {
   padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
 }
 
-/* This table draws its grid with right and bottom lines only — see "The inner
+/* This table draws its grid with right and bottom lines only - see "The inner
    grid" above. A theme's `border-top` is a line it never asked for, and
    because nothing above declares that side, there is nothing to outrank it. */
 .scf .scf-table thead th,
@@ -1139,8 +1139,8 @@ body.scf-page {
   color: var(--sc-gold-soft);
 }
 
-/* Links. Each of these is a brand colour doing a job — the muted pill, the
-   active pill, the gold-ruled CSV, the team's navy — and a theme's one link
+/* Links. Each of these is a brand colour doing a job - the muted pill, the
+   active pill, the gold-ruled CSV, the team's navy - and a theme's one link
    blue flattens the distinction between all four. */
 .scf .scf-opt {
   color: var(--sc-muted-strong);

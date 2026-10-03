@@ -7,8 +7,8 @@
  * it does: the theme prints the post title, and the title filters in
  * statchasers-team-pages.php and statchasers-player-pages.php have already
  * rewritten that title into the section-aware phrase. On a template that prints
- * no title at all — a Divi full-width layout, a Theme Builder layout with no
- * Post Title module, a block theme whose template someone stripped — there is
+ * no title at all - a Divi full-width layout, a Theme Builder layout with no
+ * Post Title module, a block theme whose template someone stripped - there is
  * nothing to rewrite, and the page ships with no H1 at all.
  *
  * The two cases are indistinguishable from inside PHP. The theme decides what
@@ -57,7 +57,7 @@ const STATCHASERS_H1_TIMEOUT = 10;
  * 'auto' is the default and the one anybody should need: it prints an H1 when
  * the probe found none and stays quiet otherwise. The two manual settings exist
  * because a probe is a measurement of one page and a site can always be the
- * exception — a template that prints a title on the team hub and not on the
+ * exception - a template that prints a title on the team hub and not on the
  * player profiles, say.
  */
 function statchasers_h1_mode(): string {
@@ -71,7 +71,7 @@ function statchasers_h1_mode(): string {
  * The stylesheet, the template and the theme's version, because a child theme
  * with its own page.php is a different answer from its parent, and a theme
  * update is exactly the event that can start or stop printing a title. Anything
- * that changes this string retires the stored verdict without deleting it — the
+ * that changes this string retires the stored verdict without deleting it - the
  * old one stays readable in the admin as "measured against a different theme".
  */
 function statchasers_h1_fingerprint(): string {
@@ -123,7 +123,7 @@ function statchasers_h1_verdict_any(): ?array {
  *
  * Two strings come back, and the second is the one that does the work.
  * `expect` is the heading the plugin would print. `anchor` is the team's name
- * alone — because an H1 somebody wrote by hand is not going to be the generated
+ * alone - because an H1 somebody wrote by hand is not going to be the generated
  * phrase word for word, and demanding that it is turns "New England Patriots
  * Fantasy Football Hub" into a warning about a page that is completely fine.
  * The question worth asking is not "is this my string" but "is this heading
@@ -175,7 +175,7 @@ function statchasers_h1_probe_target( string $tool = 'team' ): ?array {
  * to every tool, on the reasoning that a theme prints its title the same way on
  * every page. It does not: a hub whose title comes from a builder layout and a
  * player page whose title comes from `page.php` are the same site answering the
- * question differently, and the published player pages showed it — two H1s, the
+ * question differently, and the published player pages showed it - two H1s, the
  * theme's plain one and the tool's designed one, on exactly the setting that is
  * supposed to prevent that.
  *
@@ -220,13 +220,13 @@ function statchasers_h1_player_probe_target(): ?array {
  *
  * One page rather than a set, because that is what this tool is: one address
  * with eighteen week URLs hanging off it, all rendered by the same page. It is
- * found by its path rather than by a registry, because nothing creates it —
+ * found by its path rather than by a registry, because nothing creates it -
  * somebody wrote it and put the shortcode in it, and `statchasers_schedule_page_path()`
  * is where the plugin is told which page that is.
  *
  * `anchor` is the word "schedule" rather than a name. The other two probes ask
  * "is this heading about this team, this player"; here there is only one page,
- * so the question is whether the heading on it is about the schedule at all —
+ * so the question is whether the heading on it is about the schedule at all -
  * which is what separates a page whose theme names it from a page whose theme
  * prints the site name in an H1 on everything.
  *
@@ -275,7 +275,7 @@ function statchasers_h1_normalise( string $html ): string {
  *
  * Failures are recorded rather than thrown away. A host that blocks its own
  * loopback requests is a real configuration and the admin screen has to be able
- * to say so — silence would read as "no H1 found", which would be a wrong
+ * to say so - silence would read as "no H1 found", which would be a wrong
  * answer arrived at confidently.
  *
  * @return array<string,mixed> The verdict, already stored.
@@ -391,8 +391,8 @@ function statchasers_h1_measure( array $target ): array {
 	$measured['texts'] = array_slice( $texts, 0, 5 );
 
 	// Either the generated phrase, or any heading that names the subject. The
-	// second is what makes a hand-written hero — a Divi Code module carrying
-	// its own <h1> — read as the page's heading rather than as a stray one.
+	// second is what makes a hand-written hero - a Divi Code module carrying
+	// its own <h1> - read as the page's heading rather than as a stray one.
 	$expect = statchasers_h1_normalise( (string) $target['expect'] );
 	$anchor = statchasers_h1_normalise( (string) ( $target['anchor'] ?? '' ) );
 
@@ -461,14 +461,14 @@ function statchasers_h1_should_print( string $tool = '' ): bool {
  *
  * The rule that matters is the last one: a tool with no measurement of its own
  * gets no answer rather than somebody else's. Reusing the hub's count for a
- * player page is exactly how the published player pages ended up with two H1s —
+ * player page is exactly how the published player pages ended up with two H1s -
  * the hub's title comes from a builder layout and the player page's comes from
  * `page.php`, so the hub honestly measured zero and the player page honestly
  * had one, and one number was being asked to describe both.
  *
  * A verdict stored before this file learned to measure per tool has no `tools`
  * key at all. That one still answers for the hub, which is the page it was
- * taken on, and for nothing else — so an upgrade quiets the duplicate heading
+ * taken on, and for nothing else - so an upgrade quiets the duplicate heading
  * immediately and the screen asks for a fresh run to restore the rest.
  *
  * @param array<string,mixed> $verdict Stored verdict.
@@ -499,7 +499,7 @@ function statchasers_h1_measurement_for( array $verdict, string $tool ): ?array 
  * into markup it does not own, which is a different kind of act from adding
  * markup of its own, and it exists for one situation: a theme that prints a
  * page title from its template, with no builder layout to remove it from. Divi
- * is that theme — `<h1 class="entry-title main_title">` comes out of page.php —
+ * is that theme - `<h1 class="entry-title main_title">` comes out of page.php -
  * and on a site whose other pages carry a hand-built hero with a heading, a
  * rule and a standfirst, the template's bare title is the one thing that cannot
  * be made to match.
@@ -529,7 +529,7 @@ function statchasers_h1_should_replace(): bool {
  * The player fragment opens each section with "<player> Stats 2026" and its
  * siblings, normally as an <h2> because the host page has the <h1>. On a
  * section address the theme prints that same phrase as the page title, so the
- * reader sees it twice — once in the theme's serif at the top, once with the
+ * reader sees it twice - once in the theme's serif at the top, once with the
  * gold rule under it below the tab strip.
  *
  * In this mode the theme's title is emptied and the fragment is asked for the
@@ -597,8 +597,8 @@ function statchasers_h1_mounts_a_tool(): bool {
  * shortcode is about to print in the hero, so what the template gets is
  * nothing.
  *
- * The element itself survives — a filter on the text inside `<h1>` cannot
- * remove the `<h1>` — so what the theme prints is an empty heading, and the
+ * The element itself survives - a filter on the text inside `<h1>` cannot
+ * remove the `<h1>` - so what the theme prints is an empty heading, and the
  * rule below hides it. That husk is the honest cost of doing this without a
  * builder layout, and it is why `replace` is not the default.
  */
@@ -626,7 +626,7 @@ add_filter(
  * The rule below hides the husk from readers, but not from anyone who reads
  * the source: an SEO audit of the player pages found
  * `<h1 class="entry-title main_title"></h1>` in View Source and reported the
- * page's H1 as empty — a second, blank H1 beside the one the tool supplies.
+ * page's H1 as empty - a second, blank H1 beside the one the tool supplies.
  * A filter on the text cannot remove the element, so this removes it from the
  * output instead.
  *
@@ -710,19 +710,19 @@ add_filter(
  *
  * Printed rather than enqueued: which stylesheet handle is on the page depends
  * on which tool it mounts, and neither of these belongs to any of them. The
- * hero's LOOK is still the site's own CSS — this file ships none of that, for
+ * hero's LOOK is still the site's own CSS - this file ships none of that, for
  * the reason given on statchasers_page_heading_html().
  *
  * 1. The gutter. A hand-built hero is a full-width module: it spans the window
- *    and constrains its own contents, with side padding — 40px on desktop, 28
- *    and 18 further down — and an inner shell held to the site's content width
+ *    and constrains its own contents, with side padding - 40px on desktop, 28
+ *    and 18 further down - and an inner shell held to the site's content width
  *    and centred. The generated one is printed into the same container as the
  *    fragment beneath it, and an embedded fragment runs flush to that container
  *    because the host owns the page gutter (`.sct.is-embed { --sct-gutter: 0 }`).
  *    So both halves of the module's own centring indent the heading past the
  *    tool it heads, and both have to go: the padding, and the max-width with
  *    the auto margins that go with it. Zeroing only the padding left the larger
- *    of the two in place — a container wider than the shell still inset the
+ *    of the two in place - a container wider than the shell still inset the
  *    heading by half the difference, which is what a reader actually sees.
  *
  *    `!important`, which is not free and is worth saying why. The site's hero
@@ -731,11 +731,11 @@ add_filter(
  *    equal specificity the winner is whichever hook fired last, which is not
  *    something this file can know or should depend on. The element being forced
  *    is one the plugin generated itself, four lines down, and the declarations
- *    only ever undo centring — so the cost is bounded to the plugin's own copy,
+ *    only ever undo centring - so the cost is bounded to the plugin's own copy,
  *    and the hand-written heroes on every other page are untouched.
  *
  * 2. The husk, when the theme's title has been emptied. `:empty` matches an
- *    element with no children at all, including text — which is exactly what
+ *    element with no children at all, including text - which is exactly what
  *    `the_title` returning '' produces, and is why it cannot catch a heading
  *    that merely looks empty. A theme that wraps its title in whitespace needs
  *    a line of its own; the admin panel says so.
@@ -830,7 +830,7 @@ function statchasers_h1_summary(): array {
 		return array(
 			'level' => 'success',
 			'text'  => 'The theme prints no H1 on these pages, so the shortcodes print the heading themselves, ' .
-				'in the site\'s own hero markup. <strong>The hero CSS has to be site-wide for that to look right</strong> — ' .
+				'in the site\'s own hero markup. <strong>The hero CSS has to be site-wide for that to look right</strong> - ' .
 				'Divi &rarr; Theme Options &rarr; Custom CSS, not inside the Code module of one page.',
 		);
 	}
@@ -848,7 +848,7 @@ function statchasers_h1_summary(): array {
 	return array(
 		'level' => 'warning',
 		'text'  => sprintf(
-			'The page has %d H1, but it does not name the team — found %s. That is a heading written once and reused on every page (a site-wide hero module, or a theme printing the site name), so all 32 hubs are sharing it. The shortcodes will not add a second one; the fix is to make that heading name the page.',
+			'The page has %d H1, but it does not name the team - found %s. That is a heading written once and reused on every page (a site-wide hero module, or a theme printing the site name), so all 32 hubs are sharing it. The shortcodes will not add a second one; the fix is to make that heading name the page.',
 			$count,
 			'"' . implode( '", "', array_map( 'esc_html', (array) $verdict['texts'] ) ) . '"'
 		),
@@ -862,7 +862,7 @@ function statchasers_h1_summary(): array {
  *
  * Deliberately NOT `sc-lo-hero-title`, which is the id in the hand-written hero
  * module. The generated heading only renders on a page that has no H1, so the
- * two should never meet — but "should never" is not a reason to put a duplicate
+ * two should never meet - but "should never" is not a reason to put a duplicate
  * id in the document if they ever do.
  */
 const STATCHASERS_HEADING_ID = 'statchasers-page-title';
@@ -872,7 +872,7 @@ const STATCHASERS_HEADING_ID = 'statchasers-page-title';
  *
  * The class names are the ones the hand-written hero modules already use, so
  * one stylesheet dresses both: the four pages written by hand and the ~1,100
- * generated addresses that nobody could write by hand — 32 hubs across six
+ * generated addresses that nobody could write by hand - 32 hubs across six
  * sections each, several hundred profiles across seven, and 496 pair URLs that
  * all render from a single holder page and so have no module to write into.
  *
@@ -881,7 +881,7 @@ const STATCHASERS_HEADING_ID = 'statchasers-page-title';
  * that carries one hero. A copy in this plugin would be a second definition of
  * the design, and the first thing it would do is drift from the first one. The
  * consequence to know about: with the CSS still inline in a module, a generated
- * heading is unstyled — correct markup, no gold rule — and the admin panel says
+ * heading is unstyled - correct markup, no gold rule - and the admin panel says
  * so rather than leaving it to be discovered on the front end.
  *
  * @param string $heading The H1 text.
@@ -897,7 +897,7 @@ function statchasers_page_heading_html( string $heading, string $lead = '' ): st
 	// `data-sct-page-title` and `data-sct-page-lead` are the contract with the
 	// tool's own bundle. Switching a tab changes which section the reader is on
 	// and pushes that section's URL, so the heading above the fragment has to
-	// change with it — and the fragment cannot find a heading it does not own
+	// change with it - and the fragment cannot find a heading it does not own
 	// without being told which element it is. The bundle falls back to the
 	// document's first H1, so a hand-written hero still gets the swap; these
 	// attributes are what make it exact.
@@ -947,7 +947,7 @@ function statchasers_h1_filter( $value ): bool {
 	}
 
 	// Which page type is asking. The check is per page type because the answer
-	// is — see statchasers_h1_measurement_for().
+	// is - see statchasers_h1_measurement_for().
 	$map = array(
 		'statchasers_team_shortcode_h1'    => 'team',
 		'statchasers_player_shortcode_h1'  => 'player',
@@ -1041,13 +1041,13 @@ function statchasers_h1_panel(): void {
 
 	printf(
 		'<p>Every mounted fragment starts at <code>&lt;h2&gt;</code> because the page is meant to supply the <code>&lt;h1&gt;</code>. ' .
-		'Most themes print one from the page title — which this plugin has already rewritten to name the team, player or section. ' .
+		'Most themes print one from the page title - which this plugin has already rewritten to name the team, player or section. ' .
 		'A layout that prints no title leaves the page with no heading at all, so this checks a real published page and reports what it found.</p>'
 	);
 
 	printf(
-		'<p class="description">When it does print one, it uses the same <code>%s</code> markup the hand-written hero modules use — ' .
-		'section, H1, rule, lead — so the ~1,100 generated addresses and the handful of pages you write yourself are one component. ' .
+		'<p class="description">When it does print one, it uses the same <code>%s</code> markup the hand-written hero modules use - ' .
+		'section, H1, rule, lead - so the ~1,100 generated addresses and the handful of pages you write yourself are one component. ' .
 		'No stylesheet ships with the plugin; the site owns that CSS.</p>',
 		esc_html( 'sc-lo-hero' )
 	);
@@ -1075,10 +1075,10 @@ function statchasers_h1_panel(): void {
 
 	echo '<fieldset><legend class="screen-reader-text">Heading mode</legend>';
 	foreach ( array(
-		'auto'    => 'Follow the check (recommended) — print a heading only when the theme prints none.',
+		'auto'    => 'Follow the check (recommended) - print a heading only when the theme prints none.',
 		'on'      => 'Always print a heading from the shortcode. Use this where the template prints no title of its own.',
-		'replace' => 'Print the heading <strong>and empty the theme\'s page title</strong> — for a theme that prints one from its template with no layout to remove it from. The emptied heading is hidden with a rule this plugin prints; a theme that pads its title with whitespace will need one line of CSS of its own.',
-		'tool'    => '<strong>Let the tool supply the heading</strong> — empties the theme\'s page title and promotes the section heading the tool already prints (&#8220;Jacoby Brissett Stats 2026&#8221;, with the gold rule) to the page\'s H1. One heading, in the tool\'s own type, instead of the same phrase twice. Applies to player pages and team hubs. The NFL schedule prints the site&#8217;s own hero heading instead; the other tools are unaffected.',
+		'replace' => 'Print the heading <strong>and empty the theme\'s page title</strong> - for a theme that prints one from its template with no layout to remove it from. The emptied heading is hidden with a rule this plugin prints; a theme that pads its title with whitespace will need one line of CSS of its own.',
+		'tool'    => '<strong>Let the tool supply the heading</strong> - empties the theme\'s page title and promotes the section heading the tool already prints (&#8220;Jacoby Brissett Stats 2026&#8221;, with the gold rule) to the page\'s H1. One heading, in the tool\'s own type, instead of the same phrase twice. Applies to player pages and team hubs. The NFL schedule prints the site&#8217;s own hero heading instead; the other tools are unaffected.',
 		'off'     => 'Never print one; the theme supplies the H1.',
 	) as $value => $label ) {
 		printf(

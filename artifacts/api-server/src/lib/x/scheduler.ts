@@ -2,7 +2,7 @@
  * The polling queue's clock, and the state /api/status reports.
  *
  * Small on purpose. The queue itself is the claim in the database (see
- * claimDueAccounts) — not a list held in this process — so this file owns only
+ * claimDueAccounts) - not a list held in this process - so this file owns only
  * three things: a timer, a guard against a tick overlapping itself, and a
  * record of how the last tick went.
  *
@@ -56,7 +56,7 @@ const state: SchedulerState = {
  * Guard against a tick starting while the previous one is still going.
  *
  * A tick is bounded by its batch size and each fetch has a timeout, so this
- * should not happen — but "should not" and "cannot" differ by one slow network,
+ * should not happen - but "should not" and "cannot" differ by one slow network,
  * and overlapping ticks would double the outbound traffic at exactly the moment
  * the far end is already struggling.
  */
@@ -87,12 +87,12 @@ export async function tick(): Promise<XSweepResult | null> {
     state.postsStored += result.stored;
     state.consecutiveTickErrors = 0;
 
-    // Quiet by design. A tick that found nothing is the normal case — 37
-    // reporters do not all post every five minutes — and logging each one would
+    // Quiet by design. A tick that found nothing is the normal case - 37
+    // reporters do not all post every five minutes - and logging each one would
     // bury the lines that matter under ~2,800 a day. Per-post and per-failure
     // lines are logged where they happen, in lib/x/ingest.ts.
     if (result.cooldownMs) {
-      state.lastError = `rate limited — polling paused for ${Math.round(result.cooldownMs / 1000)}s`;
+      state.lastError = `rate limited - polling paused for ${Math.round(result.cooldownMs / 1000)}s`;
     } else if (result.stored > 0 || result.errors > 0) {
       logger.info(
         {
@@ -115,7 +115,7 @@ export async function tick(): Promise<XSweepResult | null> {
     if (state.consecutiveTickErrors === 3) {
       logger.error(
         { lastError: state.lastError },
-        "[X INGEST] three consecutive tick failures — X ingestion is not working",
+        "[X INGEST] three consecutive tick failures - X ingestion is not working",
       );
     }
     return null;
@@ -130,7 +130,7 @@ export async function tick(): Promise<XSweepResult | null> {
  * Returns whether it started, and never throws: this is called from the
  * server's listen callback, and an X integration that cannot start must not be
  * able to stop the news tool from serving. The same reasoning as the club
- * sweep's delayed first run applies to the initial delay — a cold start is
+ * sweep's delayed first run applies to the initial delay - a cold start is
  * already fetching the wire, the roster and the club feeds, and this can wait
  * for the process to be idle.
  */
@@ -169,13 +169,13 @@ export function startXScheduler(): boolean {
         if (count > PUBLIC_PROVIDER_SAFE_ACCOUNTS) {
           logger.warn(
             { enabled: count, safeLimit: PUBLIC_PROVIDER_SAFE_ACCOUNTS },
-            "[X INGEST] the free public provider will be rate-limited at this many accounts — " +
+            "[X INGEST] the free public provider will be rate-limited at this many accounts - " +
               "disable some, raise X_POLL_INTERVAL_MS, or set X_PROVIDER=api (see docs/x-ingestion.md)",
           );
         }
       })
       .catch(() => {
-        /* advisory only — never a reason to fail startup */
+        /* advisory only - never a reason to fail startup */
       });
   }
 

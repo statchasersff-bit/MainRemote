@@ -209,7 +209,7 @@ describe("player header", () => {
   test("no games played: dashes, never 0.0", () => {
     const h = header(state({ stats: { gamesPlayed: 0, ppg: 0 }, rosterPct: null }));
     const board = [...h.querySelectorAll(".scp-pboard-stats dd")].map(text);
-    assert.deepEqual(board, ["—", "—", "—"]);
+    assert.deepEqual(board, ["-", "-", "-"]);
   });
 
   test("a free agent: ink-2, no link, no strip", () => {

@@ -1,10 +1,10 @@
 <?php
 /**
- * Refresh orchestrator — blends the three sources, exactly like the StatChasers app:
+ * Refresh orchestrator - blends the three sources, exactly like the StatChasers app:
  *
- *   1. ESPN          — baseline for every column (fallback if others fail).
- *   2. Footballguys  — overrides the Offense / Defense / Special-Teams columns.
- *   3. FantasyPros   — fills the Fantasy tab's dedicated FAN_* columns (ECR order),
+ *   1. ESPN          - baseline for every column (fallback if others fail).
+ *   2. Footballguys  - overrides the Offense / Defense / Special-Teams columns.
+ *   3. FantasyPros   - fills the Fantasy tab's dedicated FAN_* columns (ECR order),
  *                      seeded from the canonical columns so the tab still renders
  *                      if FantasyPros is unavailable.
  *
@@ -382,7 +382,7 @@ class SCDC_Refresh {
 	/**
 	 * Backfill headshots onto every player (in place) by normalized-name lookup,
 	 * so merged-in Footballguys / FantasyPros rows recover the ESPN headshot. Only
-	 * fills gaps — never clobbers a headshot the row already carries.
+	 * fills gaps - never clobbers a headshot the row already carries.
 	 *
 	 * @param array $positions Positions matrix (by reference).
 	 * @param array $by_name   name key => headshot URL.

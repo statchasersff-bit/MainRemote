@@ -8,7 +8,7 @@
  *     bundle fetches another view from.
  *
  * The fragment is cached per (view, options) against the board's version,
- * which moves with the FPA table, the schedule and the player list — so a
+ * which moves with the FPA table, the schedule and the player list - so a
  * fresh FPA ingest invalidates every rendering and nothing else does.
  *
  * No lazy ingest of its own: the board reads the FPA table, and a cold FPA
@@ -25,7 +25,7 @@ import { LruCache } from "./lru";
 
 export interface SosSsrResult {
   html: string;
-  /** Fingerprint of everything rendered — the response ETag. */
+  /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   /** Null when there is no FPA table or no schedule. */
   board: SosBoard | null;
@@ -51,7 +51,7 @@ function optionKey(state: SosState, options: SosRenderOptions): string {
   ]);
 }
 
-/** Short, stable, non-cryptographic — this only has to differ, not resist. */
+/** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
   for (let i = 0; i < value.length; i += 1) {

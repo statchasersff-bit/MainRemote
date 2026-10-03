@@ -8,7 +8,7 @@
 /**
  * The standalone app's icons, inlined. The path data is lucide's (ISC), the
  * same set the app imported through lucide-react; nothing here fetches a font
- * or a sprite. Decorative everywhere they are used — each one sits beside
+ * or a sprite. Decorative everywhere they are used - each one sits beside
  * text that says the same thing, or is given a label by its button.
  */
 const ICONS: Record<string, string> = {

@@ -6,7 +6,7 @@
  *   - the **stat tables** a "eagles vs commanders player stats" search is
  *     actually asking for, by category, both teams in one table;
  *   - the **fantasy table**, which is the same game in the three scorings this
- *     site's readers play and the positional finish each score produced —
+ *     site's readers play and the positional finish each score produced -
  *     the column FOX and ESPN's box scores do not have;
  *   - the **usage table**, snaps and share and targets, because a role change
  *     is worth more to next week's lineup than this week's yardage;
@@ -15,7 +15,7 @@
  *
  * Everything here is measured. The takeaways are the only prose on the page
  * that is not a stat, and every sentence one of them prints restates a figure
- * printed beside it — there is no sentence about a player's outlook, because
+ * printed beside it - there is no sentence about a player's outlook, because
  * this file has no basis for one. A player with no prior games in the season
  * has no baseline and is therefore described rather than compared.
  *
@@ -94,7 +94,7 @@ export interface UsageRow extends RowBase {
  * One slice of a team's distribution of a single kind of opportunity.
  *
  * `player` is null for the pooled "Other" slice, which is what the denominator
- * has left over once the named contributors are counted — the fullback with one
+ * has left over once the named contributors are counted - the fullback with one
  * carry, the receiver who is not a skill-position regular, the tail that would
  * otherwise be four unreadable slivers.
  */
@@ -114,7 +114,7 @@ export interface UsageSlice {
  *
  * Derived beside the usage table rather than from it, because the two answer
  * different questions and need different populations. The table is about the
- * players whose snap count is in question, so it leaves quarterbacks out — a
+ * players whose snap count is in question, so it leaves quarterbacks out - a
  * starter plays every snap and his row says nothing. A carry distribution that
  * leaves the quarterback out is simply wrong: his runs are a real share of the
  * backfield, and the remaining slices would be percentages of a total that does
@@ -138,7 +138,7 @@ export interface TeamUsage {
  * One derived note about a player's role in this game.
  *
  * `direction` is the glyph the card leads with: a role that grew, one that
- * shrank, or one flagged for a reason that is not about size — a player who
+ * shrank, or one flagged for a reason that is not about size - a player who
  * carries an injury designation now.
  */
 export interface Takeaway {
@@ -152,7 +152,7 @@ export interface Takeaway {
   facts: string[];
   /** Two sentences at most, every clause of which restates a fact above. */
   body: string;
-  /** How far from his own baseline this was — the sort key, not rendered. */
+  /** How far from his own baseline this was - the sort key, not rendered. */
   magnitude: number;
 }
 
@@ -173,7 +173,7 @@ export interface GameStats {
 /**
  * The NFL's passer rating.
  *
- * Four components, each capped to the range the formula defines — without the
+ * Four components, each capped to the range the formula defines - without the
  * clamp a 3-for-3, 2-touchdown line rates above the 158.3 maximum, which is
  * not a rating anybody recognises. Null under one attempt, where the formula
  * divides by zero.
@@ -198,7 +198,7 @@ export function passerRating(
  * Each team's total targets in this game, from the game itself.
  *
  * Upstream's `target_share` is derived by a pipeline that has not filled it for
- * the current season, and `team_tgt` is absent with it — so the usage table's
+ * the current season, and `team_tgt` is absent with it - so the usage table's
  * share column was a dash for every row. It does not need either: every player
  * who saw a target in this game is in this list, so the team's total is the sum
  * of the rows, which is not an estimate of the share but the share itself.
@@ -288,8 +288,8 @@ function receivingRows(list: Appearance[]): ReceivingRow[] {
  *
  * Standard and half are DERIVED from PPR rather than read: `pts_half_ppr` is on
  * most rows but not all, and standard is on none of them. Both follow from the
- * reception count by definition — a PPR point per catch is the whole difference
- * — so deriving them is arithmetic, not an estimate. When the log does carry a
+ * reception count by definition - a PPR point per catch is the whole difference
+ * - so deriving them is arithmetic, not an estimate. When the log does carry a
  * half-PPR figure it is used, because a scoring quirk upstream knows about is
  * worth more than our subtraction.
  */
@@ -318,7 +318,7 @@ function fantasyRows(list: Appearance[], season: number, week: number): FantasyR
     })
     // Every logged score, zero and below included: the figure sits beside the
     // player's line in each stat table, and a lost fumble's -0.1 is his score,
-    // not a blank. (Finishes still skip non-scorers — see positionFinishes().)
+    // not a blank. (Finishes still skip non-scorers - see positionFinishes().)
     .sort((x, y) => y.ppr - x.ppr);
 }
 
@@ -355,7 +355,7 @@ function usageRows(list: Appearance[]): UsageRow[] {
       };
     })
     // By share rather than by raw snaps. The two teams did not run the same
-    // number of plays — 67 against 48 in a game this table was built on — so
+    // number of plays - 67 against 48 in a game this table was built on - so
     // sorting on the count ranks the busier offence's bench above the other
     // side's every-down players, which is the opposite of what the column
     // beside it is for.
@@ -367,7 +367,7 @@ function usageRows(list: Appearance[]): UsageRow[] {
 /**
  * The positions the visual layer names.
  *
- * Wider than USAGE_POSITIONS by one — the quarterback — because he is a real
+ * Wider than USAGE_POSITIONS by one - the quarterback - because he is a real
  * part of a backfield's carries even though his snap count says nothing. Anyone
  * outside this set still counts toward the denominator; he simply lands in
  * "Other" rather than taking a labelled slice.
@@ -386,7 +386,7 @@ type StatKey = Parameters<typeof num>[1];
  * The same shape and the same reasoning as teamTargets(): the sum of the rows
  * IS the team's total, so it is the share itself rather than an estimate of it.
  * For rushing that total includes quarterback kneels, exactly as the box score
- * does — this is not the place to invent a second definition of a rush attempt.
+ * does - this is not the place to invent a second definition of a rush attempt.
  */
 function teamTotals(list: Appearance[], stat: StatKey): Map<string, number> {
   const totals = new Map<string, number>();
@@ -402,7 +402,7 @@ function teamTotals(list: Appearance[], stat: StatKey): Map<string, number> {
  * One team's distribution of one stat: the named contributors, then the rest.
  *
  * Sorted by value, cut at SLICE_MAX, and whatever the denominator still has
- * left — the tail, plus anyone outside SLICE_POSITIONS — pooled into a single
+ * left - the tail, plus anyone outside SLICE_POSITIONS - pooled into a single
  * "Other". A slice is never drawn for a player who did not record the stat, so
  * a two-back game draws two slices rather than twelve slivers of nothing.
  */
@@ -486,8 +486,8 @@ function percent(share: number | null): string | null {
 /**
  * A designation as it reads inside a sentence.
  *
- * The chip elsewhere on the page prints the designation as it comes — "IR",
- * "Questionable" — and lower-casing that for a sentence produced "is listed ir",
+ * The chip elsewhere on the page prints the designation as it comes - "IR",
+ * "Questionable" - and lower-casing that for a sentence produced "is listed ir",
  * which is not how anybody writes it. The acronyms get the phrase they are short
  * for; the words that already are words get lower-cased; anything unrecognised
  * is left exactly as upstream sent it rather than mangled to fit.
@@ -536,7 +536,7 @@ const TARGET_SWING = 3;
  * expectation this server does not hold: "up from 38%" is a fact about the
  * logs, where "more than expected" would be a claim about a projection nobody
  * here made. A player in his first logged game of the season has no prior
- * weeks, so he is described at a threshold — a genuinely large role — rather
+ * weeks, so he is described at a threshold - a genuinely large role - rather
  * than compared with a baseline that does not exist.
  *
  * `injured` are the players carrying a designation on the current injury
@@ -647,7 +647,7 @@ function takeawaysFrom(
           facts,
           body:
             `Saw ${targets} target${targets === 1 ? "" : "s"}, against ${from} a game across his ` +
-            `previous ${prior.games} — ${receptions} of them caught for ${recYards} yards.`,
+            `previous ${prior.games} - ${receptions} of them caught for ${recYards} yards.`,
           magnitude: targetDelta / 10,
         });
         continue;
@@ -667,7 +667,7 @@ function takeawaysFrom(
       }
     }
 
-    // No baseline to compare with — the season's first logged game. A role this
+    // No baseline to compare with - the season's first logged game. A role this
     // size is still the most useful thing the page can say about the player, so
     // it is described rather than called a change. The headline names whichever
     // part of it stood out: six cards all reading "every-down role" is the
@@ -715,7 +715,7 @@ function takeawaysFrom(
 /**
  * Everything the postgame blocks need, from one pass over the logs.
  *
- * Null for a game that is not final, and null when the logs cannot answer —
+ * Null for a game that is not final, and null when the logs cannot answer -
  * an old meeting whose season predates them is the normal case, and every
  * caller renders nothing rather than an empty table.
  */
@@ -738,8 +738,8 @@ export function buildGameStats(
   const usage = usageRows(list);
   const leaders = gameLeaders(list);
 
-  // The fantasy leader's supporting line is the finish that score produced —
-  // "WR6" — which is the number a manager converts every score into and the
+  // The fantasy leader's supporting line is the finish that score produced -
+  // "WR6" - which is the number a manager converts every score into and the
   // one thing about it this page knows that the box score does not. It is
   // filled here rather than in gameLeaders(), which sees one game and cannot
   // rank a player against the other thirty-one teams' receivers.

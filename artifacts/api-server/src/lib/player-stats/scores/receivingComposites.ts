@@ -1,8 +1,8 @@
 /**
  * Shared receiving composite-grade engine (WR + TE).
  *
- * WR and TE share the SAME five-category framework — Opportunity, Production,
- * Explosiveness, Hands, Elusiveness, plus a blended Overall grade — for UI /
+ * WR and TE share the SAME five-category framework - Opportunity, Production,
+ * Explosiveness, Hands, Elusiveness, plus a blended Overall grade - for UI /
  * radar / sorting consistency. They differ ONLY in their weighting philosophy:
  * a position supplies its own per-stat weights, qualifier, and overall blend.
  *
@@ -14,7 +14,7 @@ import { atLeast, clampScore, mix, percentileColumnAgainst, toFiniteNumber as nu
 
 type Row = Record<string, unknown>;
 
-// Stats where a lower raw value is better — percentiles are inverted for these.
+// Stats where a lower raw value is better - percentiles are inverted for these.
 const INVERTED = new Set(['drops', 'dropPct', 'interceptionsWhenTargeted', 'fumbles']);
 
 // Derived stats (not present as a raw column). Everything else reads num(row[key]).
@@ -45,7 +45,7 @@ export interface ReceivingConfig {
   /** Field name the Overall grade is written to (e.g. 'overallWRGrade'). */
   overallKey: string;
   /**
-   * Percentile-baseline qualifier — low-sample players don't define the curve.
+   * Percentile-baseline qualifier - low-sample players don't define the curve.
    * `scale` shrinks it for a season in progress (see GradeOptions).
    */
   qualify: (row: Row, scale?: number) => boolean;
@@ -127,7 +127,7 @@ export function buildReceivingComposites<T extends Row>(
 }
 
 // ---------------------------------------------------------------------------
-// Opportunity — the same mix for WR and TE (the user's weights, 2026-09-23).
+// Opportunity - the same mix for WR and TE (the user's weights, 2026-09-23).
 // Targets, air yards and red-zone targets are per game played.
 // ---------------------------------------------------------------------------
 const OPPORTUNITY: Weights = {
@@ -151,7 +151,7 @@ const OPPORTUNITY_IN_PROGRESS_DESCRIPTION =
   'Opportunity (0-100), season in progress: offensive role & target earning. Targets/G 25%, Air Yds/G 20%, Snap% 20% (standing in for routes), Target Share% 15%, AY Share% 10%, RZ TGT/G 10%.';
 
 // ---------------------------------------------------------------------------
-// Production — the same mix for WR and TE (the user's weights, 2026-09-23).
+// Production - the same mix for WR and TE (the user's weights, 2026-09-23).
 // Everything but YPRR, success rate and Y/R is per game played.
 // ---------------------------------------------------------------------------
 const PRODUCTION: Weights = {
@@ -178,7 +178,7 @@ export function inProgressCategories(categories: ReceivingScoreCategory[]): Rece
 }
 
 // ---------------------------------------------------------------------------
-// WR config — earning and converting targets drive WR fantasy value, so Opportunity
+// WR config - earning and converting targets drive WR fantasy value, so Opportunity
 // & Production are weighted heaviest; Explosiveness/Elusiveness carry real
 // weight (deep threats, YAC monsters).
 // ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ export const WR_RECEIVING_CONFIG: ReceivingConfig = {
 };
 
 // ---------------------------------------------------------------------------
-// TE config — TE value is driven by opportunity, reliability and production far
+// TE config - TE value is driven by opportunity, reliability and production far
 // more than pure explosiveness/YAC, so Opportunity/Hands are up-weighted and
 // Explosiveness/Elusiveness down-weighted vs. WR.
 // ---------------------------------------------------------------------------
@@ -268,12 +268,12 @@ export const WR_SCORE_CATEGORIES: ReceivingScoreCategory[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// TE public surface — same categories, TE-optimized weighting (see descriptions).
+// TE public surface - same categories, TE-optimized weighting (see descriptions).
 // ---------------------------------------------------------------------------
 export const TE_SCORE_CATEGORIES: ReceivingScoreCategory[] = [
   {
     key: 'overallTEGrade', label: 'Overall', shortLabel: 'Overall',
-    description: 'Overall TE Grade (0-100): Opportunity 30%, Production 25%, Hands 20%, Explosiveness 15%, Elusiveness 10%. Weighted for TE value — opportunity, reliability & production over pure explosiveness. Percentile-based vs. qualified TEs.',
+    description: 'Overall TE Grade (0-100): Opportunity 30%, Production 25%, Hands 20%, Explosiveness 15%, Elusiveness 10%. Weighted for TE value - opportunity, reliability & production over pure explosiveness. Percentile-based vs. qualified TEs.',
   },
   {
     key: 'opportunityScore', label: 'Opportunity', shortLabel: 'Opp',
@@ -289,7 +289,7 @@ export const TE_SCORE_CATEGORIES: ReceivingScoreCategory[] = [
   },
   {
     key: 'handsScore', label: 'Hands', shortLabel: 'Hnd',
-    description: 'Hands (0-100): reliability & catch consistency — weighted heavier for TEs. Catch% 45%, Catchable TGT 20%, Drops 20% (inv), Drop% 7.5% (inv), INT-when-targeted 7.5% (inv).',
+    description: 'Hands (0-100): reliability & catch consistency - weighted heavier for TEs. Catch% 45%, Catchable TGT 20%, Drops 20% (inv), Drop% 7.5% (inv), INT-when-targeted 7.5% (inv).',
   },
   {
     key: 'elusivenessScore', label: 'Elusiveness', shortLabel: 'Elu',

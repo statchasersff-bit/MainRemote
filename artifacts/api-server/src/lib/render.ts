@@ -1,5 +1,5 @@
 /**
- * Shared markup renderer — the single source of truth for the news list HTML.
+ * Shared markup renderer - the single source of truth for the news list HTML.
  *
  * This module is compiled into BOTH bundles: the Node server (which renders the
  * initial page/fragment server-side) and the browser client (which re-renders
@@ -9,7 +9,7 @@
  *
  * Hard constraint: NOTHING in this file may touch Node APIs or the DOM, and it
  * must be deterministic. In particular, no `Date.now()` and no locale/timezone
- * defaults — a server/client disagreement there is exactly what makes SSR
+ * defaults - a server/client disagreement there is exactly what makes SSR
  * markup flicker on hydration. Timestamps are formatted in a fixed timezone and
  * carried in `datetime`/`data-ts`, and the client upgrades them to a relative
  * "3 hours ago" label after load.
@@ -42,7 +42,7 @@ export interface NewsItem {
   sourceType?: string | null;
   /** The reporter's X handle, lowercase and without the @, on X items. */
   authorHandle?: string | null;
-  /** Derived category — see lib/news-category.ts. Drives the filter. */
+  /** Derived category - see lib/news-category.ts. Drives the filter. */
   category?: string | null;
 }
 
@@ -114,7 +114,7 @@ export function teamLogoUrl(team: string | null | undefined): string | null {
  * internal links.
  *
  * Both are empty by default and must be opted into, because we cannot verify
- * from here that the target pages exist — linking every player name to a
+ * from here that the target pages exist - linking every player name to a
  * profile page that 404s would be worse than not linking at all.
  *
  * Placeholders: `{slug}` (kebab-cased name) and, for teams, `{team}` (the
@@ -163,7 +163,7 @@ function applyTemplate(
     encodeURIComponent(values[key] ?? ""),
   );
   // A template whose placeholder resolved to nothing yields a URL pointing at a
-  // parent path — drop it rather than linking somewhere arbitrary.
+  // parent path - drop it rather than linking somewhere arbitrary.
   if (/\/\/$|\/$/.test(filled) && Object.values(values).some((v) => !v)) {
     return null;
   }
@@ -247,7 +247,7 @@ const MONTHS = [
 
 /**
  * A stable, human-readable date. Rendered in a fixed timezone (US Eastern, the
- * league's own) so the server and the client never disagree about the string —
+ * league's own) so the server and the client never disagree about the string -
  * a locale-dependent format would differ per visitor and break SSR caching.
  */
 export function formatAbsoluteDate(ms: number): string {
@@ -288,8 +288,8 @@ export function itemTimestamp(item: NewsItem): number | null {
  * The X mark.
  *
  * Inline SVG rather than an <img>: it is a 16px glyph on every X card in the
- * list, and a request per card — cross-origin, at that, from a page this tool
- * is embedded into — would be absurd next to 400 bytes of path data. Marked
+ * list, and a request per card - cross-origin, at that, from a page this tool
+ * is embedded into - would be absurd next to 400 bytes of path data. Marked
  * aria-hidden because the handle beside it already says what this is.
  */
 const X_MARK =
@@ -298,15 +298,15 @@ const X_MARK =
   `</svg>`;
 
 /**
- * The top-left of a card: what kind of item this is, or — for X — who wrote it.
+ * The top-left of a card: what kind of item this is, or - for X - who wrote it.
  *
  * An X post's byline replaces the section label rather than adding a row to the
  * card, because on a post the author IS the category: the reporter's name is
  * the single most load-bearing piece of attribution in the feed. Same slot,
- * same size, same alignment as every other card — the mark and the handle are
+ * same size, same alignment as every other card - the mark and the handle are
  * the only things that distinguish it.
  *
- * Everything else carries its derived category — Injury, Practice, Status and
+ * Everything else carries its derived category - Injury, Practice, Status and
  * so on. It used to say "Player News" on every single card, which was the lane
  * the item arrived in rather than anything about the story, and a label that
  * never varies on a list where every row has it tells a reader nothing. The
@@ -353,7 +353,7 @@ export interface RenderCardOptions {
  * opens with it ("Jayden Higgins: Suffers torn ACL at practice"), so a name
  * printed again immediately below said the same thing twice on every card.
  *
- * The team name is already on the card — this only upgrades it to a link when
+ * The team name is already on the card - this only upgrades it to a link when
  * the site actually has somewhere to point it. The anchor text is the name
  * itself ("Philadelphia Eagles"), which is exactly the descriptive, crawlable
  * text a link should carry.
@@ -398,7 +398,7 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
 
   // Cards on the first page are visible immediately, so they load eagerly;
   // everything behind the pager is lazy. All of it is in the HTML either way,
-  // as a plain <img src> — discoverable by the preload scanner without running
+  // as a plain <img src> - discoverable by the preload scanner without running
   // JavaScript, and indexable in a way a CSS background image would not be.
   //
   // The very first card's headshot is the likeliest LCP element, so it also
@@ -412,7 +412,7 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     ? `<img class="sc-card-photo" src="${escapeHtml(image)}" alt="${playerName}" width="108" height="108" loading="${loading}" decoding="${decoding}"${priority} />`
     : // No headshot for this player: the badge shows the StatChasers logo,
       // painted by styles.css as a background rather than an <img>. The mark is
-      // decoration standing in for a missing photo, not content — so it stays
+      // decoration standing in for a missing photo, not content - so it stays
       // out of the accessibility tree and out of the image index, and the URL
       // resolves against the stylesheet's own origin, which is the tool server
       // in both mounts. An <img> here would need the origin threaded through
@@ -452,7 +452,7 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     renderByline(team, links) +
     (summary ? `<p class="sc-card-summary">${summary}</p>` : "") +
     // The feed's name ("Dynasty Command") is no longer printed on the card. It
-    // is still stored and still returned by /api/news — this is a display
+    // is still stored and still returned by /api/news - this is a display
     // decision, not a data one.
     (link
       ? `<p class="sc-card-cta"><span class="sc-card-more">Read article <span aria-hidden="true">&rarr;</span></span></p>`
@@ -472,7 +472,7 @@ export interface RenderListOptions {
  *
  * The server stamps it onto the list and the client recomputes it from each
  * refresh payload. When they match there is nothing to redraw, which spares the
- * main thread from rebuilding hundreds of cards every couple of minutes — the
+ * main thread from rebuilding hundreds of cards every couple of minutes - the
  * single largest task this tool can run, and one that would otherwise land in
  * the middle of someone's interaction and wreck INP.
  */
@@ -483,7 +483,7 @@ export function itemsSignature(items: NewsItem[]): string {
 }
 
 /**
- * The full list — EVERY item, not just the first page.
+ * The full list - EVERY item, not just the first page.
  *
  * Pagination is a display concern applied on top of complete markup: the list
  * carries `data-paged="1"` so the stylesheet hides pages after the first, and
@@ -517,7 +517,7 @@ export function renderList(
         ` data-player="${escapeHtml(searchKey(item.playerName))}"` +
         (item.team ? ` data-team="${escapeHtml(item.team)}"` : "") +
         // The filters read attributes rather than the rendered text, so they
-        // never have to walk into a card — the rule the player and team
+        // never have to walk into a card - the rule the player and team
         // filters were already built on, extended to the three new ones.
         ` data-source="${isXItem(item) ? X_SOURCE : "news"}"` +
         (item.authorHandle
@@ -540,7 +540,7 @@ export function renderList(
   // The list reserves height for exactly one page up front, so neither
   // hydration nor a page change can resize the container and shift whatever
   // sits below it. Without this the list collapses from all-items-tall to
-  // one-page-tall the moment the client paginates — a large layout shift on
+  // one-page-tall the moment the client paginates - a large layout shift on
   // every first load.
   const reservedRows = Math.min(pageSize, items.length);
 
@@ -558,7 +558,7 @@ export function renderList(
 }
 
 /**
- * Team codes in the order the filter lists them — by full name, not by
+ * Team codes in the order the filter lists them - by full name, not by
  * abbreviation. Exported so the client re-sorts a rebuilt menu the same way.
  */
 export function sortTeamCodes(codes: string[]): string[] {
@@ -580,8 +580,8 @@ function teamLabel(code: string): string {
 }
 
 /**
- * The mark beside a team's name in the filter: its logo, or — for the reset
- * row, which stands for no team in particular — a neutral disc drawn in CSS.
+ * The mark beside a team's name in the filter: its logo, or - for the reset
+ * row, which stands for no team in particular - a neutral disc drawn in CSS.
  *
  * Decorative in both cases: the team's name is right beside it as text, so a
  * second announcement of "Bills logo, Buffalo Bills" adds nothing.
@@ -606,7 +606,7 @@ export function renderTeamChoice(code: string): string {
  * The menu's rows: the reset first, then one per team.
  *
  * Exported because the client rebuilds this list when a refresh changes which
- * teams are in the feed — same function, same markup, so the rebuilt menu is
+ * teams are in the feed - same function, same markup, so the rebuilt menu is
  * identical to the one the server rendered.
  */
 export function renderTeamOptions(codes: string[], selected: string): string {
@@ -741,7 +741,7 @@ function renderSelectFilter(
  *
  * Deliberately NOT wrapped in a <form>: a form with no action submits to the
  * current URL, so one Enter keypress in the search box would reload the page
- * with a query string attached and hand crawlers a duplicate URL — the exact
+ * with a query string attached and hand crawlers a duplicate URL - the exact
  * thing the canonical work exists to prevent. These are bare controls whose
  * state lives in the DOM, filtering cards that are already on the page. Nothing
  * here fetches, and nothing here writes to the URL.
@@ -750,7 +750,7 @@ function renderSelectFilter(
  * anything, and a dead dropdown is worse than none. The <noscript> block in
  * renderList reveals every card in that case.
  *
- * The dropdown lists only teams that actually appear in the rendered items —
+ * The dropdown lists only teams that actually appear in the rendered items -
  * filtering is DOM-only, so an option for a team with no cards could only ever
  * produce an empty list.
  */
@@ -771,7 +771,7 @@ export function renderFilters(items: NewsItem[]): string {
     // disclosure holding real buttons looks the same everywhere, opens and
     // closes without script, and is the pattern the team-page switcher already
     // uses. Nothing is lost by not being a <select>: these controls are hidden
-    // outright until the bundle runs — see the block comment above.
+    // outright until the bundle runs - see the block comment above.
     `<div class="sc-filter sc-filter-team">` +
     `<span class="sc-filter-label" id="scFilterTeamLabel">Team</span>` +
     `<details class="sc-team-select" id="scFilterTeam">` +
@@ -788,11 +788,11 @@ export function renderFilters(items: NewsItem[]): string {
     `</details>` +
     `</div>` +
     // Category is useful whatever the feed is carrying, so it is always shown.
-    // Source and account only appear once there is an X post to filter to —
+    // Source and account only appear once there is an X post to filter to -
     // the same rule the team menu follows: a control that can only ever return
     // everything, or nothing, is worse than no control. (The toolbar is not
-    // replaced by a background refresh — that would discard whatever the reader
-    // has typed into it — so on a page that had no X items when it was rendered,
+    // replaced by a background refresh - that would discard whatever the reader
+    // has typed into it - so on a page that had no X items when it was rendered,
     // the two menus appear on the next load rather than the moment the first
     // post arrives. The cards themselves appear immediately either way.)
     renderSelectFilter(
@@ -835,7 +835,7 @@ export function renderToolbar(filters: string): string {
 }
 
 /**
- * The pager. Rendered server-side but `hidden` until the client un-hides it —
+ * The pager. Rendered server-side but `hidden` until the client un-hides it -
  * see renderList: with no JS every page is visible and a pager is meaningless.
  */
 export function renderPager(currentPage: number, totalPages: number): string {
@@ -858,8 +858,8 @@ export interface RelatedLink {
 /**
  * Links out to other tools/pages.
  *
- * Plain `<a href>` with concise descriptive text — "Fantasy Football Strength
- * of Schedule" rather than "click here" — so the target is discoverable and the
+ * Plain `<a href>` with concise descriptive text - "Fantasy Football Strength
+ * of Schedule" rather than "click here" - so the target is discoverable and the
  * anchor says what it is. Rendered server-side; there is no JS-only navigation
  * anywhere in this tool.
  */
@@ -894,13 +894,13 @@ export interface RenderFragmentOptions extends RenderListOptions {
   heading?: boolean;
   /**
    * Text for the section heading. Overridable so the tool's H2 can be worded to
-   * agree with the host page's H1 and <title> — Google may draw the displayed
+   * agree with the host page's H1 and <title> - Google may draw the displayed
    * result title from any of them, so they should not contradict each other.
    */
   headingText?: string;
   /**
    * Item cap this fragment was rendered with. Carried into the markup so a
-   * background refresh asks for the same number of items — otherwise a page
+   * background refresh asks for the same number of items - otherwise a page
    * configured with limit="30" would quietly grow to the server default.
    */
   limit?: number;

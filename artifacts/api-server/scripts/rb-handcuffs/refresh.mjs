@@ -37,7 +37,7 @@ const ROMAN_SUFFIXES = new Set(["II", "III", "IV", "V"]);
 
 /**
  * Ourlads prints some names in capitals; recase them, keeping initials and
- * suffixes. Each half of a hyphenated name on its own — the app's version
+ * suffixes. Each half of a hyphenated name on its own - the app's version
  * left "CROSKEY-MERRITT" in capitals.
  */
 function recaseToken(token) {

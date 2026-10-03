@@ -57,7 +57,7 @@ function formatDate(iso: string | null): string | null {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
-/** "A", "A and B", "A, B and C" — the form the rankings FAQ uses. */
+/** "A", "A and B", "A, B and C" - the form the rankings FAQ uses. */
 function listOf(items: string[]): string {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0] ?? "";

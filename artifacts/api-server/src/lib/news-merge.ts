@@ -2,8 +2,8 @@
  * How a team page interleaves its two providers.
  *
  * Its own module, and deliberately importing nothing. This is the one piece of
- * the read path that is a policy rather than a query — it decides what a reader
- * sees above the fold — so it is worth being able to state its behaviour in a
+ * the read path that is a policy rather than a query - it decides what a reader
+ * sees above the fold - so it is worth being able to state its behaviour in a
  * test without a database, a connection pool, or a log transport in the way.
  */
 
@@ -12,14 +12,14 @@
  * for the player wire, when the wire has that many to give.
  *
  * The two providers do not publish at the same rate. A club files two to five
- * items a day in season — practice reports, previews, roster moves — where the
+ * items a day in season - practice reports, previews, roster moves - where the
  * wire files a handful a week for any one team, so a merge ordered purely by
  * date hands a busy club every visible slot and buries "Suffers torn ACL at
  * practice" under "5 Takeaways from Wednesday's Press Conference". Both are
  * team news; only one of them changes what a reader does next.
  *
  * So the head of the list is quota'd rather than sorted. Four of the first ten,
- * which is TEAM_NEWS_VISIBLE — enough that a player note is always above the
+ * which is TEAM_NEWS_VISIBLE - enough that a player note is always above the
  * fold, few enough that the page still reads as the club's week. Everything
  * past the window is plain date order again, because by then the reader has
  * chosen to keep going and chronology is what they want.
@@ -36,9 +36,9 @@ const WIRE_QUOTA_WINDOW = 10;
  * the second one.
  *
  * Both inputs must already be newest-first; neither is re-sorted. Exported for
- * the test, because the interesting cases are the degenerate ones — a lane
+ * the test, because the interesting cases are the degenerate ones - a lane
  * shorter than its quota, a lane that is empty, a window longer than the whole
- * list — and they are tedious to reach through a database.
+ * list - and they are tedious to reach through a database.
  */
 export function mergeNewsLanes<T extends { pubDateMs?: number | null }>(
   clubLane: readonly T[],

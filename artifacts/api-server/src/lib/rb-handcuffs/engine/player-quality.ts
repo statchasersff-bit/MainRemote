@@ -1,5 +1,5 @@
 /**
- * RB Player Quality — how good a back is as a PLAYER, independent of whether he
+ * RB Player Quality - how good a back is as a PLAYER, independent of whether he
  * currently has the starting role. mak's mix, 2026-09-24:
  *
  *   30% Yards per carry
@@ -7,7 +7,7 @@
  *   10% Yards after contact per attempt
  *    5% Elude % (tackles eluded per touch)
  *    5% Fumble rate (fumbles per carry, lower is better)
- *   20% Explosiveness — the advanced stats table's grade
+ *   20% Explosiveness - the advanced stats table's grade
  *
  * Everything is ranked the way the advanced stats table ranks it
  * (lib/player-stats/scores): a percentile against qualified RBs (50+ carries
@@ -30,7 +30,7 @@ import { percentileColumnAgainst, toFiniteNumber as num } from "../../player-sta
 import type { PlayerQualityResult, PlayerQualityCategoryScore } from "./types";
 
 // Raw advanced-stats row (subset of columns the model reads). All fields are
-// optional/nullable — missing data is handled safely and never crashes.
+// optional/nullable - missing data is handled safely and never crashes.
 export interface RBStatRow {
   playerName?: string | null;
   player?: string | null;
@@ -133,7 +133,7 @@ const fumbleRate = (r: RBStatRow): number => {
  * advanced stats table ranks a season. Pass the full pool, not a subset: the
  * scores are percentiles within it.
  *
- * `scale` is the share of a 17-game season the rows cover — 6/17 for the last
+ * `scale` is the share of a 17-game season the rows cover - 6/17 for the last
  * six games. The table's qualifier shrinks by it, as the table's does for a
  * season in progress, and so do the full-trust samples (FULL_TRUST is for the
  * six-game window; a full season would need 17/6 of it).

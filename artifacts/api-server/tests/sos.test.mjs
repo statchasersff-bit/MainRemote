@@ -3,7 +3,7 @@
  *
  * Two halves, like fpa.test.mjs. The model (lib/sos/sos-model.ts) is pure, so
  * it is loaded on its own and handed a made-up FPA table and schedule whose
- * answers can be worked out by hand — that is where the source app's rules
+ * answers can be worked out by hand - that is where the source app's rules
  * (rank 1 = toughest defense, rank 1 = easiest schedule, weeks 1-17, the
  * PO2/PO3 spans, dense player ranks) are pinned. The routes are then checked
  * over HTTP against whatever the database holds, and skip their data
