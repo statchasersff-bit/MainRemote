@@ -69,7 +69,7 @@ router.get("/data/health", (_req, res) => {
     }
 
     const player = playerRefreshStatus();
-    if (player.enabled) {
+    if (player.enabled && player.daily.enabled) {
       const finished = player.daily.lastFinished ? Date.parse(player.daily.lastFinished) : null;
       // Before a first run, measured from process start, so an instance that
       // never completes one alerts instead of looking healthy forever.
@@ -80,7 +80,9 @@ router.get("/data/health", (_req, res) => {
       if (failed.length && inSeason(nowMs)) {
         reasons.push(`daily rebuild steps failed: ${failed.join(", ")}`);
       }
-      if (player.lastError) reasons.push(`game-log refresh failing: ${player.lastError.slice(0, 200)}`);
+    }
+    if (player.enabled && player.lastError) {
+      reasons.push(`game-log refresh failing: ${player.lastError.slice(0, 200)}`);
     }
 
     res
@@ -90,7 +92,7 @@ router.get("/data/health", (_req, res) => {
         ok: reasons.length === 0,
         reasons,
         fpaSnapshotAt,
-        dailyRebuild: player.enabled ? player.daily : null,
+        dailyRebuild: player.enabled && player.daily.enabled ? player.daily : null,
       });
   })();
 });

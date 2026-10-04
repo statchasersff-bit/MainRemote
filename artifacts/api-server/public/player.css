@@ -2100,15 +2100,15 @@ button.scp-search-opt {
 
 .scp table.scp-st-advt th,
 .scp table.scp-st-advt td {
-  padding: 9px 14px;
+  padding: 2px 14px;
   border: 0;
   background: none;
   vertical-align: middle;
 }
 
 .scp table.scp-st-advt thead th {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   color: var(--sc-navy);
   font-size: 15px;
   font-weight: 800;
@@ -2162,7 +2162,7 @@ button.scp-search-opt {
 
 /* Tier rows (mak, 2026-10-03): a tinted band with a 2px gold left rail. */
 .scp table.scp-st-advt tr.scp-st-tier th {
-  padding: 7px 10px;
+  padding: 4px 10px;
   background: #f1f4f8;
   box-shadow: inset 2px 0 0 var(--sc-gold);
   color: var(--sc-navy);
@@ -2174,7 +2174,7 @@ button.scp-search-opt {
 }
 
 .scp table.scp-st-advt tbody tr:not(.scp-st-tier) + tr.scp-st-tier th {
-  border-top: 10px solid transparent;
+  border-top: 6px solid transparent;
   background-clip: padding-box;
 }
 
@@ -2219,7 +2219,7 @@ button.scp-search-opt {
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  margin-top: 4px;
+  margin-top: 1px;
   font-size: 11px;
   line-height: 1.2;
   white-space: nowrap;
@@ -4000,14 +4000,8 @@ button.scp-search-opt {
 
 /* ---- at a glance
    One strip of four compact tiles (mak, 2026-09-30), ~30% shorter than the
-   cards they replaced; the lede above tells the story, so it reads larger. */
-
-.scp .scp-in #scp-in-glance-h + .scp-ox-lede {
-  color: var(--scp-ph-ink);
-  font-size: 17px;
-  font-weight: 500;
-  line-height: 1.5;
-}
+   cards they replaced. Its lede wears the plain section lede, like the body
+   map's (mak, 2026-10-03: the larger 17px ink version did not match). */
 
 .scp .scp-in .scp-in-glance {
   display: grid;
