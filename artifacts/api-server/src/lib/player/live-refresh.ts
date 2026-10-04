@@ -38,6 +38,8 @@
  *
  * ## And once a day, the rest of the weekly rebuild
  *
+ * OFF since 2026-10-04 unless SC_DAILY_REFRESH=1 (see dailyRefreshEnabled).
+ *
  * At 11:00 UTC (and once per boot, after the game logs), the builders that
  * used to be the manual weekly checklist, in dependency order:
  *
@@ -93,6 +95,7 @@ import { invalidateStatsCache } from "../player-stats/stats-data";
 import { invalidateHandcuffCache } from "../rb-handcuffs/handcuffs-data";
 import { invalidateRankingsCache } from "../rankings/rankings-data";
 import { dataPath } from "../data-dir";
+import { restorePracticeReports, savePracticeReports } from "./practice-store";
 
 const TICK_MS = 10 * 60 * 1000;
 /**
@@ -146,6 +149,7 @@ export interface PlayerRefreshStatus {
   lastError: string | null;
   lastDueAt: string | null;
   daily: {
+    enabled: boolean;
     lastAttempt: string | null;
     lastFinished: string | null;
     steps: DailyStep[];
@@ -174,6 +178,7 @@ export function playerRefreshStatus(): PlayerRefreshStatus {
     lastError,
     lastDueAt: iso(lastDueMs),
     daily: {
+      enabled: enabled && dailyRefreshEnabled(),
       lastAttempt: iso(dailyStartedMs),
       lastFinished: iso(dailyFinishedMs),
       steps: dailySteps,
@@ -441,7 +446,22 @@ function lastPracticeMs(nowMs: number): number {
 export function refreshPracticeReports(): Promise<void> {
   if (practiceRunning) return practiceRunning;
   practiceStartedMs = Date.now();
-  practiceRunning = runBuilder("player/buildPracticeReports.mjs", [String(seasonYear())])
+  const season = seasonYear();
+  practiceRunning = (async () => {
+    // A publish ships the committed file over the reads filed since: put them
+    // back first (practice-store.ts). A store failure costs only the history.
+    try {
+      await restorePracticeReports(season);
+    } catch (err) {
+      logger.warn({ err }, "Practice reports: store not read");
+    }
+    await runBuilder("player/buildPracticeReports.mjs", [String(season)]);
+    try {
+      await savePracticeReports(season);
+    } catch (err) {
+      logger.warn({ err }, "Practice reports: store not written");
+    }
+  })()
     .then(() => {
       // The page version reads the file's mtime; this drops what is cached.
       invalidatePlayerRenderCache();
@@ -476,7 +496,9 @@ async function tick(): Promise<void> {
     return;
   }
   // Then the daily rebuild, which also runs once per boot for the same reason
-  // the game logs do: a publish ships the committed files.
+  // the game logs do: a publish ships the committed files. Off unless
+  // SC_DAILY_REFRESH=1 since 2026-10-04 (mak: it kept taking the site down).
+  if (!dailyRefreshEnabled()) return;
   if (dailyStartedMs === 0 || dailyStartedMs < lastDailyMs(now)) {
     await refreshDailyData();
   }
@@ -504,6 +526,17 @@ export function playerRefreshEnabled(): boolean {
   if (raw === "1" || raw === "true" || raw === "on") return true;
   if (raw === "0" || raw === "false" || raw === "off") return false;
   return process.env["NODE_ENV"] === "production";
+}
+
+/**
+ * The daily chain only. Off by default since 2026-10-04, when mak stopped it
+ * after another production outage; the game-window and practice-report
+ * refreshes still run. Its builders are run by hand in the workspace instead
+ * (the weekly checklist), or SC_DAILY_REFRESH=1 turns it back on.
+ */
+export function dailyRefreshEnabled(): boolean {
+  const raw = (process.env["SC_DAILY_REFRESH"] ?? "").trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "on";
 }
 
 export function startPlayerRefreshScheduler(): void {

@@ -20,3 +20,4 @@
 export * from "./news";
 export * from "./x";
 export * from "./fpa";
+export * from "./practice";
