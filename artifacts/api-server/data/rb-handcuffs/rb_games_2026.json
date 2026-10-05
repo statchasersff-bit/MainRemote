@@ -2,12 +2,14 @@
 {"gsisId":"00-0033293","playerId":"4199","playerName":"Aaron Jones","team":"MIN","games":[
  {"week":1,"team":"MIN","carries":12,"rushYards":40,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":12,"ybc":20,"yac":20,"broken":0,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":3},
  {"week":2,"team":"MIN","carries":23,"rushYards":105,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":23,"ybc":74,"yac":31,"broken":1,"pbpRushes":23,"r10":2,"r15":2,"r20":1,"r30":0,"longest":20,"longestTd":null},
- {"week":3,"team":"MIN","carries":17,"rushYards":58,"targets":6,"receptions":5,"recYards":34,"recYac":42,"fumbles":0,"pfrCarries":17,"ybc":39,"yac":19,"broken":0,"pbpRushes":17,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":null}
+ {"week":3,"team":"MIN","carries":17,"rushYards":58,"targets":6,"receptions":5,"recYards":34,"recYac":42,"fumbles":0,"pfrCarries":17,"ybc":39,"yac":19,"broken":0,"pbpRushes":17,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":null},
+ {"week":4,"team":"MIN","carries":20,"rushYards":94,"targets":8,"receptions":4,"recYards":34,"recYac":30,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":20,"r10":3,"r15":2,"r20":0,"r30":0,"longest":19,"longestTd":null}
 ]},
 {"gsisId":"00-0036265","playerId":"6828","playerName":"AJ Dillon","team":"CAR","games":[
  {"week":1,"team":"CAR","carries":5,"rushYards":28,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":13,"yac":15,"broken":1,"pbpRushes":5,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
  {"week":2,"team":"CAR","carries":3,"rushYards":-3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":-3,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null},
- {"week":3,"team":"CAR","carries":4,"rushYards":16,"targets":1,"receptions":1,"recYards":-2,"recYac":5,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":8,"broken":1,"pbpRushes":4,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
+ {"week":3,"team":"CAR","carries":4,"rushYards":16,"targets":1,"receptions":1,"recYards":-2,"recYac":5,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":8,"broken":1,"pbpRushes":4,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
+ {"week":4,"team":"CAR","carries":5,"rushYards":2,"targets":1,"receptions":1,"recYards":5,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
 ]},
 {"gsisId":"00-0033906","playerId":"4035","playerName":"Alvin Kamara","team":"NO","games":[
  {"week":2,"team":"NO","carries":9,"rushYards":15,"targets":6,"receptions":5,"recYards":7,"recYac":14,"fumbles":0,"pfrCarries":9,"ybc":3,"yac":12,"broken":2,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
@@ -16,12 +18,17 @@
 {"gsisId":"00-0032104","playerId":"2359","playerName":"Ameer Abdullah","team":"JAX","games":[
  {"week":1,"team":"JAX","carries":4,"rushYards":32,"targets":1,"receptions":1,"recYards":0,"recYac":3,"fumbles":0,"pfrCarries":4,"ybc":13,"yac":19,"broken":0,"pbpRushes":4,"r10":2,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"JAX","carries":3,"rushYards":11,"targets":1,"receptions":1,"recYards":2,"recYac":8,"fumbles":0,"pfrCarries":3,"ybc":6,"yac":5,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
- {"week":3,"team":"JAX","carries":3,"rushYards":2,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":-1,"yac":3,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
+ {"week":3,"team":"JAX","carries":3,"rushYards":2,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":-1,"yac":3,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
+ {"week":4,"team":"JAX","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0040122","playerId":"12527","playerName":"Ashton Jeanty","team":"LV","games":[
  {"week":1,"team":"LV","carries":23,"rushYards":102,"targets":6,"receptions":6,"recYards":45,"recYac":27,"fumbles":0,"pfrCarries":23,"ybc":45,"yac":57,"broken":4,"pbpRushes":23,"r10":3,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":null},
  {"week":2,"team":"LV","carries":21,"rushYards":48,"targets":7,"receptions":4,"recYards":15,"recYac":25,"fumbles":0,"pfrCarries":21,"ybc":21,"yac":27,"broken":0,"pbpRushes":21,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
- {"week":3,"team":"LV","carries":19,"rushYards":56,"targets":3,"receptions":3,"recYards":37,"recYac":24,"fumbles":0,"pfrCarries":19,"ybc":34,"yac":22,"broken":0,"pbpRushes":19,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null}
+ {"week":3,"team":"LV","carries":19,"rushYards":56,"targets":3,"receptions":3,"recYards":37,"recYac":24,"fumbles":0,"pfrCarries":19,"ybc":34,"yac":22,"broken":0,"pbpRushes":19,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
+ {"week":4,"team":"LV","carries":15,"rushYards":58,"targets":8,"receptions":6,"recYards":68,"recYac":60,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":15,"r10":1,"r15":1,"r20":0,"r30":0,"longest":19,"longestTd":null}
+]},
+{"gsisId":"00-0033699","playerId":"4663","playerName":"Austin Ekeler","team":"WAS","games":[
+ {"week":4,"team":"WAS","carries":4,"rushYards":29,"targets":2,"receptions":1,"recYards":11,"recYac":11,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":4,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null}
 ]},
 {"gsisId":"00-0037157","playerId":"8122","playerName":"Bam Knight","team":"ARI","games":[
  {"week":2,"team":"ARI","carries":2,"rushYards":24,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":15,"yac":9,"broken":0,"pbpRushes":2,"r10":1,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":null}
@@ -29,7 +36,8 @@
 {"gsisId":"00-0040719","playerId":"12490","playerName":"Bhayshul Tuten","team":"JAX","games":[
  {"week":1,"team":"JAX","carries":15,"rushYards":66,"targets":1,"receptions":1,"recYards":22,"recYac":27,"fumbles":0,"pfrCarries":15,"ybc":16,"yac":50,"broken":1,"pbpRushes":15,"r10":3,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"JAX","carries":13,"rushYards":65,"targets":2,"receptions":2,"recYards":-3,"recYac":5,"fumbles":0,"pfrCarries":13,"ybc":27,"yac":38,"broken":0,"pbpRushes":13,"r10":2,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":1},
- {"week":3,"team":"JAX","carries":15,"rushYards":73,"targets":2,"receptions":2,"recYards":17,"recYac":24,"fumbles":0,"pfrCarries":15,"ybc":35,"yac":38,"broken":1,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":1}
+ {"week":3,"team":"JAX","carries":15,"rushYards":73,"targets":2,"receptions":2,"recYards":17,"recYac":24,"fumbles":0,"pfrCarries":15,"ybc":35,"yac":38,"broken":1,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":1},
+ {"week":4,"team":"JAX","carries":17,"rushYards":73,"targets":2,"receptions":2,"recYards":18,"recYac":20,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":17,"r10":2,"r15":2,"r20":1,"r30":0,"longest":20,"longestTd":null}
 ]},
 {"gsisId":"00-0038542","playerId":"9509","playerName":"Bijan Robinson","team":"ATL","games":[
  {"week":1,"team":"ATL","carries":21,"rushYards":83,"targets":10,"receptions":8,"recYards":90,"recYac":110,"fumbles":2,"pfrCarries":21,"ybc":33,"yac":50,"broken":5,"pbpRushes":21,"r10":2,"r15":2,"r20":1,"r30":0,"longest":20,"longestTd":null},
@@ -39,16 +47,19 @@
 {"gsisId":"00-0039738","playerId":"11586","playerName":"Blake Corum","team":"LA","games":[
  {"week":1,"team":"LA","carries":10,"rushYards":54,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":10,"ybc":42,"yac":12,"broken":0,"pbpRushes":10,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null},
  {"week":2,"team":"LA","carries":12,"rushYards":79,"targets":1,"receptions":1,"recYards":13,"recYac":19,"fumbles":1,"pfrCarries":12,"ybc":53,"yac":26,"broken":0,"pbpRushes":12,"r10":3,"r15":2,"r20":0,"r30":0,"longest":18,"longestTd":null},
- {"week":3,"team":"LA","carries":6,"rushYards":15,"targets":4,"receptions":2,"recYards":0,"recYac":-1,"fumbles":0,"pfrCarries":6,"ybc":12,"yac":3,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"LA","carries":6,"rushYards":15,"targets":4,"receptions":2,"recYards":0,"recYac":-1,"fumbles":0,"pfrCarries":6,"ybc":12,"yac":3,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"LA","carries":5,"rushYards":14,"targets":2,"receptions":1,"recYards":7,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
 ]},
 {"gsisId":"00-0038488","playerId":"11280","playerName":"Brady Russell","team":"SEA","games":[
  {"week":1,"team":"SEA","carries":0,"rushYards":0,"targets":2,"receptions":2,"recYards":20,"recYac":14,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
- {"week":3,"team":"SEA","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":20,"recYac":7,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"SEA","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":20,"recYac":7,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"SEA","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0039794","playerId":"11576","playerName":"Braelon Allen","team":"NYJ","games":[
  {"week":1,"team":"NYJ","carries":10,"rushYards":40,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":10,"ybc":14,"yac":26,"broken":4,"pbpRushes":10,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
  {"week":2,"team":"NYJ","carries":5,"rushYards":7,"targets":1,"receptions":1,"recYards":8,"recYac":5,"fumbles":0,"pfrCarries":5,"ybc":6,"yac":1,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":5},
- {"week":3,"team":"NYJ","carries":4,"rushYards":14,"targets":3,"receptions":3,"recYards":3,"recYac":8,"fumbles":0,"pfrCarries":4,"ybc":7,"yac":7,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"NYJ","carries":4,"rushYards":14,"targets":3,"receptions":3,"recYards":3,"recYac":8,"fumbles":0,"pfrCarries":4,"ybc":7,"yac":7,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"NYJ","carries":14,"rushYards":59,"targets":2,"receptions":2,"recYards":8,"recYac":8,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":14,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null}
 ]},
 {"gsisId":"00-0040078","playerId":"12455","playerName":"Brashard Smith","team":"KC","games":[
  {"week":2,"team":"KC","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
@@ -67,37 +78,44 @@
 {"gsisId":"00-0039361","playerId":"11584","playerName":"Bucky Irving","team":"TB","games":[
  {"week":1,"team":"TB","carries":8,"rushYards":45,"targets":7,"receptions":7,"recYards":48,"recYac":73,"fumbles":1,"pfrCarries":8,"ybc":24,"yac":21,"broken":1,"pbpRushes":8,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":10},
  {"week":2,"team":"TB","carries":17,"rushYards":89,"targets":4,"receptions":4,"recYards":1,"recYac":23,"fumbles":0,"pfrCarries":17,"ybc":57,"yac":32,"broken":1,"pbpRushes":17,"r10":2,"r15":1,"r20":1,"r30":1,"longest":38,"longestTd":null},
- {"week":3,"team":"TB","carries":15,"rushYards":46,"targets":4,"receptions":2,"recYards":12,"recYac":2,"fumbles":0,"pfrCarries":15,"ybc":24,"yac":22,"broken":0,"pbpRushes":15,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
+ {"week":3,"team":"TB","carries":15,"rushYards":46,"targets":4,"receptions":2,"recYards":12,"recYac":2,"fumbles":0,"pfrCarries":15,"ybc":24,"yac":22,"broken":0,"pbpRushes":15,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
+ {"week":4,"team":"TB","carries":16,"rushYards":61,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":16,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
 ]},
 {"gsisId":"00-0040715","playerId":"12481","playerName":"Cam Skattebo","team":"NYG","games":[
  {"week":1,"team":"NYG","carries":18,"rushYards":81,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":18,"ybc":24,"yac":57,"broken":2,"pbpRushes":18,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":3},
  {"week":2,"team":"NYG","carries":12,"rushYards":36,"targets":4,"receptions":4,"recYards":19,"recYac":23,"fumbles":1,"pfrCarries":12,"ybc":15,"yac":21,"broken":1,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
- {"week":3,"team":"NYG","carries":20,"rushYards":60,"targets":4,"receptions":3,"recYards":40,"recYac":10,"fumbles":1,"pfrCarries":20,"ybc":28,"yac":32,"broken":0,"pbpRushes":20,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null}
+ {"week":3,"team":"NYG","carries":20,"rushYards":60,"targets":4,"receptions":3,"recYards":40,"recYac":10,"fumbles":1,"pfrCarries":20,"ybc":28,"yac":32,"broken":0,"pbpRushes":20,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null},
+ {"week":4,"team":"NYG","carries":18,"rushYards":58,"targets":1,"receptions":1,"recYards":8,"recYac":6,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":18,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
 ]},
 {"gsisId":"00-0038597","playerId":"9224","playerName":"Chase Brown","team":"CIN","games":[
  {"week":1,"team":"CIN","carries":16,"rushYards":56,"targets":6,"receptions":5,"recYards":22,"recYac":32,"fumbles":0,"pfrCarries":16,"ybc":40,"yac":16,"broken":1,"pbpRushes":16,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":5},
  {"week":2,"team":"CIN","carries":20,"rushYards":80,"targets":5,"receptions":3,"recYards":2,"recYac":11,"fumbles":0,"pfrCarries":20,"ybc":42,"yac":38,"broken":2,"pbpRushes":20,"r10":2,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
- {"week":3,"team":"CIN","carries":13,"rushYards":61,"targets":2,"receptions":2,"recYards":8,"recYac":9,"fumbles":0,"pfrCarries":13,"ybc":40,"yac":21,"broken":0,"pbpRushes":13,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null}
+ {"week":3,"team":"CIN","carries":13,"rushYards":61,"targets":2,"receptions":2,"recYards":8,"recYac":9,"fumbles":0,"pfrCarries":13,"ybc":40,"yac":21,"broken":0,"pbpRushes":13,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null},
+ {"week":4,"team":"CIN","carries":9,"rushYards":10,"targets":11,"receptions":11,"recYards":71,"recYac":63,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
 ]},
 {"gsisId":"00-0038685","playerId":"11370","playerName":"Chris Brooks","team":"GB","games":[
  {"week":1,"team":"GB","carries":7,"rushYards":29,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":7,"ybc":19,"yac":10,"broken":0,"pbpRushes":7,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":null},
  {"week":2,"team":"GB","carries":4,"rushYards":11,"targets":2,"receptions":1,"recYards":15,"recYac":19,"fumbles":0,"pfrCarries":4,"ybc":6,"yac":5,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"GB","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":4,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"GB","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":4,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"GB","carries":4,"rushYards":30,"targets":1,"receptions":1,"recYards":5,"recYac":3,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":4,"r10":1,"r15":1,"r20":1,"r30":0,"longest":27,"longestTd":null}
 ]},
 {"gsisId":"00-0038611","playerId":"10219","playerName":"Chris Rodriguez Jr.","team":"JAX","games":[
  {"week":1,"team":"JAX","carries":6,"rushYards":23,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":6,"ybc":9,"yac":14,"broken":1,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
  {"week":2,"team":"JAX","carries":6,"rushYards":13,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":6,"ybc":2,"yac":11,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":3,"team":"JAX","carries":8,"rushYards":37,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":8,"ybc":21,"yac":16,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":5}
+ {"week":3,"team":"JAX","carries":8,"rushYards":37,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":8,"ybc":21,"yac":16,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":5},
+ {"week":4,"team":"JAX","carries":6,"rushYards":35,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":6,"r10":1,"r15":1,"r20":1,"r30":0,"longest":25,"longestTd":25}
 ]},
 {"gsisId":"00-0033280","playerId":"4034","playerName":"Christian McCaffrey","team":"SF","games":[
  {"week":1,"team":"SF","carries":10,"rushYards":68,"targets":8,"receptions":5,"recYards":20,"recYac":30,"fumbles":0,"pfrCarries":10,"ybc":46,"yac":22,"broken":2,"pbpRushes":10,"r10":2,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null},
  {"week":2,"team":"SF","carries":10,"rushYards":23,"targets":4,"receptions":4,"recYards":43,"recYac":32,"fumbles":0,"pfrCarries":10,"ybc":11,"yac":12,"broken":0,"pbpRushes":10,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":1},
- {"week":3,"team":"SF","carries":15,"rushYards":75,"targets":5,"receptions":4,"recYards":41,"recYac":24,"fumbles":0,"pfrCarries":15,"ybc":41,"yac":34,"broken":0,"pbpRushes":15,"r10":3,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":1}
+ {"week":3,"team":"SF","carries":15,"rushYards":75,"targets":5,"receptions":4,"recYards":41,"recYac":24,"fumbles":0,"pfrCarries":15,"ybc":41,"yac":34,"broken":0,"pbpRushes":15,"r10":3,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":1},
+ {"week":4,"team":"SF","carries":15,"rushYards":52,"targets":5,"receptions":3,"recYards":18,"recYac":6,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":15,"r10":3,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":1}
 ]},
 {"gsisId":"00-0036555","playerId":"7594","playerName":"Chuba Hubbard","team":"CAR","games":[
  {"week":1,"team":"CAR","carries":10,"rushYards":49,"targets":3,"receptions":3,"recYards":38,"recYac":38,"fumbles":0,"pfrCarries":10,"ybc":35,"yac":14,"broken":1,"pbpRushes":10,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":2},
  {"week":2,"team":"CAR","carries":12,"rushYards":53,"targets":2,"receptions":2,"recYards":11,"recYac":15,"fumbles":0,"pfrCarries":12,"ybc":40,"yac":13,"broken":2,"pbpRushes":12,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
- {"week":3,"team":"CAR","carries":19,"rushYards":82,"targets":4,"receptions":4,"recYards":28,"recYac":42,"fumbles":0,"pfrCarries":19,"ybc":50,"yac":32,"broken":2,"pbpRushes":19,"r10":3,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null}
+ {"week":3,"team":"CAR","carries":19,"rushYards":82,"targets":4,"receptions":4,"recYards":28,"recYac":42,"fumbles":0,"pfrCarries":19,"ybc":50,"yac":32,"broken":2,"pbpRushes":19,"r10":3,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null},
+ {"week":4,"team":"CAR","carries":20,"rushYards":122,"targets":2,"receptions":1,"recYards":7,"recYac":4,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":20,"r10":4,"r15":3,"r20":2,"r30":1,"longest":32,"longestTd":15}
 ]},
 {"gsisId":"00-0041326","playerId":"13277","playerName":"CJ Donaldson","team":"NO","games":[
  {"week":1,"team":"NO","carries":2,"rushYards":4,"targets":2,"receptions":1,"recYards":-2,"recYac":4,"fumbles":0,"pfrCarries":2,"ybc":1,"yac":3,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
@@ -107,17 +125,23 @@
 {"gsisId":"00-0040556","playerId":"12491","playerName":"Corey Kiner","team":"NE","games":[
  {"week":1,"team":"NE","carries":6,"rushYards":11,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":6,"ybc":5,"yac":6,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
  {"week":2,"team":"NE","carries":2,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":-2,"yac":2,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null},
- {"week":3,"team":"NE","carries":6,"rushYards":18,"targets":1,"receptions":1,"recYards":9,"recYac":12,"fumbles":0,"pfrCarries":6,"ybc":8,"yac":10,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"NE","carries":6,"rushYards":18,"targets":1,"receptions":1,"recYards":9,"recYac":12,"fumbles":0,"pfrCarries":6,"ybc":8,"yac":10,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"NE","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+]},
+{"gsisId":"00-0035567","playerId":"6659","playerName":"Craig Reynolds","team":"WAS","games":[
+ {"week":4,"team":"WAS","carries":2,"rushYards":4,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null}
 ]},
 {"gsisId":"00-0036275","playerId":"6790","playerName":"D'Andre Swift","team":"CHI","games":[
  {"week":1,"team":"CHI","carries":18,"rushYards":124,"targets":1,"receptions":1,"recYards":10,"recYac":6,"fumbles":0,"pfrCarries":18,"ybc":52,"yac":72,"broken":2,"pbpRushes":18,"r10":2,"r15":2,"r20":2,"r30":1,"longest":32,"longestTd":28},
  {"week":2,"team":"CHI","carries":16,"rushYards":45,"targets":5,"receptions":5,"recYards":54,"recYac":69,"fumbles":1,"pfrCarries":16,"ybc":24,"yac":21,"broken":0,"pbpRushes":16,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
- {"week":3,"team":"CHI","carries":20,"rushYards":84,"targets":3,"receptions":2,"recYards":4,"recYac":5,"fumbles":0,"pfrCarries":20,"ybc":44,"yac":40,"broken":2,"pbpRushes":20,"r10":1,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":null}
+ {"week":3,"team":"CHI","carries":20,"rushYards":84,"targets":3,"receptions":2,"recYards":4,"recYac":5,"fumbles":0,"pfrCarries":20,"ybc":44,"yac":40,"broken":2,"pbpRushes":20,"r10":1,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":null},
+ {"week":4,"team":"CHI","carries":15,"rushYards":58,"targets":2,"receptions":2,"recYards":16,"recYac":28,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null}
 ]},
 {"gsisId":"00-0035685","playerId":"5892","playerName":"David Montgomery","team":"HOU","games":[
  {"week":1,"team":"HOU","carries":20,"rushYards":60,"targets":3,"receptions":3,"recYards":19,"recYac":14,"fumbles":0,"pfrCarries":20,"ybc":39,"yac":21,"broken":1,"pbpRushes":20,"r10":1,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":18},
  {"week":2,"team":"HOU","carries":6,"rushYards":10,"targets":2,"receptions":2,"recYards":14,"recYac":5,"fumbles":0,"pfrCarries":6,"ybc":4,"yac":6,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"HOU","carries":11,"rushYards":33,"targets":2,"receptions":2,"recYards":15,"recYac":4,"fumbles":0,"pfrCarries":11,"ybc":17,"yac":16,"broken":2,"pbpRushes":11,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
+ {"week":3,"team":"HOU","carries":11,"rushYards":33,"targets":2,"receptions":2,"recYards":15,"recYac":4,"fumbles":0,"pfrCarries":11,"ybc":17,"yac":16,"broken":2,"pbpRushes":11,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
+ {"week":4,"team":"HOU","carries":10,"rushYards":24,"targets":0,"receptions":0,"recYards":19,"recYac":19,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":10,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
 ]},
 {"gsisId":"00-0039040","playerId":"9226","playerName":"De'Von Achane","team":"MIA","games":[
  {"week":1,"team":"MIA","carries":11,"rushYards":36,"targets":5,"receptions":4,"recYards":30,"recYac":19,"fumbles":0,"pfrCarries":11,"ybc":21,"yac":15,"broken":0,"pbpRushes":11,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null},
@@ -127,16 +151,19 @@
 {"gsisId":"00-0036425","playerId":"6931","playerName":"DeeJay Dallas","team":"MIN","games":[
  {"week":1,"team":"MIN","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":1,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
  {"week":2,"team":"MIN","carries":2,"rushYards":8,"targets":1,"receptions":1,"recYards":12,"recYac":16,"fumbles":0,"pfrCarries":2,"ybc":5,"yac":3,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"MIN","carries":1,"rushYards":2,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
+ {"week":3,"team":"MIN","carries":1,"rushYards":2,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null},
+ {"week":4,"team":"MIN","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":10,"recYac":7,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0041104","playerId":"13347","playerName":"Demond Claiborne","team":"MIN","games":[
  {"week":2,"team":"MIN","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":2,"recYac":9,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
- {"week":3,"team":"MIN","carries":3,"rushYards":1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":0,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
+ {"week":3,"team":"MIN","carries":3,"rushYards":1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":0,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
+ {"week":4,"team":"MIN","carries":3,"rushYards":12,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
 ]},
 {"gsisId":"00-0032764","playerId":"3198","playerName":"Derrick Henry","team":"BAL","games":[
  {"week":1,"team":"BAL","carries":24,"rushYards":144,"targets":1,"receptions":1,"recYards":19,"recYac":20,"fumbles":0,"pfrCarries":24,"ybc":49,"yac":95,"broken":0,"pbpRushes":24,"r10":4,"r15":2,"r20":2,"r30":1,"longest":32,"longestTd":32},
  {"week":2,"team":"BAL","carries":16,"rushYards":68,"targets":3,"receptions":3,"recYards":19,"recYac":32,"fumbles":0,"pfrCarries":16,"ybc":34,"yac":34,"broken":4,"pbpRushes":16,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":1},
- {"week":3,"team":"BAL","carries":26,"rushYards":89,"targets":1,"receptions":1,"recYards":0,"recYac":5,"fumbles":0,"pfrCarries":26,"ybc":41,"yac":48,"broken":0,"pbpRushes":26,"r10":2,"r15":1,"r20":1,"r30":0,"longest":29,"longestTd":4}
+ {"week":3,"team":"BAL","carries":26,"rushYards":89,"targets":1,"receptions":1,"recYards":0,"recYac":5,"fumbles":0,"pfrCarries":26,"ybc":41,"yac":48,"broken":0,"pbpRushes":26,"r10":2,"r15":1,"r20":1,"r30":0,"longest":29,"longestTd":4},
+ {"week":4,"team":"BAL","carries":23,"rushYards":73,"targets":2,"receptions":2,"recYards":6,"recYac":17,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":23,"r10":3,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":5}
 ]},
 {"gsisId":"00-0035250","playerId":"6130","playerName":"Devin Singletary","team":"NYG","games":[
  {"week":1,"team":"NYG","carries":6,"rushYards":16,"targets":4,"receptions":4,"recYards":22,"recYac":38,"fumbles":0,"pfrCarries":6,"ybc":5,"yac":11,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
@@ -149,7 +176,8 @@
 {"gsisId":"00-0038797","playerId":"11435","playerName":"Emanuel Wilson","team":"SEA","games":[
  {"week":1,"team":"SEA","carries":2,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":3,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
  {"week":2,"team":"SEA","carries":21,"rushYards":92,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":21,"ybc":60,"yac":32,"broken":0,"pbpRushes":21,"r10":2,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":null},
- {"week":3,"team":"SEA","carries":9,"rushYards":14,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":2,"yac":12,"broken":2,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"SEA","carries":9,"rushYards":14,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":2,"yac":12,"broken":2,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"SEA","carries":21,"rushYards":81,"targets":4,"receptions":3,"recYards":39,"recYac":54,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":21,"r10":2,"r15":2,"r20":0,"r30":0,"longest":15,"longestTd":8}
 ]},
 {"gsisId":"00-0038705","playerId":"11199","playerName":"Emari Demercado","team":"DAL","games":[
  {"week":1,"team":"DAL","carries":2,"rushYards":7,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":0,"yac":7,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
@@ -158,7 +186,8 @@
 {"gsisId":"00-0041013","playerId":"13337","playerName":"Emmett Johnson","team":"KC","games":[
  {"week":1,"team":"KC","carries":8,"rushYards":24,"targets":2,"receptions":2,"recYards":44,"recYac":52,"fumbles":0,"pfrCarries":8,"ybc":7,"yac":17,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
  {"week":2,"team":"KC","carries":2,"rushYards":15,"targets":2,"receptions":2,"recYards":20,"recYac":24,"fumbles":0,"pfrCarries":2,"ybc":4,"yac":11,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
- {"week":3,"team":"KC","carries":6,"rushYards":17,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":6,"ybc":13,"yac":4,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"KC","carries":6,"rushYards":17,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":6,"ybc":13,"yac":4,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"KC","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":10,"recYac":16,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0039471","playerId":"11573","playerName":"Frank Gore Jr.","team":"BUF","games":[
  {"week":1,"team":"BUF","carries":1,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":3,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
@@ -166,21 +195,25 @@
 {"gsisId":"00-0039299","playerId":"12048","playerName":"George Holani","team":"SEA","games":[
  {"week":1,"team":"SEA","carries":8,"rushYards":29,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":8,"ybc":15,"yac":14,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
  {"week":2,"team":"SEA","carries":4,"rushYards":13,"targets":1,"receptions":1,"recYards":2,"recYac":6,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":5,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
- {"week":3,"team":"SEA","carries":3,"rushYards":10,"targets":5,"receptions":5,"recYards":48,"recYac":58,"fumbles":0,"pfrCarries":3,"ybc":5,"yac":5,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
+ {"week":3,"team":"SEA","carries":3,"rushYards":10,"targets":5,"receptions":5,"recYards":48,"recYac":58,"fumbles":0,"pfrCarries":3,"ybc":5,"yac":5,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
+ {"week":4,"team":"SEA","carries":7,"rushYards":18,"targets":1,"receptions":1,"recYards":2,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0038738","playerId":"11510","playerName":"Hunter Luepke","team":"DAL","games":[
  {"week":1,"team":"DAL","carries":1,"rushYards":7,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":7,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":2,"team":"DAL","carries":1,"rushYards":1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null}
+ {"week":2,"team":"DAL","carries":1,"rushYards":1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null},
+ {"week":4,"team":"DAL","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":2,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0036158","playerId":"6806","playerName":"J.K. Dobbins","team":"DEN","games":[
  {"week":1,"team":"DEN","carries":8,"rushYards":36,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":8,"ybc":8,"yac":28,"broken":0,"pbpRushes":8,"r10":1,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null},
  {"week":2,"team":"DEN","carries":10,"rushYards":36,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":10,"ybc":20,"yac":16,"broken":0,"pbpRushes":10,"r10":1,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":null},
- {"week":3,"team":"DEN","carries":17,"rushYards":49,"targets":2,"receptions":1,"recYards":4,"recYac":4,"fumbles":1,"pfrCarries":17,"ybc":26,"yac":23,"broken":0,"pbpRushes":17,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":3,"team":"DEN","carries":17,"rushYards":49,"targets":2,"receptions":1,"recYards":4,"recYac":4,"fumbles":1,"pfrCarries":17,"ybc":26,"yac":23,"broken":0,"pbpRushes":17,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
+ {"week":4,"team":"DEN","carries":11,"rushYards":40,"targets":2,"receptions":2,"recYards":12,"recYac":9,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":11,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0040242","playerId":"12533","playerName":"Jacory Croskey-Merritt","team":"WAS","games":[
  {"week":1,"team":"WAS","carries":16,"rushYards":63,"targets":1,"receptions":1,"recYards":-7,"recYac":0,"fumbles":1,"pfrCarries":16,"ybc":41,"yac":22,"broken":0,"pbpRushes":16,"r10":2,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":1},
  {"week":2,"team":"WAS","carries":12,"rushYards":43,"targets":1,"receptions":1,"recYards":5,"recYac":6,"fumbles":0,"pfrCarries":12,"ybc":24,"yac":19,"broken":0,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
- {"week":3,"team":"WAS","carries":19,"rushYards":36,"targets":1,"receptions":1,"recYards":7,"recYac":2,"fumbles":0,"pfrCarries":19,"ybc":19,"yac":17,"broken":0,"pbpRushes":19,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
+ {"week":3,"team":"WAS","carries":19,"rushYards":36,"targets":1,"receptions":1,"recYards":7,"recYac":2,"fumbles":0,"pfrCarries":19,"ybc":19,"yac":17,"broken":0,"pbpRushes":19,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
+ {"week":4,"team":"WAS","carries":9,"rushYards":15,"targets":4,"receptions":2,"recYards":35,"recYac":39,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
 ]},
 {"gsisId":"00-0041512","playerId":"13286","playerName":"Jadarian Price","team":"SEA","games":[
  {"week":1,"team":"SEA","carries":10,"rushYards":52,"targets":2,"receptions":2,"recYards":6,"recYac":7,"fumbles":0,"pfrCarries":10,"ybc":35,"yac":17,"broken":0,"pbpRushes":10,"r10":2,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null},
@@ -190,36 +223,41 @@
 {"gsisId":"00-0039139","playerId":"9221","playerName":"Jahmyr Gibbs","team":"DET","games":[
  {"week":1,"team":"DET","carries":29,"rushYards":156,"targets":5,"receptions":5,"recYards":30,"recYac":34,"fumbles":1,"pfrCarries":29,"ybc":112,"yac":44,"broken":0,"pbpRushes":29,"r10":7,"r15":3,"r20":1,"r30":0,"longest":21,"longestTd":1},
  {"week":2,"team":"DET","carries":16,"rushYards":52,"targets":8,"receptions":6,"recYards":61,"recYac":28,"fumbles":0,"pfrCarries":16,"ybc":30,"yac":22,"broken":6,"pbpRushes":16,"r10":2,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null},
- {"week":3,"team":"DET","carries":20,"rushYards":99,"targets":8,"receptions":7,"recYards":65,"recYac":57,"fumbles":0,"pfrCarries":20,"ybc":69,"yac":30,"broken":1,"pbpRushes":20,"r10":2,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":17}
+ {"week":3,"team":"DET","carries":20,"rushYards":99,"targets":8,"receptions":7,"recYards":65,"recYac":57,"fumbles":0,"pfrCarries":20,"ybc":69,"yac":30,"broken":1,"pbpRushes":20,"r10":2,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":17},
+ {"week":4,"team":"DET","carries":15,"rushYards":46,"targets":7,"receptions":4,"recYards":31,"recYac":20,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":1}
 ]},
 {"gsisId":"00-0038794","playerId":"11439","playerName":"Jaleel McLaughlin","team":"CLE","games":[
  {"week":2,"team":"CLE","carries":1,"rushYards":3,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":2,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
- {"week":4,"team":"CLE","carries":1,"rushYards":28,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":1,"r15":1,"r20":1,"r30":0,"longest":28,"longestTd":28}
+ {"week":4,"team":"CLE","carries":1,"rushYards":28,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":5,"yac":23,"broken":0,"pbpRushes":1,"r10":1,"r15":1,"r20":1,"r30":0,"longest":28,"longestTd":28}
 ]},
 {"gsisId":"00-0037248","playerId":"8138","playerName":"James Cook","team":"BUF","games":[
  {"week":1,"team":"BUF","carries":13,"rushYards":57,"targets":4,"receptions":3,"recYards":12,"recYac":14,"fumbles":1,"pfrCarries":13,"ybc":44,"yac":13,"broken":1,"pbpRushes":13,"r10":2,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"BUF","carries":21,"rushYards":135,"targets":3,"receptions":1,"recYards":4,"recYac":2,"fumbles":0,"pfrCarries":21,"ybc":103,"yac":32,"broken":1,"pbpRushes":21,"r10":5,"r15":3,"r20":3,"r30":1,"longest":35,"longestTd":1},
- {"week":3,"team":"BUF","carries":24,"rushYards":154,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":24,"ybc":103,"yac":51,"broken":3,"pbpRushes":24,"r10":5,"r15":3,"r20":1,"r30":0,"longest":23,"longestTd":3}
+ {"week":3,"team":"BUF","carries":24,"rushYards":154,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":24,"ybc":103,"yac":51,"broken":3,"pbpRushes":24,"r10":5,"r15":3,"r20":1,"r30":0,"longest":23,"longestTd":3},
+ {"week":4,"team":"BUF","carries":12,"rushYards":75,"targets":2,"receptions":2,"recYards":8,"recYac":11,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":12,"r10":3,"r15":2,"r20":0,"r30":0,"longest":17,"longestTd":8}
 ]},
 {"gsisId":"00-0036997","playerId":"7588","playerName":"Javonte Williams","team":"DAL","games":[
  {"week":1,"team":"DAL","carries":12,"rushYards":41,"targets":5,"receptions":5,"recYards":31,"recYac":42,"fumbles":0,"pfrCarries":12,"ybc":16,"yac":25,"broken":2,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":1},
  {"week":2,"team":"DAL","carries":12,"rushYards":30,"targets":4,"receptions":3,"recYards":20,"recYac":28,"fumbles":0,"pfrCarries":12,"ybc":18,"yac":12,"broken":0,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
- {"week":3,"team":"DAL","carries":19,"rushYards":98,"targets":3,"receptions":2,"recYards":5,"recYac":9,"fumbles":1,"pfrCarries":19,"ybc":67,"yac":31,"broken":0,"pbpRushes":19,"r10":3,"r15":3,"r20":1,"r30":0,"longest":22,"longestTd":2}
+ {"week":3,"team":"DAL","carries":19,"rushYards":98,"targets":3,"receptions":2,"recYards":5,"recYac":9,"fumbles":1,"pfrCarries":19,"ybc":67,"yac":31,"broken":0,"pbpRushes":19,"r10":3,"r15":3,"r20":1,"r30":0,"longest":22,"longestTd":2},
+ {"week":4,"team":"DAL","carries":19,"rushYards":62,"targets":5,"receptions":5,"recYards":21,"recYac":20,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":19,"r10":1,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":8}
 ]},
 {"gsisId":"00-0037228","playerId":"8228","playerName":"Jaylen Warren","team":"PIT","games":[
  {"week":1,"team":"PIT","carries":10,"rushYards":46,"targets":6,"receptions":5,"recYards":27,"recYac":36,"fumbles":1,"pfrCarries":10,"ybc":12,"yac":34,"broken":3,"pbpRushes":10,"r10":1,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null},
  {"week":2,"team":"PIT","carries":11,"rushYards":43,"targets":4,"receptions":2,"recYards":34,"recYac":39,"fumbles":0,"pfrCarries":11,"ybc":22,"yac":21,"broken":0,"pbpRushes":11,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null},
  {"week":3,"team":"PIT","carries":17,"rushYards":127,"targets":4,"receptions":3,"recYards":49,"recYac":57,"fumbles":0,"pfrCarries":17,"ybc":65,"yac":62,"broken":0,"pbpRushes":17,"r10":3,"r15":2,"r20":2,"r30":1,"longest":35,"longestTd":null},
- {"week":4,"team":"PIT","carries":17,"rushYards":93,"targets":6,"receptions":3,"recYards":33,"recYac":40,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":17,"r10":2,"r15":1,"r20":1,"r30":0,"longest":24,"longestTd":null}
+ {"week":4,"team":"PIT","carries":17,"rushYards":93,"targets":6,"receptions":3,"recYards":33,"recYac":40,"fumbles":0,"pfrCarries":17,"ybc":47,"yac":46,"broken":1,"pbpRushes":17,"r10":2,"r15":1,"r20":1,"r30":0,"longest":24,"longestTd":null}
 ]},
 {"gsisId":"00-0039874","playerId":"11643","playerName":"Jaylen Wright","team":"MIA","games":[
  {"week":1,"team":"MIA","carries":1,"rushYards":-1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":-1,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":-1,"longestTd":null},
- {"week":2,"team":"MIA","carries":2,"rushYards":11,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":6,"yac":5,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
+ {"week":2,"team":"MIA","carries":2,"rushYards":11,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":6,"yac":5,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
+ {"week":4,"team":"MIA","carries":5,"rushYards":7,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
 ]},
 {"gsisId":"00-0041027","playerId":"13287","playerName":"Jeremiyah Love","team":"ARI","games":[
  {"week":1,"team":"ARI","carries":11,"rushYards":41,"targets":4,"receptions":2,"recYards":9,"recYac":5,"fumbles":0,"pfrCarries":11,"ybc":15,"yac":26,"broken":1,"pbpRushes":11,"r10":1,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":5},
  {"week":2,"team":"ARI","carries":9,"rushYards":29,"targets":3,"receptions":3,"recYards":16,"recYac":16,"fumbles":0,"pfrCarries":9,"ybc":18,"yac":11,"broken":0,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
- {"week":3,"team":"ARI","carries":21,"rushYards":90,"targets":5,"receptions":5,"recYards":19,"recYac":10,"fumbles":0,"pfrCarries":21,"ybc":57,"yac":33,"broken":1,"pbpRushes":21,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
+ {"week":3,"team":"ARI","carries":21,"rushYards":90,"targets":5,"receptions":5,"recYards":19,"recYac":10,"fumbles":0,"pfrCarries":21,"ybc":57,"yac":33,"broken":1,"pbpRushes":21,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
+ {"week":4,"team":"ARI","carries":14,"rushYards":63,"targets":1,"receptions":1,"recYards":-8,"recYac":-1,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":14,"r10":1,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null}
 ]},
 {"gsisId":"00-0041496","playerId":"13345","playerName":"Jonah Coleman","team":"DEN","games":[
  {"week":1,"team":"DEN","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
@@ -228,7 +266,8 @@
 {"gsisId":"00-0036223","playerId":"6813","playerName":"Jonathan Taylor","team":"IND","games":[
  {"week":1,"team":"IND","carries":19,"rushYards":98,"targets":4,"receptions":3,"recYards":23,"recYac":26,"fumbles":1,"pfrCarries":19,"ybc":54,"yac":44,"broken":1,"pbpRushes":19,"r10":5,"r15":2,"r20":1,"r30":0,"longest":21,"longestTd":3},
  {"week":2,"team":"IND","carries":24,"rushYards":92,"targets":4,"receptions":4,"recYards":40,"recYac":41,"fumbles":0,"pfrCarries":24,"ybc":40,"yac":52,"broken":0,"pbpRushes":24,"r10":3,"r15":1,"r20":1,"r30":0,"longest":24,"longestTd":24},
- {"week":3,"team":"IND","carries":23,"rushYards":68,"targets":3,"receptions":2,"recYards":4,"recYac":11,"fumbles":0,"pfrCarries":23,"ybc":30,"yac":38,"broken":0,"pbpRushes":22,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
+ {"week":3,"team":"IND","carries":23,"rushYards":68,"targets":3,"receptions":2,"recYards":4,"recYac":11,"fumbles":0,"pfrCarries":23,"ybc":30,"yac":38,"broken":0,"pbpRushes":22,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
+ {"week":4,"team":"IND","carries":20,"rushYards":95,"targets":4,"receptions":1,"recYards":2,"recYac":1,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":20,"r10":3,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":5}
 ]},
 {"gsisId":"00-0039344","playerId":"11583","playerName":"Jonathon Brooks","team":"CAR","games":[
  {"week":1,"team":"CAR","carries":4,"rushYards":14,"targets":2,"receptions":1,"recYards":48,"recYac":26,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":6,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
@@ -243,26 +282,31 @@
 {"gsisId":"00-0034975","playerId":"5995","playerName":"Justice Hill","team":"BAL","games":[
  {"week":1,"team":"BAL","carries":6,"rushYards":18,"targets":1,"receptions":1,"recYards":10,"recYac":11,"fumbles":0,"pfrCarries":6,"ybc":14,"yac":4,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
  {"week":2,"team":"BAL","carries":2,"rushYards":6,"targets":2,"receptions":2,"recYards":12,"recYac":21,"fumbles":0,"pfrCarries":2,"ybc":6,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
- {"week":3,"team":"BAL","carries":5,"rushYards":33,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":20,"yac":13,"broken":0,"pbpRushes":5,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
+ {"week":3,"team":"BAL","carries":5,"rushYards":33,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":20,"yac":13,"broken":0,"pbpRushes":5,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
+ {"week":4,"team":"BAL","carries":1,"rushYards":3,"targets":3,"receptions":2,"recYards":22,"recYac":33,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
 ]},
 {"gsisId":"00-0041052","playerId":"13414","playerName":"Kaelon Black","team":"SF","games":[
  {"week":1,"team":"SF","carries":14,"rushYards":65,"targets":1,"receptions":1,"recYards":5,"recYac":10,"fumbles":0,"pfrCarries":14,"ybc":48,"yac":17,"broken":0,"pbpRushes":14,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":null},
  {"week":2,"team":"SF","carries":7,"rushYards":25,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":7,"ybc":11,"yac":14,"broken":1,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
- {"week":3,"team":"SF","carries":4,"rushYards":17,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":6,"yac":11,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
+ {"week":3,"team":"SF","carries":4,"rushYards":17,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":6,"yac":11,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
+ {"week":4,"team":"SF","carries":6,"rushYards":13,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
 ]},
 {"gsisId":"00-0040142","playerId":"12504","playerName":"Kaleb Johnson","team":"GB","games":[
  {"week":1,"team":"GB","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
  {"week":2,"team":"GB","carries":8,"rushYards":32,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":8,"ybc":13,"yac":19,"broken":2,"pbpRushes":8,"r10":2,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
- {"week":3,"team":"GB","carries":4,"rushYards":6,"targets":3,"receptions":1,"recYards":10,"recYac":10,"fumbles":0,"pfrCarries":4,"ybc":3,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
+ {"week":3,"team":"GB","carries":4,"rushYards":6,"targets":3,"receptions":1,"recYards":10,"recYac":10,"fumbles":0,"pfrCarries":4,"ybc":3,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
+ {"week":4,"team":"GB","carries":8,"rushYards":42,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":8,"r10":1,"r15":1,"r20":1,"r30":1,"longest":31,"longestTd":null}
 ]},
 {"gsisId":"00-0041096","playerId":"13405","playerName":"Kaytron Allen","team":"WAS","games":[
  {"week":1,"team":"WAS","carries":4,"rushYards":16,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":9,"yac":7,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
- {"week":2,"team":"WAS","carries":5,"rushYards":24,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":16,"yac":8,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
+ {"week":2,"team":"WAS","carries":5,"rushYards":24,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":16,"yac":8,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
+ {"week":4,"team":"WAS","carries":3,"rushYards":1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
 ]},
 {"gsisId":"00-0038454","playerId":"9511","playerName":"Keaton Mitchell","team":"LAC","games":[
  {"week":1,"team":"LAC","carries":4,"rushYards":9,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":1,"yac":8,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
  {"week":2,"team":"LAC","carries":5,"rushYards":24,"targets":1,"receptions":1,"recYards":15,"recYac":12,"fumbles":0,"pfrCarries":5,"ybc":21,"yac":3,"broken":0,"pbpRushes":5,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
- {"week":3,"team":"LAC","carries":8,"rushYards":52,"targets":3,"receptions":3,"recYards":-5,"recYac":6,"fumbles":0,"pfrCarries":8,"ybc":18,"yac":34,"broken":4,"pbpRushes":8,"r10":2,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null}
+ {"week":3,"team":"LAC","carries":8,"rushYards":52,"targets":3,"receptions":3,"recYards":-5,"recYac":6,"fumbles":0,"pfrCarries":8,"ybc":18,"yac":34,"broken":4,"pbpRushes":8,"r10":2,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null},
+ {"week":4,"team":"LAC","carries":10,"rushYards":39,"targets":6,"receptions":5,"recYards":24,"recYac":26,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":10,"r10":1,"r15":1,"r20":1,"r30":0,"longest":20,"longestTd":null}
 ]},
 {"gsisId":"00-0038551","playerId":"9757","playerName":"Kendre Miller","team":"NO","games":[
  {"week":1,"team":"NO","carries":9,"rushYards":30,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":19,"yac":11,"broken":0,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":8},
@@ -271,33 +315,39 @@
 {"gsisId":"00-0038134","playerId":"8151","playerName":"Kenneth Walker III","team":"KC","games":[
  {"week":1,"team":"KC","carries":23,"rushYards":173,"targets":6,"receptions":3,"recYards":18,"recYac":18,"fumbles":0,"pfrCarries":23,"ybc":46,"yac":127,"broken":3,"pbpRushes":23,"r10":4,"r15":2,"r20":2,"r30":1,"longest":60,"longestTd":60},
  {"week":2,"team":"KC","carries":24,"rushYards":117,"targets":10,"receptions":6,"recYards":61,"recYac":54,"fumbles":0,"pfrCarries":24,"ybc":57,"yac":60,"broken":3,"pbpRushes":24,"r10":3,"r15":1,"r20":0,"r30":0,"longest":19,"longestTd":null},
- {"week":3,"team":"KC","carries":18,"rushYards":70,"targets":2,"receptions":2,"recYards":3,"recYac":10,"fumbles":0,"pfrCarries":18,"ybc":39,"yac":31,"broken":4,"pbpRushes":18,"r10":3,"r15":2,"r20":1,"r30":0,"longest":22,"longestTd":10}
+ {"week":3,"team":"KC","carries":18,"rushYards":70,"targets":2,"receptions":2,"recYards":3,"recYac":10,"fumbles":0,"pfrCarries":18,"ybc":39,"yac":31,"broken":4,"pbpRushes":18,"r10":3,"r15":2,"r20":1,"r30":0,"longest":22,"longestTd":10},
+ {"week":4,"team":"KC","carries":22,"rushYards":177,"targets":1,"receptions":1,"recYards":2,"recYac":7,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":22,"r10":4,"r15":3,"r20":3,"r30":1,"longest":76,"longestTd":22}
 ]},
 {"gsisId":"00-0036919","playerId":"7567","playerName":"Kenny Gainwell","team":"TB","games":[
  {"week":1,"team":"TB","carries":5,"rushYards":15,"targets":1,"receptions":1,"recYards":3,"recYac":8,"fumbles":0,"pfrCarries":5,"ybc":10,"yac":5,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
  {"week":2,"team":"TB","carries":2,"rushYards":10,"targets":4,"receptions":3,"recYards":5,"recYac":25,"fumbles":0,"pfrCarries":2,"ybc":-1,"yac":11,"broken":1,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
- {"week":3,"team":"TB","carries":3,"rushYards":-4,"targets":5,"receptions":2,"recYards":14,"recYac":18,"fumbles":0,"pfrCarries":3,"ybc":-5,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":3,"team":"TB","carries":3,"rushYards":-4,"targets":5,"receptions":2,"recYards":14,"recYac":18,"fumbles":0,"pfrCarries":3,"ybc":-5,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
+ {"week":4,"team":"TB","carries":3,"rushYards":5,"targets":2,"receptions":2,"recYards":22,"recYac":23,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null}
 ]},
 {"gsisId":"00-0039391","playerId":"11647","playerName":"Kimani Vidal","team":"LAC","games":[
  {"week":2,"team":"LAC","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
- {"week":3,"team":"LAC","carries":1,"rushYards":6,"targets":3,"receptions":1,"recYards":14,"recYac":17,"fumbles":0,"pfrCarries":1,"ybc":6,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":3,"team":"LAC","carries":1,"rushYards":6,"targets":3,"receptions":1,"recYards":14,"recYac":17,"fumbles":0,"pfrCarries":1,"ybc":6,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
+ {"week":4,"team":"LAC","carries":5,"rushYards":25,"targets":3,"receptions":2,"recYards":11,"recYac":17,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0040236","playerId":"12534","playerName":"Kyle Monangai","team":"CHI","games":[
  {"week":1,"team":"CHI","carries":10,"rushYards":100,"targets":2,"receptions":2,"recYards":24,"recYac":15,"fumbles":0,"pfrCarries":10,"ybc":30,"yac":70,"broken":0,"pbpRushes":10,"r10":2,"r15":1,"r20":1,"r30":1,"longest":61,"longestTd":61},
  {"week":2,"team":"CHI","carries":10,"rushYards":47,"targets":2,"receptions":2,"recYards":11,"recYac":10,"fumbles":0,"pfrCarries":10,"ybc":27,"yac":20,"broken":1,"pbpRushes":10,"r10":2,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":null},
- {"week":3,"team":"CHI","carries":10,"rushYards":31,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":10,"ybc":11,"yac":20,"broken":0,"pbpRushes":10,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
+ {"week":3,"team":"CHI","carries":10,"rushYards":31,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":10,"ybc":11,"yac":20,"broken":0,"pbpRushes":10,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
+ {"week":4,"team":"CHI","carries":30,"rushYards":146,"targets":1,"receptions":1,"recYards":4,"recYac":10,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":30,"r10":3,"r15":2,"r20":1,"r30":0,"longest":26,"longestTd":5}
 ]},
 {"gsisId":"00-0037840","playerId":"8150","playerName":"Kyren Williams","team":"LA","games":[
  {"week":1,"team":"LA","carries":11,"rushYards":41,"targets":3,"receptions":3,"recYards":24,"recYac":17,"fumbles":0,"pfrCarries":11,"ybc":26,"yac":15,"broken":0,"pbpRushes":11,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":5},
  {"week":2,"team":"LA","carries":12,"rushYards":85,"targets":2,"receptions":2,"recYards":12,"recYac":7,"fumbles":1,"pfrCarries":12,"ybc":51,"yac":34,"broken":0,"pbpRushes":12,"r10":3,"r15":2,"r20":1,"r30":0,"longest":20,"longestTd":null},
- {"week":3,"team":"LA","carries":15,"rushYards":88,"targets":7,"receptions":6,"recYards":70,"recYac":30,"fumbles":0,"pfrCarries":15,"ybc":55,"yac":33,"broken":1,"pbpRushes":15,"r10":1,"r15":1,"r20":1,"r30":1,"longest":30,"longestTd":null}
+ {"week":3,"team":"LA","carries":15,"rushYards":88,"targets":7,"receptions":6,"recYards":70,"recYac":30,"fumbles":0,"pfrCarries":15,"ybc":55,"yac":33,"broken":1,"pbpRushes":15,"r10":1,"r15":1,"r20":1,"r30":1,"longest":30,"longestTd":null},
+ {"week":4,"team":"LA","carries":16,"rushYards":80,"targets":13,"receptions":10,"recYards":67,"recYac":41,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":16,"r10":1,"r15":1,"r20":1,"r30":0,"longest":23,"longestTd":7}
 ]},
 {"gsisId":"00-0040568","playerId":"12969","playerName":"Lan Larison","team":"NE","games":[
  {"week":1,"team":"NE","carries":0,"rushYards":0,"targets":2,"receptions":2,"recYards":9,"recYac":12,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0040238","playerId":"12544","playerName":"LeQuint Allen Jr.","team":"JAX","games":[
  {"week":2,"team":"JAX","carries":0,"rushYards":0,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
- {"week":3,"team":"JAX","carries":0,"rushYards":0,"targets":2,"receptions":2,"recYards":9,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"JAX","carries":0,"rushYards":0,"targets":2,"receptions":2,"recYards":9,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"JAX","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0038409","playerId":"9510","playerName":"Lew Nichols III","team":"PIT","games":[
  {"week":3,"team":"PIT","carries":1,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":0,"longestTd":null},
@@ -306,37 +356,44 @@
 {"gsisId":"00-0039811","playerId":"11581","playerName":"MarShawn Lloyd","team":"GB","games":[
  {"week":1,"team":"GB","carries":13,"rushYards":37,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":13,"ybc":24,"yac":13,"broken":0,"pbpRushes":13,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"GB","carries":6,"rushYards":20,"targets":2,"receptions":2,"recYards":6,"recYac":10,"fumbles":1,"pfrCarries":6,"ybc":13,"yac":7,"broken":1,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":3,"team":"GB","carries":4,"rushYards":11,"targets":3,"receptions":2,"recYards":7,"recYac":17,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":3,"team":"GB","carries":4,"rushYards":11,"targets":3,"receptions":2,"recYards":7,"recYac":17,"fumbles":0,"pfrCarries":4,"ybc":8,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
+ {"week":4,"team":"GB","carries":7,"rushYards":13,"targets":5,"receptions":5,"recYards":36,"recYac":47,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
 ]},
 {"gsisId":"00-0040878","playerId":"13305","playerName":"Mike Washington Jr.","team":"LV","games":[
  {"week":1,"team":"LV","carries":7,"rushYards":41,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":7,"ybc":30,"yac":11,"broken":0,"pbpRushes":7,"r10":1,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":null},
  {"week":2,"team":"LV","carries":3,"rushYards":7,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":4,"yac":3,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
- {"week":3,"team":"LV","carries":5,"rushYards":54,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":14,"yac":40,"broken":1,"pbpRushes":5,"r10":1,"r15":1,"r20":1,"r30":1,"longest":36,"longestTd":36}
+ {"week":3,"team":"LV","carries":5,"rushYards":54,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":5,"ybc":14,"yac":40,"broken":1,"pbpRushes":5,"r10":1,"r15":1,"r20":1,"r30":1,"longest":36,"longestTd":36},
+ {"week":4,"team":"LV","carries":9,"rushYards":18,"targets":2,"receptions":1,"recYards":-1,"recYac":3,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
 ]},
 {"gsisId":"00-0036893","playerId":"7528","playerName":"Najee Harris","team":"NYG","games":[
  {"week":2,"team":"NYG","carries":4,"rushYards":6,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":0,"yac":6,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"NYG","carries":9,"rushYards":52,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":26,"yac":26,"broken":1,"pbpRushes":9,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
+ {"week":3,"team":"NYG","carries":9,"rushYards":52,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":26,"yac":26,"broken":1,"pbpRushes":9,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
+ {"week":4,"team":"NYG","carries":9,"rushYards":30,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0040886","playerId":"13288","playerName":"Nicholas Singleton","team":"TEN","games":[
- {"week":2,"team":"TEN","carries":4,"rushYards":10,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":7,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":2,"team":"TEN","carries":4,"rushYards":10,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":7,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
+ {"week":4,"team":"TEN","carries":3,"rushYards":2,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
 ]},
 {"gsisId":"00-0040198","playerId":"12495","playerName":"Ollie Gordon II","team":"MIA","games":[
  {"week":2,"team":"MIA","carries":3,"rushYards":7,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":4,"yac":3,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
- {"week":3,"team":"MIA","carries":17,"rushYards":41,"targets":3,"receptions":3,"recYards":14,"recYac":18,"fumbles":0,"pfrCarries":17,"ybc":28,"yac":13,"broken":1,"pbpRushes":17,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":3}
+ {"week":3,"team":"MIA","carries":17,"rushYards":41,"targets":3,"receptions":3,"recYards":14,"recYac":18,"fumbles":0,"pfrCarries":17,"ybc":28,"yac":13,"broken":1,"pbpRushes":17,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":3},
+ {"week":4,"team":"MIA","carries":9,"rushYards":100,"targets":2,"receptions":2,"recYards":0,"recYac":12,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":3,"r15":1,"r20":1,"r30":1,"longest":53,"longestTd":12}
 ]},
 {"gsisId":"00-0040666","playerId":"12507","playerName":"Omarion Hampton","team":"LAC","games":[
  {"week":1,"team":"LAC","carries":12,"rushYards":43,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":12,"ybc":18,"yac":25,"broken":6,"pbpRushes":12,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":8},
  {"week":2,"team":"LAC","carries":23,"rushYards":94,"targets":2,"receptions":2,"recYards":21,"recYac":29,"fumbles":1,"pfrCarries":23,"ybc":50,"yac":44,"broken":1,"pbpRushes":23,"r10":2,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":1},
- {"week":3,"team":"LAC","carries":15,"rushYards":56,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":15,"ybc":31,"yac":25,"broken":0,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null}
+ {"week":3,"team":"LAC","carries":15,"rushYards":56,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":15,"ybc":31,"yac":25,"broken":0,"pbpRushes":15,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null},
+ {"week":4,"team":"LAC","carries":9,"rushYards":45,"targets":2,"receptions":2,"recYards":8,"recYac":6,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":9,"r10":2,"r15":1,"r20":0,"r30":0,"longest":15,"longestTd":2}
 ]},
 {"gsisId":"00-0033376","playerId":"4353","playerName":"Patrick Ricard","team":"NYG","games":[
- {"week":1,"team":"NYG","carries":0,"rushYards":0,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":1,"team":"NYG","carries":0,"rushYards":0,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"NYG","carries":0,"rushYards":0,"targets":2,"receptions":1,"recYards":1,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0040784","playerId":"12512","playerName":"Quinshon Judkins","team":"CLE","games":[
  {"week":1,"team":"CLE","carries":12,"rushYards":33,"targets":2,"receptions":2,"recYards":17,"recYac":16,"fumbles":0,"pfrCarries":12,"ybc":23,"yac":10,"broken":0,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
  {"week":2,"team":"CLE","carries":12,"rushYards":21,"targets":5,"receptions":5,"recYards":27,"recYac":35,"fumbles":0,"pfrCarries":12,"ybc":5,"yac":16,"broken":0,"pbpRushes":12,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
  {"week":3,"team":"CLE","carries":18,"rushYards":70,"targets":2,"receptions":2,"recYards":9,"recYac":15,"fumbles":0,"pfrCarries":18,"ybc":39,"yac":31,"broken":4,"pbpRushes":18,"r10":2,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
- {"week":4,"team":"CLE","carries":17,"rushYards":53,"targets":7,"receptions":6,"recYards":43,"recYac":55,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":17,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":2}
+ {"week":4,"team":"CLE","carries":17,"rushYards":53,"targets":7,"receptions":6,"recYards":43,"recYac":55,"fumbles":0,"pfrCarries":17,"ybc":16,"yac":37,"broken":1,"pbpRushes":17,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":2}
 ]},
 {"gsisId":"00-0037256","playerId":"8136","playerName":"Rachaad White","team":"WAS","games":[
  {"week":1,"team":"WAS","carries":7,"rushYards":22,"targets":2,"receptions":2,"recYards":5,"recYac":15,"fumbles":0,"pfrCarries":7,"ybc":14,"yac":8,"broken":1,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null},
@@ -347,11 +404,12 @@
  {"week":1,"team":"CLE","carries":1,"rushYards":1,"targets":3,"receptions":3,"recYards":25,"recYac":31,"fumbles":0,"pfrCarries":1,"ybc":1,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null},
  {"week":2,"team":"CLE","carries":2,"rushYards":4,"targets":1,"receptions":1,"recYards":7,"recYac":11,"fumbles":0,"pfrCarries":2,"ybc":0,"yac":4,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
  {"week":3,"team":"CLE","carries":1,"rushYards":17,"targets":5,"receptions":4,"recYards":34,"recYac":29,"fumbles":0,"pfrCarries":1,"ybc":13,"yac":4,"broken":0,"pbpRushes":1,"r10":1,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null},
- {"week":4,"team":"CLE","carries":2,"rushYards":9,"targets":2,"receptions":2,"recYards":7,"recYac":17,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+ {"week":4,"team":"CLE","carries":2,"rushYards":9,"targets":2,"receptions":2,"recYards":7,"recYac":17,"fumbles":0,"pfrCarries":2,"ybc":2,"yac":7,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
 ]},
 {"gsisId":"00-0039875","playerId":"11575","playerName":"Ray Davis","team":"BUF","games":[
  {"week":1,"team":"BUF","carries":1,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
- {"week":2,"team":"BUF","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":2,"team":"BUF","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"BUF","carries":1,"rushYards":3,"targets":1,"receptions":1,"recYards":4,"recYac":11,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
 ]},
 {"gsisId":"00-0036187","playerId":"7204","playerName":"Reggie Gilliam","team":"NE","games":[
  {"week":2,"team":"NE","carries":0,"rushYards":0,"targets":2,"receptions":1,"recYards":4,"recYac":4,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
@@ -359,7 +417,8 @@
 {"gsisId":"00-0036875","playerId":"7611","playerName":"Rhamondre Stevenson","team":"NE","games":[
  {"week":1,"team":"NE","carries":18,"rushYards":51,"targets":6,"receptions":5,"recYards":44,"recYac":45,"fumbles":0,"pfrCarries":18,"ybc":17,"yac":34,"broken":0,"pbpRushes":18,"r10":1,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"NE","carries":6,"rushYards":43,"targets":2,"receptions":1,"recYards":3,"recYac":5,"fumbles":1,"pfrCarries":6,"ybc":19,"yac":24,"broken":0,"pbpRushes":6,"r10":1,"r15":1,"r20":1,"r30":0,"longest":24,"longestTd":null},
- {"week":3,"team":"NE","carries":7,"rushYards":22,"targets":3,"receptions":3,"recYards":16,"recYac":16,"fumbles":0,"pfrCarries":7,"ybc":9,"yac":13,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
+ {"week":3,"team":"NE","carries":7,"rushYards":22,"targets":3,"receptions":3,"recYards":16,"recYac":16,"fumbles":0,"pfrCarries":7,"ybc":9,"yac":13,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
+ {"week":4,"team":"NE","carries":13,"rushYards":47,"targets":5,"receptions":3,"recYards":27,"recYac":34,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":13,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":1}
 ]},
 {"gsisId":"00-0036139","playerId":"7021","playerName":"Rico Dowdle","team":"PIT","games":[
  {"week":1,"team":"PIT","carries":8,"rushYards":15,"targets":5,"receptions":2,"recYards":6,"recYac":12,"fumbles":0,"pfrCarries":8,"ybc":11,"yac":4,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null},
@@ -367,40 +426,54 @@
 ]},
 {"gsisId":"00-0040730","playerId":"12489","playerName":"RJ Harvey","team":"DEN","games":[
  {"week":1,"team":"DEN","carries":3,"rushYards":18,"targets":4,"receptions":4,"recYards":23,"recYac":45,"fumbles":0,"pfrCarries":3,"ybc":11,"yac":7,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":3,"team":"DEN","carries":2,"rushYards":6,"targets":7,"receptions":6,"recYards":41,"recYac":54,"fumbles":0,"pfrCarries":2,"ybc":2,"yac":4,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null}
+ {"week":3,"team":"DEN","carries":2,"rushYards":6,"targets":7,"receptions":6,"recYards":41,"recYac":54,"fumbles":0,"pfrCarries":2,"ybc":2,"yac":4,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
+ {"week":4,"team":"DEN","carries":7,"rushYards":25,"targets":10,"receptions":10,"recYards":68,"recYac":94,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0037557","playerId":"8195","playerName":"Ronnie Rivers","team":"LA","games":[
  {"week":1,"team":"LA","carries":5,"rushYards":19,"targets":1,"receptions":1,"recYards":5,"recYac":3,"fumbles":0,"pfrCarries":5,"ybc":8,"yac":11,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
 ]},
+{"gsisId":"00-0039021","playerId":"10235","playerName":"Roschon Johnson","team":"CHI","games":[
+ {"week":1,"team":"CHI","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"CHI","carries":4,"rushYards":16,"targets":1,"receptions":1,"recYards":7,"recYac":2,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":4,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
+]},
 {"gsisId":"00-0033526","playerId":"4147","playerName":"Samaje Perine","team":"CIN","games":[
  {"week":1,"team":"CIN","carries":5,"rushYards":20,"targets":3,"receptions":3,"recYards":30,"recYac":27,"fumbles":0,"pfrCarries":5,"ybc":12,"yac":8,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
  {"week":2,"team":"CIN","carries":2,"rushYards":6,"targets":1,"receptions":1,"recYards":16,"recYac":9,"fumbles":0,"pfrCarries":2,"ybc":3,"yac":3,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"CIN","carries":3,"rushYards":9,"targets":3,"receptions":1,"recYards":5,"recYac":3,"fumbles":0,"pfrCarries":3,"ybc":7,"yac":2,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
+ {"week":3,"team":"CIN","carries":3,"rushYards":9,"targets":3,"receptions":1,"recYards":5,"recYac":3,"fumbles":0,"pfrCarries":3,"ybc":7,"yac":2,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
+ {"week":4,"team":"CIN","carries":3,"rushYards":7,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
 ]},
 {"gsisId":"00-0034844","playerId":"4866","playerName":"Saquon Barkley","team":"PHI","games":[
  {"week":1,"team":"PHI","carries":15,"rushYards":83,"targets":2,"receptions":1,"recYards":-3,"recYac":2,"fumbles":0,"pfrCarries":15,"ybc":20,"yac":63,"broken":1,"pbpRushes":15,"r10":1,"r15":1,"r20":1,"r30":1,"longest":42,"longestTd":null},
  {"week":2,"team":"PHI","carries":4,"rushYards":9,"targets":2,"receptions":1,"recYards":11,"recYac":7,"fumbles":0,"pfrCarries":4,"ybc":6,"yac":3,"broken":0,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
- {"week":3,"team":"PHI","carries":15,"rushYards":82,"targets":2,"receptions":1,"recYards":-2,"recYac":4,"fumbles":0,"pfrCarries":15,"ybc":57,"yac":25,"broken":0,"pbpRushes":15,"r10":3,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null}
+ {"week":3,"team":"PHI","carries":15,"rushYards":82,"targets":2,"receptions":1,"recYards":-2,"recYac":4,"fumbles":0,"pfrCarries":15,"ybc":57,"yac":25,"broken":0,"pbpRushes":15,"r10":3,"r15":1,"r20":0,"r30":0,"longest":17,"longestTd":null},
+ {"week":4,"team":"PHI","carries":2,"rushYards":8,"targets":1,"receptions":1,"recYards":2,"recYac":1,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":6,"longestTd":null}
+]},
+{"gsisId":"00-0038951","playerId":"9506","playerName":"Sean Tucker","team":"TB","games":[
+ {"week":4,"team":"TB","carries":3,"rushYards":10,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":2}
 ]},
 {"gsisId":"00-0041125","playerId":"13424","playerName":"Seth McGowan","team":"IND","games":[
  {"week":1,"team":"IND","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":0,"recYac":2,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
  {"week":2,"team":"IND","carries":2,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null},
- {"week":3,"team":"IND","carries":4,"rushYards":14,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":1,"yac":13,"broken":1,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"IND","carries":4,"rushYards":14,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":4,"ybc":1,"yac":13,"broken":1,"pbpRushes":4,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"IND","carries":6,"rushYards":31,"targets":2,"receptions":1,"recYards":7,"recYac":5,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":6,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
 ]},
 {"gsisId":"00-0039364","playerId":"11729","playerName":"Sione Vaki","team":"DET","games":[
  {"week":1,"team":"DET","carries":2,"rushYards":7,"targets":1,"receptions":1,"recYards":11,"recYac":9,"fumbles":0,"pfrCarries":2,"ybc":7,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null},
  {"week":2,"team":"DET","carries":1,"rushYards":7,"targets":1,"receptions":1,"recYards":13,"recYac":12,"fumbles":0,"pfrCarries":1,"ybc":4,"yac":3,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":3,"team":"DET","carries":6,"rushYards":26,"targets":1,"receptions":1,"recYards":11,"recYac":6,"fumbles":0,"pfrCarries":6,"ybc":16,"yac":10,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null}
+ {"week":3,"team":"DET","carries":6,"rushYards":26,"targets":1,"receptions":1,"recYards":11,"recYac":6,"fumbles":0,"pfrCarries":6,"ybc":16,"yac":10,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
+ {"week":4,"team":"DET","carries":0,"rushYards":0,"targets":2,"receptions":1,"recYards":17,"recYac":15,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
 ]},
 {"gsisId":"00-0038555","playerId":"9225","playerName":"Tank Bigsby","team":"PHI","games":[
  {"week":1,"team":"PHI","carries":1,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
  {"week":2,"team":"PHI","carries":13,"rushYards":33,"targets":2,"receptions":2,"recYards":5,"recYac":13,"fumbles":0,"pfrCarries":13,"ybc":13,"yac":20,"broken":0,"pbpRushes":13,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":2},
- {"week":3,"team":"PHI","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":5,"recYac":5,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"PHI","carries":0,"rushYards":0,"targets":1,"receptions":1,"recYards":5,"recYac":5,"fumbles":1,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"PHI","carries":14,"rushYards":55,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":14,"r10":1,"r15":1,"r20":0,"r30":0,"longest":19,"longestTd":null}
 ]},
 {"gsisId":"00-0035261","playerId":"5967","playerName":"Tony Pollard","team":"TEN","games":[
  {"week":1,"team":"TEN","carries":7,"rushYards":35,"targets":2,"receptions":1,"recYards":-1,"recYac":1,"fumbles":0,"pfrCarries":7,"ybc":26,"yac":9,"broken":1,"pbpRushes":7,"r10":1,"r15":0,"r20":0,"r30":0,"longest":13,"longestTd":null},
  {"week":2,"team":"TEN","carries":14,"rushYards":64,"targets":1,"receptions":1,"recYards":1,"recYac":8,"fumbles":0,"pfrCarries":14,"ybc":31,"yac":33,"broken":1,"pbpRushes":14,"r10":2,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":null},
- {"week":3,"team":"TEN","carries":17,"rushYards":74,"targets":4,"receptions":4,"recYards":22,"recYac":20,"fumbles":0,"pfrCarries":17,"ybc":45,"yac":29,"broken":0,"pbpRushes":17,"r10":2,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null}
+ {"week":3,"team":"TEN","carries":17,"rushYards":74,"targets":4,"receptions":4,"recYards":22,"recYac":20,"fumbles":0,"pfrCarries":17,"ybc":45,"yac":29,"broken":0,"pbpRushes":17,"r10":2,"r15":1,"r20":0,"r30":0,"longest":16,"longestTd":null},
+ {"week":4,"team":"TEN","carries":16,"rushYards":48,"targets":4,"receptions":2,"recYards":2,"recYac":11,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":16,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":3}
 ]},
 {"gsisId":"00-0036973","playerId":"7543","playerName":"Travis Etienne","team":"NO","games":[
  {"week":1,"team":"NO","carries":9,"rushYards":46,"targets":9,"receptions":7,"recYards":32,"recYac":35,"fumbles":0,"pfrCarries":9,"ybc":31,"yac":15,"broken":0,"pbpRushes":9,"r10":2,"r15":1,"r20":0,"r30":0,"longest":18,"longestTd":null},
@@ -410,45 +483,54 @@
 {"gsisId":"00-0035594","playerId":"6012","playerName":"Travis Homer","team":"PIT","games":[
  {"week":2,"team":"PIT","carries":2,"rushYards":16,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":10,"yac":6,"broken":0,"pbpRushes":2,"r10":1,"r15":0,"r20":0,"r30":0,"longest":14,"longestTd":null},
  {"week":3,"team":"PIT","carries":1,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":0,"longestTd":null},
- {"week":4,"team":"PIT","carries":2,"rushYards":-1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
+ {"week":4,"team":"PIT","carries":2,"rushYards":-1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":2,"ybc":-3,"yac":2,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
 ]},
 {"gsisId":"00-0040734","playerId":"12529","playerName":"TreVeyon Henderson","team":"NE","games":[
  {"week":2,"team":"NE","carries":16,"rushYards":76,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":16,"ybc":39,"yac":37,"broken":0,"pbpRushes":16,"r10":2,"r15":1,"r20":1,"r30":1,"longest":39,"longestTd":39},
- {"week":3,"team":"NE","carries":8,"rushYards":23,"targets":1,"receptions":1,"recYards":6,"recYac":2,"fumbles":0,"pfrCarries":8,"ybc":12,"yac":11,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null}
+ {"week":3,"team":"NE","carries":8,"rushYards":23,"targets":1,"receptions":1,"recYards":6,"recYac":2,"fumbles":0,"pfrCarries":8,"ybc":12,"yac":11,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
+ {"week":4,"team":"NE","carries":14,"rushYards":42,"targets":2,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":14,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null}
 ]},
 {"gsisId":"00-0035537","playerId":"6039","playerName":"Ty Johnson","team":"BUF","games":[
- {"week":3,"team":"BUF","carries":0,"rushYards":0,"targets":4,"receptions":4,"recYards":50,"recYac":50,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"BUF","carries":0,"rushYards":0,"targets":4,"receptions":4,"recYards":50,"recYac":50,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"BUF","carries":1,"rushYards":3,"targets":2,"receptions":2,"recYards":9,"recYac":9,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
 ]},
 {"gsisId":"00-0039032","playerId":"9508","playerName":"Tyjae Spears","team":"TEN","games":[
  {"week":1,"team":"TEN","carries":3,"rushYards":12,"targets":4,"receptions":2,"recYards":12,"recYac":23,"fumbles":0,"pfrCarries":3,"ybc":7,"yac":5,"broken":0,"pbpRushes":3,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null},
  {"week":2,"team":"TEN","carries":7,"rushYards":41,"targets":2,"receptions":2,"recYards":29,"recYac":28,"fumbles":1,"pfrCarries":7,"ybc":25,"yac":16,"broken":0,"pbpRushes":7,"r10":1,"r15":1,"r20":1,"r30":0,"longest":27,"longestTd":null},
- {"week":3,"team":"TEN","carries":3,"rushYards":5,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":4,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
+ {"week":3,"team":"TEN","carries":3,"rushYards":5,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":3,"ybc":4,"yac":1,"broken":0,"pbpRushes":3,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
+ {"week":4,"team":"TEN","carries":2,"rushYards":7,"targets":1,"receptions":1,"recYards":-1,"recYac":2,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null}
 ]},
 {"gsisId":"00-0037263","playerId":"8132","playerName":"Tyler Allgeier","team":"ARI","games":[
  {"week":1,"team":"ARI","carries":17,"rushYards":61,"targets":2,"receptions":2,"recYards":9,"recYac":14,"fumbles":0,"pfrCarries":17,"ybc":45,"yac":16,"broken":3,"pbpRushes":17,"r10":1,"r15":0,"r20":0,"r30":0,"longest":11,"longestTd":null},
  {"week":2,"team":"ARI","carries":5,"rushYards":10,"targets":2,"receptions":2,"recYards":9,"recYac":12,"fumbles":0,"pfrCarries":5,"ybc":4,"yac":6,"broken":0,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":5,"longestTd":null},
- {"week":3,"team":"ARI","carries":2,"rushYards":-1,"targets":4,"receptions":4,"recYards":10,"recYac":32,"fumbles":0,"pfrCarries":2,"ybc":-3,"yac":2,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
+ {"week":3,"team":"ARI","carries":2,"rushYards":-1,"targets":4,"receptions":4,"recYards":10,"recYac":32,"fumbles":0,"pfrCarries":2,"ybc":-3,"yac":2,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null},
+ {"week":4,"team":"ARI","carries":8,"rushYards":42,"targets":2,"receptions":2,"recYards":7,"recYac":13,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":8,"r10":1,"r15":1,"r20":1,"r30":0,"longest":22,"longestTd":22}
 ]},
 {"gsisId":"00-0037085","playerId":"8208","playerName":"Tyler Badie","team":"DEN","games":[
  {"week":2,"team":"DEN","carries":1,"rushYards":1,"targets":3,"receptions":2,"recYards":28,"recYac":32,"fumbles":0,"pfrCarries":1,"ybc":0,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":1,"longestTd":null},
- {"week":3,"team":"DEN","carries":1,"rushYards":2,"targets":1,"receptions":1,"recYards":12,"recYac":6,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null}
+ {"week":3,"team":"DEN","carries":1,"rushYards":2,"targets":1,"receptions":1,"recYards":12,"recYac":6,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null},
+ {"week":4,"team":"DEN","carries":2,"rushYards":7,"targets":2,"receptions":2,"recYards":32,"recYac":24,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":4,"longestTd":null}
 ]},
 {"gsisId":"00-0037120","playerId":"8207","playerName":"Tyler Goodson","team":"DAL","games":[
- {"week":3,"team":"DAL","carries":6,"rushYards":22,"targets":1,"receptions":1,"recYards":-5,"recYac":1,"fumbles":0,"pfrCarries":6,"ybc":15,"yac":7,"broken":0,"pbpRushes":6,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null}
+ {"week":3,"team":"DAL","carries":6,"rushYards":22,"targets":1,"receptions":1,"recYards":-5,"recYac":1,"fumbles":0,"pfrCarries":6,"ybc":15,"yac":7,"broken":0,"pbpRushes":6,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null},
+ {"week":4,"team":"DAL","carries":3,"rushYards":12,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":3,"r10":1,"r15":0,"r20":0,"r30":0,"longest":10,"longestTd":null}
 ]},
 {"gsisId":"00-0039384","playerId":"11655","playerName":"Tyrone Tracy Jr.","team":"NYG","games":[
  {"week":1,"team":"NYG","carries":2,"rushYards":14,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":1,"pfrCarries":2,"ybc":5,"yac":9,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":8,"longestTd":null},
  {"week":2,"team":"NYG","carries":0,"rushYards":0,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
- {"week":3,"team":"NYG","carries":1,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null}
+ {"week":3,"team":"NYG","carries":1,"rushYards":3,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":1,"ybc":2,"yac":1,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
+ {"week":4,"team":"NYG","carries":1,"rushYards":-1,"targets":0,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":1,"r10":0,"r15":0,"r20":0,"r30":0,"longest":-1,"longestTd":null}
 ]},
 {"gsisId":"00-0039746","playerId":"11577","playerName":"Will Shipley","team":"PHI","games":[
  {"week":1,"team":"PHI","carries":2,"rushYards":4,"targets":1,"receptions":1,"recYards":8,"recYac":2,"fumbles":0,"pfrCarries":2,"ybc":3,"yac":1,"broken":0,"pbpRushes":2,"r10":0,"r15":0,"r20":0,"r30":0,"longest":2,"longestTd":null},
  {"week":2,"team":"PHI","carries":7,"rushYards":24,"targets":2,"receptions":2,"recYards":5,"recYac":5,"fumbles":0,"pfrCarries":7,"ybc":16,"yac":8,"broken":0,"pbpRushes":7,"r10":0,"r15":0,"r20":0,"r30":0,"longest":7,"longestTd":null},
- {"week":3,"team":"PHI","carries":0,"rushYards":0,"targets":2,"receptions":1,"recYards":11,"recYac":8,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null}
+ {"week":3,"team":"PHI","carries":0,"rushYards":0,"targets":2,"receptions":1,"recYards":11,"recYac":8,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":0,"r10":0,"r15":0,"r20":0,"r30":0,"longest":null,"longestTd":null},
+ {"week":4,"team":"PHI","carries":6,"rushYards":23,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":null}
 ]},
 {"gsisId":"00-0040583","playerId":"12474","playerName":"Woody Marks","team":"HOU","games":[
  {"week":1,"team":"HOU","carries":9,"rushYards":42,"targets":1,"receptions":1,"recYards":-2,"recYac":0,"fumbles":0,"pfrCarries":9,"ybc":24,"yac":18,"broken":1,"pbpRushes":9,"r10":2,"r15":0,"r20":0,"r30":0,"longest":12,"longestTd":null},
  {"week":2,"team":"HOU","carries":8,"rushYards":8,"targets":6,"receptions":5,"recYards":27,"recYac":20,"fumbles":0,"pfrCarries":8,"ybc":2,"yac":6,"broken":0,"pbpRushes":8,"r10":0,"r15":0,"r20":0,"r30":0,"longest":3,"longestTd":null},
- {"week":3,"team":"HOU","carries":5,"rushYards":15,"targets":1,"receptions":1,"recYards":6,"recYac":10,"fumbles":0,"pfrCarries":5,"ybc":6,"yac":9,"broken":1,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":1}
+ {"week":3,"team":"HOU","carries":5,"rushYards":15,"targets":1,"receptions":1,"recYards":6,"recYac":10,"fumbles":0,"pfrCarries":5,"ybc":6,"yac":9,"broken":1,"pbpRushes":5,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":1},
+ {"week":4,"team":"HOU","carries":6,"rushYards":22,"targets":1,"receptions":0,"recYards":0,"recYac":0,"fumbles":0,"pfrCarries":0,"ybc":0,"yac":0,"broken":0,"pbpRushes":6,"r10":0,"r15":0,"r20":0,"r30":0,"longest":9,"longestTd":6}
 ]}
 ]}

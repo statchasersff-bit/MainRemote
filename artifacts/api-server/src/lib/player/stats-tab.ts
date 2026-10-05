@@ -381,18 +381,11 @@ function bestWorst(data: PlayerPageData, c: Career, row: SeasonRow): { best: Wee
   return { best: sorted[0]!, worst: sorted[sorted.length - 1]! };
 }
 
-/** "2026 through Week 3 · Arizona Cardinals": the lede's small first line. */
-function prodKicker(data: PlayerPageData, c: Career, row: SeasonRow): string {
-  const lastWeek = Math.max(...row.weeks.map((e) => e.week));
-  const club = data.team && row.clubs[row.clubs.length - 1] === data.team.code ? [data.team.city, data.team.nickname].filter(Boolean).join(" ") : null;
-  const when = row.inProgress ? `${row.season} through Week ${Math.max(lastWeek, c.leagueWeek)}` : `${row.season} final`;
-  return `<span class="scp-st-kicker">${escapeHtml(club ? `${when} · ${club}` : when)}</span>`;
-}
-
 /**
  * The one thing neither the strip nor the table says: how much of his fantasy
  * line leans on touchdowns. mak (2026-09-30) asked for it more prominent and
- * worded as a read, with the season and club moved to a line above it.
+ * worded as a read. The season-and-club line above it is gone (mak,
+ * 2026-10-05), and the read wears the Overview strip's lede style.
  */
 function prodLede(row: SeasonRow): string {
   const t = row.line;
@@ -451,8 +444,7 @@ function renderProduction(data: PlayerPageData, c: Career, options: PlayerRender
     sectionOpen(
       STATS_LEAD_ID,
       `${data.player.name} ${row.season} stats`,
-      prodKicker(data, c, row) +
-        (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
+      (own(data.statsCopy?.prod_lede) ? copyHtml(own(data.statsCopy?.prod_lede)!) : prodLede(row)),
       `<div class="scp-st-seg" role="group" aria-label="Show stats as" data-scp-seg>` +
         `<button type="button" data-mode="total" aria-pressed="true">Season totals</button>` +
         `<button type="button" data-mode="pg" aria-pressed="false">Per game</button>` +
@@ -584,62 +576,9 @@ function renderAdvTable(cols: AdvColumn[]): string {
   );
 }
 
-/**
- * The profile tags over the advanced table (mak, 2026-10-03): what a metric
- * says about him when it sits at either end of the league, as
- * [label when high, label when low, what the percentile measures]. The
- * percentile is on the metric's own direction, so pressure rate's high end
- * is a clean pocket. Labels shared by two metrics (deep rate and air yards)
- * print once, off whichever is more extreme.
- */
-const TAGS: Record<string, [string, string, string]> = {
-  apg: ["High volume", "Low volume", "attempts per game"],
-  deep: ["Downfield passer", "Short-area passer", "deep-attempt rate"],
-  aya: ["Downfield passer", "Short-area passer", "air yards per attempt"],
-  ttt: ["Holds the ball", "Quick release", "time to throw"],
-  cmp: ["Accurate", "Inaccurate", "completion rate"],
-  ypa: ["Big gains per throw", "Low yards per attempt", "yards per attempt"],
-  epa: ["Efficient", "Inefficient", "EPA per play"],
-  success: ["On schedule", "Off schedule", "success rate"],
-  tdr: ["TD finisher", "Low TD rate", "TD rate"],
-  cpoe: ["Beats expectation", "Below expectation", "CPOE"],
-  press: ["Clean pocket", "Pressured often", "pressure rate"],
-  snap: ["Every-down back", "Part-time role", "snap share"],
-  tgts: ["Target magnet", "Few targets", "target share"],
-  tpg: ["Target magnet", "Few targets", "targets per game"],
-  yaco: ["Gains after contact", "Little after contact", "yards after contact"],
-  ybc: ["Room to run", "Meets defenders early", "yards before contact"],
-  expl: ["Explosive", "Few big plays", "explosive run rate"],
-  bt: ["Tackle breaker", "Rarely breaks tackles", "broken tackles"],
-  rzo: ["Red-zone role", "Little red-zone work", "red-zone opportunities"],
-  rzt: ["Red-zone target", "Few red-zone targets", "red-zone targets"],
-  adot: ["Downfield target", "Short-area target", "depth of target"],
-  yprr: ["Wins on routes", "Little per route", "yards per route run"],
-  route: ["Full-time routes", "Part-time routes", "route participation"],
-  yac: ["YAC threat", "Little after the catch", "YAC per reception"],
-  catch: ["Sure hands", "Low catch rate", "catch rate"],
-  ays: ["Air-yards share", "Few air yards", "air-yards share"],
-};
-
 /** The card the profile reads: this season once it qualifies, else last season. */
 function profileCard(cards: AdvCard[]): AdvCard | null {
   return cards.find((card) => card.qualified) ?? null;
-}
-
-function profileTags(card: AdvCard): string {
-  const seen = new Set<string>();
-  const tags = (card.all ?? card.metrics)
-    .filter((m) => m.pctl != null && TAGS[keyOf(m)] && (m.pctl >= 75 || m.pctl <= 25))
-    .sort((x, y) => Math.abs(y.pctl! - 50) - Math.abs(x.pctl! - 50))
-    .flatMap((m) => {
-      const [hi, lo, what] = TAGS[keyOf(m)]!;
-      const label = m.pctl! >= 75 ? hi : lo;
-      if (seen.has(label)) return [];
-      seen.add(label);
-      return [`<li><b>${escapeHtml(label)}</b><span>${escapeHtml(`${ordinal(m.pctl!)} pctl · ${what}`)}</span></li>`];
-    })
-    .slice(0, 3);
-  return tags.length ? `<ul class="scp-st-tags">${tags.join("")}</ul>` : "";
 }
 
 /**
@@ -830,20 +769,18 @@ function renderAdvanced(data: PlayerPageData, c: Career): string {
   const note = own(copy?.adv_fantasy_note)
     ? scaModule([scaPart("Fantasy impact", copyHtml(own(copy?.adv_fantasy_note)!))])
     : fantasyNote(data, c, used);
-  // A real section header (mak, 2026-10-03): the title as a small eyebrow,
-  // then what the section answers, a one-line read, and the profile tags.
+  // The section header: "<Name> Passing Stats" as the H2 (mak, 2026-10-05;
+  // the eyebrow, the "how he's creating" line and the profile tags are gone),
+  // then a one-line read.
   const card = college && !adv?.current ? null : profileCard(used);
   const summary = own(copy?.adv_lede)
     ? copyHtml(own(copy?.adv_lede)!)
     : college && !adv?.current ? collegeLede(data, college) : card ? escapeHtml(profileLine(pos, card)) : "";
-  const last = lastName(data.player.name);
   const id = "scp-st-adv-h";
   return (
     `<section class="scp-ox-sec scp-st-advsec" aria-labelledby="${id}">` +
-    `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(titleCase(`Advanced ${cats} stats`))}</h2>` +
-    `<p class="scp-st-dek">${escapeHtml(`How ${last} ${adv?.current ? "is creating" : "created"} his production`)}</p>` +
+    `<h2 class="scp-st-kick-h" id="${id}">${escapeHtml(`${data.player.name} ${titleCase(cats)} Stats`)}</h2>` +
     (summary ? `<p class="scp-ox-lede scp-st-sum">${summary}</p>` : "") +
-    (card ? profileTags(card) : "") +
     renderAdvTable(cols) +
     `<p class="scp-st-foot-note">${escapeHtml(`Percentiles: ${notes.join(" · ")}.${grey}`)}</p>` +
     note +

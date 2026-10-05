@@ -260,6 +260,24 @@ export interface FeedItem {
   pointsLine: string | null;
   /** A recap's comparison: "9.0 below his 16.5 average". */
   avgNote: string | null;
+  /** The week-state tag and the impact read (mak's News redesign, 2026-10-05). */
+  outcome: Outcome;
+  /** A recap's points against his average, signed; null with one game. */
+  avgDelta: number | null;
+  /** One rule-based line: what drove the week (the lead's SC Takeaway). */
+  takeaway: string | null;
+  /** The matchup game page, which carries the box score; recaps only. */
+  boxHref: string | null;
+}
+
+/**
+ * The week-state tag ("CEILING") and the impact read beside it ("Ceiling
+ * game"), from a controlled vocabulary (mak, 2026-10-05). The arrow is the
+ * same signal as `impact`.
+ */
+export interface Outcome {
+  tag: "Ceiling" | "Solid" | "Neutral" | "Floor" | "Injury" | "Role change" | "Status" | "Practice" | "News";
+  label: string;
 }
 
 export interface NewsContext {
@@ -277,6 +295,8 @@ export interface NewsContext {
   designation: string | null;
   practice: string | null;
   gameLogHref: string;
+  /** The matchup game page for a week, or null; built by the renderer. */
+  boxHref?: (g: ScheduleGame) => string | null;
   now: number;
 }
 
@@ -305,15 +325,86 @@ export function recapImpact(pos: string, finish: number | null | undefined, pts:
   return "flat";
 }
 
+/** Compact stat rows: "38/52 · 280 YDS · 2 TD · 0 INT", "4 CAR · 4 YDS · 1 TD". */
 function statLines(pos: string, e: GameLogEntry): string[] {
   const s = e.stats;
-  const pass = `${num(s.pass_cmp)}-of-${num(s.pass_att)}, ${num(s.pass_yd)} YDS, ${num(s.pass_td)} TD, ${num(s.pass_int)} INT`;
-  const rush = `${num(s.rush_att)} CAR, ${num(s.rush_yd)} YDS${num(s.rush_td) ? `, ${num(s.rush_td)} TD` : ""}`;
-  const rec = `${num(s.rec)} REC, ${num(s.rec_yd)} YDS${num(s.rec_td) ? `, ${num(s.rec_td)} TD` : ""} (${num(s.rec_tgt)} TGT)`;
+  const pass = `${num(s.pass_cmp)}/${num(s.pass_att)} · ${num(s.pass_yd)} YDS · ${num(s.pass_td)} TD · ${num(s.pass_int)} INT`;
+  const rush = `${num(s.rush_att)} CAR · ${num(s.rush_yd)} YDS${num(s.rush_td) ? ` · ${num(s.rush_td)} TD` : ""}`;
+  const rec = `${num(s.rec)} REC · ${num(s.rec_yd)} YDS${num(s.rec_td) ? ` · ${num(s.rec_td)} TD` : ""} · ${num(s.rec_tgt)} TGT`;
   if (pos === "QB") return num(s.rush_att) ? [pass, rush] : [pass];
   if (pos === "RB") return num(s.rec_tgt) ? [rush, rec] : [rush];
   return num(s.rush_att) ? [rec, rush] : [rec];
 }
+
+/** The workload a week is measured by: pass attempts, touches, or targets. */
+function volume(pos: string, e: GameLogEntry): { n: number; noun: string } {
+  const s = e.stats;
+  if (pos === "QB") return { n: num(s.pass_att), noun: "attempts" };
+  if (pos === "RB") return { n: num(s.rush_att) + num(s.rec), noun: "touches" };
+  return { n: num(s.rec_tgt), noun: "targets" };
+}
+
+/** A ceiling week: QB/TE top 5, RB/WR top 10. */
+const ceilingLine = (pos: string): number => (pos === "RB" || pos === "WR" ? 10 : 5);
+
+/**
+ * The recap's tag and read (mak, 2026-10-05). Ceiling is a top finish; a week
+ * on the impact's "up" side that is not one is a volume boost when the
+ * workload was 20% over his other games, else a solid starter result; the
+ * "flat" middle is solid when at or over his average, else neutral; a bust
+ * week is a floor game.
+ */
+function recapOutcome(pos: string, fin: number | null, impact: Impact, pts: number, avg: number | null, volUp: boolean): Outcome {
+  if (impact === "up" && fin && fin <= ceilingLine(pos)) return { tag: "Ceiling", label: "Ceiling game" };
+  if (impact === "up") return volUp ? { tag: "Solid", label: "Volume boost" } : { tag: "Solid", label: "Solid starter result" };
+  if (impact === "down") return { tag: "Floor", label: "Floor game" };
+  if (avg === null || pts >= avg - 0.5) return { tag: "Solid", label: "Solid starter result" };
+  return { tag: "Neutral", label: "Neutral" };
+}
+
+/** Fantasy points from touchdowns: 4 a pass TD, 6 any other (scoring.ts). */
+const tdPoints = (e: GameLogEntry): number => num(e.stats.pass_td) * 4 + (num(e.stats.rush_td) + num(e.stats.rec_td)) * 6;
+
+/**
+ * One line on what drove the week (mak's "SC Takeaway", 2026-10-05), by rule
+ * from the box score: volume, touchdowns or efficiency on a good week; the
+ * opponent's hold, or the workload, on a bad one.
+ */
+function recapTakeaway(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame, outcome: Outcome, others: GameLogEntry[]): string {
+  const s = e.stats;
+  const pts = ctx.points(e);
+  const fin = e.pos_rank ?? null;
+  const v = volume(ctx.pos, e);
+  const otherVol = others.length ? others.reduce((a, x) => a + volume(ctx.pos, x).n, 0) / others.length : null;
+  const volHigh = otherVol !== null && otherVol > 0 && v.n >= otherVol * 1.2;
+  const opp = g.opponent?.nickname ? `The ${g.opponent.nickname}` : g.opponentName;
+  // "his first 25+ point game of 2026": the highest line crossed for the first time.
+  const lines = [30, 25, 20].filter((t) => pts >= t);
+  const first = lines.find((t) => others.every((x) => ctx.points(x) < t));
+  const result = first !== undefined ? `his first ${first}+ point game of ${ctx.season}` : fin ? `a ${ctx.pos}${fin} finish` : `${one(pts)} points`;
+  const ypa = num(s.pass_att) ? num(s.pass_yd) / num(s.pass_att) : 0;
+  const ypc = num(s.rush_att) ? num(s.rush_yd) / num(s.rush_att) : 0;
+  const ypt = num(s.rec_tgt) ? num(s.rec_yd) / num(s.rec_tgt) : 0;
+  const tdShare = pts > 0 ? tdPoints(e) / pts : 0;
+
+  if (outcome.tag === "Ceiling" || outcome.tag === "Solid") {
+    if (volHigh) return `Volume drove ${outcome.tag === "Ceiling" ? "the ceiling" : "it"}: ${v.n} ${v.noun} produced ${result}.`;
+    if (tdShare >= 0.45) return `Touchdowns did the work: they made up ${Math.round(tdShare * 100)}% of his ${one(pts)} points.`;
+    if (ctx.pos === "QB" && ypa >= 8) return `Efficiency carried it: ${ypa.toFixed(1)} yards per attempt produced ${result}.`;
+    if (ctx.pos === "RB" && ypc >= 5) return `Efficiency carried it: ${ypc.toFixed(1)} yards per carry produced ${result}.`;
+    if ((ctx.pos === "WR" || ctx.pos === "TE") && ypt >= 10) return `Efficiency carried it: ${ypt.toFixed(1)} yards per target produced ${result}.`;
+    return `${cap(String(v.n))} ${v.noun} and ${result}: a usable week.`;
+  }
+  if (outcome.tag === "Floor") {
+    if (ctx.pos === "QB" && num(s.pass_att) && ypa < 6) return `${opp} limited ${ctx.last} to ${ypa.toFixed(1)} yards per attempt.`;
+    if (ctx.pos === "RB" && num(s.rush_att) && ypc < 3.5) return `${opp} held ${ctx.last} to ${ypc.toFixed(1)} yards per carry.`;
+    if (otherVol !== null && v.n < otherVol * 0.8) return `The volume dried up: ${v.n} ${v.noun}, down from ${one(otherVol)} in his other games.`;
+    return `${opp} kept ${ctx.last} out of the end zone and under his average.`;
+  }
+  return `${cap(String(v.n))} ${v.noun}, but ${one(pts)} points left him under his average.`;
+}
+
+const cap = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 
 /** "at San Francisco" / "vs. Seattle", from the schedule feed. */
 function where(g: ScheduleGame): string {
@@ -378,6 +469,9 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
   } else take += ".";
 
   const impact = recapImpact(ctx.pos, fin, pts, avg);
+  const others = played(ctx).filter((x) => x.week !== e.week);
+  const otherVol = others.length ? others.reduce((a, x) => a + volume(ctx.pos, x).n, 0) / others.length : null;
+  const outcome = recapOutcome(ctx.pos, fin, impact, pts, avg, otherVol !== null && otherVol > 0 && volume(ctx.pos, e).n >= otherVol * 1.2);
   return {
     id: `recap-${ctx.season}-${e.week}`,
     type: "game",
@@ -395,6 +489,10 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
     group: gameGroup(g),
     pointsLine: `${one(pts)} fantasy points${fin ? ` · ${ctx.pos}${fin}` : ""}`,
     avgNote,
+    outcome,
+    avgDelta: avg !== null && played(ctx).length > 1 ? pts - avg : null,
+    takeaway: recapTakeaway(ctx, e, g, outcome, others),
+    boxHref: ctx.boxHref?.(g) ?? null,
     panel: {
       caption: `Week ${e.week} fantasy result`,
       big: one(pts),
@@ -454,6 +552,18 @@ function ruleTake(ctx: NewsContext, type: NewsType, group: WeekGroup): { take: s
   return { take: "Context for his season; the Outlook tab has our rest-of-season view.", impact: "flat" };
 }
 
+const HURT_WORDS = /\b(out|ir|injur|questionable|doubtful|dnp|did not practice|sprain|strain|fracture|concussion|surgery|limited)/i;
+
+/** A wire or club item's tag and read (mak, 2026-10-05). */
+function itemOutcome(type: NewsType, impact: Impact, text: string): Outcome {
+  if (type === "status" || type === "prac") {
+    if (impact === "down" || (type === "status" && HURT_WORDS.test(text))) return { tag: "Injury", label: "Injury-driven" };
+    return type === "status" ? { tag: "Status", label: "Neutral" } : { tag: "Practice", label: "Neutral" };
+  }
+  if (type === "depth" || type === "transaction") return { tag: "Role change", label: impact === "down" ? "Role concern" : "Neutral" };
+  return { tag: "News", label: impact === "up" ? "Solid starter result" : impact === "down" ? "Role concern" : "Neutral" };
+}
+
 /**
  * The season's feed: a recap for every game he was active in, and his archive
  * items from this season, typed and given a take. A wire recap of a game that
@@ -504,6 +614,10 @@ export function buildFeed(ctx: NewsContext, news: NewsItem[]): { items: FeedItem
       panel: null,
       pointsLine: null,
       avgNote: null,
+      outcome: itemOutcome(type, impact, `${item.title} ${item.summary ?? ""}`),
+      avgDelta: null,
+      takeaway: take,
+      boxHref: null,
     });
   }
 

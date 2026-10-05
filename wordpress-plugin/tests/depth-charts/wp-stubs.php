@@ -82,6 +82,7 @@ function sanitize_title( $title ) {
 	return trim( (string) $title, '-' );
 }
 function trailingslashit( $string ) { return rtrim( (string) $string, '/\\' ) . '/'; }
+function esc_url_raw( $url ) { return (string) $url; }
 function untrailingslashit( $string ) { return rtrim( (string) $string, '/\\' ); }
 function home_url( $path = '/' ) { return 'https://statchasers.com' . ( '/' === substr( $path, 0, 1 ) ? $path : '/' . $path ); }
 function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }

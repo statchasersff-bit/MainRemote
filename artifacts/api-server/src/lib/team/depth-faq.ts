@@ -3,9 +3,9 @@
  *
  * Third sibling to outlook-faq.ts and stats-faq.ts, on the same rule as both:
  * every answer restates something the tab already printed. The names and the
- * order here are the ones the chart renders - `depthPreview()`'s output, in
- * `depthOrder`, with the slot labels it assigned - so an answer cannot name a
- * WR2 the chart above it has at WR3.
+ * order here are the ones the chart renders - the depth-charts tool's Fantasy
+ * view, with its own rank as the slot - so an answer cannot name a WR2 the
+ * chart above it has at WR3.
  *
  * Two things separate it from its siblings.
  *
@@ -30,6 +30,9 @@
 import type { NflTeam } from "./teams";
 import { sidelinedBehind } from "./roster";
 import type { DepthChartEntry, SkillPosition } from "./roster";
+
+/** What an answer reads from a chart row. */
+export type FaqEntry = Pick<DepthChartEntry, "name" | "slot" | "position" | "injuryStatus">;
 
 export interface DepthFaq {
   question: string;
@@ -78,26 +81,23 @@ function designation(status: string | null | undefined): string {
 
 export function depthFaq(input: {
   team: NflTeam;
-  depthChart: Record<SkillPosition, DepthChartEntry[]>;
+  /** The chart's rows that are available, in order. */
+  depthChart: Record<SkillPosition, FaqEntry[]>;
   /**
-   * The fantasy-relevant designated players, as Injury Watch lists them.
+   * The chart's rows carrying an out designation (IR, Out, PUP...).
    *
-   * Needed because **Sleeper demotes an injured player on the depth chart** -
-   * see INJURY_RANK_LIMIT in roster.ts, which exists for the same reason. A
-   * genuine WR1 on IR drops to WR6 and falls off the four-deep preview
-   * entirely, so the chart correctly shows somebody else first and the answer,
-   * without this, states that as though it were the pecking order. It is not:
-   * it is the pecking order with somebody missing, and a reader who knows who
-   * plays for this team will read a wrong answer as a wrong page.
+   * Kept out of `depthChart` so "X leads the backfield" names somebody who is
+   * playing, and named separately so the answer says why the order skips a
+   * player - a reader who knows the roster reads a silent gap as a wrong page.
    */
-  injuries: DepthChartEntry[];
+  injuries: FaqEntry[];
 }): DepthFaq[] {
   const { team, depthChart, injuries } = input;
   const club = team.fullName;
   const nick = team.nickname;
   const city = team.city;
 
-  const at = (position: SkillPosition): DepthChartEntry[] =>
+  const at = (position: SkillPosition): FaqEntry[] =>
     depthChart[position] ?? [];
   const qb = at("QB");
   const rb = at("RB");
@@ -109,31 +109,27 @@ export function depthFaq(input: {
   if (!qb.length && !rb.length && !wr.length && !te.length) return [];
 
   const faq: DepthFaq[] = [];
-  const name = (entry: DepthChartEntry | undefined): string => entry?.name ?? "";
+  const name = (entry: FaqEntry | undefined): string => entry?.name ?? "";
 
   /**
    * "with A.J. Brown on injured reserve", or "" when nobody at this position is.
    *
-   * Only players the chart does NOT show: someone listed above is visibly there
-   * with a badge against his name, and saying it again in prose adds nothing.
-   * Injury Watch's list is the source because it is already filtered to players
-   * worth naming - a WR7's hamstring is not why the WR1 slot moved.
+   * The chart's own out rows, so the prose and the columns name the same
+   * absences - see sidelinedBehind() in roster.ts.
    */
-  // Shared with the chart itself, so the prose and the columns name the same
-  // absences - see sidelinedBehind() in roster.ts.
-  const missing = (position: SkillPosition, shown: DepthChartEntry[]): DepthChartEntry[] =>
+  const missing = (position: SkillPosition, shown: FaqEntry[]): FaqEntry[] =>
     sidelinedBehind(injuries, position, shown);
 
   // One name takes its own designation; several share the general word, because
   // "A and B on injured reserve and C suspended" is a list a reader has to
   // unpick rather than a qualifier they can absorb.
-  const who = (out: DepthChartEntry[]): string =>
+  const who = (out: FaqEntry[]): string =>
     out.length === 1 && out[0]
       ? `${out[0].name} ${designation(out[0].injuryStatus)}`
       : `${listOf(out.map((entry) => entry.name))} out`;
 
   /** " with A.J. Brown on injured reserve" - only where it ends the sentence. */
-  const sidelinedClause = (position: SkillPosition, shown: DepthChartEntry[]): string => {
+  const sidelinedClause = (position: SkillPosition, shown: FaqEntry[]): string => {
     const out = missing(position, shown);
     return out.length ? ` with ${who(out)}` : "";
   };
@@ -144,7 +140,7 @@ export function depthFaq(input: {
    * starting tight end with X out, with Y listed behind") is a sentence nobody
    * finishes.
    */
-  const sidelinedSentence = (position: SkillPosition, shown: DepthChartEntry[]): string => {
+  const sidelinedSentence = (position: SkillPosition, shown: FaqEntry[]): string => {
     const out = missing(position, shown);
     if (out.length === 0) return "";
     return out.length === 1 && out[0]

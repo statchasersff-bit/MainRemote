@@ -16,6 +16,7 @@
  */
 
 import { escapeHtml } from "../render";
+import { slotChip } from "../team-render";
 import { getPlayerPageUrl } from "./links";
 import {
   BUY_LOW_SELL_HIGH_URL,
@@ -30,6 +31,7 @@ import {
   WAIVER_WIRE_URL,
 } from "../matchup/recap";
 import type { NflTeam } from "./teams";
+import { usageFaq, type UsageFaq } from "./usage-faq";
 import {
   getTargetShareCliff,
   surname,
@@ -57,7 +59,6 @@ import {
   signalCopy,
   signed,
   situationShare,
-  targetShareFaq,
   woprCaption,
   zoneOwner,
 } from "./usage-copy";
@@ -254,6 +255,23 @@ function introCta(): string {
     `<p class="sct-us-cta-body">Redraft Command uses these same opportunity trends alongside projections and market data to update player values, lineup decisions, trades and waiver recommendations for your league.</p>` +
     `<a class="sct-us-btn" href="${e(REDRAFT_COMMAND_URL)}" target="_top" data-cta="redraft-command-usage-intro">Open Redraft Command</a>` +
     `</div>`
+  );
+}
+
+/**
+ * "RB1, 48% of RB touches", with the slot as the hub's position chip - the
+ * one Depth Chart, News and the Outlook cards print, so a position wears the
+ * same colour on every tab. A role that is not a plain slot stays text.
+ */
+function roleCell(row: UsageRow): string {
+  const line = roleLine(row);
+  const slot = /^[A-Z]{1,3}\d+$/.test(row.role) && line.startsWith(row.role) ? row.role : "";
+  if (!slot) return `<span class="sct-us-role">${e(line)}</span>`;
+  const rest = line.slice(slot.length).replace(/^\s*[,·]\s*/, "");
+  return (
+    `<span class="sct-us-role">${slotChip(slot, true)}` +
+    (rest ? ` <span>${e(rest)}</span>` : "") +
+    `</span>`
   );
 }
 
@@ -682,7 +700,7 @@ function table(view: UsageView, team: NflTeam): string {
         `<td class="sct-us-td is-toggle"><button type="button" class="sct-us-toggle" aria-expanded="false" aria-controls="${e(id)}"` +
         ` aria-label="${e(`Show ${p.name}'s advanced profile`)}"><span aria-hidden="true">+</span></button></td>` +
         `<th scope="row" class="sct-us-td is-player">${playerLink(p, "sct-us-name")}` +
-        `<span class="sct-us-role">${e(roleLine(row))}</span>` +
+        roleCell(row) +
         (rank ? `<span class="sct-us-lrank">${e(rank)}</span>` : "") +
         `</th>` +
         woprCell(p) +
@@ -845,13 +863,33 @@ function closing(view: UsageView): string {
   );
 }
 
+/**
+ * An answer with its links: each link's phrase is wrapped where it already
+ * sits in the text, so the visible words are the schema's words.
+ */
+function faqAnswer(q: UsageFaq): string {
+  // Links in text order, each searched for after the last one, so a phrase
+  // can never match inside an anchor already written.
+  let html = e(q.answer);
+  let from = 0;
+  for (const l of q.links ?? []) {
+    const phrase = e(l.text);
+    const at = html.indexOf(phrase, from);
+    if (at < 0) continue;
+    const a = tool(l.href, l.text, l.cta);
+    html = html.slice(0, at) + a + html.slice(at + phrase.length);
+    from = at + a.length;
+  }
+  return html;
+}
+
 /* ------------------------------------------------------------------ public */
 
 export interface UsageSection {
   html: string;
   /** The tab's visible FAQ, rendered below the tools block like the others. */
   faqHtml: string;
-  /** The same question for the page's FAQPage node (approved by mak 2026-09-30). */
+  /** The same questions for the page's FAQPage node (approved by mak 2026-09-30). */
   faq: Array<{ question: string; answer: string }>;
 }
 
@@ -878,17 +916,26 @@ export function renderUsageSection(
     conversion(view, team, links) +
     `</div>`;
 
-  // In the FAQPage too (mak approved 2026-09-30). The link sits outside
-  // .sct-faq-a so the schema's answer and the visible answer are the same text.
-  const faq = targetShareFaq(view, team.fullName);
-  const faqHtml = faq
+  // mak's question list (2026-10-05), in the FAQPage too (usage FAQ schema
+  // approved 2026-09-30). The link sits outside every .sct-faq-a so the
+  // schema's answers and the visible answers are the same text.
+  const faq = usageFaq(view, team);
+  const faqHtml = faq.length
     ? `<div class="sct-block">` +
       `<h2 class="sct-h2">Common questions</h2>` +
-      `<div class="sct-faq"><details class="sct-faq-item">` +
-      `<summary class="sct-faq-q-row"><h3 class="sct-faq-q">${e(faq.question)}</h3></summary>` +
-      `<p class="sct-faq-a">${e(faq.answer)}</p>` +
+      `<div class="sct-faq">` +
+      faq
+        .map(
+          (q) =>
+            `<details class="sct-faq-item">` +
+            `<summary class="sct-faq-q-row"><h3 class="sct-faq-q">${e(q.question)}</h3></summary>` +
+            `<p class="sct-faq-a">${faqAnswer(q)}</p>` +
+            `</details>`,
+        )
+        .join("") +
+      `</div>` +
       `<p class="sct-faq-more"><a class="sct-textlink" href="#usage">See the full usage report</a></p>` +
-      `</details></div></div>`
+      `</div>`
     : "";
-  return { html, faqHtml, faq: faq ? [faq] : [] };
+  return { html, faqHtml, faq };
 }

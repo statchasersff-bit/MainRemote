@@ -105,7 +105,7 @@ describe("stats tab", () => {
     });
     assert.deepEqual(heads, [
       "Jacoby Brissett 2026 Stats",
-      "Advanced Passing Stats",
+      "Jacoby Brissett Passing Stats",
       "Fantasy Points per Game, Every Season",
       "What His Career Numbers Say",
     ]);
@@ -206,12 +206,10 @@ describe("stats tab", () => {
     const paras = [...read.querySelectorAll("p")].map(text);
     assert.match(paras[0], /^Brissett .+\.$/);
     assert.match(paras[1], /^His floor is his volume: /);
-    // The header: eyebrow H2, the question, a one-line read, profile tags.
-    assert.equal(text(doc.querySelector("#scp-st-adv-h + .scp-st-dek")), "How Brissett is creating his production");
-    assert.match(text(doc.querySelector(".scp-st-sum")), /volume · \S+ efficiency$|efficiency$/);
-    const tags = [...doc.querySelectorAll(".scp-st-tags li")];
-    assert.ok(tags.length <= 3);
-    for (const t of tags) assert.match(text(t.querySelector("span")), /^\d+(st|nd|rd|th) pctl · /);
+    // The header (mak, 2026-10-05): the name H2, then a one-line read; no dek, no tags.
+    assert.equal(doc.querySelector(".scp-st-dek"), null);
+    assert.equal(doc.querySelector(".scp-st-tags"), null);
+    assert.match(text(doc.querySelector("#scp-st-adv-h + .scp-st-sum")), /volume · \S+ efficiency$|efficiency$/);
   });
 
   test("below the qualifying line: no ranks, and the sub-line says why", () => {
@@ -265,7 +263,9 @@ describe("stats tab", () => {
     const [, ...past] = state().logCareer;
     const doc = render(state({ season: 2025, logCareer: past, statsAdvanced: { current: null, last: LAST }, leagueWeek: 0 }));
     assert.equal(text(doc.querySelector("#scp-st-prod-h")), "Jacoby Brissett 2025 Stats");
-    assert.match(text(doc.querySelector(".scp-ox-lede .scp-st-kicker")), /^2025 final/);
+    // No season-and-club kicker over the read (mak, 2026-10-05); past tense.
+    assert.equal(doc.querySelector(".scp-st-kicker"), null);
+    assert.match(text(doc.querySelector("#scp-st-prod-h").closest("section").querySelector(".scp-ox-lede")), /^(Touchdowns accounted|He didn't score)/);
     assert.ok(doc.querySelector("[data-scp-seg]"));
     assert.deepEqual([...doc.querySelectorAll(".scp-st-advt thead th")].map(text), ["Metric", "2025 13 games"]);
     assert.equal(doc.querySelector(".scp-st-col.is-now"), null);
@@ -387,7 +387,7 @@ describe("stats tab", () => {
   test("a rookie before his first game: the college card and a college table, nothing else", () => {
     const doc = render(state({ logCareer: [], statsAdvanced: { current: null, last: null }, college: COLLEGE }));
     const heads = [...doc.querySelectorAll("section h2")].map(text);
-    assert.deepEqual(heads, ["Advanced Passing Stats", "Jacoby Brissett College Stats by Season"]);
+    assert.deepEqual(heads, ["Jacoby Brissett Passing Stats", "Jacoby Brissett College Stats by Season"]);
     assert.match(text(doc.querySelector(".scp-st-sum")), /^Brissett arrives from NC State\./);
     const table = doc.querySelector(".scp-st-table");
     assert.equal(text(table.querySelector("caption")), "College stats, from CollegeFootballData.com.");

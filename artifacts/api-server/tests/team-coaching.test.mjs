@@ -200,7 +200,7 @@ describe("staff, dossier and finishes", () => {
     // The DC card leads with the EPA number and its rank; the stored body's
     // offense angle (game script) folds under More, word for word.
     assert.equal(cards[1].querySelector(".sct-co-defval").textContent, "0.07");
-    assert.equal(cards[1].querySelector(".sct-co-defmetric .sct-co-sig-pill").textContent, "#23 NFL");
+    assert.equal(cards[1].querySelector(".sct-co-defmetric .sct-co-sig-pill").textContent, "23rd");
     assert.equal(cards[1].querySelector(".sct-co-body").textContent, "Early results are weak, but the 3-week sample is still small.");
     const rest = coaching.teams.buf.staff.dc.body.replace(/^.*?play-by-play\)\.\s*/, "");
     assert.ok(cards[1].querySelector("details.sct-co-more").textContent.includes(rest));
@@ -243,7 +243,7 @@ describe("signals, staff profile and dossier redesign", () => {
     assert.deepEqual(notes, ["3-game sample · 15 red-zone plays", "3-game sample", "3-game sample"]);
     // Standing as pills, the move as its own "prior -> now" line.
     const pills = cards.map((c) => [...c.querySelectorAll(".sct-co-sig-pill")].map((p) => p.textContent));
-    assert.deepEqual(pills, [["#2 NFL"], ["−6.3 pts YoY"], ["Run-leaning", "−4.6 pts YoY"]]);
+    assert.deepEqual(pills, [["2nd"], ["−6.3 pts YoY"], ["Run-leaning", "−4.6 pts YoY"]]);
     assert.equal(cards[0].querySelector(".sct-co-sig-line").textContent, "54% → 80% YoY");
     assert.equal(cards[0].querySelector(".sct-co-sig-head").textContent, "Pass-heavy in the red zone.");
     assert.equal(cards[0].querySelector(".sct-co-sig-body").textContent, "More receiving TD opportunity, less goal-line rushing volume.");
@@ -270,8 +270,8 @@ describe("signals, staff profile and dossier redesign", () => {
     assert.doesNotMatch(block.textContent, /predates our target-tracking window/);
     const stops = [...block.querySelectorAll(".sct-co-dstop")];
     assert.equal(stops[0].querySelector(".sct-co-drole").textContent, "NE · QB coach");
-    assert.equal(stops[0].querySelector(".sct-co-drank").textContent, "#10 NFL");
-    assert.equal(stops[1].querySelector(".sct-co-drank").textContent, "Best #1 NFL");
+    assert.equal(stops[0].querySelector(".sct-co-drank").textContent, "10th in NFL");
+    assert.equal(stops[1].querySelector(".sct-co-drank").textContent, "Best: 1st in NFL");
     assert.equal(stops[4].querySelector(".sct-co-drole").textContent, "STL · Offensive coordinator");
     const raiders = stops.find((s) => s.querySelector(".sct-co-dyears").textContent === "2022");
     const rows = [...raiders.querySelectorAll(".sct-co-fp-row")].map((r) => r.textContent);
@@ -282,7 +282,7 @@ describe("signals, staff profile and dossier redesign", () => {
     assert.equal(block.querySelector(".sct-co-dnote").textContent, "Target fingerprints available from 2016 onward. Earlier stops show scoring output only.");
     const tiles = [...block.querySelectorAll(".sct-co-idtile")].map((t) => [...t.children].map((c) => c.textContent));
     assert.deepEqual(tiles.slice(0, 3), [
-      ["Scoring peak", "28.8 PPG", "#1 NFL · 2006-08 NE"],
+      ["Scoring peak", "28.8 PPG", "1st in NFL · 2006-08 NE"],
       ["Peak backfield concentration", "80%", "Lead-back share · 2023 LV"],
       ["TE target share", "3 / 4", "tracked stops below league"],
     ]);
@@ -399,7 +399,7 @@ describe("design polish (mak, 2026-10-05)", () => {
   test("compact rank badges, at most two accented rows, identity chips name-first", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const badges = [...doc.querySelectorAll(".sct-co-table .sct-co-badge")].map((b) => b.textContent);
-    assert.deepEqual(badges, ["#4 NFL", "#6 NFL", "#7 NFL", "Biggest YoY move"]);
+    assert.deepEqual(badges, ["4th", "6th", "7th", "Biggest YoY move"]);
     assert.equal(doc.querySelector(".sct-co-table .sct-co-badge").getAttribute("title"), "4th-fastest in NFL");
     assert.equal(doc.querySelectorAll(".sct-co-table tr.is-flagged").length, 2);
     const chips = [...doc.querySelectorAll(".sct-co-idchip")].map((c) => c.textContent);

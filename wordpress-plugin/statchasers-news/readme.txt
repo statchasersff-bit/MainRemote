@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.22
+Stable tag: 1.10.23
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule and the dynasty rookie hit rates into WordPress pages.
@@ -19,6 +19,12 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.23 =
+* Player section URLs with nothing behind them now redirect (302) to the profile: a healthy player's /injury/ and a kicker's /outlook/ used to serve the whole profile under the section's title and canonical, about 340 duplicate pages. The API flags such a fragment with {"missing":true} in its page-data island, and the sitemap leaves those addresses out (the roster's new emptySections field). Needs the matching API deploy.
+* Player section titles no longer end in " | StatChasers" (approved by mak): with it, every section but News ran 66 to 95 characters. Wording unchanged; the profile's stored title keeps the suffix.
+* Profiles whose player has left the indexed roster are kept, as before, but now noindex, follow (profile and section URLs) and out of the page sitemap. An unreachable API (empty roster) changes nothing.
+* The sitemap index no longer lists /sitemap-players.xml, which 404s. It is added by something outside this plugin; stripped at the last priority of rank_math/sitemap/index.
 
 = 1.10.22 =
 * New shortcode: [statchasers_rookie_hit_rates], the dynasty rookie hit rate tool, ported from the standalone Rookie-Hit-Rate app. The API renders the default view (Superflex, PPR, Top-12, every class, 8-game minimum) with all four tabs in the page's HTML: the hit rate heatmap and Pick Lens, the pick-range breakdown, the trend and time-to-breakout charts, the patience and remaining-odds tables, and the player explorer. Every other filter combination is computed in the browser from the same dataset with the same model. No attributes and no query string; the canonical is the bare page. The fragment carries the page's title, H1 and meta description, applied through Rank Math and core; no schema node is added. The page words are pending approval.

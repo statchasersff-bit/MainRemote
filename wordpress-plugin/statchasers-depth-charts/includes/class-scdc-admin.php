@@ -118,6 +118,24 @@ class SCDC_Admin {
 						<th scope="row"><?php esc_html_e( 'Teams cached', 'statchasers-depth-charts' ); ?></th>
 						<td><?php echo esc_html( (string) intval( $meta['teams_ok'] ) ); ?> / 32</td>
 					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Team hub push', 'statchasers-depth-charts' ); ?></th>
+						<td>
+						<?php
+						// Each refresh is sent to the app for the team hub's Depth Chart tab (SCDC_Push).
+						$push = isset( $meta['push'] ) && is_array( $meta['push'] ) ? $meta['push'] : null;
+						if ( ! $push ) {
+							echo '' !== SCDC_Push::secret() && '' !== SCDC_Push::origin()
+								? esc_html__( 'Configured; sends after the next refresh.', 'statchasers-depth-charts' )
+								: esc_html__( 'Off: set STATCHASERS_INGEST_SECRET in wp-config.php.', 'statchasers-depth-charts' );
+						} elseif ( 'ok' === $push['status'] ) {
+							echo esc_html( sprintf( /* translators: %s: date and time. */ __( 'Sent %s', 'statchasers-depth-charts' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $push['at'] ) ) ) );
+						} else {
+							echo '<code>' . esc_html( $push['message'] ) . '</code>';
+						}
+						?>
+						</td>
+					</tr>
 					<?php if ( ! empty( $meta['error'] ) ) : ?>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Last error', 'statchasers-depth-charts' ); ?></th>

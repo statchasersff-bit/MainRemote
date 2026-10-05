@@ -41,6 +41,13 @@ function wp_remote_get( $url, $args = array() ) {
 	}
 	return array( 'code' => 500, 'body' => '' );
 }
+// The push to the app: recorded, answered with $GLOBALS['http_post_code'].
+$GLOBALS['http_posts']     = array();
+$GLOBALS['http_post_code'] = 200;
+function wp_remote_post( $url, $args = array() ) {
+	$GLOBALS['http_posts'][] = array( 'url' => $url, 'args' => $args );
+	return array( 'code' => $GLOBALS['http_post_code'], 'body' => 200 === $GLOBALS['http_post_code'] ? '{"ok":true}' : '{"ok":false,"error":"unauthorized"}' );
+}
 function wp_remote_retrieve_response_code( $r ) { return $r['code']; }
 function wp_remote_retrieve_body( $r ) { return $r['body']; }
 function get_category_by_slug( $slug ) { return false; }
@@ -141,6 +148,27 @@ $status = SCDC_Refresh::run_and_store( 0 );
 check( 'lock: a stale lock is taken over', 'partial' === $status, "status $status" );
 check( 'lock: released when the run ends', false === get_option( SCDC_Refresh::LOCK_OPTION ) );
 check( 'lock: the run stored its result', 'partial' === SCDC_Store::get_meta()['status'] );
+check( 'push: off without STATCHASERS_INGEST_SECRET, and nothing sent', array() === $GLOBALS['http_posts'] && 'off' === SCDC_Store::get_meta()['push']['status'] );
+
+// ------------------------------------------------------------ 3b. push
+
+define( 'STATCHASERS_INGEST_SECRET', 'test-secret' );
+define( 'SCDC_PUSH_ORIGIN', 'https://app.example.com/' );
+$status = SCDC_Refresh::run_and_store( 0 );
+$sent   = end( $GLOBALS['http_posts'] );
+check( 'push: a refresh that writes the file sends it', 1 === count( $GLOBALS['http_posts'] ) && 'https://app.example.com/api/depth-charts/ingest' === $sent['url'] );
+check( 'push: with the secret header', 'test-secret' === $sent['args']['headers']['X-Ingest-Secret'] );
+check( 'push: the body is the file that was written', json_decode( $sent['args']['body'], true ) === SCDC_Store::read() );
+check( 'push: recorded as sent', 'ok' === SCDC_Store::get_meta()['push']['status'] );
+$GLOBALS['http_post_code'] = 401;
+$status = SCDC_Refresh::run_and_store( 0 );
+check( 'push: an app error is recorded, and the refresh still succeeds', 'partial' === $status && 'error' === SCDC_Store::get_meta()['push']['status'] && false !== strpos( SCDC_Store::get_meta()['push']['message'], 'unauthorized' ) );
+$GLOBALS['http_post_code'] = 200;
+$GLOBALS['http_espn_ok']   = array();
+$before = count( $GLOBALS['http_posts'] );
+SCDC_Refresh::run_and_store( 0 );
+check( 'push: a refresh that writes nothing sends nothing', count( $GLOBALS['http_posts'] ) === $before );
+$GLOBALS['http_espn_ok'] = array( 'ari', 'bal' );
 
 $on_init = false;
 foreach ( $GLOBALS['wp_filters']['init'] as $callbacks ) {

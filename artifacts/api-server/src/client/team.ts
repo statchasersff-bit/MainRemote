@@ -785,6 +785,34 @@ function wireUsageProfiles(root: HTMLElement): void {
   root.dataset["sctUsage"] = "js";
 }
 
+/**
+ * The Depth Chart tab's Fantasy / Offense / Defense / Special Teams switch.
+ *
+ * All four views are in the HTML, and team.css shows them stacked under their
+ * own headings until this has run (`data-sct-dc="js"`), with the buttons
+ * hidden - so with scripting off nothing is out of reach. Here the panels
+ * other than the pressed one are hidden and the headings drop to the screen
+ * reader, since the pressed button already names the view.
+ */
+function wireDepthViews(root: HTMLElement): void {
+  for (const block of Array.from(root.querySelectorAll<HTMLElement>("[data-sct-dc]"))) {
+    const buttons = Array.from(block.querySelectorAll<HTMLButtonElement>("[data-sct-dc-view]"));
+    const panels = Array.from(block.querySelectorAll<HTMLElement>("[data-sct-dc-panel]"));
+    if (buttons.length === 0 || panels.length === 0) continue;
+    const show = (key: string): void => {
+      for (const button of buttons) {
+        button.setAttribute("aria-pressed", String(button.dataset["sctDcView"] === key));
+      }
+      for (const panel of panels) panel.hidden = panel.dataset["sctDcPanel"] !== key;
+    };
+    for (const button of buttons) {
+      button.addEventListener("click", () => show(button.dataset["sctDcView"] ?? ""));
+    }
+    show(buttons.find((b) => b.getAttribute("aria-pressed") === "true")?.dataset["sctDcView"] ?? "");
+    block.dataset["sctDc"] = "js";
+  }
+}
+
 /* ------------------------------------------------------ scoring switch ---- */
 
 type ScoringFormat = "ppr" | "half" | "std";
@@ -1273,6 +1301,7 @@ function boot(): void {
     wirePlayerStatsMore(root);
     wireUsageDetail(root);
     wireUsageProfiles(root);
+    wireDepthViews(root);
     wireBarHeight(root);
     wireFrameHeight(root);
   }

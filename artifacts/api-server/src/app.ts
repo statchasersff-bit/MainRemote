@@ -18,6 +18,7 @@ import sosRouter from "./routes/sos";
 import rookieHitRatesRouter from "./routes/rookie-hit-rates";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
+import depthChartsRouter from "./routes/depth-charts";
 import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
@@ -67,6 +68,9 @@ app.use(
       compression.filter(req, res),
   }),
 );
+// Ahead of the app-wide parser: a depth-charts push is ~430KB, past its default
+// limit. See routes/depth-charts.ts.
+app.use(depthChartsRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

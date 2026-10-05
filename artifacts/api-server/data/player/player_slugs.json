@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-09-30T12:14:05.875Z",
+  "generated_at": "2026-10-05T21:14:06.064Z",
   "moves": [],
   "players": {
     "1": {
@@ -9913,7 +9913,10 @@
       "slug": "adrian-martinez"
     },
     "11068": {
-      "slug": "mitchell-tinsley"
+      "slug": "mitch-tinsley",
+      "previous": [
+        "mitchell-tinsley"
+      ]
     },
     "11070": {
       "slug": "kazmeir-allen"
@@ -10336,7 +10339,10 @@
       "slug": "david-durden"
     },
     "11506": {
-      "slug": "jalen-moreno-cropper"
+      "slug": "jalen-cropper",
+      "previous": [
+        "jalen-moreno-cropper"
+      ]
     },
     "11508": {
       "slug": "princeton-fant"
@@ -13233,5 +13239,6 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  }
+  },
+  "migrated_at": "2026-10-05T21:15:36.088Z"
 }

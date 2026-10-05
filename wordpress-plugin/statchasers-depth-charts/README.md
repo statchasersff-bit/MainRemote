@@ -237,6 +237,7 @@ Admin clicks Refresh  (SCDC_Refresh::run)
    → FantasyPros per-team pages (32 fetches)              ← FAN_* columns
    → normalize + diff vs previous snapshot (movement arrows)
    → /wp-content/uploads/statchasers/depth-charts.json
+   → POST <app origin>/api/depth-charts/ingest           ← team hub's Depth Chart tab
 Visitor loads page with [statchasers_depth_charts]
    → shortcode enqueues CSS/JS + the cached JSON URL
    → JS fetches the cached file and renders the UI
@@ -254,6 +255,23 @@ Visitor loads page with [statchasers_depth_charts]
 
 Refreshing only rewrites the cached JSON; the live page reflects it on the next
 load. No redeploy or commit is involved.
+
+### Push to the team hub (1.6.4)
+
+The NFL team hubs' **Depth Chart** tab shows this tool's team view (all four
+views), but the hub is rendered by the StatChasers app, which cannot reach this
+site. So every refresh that writes the file also POSTs it to the app
+(`SCDC_Push`). Add to `wp-config.php`, with the same value as the app's
+`INGEST_SECRET`:
+
+```php
+define( 'STATCHASERS_INGEST_SECRET', '...' );
+```
+
+The app origin is the StatChasers plugin's `STATCHASERS_NEWS_ORIGIN` (define
+`SCDC_PUSH_ORIGIN` to override). The admin page's **Team hub push** row shows
+the last result. Without the secret the push is off and nothing else changes;
+the hub keeps the last push it stored.
 
 ## Security
 

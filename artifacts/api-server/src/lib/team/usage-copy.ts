@@ -38,14 +38,14 @@ export function pct(v: number | null | undefined, places = 1): string {
   return v == null ? "" : `${v.toFixed(places)}%`;
 }
 
-function list(items: string[]): string {
+export function list(items: string[]): string {
   if (items.length <= 1) return items.join("");
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
 /** "a" or "an" before a number as it is read aloud: an 8, an 11, an 18, an 80. */
-function art(n: number | string | null, cap = false): string {
+export function art(n: number | string | null, cap = false): string {
   const t = String(n);
   const an = /^8/.test(t) || /^1[18](\D|$)/.test(t);
   return cap ? (an ? "An" : "A") : an ? "an" : "a";
@@ -185,6 +185,41 @@ export function situationShare(view: UsageView, p: UsagePlayer, key: keyof Usage
   return total ? Math.round((100 * p.situation[key]) / total) : null;
 }
 
+export interface HandcuffProjection {
+  rb1: UsagePlayer;
+  rb2: UsagePlayer;
+  /** RB2's weighted opportunities per active game with RB1 out. */
+  projected: number;
+  /** RB2's projected share of the room's weighted opportunities. */
+  projShare: number | null;
+  grade: string;
+  valuable: (p: UsagePlayer) => number;
+  behind: number;
+}
+
+/**
+ * The handcuff: RB1's work redistributed in proportion to who takes the
+ * valuable (early-down and red-zone) carries + targets behind him. Shared by
+ * the backfield takeaway and the FAQ so the two cannot quote different numbers.
+ */
+export function handcuffProjection(view: UsageView): HandcuffProjection | null {
+  const [rb1, rb2] = view.rbs;
+  if (!rb1 || !rb2 || (rb2.woppShare ?? 0) < 5 || rb1.woppPerGame == null || rb2.woppPerGame == null) return null;
+  const others = view.rbs.slice(1);
+  const valuable = (p: UsagePlayer) => p.situation.early + p.situation.rz;
+  const behind = others.reduce((s, p) => s + valuable(p), 0);
+  const weight = behind ? valuable(rb2) / behind : 1 / Math.max(1, others.length);
+  const projected = rb2.woppPerGame + rb1.woppPerGame * weight;
+  // The share is over season totals, like the bar above: summing per-game
+  // rates would overweight a back who missed games.
+  const room = view.rbs.reduce((s, p) => s + p.wopp, 0);
+  const projShare = room ? Math.round((100 * (rb2.wopp + rb1.wopp * weight)) / room) : null;
+  const rank = rbRankFor(view.doc.rbWoppPool, projected);
+  const grade =
+    rank <= 12 ? "a top-12 weekly RB by volume" : rank <= 24 ? "an RB2 by volume" : "flex volume at best";
+  return { rb1, rb2, projected, projShare, grade, valuable, behind };
+}
+
 export function backfieldTakeaways(view: UsageView): Takeaway[] {
   const [rb1, rb2, rb3] = view.rbs;
   if (!rb1) return [];
@@ -245,18 +280,9 @@ export function backfieldTakeaways(view: UsageView): Takeaway[] {
 
   // The handcuff: RB1's work redistributed in proportion to who takes the
   // valuable (early-down and red-zone) carries + targets behind him.
-  if (rb2 && (rb2.woppShare ?? 0) >= 5 && rb1.woppPerGame != null && rb2.woppPerGame != null) {
-    const valuable = (p: UsagePlayer) => p.situation.early + p.situation.rz;
-    const behind = others.reduce((s, p) => s + valuable(p), 0);
-    const weight = behind ? valuable(rb2) / behind : 1 / Math.max(1, others.length);
-    const projected = rb2.woppPerGame + rb1.woppPerGame * weight;
-    // The share is over season totals, like the bar above: summing per-game
-    // rates would overweight a back who missed games.
-    const room = view.rbs.reduce((s, p) => s + p.wopp, 0);
-    const projShare = room ? Math.round((100 * (rb2.wopp + rb1.wopp * weight)) / room) : null;
-    const rank = rbRankFor(view.doc.rbWoppPool, projected);
-    const grade =
-      rank <= 12 ? "a top-12 weekly RB by volume" : rank <= 24 ? "an RB2 by volume" : "flex volume at best";
+  const cuff = handcuffProjection(view);
+  if (rb2 && cuff) {
+    const { behind, valuable, projected, projShare, grade } = cuff;
     const rb2Early = situationShare(view, rb2, "early");
     const rb2Rz = situationShare(view, rb2, "rz");
     const backs =
@@ -721,28 +747,5 @@ export function signalCopy(signal: Signal): SignalCopy {
       ...(last != null ? [{ value: `${last.toFixed(1)}%`, caption: `W${lastWeek} target share` }] : []),
       { value: String(rzSince), caption: `RZ opportunities since ${base}` },
     ],
-  };
-}
-
-/* --------------------------------------------------------------------- FAQ */
-
-export function targetShareFaq(view: UsageView, teamName: string): { question: string; answer: string } | null {
-  const receivers = view.rows
-    .filter((r) => r.player.pos !== "QB" && r.player.targetShare != null)
-    .sort((a, b) => (b.player.targetShare ?? 0) - (a.player.targetShare ?? 0));
-  const [lead, second] = receivers;
-  if (!lead) return null;
-  const t = lead.ts;
-  const trendLine =
-    t.delta == null || t.baseWeek == null
-      ? ""
-      : t.direction === "flat"
-        ? `, holding steady since Week ${t.baseWeek}`
-        : `, ${t.direction === "up" ? "up" : "down"} ${Math.abs(t.delta).toFixed(1)} points since Week ${t.baseWeek}`;
-  return {
-    question: `Who leads the ${teamName} in target share?`,
-    answer:
-      `${lead.player.name} leads the ${teamName} with ${art(lead.player.targetShare!.toFixed(1))} ${lead.player.targetShare!.toFixed(1)}% target share through Week ${view.throughWeek}${trendLine}.` +
-      (second ? ` ${second.player.name} is second at ${second.player.targetShare!.toFixed(1)}%.` : ""),
   };
 }

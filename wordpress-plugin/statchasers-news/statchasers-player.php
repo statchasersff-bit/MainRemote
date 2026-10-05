@@ -1275,6 +1275,57 @@ function statchasers_player_overview_redirect(): void {
 add_action( 'template_redirect', 'statchasers_player_overview_redirect', 9 );
 
 /**
+ * Whether the fragment says its section is missing for this player.
+ *
+ * @param string $html Rendered fragment.
+ */
+function statchasers_player_section_missing( string $html ): bool {
+	if ( ! preg_match( '#<script type="application/json" class="scp-page-data">(.*?)</script>#s', $html, $match ) ) {
+		return false;
+	}
+	$copy = json_decode( $match[1], true );
+	return is_array( $copy ) && true === ( $copy['missing'] ?? false );
+}
+
+/**
+ * Send a section URL with no section behind it to the profile, 302.
+ *
+ * A healthy player has no Injury section and a kicker no Outlook, and the API
+ * answers such a request with the whole profile. Left standing, the address is
+ * a copy of the profile under the section's title and its own canonical - one
+ * duplicate per such player, and the sitemap listed them all. The fragment
+ * says so with `{"missing":true}` in its page-data island.
+ *
+ * A 302, not a 301: the section can appear (an injury gets logged) and the
+ * address is a page again from then on. The reader's query rides along, minus
+ * the rewrite's own variable, as in the Overview redirect above.
+ */
+function statchasers_player_missing_section_redirect(): void {
+	if ( '' === statchasers_player_indexed_section() ) {
+		return;
+	}
+
+	if ( ! statchasers_player_section_missing( statchasers_player_page_html() ) ) {
+		return;
+	}
+
+	$queried = get_queried_object();
+	$target  = $queried instanceof WP_Post ? get_permalink( $queried ) : '';
+	if ( ! $target ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$query = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_QUERY );
+	$query = trim( (string) preg_replace( '/(^|&)sc_section=[^&]*/', '', $query ), '&' );
+
+	wp_safe_redirect( '' === $query ? $target : $target . '?' . $query, 302 );
+	exit;
+}
+
+add_action( 'template_redirect', 'statchasers_player_missing_section_redirect', 9 );
+
+/**
  * The season the Game Log is showing, read off the fragment the page will print.
  *
  * The title needs the year - "Game Log 2026" is the phrase people type - and
@@ -1363,6 +1414,8 @@ add_filter(
 		}
 
 		$parts['title'] = $title;
+		// No site name after a section's title, as on the Rank Math path.
+		unset( $parts['site'] );
 
 		return $parts;
 	}
@@ -1541,11 +1594,16 @@ function statchasers_player_section_canonical(): string {
 	return user_trailingslashit( trailingslashit( (string) get_permalink( $queried->ID ) ) . $section );
 }
 
+/*
+ * No " | StatChasers" on a section's title (mak, 2026-10-05): with it, every
+ * section but News ran 66 to 95 characters, past what a results page shows,
+ * and the cut fell on the words. The profile's stored title keeps it.
+ */
 add_filter(
 	'rank_math/frontend/title',
 	function ( $title ) {
 		$meta = statchasers_player_request_meta();
-		return $meta ? $meta['title'] . ' | StatChasers' : $title;
+		return $meta ? $meta['title'] : $title;
 	}
 );
 
@@ -1599,6 +1657,94 @@ add_filter(
 	}
 );
 
+/* ------------------------------------------------- players who left */
+
+/**
+ * Has this profile's player left the indexed roster?
+ *
+ * Their pages are kept, never deleted (statchasers_player_page_status()): a
+ * player can come back, and the page holds every link anyone made to it. But
+ * the roster is the list of players worth a page, and a free agent with a
+ * handful of career games is a thin page Google was still told to index and
+ * finding in the sitemap (mak, 2026-10-05). Kept, then, and kept out of the
+ * index.
+ *
+ * An empty roster is the API unreachable, not everybody gone: false.
+ *
+ * @param string                         $slug   The page's slug.
+ * @param array<int,array<string,mixed>> $roster statchasers_player_roster().
+ */
+function statchasers_player_left_roster( string $slug, array $roster ): bool {
+	if ( '' === $slug || ! $roster ) {
+		return false;
+	}
+	foreach ( $roster as $row ) {
+		if ( ( $row['slug'] ?? '' ) === $slug ) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/** Is this post a profile page (under the container, mounting the tool) whose player has left? */
+function statchasers_player_post_left_roster( $post ): bool {
+	if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
+		return false;
+	}
+	// Memoised: the sitemap asks once per page, ~650 times a build.
+	static $container = null;
+	if ( null === $container ) {
+		$container = statchasers_player_container();
+	}
+	if ( ! $container || (int) $post->post_parent !== $container ) {
+		return false;
+	}
+	return statchasers_player_left_roster( (string) $post->post_name, statchasers_player_roster() );
+}
+
+/** Noindex, follow - the profile and its section URLs alike. Runs after the section rule. */
+add_filter(
+	'rank_math/frontend/robots',
+	function ( $robots ) {
+		if ( ! is_array( $robots ) || ! statchasers_player_post_has_shortcode()
+			|| ! statchasers_player_post_left_roster( get_queried_object() ) ) {
+			return $robots;
+		}
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'follow';
+		return $robots;
+	},
+	20
+);
+
+/** The same without Rank Math. */
+add_filter(
+	'wp_robots',
+	function ( $robots ) {
+		if ( ! is_array( $robots ) || ! statchasers_player_post_has_shortcode()
+			|| ! statchasers_player_post_left_roster( get_queried_object() ) ) {
+			return $robots;
+		}
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+		unset( $robots['index'] );
+		return $robots;
+	}
+);
+
+/**
+ * And out of Rank Math's page sitemap.
+ *
+ * @param array<string,mixed>|false $url    The entry.
+ * @param string                    $type   Sitemap type.
+ * @param mixed                     $object The post the entry is for.
+ * @return array<string,mixed>|false
+ */
+function statchasers_player_sitemap_drop_left( $url, $type = '', $object = null ) {
+	return 'post' === $type && statchasers_player_post_left_roster( $object ) ? false : $url;
+}
+add_filter( 'rank_math/sitemap/entry', 'statchasers_player_sitemap_drop_left', 10, 3 );
+
 /** The canonical without Rank Math: core would print the profile's. */
 add_filter(
 	'get_canonical_url',
@@ -1638,6 +1784,26 @@ function statchasers_player_breadcrumbs( $crumbs ) {
 	return $crumbs;
 }
 add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_breadcrumbs', 20 );
+
+/**
+ * Whether a profile's section URL stays out of the sitemap: a noindex bio, or
+ * a section the player has none of (the roster's `empty`, from the API's
+ * emptySections), whose address redirects to the profile.
+ *
+ * @param string                   $section The section id.
+ * @param array<string,mixed>|null $row     The player's roster row.
+ */
+function statchasers_player_sitemap_skips( string $section, ?array $row ): bool {
+	if ( ! is_array( $row ) ) {
+		return false;
+	}
+	// A noindex bio stays out of the sitemap (Bio spec 2.11).
+	if ( 'bio' === $section && false === ( $row['bioIndex'] ?? true ) ) {
+		return true;
+	}
+	// No such section for this player: the address redirects to the profile.
+	return in_array( $section, (array) ( $row['empty'] ?? array() ), true );
+}
 
 /**
  * The section URLs, appended to Rank Math's page sitemap.
@@ -1692,11 +1858,15 @@ function statchasers_player_sitemap_sections( $content ) {
 		$profile = trailingslashit( (string) get_permalink( (int) $id ) );
 		$lastmod = (string) get_post_modified_time( 'c', true, (int) $id );
 
-		// A noindex bio stays out of the sitemap (Bio spec 2.11).
+		// A player who left the roster: noindex, so none of the six either.
+		if ( statchasers_player_left_roster( (string) $post->post_name, statchasers_player_roster() ) ) {
+			continue;
+		}
+
 		$row = statchasers_player_roster_row( (string) $post->post_name );
 
 		foreach ( STATCHASERS_PLAYER_INDEXED_SECTIONS as $section ) {
-			if ( 'bio' === $section && is_array( $row ) && false === ( $row['bioIndex'] ?? true ) ) {
+			if ( statchasers_player_sitemap_skips( $section, $row ) ) {
 				continue;
 			}
 			$extra .= "\t<url>\n\t\t<loc>" . esc_url( user_trailingslashit( $profile . $section ) ) . "</loc>\n" .

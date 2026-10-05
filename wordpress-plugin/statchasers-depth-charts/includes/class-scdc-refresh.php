@@ -108,6 +108,8 @@ class SCDC_Refresh {
 		if ( 'error' !== $result['status'] ) {
 			$saved = SCDC_Store::write( $result['payload'] );
 		}
+		// The team hub's Depth Chart tab renders on the app, from this push.
+		$push = $saved ? SCDC_Push::send( $result['payload'] ) : null;
 
 		$now = time();
 		if ( 'error' === $result['status'] || ! $saved ) {
@@ -130,6 +132,9 @@ class SCDC_Refresh {
 				'teams_failed'      => $result['teams_failed'],
 				'teams_kept'        => $result['teams_kept'],
 			);
+		}
+		if ( $push ) {
+			$meta['push'] = $push;
 		}
 		SCDC_Store::set_meta( $meta );
 		return $status;

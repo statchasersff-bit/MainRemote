@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T12:14:14.199Z",
+  "generated_at": "2026-10-05T21:14:50.757Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -28,7 +28,7 @@
     "CAR": {
       "rb1": "Chuba Hubbard",
       "rb2": "AJ Dillon",
-      "rb3": null
+      "rb3": "Anthony Tyus III"
     },
     "CHI": {
       "rb1": "D'Andre Swift",
@@ -93,7 +93,7 @@
     "LAR": {
       "rb1": "Kyren Williams",
       "rb2": "Blake Corum",
-      "rb3": null
+      "rb3": "Dean Connors"
     },
     "LV": {
       "rb1": "Ashton Jeanty",
@@ -101,8 +101,8 @@
       "rb3": "Dylan Laube"
     },
     "MIA": {
-      "rb1": "Jaylen Wright",
-      "rb2": "Ollie Gordon II",
+      "rb1": "Ollie Gordon II",
+      "rb2": "Jaylen Wright",
       "rb3": null
     },
     "MIN": {
@@ -116,8 +116,8 @@
       "rb3": "Corey Kiner"
     },
     "NO": {
-      "rb1": "Travis Etienne Jr.",
-      "rb2": "Alvin Kamara",
+      "rb1": "Alvin Kamara",
+      "rb2": "Kendre Miller",
       "rb3": "CJ Donaldson"
     },
     "NYG": {
@@ -141,9 +141,9 @@
       "rb3": "Travis Homer"
     },
     "SEA": {
-      "rb1": "Jadarian Price",
-      "rb2": "Emanuel Wilson",
-      "rb3": "George Holani"
+      "rb1": "Emanuel Wilson",
+      "rb2": "George Holani",
+      "rb3": "Velus Jones Jr."
     },
     "SF": {
       "rb1": "Christian McCaffrey",
@@ -158,7 +158,7 @@
     "TEN": {
       "rb1": "Tony Pollard",
       "rb2": "Tyjae Spears",
-      "rb3": "Julius Chestnut"
+      "rb3": "Nicholas Singleton"
     },
     "WAS": {
       "rb1": "Jacory Croskey-Merritt",
@@ -188,6 +188,14 @@
       "team": "NO",
       "sleeperId": "4035",
       "age": 31,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "anthony tyus": {
+      "name": "Anthony Tyus III",
+      "team": "CAR",
+      "sleeperId": "12939",
+      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -252,7 +260,7 @@
       "team": "NYJ",
       "sleeperId": "8155",
       "age": 25,
-      "injuryStatus": "Questionable",
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "brian robinson": {
@@ -292,7 +300,7 @@
       "team": "GB",
       "sleeperId": "11370",
       "age": 26,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "chris rodriguez": {
@@ -359,6 +367,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "dean connors": {
+      "name": "Dean Connors",
+      "team": "LAR",
+      "sleeperId": "13315",
+      "age": 23,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "deejay dallas": {
       "name": "DeeJay Dallas",
       "team": "MIN",
@@ -388,7 +404,7 @@
       "team": "IND",
       "sleeperId": "12471",
       "age": 23,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "dylan laube": {
@@ -412,7 +428,7 @@
       "team": "DAL",
       "sleeperId": "11199",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "emmett johnson": {
@@ -463,14 +479,6 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "jadarian price": {
-      "name": "Jadarian Price",
-      "team": "SEA",
-      "sleeperId": "13286",
-      "age": 22,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "jahmyr gibbs": {
       "name": "Jahmyr Gibbs",
       "team": "DET",
@@ -516,7 +524,7 @@
       "team": "MIA",
       "sleeperId": "11643",
       "age": 23,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "jeremiyah love": {
@@ -540,15 +548,7 @@
       "team": "SF",
       "sleeperId": "12467",
       "age": 22,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "julius chestnut": {
-      "name": "Julius Chestnut",
-      "team": "TEN",
-      "sleeperId": "8254",
-      "age": 25,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "justice hill": {
@@ -583,6 +583,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "kendre miller": {
+      "name": "Kendre Miller",
+      "team": "NO",
+      "sleeperId": "9757",
+      "age": 24,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "kenneth walker": {
       "name": "Kenneth Walker",
       "team": "KC",
@@ -612,7 +620,7 @@
       "team": "CHI",
       "sleeperId": "12534",
       "age": 24,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "kyren williams": {
@@ -655,6 +663,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "nicholas singleton": {
+      "name": "Nicholas Singleton",
+      "team": "TEN",
+      "sleeperId": "13288",
+      "age": 22,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "ollie gordon": {
       "name": "Ollie Gordon II",
       "team": "MIA",
@@ -684,7 +700,7 @@
       "team": "WAS",
       "sleeperId": "8136",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "raheim sanders": {
@@ -724,7 +740,7 @@
       "team": "PIT",
       "sleeperId": "7021",
       "age": 28,
-      "injuryStatus": "Questionable",
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "rj harvey": {
@@ -756,7 +772,7 @@
       "team": "PHI",
       "sleeperId": "4866",
       "age": 29,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "sean tucker": {
@@ -796,7 +812,7 @@
       "team": "PHI",
       "sleeperId": "9225",
       "age": 24,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "tony pollard": {
@@ -805,14 +821,6 @@
       "sleeperId": "5967",
       "age": 29,
       "injuryStatus": null,
-      "status": "Active"
-    },
-    "travis etienne": {
-      "name": "Travis Etienne Jr.",
-      "team": "NO",
-      "sleeperId": "7543",
-      "age": 27,
-      "injuryStatus": "Out",
       "status": "Active"
     },
     "travis homer": {

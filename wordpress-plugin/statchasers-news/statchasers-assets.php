@@ -112,6 +112,24 @@ function statchasers_sitemap_drop_legacy( $url, $type = '' ) {
 }
 add_filter( 'rank_math/sitemap/entry', 'statchasers_sitemap_drop_legacy', 10, 2 );
 
+/**
+ * Drop the dead /sitemap-players.xml from Rank Math's sitemap index.
+ *
+ * Something on the WordPress side (not this plugin, not in our repo: a snippet
+ * or an older plugin) appends it to the index with a fixed 2026-09-07 lastmod,
+ * and the address 404s (found 2026-10-05). Search Console reports a sitemap
+ * that 404s as an error against the whole index. The player URLs are already
+ * in the page sitemap, through statchasers_player_sitemap_sections(). Last,
+ * so it sees the entry whatever priority added it.
+ *
+ * @param string $xml Index entries added by filters.
+ * @return string
+ */
+function statchasers_sitemap_drop_dead_players( $xml ) {
+	return (string) preg_replace( '#\s*<sitemap>\s*<loc>[^<]*/sitemap-players\.xml</loc>.*?</sitemap>#s', '', (string) $xml );
+}
+add_filter( 'rank_math/sitemap/index', 'statchasers_sitemap_drop_dead_players', PHP_INT_MAX );
+
 /* ------------------------------------------------------------------ caches */
 
 /**
