@@ -182,11 +182,11 @@ export function isOutDesignation(status: string | null | undefined): boolean {
  * Shared by the chart and its FAQ so the two cannot disagree about who is
  * missing - they are the same claim in two registers.
  */
-export function sidelinedBehind(
-  injuries: readonly DepthChartEntry[],
+export function sidelinedBehind<T extends Pick<DepthChartEntry, "name" | "position" | "injuryStatus">>(
+  injuries: readonly T[],
   position: SkillPosition,
-  shown: readonly DepthChartEntry[],
-): DepthChartEntry[] {
+  shown: readonly Pick<DepthChartEntry, "name">[],
+): T[] {
   const visible = new Set(shown.map((entry) => entry.name));
   return injuries.filter(
     (entry) =>

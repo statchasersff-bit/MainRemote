@@ -40,8 +40,8 @@ $profile = 'https://example.com/p/502/';
 is( statchasers_player_indexed_section(), 'stats', 'the section is read off the address' );
 is(
 	apply_filters( 'rank_math/frontend/title', 'Josh Allen Fantasy Football Stats & Analysis | StatChasers' ),
-	'Josh Allen Stats 2026: Fantasy Points, Passing & Rushing Stats | StatChasers',
-	'the title is the section\'s, not the profile\'s'
+	'Josh Allen Stats 2026: Fantasy Points, Passing & Rushing Stats',
+	'the title is the section\'s, not the profile\'s, with no site name after it'
 );
 is(
 	apply_filters( 'rank_math/frontend/description', 'Josh Allen Buffalo Bills quarterback fantasy football profile.' ),

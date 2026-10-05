@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr" | "depth";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -71,6 +71,12 @@ interface Tool {
   shortcode: string;
   /** Does `?embed=1` actually change this tool's output? */
   hasEmbedMode: boolean;
+  /**
+   * Rendered by its WordPress plugin, not by this app, so there is no
+   * standalone page to offer - only the shortcode on a host page and its
+   * source. The depth charts are the one such tool.
+   */
+  pluginOnly?: boolean;
   active(path: string): boolean;
 }
 
@@ -199,12 +205,23 @@ const TOOLS: Tool[] = [
       path.startsWith("/preview/rookie-hit-rates") ||
       path.startsWith("/preview/raw/rookie-hit-rates"),
   },
+  {
+    key: "depth",
+    label: "NFL Depth Charts",
+    shortLabel: "Depth",
+    shortcode: "statchasers_depth_charts",
+    hasEmbedMode: false,
+    pluginOnly: true,
+    active: (path) => DEPTH_PATH.test(path),
+  },
 ];
 
 /** The team the Team Hub button lands on when you are not already on one. */
 const DEFAULT_TEAM_SLUG = "new-england-patriots";
 
 const TEAM_PATH = /^\/(?:preview\/(?:raw\/)?)?team\/([a-z0-9-]+)\/?$/i;
+/** The depth chart routes; group 1 is the plugin route after the base. */
+const DEPTH_PATH = /^\/preview\/(?:raw\/)?depth-charts(?:\/(.*))?$/;
 const PLAYER_PATH = /^\/(?:preview\/(?:raw\/)?)?player\/([a-z0-9-]+)\/?$/i;
 
 /**
@@ -279,6 +296,8 @@ function escapeAttr(value: string): string {
 interface Subject {
   team: NflTeam | null;
   player: IndexedPlayer | null;
+  /** The depth chart route on screen (fantasy/houston-texans/), or "". */
+  depth: string;
 }
 
 /** Where a given tool + mount + subject lives. */
@@ -358,6 +377,14 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     return mount === "embed" ? "/rookie-hit-rates?embed=1" : "/rookie-hit-rates";
   }
 
+  if (tool.key === "depth") {
+    // The plugin renders only as a shortcode, so Page and Embed land on the
+    // host page too. The route on screen travels with the mount switch.
+    return mount === "fragment"
+      ? `/preview/raw/depth-charts/${subject.depth}`
+      : `/preview/depth-charts/${subject.depth}`;
+  }
+
   if (mount === "fragment") return "/preview/raw/news";
   return mount === "shortcode" ? "/preview/news" : "/";
 }
@@ -392,9 +419,14 @@ function toolButtons(context: DevBarContext, subject: Subject): string {
     // The mount travels with the switch, so flipping between the two tools does
     // not silently drop you back out of embedded mode. A tool with no embed
     // variant falls back to its page.
-    const keep: Mount = mount === "embed" && !tool.hasEmbedMode ? "page" : mount;
+    let keep: Mount = mount === "embed" && !tool.hasEmbedMode ? "page" : mount;
+    // A plugin-only tool has no page; arriving on one from a page, and leaving
+    // one for a tool that has pages, both go to the shortcode.
+    if (tool.pluginOnly && (keep === "page" || keep === "embed")) keep = "shortcode";
+    // The depth chart route is the depth chart's own; other tools start bare.
+    const target: Subject = tool.key === "depth" ? subject : { ...subject, depth: "" };
     return (
-      `<a href="${escapeAttr(href(tool, keep, subject))}"` +
+      `<a href="${escapeAttr(href(tool, keep, target))}"` +
       `${current ? ' aria-current="page"' : ""}>` +
       `<span class="scdev-full">${tool.label}</span>` +
       `<span class="scdev-short">${tool.shortLabel}</span>` +
@@ -415,7 +447,7 @@ function teamPicker(context: DevBarContext, subject: Subject): string {
           .map((entry) => {
             const selected = entry.slug === team?.slug;
             return (
-              `<option value="${escapeAttr(href(TOOLS[1]!, mount, { team: entry, player: null }))}"` +
+              `<option value="${escapeAttr(href(TOOLS[1]!, mount, { team: entry, player: null, depth: "" }))}"` +
               `${selected ? " selected" : ""}>${escapeAttr(entry.fullName)}</option>`
             );
           })
@@ -474,7 +506,7 @@ function playerPicker(context: DevBarContext, subject: Subject): string {
             : player.name;
           return (
             `<option value="${escapeAttr(
-              href(TOOLS[2]!, mount, { team: null, player }),
+              href(TOOLS[2]!, mount, { team: null, player, depth: "" }),
             )}"${selected ? " selected" : ""}>${escapeAttr(name)}</option>`
           );
         })
@@ -510,7 +542,9 @@ function mountButtons(context: DevBarContext, subject: Subject): string {
     );
   };
 
-  add("page", "Page", "The standalone tool, with this app's own shell around it");
+  if (!tool.pluginOnly) {
+    add("page", "Page", "The standalone tool, with this app's own shell around it");
+  }
   if (tool.hasEmbedMode) {
     add("embed", "Embed", "?embed=1 - the markup stripped for a host page");
   }
@@ -643,6 +677,7 @@ export function injectDevBar(html: string, context: DevBarContext): string {
   const subject: Subject = {
     team: currentTeam(context.path),
     player: currentPlayer(context.path),
+    depth: DEPTH_PATH.exec(context.path)?.[1] ?? "",
   };
   const tool = toolFor(context.path);
   // At most one of these renders: each returns "" unless its own tool is the

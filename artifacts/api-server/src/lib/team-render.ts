@@ -47,10 +47,10 @@ import { coachingCaveat, renderCoachingSection } from "./team/coaching-render";
 import { buildUsageView } from "./team/usage";
 import { renderUsageSection } from "./team/usage-render";
 import { statsFaq } from "./team/stats-faq";
-import { depthFaq } from "./team/depth-faq";
+import { depthFaq, type FaqEntry } from "./team/depth-faq";
+import type { DepthColumn, DepthRow, TeamDepthCharts } from "./team/depth-charts";
 import { scheduleFaq } from "./team/schedule-faq";
 import { seasonShape } from "./team/season-shape";
-import { sidelinedBehind } from "./team/roster";
 // The tab strip's headings and standfirsts come from the same two functions the
 // WordPress side mirrors, so the heading a click swaps in and the heading that
 // URL loads with are generated from one place. team-seo.ts imports nothing from
@@ -69,6 +69,7 @@ import {
   isOutDesignation,
   SKILL_POSITIONS,
   type DepthChartEntry,
+  type SkillPosition,
   type RosterPlayer,
 } from "./team/roster";
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
@@ -1262,7 +1263,7 @@ function renderHistory(stats: TeamStats): string {
   const span = stats.history[stats.history.length - 1]?.season;
   return (
     `<div class="sct-block">` +
-    h2("Season History") +
+    h2("Season History", "is-sub") +
     `<p class="sct-note">${escapeHtml(
       span
         ? `Every season back to ${span}, each number ranked against the 32 teams of that year.`
@@ -1381,19 +1382,21 @@ function renderTeamStats(
     stats.season < data.state.season
       ? `${stats.season} regular season${games} - the ${data.state.season} season has no completed team stats yet.`
       : `${stats.season} regular season to date${games}.`;
+  // The ladder block folds the season line and the rank direction into one
+  // note. Stated plainly because on the defense column a rank runs the way
+  // most people would guess wrong.
+  const ladderNote =
+    stats.season < data.state.season
+      ? `${seasonNote.replace(/\.$/, "")} · Ranked among all 32 teams; 1st = fewest allowed.`
+      : `${stats.season} regular season${games} · Ranked among all 32 teams; 1st = fewest allowed.`;
 
   const blocks: string[] = [];
 
   if (ladders) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Offense & Defense") +
-        `<p class="sct-note">${escapeHtml(seasonNote)}</p>` +
-        // Stated once, plainly, because a rank is meaningless until the reader
-        // knows which way it runs - and on the defense column it runs the way
-        // most people would guess wrong.
-        `<p class="sct-note">Ranked against all 32 teams. On defense 1st means ` +
-        `fewest allowed, not most.</p>` +
+        h2("Offense & Defense", "is-sub") +
+        `<p class="sct-note">${escapeHtml(ladderNote)}</p>` +
         `<div class="sct-ladders">${ladders}</div>` +
         `</div>`,
     );
@@ -1402,7 +1405,7 @@ function renderTeamStats(
   if (situational) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Situational & Ball Security") +
+        h2("Situational & Ball Security", "is-sub") +
         `<p class="sct-note">Third and fourth down, the pass rush at both ends of ` +
         `it, and what each side does with the football.</p>` +
         situational +
@@ -1413,7 +1416,7 @@ function renderTeamStats(
   if (volume || mix) {
     blocks.push(
       `<div class="sct-block">` +
-        h2("Volume & Play Mix") +
+        h2("Volume & Play Mix", "is-sub") +
         `<p class="sct-note">Opportunity, not quality: how many snaps there are ` +
         `to go round and how they are divided. Ranks here are most to least, ` +
         `with no better end.</p>` +
@@ -2605,7 +2608,7 @@ function renderQuickLinksPanel(team: NflTeam): string {
  * span is aria-hidden, and the long one is only ever hidden visually - so a
  * screen reader reads "Rhamondre Stevenson" at every width, once.
  */
-function depthName(player: DepthChartEntry): string {
+function depthName(player: { name: string }): string {
   const brief = briefName(player.name);
   if (!brief) return playerName(player.name, "sct-depth-name");
   return playerName(
@@ -2616,109 +2619,175 @@ function depthName(player: DepthChartEntry): string {
   );
 }
 
+/** "01", "02": the tool's depth rank, zero-padded so the column aligns. */
+function depthRank(rank: number): string {
+  return String(rank).padStart(2, "0");
+}
+
+/**
+ * The tool's movement mark against the last refresh: an arrow beside the rank
+ * for a player who moved, a NEW chip for one who was not listed before.
+ */
+function depthMovement(row: DepthRow): string {
+  if (row.movement === "up") {
+    return `<span class="sct-dc-move is-up" title="Moved up"><span aria-hidden="true">\u25B2</span><span class="sct-visually-hidden">Moved up</span></span>`;
+  }
+  if (row.movement === "down") {
+    return `<span class="sct-dc-move is-down" title="Moved down"><span aria-hidden="true">\u25BC</span><span class="sct-visually-hidden">Moved down</span></span>`;
+  }
+  return "";
+}
+
+function depthToolRow(row: DepthRow): string {
+  const sidelined = isOutDesignation(row.injuryStatus);
+  const meta = (row.movement === "new" ? `<span class="sct-dc-new">New</span>` : "") + injuryBadge(row);
+  return (
+    `<li class="sct-depth-row sct-dc-row${sidelined ? " is-sidelined" : ""}">` +
+    `<span class="sct-dc-rank">${depthRank(row.rank)}${depthMovement(row)}</span>` +
+    // Decorative, so the alt is empty: the name is on the same row. A player
+    // the tool has no headshot for sits in the bare team-tinted well.
+    `<span class="sct-depth-well">` +
+    (row.headshot
+      ? `<img class="sct-depth-photo" src="${escapeHtml(row.headshot)}"` +
+        ` alt="" width="38" height="38" loading="lazy" decoding="async" />`
+      : "") +
+    `</span>` +
+    `<span class="sct-depth-body">` +
+    depthName(row) +
+    (meta ? `<span class="sct-depth-meta">${meta}</span>` : "") +
+    `</span>` +
+    `</li>`
+  );
+}
+
+function depthToolColumn(column: DepthColumn): string {
+  const listed = column.rows.length;
+  return (
+    `<div class="sct-depth-col">` +
+    `<h4 class="sct-depth-pos" data-pos="${escapeHtml(column.pos)}" title="${escapeHtml(column.label)}">` +
+    `<span class="sct-depth-pos-name">${escapeHtml(column.pos)}` +
+    `<span class="sct-visually-hidden"> - ${escapeHtml(column.label)}</span></span>` +
+    `<span class="sct-depth-count">${listed}` +
+    `<span class="sct-visually-hidden"> player${listed === 1 ? "" : "s"} listed</span>` +
+    `</span>` +
+    `</h4>` +
+    (listed
+      ? `<ol class="sct-depth-list">${column.rows.map(depthToolRow).join("")}</ol>`
+      : `<p class="sct-dc-empty">None listed</p>`) +
+    `</div>`
+  );
+}
+
+/**
+ * The Fantasy view's rows as the FAQ reads them: the available players in
+ * order, and the ones carrying an out designation, each with the slot the
+ * chart prints ("WR3" for the third row, whoever is above him).
+ */
+function depthFaqInput(charts: TeamDepthCharts): {
+  depthChart: Record<SkillPosition, FaqEntry[]>;
+  injuries: FaqEntry[];
+} {
+  const depthChart = { QB: [], RB: [], WR: [], TE: [] } as Record<SkillPosition, FaqEntry[]>;
+  const injuries: FaqEntry[] = [];
+  const fantasy = charts.views.find((view) => view.key === "fantasy");
+  for (const position of SKILL_POSITIONS) {
+    const column = fantasy?.columns.find((c) => c.pos === position);
+    for (const row of column?.rows ?? []) {
+      const entry: FaqEntry = {
+        name: row.name,
+        slot: `${position}${row.rank}`,
+        position,
+        injuryStatus: row.injuryStatus,
+      };
+      (isOutDesignation(row.injuryStatus) ? injuries : depthChart[position]).push(entry);
+    }
+  }
+  return { depthChart, injuries };
+}
+
+/**
+ * The depth-charts tool's team view, in the hub's dress.
+ *
+ * Four views - Fantasy, Offense, Defense, Special Teams - as the tool has them,
+ * each a row of position columns in the tool's depth order with its rank
+ * numbers, movement marks and status badges. All four are in the HTML: the
+ * switch above them only hides three (client/team.ts, wireDepthViews), so with
+ * scripting off the tab reads as four stacked sections under their own
+ * headings, and a crawler sees the whole roster.
+ *
+ * The data is the tool's own document, pushed by the WordPress plugin after
+ * each refresh (lib/team/depth-charts.ts). It replaced the Sleeper skill-
+ * position cards here on 2026-10-05, so the hub and the tool cannot disagree
+ * about an order.
+ */
 function renderDepthChart(
   data: TeamPageData,
   faq: FaqSink,
   tail: TailSink,
 ): string {
-  const { team, depthChart } = data;
-  const groups = SKILL_POSITIONS.filter(
-    (position) => depthChart[position].length > 0,
-  );
+  const { team, depthCharts } = data;
+  if (!depthCharts) return "";
+  const views = depthCharts.views.filter((view) => view.columns.some((c) => c.rows.length));
+  if (views.length === 0) return "";
 
-  if (groups.length === 0) return "";
+  // Below the tools block, like the other tabs' questions - and assigned after
+  // the early returns above, so a team whose chart did not render carries no
+  // questions about one.
+  tail.html = faqBlock(faqList(depthFaq({ team, ...depthFaqInput(depthCharts) }), faq, "h3"));
 
-  // Below the tools block, like the other two tabs' questions - and assigned
-  // after the early return above, so a team whose chart did not render carries
-  // no questions about one.
-  tail.html = faqBlock(
-    faqList(depthFaq({ team, depthChart, injuries: data.injuries }), faq, "h3"),
-  );
+  const switcher =
+    `<div class="sct-dc-views" role="group" aria-label="Depth chart view">` +
+    views
+      .map(
+        (view, i) =>
+          `<button type="button" class="sct-dc-view" data-sct-dc-view="${view.key}"` +
+          ` aria-pressed="${i === 0 ? "true" : "false"}">${escapeHtml(view.label)}</button>`,
+      )
+      .join("") +
+    `</div>`;
 
-  const columns = groups
-    .map((position) => {
-      // Sleeper demotes an injured player rather than removing him, so a WR1 on
-      // IR sits at WR6 and drops off a four-deep preview. Without these rows the
-      // column silently promotes everyone behind him and the chart reads as
-      // wrong to anyone who knows the roster. Same source as the FAQ under it.
-      const out = sidelinedBehind(data.injuries, position, depthChart[position]);
-      const rows = [...depthChart[position], ...out]
-        .map(
-          (player) =>
-            // Two cells: the photo, and a stack of the name over the slot and
-            // whatever designation the player is carrying.
-            //
-            // The name gets a line to itself because it is the thing being
-            // looked up - four across, sharing that line with a slot chip and a
-            // status pill left it about 120px, which is where the abbreviating
-            // and the clipping came from. Underneath it, "RB1" and "Q" read as
-            // what they are: two labels on the player above them, in a lighter
-            // register, on a line of their own that cannot push the name
-            // anywhere.
-            `<li class="sct-depth-row${out.includes(player) ? " is-out" : ""}">` +
-            // Decorative, so the alt is empty: the name is on the same row, and
-            // announcing the face as well would read the player out twice. It
-            // also means a headshot the CDN does not hold degrades to the bare
-            // tinted well rather than to a broken-image icon captioned with the
-            // player's name.
-            `<span class="sct-depth-well">` +
-            `<img class="sct-depth-photo" src="${escapeHtml(player.headshot)}"` +
-            ` alt="" width="38" height="38" loading="lazy" decoding="async" />` +
-            `</span>` +
-            `<span class="sct-depth-body">` +
-            depthName(player) +
-            `<span class="sct-depth-meta">` +
-            // No slot on an out row. Sleeper's number for him is the demoted
-            // one - printing "WR6" beside a receiver who is the WR1 when fit
-            // states exactly the thing that misleads. The badge beside it
-            // already reads "IR", so the eye needs no second word; what it
-            // cannot show is that the row sits outside the numbering, and that
-            // is what the hidden line says.
-            (out.includes(player)
-              ? `<span class="sct-visually-hidden">Not in the current depth order.</span>`
-              : slotChip(player.slot, true)) +
-            injuryBadge(player) +
-            `</span>` +
-            `</span>` +
-            `</li>`,
-        )
-        .join("");
-      // The count earns its place: a column showing two quarterbacks and one
-      // showing four receivers are different amounts of information, and with
-      // the cards no longer padded to a common height the number is what says
-      // a short column is short because the chart is, not because the page
-      // failed to load the rest.
-      const listed = depthChart[position].length + out.length;
+  const panels = views
+    .map((view, i) => {
+      // The tool's summary strip: "2 QB · 4 RB · 6 WR · 3 TE · 1 K".
+      const summary = view.columns
+        .filter((c) => c.rows.length)
+        .map((c) => `${c.rows.length} ${c.pos}`)
+        .join(" \u00B7 ");
       return (
-        `<div class="sct-depth-col">` +
-        `<h3 class="sct-depth-pos">` +
-        `<span class="sct-depth-pos-name">${escapeHtml(position)}</span>` +
-        `<span class="sct-depth-count">${listed}` +
-        `<span class="sct-visually-hidden"> player${listed === 1 ? "" : "s"} listed</span>` +
-        `</span>` +
-        `</h3>` +
-        `<ol class="sct-depth-list">${rows}</ol>` +
-        `</div>`
+        `<section class="sct-dc-panel" data-sct-dc-panel="${view.key}">` +
+        `<h3 class="sct-dc-title">${escapeHtml(view.label)}</h3>` +
+        `<p class="sct-dc-summary">${escapeHtml(summary)}</p>` +
+        (view.key === "fantasy"
+          ? `<p class="sct-note sct-dc-note">Fantasy view prioritizes fantasy value and may differ from official team depth charts.</p>`
+          : "") +
+        `<div class="sct-depth sct-dc-grid">${view.columns.map(depthToolColumn).join("")}</div>` +
+        `</section>`
       );
     })
     .join("");
+
+  const fetchedMs = Date.parse(depthCharts.fetchedAt);
+  const updated = Number.isFinite(fetchedMs)
+    ? (() => {
+        const parts = easternParts(fetchedMs);
+        return (
+          `<p class="sct-note sct-dc-updated">Updated ` +
+          `<time datetime="${escapeHtml(new Date(fetchedMs).toISOString())}" data-ts="${fetchedMs}">` +
+          `${escapeHtml(`${parts.month} ${parts.day}, ${parts.time}`)}</time></p>`
+        );
+      })()
+    : "";
 
   const full = getTeamDepthChartUrl(team);
 
   return (
     h2(`${team.nickname} Fantasy Depth Chart`) +
-    `<p class="sct-note">Offensive skill positions only. Order as listed on the team's depth chart.</p>` +
-    `<div class="sct-depth">${columns}</div>` +
+    updated +
+    `<div class="sct-dc" data-sct-dc>${switcher}${panels}</div>` +
     (full
       ? `<p class="sct-block-footer">` +
-        // Not "View the full Patriots depth chart": the heading two lines above
-        // already says whose chart this is, and repeating it was most of a
-        // button that ran wider than the cards it sat under.
-        //
-        // .sct-textlink, not .sct-button - the same treatment the schedule and
-        // news footers use. A filled navy button was the loudest thing on the
-        // tab and it was pointing away from it; all three block footers are the
-        // same quiet gold-underlined link now.
+        // .sct-textlink, not .sct-button - the same quiet gold-underlined link
+        // the schedule and news footers use.
         siteLink(full, `View full depth chart ${ARROW}`, "sct-textlink") +
         `</p>`
       : "")

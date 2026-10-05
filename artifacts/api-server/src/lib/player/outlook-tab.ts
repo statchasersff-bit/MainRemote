@@ -229,6 +229,16 @@ export function outlookShort(data: PlayerPageData): string | null {
   return `${bucket(m.pos, m.rank)}, ${m.chips[1].label.toLowerCase()}`;
 }
 
+/**
+ * The News sidebar's snapshot (mak, 2026-10-05): the season tier ("QB2") and
+ * the 1QB/12-team call ("Streamer"), the same two words outlookShort joins.
+ */
+export function outlookSnapshot(data: PlayerPageData): { tier: string; call: string } | null {
+  const m = model(data);
+  if (!m || m.rank === null || !m.chips) return null;
+  return { tier: bucket(m.pos, m.rank), call: m.chips[1].label };
+}
+
 /** "QB2": the fantasy tier a rank sits in. */
 function bucket(pos: string, rank: number): string {
   const size = pos === "QB" || pos === "TE" ? 12 : 12;
@@ -338,39 +348,22 @@ function matchupList(games: UpcomingGame[]): string {
 
 /* ------------------------------------------------------ section 1: the take */
 
-/** "EPA per play" → "EPA/play", "attempts per game" → "att/game". */
-function compactUnit(unit: string): string {
-  return unit.replace(/\battempts\b/g, "att").replace(/\byards\b/g, "yds").replace(/ per /g, "/");
-}
-
 function renderTake(m: Model): string {
   const tier = tierLine(m);
   if (!tier || !m.chips) return "";
   const leagues = LEAGUES[m.pos]!;
-  const top = topDriver(m);
 
-  // mak's hero rework, 2026-10-01: the sentence that sat under the tier line
-  // ("He's QB2 through Week 3, and the reason is efficiency: …") became a
-  // dot-separated meta line - the rank, the rate and the headline stat. The
-  // full reasoning lives one section down, in Our Take; the league-by-league
-  // call is the chips beside it, now anchored under a "Best fit" label
-  // instead of floating.
-  const meta: string[] = [];
-  if (m.preseason) {
-    if (m.prior?.rank) meta.push(`${m.pos}${m.prior.rank} last season`, `${one(m.prior.ppg)} PPG`);
-  } else if (m.rank !== null) {
-    meta.push(`${m.pos}${m.rank} through Week ${m.week}`);
-    if (m.now) meta.push(`${one(m.now.ppg)} PPG`);
-  }
-  if (top && top.tier === "good") meta.push(`${top.value} ${compactUnit(top.unit)}`);
-
+  // mak's hero rework, 2026-10-01, then 2026-10-05: the dot-separated meta
+  // line under the tier ("QB17 through Week 4 · 15.8 PPG · 34.6 att/game")
+  // is gone, and the tier line wears the section ledes' style. The full
+  // reasoning lives one section down, in Our Take; the league-by-league call
+  // is the chips beside it, under a "Best fit" label.
   return (
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
     `<div>` +
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
     `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
-    (meta.length ? `<p class="scp-ol-meta">${escapeHtml(meta.join(" · "))}</p>` : "") +
     `</div>` +
     `<div class="scp-ol-fitwrap">` +
     `<div class="scp-ol-fithead" aria-hidden="true">Best fit</div>` +

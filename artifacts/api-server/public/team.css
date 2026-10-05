@@ -255,7 +255,7 @@ body.sct-page.is-embed {
  * are the same weight and come later, still win over the base rule.
  *
  * The classes: .sct-title, .sct-h2, .sct-panel-title, .sct-switch-conf-title,
- * .sct-band-label, .sct-depth-pos, .sct-ladder-title, .sct-mu-h3,
+ * .sct-band-label, .sct-depth-pos, .sct-dc-title, .sct-ladder-title, .sct-mu-h3,
  * .sct-news-title, .sct-outlook-name, .sct-faq-q, .sct-sbh-title, .sct-mu-story-title, .sct-rb-h2, .sct-rb-h3,
  * .sct-rb-redraft-title - every <h1>-<h4> the hub
  * prints. The list is the checklist: a heading class added below and left off
@@ -1467,6 +1467,27 @@ body.sct-page.is-embed {
   margin: 20px 0 0;
 }
 
+/* A section inside a tab, under the tab's own heading: the Usage H3 look
+   (.sct-us-h3), which Coaching also wears, so every tab's sections share one
+   heading size. Still an <h2> in the markup - only the dress changes. The note
+   under it takes the Usage sub-line (.sct-us-sub). */
+.sct-h2.is-sub {
+  margin: 0 0 2px;
+  padding-bottom: 0;
+  font-size: 1.15rem !important;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.sct-h2.is-sub::after {
+  content: none;
+}
+.sct-h2.is-sub + .sct-note {
+  margin: 0 0 14px;
+  font-size: 0.86rem;
+  font-weight: 400;
+}
+
 /* ------------------------------------------------------------- buttons */
 
 .sct-button {
@@ -1839,27 +1860,15 @@ body.sct-page.is-embed {
   margin: 26px 0 0;
 }
 
-/* The band heading. Sized as a label rather than a sub-heading - it is a
-   divider that happens to assert something, and at heading weight two of them
-   would compete with the section's own <h2>. The rule fills the rest of the
-   line so the band reads as a section break at a glance. */
+/* The band heading, in the section-heading look every tab shares (Usage's
+   .sct-us-h3, .sct-h2.is-sub). It was a small uppercase label with a hairline,
+   one of six heading styles across the hub. The list below supplies the gap. */
 .sct-band-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin: 0;
-  color: var(--sc-muted-strong) !important;
-  font-size: 0.7rem !important;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.sct-band-label::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--sc-hairline);
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  line-height: 1.25;
+  font-weight: 800;
 }
 
 /* Two across, not six. These cards hold a paragraph apiece, and at a
@@ -16896,4 +16905,420 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) .sct-pv-at { width: 34px; height: 34px; font-size: 11px; }
   :is(.sct, #sct-table-armour) .sct-pv-context li + li::before { margin: 0 8px; }
   :is(.sct, #sct-table-armour) .sct-pv-row { flex-direction: column; gap: 6px; }
+}
+
+/* ---------------------------------------------------- one numeral face
+ *
+ * The headline numbers on Stats and Schedule wear the face Usage and Coaching
+ * already use (.sct-us-num: Barlow Condensed 700), at Usage's sizes, so a stat
+ * reads the same on every tab. They were Inter 900, the one place the hub set
+ * its figures in two faces. The family goes through --sc-font for the reason
+ * .sct-us-num's does: the theme armour pins font-family to that token. */
+:is(.sct, #sct-table-armour) :is(.sct-metric-value, .sct-tile-value, .sct-stat-value, .sct-hist-value, .sct-snap-value) {
+  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+:is(.sct, #sct-table-armour) .sct-metric-value { font-size: 2.1rem; }
+:is(.sct, #sct-table-armour) .sct-tile-value { font-size: 1.45rem; }
+:is(.sct, #sct-table-armour) .sct-stat-value { font-size: 1.05rem; }
+:is(.sct, #sct-table-armour) .sct-hist-value { font-size: 1.1rem; }
+:is(.sct, #sct-table-armour) .sct-snap-value { font-size: 1.45rem; }
+
+@media (max-width: 720px) {
+  :is(.sct, #sct-table-armour) .sct-metric-value { font-size: 1.7rem; }
+  :is(.sct, #sct-table-armour) .sct-tile-value { font-size: 1.3rem; }
+}
+
+/* ------------------------------------------------------- one rank pill
+ *
+ * Every NFL rank on the hub prints as an ordinal ("30th", "T-6th") in the
+ * Stats ladder's pill (.sct-stat-rank): 0.7rem/800, 2px 8px, tinted by tier -
+ * green for the good end, red for the poor end, slate otherwise, and slate
+ * wherever a rank is not graded (Coaching's tendencies). It replaces four
+ * treatments: the dot + flat ordinal on the Stats cards, the lighter history
+ * pills, Usage's coloured text, and Coaching's gold "#N NFL" badges. */
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank-value, .sct-tile-rank-value, .sct-hist-rank, .sct-us-rank, .sct-co-badge, .sct-co-sig-pill.is-rank) {
+  display: inline-block;
+  min-height: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sc-surface-sink);
+  color: var(--sc-muted-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank)[data-tier="good"] :is(.sct-metric-rank-value, .sct-tile-rank-value),
+:is(.sct, #sct-table-armour) .sct-hist-rank:is([data-tier="good"], [data-tier="elite"]),
+:is(.sct, #sct-table-armour) .sct-us-rank.is-good {
+  background: rgba(16, 122, 87, 0.1);
+  color: #0f6b4f;
+}
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank)[data-tier="poor"] :is(.sct-metric-rank-value, .sct-tile-rank-value),
+:is(.sct, #sct-table-armour) .sct-hist-rank[data-tier="poor"] {
+  background: rgba(153, 46, 46, 0.09);
+  color: #94363a;
+}
+/* The pill carries the tier now, so the card footers lose the dot and stop
+   tinting the caption beside it. */
+:is(.sct, #sct-table-armour) :is(.sct-metric-dot, .sct-tile-dot) {
+  display: none;
+}
+:is(.sct, #sct-table-armour) :is(.sct-metric-rank, .sct-tile-rank) {
+  align-items: center;
+  color: var(--sc-muted-strong);
+}
+:is(.sct, #sct-table-armour) .sct-hist-rank {
+  margin-top: 4px;
+}
+:is(.sct, #sct-table-armour) .sct-us-rank {
+  align-self: flex-start;
+}
+
+/* ------------------------------------------------- one card, every tab
+ *
+ * A tab's top-level cards share the hub's tokens: --sc-radius and
+ * --sc-shadow, which Stats' ladders, News, Depth Chart and "Use this research"
+ * already wore. Usage and Coaching had their own flat 14px card and Stats'
+ * stat cards and Schedule's game cards sat at 12-14px with lighter drops.
+ * Only the corner and the shadow change: borders keep their colour, so the
+ * accent rules (Coaching's gold signal top, Usage's buy/sell edge, the next
+ * game's gold top) stay where they were. Nested tiles keep their own. */
+:is(.sct, #sct-table-armour) .sct-section :is(
+  .sct-metric, .sct-tile, .sct-mix,
+  .sct-us-envcard, .sct-us-signal, .sct-us-product, .sct-us-scroll,
+  .sct-co-grid, .sct-co-shift, .sct-co-staffcard, .sct-co-idtile, .sct-co-panel,
+  .sct-game, .sct-sboard, .sct-panel, .sct-outlook-player
+) {
+  border-radius: var(--sc-radius);
+}
+:is(.sct, #sct-table-armour) .sct-section :is(
+  .sct-metric, .sct-tile, .sct-mix,
+  .sct-us-envcard, .sct-us-signal, .sct-us-product, .sct-us-scroll,
+  .sct-co-grid, .sct-co-shift, .sct-co-staffcard, .sct-co-idtile, .sct-co-panel,
+  .sct-sboard, .sct-panel
+) {
+  box-shadow: var(--sc-shadow);
+}
+
+/* ------------------------------------------------- one table header
+ *
+ * Stats' history, Usage's player table and both Coaching tables print their
+ * column heads the same way. They were 9.6px, 10.9px and two other sizes. */
+:is(.sct, #sct-table-armour) :is(.sct-hist, .sct-us-table, .sct-co-table, .sct-co-finishes) thead th {
+  color: var(--sc-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------- one injury badge
+ *
+ * Injury Watch spells the designation out ("Questionable") where the cards
+ * abbreviate it ("Q"), but both wear the same chip: the cards' size, weight
+ * and case, and the same colours by severity. */
+:is(.sct, #sct-table-armour) .sct-injury-status {
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* ------------------------------------------------- player name links
+ *
+ * The hairline under a player's name hugs the name. In Injury Watch and the
+ * Depth Chart the link was a stretched grid/flex child, so the line ran on to
+ * the edge of the column and every name's rule ended somewhere different.
+ * Usage's table now underlines its names the same way; the Outlook cards stay
+ * bare because the whole card is the link. */
+:is(.sct, #sct-table-armour) .sct-injury-name {
+  justify-self: start;
+  max-width: 100%;
+}
+:is(.sct, #sct-table-armour) .sct-depth-name {
+  align-self: flex-start;
+  max-width: 100%;
+}
+:is(.sct, #sct-table-armour) .sct-us .sct-us-name.sct-player-link {
+  width: fit-content;
+  max-width: 100%;
+  border-bottom: 1px solid rgba(11, 22, 52, 0.2);
+}
+:is(.sct, #sct-table-armour) .sct-us .sct-us-name.sct-player-link:hover {
+  text-decoration: none;
+  border-bottom-color: var(--sc-gold);
+}
+:is(.sct, #sct-table-armour) .sct-us-role .sct-slot {
+  margin-right: 2px;
+}
+
+/* ------------------------------------------------- Usage text scale
+ *
+ * Three sizes instead of eight: body 0.95rem, secondary 0.86rem, fine print
+ * 0.78rem - the steps the rest of the hub uses. */
+:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-fine, .sct-us-legend li, .sct-us-chip > span:not(.sct-us-num), .sct-us-bridge.is-quiet) {
+  font-size: 0.78rem;
+}
+:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-toolrow, .sct-us-product-lead, .sct-us-bridge:not(.is-quiet), .sct-us-sub, .sct-us-pnote, .sct-us-cta-body, .sct-us-takeaway, .sct-us-note) {
+  font-size: 0.86rem;
+}
+
+/* Buy Low / Sell High: as many columns as there are cards, so two cards fill
+   the row instead of leaving a third of it empty. */
+:is(.sct, #sct-table-armour) .sct-us .sct-us-signals {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+/* ------------------------------------------------ depth chart: tool views
+ *
+ * The depth-charts tool's team view (2026-10-05): Fantasy / Offense /
+ * Defense / Special Teams, each a row of position columns in the tool's order.
+ * The columns and rows are the hub's .sct-depth cards; what is added is the
+ * tool's own furniture - the view switch, the 01/02 rank, the movement arrows
+ * and the NEW chip - in the hub's tokens.
+ *
+ * With scripting off every view shows, stacked under its own heading, and the
+ * switch (which could do nothing) is hidden. client/team.ts wireDepthViews
+ * sets data-sct-dc="js" and hides all but the pressed view. */
+:is(.sct, #sct-table-armour) .sct-dc {
+  margin: 14px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-updated {
+  margin: -4px 0 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc:not([data-sct-dc="js"]) .sct-dc-views {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-view {
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  box-shadow: none;
+  color: var(--sc-navy);
+  font-family: var(--sc-font);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-view:hover {
+  border-color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-view[aria-pressed="true"] {
+  border-color: var(--sc-navy);
+  background: var(--sc-navy);
+  color: #fff;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-view:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: 2px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-panel[hidden] {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-panel + .sct-dc-panel {
+  margin-top: 28px;
+}
+
+/* The section-heading look every hub tab shares (.sct-us-h3). Read aloud
+   only once the switch is live: the pressed button already names the view. */
+.sct-dc-title {
+  margin: 0 0 2px;
+  padding: 0;
+  color: var(--sc-navy) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc[data-sct-dc="js"] .sct-dc-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-summary {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-note {
+  margin: 4px 0 0;
+}
+
+/* As many columns as fit, rather than the four the skill-position chart had:
+   Offense has nine and Defense five. auto-fit, so a five-column view fills the
+   row instead of leaving a sixth track empty. Two to a row on a phone. */
+:is(.sct, #sct-table-armour) .sct-depth.sct-dc-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 480px) {
+  :is(.sct, #sct-table-armour) .sct-depth.sct-dc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  /* Two columns of ~160px cannot hold a photo and "Rhamondre Stevenson"
+     both. The name is the thing being looked up; the tool shows none. */
+  :is(.sct, #sct-table-armour) .sct-dc-row {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-well {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-col {
+    padding: 10px 10px 8px;
+  }
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-col {
+  padding: 12px 12px 10px;
+}
+
+/* Divi's `#left-area ol` (an id: padding 0 0 23px, line-height 26px) and its
+   `ol li` margin outrank the one-class list rules above; the header takes its
+   bare-heading line-height. Measured in the Divi sim, 2026-10-05. */
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-list {
+  padding: 0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-list > li {
+  margin: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos {
+  line-height: 1.35;
+}
+
+/* The accent under each header takes the position palette where there is one. */
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="QB"]::after { background: var(--sct-pos-qb); }
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="RB"]::after { background: var(--sct-pos-rb); }
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="WR"]::after { background: var(--sct-pos-wr); }
+:is(.sct, #sct-table-armour) .sct-dc-grid .sct-depth-pos[data-pos="TE"]::after { background: var(--sct-pos-te); }
+
+/* Rank, photo, then name over its chips. */
+:is(.sct, #sct-table-armour) .sct-dc-row {
+  grid-template-columns: 22px auto minmax(0, 1fr);
+  gap: 8px;
+  margin-inline: -6px;
+  padding: 7px 6px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-well {
+  width: 32px;
+  height: 32px;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-rank {
+  --sc-font: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--sc-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-row:first-child .sct-dc-rank {
+  color: var(--sc-navy);
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-move {
+  margin-top: 2px;
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-move.is-up { color: var(--sct-pos-rb); }
+:is(.sct, #sct-table-armour) .sct-dc-move.is-down { color: var(--sct-pos-qb); }
+
+:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name {
+  font-size: 0.88rem;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+/* Whole names, wrapping to a second line where they must. With nine columns
+   to a view there is no width at which one line holds "Rhamondre Stevenson",
+   and the tool itself prints the name rather than an ellipsis. */
+:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name-long {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-row .sct-depth-name-brief {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-new {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sct-pos-rb) 12%, #fff);
+  color: var(--sct-pos-rb);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* In the order, not set apart: the tool lists him where he stands. Only the
+   photo drops back; the name stays at full contrast. */
+:is(.sct, #sct-table-armour) .sct-dc-row.is-sidelined .sct-depth-photo {
+  filter: grayscale(0.7);
+  opacity: 0.75;
+}
+
+:is(.sct, #sct-table-armour) .sct-dc-empty {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 0.85rem;
 }

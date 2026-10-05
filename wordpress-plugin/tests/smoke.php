@@ -1827,6 +1827,33 @@ $sitemap = statchasers_player_sitemap_sections( '' );
 is( substr_count( $sitemap, 'https://example.com/p/902/' ), count( STATCHASERS_PLAYER_INDEXED_SECTIONS ), 'the profile gets its section URLs' );
 is( false === strpos( $sitemap, '/p/903/' ), true, 'the page without the shortcode gets none' );
 
+// A section the player has none of redirects, so it stays out of the sitemap.
+is( statchasers_player_sitemap_skips( 'injury', array( 'empty' => array( 'injury' ) ) ), true, 'a section the roster says is empty is left out' );
+is( statchasers_player_sitemap_skips( 'stats', array( 'empty' => array( 'injury' ) ) ), false, 'and its other sections are kept' );
+is( statchasers_player_sitemap_skips( 'outlook', array() ), false, 'a row from before emptySections keeps every section' );
+is( statchasers_player_sitemap_skips( 'bio', array( 'bioIndex' => false ) ), true, 'a noindex bio is still left out' );
+is( statchasers_player_sitemap_skips( 'injury', null ), false, 'and a page with no roster row keeps its sections' );
+
+// The dead players sitemap is taken out of the index; the others stay.
+$sm_index = "\t<sitemap>\n\t\t<loc>https://statchasers.com/sitemap-players.xml</loc>\n\t\t<lastmod>2026-09-07T00:00:00+00:00</lastmod>\n\t</sitemap>\n" .
+	"\t<sitemap>\n\t\t<loc>https://statchasers.com/nfl-depth-charts-sitemap.xml</loc>\n\t</sitemap>\n";
+$sm_index = statchasers_sitemap_drop_dead_players( $sm_index );
+is( false === strpos( $sm_index, 'sitemap-players.xml' ), true, 'the 404ing players sitemap leaves the index' );
+is( false !== strpos( $sm_index, '<loc>https://statchasers.com/nfl-depth-charts-sitemap.xml</loc>' ), true, 'and the depth charts sitemap stays' );
+
+// A player who has left the roster: noindex, and out of the sitemap.
+$sm_roster = array( array( 'slug' => 'josh-allen' ), array( 'slug' => 'dj-moore' ) );
+is( statchasers_player_left_roster( 'malik-turner', $sm_roster ), true, 'a page whose player is off the roster has left' );
+is( statchasers_player_left_roster( 'josh-allen', $sm_roster ), false, 'a rostered player has not' );
+is( statchasers_player_left_roster( 'malik-turner', array() ), false, 'and an empty roster (the API down) sends nobody away' );
+is( statchasers_player_sitemap_drop_left( array( 'loc' => 'x' ), 'post', null ), array( 'loc' => 'x' ), 'an entry with no post is kept' );
+is( statchasers_player_sitemap_drop_left( array( 'loc' => 'x' ), 'post', $sm_other ), array( 'loc' => 'x' ), 'and so is a page without the shortcode' );
+
+// The fragment's flag for a section the player has none of.
+is( statchasers_player_section_missing( '<div></div><script type="application/json" class="scp-page-data">{"missing":true}</script>' ), true, 'the missing flag is read off the page-data island' );
+is( statchasers_player_section_missing( '<script type="application/json" class="scp-page-data">{"title":"T","description":"D"}</script>' ), false, 'a section with its own copy is not missing' );
+is( statchasers_player_section_missing( '' ), false, 'nor is an empty fragment (the API down): no redirect on no evidence' );
+
 // The team hubs, through the filter: two pages at team slugs, one a hub.
 $sm_teams                = new WP_Post();
 $sm_teams->ID            = 910;

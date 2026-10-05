@@ -1908,11 +1908,12 @@ describe("the news tab", () => {
     for (const item of items) {
       assert.ok(item.querySelector("h3")?.textContent.trim(), "a headline");
       if (item.matches(".scp-nw-item")) {
-        // A recap's take is its result line; anything else says "Fantasy take".
-        const take = item.querySelector(".scp-nw-take").textContent;
-        if (item.dataset.type === "game") assert.match(take, /^\S+ fantasy points/);
+        // Every entry carries a week-state tag (2026-10-05); a recap's result
+        // is its points line, anything else says "SC Takeaway".
+        assert.ok(item.querySelector(".scp-nw-tag")?.textContent.trim(), "a tag");
+        if (item.dataset.type === "game") assert.match(item.querySelector(".scp-nw-result").textContent, /^\S+ FPTS/);
         else {
-          assert.match(take, /^Fantasy take: \S/);
+          assert.match(item.querySelector(".scp-nw-take").textContent, /^SC Takeaway: \S/);
           assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
         }
         assert.match(item.dataset.impact, /^(up|flat|down)$/);
@@ -4001,5 +4002,67 @@ describe("a slug that has moved", () => {
     // page a round trip.
     const res = await rawGet(`/embed/player/${moved.previousSlugs[0]}`);
     assert.equal(res.status, 200);
+  });
+});
+
+/*
+ * A section URL with no section behind it. A healthy player has no Injury
+ * section and a kicker no Outlook, and the render for such a request is the
+ * whole profile - which, left at the section's address, was a copy of the
+ * profile under the section's title and canonical, ~340 of them, every one in
+ * the sitemap. It redirects to the profile now, the fragment says so for the
+ * plugin, and the roster names those sections so the sitemap can skip them.
+ */
+describe("section URLs with nothing behind them", () => {
+  const emptyFor = (section) => roster.find((p) => (p.emptySections ?? []).includes(section));
+  const fullFor = (section) =>
+    roster.find((p) => Array.isArray(p.emptySections) && !p.emptySections.includes(section));
+
+  test("the roster names each player's empty sections", () => {
+    for (const player of roster) {
+      assert.ok(Array.isArray(player.emptySections), player.slug);
+      for (const id of player.emptySections) {
+        assert.ok(["injury", "outlook"].includes(id), `${player.slug}: ${id}`);
+      }
+    }
+  });
+
+  for (const section of ["injury", "outlook"]) {
+    test(`an empty ${section} section redirects to the profile, query and all`, async (t) => {
+      const player = emptyFor(section);
+      if (!player) return t.skip(`no player in this roster lacks ${section}`);
+
+      const res = await get(`/player/${player.slug}/${section}/?format=half`);
+      assert.equal(res.status, 302);
+      assert.equal(res.headers.get("location"), `/player/${player.slug}?format=half`);
+    });
+
+    test(`the ${section} fragment tells the plugin it is missing`, async (t) => {
+      const player = emptyFor(section);
+      if (!player) return t.skip(`no player in this roster lacks ${section}`);
+
+      const missing = await get(`/embed/player/${player.slug}?section=${section}`);
+      assert.match(missing.body, /<script type="application\/json" class="scp-page-data">\{"missing":true\}<\/script>/);
+
+      const other = fullFor(section);
+      const present = await get(`/embed/player/${other.slug}?section=${section}`);
+      assert.doesNotMatch(present.body, /"missing":true/);
+      assert.match(present.body, /class="scp-page-data">\{"title":/);
+    });
+  }
+
+  test("emptySections agrees with what the page renders", async () => {
+    // The roster's answer is computed without building the page; this is the
+    // check that it is the same answer. Every flagged player redirects, and a
+    // sample of unflagged ones render the section as a page of its own.
+    const flagged = roster.filter((p) => p.emptySections.length > 0);
+    const sample = [...flagged, ...roster.filter((p) => p.emptySections.length < 2).slice(0, 40)];
+    for (const player of sample) {
+      for (const section of ["injury", "outlook"]) {
+        const res = await get(`/player/${player.slug}/${section}/`);
+        const empty = player.emptySections.includes(section);
+        assert.equal(res.status, empty ? 302 : 200, `${player.slug}/${section}`);
+      }
+    }
   });
 });

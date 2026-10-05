@@ -40,6 +40,12 @@ export interface PlayerSsrResult {
   season: number;
   /** The player's display name, for the 404-vs-500 distinction upstream. */
   name: string;
+  /**
+   * A section was asked for and this player has none: the render is the whole
+   * profile, so the section URL must redirect to the profile rather than
+   * stand as a page wearing the section's title.
+   */
+  sectionMissing: boolean;
 }
 
 const FRAGMENT_CACHE_MAX = 256;
@@ -114,11 +120,16 @@ async function renderWithData(
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return { result: hit, data };
 
+  const rendered: string[] = [];
+  const html = renderPlayerPage(data, { ...options, sectionsSink: rendered });
+  const sectionMissing =
+    !!options.section && INDEXED_SECTIONS.has(options.section) && !rendered.includes(options.section);
   const result: PlayerSsrResult = {
-    html: renderPlayerPage(data, options) + pageDataIsland(data, options),
+    html: html + pageDataIsland(data, options, sectionMissing),
     version,
     season: data.season,
     name: data.player.name,
+    sectionMissing,
   };
   fragmentCache.set(key, result);
   return { result, data };
@@ -138,9 +149,19 @@ const INDEXED_SECTIONS = new Set(["stats", "game-log", "outlook", "injury", "new
  * plugin appends its own. Embedded section fragments only: the profile's
  * title is the one stored on its page.
  */
-function pageDataIsland(data: PlayerPageData, options: PlayerRenderOptions): string {
+function pageDataIsland(
+  data: PlayerPageData,
+  options: PlayerRenderOptions,
+  sectionMissing: boolean,
+): string {
   if (!options.embed || !options.section || !INDEXED_SECTIONS.has(options.section)) {
     return "";
+  }
+  // No such section for this player (a healthy player's Injury, a kicker's
+  // Outlook): the render is the full profile. No title for it - the plugin
+  // reads `missing` and redirects the section URL to the profile instead.
+  if (sectionMissing) {
+    return `<script type="application/json" class="scp-page-data">{"missing":true}</script>`;
   }
   const meta = playerPageMeta(data, "", options.section);
   return (

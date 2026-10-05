@@ -311,10 +311,10 @@ function rankText(row: TendencyRow, rank: number | null): string {
   return text[0].toUpperCase() + text.slice(1);
 }
 
-/** The table's compact badge, "#2 NFL", with the long form as its title. */
+/** The table's compact badge, "2nd", with the long form as its title. */
 function rankBadge(row: TendencyRow, rank: number | null): string {
   if (!atEdge(rank)) return "";
-  return `<span class="sct-co-badge" title="${e(rankText(row, rank))}">#${rank} NFL</span>`;
+  return `<span class="sct-co-badge" title="${e(rankText(row, rank))}">${ordinal(rank)}</span>`;
 }
 
 /** Short names for the identity chips, by the builder's metric key. */
@@ -492,7 +492,7 @@ function signals(c: TeamCoaching, view: UsageView | null): string {
       if (row.key === "proe" && v.change.dir !== "flat") pills.push({ text: v.current.startsWith("−") ? "Run-leaning" : "Pass-leaning", neutral: true });
       pills.push(
         atEdge(v.rank)
-          ? { text: `#${v.rank} NFL`, title: rankText(row, v.rank) }
+          ? { text: ordinal(v.rank), title: rankText(row, v.rank) }
           : { text: v.change.dir === "flat" ? "Steady YoY" : `${v.change.text} YoY` },
       );
       if (row.prior && row.prior !== "-" && v.current !== "-") fromTo = `${row.prior} → ${v.current} YoY`;
@@ -501,7 +501,7 @@ function signals(c: TeamCoaching, view: UsageView | null): string {
       `<li class="sct-co-shift">` +
       `<p class="sct-co-sig-label">${e((s.key && SIGNAL_LABELS[s.key]) || s.unit)}</p>` +
       `<div class="sct-co-sig-top"><p class="sct-co-sig-value">${e(value)}</p>` +
-      pills.map((p) => `<span class="sct-co-sig-pill${p.neutral ? " is-neutral" : ""}"${p.title ? ` title="${e(p.title)}"` : ""}>${e(p.text)}</span>`).join("") +
+      pills.map((p) => `<span class="sct-co-sig-pill${p.neutral ? " is-neutral" : ""}${p.title ? " is-rank" : ""}"${p.title ? ` title="${e(p.title)}"` : ""}>${e(p.text)}</span>`).join("") +
       `</div>` +
       `<h4 class="sct-co-sig-head">${e(s.heading)}</h4>` +
       (fromTo ? `<p class="sct-co-sig-line">${e(fromTo)}</p>` : "") +
@@ -586,7 +586,7 @@ function staff(c: TeamCoaching): string {
     `<p class="sct-co-staff-sub is-tag">${e(dcNote.lead)}</p>` +
     (def
       ? `<p class="sct-co-defmetric"><span class="sct-co-defval">${e(def.epa)}</span> <span class="sct-co-defunit">EPA/play allowed</span>` +
-        (def.rank != null ? `<span class="sct-co-sig-pill">#${def.rank} NFL</span>` : "") +
+        (def.rank != null ? `<span class="sct-co-sig-pill is-rank" title="${e(`${ordinal(def.rank)} in NFL`)}">${ordinal(def.rank)}</span>` : "") +
         `</p>` +
         (defLine ? `<p class="sct-co-body">${e(defLine)}</p>` : "")
       : `<p class="sct-co-body">${e(dc.body)}</p>`) +
@@ -646,16 +646,16 @@ function stopParts(row: DossierRow): { code: string; role: string; years: string
   };
 }
 
-/** "23.7 ppg" + "best finish 10th in NFL" -> "23.7 PPG", "#10 NFL". */
+/** "23.7 ppg" + "best finish 10th in NFL" -> "23.7 PPG", "10th in NFL". */
 function scoreParts(row: DossierRow, multi: boolean): { ppg: string; rank: string } {
   const ppg = row.scoring.replace(/ ppg$/, " PPG");
   const ctx = row.scoringContext;
   let m = ctx.match(/^best finish (\d+)(?:st|nd|rd|th) in NFL$/);
-  if (m) return { ppg, rank: `${multi ? "Best " : ""}#${m[1]} NFL` };
+  if (m) return { ppg, rank: `${multi ? "Best: " : ""}${ordinal(Number(m[1]))} in NFL` };
   m = ctx.match(/^(\d+)(?:st|nd|rd|th) in NFL over Wks/);
-  if (m) return { ppg, rank: `#${m[1]} NFL in window` };
+  if (m) return { ppg, rank: `${ordinal(Number(m[1]))} in NFL in window` };
   m = ctx.match(/^(?:(\d{4}) )?through Week (\d+)(?:, (\d+)(?:st|nd|rd|th) in NFL)?$/);
-  if (m) return { ppg, rank: `${m[3] ? `#${m[3]} NFL · ` : ""}${m[1] ? `${m[1]} ` : ""}thru Wk ${m[2]}` };
+  if (m) return { ppg, rank: `${m[3] ? `${ordinal(Number(m[3]))} in NFL · ` : ""}${m[1] ? `${m[1]} ` : ""}thru Wk ${m[2]}` };
   return { ppg, rank: ctx };
 }
 
@@ -725,7 +725,7 @@ function careerIdentity(c: TeamCoaching): string {
   if (past.length) {
     const peak = past.reduce((a, b) => (parseFloat(b.scoring) > parseFloat(a.scoring) ? b : a));
     const rank = scoreParts(peak, false).rank;
-    tiles.push(tile("Scoring peak", peak.scoring.replace(/ ppg$/, " PPG"), /^#\d+ NFL$/.test(rank) ? `${rank} · ${where(peak)}` : where(peak)));
+    tiles.push(tile("Scoring peak", peak.scoring.replace(/ ppg$/, " PPG"), /^\d+(?:st|nd|rd|th) in NFL$/.test(rank) ? `${rank} · ${where(peak)}` : where(peak)));
   }
   const prints = rows
     .map((r) => ({ r, fp: readFingerprint(r.fingerprint) }))

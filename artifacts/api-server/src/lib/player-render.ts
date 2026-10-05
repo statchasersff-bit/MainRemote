@@ -176,6 +176,14 @@ export interface PlayerRenderOptions {
    * header stays an <h2> in this mode as in any embed.
    */
   ownHeading?: boolean;
+  /**
+   * Where the ids of the sections that rendered are collected.
+   *
+   * INTERNAL, like faqSink: the SSR layer reads it to tell a section URL whose
+   * section exists from one whose section does not, which must not stand as a
+   * page (it would be the whole profile under the section's title).
+   */
+  sectionsSink?: string[];
 }
 
 /**
@@ -1372,7 +1380,7 @@ function renderBio(
  * of that span. The expected band is a painted segment rather than a point,
  * because a projection precise to one rank is a precision nobody has.
  */
-function renderOutlookRange(data: PlayerPageData): string {
+function renderOutlookRange(data: OutlookSource): string {
   const range = data.fantasyOutlook2026?.range;
   if (!range) return "";
 
@@ -1455,7 +1463,7 @@ function renderOutlookRange(data: PlayerPageData): string {
  * It is also the block that ages best - these are the lines to rewrite in
  * October, without touching anything else on the tab.
  */
-function renderOutlookMoves(data: PlayerPageData): string {
+function renderOutlookMoves(data: OutlookSource): string {
   const outlook = data.fantasyOutlook2026;
   const upside = outlook?.upsideTriggers?.filter((line) => line.trim()) ?? [];
   const warning = outlook?.warningSigns?.filter((line) => line.trim()) ?? [];
@@ -1494,7 +1502,7 @@ function renderOutlookMoves(data: PlayerPageData): string {
  * do: a quarterback's managers are asking about one-QB against superflex, and
  * everybody else's are asking about a standard league against a deep one.
  */
-function renderOutlookUsage(data: PlayerPageData): string {
+function renderOutlookUsage(data: OutlookSource): string {
   const usage = data.fantasyOutlook2026?.usage;
   if (!usage) return "";
 
@@ -1541,7 +1549,7 @@ function verdictTone(call: string): string {
   return "neutral";
 }
 
-function renderOutlookVerdict(data: PlayerPageData): string {
+function renderOutlookVerdict(data: OutlookSource): string {
   const verdict = data.fantasyOutlook2026?.verdict;
   if (!verdict?.call) return "";
 
@@ -1564,7 +1572,24 @@ function renderOutlookVerdict(data: PlayerPageData): string {
  * below (lib/player/outlook-tab.ts) say both. The written body still decides
  * whether the tab exists, so no player gained or lost an Outlook URL.
  */
-function renderOutlook2026(data: PlayerPageData): { exists: boolean; html: string } {
+/**
+ * What the Outlook tab is drawn from: the written take and the drivers built
+ * off it, nothing else. Narrowed so hasOutlookTab() can answer for the whole
+ * roster without building a page's worth of data per player.
+ */
+type OutlookSource = Pick<PlayerPageData, "player" | "fantasyOutlook2026" | "outlookDrivers">;
+
+/**
+ * Whether this player gets an Outlook tab at all.
+ *
+ * The same test renderPlayerPage() applies, exported for /embed/players.json:
+ * the sitemap must not list an /outlook/ address that only redirects.
+ */
+export function hasOutlookTab(data: OutlookSource): boolean {
+  return renderOutlook2026(data).exists;
+}
+
+function renderOutlook2026(data: OutlookSource): { exists: boolean; html: string } {
   const outlook = data.fantasyOutlook2026;
   const range = renderOutlookRange(data);
   const moves = renderOutlookMoves(data);
@@ -3309,6 +3334,7 @@ export function renderPlayerPage(
     { id: "news", label: "News", html: news },
     { id: "bio", label: "Bio", html: bio },
   ].filter((section) => section.html !== "");
+  options.sectionsSink?.push(...sections.map((section) => section.id));
 
   if (sections.length === 0) {
     // Everything failed to produce markup, which for this page means the player

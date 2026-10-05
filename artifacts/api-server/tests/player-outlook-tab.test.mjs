@@ -116,9 +116,9 @@ describe("in season", () => {
     assert.equal(doc.querySelectorAll(".scp-ol-arrow[aria-hidden='true']").length, 2);
   });
 
-  test("the hero: a meta line under the tier, and the chips under a Best fit label", () => {
-    // mak's hero rework of 2026-10-01: rank · PPG · headline stat, no prose.
-    assert.equal(doc.querySelector(".scp-ol-meta").textContent, "QB17 through Week 3 · 16.5 PPG · 34.6 att/game");
+  test("the hero: no meta line under the tier, and the chips under a Best fit label", () => {
+    // The rank · PPG · headline stat line went 2026-10-05 (mak).
+    assert.equal(doc.querySelector(".scp-ol-meta"), null);
     assert.equal(doc.querySelector(".scp-ol-sum"), null);
     assert.equal(doc.querySelector(".scp-ol-fithead").textContent, "Best fit");
   });

@@ -22,9 +22,11 @@ import { categoryLabel } from "../news-category";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
-import { lastName, STARTSIT_BASE, teamInk } from "./header";
+import { lastName, matchupBand, STARTSIT_BASE, teamInk } from "./header";
 import { titleCase } from "./title-case";
-import { outlookShort } from "./outlook-tab";
+import { outlookSnapshot } from "./outlook-tab";
+import { canonicalizeMatchupPair, gameSegment } from "../matchup/pair";
+import type { ScheduleGame } from "../team/schedule";
 import { loadPlayers } from "./data";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
 import {
@@ -38,6 +40,7 @@ import {
   TYPE_LABEL,
   type FeedItem,
   type Impact,
+  type Outcome,
   type NewsContext,
   type NewsMate,
   type WeekGroup,
@@ -74,6 +77,30 @@ function stamp(ms: number, hasTime: boolean): string {
   return `<time datetime="${escapeHtml(iso)}">${escapeHtml(hasTime ? `${day}, ${easternParts(ms).time}` : day)}</time>`;
 }
 
+const ARROW: Record<Impact, string> = { up: "↑", flat: "≈", down: "↓" };
+
+/** The week-state tag: "CEILING", "FLOOR", "PENDING" (mak, 2026-10-05). */
+const tag = (kind: string, text: string): string => `<span class="scp-nw-tag is-${kind}">${escapeHtml(text)}</span>`;
+const tagFor = (o: Outcome): string => tag(o.tag.toLowerCase().replace(/\s+/g, "-"), o.tag);
+
+/** "↑ Ceiling game": the controlled-vocabulary impact read. */
+const impactRead = (i: FeedItem): string =>
+  `<span class="scp-nw-read is-${i.impact}"><span class="scp-nw-sr">Fantasy impact: </span><span aria-hidden="true">${ARROW[i.impact]}</span>${escapeHtml(i.outcome.label)}</span>`;
+
+/** "25.6 FPTS · QB4", from the recap's points line. */
+const fpts = (i: FeedItem): string => (i.pointsLine ?? "").replace(" fantasy points", " FPTS");
+
+/** "↓ 9.0 below season average", "≈ season average". */
+function avgLine(i: FeedItem): string {
+  if (i.avgDelta === null) return "";
+  const d = i.avgDelta;
+  const text = Math.abs(d) < 0.5 ? "≈ season average" : `${d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(1)} ${d > 0 ? "above" : "below"} season average`;
+  return `<span class="scp-nw-avg">${escapeHtml(text)}</span>`;
+}
+
+const arrowLink = (href: string, text: string, cta: string): string =>
+  `<a class="scp-nw-readlink" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(text)} <span aria-hidden="true">→</span></a>`;
+
 const impactPill = (impact: Impact, prefix = ""): string =>
   `<span class="scp-nw-impact is-${impact}">${escapeHtml(prefix + (prefix ? IMPACT_WORD[impact].toLowerCase() : IMPACT_WORD[impact]))}</span>`;
 
@@ -98,6 +125,14 @@ function context(data: PlayerPageData, options: PlayerRenderOptions): NewsContex
     designation: (data.designation?.injuryStatus ?? "").trim() || null,
     practice: (data.designation?.practice ?? "").trim() || null,
     gameLogHref: `${prefix}${data.player.slug}/game-log/${q}`,
+    boxHref: (g: ScheduleGame) => {
+      const pair = canonicalizeMatchupPair(data.team?.code ?? null, g.opponent?.code ?? null);
+      if (!pair) return null;
+      // The schedule numbers the postseason 19-22; the address uses ESPN's round.
+      const post = g.week > 18 || g.seasonType === "post";
+      const week = post && g.week > 18 ? ({ 19: 1, 20: 2, 21: 3, 22: 5 } as Record<number, number>)[g.week] ?? g.week - 18 : g.week;
+      return `${(options.matchupPathPrefix ?? "/nfl/").trim()}${pair.slug}/${gameSegment({ season, week, seasonType: post ? "post" : "regular" })}/${q}`;
+    },
     now: options.now ?? Date.now(),
   };
 }
@@ -137,27 +172,35 @@ function renderLatest(
 ): string {
   let body: string;
   if (lead) {
-    const stats = lead.panel
-      ? `<div class="scp-nw-lead-stats">` +
-        lead.panel.lines.map((l) => `<p class="scp-nw-statline">${escapeHtml(l)}</p>`).join("") +
-        (lead.pointsLine ? `<p class="scp-nw-pts">${escapeHtml(lead.pointsLine)}</p>` : "") +
-        `</div>`
-      : "";
+    // mak's News redesign (2026-10-05): eyebrow, headline, the fantasy result
+    // as the hero with the impact read beside it, compact stat rows, one SC
+    // Takeaway line, then the links. A recap drops its prose summary.
+    const game = lead.type === "game";
+    const hero = game && lead.pointsLine
+      ? `<div class="scp-nw-hero"><p class="scp-nw-fpts">${escapeHtml(fpts(lead))}</p>${impactRead(lead)}</div>`
+      : `<div class="scp-nw-hero">${tagFor(lead.outcome)}${impactRead(lead)}</div>`;
+    const stats = lead.panel ? `<div class="scp-nw-lead-stats">${lead.panel.lines.map((l) => `<p class="scp-nw-statline">${escapeHtml(l)}</p>`).join("")}</div>` : "";
+    const links = game
+      ? (lead.boxHref ? arrowLink(lead.boxHref, "Box score", "news-boxscore") : "") + readLink(lead, true)
+      : lead.type === "status"
+        ? arrowLink(injuryHref, "Injury status and history", "news-injury")
+        : readLink(lead, true);
     body =
+      `<p class="scp-nw-label">Latest update</p>` +
       `<article class="scp-nw-lead is-${lead.impact}" data-type="${lead.type}">` +
+      `<p class="scp-nw-meta">${stamp(lead.ms, lead.hasTime)}<span>${escapeHtml(TYPE_LABEL[lead.type])}</span>${game ? "" : `<span>${sourceBits(lead)}</span>`}</p>` +
       `<h3>${link(lead.url, lead.headline, "", lead.external)}</h3>` +
-      `<p class="scp-nw-meta">${stamp(lead.ms, lead.hasTime)}<span>${escapeHtml(TYPE_LABEL[lead.type])}</span><span>${sourceBits(lead)}</span></p>` +
+      hero +
       stats +
-      (lead.summary ? `<p class="scp-nw-lead-sum">${escapeHtml(lead.summary)}</p>` : "") +
-      (lead.type === "game" ? "" : `<p class="scp-nw-take"><strong>Fantasy take:</strong> ${escapeHtml(lead.take)}</p>`) +
-      `<div class="scp-nw-foot">` +
-      `<span class="scp-nw-impact is-${lead.impact}">Fantasy impact: ${IMPACT_WORD[lead.impact]}</span>` +
-      (lead.type === "status" ? `<a class="scp-nw-readlink" href="${escapeHtml(injuryHref)}">Injury status and history <span aria-hidden="true">→</span></a>` : readLink(lead, true)) +
-      `</div></article>`;
+      (!game && lead.summary ? `<p class="scp-nw-lead-sum">${escapeHtml(lead.summary)}</p>` : "") +
+      (lead.takeaway ? `<div class="scp-nw-takeaway"><p class="scp-nw-takeaway-h">SC Takeaway</p><p>${escapeHtml(lead.takeaway)}</p></div>` : "") +
+      (links ? `<div class="scp-nw-foot">${links}</div>` : "") +
+      `</article>`;
   } else if (fallback) {
     // No news this season (spec 4.9): the most recent item from any season.
     const ts = itemTimestamp(fallback);
     body =
+      `<p class="scp-nw-label">Latest update</p>` +
       `<article class="scp-nw-lead is-old">` +
       `<h3>${link(fallback.link ?? null, fallback.title, "", true)}</h3>` +
       `<p class="scp-nw-meta"><span class="scp-nw-new">${escapeHtml(`From ${ts ? etDay(ts).slice(0, 4) : "an earlier season"}`)}</span>` +
@@ -170,7 +213,7 @@ function renderLatest(
   }
   // No "Latest story" heading or lede (mak, 2026-10-02): the panel heading
   // above already reads "Latest {name} News & Updates".
-  return `<section class="scp-ox-sec">` + body + `</section>`;
+  return `<section class="scp-ox-sec scp-nw-latest">` + body + `</section>`;
 }
 
 /* -------------------------------------------------------- section 2: feed */
@@ -182,20 +225,34 @@ function renderLatest(
  */
 function renderItem(i: FeedItem): string {
   const group = MOVES.includes(i.type) ? ` data-group="moves"` : "";
-  const sub =
-    i.type === "game" && i.pointsLine
-      ? `<p class="scp-nw-take is-result">${escapeHtml(i.pointsLine + (i.avgNote ? ` · ${i.avgNote}` : ""))}</p>`
-      : `<p class="scp-nw-meta"><span>${escapeHtml(TYPE_LABEL[i.type])}</span>${stamp(i.ms, i.hasTime)}<span>${sourceBits(i)}</span></p>`;
+  const game = i.type === "game" && i.pointsLine;
+  // One anatomy per entry (mak, 2026-10-05): tag, headline, the result with
+  // its distance from his average, compact stats, one line, one link.
+  const body = game
+    ? `<p class="scp-nw-result"><b>${escapeHtml(fpts(i))}</b>${avgLine(i)}</p>` +
+      (i.panel ? `<p class="scp-nw-statline">${escapeHtml(timelineStats(i.panel.lines))}</p>` : "") +
+      (i.takeaway ? `<p class="scp-nw-sum">${escapeHtml(i.takeaway)}</p>` : "")
+    : `<p class="scp-nw-meta">${stamp(i.ms, i.hasTime)}<span>${sourceBits(i)}</span></p>` +
+      (i.summary ? `<p class="scp-nw-sum">${escapeHtml(i.summary)}</p>` : "") +
+      `<p class="scp-nw-take"><strong>SC Takeaway:</strong> ${escapeHtml(i.take)}</p>`;
   return (
     `<article class="scp-nw-item is-${i.impact}" data-type="${i.type}" data-impact="${i.impact}"${group}>` +
     impactSr(i.impact) +
+    // The read beside the tag only when it says more ("SOLID Volume boost",
+    // not "FLOOR Floor game").
+    `<p class="scp-nw-tagrow">${tagFor(i.outcome)}${game && !i.outcome.label.toLowerCase().startsWith(i.outcome.tag.toLowerCase()) ? `<span class="scp-nw-tagword">${escapeHtml(i.outcome.label)}</span>` : ""}</p>` +
     `<h3>${link(i.url, i.headline, "", i.external)}</h3>` +
-    sub +
-    (i.summary ? `<p class="scp-nw-sum">${escapeHtml(i.summary)}</p>` : "") +
-    (i.type === "game" ? "" : `<p class="scp-nw-take"><strong>Fantasy take:</strong> ${escapeHtml(i.take)}</p>`) +
+    body +
     readLink(i, true) +
     `</article>`
   );
+}
+
+/** One timeline stat row: the main line, plus the second when it scored or ran 20+ yards. */
+function timelineStats(lines: string[]): string {
+  const [main, extra] = lines;
+  const counts = extra && (/ TD/.test(extra) || Number(/· (\d+) YDS/.exec(extra)?.[1] ?? 0) >= 20);
+  return counts ? `${main} · ${extra}` : main ?? "";
 }
 
 function renderGroup(g: WeekGroup, items: FeedItem[], pending: boolean): string {
@@ -204,8 +261,11 @@ function renderGroup(g: WeekGroup, items: FeedItem[], pending: boolean): string 
     `<p class="scp-nw-wklabel"><b>${escapeHtml(g.label)}</b>` +
     (g.date ? `<span>${escapeHtml(g.date)}</span>` : "") +
     (g.result ? `<span class="scp-nw-res">${escapeHtml(g.result)}</span>` : "") +
-    `</p><div class="scp-nw-items">` +
-    (pending ? `<p class="scp-nw-pending">Game recap coming soon</p>` : "") +
+    `</p>` +
+    (g.bye && items.length === 0 ? `<p class="scp-nw-pending">${tag("bye", "Bye")}<span>No game this week</span></p>` : "") +
+    `<div class="scp-nw-items">` +
+    // A deliberate state, not a gap (mak, 2026-10-05).
+    (pending ? `<p class="scp-nw-pending">${tag("pending", "Pending")}<span>Recap pending · analysis updating</span></p>` : "") +
     items.map(renderItem).join("") +
     `</div></li>`
   );
@@ -236,9 +296,9 @@ function renderFeed(
   const filters =
     `<div class="scp-nw-filters" role="group" aria-label="Filter updates" data-scp-news-filter>` +
     `<button type="button" aria-pressed="true" data-f="all" data-cta="news-filter-all">All</button>` +
-    `<button type="button" aria-pressed="false" data-f="game" data-cta="news-filter-game">Game recaps</button>` +
+    `<button type="button" aria-pressed="false" data-f="game" data-cta="news-filter-game">Games</button>` +
     `<button type="button" aria-pressed="false" data-f="status" data-cta="news-filter-status">Status</button>` +
-    `<button type="button" aria-pressed="false" data-f="prac" data-cta="news-filter-prac">Practice &amp; offseason</button>` +
+    `<button type="button" aria-pressed="false" data-f="prac" data-cta="news-filter-prac">Practice</button>` +
     (MOVES.some((t) => types.has(t)) ? `<button type="button" aria-pressed="false" data-f="moves" data-cta="news-filter-moves">Moves</button>` : "") +
     `</div>`;
 
@@ -270,32 +330,47 @@ function renderFeed(
   const statusKind = !ctx.designation ? "good" : /^(questionable)/i.test(status) ? "mid" : "bad";
   const next = (data.upcoming ?? [])[0];
   const lastGame = [...ctx.log].reverse().find((e) => (e.game_status ?? "active") === "active" && e.stats);
-  const outlook = outlookShort(data);
-  const rows: string[] = [
-    `<dt>Status</dt><dd><a class="is-${statusKind}" href="${escapeHtml(injuryHref)}">${escapeHtml(status)}</a></dd>`,
-  ];
+  const snap = outlookSnapshot(data);
+  // The Overview snapshot's own trend read, so the two tabs agree.
+  const form = data.outlook;
+  // Values first, no underlined links (mak, 2026-10-05): a snapshot, with
+  // the one small link under the week it is about.
+  const row = (label: string, value: string, sub = "", kind = ""): string =>
+    `<div><dt>${escapeHtml(label)}</dt><dd><b${kind ? ` class="is-${kind}"` : ""}>${escapeHtml(value)}</b>${sub}</dd></div>`;
+  const small = (text: string): string => `<small>${escapeHtml(text)}</small>`;
+  const go = (href: string, text: string, cta: string): string =>
+    `<a class="scp-nw-qa-link" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(text)} <span aria-hidden="true">→</span></a>`;
+  const rows: string[] = [row("Status", status, go(injuryHref, "Injury report", "news-sidebar-injury"), statusKind)];
   if (next) {
+    const opp = next.opponentCode ? `${next.homeAway === "away" ? "@" : "vs"} ${next.opponentCode}` : "";
+    const band = next.matchup ? { soft: "favorable", mid: "neutral", tough: "tough" }[matchupBand(next.matchup.rank)] : "";
     rows.push(
-      `<dt>${escapeHtml(`Week ${next.week}`)}</dt><dd><a href="${escapeHtml(`${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`)}" data-cta="startsit-news-sidebar">Start or sit?</a></dd>`,
+      row(`Week ${next.week}`, snap?.call ?? (opp || "Next game"),
+        (opp && snap ? small(`${opp}${band ? ` · ${band} matchup` : ""}`) : "") +
+          go(`${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`, "View Start/Sit", "startsit-news-sidebar")),
     );
   }
-  if (outlook) rows.push(`<dt>Season outlook</dt><dd><a href="${escapeHtml(`${prefix}/outlook/${q}`)}">${escapeHtml(outlook)}</a></dd>`);
+  if (snap) {
+    rows.push(row("Season role", snap.tier, small(`${snap.call === "Weekly starter" ? "Starter" : snap.call === "Streamer" ? "Streaming" : snap.call} tier`)));
+  }
   if (lastGame) {
-    rows.push(
-      `<dt>Last game</dt><dd><a href="${escapeHtml(ctx.gameLogHref)}">${escapeHtml(`${ctx.points(lastGame).toFixed(1)} pts${lastGame.pos_rank ? ` · ${ctx.pos}${lastGame.pos_rank}` : ""}`)}</a></dd>`,
-    );
+    rows.push(row("Last game", `${ctx.points(lastGame).toFixed(1)} FPTS${lastGame.pos_rank ? ` · ${ctx.pos}${lastGame.pos_rank}` : ""}`, small(`Week ${lastGame.week}`) + go(ctx.gameLogHref, "Game log", "news-sidebar-gamelog")));
+  }
+  if (form?.hasData) {
+    const dir = form.formDirection;
+    rows.push(row("Trend", `${dir === "up" ? "↑" : dir === "down" ? "↓" : "→"} ${form.formLabel}`, "", dir === "up" ? "good" : dir === "down" ? "bad" : ""));
   }
   const aside =
     `<aside class="scp-ox-aside" aria-label="Current outlook">` +
     `<div class="scp-ox-panel scp-nw-card"><h3>Current Outlook</h3>` +
     `<dl class="scp-nw-qa">${rows.join("")}</dl>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(rc)}" data-cta="redraft-command-news-sidebar">${escapeHtml(`Open ${ctx.last} in Redraft Command`)} <span aria-hidden="true">→</span></a>` +
+    `<a class="scp-ox-btn" href="${escapeHtml(rc)}" data-cta="redraft-command-news-sidebar">Open in Redraft Command <span aria-hidden="true">→</span></a>` +
     `</div></aside>`;
 
   return (
     `<section class="scp-ox-sec" aria-labelledby="scp-nw-feed-h"><div class="scp-ox-read"><div>` +
-    `<h2 class="scp-ox-h2" id="scp-nw-feed-h">${escapeHtml(titleCase("Season timeline"))}</h2>` +
-    `<p class="scp-ox-lede">Every update this season, grouped by week, newest first.</p>` +
+    // Same label language as "Latest update", no gold rule (mak, 2026-10-05).
+    `<h2 class="scp-ox-h2 scp-nw-label" id="scp-nw-feed-h">${escapeHtml(titleCase("Season timeline"))}</h2>` +
     (ordered.length ? filters : "") +
     feed +
     `</div>${aside}</div></section>`
@@ -463,7 +538,8 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   const wrap = (html: string): string =>
     html ? `<div class="scp-ox scp-st scp-nw"${ink ? ` style="--scp-team:${escapeHtml(ink)}"` : ""}>${html}</div>` : "";
   return {
-    body: wrap(latest + renderFeed(data, ctx, feedItems, pending, options, injuryHref) + mates + team),
+    // The panel heading's one-line dek (mak, 2026-10-05).
+    body: wrap(`<p class="scp-nw-dek">Fantasy-relevant news, game recaps and role changes</p>` + latest + renderFeed(data, ctx, feedItems, pending, options, injuryHref) + mates + team),
     faq: wrap(faq),
   };
 }

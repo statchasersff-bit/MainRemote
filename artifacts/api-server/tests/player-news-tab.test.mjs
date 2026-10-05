@@ -131,9 +131,19 @@ describe("game recaps (spec 4.5, 4.6)", () => {
     assert.equal(d.recapImpact("TE", 18, 13, 10), "up", "25% over his average");
   });
 
+  test("outcome tags and the SC takeaway follow the week (2026-10-05)", () => {
+    assert.deepEqual(byWeek(3).outcome, { tag: "Ceiling", label: "Ceiling game" });
+    assert.deepEqual(byWeek(2).outcome, { tag: "Floor", label: "Floor game" });
+    assert.deepEqual(byWeek(1).outcome, { tag: "Solid", label: "Solid starter result" });
+    assert.equal(byWeek(3).takeaway, "Volume drove the ceiling: 52 attempts produced his first 25+ point game of 2026.");
+    assert.equal(byWeek(2).takeaway, "The Seahawks limited Brissett to 3.4 yards per attempt.");
+    assert.equal(byWeek(2).avgDelta.toFixed(1), "-9.0");
+  });
+
   test("the take names points, finish and the season average", () => {
     assert.equal(byWeek(2).take, "7.5 PPR points, a QB28 finish, 9.0 below his season average of 16.5.");
-    assert.deepEqual(byWeek(3).panel.lines, ["38-of-52, 280 YDS, 2 TD, 0 INT", "4 CAR, 4 YDS, 1 TD"]);
+    // Compact rows (mak's News redesign, 2026-10-05).
+    assert.deepEqual(byWeek(3).panel.lines, ["38/52 · 280 YDS · 2 TD · 0 INT", "4 CAR · 4 YDS · 1 TD"]);
     assert.equal(byWeek(3).pointsLine, "25.6 fantasy points · QB4");
     assert.equal(byWeek(2).avgNote, "9.0 below his 16.5 average");
     assert.equal(byWeek(3).hasTime, false, "the day is known, the time is not");
@@ -236,15 +246,29 @@ describe("rendered", () => {
     assert.equal(doc.querySelector("#scp-nw-latest-h"), null);
     assert.equal(doc.querySelector(".scp-nw .scp-st-foot"), null);
     assert.equal(doc.querySelector(".scp-nw-lead h3").textContent, "Brissett posts season high in loss at San Francisco");
-    // One feature card, no navy panel (2026-09-30, second pass).
-    assert.equal(doc.querySelector(".scp-nw-lead .scp-nw-pts").textContent, "25.6 fantasy points · QB4");
+    // The compact card (2026-10-05): the fantasy result as the hero, the
+    // impact read beside it, compact stats, one SC Takeaway, two links.
+    const lead0 = doc.querySelector(".scp-nw-lead");
+    assert.equal(lead0.querySelector(".scp-nw-fpts").textContent, "25.6 FPTS · QB4");
+    assert.equal(lead0.querySelector(".scp-nw-read").textContent, "Fantasy impact: ↑Ceiling game");
+    assert.deepEqual([...lead0.querySelectorAll(".scp-nw-statline")].map((p) => p.textContent), ["38/52 · 280 YDS · 2 TD · 0 INT", "4 CAR · 4 YDS · 1 TD"]);
+    assert.match(lead0.querySelector(".scp-nw-takeaway").textContent, /^SC TakeawayVolume drove the ceiling: /);
+    assert.equal(lead0.querySelector(".scp-nw-lead-sum"), null, "a recap lead drops its prose summary");
+    assert.deepEqual([...lead0.querySelectorAll(".scp-nw-foot a")].map((a) => a.getAttribute("href")), [
+      "/nfl/arizona-cardinals-vs-san-francisco-49ers/2026-week-3/",
+      "/player/jacoby-brissett/game-log/",
+    ]);
     assert.equal(doc.querySelector(".scp-nw-stat"), null);
-    assert.match(doc.querySelector(".scp-nw-lead .scp-nw-impact").textContent, /^Fantasy impact: Positive$/);
-    // A feed item's impact is its edge colour, with the word in hidden text.
+    // A timeline entry: tag, headline, result with its average, stats, one line.
     const w2 = doc.querySelector('.scp-nw-item[data-type="game"]');
     assert.equal(w2.dataset.impact, "down");
     assert.match(w2.querySelector(".scp-nw-sr").textContent, /^Fantasy impact: Negative/);
-    assert.equal(w2.querySelector(".scp-nw-take").textContent, "7.5 fantasy points · QB28 · 9.0 below his 16.5 average");
+    assert.equal(w2.querySelector(".scp-nw-tag").textContent, "Floor");
+    assert.equal(w2.querySelector(".scp-nw-tagword"), null, "no read that repeats the tag");
+    assert.equal(w2.querySelector(".scp-nw-result").textContent, "7.5 FPTS · QB28↓ 9.0 below season average");
+    assert.equal(w2.querySelector(".scp-nw-statline").textContent, "17/28 · 95 YDS · 1 TD · 1 INT");
+    assert.equal(w2.querySelector(".scp-nw-sum").textContent, "The Seahawks limited Brissett to 3.4 yards per attempt.");
+    assert.deepEqual([...doc.querySelectorAll(".scp-nw-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "Practice"]);
     assert.deepEqual([...doc.querySelectorAll(".scp-nw-wklabel b")].map((b) => b.textContent), ["Week 2", "Week 1"]);
     assert.equal(doc.querySelector('[data-f="moves"]'), null);
     const signed = news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction");
@@ -260,7 +284,7 @@ describe("rendered", () => {
   test("a pending recap shows in its week, unlinked", () => {
     const doc = render(state({ gameLog: LOG.slice(0, 2) })).window.document;
     const pending = doc.querySelector(".scp-nw-pending");
-    assert.equal(pending.textContent, "Game recap coming soon");
+    assert.equal(pending.textContent, "PendingRecap pending · analysis updating");
     assert.equal(pending.closest(".scp-nw-wk").querySelector(".scp-nw-wklabel b").textContent, "Week 3");
   });
 

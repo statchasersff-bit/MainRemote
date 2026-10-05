@@ -165,6 +165,10 @@ function statchasers_player_roster( bool $fresh = false ): array {
 			'previous' => $previous,
 			// The Bio spec's index rule: false keeps /bio/ out of the sitemap.
 			'bioIndex' => false !== ( $player['bioIndex'] ?? true ),
+			// Section URLs with nothing behind them (a healthy player's
+			// /injury/, a kicker's /outlook/). They redirect to the profile,
+			// so the sitemap leaves them out.
+			'empty'    => array_values( array_intersect( (array) ( $player['emptySections'] ?? array() ), STATCHASERS_PLAYER_INDEXED_SECTIONS ) ),
 		);
 	}
 

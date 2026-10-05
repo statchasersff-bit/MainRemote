@@ -35,7 +35,7 @@ import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
-import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
+import { hasOutlookTab, renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import {
   getAvailableSeasons,
   previousSlugsFor,
@@ -43,7 +43,9 @@ import {
 } from "../lib/player/data";
 import { indexedPlayers, playerDirectory } from "../lib/player/player-data";
 import { bioIndexable } from "../lib/player/bio-tab-data";
-import { loadBioSources } from "../lib/player/data";
+import { getPlayerBySlug, loadBioSources, loadFantasyOutlook2026 } from "../lib/player/data";
+import { getInjuryHistory } from "../lib/player/injury";
+import { outlookDrivers } from "../lib/player/outlook-drivers";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -355,6 +357,26 @@ router.get("/embed/players", (req, res) => {
     .send(html);
 });
 
+/**
+ * The indexed sections this player renders nothing for.
+ *
+ * Only the two that can be absent for a player on the indexed roster: Injury
+ * (no logged injury history) and Outlook (no written take and no drivers -
+ * kickers, mostly). Both tested the way renderPlayerPage() tests them, without
+ * building the page, so the whole roster costs a few lookups per player.
+ */
+function emptySections(id: string, slug: string): string[] {
+  const player = getPlayerBySlug(slug);
+  if (!player) return [];
+  const outlook = loadFantasyOutlook2026()[id] ?? null;
+  const empty: string[] = [];
+  if (!hasOutlookTab({ player, fantasyOutlook2026: outlook, outlookDrivers: outlookDrivers(player, outlook) })) {
+    empty.push("outlook");
+  }
+  if (!getInjuryHistory(id)) empty.push("injury");
+  return empty;
+}
+
 router.get("/embed/players.json", (_req, res) => {
   const players = indexedPlayers().map((row) => ({
     id: row.id,
@@ -373,6 +395,9 @@ router.get("/embed/players.json", (_req, res) => {
     // The Bio spec's index rule (2.11): the plugin leaves /bio/ out of the
     // sitemap for a player whose bio page is noindex.
     bioIndex: bioIndexable(row.team !== null, loadBioSources().players[row.slug] ?? null),
+    // Section URLs this player has no section for. They redirect to the
+    // profile, so the plugin leaves them out of the sitemap.
+    emptySections: emptySections(row.id, row.slug),
   }));
 
   res
@@ -532,6 +557,17 @@ router.get("/player/:slug/:section", (req, res) => {
 
       if (!result) {
         notFound(res);
+        return;
+      }
+
+      // This player has no such section - a healthy player's Injury, a
+      // kicker's Outlook. The render would be the whole profile under the
+      // section's title and canonical: a duplicate of the profile, once per
+      // such player. Sent to the profile instead, and a 302 because the section
+      // can appear (an injury is logged) and the address becomes a page again.
+      if (result.sectionMissing) {
+        const query = queryString(req);
+        res.redirect(302, `${playerPath(slug)}${query ? `?${query}` : ""}`);
         return;
       }
 

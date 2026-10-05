@@ -652,40 +652,70 @@ describe("embedded mode", () => {
     assert.ok(paired > 0, "this test needs a resolvable opponent");
   });
 
-  test("a designated player Sleeper demoted is still on the chart, outside the order", async () => {
-    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
-    const out = [...doc.querySelectorAll(".sct-depth-row.is-out")];
-    if (out.length === 0) return; // Nobody relevant is out for this team today.
+  /** A depth row's name: the full spelling, where a brief one rides alongside. */
+  const rowName = (row) =>
+    (row.querySelector(".sct-depth-name-long") ?? row.querySelector(".sct-depth-name")).textContent.trim();
 
-    for (const row of out) {
-      const name = row.querySelector(".sct-depth-name-long, .sct-depth-name");
-      assert.ok(name?.textContent.trim(), "an out row still names the player");
-      // No slot chip: Sleeper's number for an injured player is the demoted
-      // one, and "WR6" beside a receiver who is the WR1 when fit is the claim
-      // the row exists to correct.
-      assert.equal(
-        row.querySelector(".sct-slot-chip"),
-        null,
-        "an out row carries no slot number",
-      );
-      assert.ok(
-        row.querySelector(".sct-injury-badge"),
-        "an out row says what is wrong",
-      );
+  test("the Depth Chart tab is the depth-charts tool's team view", async () => {
+    const { doc } = await dom("/team/new-england-patriots/depth-chart/");
+    const snapshot = JSON.parse(
+      fs.readFileSync(path.join(APP_DIR, "data/depth-charts/statchasers/depth-charts.json"), "utf8"),
+    );
+    const ne = snapshot.teams.find((t) => t.team.abbr === "NE");
+    assert.ok(ne, "the snapshot has the Patriots");
+
+    // The tool's four views, Fantasy first and pressed.
+    const buttons = [...doc.querySelectorAll("#depth-chart [data-sct-dc-view]")];
+    assert.deepEqual(
+      buttons.map((b) => b.textContent.trim()),
+      ["Fantasy", "Offense", "Defense", "Special Teams"],
+    );
+    assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
+    const panels = [...doc.querySelectorAll("#depth-chart [data-sct-dc-panel]")];
+    assert.equal(panels.length, 4, "every view is in the HTML, not fetched");
+
+    // Column for column, rank for rank, the tool's order.
+    const columns = {
+      fantasy: ["FAN_QB", "FAN_RB", "FAN_WR", "FAN_TE", "FAN_K"],
+      offense: ["QB", "RB", "WR", "TE", "LT", "LG", "C", "RG", "RT"],
+      defense: ["EDGE", "DL", "LB", "CB", "S"],
+      special: ["K", "P", "LS", "KR", "PR"],
+    };
+    for (const panel of panels) {
+      const keys = columns[panel.dataset.sctDcPanel];
+      const cols = [...panel.querySelectorAll(".sct-depth-col")];
+      assert.equal(cols.length, keys.length, `${panel.dataset.sctDcPanel}: column count`);
+      cols.forEach((col, i) => {
+        const expected = [...(ne.positions[keys[i]] ?? [])].sort((a, b) => a.rank - b.rank);
+        const rows = [...col.querySelectorAll(".sct-dc-row")];
+        assert.deepEqual(
+          rows.map(rowName),
+          expected.map((p) => p.name),
+          `${keys[i]}: names in the tool's order`,
+        );
+        assert.deepEqual(
+          rows.map((r) => r.querySelector(".sct-dc-rank").firstChild.textContent),
+          expected.map((p) => String(p.rank).padStart(2, "0")),
+          `${keys[i]}: the tool's ranks`,
+        );
+        assert.equal(
+          Number.parseInt(col.querySelector(".sct-depth-count").textContent, 10),
+          expected.length,
+        );
+      });
     }
 
-    // The numbered rows keep a clean 1..n, with the out rows after them.
-    for (const col of doc.querySelectorAll(".sct-depth-col")) {
-      const rows = [...col.querySelectorAll(".sct-depth-row")];
-      const firstOut = rows.findIndex((r) => r.classList.contains("is-out"));
-      if (firstOut === -1) continue;
-      assert.ok(
-        rows.slice(firstOut).every((r) => r.classList.contains("is-out")),
-        "out rows sit after the running order, not inside it",
-      );
-      // The count above the column describes the rows under it.
-      const shown = col.querySelector(".sct-depth-count").textContent.trim();
-      assert.equal(Number.parseInt(shown, 10), rows.length);
+    // The Fantasy columns carry no status in the document; each row borrows the
+    // Offense column's for the same player.
+    const fantasy = panels[0];
+    for (const pos of ["QB", "RB", "WR", "TE"]) {
+      const offense = ne.positions[pos] ?? [];
+      for (const player of ne.positions[`FAN_${pos}`] ?? []) {
+        const twin = offense.find((o) => o.name === player.name);
+        if (player.status || !twin?.status) continue;
+        const row = [...fantasy.querySelectorAll(".sct-dc-row")].find((r) => rowName(r) === player.name);
+        assert.ok(row?.querySelector(".sct-injury-badge"), `${player.name} lost the ${twin.status} the Offense view has`);
+      }
     }
   });
 
@@ -714,27 +744,18 @@ describe("embedded mode", () => {
         .filter(Boolean),
     );
     assert.ok(charted.size > 0, "the chart rendered names to check against");
-    // Sleeper demotes an injured player on the depth chart, so a genuine WR1 on
-    // IR falls off the four-deep preview and the chart correctly shows someone
-    // else first. The answer has to say why, or it reads as a wrong answer to
-    // anyone who knows the roster.
-    //
-    // Out designations only, matching sidelinedBehind(): a Questionable RB4
-    // off a four-deep chart is a healthy scratch next week, not a chart
-    // mystery, and the FAQ deliberately leaves him unexplained.
-    const charted2 = [...doc.querySelectorAll("#depth-chart .sct-depth-name-long, #depth-chart .sct-depth-name")]
-      .map((n) => n.textContent.trim());
-    const outNames = [...doc.querySelectorAll(".sct-injury")]
-      .filter((row) => row.querySelector('.sct-injury-status[data-severity="out"]'))
-      .map((row) => row.querySelector(".sct-injury-name")?.textContent.trim())
-      .filter((n) => n && !charted2.includes(n));
-    if (outNames.length) {
-      const mentioned = entries.some((e) =>
-        outNames.some((who) => e.answer.includes(who)),
-      );
+    // A sidelined player in the Fantasy view is named as such, so an order
+    // that skips him reads as an injury and not as a wrong chart.
+    const sidelined = [
+      ...doc.querySelectorAll('#depth-chart [data-sct-dc-panel="fantasy"] .sct-depth-col'),
+    ]
+      .filter((col) => ["QB", "RB", "WR", "TE"].includes(col.querySelector(".sct-depth-pos").dataset.pos))
+      .flatMap((col) => [...col.querySelectorAll(".sct-dc-row.is-sidelined")])
+      .map(rowName);
+    for (const who of sidelined) {
       assert.ok(
-        mentioned,
-        `a designated player off the chart (${outNames[0]}) goes unmentioned`,
+        entries.some((e) => e.answer.includes(who)),
+        `a sidelined player on the chart (${who}) goes unmentioned`,
       );
     }
 

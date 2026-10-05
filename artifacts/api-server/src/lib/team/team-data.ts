@@ -39,6 +39,12 @@ import {
 import type { NflTeam } from "./teams";
 import { coachingVersion } from "./coaching";
 import { usageVersion } from "./usage";
+import {
+  depthChartsVersion,
+  getTeamDepthCharts,
+  restoreDepthCharts,
+  type TeamDepthCharts,
+} from "./depth-charts";
 
 /** Stories shown before "View more" reveals the rest. */
 export const TEAM_NEWS_VISIBLE = 10;
@@ -68,6 +74,11 @@ export interface TeamPageData {
   injuries: DepthChartEntry[];
   /** Epoch ms the roster/injury snapshot was pulled. 0 when there is none. */
   rosterFetchedAt: number;
+  /**
+   * The depth-charts tool's four views for this team, for the Depth Chart tab.
+   * Pushed by the WordPress plugin; null when the document has no entry.
+   */
+  depthCharts: TeamDepthCharts | null;
 
   schedule: TeamSchedule | null;
   profile: TeamProfile | null;
@@ -176,6 +187,12 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
   await ensureTeams();
 
   const state = await nflState();
+  // Once per process: the last push, put back over the committed snapshot.
+  // Bounded, so a database that hangs costs the first visitor 3s, not the page.
+  await Promise.race([
+    restoreDepthCharts(),
+    new Promise((resolve) => setTimeout(resolve, 3_000).unref()),
+  ]);
 
   const [newsResult, scheduleResult, profileResult, snapshotResult, statsResult] =
     await Promise.allSettled([
@@ -208,6 +225,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     depthChart: depthPreview(roster),
     injuries: injuryWatch(roster),
     rosterFetchedAt: rosterFetchedAt(),
+    depthCharts: getTeamDepthCharts(team.abbreviation),
     schedule,
     profile:
       profile && !recordDescribesSeason(profile, schedule, state)
@@ -248,5 +266,7 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     // Coaching tab reads one that hand edits and new club entries change.
     usageVersion(data.state.season),
     coachingVersion(data.state.season),
+    // The depth-charts plugin's push rewrites its file in place.
+    depthChartsVersion(),
   ].join("-");
 }

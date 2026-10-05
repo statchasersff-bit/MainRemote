@@ -97,11 +97,15 @@ describe("placement", () => {
       /^Buffalo Bills target share, snap share and red-zone touches for 2026, updated every Tuesday/,
     );
     assert.equal(doc.querySelector('link[rel="canonical"]')?.getAttribute("href")?.endsWith("/usage/"), true);
-    // The page's FAQPage describes this page's question alone.
+    // The page's FAQPage describes this page's questions alone: mak's list
+    // (2026-10-05), in his order, every one answerable for the Bills.
     const faq = [...doc.querySelectorAll('script[type="application/ld+json"]')]
       .map((s) => JSON.parse(s.textContent))
       .find((j) => j["@type"] === "FAQPage");
-    assert.deepEqual(faq.mainEntity.map((q) => q.name), ["Who leads the Buffalo Bills in target share?"]);
+    const names = faq.mainEntity.map((q) => q.name);
+    assert.equal(names.length, 15);
+    assert.equal(names[0], "Who leads the Bills in target share?");
+    assert.equal(names[14], "How should I use Bills usage data for trades, waivers and start/sit decisions?");
   });
 
   test("with the host's heading off, the section's H1 is the address's phrase", async () => {
@@ -237,10 +241,11 @@ describe("profiles", () => {
 });
 
 describe("FAQ", () => {
-  test("the target-share question is visible and links to #usage", async () => {
+  test("the questions are visible and link to #usage", async () => {
     const { doc } = await page("/team/buffalo-bills/");
     const tail = doc.querySelector('[data-sct-faq-for="usage"]');
-    assert.equal(tail.querySelector(".sct-faq-q").textContent, "Who leads the Buffalo Bills in target share?");
+    assert.equal(tail.querySelector(".sct-faq-q").textContent, "Who leads the Bills in target share?");
+    assert.equal(tail.querySelectorAll(".sct-faq-item").length, 15);
     assert.equal(tail.querySelector(".sct-faq-more a").getAttribute("href"), "#usage");
   });
 
@@ -249,17 +254,30 @@ describe("FAQ", () => {
     const node = [...doc.querySelectorAll('script[type="application/ld+json"]')]
       .map((s) => JSON.parse(s.textContent))
       .find((j) => j["@type"] === "FAQPage");
-    const q = node.mainEntity.find((m) => m.name === "Who leads the Buffalo Bills in target share?");
-    assert.ok(q);
-    const visible = doc.querySelector('[data-sct-faq-for="usage"] .sct-faq-a').textContent;
-    assert.equal(q.acceptedAnswer.text, visible);
+    const visible = [...doc.querySelectorAll('[data-sct-faq-for="usage"] .sct-faq-item')];
+    assert.equal(visible.length, 15);
+    for (const item of visible) {
+      const q = node.mainEntity.find((m) => m.name === item.querySelector(".sct-faq-q").textContent);
+      assert.ok(q);
+      assert.equal(q.acceptedAnswer.text, item.querySelector(".sct-faq-a").textContent);
+    }
+  });
+
+  test("answers link their tools inline (mak, 2026-10-05)", async () => {
+    const { doc } = await page("/team/buffalo-bills/");
+    const ctas = [...doc.querySelectorAll('[data-sct-faq-for="usage"] .sct-faq-a a[data-cta]')].map((a) =>
+      a.getAttribute("data-cta"),
+    );
+    for (const want of ["rb-handcuffs-usage-faq", "start-sit-usage-faq", "trade-analyzer-usage-faq", "redraft-command-usage-faq"]) {
+      assert.ok(ctas.includes(want), want);
+    }
   });
 
   test("embedded, it rides in the data island for Rank Math", async () => {
     const res = await fetch(`${server.origin}/embed/team/buf`);
     const body = await res.text();
     const island = body.match(/<script type="application\/json" class="sct-faq-data">(.*?)<\/script>/s);
-    assert.ok(JSON.parse(island[1]).some((e) => e.q === "Who leads the Buffalo Bills in target share?"));
+    assert.ok(JSON.parse(island[1]).some((e) => e.q === "Who leads the Bills in target share?"));
   });
 });
 
@@ -274,7 +292,8 @@ describe("all 32 clubs", () => {
       const { doc } = await page(`/team/${slug}/`);
       const section = doc.querySelector("#usage");
       assert.ok(section, slug);
-      const text = section.textContent;
+      // The FAQ renders below the tools block, outside the panel.
+      const text = section.textContent + (doc.querySelector('[data-sct-faq-for="usage"]')?.textContent ?? "");
       for (const bad of ["undefined", "NaN", "null", "Infinity"]) {
         assert.ok(!text.includes(bad), `${slug}: ${bad}`);
       }
@@ -311,7 +330,7 @@ describe("all 32 clubs", () => {
       const { doc } = await page(`/team/${slug}/`);
       const section = doc.querySelector("#usage");
       section.querySelector(".sct-us-intro")?.remove();
-      const text = section.textContent;
+      const text = section.textContent + (doc.querySelector('[data-sct-faq-for="usage"]')?.textContent ?? "");
       for (const [re, why] of OVERCLAIMS) {
         const hit = text.match(re);
         assert.equal(hit, null, `${slug}: "${hit?.[0]}" - ${why}`);

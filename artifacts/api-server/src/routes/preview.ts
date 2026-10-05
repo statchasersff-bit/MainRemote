@@ -21,6 +21,11 @@
  *   [statchasers_rb_handcuffs] -> /preview/rb-handcuffs
  *   [statchasers_strength_of_schedule] -> /preview/sos
  *   [statchasers_rookie_hit_rates] -> /preview/rookie-hit-rates
+ *   [statchasers_depth_charts] -> /preview/depth-charts[/view/team/pos]
+ *
+ * The depth charts are the exception to "same renderer as /embed": they are
+ * a PHP plugin with no renderer in this app, so their routes run the plugin
+ * itself (lib/depth-charts-preview.ts).
  *
  * The fragment is the SAME markup the plugin fetches - it comes from the same
  * renderer the /embed endpoints use, not a second code path - wrapped in a mock
@@ -35,7 +40,7 @@
  * either tool on the public internet.
  */
 
-import { Router, type IRouter, type Request, type Response } from "express";
+import express, { Router, type IRouter, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
 import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
@@ -54,6 +59,13 @@ import { renderHandcuffFragment } from "../lib/rb-handcuffs-ssr";
 import { renderSosFragment } from "../lib/sos-ssr";
 import { parseSosState } from "../lib/sos/sos-data";
 import { renderRhrFragment } from "../lib/rookie-hit-rates-ssr";
+import {
+  PLUGIN_DIR as DEPTH_PLUGIN_DIR,
+  PREVIEW_ASSETS as DEPTH_ASSETS,
+  PREVIEW_DATA as DEPTH_DATA,
+  SNAPSHOT_FILE as DEPTH_SNAPSHOT,
+  renderDepthCharts,
+} from "../lib/depth-charts-preview";
 import { parseFpaFormat, parseFpaView } from "../lib/fpa/fpa-data";
 import {
   parseGameFilter,
@@ -97,6 +109,11 @@ interface HostPageOptions {
   scripts: string[];
   /** The fragment, exactly as the plugin would receive it. */
   fragment: string;
+  /**
+   * The host page's H1 as markup, when the plugin rewrites it (the depth
+   * charts retitle the theme's H1 on team routes). Defaults to `title`.
+   */
+  heading?: string;
 }
 
 /**
@@ -154,7 +171,7 @@ function hostPage(options: HostPageOptions): string {
     `The chrome around it is a stand-in, not the real theme.</p>` +
     `<header class="hp-head">` +
     `<p class="hp-crumb">StatChasers &rsaquo; Fantasy Football</p>` +
-    `<h1 class="hp-h1">${escapeHtml(options.title)}</h1>` +
+    (options.heading ?? `<h1 class="hp-h1">${escapeHtml(options.title)}</h1>`) +
     `<p class="hp-lede">The host page owns this heading and the column width. ` +
     `Everything below the line is the shortcode's own output.</p>` +
     `</header>` +
@@ -770,6 +787,86 @@ router.get("/preview/raw/schedule", (req, res) => {
       );
     } catch (err) {
       logger.error({ err }, "Schedule fragment source view failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/* ----------------------------------------------------------- depth charts */
+
+// The plugin's stylesheet and script, served from the plugin directory as-is,
+// and the snapshot standing in for wp-content/uploads/statchasers/.
+if (DEPTH_PLUGIN_DIR) {
+  router.use(DEPTH_ASSETS, express.static(`${DEPTH_PLUGIN_DIR}/assets`, { maxAge: 0 }));
+}
+router.get(DEPTH_DATA, (_req, res) => {
+  res.set("Cache-Control", "no-store").sendFile(DEPTH_SNAPSHOT, (err) => {
+    if (err && !res.headersSent) res.status(404).type("text/plain").send("No depth chart snapshot");
+  });
+});
+
+/** What follows /preview/[raw/]depth-charts/, and the query string. */
+function depthRequest(req: Request): { rest: string; query: string } {
+  const rest = String((req.params as Record<string, string | undefined>)[0] ?? "");
+  const q = req.originalUrl.indexOf("?");
+  return { rest, query: q === -1 ? "" : req.originalUrl.slice(q + 1) };
+}
+
+/**
+ * [statchasers_depth_charts] as it renders on a page, at any of the plugin's
+ * routes: /preview/depth-charts/fantasy/houston-texans/ is the live
+ * /nfl/nfl-depth-charts/fantasy/houston-texans/. The plugin's redirects and
+ * 404s come through as they would live.
+ */
+router.get(/^\/preview\/depth-charts(?:\/(.*))?$/, (req, res) => {
+  void (async () => {
+    try {
+      const { rest, query } = depthRequest(req);
+      const result = await renderDepthCharts(rest, query);
+      if (result.redirect) {
+        res.redirect(result.status, result.redirect);
+        return;
+      }
+      if (result.status === 404) {
+        res.status(404).type("text/plain").send("Not found (the plugin 404s this route)");
+        return;
+      }
+      send(
+        req,
+        res,
+        hostPage({
+          title: result.title,
+          heading: result.heading,
+          shortcode: "[statchasers_depth_charts]",
+          styles: [`${DEPTH_ASSETS}css/frontend.css`],
+          scripts: [`${DEPTH_ASSETS}js/frontend.js`],
+          fragment: result.fragment,
+        }),
+      );
+    } catch (err) {
+      logger.error({ err }, "Depth charts shortcode preview failed");
+      res.status(500).type("html").send("<h1>Preview failed</h1>");
+    }
+  })();
+});
+
+/** The depth chart shortcode output as source. */
+router.get(/^\/preview\/raw\/depth-charts(?:\/(.*))?$/, (req, res) => {
+  void (async () => {
+    try {
+      const { rest, query } = depthRequest(req);
+      const result = await renderDepthCharts(rest, query);
+      send(
+        req,
+        res,
+        sourcePage(
+          "[statchasers_depth_charts]",
+          `/nfl/nfl-depth-charts/${rest}`,
+          result.fragment,
+        ),
+      );
+    } catch (err) {
+      logger.error({ err }, "Depth charts fragment source view failed");
       res.status(500).type("html").send("<h1>Preview failed</h1>");
     }
   })();
