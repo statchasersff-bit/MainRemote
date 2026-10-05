@@ -17,6 +17,18 @@
 
 import { escapeHtml } from "../render";
 import { getPlayerPageUrl } from "./links";
+import {
+  BUY_LOW_SELL_HIGH_URL,
+  DYNASTY_COMMAND_URL,
+  DYNASTY_RANKINGS_URL,
+  DYNASTY_TRADE_CALCULATOR_URL,
+  PROJECTIONS_URL,
+  RB_HANDCUFF_RANKINGS_URL,
+  ROS_RANKINGS_URL,
+  TRADE_CALCULATOR_URL,
+  TRADE_FINDER_URL,
+  WAIVER_WIRE_URL,
+} from "../matchup/recap";
 import type { NflTeam } from "./teams";
 import {
   getTargetShareCliff,
@@ -130,6 +142,43 @@ function playerLink(p: UsagePlayer, className: string): string {
     : `<span class="${className}">${e(p.name)}</span>`;
 }
 
+/* --------------------------------------------------------- product bridges */
+
+/*
+ * Where the report hands off to a tool (mak, 2026-10-05): each section links
+ * the tool that answers its own next question - rankings after the Target
+ * Tree, waivers and (quietly) dynasty after the handcuff math, trades after
+ * Buy Low / Sell High, projections after xFP, the matchup preview after the
+ * pass map - and the close puts both Commands side by side. Roughly 3:1
+ * redraft to dynasty: dynasty only where the question is succession or
+ * long-term role. A tool whose address is not confirmed (null in
+ * matchup/recap.ts) drops its link, and a line left with no link drops too.
+ */
+
+/** Where the report can send a reader next, decided by the page around it. */
+export interface UsageLinks {
+  /** This club's next matchup page, when the schedule has one. */
+  matchup: { href: string; opponent: string } | null;
+}
+
+/**
+ * `target="_top"` only for the site's absolute tool URLs: the hub's own
+ * root-relative pages (the matchup preview) stay plain anchors like the tab
+ * nav, since a sandboxed preview frame blocks a top-frame navigation outright.
+ */
+const topTarget = (href: string) => (/^https?:/.test(href) ? ` target="_top"` : "");
+
+function tool(href: string | null, text: string, cta: string): string {
+  return href
+    ? `<a class="sct-textlink" href="${e(href)}"${topTarget(href)} data-cta="${e(cta)}">${e(text)}</a>`
+    : "";
+}
+
+/** A one-line handoff under a section: the question in bold, then the link. */
+function bridge(lead: string, html: string, quiet = false): string {
+  return html ? `<p class="sct-us-bridge${quiet ? " is-quiet" : ""}"><strong>${e(lead)}</strong> ${html}</p>` : "";
+}
+
 interface Segment {
   label: string;
   short: string;
@@ -198,6 +247,16 @@ function intro(): string {
   return `<div class="sct-us-intro">${paras.map((t) => `<p>${e(t)}</p>`).join("")}</div>`;
 }
 
+function introCta(): string {
+  return (
+    `<div class="sct-us-cta">` +
+    `<p class="sct-us-cta-title">Turn usage into a roster decision</p>` +
+    `<p class="sct-us-cta-body">Redraft Command uses these same opportunity trends alongside projections and market data to update player values, lineup decisions, trades and waiver recommendations for your league.</p>` +
+    `<a class="sct-us-btn" href="${e(REDRAFT_COMMAND_URL)}" target="_top" data-cta="redraft-command-usage-intro">Open Redraft Command</a>` +
+    `</div>`
+  );
+}
+
 function environment(view: UsageView): string {
   const cards = environmentCards(view);
   if (cards.length === 0) return "";
@@ -247,6 +306,10 @@ function targetTree(view: UsageView, team: NflTeam): string {
     h3("The Target Tree") +
     `<p class="sct-us-sub">${e(`All ${tgt} ${team.nickname} targets through Week ${view.throughWeek}`)}</p>` +
     stackedBar(segs, `${team.nickname} target shares: ${segs.map((s) => `${s.label} ${s.share.toFixed(1)}%`).join(", ")}`) +
+    bridge(
+      "What are these targets worth?",
+      `See how changing target shares show up in our ${tool(ROS_RANKINGS_URL, "Rest-of-Season Rankings", "ros-rankings-usage-tree")}.`,
+    ) +
     `</div>`
   );
 }
@@ -327,6 +390,37 @@ function backfield(view: UsageView, team: NflTeam): string {
       `</div>`
     : "";
 
+  // The handcuff takeaway names the two backs: "The Henderson math if
+  // Stevenson misses time:". No takeaway, no handoff.
+  const cuff = takeaways.map((t) => t.lead.match(/^The (.+) math if (.+) misses time:$/)).find(Boolean);
+  const byName = (last: string) => view.rbs.find((p) => surname(p.name) === last);
+  const rb2 = cuff ? byName(cuff[1]!) : undefined;
+  const rb1 = cuff ? byName(cuff[2]!) : undefined;
+  const handoff =
+    rb1 && rb2
+      ? bridge(
+          "Need the handcuff?",
+          WAIVER_WIRE_URL
+            ? `Check whether ${e(rb2.name)} is available in your leagues with the ${tool(WAIVER_WIRE_URL, "Waiver Wire Scanner", "waiver-wire-usage-handcuff")}.`
+            : `See where ${e(rb2.name)} ranks in our ${tool(RB_HANDCUFF_RANKINGS_URL, "RB Handcuff Rankings", "rb-handcuffs-usage-handcuff")}.`,
+        ) +
+        // Succession is a dynasty question, so this is where Dynasty Command
+        // earns a link - a quieter one, under the redraft action.
+        (DYNASTY_RANKINGS_URL && DYNASTY_TRADE_CALCULATOR_URL
+          ? bridge(
+              "Thinking longer term?",
+              `Compare ${e(rb1.name)} and ${e(rb2.name)} in ${tool(DYNASTY_RANKINGS_URL, "Dynasty Rankings", "dynasty-rankings-usage-handcuff")} or price a deal in the ${tool(DYNASTY_TRADE_CALCULATOR_URL, "Dynasty Trade Calculator", "dynasty-trade-calc-usage-handcuff")}.`,
+              true,
+            )
+          : bridge(
+              "Thinking longer term?",
+              DYNASTY_COMMAND_URL
+                ? `Weigh ${e(rb1.name)}'s and ${e(rb2.name)}'s future roles in ${tool(DYNASTY_COMMAND_URL, "Dynasty Command", "dynasty-command-usage-handcuff")}.`
+                : "",
+              true,
+            ))
+      : "";
+
   return (
     `<div class="sct-us-card">` +
     h3("The Backfield Split") +
@@ -335,6 +429,7 @@ function backfield(view: UsageView, team: NflTeam): string {
     grid +
     chipHtml +
     takeawayHtml +
+    handoff +
     runDirection(view) +
     `</div>`
   );
@@ -374,7 +469,7 @@ const ZONES: Zone[][] = [
   ["SL", "SM", "SR"],
 ];
 
-function passMap(view: UsageView, team: NflTeam): string {
+function passMap(view: UsageView, team: NflTeam, links: UsageLinks): string {
   const zones = view.team.zones;
   const all = Object.values(zones).reduce((s, z) => s + (z?.att ?? 0), 0);
   if (all < 20) return "";
@@ -409,6 +504,12 @@ function passMap(view: UsageView, team: NflTeam): string {
     `<ul class="sct-us-zones">${ZONES[1]!.map(cell).join("")}</ul>` +
     `</div>` +
     (note ? `<p class="sct-us-note">${e(note)}</p>` : "") +
+    (links.matchup
+      ? bridge(
+          "What comes next?",
+          `See how this usage profile lines up with the ${e(links.matchup.opponent)} in the ${tool(links.matchup.href, `${team.nickname} Fantasy Matchup Preview`, "matchup-preview-usage-passmap")}.`,
+        )
+      : "") +
     `</div>`
   );
 }
@@ -611,6 +712,18 @@ function table(view: UsageView, team: NflTeam): string {
   );
 }
 
+function projectionsBridge(view: UsageView): string {
+  // A big opportunity/production gap is exactly what the buy/sell board prices.
+  const gap = view.rows.some((r) => Math.abs(r.player.fpoePerGame ?? 0) >= 3);
+  return bridge(
+    "Compare opportunity with what comes next:",
+    `see current weekly and rest-of-season expectations in ${tool(PROJECTIONS_URL, "Fantasy Football Projections", "projections-usage-xfp")}.` +
+      (gap && BUY_LOW_SELL_HIGH_URL
+        ? ` Large opportunity/production gaps also feed the ${tool(BUY_LOW_SELL_HIGH_URL, "Buy Low & Sell High board", "blsh-usage-xfp")}.`
+        : ""),
+  );
+}
+
 function legend(): string {
   const items: Array<[string, string, string]> = [
     ["set", "Set & forget", "20%+ target share or locked bell-cow role - start everywhere"],
@@ -657,6 +770,72 @@ function signals(view: UsageView): string {
   );
 }
 
+function tradeBlock(view: UsageView): string {
+  const names = view.signals
+    .filter((s) => s.kind === "buy" || s.kind === "sell")
+    .map((s) => surname(s.row.player.name));
+  if (names.length === 0) return "";
+  const who = names.length > 1 ? `${names[0]} or ${names[1]}` : names[0]!;
+  return (
+    `<div class="sct-us-cta is-trade">` +
+    `<p class="sct-us-cta-title">Turn the usage signal into a trade</p>` +
+    `<p class="sct-us-cta-body">Check ${e(who)} in the ${tool(TRADE_CALCULATOR_URL, "Fantasy Football Trade Analyzer", "trade-analyzer-usage-signals")} to see current value, compare both sides of a deal and measure the impact on your actual roster.` +
+    (TRADE_FINDER_URL ? ` Not sure what offer to make? Use the ${tool(TRADE_FINDER_URL, "Trade Finder", "trade-finder-usage-signals")} to find realistic partners and packages in your league.` : "") +
+    `</p>` +
+    (BUY_LOW_SELL_HIGH_URL
+      ? `<p class="sct-us-cta-more">See every current riser and faller on the ${tool(BUY_LOW_SELL_HIGH_URL, "Buy Low, Sell High & Trade Targets", "blsh-usage-signals")} board.</p>`
+      : "") +
+    `</div>`
+  );
+}
+
+/**
+ * The close: the line on how usage feeds our pricing, then both Commands side
+ * by side with what each does with this data, then a row of direct tools.
+ * It stands in for the hub's shared "Use this research" block, which the
+ * Usage tab hides.
+ */
+function conversion(view: UsageView, team: NflTeam, links: UsageLinks): string {
+  const product = (title: string, lead: string, items: string[], href: string | null, cta: string) =>
+    href
+      ? `<article class="sct-us-product">` +
+        `<p class="sct-us-product-title">${e(title)}</p>` +
+        `<p class="sct-us-product-lead">${e(lead)}</p>` +
+        `<ul class="sct-us-product-list">${items.map((i) => `<li>${e(i)}</li>`).join("")}</ul>` +
+        `<a class="sct-us-btn" href="${e(href)}" target="_top" data-cta="${e(cta)}">${e(`Open ${title}`)}</a>` +
+        `</article>`
+      : "";
+  const row = [
+    tool(TRADE_CALCULATOR_URL, "Trade Analyzer", "trade-analyzer-usage-footer"),
+    tool(WAIVER_WIRE_URL, "Waiver Wire", "waiver-wire-usage-footer"),
+    tool(ROS_RANKINGS_URL, "Rest of Season Rankings", "ros-rankings-usage-footer"),
+    links.matchup ? tool(links.matchup.href, `${team.nickname} Matchup Preview`, "matchup-preview-usage-footer") : "",
+  ].filter(Boolean);
+  return (
+    `<div class="sct-us-convert">` +
+    `<h3 class="sct-us-h3">Put this usage data to work</h3>` +
+    closing(view) +
+    `<div class="sct-us-products">` +
+    product(
+      "Redraft Command",
+      "Use current usage, projections and player values against your actual roster for:",
+      ["Lineup decisions", "Trades", "Waivers", "Rest-of-season value"],
+      REDRAFT_COMMAND_URL,
+      "redraft-command-usage-footer",
+    ) +
+    product(
+      "Dynasty Command",
+      "Use current role changes alongside long-term values for:",
+      ["Dynasty rankings", "Dynasty trades", "Roster direction", "Future picks"],
+      DYNASTY_COMMAND_URL,
+      "dynasty-command-usage-footer",
+    ) +
+    `</div>` +
+    (row.length ? `<p class="sct-us-toolrow">${row.join(`<span aria-hidden="true"> · </span>`)}</p>` : "") +
+    `</div>`
+  );
+}
+
 function closing(view: UsageView): string {
   const riser = view.signals.find((s) => s.kind === "buy")?.row.player;
   return (
@@ -676,20 +855,27 @@ export interface UsageSection {
   faq: Array<{ question: string; answer: string }>;
 }
 
-export function renderUsageSection(view: UsageView | null, team: NflTeam): UsageSection {
+export function renderUsageSection(
+  view: UsageView | null,
+  team: NflTeam,
+  links: UsageLinks = { matchup: null },
+): UsageSection {
   if (!view) return { html: "", faqHtml: "", faq: [] };
   const html =
     `<div class="sct-block sct-us">` +
     header(view) +
     intro() +
+    introCta() +
     environment(view) +
     targetTree(view, team) +
     backfield(view, team) +
-    passMap(view, team) +
+    passMap(view, team, links) +
     table(view, team) +
     legend() +
+    projectionsBridge(view) +
     signals(view) +
-    closing(view) +
+    tradeBlock(view) +
+    conversion(view, team, links) +
     `</div>`;
 
   // In the FAQPage too (mak approved 2026-09-30). The link sits outside

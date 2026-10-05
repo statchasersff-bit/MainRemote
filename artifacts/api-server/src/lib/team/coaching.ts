@@ -24,6 +24,8 @@ import { readDataJson } from "./read-json";
 export type ChangeDir = "up" | "down" | "flat";
 
 export interface TendencyRow {
+  /** The builder's metric key; drives the identity chips' short names. */
+  key?: string;
   label: string;
   sub?: string;
   /** How the row is counted, opened from a note beside the label. */
@@ -75,6 +77,19 @@ export interface TeamCoaching {
     sameSchemeFamily: boolean;
     explanation: string;
     ledger: string;
+    /**
+     * The ledger as data, for the card's chips. Null (or absent on an older
+     * file) after an in-season change of caller, where the prose ledger stands.
+     */
+    ledgerStats?: {
+      called: number;
+      games: number;
+      priorSeasons: number;
+      /** First season this caller called plays for this club. */
+      firstSeason: number;
+      /** The qualifier a bare count would lose (partial seasons, title vs calling). */
+      note: string | null;
+    } | null;
   };
   introAnswer: string;
   tendencies: {
@@ -82,9 +97,25 @@ export interface TeamCoaching {
     currentLabel: string;
     rows: TendencyRow[];
   };
-  shifts: Array<{ stat: string; unit: string; heading: string; body: string }>;
+  shifts: Array<{
+    /** The tendency row this signal reads; absent on the "holding steady" card. */
+    key?: string;
+    stat: string;
+    unit: string;
+    heading: string;
+    body: string;
+    /** The sample caveat, shown muted under the body. */
+    note?: string | null;
+  }>;
   staff: {
-    oc: { name: string; sub: string; hasCalledPlays: boolean; body: string };
+    oc: {
+      name: string;
+      sub: string;
+      /** The OC is this club's play-caller (the card above profiles him). */
+      isCaller?: boolean;
+      hasCalledPlays: boolean;
+      body: string;
+    };
     dc: { name: string; sub: string; body: string };
     continuity: { stat: string; sub: string; body: string };
   };

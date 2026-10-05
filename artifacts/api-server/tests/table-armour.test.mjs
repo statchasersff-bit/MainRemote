@@ -134,6 +134,21 @@ describe("whole table families are lifted, so no rule is left behind", () => {
     );
   });
 
+  test("every rookie-hit-rates.css selector naming a table, list, link, button or input carries the id-weight prefix", () => {
+    // The drawer lives on <body>, outside the tool, so it carries its own root in the prefix.
+    const all = selectors(read("rookie-hit-rates.css"));
+    const loose = all.filter(
+      (s) =>
+        (/\.schr-[a-z-]*table\b|\btable\.schr-|\b(?:ul|a|button|input|th|td)\.schr-|\bbutton\b|\binput\b/.test(s) ||
+          /\.schr-(?:odds|pi|seasons|line-legend)\b/.test(s)) &&
+        /\b(?:table|ul|a|button|input|th|td)\b/.test(s) &&
+        !s.startsWith(":is(.schr, #schr-armour) ") &&
+        !s.startsWith(":is(.schr-drawer-host, #schr-armour) "),
+    );
+    assert.deepEqual(loose, [], "these lose to Divi's rules on an embedded page");
+    assert.ok(all.includes(":is(.schr, #schr-armour) table.schr-table"), "the table frame itself must be armed");
+  });
+
   test("the id in the prefix is never an element's id", () => {
     // Its only job is weight. A real element carrying it would be styled as a
     // tool root by every table rule in team.css.
@@ -143,7 +158,7 @@ describe("whole table families are lifted, so no rule is left behind", () => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(p);
-        else if (/\.ts$/.test(entry.name) && /sct-table-armour|scsos-armour/.test(readFileSync(p, "utf8"))) hits.push(p);
+        else if (/\.ts$/.test(entry.name) && /sct-table-armour|scsos-armour|schr-armour/.test(readFileSync(p, "utf8"))) hits.push(p);
       }
     };
     walk(src);

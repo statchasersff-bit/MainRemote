@@ -739,7 +739,7 @@ describe("the fixture page", () => {
     assert.equal(hero.querySelectorAll(".sct-pv-side").length, 2, "two sides");
     assert.equal(hero.querySelectorAll(".sct-sbh-score, table").length, 0, "no score, no table");
     const chips = [...hero.querySelectorAll(".sct-pv-chip")].map((n) => n.textContent);
-    assert.match(chips[0] ?? "", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}, \d{4}( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/, `kickoff chip: ${chips[0]}`);
+    assert.match(chips[0] ?? "", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}( · (\d{1,2}:\d{2} [AP]M ET|Time TBD))?$/, `kickoff chip: ${chips[0]}`);
 
     // The strip's implied totals are (total -/+ spread) / 2 of what it prints.
     const cells = [...hero.querySelectorAll(".sct-pv-bet")].map((c) => ({

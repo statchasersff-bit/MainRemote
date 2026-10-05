@@ -8,8 +8,8 @@
  * - roles from the team hub's Usage Report (usage_<season>.json), the same
  *   figures the hub prints;
  * - score-state pass rates from the Coaching Profile (coaching_<season>.json);
- * - positional points allowed from the FPA table, half-PPR, which is the
- *   format the board is called for;
+ * - positional points allowed from the FPA table, PPR, which is the format
+ *   the board is called for (mak, 2026-10-05);
  * - lines and forecasts from game-lines.ts.
  *
  * Every sentence is a template filled from those numbers (mak, 2026-10-03: no
@@ -57,9 +57,30 @@ export interface BoardRow {
   pos: Pos | "DST";
   slug: string | null;
   verdict: Verdict;
+  /** The full sentence: the FAQ and the no-usage / D/ST cards still read it. */
   reason: string;
   rostered: number;
   leverage: Leverage | null;
+  /*
+   * The card's structured lines (mak, 2026-10-05: "stop writing the card as a
+   * paragraph"). Null where the row has no usage to read them from.
+   */
+  /** "NYJ": the player's team, for the "NYJ · WR" micro-context. */
+  team: string;
+  /** Unavailable this week (Out, IR, Doubtful...): shown as OUT, not SIT. */
+  out: boolean;
+  injury: { status: string; part: string | null } | null;
+  ppg: number | null;
+  /** The board's matchup- and script-adjusted figure, printed as PROJ. */
+  proj: number | null;
+  /** The one usage number that matters at the position. */
+  metric: string | null;
+  /** The defense's code, for "NE MATCHUP". */
+  matchupTeam: string | null;
+  /** "15th-most WR fantasy points allowed". */
+  matchupLine: string | null;
+  /** The "Why this call" bullets. */
+  why: string[];
 }
 
 export interface LeverageRow {
@@ -70,6 +91,34 @@ export interface LeverageRow {
   role: string;
   defense: string;
   chip: Leverage;
+  /** The board's call, to spot a role/matchup conflict. */
+  verdict: Verdict;
+  ppg: number;
+  /** The role column as number + label pairs ("28.4%" / "targets"). */
+  roleStats: Array<{ v: string; k: string }>;
+  /** What the defense allows at his position, and where that ranks. */
+  defFpa: number | null;
+  defRank: number | null;
+}
+
+/** The two or three conclusions above the leverage table. */
+export interface LeverageRead {
+  up: number;
+  neutral: number;
+  down: number;
+  edge: LeverageRow | null;
+  fade: LeverageRow | null;
+  conflict: { row: LeverageRow; text: string } | null;
+}
+
+/** One defense-vs-position headline above the points-allowed table. */
+export interface FpaHeadline {
+  def: string;
+  pos: Pos;
+  fpa: number;
+  rank: number;
+  /** The offense player it sets up (softest only). */
+  who: string | null;
 }
 
 export interface InjuryRow {
@@ -81,6 +130,20 @@ export interface InjuryRow {
   fallout: string;
   /** Sleeper roster %, for picking the game's top injury question. */
   rostered: number;
+  /*
+   * For the Injury Impact strip: an absence that hands work to someone
+   * ("out", with who gets it), a designation to watch, or nothing for lineups.
+   */
+  impact: "out" | "watch" | "none";
+  beneficiary: { name: string; pos: string } | null;
+  ppg: number | null;
+}
+
+/** The strip above the injury cards (mak, 2026-10-05). */
+export interface InjuryImpact {
+  beneficiary: { name: string; team: string; pos: string; because: string } | null;
+  watch: Array<{ name: string; team: string }>;
+  none: Array<{ name: string; team: string }>;
 }
 
 export interface Preview {
@@ -94,10 +157,13 @@ export interface Preview {
   call: { thesis: string; paragraph: string; lean: number; leanText: string } | null;
   board: Record<SideKey, BoardRow[]>;
   leverage: LeverageRow[];
+  leverageRead: LeverageRead | null;
   snapshotNote: string | null;
   fpaNote: string | null;
+  fpaHeadlines: { soft: FpaHeadline; tough: FpaHeadline } | null;
   injuries: Record<SideKey, InjuryRow[]>;
   h2h: H2hStrip | null;
+  injuryImpact: InjuryImpact | null;
   usageThrough: number | null;
   /** When the freshest input was read: the byline's "Updated". */
   updatedMs: number;
@@ -110,6 +176,8 @@ export interface H2hStrip {
   avgPoints: number | null;
   avgVsTotal: string | null;
   third: { value: string; label: string } | null;
+  /** "the Patriots have won 8 of the last 10" and the average margin. */
+  trend: { text: string; margin: string } | null;
   lede: string;
   returnMeeting: Meeting | null;
 }
@@ -128,6 +196,7 @@ export function ordinal(n: number): string {
 }
 
 const one = (n: number): string => n.toFixed(1);
+const code = (t: NflTeam): string => t.code.toUpperCase();
 const pct = (n: number | null | undefined): string => (n == null ? "-" : `${Math.round(n)}%`);
 const trimZero = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 /** 28.25 stays 28.25: the strip, the call and the FAQ print the same figure. */
@@ -157,10 +226,10 @@ function chipFor(rank: number | null): Leverage {
   return "neutral";
 }
 
-/** Half-PPR points a game, from the usage file's PPR figure. */
-function halfPpg(p: UsagePlayer): number | null {
+/** PPR points a game, the usage file's own figure. */
+function pprPpg(p: UsagePlayer): number | null {
   if (p.fpPerGame === null || !p.games) return null;
-  return p.fpPerGame - (0.5 * p.receptions) / p.games;
+  return p.fpPerGame;
 }
 
 const OUT = new Set(["Out", "IR", "PUP", "Doubtful", "Sus", "Suspended", "NFI", "COV"]);
@@ -177,7 +246,7 @@ function chipCode(status: string): string {
   return status.toUpperCase();
 }
 
-/** Verdict cut-offs: league position rank (by adjusted half-PPR ppg). */
+/** Verdict cut-offs: league position rank (by adjusted PPR ppg). */
 const CUTS: Record<Pos, [number, number, number]> = {
   // [MUST START <=, START <=, FLEX <=]; QB FLEX is the Superflex band.
   QB: [4, 12, 18],
@@ -198,7 +267,7 @@ function findRow(stats: TeamStats | null, key: string): StatRow | null {
 /* ----------------------------------------------------------------- league */
 
 interface League {
-  /** Raw half-PPR ppg per position, best first - the cut-off ladder. */
+  /** Raw PPR ppg per position, best first - the cut-off ladder. */
   ladder: Record<Pos, number[]>;
   rankOf(p: UsagePlayer): number | null;
 }
@@ -208,7 +277,7 @@ function buildLeague(doc: UsageDoc): League {
   const minGames = Math.min(2, Math.max(1, doc.throughWeek - 1));
   for (const team of Object.values(doc.teams)) {
     for (const p of team.players) {
-      const ppg = halfPpg(p);
+      const ppg = pprPpg(p);
       if (ppg === null || p.games < minGames) continue;
       pools[p.pos].push({ id: p.id, ppg });
     }
@@ -310,12 +379,15 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     chip: Leverage;
     injury: RosterPlayer | null;
     rostered: number;
+    matchup: number;
+    script: number;
+    adjusted: number;
   }
   const facts: Fact[] = [];
   for (const side of [away, home]) {
     const opp = otherOf(side.key);
     for (const p of side.usage?.players ?? []) {
-      const ppg = halfPpg(p);
+      const ppg = pprPpg(p);
       if (ppg === null || !league) continue;
       const rostered = owned(p.sleeperId);
       if (rostered < 5) continue;
@@ -344,21 +416,36 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
         chip,
         injury,
         rostered,
+        matchup,
+        script,
+        adjusted,
       });
     }
   }
 
   const board: Record<SideKey, BoardRow[]> = { away: [], home: [] };
   for (const f of facts) {
+    const side = sideOf(f.side);
+    const opp = otherOf(f.side);
+    const status = f.injury?.injuryStatus ?? null;
     board[f.side].push({
       side: f.side,
       name: f.p.name,
       pos: f.p.pos,
       slug: f.p.slug,
       verdict: verdictFor(f),
-      reason: reasonFor(f, sideOf(f.side), otherOf(f.side)),
+      reason: reasonFor(f, side, opp),
       rostered: f.rostered,
       leverage: f.chip,
+      team: code(side.team),
+      out: isOut(status),
+      injury: status ? { status, part: f.injury?.injuryBodyPart ?? null } : null,
+      ppg: f.ppg,
+      proj: isOut(status) ? null : f.adjusted,
+      metric: metricFor(f.p),
+      matchupTeam: code(opp.team),
+      matchupLine: f.oppRank === null ? null : `${allowPhrase(f.oppRank)} ${f.p.pos} fantasy points allowed`,
+      why: isOut(status) ? [] : whyFor(f, side, opp),
     });
   }
   // Rostered players with no 2026 usage yet: the board still has to cover them.
@@ -373,6 +460,15 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
         pos: r.position,
         slug: null,
         verdict: "SIT",
+        team: code(side.team),
+        out: isOut(status),
+        injury: status ? { status, part: r.injuryBodyPart ?? null } : null,
+        ppg: null,
+        proj: null,
+        metric: null,
+        matchupTeam: null,
+        matchupLine: null,
+        why: [],
         reason: isOut(status)
           ? `Listed ${status}${r.injuryBodyPart ? ` (${r.injuryBodyPart.toLowerCase()})` : ""} and yet to log a 2026 snap; ${Math.round(owned(r.id))}% rostered is a stash, not a start.`
           : `No 2026 usage on record yet, so there is no role to start him on; ${Math.round(owned(r.id))}% rostered.`,
@@ -400,12 +496,23 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
         reason,
         rostered: dst,
         leverage: null,
+        team: code(side.team),
+        out: false,
+        injury: null,
+        ppg: null,
+        proj: null,
+        metric: `${exact(oppImplied)}-point implied total against`,
+        matchupTeam: code(otherOf(side.key).team),
+        matchupLine: null,
+        why: [reason],
       });
     }
   }
+  // Unavailable players close each column, after the role/matchup sits.
   const order: Record<Verdict, number> = { "MUST START": 0, START: 1, FLEX: 2, SIT: 3 };
+  const rank = (r: BoardRow) => (r.out ? 4 : order[r.verdict]);
   for (const k of ["away", "home"] as SideKey[]) {
-    board[k].sort((x, y) => order[x.verdict] - order[y.verdict] || y.rostered - x.rostered);
+    board[k].sort((x, y) => rank(x) - rank(y) || (y.proj ?? -1) - (x.proj ?? -1) || y.rostered - x.rostered);
   }
 
   /* ---- Matchup Leverage: the 6-8 most relevant players, both teams mixed */
@@ -422,6 +529,11 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       role: roleFact(f.p, sideOf(f.side).usage),
       defense: defenseFact(f, otherOf(f.side).team),
       chip: f.chip,
+      verdict: verdictFor(f),
+      ppg: f.ppg,
+      roleStats: roleStats(f.p),
+      defFpa: f.oppFpa,
+      defRank: f.oppRank,
     }));
 
   const injuries = {
@@ -439,10 +551,13 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     call: buildCall(away, home, line, facts, inputs.forecast, slate.length, meeting),
     board,
     leverage: leverage.length >= 3 ? leverage : [],
+    leverageRead: leverage.length >= 3 ? leverageRead(leverage) : null,
     snapshotNote: snapshotNote(away, home),
-    fpaNote: fpaNote(away, home, facts),
+    fpaNote: fpaNote(away, home),
+    fpaHeadlines: fpaHeadlines(away, home, facts),
     injuries,
     h2h: buildH2h(data, meeting, line),
+    injuryImpact: injuryImpact(away, home, injuries),
     usageThrough: usage?.throughWeek ?? null,
     updatedMs: Math.max(inputs.lines?.fetchedAt ?? 0, usage ? Date.parse(usage.builtAt) || 0 : 0),
   };
@@ -458,20 +573,49 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     return "SIT";
   }
 
+  /** The "Why this call" bullets: verdict logic, then usage, production, matchup, adjustment, injury. */
+  function whyFor(f: Fact, side: PreviewSide, opp: PreviewSide): string[] {
+    const p = f.p;
+    const verdict = verdictFor(f);
+    const status = f.injury?.injuryStatus ?? null;
+    const note =
+      f.chip === "proof"
+        ? `A top-3 ${p.pos} pace makes him matchup-proof.`
+        : f.chip === "down" && verdict !== "SIT"
+          ? `Role beats matchup at ${p.pos} at this volume: keep him in, with a lower ceiling.`
+          : f.chip === "up" && verdict === "SIT"
+            ? `The matchup is soft, but there is too little volume to chase. Bench him unless you are desperate at ${p.pos}.`
+            : f.chip === "up"
+              ? `This is a soft matchup${side.implied !== null ? `, with a ${exact(side.implied)} implied total behind him` : ""}.`
+              : null;
+    const role = roleFact(p, side.usage);
+    return [
+      note,
+      role ? `Usage: ${role}.` : null,
+      `Production: ${one(f.ppg)} PPR points a game over ${p.games} ${p.games === 1 ? "game" : "games"}` +
+        (f.posRank !== null ? `, ${p.pos}${f.posRank} in the league.` : "."),
+      `Matchup: ${defenseFact(f, opp.team)}.`,
+      `Adjustment: defense ${nudge(f.matchup)}, team total ${nudge(f.script)}` +
+        (side.implied !== null ? ` (${exact(side.implied)} implied)` : " (no line yet)") +
+        `, for ${one(f.adjusted)} projected.`,
+      status ? `Injury: listed ${status}${f.injury?.injuryBodyPart ? ` (${f.injury.injuryBodyPart.toLowerCase()})` : ""}.` : null,
+    ].filter((x): x is string => !!x);
+  }
+
   function reasonFor(f: Fact, side: PreviewSide, opp: PreviewSide): string {
     const p = f.p;
     const status = f.injury?.injuryStatus ?? null;
     const verdict = verdictFor(f);
     if (isOut(status)) {
-      return `Listed ${status}${f.injury?.injuryBodyPart ? ` (${f.injury.injuryBodyPart.toLowerCase()})` : ""}, so his ${one(f.ppg)} half-PPR points a game come off your lineup this week. See the Injury Watch below for who absorbs the work.`;
+      return `Listed ${status}${f.injury?.injuryBodyPart ? ` (${f.injury.injuryBodyPart.toLowerCase()})` : ""}, so his ${one(f.ppg)} PPR points a game come off your lineup this week. See the Injury Watch below for who absorbs the work.`;
     }
     const role = (() => {
       if (p.pos === "QB") {
         const rush = p.rushYards && p.games ? p.rushYards / p.games : 0;
-        return `${one(f.ppg)} half-PPR points a game${rush >= 20 ? `, with ${Math.round(rush)} rushing yards a game` : ""}`;
+        return `${one(f.ppg)} PPR points a game${rush >= 20 ? `, with ${Math.round(rush)} rushing yards a game` : ""}`;
       }
-      if (p.pos === "RB") return `${one(f.ppg)} half-PPR points a game on a ${pct(p.snapShare)} snap share`;
-      return `${one(f.ppg)} half-PPR points a game on a ${p.targetShare === null ? "-" : `${one(p.targetShare)}%`} target share`;
+      if (p.pos === "RB") return `${one(f.ppg)} PPR points a game on a ${pct(p.snapShare)} snap share`;
+      return `${one(f.ppg)} PPR points a game on a ${p.targetShare === null ? "-" : `${one(p.targetShare)}%`} target share`;
     })();
     const defense =
       f.oppRank === null
@@ -495,11 +639,76 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   }
 }
 
+/** The one usage number the card leads with, after PPG. */
+function metricFor(p: UsagePlayer): string | null {
+  if (p.pos === "QB") {
+    const rush = p.rushYards && p.games ? p.rushYards / p.games : 0;
+    return rush >= 20 ? `${Math.round(rush)} rush yds/g` : null;
+  }
+  if (p.pos === "RB") return p.snapShare === null ? null : `${pct(p.snapShare)} snap share`;
+  return p.targetShare === null ? null : `${one(p.targetShare)}% target share`;
+}
+
+/** "+4%" / "-2%" / "even" for a multiplier. */
+function nudge(m: number): string {
+  const d = Math.round((m - 1) * 100);
+  return d === 0 ? "even" : d > 0 ? `+${d}%` : `${d}%`;
+}
+
 function capital(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /* --------------------------------------------------------------- leverage */
+
+/** The role column as number + label pairs, numbers first (mak, 2026-10-05). */
+function roleStats(p: UsagePlayer): Array<{ v: string; k: string }> {
+  const out: Array<{ v: string; k: string } | null> = [];
+  if (p.pos === "QB") {
+    const rush = p.rushYards && p.games ? Math.round(p.rushYards / p.games) : null;
+    out.push(rush !== null ? { v: String(rush), k: "rush yds/g" } : null);
+    out.push(p.rzTouches ? { v: String(p.rzTouches), k: p.rzTouches === 1 ? "RZ opp" : "RZ opps" } : null);
+  } else if (p.pos === "RB") {
+    out.push(p.snapShare !== null ? { v: pct(p.snapShare), k: "snaps" } : null);
+    out.push(p.touchShare != null ? { v: `${Math.round(p.touchShare)}%`, k: "RB touches" } : { v: String(p.carries), k: "carries" });
+    out.push({ v: String(p.rzTouches), k: p.rzTouches === 1 ? "RZ touch" : "RZ touches" });
+  } else {
+    out.push(p.targetShare !== null ? { v: `${one(p.targetShare)}%`, k: "targets" } : null);
+    if (p.pos === "WR") out.push(p.adot !== null ? { v: one(p.adot), k: "aDOT" } : null);
+    if (p.pos === "TE") out.push(p.snapShare !== null ? { v: pct(p.snapShare), k: "snaps" } : null);
+  }
+  return out.filter((x): x is { v: string; k: string } => !!x);
+}
+
+/**
+ * The read above the table: the counts, the best edge (softest spot), the
+ * biggest fade (stingiest spot) and one place role and matchup disagree.
+ */
+function leverageRead(rows: LeverageRow[]): LeverageRead {
+  const up = rows.filter((r) => r.chip === "up");
+  const down = rows.filter((r) => r.chip === "down");
+  const conflictRow =
+    [...down.filter((r) => r.verdict !== "SIT")].sort((x, y) => y.ppg - x.ppg)[0] ??
+    [...up.filter((r) => r.verdict === "SIT")].sort((x, y) => y.ppg - x.ppg)[0] ??
+    null;
+  const conflict = conflictRow
+    ? {
+        row: conflictRow,
+        text: conflictRow.chip === "down" ? "Role beats a tough matchup" : "Soft matchup, thin role",
+      }
+    : null;
+  const edge = [...up].sort((x, y) => (x.defRank ?? 99) - (y.defRank ?? 99) || y.ppg - x.ppg)[0] ?? null;
+  const fades = [...down].sort((x, y) => (y.defRank ?? 0) - (x.defRank ?? 0) || y.ppg - x.ppg);
+  const fade = fades.find((r) => r !== conflictRow) ?? fades[0] ?? null;
+  return {
+    up: up.length,
+    neutral: rows.length - up.length - down.length,
+    down: down.length,
+    edge,
+    fade,
+    conflict,
+  };
+}
 
 /** 1-2 usage facts, worded and rounded the way the Usage Report prints them. */
 function roleFact(p: UsagePlayer, team: UsageTeam | null): string {
@@ -507,7 +716,7 @@ function roleFact(p: UsagePlayer, team: UsageTeam | null): string {
     const rush = p.rushYards && p.games ? Math.round(p.rushYards / p.games) : null;
     const parts = [
       rush !== null ? `${rush} rush yds/g` : null,
-      p.rzTouches ? `${p.rzTouches} red-zone carries + targets` : null,
+      p.rzTouches ? `${p.rzTouches} red-zone ${p.rzTouches === 1 ? "carry or target" : "carries + targets"}` : null,
       team?.env.passRate?.value != null ? `team pass rate ${team.env.passRate.value}%` : null,
     ].filter(Boolean);
     return parts.slice(0, 2).join(" · ");
@@ -671,66 +880,63 @@ function buildCall(
 
 /* ---------------------------------------------------------------- notes */
 
+const POS_GROUP: Record<Pos, string> = { QB: "quarterback", RB: "backfield", WR: "receivers", TE: "tight ends" };
+
+/**
+ * The StatChasers matchup read under the team profile (mak, 2026-10-05: shorter
+ * and directional). Which offense is weaker, then where the fantasy leverage
+ * tilts: the softest defense-vs-position spot on the page.
+ */
 function snapshotNote(away: PreviewSide, home: PreviewSide): string | null {
-  const r = (s: PreviewSide, key: string) => findRow(s.stats, key);
-  const ao = r(away, "off-points");
-  const ho = r(home, "off-points");
-  const ad = r(away, "def-points");
-  const hd = r(home, "def-points");
-  if (!ao?.rank || !ho?.rank || !ad?.rank || !hd?.rank) return null;
-  // The mismatch that matters most: the bigger gap between an offense's rank
-  // and the defense it faces.
-  const gapA = hd.rank - ao.rank; // > 0: away offense better than home defense
-  const gapH = ad.rank - ho.rank;
-  const [off, offRow, def, defRow, other, otherRow] =
-    Math.abs(gapA) >= Math.abs(gapH)
-      ? [away, ao, home, hd, home, ho]
-      : [home, ho, away, ad, away, ao];
-  const edge =
-    offRow.rank! >= 17 && defRow.rank! >= 17
-      ? `two below-average units, so something gives`
-      : offRow.rank! <= 16 && defRow.rank! <= 16
-        ? `strength against strength`
-        : offRow.rank! < defRow.rank!
-          ? `the offense has the edge on paper`
-          : `the defense has the edge on paper`;
-  const tail =
-    otherRow.rank! >= 23
-      ? ` The ${other.team.nickname}' own offense (${ordinal(otherRow.rank!)} in scoring, ${otherRow.value} a game) keeps handing the ball back, so they cannot win a trade of possessions.`
-      : otherRow.rank! <= 10
-        ? ` The ${other.team.nickname} can answer: their offense is ${ordinal(otherRow.rank!)} in scoring at ${otherRow.value} a game.`
-        : ` The ${other.team.nickname}' offense sits ${ordinal(otherRow.rank!)} in scoring (${otherRow.value} a game).`;
-  return (
-    `The shape of the game in one line: the ${off.team.nickname} offense (${ordinal(offRow.rank!)} in scoring, ${offRow.value} a game) against a ${def.team.nickname} defense ${ordinal(defRow.rank!)} in points allowed (${defRow.value}), and ${edge}.` +
-    tail
-  );
+  const ao = findRow(away.stats, "off-points");
+  const ho = findRow(home.stats, "off-points");
+  const parts: string[] = [];
+  if (ao?.rank && ho?.rank && ao.rank !== ho.rank) {
+    const [weak, row] = ao.rank > ho.rank ? [away, ao] : [home, ho];
+    parts.push(`The ${weak.team.nickname} bring the weaker offense (${ordinal(row.rank!)} in scoring, ${row.value} a game).`);
+  }
+  if (away.fpa && home.fpa) {
+    const spots = [away, home].flatMap((def) =>
+      (["QB", "RB", "WR", "TE"] as Pos[]).map((pos) => ({ def, off: def === away ? home : away, pos, ...def.fpa!.byPos[pos] })),
+    );
+    const soft = spots.sort((x, y) => x.rank - y.rank)[0]!;
+    const other = (soft.def === away ? home : away).fpa!.byPos[soft.pos];
+    if (soft.rank <= 10) {
+      parts.push(
+        `The ${soft.def.team.nickname}' defense gives up the ${allowPhrase(soft.rank)} ${soft.pos} points` +
+          (other.rank > soft.rank ? `, against the ${(soft.def === away ? home : away).team.nickname}' ${allowPhrase(other.rank)}` : "") +
+          `, which tilts the best fantasy leverage toward the ${soft.off.team.nickname}' ${POS_GROUP[soft.pos]}.`,
+      );
+    } else {
+      parts.push(`Neither defense is soft at any position, so lineups here lean on role more than matchup.`);
+    }
+  }
+  return parts.length ? parts.join(" ") : null;
 }
 
-function fpaNote(
+function fpaNote(away: PreviewSide, home: PreviewSide): string | null {
+  if (!away.fpa || !home.fpa) return null;
+  return `1st = most fantasy points allowed, so a lower rank (and a bigger number) means a softer defense.`;
+}
+
+/** The softest and the toughest defense-vs-position spot, for the headline cells. */
+function fpaHeadlines(
   away: PreviewSide,
   home: PreviewSide,
-  facts: Array<{ side: SideKey; p: UsagePlayer; ppg: number; oppRank: number | null }>,
-): string | null {
+  facts: Array<{ side: SideKey; p: UsagePlayer; ppg: number }>,
+): { soft: FpaHeadline; tough: FpaHeadline } | null {
   if (!away.fpa || !home.fpa) return null;
-  const leaks: string[] = [];
-  for (const def of [away, home]) {
-    const offense = def === away ? home : away;
-    const soft = (["QB", "RB", "WR", "TE"] as Pos[])
-      .map((pos) => ({ pos, ...def.fpa!.byPos[pos] }))
-      .filter((x) => x.rank <= 10)
-      .sort((x, y) => x.rank - y.rank)[0];
-    if (!soft) continue;
-    const who = facts
-      .filter((f) => f.side === offense.key && f.p.pos === soft.pos)
-      .sort((x, y) => y.ppg - x.ppg)[0];
-    leaks.push(
-      `the ${def.team.nickname} allow the ${allowPhrase(soft.rank)} ${soft.pos} points (${one(soft.fpa)} a game)${who ? `, which sets up ${who.p.name}` : ""}`,
-    );
-  }
-  const head = leaks.length
-    ? `Headline leaks: ${leaks.join("; ")}.`
-    : `Neither defense ranks in the 10 softest at any position, so no spot here is a points-allowed upgrade.`;
-  return `How to read it: 1st = most fantasy points allowed, so a lower rank (and a bigger number) means a softer defense. ${head}`;
+  const spots = [away, home].flatMap((def) =>
+    (["QB", "RB", "WR", "TE"] as Pos[]).map((pos) => ({ def, off: def === away ? home : away, pos, ...def.fpa!.byPos[pos] })),
+  );
+  const soft = [...spots].sort((x, y) => x.rank - y.rank)[0]!;
+  const tough = [...spots].sort((x, y) => y.rank - x.rank)[0]!;
+  const who =
+    facts.filter((f) => f.side === soft.off.key && f.p.pos === soft.pos).sort((x, y) => y.ppg - x.ppg)[0]?.p.name ?? null;
+  return {
+    soft: { def: code(soft.def.team), pos: soft.pos, fpa: soft.fpa, rank: soft.rank, who },
+    tough: { def: code(tough.def.team), pos: tough.pos, fpa: tough.fpa, rank: tough.rank, who: null },
+  };
 }
 
 /* ---------------------------------------------------------------- injuries */
@@ -766,6 +972,8 @@ function injuryRows(
         ? ` Game-time decision: inactives post 90 minutes before the ${kickoff ?? "kickoff"}${kickoff ? " kickoff" : ""}.`
         : "";
     let fallout: string;
+    let impact: InjuryRow["impact"] = status === "Questionable" ? "watch" : out ? "out" : "watch";
+    let beneficiary: InjuryRow["beneficiary"] = null;
     const mates = (pos: Pos[]) =>
       players
         .filter((p) => p.id !== u?.id && pos.includes(p.pos) && healthy(p) && p.targetShare !== null)
@@ -773,8 +981,10 @@ function injuryRows(
     const minor =
       !!u && owned(r.id) < 5 && (u.targetShare ?? 0) < 8 && (u.snapShare ?? 0) < 25 && (u.pos !== "RB" || (u.snapShare ?? 0) < 15);
     if (minor && u) {
+      impact = "none";
       fallout = `Depth piece (${pct(u.snapShare)} of snaps, ${u.targetShare === null ? "no" : `${one(u.targetShare)}%`} target share); no lineup impact either way.`;
     } else if (!u || !u.games) {
+      impact = "none";
       fallout = `Has not played in 2026, so today's ${side.team.nickname} roles already account for his absence.`;
     } else if (u.pos === "WR" || u.pos === "TE") {
       const next = mates(["WR", "TE"]).slice(0, 2);
@@ -782,6 +992,7 @@ function injuryRows(
       const flow = next.length
         ? `${next.map((p) => `${p.name} (${one(p.targetShare!)}%)`).join(" and ")} ${next.length > 1 ? "are" : "is"} next in line`
         : "nobody on the roster has a clear claim to it";
+      if (out && next[0]) beneficiary = { name: next[0].name, pos: next[0].pos };
       fallout = out
         ? `His ${share} is open; ${flow}.`
         : `If he sits, his ${share} flows first to ${next[0] ? `${next[0].name} (${one(next[0].targetShare!)}%)` : "the depth chart"}.`;
@@ -789,16 +1000,20 @@ function injuryRows(
       const rbs = players.filter((p) => p.pos === "RB" && p.games > 0).sort((x, y) => (y.snapShare ?? 0) - (x.snapShare ?? 0));
       const lead = rbs[0];
       if (lead && lead.id !== u.id) {
+        // A backup: out costs nothing this week; questionable is still worth a look.
+        if (out) impact = "none";
         fallout = `Handcuff alert for ${lead.name} managers: ${u.name} is a backup (${pct(u.snapShare)} of snaps), so the ${lead.name} handcuff chain is thinner until he is back.`;
       } else {
         const next = rbs.find((p) => p.id !== u.id && healthy(p));
+        if (out && next) beneficiary = { name: next.name, pos: next.pos };
         fallout = next
-          ? `${out ? "With him out" : "If he sits"}, ${next.name} (${pct(next.snapShare)} of snaps so far) leads the backfield; his ${one(halfPpg(u) ?? 0)} half-PPR points a game need replacing.`
+          ? `${out ? "With him out" : "If he sits"}, ${next.name} (${pct(next.snapShare)} of snaps so far) leads the backfield; his ${one(pprPpg(u) ?? 0)} PPR points a game need replacing.`
           : `${out ? "With him out" : "If he sits"}, the ${side.team.nickname} have no back with a real 2026 role behind him.`;
       }
     } else {
       const qbs = players.filter((p) => p.pos === "QB" && p.games > 0).sort((x, y) => y.dropbacks - x.dropbacks);
       const starter = qbs[0];
+      if (starter && starter.id !== u.id) impact = "none";
       fallout =
         starter && starter.id !== u.id
           ? `No fantasy fallout while ${starter.name} starts.`
@@ -811,6 +1026,9 @@ function injuryRows(
       pos: r.position,
       fallout: (fallout + practice + timing).trim(),
       rostered: owned(r.id),
+      impact,
+      beneficiary,
+      ppg: u ? pprPpg(u) : null,
     };
   });
 
@@ -828,10 +1046,39 @@ function injuryRows(
         `${rows.length ? "Apart from the depth and long-term absences above, no" : "No"} ${side.team.nickname} player rostered in 5%+ of leagues ` +
         `carries a designation this week, so every role in the Usage Report is available.`,
       rostered: 0,
+      impact: "none",
+      beneficiary: null,
+      ppg: null,
     });
   }
   void now;
   return rows;
+}
+
+/**
+ * The Injury Impact strip: who gains most from an absence (the absence worth
+ * the most points a game), who to watch (designations that still decide a
+ * lineup), and the listings that change nothing.
+ */
+function injuryImpact(
+  away: PreviewSide,
+  home: PreviewSide,
+  injuries: Record<SideKey, InjuryRow[]>,
+): InjuryImpact | null {
+  const rows = (["away", "home"] as SideKey[]).flatMap((k) =>
+    injuries[k].filter((r) => r.chip !== "OK").map((r) => ({ r, team: code((k === "away" ? away : home).team) })),
+  );
+  if (!rows.length) return null;
+  const gain = rows
+    .filter((x) => x.r.impact === "out" && x.r.beneficiary)
+    .sort((x, y) => (y.r.ppg ?? 0) - (x.r.ppg ?? 0))[0];
+  return {
+    beneficiary: gain
+      ? { name: gain.r.beneficiary!.name, team: gain.team, pos: gain.r.beneficiary!.pos, because: `${gain.r.name} ${gain.r.status === "IR" ? "on IR" : "out"}` }
+      : null,
+    watch: rows.filter((x) => x.r.impact === "watch").map((x) => ({ name: x.r.name, team: x.team })),
+    none: rows.filter((x) => x.r.impact === "none").map((x) => ({ name: x.r.name, team: x.team })),
+  };
 }
 
 /* --------------------------------------------------------------- head to head */
@@ -875,7 +1122,7 @@ function buildH2h(data: MatchupData, meeting: Meeting, line: GameLine | null): H
   const atHome = played.filter((m) => m.home.abbreviation === home.abbreviation && !m.neutralSite);
   const homeWins = atHome.filter((m) => m.winner?.abbreviation === home.abbreviation).length;
   const third = atHome.length
-    ? { value: `${homeWins}-${atHome.length - homeWins}`, label: `${home.nickname} at home since ${since}` }
+    ? { value: `${homeWins}-${atHome.length - homeWins}`, label: `${home.nickname} at home · since ${since}` }
     : null;
 
   const returnMeeting =
@@ -898,5 +1145,19 @@ function buildH2h(data: MatchupData, meeting: Meeting, line: GameLine | null): H
       ? ` The return meeting is ${returnMeeting.weekLabel}${returnMeeting.venue ? ` at ${returnMeeting.venue}` : ` in ${returnMeeting.home.city}`}.`
       : "");
 
-  return { since, games: played, record, avgPoints: avg, avgVsTotal, third, lede, returnMeeting };
+  // Series trend: the leader's share and the average margin, from the
+  // leader's side (or either way when the series is level).
+  const margins = played.map((m) => {
+    const diff = m.score!.home - m.score!.away;
+    return leader ? (m.home.abbreviation === leader.abbreviation ? diff : -diff) : Math.abs(diff);
+  });
+  const avgMargin = margins.reduce((s, x) => s + x, 0) / margins.length;
+  const trend = leader
+    ? {
+        text: `The ${leader.nickname} have won ${Math.max(hw, aw)} of the last ${played.length} meetings.`,
+        margin: avgMargin >= 0 ? `Average margin: ${leader.nickname} by ${one(avgMargin)}.` : `Average margin: ${one(-avgMargin)} the other way.`,
+      }
+    : { text: `The series is level at ${hw}-${aw}${ties ? `-${ties}` : ""} over the last ${played.length} meetings.`, margin: `Average margin: ${one(avgMargin)} points.` };
+
+  return { since, games: played, record, avgPoints: avg, avgVsTotal, third, lede, returnMeeting, trend };
 }

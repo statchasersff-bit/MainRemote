@@ -15,6 +15,7 @@ import scheduleRouter from "./routes/schedule";
 import playerStatsRouter from "./routes/player-stats";
 import rbHandcuffsRouter from "./routes/rb-handcuffs";
 import sosRouter from "./routes/sos";
+import rookieHitRatesRouter from "./routes/rookie-hit-rates";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import { refreshIfStale } from "./routes/news";
@@ -134,6 +135,11 @@ app.use(rbHandcuffsRouter);
 // /embed/sos fragment. Mounted alongside the other tools, for the same reason.
 app.use(sosRouter);
 
+// Dynasty rookie hit rates: /rookie-hit-rates, the /embed/rookie-hit-rates
+// fragment and the dataset its bundle recomputes views from. Mounted alongside
+// the other tools, for the same reason.
+app.use(rookieHitRatesRouter);
+
 // Shortcode preview harness (/preview/*). Development only - the router's own
 // first middleware 404s the whole thing outside development.
 app.use(previewRouter);
@@ -238,6 +244,7 @@ app.get(["/", "/index.html"], (req, res) => {
 const HASHED_ASSETS = new Set(
   [
     "news", "team", "player", "fpa", "rankings", "schedule", "player-stats", "rb-handcuffs", "sos",
+    "rookie-hit-rates",
   ].flatMap((name) => [
     `/dist/statchasers-${name}.js`,
     `/${name === "news" ? "styles" : name}.css`,

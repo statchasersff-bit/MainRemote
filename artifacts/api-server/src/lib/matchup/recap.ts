@@ -33,6 +33,23 @@ export const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
 export const PROJECTIONS_URL = "https://statchasers.com/redraft-command/fantasy-football-projections";
 export const TRADE_CALCULATOR_URL = "https://statchasers.com/redraft-command/fantasy-football-trade-calculator";
 export const LEAGUE_ANALYZER_URL = "https://statchasers.com/redraft-command/fantasy-football-league-analyzer";
+export const ROS_RANKINGS_URL = "https://statchasers.com/fantasy-football/rest-of-season-rankings/";
+/*
+ * Tools the upcoming preview links (mak, 2026-10-05) whose final addresses are
+ * not confirmed yet. Null keeps every link to them off the page; set the
+ * address here and the CTAs and the footer pick it up.
+ */
+export const LINEUP_OPTIMIZER_URL: string | null = null;
+export const WAIVER_WIRE_URL: string | null = null;
+/** Confirmed by mak 2026-10-05 (the team hub footer); it also turns on the preview's Dynasty bridge. */
+export const DYNASTY_COMMAND_URL: string | null = "https://statchasers.com/dynasty-command/";
+/* The usage report's bridges (mak, 2026-10-05), addresses not given yet. */
+export const TRADE_FINDER_URL: string | null = null;
+export const BUY_LOW_SELL_HIGH_URL: string | null = null;
+export const DYNASTY_RANKINGS_URL: string | null = null;
+export const DYNASTY_TRADE_CALCULATOR_URL: string | null = null;
+/** The handcuff rankings tool on statchasers.com, the waiver line's stand-in until WAIVER_WIRE_URL is set. */
+export const RB_HANDCUFF_RANKINGS_URL = "https://statchasers.com/rb-handcuff-rankings/";
 
 /**
  * A start/sit comparison page: `<a>-or-<b>`, the slugs in alphabetical order

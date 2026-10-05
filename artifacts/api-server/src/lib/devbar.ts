@@ -63,7 +63,7 @@ export interface DevBarContext {
 type Mount = "page" | "embed" | "shortcode" | "fragment";
 
 interface Tool {
-  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos";
+  key: "news" | "team" | "player" | "fpa" | "rankings" | "schedule" | "stats" | "handcuffs" | "sos" | "rhr";
   label: string;
   /** Shown instead of `label` when the pane is too narrow for the full name. */
   shortLabel: string;
@@ -187,6 +187,17 @@ const TOOLS: Tool[] = [
       path.startsWith("/strength-of-schedule") ||
       path.startsWith("/preview/sos") ||
       path.startsWith("/preview/raw/sos"),
+  },
+  {
+    key: "rhr",
+    label: "Rookie Hit Rates",
+    shortLabel: "Hit Rates",
+    shortcode: "statchasers_rookie_hit_rates",
+    hasEmbedMode: true,
+    active: (path) =>
+      path.startsWith("/rookie-hit-rates") ||
+      path.startsWith("/preview/rookie-hit-rates") ||
+      path.startsWith("/preview/raw/rookie-hit-rates"),
   },
 ];
 
@@ -338,6 +349,13 @@ function href(tool: Tool, mount: Mount, subject: Subject): string {
     if (mount === "fragment") return "/preview/raw/sos";
     if (mount === "shortcode") return "/preview/sos";
     return mount === "embed" ? "/strength-of-schedule?embed=1" : "/strength-of-schedule";
+  }
+
+  if (tool.key === "rhr") {
+    // One page; the tabs and filters are its own controls.
+    if (mount === "fragment") return "/preview/raw/rookie-hit-rates";
+    if (mount === "shortcode") return "/preview/rookie-hit-rates";
+    return mount === "embed" ? "/rookie-hit-rates?embed=1" : "/rookie-hit-rates";
   }
 
   if (mount === "fragment") return "/preview/raw/news";

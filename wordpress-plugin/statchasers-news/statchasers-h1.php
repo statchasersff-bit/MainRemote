@@ -577,6 +577,7 @@ function statchasers_h1_mounts_a_tool(): bool {
 		defined( 'STATCHASERS_ROS_RANKINGS_SHORTCODE' ) ? STATCHASERS_ROS_RANKINGS_SHORTCODE : '',
 		defined( 'STATCHASERS_PLAYER_STATS_SHORTCODE' ) ? STATCHASERS_PLAYER_STATS_SHORTCODE : '',
 		defined( 'STATCHASERS_SOS_SHORTCODE' ) ? STATCHASERS_SOS_SHORTCODE : '',
+		defined( 'STATCHASERS_RHR_SHORTCODE' ) ? STATCHASERS_RHR_SHORTCODE : '',
 	) as $tag ) {
 		if ( '' !== $tag && has_shortcode( $content, $tag ) ) {
 			$answer = true;
@@ -959,6 +960,7 @@ function statchasers_h1_filter( $value ): bool {
 		'statchasers_rankings_shortcode_h1'     => 'rankings',
 		'statchasers_player_stats_shortcode_h1' => 'player_stats',
 		'statchasers_sos_shortcode_h1'          => 'sos',
+		'statchasers_rhr_shortcode_h1'          => 'rhr',
 	);
 
 	return statchasers_h1_should_print( $map[ current_filter() ] ?? '' );
@@ -970,6 +972,7 @@ add_filter( 'statchasers_schedule_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_rankings_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_player_stats_shortcode_h1', 'statchasers_h1_filter' );
 add_filter( 'statchasers_sos_shortcode_h1', 'statchasers_h1_filter' );
+add_filter( 'statchasers_rhr_shortcode_h1', 'statchasers_h1_filter' );
 
 /**
  * A theme switch retires the verdict.

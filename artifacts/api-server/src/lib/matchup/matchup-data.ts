@@ -361,7 +361,8 @@ export async function getMatchupData(
 
   // Allowed to fail on its own, like the prior-season schedules above: an FPA
   // table that will not load costs this page one block, not the page.
-  const fpaTable = await getFpaTable().catch(() => null);
+  // PPR, the format the matchup pages are called for (mak, 2026-10-05).
+  const fpaTable = await getFpaTable({ format: "ppr" }).catch(() => null);
   const fpaFor = (team: NflTeam): FpaRow | null =>
     fpaTable?.rows.find(
       (row) => row.team?.abbreviation === team.abbreviation,

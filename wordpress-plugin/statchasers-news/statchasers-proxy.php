@@ -10,11 +10,11 @@
  *      place by the `http_request_args` filter. No fetch site in the other
  *      files had to change, and a new one is covered automatically.
  *
- *   2. Five widgets fetch from the reader's browser, where a key cannot live:
+ *   2. Six widgets fetch from the reader's browser, where a key cannot live:
  *      the Player Stats table, FPA, RB Handcuffs player cards, the Strength of
- *      Schedule view switch and the news refresh. They call this site instead,
+ *      Schedule view switch, the Rookie Hit Rates dataset and the news refresh. They call this site instead,
  *      at /wp-json/statchasers/v1/p/<path>, and this forwards the request to
- *      the app with the key. Only those five paths are forwarded. The app points
+ *      the app with the key. Only those six paths are forwarded. The app points
  *      the widgets here once SC_BROWSER_PROXY is set on it.
  *
  * Set the key in wp-config.php, the same value as SC_EMBED_KEY on the app:
@@ -44,6 +44,7 @@ const STATCHASERS_PROXY_PATHS = array(
 	'#^embed/fpa$#',
 	'#^embed/player-stats$#',
 	'#^embed/sos$#',
+	'#^embed/rookie-hit-rates/data$#',
 	'#^embed/rb-handcuffs/player/[A-Za-z0-9_-]{1,40}$#',
 	'#^api/news$#',
 );

@@ -74,6 +74,7 @@ import {
 import { upcomingGames, type ScheduleGame } from "./team/schedule";
 import { scheduleItemList } from "./team/schedule-schema";
 import { canonicalizeMatchupPair } from "./matchup/pair";
+import { DYNASTY_COMMAND_URL, REDRAFT_COMMAND_URL } from "./matchup/recap";
 import {
   getFPAUrl,
   getPlayerProfileUrl,
@@ -2560,10 +2561,10 @@ function resourceCards(team: NflTeam): ResourceCard[] {
 }
 
 function renderQuickLinksPanel(team: NflTeam): string {
-  // The whole set, not a truncation. This rail is the only route to the tools
-  // on the News tab, where the "Explore StatChasers" block is hidden as a
-  // duplicate of it, so dropping any row here would leave that tool
-  // unreachable from that tab.
+  // The whole set, not a truncation. Since the page's bottom block became
+  // "Use this research" (products and next pages, mak 2026-10-05), this News
+  // rail is the hub's only route to these tools, so dropping a row here would
+  // leave that tool unreachable.
   const cards = resourceCards(team);
   if (cards.length === 0) return "";
   return (
@@ -3453,18 +3454,49 @@ function renderTails(sections: Section[]): string {
     .join("");
 }
 
-function renderResources(team: NflTeam): string {
-  const cards = resourceCards(team);
-  if (cards.length === 0) return "";
+
+/**
+ * "Use this research": the page's conversion block (mak, 2026-10-05). The two
+ * products first, then the two team pages a reader acts on next - this club's
+ * usage report and its next matchup's preview. The tool directory it replaced
+ * still lives in the Quick Links rail (resourceCards).
+ *
+ * The Usage tab hides it (team.css) and closes on its own, richer block, so
+ * the usage card here never links a reader back to the page they are on.
+ */
+function renderResources(
+  data: TeamPageData,
+  options: TeamRenderOptions,
+  now: number,
+  scopedId?: string,
+): string {
+  const { team } = data;
+  const prefix = options.teamPathPrefix ?? "/team/";
+  const next = data.schedule ? upcomingGames(data.schedule, now, 1)[0] : undefined;
+  const preview = next ? matchupHref(team, next.opponent, options) : null;
+  // The Usage tab closes on its own conversion block ("Put this usage data
+  // to work"), so the shared one is hidden there by team.css and left out of
+  // the scoped /usage/ page.
+  if (scopedId === "usage") return "";
+  const cards: Array<{ href: string | null; title: string; body: string }> = [
+    { href: REDRAFT_COMMAND_URL, title: "Redraft Command", body: "Lineups, trades, waivers and projections for your league." },
+    { href: DYNASTY_COMMAND_URL, title: "Dynasty Command", body: "Dynasty values, trades and league analysis." },
+    { href: sectionPath(prefix, team.slug, "usage"), title: `${team.nickname} Usage Report`, body: "Current role and opportunity." },
+    { href: preview, title: `${team.nickname} Matchup Preview`, body: "This week's fantasy outlook." },
+  ];
   return (
     `<section class="sct-section" id="resources">` +
-    h2("Explore StatChasers") +
+    h2("Use this research") +
     `<ul class="sct-resources">` +
     cards
+      .filter((card) => card.href)
       .map(
         (card) =>
           `<li class="sct-resource">` +
-          `<a class="sct-resource-link" href="${escapeHtml(card.href)}" target="_top">` +
+          // Absolute tool URLs break out of a legacy frame; the hub's own
+          // root-relative pages stay plain anchors, like the tab nav and
+          // matchup links (a sandboxed preview frame blocks _top outright).
+          `<a class="sct-resource-link" href="${escapeHtml(card.href as string)}"${/^https?:/.test(card.href as string) ? ` target="_top"` : ""}>` +
           `<span class="sct-resource-title">${escapeHtml(card.title)}</span>` +
           `<span class="sct-resource-body">${escapeHtml(card.body)}</span>` +
           `<span class="sct-resource-cta">Open ${ARROW}</span>` +
@@ -3519,7 +3551,12 @@ export function renderTeamPage(
     data.state.season,
     data.roster?.players ?? null,
   );
-  const usage = renderUsageSection(usageView, team);
+  // The report's matchup handoffs point at the next game's page.
+  const nextGame = data.schedule ? upcomingGames(data.schedule, now, 1)[0] : undefined;
+  const nextHref = nextGame ? matchupHref(team, nextGame.opponent, options) : null;
+  const usage = renderUsageSection(usageView, team, {
+    matchup: nextHref && nextGame?.opponent ? { href: nextHref, opponent: nextGame.opponent.nickname } : null,
+  });
   const teamCoaching = getTeamCoaching(team.abbreviation, data.state.season);
   const coaching = renderCoachingSection(teamCoaching, team, usageView);
   // A new play-caller makes last season's data an unreliable guide, and the
@@ -3671,7 +3708,7 @@ export function renderTeamPage(
           )
         : scoped.html) +
       `</section>` +
-      renderResources(team) +
+      renderResources(data, options, now, scoped.id) +
       renderTails([scoped]) +
       // Scoped to this section: a Schedule page carrying the Stats questions
       // would be structured data describing a page the reader is not on.
@@ -3711,7 +3748,7 @@ export function renderTeamPage(
     renderHero(data, options) +
     renderNav(tabs, team, data.state.season, options) +
     body +
-    renderResources(team) +
+    renderResources(data, options, now) +
     renderTails(tabs) +
     // After the sections, because it describes them: `faq` is only complete
     // once every block above has had its chance to render.

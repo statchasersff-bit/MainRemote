@@ -3815,13 +3815,17 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
         renderSnapshot(data) +
         renderFantasy(data) +
         renderInjuries(data)
-      : (pv && data.preview ? renderPreviewBody(data.preview, pv, pvFaq) : "") +
-        renderWatch(data) +
-        renderSnapshot(data) +
-        renderFantasy(data) +
-        renderInjuries(data) +
-        (pv ? `<div id="series-history"></div>` : "") +
-        renderMeetings(data, options);
+      : pv && data.preview
+        ? // The decision layer alone (mak, 2026-10-05): the older Where to
+          // Watch, Snapshot, Fantasy Matchups, Injury Watch and Head-to-Head
+          // blocks that sat below it for comparison are gone, and so are the
+          // hub links under them - the layer's own footer carries those.
+          renderPreviewBody(data.preview, pv, pvFaq)
+        : renderWatch(data) +
+          renderSnapshot(data) +
+          renderFantasy(data) +
+          renderInjuries(data) +
+          renderMeetings(data, options);
 
   return (
     `<div class="sct sct-mu${options.embed ? " is-embed" : ""}" data-sct-root="1"` +
@@ -3834,7 +3838,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     body +
     `</div>` +
     // The recap body carries its own related pages in the main column.
-    (recapInput ? "" : renderLinks(data, options)) +
+    (recapInput || (pv && data.preview) ? "" : renderLinks(data, options)) +
     (options.embed && recapInput ? recapFaqSchema(recapFaq(recapInput), true) : "") +
     (options.embed && pv ? previewFaqSchema(pvFaq, true) : "") +
     // Embedded only: the standalone page carries the same node as JSON-LD in
