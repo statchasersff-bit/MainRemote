@@ -7493,12 +7493,13 @@ button.scp-search-opt {
   padding-top: 8px;
 }
 
-/* Two pixels of air per row. A premium stats table is still dense; this one
-   had crossed from dense into spreadsheet. */
+/* Rows cut to 70% of their old height (mak, 2026-10-05): 47px became 31px,
+   and the Career row below tightened to match, so the whole table is 30%
+   shorter with the header bands left as they were. */
 .scp .scp-table--career tbody td,
 .scp .scp-table--career tbody th {
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 /* The season is the row's name and the column a reader scans down. */
@@ -7512,7 +7513,8 @@ button.scp-search-opt {
    darker tint and heavier figures (mak, 2026-09-30). */
 .scp .scp-table--career tfoot .scp-total th,
 .scp .scp-table--career tfoot .scp-total td {
-  padding-top: 14px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   border-top: 2px solid var(--sc-navy);
   background: color-mix(in srgb, var(--sc-navy) 9%, var(--sc-surface));
   font-size: 14px;
@@ -10166,7 +10168,8 @@ a.scp-peer:focus-visible {
   gap: 14px;
   align-items: center;
   margin: 0;
-  padding: 12px 18px;
+  /* 15% shorter list (mak, 2026-10-05): 12px became 8.5px, 49px rows 42px. */
+  padding: 8.5px 18px;
   font-size: 14px;
   list-style: none;
 }
@@ -10224,7 +10227,9 @@ a.scp-peer:focus-visible {
 
   .scp .scp-bo .scp-bo-txlog li {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 }
 

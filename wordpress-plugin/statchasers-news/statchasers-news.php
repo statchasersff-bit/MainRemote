@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.21
+ * Version:           1.10.22
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.21';
+const STATCHASERS_NEWS_VERSION       = '1.10.22';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -69,6 +69,7 @@ require_once __DIR__ . '/statchasers-schedule.php';
 require_once __DIR__ . '/statchasers-player-stats.php';
 require_once __DIR__ . '/statchasers-rb-handcuffs.php';
 require_once __DIR__ . '/statchasers-sos.php';
+require_once __DIR__ . '/statchasers-rookie-hit-rates.php';
 // After the three they build on: the player builder uses the team file's
 // fill_meta() and season constant, and the heading module asks the team file
 // for a page to measure.
@@ -691,6 +692,7 @@ function statchasers_news_flush( bool $all = false ): void {
 	statchasers_player_stats_flush( $all );
 	statchasers_rb_handcuffs_flush( $all );
 	statchasers_sos_flush( $all );
+	statchasers_rhr_flush( $all );
 
 	// The browser proxy's answers (statchasers-proxy.php).
 	statchasers_flush_transients( 'sc_proxy_', $all );

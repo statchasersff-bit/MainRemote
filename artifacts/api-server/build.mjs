@@ -218,6 +218,15 @@ async function buildClient() {
     outfile: path.join(outDir, "statchasers-sos.js"),
   });
 
+  // The rookie hit rate bundle. It carries the model and the renderer
+  // (src/lib/rookie-hit-rates/), so every view after the default is drawn in
+  // the browser with the code the server drew the default with.
+  await esbuild({
+    ...shared,
+    entryPoints: [path.resolve(artifactDir, "src/client/rookie-hit-rates.ts")],
+    outfile: path.join(outDir, "statchasers-rookie-hit-rates.js"),
+  });
+
   // Core Web Vitals reporting ships as a SEPARATE bundle, fetched at runtime
   // only when a site has configured an endpoint. Folding it into the main
   // bundle would make every visitor download monitoring code they don't use,
@@ -257,6 +266,8 @@ async function buildClient() {
   );
   const sosJs = await readFile(path.join(outDir, "statchasers-sos.js"));
   const sosCss = await readFile(path.resolve(artifactDir, "public", "sos.css"));
+  const rhrJs = await readFile(path.join(outDir, "statchasers-rookie-hit-rates.js"));
+  const rhrCss = await readFile(path.resolve(artifactDir, "public", "rookie-hit-rates.css"));
   const version = createHash("sha256")
     .update(js)
     .update(css)
@@ -276,6 +287,8 @@ async function buildClient() {
     .update(handcuffsCss)
     .update(sosJs)
     .update(sosCss)
+    .update(rhrJs)
+    .update(rhrCss)
     .digest("hex")
     .slice(0, 12);
 

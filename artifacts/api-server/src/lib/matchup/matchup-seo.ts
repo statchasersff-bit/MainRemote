@@ -128,25 +128,23 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     };
   }
 
-  // The upcoming decision page (mak approved the spec's SEO, 2026-10-03).
+  // The upcoming decision page: a game-level fantasy preview, with start/sit
+  // as one section of it (mak approved this title and description, 2026-10-05;
+  // the spec's 2026-10-03 "Start/Sit, Fantasy Matchups, Odds & Prediction"
+  // title is retired).
   const pv = data.matchupState === "upcoming" ? data.preview : null;
   if (pv) {
     const label = `${pv.away.team.nickname} vs ${pv.home.team.nickname}`;
-    const marquee = [...pv.board.away, ...pv.board.home]
-      .filter((r) => r.pos !== "DST" && r.verdict !== "SIT")
-      .sort((x, y) => y.rostered - x.rostered)
-      .slice(0, 4)
-      .map((r) => r.name);
-    const who = marquee.length > 1 ? `${marquee.slice(0, -1).join(", ")} and ${marquee[marquee.length - 1]}` : marquee[0];
+    const week = pv.meeting.weekLabel;
     const long =
-      `${label} ${pv.meeting.weekLabel} ${pv.meeting.season}: start/sit calls${who ? ` for ${who}` : ""}, ` +
-      `odds and implied totals, matchup leverage and injury fallout.`;
+      `${label} ${week} fantasy football preview with start/sit recommendations, projections, ` +
+      `matchup data, injuries, usage and points allowed by position.`;
     return {
-      title: `${label} ${pv.meeting.weekLabel} (${pv.meeting.season}): Start/Sit, Fantasy Matchups, Odds & Prediction | ${SITE_NAME}`,
+      title: fitMatchupTitle([`${label} Fantasy Football Matchup Preview - ${week}`]),
       description:
         long.length <= 160
           ? long
-          : `${label} ${pv.meeting.weekLabel} ${pv.meeting.season}: start/sit calls, odds and implied totals, matchup leverage and injury fallout.`,
+          : `${label} ${week} fantasy football preview: start/sit calls, matchup data, injuries, usage and points allowed by position.`,
       canonical,
       siteName: SITE_NAME,
     };

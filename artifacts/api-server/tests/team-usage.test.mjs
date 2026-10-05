@@ -319,3 +319,28 @@ describe("all 32 clubs", () => {
     }
   });
 });
+
+describe("product bridges (mak, 2026-10-05)", () => {
+  test("each section hands off to the tool that answers its next question", async () => {
+    const res = await fetch(`${server.origin}/team/new-england-patriots/`);
+    const doc = new JSDOM(await res.text()).window.document;
+    const us = doc.querySelector(".sct-us");
+    const ctas = [...us.querySelectorAll("[data-cta]")].map((a) => a.getAttribute("data-cta"));
+    // Intro, tree, pass map, projections, trade block and the close.
+    for (const want of [
+      "redraft-command-usage-intro",
+      "ros-rankings-usage-tree",
+      "matchup-preview-usage-passmap",
+      "projections-usage-xfp",
+      "redraft-command-usage-footer",
+      "dynasty-command-usage-footer",
+      "trade-analyzer-usage-footer",
+    ]) assert.ok(ctas.includes(want), `missing ${want}`);
+    // Unconfirmed tools stay off the page.
+    assert.ok(!ctas.some((c) => /trade-finder|blsh|waiver-wire|dynasty-rankings|dynasty-trade-calc/.test(c)));
+    // Dynasty stays a minority of the product links.
+    const dynasty = ctas.filter((c) => c.startsWith("dynasty")).length;
+    assert.ok(dynasty <= Math.ceil(ctas.length * 0.3), `${dynasty} of ${ctas.length} links are dynasty`);
+    assert.equal(us.querySelector(".sct-us-convert h3").textContent, "Put this usage data to work");
+  });
+});

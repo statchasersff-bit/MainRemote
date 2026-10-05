@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+    Title, description, canonical and the OG/Twitter tags are rendered here by
+    the server (src/lib/rookie-hit-rates-seo.ts). Nothing below is set or
+    amended by JavaScript.
+  -->
+  <!--SSR-HEAD-->
+  <!--
+    This URL is the raw tool. The public page is the statchasers.com page that
+    mounts [statchasers_rookie_hit_rates], and WordPress owns the document
+    there. `noindex` keeps this address out of the index; `indexifembedded`
+    lets Google still use the content embedded.
+  -->
+  <meta name="robots" content="noindex, indexifembedded" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Headshots and team logos come from the CDN the other tools already use. -->
+  <link rel="preconnect" href="https://sleepercdn.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/rookie-hit-rates.css" />
+</head>
+<body class="schr-page<!--SSR-BODY-CLASS-->">
+  <!--SSR-->
+  <script src="/dist/statchasers-rookie-hit-rates.js" defer></script>
+</body>
+</html>

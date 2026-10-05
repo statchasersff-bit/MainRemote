@@ -551,15 +551,15 @@ const METRics_SPEC = [
     def: "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster." },
   { key: "earlyDownPassRate", label: "Early-down pass rate", sub: "1st & 2nd down", unit: "%", places: 1,
     def: "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes." },
-  { key: "noHuddleRate", label: "No-huddle rate", unit: "%", places: 1,
+  { key: "noHuddleRate", label: "No-huddle rate", sub: "share of offensive snaps", unit: "%", places: 1,
     def: "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate." },
   { key: "paRate", label: "Play-action rate", sub: "share of dropbacks, FTN charting", unit: "%", places: 1,
     def: "Share of dropbacks that FTN charting marks as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it." },
   { key: "motionRate", label: "Pre-snap motion", sub: "before or at the snap, FTN charting", unit: "%", places: 1,
     def: "Share of FTN-charted snaps with motion before or at the snap, as FTN defines it. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is." },
-  { key: "shotgunRate", label: "Shotgun rate", unit: "%", places: 1,
+  { key: "shotgunRate", label: "Shotgun rate", sub: "share of offensive snaps", unit: "%", places: 1,
     def: "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun." },
-  { key: "rzPassRate", label: "Red-zone pass rate", feed: "rzPassRate", unit: "%", places: 0,
+  { key: "rzPassRate", label: "Red-zone pass rate", sub: "inside the opponent's 20", feed: "rzPassRate", unit: "%", places: 0,
     def: "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season." },
   { key: "fourthGoRate", label: "4th-down go rate", sub: "opponent territory, 2 yds or less", unit: "%", places: 0,
     def: "Share of 4th-and-2-or-less snaps in opponent territory (midfield included) where the offense ran a play instead of punting or attempting a field goal. Snaps wiped out by penalty are removed. Shown as - until a team has had three such snaps." },
@@ -573,61 +573,51 @@ const fmt = (spec, v) => {
 };
 
 /** The fantasy read for each tendency, by direction - the shift-card library. */
+// Each signal card shows its own "54% -> 80% YoY" line, so the body skips the
+// numbers and carries only what the move means (mak, 2026-10-05: ~25% less
+// copy per card, the bold heading does the work).
 const SHIFT_COPY = {
   passRate: {
-    up: ["More dropbacks.", (a, b) => `Pass rate rose from ${a} to ${b}. More pass attempts means more target volume for the receivers and backs who catch it - the simplest kind of fantasy raise.`],
-    down: ["The run game grew.", (a, b) => `Pass rate fell from ${a} to ${b}. Carries are up at the expense of targets - the backfield's floor rises while the pass-catchers' ceilings compress.`],
+    up: ["More dropbacks.", () => `More target volume for the pass-catchers.`],
+    down: ["The run game grew.", () => `The backfield's floor rises while pass-catcher ceilings compress.`],
   },
   proe: {
-    up: ["A pass lean has emerged.", (a, b, x) => `The ${x.team}' pass rate over expected is ${b} ${x.span} after finishing ${x.priorSeason} at ${a}. Because PROE adjusts for situation, the ${x.early ? "early " : ""}shift suggests a more intentional pass preference rather than game script alone.${x.early ? ` A ${x.games}-game sample is still too small to call it a permanent philosophical change.` : ""}`],
-    down: ["A run lean has emerged.", (a, b, x) => `The ${x.team}' pass rate over expected is ${b} ${x.span} after finishing ${x.priorSeason} at ${a}. Because PROE adjusts for situation, the ${x.early ? "early " : ""}shift suggests a more intentional run preference rather than game script alone.${x.early ? ` A ${x.games}-game sample is still too small to call it a permanent philosophical change.` : ""}`],
+    up: ["A pass lean has emerged.", () => `Adjusted for situation, so the pass lean reads as intent, not game script.`],
+    down: ["A run lean has emerged.", () => `Adjusted for situation, so the run lean reads as intent, not game script.`],
   },
   pace: {
-    up: ["The offense sped up.", (a, b) => `Neutral pace quickened from ${a} to ${b} per snap. Faster pace compounds into extra plays per game - raw opportunity for every skill player, the quietest fantasy upgrade a staff can hand out.`],
-    down: ["The offense slowed down.", (a, b) => `Neutral pace slowed from ${a} to ${b} per snap. Fewer snaps per game trims every player's raw opportunity, and it shows up first in the WR3/TE2 tier.`],
+    up: ["The offense sped up.", () => `Extra plays per game for every skill player.`],
+    down: ["The offense slowed down.", () => `Fewer snaps trims everyone's raw opportunity.`],
   },
   earlyDownPassRate: {
-    up: ["Passing on the downs that are a choice.", (a, b) => `Early-down pass rate climbed from ${a} to ${b}. First and second down are where a play-caller shows intent - this is a real lean toward the pass game, not late-down necessity.`],
-    down: ["Running on the downs that are a choice.", (a, b) => `Early-down pass rate fell from ${a} to ${b}. First and second down are where intent shows, and this staff is choosing the ground game with them.`],
+    up: ["Passing on the downs that are a choice.", () => `A real lean toward the pass when the staff has the choice.`],
+    down: ["Running on the downs that are a choice.", () => `The staff is choosing the ground game when it has the choice.`],
   },
   noHuddleRate: {
-    up: ["Tempo is now a weapon.", (a, b) => `No-huddle rate rose from ${a} to ${b}. Tempo pins defensive personnel on the field and adds snaps - more raw opportunity across the board.`],
-    down: ["The huddle is back.", (a, b) => `No-huddle rate fell from ${a} to ${b}. A more deliberate operation usually means fewer total snaps - a quiet tax on everyone's volume.`],
+    up: ["Tempo is now a weapon.", () => `Tempo adds snaps across the board.`],
+    down: ["The huddle is back.", () => `A more deliberate operation, usually fewer total snaps.`],
   },
   paRate: {
-    up: ["More play-action.", (a, b) => `Play-action rate rose from ${a} to ${b} of dropbacks. Play-action throws travel farther and produce more yards per attempt league-wide - a boost to downfield receiver efficiency.`],
-    down: ["Less play-action.", (a, b) => `Play-action rate fell from ${a} to ${b} of dropbacks - fewer of the scheme's easiest explosive throws, a quiet drag on downfield receiver efficiency.`],
+    up: ["More play-action.", () => `A boost to downfield receiver efficiency.`],
+    down: ["Less play-action.", () => `Fewer of the scheme's easiest explosive throws.`],
   },
   motionRate: {
-    up: ["More pre-snap motion.", (a, b, x) => `Motion before the snap has risen from ${a} to ${b} of charted plays, indicating a more motion-heavy presentation than the ${x.team} used in ${x.priorSeason}.`],
-    down: ["Less pre-snap motion.", (a, b, x) => `Motion before the snap has fallen from ${a} to ${b} of charted plays, indicating a less motion-heavy presentation than the ${x.team} used in ${x.priorSeason}.`],
+    up: ["More pre-snap motion.", (a, b, x) => `A more motion-heavy look than in ${x.priorSeason}.`],
+    down: ["Less pre-snap motion.", (a, b, x) => `A less motion-heavy look than in ${x.priorSeason}.`],
   },
   shotgunRate: {
-    up: ["More shotgun.", (a, b) => `Shotgun rate rose from ${a} to ${b} - a more spread, dropback-first identity, which usually travels with more targets for backs and slots.`],
-    down: ["More under center.", (a, b) => `Shotgun rate fell from ${a} to ${b} - more under-center snaps, which usually travels with a heavier run game and play-action rather than quick game.`],
+    up: ["More shotgun.", () => `A more spread, dropback-first identity.`],
+    down: ["More under center.", () => `Under-center snaps travel with the run game and play-action.`],
   },
   rzPassRate: {
-    // A play-selection rate, not a touchdown forecast: through a few games it
-    // is a handful of drives, so it says what has happened and what would
-    // follow if it holds.
-    up: [
-      "Pass-heavy in the red zone so far.",
-      (a, b, x) => `The ${x.team} have called passes on ${b} of red-zone plays ${x.span}, up from ${a} in ${x.priorSeason}. If that holds, it would raise receiving touchdown opportunity and cut goal-line rushing opportunity.${x.smallSample}`,
-    ],
-    down: [
-      "Run-heavy in the red zone so far.",
-      (a, b, x) => `The ${x.team} have called passes on ${b} of red-zone plays ${x.span}, down from ${a} in ${x.priorSeason}. If that holds, it would shift touchdown opportunity toward the backfield and away from the pass-catchers.${x.smallSample}`,
-    ],
+    // A play-selection rate, not a touchdown forecast: the card's note carries
+    // the sample, so the body says which way it points.
+    up: ["Pass-heavy in the red zone.", () => `More receiving TD opportunity, less goal-line rushing volume.`],
+    down: ["Run-heavy in the red zone.", () => `More rushing TD opportunity, less for the pass-catchers.`],
   },
   fourthGoRate: {
-    up: [
-      "Going for it more so far.",
-      (a, b, x) => `The ${x.team} have gone for it on ${b} of short 4th downs in opponent territory ${x.span}, up from ${a} in ${x.priorSeason}. If that holds, more drives would continue past field-goal range.${x.fourthSample}`,
-    ],
-    down: [
-      "Kicking more so far.",
-      (a, b, x) => `The ${x.team} have gone for it on ${b} of short 4th downs in opponent territory ${x.span}, down from ${a} in ${x.priorSeason}. If that holds, more of those drives would end in a punt or field-goal try.${x.fourthSample}`,
-    ],
+    up: ["Going for it more.", () => `More drives continue past field-goal range.`],
+    down: ["Kicking more.", () => `More of those drives end in a punt or field-goal try.`],
   },
 };
 
@@ -712,6 +702,7 @@ function composeEntry({
       }
     }
     const row = {
+      key: spec.key,
       label: spec.label,
       ...(spec.sub ? { sub: spec.sub } : {}),
       ...(spec.def ? { def: spec.def } : {}),
@@ -764,15 +755,28 @@ function composeEntry({
       ? ` The sample is still small: ${cur.fourthShortAll} such snap${cur.fourthShortAll === 1 ? "" : "s"}.`
       : "",
     smallSample: rzPlays < 40 ? ` The sample is still small: ${rzPlays} red-zone play${rzPlays === 1 ? "" : "s"}.` : "",
+    rzPlays,
+    fourthShort: cur.fourthShortAll ?? 0,
+  };
+  // The caveat line under a signal card, kept out of the body: the sample
+  // while it is early or thin. A quiet footer, not a reading instruction.
+  const shiftNote = (key, x) => {
+    const parts = [];
+    if (x.early) parts.push(`${x.games}-game sample`);
+    if (key === "rzPassRate" && x.rzPlays < 40) parts.push(`${x.rzPlays} red-zone play${x.rzPlays === 1 ? "" : "s"}`);
+    if (key === "fourthGoRate" && x.fourthShort < 15) parts.push(`${x.fourthShort} such snap${x.fourthShort === 1 ? "" : "s"}`);
+    return parts.length ? parts.join(" · ") : null;
   };
   let shifts = moves.slice(0, 3).map(({ spec, curV, priorV, delta }) => {
     const dirKey = spec.invert ? (delta < 0 ? "up" : "down") : delta > 0 ? "up" : "down";
     const [heading, body] = SHIFT_COPY[spec.key][dirKey];
     return {
+      key: spec.key,
       stat: fmt(spec, curV).replace("%", ""),
       unit: SHIFT_UNITS[spec.key],
       heading,
       body: body(fmt(spec, priorV), fmt(spec, curV), shiftContext),
+      note: shiftNote(spec.key, shiftContext),
     };
   });
   if (shifts.length === 0) {
@@ -805,9 +809,10 @@ function composeEntry({
   const ocCard = staff.ocIsCaller
     ? {
         name: staff.oc ?? caller,
-        sub: "Primary play-caller - see the card above",
+        sub: "Primary play-caller",
+        isCaller: true,
         hasCalledPlays: true,
-        body: `The call sheet runs through the coordinator here: ${caller} has the play-calling duties${isHC ? "" : ` while head coach ${staff.hc} runs the game`}. The profile on this page is his.`,
+        body: `Runs the offense from the call sheet${isHC ? "" : `; ${lastName(staff.hc)} retains game-management oversight`}.`,
       }
     : {
         name: staff.oc ?? "-",
@@ -839,7 +844,7 @@ function composeEntry({
       ? `New play-caller, but from the same scheme family as ${staff.prev2025Caller ?? "the previous staff"} - some carryover is real, but treat ${season - 1} numbers as context, not baseline.`
       : `New play-caller${staff.prev2025Caller ? ` (${staff.prev2025Caller} called plays here in ${season - 1})` : ""}. Last season's tendencies describe a different coach's offense - project from this season's sample, small as it is.`
     : brokenTenure
-      ? `Same play-caller as last season. ${callerLast} is in his ${ordWord(currentRun)} consecutive season of his current ${nickname} stint and his ${tenureWord} overall. The ${season - 1} offense is therefore a strong stylistic baseline, while personnel and game-state changes still matter.`
+      ? `Same play-caller as last season: ${callerLast} returns for Year ${currentRun} of his current ${nickname} stint, his ${tenureWord}. The ${season - 1} offense is a strong stylistic baseline for ${season}.`
       : `Same play-caller as last season - his ${seasonsWord} calling this offense. Last year's tendencies are a valid baseline for projecting it.`;
   const gamesPlayed = scoring.get(`${abbr}|${season}`)?.games ?? cur.games;
   // priorSeasonsNote overrides the generic fragment when the count needs
@@ -850,6 +855,18 @@ function composeEntry({
         staff.priorSeasonsNote ??
         (priorSeasons > 0 ? `${priorSeasons} prior season${priorSeasons === 1 ? "" : "s"} as caller here` : "first season")
       }`;
+
+  // The same ledger as data, for the card's chips. Null after an in-season
+  // change of caller, where the ledger is a sentence that has to stay one.
+  const ledgerStats = staff.inSeasonChange2026
+    ? null
+    : {
+        called: gamesPlayed,
+        games: gamesPlayed,
+        priorSeasons,
+        firstSeason: seasonsHere[0] ?? season,
+        note: staff.priorSeasonsNote ?? null,
+      };
 
   const introAnswer = newCaller
     ? `For the ${nickname} the answer is: new fingerprints. ${caller} is calling this offense for the first time in ${season}${sameFamily ? ", though from the same scheme family as his predecessor" : ""} - so the ${season} sample, not last year's, is the signal.`
@@ -1178,6 +1195,7 @@ function composeEntry({
       sameSchemeFamily: sameFamily,
       explanation,
       ledger,
+      ledgerStats,
     },
     introAnswer,
     tendencies: {

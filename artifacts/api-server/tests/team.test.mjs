@@ -751,10 +751,37 @@ describe("embedded mode", () => {
     const resources = [...doc.querySelectorAll(".sct-resource-link")];
     assert.ok(resources.length > 0, "resource cards rendered");
     for (const link of resources) {
-      // A plain link would load the whole site inside the iframe.
-      assert.equal(link.getAttribute("target"), "_top");
-      assert.match(link.getAttribute("href"), /^https?:\/\//);
+      const href = link.getAttribute("href");
+      // Products are absolute and break out of the frame (a plain link would
+      // load the whole site inside it); the team's own pages are root-relative
+      // plain anchors, like the tab nav and matchup links beside them.
+      if (/^https?:\/\//.test(href)) assert.equal(link.getAttribute("target"), "_top");
+      else {
+        assert.match(href, /^\//);
+        assert.equal(link.getAttribute("target"), null);
+      }
     }
+  });
+
+  test("'Use this research': the two products, then this club's usage report and next matchup", async () => {
+    const { doc } = await dom("/team/new-england-patriots/");
+    const block = doc.getElementById("resources");
+    assert.equal(block.querySelector("h2").textContent, "Use this research");
+    const cards = [...block.querySelectorAll(".sct-resource")].map((li) => [
+      li.querySelector(".sct-resource-title").textContent,
+      li.querySelector("a").getAttribute("href"),
+    ]);
+    assert.deepEqual(cards.slice(0, 3), [
+      ["Redraft Command", "https://statchasers.com/redraft-command/"],
+      ["Dynasty Command", "https://statchasers.com/dynasty-command/"],
+      ["Patriots Usage Report", "/team/new-england-patriots/usage/"],
+    ]);
+    // The next game's preview, when the schedule has one.
+    if (cards[3]) assert.match(cards[3][1], /^\/nfl\/[a-z0-9-]+\/$/);
+    // The /usage/ page closes on its own conversion block instead.
+    const usage = await dom("/team/new-england-patriots/usage/");
+    assert.equal(usage.doc.getElementById("resources"), null);
+    assert.ok(usage.doc.querySelector(".sct-us-convert"));
   });
 });
 

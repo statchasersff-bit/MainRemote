@@ -1257,6 +1257,31 @@ shortcode prints the H1 itself. The CSV export is a public app route
 plugin sets its own title, description, canonical and schema, which fight
 these.
 
+## Dynasty rookie hit rates - `[statchasers_rookie_hit_rates]`
+
+One page, wherever it is made (no other tool links to it yet). Ported from the
+standalone Rookie-Hit-Rate app (the "Hit-Rate-Chasers" Replit project), which
+had no WordPress mount of its own.
+
+```
+[statchasers_rookie_hit_rates]
+```
+
+No attributes and no query string: the app kept its tabs and nine filters in
+component state and never wrote them to the address, and neither does this.
+The canonical is always the bare page.
+
+It prints the fragment from `/embed/rookie-hit-rates`, cached for an hour with a
+30-day fallback: the default view (Superflex, PPR, Top-12, every class, 8 games)
+with all four tabs - Overview, Trends, Cohorts, Players - in the page's HTML.
+Every other view is computed in the reader's browser from the dataset at
+`embed/rookie-hit-rates/data`, which goes through the browser proxy once the
+embed key is on. The fragment's `schr-page-data` island carries the page's
+title, H1 and meta description; the plugin applies them through Rank Math and
+core and strips the island. **Those words are not yet approved by mak** - see
+the API's replit.md, "Rookie Hit Rates", before publishing the page. No schema
+node is added. In tool heading mode the shortcode prints the H1 itself.
+
 ## Locking the app to WordPress
 
 The app is a public address of its own. Without a key, anyone can skip this
@@ -1276,12 +1301,13 @@ page (the deployment health check requests it), the FPA and schedule CSV
 downloads, the `.ics` calendar, and the health and ingest routes (which have
 their own secret).
 
-Five widgets fetch from the reader's browser, where a key cannot be kept: the
+Six widgets fetch from the reader's browser, where a key cannot be kept: the
 Player Stats table, FPA, RB Handcuffs player cards, the Strength of Schedule
-view switch (`embed/sos`, since 1.10.18) and the news refresh. They go through
-this site's proxy, `/wp-json/statchasers/v1/p/<path>`, which forwards only those
-five paths, adds the key and caches each answer for five minutes. Those five
-answers are therefore still public, but at statchasers.com, behind
+view switch (`embed/sos`, since 1.10.18), the Rookie Hit Rates dataset
+(`embed/rookie-hit-rates/data`, since 1.10.22) and the news refresh. They go
+through this site's proxy, `/wp-json/statchasers/v1/p/<path>`, which forwards
+only those six paths, adds the key and caches each answer for five minutes.
+Those six answers are therefore still public, but at statchasers.com, behind
 Cloudflare's bot rules and rate limits, rather than at the app.
 
 **Rollout.** Three switches, each safe on its own, in this order:

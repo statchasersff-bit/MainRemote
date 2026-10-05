@@ -38,6 +38,9 @@ describe("the key", () => {
       "/embed/player-stats",
       "/embed/sos",
       "/strength-of-schedule",
+      "/embed/rookie-hit-rates",
+      "/embed/rookie-hit-rates/data",
+      "/rookie-hit-rates",
       "/api/news",
     ]) {
       const res = await get(path);
@@ -62,7 +65,7 @@ describe("the key", () => {
   });
 
   test("assets, the root page, /embed.js, health and the CSV downloads stay public", async () => {
-    for (const path of ["/player.css", "/sos.css", "/embed.js", "/", "/api/healthz", "/sos/download.csv"]) {
+    for (const path of ["/player.css", "/sos.css", "/rookie-hit-rates.css", "/embed.js", "/", "/api/healthz", "/sos/download.csv"]) {
       const res = await get(path);
       assert.notEqual(res.status, 403, path);
     }
@@ -99,6 +102,8 @@ describe("the browser proxy", () => {
     if (sos.status === 200) {
       assert.match(await sos.text(), new RegExp(`data-scsos-endpoint="${PROXY}/embed/sos"`));
     }
+    const rhr = await (await get("/embed/rookie-hit-rates", keyed)).text();
+    assert.match(rhr, new RegExp(`data-schr-data="${PROXY}/embed/rookie-hit-rates/data"`));
   });
 
   test("the news fragment names the proxy for its refresh, and keeps its asset origin", async () => {
