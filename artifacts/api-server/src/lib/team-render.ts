@@ -72,9 +72,14 @@ import {
   type SkillPosition,
   type RosterPlayer,
 } from "./team/roster";
-import { upcomingGames, type ScheduleGame } from "./team/schedule";
+import { upcomingGames, type ScheduleGame, type TeamSchedule } from "./team/schedule";
 import { scheduleItemList } from "./team/schedule-schema";
-import { canonicalizeMatchupPair } from "./matchup/pair";
+import {
+  canonicalizeMatchupPair,
+  gameSegment,
+  isUpcomingFixture,
+  meetingHasOwnAddress,
+} from "./matchup/pair";
 import { DYNASTY_COMMAND_URL, REDRAFT_COMMAND_URL } from "./matchup/recap";
 import {
   getFPAUrl,
@@ -2432,6 +2437,42 @@ function matchupHref(
 }
 
 /**
+ * The page for one meeting on this team's schedule, or null.
+ *
+ * matchupHref() names the pair; this names the game. A finished meeting the
+ * pair's page has let go of - past the recent window, or with a rematch still
+ * to come, which the pair's page leads with instead - has a dated address of
+ * its own, and a row for that week has to point there or it opens the other
+ * meeting's preview. The rule is meetingHasOwnAddress(), asked the same way
+ * schedule-render.ts asks it, so neither side keeps its own copy of it.
+ */
+function gameMatchupHref(
+  team: NflTeam,
+  game: ScheduleGame,
+  schedule: TeamSchedule,
+  options: TeamRenderOptions,
+  now: number,
+): string | null {
+  const base = matchupHref(team, game.opponent, options);
+  if (!base || !game.opponent) return base;
+  const rematchAhead = schedule.games.some(
+    (other) =>
+      other !== game &&
+      other.opponent?.abbreviation === game.opponent?.abbreviation &&
+      isUpcomingFixture(other.status === "final", other.kickoffMs, now),
+  );
+  if (!meetingHasOwnAddress(game.kickoffMs, game.status === "final" && !!game.result, now, rematchAhead)) {
+    return base;
+  }
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const query = options.linkQuery ?? "";
+  const pair = canonicalizeMatchupPair(team, game.opponent);
+  return pair
+    ? `${prefix}${pair.slug}/${gameSegment({ season: schedule.season, week: game.week, seasonType: game.seasonType })}/${query}`
+    : base;
+}
+
+/**
  * The Matchups hub: how this team compares with each opponent.
  *
  * Not the schedule again. Schedule answers "when do they play"; this answers
@@ -2482,7 +2523,7 @@ function renderMatchups(
 
   const rows = schedule.games
     .map((game) => {
-      const href = hrefFor(game.opponent);
+      const href = gameMatchupHref(team, game, schedule, options, now);
       const line = gameDateLine(game);
       const status = game.result
         ? `<span class="sct-mu-result">${escapeHtml(`${game.result.outcome} ${game.result.teamScore}–${game.result.opponentScore}`)}</span>`
@@ -3119,6 +3160,7 @@ export function renderUpcomingCard(
 function renderFullSchedule(
   data: TeamPageData,
   options: TeamRenderOptions,
+  now: number,
 ): string {
   const schedule = data.schedule;
   if (!schedule) return "";
@@ -3169,9 +3211,9 @@ function renderFullSchedule(
         // an opponent this server cannot resolve to a team, which is what a
         // TBD playoff slot looks like. Dropping it on those rows alone would
         // leave a five-column row in a six-column table.
-        (matchupHref(data.team, game.opponent, options)
+        (gameMatchupHref(data.team, game, schedule, options, now)
           ? `<a class="sct-textlink sct-srow-view"` +
-            ` href="${escapeHtml(matchupHref(data.team, game.opponent, options) ?? "")}">` +
+            ` href="${escapeHtml(gameMatchupHref(data.team, game, schedule, options, now) ?? "")}">` +
             `View matchup ${ARROW}</a>`
           : `<span class="sct-srow-view"></span>`) +
         `</li>`,
@@ -3244,6 +3286,7 @@ function renderFullSchedule(
 function renderSeasonShape(
   data: TeamPageData,
   options: TeamRenderOptions,
+  now: number,
 ): string {
   const { team, schedule } = data;
   if (!schedule) return "";
@@ -3355,7 +3398,12 @@ function renderSeasonShape(
 
   const slateRows = shape.slate
     .map((game) => {
-      const href = matchupHref(team, game.opponent, options);
+      const fixture = schedule.games.find(
+        (g) => g.seasonType === "regular" && g.week === game.week && g.opponent === game.opponent,
+      );
+      const href = fixture
+        ? gameMatchupHref(team, fixture, schedule, options, now)
+        : matchupHref(team, game.opponent, options);
       const name = href
         ? `<a class="sct-slate-link" href="${escapeHtml(href)}">${escapeHtml(game.name)}</a>`
         : escapeHtml(game.name);
@@ -3461,13 +3509,13 @@ function renderSchedule(
   // Not a grid when there is no shape to put in the rail. seasonShape() returns
   // null for a schedule that rendered no rows, and a two-column layout with an
   // empty second column would take 300px off the table for nothing.
-  const shape = renderSeasonShape(data, options);
+  const shape = renderSeasonShape(data, options, now);
   const board = shape
     ? `<div class="sct-sched-grid">` +
-      `<div class="sct-sched-main">${renderFullSchedule(data, options)}</div>` +
+      `<div class="sct-sched-main">${renderFullSchedule(data, options, now)}</div>` +
       shape +
       `</div>`
-    : renderFullSchedule(data, options);
+    : renderFullSchedule(data, options, now);
 
   // Below the tools block with the other tabs' questions, and assigned after
   // the early return above: a team whose fixtures did not load carries no
