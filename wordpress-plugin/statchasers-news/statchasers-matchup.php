@@ -637,58 +637,20 @@ function statchasers_matchup_shortcode_heading(): string {
 	);
 }
 
-/**
- * The scoreboard hero's webfonts: Barlow and Barlow Condensed.
- *
- * The hero is set in its own type rather than the hub's Inter (see .sct-sbh in
- * team.css), so a matchup page loads one more stylesheet than a hub does.
- * Return '' from the filter to serve the fonts yourself or not at all; the
- * stacks fall back to Arial Narrow and the system face.
+/*
+ * The hero's webfonts (Barlow, Barlow Condensed) ride on team.css as a
+ * dependency - see statchasers_display_font_dependency() in
+ * statchasers-assets.php - and the Google Fonts preconnect is shared there
+ * too, so a matchup page enqueues the hub's assets and nothing more.
  */
-function statchasers_matchup_font_url(): string {
-	return (string) apply_filters(
-		'statchasers_matchup_font_url',
-		'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap'
-	);
-}
-
 add_action(
 	'wp_enqueue_scripts',
 	static function (): void {
 		if ( null !== statchasers_matchup_current() ) {
 			statchasers_team_enqueue_assets();
-			$url = statchasers_matchup_font_url();
-			if ( '' !== $url ) {
-				// No version: the URL is the version, as with the Inter handle.
-				wp_enqueue_style( 'statchasers-matchup-font', $url, array(), null );
-			}
 		}
 	}
 );
-
-/**
- * Preconnect to both Google Fonts hosts on a matchup page, so the hero's type
- * is not the last thing to arrive. The stylesheet host and the font-file host
- * are different origins, and the second is fetched in CORS mode.
- *
- * @param array<int,string|array<string,string>> $urls Resource URLs.
- * @param string                                  $relation_type Relation being filtered.
- * @return array<int,string|array<string,string>>
- */
-function statchasers_matchup_resource_hints( array $urls, string $relation_type ): array {
-	if ( 'preconnect' !== $relation_type || '' === statchasers_matchup_font_url() || null === statchasers_matchup_current() ) {
-		return $urls;
-	}
-
-	$urls[] = 'https://fonts.googleapis.com';
-	$urls[] = array(
-		'href'        => 'https://fonts.gstatic.com',
-		'crossorigin' => 'anonymous',
-	);
-
-	return $urls;
-}
-add_filter( 'wp_resource_hints', 'statchasers_matchup_resource_hints', 10, 2 );
 
 /* -------------------------------------------------------------- metadata */
 

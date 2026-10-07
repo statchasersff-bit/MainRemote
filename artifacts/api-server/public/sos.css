@@ -126,7 +126,7 @@ body.scsos-page {
   color: var(--sc-navy);
   font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
   line-height: 1.15;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -326,7 +326,7 @@ body.scsos-page {
   margin: 0;
   overflow: hidden;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -400,7 +400,7 @@ body.scsos-page {
   overflow: hidden;
   color: var(--sc-ink);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0.01em;
   text-decoration: none;
@@ -417,7 +417,7 @@ body.scsos-page {
   flex: none;
   color: var(--sc-ink);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -426,7 +426,7 @@ body.scsos-page {
   margin-left: 3px;
   color: var(--sc-muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.03em;
 }
 
@@ -612,7 +612,7 @@ body.scsos-page {
   background: var(--sc-surface-sink);
   color: var(--sc-muted);
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
 }
 

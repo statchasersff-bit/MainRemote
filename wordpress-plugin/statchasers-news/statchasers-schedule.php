@@ -394,6 +394,21 @@ function statchasers_schedule_fetch( array $args ): ?array {
  * should not download the news tool's stylesheet. The version is shared because
  * the build hashes every asset into one number.
  */
+/**
+ * The schedule's own webfonts: DM Sans for text, Space Grotesk for titles,
+ * scores and TV marks - the source repo's type, which this tool keeps (see
+ * the head of schedule.css). Until 2026-10-07 schedule.css loaded them itself
+ * with an @import, which bypassed the enqueue system and OMGF both. Now a
+ * dependency of the stylesheet, so they load on the schedule page and nowhere
+ * else. Return '' from the filter to serve them yourself or not at all.
+ */
+function statchasers_schedule_font_url(): string {
+	return (string) apply_filters(
+		'statchasers_schedule_font_url',
+		'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap'
+	);
+}
+
 function statchasers_schedule_enqueue_assets(): void {
 	$origin = statchasers_news_origin();
 	if ( '' === $origin ) {
@@ -403,10 +418,17 @@ function statchasers_schedule_enqueue_assets(): void {
 	$version = statchasers_news_asset_version();
 
 	if ( ! wp_style_is( STATCHASERS_SCHEDULE_HANDLE, 'registered' ) ) {
+		$deps = statchasers_font_dependency();
+		$font = statchasers_schedule_font_url();
+		if ( '' !== $font ) {
+			// No version: the URL is the version, as with the Inter handle.
+			wp_register_style( 'statchasers-schedule-font', $font, array(), null );
+			$deps[] = 'statchasers-schedule-font';
+		}
 		wp_register_style(
 			STATCHASERS_SCHEDULE_HANDLE,
 			$origin . '/schedule.css',
-			statchasers_font_dependency(),
+			$deps,
 			$version
 		);
 	}

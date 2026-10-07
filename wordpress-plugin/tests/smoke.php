@@ -682,7 +682,18 @@ is(
 
 echo "\nwebfont\n";
 is( str_contains( statchasers_font_url(), 'family=Inter' ), true, 'Inter is the family asked for' );
+is( str_contains( statchasers_font_url(), 'wght@400;500;600;700;800&' ), true, 'at five weights, 400 to 800' );
+is( str_contains( statchasers_font_url(), '900' ), false, 'and never 900' );
 is( statchasers_font_dependency(), array( STATCHASERS_FONT_HANDLE ), 'every stylesheet depends on it' );
+is( str_contains( statchasers_matchup_font_url(), 'family=Barlow' ), true, 'Barlow is the display family' );
+is( statchasers_display_font_dependency(), array( STATCHASERS_DISPLAY_FONT_HANDLE ), 'the hub stylesheet depends on it' );
+is( str_contains( statchasers_player_header_font_url(), 'family=Archivo' ), true, 'Archivo is the player header face' );
+is( str_contains( statchasers_schedule_font_url(), 'family=DM+Sans' ), true, 'DM Sans + Space Grotesk are the schedule faces' );
+// OMGF self-hosts every one of these on the live site, so the plugin prints no
+// preconnect to Google's hosts - the matchup-only hint and the shared one that
+// briefly replaced it are both gone.
+is( function_exists( 'statchasers_matchup_resource_hints' ), false, 'no matchup-only preconnect' );
+is( function_exists( 'statchasers_fonts_resource_hints' ), false, 'no shared preconnect either' );
 
 echo "\nreplace mode\n";
 // A page that mounts the team shortcode, in the loop, on the front end.

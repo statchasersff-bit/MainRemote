@@ -166,7 +166,7 @@ body.sca-page {
   margin: 0;
   color: var(--sc-navy);
   font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.6rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.025em;
 }
@@ -407,7 +407,7 @@ body.sca-page {
   border-color: var(--sc-navy);
   background: var(--sc-navy);
   color: #fff;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -765,7 +765,7 @@ body.sca-page {
   display: block;
   color: var(--sc-navy);
   font-size: clamp(1.75rem, 1.45rem + 1vw, 2.25rem);
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }

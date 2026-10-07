@@ -296,10 +296,14 @@ function statchasers_team_enqueue_assets(): void {
 	$version = statchasers_news_asset_version();
 
 	if ( ! wp_style_is( STATCHASERS_TEAM_HANDLE, 'registered' ) ) {
+		// Inter like every tool, plus the hub's display face (Barlow, Barlow
+		// Condensed) for its numerals, headings and the matchup hero. Both as
+		// dependencies, so they print exactly where team.css does and nowhere
+		// else. See statchasers-assets.php.
 		wp_register_style(
 			STATCHASERS_TEAM_HANDLE,
 			$origin . '/team.css',
-			statchasers_font_dependency(),
+			array_merge( statchasers_font_dependency(), statchasers_display_font_dependency() ),
 			$version
 		);
 	}
@@ -319,16 +323,6 @@ function statchasers_team_enqueue_assets(): void {
 
 	wp_enqueue_style( STATCHASERS_TEAM_HANDLE );
 	wp_enqueue_script( STATCHASERS_TEAM_HANDLE );
-
-	// The hub's Usage report sets its numbers in Barlow Condensed, the face the
-	// matchup pages already load; same handle and URL, so a page that mounts
-	// both enqueues it once. See statchasers_matchup_font_url().
-	if ( function_exists( 'statchasers_matchup_font_url' ) ) {
-		$font = statchasers_matchup_font_url();
-		if ( '' !== $font ) {
-			wp_enqueue_style( 'statchasers-matchup-font', $font, array(), null );
-		}
-	}
 
 	// Rides on the handle above, so it is scoped to hub pages by the same
 	// condition that loads the stylesheet at all - no body class, no filter
