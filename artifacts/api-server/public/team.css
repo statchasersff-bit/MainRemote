@@ -677,7 +677,7 @@ body.sct-page.is-embed {
   /* Strong without becoming a billboard. */
   font-size: clamp(1.7rem, 1.1rem + 2.1vw, 2.05rem) !important;
   line-height: 1.08;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.025em;
   color: var(--sc-navy) !important;
 }
@@ -950,7 +950,7 @@ body.sct-page.is-embed {
   border-bottom: 2px solid var(--sc-gold);
   color: var(--sc-navy) !important;
   font-size: 0.8rem !important;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.08em;
 }
 
@@ -1101,7 +1101,7 @@ body.sct-page.is-embed {
   border-bottom: 1px solid var(--sc-hairline);
   color: var(--sc-navy);
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .sct-index-div .sct-switch-team {
@@ -1439,7 +1439,7 @@ body.sct-page.is-embed {
   color: var(--sc-navy) !important;
   font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem) !important;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -1612,7 +1612,7 @@ body.sct-page.is-embed {
      height came out of the gaps around it, not out of the figure itself. */
   font-size: clamp(2.25rem, 1.8rem + 1.3vw, 2.75rem);
   line-height: 1;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
@@ -1640,7 +1640,7 @@ body.sct-page.is-embed {
   min-width: 0;
   color: var(--sc-muted-strong);
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2059,7 +2059,7 @@ body.sct-page.is-embed {
   margin: 0;
   color: var(--sc-navy) !important;
   font-size: 1.06rem !important;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.015em;
   line-height: 1.25;
 }
@@ -2109,7 +2109,7 @@ body.sct-page.is-embed {
 .sct-outlook-tier {
   color: var(--sc-navy);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -2329,7 +2329,7 @@ body.sct-page.is-embed {
   padding-left: 12px;
   color: var(--sc-navy) !important;
   font-size: 1.02rem !important;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.01em;
 }
 
@@ -2435,7 +2435,7 @@ body.sct-page.is-embed {
   justify-self: end;
   color: var(--sc-navy);
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2525,7 +2525,7 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
   font-size: 1.5rem;
   line-height: 1.02;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -2550,7 +2550,7 @@ body.sct-page.is-embed {
   min-width: 0;
   color: var(--sc-muted-strong);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2921,7 +2921,7 @@ body.sct-page.is-embed {
 :is(.sct, #sct-table-armour) .sct-hist tbody th {
   color: var(--sc-navy);
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.01em;
 }
 
@@ -2993,7 +2993,7 @@ body.sct-page.is-embed {
    the block box - so it reads as a mark on the figure rather than a border on
    the cell. Doubled for screen readers by a note in the cell itself. */
 :is(.sct, #sct-table-armour) .sct-hist-value.is-best {
-  font-weight: 900;
+  font-weight: 800;
   text-decoration: underline;
   text-decoration-color: rgba(212, 175, 55, 0.9);
   text-decoration-thickness: 2px;
@@ -3148,7 +3148,7 @@ body.sct-page.is-embed {
   align-items: center;
   color: var(--sct-slot-ink);
   font-size: 0.66rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
 }
 
@@ -3233,7 +3233,7 @@ body.sct-page.is-embed {
   padding: 2px 7px;
   border-radius: 999px;
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.02em;
   background: #fde68a;
   color: #5c3d06;
@@ -3864,7 +3864,7 @@ body.sct-page.is-embed {
   margin: 0;
   color: var(--sc-muted);
   font-size: 0.66rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -3910,7 +3910,7 @@ body.sct-page.is-embed {
 .sct-matchup-code {
   color: var(--sc-muted-strong);
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.02em;
 }
 
@@ -3931,7 +3931,7 @@ body.sct-page.is-embed {
 .sct-matchup-name.is-lead {
   color: var(--sc-navy);
   font-size: 0.85rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .sct-matchup-at {
@@ -4096,7 +4096,7 @@ body.sct-page.is-embed {
   padding-bottom: 9px;
   color: var(--sc-navy) !important;
   font-size: 0.86rem !important;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.1em;
 }
 
@@ -4364,7 +4364,7 @@ body.sct-page.is-embed {
   margin: 0 0 4px;
   color: var(--sc-gold-deep);
   font-size: 0.62rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -4403,7 +4403,7 @@ body.sct-page.is-embed {
 .sct-game-week {
   color: var(--sc-muted);
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -4422,7 +4422,7 @@ body.sct-page.is-embed {
   background: var(--sc-surface-soft);
   color: var(--sc-muted-strong);
   font-size: 0.6rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -4478,7 +4478,7 @@ body.sct-page.is-embed {
   color: var(--sc-navy);
   font-size: 1.46rem;
   line-height: 1.12;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.03em;
 }
 
@@ -4646,7 +4646,7 @@ body.sct-page.is-embed {
 .sct-srow-week {
   color: var(--sc-muted);
   font-size: 0.7rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
@@ -4740,7 +4740,7 @@ body.sct-page.is-embed {
 .sct-srow-bye {
   grid-column: 2 / -1;
   color: #8a6500;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -4842,7 +4842,7 @@ body.sct-page.is-embed {
 .sct-result {
   justify-self: start;
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: var(--sc-muted-strong);
@@ -4876,7 +4876,7 @@ body.sct-page.is-embed {
   border-radius: 6px;
   background: rgba(153, 46, 46, 0.1);
   color: #94363a;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -4993,7 +4993,7 @@ body.sct-page.is-embed {
   margin: 0;
   color: #fff;
   font-size: 1.3rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -5148,7 +5148,7 @@ body.sct-page.is-embed {
 .sct-seg-label {
   color: var(--sc-navy);
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5171,7 +5171,7 @@ body.sct-page.is-embed {
   border-top: 1px solid var(--sc-hairline);
   color: #8a6500;
   font-size: 0.62rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -5241,7 +5241,7 @@ body.sct-page.is-embed {
   text-align: left;
   color: var(--sc-muted);
   font-size: 0.62rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
@@ -5333,7 +5333,7 @@ body.sct-page.is-embed {
   text-align: right;
   color: var(--sc-navy);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5360,7 +5360,7 @@ body.sct-page.is-embed {
   margin: 2px 0 0;
   color: var(--sc-navy);
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -5415,7 +5415,7 @@ body.sct-page.is-embed {
 .sct-resource-title {
   color: var(--sc-navy);
   font-size: 0.98rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.015em;
 }
 
@@ -6466,7 +6466,7 @@ body.sct-page.is-embed {
 
 .sct-mu-res-side.is-winner .sct-mu-res-score {
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .sct-mu-res-dash {
@@ -6598,7 +6598,7 @@ body.sct-page.is-embed {
 
 .sct-mu-leader-name {
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--sc-navy);
   line-height: 1.2;
 }
@@ -6620,7 +6620,7 @@ body.sct-page.is-embed {
 
 .sct-mu-leader-value {
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--sc-navy);
@@ -6888,7 +6888,7 @@ body.sct-page.is-embed {
 
 .sct-mu-h2h-tally {
   font-size: clamp(30px, 7vw, 44px);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -9046,7 +9046,7 @@ body.sct-page:not(.is-embed):has(.sct-rb) {
 
 .sct .sct-mu-usage-share-pct {
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--sc-navy);
 }
@@ -10756,7 +10756,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-mu-glance .sct-mu-val.is-better {
   color: var(--sc-navy);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 /* ------------------------------------------------------- game leaders */
@@ -11128,7 +11128,7 @@ a.sct-ex-game:hover .sct-ex-line {
    at full strength is a wall. */
 :is(.sct, #sct-table-armour) .sct-mu-ps-table td.is-key {
   color: var(--sc-navy);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 /* The cell stays a cell. The flex row is the span inside it: `display:flex` on
@@ -11260,7 +11260,7 @@ a.sct-ex-game:hover .sct-ex-line {
   gap: 8px;
   margin: 0 0 4px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--sc-navy);
@@ -11374,7 +11374,7 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct-mu-usage-bar-pct {
   margin-left: auto;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--sc-navy);
 }
@@ -13131,7 +13131,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 4px 9px;
   border-radius: 999px;
   font-size: 0.66rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -13302,7 +13302,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 4px;
   padding: 0;
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -13720,7 +13720,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0;
   color: var(--sc-navy) !important;
   font-size: 1.6rem !important;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
 }
@@ -13819,7 +13819,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-step-years {
   color: var(--sc-navy);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -13867,7 +13867,7 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 2px 9px;
   border-radius: 999px;
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
 }
 
@@ -14154,7 +14154,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-co-table .sct-co-td.is-now {
   color: var(--sc-navy);
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 :is(.sct, #sct-table-armour) .sct-co-table .sct-co-th.is-avg,
@@ -14315,7 +14315,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--co-gold-soft);
   color: var(--sc-gold-deep);
   font-size: 0.66rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.02em;
   vertical-align: 1px;
   white-space: nowrap;
@@ -14399,7 +14399,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--co-gold-soft);
   color: var(--sc-gold-deep);
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1.5;
   white-space: nowrap;
@@ -14485,7 +14485,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--co-amber-soft);
   color: var(--co-amber);
   font-size: 0.62rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
 }
 
@@ -14719,7 +14719,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0;
   color: var(--sc-navy);
   font-size: 1.1rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -14730,7 +14730,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--co-gold-soft);
   color: var(--sc-gold-deep);
   font-size: 0.6rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -14861,7 +14861,7 @@ a.sct-ex-game:hover .sct-ex-line {
   border: 1px solid transparent;
   border-radius: 6px;
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.4;
   white-space: nowrap;
 }
@@ -14918,7 +14918,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--sc-surface-sink);
   color: var(--sc-muted-strong);
   font-size: 0.6rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -15148,7 +15148,7 @@ a.sct-ex-game:hover .sct-ex-line {
   background: var(--co-gold-soft);
   color: var(--sc-gold-deep);
   font-size: 0.56rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1.6;
   text-transform: uppercase;
@@ -15217,7 +15217,7 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 0 0 10px;
   color: var(--sc-navy);
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -16762,7 +16762,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 :is(.sct, #sct-table-armour) .sct-pv-stat-v {
   font-size: 26px !important;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--pv-ink);
@@ -17026,7 +17026,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-injury-status {
   padding: 2px 7px;
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: none;
 }

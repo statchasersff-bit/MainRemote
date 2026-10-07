@@ -30,7 +30,13 @@
  * would be the only dark thing on the page.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+/*
+ * DM Sans and Space Grotesk are not loaded here. An @import in this file went
+ * straight to Google on every schedule page, past the WordPress enqueue system
+ * and past OMGF's self-hosting. The plugin registers them as a dependency of
+ * this stylesheet (statchasers_schedule_font_url in statchasers-schedule.php)
+ * and schedule.html carries the same <link> for the raw tool.
+ */
 
 :where(.scs),
 :where(body.scs-page) {

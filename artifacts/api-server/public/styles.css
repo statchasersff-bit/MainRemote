@@ -108,7 +108,7 @@ body {
   margin: 0 0 18px;
   color: #0b2347;
   font-size: 1.35rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -318,7 +318,7 @@ body {
 .sc-card-label {
   color: #123b73;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -330,7 +330,7 @@ body {
   color: #0b2347;
   font-size: 1.2rem;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -404,7 +404,7 @@ body {
   margin: 0 0 10px;
   color: #0b2347;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.01em;
 }
 

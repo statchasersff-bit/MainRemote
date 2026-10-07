@@ -141,7 +141,7 @@ function hostPage(options: HostPageOptions): string {
     `<title>${escapeHtml(options.title)} - shortcode preview</title>` +
     `<link rel="preconnect" href="https://fonts.googleapis.com" />` +
     `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />` +
-    `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />` +
+    `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />` +
     styles +
     `<style>` +
     `.hostpage{margin:0;background:#f4f6fa;color:#0b1220;` +
@@ -153,7 +153,7 @@ function hostPage(options: HostPageOptions): string {
     `.hp-head{max-width:1180px;margin:0 auto;padding:34px 24px 0}` +
     `.hp-crumb{margin:0 0 10px;color:#64748b;font-size:.8rem;font-weight:600}` +
     `.hp-h1{margin:0;font-size:clamp(1.9rem,1.3rem+2.2vw,2.9rem);line-height:1.1;` +
-    `font-weight:900;letter-spacing:-.03em;color:#0b1634}` +
+    `font-weight:800;letter-spacing:-.03em;color:#0b1634}` +
     `.hp-lede{margin:12px 0 0;max-width:70ch;color:#475569;font-size:1.02rem}` +
     `.hp-main{max-width:1180px;margin:0 auto;padding:28px 24px 60px}` +
     // The fragment sits on the page's own surface, exactly as it does live.

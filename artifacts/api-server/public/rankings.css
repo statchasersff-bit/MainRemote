@@ -460,7 +460,7 @@ a.scr-all-name:hover {
   background: linear-gradient(90deg, var(--sc-navy) 0%, #132a4a 100%);
   color: #fff;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-align: left;
@@ -633,7 +633,7 @@ a.scr-player-link:hover {
   padding-bottom: 10px;
   color: var(--sc-navy);
   font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
@@ -947,7 +947,7 @@ a.scr-player-link:hover {
 }
 
 .scr .scr-tier-head th {
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .scr .scr-row th.scr-player {

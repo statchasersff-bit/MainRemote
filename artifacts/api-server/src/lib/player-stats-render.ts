@@ -437,9 +437,15 @@ function renderSectionHead(label: string, id: string, heading: string): string {
  */
 function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, className: string): string {
   const row = leader.player;
+  // The leaders are the first thing on the page, so the photos are not lazy:
+  // a lazy image in the first screen is requested later than an eager one
+  // for no saving. width/height match the 36px box player-stats.css draws,
+  // so the row keeps its height before the file arrives rather than growing
+  // when it does. skip-lazy / data-no-lazy keep WP Rocket from swapping in
+  // its empty-SVG placeholder (drawn at 300x150) on the WordPress host.
   const photo = row?.playerId
-    ? `<img class="sca-leader-photo" src="${escapeHtml(headshotUrl(row.playerId))}"` +
-      ` alt="" loading="lazy" decoding="async" />`
+    ? `<img class="sca-leader-photo skip-lazy" src="${escapeHtml(headshotUrl(row.playerId))}"` +
+      ` alt="" width="36" height="36" decoding="async" data-no-lazy="1" />`
     : "";
 
   return (

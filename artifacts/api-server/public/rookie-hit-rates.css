@@ -135,7 +135,7 @@ body.schr-page {
   color: var(--sc-navy);
   font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
   line-height: 1.15;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
@@ -560,7 +560,7 @@ body.schr-page {
   margin: 5px 0 0;
   color: var(--sc-navy);
   font-size: 19px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -604,7 +604,7 @@ body.schr-page {
   padding: 0 0 8px;
   color: var(--sc-navy);
   font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.01em;
   background: linear-gradient(var(--sc-gold), var(--sc-gold)) left bottom / 44px 3px no-repeat;
@@ -1832,7 +1832,7 @@ body.schr-page {
   padding: 0 0 6px;
   color: #fff;
   font-size: 19px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.01em;
   background: linear-gradient(var(--sc-gold), var(--sc-gold)) left bottom / 32px 3px no-repeat;

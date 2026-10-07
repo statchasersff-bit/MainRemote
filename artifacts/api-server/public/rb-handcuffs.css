@@ -1295,7 +1295,7 @@ a.rbh-name:hover {
   padding-bottom: 10px;
   color: var(--sc-navy);
   font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
@@ -2532,7 +2532,7 @@ html.rbh-locked body {
 .rbh .rbh-faq-title {
   color: var(--sc-navy);
   font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
 }
 

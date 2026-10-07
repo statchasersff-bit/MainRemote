@@ -318,7 +318,7 @@ body.scf-page {
   color: var(--sc-navy);
   font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.7rem);
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 

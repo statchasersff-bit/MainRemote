@@ -2,6 +2,16 @@
    Everything is scoped under .scdc-root and defines its own design tokens so it
    blends onto a white page without inheriting/leaking the host theme's styles. */
 
+/* The index and all-teams routes render their whole grid in the browser, so
+   until the script runs the root is one line of "Loading…" with the 32 team
+   links right under it, on screen. Reserving a viewport of height keeps those
+   links below the fold while the grid (far taller than this) drops in above
+   them, so the page does not visibly jump. Team routes print their content
+   server-side and do not need it. */
+.scdc-page:not(.scdc-page-team) .scdc-root {
+	min-height: 100vh;
+}
+
 .scdc-root {
 	--sc-bg: #f7f9fc;
 	--sc-card: #ffffff;

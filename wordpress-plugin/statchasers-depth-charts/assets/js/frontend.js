@@ -122,6 +122,9 @@
 	// src for a placeholder that never resolves inside a popover that was never
 	// "scrolled into view" - leaving an empty box where the logo should be.
 	// "eager" is deliberate for the small dropdown imagery.
+	// Every image the script makes carries width and height: the CSS sizes them,
+	// but the attributes are what let the browser reserve the box before the
+	// file arrives (a late logo otherwise shifts the row it sits in).
 	function imgProps(props) {
 		var out = { "data-no-lazy": "1", "data-skip-lazy": "1", decoding: "async" };
 		Object.keys(props).forEach(function (k) {
@@ -193,7 +196,7 @@
 		function fillRow(node, opt) {
 			node.innerHTML = "";
 			if (opt.logo) {
-				node.appendChild(el("img", imgProps({ class: "scdc-cs-logo", src: opt.logo, alt: "" })));
+				node.appendChild(el("img", imgProps({ class: "scdc-cs-logo", src: opt.logo, alt: "", width: "20", height: "20" })));
 			} else if (opt.abbr) {
 				node.appendChild(el("span", { class: "scdc-cs-logo scdc-cs-logo-text", text: opt.abbr }));
 			}
@@ -445,7 +448,7 @@
 	function teamCard(team, columns, template) {
 		var logo;
 		if (team.team.logo) {
-			logo = el("img", imgProps({ src: team.team.logo, alt: team.team.name + " logo", loading: "lazy" }));
+			logo = el("img", imgProps({ src: team.team.logo, alt: team.team.name + " logo", width: "40", height: "40", loading: "lazy" }));
 		} else {
 			logo = el("span", { text: team.team.abbr });
 		}
@@ -728,7 +731,7 @@
 			if (it.type === "team") {
 				var teamWrap = el("span", { class: "scdc-sg-avatar scdc-sg-avatar-team" });
 				if (it.logo) {
-					teamWrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.logo, alt: "" })));
+					teamWrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.logo, alt: "", width: "24", height: "24" })));
 				} else {
 					teamWrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
 				}
@@ -736,15 +739,15 @@
 			}
 			var wrap = el("span", { class: "scdc-sg-avatar" });
 			if (it.headshot) {
-				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-head", src: it.headshot, alt: "" })));
+				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-head", src: it.headshot, alt: "", width: "28", height: "28" })));
 				if (it.teamLogo) {
-					wrap.appendChild(el("img", imgProps({ class: "scdc-sg-badge", src: it.teamLogo, alt: "" })));
+					wrap.appendChild(el("img", imgProps({ class: "scdc-sg-badge", src: it.teamLogo, alt: "", width: "14", height: "14" })));
 				}
 			} else if (it.teamLogo) {
 				// No headshot for this player (ESPN doesn't publish one, or the cached
 				// file predates them). Show the team logo at full size rather than an
 				// orphaned corner badge floating beside the abbreviation.
-				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.teamLogo, alt: "" })));
+				wrap.appendChild(el("img", imgProps({ class: "scdc-sg-logo", src: it.teamLogo, alt: "", width: "24", height: "24" })));
 			} else {
 				wrap.appendChild(el("span", { class: "scdc-sg-fallback", text: it.sub || "" }));
 			}

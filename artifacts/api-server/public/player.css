@@ -7677,7 +7677,7 @@ button.scp-search-opt {
   border-top: 2px solid var(--sc-navy);
   background: color-mix(in srgb, var(--sc-navy) 9%, var(--sc-surface));
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 /* The season in progress: a subtle cool tint and a heavier season cell
