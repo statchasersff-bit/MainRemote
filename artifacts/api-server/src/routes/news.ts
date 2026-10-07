@@ -2,6 +2,8 @@ import { Router } from "express";
 import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db, newsItems, newsDedupeKey } from "../lib/db";
 import { dataDirStatus } from "../lib/data-dir";
+import { imageCacheStatus } from "../lib/image-cache";
+import { imageVersionsStatus, stampImageVersions } from "../lib/image-versions";
 import { listNews } from "../lib/news-query";
 import { logger } from "../lib/logger";
 import { summarize, summariesEnabled } from "../lib/summarize";
@@ -90,7 +92,7 @@ const FEED_URLS: string[] = (process.env["DYNASTY_NEWS_API_URL"] ?? "")
   .filter(Boolean);
 
 /** Identifies this server to the upstream feed. See the fetch below. */
-const USER_AGENT = "StatChasersNews/1.0 (+https://newsfeed.replit.app)";
+const USER_AGENT = "StatChasersNews/1.0 (+https://news.statchasers.com)";
 
 /**
  * Header carrying the shared secret that proves this caller to the feed's WAF.
@@ -1007,6 +1009,8 @@ router.get("/status", (_req, res) => {
         // serves an empty player index and a rankings board with no rows, and
         // looks healthy doing it. This is the line that says so out loud.
         data: dataDirStatus(),
+        // The resized headshot/logo derivatives the news cards point at.
+        images: { ...imageCacheStatus(), versions: imageVersionsStatus() },
         ingest: {
           lastAttempt: iso(ingest.lastAttemptMs),
           lastSuccess: iso(ingest.lastSuccessMs),
@@ -1177,6 +1181,8 @@ router.get("/news", (req, res) => {
         ...(Number.isNaN(rawLimit) ? {} : { limit: rawLimit }),
         search,
       });
+      // Current knowledge only; unknown faces resolve in the background.
+      await stampImageVersions(items, 0);
 
       // Every open news tab polls this every two minutes. A short shared
       // lifetime lets browsers and any cache in front answer the repeats

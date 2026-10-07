@@ -20,6 +20,8 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
+import { headshotPath } from "../image-urls";
+import { TEAM_LOGO_FILES } from "../team-logo-files";
 import { renderBarChart, renderLineChart, niceTicks, type LineSeries } from "./charts";
 import {
   OUTCOME_LABELS,
@@ -50,6 +52,7 @@ import {
   type State,
   type Tab,
   type TrendsView,
+  type RhrAssets,
 } from "./model";
 
 export interface RhrRenderOptions {
@@ -121,12 +124,25 @@ function posBadge(pos: Pos, extra = ""): string {
   return `<span class="schr-pos${extra ? ` ${extra}` : ""}" data-pos="${pos}">${pos}</span>`;
 }
 
-function headshot(sleeperId: string | null): string {
-  return sleeperId ? `https://sleepercdn.com/content/nfl/players/thumb/${sleeperId}.jpg` : "";
+/**
+ * The 160px square derivative of a player's headshot on the StatChasers
+ * server (lib/image-urls.ts), versioned when the dataset's `assets` know the
+ * version and `latest` otherwise. Empty for a player Sleeper has no photo
+ * for, so the initials show instead. This renderer runs in the browser too,
+ * so the origin and the versions travel with the data rather than being read
+ * from a server module.
+ */
+function headshot(sleeperId: string | null, assets: RhrAssets | undefined): string {
+  if (!sleeperId) return "";
+  const version = assets?.headshots[sleeperId];
+  if (version === null) return "";
+  return `${assets?.origin ?? ""}${headshotPath(sleeperId, version, "160")}`;
 }
 
-function teamLogo(code: string): string {
-  return code && code !== "FA" ? `https://sleepercdn.com/images/team_logos/nfl/${code.toLowerCase()}.png` : "";
+/** The club's locally hosted SVG crest; nothing for a free agent. */
+function teamLogo(code: string, assets: RhrAssets | undefined): string {
+  const file = code && code !== "FA" ? TEAM_LOGO_FILES[code.toLowerCase()] : undefined;
+  return file ? `${assets?.origin ?? ""}${file}` : "";
 }
 
 function initials(name: string): string {
@@ -616,8 +632,8 @@ const COLUMNS: { field: SortField; label: string }[] = [
   { field: "breakout_time", label: "Breakout" },
 ];
 
-function avatar(p: Pick<PlayerSummary, "player_name" | "sleeper_id">): string {
-  const src = headshot(p.sleeper_id);
+function avatar(p: Pick<PlayerSummary, "player_name" | "sleeper_id">, assets: RhrAssets | undefined): string {
+  const src = headshot(p.sleeper_id, assets);
   return (
     `<span class="schr-avatar" aria-hidden="true">` +
     (src
@@ -627,8 +643,8 @@ function avatar(p: Pick<PlayerSummary, "player_name" | "sleeper_id">): string {
   );
 }
 
-function team(code: string): string {
-  const src = teamLogo(code);
+function team(code: string, assets: RhrAssets | undefined): string {
+  const src = teamLogo(code, assets);
   return (
     `<span class="schr-team">` +
     (src
@@ -662,8 +678,8 @@ export function renderPlayersPanel(board: Board, state: State, summaries?: Playe
         .map(
           (p) =>
             `<tr data-player="${escapeHtml(p.player_id)}" tabindex="0" aria-label="${escapeHtml(`${p.player_name} details`)}">` +
-            `<th scope="row" class="schr-pname">${avatar(p)}<span>${escapeHtml(p.player_name)}</span></th>` +
-            `<td>${team(p.current_nfl_team)}</td>` +
+            `<th scope="row" class="schr-pname">${avatar(p, board.data.assets)}<span>${escapeHtml(p.player_name)}</span></th>` +
+            `<td>${team(p.current_nfl_team, board.data.assets)}</td>` +
             `<td class="is-center schr-num is-muted">${p.rookie_year}</td>` +
             `<td class="is-center schr-num is-muted">${p.rookie_round}.${pad2(p.rookie_pick)}</td>` +
             `<td class="is-center">` +

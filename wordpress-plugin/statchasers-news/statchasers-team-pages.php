@@ -371,7 +371,15 @@ function statchasers_team_set_crest( int $id, string $name, string $abbr ): stri
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 
-	$file = download_url( 'https://sleepercdn.com/images/team_logos/nfl/' . $abbr . '.png', 20 );
+	// The API's own rendering of the crest (a PNG of the SVG it draws
+	// everywhere else; /team-logos/<abbr>.png redirects to the current file).
+	// The media library does not accept SVG, hence the PNG. Sleeper's 150px
+	// PNG only when no origin is configured.
+	$origin = rtrim( statchasers_news_origin(), '/' );
+	$source = '' !== $origin
+		? $origin . '/team-logos/' . rawurlencode( $abbr ) . '.png'
+		: 'https://sleepercdn.com/images/team_logos/nfl/' . rawurlencode( $abbr ) . '.png';
+	$file = download_url( $source, 20 );
 
 	if ( is_wp_error( $file ) ) {
 		return sprintf( '%s: crest download failed (%s)', $name, $file->get_error_message() );

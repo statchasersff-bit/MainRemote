@@ -65,6 +65,17 @@ export interface PackedDataset {
   seasons: PackedSeason[][];
   /** Added by the server per request: the player's statchasers.com profile, when one is published. */
   profiles?: Record<string, string>;
+  /**
+   * Added by the server per request: where this server's headshot
+   * derivatives and crest SVGs live, and each player's headshot version
+   * (null: Sleeper has no photo; absent: not known yet, so `latest`).
+   */
+  assets?: RhrAssets;
+}
+
+export interface RhrAssets {
+  origin: string;
+  headshots: Record<string, string | null>;
 }
 
 export interface RookieDraft {

@@ -54,7 +54,7 @@ const TIMEOUT_MS = (() => {
  * anyone looking at their logs can see exactly who this is and ask us to stop.
  */
 const USER_AGENT =
-  "Mozilla/5.0 (compatible; StatChasersNews/1.0; +https://newsfeed.replit.app)";
+  "Mozilla/5.0 (compatible; StatChasersNews/1.0; +https://news.statchasers.com)";
 
 /** The embedded JSON blob the page carries its timeline in. */
 const NEXT_DATA_RE =

@@ -1979,10 +1979,14 @@ describe("the team index", () => {
   });
 
   test("it revalidates and keeps this origin out of the index", async () => {
-    const { headers } = await indexFragment();
-    const etag = headers.get("etag");
+    // Both requests go to the SAME server: the crests are now this origin's
+    // own files, printed absolute for the host that was asked, so a fragment
+    // from a server on another port is legitimately a different fragment.
+    const first = await rawGet("/embed/teams");
+    assert.equal(first.status, 200);
+    const etag = first.headers["etag"];
     assert.ok(etag, "the fragment is revalidatable");
-    assert.match(headers.get("x-robots-tag"), /noindex, indexifembedded/);
+    assert.match(first.headers["x-robots-tag"], /noindex, indexifembedded/);
 
     const second = await rawGet("/embed/teams", { "If-None-Match": etag });
     assert.equal(second.status, 304);

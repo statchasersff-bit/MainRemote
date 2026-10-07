@@ -26,6 +26,18 @@ _Replace the heading above with the project's name, and this line with one sente
   not just the workspace**: `.replit`'s `[userenv.shared]` configures the
   workspace only, and a missing feed URL makes `runIngest()` throw at startup
   where nothing but the log shows it.
+- **Public origin: `https://news.statchasers.com`.** That is the canonical name
+  for the newsfeed and the only one its markup prints: `<link rel=canonical>`,
+  og:url, the `/embed` snippet and every absolute `/news-image/` and
+  `/team-logos/` URL (lib/request.ts `CANONICAL_PUBLIC_ORIGIN`). A production
+  process pins itself to it whatever host carried the request, so a fragment
+  WordPress fetches over `newsfeed.replit.app` no longer comes back with Replit
+  image URLs. `PUBLIC_ORIGIN=https://other.name` names a different one;
+  `PUBLIC_ORIGIN=request` switches the pin off; development and tests derive
+  the origin from the request so the preview loads its own images. The image
+  and crest routes stay on this app - do not move them onto
+  `api.statchasers.com`. The watchdog still probes the bare `*.replit.app`
+  address on purpose (lib/watchdog.ts).
 - `DYNASTY_NEWS_API_URL` accepts a **comma-separated list** of feed URLs, tried
   in order until one works. A dead entry costs one failed request, not an outage,
   which is what makes an unverified origin hostname safe to put first.
@@ -44,6 +56,23 @@ _Replace the heading above with the project's name, and this line with one sente
   needs a full **Stop → Start**; a publish keeps the environment it booted with.
   `/api/status` reports `feedKeyConfigured` so you can tell "never arrived" from
   "wrong value".
+- Image env: player headshots on the news cards, team hubs, player pages and
+  the handcuff board are this server's own resized WebP derivatives at
+  `/news-image/player/<sleeperId>/<version>/<size>.webp` (`src/lib/image-urls.ts`,
+  `src/lib/image-cache.ts`, `src/routes/images.ts`), never the Sleeper
+  originals. The version is a digest of the photo's bytes and lives in the
+  `player_image_versions` table (`src/lib/image-versions.ts`), so the URLs are
+  immutable for a year and still change when Sleeper replaces a photo; the
+  resized files themselves are a disk cache under `data/img-cache/`
+  (gitignored, rebuilt on demand after a publish; `IMAGE_CACHE_DIR` moves it).
+  `SLEEPER_CDN_BASE_URL` points the fetch at a stand-in for the CDN and
+  `IMAGE_VERSIONS_DB=0` keeps versions in memory only; the tests use both.
+  Needs `sharp` (a native dependency of the api-server package). Team logos
+  are locally hosted SVGs in `public/team-logos/`, rebuilt from Wikipedia with
+  `pnpm --filter @workspace/api-server run team-logos` (provenance in
+  `data/team-logos/sources.json`); `/team-logos/<abbr>.svg` and `.png` are
+  day-cached redirects to the current hashed file for the WordPress plugin,
+  the PNG rendered from the SVG for the media library's featured images.
 - Monitoring env: `INGEST_ALERT_MAX_FAILURES` (default 3) and
   `INGEST_ALERT_MAX_AGE_MS` (default 1h) set when `GET /api/ingest/health` starts
   answering 503. Point an uptime checker at it - see below
@@ -1290,8 +1319,9 @@ _Populate as you build - explicit user instructions worth remembering across ses
 - Don't add filter/sort UI as `<a href="?...">`. Use `<button>` and keep the
   state in the DOM - anchors here would create a crawlable duplicate URL space
   and undo the canonical work. Links to *other pages* are fine and wanted; it's
-  parameterised self-links that cause the problem. Set `PUBLIC_CANONICAL_URL` if
-  the app is served behind a different public URL than it sees.
+  parameterised self-links that cause the problem. Production pins its origin to
+  `https://news.statchasers.com` (see Run & Operate); `PUBLIC_CANONICAL_URL`
+  overrides the whole canonical for a deployment behind a different URL.
 - `.sc-card-player` must stay above the headline's stretched `::after` overlay
   (z-index 3 vs 2) or the player/team links become unclickable for readers while
   still being followable by crawlers - a silent, easy-to-miss regression.

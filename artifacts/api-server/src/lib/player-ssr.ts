@@ -32,6 +32,7 @@ import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
 import { bioPersonNode } from "./player/bio-seo";
 import { LruCache } from "./lru";
+import { onImageVersionsChanged } from "./image-versions";
 
 export interface PlayerSsrResult {
   html: string;
@@ -50,6 +51,9 @@ export interface PlayerSsrResult {
 
 const FRAGMENT_CACHE_MAX = 256;
 const fragmentCache = new LruCache<PlayerSsrResult>(FRAGMENT_CACHE_MAX);
+
+// A learned headshot version changes the URLs the hero and peer rail print.
+onImageVersionsChanged(() => invalidatePlayerRenderCache());
 
 export function invalidatePlayerRenderCache(): void {
   fragmentCache.clear();

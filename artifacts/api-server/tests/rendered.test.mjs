@@ -337,7 +337,8 @@ describe("filters", () => {
     for (const row of rows.slice(1)) {
       const logo = row.querySelector("img.sc-team-logo");
       assert.ok(logo, `no logo on the ${row.dataset.team} row`);
-      assert.match(logo.getAttribute("src"), /team_logos\/nfl\//);
+      // The locally hosted SVG served from this origin, never the Sleeper PNG.
+      assert.match(logo.getAttribute("src"), /^\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/);
       assert.equal(
         logo.getAttribute("alt"),
         "",
@@ -359,7 +360,8 @@ describe("filters", () => {
 
     const current = doc.querySelector(".sc-team-current");
     assert.ok(
-      current.querySelector("img").getAttribute("src").endsWith(`/${code}.png`),
+      /\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/.test(current.querySelector("img").getAttribute("src")) &&
+        current.querySelector("img").getAttribute("src").includes(`/team-logos/${code}-`),
       "the trigger should show the chosen team's logo",
     );
     assert.equal(

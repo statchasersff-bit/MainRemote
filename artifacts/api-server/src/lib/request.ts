@@ -1,14 +1,47 @@
 import type { Request } from "express";
 
 /**
+ * The one public name for the newsfeed: canonical URLs, og:url, the embed
+ * snippets and every absolute /news-image/ and /team-logos/ URL name it.
+ * The deployment answers on its *.replit.app address as well, and the
+ * WordPress plugin may fetch fragments over either, but markup printed into
+ * statchasers.com must not depend on which one carried the request - a
+ * fragment fetched over the Replit host used to come back with Replit image
+ * URLs. The image and crest routes live on this host; they are not to be
+ * moved onto api.statchasers.com.
+ */
+export const CANONICAL_PUBLIC_ORIGIN = "https://news.statchasers.com";
+
+const ORIGIN = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i;
+
+/**
+ * The origin fixed by configuration, or null to derive it from the request.
+ *
+ * `PUBLIC_ORIGIN` names another one (a staging deployment behind its own
+ * name) or, as the literal `request`, switches the pin off. Unset, a
+ * production process pins itself to the canonical name and everything else
+ * (the workspace preview, the test suite) follows the request, so a local
+ * page loads its images from the local server.
+ */
+export function configuredPublicOrigin(): string | null {
+  const raw = (process.env["PUBLIC_ORIGIN"] ?? "").trim().replace(/\/+$/, "");
+  if (raw.toLowerCase() === "request") return null;
+  if (ORIGIN.test(raw)) return raw;
+  return process.env["NODE_ENV"] === "production" ? CANONICAL_PUBLIC_ORIGIN : null;
+}
+
+/**
  * The public origin this server is reachable at.
  *
- * Behind a proxy (Replit terminates TLS and forwards x-forwarded-*) the raw
+ * Pinned by configuredPublicOrigin() where that applies. Otherwise, behind a
+ * proxy (Replit terminates TLS and forwards x-forwarded-*) the raw
  * protocol/host are the internal ones, so prefer the forwarded values. Used for
  * the canonical URL, absolute OG URLs, and the generated embed snippets - all
  * of which are wrong if they point at the internal host.
  */
 export function publicOrigin(req: Request): string {
+  const configured = configuredPublicOrigin();
+  if (configured) return configured;
   const forwardedProto = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
   const proto =
     forwardedProto === "http" || forwardedProto === "https"

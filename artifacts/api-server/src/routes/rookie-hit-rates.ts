@@ -28,8 +28,9 @@ import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { browserEndpoint } from "../lib/embed-key";
-import { renderRhrAppPage, renderRhrFragment } from "../lib/rookie-hit-rates-ssr";
+import { renderRhrAppPage, renderRhrFragment , rhrAssets } from "../lib/rookie-hit-rates-ssr";
 import { getRhrData, rhrDataVersion, rhrProfiles } from "../lib/rookie-hit-rates/data";
+import { imageVersionsEpoch } from "../lib/image-versions";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
@@ -154,7 +155,9 @@ router.get(RHR_DATA_PATH, (req, res) => {
       res.status(404).set("Cache-Control", "no-store").type("text/plain").send("No rookie hit rate data is available");
       return;
     }
-    res.set("ETag", `W/"${rhrDataVersion()}"`);
+    // The headshot versions ride along (rhrAssets), so the validator moves
+    // when they do as well as when the dataset does.
+    res.set("ETag", `W/"${rhrDataVersion()}-${imageVersionsEpoch()}"`);
     if (req.fresh) {
       res.status(304).end();
       return;
@@ -163,7 +166,7 @@ router.get(RHR_DATA_PATH, (req, res) => {
       .set("Cache-Control", "public, max-age=300")
       .set("X-Robots-Tag", "noindex")
       .type("application/json")
-      .send(JSON.stringify({ ...data, profiles: rhrProfiles() }));
+      .send(JSON.stringify({ ...data, profiles: rhrProfiles(), assets: rhrAssets(data) }));
   } catch (err) {
     logger.error({ err }, "Failed to serve the rookie hit rates data");
     res.status(503).type("text/plain").send("Rookie hit rates data unavailable");

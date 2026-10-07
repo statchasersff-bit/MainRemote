@@ -364,7 +364,7 @@ class NewsWidget {
   /** The trigger shows the chosen team; exactly one row is marked current. */
   private paintTeamChoice(): void {
     const current = this.root.querySelector<HTMLElement>(".sc-team-current");
-    if (current) current.innerHTML = renderTeamChoice(this.teamFilter);
+    if (current) current.innerHTML = renderTeamChoice(this.teamFilter, this.origin);
 
     for (const row of Array.from(
       this.root.querySelectorAll<HTMLElement>(".sc-team-option"),
@@ -408,7 +408,7 @@ class NewsWidget {
 
     // Same renderer the server used, so the rebuilt rows are byte-identical to
     // the ones they replace - including the sort.
-    list.innerHTML = renderTeamOptions(sortTeamCodes(present), this.teamFilter);
+    list.innerHTML = renderTeamOptions(sortTeamCodes(present), this.teamFilter, this.origin);
     this.paintTeamChoice();
   }
 
@@ -696,6 +696,9 @@ class NewsWidget {
       const html = renderList(items, {
         pageSize: this.pageSize,
         links: this.links,
+        // Same image URLs the server printed: absolute in the WordPress
+        // mount, relative on the standalone page.
+        origin: this.origin,
       });
 
       if (existing) {

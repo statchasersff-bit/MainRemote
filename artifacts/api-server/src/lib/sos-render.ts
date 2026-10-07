@@ -19,6 +19,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
+import { headshotImg } from "./headshot-html";
 import { getFPAUrl, getPlayerPageUrl } from "./team/links";
 import type { FantasyPosition } from "./fpa/nflverse";
 import {
@@ -182,10 +183,22 @@ function renderCard(card: SosCard, board: SosBoard, isPlayer: boolean): string {
         `<span class="scsos-pname-short">${escapeHtml(abbreviateName(name))}</span></span>`
       : `<span class="scsos-card-name">${escapeHtml(name)}</span>`;
 
-  const image = player
-    ? `<img class="scsos-card-img is-headshot" src="https://sleepercdn.com/content/nfl/players/${escapeHtml(player.id)}.jpg"` +
-      ` alt="" width="36" height="36" loading="lazy" decoding="async" />`
-    : `<img class="scsos-card-img" src="${escapeHtml(team.logo)}" alt="" width="28" height="28" loading="lazy" decoding="async" />`;
+  // The 160px square derivative for the 36px round well (headshot-html.ts);
+  // the crest when the card is a team's, or when Sleeper has no photo.
+  const image =
+    (player
+      ? headshotImg({
+          src: null,
+          id: player.id,
+          className: "scsos-card-img is-headshot",
+          alt: "",
+          variants: ["160"],
+          width: 36,
+          height: 36,
+          loading: "lazy",
+        })
+      : null) ??
+    `<img class="scsos-card-img" src="${escapeHtml(team.logo)}" alt="" width="28" height="28" loading="lazy" decoding="async" />`;
 
   const sub = player ? `${team.code} · ${board.position}` : team.fullName;
   const delta = isPlayer

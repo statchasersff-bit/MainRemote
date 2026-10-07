@@ -12,10 +12,13 @@
  * This is the app noticing for itself. Every five minutes it asks for its own
  * /api/healthz twice:
  *
- *   - through the public origin (SC_SELF_URL, default the deployment's
- *     *.replit.app address) - the path readers and the WordPress plugin take.
- *     During the 10-02 outage this exact probe failed from the workspace, so
- *     it is known to exercise the broken route;
+ *   - through the deployment's own *.replit.app address (SC_SELF_URL) - the
+ *     Replit proxy route, with nothing in front of it. During the 10-02
+ *     outage this exact probe failed from the workspace, so it is known to
+ *     exercise the broken route. Deliberately NOT the public name
+ *     (news.statchasers.com, lib/request.ts): that sits behind Cloudflare,
+ *     which can challenge this VM's egress address or have a bad day of its
+ *     own, and neither is something a restart here can cure;
  *   - through 127.0.0.1 - the app itself, no proxy involved.
  *
  * Local up + public down, three probes running (~15 minutes), is the

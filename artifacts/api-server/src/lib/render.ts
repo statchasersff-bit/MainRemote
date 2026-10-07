@@ -21,6 +21,8 @@ import {
   categoryLabel,
   type NewsCategory,
 } from "./news-category";
+import { assetOrigin, headshotSources, sleeperHeadshotId } from "./image-urls";
+import { TEAM_LOGO_FILES } from "./team-logo-files";
 
 export interface NewsItem {
   id: string;
@@ -30,6 +32,12 @@ export interface NewsItem {
   pubDateMs?: number | null;
   playerName?: string | null;
   image?: string | null;
+  /**
+   * The content version of the Sleeper headshot in `image`, stamped by the
+   * server (lib/image-versions.ts): a string once known, null when Sleeper
+   * has no photo for the player, undefined when not yet known.
+   */
+  imageVersion?: string | null;
   summary?: string | null;
   source?: string | null;
   /** Lowercase team abbreviation (e.g. "buf"), resolved server-side. */
@@ -105,8 +113,29 @@ export const TEAM_NAMES: Record<string, string> = {
   ten: "Tennessee Titans", was: "Washington Commanders",
 };
 
+/**
+ * The Sleeper ORIGINAL - a 150px PNG. Nothing in the app prints it any more;
+ * every surface draws the locally hosted SVG (teamLogoAssetUrl, and the
+ * `logo` of lib/team/teams.ts). Kept for the ingest tests' fixtures.
+ */
 export function teamLogoUrl(team: string | null | undefined): string | null {
   return team ? `https://sleepercdn.com/images/team_logos/nfl/${team}.png` : null;
+}
+
+/**
+ * The locally hosted SVG of a team's logo (public/team-logos/, built by
+ * scripts/images/team-logos.mjs), absolute when `origin` is given - the
+ * WordPress mount, where the markup lives on statchasers.com and the files on
+ * this server - and root-relative otherwise. A vector, so the 22px crest in
+ * the filter and the 184px watermark behind a card are the same two-kilobyte
+ * file, cached for a year under its content-hashed name.
+ */
+export function teamLogoAssetUrl(
+  team: string | null | undefined,
+  origin = "",
+): string | null {
+  const file = team ? TEAM_LOGO_FILES[team] : undefined;
+  return file ? `${assetOrigin(origin)}${file}` : null;
 }
 
 /**
@@ -344,7 +373,25 @@ export interface RenderCardOptions {
   links?: LinkTemplates;
   /** True for the single most likely LCP image (the first card's headshot). */
   lcpCandidate?: boolean;
+  /**
+   * True for a card in the first viewport, whose photo should load at once.
+   * Everything else is lazy. The LCP candidate is always eager.
+   */
+  eager?: boolean;
+  /**
+   * The tool server's origin, for the image URLs. Empty (relative) on the
+   * standalone page; the WordPress fragment passes its own.
+   */
+  origin?: string;
 }
+
+/**
+ * How many cards count as "in the first viewport". Card one is the LCP
+ * candidate; two and three are usually visible on a laptop before scrolling.
+ * The fourth card of the first page sits around 700px down, below the fold
+ * on most screens, and is lazy with the rest.
+ */
+export const EAGER_CARDS = 3;
 
 /**
  * The team byline.
@@ -382,7 +429,7 @@ function renderByline(
  * clickability is restored in CSS with a stretched-link overlay.
  */
 export function renderCard(item: NewsItem, options: RenderCardOptions): string {
-  const { pageIndex, links } = options;
+  const { links } = options;
 
   const link = safeUrl(item.link);
   const image = safeUrl(item.image);
@@ -396,31 +443,59 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
     ? `<time class="sc-chip" datetime="${escapeHtml(new Date(ts).toISOString())}" data-ts="${ts}">${escapeHtml(formatAbsoluteDate(ts))}</time>`
     : "";
 
-  // Cards on the first page are visible immediately, so they load eagerly;
-  // everything behind the pager is lazy. All of it is in the HTML either way,
-  // as a plain <img src> - discoverable by the preload scanner without running
+  // Only the first few cards are in the first viewport (EAGER_CARDS); the
+  // rest of the first page and everything behind the pager is below the fold
+  // and loads lazily. All of it is in the HTML either way, as a plain <img>
+  // with src and srcset - discoverable by the preload scanner without running
   // JavaScript, and indexable in a way a CSS background image would not be.
   //
-  // The very first card's headshot is the likeliest LCP element, so it also
-  // gets fetchpriority="high" to jump the queue. Marking more than one would
-  // just dilute the signal.
+  // The very first card's headshot is the likeliest LCP element, so it is
+  // never lazy and also gets fetchpriority="high" to jump the queue. Marking
+  // more than one would just dilute the signal.
   const isLcpCandidate = options.lcpCandidate === true;
-  const loading = pageIndex === 0 ? "eager" : "lazy";
+  const eager = isLcpCandidate || options.eager === true;
+  const loading = eager ? "eager" : "lazy";
   const priority = isLcpCandidate ? ` fetchpriority="high"` : "";
   const decoding = isLcpCandidate ? "sync" : "async";
-  const mediaInner = image
-    ? `<img class="sc-card-photo" src="${escapeHtml(image)}" alt="${playerName}" width="108" height="108" loading="${loading}" decoding="${decoding}"${priority} />`
-    : // No headshot for this player: the badge shows the StatChasers logo,
-      // painted by styles.css as a background rather than an <img>. The mark is
-      // decoration standing in for a missing photo, not content - so it stays
-      // out of the accessibility tree and out of the image index, and the URL
-      // resolves against the stylesheet's own origin, which is the tool server
-      // in both mounts. An <img> here would need the origin threaded through
-      // every render path just to avoid pointing at the host site.
-      `<span class="sc-card-photo-fallback" aria-hidden="true"></span>`;
+  const origin = options.origin ?? "";
+
+  // A Sleeper headshot is served as this server's resized, versioned WebP
+  // derivatives (lib/image-urls.ts, routes/images.ts), never as the 350x254
+  // original: src is the smallest square, srcset offers the three widths,
+  // sizes is the box they are drawn in, and width/height put the 1:1 ratio
+  // on the element before a byte arrives. The version rides on the item
+  // (imageVersion, stamped by the server); null means Sleeper has no photo
+  // for the player, and the card draws its fallback mark rather than an
+  // <img> that would 404. An image from any other host is printed as the
+  // feed supplied it.
+  const headshotId = sleeperHeadshotId(image);
+  let mediaInner: string;
+  if (headshotId && item.imageVersion !== null) {
+    const photo = headshotSources(headshotId, item.imageVersion, origin);
+    mediaInner =
+      `<img class="sc-card-photo" src="${escapeHtml(photo.src)}"` +
+      ` srcset="${escapeHtml(photo.srcset)}" sizes="${escapeHtml(photo.sizes)}"` +
+      ` alt="${playerName}" width="${photo.width}" height="${photo.height}"` +
+      ` loading="${loading}" decoding="${decoding}"${priority} />`;
+  } else if (image && !headshotId) {
+    mediaInner = `<img class="sc-card-photo" src="${escapeHtml(image)}" alt="${playerName}" width="108" height="108" loading="${loading}" decoding="${decoding}"${priority} />`;
+  } else {
+    // Either no headshot at all, or a Sleeper id the CDN has no photo for
+    // (imageVersion null) - the same badge either way, and never the original.
+    // No headshot for this player: the badge shows the StatChasers logo,
+    // painted by styles.css as a background rather than an <img>. The mark is
+    // decoration standing in for a missing photo, not content - so it stays
+    // out of the accessibility tree and out of the image index, and the URL
+    // resolves against the stylesheet's own origin, which is the tool server
+    // in both mounts.
+    mediaInner = `<span class="sc-card-photo-fallback" aria-hidden="true"></span>`;
+  }
 
   const team = item.team ?? null;
-  const logo = teamLogoUrl(team);
+  // The watermark behind the text: the logo derivative, not the Sleeper PNG.
+  // An inline style resolves against the DOCUMENT, so in the WordPress mount
+  // this has to be absolute - hence the origin, which the fragment carries.
+  const logo = teamLogoAssetUrl(team, origin);
   const color = team ? TEAM_COLORS[team] : null;
   const accent = team ? TEAM_ACCENTS[team] : null;
 
@@ -465,6 +540,8 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
 export interface RenderListOptions {
   pageSize?: number;
   links?: LinkTemplates;
+  /** The tool server's origin for image URLs; empty for same-origin paths. */
+  origin?: string;
 }
 
 /**
@@ -527,8 +604,10 @@ export function renderList(
         `>` +
         renderCard(item, {
           pageIndex,
+          eager: index < EAGER_CARDS,
           ...(index === lcpIndex ? { lcpCandidate: true } : {}),
           ...(options.links ? { links: options.links } : {}),
+          ...(options.origin ? { origin: options.origin } : {}),
         }) +
         `</li>`
       );
@@ -586,8 +665,10 @@ function teamLabel(code: string): string {
  * Decorative in both cases: the team's name is right beside it as text, so a
  * second announcement of "Bills logo, Buffalo Bills" adds nothing.
  */
-function teamMark(code: string): string {
-  const logo = teamLogoUrl(code);
+function teamMark(code: string, origin = ""): string {
+  // The local SVG: crisp at 22px on any screen, and the same file the
+  // card watermark draws, so the menu costs no second download.
+  const logo = teamLogoAssetUrl(code, origin);
   return logo
     ? `<img class="sc-team-logo" src="${escapeHtml(logo)}" alt=""` +
         ` width="22" height="22" loading="lazy" decoding="async" />`
@@ -595,9 +676,9 @@ function teamMark(code: string): string {
 }
 
 /** Logo + name, as shown both on the trigger and on every row of the menu. */
-export function renderTeamChoice(code: string): string {
+export function renderTeamChoice(code: string, origin = ""): string {
   return (
-    teamMark(code) +
+    teamMark(code, origin) +
     `<span class="sc-team-name">${escapeHtml(teamLabel(code))}</span>`
   );
 }
@@ -609,7 +690,11 @@ export function renderTeamChoice(code: string): string {
  * teams are in the feed - same function, same markup, so the rebuilt menu is
  * identical to the one the server rendered.
  */
-export function renderTeamOptions(codes: string[], selected: string): string {
+export function renderTeamOptions(
+  codes: string[],
+  selected: string,
+  origin = "",
+): string {
   return ["", ...codes]
     .map((code) => {
       const current = code === selected;
@@ -617,7 +702,7 @@ export function renderTeamOptions(codes: string[], selected: string): string {
         `<li>` +
         `<button type="button" class="sc-team-option${current ? " is-current" : ""}"` +
         ` data-team="${escapeHtml(code)}" aria-pressed="${current}">` +
-        renderTeamChoice(code) +
+        renderTeamChoice(code, origin) +
         `</button></li>`
       );
     })
@@ -754,7 +839,7 @@ function renderSelectFilter(
  * filtering is DOM-only, so an option for a team with no cards could only ever
  * produce an empty list.
  */
-export function renderFilters(items: NewsItem[]): string {
+export function renderFilters(items: NewsItem[], origin = ""): string {
   const teams = teamCodesInItems(items);
   const showX = hasXItems(items);
 
@@ -778,12 +863,12 @@ export function renderFilters(items: NewsItem[]): string {
     `<summary class="sc-team-trigger"` +
     ` aria-labelledby="scFilterTeamLabel scFilterTeamValue">` +
     `<span class="sc-team-current" id="scFilterTeamValue">` +
-    renderTeamChoice("") +
+    renderTeamChoice("", origin) +
     `</span>` +
     `<span class="sc-team-caret" aria-hidden="true"></span>` +
     `</summary>` +
     `<div class="sc-team-panel">` +
-    `<ul class="sc-team-list">${renderTeamOptions(teams, "")}</ul>` +
+    `<ul class="sc-team-list">${renderTeamOptions(teams, "", origin)}</ul>` +
     `</div>` +
     `</details>` +
     `</div>` +
@@ -959,10 +1044,11 @@ export function renderFragment(
     // Outside renderList on purpose: a background refresh replaces the list and
     // pager wholesale, and the reader's half-typed search and chosen team must
     // survive that.
-    renderToolbar(items.length > 0 ? renderFilters(items) : "") +
+    renderToolbar(items.length > 0 ? renderFilters(items, origin ?? "") : "") +
     renderList(items, {
       pageSize,
       ...(links ? { links } : {}),
+      ...(origin ? { origin } : {}),
     }) +
     // Shown by the client when the filters exclude everything. Rendered here,
     // hidden, rather than created on demand so the message is one string in one

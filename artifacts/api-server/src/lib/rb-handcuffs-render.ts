@@ -31,7 +31,8 @@
  *    `<details>`, and open with scripting off.
  */
 
-import { escapeHtml, escapeJsonLd, teamLogoUrl } from "./render";
+import { escapeHtml, escapeJsonLd } from "./render";
+import { headshotImg } from "./headshot-html";
 import { getTeamByAbbreviation } from "./team/teams";
 import {
   archetypeLine,
@@ -114,14 +115,9 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1]![0] : "")).toUpperCase();
 }
 
-/** Sleeper's logo files are lower case and use Sleeper's codes: WSH is `was`. */
+/** The club's locally hosted SVG (lib/team/teams.ts); Sleeper's codes: WSH is `was`. */
 function logoFor(team: string): string | null {
-  const abbr = getTeamByAbbreviation(team)?.abbreviation ?? team.toLowerCase();
-  return teamLogoUrl(abbr);
-}
-
-function headshotUrl(sleeperId: string): string {
-  return `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(sleeperId)}.jpg`;
+  return getTeamByAbbreviation(team)?.logo ?? null;
 }
 
 function playerHref(slug: string, options: HandcuffRenderOptions): string {
@@ -1067,7 +1063,16 @@ export function renderHandcuffCard(
     `<div class="rbh-hero-photo">` +
     `<span class="rbh-hero-initials" aria-hidden="true">${escapeHtml(initials(p.playerName))}</span>` +
     (p.sleeperId
-      ? `<img src="${escapeHtml(headshotUrl(p.sleeperId))}" alt="${escapeHtml(p.playerName)}" width="120" height="120" decoding="async" />`
+      ? headshotImg({
+          src: null,
+          id: p.sleeperId,
+          className: "rbh-hero-shot",
+          alt: p.playerName,
+          variants: ["160", "256"],
+          sizes: "120px",
+          width: 120,
+          height: 120,
+        }) ?? ""
       : "") +
     `</div>` +
     `<div class="rbh-hero-body">` +

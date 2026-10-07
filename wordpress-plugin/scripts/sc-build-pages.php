@@ -515,8 +515,14 @@ function sc_set_crest( $id, $name, $abbr, $go ) {
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 
-	$url  = 'https://sleepercdn.com/images/team_logos/nfl/' . $abbr . '.png';
-	$file = download_url( $url, 30 );
+	// The API's PNG rendering of the crest it draws everywhere else
+	// (/team-logos/<abbr>.png redirects to the current file); Sleeper's 150px
+	// PNG only when the main plugin and its origin are not available.
+	$origin = function_exists( 'statchasers_news_origin' ) ? rtrim( (string) statchasers_news_origin(), '/' ) : '';
+	$url    = '' !== $origin
+		? $origin . '/team-logos/' . rawurlencode( $abbr ) . '.png'
+		: 'https://sleepercdn.com/images/team_logos/nfl/' . $abbr . '.png';
+	$file   = download_url( $url, 30 );
 
 	if ( is_wp_error( $file ) ) {
 		sc_say( 'warn', sprintf( '%s: crest download failed (%s) - set it by hand', $name, $file->get_error_message() ) );

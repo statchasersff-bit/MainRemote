@@ -86,6 +86,9 @@ artifacts/api-server/.dev-restart.lock
 # Share images, drawn on first request from the stored box scores (og-image.ts).
 # Derived, and redrawn when deleted, so never committed.
 artifacts/api-server/data/og/
+# Resized WebP copies of Sleeper headshots and team logos, built on first
+# request (lib/image-cache.ts). Derived, and rebuilt when deleted.
+artifacts/api-server/data/img-cache/
 # Written by the production refresh (find-game-videos.mjs --live).
 artifacts/api-server/data/matchup/game-videos-live.json
 artifacts/api-server/data/matchup/game-videos-live-misses.json
