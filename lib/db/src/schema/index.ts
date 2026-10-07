@@ -22,3 +22,4 @@ export * from "./x";
 export * from "./fpa";
 export * from "./practice";
 export * from "./depth-charts";
+export * from "./player-images";

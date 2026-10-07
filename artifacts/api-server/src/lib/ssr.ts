@@ -21,12 +21,18 @@ import {
   renderFragment,
   DEFAULT_PAGE_SIZE,
   type LinkTemplates,
+  type NewsItem,
   type RelatedLink,
 } from "./render";
 import { ensureTeams } from "./teams";
 import { pageMeta, renderHeadTags, type PageMeta } from "./seo";
 import { contentVersion, ensureFreshness } from "./freshness";
 import { logger } from "./logger";
+import {
+  imageVersionsEpoch,
+  onImageVersionsChanged,
+  stampImageVersions,
+} from "./image-versions";
 
 export interface SsrOptions {
   limit?: number;
@@ -58,13 +64,38 @@ const renderCache = new Map<string, string>();
 /** Bound the map so unusual option combinations can't grow it without limit. */
 const RENDER_CACHE_MAX = 32;
 
+/**
+ * The items behind each rendered fragment, keyed by content version and
+ * limit, and kept SEPARATELY from the HTML. A learned headshot version only
+ * changes the URLs a card prints, so it re-renders from these same items
+ * rather than re-reading the archive: a re-read could surface a story the
+ * freshness snapshot has not yet seen, and the page would change under an
+ * ETag that had not - exactly what the freshness suite guards against.
+ */
+const itemsCache = new Map<string, NewsItem[]>();
+const ITEMS_CACHE_MAX = 8;
+
+/** The archive changed (an ingest ran): forget the items and the HTML. */
 export function invalidateRenderCache(): void {
   renderCache.clear();
+  itemsCache.clear();
 }
+
+// A learned headshot version changes the URLs a card prints, not the stories.
+onImageVersionsChanged(() => renderCache.clear());
+
+/**
+ * How long the first render waits for headshot versions it has not met. One
+ * round trip to Sleeper plus a resize is well under this; a feed full of new
+ * faces after a cold start spills into the background and the cache listener
+ * above re-renders when they land.
+ */
+const IMAGE_VERSION_BUDGET_MS = 1_500;
 
 function cacheKey(options: SsrOptions, limit: number): string {
   return JSON.stringify([
     contentVersion(),
+    imageVersionsEpoch(),
     limit,
     options.pageSize ?? DEFAULT_PAGE_SIZE,
     options.origin ?? "",
@@ -103,7 +134,17 @@ export async function renderNewsFragment(
   const hit = renderCache.get(key);
   if (hit !== undefined) return hit;
 
-  const items = await listNews({ limit });
+  const itemsKey = JSON.stringify([contentVersion(), limit]);
+  let items = itemsCache.get(itemsKey);
+  if (!items) {
+    items = await listNews({ limit });
+    if (itemsCache.size >= ITEMS_CACHE_MAX) {
+      const oldest = itemsCache.keys().next();
+      if (!oldest.done) itemsCache.delete(oldest.value);
+    }
+    itemsCache.set(itemsKey, items);
+  }
+  await stampImageVersions(items, IMAGE_VERSION_BUDGET_MS);
   const html = renderFragment(items, {
     limit,
     pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,

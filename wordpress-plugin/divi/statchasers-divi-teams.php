@@ -2,7 +2,7 @@
 /**
  * Plugin Name: StatChasers Divi Team Pages
  * Description: Per-team data for a single Divi Theme Builder template, plus the sticky-header offset the hub needs. Companion to the StatChasers plugin.
- * Version:     1.0.0
+ * Version:     1.0.1
  *
  * Install as an mu-plugin: wp-content/mu-plugins/statchasers-divi-teams.php
  * (mu-plugins load unconditionally, so nothing here can be switched off by
@@ -100,12 +100,35 @@ function statchasers_divi_team(): ?array {
 
 	$team         = STATCHASERS_DIVI_TEAMS[ $slug ];
 	$team['slug'] = $slug;
-	// The same Sleeper CDN crest the hub's own hero and the news cards use, so
-	// a Divi hero above the hub shows the identical mark rather than a second
-	// artwork that has to be kept in step by hand.
-	$team['logo'] = 'https://sleepercdn.com/images/team_logos/nfl/' . $team['abbr'] . '.png';
+	// The same crest the hub's own hero and the news cards draw - the SVG the
+	// API serves from its own origin (/team-logos/<abbr>.svg redirects to the
+	// current content-hashed file) - so a Divi hero above the hub shows the
+	// identical mark rather than a second artwork kept in step by hand. The
+	// Sleeper PNG the hub used to draw is the fallback when the main plugin,
+	// which knows the API origin, is not active.
+	$team['logo'] = statchasers_divi_crest_url( $team['abbr'] );
 
 	return $team;
+}
+
+/**
+ * The crest URL for a team code: the API's own SVG when its origin is known.
+ *
+ * @param string $abbr Sleeper's lowercase team code.
+ * @return string
+ */
+function statchasers_divi_crest_url( string $abbr ): string {
+	$origin = '';
+	if ( function_exists( 'statchasers_news_origin' ) ) {
+		$origin = (string) statchasers_news_origin();
+	} elseif ( defined( 'STATCHASERS_NEWS_ORIGIN' ) ) {
+		$origin = (string) constant( 'STATCHASERS_NEWS_ORIGIN' );
+	}
+	$origin = rtrim( $origin, '/' );
+	if ( '' !== $origin ) {
+		return $origin . '/team-logos/' . rawurlencode( $abbr ) . '.svg';
+	}
+	return 'https://sleepercdn.com/images/team_logos/nfl/' . rawurlencode( $abbr ) . '.png';
 }
 
 /**

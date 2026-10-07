@@ -4,6 +4,9 @@ import { runClubIngest, runIngest, wireIngestEnabled } from "./routes/news";
 import { startXScheduler } from "./lib/x/scheduler";
 import { startPlayerRefreshScheduler } from "./lib/player/live-refresh";
 import { startWatchdog } from "./lib/watchdog";
+import { loadImageVersions } from "./lib/image-versions";
+// Registers the headshot resolver with the version store (import for effect).
+import "./lib/image-cache";
 
 const rawPort = process.env["PORT"];
 
@@ -26,6 +29,14 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Which headshot version each player is at, from the table, so the first
+  // renders after a (re)start print versioned image URLs rather than
+  // redirects. Not awaited: a render before it lands prints `latest` and the
+  // cache listeners re-render once it has.
+  loadImageVersions()
+    .then((count) => logger.info({ count }, "Player image versions loaded"))
+    .catch((err) => logger.warn({ err }, "Player image versions failed to load"));
 
   // The wire: on startup, then every 10 minutes. Not in the development
   // workspace unless asked for - see wireIngestEnabled().

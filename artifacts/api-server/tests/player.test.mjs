@@ -2280,7 +2280,9 @@ describe("the player search", () => {
     for (const [code, club] of Object.entries(teams)) {
       assert.match(code, /^[A-Z]{2,3}$/);
       assert.ok(club.name, `${code} carries a nickname`);
-      assert.match(club.logo, /^https:\/\//, `${code} carries an absolute logo`);
+      // Absolute on whatever origin served the page: the logo is this
+      // server's own SVG now, not a fixed https CDN host.
+      assert.match(club.logo, /^https?:\/\/[^/]+\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/, `${code} carries an absolute logo`);
     }
     assert.ok(
       Object.keys(teams).length <= 32,
@@ -2320,7 +2322,7 @@ describe("the player search", () => {
       assert.match(division, /^(AFC|NFC) (East|North|South|West)$/, row);
       // The logo is not repeated in the row: it is already beside it, once
       // per code, for the players on that club.
-      assert.match(teams[code].logo, /^https:\/\//, `${code} has a mark to draw`);
+      assert.match(teams[code].logo, /^https?:\/\/[^/]+\/team-logos\//, `${code} has a mark to draw`);
       slugs.add(slug);
     }
     assert.equal(slugs.size, 32, "no club listed twice");

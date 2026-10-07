@@ -39,7 +39,7 @@ import {
 export { clubFeedUrl, clubOutlet, type ClubNewsItem };
 
 /** Identifies this server to the club feeds, as the player wire's fetch does. */
-const USER_AGENT = "StatChasersNews/1.0 (+https://newsfeed.replit.app)";
+const USER_AGENT = "StatChasersNews/1.0 (+https://news.statchasers.com)";
 
 /** Per-feed timeout. One slow club must not hold up the other 31. */
 const FEED_TIMEOUT_MS = 12_000;

@@ -30,7 +30,7 @@ nothing is hidden behind a click.
 2. Point it at the news API in `wp-config.php`:
 
    ```php
-   define( 'STATCHASERS_NEWS_ORIGIN', 'https://your-news-app.example.com' );
+   define( 'STATCHASERS_NEWS_ORIGIN', 'https://news.statchasers.com' );
    ```
 
    Alternatively set the `statchasers_news_origin` option, or filter

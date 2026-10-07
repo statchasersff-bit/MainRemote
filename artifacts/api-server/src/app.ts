@@ -19,12 +19,15 @@ import rookieHitRatesRouter from "./routes/rookie-hit-rates";
 import previewRouter from "./routes/preview";
 import xRouter from "./routes/x";
 import depthChartsRouter from "./routes/depth-charts";
+import imagesRouter from "./routes/images";
 import { refreshIfStale } from "./routes/news";
 import { logger } from "./lib/logger";
 import { setupLiveReload } from "./lib/livereload";
 import { renderAppPage } from "./lib/ssr";
 import { canonicalUrl } from "./lib/request";
 import { requireEmbedKey } from "./lib/embed-key";
+import { runWithAssetOrigin } from "./lib/asset-origin";
+import { publicOrigin } from "./lib/request";
 import { linkTemplatesFromEnv, relatedLinksFromEnv } from "./lib/links";
 import { devBarEnabled, injectDevBar } from "./lib/devbar";
 import { contentVersion, ensureFreshness, freshness } from "./lib/freshness";
@@ -55,6 +58,13 @@ app.use(
   }),
 );
 app.use(cors());
+// Every handler below runs inside this request's asset-origin context, so a
+// renderer deep in the team hub or a player page can print an absolute URL
+// for a file on this server without the request being threaded to it. See
+// lib/asset-origin.ts.
+app.use((req, _res, next) => {
+  runWithAssetOrigin(publicOrigin(req), next);
+});
 /**
  * gzip/brotli for everything except the dev live-reload stream, which is a
  * long-lived event stream that compression would buffer. Nothing here was
@@ -95,6 +105,12 @@ app.use("/api", router);
 // Copy-paste embed snippet page (/embed and /embed.txt). Mounted before the
 // static/SPA fallback so it isn't swallowed by the index.html catch-all.
 app.use(embedRouter);
+
+// /news-image/player/*: the resized, versioned WebP headshots the news
+// cards, team hub and player pages point at instead of the Sleeper CDN.
+// Public by design - a reader's browser fetches them straight from here,
+// cross-origin.
+app.use(imagesRouter);
 
 // NFL Team Hub: /team, /team/:slug and the /embed/team/:slug fragment. Mounted
 // here for the same reason as the embed router - the 404 at the bottom of this
@@ -270,8 +286,16 @@ app.use((req, res, next) => {
 app.use(
   express.static(publicDir, {
     setHeaders(res, filePath) {
-      if (process.env["NODE_ENV"] !== "production") return;
       const rel = `/${path.relative(publicDir, filePath).split(path.sep).join("/")}`;
+      // The team logo SVGs carry a content hash in their file name
+      // (scripts/images/team-logos.mjs), so each URL names one set of bytes
+      // for good - for the browser and for Cloudflare in front of this origin.
+      if (/^\/team-logos\/[a-z]{2,3}-[0-9a-f]{8}\.svg$/.test(rel)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        res.setHeader("Cloudflare-CDN-Cache-Control", "public, max-age=31536000");
+        return;
+      }
+      if (process.env["NODE_ENV"] !== "production") return;
       if (!HASHED_ASSETS.has(rel)) return;
       builtAssetVersion ??= assetVersion();
       const ver = (res as Response).req?.query["ver"];

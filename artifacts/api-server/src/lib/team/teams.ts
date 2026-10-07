@@ -20,7 +20,9 @@
  * news cards disagree about its own colour.
  */
 
-import { TEAM_ACCENTS, TEAM_COLORS, TEAM_NAMES, teamLogoUrl } from "../render";
+import { TEAM_ACCENTS, TEAM_COLORS, TEAM_NAMES } from "../render";
+import { TEAM_LOGO_FILES } from "../team-logo-files";
+import { assetUrl } from "../asset-origin";
 
 export type Conference = "AFC" | "NFC";
 export type DivisionName = "East" | "North" | "South" | "West";
@@ -45,8 +47,14 @@ export interface NflTeam {
   divisionName: DivisionName;
   /** e.g. "AFC East" - the form shown in the hero. */
   division: string;
-  /** Absolute logo URL (Sleeper's CDN, already used by the news cards). */
-  logo: string;
+  /**
+   * The team's logo: the locally hosted SVG (public/team-logos/), as an
+   * absolute URL on this server for the request being answered - the markup
+   * is printed into statchasers.com, where a root-relative path would point
+   * at the wrong host. A getter, read at print time (lib/asset-origin.ts), so
+   * the same table serves every origin; outside a request it is the path.
+   */
+  readonly logo: string;
   primaryColor: string;
   secondaryColor: string;
   /** ESPN's numeric team id, for the schedule/record/statistics providers. */
@@ -123,7 +131,7 @@ const SEEDS: TeamSeed[] = [
 
 function build(seed: TeamSeed): NflTeam {
   const abbr = seed.abbreviation;
-  return {
+  const team: NflTeam = {
     abbreviation: abbr,
     code: abbr.toUpperCase(),
     slug: seed.slug,
@@ -137,13 +145,18 @@ function build(seed: TeamSeed): NflTeam {
     conference: seed.conference,
     divisionName: seed.divisionName,
     division: `${seed.conference} ${seed.divisionName}`,
-    logo: teamLogoUrl(abbr) ?? "",
+    logo: "",
     primaryColor: TEAM_COLORS[abbr] ?? "#0b1634",
     secondaryColor: TEAM_ACCENTS[abbr] ?? "#d4af37",
     espnId: seed.espnId,
     espnAbbr: seed.espnAbbr ?? abbr.toUpperCase(),
     siteDomain: seed.siteDomain,
   };
+  Object.defineProperty(team, "logo", {
+    enumerable: true,
+    get: () => assetUrl(TEAM_LOGO_FILES[abbr] ?? ""),
+  });
+  return team;
 }
 
 /** All 32 teams, in division order. */

@@ -18,6 +18,9 @@ import { renderRhrEmpty, renderRhrPage, rhrPageCopy, type RhrRenderOptions } fro
 import { defaultState, getRhrData, rhrDataVersion } from "./rookie-hit-rates/data";
 import { renderRhrHeadTags } from "./rookie-hit-rates-seo";
 import { LruCache } from "./lru";
+import { currentAssetOrigin } from "./asset-origin";
+import { enqueueImageResolve, imageVersionFor, imageVersionsEpoch, onImageVersionsChanged } from "./image-versions";
+import type { PackedDataset, RhrAssets } from "./rookie-hit-rates/model";
 
 export interface RhrSsrResult {
   html: string;
@@ -35,6 +38,31 @@ export function invalidateRhrRenderCache(): void {
   fragmentCache.clear();
 }
 
+// A learned headshot version changes the avatar URLs the players table prints.
+onImageVersionsChanged(invalidateRhrRenderCache);
+
+/**
+ * Where the browser finds this server's headshots and crests, and which
+ * version each rookie's photo is at. Attached to the dataset per request -
+ * the renderer runs in the browser too, so it cannot read the version store
+ * itself. Players the store has not met yet are left out (the renderer prints
+ * `latest`) and queued for resolution in the background.
+ */
+export function rhrAssets(data: PackedDataset): RhrAssets {
+  const headshots: Record<string, string | null> = {};
+  for (const player of data.players) {
+    const id = player[8];
+    if (!id) continue;
+    const version = imageVersionFor(id);
+    if (version === undefined) {
+      void enqueueImageResolve(id);
+      continue;
+    }
+    headshots[id] = version;
+  }
+  return { origin: currentAssetOrigin(), headshots };
+}
+
 /** Short, stable, non-cryptographic - this only has to differ, not resist. */
 function hash(value: string): string {
   let h = 5381;
@@ -49,12 +77,15 @@ export function renderRhrFragment(options: RhrRenderOptions = {}): RhrSsrResult 
   if (!data) {
     return { html: renderRhrEmpty(options), version: "empty", ok: false, firstClass: null, lastClass: null };
   }
-  const key = JSON.stringify([options.embed ?? false, options.dataUrl ?? ""]);
-  const version = `${rhrDataVersion()}-${hash(key)}`;
+  // The origin and the known headshot versions are in the markup, so both
+  // key the cache alongside the options.
+  const assets = rhrAssets(data);
+  const key = JSON.stringify([options.embed ?? false, options.dataUrl ?? "", assets.origin]);
+  const version = `${rhrDataVersion()}-${imageVersionsEpoch()}-${hash(key)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
   const result: RhrSsrResult = {
-    html: renderRhrPage(data, defaultState(data), options),
+    html: renderRhrPage({ ...data, assets }, defaultState(data), options),
     version,
     ok: true,
     firstClass: data.firstClass,

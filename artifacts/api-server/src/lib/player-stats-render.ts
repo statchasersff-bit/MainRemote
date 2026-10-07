@@ -30,6 +30,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
+import { headshotImg } from "./headshot-html";
 import {
   ADVANCED_COPY,
   introCopy,
@@ -415,10 +416,6 @@ function renderControls(table: StatsTable, options: StatsRenderOptions): string 
 
 /* ---------------------------------------------------------- leader cards */
 
-function headshotUrl(playerId: string): string {
-  return `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(playerId)}.jpg`;
-}
-
 /**
  * A section's head: the small label over the heading.
  */
@@ -443,10 +440,20 @@ function renderLeaderBody(leader: LeaderFigure, options: StatsRenderOptions, cla
   // so the row keeps its height before the file arrives rather than growing
   // when it does. skip-lazy / data-no-lazy keep WP Rocket from swapping in
   // its empty-SVG placeholder (drawn at 300x150) on the WordPress host.
-  const photo = row?.playerId
-    ? `<img class="sca-leader-photo skip-lazy" src="${escapeHtml(headshotUrl(row.playerId))}"` +
-      ` alt="" width="36" height="36" decoding="async" data-no-lazy="1" />`
-    : "";
+  // The 160px square derivative on this server (headshot-html.ts).
+  const photo =
+    (row?.playerId
+      ? headshotImg({
+          src: null,
+          id: row.playerId,
+          className: "sca-leader-photo skip-lazy",
+          alt: "",
+          variants: ["160"],
+          width: 36,
+          height: 36,
+          extra: ` data-no-lazy="1"`,
+        })
+      : null) ?? "";
 
   return (
     `<div class="${className}">` +

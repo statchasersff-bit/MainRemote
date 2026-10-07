@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.25
+Stable tag: 1.10.26
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule and the dynasty rookie hit rates into WordPress pages.
@@ -19,6 +19,10 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.26 =
+* Team page featured images: the crest is sideloaded from the API's own rendering (<origin>/team-logos/<abbr>.png, a PNG of the SVG every tool now draws) instead of Sleeper's 150px PNG. Needs the matching API deploy; with no origin configured it falls back to Sleeper as before. The companion Divi file (1.0.1) points its hero crest at the API's SVG the same way.
+* No functional change to the tool pages themselves: the API deploy moves every player headshot to its own resized, versioned WebP derivatives and every team crest to a locally hosted SVG, so nothing on a tool page loads from sleepercdn.com any more.
 
 = 1.10.25 =
 * Webfonts: one loader per family, each a dependency of the one stylesheet that names it, never an enqueue of its own. Inter (handle statchasers-font) is the dependency of every tool stylesheet, as before, now at five weights, 400 to 800; every font-weight: 900 in the served stylesheets became 800 (86 declarations, 61 of them in team.css), so the heaviest file is no longer downloaded for nothing. Barlow and Barlow Condensed (new handle statchasers-display-font, filter statchasers_matchup_font_url unchanged) are a dependency of team.css instead of being enqueued by hand in both the hub and the matchup code, so they print exactly where a hub or a matchup mounts. Archivo stays a dependency of player.css only. DM Sans and Space Grotesk, the NFL schedule's type, move out of an @import at the top of schedule.css - which went straight to Google on every schedule page, past the enqueue system and past OMGF - into a dependency of schedule.css (handle statchasers-schedule-font, filter statchasers_schedule_font_url). Needs the matching API deploy for the stylesheet changes.

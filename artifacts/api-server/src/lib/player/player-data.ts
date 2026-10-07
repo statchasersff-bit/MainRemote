@@ -1550,12 +1550,15 @@ let searchIndexCache: { stamp: string; index: PlayerSearchIndex } | null = null;
 
 export function playerSearchIndex(): PlayerSearchIndex {
   const stamp = dataStamp();
-  if (searchIndexCache?.stamp === stamp) return searchIndexCache.index;
-
+  // The clubs are rebuilt on every call rather than cached with the rows:
+  // `team.logo` is absolute for the REQUEST being answered (lib/asset-origin.ts),
+  // and a cached copy would carry whatever origin asked first. Thirty-two
+  // entries; the ~575 rows are what the cache is for.
   const teams: PlayerSearchIndex["teams"] = {};
   for (const team of TEAMS) {
     teams[team.code] = { name: team.nickname, logo: team.logo };
   }
+  if (searchIndexCache?.stamp === stamp) return { ...searchIndexCache.index, teams };
 
   // The city and the nickname separately rather than the full name joined,
   // because the client matches word by word and "New England" is two of them.

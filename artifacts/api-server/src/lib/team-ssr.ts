@@ -22,6 +22,7 @@ import { dataVersion, getTeamPageData } from "./team/team-data";
 import { renderTeamHeadTags, teamPageMeta } from "./team-seo";
 import type { NflTeam } from "./team/teams";
 import { LruCache } from "./lru";
+import { onImageVersionsChanged } from "./image-versions";
 
 export interface TeamSsrResult {
   html: string;
@@ -37,6 +38,9 @@ export interface TeamSsrResult {
  */
 const FRAGMENT_CACHE_MAX = 256;
 const fragmentCache = new LruCache<TeamSsrResult>(FRAGMENT_CACHE_MAX);
+
+// A learned headshot version changes the URLs the roster and depth rows print.
+onImageVersionsChanged(() => invalidateTeamRenderCache());
 
 export function invalidateTeamRenderCache(): void {
   fragmentCache.clear();

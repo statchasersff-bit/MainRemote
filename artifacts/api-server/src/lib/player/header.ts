@@ -10,7 +10,8 @@
  * Its styles are in player.css under "header", with their own tokens and face.
  */
 
-import { escapeHtml, safeUrl } from "../render";
+import { escapeHtml } from "../render";
+import { headshotImg } from "../headshot-html";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
 import type { NflTeam } from "../team/teams";
@@ -407,19 +408,28 @@ const SILHOUETTE =
  */
 function renderPhotoWell(data: PlayerPageData): string {
   const { player } = data;
-  const src = player.headshotUrl
-    ? safeUrl(player.headshotUrl)
-    : `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(player.id)}.jpg`;
   const jersey = player.number
     ? `<span class="scp-pwell-num" aria-hidden="true">${escapeHtml(String(player.number))}</span>`
     : "";
-  const img = src
-    ? `<img class="scp-pwell-img" src="${escapeHtml(src)}"` +
-      ` alt="${escapeHtml(`${player.name} headshot`)}"` +
-      ` width="350" height="254" fetchpriority="high" decoding="async" />`
-    : "";
+  // The full figure at its own 350x254 ratio, drawn 200px wide (160 on a
+  // phone): the f200 derivative for 1x screens and the f350 original size for
+  // 2x, versioned and WebP (headshot-html.ts). Still the LCP candidate, so
+  // eager and at high priority. A player known to have no photo ships the
+  // silhouette.
+  const img =
+    headshotImg({
+      src: player.headshotUrl,
+      id: player.id,
+      className: "scp-pwell-img",
+      alt: `${player.name} headshot`,
+      variants: ["f200", "f350"],
+      sizes: "(max-width: 640px) 160px, 200px",
+      width: 350,
+      height: 254,
+      fetchpriority: "high",
+    }) ?? "";
   return (
-    `<div class="scp-pwell${src ? "" : " is-missing"}" data-scp-pwell>` +
+    `<div class="scp-pwell${img ? "" : " is-missing"}" data-scp-pwell>` +
     jersey +
     SILHOUETTE +
     img +

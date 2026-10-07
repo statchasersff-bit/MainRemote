@@ -123,7 +123,7 @@ function searchable(text: string): Searchable {
 
 function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: TeamEntry[] } {
   const empty = { players: [], teams: [] };
-  let island: { rows?: unknown; teams?: Record<string, Club>; clubs?: unknown };
+  let island: { rows?: unknown; teams?: Record<string, Club>; clubs?: unknown; shots?: unknown };
   try {
     island = JSON.parse(script.textContent ?? "{}");
   } catch {
@@ -133,6 +133,10 @@ function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: Team
   const rows = island.rows;
   if (!Array.isArray(rows)) return empty;
   const teams = island.teams ?? {};
+  // Where a result's portrait comes from: the server's versioned headshot
+  // route, printed into the island absolute for this page's origin. An island
+  // from before it was added falls back to the CDN the portraits came from.
+  shotBase = typeof island.shots === "string" ? island.shots : "";
 
   const players: Entry[] = [];
   for (const row of rows) {
@@ -186,6 +190,16 @@ function parseRoster(script: HTMLScriptElement): { players: Entry[]; teams: Team
  * empty box of the right size in some engines and a broken-image glyph in
  * others, and the second of those is worse than the plain well underneath.
  */
+/** Set when the island is parsed; "" means "no server route, use the CDN". */
+let shotBase = "";
+
+/** A result's portrait: the 160px square derivative, at whatever version is current. */
+function portraitUrl(id: string): string {
+  return shotBase
+    ? `${shotBase}${encodeURIComponent(id)}/latest/160.webp`
+    : `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(id)}.jpg`;
+}
+
 function cdnImage(src: string, className: string): HTMLImageElement {
   const img = document.createElement("img");
   img.className = className;
@@ -439,12 +453,7 @@ export function wirePlayerSearch(root: HTMLElement): void {
         if (entry.logo) face.appendChild(cdnImage(entry.logo, "scp-search-mark"));
       } else {
         if (entry.id) {
-          face.appendChild(
-            cdnImage(
-              `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(entry.id)}.jpg`,
-              "scp-search-shot",
-            ),
-          );
+          face.appendChild(cdnImage(portraitUrl(entry.id), "scp-search-shot"));
         }
         if (entry.club?.logo) {
           face.appendChild(cdnImage(entry.club.logo, "scp-search-badge"));

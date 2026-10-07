@@ -39,6 +39,8 @@
  */
 
 import { escapeHtml, escapeJsonLd, safeUrl } from "./render";
+import { headshotImg } from "./headshot-html";
+import { assetUrl } from "./asset-origin";
 import { easternParts } from "./news-card";
 // The tab strip's headings and standfirsts come from the same function the
 // document head uses, so a heading swapped in by a click and one loaded with
@@ -820,7 +822,9 @@ function renderPlayerSearch(
     // once, and a JSON island is inert markup the browser never executes.
     // escapeJsonLd is what keeps a "</script" inside a name from ending it.
     `<script type="application/json" data-scp-roster>` +
-    escapeJsonLd(JSON.stringify(index)) +
+    // `shots` is where the client builds a result's portrait URL from: this
+    // server's versioned headshot route, absolute for the page's origin.
+    escapeJsonLd(JSON.stringify({ ...index, shots: assetUrl("/news-image/player/") })) +
     `</script>` +
     `</div>`
   );
@@ -3126,13 +3130,8 @@ function renderPositionPeers(
 
   const cards = peers.rows
     .map((row) => {
-      // The same CDN and the same fallback the hero uses: Sleeper keys its
-      // thumbnails by the player id, and the dictionary's own URL wins when it
-      // has one.
-      const src =
-        (row.headshot ? safeUrl(row.headshot) : null) ??
-        `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(row.id)}.jpg`;
-
+      // The same derivatives the hero uses, keyed by the same Sleeper id
+      // (headshot-html.ts): the full figure at 160 wide for 1x, 350 for 2x.
       const photo =
         `<span class="scp-peer-well">` +
         // Nothing behind the portrait. The original app laid the player's
@@ -3142,8 +3141,17 @@ function renderPositionPeers(
         // player's shoulders on every card that had one. A player with no
         // thumbnail gets the club's wash and nothing else, which is the well
         // doing its own job.
-        `<img class="scp-peer-img" src="${escapeHtml(src)}" alt=""` +
-        ` width="150" height="98" loading="lazy" decoding="async" />` +
+        (headshotImg({
+          src: row.headshot,
+          id: row.id,
+          className: "scp-peer-img",
+          alt: "",
+          variants: ["f160", "f350"],
+          sizes: "150px",
+          width: 150,
+          height: 98,
+          loading: "lazy",
+        }) ?? "") +
         `<span class="scp-peer-rank">${escapeHtml(`${pos}${row.rank}`)}</span>` +
         (row.isCurrent
           ? `<span class="scp-peer-here">You are here</span>`
@@ -3551,22 +3559,6 @@ function positionOrder(position: string | null | undefined): number {
 }
 
 /**
- * The portrait for one row.
- *
- * The dictionary's own URL when it has one, Sleeper's thumbnail otherwise -
- * the same two-step the hero and the peers rail make, and the same CDN keyed
- * by the same id. A player Sleeper has no thumbnail for gets the empty well,
- * which is the well doing its job rather than a broken image; the client
- * removes the <img> when the CDN 404s, as it does in the search panel.
- */
-function directoryShot(row: DirectoryPlayer): string {
-  return (
-    (row.headshot ? safeUrl(row.headshot) : null) ??
-    `https://sleepercdn.com/content/nfl/players/thumb/${encodeURIComponent(row.id)}.jpg`
-  );
-}
-
-/**
  * How loudly one row reads: the rank band it falls in.
  *
  * A card of eighteen rows all shouting equally is a card nobody scans - the
@@ -3635,9 +3627,19 @@ function renderDirectoryRow(
     `<a class="scp-dir-row" href="${escapeHtml(`${prefix}${row.slug}/${query}`)}" target="_top">` +
     `<span class="scp-dir-face">` +
     // 38 to match the well in the stylesheet, so the box the browser reserves
-    // before the CDN answers is the box the portrait lands in.
-    `<img class="scp-dir-shot" src="${escapeHtml(directoryShot(row))}" alt=""` +
-    ` width="38" height="38" loading="lazy" decoding="async" />` +
+    // before the image answers is the box the portrait lands in. The 160px
+    // square derivative, keyed by the same Sleeper id the hero uses; a player
+    // with no photo gets the empty well (headshot-html.ts).
+    (headshotImg({
+      src: row.headshot,
+      id: row.id,
+      className: "scp-dir-shot",
+      alt: "",
+      variants: ["160"],
+      width: 38,
+      height: 38,
+      loading: "lazy",
+    }) ?? "") +
     `</span>` +
     `<span class="scp-dir-who">` +
     `<span class="scp-dir-name">${escapeHtml(row.name)}</span>` +

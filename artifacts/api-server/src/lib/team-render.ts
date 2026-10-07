@@ -65,6 +65,7 @@ import type {
 } from "./team/stats";
 import type { SnapshotMetric } from "./team/snapshot";
 import { TEAM_NEWS_VISIBLE } from "./team/team-data";
+import { headshotImg } from "./headshot-html";
 import {
   isOutDesignation,
   SKILL_POSITIONS,
@@ -1700,10 +1701,17 @@ function outlookPlayerCard(
 
   // Decorative, so the alt is empty: the name is on the same row, and
   // announcing the face as well would read the player out twice.
-  const photo = headshot
-    ? `<img class="sct-outlook-photo" src="${escapeHtml(headshot)}" alt=""` +
-      ` width="64" height="64" loading="lazy" decoding="async" />`
-    : "";
+  // The 160px square derivative covers the 64px well at 2x (headshot-html.ts).
+  const photo =
+    headshotImg({
+      src: headshot,
+      className: "sct-outlook-photo",
+      alt: "",
+      variants: ["160"],
+      width: 64,
+      height: 64,
+      loading: "lazy",
+    }) ?? "";
 
   // The name carries the link and a stretched ::after makes the whole card
   // clickable - the news card's device rather than the cornerstone's bare
@@ -2087,9 +2095,18 @@ function renderCornerstones(data: TeamPageData): string {
             )}"></a>`
           : "") +
         `<div class="sct-player-well">` +
-        `<img class="sct-player-photo" src="${escapeHtml(player.headshot)}"` +
-        ` alt="${escapeHtml(player.name)}" width="150" height="150"` +
-        ` loading="lazy" decoding="async" />` +
+        // The well is a square of up to 200px: the three square derivatives
+        // cover it from 1x to 2x. A player with no photo keeps the bare well.
+        (headshotImg({
+          src: player.headshot,
+          className: "sct-player-photo",
+          alt: player.name,
+          variants: ["160", "256", "320"],
+          sizes: "200px",
+          width: 150,
+          height: 150,
+          loading: "lazy",
+        }) ?? "") +
         // Pinned to the top-right corner of the photo rather than sitting in
         // the body under the name: the status belongs to the face, and down
         // there it pushed the name, slot and CTA around by a row height on
@@ -2142,13 +2159,23 @@ function renderNewsCard(
   // aspect-ratio governs once the stylesheet is in - and the square they used
   // to declare was a headshot's shape, from before the clubs' landscape art
   // was the common case.
-  const media = image
-    ? `<img class="sct-news-photo" src="${escapeHtml(image)}" alt="${escapeHtml(name)}"` +
-      ` width="${featured ? 640 : 480}" height="${featured ? 360 : 270}"` +
-      ` loading="lazy" decoding="async" />`
-    : // No image: the well keeps its team tint and shows nothing else. A
-      // stand-in mark would be one more thing to load for no information.
-      `<span class="sct-news-photo-empty" aria-hidden="true"></span>`;
+  // A Sleeper headshot comes as the 16:9 band derivative (headshot-html.ts);
+  // a club's own landscape art is printed as the feed supplied it.
+  const media =
+    (image
+      ? headshotImg({
+          src: image,
+          className: "sct-news-photo",
+          alt: name,
+          variants: ["b350"],
+          width: featured ? 640 : 480,
+          height: featured ? 360 : 270,
+          loading: "lazy",
+        })
+      : null) ??
+    // No image: the well keeps its team tint and shows nothing else. A
+    // stand-in mark would be one more thing to load for no information.
+    `<span class="sct-news-photo-empty" aria-hidden="true"></span>`;
 
   const byline =
     name || team.fullName
@@ -2688,10 +2715,15 @@ function depthToolRow(row: DepthRow): string {
     // Decorative, so the alt is empty: the name is on the same row. A player
     // the tool has no headshot for sits in the bare team-tinted well.
     `<span class="sct-depth-well">` +
-    (row.headshot
-      ? `<img class="sct-depth-photo" src="${escapeHtml(row.headshot)}"` +
-        ` alt="" width="38" height="38" loading="lazy" decoding="async" />`
-      : "") +
+    (headshotImg({
+      src: row.headshot,
+      className: "sct-depth-photo",
+      alt: "",
+      variants: ["160"],
+      width: 38,
+      height: 38,
+      loading: "lazy",
+    }) ?? "") +
     `</span>` +
     `<span class="sct-depth-body">` +
     depthName(row) +
