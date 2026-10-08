@@ -36,6 +36,15 @@ nothing is hidden behind a click.
    Alternatively set the `statchasers_news_origin` option, or filter
    `statchasers_news_origin`.
 
+   That is the address the *server* fetches from. What a reader's browser is
+   sent to (stylesheet and script tags, the preconnect hint, the Divi crest,
+   the news tool's client-side fetch base) is the public name,
+   `https://news.statchasers.com` by default, so the two can differ: the
+   server may fetch over the deployment's bare `*.replit.app` address, which
+   nothing proxies, while every URL in the page carries the public one. A
+   site whose public name is different sets `STATCHASERS_PUBLIC_ORIGIN`, the
+   `statchasers_public_origin` option, or the filter of the same name.
+
 3. Add a shortcode to a page:
 
    ```
@@ -1381,6 +1390,79 @@ delays pagination and relative timestamps - never the news itself.
 Do **not** exclude the stylesheet from optimisation and then also defer it; the
 markup ships styled-by-stylesheet and will flash unstyled if the CSS is pushed
 to the footer.
+
+## Blog Designer Pack's stylesheets
+
+Blog Designer Pack (the post grid / slider / ticker plugin) enqueues three
+stylesheets on every front-end page, whether or not the page renders any of
+its layouts. The handles, as `includes/class-bdpp-scripts.php` registers them
+and as the page prints them (the `<link id>` is the handle plus `-css`):
+
+| handle              | file                                 | what it is                                    |
+| ------------------- | ------------------------------------ | --------------------------------------------- |
+| `inf-font-awesome`  | `assets/css/font-awesome.min.css`    | Font Awesome 7 Free, ~75 KB plus its webfonts |
+| `owl-carousel`      | `assets/css/owl.carousel.min.css`    | the slider and carousel chrome                |
+| `bdpp-public-style` | `assets/css/bdpp-public.min.css`     | the layouts themselves                        |
+
+Its scripts are not the problem: they are registered on every page but only
+enqueued by the shortcode that needs them.
+
+`statchasers-bdp-assets.php` dequeues the two layout stylesheets on every
+request that will not render the plugin, and Font Awesome on every request.
+A request renders the plugin when any of these carries one of its nine
+shortcodes (`bdp_post`, `bdp_post_list`, `pld_post_list`, `bdp_post_gridbox`,
+`bdp_post_slider`, `bdp_post_carousel`, `bdp_masonry`, `bdp_ticker`,
+`bdpp_tmpl`) or its block (`bdpp/bdpp-layout-selector`):
+
+- the queried post's content. A Divi page is shortcodes in `post_content`, so
+  a layout inside a Text or Code module is found there;
+- the Divi Theme Builder layouts applied to the request: header, body and
+  footer;
+- a Divi global module or a reusable block referenced from either, followed
+  two levels down;
+
+or when one of its two widgets (`bdpp-post-widget`, `bdpp-post-scrolling-widget`)
+is active in any sidebar, which keeps the stylesheets on every page because
+the theme, not this plugin, decides where a sidebar prints. The Visual
+Builder and the Customizer preview keep everything.
+
+If a layout renders on a page the check missed (a template calling
+`do_shortcode()` itself, a plugin printing one from a hook), the plugin's
+shortcode output and widget output are watched, and the two layout
+stylesheets are enqueued again at `wp_footer` and printed there. The page
+flashes unstyled once; it is never broken. To force a page's verdict:
+
+```php
+add_filter( 'statchasers_bdp_page_uses_plugin', fn( $uses ) => $uses || is_page( 'some-slug' ) );
+```
+
+### Font Awesome is never loaded
+
+The plugin uses twelve icons from the font: the post-meta row (author, date,
+comments, category, tags), the post-format badge (video, audio, quote,
+gallery, link, pin) and the Load More chevron, each printed as an empty
+`<i class="... fa-solid fa-user"></i>`. Every Blog Designer Pack shortcode's
+output, every widget's, and the AJAX Load More reply are rewritten so each of
+those becomes the same icon as an inline SVG (Font Awesome Free's own paths,
+CC BY 4.0), with the `fa-*` classes removed and the plugin's own hook classes
+(`bdpp-fa`, `bdpp-post-icon`, `bdpp-load-more-icon`) kept, so its CSS still
+sizes the post-format badge. Two rules are printed inline on
+`bdpp-public-style` to size the SVG as the glyph was. An icon outside the
+twelve is left alone and the Font Awesome stylesheet is printed late for it.
+
+Nothing else on the site should depend on Blog Designer Pack's copy of Font
+Awesome. If a hand-written `<i class="fa-solid fa-...">` somewhere does, give
+it a stylesheet of its own, or keep the font on the pages that render the
+plugin:
+
+```php
+add_filter( 'statchasers_bdp_inline_icons', '__return_false' );
+```
+
+Blog Designer Pack's own settings carry a site-wide "disable Font Awesome
+CSS" and "disable Owl CSS" switch. Either one leaves the handle unregistered
+and the dequeue here a no-op; they do not conflict, but they are also
+all-or-nothing, which is why this exists.
 
 ## Still using the iframe?
 

@@ -37,11 +37,47 @@ async function fakeHeadshot(fill) {
   return sharp(svg).png().toBuffer();
 }
 
+/** A 1600x900 JPEG, the shape of a club site's editorial landscape art. */
+async function fakeClubArt() {
+  const svg = Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">` +
+      `<rect width="1600" height="900" fill="#0b2a4a"/><circle cx="800" cy="450" r="300" fill="#c8102e"/></svg>`,
+  );
+  return sharp(svg).jpeg().toBuffer();
+}
+
+const CLUB_ART_PATH = "/image/upload/t_editorial_landscape_12_desktop/eagles/abc123xyz.jpg";
+const clubKeyId = Buffer.from(CLUB_ART_PATH).toString("base64url");
+
 before(async () => {
   const original = await fakeHeadshot("#143c78");
   const replacement = await fakeHeadshot("#a40000");
+  const clubArt = await fakeClubArt();
+  const ytThumb = await sharp(
+    Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="480" height="360"/><rect y="45" width="480" height="270" fill="#2a6"/></svg>`),
+  )
+    .jpeg()
+    .toBuffer();
   upstream = http.createServer((req, res) => {
     upstreamHits.push({ url: req.url, ifNoneMatch: req.headers["if-none-match"] ?? null });
+    // ESPN's full headshot for athlete 77: the same 350x254 PNG shape.
+    if (req.url === "/i/headshots/nfl/players/full/77.png") {
+      res.writeHead(200, { "content-type": "image/png" });
+      res.end(original);
+      return;
+    }
+    // A YouTube hqdefault thumbnail: 480x360, letterboxed 16:9 content.
+    if (req.url === "/vi/dQw4w9WgXcQ/hqdefault.jpg") {
+      res.writeHead(200, { "content-type": "image/jpeg" });
+      res.end(ytThumb);
+      return;
+    }
+    // A club site's editorial art.
+    if (req.url === CLUB_ART_PATH) {
+      res.writeHead(200, { "content-type": "image/jpeg" });
+      res.end(clubArt);
+      return;
+    }
     if (req.url === "/content/nfl/players/thumb/1.jpg") {
       const body = replaced ? replacement : original;
       res.writeHead(200, { "content-type": "image/jpeg", etag: replaced ? '"v2"' : '"v1"' });
@@ -64,6 +100,9 @@ before(async () => {
   cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "sc-img-cache-"));
   server = await startServer({
     SLEEPER_CDN_BASE_URL: `http://127.0.0.1:${upstream.address().port}`,
+    ESPN_CDN_BASE_URL: `http://127.0.0.1:${upstream.address().port}`,
+    CLUB_CDN_BASE_URL: `http://127.0.0.1:${upstream.address().port}`,
+    YT_IMG_BASE_URL: `http://127.0.0.1:${upstream.address().port}`,
     IMAGE_CACHE_DIR: cacheDir,
     IMAGE_VERSIONS_DB: "0",
   });
@@ -240,6 +279,75 @@ describe("crest aliases for the WordPress plugin", () => {
   });
 });
 
+describe("the other sources", () => {
+  test("an ESPN headshot: `latest` redirects to the versioned URL, which is the square derivative", async () => {
+    const first = await get("/news-image/espn/77/latest/160.webp");
+    assert.equal(first.res.status, 302);
+    const location = first.res.headers.get("location");
+    const m = /^\/news-image\/espn\/77\/([0-9a-f]{10})\/160\.webp$/.exec(location);
+    assert.ok(m, `versioned redirect target, got ${location}`);
+    const { res, body } = await get(location);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("cache-control"), "public, max-age=31536000, immutable");
+    const meta = await sharp(body).metadata();
+    assert.deepEqual([meta.format, meta.width, meta.height, meta.hasAlpha], ["webp", 160, 160, true]);
+    assert.equal(upstreamHits.filter((h) => h.url === "/i/headshots/nfl/players/full/77.png").length, 1);
+  });
+
+  test("club art: a 16:9 band at the well's width, a centred square for the news card", async () => {
+    const band = await get(`/news-image/club/${clubKeyId}/latest/b640.webp`);
+    assert.equal(band.res.status, 302, "latest redirects");
+    const location = band.res.headers.get("location");
+    assert.match(location, new RegExp(`^/news-image/club/${clubKeyId}/[0-9a-f]{10}/b640\\.webp$`));
+    const versioned = await get(location);
+    assert.equal(versioned.res.status, 200);
+    const meta = await sharp(versioned.body).metadata();
+    assert.deepEqual([meta.format, meta.width, meta.height], ["webp", 640, 360]);
+
+    const version = /\/([0-9a-f]{10})\//.exec(location)[1];
+    const square = await get(`/news-image/club/${clubKeyId}/${version}/256.webp`);
+    assert.equal(square.res.status, 200);
+    const sq = await sharp(square.body).metadata();
+    assert.deepEqual([sq.width, sq.height], [256, 256]);
+    assert.equal(upstreamHits.filter((h) => h.url === CLUB_ART_PATH).length, 1, "one fetch for every size");
+  });
+
+  test("a club key only ever names a path on the clubs' CDN, and only an art path", async () => {
+    for (const bad of [
+      Buffer.from("/etc/passwd").toString("base64url"),
+      Buffer.from("https://evil.example/x.jpg").toString("base64url"),
+      Buffer.from("/image/upload/../../x.jpg").toString("base64url"),
+      "not-base64!!",
+    ]) {
+      const { res } = await get(`/news-image/club/${bad}/latest/256.webp`);
+      assert.equal(res.status, 404, bad);
+    }
+  });
+
+  test("a YouTube thumbnail: 4:3 WebP at the highlights box's two widths", async () => {
+    const first = await get("/news-image/yt/dQw4w9WgXcQ/latest/r480.webp");
+    assert.equal(first.res.status, 302);
+    const location = first.res.headers.get("location");
+    assert.match(location, /^\/news-image\/yt\/dQw4w9WgXcQ\/[0-9a-f]{10}\/r480\.webp$/);
+    const big = await get(location);
+    assert.equal(big.res.status, 200);
+    const meta = await sharp(big.body).metadata();
+    assert.deepEqual([meta.format, meta.width, meta.height], ["webp", 480, 360]);
+    const small = await get(location.replace("r480", "r320"));
+    const sm = await sharp(small.body).metadata();
+    assert.deepEqual([sm.width, sm.height], [320, 240]);
+    assert.equal((await get("/news-image/yt/dQw4w9WgXcQ/latest/256.webp")).res.status, 404, "no square of a video thumb");
+    assert.equal((await get("/news-image/yt/bad id!/latest/r480.webp")).res.status, 404);
+  });
+
+  test("a source the route does not know, or a size a source does not produce, is a 404", async () => {
+    assert.equal((await get("/news-image/other/1/latest/256.webp")).res.status, 404);
+    assert.equal((await get(`/news-image/club/${clubKeyId}/latest/f350.webp`)).res.status, 404, "no figure crop of a photograph");
+    assert.equal((await get("/news-image/player/1/latest/b960.webp")).res.status, 404, "no 960 band of a 350px headshot");
+    assert.equal((await get("/news-image/espn/abc/latest/160.webp")).res.status, 404);
+  });
+});
+
 describe("the other tools", () => {
   for (const [name, route] of [
     ["strength of schedule", "/embed/sos"],
@@ -375,7 +483,7 @@ describe("team hub and player pages", () => {
     for (const img of ours) {
       assert.match(
         img.getAttribute("src"),
-        /^https:\/\/news\.statchasers\.com\/news-image\/player\/\d+\/(latest|[0-9a-f]{10})\/\d+\.webp$/,
+        /^https:\/\/news\.statchasers\.com\/news-image\/(player|espn)\/\d+\/(latest|[0-9a-f]{10})\/\d+\.webp$/,
         img.outerHTML,
       );
     }

@@ -494,10 +494,37 @@
 		return "min(100%, " + rem.toFixed(2) + "rem)";
 	}
 
+	// ESPN's files are a 350x254 PNG per headshot and a 500px PNG per crest,
+	// for boxes of 20 to 40 pixels. When the page names the StatChasers app's
+	// public origin (data-image-origin), every image is pointed at the app's
+	// own derivatives instead: the 160px square WebP of each ESPN headshot
+	// (`latest` redirects to the current version, cached an hour) and the SVG
+	// crest by team code (a day-cached redirect to the hashed file). Done once
+	// on the loaded data, so every place that draws a logo or a headshot -
+	// cards, dropdown, search - picks the new address up without knowing.
+	var ESPN_HEADSHOT = /^https?:\/\/a\.espncdn\.com\/i\/headshots\/nfl\/players\/full\/(\d+)\.png/i;
+	function optimizeImagery(teams, origin) {
+		origin = String(origin || "").replace(/\/+$/, "");
+		if (!origin) return;
+		teams.forEach(function (t) {
+			if (t.team && t.team.abbr) {
+				t.team.logo = origin + "/team-logos/" + String(t.team.abbr).toLowerCase() + ".svg";
+			}
+			var positions = t.positions && typeof t.positions === "object" ? t.positions : {};
+			Object.keys(positions).forEach(function (key) {
+				(Array.isArray(positions[key]) ? positions[key] : []).forEach(function (p) {
+					var m = p && typeof p.headshot === "string" ? ESPN_HEADSHOT.exec(p.headshot) : null;
+					if (m) p.headshot = origin + "/news-image/espn/" + m[1] + "/latest/160.webp";
+				});
+			});
+		});
+	}
+
 	function render(root, data, ctx) {
 		var teams = (data.teams || []).slice().sort(function (a, b) {
 			return a.team.name.localeCompare(b.team.name);
 		});
+		optimizeImagery(teams, ctx.imageOrigin);
 
 		// Bidirectional team <-> slug maps built from the loaded data.
 		var abbrToSlug = {};
@@ -1371,6 +1398,7 @@
 
 		var ctx = {
 			basePath: basePath,
+			imageOrigin: root.getAttribute("data-image-origin") || "",
 			lastUpdated: root.getAttribute("data-last-updated") || "",
 			// Route + copy resolved server-side (see SCDC_Route / SCDC_SEO).
 			route: root.getAttribute("data-route") || "main",

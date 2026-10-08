@@ -256,6 +256,18 @@ Visitor loads page with [statchasers_depth_charts]
 Refreshing only rewrites the cached JSON; the live page reflects it on the next
 load. No redeploy or commit is involved.
 
+### Imagery from the app (1.6.6)
+
+ESPN serves a 350x254 PNG per headshot and a 500px PNG per crest, and the
+script drew them into 20 to 40 pixel boxes. When the StatChasers plugin is
+active (or `STATCHASERS_PUBLIC_ORIGIN` / `STATCHASERS_NEWS_ORIGIN` /
+`SCDC_IMAGE_ORIGIN` is defined), the root carries `data-image-origin` and the
+script points every headshot at the app's resized WebP
+(`<origin>/news-image/espn/<athlete id>/latest/160.webp`) and every crest at
+the app's SVG (`<origin>/team-logos/<abbr>.svg`) instead. The cached JSON and
+the push to the hub are unchanged: the rewrite happens in the browser on the
+loaded data. Filter `scdc_image_origin` to change or clear the origin.
+
 ### Push to the team hub (1.6.4)
 
 The NFL team hubs' **Depth Chart** tab shows this tool's team view (all four

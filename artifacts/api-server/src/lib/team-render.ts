@@ -66,6 +66,7 @@ import type {
 import type { SnapshotMetric } from "./team/snapshot";
 import { TEAM_NEWS_VISIBLE } from "./team/team-data";
 import { headshotImg } from "./headshot-html";
+import { CLUB_BAND_VARIANTS } from "./image-urls";
 import {
   isOutDesignation,
   SKILL_POSITIONS,
@@ -2159,15 +2160,18 @@ function renderNewsCard(
   // aspect-ratio governs once the stylesheet is in - and the square they used
   // to declare was a headshot's shape, from before the clubs' landscape art
   // was the common case.
-  // A Sleeper headshot comes as the 16:9 band derivative (headshot-html.ts);
-  // a club's own landscape art is printed as the feed supplied it.
+  // A Sleeper headshot comes as its one 16:9 band derivative; a club's
+  // landscape art as the bands at the widths the wells are drawn, with the
+  // browser choosing by the well's width (headshot-html.ts drops the
+  // variants a source does not produce, so one list serves both).
   const media =
     (image
       ? headshotImg({
           src: image,
           className: "sct-news-photo",
           alt: name,
-          variants: ["b350"],
+          variants: ["b350", ...CLUB_BAND_VARIANTS],
+          sizes: featured ? "(max-width: 700px) 100vw, 640px" : "(max-width: 700px) 100vw, 480px",
           width: featured ? 640 : 480,
           height: featured ? 360 : 270,
           loading: "lazy",

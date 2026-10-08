@@ -21,7 +21,7 @@ import {
   categoryLabel,
   type NewsCategory,
 } from "./news-category";
-import { assetOrigin, headshotSources, sleeperHeadshotId } from "./image-urls";
+import { assetOrigin, headshotSources, imageKeyFor } from "./image-urls";
 import { TEAM_LOGO_FILES } from "./team-logo-files";
 
 export interface NewsItem {
@@ -38,6 +38,12 @@ export interface NewsItem {
    * has no photo for the player, undefined when not yet known.
    */
   imageVersion?: string | null;
+  /**
+   * The image route's key for `image` (lib/image-urls.ts), stamped by the
+   * server beside the version. Absent on an item the server has not
+   * stamped; derived from the URL then.
+   */
+  imageKey?: string | null;
   summary?: string | null;
   source?: string | null;
   /** Lowercase team abbreviation (e.g. "buf"), resolved server-side. */
@@ -468,16 +474,18 @@ export function renderCard(item: NewsItem, options: RenderCardOptions): string {
   // for the player, and the card draws its fallback mark rather than an
   // <img> that would 404. An image from any other host is printed as the
   // feed supplied it.
-  const headshotId = sleeperHeadshotId(image);
+  // The same goes for an ESPN headshot or a club's editorial art: any image
+  // the route serves (imageKeyFor) is printed as its derivatives.
+  const imageKey = item.imageKey ?? imageKeyFor(image);
   let mediaInner: string;
-  if (headshotId && item.imageVersion !== null) {
-    const photo = headshotSources(headshotId, item.imageVersion, origin);
+  if (imageKey && item.imageVersion !== null) {
+    const photo = headshotSources(imageKey, item.imageVersion, origin);
     mediaInner =
       `<img class="sc-card-photo" src="${escapeHtml(photo.src)}"` +
       ` srcset="${escapeHtml(photo.srcset)}" sizes="${escapeHtml(photo.sizes)}"` +
       ` alt="${playerName}" width="${photo.width}" height="${photo.height}"` +
       ` loading="${loading}" decoding="${decoding}"${priority} />`;
-  } else if (image && !headshotId) {
+  } else if (image && !imageKey) {
     mediaInner = `<img class="sc-card-photo" src="${escapeHtml(image)}" alt="${playerName}" width="108" height="108" loading="${loading}" decoding="${decoding}"${priority} />`;
   } else {
     // Either no headshot at all, or a Sleeper id the CDN has no photo for

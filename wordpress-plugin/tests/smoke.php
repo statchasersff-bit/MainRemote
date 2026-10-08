@@ -196,13 +196,22 @@ function absint( $v ) { return abs( (int) $v ); }
 function wp_unslash( $v ) { return $v; }
 function ucwords_( $s ) { return ucwords( $s ); }
 function statchasers_news_origin() { return 'https://api.example.com'; }
+function statchasers_public_origin() { return 'https://news.example.com'; }
 function statchasers_news_flush() {}
 function statchasers_news_asset_version() { return '1'; }
 function statchasers_news_schema_page_id( $d ) { return ''; }
 function statchasers_news_schema_node() { return array(); }
 function wp_enqueue_script() {}
-function wp_enqueue_style() {}
-function wp_add_inline_style() {}
+// Enqueues are recorded and dequeues forget them, so a test can read the
+// queue back through wp_style_is(). Inline CSS is kept by handle the same way.
+function wp_enqueue_style( $h = '' ) { if ( '' !== $h ) { $GLOBALS['styles'][ $h ] = true; } }
+function wp_dequeue_style( $h ) { unset( $GLOBALS['styles'][ $h ] ); }
+function wp_add_inline_style( $h = '', $css = '' ) { $GLOBALS['inline_styles'][ $h ] = ( $GLOBALS['inline_styles'][ $h ] ?? '' ) . $css; }
+function has_block( $name, $content = '' ) { return false !== strpos( (string) $content, '<!-- wp:' . $name ); }
+function is_active_widget( $cb = false, $id = false, $id_base = false, $skip = true ) { return in_array( $id_base, (array) ( $GLOBALS['active_widgets'] ?? array() ), true ) ? 'sidebar-1' : false; }
+function is_customize_preview() { return false; }
+function __return_true() { return true; }
+function __return_false() { return false; }
 function wp_register_script() {}
 function wp_register_style() {}
 function plugin_dir_url( $f ) { return ''; }
@@ -311,6 +320,7 @@ $GLOBALS['wpdb'] = new class {
 $dir = __DIR__ . '/../statchasers-news';
 
 require_once "$dir/statchasers-assets.php";
+require_once "$dir/statchasers-bdp-assets.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";
@@ -385,6 +395,12 @@ if ( 'main' === $group ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
 	echo "\n";
+}
+
+if ( 'bdp' === $group ) {
+	require __DIR__ . '/smoke-bdp.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
 }
 
 if ( 'containers' === $group ) {
@@ -474,7 +490,7 @@ $GLOBALS['http_headers'] = array(
 	'x-matchup-image-alt'   => rawurlencode( 'Final score: Los Angeles Rams 34, Arizona Cardinals 11, 2021 Wild Card.' ),
 );
 $share = statchasers_matchup_share_image();
-is( $share['url'] ?? '', 'https://api.example.com/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png', 'the image is absolute, on the API origin' );
+is( $share['url'] ?? '', 'https://news.example.com/og/arizona-cardinals-vs-los-angeles-rams-2021-wild-card.png', 'the image is absolute, on the public origin, not the fetch origin' );
 is( array( $share['width'] ?? 0, $share['height'] ?? 0 ), array( 1200, 630 ), 'at 1200 x 630' );
 is( $share['alt'] ?? '', 'Final score: Los Angeles Rams 34, Arizona Cardinals 11, 2021 Wild Card.', 'with its alt text' );
 is( statchasers_matchup_request_meta()['description'] ?? '', 'Rams beat the Cardinals 34–11 at SoFi Stadium.', "the API's description wins" );
@@ -1919,7 +1935,7 @@ is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule,
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'rhr', 'rhrleak' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'rhr', 'rhrleak', 'bdp' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

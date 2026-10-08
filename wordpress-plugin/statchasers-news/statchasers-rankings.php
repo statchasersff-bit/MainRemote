@@ -603,7 +603,7 @@ function statchasers_rankings_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_RANKINGS_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_RANKINGS_HANDLE,
-			$origin . '/rankings.css',
+			statchasers_public_origin() . '/rankings.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -612,7 +612,7 @@ function statchasers_rankings_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_RANKINGS_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_RANKINGS_HANDLE,
-			$origin . '/dist/statchasers-rankings.js',
+			statchasers_public_origin() . '/dist/statchasers-rankings.js',
 			array(),
 			$version,
 			array(

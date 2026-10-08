@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.26
+Stable tag: 1.10.28
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule and the dynasty rookie hit rates into WordPress pages.
@@ -19,6 +19,14 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.28 =
+* Blog Designer Pack's three stylesheets (handles inf-font-awesome, owl-carousel and bdpp-public-style; that plugin enqueues all three on every front-end page) now load only where the page renders Blog Designer Pack: one of its nine shortcodes or its block in the queried post, in a Divi Theme Builder layout applied to the request, or in a global module or reusable block those reference, or an active Blog Designer Pack widget. Every other page dequeues them. A Blog Designer Pack shortcode or widget that renders on a page the check missed gets the two layout stylesheets printed late in the footer, so nothing is ever left unstyled for good. Force the verdict with the statchasers_bdp_page_uses_plugin filter.
+* Font Awesome is dequeued everywhere: the twelve icons Blog Designer Pack prints (the post-meta row, the post-format badge, the Load More chevron) are redrawn as inline SVG in the shortcode, widget and AJAX load-more output, so the 75 KB stylesheet and its webfonts are never fetched. An icon outside the twelve brings the stylesheet back, late, on that page. Filter statchasers_bdp_inline_icons false keeps the font and the plugin's own <i> markup on the pages that use it.
+
+= 1.10.27 =
+* Two origins. STATCHASERS_NEWS_ORIGIN stays the address this server fetches fragments from (it may be the deployment's bare Replit address, which nothing proxies). Everything printed for a reader's browser - the stylesheet and script tags, the preconnect hint, the matchup og:image, the news tool's client-side fetch base and the companion Divi crest (1.0.2) - now uses the public name, https://news.statchasers.com by default, from the new statchasers_public_origin(). Override with STATCHASERS_PUBLIC_ORIGIN, the statchasers_public_origin option or the filter of the same name. No wp-config change is needed.
+* Cached renders are swept once after every upgrade, the same sweep as wp eval 'statchasers_news_flush();'. The 1.10.26 upgrade left the player directory on its pre-upgrade render for a day because a stale backup copy had nothing to clear it.
 
 = 1.10.26 =
 * Team page featured images: the crest is sideloaded from the API's own rendering (<origin>/team-logos/<abbr>.png, a PNG of the SVG every tool now draws) instead of Sleeper's 150px PNG. Needs the matching API deploy; with no origin configured it falls back to Sleeper as before. The companion Divi file (1.0.1) points its hero crest at the API's SVG the same way.

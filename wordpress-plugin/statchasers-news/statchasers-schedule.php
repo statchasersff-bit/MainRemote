@@ -427,7 +427,7 @@ function statchasers_schedule_enqueue_assets(): void {
 		}
 		wp_register_style(
 			STATCHASERS_SCHEDULE_HANDLE,
-			$origin . '/schedule.css',
+			statchasers_public_origin() . '/schedule.css',
 			$deps,
 			$version
 		);
@@ -436,7 +436,7 @@ function statchasers_schedule_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_SCHEDULE_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_SCHEDULE_HANDLE,
-			$origin . '/dist/statchasers-schedule.js',
+			statchasers_public_origin() . '/dist/statchasers-schedule.js',
 			array(),
 			$version,
 			array(

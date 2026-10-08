@@ -56,3 +56,6 @@ externalPort = 3001
 [[ports]]
 localPort = 8791
 externalPort = 3002
+
+[nix]
+packages = ["wp-cli"]

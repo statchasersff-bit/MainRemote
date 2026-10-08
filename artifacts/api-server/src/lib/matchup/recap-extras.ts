@@ -9,6 +9,8 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
+import { headshotImg } from "../headshot-html";
+import { YT_THUMB_VARIANTS } from "../image-urls";
 import type { ScheduleGame } from "../team/schedule";
 import type { GameOdds } from "./boxscore";
 import { againstSpread, againstTotal, type BettingSeason, type SeasonGame, type Tally3 } from "./season-data";
@@ -251,8 +253,21 @@ export function renderHighlights(game: ScoreboardGame, video: GameVideo | null):
     `<div class="sct-hl-box" style="--hl-a:${colors.away.fill};--hl-b:${colors.home.fill}">` +
     `<button type="button" class="sct-hl-play" data-hl-embed="${escapeHtml(embed)}" data-hl-title="${escapeHtml(frameTitle)}" ` +
     `aria-label="${escapeHtml(`Play video: ${video.title}`)}">` +
-    `<img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy" decoding="async" width="480" height="360" ` +
-    `data-hl-thumb onerror="this.remove()">` +
+    // The thumbnail as this server's 4:3 WebP derivatives of YouTube's
+    // hqdefault (lib/image-urls.ts, `yt` source), 320 and 480 wide for the
+    // box's widths. A video YouTube has no thumbnail for prints nothing, as
+    // the onerror used to arrange after a failed load.
+    (headshotImg({
+      src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      className: "sct-hl-thumb",
+      alt: "",
+      variants: YT_THUMB_VARIANTS,
+      sizes: "(max-width: 520px) 100vw, 480px",
+      width: 480,
+      height: 360,
+      loading: "lazy",
+      extra: ` data-hl-thumb onerror="this.remove()"`,
+    }) ?? "") +
     `<span class="sct-hl-icon" aria-hidden="true"></span>` +
     `<span class="sct-hl-caption">${escapeHtml(video.title)}</span>` +
     `</button>` +

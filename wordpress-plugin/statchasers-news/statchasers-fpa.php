@@ -243,7 +243,7 @@ function statchasers_fpa_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_FPA_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_FPA_HANDLE,
-			$origin . '/fpa.css',
+			statchasers_public_origin() . '/fpa.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -252,7 +252,7 @@ function statchasers_fpa_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_FPA_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_FPA_HANDLE,
-			$origin . '/dist/statchasers-fpa.js',
+			statchasers_public_origin() . '/dist/statchasers-fpa.js',
 			array(),
 			$version,
 			array(

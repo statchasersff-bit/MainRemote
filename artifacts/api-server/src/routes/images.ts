@@ -1,5 +1,8 @@
 /**
  * GET /news-image/player/<sleeperId>/<version>/<size>.webp
+ * GET /news-image/espn/<athleteId>/<version>/<size>.webp
+ * GET /news-image/club/<base64url path>/<version>/<size>.webp
+ * GET /news-image/yt/<video id>/<version>/<size>.webp
  *
  * The StatChasers-hosted headshot derivatives the news cards, team hub and
  * player pages point at instead of the Sleeper CDN (lib/image-urls.ts says
@@ -8,8 +11,10 @@
  * outside the embed-key lock (lib/embed-key.ts lists what is protected; this
  * is not).
  *
- * Only the sizes the renderers emit are served, and only for a numeric
- * player id - this is not a resizing proxy for arbitrary URLs or dimensions.
+ * Only the sizes the renderers emit are served, and only for the four
+ * sources lib/image-urls.ts names - a Sleeper or ESPN numeric id, a YouTube
+ * video id, or a path on the clubs' CDN. This is not a resizing proxy for arbitrary URLs or
+ * dimensions.
  *
  * Headers. The current version of a photo is immutable for a year, for the
  * browser and for Cloudflare (Cloudflare-CDN-Cache-Control), because the
@@ -22,8 +27,8 @@
  */
 
 import { Router, type IRouter } from "express";
-import { getHeadshot, getTeamLogoPng, sourceUrl, validPlayerId } from "../lib/image-cache";
-import { headshotPath, isHeadshotVariant, isImageVersion } from "../lib/image-urls";
+import { getHeadshot, getTeamLogoPng, sourceUrl } from "../lib/image-cache";
+import { imageKeyFrom, imagePath, isImageVersion, isVariantFor, parseImageKey } from "../lib/image-urls";
 import { TEAM_LOGO_FILES } from "../lib/team-logo-files";
 
 const router: IRouter = Router();
@@ -32,13 +37,14 @@ const YEAR = "public, max-age=31536000, immutable";
 const CDN_YEAR = "public, max-age=31536000";
 const HOUR = "public, max-age=3600";
 
-router.get("/news-image/player/:id/:version/:file", (req, res) => {
+router.get("/news-image/:source/:id/:version/:file", (req, res) => {
   void (async () => {
-    const id = String(req.params["id"] ?? "");
+    const id = imageKeyFrom(String(req.params["source"] ?? ""), String(req.params["id"] ?? ""));
     const version = String(req.params["version"] ?? "");
     const file = String(req.params["file"] ?? "");
     const variant = file.endsWith(".webp") ? file.slice(0, -5) : "";
-    if (!validPlayerId(id) || !isImageVersion(version) || !isHeadshotVariant(variant)) {
+    const source = parseImageKey(id)?.source;
+    if (!id || !source || !isImageVersion(version) || !isVariantFor(source, variant)) {
       res.status(404).set("Cache-Control", HOUR).type("text/plain").send("Not found");
       return;
     }
@@ -59,7 +65,7 @@ router.get("/news-image/player/:id/:version/:file", (req, res) => {
           .status(302)
           .set("Cache-Control", HOUR)
           .set("Cloudflare-CDN-Cache-Control", HOUR)
-          .set("Location", headshotPath(id, result.version, variant))
+          .set("Location", imagePath(id, result.version, variant))
           .type("text/plain")
           .send("See the current version of this image");
         return;

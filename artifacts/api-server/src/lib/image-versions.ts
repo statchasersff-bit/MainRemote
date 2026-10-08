@@ -29,7 +29,7 @@
  */
 
 import { logger } from "./logger";
-import { sleeperHeadshotId } from "./image-urls";
+import { imageKeyFor } from "./image-urls";
 import type { NewsItem } from "./render";
 
 interface Known {
@@ -136,7 +136,7 @@ export function imageVersionFor(id: string | null | undefined): string | null | 
 }
 
 export function imageVersionForUrl(url: string | null | undefined): string | null | undefined {
-  return imageVersionFor(sleeperHeadshotId(url));
+  return imageVersionFor(imageKeyFor(url));
 }
 
 export function imageEtagFor(id: string): string | null {
@@ -258,19 +258,20 @@ export async function ensureImageVersions(ids: Iterable<string>, budgetMs: numbe
 }
 
 /**
- * Put each item's headshot version on it, waiting a bounded moment for any
- * the store has not met before. Items whose image is not a Sleeper thumb are
- * left alone.
+ * Put each item's image key and version on it, waiting a bounded moment for
+ * any the store has not met before. Items whose image is from a host the
+ * route does not serve are left alone.
  */
 export async function stampImageVersions(items: NewsItem[], budgetMs = 0): Promise<void> {
-  const ids = items
-    .map((item) => sleeperHeadshotId(item.image))
-    .filter((id): id is string => id !== null);
-  await ensureImageVersions(ids, budgetMs);
+  const keys = items
+    .map((item) => imageKeyFor(item.image))
+    .filter((key): key is string => key !== null);
+  await ensureImageVersions(keys, budgetMs);
   for (const item of items) {
-    const id = sleeperHeadshotId(item.image);
-    if (!id) continue;
-    item.imageVersion = imageVersionFor(id);
+    const key = imageKeyFor(item.image);
+    if (!key) continue;
+    item.imageKey = key;
+    item.imageVersion = imageVersionFor(key);
   }
 }
 
