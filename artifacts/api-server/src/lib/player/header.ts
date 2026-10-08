@@ -414,7 +414,13 @@ function renderPhotoWell(data: PlayerPageData): string {
   // The full figure at its own 350x254 ratio, drawn 200px wide (160 on a
   // phone): the f200 derivative for 1x screens and the f350 original size for
   // 2x, versioned and WebP (headshot-html.ts). Still the LCP candidate, so
-  // eager and at high priority. A player known to have no photo ships the
+  // eager and at high priority. Both of those are spelled out because WP
+  // Rocket's LazyLoad rewrote this tag on the live site (2026-10-08): it
+  // swapped the src for a blank SVG and parked the real URLs in data-lazy-*,
+  // which defeats the priority hint. Rocket leaves alone any <img> carrying
+  // loading="eager" or data-no-lazy, and so do the other lazy-load plugins
+  // that honour that attribute; the news plugin also names this class in
+  // Rocket's exclusion filter. A player known to have no photo ships the
   // silhouette.
   const img =
     headshotImg({
@@ -426,7 +432,9 @@ function renderPhotoWell(data: PlayerPageData): string {
       sizes: "(max-width: 640px) 160px, 200px",
       width: 350,
       height: 254,
+      loading: "eager",
       fetchpriority: "high",
+      extra: ' data-no-lazy="1"',
     }) ?? "";
   return (
     `<div class="scp-pwell${img ? "" : " is-missing"}" data-scp-pwell>` +

@@ -467,11 +467,11 @@ function statchasers_sos_page_copy(): array {
 }
 
 /**
- * The title/H1/description island out of a rendered fragment. Validated rather
+ * The title/H1/description/lead island out of a rendered fragment. Validated rather
  * than trusted: tags stripped, empty and unknown keys dropped.
  *
  * @param string $html Rendered fragment.
- * @return array{title?:string,h1?:string,description?:string}
+ * @return array{title?:string,h1?:string,description?:string,lead?:string}
  */
 function statchasers_sos_parse_copy( string $html ): array {
 	$copy = array();
@@ -485,7 +485,7 @@ function statchasers_sos_parse_copy( string $html ): array {
 		return $copy;
 	}
 
-	foreach ( array( 'title', 'h1', 'description' ) as $key ) {
+	foreach ( array( 'title', 'h1', 'description', 'lead' ) as $key ) {
 		if ( isset( $decoded[ $key ] ) && is_string( $decoded[ $key ] ) ) {
 			$value = trim( wp_strip_all_tags( $decoded[ $key ] ) );
 			if ( '' !== $value ) {
@@ -507,6 +507,15 @@ function statchasers_sos_title(): string {
 function statchasers_sos_h1(): string {
 	$copy = statchasers_sos_page_copy();
 	return isset( $copy['h1'] ) ? $copy['h1'] : '';
+}
+
+/**
+ * The paragraph under the H1 (the old standalone plugin's hero copy, now the
+ * island's "lead"), or '' when the fragment carries none.
+ */
+function statchasers_sos_lead(): string {
+	$copy = statchasers_sos_page_copy();
+	return isset( $copy['lead'] ) ? $copy['lead'] : '';
 }
 
 /** The meta description, or '' to leave the page's own. */
@@ -549,7 +558,7 @@ function statchasers_sos_shortcode_heading(): string {
 		return '';
 	}
 
-	return statchasers_page_heading_html( statchasers_sos_h1() );
+	return statchasers_page_heading_html( statchasers_sos_h1(), statchasers_sos_lead() );
 }
 
 /**

@@ -499,6 +499,34 @@ function statchasers_player_enqueue_assets(): void {
 }
 
 /**
+ * Keep WP Rocket's LazyLoad off the player header's headshot.
+ *
+ * The headshot (<img class="scp-pwell-img">) is the page's LCP candidate and
+ * ships with fetchpriority="high". Rocket's LazyLoad rewrote it anyway on the
+ * live site (seen 2026-10-08): src became a blank inline SVG, the real URLs
+ * moved to data-lazy-src / data-lazy-srcset, and the browser could not start
+ * the high-priority fetch until Rocket's script ran. Rocket matches the
+ * strings in this list against the whole <img> tag, so naming the class is
+ * enough, and anything else marked fetchpriority="high" is by definition
+ * above the fold and excluded with it. The API also prints loading="eager"
+ * and data-no-lazy="1" on the tag, which Rocket skips by default; this filter
+ * covers cached fragments rendered before that change.
+ *
+ * @param mixed $attributes Rocket's list of attribute substrings to skip.
+ * @return array
+ */
+function statchasers_player_lazyload_exclusions( $attributes ): array {
+	$attributes = is_array( $attributes ) ? $attributes : array();
+	foreach ( array( 'class="scp-pwell-img"', 'fetchpriority="high"' ) as $needle ) {
+		if ( ! in_array( $needle, $attributes, true ) ) {
+			$attributes[] = $needle;
+		}
+	}
+	return $attributes;
+}
+add_filter( 'rocket_lazyload_excluded_attributes', 'statchasers_player_lazyload_exclusions' );
+
+/**
  * Does the request being rendered mount a player page?
  *
  * Reads get_queried_object() rather than get_post(), for the reason given at

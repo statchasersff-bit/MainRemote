@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.28
+Stable tag: 1.10.29
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule and the dynasty rookie hit rates into WordPress pages.
@@ -20,9 +20,14 @@ upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
 
+= 1.10.29 =
+* Player pages: the header headshot (class scp-pwell-img, the page's LCP image, fetchpriority="high") is excluded from WP Rocket's LazyLoad through the rocket_lazyload_excluded_attributes filter, along with any other image marked fetchpriority="high". Rocket had been swapping the headshot's src for a blank SVG and loading the real file only after its script ran, which defeats the priority hint. The matching API deploy prints loading="eager" and data-no-lazy="1" on the tag and pins the image to its 350x254 box with aspect-ratio, so the well is the same height before and after the file arrives. Purge Rocket after installing: cached pages still carry the rewritten tag.
+* Strength of schedule: the hero prints the page's lead paragraph under the H1 (the old standalone plugin's copy: "Fantasy football strength of schedule helps you compare..."), read from the fragment's scsos-page-data island as "lead", the way the player stats page already does. Needs the matching API deploy; until the per-view fragment cache (an hour) turns over, the H1 stands alone as before.
+
 = 1.10.28 =
 * Blog Designer Pack's three stylesheets (handles inf-font-awesome, owl-carousel and bdpp-public-style; that plugin enqueues all three on every front-end page) now load only where the page renders Blog Designer Pack: one of its nine shortcodes or its block in the queried post, in a Divi Theme Builder layout applied to the request, or in a global module or reusable block those reference, or an active Blog Designer Pack widget. Every other page dequeues them. A Blog Designer Pack shortcode or widget that renders on a page the check missed gets the two layout stylesheets printed late in the footer, so nothing is ever left unstyled for good. Force the verdict with the statchasers_bdp_page_uses_plugin filter.
 * Font Awesome is dequeued everywhere: the twelve icons Blog Designer Pack prints (the post-meta row, the post-format badge, the Load More chevron) are redrawn as inline SVG in the shortcode, widget and AJAX load-more output, so the 75 KB stylesheet and its webfonts are never fetched. An icon outside the twelve brings the stylesheet back, late, on that page. Filter statchasers_bdp_inline_icons false keeps the font and the plugin's own <i> markup on the pages that use it.
+* Divi Supreme's module stylesheet (supreme-modules-for-divi-styles, 193 KB) and the magnific-popup stylesheet it enqueues beside it (both on every front-end page while its own Dynamic Assets setting is off) now load only where the page carries a [dsm_*] module or a dsm_* extension setting: in the queried post, a Divi Theme Builder layout applied to the request, a global module those reference, or an active widget. Every other page dequeues both and prints the one global rule magnific_popup.css carried (a Firefox button-padding reset) so nothing moves. A magnific-popup registered by Divi itself is never touched. TablePress is switched to its own on-demand CSS loading (tablepress_frontend_legacy_css_loading false): default.css is enqueued where a [table] renders instead of on every page, and a page whose content carries one gets it in the head. Filters: statchasers_host_css_features and statchasers_host_css_dequeue.
 
 = 1.10.27 =
 * Two origins. STATCHASERS_NEWS_ORIGIN stays the address this server fetches fragments from (it may be the deployment's bare Replit address, which nothing proxies). Everything printed for a reader's browser - the stylesheet and script tags, the preconnect hint, the matchup og:image, the news tool's client-side fetch base and the companion Divi crest (1.0.2) - now uses the public name, https://news.statchasers.com by default, from the new statchasers_public_origin(). Override with STATCHASERS_PUBLIC_ORIGIN, the statchasers_public_origin option or the filter of the same name. No wp-config change is needed.

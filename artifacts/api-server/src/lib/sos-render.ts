@@ -20,6 +20,7 @@
 
 import { escapeHtml, escapeJsonLd } from "./render";
 import { headshotImg } from "./headshot-html";
+import { renderSosFaq, type SosFaqFacts } from "./sos-faq";
 import { getFPAUrl, getPlayerPageUrl } from "./team/links";
 import type { FantasyPosition } from "./fpa/nflverse";
 import {
@@ -50,21 +51,41 @@ export interface SosRenderOptions {
   endpoint?: string;
   /** The CSV route, absolute when embedded (it lives on this origin, not WordPress). */
   csvBase?: string;
+  /**
+   * The FAQ's four team answers, from the RB/PPR board (sos-faq.ts). Unset,
+   * the FAQ still prints with those answers pointing at the cards instead.
+   */
+  faq?: SosFaqFacts | null;
 }
 
 export const SOS_H1 = "Fantasy Football Strength of Schedule";
 
+/** The paragraph under the H1 on the WordPress page (mak, 2026-10-08). */
+export const SOS_LEAD =
+  "Fantasy football strength of schedule helps you compare the easiest and toughest " +
+  "matchups by team, player, position, scoring format, rest-of-season, and fantasy " +
+  "playoff weeks. Use the tool below to identify schedule edges using opponent-adjusted " +
+  "fantasy points allowed.";
+
 /**
  * The page's words. mak approved the source's title, H1 and description on
- * 2026-09-30 - those three and nothing else (no schema, no FAQ).
+ * 2026-09-30 - those three and nothing else (no schema, no FAQ). The lead is
+ * the old standalone plugin's hero paragraph, supplied by mak 2026-10-08; the
+ * WordPress plugin prints it under the H1 as the hero's description.
  */
-export function sosPageCopy(season: number): { title: string; h1: string; description: string } {
+export function sosPageCopy(season: number): {
+  title: string;
+  h1: string;
+  description: string;
+  lead: string;
+} {
   return {
     title: `${SOS_H1} | ${season} SOS by Team & Player`,
     h1: SOS_H1,
     description:
       `View ${season} fantasy football strength of schedule by team, player, position, ` +
       `scoring format, rest-of-season, and fantasy playoff weeks.`,
+    lead: SOS_LEAD,
   };
 }
 
@@ -508,6 +529,8 @@ export function renderSosPage(
     (state.tab === "player" ? renderPlayerTable(board) : renderTeamTable(board)) +
     `</div>` +
     `</div>` +
+    // Outside .scsos-view, so a view swap (client/sos.ts) leaves it alone.
+    renderSosFaq(board.season, options.faq ?? null) +
     renderMetaIsland(board, options) +
     `</div>`
   );

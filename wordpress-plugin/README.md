@@ -1255,8 +1255,16 @@ It prints the fragment from `/embed/sos`, cached for an hour per view with a
 30-day fallback. The board is computed by the API from the live FPA table and
 the season's schedule, so it moves when the FPA ingest does. The fragment's
 `scsos-page-data` island carries the page's title, H1 and meta description
-(approved by mak, 2026-09-30); the plugin applies them through Rank Math and
-core and strips the island. No schema node is added. In tool heading mode the
+(approved by mak, 2026-09-30) and, since 1.10.29, the lead paragraph under
+the H1 (the old standalone plugin's hero copy); the plugin applies the first
+three through Rank Math and core, prints the lead in the hero, and strips the
+island.
+
+The fragment ends with the page's FAQ (mak's twenty questions, 2026-10-08,
+`src/lib/sos-faq.ts` in the API): the four answers that name teams quote the
+RB/PPR board's summary cards, so they move with the board. On the page only;
+no FAQ schema is emitted, and the plugin prints it as part of the fragment
+without code of its own. No schema node is added. In tool heading mode the
 shortcode prints the H1 itself. The CSV export is a public app route
 (`/sos/download.csv`).
 
@@ -1463,6 +1471,54 @@ Blog Designer Pack's own settings carry a site-wide "disable Font Awesome
 CSS" and "disable Owl CSS" switch. Either one leaves the handle unregistered
 and the dequeue here a no-op; they do not conflict, but they are also
 all-or-nothing, which is why this exists.
+
+## Divi Supreme's and TablePress's stylesheets
+
+The same audit (2026-10-08, every post, category and hand-made page on the
+live site plus one of each generated page type) found three more stylesheets
+on every page with nothing on any of those pages for them to style:
+
+| handle | file | registered by | size |
+|---|---|---|---|
+| `supreme-modules-for-divi-styles` | `supreme-modules-for-divi/styles/style.min.css` | Divi Supreme Lite 2.5.64, through Divi's extension framework | 193 KB |
+| `magnific-popup` | `Divi/includes/builder/feature/dynamic-assets/assets/css/magnific_popup.css` | Divi Supreme's `enqueue_styles()`, whenever its own **Dynamic Assets** setting is off (it is: both print with `?ver=2.5.64`) | 6 KB |
+| `tablepress-default` | `tablepress/css/build/default.css` | TablePress, on every page because Divi is not a block theme | 8 KB |
+
+`statchasers-host-css.php` handles them the way `statchasers-bdp-assets.php`
+handles Blog Designer Pack. At `wp_enqueue_scripts` priority 1000 it reads
+the content that will render: the queried post, the posts page on the blog
+index, every Divi Theme Builder layout applied to the request, the global
+library modules those reference, and the active widgets (their ids, and the
+content of the active block, text and custom-HTML instances). A page with no
+`[dsm_*]` module and no `dsm_*` extension setting anywhere in that content
+dequeues the Divi Supreme stylesheet and the magnific-popup beside it. The
+one rule in `magnific_popup.css` that applies outside the lightbox, a Firefox
+`button::-moz-focus-inner` padding reset, is printed inline in its place so
+nothing moves. A `magnific-popup` registered by Divi itself (a different
+version string) is never touched: Divi's own lightbox CSS travels inside its
+dynamic assets and is not this handle.
+
+TablePress is different: it already has an on-demand mode, meant for block
+themes, behind the `tablepress_frontend_legacy_css_loading` filter. That
+filter is set to `false`, so `default.css` is enqueued when a `[table]`
+actually renders and printed in place if the head has already gone out. A
+table in a widget or a template is therefore always styled. On a page whose
+content carries a `[table]`, `[table-info]` or the TablePress block, the CSS
+is enqueued in the head as well, through TablePress's own controller, so that
+page does not paint the table unstyled first.
+
+The editors keep everything: the Visual Builder, the Theme Builder editor,
+the Customizer and post previews. No script is touched. Two filters:
+
+- `statchasers_host_css_features` receives `array( 'dsm' => bool, 'tablepress' => bool )`
+  and the scanned content; force one on for a page the scan cannot see.
+- `statchasers_host_css_dequeue` receives the handles about to go; return an
+  empty array to switch the whole thing off.
+
+Divi Supreme's own **Dynamic Assets** setting (Divi Supreme > Settings > Misc)
+reaches the same place for its two files by handing per-module CSS to Divi's
+dynamic assets; with it on, this file finds the stylesheet already dequeued
+and magnific-popup absent, and does nothing. Both can stay on.
 
 ## Still using the iframe?
 
