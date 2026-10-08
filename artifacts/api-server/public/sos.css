@@ -1030,3 +1030,88 @@ body.scsos-page {
     width: 280px;
   }
 }
+
+/* ------------------------------------------------------------------- FAQ */
+
+/* Under the board on every view: the team hubs' fold-per-question
+   arrangement (team.css .sct-faq), in this board's tokens. The two headings
+   carry `!important` on size and colour for the hubs' reason: Divi's
+   typography panel reaches them through `#left-area h2/h3`, an id no class
+   here can outweigh. */
+.scsos-faq {
+  margin: 36px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--sc-border);
+  max-width: 880px;
+}
+
+.scsos .scsos-faq-title {
+  margin: 0 0 6px;
+  color: var(--sc-navy) !important;
+  font-size: 1.25rem !important;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.scsos-faq-item {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--sc-hairline);
+}
+
+.scsos-faq-q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scsos-faq-q-row::-webkit-details-marker {
+  display: none;
+}
+
+.scsos-faq-q-row::before {
+  content: "";
+  flex: none;
+  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sc-gold);
+  border-bottom: 2px solid var(--sc-gold);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.scsos-faq-item[open] > .scsos-faq-q-row::before {
+  transform: rotate(45deg);
+}
+
+.scsos .scsos-faq-q {
+  margin: 0;
+  color: var(--sc-ink) !important;
+  font-size: 0.95rem !important;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.scsos-faq-a {
+  margin: 8px 0 0 20px;
+  max-width: 72ch;
+  color: var(--sc-muted-strong);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.scsos-faq-a p {
+  margin: 0 0 8px;
+}
+
+.scsos-faq-a p:last-child {
+  margin-bottom: 0;
+}
+
+.scsos-faq-a strong {
+  color: var(--sc-ink);
+  font-weight: 800;
+}

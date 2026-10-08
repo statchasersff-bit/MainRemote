@@ -212,6 +212,10 @@ function is_active_widget( $cb = false, $id = false, $id_base = false, $skip = t
 function is_customize_preview() { return false; }
 function __return_true() { return true; }
 function __return_false() { return false; }
+function wp_styles() { return $GLOBALS['wp_styles'] ?? (object) array( 'registered' => array() ); }
+function is_home() { return (bool) ( $GLOBALS['page']['home'] ?? false ); }
+function is_preview() { return false; }
+function __return_empty_array() { return array(); }
 function wp_register_script() {}
 function wp_register_style() {}
 function plugin_dir_url( $f ) { return ''; }
@@ -321,6 +325,7 @@ $dir = __DIR__ . '/../statchasers-news';
 
 require_once "$dir/statchasers-assets.php";
 require_once "$dir/statchasers-bdp-assets.php";
+require_once "$dir/statchasers-host-css.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";
@@ -399,6 +404,12 @@ if ( 'main' === $group ) {
 
 if ( 'bdp' === $group ) {
 	require __DIR__ . '/smoke-bdp.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'hostcss' === $group ) {
+	require __DIR__ . '/smoke-hostcss.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -1931,11 +1942,17 @@ is( statchasers_team_title_is_generated( 'Patriots 2026: Our Take | StatChasers'
 is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football', $patriots ), false, 'even one a suffix away' );
 is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), false, 'and another team\'s title is not this team\'s' );
 
+// WP Rocket LazyLoad: the player headshot and anything fetchpriority="high"
+// are added to Rocket's skip list, once each, with Rocket's own entries kept.
+$lazy = apply_filters( 'rocket_lazyload_excluded_attributes', array( 'data-no-lazy=', 'class="scp-pwell-img"' ) );
+is( $lazy, array( 'data-no-lazy=', 'class="scp-pwell-img"', 'fetchpriority="high"' ), 'rocket lazyload: headshot class and fetchpriority=high excluded, no duplicates' );
+is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img"', 'fetchpriority="high"' ), 'rocket lazyload: a non-array from another filter is tolerated' );
+
 /*
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'rhr', 'rhrleak', 'bdp' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'sos', 'sosleak', 'rhr', 'rhrleak', 'bdp', 'hostcss' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

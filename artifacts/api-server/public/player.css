@@ -626,6 +626,11 @@ button.scp-search-opt {
 }
 
 .scp .scp-pwell-img {
+  /* The box is the attributes' 350x254 whatever the file (or a lazy-load
+     placeholder) turns out to be, so the well never changes height on swap. */
+  aspect-ratio: 350 / 254;
+  object-fit: contain;
+  object-position: center bottom;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
 }
 

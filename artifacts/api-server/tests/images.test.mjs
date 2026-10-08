@@ -509,7 +509,10 @@ describe("team hub and player pages", () => {
       assert.match(hero.getAttribute("src"), /\/news-image\/player\/\d+\/(latest|[0-9a-f]{10})\/f200\.webp$/);
       assert.match(hero.getAttribute("srcset"), /f200\.webp 200w, .*f350\.webp 350w$/);
       assert.equal(hero.getAttribute("fetchpriority"), "high");
-      assert.equal(hero.getAttribute("loading"), null, "the LCP hero is not lazy");
+      // Both attributes keep WP Rocket's LazyLoad off the LCP image (it
+      // rewrote the tag on the live site, 2026-10-08).
+      assert.equal(hero.getAttribute("loading"), "eager", "the LCP hero is eager");
+      assert.equal(hero.getAttribute("data-no-lazy"), "1", "the LCP hero opts out of lazy-load plugins");
     }
   });
 });

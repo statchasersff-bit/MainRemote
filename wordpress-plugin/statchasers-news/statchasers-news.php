@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.28
+ * Version:           1.10.29
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.28';
+const STATCHASERS_NEWS_VERSION       = '1.10.29';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -82,6 +82,8 @@ require_once __DIR__ . '/statchasers-player-pages.php';
 require_once __DIR__ . '/statchasers-h1.php';
 // Blog Designer Pack's stylesheets, dequeued on the pages that do not render it.
 require_once __DIR__ . '/statchasers-bdp-assets.php';
+// Divi Supreme's and TablePress's, the same way.
+require_once __DIR__ . '/statchasers-host-css.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;

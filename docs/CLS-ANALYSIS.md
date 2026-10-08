@@ -188,7 +188,7 @@ Fix options, in order of effort:
 Each of these is well under Google's 0.1 "good" line on its own and only
 worth doing once the two above are in.
 
-- **Player page peer rails.** `.scp-peer-img` is emitted as
+- **Player page peer rails** (fixed 2026-10-08: now `height="109"`). `.scp-peer-img` was emitted as
   `width="150" height="98"`, but Sleeper's thumbnails are 350 x 254 (ratio
   1.38, not 1.53). The well is a fixed 98 px on desktop, but the full-width
   `.scp-peer.is-current` card on phones grows 10 to 11 px when WP Rocket's
@@ -301,3 +301,50 @@ Two things follow:
   its own stylesheets (team.css is 461 KB raw, 200 KB minified, roughly 50 KB
   against 33 KB gzipped). That is a trade-off for mak to call; nothing was
   changed.
+
+## Fix shipped 2026-10-08: the headshot is no longer lazy-loaded
+
+A follow-up report put the player pages at 0.117 with `.scp-pid` (position,
+team and name under the headshot) as the shifting element, and blamed WP
+Rocket's LazyLoad on the headshot: the live tag came out as
+`<img class="scp-pwell-img" src="data:image/svg+xml,..." data-lazy-src="..."
+fetchpriority="high">`, so the high-priority fetch could not start until
+Rocket's script ran. That rewrite was confirmed on the live Josh Allen page.
+
+What was shipped:
+
+1. **API** (`src/lib/player/header.ts`): the headshot prints
+   `loading="eager"` and `data-no-lazy="1"`. Rocket's LazyLoad skips a tag
+   carrying either by default, as do the other lazy-load plugins that honour
+   `data-no-lazy`.
+2. **API** (`public/player.css`): `.scp-pwell-img` gets
+   `aspect-ratio: 350 / 254` with `object-fit: contain` anchored to the
+   bottom, so the box is the attributes' ratio whatever file or placeholder
+   is in it. The well itself already had a `min-height` (236 px, 180 on
+   phones) and both figure and jersey number are absolutely positioned, so
+   nothing in the well can push `.scp-pid` in the first place.
+3. **News plugin 1.10.29** (`statchasers-player.php`): the
+   `rocket_lazyload_excluded_attributes` filter adds `class="scp-pwell-img"`
+   and `fetchpriority="high"` to Rocket's skip list, which covers fragments
+   cached before the API change and any other above-the-fold image the tools
+   mark high priority. Purge Rocket after installing.
+4. **API** (`src/lib/player-render.ts`): the peer-rail photos declare
+   `width="150" height="109"`, the derivatives' real 350x254 ratio, instead
+   of the well's 98 px height (Finding 3, first bullet). Same deploy as 1
+   and 2.
+
+What the lab says: `cls-probe.mjs` on the live page before the change, in
+`narrow` mode and in throttled `mobile` mode, found no shift on `.scp-pid`
+or on the well at all. `narrow` recorded 0.021 (0.0165 of it the
+`#content-area` Divi shift from Finding 1, 0.0048 the Archivo swap on the
+jersey number and name); `mobile` recorded 0.0048 (the swap only). The
+0.117 is therefore most likely the field figure, which is a 28-day window
+and still carries the header shift that 1.10.24 fixed on 10-07. The
+lazy-load fix is right on its own merits (the LCP image should never wait
+for a script) but is not expected to move the field number by itself; the
+field number should fall as the window rolls past 10-07.
+
+Side observation: the bare dev page (`/player/<slug>` on the API, no
+WordPress) shows a 0.056 shift of `.scp-phead` moving down 68 px at font
+load time, identical before and after this change. It does not appear on the
+live page and was left alone.

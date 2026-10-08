@@ -21,6 +21,7 @@ import { logger } from "./logger";
 import { renderSosEmpty, renderSosPage, sosPageCopy, type SosRenderOptions } from "./sos-render";
 import { getSosBoard, type SosBoard, type SosState } from "./sos/sos-data";
 import { renderSosHeadTags } from "./sos-seo";
+import { sosFaqFacts } from "./sos-faq";
 import { LruCache } from "./lru";
 
 export interface SosSsrResult {
@@ -69,12 +70,22 @@ export async function renderSosFragment(
     return { html: renderSosEmpty(options), version: "empty", board: null };
   }
 
+  // The FAQ quotes the RB/PPR cards whatever the view (sos-faq.ts); the same
+  // inputs as this view's board, so it is there whenever the board is.
+  const rbBoard =
+    board.position === "RB" && board.scoring === "ppr" ? board : await getSosBoard("RB", "ppr");
+  const faq = sosFaqFacts(rbBoard);
+
   const key = optionKey(state, options);
-  const version = `${board.version}-${hash(key)}`;
+  const version = `${board.version}-${rbBoard?.version ?? "x"}-${hash(key)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
 
-  const result: SosSsrResult = { html: renderSosPage(board, state, options), version, board };
+  const result: SosSsrResult = {
+    html: renderSosPage(board, state, { ...options, faq }),
+    version,
+    board,
+  };
   fragmentCache.set(key, result);
   return result;
 }

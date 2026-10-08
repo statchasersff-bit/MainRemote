@@ -67,7 +67,7 @@ $_GET                    = array( 'tab' => 'player', 'pos' => 'te', 'scoring' =>
 $GLOBALS['remote_urls']  = array();
 $GLOBALS['http_body']    =
 	'<div class="scsos is-embed" data-scsos-root="1" data-season="2026"><h2>Board</h2>' .
-	'<script type="application/json" class="scsos-page-data">{"title":"Fantasy Football Strength of Schedule | 2026 SOS by Team & Player","h1":"Fantasy Football Strength of Schedule","description":"View 2026 fantasy football strength of schedule <b>by team</b>.","extra":1}</script>' .
+	'<script type="application/json" class="scsos-page-data">{"title":"Fantasy Football Strength of Schedule | 2026 SOS by Team & Player","h1":"Fantasy Football Strength of Schedule","description":"View 2026 fantasy football strength of schedule <b>by team</b>.","lead":"Use the <i>tool</i> below.","extra":1}</script>' .
 	'</div>';
 
 $html = statchasers_sos_shortcode();
@@ -78,6 +78,7 @@ is(
 );
 is( substr_count( $html, '<h1' ), 1, 'the shortcode prints exactly one H1 in tool mode' );
 is( str_contains( $html, '>Fantasy Football Strength of Schedule</h1>' ), true, 'naming the board, from the island' );
+is( str_contains( $html, '<p class="sc-lo-hero__lead" data-sct-page-lead>Use the tool below.</p>' ), true, 'with the lead under it, tags stripped' );
 is( str_contains( $html, 'scsos-page-data' ), false, 'and the island is stripped from the printed markup' );
 is( str_contains( $html, 'data-scsos-root="1"' ), true, 'while the board itself is printed' );
 

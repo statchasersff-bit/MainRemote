@@ -18,6 +18,7 @@ import { importModule } from "./helpers/bundle.mjs";
 const model = await importModule("lib/sos/sos-model");
 const { TEAMS } = await importModule("lib/team/teams");
 const render = await importModule("lib/sos-render");
+const faq = await importModule("lib/sos-faq");
 
 /* ------------------------------------------------------------- fixtures */
 
@@ -210,8 +211,43 @@ describe("the markup", () => {
       h1: "Fantasy Football Strength of Schedule",
       description:
         "View 2026 fantasy football strength of schedule by team, player, position, scoring format, rest-of-season, and fantasy playoff weeks.",
+      lead: "Fantasy football strength of schedule helps you compare the easiest and toughest matchups by team, player, position, scoring format, rest-of-season, and fantasy playoff weeks. Use the tool below to identify schedule edges using opponent-adjusted fantasy points allowed.",
     });
     assert.match(html, /data-scsos-endpoint="https:\/\/x\/embed\/sos"/);
+  });
+
+  test("the FAQ: every question, under the board and outside the swapped view, with the RB/PPR cards quoted", () => {
+    const facts = faq.sosFaqFacts(board);
+    assert.ok(facts, "the RB/PPR board yields the four team facts");
+    assert.equal(faq.sosFaqFacts(null), null);
+    assert.equal(faq.sosFaqFacts({ ...board, position: "WR" }), null, "only the RB/PPR board is quoted");
+
+    const html = render.renderSosPage(board, team, { embed: true, faq: facts });
+    const faqAt = html.indexOf('<section class="scsos-faq"');
+    assert.ok(faqAt > html.indexOf("</table>"), "after the board");
+    assert.ok(faqAt > html.lastIndexOf('<div class="scsos-view">'), "outside .scsos-view");
+    assert.ok(faqAt < html.indexOf("scsos-page-data"), "before the island");
+    assert.match(html, /<h2 id="scsos-faq-title" class="scsos-faq-title">Fantasy Football Strength of Schedule FAQ<\/h2>/);
+    assert.equal((html.match(/<details class="scsos-faq-item">/g) ?? []).length, 20, "twenty questions");
+    assert.equal(faq.sosFaqEntries(board.season, facts).length, 20);
+    assert.doesNotMatch(html, /\u2014/, "no em dashes");
+
+    const easiest = board.teamCards.find((c) => c.id === "easiest-full");
+    const toughest = board.teamCards.find((c) => c.id === "toughest-full");
+    const po = board.teamCards.find((c) => c.id === "easiest-playoff");
+    const poBad = board.teamCards.find((c) => c.id === "toughest-playoff");
+    assert.match(
+      html,
+      new RegExp(`For ${board.season} PPR scoring, the ${easiest.team.fullName} currently rank No\\. 1 in full-season running back strength of schedule\\. Their opponents average ${easiest.afpa.toFixed(1)} adjusted fantasy points allowed to running backs, which is \\d+\\.\\d points (above|below) the league average\\.`),
+    );
+    assert.match(html, new RegExp(`the ${toughest.team.fullName} currently rank No\\. ${board.teams.find((t) => t.team.abbreviation === toughest.team.abbreviation).overallRank} in full-season`));
+    assert.match(html, new RegExp(`${po.team.city} currently has the easiest ${board.season} fantasy playoff schedule for running backs in PPR scoring\\. ${po.team.nickname} running backs face opponents allowing an average of ${po.afpa.toFixed(1)} adjusted fantasy points`));
+    assert.match(html, new RegExp(`${poBad.team.city} currently has the toughest ${board.season} fantasy playoff schedule for running backs in PPR scoring\\. The ${poBad.team.nickname}' playoff opponents allow an average of ${poBad.afpa.toFixed(1)} adjusted fantasy points to running backs\\.`));
+    assert.match(html, new RegExp(`StatChasers uses a ${board.season - 1}\u2013${board.season} data blend`), "the blend names the seasons");
+
+    const bare = render.renderSosPage(board, team, { embed: true });
+    assert.match(bare, /the Easiest Full-Season card above names the team at No\. 1/, "without facts the four answers point at the cards");
+    assert.equal((bare.match(/<details class="scsos-faq-item">/g) ?? []).length, 20);
   });
 
   test("standalone: the H1, and no island", () => {

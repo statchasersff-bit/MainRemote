@@ -3148,8 +3148,13 @@ function renderPositionPeers(
           alt: "",
           variants: ["f160", "f350"],
           sizes: "150px",
+          // The derivatives' own 350x254 ratio at the card's width, so the
+          // box the browser reserves is the box the file fills. The old
+          // 150x98 (the well's height) was the wrong ratio: on a phone the
+          // full-width card grew 10px when WP Rocket swapped the file in
+          // (docs/CLS-ANALYSIS.md, Finding 3).
           width: 150,
-          height: 98,
+          height: 109,
           loading: "lazy",
         }) ?? "") +
         `<span class="scp-peer-rank">${escapeHtml(`${pos}${row.rank}`)}</span>` +
