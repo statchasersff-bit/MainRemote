@@ -358,7 +358,7 @@ function statchasers_player_stats_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_PLAYER_STATS_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_PLAYER_STATS_HANDLE,
-			$origin . '/player-stats.css',
+			statchasers_public_origin() . '/player-stats.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -367,7 +367,7 @@ function statchasers_player_stats_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_PLAYER_STATS_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_PLAYER_STATS_HANDLE,
-			$origin . '/dist/statchasers-player-stats.js',
+			statchasers_public_origin() . '/dist/statchasers-player-stats.js',
 			array(),
 			$version,
 			array(

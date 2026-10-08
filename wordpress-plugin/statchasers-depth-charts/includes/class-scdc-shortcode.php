@@ -300,6 +300,39 @@ class SCDC_Shortcode {
 	 * @param array $atts Shortcode attributes (unused for now).
 	 * @return string
 	 */
+	/**
+	 * The StatChasers app's public origin, for its image derivatives.
+	 *
+	 * ESPN serves 350x254 PNG headshots and 500px PNG crests, which the script
+	 * drew into boxes of 20 to 40 pixels. With the app's origin known, the
+	 * script points those at the app's own resized WebP headshots
+	 * (/news-image/espn/<id>/...) and its SVG crests (/team-logos/<abbr>.svg)
+	 * instead. The public name, as the StatChasers plugin defines it, not the
+	 * fetch origin SCDC_Push uses. SCDC_IMAGE_ORIGIN overrides; '' (no
+	 * StatChasers plugin and no constant) keeps ESPN's files.
+	 *
+	 * @return string Origin without a trailing slash, or ''.
+	 */
+	public static function image_origin() {
+		$origin = '';
+		if ( defined( 'SCDC_IMAGE_ORIGIN' ) ) {
+			$origin = (string) constant( 'SCDC_IMAGE_ORIGIN' );
+		} elseif ( function_exists( 'statchasers_public_origin' ) ) {
+			$origin = (string) statchasers_public_origin();
+		} elseif ( defined( 'STATCHASERS_PUBLIC_ORIGIN' ) ) {
+			$origin = (string) constant( 'STATCHASERS_PUBLIC_ORIGIN' );
+		} elseif ( defined( 'STATCHASERS_NEWS_ORIGIN' ) ) {
+			$origin = (string) constant( 'STATCHASERS_NEWS_ORIGIN' );
+		}
+		/**
+		 * Filters the origin the depth chart loads its imagery from.
+		 *
+		 * @param string $origin App origin, no trailing slash, or ''.
+		 */
+		$origin = (string) apply_filters( 'scdc_image_origin', $origin );
+		return untrailingslashit( esc_url_raw( $origin ) );
+	}
+
 	public function render( $atts = array() ) {
 		// Fallback when nothing has been cached yet.
 		if ( ! SCDC_Store::has_data() ) {
@@ -343,6 +376,7 @@ class SCDC_Shortcode {
 				id="<?php echo esc_attr( $id ); ?>"
 				class="scdc-root"
 				data-endpoint="<?php echo esc_url( $endpoint ); ?>"
+				data-image-origin="<?php echo esc_url( self::image_origin() ); ?>"
 				data-last-updated="<?php echo esc_attr( $last_updated ); ?>"
 				data-base="<?php echo esc_url( $initial['base'] ); ?>"
 				data-view="<?php echo esc_attr( $initial['view'] ); ?>"

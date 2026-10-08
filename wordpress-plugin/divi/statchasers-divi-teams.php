@@ -2,7 +2,7 @@
 /**
  * Plugin Name: StatChasers Divi Team Pages
  * Description: Per-team data for a single Divi Theme Builder template, plus the sticky-header offset the hub needs. Companion to the StatChasers plugin.
- * Version:     1.0.1
+ * Version:     1.0.2
  *
  * Install as an mu-plugin: wp-content/mu-plugins/statchasers-divi-teams.php
  * (mu-plugins load unconditionally, so nothing here can be switched off by
@@ -118,9 +118,13 @@ function statchasers_divi_team(): ?array {
  * @return string
  */
 function statchasers_divi_crest_url( string $abbr ): string {
+	// The public name of the app, as the reader's browser should load it -
+	// not the fetch origin, which may be the deployment's bare Replit address.
 	$origin = '';
-	if ( function_exists( 'statchasers_news_origin' ) ) {
-		$origin = (string) statchasers_news_origin();
+	if ( function_exists( 'statchasers_public_origin' ) ) {
+		$origin = (string) statchasers_public_origin();
+	} elseif ( defined( 'STATCHASERS_PUBLIC_ORIGIN' ) ) {
+		$origin = (string) constant( 'STATCHASERS_PUBLIC_ORIGIN' );
 	} elseif ( defined( 'STATCHASERS_NEWS_ORIGIN' ) ) {
 		$origin = (string) constant( 'STATCHASERS_NEWS_ORIGIN' );
 	}

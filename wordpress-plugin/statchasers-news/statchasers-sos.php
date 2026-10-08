@@ -226,7 +226,7 @@ function statchasers_sos_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_SOS_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_SOS_HANDLE,
-			$origin . '/sos.css',
+			statchasers_public_origin() . '/sos.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -235,7 +235,7 @@ function statchasers_sos_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_SOS_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_SOS_HANDLE,
-			$origin . '/dist/statchasers-sos.js',
+			statchasers_public_origin() . '/dist/statchasers-sos.js',
 			array(),
 			$version,
 			array(

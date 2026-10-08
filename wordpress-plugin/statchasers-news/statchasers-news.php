@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.26
+ * Version:           1.10.28
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,10 +43,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.26';
+const STATCHASERS_NEWS_VERSION       = '1.10.28';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
+/** The option behind statchasers_public_origin(), and the name it prints by default. */
+const STATCHASERS_NEWS_OPTION_PUBLIC_ORIGIN  = 'statchasers_public_origin';
+const STATCHASERS_NEWS_PUBLIC_ORIGIN_DEFAULT = 'https://news.statchasers.com';
+/** Where the last upgrade's cache sweep recorded the version it swept for. */
+const STATCHASERS_NEWS_OPTION_INSTALLED      = 'statchasers_news_installed_version';
 
 // The other tools' shortcodes. Required after the constants above and
 // before any hook registration, because they reuse this file's origin,
@@ -75,6 +80,8 @@ require_once __DIR__ . '/statchasers-rookie-hit-rates.php';
 // for a page to measure.
 require_once __DIR__ . '/statchasers-player-pages.php';
 require_once __DIR__ . '/statchasers-h1.php';
+// Blog Designer Pack's stylesheets, dequeued on the pages that do not render it.
+require_once __DIR__ . '/statchasers-bdp-assets.php';
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -115,6 +122,47 @@ function statchasers_news_origin(): string {
 	 * @param string $origin Origin URL, no trailing slash.
 	 */
 	$origin = (string) apply_filters( 'statchasers_news_origin', $origin );
+
+	return untrailingslashit( esc_url_raw( $origin ) );
+}
+
+/**
+ * The origin a READER'S BROWSER is sent to, without a trailing slash.
+ *
+ * Two origins, on purpose. STATCHASERS_NEWS_ORIGIN above is where this server
+ * fetches fragments and data from; it may be the deployment's bare
+ * *.replit.app address, which nothing proxies and nothing challenges. This
+ * one is the public name of the same deployment - the stylesheet and script
+ * tags, the preconnect hint, the Divi crest and the news tool's client-side
+ * fetch base all print it, so markup never carries the fetch address. It
+ * defaults to the canonical newsfeed origin and needs no configuration.
+ *
+ *   define( 'STATCHASERS_PUBLIC_ORIGIN', 'https://news.statchasers.com' );
+ *
+ * ...or the `statchasers_public_origin` option, or the filter of the same
+ * name, for a site whose public name is something else.
+ */
+function statchasers_public_origin(): string {
+	$origin = '';
+
+	if ( defined( 'STATCHASERS_PUBLIC_ORIGIN' ) ) {
+		$origin = (string) constant( 'STATCHASERS_PUBLIC_ORIGIN' );
+	}
+
+	if ( '' === $origin ) {
+		$origin = (string) get_option( STATCHASERS_NEWS_OPTION_PUBLIC_ORIGIN, '' );
+	}
+
+	if ( '' === $origin ) {
+		$origin = STATCHASERS_NEWS_PUBLIC_ORIGIN_DEFAULT;
+	}
+
+	/**
+	 * Filters the origin printed into markup for readers' browsers.
+	 *
+	 * @param string $origin Origin URL, no trailing slash.
+	 */
+	$origin = (string) apply_filters( 'statchasers_public_origin', $origin );
 
 	return untrailingslashit( esc_url_raw( $origin ) );
 }
@@ -322,7 +370,7 @@ function statchasers_news_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_NEWS_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_NEWS_HANDLE,
-			$origin . '/styles.css',
+			statchasers_public_origin() . '/styles.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -331,7 +379,7 @@ function statchasers_news_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_NEWS_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_NEWS_HANDLE,
-			$origin . '/dist/statchasers-news.js',
+			statchasers_public_origin() . '/dist/statchasers-news.js',
 			array(),
 			$version,
 			array(
@@ -418,7 +466,7 @@ function statchasers_news_shortcode( $atts = array() ): string {
 		// client-side. Degraded for crawlers, but readers still get the tool.
 		return sprintf(
 			'<div class="statchasers-news" data-sc-root="1" data-sc-origin="%1$s" data-sc-page-size="%2$d"></div>',
-			esc_attr( $origin ),
+			esc_attr( statchasers_public_origin() ),
 			(int) $args['page_size']
 		);
 	}
@@ -658,7 +706,7 @@ function statchasers_news_resource_hints( array $urls, string $relation_type ): 
 		return $urls;
 	}
 
-	$origin = statchasers_news_origin();
+	$origin = statchasers_public_origin();
 	if ( '' !== $origin ) {
 		$urls[] = $origin;
 	}
@@ -666,6 +714,29 @@ function statchasers_news_resource_hints( array $urls, string $relation_type ): 
 	return $urls;
 }
 add_filter( 'wp_resource_hints', 'statchasers_news_resource_hints', 10, 2 );
+
+/**
+ * Sweep the cached renders once after every upgrade.
+ *
+ * A fragment cached under the previous release can outlive the release by a
+ * day: the backup copies survive a failed refresh for that long, and a
+ * refresh that keeps failing keeps serving them. The 1.10.26 upgrade left the
+ * player directory on its pre-upgrade render, Sleeper crests and all, with no
+ * way to clear it short of WP-CLI. So the first request after an upgrade
+ * runs the same sweep `wp eval 'statchasers_news_flush();'` does, and records
+ * the version it swept for so it runs once.
+ */
+add_action(
+	'init',
+	static function (): void {
+		if ( STATCHASERS_NEWS_VERSION === (string) get_option( STATCHASERS_NEWS_OPTION_INSTALLED, '' ) ) {
+			return;
+		}
+		statchasers_news_flush();
+		update_option( STATCHASERS_NEWS_OPTION_INSTALLED, STATCHASERS_NEWS_VERSION, false );
+	},
+	20
+);
 
 /**
  * Clear cached renders. Handy after a deploy: wp eval 'statchasers_news_flush();'

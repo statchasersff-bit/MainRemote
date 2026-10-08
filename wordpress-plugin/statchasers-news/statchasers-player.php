@@ -459,7 +459,7 @@ function statchasers_player_enqueue_assets(): void {
 		}
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
-			$origin . '/player.css',
+			statchasers_public_origin() . '/player.css',
 			$deps,
 			$version
 		);
@@ -468,7 +468,7 @@ function statchasers_player_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_PLAYER_HANDLE,
-			$origin . '/dist/statchasers-player.js',
+			statchasers_public_origin() . '/dist/statchasers-player.js',
 			array(),
 			$version,
 			array(

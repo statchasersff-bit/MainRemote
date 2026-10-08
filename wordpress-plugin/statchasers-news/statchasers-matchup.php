@@ -856,7 +856,7 @@ function statchasers_matchup_share_image(): ?array {
 	if ( '' === $path || 0 !== strpos( $path, '/og/' ) ) {
 		return null;
 	}
-	$origin = statchasers_news_origin();
+	$origin = statchasers_public_origin();
 	if ( '' === $origin ) {
 		return null;
 	}

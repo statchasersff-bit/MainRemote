@@ -38,6 +38,20 @@ _Replace the heading above with the project's name, and this line with one sente
   and crest routes stay on this app - do not move them onto
   `api.statchasers.com`. The watchdog still probes the bare `*.replit.app`
   address on purpose (lib/watchdog.ts).
+- **Image route sources (10-08):** `/news-image/<source>/<id>/<version>/<size>.webp`
+  serves four sources and nothing else (lib/image-urls.ts): `player` (Sleeper
+  thumb by id), `espn` (ESPN full headshot by athlete id, for the depth charts
+  WordPress pushes), `club` (editorial art on static.clubs.nfl.com, the id
+  being the base64url of its path, so no lookup table and no other host) and
+  `yt` (a YouTube video's hqdefault thumbnail by video id, for the matchup
+  highlights box). One key string names an image everywhere: `4046`,
+  `espn:4040715`, `club:<base64url>`, `yt:<video id>`; `imageKeyFor(url)`
+  makes it, `parseImageKey()` reads it. Club art gets centre-cropped squares
+  plus 16:9 bands to 960px; video thumbs 4:3 at 320 and 480; headshots keep
+  the top-anchored squares, figures and 350 band. `ESPN_CDN_BASE_URL`,
+  `CLUB_CDN_BASE_URL` and `YT_IMG_BASE_URL` stub the upstreams in tests. The standalone depth charts
+  plugin (1.6.6) rewrites its ESPN URLs to this route client-side from
+  `data-image-origin`.
 - `DYNASTY_NEWS_API_URL` accepts a **comma-separated list** of feed URLs, tried
   in order until one works. A dead entry costs one failed request, not an outage,
   which is what makes an unverified origin hostname safe to put first.

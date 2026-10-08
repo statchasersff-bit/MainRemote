@@ -2,7 +2,8 @@
  * The server side of the headshot pipeline (lib/image-urls.ts is the browser
  * side; lib/image-versions.ts the version store).
  *
- * A request for /news-image/player/4046/<version>/256.webp is answered from,
+ * A request for /news-image/player/4046/<version>/256.webp (or an `espn` or
+ * `club` key's derivative, lib/image-urls.ts) is answered from,
  * in order: an in-memory LRU of finished derivatives; the disk cache under
  * data/img-cache/ (IMAGE_CACHE_DIR to move it); or one fetch of the Sleeper
  * original, which is resized into EVERY variant at once, written to disk and
@@ -46,9 +47,15 @@ import { TEAM_LOGO_FILES } from "./team-logo-files";
 import { logger } from "./logger";
 import { LruCache } from "./lru";
 import {
+  CLUB_CDN,
   HEADSHOT_VARIANTS,
   LATEST_VERSION,
+  VARIANTS_FOR,
+  decodeClubPath,
+  isVariantFor,
+  parseImageKey,
   type HeadshotVariant,
+  type ImageSource,
 } from "./image-urls";
 import {
   RECHECK_AFTER_MS,
@@ -73,10 +80,29 @@ const FETCH_TIMEOUT_MS = 8_000;
 /** 512 finished WebPs of at most ~15KB each: a few megabytes, bounded. */
 const MEMORY_ENTRIES = 512;
 const WEBP_QUALITY = 82;
+/**
+ * YouTube's hqdefault is itself a hard-compressed JPEG: re-encoding its
+ * noise at 82 came out LARGER than the original (31KB against 25KB for a
+ * 480x360). At 60 the 480 lands under the original and the 320 at half,
+ * and the thumbnail sits behind a play button, so the loss is invisible.
+ */
+const WEBP_QUALITY_FOR: Partial<Record<ImageSource, number>> = { yt: 60 };
 const VERSION_LENGTH = 10;
 
 function cdnBase(): string {
   return (process.env["SLEEPER_CDN_BASE_URL"]?.trim() || "https://sleepercdn.com").replace(/\/+$/, "");
+}
+
+function espnBase(): string {
+  return (process.env["ESPN_CDN_BASE_URL"]?.trim() || "https://a.espncdn.com").replace(/\/+$/, "");
+}
+
+function clubBase(): string {
+  return (process.env["CLUB_CDN_BASE_URL"]?.trim() || CLUB_CDN).replace(/\/+$/, "");
+}
+
+function ytBase(): string {
+  return (process.env["YT_IMG_BASE_URL"]?.trim() || "https://i.ytimg.com").replace(/\/+$/, "");
 }
 
 function cacheRoot(): string {
@@ -87,17 +113,35 @@ export function validPlayerId(id: string): boolean {
   return /^\d{1,12}$/.test(id);
 }
 
-/** The Sleeper original a derivative is built from. */
-export function sourceUrl(id: string): string {
-  return `${cdnBase()}/content/nfl/players/thumb/${id}.jpg`;
+/** True for a key the route serves: a Sleeper id, `espn:<id>` or `club:<path>`. */
+export function validImageKey(key: string): boolean {
+  return parseImageKey(key) !== null;
 }
 
-function memoryKey(id: string, version: string, variant: HeadshotVariant): string {
-  return `${id}/${version}/${variant}`;
+function sourceOf(key: string): ImageSource {
+  return parseImageKey(key)?.source ?? "player";
 }
 
-function diskPath(id: string, version: string, variant: HeadshotVariant): string {
-  return path.join(cacheRoot(), "headshot", `${id}-${version}-${variant}.webp`);
+/** The original a key's derivatives are built from. */
+export function sourceUrl(key: string): string {
+  const parts = parseImageKey(key);
+  if (!parts || parts.source === "player") return `${cdnBase()}/content/nfl/players/thumb/${parts?.id ?? key}.jpg`;
+  if (parts.source === "espn") return `${espnBase()}/i/headshots/nfl/players/full/${parts.id}.png`;
+  if (parts.source === "yt") return `${ytBase()}/vi/${parts.id}/hqdefault.jpg`;
+  return `${clubBase()}${decodeClubPath(parts.id) ?? ""}`;
+}
+
+/** A key as a file-name fragment: a Sleeper id as before, `espn-<id>`, `club-<path>`. */
+function fileKey(key: string): string {
+  return key.replace(":", "-");
+}
+
+function memoryKey(key: string, version: string, variant: HeadshotVariant): string {
+  return `${key}/${version}/${variant}`;
+}
+
+function diskPath(key: string, version: string, variant: HeadshotVariant): string {
+  return path.join(cacheRoot(), "headshot", `${fileKey(key)}-${version}-${variant}.webp`);
 }
 
 const memory = new LruCache<Buffer>(MEMORY_ENTRIES);
@@ -129,7 +173,7 @@ type Fetched =
   | { kind: "unchanged" }
   | { kind: "none" };
 
-/** Fetch the Sleeper original, conditionally when an ETag is known. */
+/** Fetch the original, conditionally when an ETag is known. */
 async function fetchSource(id: string, etag: string | null): Promise<Fetched> {
   const url = sourceUrl(id);
   const res = await fetch(url, {
@@ -142,9 +186,10 @@ async function fetchSource(id: string, etag: string | null): Promise<Fetched> {
     redirect: "follow",
   });
   if (res.status === 304) return { kind: "unchanged" };
-  // 403 is what Sleeper returns for a player it has no picture of.
+  // 403 is what Sleeper returns for a player it has no picture of; ESPN, the
+  // club CDN and YouTube say 404.
   if (res.status === 403 || res.status === 404 || res.status === 410) return { kind: "none" };
-  if (!res.ok) throw new Error(`Sleeper answered ${res.status} for ${url}`);
+  if (!res.ok) throw new Error(`image source answered ${res.status} for ${url}`);
   const type = (res.headers.get("content-type") ?? "").toLowerCase();
   // A 200 carrying an HTML page is also "no picture"; sharp would reject it
   // anyway, but this spares the attempt.
@@ -184,19 +229,29 @@ async function buildVariants(id: string, version: string, source: Buffer): Promi
     return false;
   }
   const writes: Promise<void>[] = [];
-  for (const [token, shape] of Object.entries(HEADSHOT_VARIANTS) as [HeadshotVariant, { width: number; height: number }][]) {
+  const source_ = sourceOf(id);
+  for (const token of VARIANTS_FOR[source_]) {
+    const shape = HEADSHOT_VARIANTS[token];
     const image = sharp(source, { failOn: "none" });
     const resized = token.startsWith("f")
       ? // The full figure at its own ratio. Never enlarged past the source.
         image.resize({ width: shape.width, withoutEnlargement: true })
-      : // Square (or 16:9 band) cover crop anchored at the top: the same
-        // pixels `object-fit: cover; object-position: center top` showed. The
-        // 320 square is a little larger than the 254px-tall source allows, so
-        // it is the one derivative that is upscaled; it serves 3x phones,
-        // where a 108px box would otherwise read a 256px image at 1.27x.
-        image.resize({ width: shape.width, height: shape.height, fit: "cover", position: "top" });
+      : // Square (or 16:9 band) cover crop. For a headshot it is anchored at
+        // the top: the same pixels `object-fit: cover; object-position:
+        // center top` showed. The 320 square is a little larger than the
+        // 254px-tall source allows, so it is the one derivative that is
+        // upscaled; it serves 3x phones, where a 108px box would otherwise
+        // read a 256px image at 1.27x. Club art is a landscape photograph
+        // with its subject in the middle, so that crops from the centre; a
+        // YouTube thumbnail is already 4:3 and is only scaled.
+        image.resize({
+          width: shape.width,
+          height: shape.height,
+          fit: "cover",
+          position: source_ === "player" || source_ === "espn" ? "top" : "centre",
+        });
     const body = await resized
-      .webp({ quality: WEBP_QUALITY, alphaQuality: 90, effort: 4 })
+      .webp({ quality: WEBP_QUALITY_FOR[source_] ?? WEBP_QUALITY, alphaQuality: 90, effort: 4 })
       .toBuffer();
     memory.set(memoryKey(id, version, token), body);
     writes.push(writeVariant(diskPath(id, version, token), body));
@@ -206,7 +261,7 @@ async function buildVariants(id: string, version: string, source: Buffer): Promi
 }
 
 async function haveAllVariants(id: string, version: string): Promise<boolean> {
-  const checks = (Object.keys(HEADSHOT_VARIANTS) as HeadshotVariant[]).map(async (token) => {
+  const checks = VARIANTS_FOR[sourceOf(id)].map(async (token) => {
     if (memory.get(memoryKey(id, version, token))) return true;
     try {
       await fsp.access(diskPath(id, version, token));
@@ -284,7 +339,8 @@ export async function getHeadshot(
   requested: string,
   variant: HeadshotVariant,
 ): Promise<HeadshotResult> {
-  if (!validPlayerId(id)) return { status: "missing" };
+  const parts = parseImageKey(id);
+  if (!parts || !isVariantFor(parts.source, variant)) return { status: "missing" };
 
   // An older version this server still holds names exactly those bytes.
   if (requested !== LATEST_VERSION && requested !== imageVersionFor(id)) {

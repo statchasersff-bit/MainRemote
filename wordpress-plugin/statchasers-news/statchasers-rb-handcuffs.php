@@ -165,7 +165,7 @@ function statchasers_rb_handcuffs_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_RB_HANDCUFFS_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_RB_HANDCUFFS_HANDLE,
-			$origin . '/rb-handcuffs.css',
+			statchasers_public_origin() . '/rb-handcuffs.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -174,7 +174,7 @@ function statchasers_rb_handcuffs_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_RB_HANDCUFFS_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_RB_HANDCUFFS_HANDLE,
-			$origin . '/dist/statchasers-rb-handcuffs.js',
+			statchasers_public_origin() . '/dist/statchasers-rb-handcuffs.js',
 			array(),
 			$version,
 			array(

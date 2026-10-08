@@ -302,7 +302,7 @@ function statchasers_team_enqueue_assets(): void {
 		// else. See statchasers-assets.php.
 		wp_register_style(
 			STATCHASERS_TEAM_HANDLE,
-			$origin . '/team.css',
+			statchasers_public_origin() . '/team.css',
 			array_merge( statchasers_font_dependency(), statchasers_display_font_dependency() ),
 			$version
 		);
@@ -311,7 +311,7 @@ function statchasers_team_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_TEAM_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_TEAM_HANDLE,
-			$origin . '/dist/statchasers-team.js',
+			statchasers_public_origin() . '/dist/statchasers-team.js',
 			array(),
 			$version,
 			array(

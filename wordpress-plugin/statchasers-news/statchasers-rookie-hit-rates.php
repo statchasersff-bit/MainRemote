@@ -125,7 +125,7 @@ function statchasers_rhr_enqueue_assets(): void {
 	if ( ! wp_style_is( STATCHASERS_RHR_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_RHR_HANDLE,
-			$origin . '/rookie-hit-rates.css',
+			statchasers_public_origin() . '/rookie-hit-rates.css',
 			statchasers_font_dependency(),
 			$version
 		);
@@ -134,7 +134,7 @@ function statchasers_rhr_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_RHR_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_RHR_HANDLE,
-			$origin . '/dist/statchasers-rookie-hit-rates.js',
+			statchasers_public_origin() . '/dist/statchasers-rookie-hit-rates.js',
 			array(),
 			$version,
 			array(

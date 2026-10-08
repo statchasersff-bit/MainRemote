@@ -12,6 +12,7 @@ import { categorize } from "./news-category";
 import type { NewsItem } from "./render";
 import { mergeNewsLanes } from "./news-merge";
 import { imageVersionForUrl } from "./image-versions";
+import { imageKeyFor } from "./image-urls";
 
 /**
  * The X lane's source_type. Declared here rather than imported from lib/x so
@@ -165,6 +166,7 @@ function toNewsItem(row: typeof newsItems.$inferSelect): NewsItem {
     pubDateMs: row.pubDateMs,
     playerName: row.playerName,
     image: row.image,
+    imageKey: imageKeyFor(row.image),
     imageVersion: imageVersionForUrl(row.image),
     summary: row.summary,
     source: row.source,
