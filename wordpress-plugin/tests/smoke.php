@@ -533,13 +533,22 @@ $meta = statchasers_player_page_meta( array(
 	'slug' => 'kyler-murray', 'name' => 'Kyler Murray', 'position' => 'QB',
 	'team' => 'MIN', 'teamName' => 'Minnesota Vikings', 'id' => '1',
 ) );
-is( $meta['title'], 'Kyler Murray Fantasy Football Stats & Analysis', 'title: no brand since 2026-10-08' );
-is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers' ), 'Kyler Murray Fantasy Football Stats & Analysis', 'retitle: the old branded wording is ours' );
-is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis' ), 'Kyler Murray Fantasy Football Stats & Analysis', 'retitle: the current wording is ours' );
+is( $meta['title'], 'Kyler Murray Fantasy Football ' . STATCHASERS_TEAM_SEASON . ': Stats, Outlook & News', 'title: the hub leads with "fantasy football" and the year (mak, 2026-10-09)' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers' ), $meta['title'], 'retitle: the old branded wording is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis' ), $meta['title'], 'retitle: the 2026-10-08 wording is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football 2025: Stats & Outlook' ), $meta['title'], 'retitle: an earlier year of the current ladder is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray: the QB nobody expected' ), '', 'retitle: a typed title is left alone' );
+is(
+	statchasers_fit_title( statchasers_player_title_ladder( 'Marquez Valdes-Scantling' ) ),
+	'Marquez Valdes-Scantling Fantasy ' . STATCHASERS_TEAM_SEASON . ': Stats & Outlook',
+	'title: the longest names drop to the last rung'
+);
+is( strlen( $meta['title'] ) <= 60, true, 'title: within sixty characters' );
+is( false !== strpos( $meta['description'], 'fantasy football profile: ' . STATCHASERS_TEAM_SEASON . ' outlook' ), true, 'description: the stored copy is the offseason wording' );
 is( statchasers_player_generated_title( 'Kyler Murray: Our Take | StatChasers' ), '', 'retitle: a custom title stays custom' );
 is(
 	$meta['description'],
-	'Kyler Murray Minnesota Vikings quarterback fantasy football profile: 2026 game log, weekly finishes, advanced metrics, injury history and career production.',
+	'Kyler Murray (QB, MIN) fantasy football profile: ' . STATCHASERS_TEAM_SEASON . ' outlook, projections, stats, injury history and dynasty value.',
 	'description'
 );
 
@@ -806,7 +815,7 @@ $allen->ID         = 71;
 $allen->post_name  = 'josh-allen-h1-test';
 $allen->post_title = 'Josh Allen (QB)';
 $GLOBALS['page']   = array( 'singular' => true, 'loop' => true, 'admin' => false, 'post' => $allen );
-is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen Fantasy Football Stats & Analysis', 'player H1: the profile names its intent' );
+is( statchasers_player_heading( 'josh-allen-h1-test', '' ), 'Josh Allen Fantasy Football', 'player H1: the profile is "{Name} Fantasy Football" (mak, 2026-10-09)' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'stats' ), 'Josh Allen Stats ' . STATCHASERS_TEAM_SEASON, 'player H1: stats is dated' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'outlook' ), 'Josh Allen Fantasy Outlook ' . STATCHASERS_TEAM_SEASON, 'player H1: so is the outlook' );
 is( statchasers_player_heading( 'josh-allen-h1-test', 'injury' ), 'Josh Allen Injury Update & History', 'player H1: injury is not' );
@@ -1600,6 +1609,33 @@ is(
 	statchasers_matchup_meta( 'los-angeles-chargers', 'washington-commanders', 'historical', '2026' )['title'],
 	'Chargers vs Commanders: Head-to-Head Record & History',
 	'head-to-head: nicknames when the full names leave no room'
+);
+// A pair that has played this season (X-Matchup-Week set) leads with that
+// game's player stats, in either postgame state, mak's wording first.
+is(
+	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['title'],
+	'Browns vs Buccaneers Player Stats & Fantasy Points (Week 2)',
+	'season game: the spec wording is 66 characters for this pair, so the year goes first (59)'
+);
+is(
+	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['title'],
+	'Jets vs Rams Player Stats & Fantasy Points (Week 2, 2026)',
+	'season game: the spec wording as written when it fits'
+);
+is(
+	statchasers_matchup_meta( 'tampa-bay-buccaneers', 'washington-commanders', 'historical', '2026', '', 'Week 18' )['title'],
+	'Buccaneers vs Commanders Player Stats (Week 18, 2026)',
+	'season game: the longest nicknames and round pass the year-less rung too (64) and land on the last'
+);
+is(
+	strpos( statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['description'], 'Buccaneers won 24-17. Browns vs Buccaneers Week 2 2026 player stats' ),
+	0,
+	'season game: the score leads the description'
+);
+is(
+	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'upcoming', '2026', '', 'Week 2' )['title'],
+	'Browns vs Buccaneers 2026: Where to Watch',
+	'season game: a week header does not retitle an upcoming pair'
 );
 $GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'a regular-season game is still "Week N"' );

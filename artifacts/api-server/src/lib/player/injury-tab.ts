@@ -472,6 +472,171 @@ function nextGameText(g: UpcomingGame): { opp: string; line: string } {
   return { opp, line: `${where} ${g.opponentCode}${when}` };
 }
 
+/* ------------------------------------------------ the answer-first block */
+
+/**
+ * The one-sentence answer to "Is he injured?", which the section opens on
+ * and the page's description starts with (mak's refresh, 2026-10-09).
+ */
+export interface InjuryAnswer {
+  /** Whether the answer begins "Yes". A suspension is a "No": not injured. */
+  yes: boolean;
+  /** "No. Bijan Robinson has no injury designation for Week 6 (Falcons vs Buccaneers, Oct 12). Last checked Oct 9." */
+  sentence: string;
+  /** The same answer, short, for the front of the meta description. */
+  lead: string;
+  /** "Games missed in 2026: 0. Career games missed: 4." */
+  missed: string;
+  /** The ISO date (Eastern) of the latest report or status change - the title's "(Updated Mon D)". */
+  updated: string;
+}
+
+/** How the week's practice reads, for the answer: "after limited practice Wednesday and Thursday". */
+function practicePhrase(m: Model): string {
+  const cur = m.practice.find((r) => r.current);
+  if (!cur) return "";
+  const today = et(m.now).iso;
+  const known = cur.days.filter((d) => d.date <= today && (d.value === "FULL" || d.value === "LIMITED" || d.value === "DNP"));
+  if (known.length === 0) return "";
+  const noun: Record<string, string> = { FULL: "full practice", LIMITED: "limited practice", DNP: "no practice" };
+  const dayName = (d: string) => DAY_NAME[d] ?? d;
+  const first = known[0]!.value;
+  if (known.every((d) => d.value === first)) {
+    return ` after ${noun[first]} ${listWords(known.map((d) => dayName(d.day)))}`;
+  }
+  return ` after ${listWords(known.map((d) => `${noun[d.value]} ${dayName(d.day)}`))}`;
+}
+
+/** "Week 6 (Falcons vs Buccaneers, Oct 12)" - the game the designation is for. */
+function weekPhrase(m: Model): string {
+  if (!m.next) return "this week";
+  const g = m.next;
+  const opp = g.opponent?.nickname ?? g.opponentName;
+  const own = m.nickname ?? "";
+  const pair = own ? `${own} ${g.homeAway === "home" ? "vs" : "at"} ${opp}` : `${g.homeAway === "home" ? "vs" : "at"} ${opp}`;
+  const when = g.kickoffMs ? `, ${mmmD(et(g.kickoffMs).iso)}` : "";
+  return `Week ${g.week} (${pair}${when})`;
+}
+
+/** "Week 6 vs TB" - the short form the description uses. */
+function weekShort(m: Model): string {
+  if (!m.next) return "this week";
+  return `Week ${m.next.week} ${m.next.homeAway === "home" ? "vs" : "at"} ${m.next.opponentCode}`;
+}
+
+/**
+ * The date of the latest injury report or status change for HIM, never the
+ * render date: the title carries it and must not bump unless the data did.
+ *
+ * In order: the latest day a league report listed him (the final report
+ * counts as the week's last report day); an injury logged this season, dated
+ * at its game; a player on no report at all takes the latest report day the
+ * league has issued, because his absence from it is what says he is healthy;
+ * failing all of those, the roster snapshot the status was read from.
+ */
+function updatedIso(m: Model, data: PlayerPageData): string {
+  const today = et(m.now).iso;
+  let best = "";
+  const bump = (iso: string | null | undefined): void => {
+    if (iso && iso <= today && iso > best) best = iso;
+  };
+  const gameDate = (week: number): string | null => {
+    const g = data.schedule.find((s) => s.week === week && s.kickoffMs !== null);
+    return g ? et(g.kickoffMs!).iso : null;
+  };
+  const reportDays = (week: number): string[] => {
+    const date = gameDate(week);
+    return date ? practiceDays(date).map((d) => d.date) : [];
+  };
+
+  for (const r of m.report) {
+    for (const [date, raw] of Object.entries(r.days)) if (parseValue(raw)) bump(date);
+    if (r.final || r.gameStatus) {
+      const days = reportDays(r.week);
+      bump(days[days.length - 1]);
+    }
+  }
+  for (const ev of m.events) {
+    if (ev.season === data.leagueSeason && ev.week) bump(gameDate(ev.week));
+  }
+  if (!best) {
+    const doc = loadPracticeReports(data.leagueSeason);
+    for (const wk of Object.keys(doc?.weeks ?? {})) for (const day of reportDays(Number(wk))) bump(day);
+  }
+  if (!best && m.checkedMs > 0) best = et(m.checkedMs).iso;
+  return best || today;
+}
+
+function answerOf(m: Model, data: PlayerPageData): InjuryAnswer {
+  const checked = m.checkedMs > 0 ? mmmD(et(m.checkedMs).iso) : null;
+  const tail = checked ? ` Last checked ${checked}.` : "";
+  const paren = checked ? ` (checked ${checked})` : "";
+  const part = m.bodyPart ? ` (${m.bodyPart.toLowerCase()})` : "";
+  const wk = weekPhrase(m);
+  const wkShort = weekShort(m);
+  let yes = true;
+  let sentence: string;
+  let lead: string;
+
+  switch (m.code) {
+    case "Q":
+    case "D":
+    case "O": {
+      const word = STATUS_WORD[m.code];
+      sentence = `Yes. ${m.name} is ${word}${part} for ${wk}${practicePhrase(m)}.${tail}`;
+      lead = `${word}${part} for ${wkShort}${paren}.`;
+      break;
+    }
+    case "IR":
+    case "PUP":
+    case "NFI": {
+      const where = m.code === "IR" ? "on injured reserve" : `on the ${STATUS_WORD[m.code]}`;
+      sentence = `Yes. ${m.name} is ${where}${part} and out for ${wk}.${tail}`;
+      lead = `${cap(where)}${part}, out for ${wkShort}${paren}.`;
+      break;
+    }
+    case "SUSP":
+      yes = false;
+      sentence = `No. ${m.name} is suspended, not injured, and out for ${wk}.${tail}`;
+      lead = `Suspended, not injured, for ${wkShort}${paren}.`;
+      break;
+    case "OFFSEASON":
+      yes = false;
+      sentence = `No. ${m.name} has no injury designation; the ${m.season} season is over.${tail}`;
+      lead = `No injury designation; the ${m.season} season is over${paren}.`;
+      break;
+    default:
+      yes = false;
+      sentence = `No. ${m.name} has no injury designation for ${wk}.${tail}`;
+      lead = `No injury designation for ${wkShort}${paren}.`;
+  }
+
+  const thisSeason =
+    data.season === data.leagueSeason && m.seasonMissed !== null
+      ? `Games missed in ${m.season}: ${m.seasonMissed}.`
+      : `No ${m.season} games played yet.`;
+  const missed = `${thisSeason} Career games missed: ${m.t.games}.`;
+
+  return { yes, sentence, lead, missed, updated: updatedIso(m, data) };
+}
+
+/** The answer block for a player with an injury record; null without one. */
+export function injuryAnswer(data: PlayerPageData, options: PlayerRenderOptions = {}): InjuryAnswer | null {
+  const m = model(data, options);
+  return m ? answerOf(m, data) : null;
+}
+
+function renderAnswer(m: Model, data: PlayerPageData): string {
+  const ans = answerOf(m, data);
+  return (
+    `<div class="scp-in-ask">` +
+    `<h2 class="scp-ox-h2" id="scp-in-ask-h">${escapeHtml(`Is ${m.name} injured?`)}</h2>` +
+    `<p class="scp-ox-lede scp-in-answer">${escapeHtml(ans.sentence)}</p>` +
+    `<p class="scp-in-missedline">${escapeHtml(ans.missed)}</p>` +
+    `</div>`
+  );
+}
+
 /**
  * One status strip: the status and its answer, then three short facts. It was
  * four ~160px cards under their own "Is he injured?" heading; mak asked for one
@@ -609,9 +774,11 @@ function renderPractice(m: Model): string {
 
 function renderSection1(m: Model, data: PlayerPageData): string {
   return (
-    // No heading: the tab's H1 sits right above, and the panel answers the
-    // "is he injured?" question the old heading asked.
-    `<section class="scp-ox-sec scp-in-now" aria-label="Current injury status">` +
+    // The question, its Yes/No answer and the games-missed line come first
+    // (mak's refresh, 2026-10-09); the status strip and the practice grid
+    // follow. The H2 had been removed on 2026-09-30 and is back by that spec.
+    `<section class="scp-ox-sec scp-in-now" aria-labelledby="scp-in-ask-h">` +
+    renderAnswer(m, data) +
     renderStatus(m, data) +
     renderPractice(m) +
     `</section>`

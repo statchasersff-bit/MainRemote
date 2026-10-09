@@ -16,7 +16,7 @@ The runtime probe sent about 135 GETs to the dev server on `localhost:8080` and 
 
 Paths are relative to the repo root.
 - `WP/` = `wordpress-plugin/statchasers-news/`
-- `DC/` = `wordpress-plugin/statchasers-depth-charts/`
+- `DC/` = `wordpress-plugin/statchasers-news/depth-charts/`
 - `API/` = `artifacts/api-server/src/`
 
 **Limits of this audit**

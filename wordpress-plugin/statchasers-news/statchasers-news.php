@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       StatChasers
- * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings and fantasy football strength of schedule. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.32
+ * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule and the NFL depth charts. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
+ * Version:           1.10.34
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.32';
+const STATCHASERS_NEWS_VERSION       = '1.10.34';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -84,6 +84,25 @@ require_once __DIR__ . '/statchasers-h1.php';
 require_once __DIR__ . '/statchasers-bdp-assets.php';
 // Divi Supreme's and TablePress's, the same way.
 require_once __DIR__ . '/statchasers-host-css.php';
+
+/**
+ * The NFL Depth Charts tool (depth-charts/): the former standalone
+ * "StatChasers Depth Charts" plugin, shipped inside this one since 1.10.33.
+ *
+ * Loaded unless the standalone plugin is still active. Both copies declare the
+ * same SCDC_* classes, and the standalone one loads first (WordPress loads
+ * active plugins in basename order), so a second copy would be a fatal. The
+ * standalone copy is then deactivated on the next admin request
+ * (statchasers_retire_standalone_depth_charts()), and this copy takes over on
+ * the request after that.
+ */
+const STATCHASERS_DEPTH_STANDALONE = 'statchasers-depth-charts/statchasers-depth-charts.php';
+if ( ! defined( 'SCDC_VERSION' ) ) {
+	require_once __DIR__ . '/depth-charts/statchasers-depth-charts.php';
+	define( 'STATCHASERS_DEPTH_EMBEDDED', true );
+} else {
+	define( 'STATCHASERS_DEPTH_EMBEDDED', false );
+}
 
 /** How long a rendered fragment is reused before we ask the API again. */
 const STATCHASERS_NEWS_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
@@ -792,6 +811,16 @@ function statchasers_news_flush_all(): void {
 }
 register_deactivation_hook( __FILE__, 'statchasers_news_flush_all' );
 
+// The depth charts: drop their rewrite rules and daily refresh with the plugin.
+register_deactivation_hook(
+	__FILE__,
+	static function (): void {
+		if ( STATCHASERS_DEPTH_EMBEDDED && function_exists( 'scdc_deactivate' ) ) {
+			scdc_deactivate();
+		}
+	}
+);
+
 // The daily player-page build (statchasers-player-pages.php) stops with the
 // plugin rather than firing into a missing callback.
 register_deactivation_hook(
@@ -818,6 +847,11 @@ register_activation_hook(
 	__FILE__,
 	static function (): void {
 		update_option( 'statchasers_needs_flush', 1, false );
+		// The depth charts' pages (/nfl/ and /nfl/nfl-depth-charts/) and rules.
+		// Their flush is redundant with the flag above but harmless.
+		if ( STATCHASERS_DEPTH_EMBEDDED && function_exists( 'scdc_activate' ) ) {
+			scdc_activate();
+		}
 	}
 );
 
@@ -831,4 +865,51 @@ add_action(
 		flush_rewrite_rules();
 	},
 	PHP_INT_MAX
+);
+
+/**
+ * Retire the standalone depth charts plugin once this one carries the tool.
+ *
+ * While both are installed and active, this file leaves its own copy unloaded
+ * (see the require block at the top), so nothing is broken; but the standalone
+ * copy would never get another update. It is deactivated quietly here, with no
+ * deactivation hook: that hook would flush the rewrite rules and clear the
+ * daily refresh, and the embedded copy registers the same rules and the same
+ * cron hook on the next request, which scdc_after_upgrade() then flushes for.
+ * The folder stays on disk, inactive, until someone deletes it from the
+ * Plugins screen; the notice says so until they do.
+ */
+function statchasers_retire_standalone_depth_charts(): void {
+	if ( ! current_user_can( 'activate_plugins' ) ) {
+		return;
+	}
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+	if ( ! is_plugin_active( STATCHASERS_DEPTH_STANDALONE ) ) {
+		return;
+	}
+	deactivate_plugins( STATCHASERS_DEPTH_STANDALONE, true );
+	// The embedded copy is not loaded on this request (the standalone one got
+	// there first); let its first load re-check the pages and flush.
+	delete_option( 'scdc_installed_version' );
+	update_option( 'statchasers_depth_retired_notice', 1, false );
+}
+add_action( 'admin_init', 'statchasers_retire_standalone_depth_charts' );
+
+add_action(
+	'admin_notices',
+	static function (): void {
+		if ( ! current_user_can( 'activate_plugins' ) || ! get_option( 'statchasers_depth_retired_notice' ) ) {
+			return;
+		}
+		if ( ! file_exists( WP_PLUGIN_DIR . '/' . STATCHASERS_DEPTH_STANDALONE ) ) {
+			delete_option( 'statchasers_depth_retired_notice' );
+			return;
+		}
+		printf(
+			'<div class="notice notice-info"><p>%s</p></div>',
+			esc_html__( 'StatChasers now includes the NFL Depth Charts tool. The separate "StatChasers Depth Charts" plugin has been deactivated and can be deleted from the Plugins screen; its settings, cached data and daily refresh carry over.', 'statchasers-news' )
+		);
+	}
 );

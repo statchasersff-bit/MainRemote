@@ -93,9 +93,12 @@ import {
   matchupBand,
   OUTLOOK_SEASON,
   renderHero,
+  STARTSIT_BASE,
   type MatchupBand,
 } from "./player/header";
 import { renderOverviewSections } from "./player/overview";
+import { sectionHref } from "./player/sections";
+import { currentRank, nextGame, oneDecimal, seasonPpg } from "./player/season-phase";
 import { renderStatsTabParts, STATS_LEAD_ID } from "./player/stats-tab";
 import { outlookTabParts } from "./player/outlook-tab";
 import { renderOutlook2026 } from "./player/outlook-2026";
@@ -209,7 +212,7 @@ const SECTION_HEADINGS: Record<string, string> = {
 };
 
 /**
- * The heading of the profile itself: "Josh Allen Fantasy Football Stats & Analysis".
+ * The heading of the profile itself: "Josh Allen Fantasy Football".
  *
  * The profile's address is the Overview's address - `/overview/` 301s here - so
  * this is also the Overview tab's heading. It names the player and the intent,
@@ -218,7 +221,14 @@ const SECTION_HEADINGS: Record<string, string> = {
  * bare name was the same words as the hero.
  */
 export function profileHeading(playerName: string): string {
-  return `${playerName} Fantasy Football Stats & Analysis`;
+  // "{Name} Fantasy Football" since 2026-10-09 (mak): the hub's search is
+  // "X fantasy", and "Stats" belongs to the Stats tab's heading.
+  return `${playerName} Fantasy Football`;
+}
+
+/** The small line under the hub's H1: "RB, Atlanta Falcons". */
+export function profileSubtitle(data: PlayerPageData): string {
+  return [data.player.position, data.team?.fullName].filter(Boolean).join(", ");
 }
 
 /** The public heading for a section page, e.g. "Jacoby Brissett Injury Update & History". */
@@ -306,11 +316,15 @@ function h3(text: string): string {
  * profileHeading(): its opening panel is headed "2026 Fantasy Snapshot", which
  * names nobody and read the same on every profile once it was the H1.
  */
-function promoteHeading(html: string, text?: string): string {
+function promoteHeading(html: string, text?: string, subtitle?: string): string {
   return html.replace(
     /<h2 class="scp-h2">([\s\S]*?)<\/h2>/,
     (_, inner: string) =>
-      `<h1 class="scp-h2">${text === undefined ? inner : escapeHtml(text)}</h1>`,
+      `<h1 class="scp-h2">${text === undefined ? inner : escapeHtml(text)}</h1>` +
+      // The hub's small line under its H1 - "RB, Atlanta Falcons" (mak,
+      // 2026-10-09). Only the promoted heading carries it: the panel's own
+      // <h2> is a snapshot caption, not the page's name.
+      (subtitle ? `<p class="scp-head-sub">${escapeHtml(subtitle)}</p>` : ""),
   );
 }
 
@@ -1018,7 +1032,43 @@ function pageUrl(
  * the percentiles do not support, and it drops clauses instead of hedging when
  * the inputs are missing.
  */
-function renderFantasySnapshot(data: PlayerPageData): string {
+/**
+ * "Bijan Robinson is the RB3 in PPR this season (21.4 points per game) and
+ * faces the Buccaneers in Week 6." - the hub's answer, near the top, in the
+ * server HTML (mak, 2026-10-09). The rank phrase links to the Outlook tab and
+ * the fixture to his start/sit page. A player on last season's page gets
+ * last season's finish and this season's opener; a player with no rank gets
+ * nothing rather than a sentence with a hole in it.
+ */
+function renderHubAnswer(data: PlayerPageData, options: PlayerRenderOptions): string {
+  const pos = data.player.position ?? "";
+  const rank = currentRank(data);
+  const ppg = seasonPpg(data);
+  // ppg > 0 for the same reason profileMeta() asks it: "WR162 (0.0 points
+  // per game)" is a true sentence nobody wants under a heading.
+  if (!pos || rank === null || ppg === null || ppg <= 0) return "";
+  const scoring = SCORING_SHORT[data.format];
+  const next = nextGame(data);
+  const outlook = sectionHref(data, options, "outlook");
+  const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+  const link = (href: string | null, text: string) =>
+    href ? `<a href="${escapeHtml(href)}">${escapeHtml(text)}</a>` : escapeHtml(text);
+
+  const rate = `(${oneDecimal(ppg)} points per game)`;
+  const standing =
+    data.season === data.leagueSeason
+      ? `is the ${link(outlook, `${pos}${rank} in ${scoring} this season`)} ${rate}`
+      : `finished ${data.season} as the ${link(outlook, `${pos}${rank} in ${scoring}`)} ${rate}`;
+  const fixture = next
+    ? ` and ${data.season === data.leagueSeason ? "faces" : `opens ${data.leagueSeason} against`} ` +
+      link(startSit, `the ${next.opponent?.nickname ?? next.opponentName} in Week ${next.week}`)
+    : "";
+  // No fixture to hang the start/sit link on: it stands after the sentence.
+  const trail = next ? "" : ` ${link(startSit, "Start/sit call")}.`;
+  return `<p class="scp-answer">${escapeHtml(data.player.name)} ${standing}${fixture}.${trail}</p>`;
+}
+
+function renderFantasySnapshot(data: PlayerPageData, options: PlayerRenderOptions): string {
   const { stats, player, outlook } = data;
   if (!stats || stats.gamesPlayed === 0) return "";
 
@@ -1059,6 +1109,9 @@ function renderFantasySnapshot(data: PlayerPageData): string {
     // display line - there is no display line here, only the strip, so the
     // eyebrow was the tab's <h2> set six sizes below every other heading.
     h2(`${data.season} Fantasy Snapshot`) +
+    // The answer-first sentence (mak, 2026-10-09): rank, rate and the next
+    // game, linked to the start/sit page and the Outlook tab.
+    renderHubAnswer(data, options) +
     `<div class="scp-read-grid">` +
     reads
       .map(
@@ -3018,7 +3071,7 @@ export function renderPlayerPage(
   };
 
   const overviewBody =
-    renderFantasySnapshot(data) +
+    renderFantasySnapshot(data, options) +
     // The profile band ("Fantasy Profile", "What Is Driving The Production"),
     // the weekly one's "Weekly Profile" and "Week By Week" chart, and "Career
     // Context" are gone: the read's sidebar profile, the meters, the season
@@ -3207,7 +3260,7 @@ export function renderPlayerPage(
         // the document has one H1 whichever tab a reader switches to. It reads
         // as the profile rather than as the panel: this address is the profile.
         (options.ownHeading && i === 0
-          ? promoteHeading(section.html, profileHeading(data.player.name))
+          ? promoteHeading(section.html, profileHeading(data.player.name), profileSubtitle(data))
           : section.html) +
         `</section>`,
     )

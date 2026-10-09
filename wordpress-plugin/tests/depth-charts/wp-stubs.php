@@ -66,7 +66,7 @@ function register_activation_hook( $f, $cb ) {}
 function register_deactivation_hook( $f, $cb ) {}
 function add_shortcode( $tag, $cb ) { $GLOBALS['shortcodes'][ $tag ] = $cb; }
 function plugin_dir_path( $file ) { return dirname( $file ) . '/'; }
-function plugin_dir_url( $file ) { return 'https://statchasers.com/wp-content/plugins/statchasers-depth-charts/'; }
+function plugin_dir_url( $file ) { return 'https://statchasers.com/wp-content/plugins/statchasers-news/depth-charts/'; }
 
 function __( $text, $domain = '' ) { return $text; }
 function esc_html__( $text, $domain = '' ) { return esc_html( $text ); }

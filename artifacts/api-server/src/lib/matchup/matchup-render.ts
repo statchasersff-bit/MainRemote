@@ -106,6 +106,7 @@ import {
   heroSideFill,
   pairColors as heroPairColors,
   renderScoreboardHero,
+  scoreboardHeading,
   scoreboardResult,
   scoreboardSportsEvent,
   type ScoreboardGame,
@@ -200,6 +201,43 @@ export function matchupPath(prefix: string, slug: string): string {
 /** The public address of one meeting: `<prefix><a>-vs-<b>/2026-week-1/`. */
 export function gamePath(prefix: string, slug: string, ref: MatchupGameRef): string {
   return `${matchupPath(prefix, slug)}${gameSegment(ref)}/`;
+}
+
+/**
+ * The game the pair's own address leads with, when it is one of this season's
+ * and already played: the Week 2 game in October as much as the one just
+ * played. The title and the H1 name it (mak, 2026-10-09), because the search
+ * these pages get is "browns vs buccaneers player stats" and not the rivalry:
+ * 62k impressions at position 10 and seven clicks under the head-to-head
+ * wording. Null on a game address (its own heading), before the pair has met
+ * this season, and on the evergreen page whose last meeting was an earlier
+ * season, which keeps the head-to-head title.
+ */
+export function seasonGameLead(data: MatchupData): Meeting | null {
+  if (data.pinned) return null;
+  const meeting = data.featured;
+  if (!meeting || meeting.status !== "final" || meeting.score === null) return null;
+  return meeting.season === data.state.season ? meeting : null;
+}
+
+/** "Browns vs Buccaneers Player Stats & Fantasy Points (Week 2, 2026)" - mak's wording, as written. */
+export function seasonGameHeading(data: MatchupData, meeting: Meeting): string {
+  return (
+    `${data.pair.a.nickname} vs ${data.pair.b.nickname} Player Stats & Fantasy Points ` +
+    `(${meeting.weekLabel}, ${meeting.season})`
+  );
+}
+
+/**
+ * The page's H1, which the hero prints and the plugin copies into the holder
+ * page's title: the game's own heading on a game address, the season game's
+ * on a pair page leading with one, the pair's two names otherwise.
+ */
+export function matchupPageHeading(data: MatchupData): string {
+  const game = data.pinned ? matchupScoreboardGame(data) : null;
+  if (game) return scoreboardHeading(game);
+  const lead = seasonGameLead(data);
+  return lead ? seasonGameHeading(data, lead) : matchupTitle(data);
 }
 
 /** The pair as a heading: "New England Patriots vs Philadelphia Eagles". */
@@ -397,8 +435,11 @@ const HERO_HEADING_ID = "sct-mu-title";
  * The hero: the scoreboard for the featured meeting.
  *
  * A game address is headed by its game, in the scoreboard's own wording. The
- * pair's address keeps the pair's name, because that URL outlives any one
- * meeting and its H1 must not change when the next one is featured.
+ * pair's address is headed by the season game it leads with when it has one
+ * (seasonGameLead, mak's 2026-10-09 wording), and by the pair's name
+ * otherwise. Under the scoreboard, a line to the game's own page whenever
+ * that page exists - on the recently-played layout the pair's address IS the
+ * game's page and the dated URL 301s back here, so there is none to link.
  *
  * Embedded, the heading is an H2 marked `data-sct-hero-heading`: the plugin
  * promotes it to the page's H1 when it is the one supplying the heading, and
@@ -409,11 +450,13 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
   const headingTag = options.embed ? "h2" : "h1";
   const game = matchupScoreboardGame(data);
   if (game) {
-    return renderScoreboardHero(game, {
-      headingTag,
-      headingId: HERO_HEADING_ID,
-      heading: data.pinned ? undefined : matchupTitle(data),
-    });
+    return (
+      renderScoreboardHero(game, {
+        headingTag,
+        headingId: HERO_HEADING_ID,
+        heading: data.pinned ? undefined : matchupPageHeading(data),
+      }) + renderSeasonGameLink(data, options)
+    );
   }
 
   // No meeting in the window at all, which is two clubs from different
@@ -432,6 +475,26 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
     escapeHtml("Head-to-head record, team stats, injuries and recent meetings") +
     `</p>` +
     `</header>`
+  );
+}
+
+/**
+ * "Browns vs Buccaneers, Week 2 2026: box score & recap" under the hero, to
+ * the game's own address, when the pair's page leads with a season game that
+ * has one (the historical layout; see recapLink for the same rule per row).
+ */
+function renderSeasonGameLink(data: MatchupData, options: MatchupRenderOptions): string {
+  const lead = seasonGameLead(data);
+  if (!lead || !isHistoricalRecap(data)) return "";
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
+  const href = `${gamePath(prefix, data.pair.slug, {
+    season: lead.season,
+    week: lead.week,
+    seasonType: lead.seasonType,
+  })}${options.linkQuery ?? ""}`;
+  return (
+    `<p class="sct-mu-gamelink"><a class="sct-textlink" href="${escapeHtml(href)}">` +
+    `${escapeHtml(`${lead.away.nickname} vs ${lead.home.nickname}, ${lead.weekLabel} ${lead.season}: box score & recap`)} ${ARROW}</a></p>`
   );
 }
 

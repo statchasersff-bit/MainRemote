@@ -36,7 +36,7 @@ const T = "/nfl/teams";
 /** Representative routes. Edit freely; each is one page Google should see. */
 const ROUTES = [
   // A star player, every tab.
-  { kind: "indexable", path: `${P}/josh-allen/`, h1: /Josh Allen Fantasy Football Stats & Analysis/ },
+  { kind: "indexable", path: `${P}/josh-allen/`, h1: /^Josh Allen Fantasy Football$/ },
   { kind: "indexable", path: `${P}/josh-allen/stats/`, h1: /^Josh Allen Stats \d{4}$/ },
   { kind: "indexable", path: `${P}/josh-allen/game-log/`, h1: /^Josh Allen Game Log \d{4}$/ },
   { kind: "indexable", path: `${P}/josh-allen/outlook/`, h1: /^Josh Allen Fantasy Outlook \d{4}$/ },

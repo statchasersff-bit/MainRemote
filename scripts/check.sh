@@ -37,7 +37,6 @@ run() {
 run "typecheck" pnpm run typecheck
 run "api-server tests" env -u INGEST_SECRET pnpm --filter @workspace/api-server test
 run "news plugin" bash wordpress-plugin/scripts/build-zip.sh
-run "depth-charts plugin" bash wordpress-plugin/scripts/build-zip-depth.sh
 run "divi plugin" bash wordpress-plugin/scripts/build-zip-divi.sh
 run "depth-charts checks" bash -c 'bash wordpress-plugin/tests/depth-charts/run-tests.sh >/dev/null'
 

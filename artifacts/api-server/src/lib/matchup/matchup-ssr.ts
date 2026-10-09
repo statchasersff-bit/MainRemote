@@ -22,9 +22,8 @@ import {
   renderMatchupPage,
   type MatchupRenderOptions,
 } from "./matchup-render";
-import { scoreboardHeading } from "./scoreboard-hero";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
-import { matchupShare } from "./matchup-render";
+import { matchupPageHeading, matchupShare, seasonGameLead } from "./matchup-render";
 import type { MatchupPair } from "./pair";
 import { LruCache } from "../lru";
 
@@ -65,6 +64,12 @@ export interface MatchupSsrResult {
   heading: string;
   /** The <title>, brand included when it fits. Same string the app page uses. */
   title: string;
+  /**
+   * "Week 2" when the pair's page leads with one of this season's played
+   * games (seasonGameLead), else "". The plugin's title mirror needs the
+   * round to build the same string without the API's title header.
+   */
+  week: string;
   /** The meta description, for the plugin to print as the API wrote it. */
   description: string;
   /** A completed game's share image, path on this origin, and its alt text; null elsewhere. */
@@ -131,19 +136,14 @@ async function renderWithData(
     scoreLine: matchupScoreLine(data),
     pinnedMissing: data.pinnedRequested && data.pinned === null,
     pinnedIsCurrent: data.pinnedIsCurrent,
-    heading: pageHeadingFor(data),
+    heading: matchupPageHeading(data),
     title: meta.title,
+    week: seasonGameLead(data)?.weekLabel ?? "",
     description: meta.description,
     shareImage: share ? { path: share.path, alt: share.alt } : null,
   };
   fragmentCache.set(key, result);
   return { result, data };
-}
-
-/** The H1 the hero prints - see renderHero() in matchup-render.ts. */
-function pageHeadingFor(data: MatchupData): string {
-  const game = data.pinned ? matchupScoreboardGame(data) : null;
-  return game ? scoreboardHeading(game) : `${data.pair.a.fullName} vs ${data.pair.b.fullName}`;
 }
 
 const HEAD_MARKER = "<!--SSR-HEAD-->";

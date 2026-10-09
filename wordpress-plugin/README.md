@@ -27,6 +27,10 @@ nothing is hidden behind a click.
    or copy `statchasers-news/` into `wp-content/plugins/` yourself, and
    activate it. Activation flushes permalinks on the next request, so the
    section and pair URLs below work without a visit to Settings → Permalinks.
+   The NFL Depth Charts tool ships inside the same zip (`depth-charts/`, see
+   its own README); if the old standalone "StatChasers Depth Charts" plugin is
+   still active, this one deactivates it on the next admin page view and says
+   so until its folder is deleted.
 2. Point it at the news API in `wp-config.php`:
 
    ```php
@@ -383,10 +387,12 @@ mirroring `heroHeading()` in `src/lib/matchup/matchup-render.ts`.
 (within two weeks), or neither, and the fragment returns that in an
 `X-Matchup-State` header. The page leads with the next game, the score, or the
 head-to-head accordingly, and the title says so - `… 2026: Where to Watch,
-Stats, Injuries & History` / `… 2026: Score, Player Stats & Fantasy Recap` /
-`…: Head-to-Head Record, Stats & History`. `statchasers_matchup_meta()` mirrors
-`matchupPageMeta()` in `src/lib/matchup/matchup-seo.ts`; change one and change
-the other.
+Stats & Injuries` before a game, `Browns vs Buccaneers Player Stats & Fantasy
+Points (Week 2, 2026)` once the pair has met this season (just played or back
+in Week 2; the same words are the H1, and the `X-Matchup-Week` header carries
+the round), and `…: Head-to-Head Record & History` for a pair that has not met
+this season. `statchasers_matchup_meta()` mirrors `matchupPageMeta()` in
+`src/lib/matchup/matchup-seo.ts`; change one and change the other.
 
 ### One address per meeting
 
@@ -633,6 +639,36 @@ The Divi notes on the team hubs apply here unchanged - a Theme Builder body
 template **must** contain a Post Content module or every one of these pages
 ships empty, and the plugin takes Divi's full-width column for the same reason
 it does on a hub.
+
+### Titles and descriptions
+
+Every player title is written by the API (`src/lib/player-seo.ts`) as a ladder
+of candidates, and the first that fits sixty characters is used; none carries
+" | StatChasers". The section URLs read theirs from the fragment's
+`scp-page-data` island and hand them to Rank Math. Since 1.10.34 the profile
+does the same: its description is built from live data in season (positional
+rank, points per game, the next game), which the copy stored on the page at
+build time cannot say. The stored title and description are the offseason
+fallback, and a title an editor typed by hand still wins - the island is only
+applied when the stored title is empty or one the builder wrote
+(`statchasers_player_generated_title()`).
+
+The current wording, all answer-first (2026-10-09):
+
+- **Profile:** `{Name} Fantasy Football 2026: Stats, Outlook & News`, falling
+  to `… 2026: Stats & Outlook`, then `{Name} Fantasy 2026: Stats & Outlook`.
+  H1 `{Name} Fantasy Football` with `{POS}, {Team}` under it.
+- **Injury:** `{Name} Injury Update & History (Updated {Mon D})` - the date of
+  the latest report or status change for that player, never the render date;
+  the page opens on "Is {Name} injured?" and a Yes/No sentence, and the graph's
+  WebPage node carries the same date as `dateModified`.
+- **Outlook:** `{Name} Fantasy Outlook 2026: Rest-of-Season Value` in season;
+  the draft-day wording before Week 1 and after the last game.
+- **Game log:** the description leads with his latest game's points.
+
+The Tools screen's retitle button moves stored titles in the old wording
+("… Fantasy Football Stats & Analysis", with or without the brand) over to
+the ladder; a custom title is listed and left alone.
 
 ## Fantasy Points Allowed - `[statchasers_fpa]`
 

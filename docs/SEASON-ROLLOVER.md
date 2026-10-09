@@ -55,14 +55,14 @@ Flip these the week the first 2027 games are played. Not in March.
 | Constant | File:line | Drives |
 |---|---|---|
 | `STATCHASERS_TEAM_SEASON = '2026'` | `wordpress-plugin/statchasers-news/statchasers-team-pages.php:31` | Team section titles, descriptions and H1s; player section H1s and lead text (`statchasers-player-pages.php` ≈ 861-865, 987-1002); the matchup fallback season (`statchasers-matchup.php` ≈ 472, 518); the Rank Math description written for new player pages (≈ 489) |
-| `SCDC_SEASON` 2026 | `wordpress-plugin/statchasers-depth-charts/statchasers-depth-charts.php:30` (a `define`, so it can also be set in `wp-config.php`) and `includes/class-scdc-teams.php:22` `DEFAULT_SEASON` | Depth-chart titles, descriptions, H1s ("… Depth Chart 2027") |
+| `SCDC_SEASON` 2026 | `wordpress-plugin/statchasers-news/depth-charts/statchasers-depth-charts.php` (a `define`, so it can also be set in `wp-config.php`) and `includes/class-scdc-teams.php:22` `DEFAULT_SEASON` | Depth-chart titles, descriptions, H1s ("… Depth Chart 2027") |
 | `SC_BUILD_SEASON` / `SEASON` | `wordpress-plugin/scripts/sc-build-pages.php:51`, `create-player-pages.sh:44`, `create-team-pages.sh:30` | The CLI page builders |
 
 Bump the plugin version, rebuild the zip (`bash wordpress-plugin/scripts/build-zip.sh`) and upload it.
 
 **Stored meta does not follow the constant.** Rank Math titles and descriptions are written into each page's meta *only when empty*, so the 611 player descriptions ("… 2026 game log …") and 32 team hub titles keep saying 2026. Two ways to refresh them:
 
-- **Player descriptions:** re-run `create-player-pages.sh` with `--force`, or clear `rank_math_description` on the player pages and press **Build player pages** (it refills empty fields).
+- **Player titles and descriptions:** since 1.10.34 (2026-10-09) the profile's stored title is dated ("{Name} Fantasy Football 2026: Stats, Outlook & News") and the Tools-screen **retitle** recognizes that ladder for any year, so pressing it after the rollover moves every generated title to 2027. The stored description is only the offseason fallback - in season the plugin takes the API's live one from the fragment's `scp-page-data` island - so re-run `create-player-pages.sh` with `--force`, or clear `rank_math_description` on the player pages and press **Build player pages** (it refills empty fields).
 - **Team hub titles:** the Tools-screen retitle only recognizes the old `YYYY {Team} Fantasy Football Hub | StatChasers` template (`statchasers-team-pages.php` ≈ 1679-1688). It will treat the current "{Team} 2026: Record, …" titles as custom and skip them. Either update that pattern to recognize the current template before the rollover, or clear `rank_math_title` on the hubs and rebuild.
 
 ### 4. RB handcuffs: owner decision

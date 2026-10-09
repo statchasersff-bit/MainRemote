@@ -363,6 +363,9 @@ function renderTake(m: Model): string {
     `<section class="scp-ox-sec scp-ol-sec-take" aria-labelledby="scp-ol-take-h"><div class="scp-ol-take">` +
     `<div>` +
     `<h2 class="scp-ox-h2 is-lead" id="scp-ol-take-h">${escapeHtml(titleCase(`${m.name} rest-of-season outlook`))}</h2>` +
+    // The body's first sentence names the page's search, "fantasy outlook",
+    // and the reading it is built on (mak, 2026-10-09).
+    `<p class="scp-ox-lede scp-ol-lede">${escapeHtml(outlookLede(m))}</p>` +
     `<p class="scp-ol-tier">${escapeHtml(tier)}</p>` +
     (m.injured ? `<p class="scp-ol-injured">${escapeHtml(`${m.injured}.`)}</p>` : "") +
     `</div>` +
@@ -379,6 +382,26 @@ function renderTake(m: Model): string {
     `</div></div>` +
     `</div></section>`
   );
+}
+
+/**
+ * "Bijan Robinson's fantasy outlook for the rest of 2026: RB3 through Week 5
+ * at 21.4 PPR points per game." Before Week 1 it is the projection and last
+ * season's finish instead.
+ */
+function outlookLede(m: Model): string {
+  if (!m.preseason && m.now?.rank) {
+    return (
+      `${m.name}'s fantasy outlook for the rest of ${m.season}: ${m.pos}${m.now.rank} through ` +
+      `Week ${m.week} at ${one(m.now.ppg)} ${m.scoring} points per game.`
+    );
+  }
+  if (!m.preseason) {
+    return `${m.name}'s fantasy outlook for the rest of ${m.season}, from his role, his usage and the matchups ahead.`;
+  }
+  const projected = m.projected ? `: projected as ${preseasonWords(m.pos, m.projected)}` : "";
+  const prior = m.prior?.rank ? ` He finished ${m.pos}${m.prior.rank} in ${m.prior.season} at ${one(m.prior.ppg)} points per game.` : "";
+  return `${m.name}'s ${m.season} fantasy outlook${projected}.${prior}`;
 }
 
 /* --------------------------------------------- section 2: expectation check */

@@ -10,7 +10,7 @@
 
 import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
-import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription } from "./matchup-render";
+import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
 import { scoreboardTitleCandidates } from "./scoreboard-hero";
 import { fitTitle, TITLE_MAX } from "../title-fit";
@@ -49,8 +49,8 @@ function nicknames(data: MatchupData): string {
 export function matchupScoreLine(data: MatchupData): string {
   const featured = data.featured;
   // A game address always has a score to lead with; the pair's address only
-  // while it is leading with a result.
-  if (!data.pinned && data.matchupState !== "recently_completed") return "";
+  // while it is leading with a result - just played, or any of this season's.
+  if (!data.pinned && data.matchupState !== "recently_completed" && !seasonGameLead(data)) return "";
   if (!featured?.score || !featured.winner) return "";
   const high = Math.max(featured.score.home, featured.score.away);
   const low = Math.min(featured.score.home, featured.score.away);
@@ -143,6 +143,34 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
         long.length <= 160
           ? long
           : `${label} ${week} fantasy football preview: start/sit calls, matchup data, injuries, usage and points allowed by position.`,
+      canonical,
+      siteName: SITE_NAME,
+    };
+  }
+
+  // The pair's page while it leads with one of this season's played games,
+  // whether just played or back in Week 2: "Browns vs Buccaneers Player Stats
+  // & Fantasy Points (Week 2, 2026)", mak's wording (2026-10-09), with the
+  // same words in the H1 (seasonGameHeading). The spec's string runs past
+  // sixty for most pairs, so the ladder drops the year first - the searches
+  // are "browns vs buccaneers player stats", so "Player Stats" outranks
+  // "2026" (mak, 2026-10-09) - and only then the shorter wordings. The
+  // head-to-head wording below is now only for a pair that has not met this
+  // season.
+  const lead = seasonGameLead(data);
+  if (lead) {
+    const when = `(${lead.weekLabel}, ${lead.season})`;
+    const scored = matchupScoreLine(data);
+    return {
+      title: fitMatchupTitle([
+        `${short} Player Stats & Fantasy Points ${when}`,
+        `${short} Player Stats & Fantasy Points (${lead.weekLabel})`,
+        `${short} Stats & Fantasy Points ${when}`,
+        `${short} Player Stats ${when}`,
+      ]),
+      description:
+        `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname} ${lead.weekLabel} ${lead.season} ` +
+        `player stats and fantasy points by player, plus the final score and the head-to-head record.`,
       canonical,
       siteName: SITE_NAME,
     };
