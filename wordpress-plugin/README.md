@@ -1290,7 +1290,11 @@ The canonical is always the bare page.
 
 It prints the fragment from `/embed/rookie-hit-rates`, cached for an hour with a
 30-day fallback: the default view (Superflex, PPR, Top-12, every class, 8 games)
-with all four tabs - Overview, Trends, Cohorts, Players - in the page's HTML.
+with all four tabs - Overview, Draft Classes, Year-by-Year, Players - in the
+page's HTML (the app's tab names since its 2026-10-08 commit, which the port
+follows: the Overview's Simple/Detailed table switch, the Players Who Hit by
+Class table with its draft boards, the conditional patience odds, and player
+names that link to their profiles; the season-history drawer is gone).
 Every other view is computed in the reader's browser from the dataset at
 `embed/rookie-hit-rates/data`, which goes through the browser proxy once the
 embed key is on. The fragment's `schr-page-data` island carries the page's

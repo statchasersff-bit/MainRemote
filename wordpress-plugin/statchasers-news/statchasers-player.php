@@ -1625,7 +1625,9 @@ function statchasers_player_section_canonical(): string {
 /*
  * No " | StatChasers" on a section's title (mak, 2026-10-05): with it, every
  * section but News ran 66 to 95 characters, past what a results page shows,
- * and the cut fell on the words. The profile's stored title keeps it.
+ * and the cut fell on the words. Since 2026-10-08 the profile's stored title
+ * has none either, and every section title is a sixty-character ladder on the
+ * API side (src/lib/title-fit.ts).
  */
 add_filter(
 	'rank_math/frontend/title',

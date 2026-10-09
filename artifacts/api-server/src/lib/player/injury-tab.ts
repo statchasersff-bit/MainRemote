@@ -52,6 +52,7 @@ import {
   type PracticeValue,
   type ReportRow,
 } from "./injury-tab-data";
+import { hasPlayerSection, sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
@@ -296,10 +297,9 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
     practiceNote: null,
     starter: data.depth?.order === 1,
     rc: `${REDRAFT_COMMAND_URL}?player=${encodeURIComponent(player.slug)}`,
-    hasOutlook:
-      /\S/.test(data.fantasyOutlook2026?.body ?? "") ||
-      Boolean(data.fantasyOutlook2026?.weeklyRole || data.fantasyOutlook2026?.restOfSeason) ||
-      (data.outlookDrivers ?? []).length > 0,
+    // The same test the Outlook tab applies to itself, so this tab never
+    // links to an Outlook page that is not there.
+    hasOutlook: hasPlayerSection(data, "outlook"),
     tabUrl,
     playerUrl: (slug: string) => `${prefix}${slug}/${options.linkQuery ?? ""}`,
   };
@@ -967,13 +967,14 @@ function renderContingency(m: Model, data: PlayerPageData, emphasis: boolean): s
  * day, "did he practice today" only on a day with a report reading. Return
  * timelines are never asked: nothing in the data says when anyone comes back.
  */
-function injuryPool(m: Model, options: PlayerRenderOptions): FaqCandidate[] {
+function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions): FaqCandidate[] {
   const pool: FaqCandidate[] = [];
   const asOf = m.checkedMs > 0 ? longDate(m.checkedMs) : null;
   const part = m.bodyPart ? `${m.bodyPart.toLowerCase()} injury` : "injury";
   const hurt = !["ACTIVE", "OFFSEASON", "SUSP"].includes(m.code);
   const statusWord = m.code === "IR" ? "on injured reserve" : STATUS_WORD[m.code].toLowerCase();
-  const outlook = { href: `${options.playerPathPrefix ?? "/player/"}${m.slug}/outlook/${options.linkQuery ?? ""}`, text: `See how the injury changes his rest-of-season value.` };
+  const outlookHref = sectionHref(data, options, "outlook");
+  const outlook = outlookHref ? { href: outlookHref, text: `See how the injury changes his rest-of-season value.` } : null;
   const missedLine =
     m.seasonMissed === 0 && m.playedThisSeason > 0
       ? ` He has played every game in ${m.season}.`
@@ -1184,7 +1185,7 @@ export function injuryTabParts(
     renderMap(m) +
     renderHistory(m) +
     (out ? "" : plan);
-  const faqItems = selectFaq(injuryPool(m, options));
+  const faqItems = selectFaq(injuryPool(m, data, options));
 
   const doc = loadPracticeReports(data.leagueSeason);
   const checked = m.checkedMs > 0 ? ` Status last checked ${timeTag(m.checkedMs, stampText(m.checkedMs))}.` : "";

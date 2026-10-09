@@ -583,7 +583,11 @@ body.scf-page {
   /* The team cell is two lines now, so everything beside it centres against it
      rather than sitting on the first line's baseline. */
   vertical-align: middle;
-  text-align: right;
+  /* Centred under the centred QB / RB / WR / TE / OFF labels (mak, 2026-10-08).
+     The figure and its rank move together as one block, so the numbers still
+     line up down a column: tabular numerals and a fixed-width rank box. The
+     games column keeps ranging right under its right-ranged label. */
+  text-align: center;
   white-space: nowrap;
   /* Ranks 13–20 wear the page. Nothing to say about them, so nothing said. */
   background: var(--sc-surface);
@@ -627,23 +631,26 @@ body.scf-page {
   color: var(--sc-ink);
 }
 
-/* The rank, in the arm's ink - the second reading of the tint, and the one
-   that survives a greyscale print. */
+/* The rank beside the figure, hidden from sight at every width (mak,
+   2026-10-08: the figure alone is what the table shows). Hidden VISUALLY, not
+   removed: the rank is the tint's second reading, and on a page whose scale is
+   green against red that second reading is what a colourblind reader relies on.
+   Clipping it rather than displaying it none keeps it in the accessibility
+   tree, so a screen reader still hears "23.7, 4th most points allowed". This
+   is the treatment the phone layout used below 540px; it is now the base rule.
+   Positioned against .scf-cell, which is relative for exactly this reason (see
+   the long note on the cell) - anything else would resolve it against the
+   document and drag the page wider than the screen. */
 .scf-rank {
-  display: inline-block;
-  vertical-align: middle;
-  min-width: 22px;
-  margin-left: 8px;
-  font-size: 11px;
-  font-weight: 800;
-  text-align: right;
-  color: var(--sc-muted);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
-
-.scf-cell[data-tier="soft-2"] .scf-rank { color: var(--scf-soft-2-ink); }
-.scf-cell[data-tier="soft-1"] .scf-rank { color: var(--scf-soft-1-ink); }
-.scf-cell[data-tier="tough-1"] .scf-rank { color: var(--scf-tough-1-ink); }
-.scf-cell[data-tier="tough-2"] .scf-rank { color: var(--scf-tough-2-ink); }
 
 .scf-games {
   padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
@@ -756,37 +763,15 @@ body.scf-page {
 }
 
 /*
- * Narrower still: the rank digits go too, leaving the figure alone.
+ * Narrower still: the gutters come in.
  *
- * Same measurement, one step on. Without the names the table wants ~527px, and
- * without the ranks as well ~377px - so 540px is where the ranks become what
- * pays. That is the last thing the table can give up: below it there is nothing
- * left to drop and it scrolls sideways instead.
- *
- * Hidden VISUALLY, not removed. The rank is the tint's second reading, and on a
- * page whose scale is green against red that second reading is what a
- * colourblind reader is relying on. Clipping it rather than displaying it none
- * keeps it in the accessibility tree, so a screen reader still reads "23.7, 4th
- * most points allowed" while the screen shows only 23.7. A sighted reader who
- * needs the ranks back can turn the phone.
+ * This breakpoint used to be where the rank digits went too, leaving the
+ * figure alone - without the names the table wanted ~527px, and without the
+ * ranks as well ~377px. The ranks are hidden at every width now (see .scf-rank),
+ * so 540px is only where the padding gives up its last 3px a side. Below it
+ * there is nothing left to drop and the table scrolls sideways instead.
  */
 @container scf (max-width: 540px) {
-  .scf-rank {
-    position: absolute;
-    /* `min-width: 22px` on the base rule outranks `width: 1px` - a used width
-       is clamped up to its minimum - so this box was 22px wide, not 1px, for
-       as long as it has existed. Invisible either way, which is why it went
-       unnoticed; 22px of it was not. */
-    min-width: 0;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   /* The columns are down to their labels and four digits; the gutters can come
      in with them. This is what gets a 375px phone under the wire.
 
@@ -799,13 +784,6 @@ body.scf-page {
   .scf-games,
   .scf-table thead th {
     --scf-cell-pad-x: 7px;
-  }
-
-  /* With the rank gone the figure is alone in the cell, so it can sit under the
-     centred header rather than ranging right against a label that does not. The
-     games column is untouched: its header ranges right and so does its number. */
-  .scf-cell {
-    text-align: center;
   }
 
   /*
@@ -921,31 +899,11 @@ body.scf-page {
 }
 
 @media (max-width: 540px) {
-  .scf-rank {
-    position: absolute;
-    /* `min-width: 22px` on the base rule outranks `width: 1px` - a used width
-       is clamped up to its minimum - so this box was 22px wide, not 1px, for
-       as long as it has existed. Invisible either way, which is why it went
-       unnoticed; 22px of it was not. */
-    min-width: 0;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   .scf-cell,
   .scf-team,
   .scf-games,
   .scf-table thead th {
     --scf-cell-pad-x: 7px;
-  }
-
-  .scf-cell {
-    text-align: center;
   }
 
   .scf-csv {

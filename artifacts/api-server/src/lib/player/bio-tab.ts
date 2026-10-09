@@ -34,6 +34,7 @@ import type { PlayerPageData } from "./player-data";
 import { lastName, teamInk } from "./header";
 import { titleCase } from "./title-case";
 import { outlookShort } from "./outlook-tab";
+import { sectionHref } from "./sections";
 import type { BioPageFacts, BioStop } from "./bio-tab-data";
 
 const REDRAFT_COMMAND_URL = "https://statchasers.com/redraft-command/";
@@ -171,11 +172,15 @@ function renderCareer(data: PlayerPageData, page: BioPageFacts, options: PlayerR
     rows.push(`<dt>Career stats</dt><dd><a href="${escapeHtml(`${prefix}/stats/${q}`)}">${escapeHtml(page.seasonsPlayed === 1 ? "1 season" : page.coversCareer ? `All ${page.seasonsPlayed} seasons` : `${page.seasonsPlayed} seasons since ${page.axis[0]}`)}</a></dd>`);
     rows.push(`<dt>Game log</dt><dd><a href="${escapeHtml(`${prefix}/game-log/${q}`)}">Every game</a></dd>`);
   }
-  rows.push(`<dt>Injury history</dt><dd><a href="${escapeHtml(`${prefix}/injury/${q}`)}">Injury tab</a></dd>`);
+  // Each row only when the player has the tab it points at: a link to a
+  // section URL with no section behind it just 302s back here.
+  const injuryHref = sectionHref(data, options, "injury");
+  if (injuryHref) rows.push(`<dt>Injury history</dt><dd><a href="${escapeHtml(injuryHref)}">Injury tab</a></dd>`);
   // The link, not the Outlook tab's fantasy label ("QB2, streamer"): the bio
   // carries no fantasy wording outside its three marked places.
-  if (page.status === "active" && outlookShort(data)) {
-    rows.push(`<dt>${escapeHtml(`${data.leagueSeason ?? data.season} outlook`)}</dt><dd><a href="${escapeHtml(`${prefix}/outlook/${q}`)}">Outlook tab</a></dd>`);
+  const outlookHref = sectionHref(data, options, "outlook");
+  if (page.status === "active" && outlookShort(data) && outlookHref) {
+    rows.push(`<dt>${escapeHtml(`${data.leagueSeason ?? data.season} outlook`)}</dt><dd><a href="${escapeHtml(outlookHref)}">Outlook tab</a></dd>`);
   }
   if (data.team && page.status === "active") {
     rows.push(`<dt>Team</dt><dd><a href="${escapeHtml(`${options.teamPathPrefix ?? "/team/"}${data.team.slug}/${q}`)}">${escapeHtml(data.team.nickname)}</a></dd>`);

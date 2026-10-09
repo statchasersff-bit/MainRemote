@@ -24,6 +24,12 @@ export interface MergedRBData {
   /** 2025 rush attempts + receptions: ranks a team's backs. */
   season_touches: number | null;
   rush_att_per_gm: number | null;
+  /** The raw rushing line, for the starter-efficiency reads in scoring.ts
+      (mak, 2026-10-08): a season total, the yards behind it, and the one run
+      that can carry an average on its own. */
+  rush_att: number | null;
+  rush_yards: number | null;
+  longest_rush: number | null;
   targets_per_gm: number | null;
   routes_per_gm: number | null;
   route_pct: number | null;
@@ -133,6 +139,7 @@ function empty(player: string, team: string, games: number): MergedRBData {
     player, team, games,
     age: null,
     snap_pct: null, touches_per_gm: null, season_touches: null, rush_att_per_gm: null,
+    rush_att: null, rush_yards: null, longest_rush: null,
     targets_per_gm: null, routes_per_gm: null, route_pct: null,
     rz_touches: null, rz_rush_att: null, goal_line_att: null,
     usage_role_score: null, role_trend: null,
@@ -173,6 +180,9 @@ export function mergeStats(rows: RBStatRow[], scale = 1): Map<string, MergedRBDa
     if (n("snapPct") != null) r.snap_pct = r.snap_pct ?? n("snapPct");
     if (rush != null || rec != null) r.season_touches = r.season_touches ?? (rush ?? 0) + (rec ?? 0);
     if (rush != null) r.rush_att_per_gm = r.rush_att_per_gm ?? rush / g;
+    if (rush != null) r.rush_att = r.rush_att ?? rush;
+    if (n("rushYards") != null) r.rush_yards = r.rush_yards ?? n("rushYards");
+    if (n("longestRush") != null) r.longest_rush = r.longest_rush ?? n("longestRush");
     if (n("targets") != null) r.targets_per_gm = r.targets_per_gm ?? n("targets")! / g;
     if (n("routes") != null) r.routes_per_gm = r.routes_per_gm ?? n("routes")! / g;
     if (n("redZoneOpportunities") != null) r.rz_touches = r.rz_touches ?? n("redZoneOpportunities");

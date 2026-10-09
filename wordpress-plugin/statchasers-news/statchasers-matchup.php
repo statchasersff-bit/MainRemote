@@ -655,27 +655,17 @@ add_action(
 /* -------------------------------------------------------------- metadata */
 
 /**
- * The first title candidate that fits in 70 characters, most descriptive first.
+ * The first title candidate that fits in 60 characters, most descriptive first.
  *
- * MIRRORS fitMatchupTitle() in the API's src/lib/matchup/matchup-seo.ts. Each
- * candidate is tried with " | StatChasers" and then without it, before the
- * next one is: a long pair drops the brand before it drops a word people
- * search. The last candidate is short enough to fit for every pair.
+ * MIRRORS fitMatchupTitle() in the API's src/lib/matchup/matchup-seo.ts, which
+ * is the shared statchasers_fit_title() budget. No brand since 2026-10-08
+ * (was 70 characters with " | StatChasers" tried first). The last candidate
+ * is short enough to fit for every pair.
  *
- * @param string[] $candidates Titles without the brand.
- * @return string The finished title, brand included when it fits.
+ * @param string[] $candidates Titles, most descriptive first.
  */
 function statchasers_matchup_fit_title( array $candidates ): string {
-	foreach ( $candidates as $candidate ) {
-		$branded = $candidate . ' | StatChasers';
-		if ( strlen( $branded ) <= 70 ) {
-			return $branded;
-		}
-		if ( strlen( $candidate ) <= 70 ) {
-			return $candidate;
-		}
-	}
-	return (string) end( $candidates );
+	return statchasers_fit_title( $candidates );
 }
 
 /**
@@ -728,10 +718,9 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	return array(
 		'title'       => statchasers_matchup_fit_title(
 			array(
-				"$names: Head-to-Head Record, Stats & History",
 				"$names: Head-to-Head Record & History",
-				"$names: Head-to-Head Record",
-				"$short: Head-to-Head Record",
+				"$names: Head-to-Head History",
+				"$short: Head-to-Head Record & History",
 			)
 		),
 		'description' => sprintf( '%1$s vs %2$s: the regular-season head-to-head record, recent meetings, and %3$s team stats side by side.', $nick_a, $nick_b, $season ),
@@ -783,6 +772,9 @@ function statchasers_matchup_game_meta( string $a, string $b, string $game, stri
 				"$names, $label $season Box Score",
 				"$short, $label $season: Box Score & Fantasy Recap",
 				"$short, $label $season Box Score",
+				// "Buccaneers vs Commanders, Conference Championship 2025": the
+				// longest nicknames with the longest round still fit sixty.
+				"$short, $label $season",
 			)
 		),
 		'description' => sprintf(

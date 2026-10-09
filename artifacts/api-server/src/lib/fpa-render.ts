@@ -28,8 +28,9 @@
  * red runs 0.080 darker than its green mirror, which is what keeps the mirrored
  * pairs at ΔE 15.6 under protanopia and 7.5 under deuteranopia rather than ~1.
  * 7.5 is the floor band, legal only because there is a second encoding - every
- * tinted cell prints its rank, and the rows arrive sorted by it. See fpa.css for
- * the full derivation.
+ * tinted cell carries its rank (visually hidden since 2026-10-08 at mak's
+ * request, still read out by screen readers and shown in the cell's tooltip),
+ * and the rows arrive sorted by it. See fpa.css for the full derivation.
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
@@ -292,11 +293,13 @@ function renderDataMode(data: FpaTableData): string {
 function renderCell(entry: { fpa: number; rank: number }): string {
   const tier = matchupTier(entry.rank);
   return (
-    `<td class="scf-cell" data-tier="${tier}" data-sort="${entry.fpa}">` +
-    `<span class="scf-fpa">${escapeHtml(num(entry.fpa))}</span>` +
-    `<span class="scf-rank" title="${escapeHtml(
+    // The title sits on the cell, not the rank: the rank is clipped out of
+    // sight (fpa.css, .scf-rank), and a tooltip on a 1px box is no tooltip.
+    `<td class="scf-cell" data-tier="${tier}" data-sort="${entry.fpa}" title="${escapeHtml(
       `${ordinal(entry.rank)} most points allowed - ${TIER_LABEL[tier]}`,
-    )}">${entry.rank}</span>` +
+    )}">` +
+    `<span class="scf-fpa">${escapeHtml(num(entry.fpa))}</span>` +
+    `<span class="scf-rank">${entry.rank}</span>` +
     `</td>`
   );
 }

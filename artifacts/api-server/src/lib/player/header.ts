@@ -17,6 +17,8 @@ import type { PlayerRenderOptions } from "../player-render";
 import type { NflTeam } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
 import { SCORING_SHORT } from "./scoring";
+import { OUTLOOK_SEASON } from "./outlook-2026";
+import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 
 const DASH = "-";
@@ -40,14 +42,9 @@ function ordinal(n: number): string {
   return `${n}${suffix}`;
 }
 
-/**
- * The season the Outlook tab is about.
- *
- * Named once rather than written into six strings: this tab is the one place
- * on the page allowed to talk about a season nobody has played, and the year it
- * means has to be impossible to leave half-updated.
- */
-export const OUTLOOK_SEASON = 2026;
+// The season the Outlook tab is about: lib/player/outlook-2026.ts owns it,
+// re-exported here because the header's importers always read it from here.
+export { OUTLOOK_SEASON };
 
 /**
  * A player's start/sit page is this plus his slug. The final address, not the
@@ -445,15 +442,23 @@ function renderPhotoWell(data: PlayerPageData): string {
   );
 }
 
-/** The designation pill's tone: amber for questionable, red for anything worse. */
+/**
+ * The designation pill: amber for questionable, red for anything worse.
+ *
+ * A link to the Injury tab when the player has one. A player can carry a
+ * designation with no injury record behind it (a fresh listing, nothing
+ * logged yet), and then there is no Injury page: the pill is the status
+ * alone, not a link that 302s back to the page it is on.
+ */
 function injuryPill(
   status: string,
-  href: string,
+  href: string | null,
 ): string {
   const severity = designationSeverity(status);
   const key = status.trim().toLowerCase();
   const label = /^ir\b/.test(key) || key.includes("injured reserve") ? "IR" : status.trim();
   const tone = severity === "out" || severity === "doubtful" ? "is-bad" : "is-mid";
+  if (!href) return `<span class="scp-ptag-inj ${tone}">${escapeHtml(label)}</span>`;
   return (
     `<a class="scp-ptag-inj ${tone}" href="${escapeHtml(href)}" target="_top">` +
     `${escapeHtml(label)}</a>`
@@ -503,7 +508,7 @@ export function renderHero(
     tags.push(`<span class="scp-ptag-num">#${escapeHtml(String(player.number))}</span>`);
   }
   const status = data.designation?.injuryStatus ?? player.injury_status ?? "";
-  if (status.trim()) tags.push(injuryPill(status, tabUrl("injury")));
+  if (status.trim()) tags.push(injuryPill(status, sectionHref(data, options, "injury")));
 
   /* ---- the spec row ---- */
 
@@ -582,15 +587,18 @@ export function renderHero(
     // Start/sit while there is a week to start him in; before Week 1, or once
     // the schedule has run out, the question is the season rather than a week.
     let primary = "";
+    // The Outlook tab's own URL, when the player has the tab: a written take
+    // alone is not enough if the tab would not render from it.
+    const outlookHref = sectionHref(data, options, "outlook");
     if (next && !seasonNotStarted(data)) {
       const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(player.slug)}`;
       primary =
         `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(href)}"` +
         ` data-cta="startsit-header-${cta}" data-scp-cta="startsit-header">` +
         `${escapeHtml(`Should I start ${last} in Week ${next.game.week}?`)}</a>`;
-    } else if (data.fantasyOutlook2026) {
+    } else if (outlookHref) {
       primary =
-        `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(tabUrl("outlook"))}"` +
+        `<a class="scp-pbtn scp-pbtn--dark" href="${escapeHtml(outlookHref)}"` +
         ` target="_top" data-cta="outlook-header-${cta}" data-scp-cta="outlook-header">` +
         `${escapeHtml(`See ${last}'s ${OUTLOOK_SEASON} outlook`)}</a>`;
     }

@@ -647,11 +647,25 @@ function statchasers_team_wants_full_width(): bool {
  * z-index and nothing else, deliberately. The obvious companion is
  * `position: relative`, and it is wrong here: a Theme Builder header may be
  * `sticky`, and forcing it to `relative` would unstick the site's navigation
- * to fix a stacking bug. Every shape this has to cover already has a position -
- * Divi's own `#main-header` is fixed or absolute, and a Theme Builder wrapper
- * is relative or sticky - so z-index alone lands. Verified against four of
- * them: Divi's own header, a Theme Builder wrapper with a z-index, one with
- * none, and no wrapper at all.
+ * to fix a stacking bug. So the rule has to name an element Divi already
+ * positions, and on a Theme Builder header that is NOT `.et-l--header`: on
+ * statchasers.com that `<header>` has no position at all, so a z-index on it
+ * is ignored and the header's real level in the page was Divi's own
+ *
+ *     .et_builder_inner_content { position: relative; z-index: 1 }
+ *     header .et_builder_inner_content { z-index: 2 }
+ *
+ * - which is why the Tools dropdown drew behind a player page's 4px accent
+ * bar (a z-index of 2 later in the DOM) and the player tab bar (20) printed
+ * through the open mobile menu, with this rule on the page the whole time.
+ * Lifting that inner wrapper is what lands: it is relative in Divi's own
+ * stylesheet, the menu module and the mobile overlay both sit inside it, and
+ * on a header that IS positioned the wrapper's 99999 is read inside the
+ * header's own context, where it changes nothing. Divi's
+ * `.et_builder_inner_content.has_et_pb_sticky { z-index: inherit }` is the
+ * same specificity as a two-class selector, hence the `header` tag on ours.
+ * Checked by injecting the rule into the live page in headless Chromium and
+ * reading elementFromPoint under the open dropdown and the open mobile menu.
  *
  * No media query: a desktop dropdown is the same overlay as the mobile panel
  * and loses to the same rule.
@@ -659,7 +673,7 @@ function statchasers_team_wants_full_width(): bool {
  * @return string
  */
 function statchasers_tool_header_layer_css(): string {
-	return '.et-l--header,#main-header,#top-header{z-index:99999}';
+	return '.et-l--header,#main-header,#top-header,header.et-l--header>.et_builder_inner_content{z-index:99999}';
 }
 
 /**

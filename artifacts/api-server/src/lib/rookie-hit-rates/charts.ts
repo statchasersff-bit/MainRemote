@@ -1,12 +1,12 @@
 /**
  * The rookie hit rate charts, as SVG strings.
  *
- * The standalone app drew three charts with recharts: the Pick Lens bars, the
- * Hit Rate Trends lines and the Time to Breakout lines. These are the same
- * charts without the library - the same axes, domains, reference lines, dash
- * patterns and `type="monotone"` curve (d3's monotoneX, which is what recharts
- * draws for it) - so the server can put them in the page and the bundle can
- * redraw them at the column's real width.
+ * The standalone app draws two charts with recharts: the Best Finish card's
+ * "Hit by Year" bars and the Time to Breakout lines. These are the same
+ * charts without the library - the same axes, domains, reference lines and
+ * `type="monotone"` curve (d3's monotoneX, which is what recharts draws for
+ * it) - so the server can put them in the page and the bundle can redraw them
+ * at the column's real width.
  *
  * Every column of a line chart carries an invisible hit band (`.schr-hit`,
  * `data-x`) that the bundle hangs its tooltip on; with scripting off the chart
@@ -36,10 +36,12 @@ export interface LineChartOptions {
   width: number;
   height: number;
   xs: number[];
+  /** The axis floor: 0 unless the chart starts just under its lowest point. */
+  yMin?: number;
   yMax: number;
   yTicks: number[];
   series: LineSeries[];
-  /** A dashed horizontal line (the trends chart's average). */
+  /** A dashed horizontal line. */
   refY?: number | null;
   /** A dashed vertical line with a label (the survival chart's Year 3). */
   refX?: { x: number; label: string } | null;
@@ -124,7 +126,9 @@ export function renderLineChart(o: LineChartOptions): string {
   // recharts' category axis: each x gets an equal band and sits in its middle.
   const band = iw / Math.max(1, xs.length);
   const xPos = (x: number) => MARGIN.left + band * (xs.indexOf(x) + 0.5);
-  const yPos = (y: number) => MARGIN.top + ih - (o.yMax > 0 ? (y / o.yMax) * ih : 0);
+  const yMin = o.yMin ?? 0;
+  const span = o.yMax - yMin;
+  const yPos = (y: number) => MARGIN.top + ih - (span > 0 ? ((y - yMin) / span) * ih : 0);
 
   const grid = o.yTicks
     .map((t) => {
@@ -209,22 +213,20 @@ export interface Bar {
   color: string;
 }
 
-/** The Pick Lens "Hit by Year" bars: 0-100%, a label over each bar. */
+/**
+ * The Best Finish card's "Hit by Year" bars: 0-100%, a label over each bar and,
+ * as the source's since 9c69b00, no y axis - the labels carry the values.
+ */
 export function renderBarChart(bars: Bar[], width: number, height: number, label: string): string {
-  const w = Math.max(160, Math.round(width));
+  const w = Math.max(120, Math.round(width));
   const h = Math.round(height);
-  const m = { top: 14, right: 4, bottom: 18, left: 34 };
+  const m = { top: 14, right: 0, bottom: 18, left: 0 };
   const iw = w - m.left - m.right;
   const ih = h - m.top - m.bottom;
   const band = iw / Math.max(1, bars.length);
-  const barW = Math.min(28, band * 0.85);
+  const barW = Math.min(28, band * 0.88);
   const yPos = (v: number) => m.top + ih - v * ih;
-  const ticks = [0, 0.25, 0.5, 0.75, 1]
-    .map(
-      (t) =>
-        `<text class="schr-tick" x="${m.left - 6}" y="${fmt(yPos(t))}" text-anchor="end" dominant-baseline="middle">${pctTick(t)}</text>`,
-    )
-    .join("");
+  const ticks = "";
   const body = bars
     .map((b, i) => {
       const cx = m.left + band * (i + 0.5);

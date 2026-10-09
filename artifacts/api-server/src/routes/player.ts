@@ -35,7 +35,8 @@ import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
-import { hasOutlookTab, renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
+import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
+import { hasOutlookTab } from "../lib/player/outlook-2026";
 import {
   getAvailableSeasons,
   previousSlugsFor,

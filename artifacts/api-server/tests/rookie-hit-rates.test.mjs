@@ -2,12 +2,13 @@
  * Dynasty rookie hit rates.
  *
  * Three halves. The model (lib/rookie-hit-rates/model.ts) is held to the
- * standalone app's own output: tests/fixtures/rookie-hit-rates-source-2026-10-05.json
- * is what the app's cohort.ts and insight generators computed from its CSVs
- * for six filter combinations, and every number, sample size and sentence here
- * must match it. The charts' path and tick helpers are pinned on their own.
- * Then the routes are checked over HTTP: the page, the fragment the plugin
- * prints and the dataset the bundle recomputes from.
+ * standalone app's own output: tests/fixtures/rookie-hit-rates-source-2026-10-08.json
+ * is what the app's cohort.ts, insight generators, patience maths and class
+ * table computed from its CSVs (at 9c69b00) for six filter combinations, and
+ * every number, sample size and sentence here must match it. The charts' path
+ * and tick helpers and the draft board's layout ladder are pinned on their
+ * own. Then the routes are checked over HTTP: the page, the fragment the
+ * plugin prints and the dataset the bundle recomputes from.
  */
 
 import test, { before, after, describe } from "node:test";
@@ -21,8 +22,9 @@ import { importModule } from "./helpers/bundle.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const model = await importModule("lib/rookie-hit-rates/model");
 const charts = await importModule("lib/rookie-hit-rates/charts");
+const layout = await importModule("lib/rookie-hit-rates/board-layout");
 const data = JSON.parse(readFileSync(path.join(HERE, "..", "data", "rookie-hit-rates", "hit-rates.json"), "utf8"));
-const fixture = JSON.parse(readFileSync(path.join(HERE, "fixtures", "rookie-hit-rates-source-2026-10-05.json"), "utf8"));
+const fixture = JSON.parse(readFileSync(path.join(HERE, "fixtures", "rookie-hit-rates-source-2026-10-08.json"), "utf8"));
 
 /** Round like the fixture, and compare keys in any order. */
 function norm(value) {
@@ -47,16 +49,26 @@ describe("the model reproduces the standalone app", () => {
       assert.deepEqual(norm(ov.cohorts), norm(c.cohorts), "heatmap cohorts");
       assert.deepEqual(norm(ov.pickRange), norm(c.pickRange), "pick-range cohorts");
       assert.deepEqual(norm(ov.insights), norm(c.overviewInsights), "overview cards");
-      assert.deepEqual(norm(ov.pickRangeInsights), norm(c.pickRangeInsights), "pick-range cards");
 
       const tv = model.trendsView(board, f);
-      assert.deepEqual(norm(tv.series.map((s) => s.raw)), norm(c.trends), "trend series");
-      assert.deepEqual(norm(tv.insights), norm(c.trendInsights), "trend cards");
+      assert.deepEqual(norm(tv.series.map((s) => s.raw)), norm(c.trends), "class series");
+      assert.deepEqual(norm(tv.insights), norm(c.trendInsights), "class cards");
+      assert.deepEqual(norm(tv.classes), norm(c.classRows), "players who hit by class");
+      for (const row of tv.classes) {
+        const board2 = model.draftBoard(board.drafts, board.ranks, f, row.year).map((p) => [p.id, p.round, p.pick, p.hit]);
+        assert.deepEqual(board2, c.boards[row.year], `draft board ${row.year}`);
+      }
 
       for (const g of ["pos", "round"]) {
         const cv = model.cohortsView(board, f, g);
         assert.deepEqual(norm(cv.survival), norm(c.survival[g]), `survival by ${g}`);
         assert.deepEqual(norm(cv.insights), norm(c.cohortInsights[g]), `cohort cards by ${g}`);
+        assert.deepEqual(norm(cv.patience), norm(c.patience[g]), `hit rates after year 1 by ${g}`);
+        const rows = cv.roster.rows.map(({ group, n, y1, y2, y3, ceiling, remY3, afterY1, afterY2, afterY3 }) => ({
+          group, n, y1, y2, y3, ceiling, remY3, afterY1, afterY2, afterY3,
+        }));
+        assert.deepEqual(norm(rows), norm(c.roster[g].rows), `remaining hit odds by ${g}`);
+        assert.equal(cv.roster.takeaway, c.roster[g].takeaway, `takeaway by ${g}`);
       }
 
       if (c.players) {
@@ -82,9 +94,12 @@ describe("the model reproduces the standalone app", () => {
       rounds: [1, 2, 3, 4, 5],
       minGames: 8,
     });
+    assert.equal(state.tableView, "simple");
+    assert.deepEqual(state.classSort, { key: "year", dir: "asc" });
     const ov = model.overviewView(model.makeBoard(data, "sf", "ppr"), state.filters);
     assert.equal(ov.insights[0].stat, "19.6%");
     assert.equal(ov.insights[0].body, "104 of 530 rookies reached the top-12 threshold.");
+    assert.equal(ov.insights.length, 4, "the Overview shows up to six cards; the default makes four");
   });
 
   test("survival never falls year over year", () => {
@@ -94,7 +109,16 @@ describe("the model reproduces the standalone app", () => {
     }
   });
 
-  test("the player explorer sorts and pages as the app's table did", () => {
+  test("a season before the rookie year never counts as a hit", () => {
+    // The source's 9c69b00 fix: a few ids carry an earlier player's seasons.
+    const board = model.makeBoard(data, "sf", "ppr");
+    for (const p of model.playerSummaries(board, model.defaultFilters(data))) {
+      assert.ok(p.breakout_time === null || p.breakout_time >= 1, `${p.player_id} breakout ${p.breakout_time}`);
+      assert.ok(p.best_finish === "N/A" || p.best_finish_year >= p.rookie_year, `${p.player_id} best finish ${p.best_finish}`);
+    }
+  });
+
+  test("the player explorer sorts and pages as the app's table does", () => {
     const board = model.makeBoard(data, "sf", "ppr");
     const state = model.defaultState(data);
     const all = model.playerSummaries(board, state.filters);
@@ -104,8 +128,31 @@ describe("the model reproduces the standalone app", () => {
     const best = model.filterPlayers(all, { ...state, sortField: "best_finish", sortDir: "asc" });
     assert.equal(best[0].best_rank, 1);
     assert.equal(best.at(-1).best_finish, "N/A", "players with no finish sink");
+    const bestDesc = model.filterPlayers(all, { ...state, sortField: "best_finish", sortDir: "desc" });
+    assert.equal(bestDesc.at(-1).best_finish, "N/A", "...whichever way the column runs");
+    assert.ok(bestDesc[0].best_rank > best[0].best_rank);
+    const breakout = model.filterPlayers(all, { ...state, sortField: "breakout_time", sortDir: "desc" });
+    assert.equal(breakout.at(-1).breakout_time, null, "no breakout sinks too");
+    assert.ok(breakout[0].breakout_time >= 1);
     const search = model.filterPlayers(all, { ...state, search: "BIJAN" });
     assert.deepEqual(search.map((p) => p.player_id), ["bijan-robinson"]);
+  });
+
+  test("the class table sorts with the year as the tie-break", () => {
+    const rows = [
+      { year: 2019, QB: 2, RB: 1, WR: 0, TE: 0, total: 3 },
+      { year: 2017, QB: 2, RB: 0, WR: 0, TE: 0, total: 2 },
+      { year: 2018, QB: 1, RB: 2, WR: 0, TE: 0, total: 3 },
+    ];
+    assert.deepEqual(model.sortClassRows(rows, { key: "year", dir: "asc" }).map((r) => r.year), [2017, 2018, 2019]);
+    assert.deepEqual(model.sortClassRows(rows, { key: "total", dir: "desc" }).map((r) => r.year), [2018, 2019, 2017]);
+    assert.deepEqual(model.sortClassRows(rows, { key: "QB", dir: "desc" }).map((r) => r.year), [2017, 2019, 2018]);
+  });
+
+  test("names shorten as the app's did", () => {
+    assert.equal(model.abbreviateName("Ja'Marr Chase"), "J. Chase");
+    assert.equal(model.abbreviateName("Amon-Ra St. Brown"), "A. St. Brown");
+    assert.equal(model.abbreviateName("Cher"), "Cher");
   });
 });
 
@@ -139,6 +186,47 @@ describe("chart helpers", () => {
     assert.deepEqual(charts.niceTicks(0.37).max, 0.4);
     assert.ok(charts.niceTicks(0).ticks.length >= 2);
   });
+
+  test("a line chart can start above zero", () => {
+    const opts = {
+      width: 400,
+      height: 200,
+      xs: [1, 2],
+      yMax: 0.4,
+      yTicks: [0.2, 0.4],
+      series: [{ key: "a", name: "a", color: "#000", points: [{ x: 1, y: 0.2 }, { x: 2, y: 0.4 }] }],
+      label: "t",
+    };
+    const floor = charts.renderLineChart({ ...opts, yMin: 0.2 });
+    const zero = charts.renderLineChart(opts);
+    const firstY = (svg) => Number(svg.match(/<path d="M[\d.]+,([\d.]+)/)[1]);
+    assert.ok(firstY(floor) > firstY(zero), "the 20% point sits lower when the axis starts at 20%");
+  });
+});
+
+describe("the draft board's layout ladder", () => {
+  const widths = new Map([
+    [1, { full: 120, abbrev: 70 }],
+    [2, { full: 110, abbrev: 60 }],
+    [3, { full: 100, abbrev: 65 }],
+  ]);
+  const rounds = [1, 2, 3];
+  const ladder = layout.buildLadder(3);
+
+  test("gives up the cheapest thing first", () => {
+    const roomy = layout.chooseLayout(ladder, rounds, widths, 900, 12);
+    assert.deepEqual(roomy, { abbrev: false, chrome: "normal", cols: 3, fill: true });
+    const tight = layout.chooseLayout(ladder, rounds, widths, 420, 12);
+    assert.equal(tight.abbrev, true);
+    assert.equal(tight.cols, 3);
+    const squeezed = layout.chooseLayout(ladder, rounds, widths, 200, 12);
+    assert.ok(squeezed.cols < 3, "rounds wrap when nothing else fits");
+    assert.equal(squeezed.chrome, "none");
+  });
+
+  test("falls back to the last rung rather than nothing", () => {
+    assert.deepEqual(layout.chooseLayout(ladder, rounds, widths, 10, 12), ladder.at(-1));
+  });
 });
 
 describe("routes", () => {
@@ -161,8 +249,19 @@ describe("routes", () => {
     for (const tab of ["overview", "trends", "cohorts", "players"]) {
       assert.match(html, new RegExp(`data-panel="${tab}"`), tab);
     }
-    assert.equal((html.match(/class="schr-cell[^"]*" data-tier/g) ?? []).length, 20 + 80, "heatmap and pick-range cells");
+    for (const label of ["Overview", "Draft Classes", "Year-by-Year", "Players"]) {
+      assert.match(html, new RegExp(`data-tab="[a-z]+">${label}</button>`), label);
+    }
+    assert.equal((html.match(/class="schr-cell[^"]*" data-tier/g) ?? []).length, 20 + 80, "heatmap and pick-range cells, both tables in the page");
+    assert.match(html, /data-table-view-panel="simple">/, "the heatmap shows");
+    assert.match(html, /data-table-view-panel="detailed" hidden>/, "the pick ranges wait behind the toggle");
+    assert.equal((html.match(/<tr class="schr-class-row" data-class-row="\d{4}">/g) ?? []).length, 9, "one class row per season");
+    assert.match(html, /Players Who Hit by Class/);
+    assert.match(html, /Hit Rates After Year 1/);
+    assert.match(html, /Remaining Hit Odds/);
     assert.equal((html.match(/<tr data-player=/g) ?? []).length, 50, "the first page of players");
+    assert.doesNotMatch(html, /Finish Yr/, "the finish-year column is gone");
+    assert.doesNotMatch(html, /Patience Index|Stability|Pick Lens/, "the old modules are gone");
     assert.match(html, /104 of 530 rookies reached the top-12 threshold\./);
     assert.match(html, /data-schr-data="\/embed\/rookie-hit-rates\/data"/);
     assert.doesNotMatch(html, /—/, "no em dashes");

@@ -25,6 +25,7 @@ import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { lastName, matchupBand, STARTSIT_BASE, teamInk } from "./header";
 import { titleCase } from "./title-case";
 import { outlookSnapshot } from "./outlook-tab";
+import { sectionHref } from "./sections";
 import { canonicalizeMatchupPair, gameSegment } from "../matchup/pair";
 import type { ScheduleGame } from "../team/schedule";
 import { loadPlayers } from "./data";
@@ -168,7 +169,7 @@ function renderLatest(
   ctx: NewsContext,
   lead: FeedItem | null,
   fallback: NewsItem | null,
-  injuryHref: string,
+  injuryHref: string | null,
 ): string {
   let body: string;
   if (lead) {
@@ -183,7 +184,7 @@ function renderLatest(
     const links = game
       ? (lead.boxHref ? arrowLink(lead.boxHref, "Box score", "news-boxscore") : "") + readLink(lead, true)
       : lead.type === "status"
-        ? arrowLink(injuryHref, "Injury status and history", "news-injury")
+        ? (injuryHref ? arrowLink(injuryHref, "Injury status and history", "news-injury") : "")
         : readLink(lead, true);
     body =
       `<p class="scp-nw-label">Latest update</p>` +
@@ -277,7 +278,7 @@ function renderFeed(
   items: FeedItem[],
   pendingGroups: WeekGroup[],
   options: PlayerRenderOptions,
-  injuryHref: string,
+  injuryHref: string | null,
 ): string {
   const groups = new Map<string, { g: WeekGroup; items: FeedItem[]; pending: boolean }>();
   for (const i of items) {
@@ -340,7 +341,8 @@ function renderFeed(
   const small = (text: string): string => `<small>${escapeHtml(text)}</small>`;
   const go = (href: string, text: string, cta: string): string =>
     `<a class="scp-nw-qa-link" href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(text)} <span aria-hidden="true">→</span></a>`;
-  const rows: string[] = [row("Status", status, go(injuryHref, "Injury report", "news-sidebar-injury"), statusKind)];
+  // The report link only when the player has an Injury page to report from.
+  const rows: string[] = [row("Status", status, injuryHref ? go(injuryHref, "Injury report", "news-sidebar-injury") : "", statusKind)];
   if (next) {
     const opp = next.opponentCode ? `${next.homeAway === "away" ? "@" : "vs"} ${next.opponentCode}` : "";
     const band = next.matchup ? { soft: "favorable", mid: "neutral", tough: "tough" }[matchupBand(next.matchup.rank)] : "";
@@ -478,7 +480,8 @@ function renderTeam(data: PlayerPageData, options: PlayerRenderOptions): string 
  */
 function newsPool(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lead: FeedItem | null, options: PlayerRenderOptions): FaqCandidate[] {
   const pool: FaqCandidate[] = [];
-  const outlook = { href: `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/outlook/${options.linkQuery ?? ""}`, text: `See the updated fantasy outlook.` };
+  const outlookHref = sectionHref(data, options, "outlook");
+  const outlook = outlookHref ? { href: outlookHref, text: `See the updated fantasy outlook.` } : null;
   const day = (i: FeedItem): string => {
     const d = etDay(i.ms);
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -525,7 +528,8 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   const { items, pending } = buildFeed(ctx, data.news ?? []);
   const lead = pickLead(items);
   const feedItems = items.filter((i) => i !== lead);
-  const injuryHref = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/injury/${options.linkQuery ?? ""}`;
+  // Null when the player has no Injury page; every link to it is then left out.
+  const injuryHref = sectionHref(data, options, "injury");
 
   const latest = renderLatest(data, ctx, lead, lead ? null : data.news?.[0] ?? null, injuryHref);
   const mates = renderMates(data, ctx, options);

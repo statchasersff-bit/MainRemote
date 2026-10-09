@@ -288,7 +288,7 @@ describe("the page follows its state", () => {
     const phrase = {
       upcoming: /Where to Watch/,
       recently_completed: /Score/,
-      historical: /Head-to-Head Record/,
+      historical: /Head-to-Head (Record|History)/,
     }[state];
     assert.match(title, phrase);
     // Site audits flag anything longer, and Google truncates it anyway.

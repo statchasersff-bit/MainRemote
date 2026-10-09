@@ -6960,6 +6960,79 @@ body.sct-page.is-embed {
   color: var(--sc-gold-deep);
 }
 
+/* ------------------------------------------- the head-to-head page index */
+
+/* Every pair page this club is half of, as 31 pills in eight division groups
+ * - renderSeriesIndex() in team-render.ts. It sits under the schedule board
+ * and at the foot of the Matchups page, so a pair the club does not play this
+ * season still has a door on both hubs. The pills are deliberately small and
+ * grey: this is an index, not a call to action, and it must not outweigh the
+ * "View matchup" links in the rows above it. */
+.sct-series {
+  margin: 28px 0 0;
+}
+
+.sct-series-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px 24px;
+}
+
+.sct-series-group {
+  min-width: 0;
+}
+
+.sct-series-div {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+.sct-series-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.sct-series-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.sct li > .sct-series-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 5px;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  background: var(--sc-surface);
+  color: var(--sc-navy) !important;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none !important;
+}
+
+.sct li > .sct-series-link:hover,
+.sct li > .sct-series-link:focus-visible {
+  border-color: var(--sc-gold);
+  color: var(--sc-gold-deep) !important;
+}
+
+.sct-series-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: none;
+}
+
 .sct-game-cta {
   margin: 10px 0 0;
   font-size: 13px;
@@ -13510,13 +13583,25 @@ a.sct-ex-game:hover .sct-ex-line {
   margin: 30px 0 0;
 }
 
-:is(.sct, #sct-table-armour) .sct-us-convert .sct-us-close {
-  margin: 4px 0 14px;
+:is(.sct, #sct-table-armour) .sct-us-convert-lead {
+  margin: 0 0 14px;
+  padding: 0;
+  color: var(--sc-ink);
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 
+/* The umbrella line closes the block, under the tool row. */
+:is(.sct, #sct-table-armour) .sct-us-convert .sct-us-close {
+  margin: 14px 0 0;
+  color: var(--sc-muted-strong);
+  font-size: 0.86rem;
+}
+
+/* Six decision cards: three across in the hub column, two on a tablet, one on a phone. */
 :is(.sct, #sct-table-armour) .sct-us-products {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
 }
 
@@ -13586,6 +13671,56 @@ a.sct-ex-game:hover .sct-ex-line {
   padding: 0;
   color: var(--sc-muted);
   font-size: 0.84rem;
+}
+
+/* The action links under a CTA box, and under a "Put this to work" card. */
+:is(.sct, #sct-table-armour) .sct-us-cta-links,
+:is(.sct, #sct-table-armour) .sct-us-product-links {
+  margin: 10px 0 0;
+  padding: 0;
+  color: var(--sc-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+/* One link per line in a card: a wrapped row leaves its separators dangling. */
+:is(.sct, #sct-table-armour) .sct-us-product-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  line-height: 1.4;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product-links > span {
+  display: none;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product-links .sct-textlink {
+  align-self: flex-start;
+}
+
+/* The trade box's one-line read on the two cards above it. */
+:is(.sct, #sct-table-armour) .sct-us-cta-lead {
+  margin: 0 0 6px;
+  padding: 0;
+  color: var(--sc-navy);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* A decision card: the question as its title, the answer as its lead. */
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-title {
+  font-size: 0.95rem;
+}
+
+:is(.sct, #sct-table-armour) .sct-us-product.is-ask .sct-us-product-lead {
+  margin-bottom: 0;
+  color: var(--sc-ink);
+  line-height: 1.55;
 }
 
 /* ------------------------------------------------- coaching profile ---- */
@@ -17066,7 +17201,7 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) .sct-us :is(.sct-us-fine, .sct-us-legend li, .sct-us-chip > span:not(.sct-us-num), .sct-us-bridge.is-quiet) {
   font-size: 0.78rem;
 }
-:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-toolrow, .sct-us-product-lead, .sct-us-bridge:not(.is-quiet), .sct-us-sub, .sct-us-pnote, .sct-us-cta-body, .sct-us-takeaway, .sct-us-note) {
+:is(.sct, #sct-table-armour) .sct-us :is(.sct-us-toolrow, .sct-us-cta-links, .sct-us-product-links, .sct-us-product-lead, .sct-us-bridge:not(.is-quiet), .sct-us-sub, .sct-us-pnote, .sct-us-cta-body, .sct-us-takeaway, .sct-us-note) {
   font-size: 0.86rem;
 }
 

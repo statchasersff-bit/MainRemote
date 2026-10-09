@@ -13,31 +13,25 @@ import type { MatchupData } from "./matchup-data";
 import { matchupScoreboardGame, matchupShare, matchupTitle, recapDescription } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
 import { scoreboardTitleCandidates } from "./scoreboard-hero";
+import { fitTitle, TITLE_MAX } from "../title-fit";
 
 const SITE_NAME = "StatChasers";
 
 /**
- * The longest title a page may carry. Site audits flag anything over 70, and
- * Google cuts the rest off in the result anyway; two full team names already
- * spend up to 45 of it, so the phrase and the brand have to earn their place.
+ * The longest title a page may carry: sixty characters, the shared budget in
+ * lib/title-fit.ts. Two full team names spend up to 45 of it, so the phrase
+ * has to earn its place and the nicknames step in when it cannot. Was 70 with
+ * the brand tried first until 2026-10-08.
  */
-export const MATCHUP_TITLE_MAX = 70;
+export const MATCHUP_TITLE_MAX = TITLE_MAX;
 
 /**
- * The first candidate that fits, most descriptive first.
- *
- * Each candidate is tried with the brand and then without it, before the next
- * one is: the full team names are what people search, the brand is not, so a
- * pair with long names drops " | StatChasers" before it drops a word of its own.
- * The last candidate is written short enough to fit for every pair.
+ * The first candidate that fits, most descriptive first. No brand: the full
+ * team names are what people search. The last candidate is written short
+ * enough to fit for every pair.
  */
 export function fitMatchupTitle(candidates: string[]): string {
-  for (const candidate of candidates) {
-    const branded = `${candidate} | ${SITE_NAME}`;
-    if (branded.length <= MATCHUP_TITLE_MAX) return branded;
-    if (candidate.length <= MATCHUP_TITLE_MAX) return candidate;
-  }
-  return candidates[candidates.length - 1];
+  return fitTitle(candidates, MATCHUP_TITLE_MAX);
 }
 
 /** "Cardinals vs Chiefs" - the fallback when the full names leave no room. */
@@ -116,7 +110,11 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
       title: fitMatchupTitle(
         game
           ? scoreboardTitleCandidates(game)
-          : [`${names}, ${label} ${gameSeason} Box Score`, `${short}, ${label} ${gameSeason} Box Score`],
+          : [
+              `${names}, ${label} ${gameSeason} Box Score`,
+              `${short}, ${label} ${gameSeason} Box Score`,
+              `${short}, ${label} ${gameSeason}`,
+            ],
       ),
       description:
         `${scored ? `${scored} ` : ""}Full box score from ${a.nickname} vs ` +
@@ -181,10 +179,9 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     }
     default:
       title = fitMatchupTitle([
-        `${names}: Head-to-Head Record, Stats & History`,
         `${names}: Head-to-Head Record & History`,
-        `${names}: Head-to-Head Record`,
-        `${short}: Head-to-Head Record`,
+        `${names}: Head-to-Head History`,
+        `${short}: Head-to-Head Record & History`,
       ]);
       description =
         `${a.nickname} vs ${b.nickname}: the regular-season head-to-head record, ` +

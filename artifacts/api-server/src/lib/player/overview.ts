@@ -23,6 +23,7 @@ import { renderFaqSection, selectFaq } from "./faq-engine";
 import { overviewPool } from "./faq-pools";
 import { easternParts } from "../news-card";
 import type { PlayerRenderOptions } from "../player-render";
+import { sectionHref } from "./sections";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { CareerStatRow } from "./stats-profile";
 import type { PlayerPageData } from "./player-data";
@@ -779,9 +780,12 @@ function renderCards(data: PlayerPageData, options: PlayerRenderOptions): string
     }
     if (o.restOfSeason) bits.push(escapeHtml(`Rest-of-season tier: ${o.restOfSeason}.`));
     if (bits.length) {
+      // The link only when the Outlook tab exists for this player.
+      const outlookHref = sectionHref(data, options, "outlook");
       cards.push(
-        `<div class="scp-ox-card"><h3>Outlook</h3><p>${bits.join(" ")} ` +
-          `<a href="${escapeHtml(`${prefix}/outlook/${query}`)}">Full outlook</a></p></div>`,
+        `<div class="scp-ox-card"><h3>Outlook</h3><p>${bits.join(" ")}` +
+          (outlookHref ? ` <a href="${escapeHtml(outlookHref)}">Full outlook</a>` : "") +
+          `</p></div>`,
       );
     }
   }
@@ -794,6 +798,7 @@ function renderCards(data: PlayerPageData, options: PlayerRenderOptions): string
     ? "Active, no designation"
     : /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "Injured reserve" : status;
   const inj = data.injury;
+  const injuryHref = sectionHref(data, options, "injury");
   const sentences: string[] = [];
   if (inj?.seasonMissed !== null && inj?.seasonMissed !== undefined) {
     sentences.push(inj.seasonMissed === 0 ? "He has not missed a game this season." : `He has missed ${inj.seasonMissed} game${inj.seasonMissed > 1 ? "s" : ""} this season.`);
@@ -814,7 +819,7 @@ function renderCards(data: PlayerPageData, options: PlayerRenderOptions): string
   const injury =
     `<div class="scp-ox-card"><h3>Injury status</h3>` +
     `<p class="scp-ox-status is-${tone}">${escapeHtml(label)}</p>` +
-    (sentences.length ? `<p>${escapeHtml(sentences.join(" "))} <a href="${escapeHtml(`${prefix}/injury/${query}`)}">Injury history</a></p>` : "") +
+    (sentences.length ? `<p>${escapeHtml(sentences.join(" "))}${injuryHref ? ` <a href="${escapeHtml(injuryHref)}">Injury history</a>` : ""}</p>` : "") +
     (list.length ? `<ul class="scp-ox-inj">${list.join("")}</ul>` : "") +
     `</div>`;
 

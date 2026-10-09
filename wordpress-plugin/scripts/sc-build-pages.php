@@ -616,7 +616,13 @@ foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
 	// The title is the one the plugin's own builder writes (the no-section
 	// branch of statchasers_team_section_meta()), so a hub built here and one
 	// built from Tools cannot carry two titles for the same page.
-	sc_set_meta( $sc_id, 'rank_math_title', $sc_name . ' ' . SC_BUILD_SEASON . ': Record, Schedule, Stats & Fantasy Football | StatChasers', $sc_go );
+	// The sixty-character ladder of statchasers_fit_title(): the shorter rung
+	// for a name of twenty letters or more (mak, 2026-10-08), no brand.
+	$sc_title = $sc_name . ' ' . SC_BUILD_SEASON . ': Record, Schedule, Stats & Fantasy';
+	if ( strlen( $sc_title ) > 60 ) {
+		$sc_title = $sc_name . ' ' . SC_BUILD_SEASON . ': Record, Schedule & Stats';
+	}
+	sc_set_meta( $sc_id, 'rank_math_title', $sc_title, $sc_go );
 	sc_set_meta(
 		$sc_id,
 		'rank_math_description',

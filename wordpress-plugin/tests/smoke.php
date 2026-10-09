@@ -476,11 +476,26 @@ is( statchasers_team_heading( 'new-england-patriots', 'depth-chart' ), 'New Engl
 
 echo "\nteam section meta mirrors the API\n";
 $news = statchasers_team_section_meta( 'new-england-patriots', 'news' );
-is( $news['title'], 'New England Patriots News 2026: Injuries, Roster Moves & Fantasy Impact', 'news title' );
+is( $news['title'], 'New England Patriots News 2026: Injuries & Roster Moves', 'news title: the short rung for a twenty-letter name' );
+is( statchasers_team_section_meta( 'buffalo-bills', 'news' )['title'], 'Buffalo Bills News 2026: Injuries, Moves & Fantasy Impact', 'news title: the full rung when it fits' );
+is( statchasers_team_section_meta( 'washington-commanders', 'stats' )['title'], 'Washington Commanders Stats 2026: Offense & Defense Rankings', 'stats title: exactly sixty' );
+is( statchasers_team_section_meta( 'washington-commanders', '' )['title'], 'Washington Commanders 2026: Record, Schedule & Stats', 'hub title: the one name that needs the short rung' );
+is( statchasers_team_section_meta( 'buffalo-bills', '' )['title'], 'Buffalo Bills 2026: Record, Schedule, Stats & Fantasy', 'hub title' );
+foreach ( statchasers_team_table() as $sc_slug => $sc_row ) {
+	foreach ( array_merge( array( '' ), STATCHASERS_TEAM_SECTIONS ) as $sc_section ) {
+		$sc_t = statchasers_team_section_meta( $sc_slug, $sc_section )['title'];
+		if ( strlen( $sc_t ) > 60 || false !== strpos( $sc_t, 'StatChasers' ) ) {
+			is( $sc_t, '(sixty characters, no brand)', "$sc_slug $sc_section title" );
+		}
+	}
+}
+is( statchasers_fit_title( array( 'a much longer candidate that does not fit', 'short' ), 20 ), 'short', 'fit_title takes the first rung that fits' );
+is( statchasers_fit_title( array( 'too long for the budget', 'also too long for it' ), 10 ), 'also too long for it', 'fit_title falls back to the last rung' );
 is( in_array( 'news', STATCHASERS_TEAM_SECTIONS, true ), true, 'news is a public section' );
 is( count( STATCHASERS_TEAM_SECTIONS ), 7, 'seven sections' );
 is( statchasers_team_heading( 'new-england-patriots', 'usage' ), 'New England Patriots Usage & Opportunity Report 2026', 'usage' );
-is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['title'], 'New England Patriots Target Share & Snap Counts 2026: Usage Report', 'usage title' );
+is( statchasers_team_section_meta( 'new-england-patriots', 'usage' )['title'], 'New England Patriots Target Share & Snap Counts 2026', 'usage title: the short rung' );
+is( statchasers_team_section_meta( 'buffalo-bills', 'usage' )['title'], 'Buffalo Bills Target Share & Snap Counts 2026: Usage Report', 'usage title: the full rung' );
 
 echo "\nurl switches default on\n";
 is( statchasers_team_section_urls_enabled(), true, 'team sections' );
@@ -518,7 +533,10 @@ $meta = statchasers_player_page_meta( array(
 	'slug' => 'kyler-murray', 'name' => 'Kyler Murray', 'position' => 'QB',
 	'team' => 'MIN', 'teamName' => 'Minnesota Vikings', 'id' => '1',
 ) );
-is( $meta['title'], 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers', 'title' );
+is( $meta['title'], 'Kyler Murray Fantasy Football Stats & Analysis', 'title: no brand since 2026-10-08' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers' ), 'Kyler Murray Fantasy Football Stats & Analysis', 'retitle: the old branded wording is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis' ), 'Kyler Murray Fantasy Football Stats & Analysis', 'retitle: the current wording is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray: Our Take | StatChasers' ), '', 'retitle: a custom title stays custom' );
 is(
 	$meta['description'],
 	'Kyler Murray Minnesota Vikings quarterback fantasy football profile: 2026 game log, weekly finishes, advanced metrics, injury history and career production.',
@@ -1035,6 +1053,7 @@ $layer = statchasers_tool_header_layer_css();
 is( false !== strpos( $layer, '.et-l--header' ), true, 'a Theme Builder header is lifted too, not just #main-header' );
 is( false === strpos( $layer, 'position' ), true, 'and nothing here moves it' );
 is( false === strpos( $layer, '@media' ), true, 'a desktop dropdown is the same overlay, so no breakpoint' );
+is( false !== strpos( $layer, 'header.et-l--header>.et_builder_inner_content' ), true, 'and the inner wrapper Divi positions, since .et-l--header itself has no position on a Theme Builder header' );
 
 /*
  * And every tool enqueues both of them.
@@ -1538,12 +1557,13 @@ $GLOBALS['query']['sc_matchup_game'] = '2025-super-bowl';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Super Bowl 2025', 'a Super Bowl is headed by its round' );
 is(
 	statchasers_matchup_game_meta( 'new-england-patriots', 'philadelphia-eagles', '2025-super-bowl' )['title'],
-	'New England Patriots vs Philadelphia Eagles, Super Bowl 2025 Box Score',
-	'and titled by it'
+	'Patriots vs Eagles, Super Bowl 2025 Box Score',
+	'and titled by it (the nickname rung: the full names run past sixty)'
 );
 
-// Every matchup title fits in 70 characters: all 496 pairs, every state, and
-// the longest game labels. Site audits flag longer titles, and there were 1,280.
+// Every matchup title fits in 60 characters: all 496 pairs, every state, and
+// the longest game labels. Was 70 with the brand until 2026-10-08, when the
+// crawl still found 389 pair titles past what a results page shows.
 $longest = '';
 foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 	foreach ( array_keys( statchasers_team_table() ) as $tb ) {
@@ -1565,11 +1585,21 @@ foreach ( array_keys( statchasers_team_table() ) as $ta ) {
 		}
 	}
 }
-is( strlen( $longest ) <= 70, true, "no matchup title is over 70 characters (longest: $longest)" );
+is( strlen( $longest ) <= 60, true, "no matchup title is over 60 characters (longest: $longest)" );
 is(
 	statchasers_matchup_game_meta( 'miami-dolphins', 'new-york-jets', '2026-week-1' )['title'],
-	'Miami Dolphins vs New York Jets, Week 1 2026 Box Score | StatChasers',
-	'the brand stays when it fits'
+	'Miami Dolphins vs New York Jets, Week 1 2026 Box Score',
+	'no brand, even when it would fit'
+);
+is(
+	statchasers_matchup_meta( 'arizona-cardinals', 'buffalo-bills', 'historical', '2026' )['title'],
+	'Arizona Cardinals vs Buffalo Bills: Head-to-Head History',
+	'head-to-head: the second rung for most pairs'
+);
+is(
+	statchasers_matchup_meta( 'los-angeles-chargers', 'washington-commanders', 'historical', '2026' )['title'],
+	'Chargers vs Commanders: Head-to-Head Record & History',
+	'head-to-head: nicknames when the full names leave no room'
 );
 $GLOBALS['query']['sc_matchup_game'] = '2026-week-1';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles, Week 1 2026', 'a regular-season game is still "Week N"' );
@@ -1937,9 +1967,12 @@ is( statchasers_team_title_is_generated( '2025 New England Patriots Fantasy Foot
 is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), true, 'the current template' );
 is( statchasers_team_title_is_generated( 'New England Patriots 2025: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), true, 'the current template on an earlier season' );
 is( statchasers_team_title_is_generated( '', $patriots ), true, 'no title' );
-is( statchasers_team_title_is_generated( statchasers_team_section_meta( 'new-england-patriots', '' )['title'] . ' | StatChasers', $patriots ), true, 'exactly what the builder writes today' );
+is( statchasers_team_title_is_generated( statchasers_team_section_meta( 'new-england-patriots', '' )['title'], $patriots ), true, 'exactly what the builder writes today' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy', $patriots ), true, 'the current template, full rung' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2025: Record, Schedule & Stats', $patriots ), true, 'the current template, short rung, earlier season' );
 is( statchasers_team_title_is_generated( 'Patriots 2026: Our Take | StatChasers', $patriots ), false, 'a custom title stays custom' );
-is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football', $patriots ), false, 'even one a suffix away' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy Football', $patriots ), false, 'the 2026-09 wording without its suffix was never written' );
+is( statchasers_team_title_is_generated( 'New England Patriots 2026: Record, Schedule, Stats & Fantasy | StatChasers', $patriots ), false, 'nor the current wording with one' );
 is( statchasers_team_title_is_generated( 'Miami Dolphins 2026: Record, Schedule, Stats & Fantasy Football | StatChasers', $patriots ), false, 'and another team\'s title is not this team\'s' );
 
 // WP Rocket LazyLoad: the player headshot and anything fetchpriority="high"

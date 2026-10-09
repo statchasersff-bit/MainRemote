@@ -2504,6 +2504,56 @@ function gameMatchupHref(
 }
 
 /**
+ * Every pair page this team is one half of, grouped by the opponent's division.
+ *
+ * The schedule rows link the 17 or so opponents on this season's slate, and a
+ * finished meeting's row moves on to the game's own dated page once the pair's
+ * page lets go of it (gameMatchupHref). Between the two, most of the 496 pair
+ * pages ended up with no inbound link at all: a Rank Math crawl on 2026-10-08
+ * found 294 of them orphaned. This block is the fix at the source. All 31
+ * opponents, every season, on both clubs' hubs, so every pair page is reached
+ * from two hubs whether or not the teams meet this year.
+ *
+ * The visible text is the opponent alone - the heading above already names
+ * this team - but the anchor reads "Patriots vs Bills" in full, so a crawler
+ * and a screen reader both get the pair the link opens.
+ */
+function renderSeriesIndex(team: NflTeam, options: TeamRenderOptions): string {
+  const groups = TEAM_GROUPS.flatMap((conference) => conference.divisions)
+    .map((division) => {
+      const links = division.teams
+        .filter((opponent) => opponent.abbreviation !== team.abbreviation)
+        .map((opponent) => {
+          const href = matchupHref(team, opponent, options);
+          if (!href) return "";
+          return (
+            `<li><a class="sct-series-link" href="${escapeHtml(href)}">` +
+            `<img class="sct-series-logo" src="${escapeHtml(opponent.logo)}" alt=""` +
+            ` width="18" height="18" loading="lazy" decoding="async" />` +
+            `<span class="sct-visually-hidden">${escapeHtml(`${team.nickname} vs `)}</span>` +
+            `${escapeHtml(opponent.nickname)}</a></li>`
+          );
+        })
+        .join("");
+      if (!links) return "";
+      return (
+        `<div class="sct-series-group">` +
+        `<span class="sct-series-div">${escapeHtml(division.division)}</span>` +
+        `<ul class="sct-series-list">${links}</ul>` +
+        `</div>`
+      );
+    })
+    .join("");
+  if (!groups) return "";
+  return (
+    `<nav class="sct-series" aria-label="${escapeHtml(`${team.nickname} head-to-head pages`)}">` +
+    `<h3 class="sct-mu-h3">${escapeHtml(`${team.nickname} vs Every Team`)}</h3>` +
+    `<div class="sct-series-groups">${groups}</div>` +
+    `</nav>`
+  );
+}
+
+/**
  * The Matchups hub: how this team compares with each opponent.
  *
  * Not the schedule again. Schedule answers "when do they play"; this answers
@@ -2584,7 +2634,8 @@ function renderMatchups(
     h2(`${team.nickname} Matchups`) +
     upNext +
     `<h3 class="sct-mu-h3">${escapeHtml(`${schedule.season} Matchups`)}</h3>` +
-    `<ol class="sct-slist sct-mu-list">${rows}</ol>`
+    `<ol class="sct-slist sct-mu-list">${rows}</ol>` +
+    renderSeriesIndex(team, options)
   );
 }
 
@@ -3575,6 +3626,8 @@ function renderSchedule(
           .join("")}</ul>`
       : "") +
     board +
+    // Every opponent, not just this season's: see renderSeriesIndex().
+    renderSeriesIndex(team, options) +
     (full
       ? `<p class="sct-block-footer">` +
         // "View full NFL schedule", not "See the full 2026 schedule": the
@@ -3614,9 +3667,13 @@ function renderTails(sections: Section[]): string {
  * usage report and its next matchup's preview. The tool directory it replaced
  * still lives in the Quick Links rail (resourceCards).
  *
- * The Usage tab hides it (team.css) and closes on its own, richer block, so
- * the usage card here never links a reader back to the page they are on.
+ * NOT MOUNTED since 2026-10-09: mak asked for the block to come off the team
+ * pages. Kept, like renderCornerstones, so putting it back is one line at
+ * each of the two mount points in renderTeamPage (after the panels, before
+ * renderTails). The Usage tab's own close ("Put this usage data to work")
+ * still renders.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function renderResources(
   data: TeamPageData,
   options: TeamRenderOptions,
@@ -3861,7 +3918,6 @@ export function renderTeamPage(
           )
         : scoped.html) +
       `</section>` +
-      renderResources(data, options, now, scoped.id) +
       renderTails([scoped]) +
       // Scoped to this section: a Schedule page carrying the Stats questions
       // would be structured data describing a page the reader is not on.
@@ -3901,7 +3957,6 @@ export function renderTeamPage(
     renderHero(data, options) +
     renderNav(tabs, team, data.state.season, options) +
     body +
-    renderResources(data, options, now) +
     renderTails(tabs) +
     // After the sections, because it describes them: `faq` is only complete
     // once every block above has had its chance to render.

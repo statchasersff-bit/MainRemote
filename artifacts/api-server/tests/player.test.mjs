@@ -4067,4 +4067,32 @@ describe("section URLs with nothing behind them", () => {
       }
     }
   });
+
+  test("nothing on a profile links to a section the player does not have", async () => {
+    // Those URLs 302 back to the profile, so a link to one - from the strip,
+    // the header's status pill, the News sidebar, the Bio's rows or an FAQ
+    // answer - is a broken link in every crawler's report (2026-10-08: 378
+    // of them to /injury/, 66 to /outlook/). Every section link goes through
+    // lib/player/sections.ts, which answers null for an absent section.
+    const flagged = roster.filter((p) => p.emptySections.length > 0).slice(0, 24);
+    assert.ok(flagged.length > 0, "some player on the roster lacks an Injury or Outlook section");
+    for (const player of flagged) {
+      const res = await get(`/player/${player.slug}`);
+      assert.equal(res.status, 200, player.slug);
+      const doc = new JSDOM(res.body).window.document;
+      for (const section of player.emptySections) {
+        const links = [...doc.querySelectorAll("a[href]")].filter((a) =>
+          new RegExp(`/player/${player.slug}/${section}/(\\?|$)`).test(a.getAttribute("href")),
+        );
+        assert.deepEqual(
+          links.map((a) => a.outerHTML.slice(0, 140)),
+          [],
+          `${player.slug}: links to the absent ${section} section`,
+        );
+      }
+      // The status pill survives as text when there is a designation and no record.
+      const pill = doc.querySelector(".scp-ptag-inj");
+      if (pill && player.emptySections.includes("injury")) assert.equal(pill.tagName, "SPAN", player.slug);
+    }
+  });
 });

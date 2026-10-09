@@ -1039,10 +1039,10 @@ body.scsos-page {
    typography panel reaches them through `#left-area h2/h3`, an id no class
    here can outweigh. */
 .scsos-faq {
-  margin: 36px auto 0;
-  padding-top: 20px;
-  border-top: 1px solid var(--sc-border);
-  max-width: 880px;
+  /* Full board width, like the hubs' .sct-faq: a centred 880px cap left it
+     looking indented against the table's left edge on wide screens. */
+  margin: 36px 0 0;
+  padding-top: 30px;
 }
 
 .scsos .scsos-faq-title {

@@ -5,20 +5,24 @@
  * (Superflex, PPR, Top-12, 2017 onward, 8 games), every number in the HTML.
  * What the standalone app's React state did, this does over that markup:
  *
- * 1. **The tabs** - Overview, Trends, Cohorts, Players - shown one at a time,
- *    with the filter bar hiding what a tab does not use (Position and Round on
- *    the Overview, Search everywhere but Players).
+ * 1. **The tabs** - Overview, Draft Classes, Year-by-Year, Players - shown one
+ *    at a time, with the filter bar hiding what a tab does not use (Position
+ *    and Round on the Overview, Position on Draft Classes, Search everywhere
+ *    but Players).
  * 2. **The filters.** Any change loads the dataset once
  *    (/embed/rookie-hit-rates/data) and redraws the open tab with
  *    lib/rookie-hit-rates/render.ts - the module the server drew the default
  *    with - so a view here is exactly what the server would have sent.
- * 3. **The heatmap.** Hovering a cell shows its breakdown in the Pick Lens and
- *    a tooltip; clicking pins it. Pick-range cells get the tooltip too.
- * 4. **The charts**: redrawn at the column's real width, with a hover read-out
- *    per class year (Trends) or per year after entry (Cohorts); the view mode,
- *    3-year smoothing and Position/Round grouping.
- * 5. **The player explorer**: sorting, paging, search and the season-history
- *    drawer.
+ * 3. **The Overview table.** Simple (the heatmap) or Detailed (pick ranges),
+ *    both in the page, one shown. Hovering a heatmap cell shows its breakdown
+ *    in the Best Finish card and a tooltip; clicking pins it.
+ * 4. **The Draft Classes table**: sortable, and each class opens to its draft
+ *    board, laid out by the source's ladder (board-layout.ts) once the names
+ *    are measured.
+ * 5. **The breakout chart**: redrawn at the column's real width, with a hover
+ *    read-out per year after entry; the Position/Round grouping.
+ * 6. **The player explorer**: sorting, paging, search, and names that shorten
+ *    to "F. Last" when the table would otherwise scroll sideways.
  *
  * Nothing is written to the URL. The app kept all of this in component state,
  * and so does this.
@@ -27,20 +31,18 @@
 import { wireFrameHeight } from "./enhance";
 import {
   DEFAULT_WIDTHS,
-  activeFilterCount,
   lensCohort,
   renderCohortTip,
   renderCohortsPanel,
-  renderDrawer,
   renderLens,
   renderOverviewPanel,
   renderPlayersPanel,
   renderSurvivalTip,
-  renderTrendTip,
   renderTrendsPanel,
   type Widths,
 } from "../lib/rookie-hit-rates/render";
 import {
+  abbreviateName,
   computeCohorts,
   computePickRangeCohorts,
   cohortsView,
@@ -48,8 +50,8 @@ import {
   makeBoard,
   pad2,
   playerSummaries,
-  trendsView,
   type Board,
+  type ClassSortKey,
   type Format,
   type Outcome,
   type PackedDataset,
@@ -59,7 +61,15 @@ import {
   type SortField,
   type State,
   type Tab,
+  type TableView,
 } from "../lib/rookie-hit-rates/model";
+import {
+  AVATAR_GAP,
+  buildLadder,
+  chooseLayout,
+  type BoardLayout,
+  type RoundWidth,
+} from "../lib/rookie-hit-rates/board-layout";
 
 const ROOT_SELECTOR = "[data-schr-root]";
 
@@ -76,7 +86,8 @@ interface Tool {
   hover: { pos: Pos; round: number } | null;
   tip: HTMLElement;
   lastWidth: number;
-  drawerReturn: HTMLElement | null;
+  /** The width the player table needs with full names, taken when it first overflows. */
+  fullNamesNeed: number;
 }
 
 /* ---------------------------------------------------------------- helpers */
@@ -131,6 +142,16 @@ function renderPanel(t: Tool, tab: Tab): void {
   else el.innerHTML = renderPlayersPanel(b, t.state, summaries(t));
   stripTitles(el);
   t.stale.delete(tab);
+  afterDraw(t, tab);
+}
+
+/** The measurements a freshly drawn panel needs: board rungs, name lengths. */
+function afterDraw(t: Tool, tab: Tab): void {
+  if (tab === "trends") layoutBoards(t);
+  if (tab === "players") {
+    t.fullNamesNeed = 0;
+    fitPlayerNames(t);
+  }
 }
 
 /** Redraw the open tab now and every other tab when it is next opened. */
@@ -182,13 +203,6 @@ function syncBar(t: Tool): void {
   const games = root.querySelector<HTMLInputElement>("[data-schr-min-games]");
   if (games && document.activeElement !== games) games.value = String(f.minGames);
 
-  const count = root.querySelector<HTMLElement>("[data-filter-count]");
-  if (count && t.data) {
-    const n = activeFilterCount(f, t.state.tab, t.data.firstClass, t.data.lastClass);
-    count.textContent = String(n);
-    count.hidden = n === 0;
-  }
-
   root.querySelectorAll<HTMLElement>("[data-tab]").forEach((el) => {
     if (!el.classList.contains("schr-tab")) return;
     const on = el.dataset["tab"] === t.state.tab;
@@ -198,6 +212,19 @@ function syncBar(t: Tool): void {
   });
   root.querySelectorAll<HTMLElement>("[data-panel]").forEach((el) => {
     el.hidden = el.dataset["panel"] !== t.state.tab;
+  });
+}
+
+/** Simple / Detailed: both tables are in the page; show one and mark every toggle. */
+function syncTableView(t: Tool): void {
+  const view = t.state.tableView;
+  t.root.querySelectorAll<HTMLElement>("[data-table-view-panel]").forEach((el) => {
+    el.hidden = el.dataset["tableViewPanel"] !== view;
+  });
+  t.root.querySelectorAll<HTMLElement>("[data-table-view]").forEach((el) => {
+    const on = el.dataset["tableView"] === view;
+    el.classList.toggle("is-active", on);
+    el.setAttribute("aria-selected", String(on));
   });
 }
 
@@ -291,7 +318,7 @@ function cellTip(t: Tool, cell: HTMLElement): void {
   }
 }
 
-/* ------------------------------------------------------------ pick lens */
+/* ---------------------------------------------------------- best finish */
 
 function drawLens(t: Tool): void {
   if (!t.data) return;
@@ -320,13 +347,9 @@ function chartHover(t: Tool, rect: SVGRectElement): void {
   if (!t.data) return;
   const chart = rect.closest<HTMLElement>("[data-chart]");
   const svg = rect.ownerSVGElement;
-  if (!chart || !svg) return;
+  if (!chart || !svg || chart.dataset["chart"] !== "survival") return;
   const x = Number(rect.dataset["x"]);
-  const b = board(t);
-  const html =
-    chart.dataset["chart"] === "trends"
-      ? renderTrendTip(trendsView(b, t.state.filters), t.state, x)
-      : renderSurvivalTip(cohortsView(b, t.state.filters, t.state.groupBy), x);
+  const html = renderSurvivalTip(cohortsView(board(t), t.state.filters, t.state.groupBy), x);
   const cursor = svg.querySelector<SVGLineElement>(".schr-cursor");
   if (cursor) {
     const cx = Number(rect.getAttribute("x")) + Number(rect.getAttribute("width")) / 2;
@@ -342,39 +365,81 @@ function chartLeave(t: Tool, chart: Element): void {
   hideTip(t);
 }
 
-/* ----------------------------------------------------------------- drawer */
+/* ----------------------------------------------------------- draft boards */
 
-function openDrawer(t: Tool, id: string, from: HTMLElement): void {
-  if (!t.data) return;
-  const p = summaries(t).find((s) => s.player_id === id);
-  if (!p) return;
-  closeDrawer(t);
-  const wrap = document.createElement("div");
-  wrap.className = "schr-drawer-host";
-  wrap.innerHTML = renderDrawer(p, t.data.profiles?.[id] ?? null);
-  document.body.appendChild(wrap);
-  t.drawerReturn = from;
-  const close = () => closeDrawer(t);
-  wrap.addEventListener("click", (e) => {
-    if ((e.target as Element).closest("[data-close]")) close();
+const measureCanvas = typeof document !== "undefined" ? document.createElement("canvas").getContext("2d") : null;
+
+function textWidth(text: string, font: string): number {
+  if (!measureCanvas) return text.length * 6;
+  measureCanvas.font = font;
+  return measureCanvas.measureText(text).width;
+}
+
+function fontOf(el: Element | null): string {
+  if (!el) return "normal 500 11px sans-serif";
+  const cs = getComputedStyle(el);
+  return `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+}
+
+/**
+ * Pick each open board's rung: the first of the ladder whose columns fit the
+ * board's width with the names measured in the real font. Applied as
+ * attributes the stylesheet reads (abbreviation, chrome) and the grid's
+ * columns; nothing is re-rendered.
+ */
+function layoutBoards(t: Tool): void {
+  t.root.querySelectorAll<HTMLElement>("[data-board]").forEach((grid) => {
+    const rounds = Array.from(grid.querySelectorAll<HTMLElement>(".schr-board-round"));
+    if (!rounds.length) return;
+    const cs = getComputedStyle(grid);
+    const gap = parseFloat(cs.columnGap) || 8;
+    const avail = grid.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    if (avail <= 0) return;
+    const nameFont = fontOf(grid.querySelector(".schr-board-name"));
+    const metaFont = fontOf(grid.querySelector(".schr-board-meta"));
+    const widthsByRound = new Map<number, RoundWidth>();
+    const keys: number[] = [];
+    rounds.forEach((col, i) => {
+      let full = 0;
+      let abbrev = 0;
+      col.querySelectorAll<HTMLElement>(".schr-board-pill").forEach((pill) => {
+        const name = pill.dataset["name"] ?? "";
+        full = Math.max(full, textWidth(name, nameFont));
+        abbrev = Math.max(abbrev, textWidth(abbreviateName(name), nameFont));
+        // The "1.05 WR" line sits under the name and can out-width a short one.
+        const meta = textWidth(pill.querySelector(".schr-board-meta")?.textContent?.replace(/\s+/g, " ") ?? "", metaFont) + 4;
+        full = Math.max(full, meta);
+        abbrev = Math.max(abbrev, meta);
+      });
+      widthsByRound.set(i, { full, abbrev });
+      keys.push(i);
+    });
+    const pick: BoardLayout = chooseLayout(buildLadder(rounds.length), keys, widthsByRound, avail, gap);
+    grid.dataset["chrome"] = pick.chrome;
+    grid.dataset["abbrev"] = pick.abbrev ? "1" : "0";
+    grid.style.gridTemplateColumns = pick.fill ? `repeat(${pick.cols}, minmax(0, 1fr))` : `repeat(${pick.cols}, max-content)`;
+    grid.style.setProperty("--schr-board-gap", `${AVATAR_GAP}px`);
   });
-  wrap.querySelector<HTMLElement>(".schr-drawer-close")?.focus();
-  document.addEventListener("keydown", onDrawerKey);
 }
 
-let openTool: Tool | null = null;
+/* ----------------------------------------------------------- player names */
 
-function onDrawerKey(e: KeyboardEvent): void {
-  if (e.key === "Escape" && openTool) closeDrawer(openTool);
-}
-
-function closeDrawer(t: Tool): void {
-  const host = document.querySelector(".schr-drawer-host");
-  if (!host) return;
-  host.remove();
-  document.removeEventListener("keydown", onDrawerKey);
-  t.drawerReturn?.focus();
-  t.drawerReturn = null;
+/**
+ * When the player table cannot fit without scrolling sideways, every name
+ * collapses to "F. Last". The width full names need is kept from the moment
+ * the table first overflows, so names only return once there is room again -
+ * no flicker at the breakpoint.
+ */
+function fitPlayerNames(t: Tool): void {
+  const scroll = t.root.querySelector<HTMLElement>("[data-players-scroll]");
+  const table = scroll?.querySelector<HTMLElement>(".schr-players-table");
+  if (!scroll || !table) return;
+  if (!table.classList.contains("is-abbrev")) {
+    t.fullNamesNeed = scroll.scrollWidth;
+    if (scroll.scrollWidth > scroll.clientWidth + 1) table.classList.add("is-abbrev");
+  } else if (scroll.clientWidth >= t.fullNamesNeed) {
+    table.classList.remove("is-abbrev");
+  }
 }
 
 /* ----------------------------------------------------------------- wiring */
@@ -388,19 +453,14 @@ function wire(t: Tool): void {
 
   root.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
+    if (target.closest("a")) return;
     const el = target.closest<HTMLElement>(
       "[data-tab],[data-format],[data-scoring],[data-outcome],[data-position],[data-round-toggle]," +
-        "[data-view-mode],[data-moving-avg],[data-group-by],[data-sort],[data-page],[data-filter-toggle]," +
-        ".schr-heat-table .schr-cell,tr[data-player]",
+        "[data-table-view],[data-class-sort],[data-class-toggle],[data-group-by],[data-sort],[data-page]," +
+        ".schr-heat-table .schr-cell,tr[data-class-row]",
     );
     if (!el || !root.contains(el)) return;
 
-    if (el.matches("[data-filter-toggle]")) {
-      const open = el.getAttribute("aria-expanded") !== "true";
-      el.setAttribute("aria-expanded", String(open));
-      root.querySelector(".schr-filters")?.classList.toggle("is-collapsed", !open);
-      return;
-    }
     if (el.matches(".schr-tab[data-tab]")) {
       const tab = el.dataset["tab"] as Tab;
       if (tab === t.state.tab) return;
@@ -408,10 +468,11 @@ function wire(t: Tool): void {
       hideTip(t);
       syncBar(t);
       if (t.stale.has(tab)) renderPanel(t, tab);
-      // A chart first drawn while hidden was drawn at the fallback width.
-      else if (tab === "trends" || tab === "cohorts") {
+      // A chart first drawn while hidden was drawn at the fallback width, and
+      // a table measured while hidden measured nothing.
+      else if (tab === "cohorts") {
         if (t.data) renderPanel(t, tab);
-      }
+      } else afterDraw(t, tab);
       return;
     }
     if (el.dataset["format"]) return update(t, (s) => void (s.filters.format = el.dataset["format"] as Format));
@@ -423,10 +484,31 @@ function wire(t: Tool): void {
     if (el.dataset["roundToggle"]) {
       return update(t, (s) => void (s.filters.rounds = toggle(s.filters.rounds, Number(el.dataset["roundToggle"]))));
     }
-    if (el.dataset["viewMode"]) {
-      return update(t, (s) => void (s.viewMode = el.dataset["viewMode"] as State["viewMode"]), false);
+    if (el.dataset["tableView"]) {
+      t.state.tableView = el.dataset["tableView"] as TableView;
+      syncTableView(t);
+      hideTip(t);
+      return;
     }
-    if (el.matches("[data-moving-avg]")) return update(t, (s) => void (s.movingAvg = !s.movingAvg), false);
+    if (el.dataset["classSort"]) {
+      const key = el.dataset["classSort"] as ClassSortKey;
+      return update(
+        t,
+        (s) => {
+          s.classSort =
+            s.classSort.key === key
+              ? { key, dir: s.classSort.dir === "asc" ? "desc" : "asc" }
+              : { key, dir: key === "year" ? "asc" : "desc" };
+        },
+        false,
+      );
+    }
+    if (el.dataset["classToggle"] || el.dataset["classRow"]) {
+      const year = Number(el.dataset["classToggle"] ?? el.dataset["classRow"]);
+      update(t, (s) => void (s.expandedYears = toggle(s.expandedYears, year)), false);
+      root.querySelector<HTMLElement>(`#schr-class-${year}`)?.focus();
+      return;
+    }
     if (el.dataset["groupBy"]) return update(t, (s) => void (s.groupBy = el.dataset["groupBy"] as State["groupBy"]), false);
     if (el.dataset["sort"]) {
       const field = el.dataset["sort"] as SortField;
@@ -457,23 +539,11 @@ function wire(t: Tool): void {
       }
       markSelected(t);
       drawLens(t);
-      return;
-    }
-    if (el.matches("tr[data-player]")) {
-      void load(t).then(() => {
-        openTool = t;
-        openDrawer(t, el.dataset["player"]!, el);
-      });
     }
   });
 
   root.addEventListener("keydown", (e) => {
     const target = e.target as HTMLElement;
-    if (target.matches("tr[data-player]") && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      target.click();
-      return;
-    }
     // Arrow keys move between tabs, as a tablist promises.
     if (target.matches(".schr-tab") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
       const tabs = Array.from(root.querySelectorAll<HTMLElement>(".schr-tab"));
@@ -514,7 +584,7 @@ function wire(t: Tool): void {
     }
   });
 
-  // Hover: the Pick Lens follows the pointer and falls back to the pinned cell.
+  // Hover: the Best Finish card follows the pointer and falls back to the pinned cell.
   root.addEventListener("mouseover", (e) => {
     const target = e.target as Element;
     const cell = target.closest<HTMLElement>(".schr-cell");
@@ -576,10 +646,13 @@ function wire(t: Tool): void {
     true,
   );
 
-  // Redraw the charts at the column's width when it changes.
+  // Redraw the chart at the column's width when it changes; re-fit the boards
+  // and the player names on any change.
   if (typeof ResizeObserver !== "undefined") {
     let timer = 0;
     new ResizeObserver(() => {
+      if (t.state.tab === "trends") layoutBoards(t);
+      if (t.state.tab === "players") fitPlayerNames(t);
       const w = root.clientWidth;
       if (Math.abs(w - t.lastWidth) < 24) return;
       t.lastWidth = w;
@@ -589,11 +662,17 @@ function wire(t: Tool): void {
           void load(t).then((d) => d && renderPanel(t, t.state.tab));
           return;
         }
-        for (const tab of ["overview", "trends", "cohorts"] as Tab[]) t.stale.add(tab);
-        if (t.state.tab !== "players") renderPanel(t, t.state.tab);
+        for (const tab of ["overview", "cohorts"] as Tab[]) t.stale.add(tab);
+        if (t.state.tab === "overview" || t.state.tab === "cohorts") renderPanel(t, t.state.tab);
       }, 150);
     }).observe(root);
   }
+
+  // Text measurement is only trustworthy once the real font is in.
+  document.fonts?.ready.then(() => {
+    layoutBoards(t);
+    fitPlayerNames(t);
+  });
 }
 
 function init(root: HTMLElement): void {
@@ -618,19 +697,20 @@ function init(root: HTMLElement): void {
     hover: null,
     tip,
     lastWidth: root.clientWidth,
-    drawerReturn: null,
+    fullNamesNeed: 0,
   };
   stripTitles(root);
   wire(t);
   wireFrameHeight(root);
-  // The charts were drawn at a fallback width; fetch the data in the
+  fitPlayerNames(t);
+  // The chart was drawn at a fallback width; fetch the data in the
   // background so the first redraw and the first hover are instant.
   void load(t).then((data) => {
     if (!data) return;
     const w = widths(t).chart;
     if (Math.abs(w - DEFAULT_WIDTHS.chart) > 24) {
-      for (const tab of ["overview", "trends", "cohorts"] as Tab[]) t.stale.add(tab);
-      renderPanel(t, t.state.tab);
+      for (const tab of ["overview", "cohorts"] as Tab[]) t.stale.add(tab);
+      if (t.state.tab === "overview" || t.state.tab === "cohorts") renderPanel(t, t.state.tab);
     }
   });
 }

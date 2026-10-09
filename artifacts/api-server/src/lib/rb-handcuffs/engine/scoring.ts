@@ -67,7 +67,67 @@ export interface ReasonContext {
   roleClarity: number;
   talentBackup: number;
   oLine: number;
+  /** The starter's rushing line this season, read by the efficiency flags below. */
   starterYpc: number | null;
+  starterCarries: number | null;
+  starterGames: number | null;
+  /** Yards per carry with his longest run taken out - see ypcWithoutLongest(). */
+  starterYpcWithoutLongest: number | null;
+}
+
+/*
+ * When a starter's efficiency is allowed to speak (mak, 2026-10-08).
+ *
+ * The flags used to read yards per carry alone, with no floor: Saquon Barkley
+ * came out "excelling" in week 4 on 36 carries at 5.06, where one 42-yard run
+ * was the whole margin - take it out and the other 35 went 4.0 - while nine
+ * carries a game said the Eagles were not feeding him at all. A back who is
+ * excelling has a real sample, a lead back's share, and an average that
+ * survives losing his best run. DIVERGES from the standalone app, which had
+ * the bare 5.0 / 3.5 reads.
+ *
+ * 40 carries is the model's own trust threshold (FULL_TRUST in Player
+ * Quality); 12 a game is roughly a lead back's share; 4.5 without the longest
+ * run is where an efficient back still stands once his best play is set aside
+ * (Hubbard 4.57 keeps the flag at 5.02; Barkley 4.0 and Gordon 3.39 lose it).
+ */
+export const STARTER_SAMPLE_CARRIES = 40;
+export const STARTER_LEAD_CARRIES_PER_GAME = 12;
+export const EXCELLING_YPC = 5.0;
+export const EXCELLING_YPC_WITHOUT_LONGEST = 4.5;
+export const POOR_YPC = 3.5;
+
+/**
+ * Yards per carry with the longest run removed: the outlier check. One
+ * breakaway on a thin season is most of the average; the other carries are
+ * the back. Null until there are two carries to compare.
+ */
+export function ypcWithoutLongest(
+  carries: number | null | undefined,
+  yards: number | null | undefined,
+  longest: number | null | undefined,
+): number | null {
+  if (carries == null || yards == null || longest == null || carries < 2) return null;
+  return Math.round(((yards - longest) / (carries - 1)) * 100) / 100;
+}
+
+/** Enough carries this season for his average to mean anything. */
+function starterHasSample(ctx: ReasonContext): boolean {
+  return ctx.starterCarries != null && ctx.starterCarries >= STARTER_SAMPLE_CARRIES;
+}
+
+/** Excelling: efficient on a real sample, at a lead back's share, and still efficient without his best run. */
+export function starterIsExcelling(ctx: ReasonContext): boolean {
+  if (ctx.starterYpc == null || ctx.starterYpc < EXCELLING_YPC) return false;
+  if (!starterHasSample(ctx)) return false;
+  if (ctx.starterGames == null || ctx.starterGames <= 0) return false;
+  if (ctx.starterCarries! / ctx.starterGames < STARTER_LEAD_CARRIES_PER_GAME) return false;
+  return ctx.starterYpcWithoutLongest != null && ctx.starterYpcWithoutLongest >= EXCELLING_YPC_WITHOUT_LONGEST;
+}
+
+/** Struggling: the same sample floor, so a handful of runs cannot call him inefficient either. */
+export function starterIsStruggling(ctx: ReasonContext): boolean {
+  return ctx.starterYpc != null && ctx.starterYpc < POOR_YPC && starterHasSample(ctx);
 }
 
 /** MIRRORS getTopReasons() (with no depth-chart disagreement signal to report). */
@@ -82,7 +142,7 @@ export function getTopReasons(
   if (ctx.roleClarity >= 75) reasons.push("Clear next-man-up on the depth chart");
   if (ctx.talentBackup >= 70 && !backupData) reasons.push("Above-average talent profile");
   if (ctx.oLine >= 70) reasons.push("Top-tier offensive line");
-  if (ctx.starterYpc != null && ctx.starterYpc < 3.5) reasons.push("Starter showing poor efficiency");
+  if (starterIsStruggling(ctx)) reasons.push("Starter showing poor efficiency");
   if (backupData?.role_trend === "Rising Fast") reasons.push("Role is rising fast in recent weeks");
   if (backupData?.role_trend === "Trending Up") reasons.push("Trending upward in usage and snaps");
   if (backupData?.efficiency_score != null && backupData.efficiency_score >= 80) {
@@ -106,7 +166,7 @@ export function getRiskFlags(
   if (ctx.workloadIfStarterOut < 40) flags.push("Timeshare if starter out");
   if (ctx.oLine < 35) flags.push("Weak offensive line");
   if (ctx.offenseQuality < 35) flags.push("Poor offense");
-  if (ctx.starterYpc != null && ctx.starterYpc >= 5.0) flags.push("Starter is excelling - low bench risk");
+  if (starterIsExcelling(ctx)) flags.push("Starter is excelling - low bench risk");
   if (backupData?.role_trend === "Trending Down" || backupData?.role_trend === "Falling Fast") {
     flags.push("Role trending downward");
   }
