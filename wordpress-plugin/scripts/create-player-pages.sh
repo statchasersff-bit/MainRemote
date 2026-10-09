@@ -244,21 +244,23 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	# Rank Math. The plugin emits no title/description/robots of its own by
 	# design, so these three are the page's only ones - and the robots value is
 	# the difference between a profile that ranks and one that quietly doesn't.
-	pos_words="$position"
-	case "$position" in
-		QB) pos_words="quarterback" ;;
-		RB) pos_words="running back" ;;
-		WR) pos_words="wide receiver" ;;
-		TE) pos_words="tight end" ;;
-		K)  pos_words="kicker" ;;
-	esac
+	# The same ladder as statchasers_player_page_meta() in the plugin (mak's
+	# refresh, 2026-10-09): the fullest wording that fits sixty characters.
+	seo_title="$name Fantasy Football $SEASON: Stats, Outlook & News"
+	[ "${#seo_title}" -gt 60 ] && seo_title="$name Fantasy Football $SEASON: Stats & Outlook"
+	[ "${#seo_title}" -gt 60 ] && seo_title="$name Fantasy $SEASON: Stats & Outlook"
 
-	where=""
-	[ -n "$team_name" ] && where=" $team_name"
+	who="$name"
+	if [ -n "$position" ] && [ -n "$team" ]; then
+		who="$name ($position, $team)"
+	elif [ -n "$position" ]; then
+		who="$name ($position)"
+	fi
 
-	set_meta "$id" rank_math_title "$name Fantasy Football Stats & Analysis | StatChasers"
+	set_meta "$id" rank_math_title "$seo_title"
+	# The offseason wording; in season the plugin prefers the API's live copy.
 	set_meta "$id" rank_math_description \
-		"$name$where $pos_words fantasy football profile: $SEASON game log, weekly finishes, advanced metrics, injury history and career production."
+		"$who fantasy football profile: $SEASON outlook, projections, stats, injury history and dynasty value."
 	set_meta "$id" rank_math_robots '["index","follow"]' --format=json
 
 	if [ "$WITH_IMAGES" -eq 1 ] && meta_is_empty "$id" _thumbnail_id; then

@@ -31,7 +31,7 @@ if ( $request === $base || 0 === strpos( $request, $base . '/' ) ) {
 	if ( isset( $segs[2] ) ) { $GLOBALS['wp_query_vars']['sc_position'] = $segs[2]; }
 }
 
-require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php';
+require __DIR__ . '/../../statchasers-news/depth-charts/statchasers-depth-charts.php';
 do_action( 'plugins_loaded' );
 
 // --- The request lifecycle WordPress would run ---

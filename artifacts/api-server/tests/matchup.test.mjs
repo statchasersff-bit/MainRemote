@@ -135,7 +135,7 @@ describe("one address per pair", () => {
     assert.ok(canonical.endsWith(CANON), "canonical is the pretty pair path");
     assert.equal(one('meta[property="og:url"]').getAttribute("content"), canonical);
     // The head's <title>: the usage charts carry SVG <title>s of their own.
-    assert.match(one("head > title").textContent, /^New England Patriots vs Philadelphia Eagles/);
+    assert.match(one("head > title").textContent, /^(New England Patriots|Patriots) vs (Philadelphia Eagles|Eagles)/);
     one('meta[name="description"]');
     one('meta[name="robots"]');
   });
@@ -285,10 +285,13 @@ describe("the page follows its state", () => {
     const { doc } = await dom(CANON);
     const state = doc.querySelector("[data-sct-root]").getAttribute("data-matchup-state");
     const title = doc.querySelector("title").textContent;
+    // A pair that has played this season leads with that game's player stats
+    // (mak, 2026-10-09) whichever of the two postgame states it is in; the
+    // head-to-head wording is for a pair that has not met this season.
     const phrase = {
-      upcoming: /Where to Watch/,
-      recently_completed: /Score/,
-      historical: /Head-to-Head (Record|History)/,
+      upcoming: /Where to Watch|Matchup Preview/,
+      recently_completed: /Player Stats/,
+      historical: /Head-to-Head (Record|History)|Player Stats/,
     }[state];
     assert.match(title, phrase);
     // Site audits flag anything longer, and Google truncates it anyway.
@@ -381,18 +384,24 @@ describe("links between the family", () => {
     );
     const hrefs = [...doc.querySelectorAll('a[href^="/nfl/"]')].map((a) => a.getAttribute("href"));
     assert.ok(hrefs.length >= 10, "one link per scheduled game");
+    // A game already played links to its own dated page under the pair's
+    // address (mak, 2026-10-09: that is what gives the game pages links); a
+    // game still to come links to the pair's page itself.
+    const PAIR_OR_GAME =
+      /^\/nfl\/([a-z0-9-]+)-vs-([a-z0-9-]+)\/(?:\d{4}-(?:week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl)\/)?$/;
+    const pairOf = (href) => href.replace(/\/\d{4}-[a-z0-9-]+\/$/, "/");
     for (const href of hrefs) {
-      const m = /^\/nfl\/([a-z0-9-]+)-vs-([a-z0-9-]+)\/$/.exec(href);
-      assert.ok(m, `${href} is a pair path`);
+      const m = PAIR_OR_GAME.exec(href);
+      assert.ok(m, `${href} is a pair path or a game path under one`);
       assert.ok(m[1] < m[2], `${href} is in canonical order`);
       assert.ok(m[1] === "new-england-patriots" || m[2] === "new-england-patriots");
       // Every one resolves without a redirect - the hub never links a spelling
       // the route would have to correct.
       assert.equal((await get(href)).status, 200, href);
     }
-    // A divisional opponent is two rows, one page.
-    const counts = hrefs.reduce((m, h) => m.set(h, (m.get(h) ?? 0) + 1), new Map());
-    assert.ok([...counts.values()].some((n) => n === 2), "a repeated opponent shares its page");
+    // A divisional opponent is two rows, one pair.
+    const counts = hrefs.map(pairOf).reduce((m, h) => m.set(h, (m.get(h) ?? 0) + 1), new Map());
+    assert.ok([...counts.values()].some((n) => n === 2), "a repeated opponent shares its pair");
   });
 
   test("both hubs link the same page for the pair", async () => {
@@ -1645,7 +1654,7 @@ describe("the Cardinals–Rams games", () => {
 
     assert.equal(
       doc.querySelector("title").textContent,
-      "Cardinals vs Rams Wild Card 2021: Final Score 34–11, Stats & Recap",
+      "Cardinals vs Rams Wild Card 2021: Final Score 34–11",
     );
 
     // In the served HTML, no script run: the head carries the SportsEvent.

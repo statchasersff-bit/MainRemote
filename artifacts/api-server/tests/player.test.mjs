@@ -1855,8 +1855,8 @@ describe("the injury tab", () => {
     );
     assert.match(
       doc.querySelector("title")?.textContent ?? "",
-      /Injury Update, Status & History/,
-      "and the title targets both intents",
+      /Injury Update & History \(Updated [A-Z][a-z]{2} \d{1,2}\)$/,
+      "and the title carries the date of the latest report (mak, 2026-10-09)",
     );
 
     // The whole point of scoping: the other six sections are NOT here, or the
@@ -2182,7 +2182,7 @@ describe("the bio tab", () => {
     assert.equal(doc.querySelector("#bio .scp-h2").textContent.trim(), `${name} Bio`);
     assert.match(
       doc.querySelector("title").textContent,
-      /Bio: Age, Height, College, Draft & Career/,
+      /Bio: Age, Height, College & Draft$/,
       "the title targets the biographical cluster",
     );
     assert.ok(
@@ -2860,8 +2860,13 @@ describe("the embedded fragment", () => {
 
   test("?h1=1: the profile's one H1 names the player and the page", async () => {
     const { doc, h1, text } = h1Of((await get(`/embed/player/${fixture.slug}?h1=1`)).body);
-    assert.equal(text, `${fixture.name} Fantasy Football Stats & Analysis`);
+    assert.equal(text, `${fixture.name} Fantasy Football`, "the hub's H1 since 2026-10-09 (mak)");
     assert.ok(h1.matches("#overview h1.scp-h2"), "the opening panel's heading, promoted");
+    assert.match(
+      h1.nextElementSibling?.className ?? "",
+      /scp-head-sub/,
+      "with the small position-and-team line under it",
+    );
     assert.ok(doc.querySelector("header.scp-phead h2.scp-phead-h1"), "the header stays an H2");
   });
 
@@ -2931,8 +2936,15 @@ describe("the embedded fragment", () => {
     assert.equal(new Set([...copies.values()].map((c) => c.title)).size, 6, "six distinct titles");
     assert.equal(new Set([...copies.values()].map((c) => c.description)).size, 6, "six distinct descriptions");
 
+    // The profile carries one too since 2026-10-09: in season its description
+    // is built from live data, which the copy stored on the page cannot be.
     const profile = await get(`/embed/player/${fixture.slug}`);
-    assert.doesNotMatch(profile.body, /scp-page-data/, "the profile's title is the one stored on its page");
+    const own = profile.body.match(/<script type="application\/json" class="scp-page-data">(.*?)<\/script>/s);
+    assert.ok(own, "the profile hands the plugin its own copy");
+    const hub = JSON.parse(own[1]);
+    assert.match(hub.title, new RegExp(`^${fixture.name} Fantasy(?: Football)? \\d{4}: Stats`), "the hub's title");
+    assert.ok(hub.title.length <= 60, `hub title within 60: ${hub.title}`);
+    assert.ok(hub.description.length <= 155, `hub description within 155: ${hub.description}`);
   });
 
   test("each tab carries the title its own address wears, for the history push", async () => {
@@ -3404,7 +3416,7 @@ describe("player section URLs", () => {
     assert.equal(tab.getAttribute("href"), tabHref("overview"), "the tab links to the profile");
     assert.equal(
       tab.getAttribute("data-scp-heading"),
-      `${fixture.name} Fantasy Football Stats & Analysis`,
+      `${fixture.name} Fantasy Football`,
       "and carries the profile's heading",
     );
   });

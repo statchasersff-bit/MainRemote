@@ -408,6 +408,9 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		'state'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-state' ) ),
 		'season'  => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-season' ) ),
 		'score'   => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-score' ) ),
+		// "Week 2" while the pair's page leads with one of this season's played
+		// games, which retitles it (statchasers_matchup_meta); empty otherwise.
+		'week'    => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-week' ) ),
 		// "current" means the pair's own page is still leading with this game,
 		// so this address does not exist yet. "archived" means it does.
 		'game'    => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-game' ) ),
@@ -674,9 +677,11 @@ function statchasers_matchup_fit_title( array $candidates ): string {
  * MIRRORS matchupPageMeta() in the API's src/lib/matchup/matchup-seo.ts.
  * Change one and change the other.
  *
+ * @param string $week "Week 2" (X-Matchup-Week) while the pair's page leads
+ *                     with one of this season's played games; '' otherwise.
  * @return array{title:string,description:string}
  */
-function statchasers_matchup_meta( string $a, string $b, string $state, string $season, string $score = '' ): array {
+function statchasers_matchup_meta( string $a, string $b, string $state, string $season, string $score = '', string $week = '' ): array {
 	$table  = statchasers_team_table();
 	$name_a = $table[ $a ][0] ?? $a;
 	$name_b = $table[ $b ][0] ?? $b;
@@ -685,6 +690,30 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	$names  = $name_a . ' vs ' . $name_b;
 	$short  = $nick_a . ' vs ' . $nick_b;
 	$season = '' === $season ? STATCHASERS_TEAM_SEASON : $season;
+
+	// A pair that has played this season leads with that game, just played or
+	// back in Week 2: "Browns vs Buccaneers Player Stats & Fantasy Points
+	// (Week 2, 2026)", mak's wording (2026-10-09), same words in the H1 the
+	// API sends. MIRRORS the seasonGameLead() branch of matchupPageMeta(): the
+	// spec's string runs past sixty for most pairs, so the year goes first
+	// ("Player Stats" outranks "2026" in the searches these pages get), then
+	// the shorter wordings. Head-to-head wording is now only for a pair that
+	// has not met this season.
+	if ( '' !== $week && ( 'recently_completed' === $state || 'historical' === $state ) ) {
+		$when = "($week, $season)";
+		$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
+		return array(
+			'title'       => statchasers_matchup_fit_title(
+				array(
+					"$short Player Stats & Fantasy Points $when",
+					"$short Player Stats & Fantasy Points ($week)",
+					"$short Stats & Fantasy Points $when",
+					"$short Player Stats $when",
+				)
+			),
+			'description' => sprintf( '%1$s%2$s vs %3$s %4$s %5$s player stats and fantasy points by player, plus the final score and the head-to-head record.', $lead, $nick_a, $nick_b, $week, $season ),
+		);
+	}
 
 	switch ( $state ) {
 		case 'upcoming':
@@ -811,7 +840,8 @@ function statchasers_matchup_request_meta(): ?array {
 			$pair['b'],
 			(string) ( $data['state'] ?? '' ),
 			(string) ( $data['season'] ?? '' ),
-			(string) ( $data['score'] ?? '' )
+			(string) ( $data['score'] ?? '' ),
+			(string) ( $data['week'] ?? '' )
 		);
 
 	// The API's title wins when it sent one: it is built from the same game

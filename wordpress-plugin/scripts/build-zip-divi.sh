@@ -5,7 +5,7 @@
 #
 #   bash wordpress-plugin/scripts/build-zip-divi.sh
 #
-# The third sibling of build-zip.sh and build-zip-depth.sh. This plugin is one
+# The sibling of build-zip.sh. This plugin is one
 # file, so the checks are the two that apply: it parses, and it has a Version
 # header. The archive holds "statchasers-divi-teams/<file>", because WordPress
 # installs the top-level directory it finds.

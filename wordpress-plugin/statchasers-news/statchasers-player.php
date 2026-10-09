@@ -1408,7 +1408,7 @@ add_filter(
 
 		$phrases = array(
 			'stats'    => 'Stats',
-			'injury'   => 'Injury Update, Status & History',
+			'injury'   => 'Injury Update & History',
 			'game-log' => 'Game Log',
 			'outlook'  => 'Fantasy Outlook',
 			'news'     => 'News & Analysis',
@@ -1495,20 +1495,24 @@ function statchasers_player_indexed_section(): string {
 }
 
 /**
- * A section URL's own title and description, from the fragment, or null.
+ * The request's own title and description, from the fragment, or null.
  *
  * A section URL is a rewrite onto the profile page, so without this Rank Math
  * gives all six of them the profile's stored title, description and canonical:
  * six addresses telling Google they are one page. The words are the API's
  * (player-seo.ts, shipped as `scp-page-data`), so the plugin keeps no copy.
  *
- * The profile itself is left alone: its title and description are stored on
- * its page by the builder, where an editor may have changed them.
+ * The profile reads its own island too since 2026-10-09 (mak): in season its
+ * description is built from live data - rank, rate, the next game - which the
+ * copy stored on the page at build time cannot say. A title an editor typed
+ * (one statchasers_player_generated_title() does not recognise) still wins:
+ * the island is ignored and the stored copy stands.
  *
  * On /bio/ the island also carries the Bio spec's Person node and index
- * decision (mak, 2026-09-30), kept here as `person` and `index`.
+ * decision (mak, 2026-09-30), kept here as `person` and `index`; on /injury/
+ * the date of the latest report, as `modified`, for the WebPage node.
  *
- * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool}|null
+ * @return array{title:string,description:string,person?:array<string,mixed>,index?:bool,modified?:string}|null
  */
 function statchasers_player_request_meta(): ?array {
 	static $meta = false;
@@ -1519,7 +1523,7 @@ function statchasers_player_request_meta(): ?array {
 
 	$meta = null;
 
-	if ( '' === statchasers_player_indexed_section() ) {
+	if ( '' === statchasers_player_indexed_section() && ! statchasers_player_profile_takes_live_meta() ) {
 		return $meta;
 	}
 
@@ -1547,10 +1551,97 @@ function statchasers_player_request_meta(): ?array {
 		if ( is_bool( $copy['index'] ?? null ) ) {
 			$meta['index'] = $copy['index'];
 		}
+		if ( is_string( $copy['modified'] ?? null ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $copy['modified'] ) ) {
+			$meta['modified'] = $copy['modified'];
+		}
 	}
 
 	return $meta;
 }
+
+/**
+ * Does the profile (no section) take its title and description from the API?
+ *
+ * Yes when this is a player page with the section URLs on and its stored
+ * title is empty or one the builder wrote; no when an editor typed one.
+ */
+function statchasers_player_profile_takes_live_meta(): bool {
+	if ( ! statchasers_player_section_urls_enabled() || ! statchasers_player_post_has_shortcode() ) {
+		return false;
+	}
+	if ( '' !== statchasers_player_section_from_url() ) {
+		return false;
+	}
+	if ( ! function_exists( 'statchasers_player_generated_title' ) ) {
+		return false;
+	}
+
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return false;
+	}
+
+	$stored = trim( (string) get_post_meta( $queried->ID, 'rank_math_title', true ) );
+
+	return '' === $stored || '' !== statchasers_player_generated_title( $stored );
+}
+
+/**
+ * The injury page's dateModified (mak, 2026-10-09): the date in its title,
+ * on the graph's WebPage node. Rank Math's graph on these pages carries no
+ * WebPage of its own (BreadcrumbList and the FAQ only), so one is added when
+ * none is there, and the FAQ is made part of it.
+ *
+ * @param array<string,mixed> $data Rank Math's schema nodes.
+ * @return array<string,mixed>
+ */
+function statchasers_player_modified_schema( $data ) {
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	$meta = statchasers_player_request_meta();
+	if ( ! $meta || empty( $meta['modified'] ) ) {
+		return $data;
+	}
+
+	// A date, not a datetime: the title carries a day, and a clock time would
+	// claim a precision the report does not have.
+	$modified = $meta['modified'];
+	$url      = statchasers_player_section_canonical();
+
+	foreach ( $data as $key => $node ) {
+		if ( ! is_array( $node ) || empty( $node['@type'] ) ) {
+			continue;
+		}
+		foreach ( (array) $node['@type'] as $type ) {
+			if ( is_string( $type ) && false !== strpos( $type, 'Page' ) && 'FAQPage' !== $type ) {
+				$data[ $key ]['dateModified'] = $modified;
+				return $data;
+			}
+		}
+	}
+
+	$page_id = '' === $url ? '' : $url . '#webpage';
+	$page    = array(
+		'@type'        => 'WebPage',
+		'name'         => $meta['title'],
+		'description'  => $meta['description'],
+		'dateModified' => $modified,
+	);
+	if ( '' !== $page_id ) {
+		$page['@id'] = $page_id;
+		$page['url'] = $url;
+	}
+	$data = array( 'statchasersPlayerPage' => $page ) + $data;
+
+	if ( '' !== $page_id && isset( $data['statchasersPlayerFaq'] ) && is_array( $data['statchasersPlayerFaq'] ) ) {
+		$data['statchasersPlayerFaq']['isPartOf'] = array( '@id' => $page_id );
+	}
+
+	return $data;
+}
+add_filter( 'rank_math/json_ld', 'statchasers_player_modified_schema', 30 );
 
 /* ------------------------------------------------------------- bio schema */
 

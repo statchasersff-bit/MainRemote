@@ -54,7 +54,7 @@ function wp_remote_retrieve_response_code( $r ) { return $r['code']; }
 function wp_remote_retrieve_body( $r ) { return $r['body']; }
 function get_category_by_slug( $slug ) { return false; }
 
-require __DIR__ . '/../../statchasers-depth-charts/statchasers-depth-charts.php';
+require __DIR__ . '/../../statchasers-news/depth-charts/statchasers-depth-charts.php';
 do_action( 'plugins_loaded' );
 
 // ---------------------------------------------------------- 1. one address

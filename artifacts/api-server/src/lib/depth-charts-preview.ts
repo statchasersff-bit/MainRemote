@@ -3,7 +3,7 @@
  *
  * Every other tool on the dev bar is rendered by this server. The depth charts
  * are not: they are a self-contained PHP plugin
- * (wordpress-plugin/statchasers-depth-charts/) that renders on the WordPress
+ * (wordpress-plugin/statchasers-news/depth-charts/) that renders on the WordPress
  * host, from a cache file the plugin's own refresh writes. There is no
  * TypeScript copy to call, and writing one would be a second renderer to keep
  * in step with the real one.

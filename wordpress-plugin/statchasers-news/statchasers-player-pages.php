@@ -636,31 +636,44 @@ function statchasers_player_build_batch( int $offset ): array {
  * @return array{title:string,description:string}
  */
 function statchasers_player_page_meta( array $row ): array {
-	$words = array(
-		'QB' => 'quarterback',
-		'RB' => 'running back',
-		'WR' => 'wide receiver',
-		'TE' => 'tight end',
-		'K'  => 'kicker',
-	);
 
-	$position = $words[ $row['position'] ] ?? strtolower( $row['position'] );
-	$where    = '' === $row['teamName'] ? '' : ' ' . $row['teamName'];
+	// "Bijan Robinson (RB, ATL)" - the opening the API's profileMeta() uses.
+	$who = $row['name'];
+	if ( '' !== $row['position'] && '' !== $row['team'] ) {
+		$who = sprintf( '%s (%s, %s)', $row['name'], $row['position'], $row['team'] );
+	} elseif ( '' !== $row['position'] ) {
+		$who = sprintf( '%s (%s)', $row['name'], $row['position'] );
+	}
 
 	return array(
-		// No " | StatChasers" since 2026-10-08 (mak): with it, every name past
-		// twelve letters ran over the sixty characters a results page shows.
-		// statchasers_player_retitle_apply() moves the stored titles over.
-		'title'       => sprintf( '%s Fantasy Football Stats & Analysis', $row['name'] ),
-		'description' => trim(
-			sprintf(
-				'%1$s%2$s %3$s fantasy football profile: %4$s game log, weekly finishes, advanced metrics, injury history and career production.',
-				$row['name'],
-				$where,
-				$position,
-				STATCHASERS_TEAM_SEASON
-			)
+		// mak's refresh of 2026-10-09: the hub's search is "X fantasy", so the
+		// title leads with it and the year, and gives way by rungs for the long
+		// names (statchasers_player_title_ladder). No " | StatChasers" since
+		// 2026-10-08. statchasers_player_retitle_apply() moves the stored
+		// titles over.
+		'title'       => statchasers_fit_title( statchasers_player_title_ladder( $row['name'] ) ),
+		// The offseason wording. In season the API builds one from live data
+		// (rank, rate, next game) and the plugin prefers it: see
+		// statchasers_player_request_meta().
+		'description' => sprintf(
+			'%1$s fantasy football profile: %2$s outlook, projections, stats, injury history and dynasty value.',
+			$who,
+			STATCHASERS_TEAM_SEASON
 		),
+	);
+}
+
+/**
+ * The profile title's rungs, fullest first. MIRRORS profileMeta() in the
+ * API's src/lib/player-seo.ts. Change one and change the other.
+ *
+ * @return string[]
+ */
+function statchasers_player_title_ladder( string $name ): array {
+	return array(
+		sprintf( '%s Fantasy Football %s: Stats, Outlook & News', $name, STATCHASERS_TEAM_SEASON ),
+		sprintf( '%s Fantasy Football %s: Stats & Outlook', $name, STATCHASERS_TEAM_SEASON ),
+		sprintf( '%s Fantasy %s: Stats & Outlook', $name, STATCHASERS_TEAM_SEASON ),
 	);
 }
 
@@ -1028,7 +1041,9 @@ function statchasers_player_heading( string $slug, string $section ): string {
 	);
 
 	if ( ! isset( $phrases[ $section ] ) ) {
-		return $name . ' Fantasy Football Stats & Analysis';
+		// "{Name} Fantasy Football" since 2026-10-09 (mak); "Stats" belongs to
+		// the Stats tab's heading. The small line under it is the lead.
+		return $name . ' Fantasy Football';
 	}
 
 	if ( 'news' === $section ) {
@@ -1164,19 +1179,16 @@ function statchasers_player_lead( string $slug, string $section ): string {
 		return sprintf( $leads[ $section ], $name, STATCHASERS_TEAM_SEASON );
 	}
 
-	// The profile itself takes the description the builder already wrote for it,
-	// so the page and its Rank Math entry open on the same sentence. Without the
-	// roster there is no team or position to write it from, so it falls back to
-	// the one sentence that is true of every profile.
+	// The profile's lead is the small line under its H1 - "RB, Atlanta
+	// Falcons" (mak, 2026-10-09) - which the API prints the same way under
+	// the heading it supplies. Without the roster there is nothing to write
+	// it from, and the heading stands alone.
 	$row = statchasers_player_roster_row( $slug );
+	if ( null === $row ) {
+		return '';
+	}
 
-	return null === $row
-		? sprintf(
-			'%1$s\'s %2$s fantasy football profile: game log, weekly finishes, advanced metrics, injury history and career production.',
-			$name,
-			STATCHASERS_TEAM_SEASON
-		)
-		: statchasers_player_page_meta( $row )['description'];
+	return implode( ', ', array_filter( array( $row['position'], $row['teamName'] ) ) );
 }
 
 add_filter(
@@ -1300,17 +1312,23 @@ add_action(
  * The profile title the builder writes for a player, from the stored title it
  * wrote before, or '' when the stored title is not one of ours.
  *
- * One template, with and without the brand: "<name> Fantasy Football Stats &
- * Analysis | StatChasers" was the builder's wording until 2026-10-08, and the
- * same words without the brand are the wording since. Anything else that is
- * not empty was typed by a person and is theirs.
+ * Two templates: "<name> Fantasy Football Stats & Analysis", with and without
+ * the brand, was the builder's wording until 2026-10-09, and the dated ladder
+ * of statchasers_player_title_ladder() is the wording since. Anything else
+ * that is not empty was typed by a person and is theirs.
  *
  * @param string $title Stored rank_math_title.
  * @return string The current wording for that name, or '' for a custom title.
  */
 function statchasers_player_generated_title( string $title ): string {
-	if ( 1 === preg_match( '/^(.+) Fantasy Football Stats & Analysis(?: \| StatChasers)?$/', trim( $title ), $m ) ) {
-		return $m[1] . ' Fantasy Football Stats & Analysis';
+	$title = trim( $title );
+	// The wording until 2026-10-09, with and without the brand.
+	if ( 1 === preg_match( '/^(.+) Fantasy Football Stats & Analysis(?: \| StatChasers)?$/', $title, $m ) ) {
+		return statchasers_fit_title( statchasers_player_title_ladder( $m[1] ) );
+	}
+	// The wording since: any rung of the ladder, for any year.
+	if ( 1 === preg_match( '/^(.+) Fantasy(?: Football)? (\d{4}): Stats(?:, Outlook & News| & Outlook)$/', $title, $m ) ) {
+		return statchasers_fit_title( statchasers_player_title_ladder( $m[1] ) );
 	}
 	return '';
 }
@@ -1359,7 +1377,7 @@ function statchasers_player_retitle_plan(): array {
 
 		if ( '' === $current ) {
 			if ( isset( $roster[ $slug ] ) ) {
-				$plan['eligible'][ $id ] = $roster[ $slug ] . ' Fantasy Football Stats & Analysis';
+				$plan['eligible'][ $id ] = statchasers_fit_title( statchasers_player_title_ladder( $roster[ $slug ] ) );
 			}
 			continue;
 		}

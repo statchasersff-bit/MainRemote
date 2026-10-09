@@ -169,7 +169,8 @@ _Replace the heading above with the project's name, and this line with one sente
   `SC_SITE_ORIGIN` (default `https://statchasers.com`),
   `SC_TEAM_HUB_URL_TEMPLATE`, `SC_DEPTH_CHART_URL_TEMPLATE` (default
   `/nfl/nfl-depth-charts/`, the league-wide tool; its per-team routes were
-  retired in the depth-charts plugin's 1.7.0),
+  retired in the depth charts' 1.7.0; the tool ships inside the StatChasers
+  plugin since 1.10.33, under `wordpress-plugin/statchasers-news/depth-charts/`),
   `SC_TEAM_SCHEDULE_URL_TEMPLATE` (default `/nfl/nfl-schedule/`: the link reads
   "View full NFL schedule"; the old `/nfl/schedule/{slug}/` never existed),
   `SC_TOOLS_URL` (the "Explore StatChasers" tool index),

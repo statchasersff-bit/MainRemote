@@ -1,9 +1,19 @@
-# StatChasers Depth Charts (WordPress plugin)
+# StatChasers Depth Charts (the depth-charts/ half of the StatChasers plugin)
 
-A self-contained WordPress plugin that pulls NFL depth charts, caches them
-locally, and renders the StatChasers depth-chart UI on the front end. No external
-host, API server, or GitHub workflow is required - everything runs inside
-WordPress.
+The code that pulls NFL depth charts, caches them locally, and renders the
+StatChasers depth-chart UI on the front end. No external host, API server, or
+GitHub workflow is required - everything runs inside WordPress.
+
+Until 1.7.0 this was a plugin of its own, "StatChasers Depth Charts". Since
+StatChasers 1.10.33 it lives here, under `statchasers-news/depth-charts/`, and
+`statchasers-news.php` loads it: one zip installs everything, and the parent's
+activation, deactivation and upgrade hooks call `scdc_activate()`,
+`scdc_deactivate()` and `scdc_after_upgrade()` here. The classes, constants,
+options, upload path and cron hook kept their `scdc_` / `SCDC_` names, so a
+site coming from the standalone plugin keeps its data and schedule. The
+standalone copy, if still active, is deactivated by the parent on the next
+admin page view (both declare the same classes, so only one may load); delete
+its folder from the Plugins screen afterwards.
 
 **Sources (blended, matching the StatChasers app):**
 
@@ -40,8 +50,10 @@ WordPress.
 
 ## Install
 
-1. Copy the `statchasers-depth-charts` folder into `wp-content/plugins/`.
-2. In **Plugins**, activate **StatChasers Depth Charts**. Activation
+1. Install the StatChasers plugin (`wordpress-plugin/dist/statchasers-news.zip`,
+   built by `scripts/build-zip.sh`); this directory ships inside it.
+2. In **Plugins**, activate **StatChasers** (or, on an upgrade, just load any
+   admin page once). Activation, and the first request after an upgrade,
    automatically:
    - creates the **`/nfl/`** hub page (containing `[statchasers_nfl_hub]`) if it
      doesn't already exist,

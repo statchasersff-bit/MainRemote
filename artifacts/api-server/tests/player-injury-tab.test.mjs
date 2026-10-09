@@ -251,6 +251,8 @@ describe("rendered", () => {
     assert.ok(doc.querySelector(".scp-in > .scp-ox-sec.scp-in-now:first-child .scp-in-statusbar"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
     assert.deepEqual(h2, [
+      // Back by mak's refresh of 2026-10-09, with a Yes/No sentence under it.
+      "Is Jacoby Brissett injured?",
       "Injury History at a Glance",
       "Where He's Been Hurt",
       "Jacoby Brissett Injury History",
@@ -317,7 +319,9 @@ describe("rendered", () => {
     const { doc } = render({ designation: { injuryStatus: "Out", injuryBodyPart: "Ankle" } });
     assert.ok(doc.querySelector(".scp-in-main.is-bad"));
     const h2 = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
-    assert.equal(h2[0], "If Brissett Misses Time");
+    assert.equal(h2[0], "Is Jacoby Brissett injured?");
+    assert.equal(h2[1], "If Brissett Misses Time");
+    assert.match(doc.querySelector(".scp-in-answer").textContent, /^Yes\. Jacoby Brissett is Out \(ankle\) for Week 4 \(/);
     assert.ok(doc.querySelector(".scp-in-urgent"));
   });
 

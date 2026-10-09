@@ -45,10 +45,12 @@ die()  { printf 'ERROR %s\n' "$*" >&2; exit 1; }
 # ------------------------------------------------------------------ 1. parse
 
 if [ -n "$PHP" ]; then
-	for file in "$plugin"/*.php; do
-		"$PHP" -l "$file" >/dev/null || die "$(basename "$file") does not parse."
-	done
-	say "parse    ok ($(ls "$plugin"/*.php | wc -l | tr -d ' ') files)"
+	count=0
+	while IFS= read -r file; do
+		"$PHP" -l "$file" >/dev/null || die "${file#"$plugin"/} does not parse."
+		count=$(( count + 1 ))
+	done < <(find "$plugin" -name '*.php' -type f | sort)
+	say "parse    ok ($count files)"
 else
 	say "parse    SKIPPED - no php binary found"
 fi
@@ -63,6 +65,13 @@ fi
 if [ -n "$PHP" ] && [ -f "$here/tests/smoke.php" ]; then
 	"$PHP" "$here/tests/smoke.php" >/dev/null || die "tests/smoke.php failed. Run it to see why."
 	say "load     ok"
+fi
+
+# The depth charts (depth-charts/) have their own harness: tests/depth-charts
+# stubs WordPress, loads the embedded copy and asserts what each URL returns.
+if [ -n "$PHP" ] && [ -f "$here/tests/depth-charts/checks.php" ]; then
+	( cd "$here/tests/depth-charts" && "$PHP" checks.php >/dev/null ) || die "tests/depth-charts/checks.php failed. Run it to see why."
+	say "depth    ok"
 fi
 
 # ---------------------------------------------------------------- 2. version
@@ -91,6 +100,20 @@ for file in "$plugin"/*.php; do
 done
 
 [ -z "$missing" ] || die "the loader does not require:$missing"
+
+# The same for the depth charts' own loader and its includes/ directory, and the
+# parent has to require that loader: an embedded tool nobody loads is the same
+# mistake one level down.
+depth="$plugin/depth-charts/statchasers-depth-charts.php"
+[ -f "$depth" ] || die "no depth charts loader at ${depth#"$here"/}"
+grep -q "require_once __DIR__ . '/depth-charts/statchasers-depth-charts.php'" "$plugin/statchasers-news.php" \
+	|| die "the loader does not require depth-charts/statchasers-depth-charts.php"
+grep -q "Plugin Name:" "$depth" && die "depth-charts/statchasers-depth-charts.php carries a Plugin Name header; it is not a plugin of its own."
+for file in "$plugin"/depth-charts/includes/*.php; do
+	name="$(basename "$file")"
+	grep -q "includes/$name" "$depth" || missing="$missing depth-charts/includes/$name"
+done
+[ -z "$missing" ] || die "the depth charts loader does not require:$missing"
 
 say "loader   ok"
 

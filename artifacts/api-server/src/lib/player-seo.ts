@@ -21,6 +21,18 @@ import { escapeHtml } from "./render";
 import { OUTLOOK_SEASON } from "./player/header";
 import type { PlayerPageData } from "./player/player-data";
 import { bioDescription } from "./player/bio-seo";
+import { injuryAnswer } from "./player/injury-tab";
+import { SCORING_SHORT } from "./player/scoring";
+import {
+  currentRank,
+  gamePoints,
+  inSeason,
+  lastGame,
+  nextGame,
+  oneDecimal,
+  oppPhrase,
+  seasonPpg,
+} from "./player/season-phase";
 import { fitTitle } from "./title-fit";
 
 export interface PlayerPageMeta {
@@ -33,6 +45,16 @@ export interface PlayerPageMeta {
 }
 
 const SITE_NAME = "StatChasers";
+
+/** What a results page shows of a description before it cuts it. */
+const DESCRIPTION_MAX = 155;
+
+/** The month-and-day a title carries: "Oct 9". */
+function monD(iso: string): string {
+  const [, m, d] = iso.split("-").map(Number);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[(m ?? 1) - 1]} ${d}`;
+}
 
 /**
  * Title and description for a section-scoped page.
@@ -70,6 +92,30 @@ function sectionMeta(
   }
 
   if (section === "injury") {
+    // Answer first (mak, 2026-10-09): the title carries the date of the
+    // latest report or status change for him - not today's - and the
+    // description opens on the same Yes/No the page does. The answer needs
+    // the injury record; without one the section does not exist and the
+    // plugin redirects it, so the wording below it is only ever a fallback.
+    const ans = injuryAnswer(data);
+    if (ans) {
+      const when = monD(ans.updated);
+      return {
+        title: fitTitle([
+          `${player.name} Injury Update & History (Updated ${when})`,
+          `${player.name} Injury Update & History (${when})`,
+          `${player.name} Injury Update (${when})`,
+        ]),
+        description: fitTitle(
+          [
+            `${ans.lead} ${player.name} injury history: every logged injury, games missed and recovery timelines.`,
+            `${ans.lead} ${player.name} injury history: every logged injury and games missed.`,
+            `${ans.lead} ${player.name} injury history and games missed.`,
+          ],
+          DESCRIPTION_MAX,
+        ),
+      };
+    }
     return {
       title: fitTitle([
         `${player.name} Injury Update, Status & History ${season}`,
@@ -110,6 +156,24 @@ function sectionMeta(
     // OUTLOOK_SEASON, not the season the player last played: the tab is the
     // 2026 outlook for everybody, and a player with no 2026 snaps yet got a
     // "2025" title over a 2026 H1.
+    //
+    // In season the page is a rest-of-season read and says so (mak,
+    // 2026-10-09); before Week 1 and after the last game the draft-day
+    // wording stands. The spec gives no shorter rung for the in-season
+    // title, so the long names fall back to "ROS Value", then to the bare
+    // phrase.
+    if (inSeason(data)) {
+      return {
+        title: fitTitle([
+          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Rest-of-Season Value`,
+          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: ROS Value`,
+          `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}`,
+        ]),
+        description:
+          `${player.name} rest-of-season fantasy outlook: role, usage trend and ` +
+          `trade and lineup value for the rest of ${OUTLOOK_SEASON}.`,
+      };
+    }
     return {
       title: fitTitle([
         `${player.name} Fantasy Outlook ${OUTLOOK_SEASON}: Role, Usage & Value`,
@@ -136,11 +200,30 @@ function sectionMeta(
     // where it was, so the page is still the current season's game log and a
     // title naming 2023 would describe the block at the bottom of it.
     const year = data.season;
+    const title = fitTitle([
+      `${player.name} Game Log ${year}: Fantasy Points by Week`,
+      `${player.name} Game Log ${year}: Week by Week`,
+    ]);
+    // The description leads with his latest game (mak, 2026-10-09): "how many
+    // fantasy points did X have" is the tab's top search.
+    const last = lastGame(data);
+    if (last) {
+      const pts = `${oneDecimal(gamePoints(data, last))} ${SCORING_SHORT[data.format]} points`;
+      return {
+        title,
+        description: fitTitle(
+          [
+            `${player.name} scored ${pts} in Week ${last.week} ${oppPhrase(last.opp)}. ` +
+              `Full ${year} game log: fantasy points, stats and positional finish by week.`,
+            `${player.name} scored ${pts} in Week ${last.week} ${oppPhrase(last.opp)}. ` +
+              `Full ${year} game log: fantasy points and stats by week.`,
+          ],
+          DESCRIPTION_MAX,
+        ),
+      };
+    }
     return {
-      title: fitTitle([
-        `${player.name} Game Log ${year}: Fantasy Points by Week`,
-        `${player.name} Game Log ${year}: Week by Week`,
-      ]),
+      title,
       description:
         `${player.name} ${year} game log: fantasy points by week, ` +
         `${position}stats game by game, weekly positional finish and the ` +
@@ -151,30 +234,73 @@ function sectionMeta(
   return null;
 }
 
+/**
+ * The profile's own title and description (mak, 2026-10-09).
+ *
+ * The title names the search the hub ranks for - "X fantasy" - and the year,
+ * and gives way by rungs for the long names. The description is built from
+ * live data in season: his rank, his points per game and the next game. The
+ * Stats, Injury and Bio tabs own "stats", "injury" and "age", so neither
+ * string reaches for those words beyond the title's one "Stats".
+ *
+ * MIRRORED in statchasers_player_page_meta() in the WordPress plugin, which
+ * writes the stored copy; in season the plugin prefers this live one.
+ */
+export function profileMeta(data: PlayerPageData): { title: string; description: string } {
+  const { player } = data;
+  const year = data.leagueSeason;
+  const pos = player.position ?? "";
+  const team = data.team?.code ?? "";
+  const who = pos && team ? `${player.name} (${pos}, ${team})` : pos ? `${player.name} (${pos})` : player.name;
+
+  const title = fitTitle([
+    `${player.name} Fantasy Football ${year}: Stats, Outlook & News`,
+    `${player.name} Fantasy Football ${year}: Stats & Outlook`,
+    `${player.name} Fantasy ${year}: Stats & Outlook`,
+  ]);
+
+  const rank = currentRank(data);
+  const ppg = seasonPpg(data);
+  const next = nextGame(data);
+  // ppg > 0, not just played: a rank by total points with 0.0 beside it is
+  // true of every healthy scratch and reads as a mistake.
+  if (inSeason(data) && data.season === year && pos && rank !== null && ppg !== null && ppg > 0 && next) {
+    const scoring = SCORING_SHORT[data.format];
+    const game = `Week ${next.week} ${next.homeAway === "home" ? "vs" : "at"} ${next.opponentCode}`;
+    return {
+      title,
+      description: fitTitle(
+        [
+          `${who} fantasy outlook: ${pos}${rank} with ${oneDecimal(ppg)} ${scoring} points per game in ${year}. ` +
+            `${game}: start/sit call, injury status and trade value.`,
+          `${who} fantasy outlook: ${pos}${rank}, ${oneDecimal(ppg)} ${scoring} points per game in ${year}. ` +
+            `${game}: start/sit, injury status and trade value.`,
+        ],
+        DESCRIPTION_MAX,
+      ),
+    };
+  }
+  return {
+    title,
+    description:
+      `${who} fantasy football profile: ${year} outlook, projections, stats, ` +
+      `injury history and dynasty value.`,
+  };
+}
+
 export function playerPageMeta(
   data: PlayerPageData,
   canonical: string,
   section?: string,
 ): PlayerPageMeta {
-  const { player, season } = data;
-  const position = player.position ? `${player.position} ` : "";
+  const { player } = data;
 
   const scoped = section ? sectionMeta(data, section) : null;
-
-  // The description names what is actually on the page and the season it
-  // describes. No superlatives, and no claim about next season - see rule 3 in
-  // player-render.ts.
-  const description =
-    scoped?.description ??
-    `${player.name} ${position}fantasy football stats and analysis: ` +
-      `${season} season and career stats, game log, weekly finishes, injury ` +
-      `history and fantasy outlook.`;
+  const own = scoped ?? profileMeta(data);
 
   return {
-    // The profile's title is the one the WordPress page builder stores
-    // (statchasers_player_page_meta); the two must say the same thing.
-    title: scoped?.title ?? `${player.name} Fantasy Football Stats & Analysis`,
-    description,
+    title: own.title,
+    description: own.description,
     canonical,
     siteName: SITE_NAME,
     image: player.headshotUrl ?? null,

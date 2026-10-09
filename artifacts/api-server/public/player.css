@@ -3924,6 +3924,26 @@ button.scp-search-opt {
   padding-top: 4px;
 }
 
+/* "Is X injured?" and its Yes/No answer, first on the tab (mak, 2026-10-09).
+   The answer is set a size up from the ledes: it is the page's one answer,
+   not a caption. The games-missed line under it is the small print. */
+.scp .scp-in .scp-in-ask {
+  margin: 0 0 16px;
+}
+
+.scp .scp-in .scp-in-answer {
+  margin: 10px 0 6px;
+  color: var(--sc-ink, #0f172a);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.scp .scp-in .scp-in-missedline {
+  margin: 0;
+  color: var(--sc-muted);
+  font-size: 13px;
+}
+
 .scp .scp-in .scp-in-statusbar {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
@@ -6906,6 +6926,24 @@ button.scp-search-opt {
  */
 .scp-read-hero {
   margin: 0;
+}
+
+/* The hub's answer-first sentence under the promoted heading (mak,
+   2026-10-09): one readable line, its two links in the team's ink like the
+   Overview's other links. */
+.scp .scp-answer {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sc-ink, #0f172a);
+}
+
+.scp .scp-answer a {
+  color: var(--scp-team, var(--sc-navy));
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .scp-read-grid {

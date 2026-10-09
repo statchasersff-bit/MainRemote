@@ -31,6 +31,7 @@ import {
 import { escapeJsonLd } from "./render";
 import { playerPageMeta, renderPlayerHeadTags } from "./player-seo";
 import { bioPersonNode } from "./player/bio-seo";
+import { injuryAnswer } from "./player/injury-tab";
 import { LruCache } from "./lru";
 import { onImageVersionsChanged } from "./image-versions";
 
@@ -143,22 +144,25 @@ async function renderWithData(
 const INDEXED_SECTIONS = new Set(["stats", "game-log", "outlook", "injury", "news", "bio"]);
 
 /**
- * A section URL's title and description, as an inert island for the plugin.
+ * A page's title and description, as an inert island for the plugin.
  *
  * On WordPress a section URL is a rewrite onto the profile page, so Rank Math
  * would give it the profile's title, description and canonical: six pages
  * claiming to be one. The plugin reads this and hands Rank Math the section's
  * own copy - written here, once, by playerPageMeta(), the same words this
- * server's standalone page wears. The title goes without the site name; the
- * plugin appends its own. Embedded section fragments only: the profile's
- * title is the one stored on its page.
+ * server's standalone page wears. The title goes without the site name.
+ *
+ * The profile carries one too since 2026-10-09 (mak): its description is
+ * built from live data in season - rank, rate, next game - which a title
+ * stored on the page at build time cannot say. The plugin applies it unless
+ * an editor typed a title of their own.
  */
 function pageDataIsland(
   data: PlayerPageData,
   options: PlayerRenderOptions,
   sectionMissing: boolean,
 ): string {
-  if (!options.embed || !options.section || !INDEXED_SECTIONS.has(options.section)) {
+  if (!options.embed || (options.section && !INDEXED_SECTIONS.has(options.section))) {
     return "";
   }
   // No such section for this player (a healthy player's Injury, a kicker's
@@ -179,6 +183,9 @@ function pageDataIsland(
         ...(options.section === "bio" && data.bioPage
           ? { person: bioPersonNode(data, data.bioPage), index: data.bioPage.indexable }
           : {}),
+        // Injury: the date in the title, for the WebPage node's dateModified
+        // (mak, 2026-10-09). ISO, Eastern.
+        ...(options.section === "injury" ? { modified: injuryAnswer(data)?.updated ?? null } : {}),
       }),
     ) +
     `</script>`

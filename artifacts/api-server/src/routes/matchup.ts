@@ -252,6 +252,9 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // The score, for the postgame description the plugin mirrors. Empty
         // header rather than an absent one so the plugin reads one shape.
         .set("X-Matchup-Score", result.scoreLine)
+        // "Week 2" while the pair's page leads with one of this season's
+        // played games, for the plugin's title mirror; empty otherwise.
+        .set("X-Matchup-Week", result.week)
         // The H1 and the <title>, so WordPress prints this origin's words
         // rather than rebuilding them: a game page's heading runs away-then-
         // home, which only the API knows. Percent-encoded, because the title's

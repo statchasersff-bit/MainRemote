@@ -6497,6 +6497,14 @@ body.sct-page.is-embed {
   white-space: nowrap;
 }
 
+/* The line under the pair page's scoreboard to the season game's own page
+   (renderSeasonGameLink): one link, flush with the hero's edge. */
+.sct-mu-gamelink {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 /* The pair-page link on a schedule row. Right-aligned so the column ends flush
    with the table rather than raggedly against the status beside it, and
    nowrap because "View matchup" on two lines makes that row taller than the
